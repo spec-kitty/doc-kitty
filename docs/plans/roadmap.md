@@ -34,6 +34,8 @@ The decisions behind this plan are recorded as ADRs, not here:
 - [ADR-0006](../adr/0006-direct-render-default-projection-deferred.md) — direct
   render by default; projection deferred to M8.
 - [ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md) — the CI/CD strategy.
+- [ADR-0008](../adr/0008-swappable-theme-layer.md) — theme and chrome are a
+  swappable, layered concern.
 
 ## Phased missions
 
@@ -41,7 +43,7 @@ The decisions behind this plan are recorded as ADRs, not here:
 |---|---|
 | **M0 — CI/CD foundation** | The pipeline below, stood up against the current scaffold so every later mission lands green. |
 | **M1 — Metadata & chrome foundation** | Schema (`doc_status`, `kind`, `audience`, `related`, `external_references`, `banner`/`social_thumb`), `MarkdownContent`/`Head` overrides. |
-| **M2 — Component system & theme** | Atomic-design layering, token theme, frontend/a11y doctrine. |
+| **M2 — Component system & theme** | Atomic-design layering; the swappable theme layer (default + Spec Kitty brand) per [ADR-0008](../adr/0008-swappable-theme-layer.md); per-kind layouts; frontend/a11y doctrine. |
 | **M3 — Audience + Related + External refs** | The three metadata-rendered relationship features + bibliography/tools catalogs. |
 | **M4 — Glossary & terminology** | `.contextive` source, glossary pages, remark auto-linking, search. |
 | **M5 — Diagrams** | Build-time mermaid + plantuml + lightbox. |

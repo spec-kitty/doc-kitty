@@ -17,5 +17,6 @@ type: ADR
 | [0005](./0005-frontmatter-doc-status-and-divio-type.md) | Rename `status` to `doc_status`; add `divio_type` | accepted | 2026-08-21 |
 | [0006](./0006-direct-render-default-projection-deferred.md) | Direct render by default; projection deferred | accepted | 2026-08-21 |
 | [0007](./0007-ci-cd-path-scoped-lanes.md) | Path-scoped CI/CD lanes | accepted | 2026-08-21 |
+| [0008](./0008-swappable-theme-layer.md) | Theme and chrome are a swappable, layered concern | accepted | 2026-08-21 |
 
 New ADRs copy [`template.md`](./template.md).

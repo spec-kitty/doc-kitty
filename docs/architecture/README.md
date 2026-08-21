@@ -43,6 +43,8 @@ page:
   agent-API `<head>` links, and theming.
 - [Builder scripts](./builder-scripts.md) — `scaffold.mjs`, `new-doc.mjs`, and
   `validate-frontmatter.mjs`.
+- [Theming and chrome](./theming.md) — how a consumer rebrands the site without
+  forking: the theme surface, layering, and the default-vs-brand split.
 
 ## Build and delivery
 
