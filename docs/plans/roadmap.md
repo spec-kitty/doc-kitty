@@ -36,6 +36,8 @@ The decisions behind this plan are recorded as ADRs, not here:
 - [ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md) — the CI/CD strategy.
 - [ADR-0008](../adr/0008-swappable-theme-layer.md) — theme and chrome are a
   swappable, layered concern.
+- [ADR-0009](../adr/0009-finalize-metadata-contract.md) — the finalized metadata
+  contract (supersedes ADR-0005's `divio_type`).
 
 ## Phased missions
 

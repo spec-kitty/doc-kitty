@@ -47,9 +47,9 @@ put in frontmatter.
 ¹ `type` is required on every page except the bundle-root `README.md`, which
 carries `okf_version` instead. See "Sections and type".
 
-`doc_status` and `kind` are the M1 additions to the contract (ADR-0005). The repo
-uses `status` and omits `kind` until the M1 migration, so this table describes the
-intended contract, not what the validator enforces today.
+`doc_status` and `kind` are the M1 additions to the contract (ADR-0005 and
+ADR-0009). The repo uses `status` and omits `kind` until the M1 migration, so this
+table describes the intended contract, not what the validator enforces today.
 
 ## Required fields
 
@@ -68,10 +68,11 @@ of an incidental edit. It drives feed ordering and freshness.
 ## Page kind: `kind`
 
 `type` says where a page lives (its section); `kind` says what kind of page it is
-and how to read it. The two axes are independent
-([ADR-0005](../adr/0005-frontmatter-doc-status-and-divio-type.md) introduced this
-field as `divio_type`, before it was renamed): a tutorial and a reference page can
-share a section.
+and how to read it. The two axes are independent.
+[ADR-0005](../adr/0005-frontmatter-doc-status-and-divio-type.md) introduced this
+field as `divio_type`;
+[ADR-0009](../adr/0009-finalize-metadata-contract.md) renamed it to `kind` and
+defined the taxonomy. A tutorial and a reference page can share a section.
 
 `kind` is required on every page. Its value set is the four Divio content quadrants
 plus a set of structural kinds, so a page that does not fit a quadrant still
@@ -217,30 +218,10 @@ shaping of agent records. The zod schema in `lib/schema.ts` mirrors the contract
 for the Astro build. See [loader and schema](./loader-and-schema.md) and
 [generators](./generators.md).
 
-## Design decisions (pending ADR reconciliation)
+## Decisions
 
-Working resolutions from the design phase. They move into ADRs once the contract
-stops growing; until then this list is the record.
-
-1. **`related` shape.** Accept both a bare slug and `{ ref, note }`. A bare slug
-   renders the target's own `description`; a `note` overrides it. The build fails
-   on a ref that does not resolve.
-2. **`external_references` shape.** Support both inline `{ url, title, note? }`
-   and catalog `{ type, id }` from the start, backed by `bibliography` and `tools`
-   collections.
-3. **Page kind is `kind`** (renamed from `divio_type`), required on every page,
-   with an extended open vocabulary: the four Divio quadrants plus structural kinds
-   (`Hub`, `ADR`, `Changelog`, `Glossary`, `Presentation`, `Persona`). It drives
-   per-kind layout. See "Page kind".
-4. **`type` is authored**, and the validator checks it matches the section.
-5. **Images**: `banner` (page hero and the default social image) and
-   `social_thumb` (the OG/Twitter card), following the Hugo reference. See
-   "Images".
-6. **Freshness** (taken as recommended, pending objection): `stale_after` and
-   `updated` feed a nightly, non-blocking freshness report. Thresholds are defined
-   with the freshness feature, not here.
-
-Reconciliation pending: the rename to `kind` and the extended vocabulary need to
-land in [ADR-0005](../adr/0005-frontmatter-doc-status-and-divio-type.md), which
-recorded the field as `divio_type` with only the four quadrants. That waits until
-the contract stops growing.
+The metadata contract is finalized in
+[ADR-0009](../adr/0009-finalize-metadata-contract.md): the `kind` taxonomy (which
+supersedes ADR-0005's `divio_type`), the `related` and `external_references`
+shapes, the `banner`/`social_thumb` images, authored `type`, and freshness. This
+page describes the contract; ADR-0009 records the decisions and their rationale.

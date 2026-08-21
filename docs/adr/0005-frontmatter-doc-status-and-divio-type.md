@@ -67,9 +67,9 @@ During the same design session, `divio_type` was renamed to `kind` and grown int
 a page-kind taxonomy: the four Divio quadrants plus structural kinds (`Hub`,
 `ADR`, `Changelog`, `Glossary`, `Presentation`, `Persona`), required on every
 page, driving per-kind layout. The current shape lives in
-[the metadata model](../architecture/metadata-model.md). This ADR will be revised
-or superseded to record the final field name and vocabulary once the contract
-stops growing.
+[the metadata model](../architecture/metadata-model.md). The `divio_type` decision
+here is superseded by [ADR-0009](./0009-finalize-metadata-contract.md); the
+`doc_status` decision stands.
 
 ## References
 
