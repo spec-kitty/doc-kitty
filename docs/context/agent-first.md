@@ -41,3 +41,6 @@ The metadata that makes docs browsable for people is most of what an agent needs
 Emitting the discovery surfaces from that metadata costs little. For a company
 whose tools are agents, generating an agent-friendly site is the obvious move, not
 an add-on.
+
+See the [convention](./convention.md) for the metadata that drives these surfaces,
+and [what Doc Kitty solves for](./what-we-solve-for.md) for the four outcomes.

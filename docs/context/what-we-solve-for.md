@@ -30,11 +30,10 @@ accumulating.
 
 ## Agent interoperability
 
-The site is one an AI agent can discover and browse. Doc Kitty generates a
-sitemap, an RSS feed, an `llms.txt` index, and a JSON agent-API from the same
-metadata that serves human readers. This is discovery, not retrieval: a crawlable
-map of the corpus, not a vector index to host. See [agent-first
-documentation](./agent-first.md).
+The site is one an AI agent can discover and browse. The same metadata that serves
+human readers drives the agent-facing surfaces, so agents get a crawlable map of
+the corpus rather than a search index to host. See [agent-first
+documentation](./agent-first.md) for the surfaces and how they work.
 
 ## Flexibility
 

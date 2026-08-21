@@ -47,6 +47,10 @@ put in frontmatter.
 ¹ `type` is required on every page except the bundle-root `README.md`, which
 carries `okf_version` instead. See "Sections and type".
 
+`doc_status` and `kind` are the M1 additions to the contract (ADR-0005). The repo
+uses `status` and omits `kind` until the M1 migration, so this table describes the
+intended contract, not what the validator enforces today.
+
 ## Required fields
 
 `title` and `description` name and summarise the page. `description` is bounded to
@@ -169,8 +173,9 @@ Image handling differs by purpose:
 that must resolve to a persona page under `context/audience/<profile>.md`;
 `guidance_text` is the page-local note on what that reader should take from the
 page. A "Who is this for" block renders when the list is non-empty. Persona pages
-are the shared stakeholder descriptions. This is an M3 feature; the shape is fixed
-here so the schema can carry it earlier.
+are the shared stakeholder descriptions. They live under `context/audience/`, a
+sub-location of the `context` section, and carry `kind: Persona`. This is an M3
+feature; the shape is fixed here so the schema can carry it earlier.
 
 ## Agent extension
 
@@ -186,10 +191,11 @@ feeds), so section identity, labels, and ordering are data, not code
 ([ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md)).
 
 `type` names the kind of page and maps to its section (for example
-`architecture/*` is `Architecture`). The canonical set is the twelve Common Docs
-kinds plus `Presentation`. The value set is open: the validator checks the
-canonical set strictly and warns on an unknown value rather than failing, so a
-project's own sections degrade gracefully.
+`architecture/*` is `Architecture`). The canonical set is the Common Docs `type`
+values (one per section, plus the ADR `Template` and the `plans/` and
+`operations/` sub-kinds) plus `Presentation`. The value set is open: the validator
+checks the canonical set strictly and warns on an unknown value rather than
+failing, so a project's own sections degrade gracefully.
 
 ## Publication and validation rules
 
@@ -211,9 +217,10 @@ shaping of agent records. The zod schema in `lib/schema.ts` mirrors the contract
 for the Astro build. See [loader and schema](./loader-and-schema.md) and
 [generators](./generators.md).
 
-## Decisions
+## Design decisions (pending ADR reconciliation)
 
-Resolved 2026-08-21:
+Working resolutions from the design phase. They move into ADRs once the contract
+stops growing; until then this list is the record.
 
 1. **`related` shape.** Accept both a bare slug and `{ ref, note }`. A bare slug
    renders the target's own `description`; a `note` overrides it. The build fails

@@ -33,8 +33,8 @@ graph, and check lists live in the design:
 Detect the change surface once, then run lanes conditionally.
 
 - A `detect-changes` job classifies the diff into path groups (`code`,
-  `example_content`, `repo_docs`, `workflows`). Each lane runs only when its group
-  changed.
+  `example_content`, `repo_docs`, `workflows`, plus an `ignored` set that runs no
+  CI). Each lane runs only when its group changed.
 - One `ci-ok` aggregate job is the sole required check. It passes when the
   applicable lanes pass and skipped lanes do not block a merge.
 
@@ -61,7 +61,7 @@ The path groups need care: a file in the wrong group runs the wrong lanes. The
 group definitions live in the design doc and are covered by the acceptance
 criteria there.
 
-## Alternatives Considered
+## Alternatives considered
 
 Separate path-triggered workflows per lane. Rejected: skipped required checks
 block merges, and there is no single status to gate on.

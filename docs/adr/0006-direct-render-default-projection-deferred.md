@@ -53,7 +53,7 @@ README-as-index reads correctly on the repo host.
 Direct render cannot publish a filtered subset of a private tree. A project that
 needs redaction waits for the M8 projection mode.
 
-## Alternatives Considered
+## Alternatives considered
 
 Projection by default. Rejected: it adds a sync step, a git-ignored tree, and a
 gap between the authored and rendered files that most sites never need.

@@ -53,7 +53,7 @@ The rename touches every existing page's frontmatter, and authors have two typin
 axes to learn instead of one. The migration is mechanical for `doc_status`; a
 `divio_type` value has to be chosen per page.
 
-## Alternatives Considered
+## Alternatives considered
 
 Keep `status`. Rejected: the collision with lane status is real in Spec Kitty
 repos and confuses both readers and tools.

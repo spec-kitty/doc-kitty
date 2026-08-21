@@ -14,6 +14,13 @@ related:
 
 # CI/CD Pipeline
 
+For contributors setting up or changing CI. The pipeline detects what a change
+touches, then runs only the lanes that change can affect: code checks for code,
+documentation checks for docs, a build for deployed content. One aggregate check
+gates the merge. The [lane matrix](#lane-matrix) is the core of the design, and a
+nightly smoke flow covers the deployed site. The decisions behind it are in
+[ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md).
+
 ## Problem
 
 doc-kitty must ship with a working CI/CD pipeline that runs unit and integration
@@ -26,8 +33,8 @@ concern, independent of the feature design.
 
 - **Path-efficient.** Each change runs only the lanes it can affect. No wasted
   builds, no false "required check" waits.
-- **Single required status.** One aggregate check gates merges, so skipped lanes
-  don't block (a classic branch-protection foot-gun).
+- **Single required status.** One aggregate check gates merges, so a skipped lane
+  does not block the merge the way a required-but-skipped check otherwise would.
 - **Fail fast, fail cheap.** Doc problems caught by a build-free validator before
   any Astro build.
 - **Deploy only what changed.** The example site redeploys only when the site or
@@ -49,7 +56,7 @@ exactly one group (first match wins, top to bottom):
 | `ignored` | `research/**`, `**/*.excalidraw`, editor cruft | No CI. |
 
 Key distinction: **`example_content` is deployed; `repo_docs` is not.** That single
-fact drives the efficiency split — deployed content must prove it still builds;
+fact drives the efficiency split: deployed content must prove it still builds, and
 repo docs need only pass sanity checks.
 
 ## Lane matrix
@@ -59,21 +66,21 @@ groups):
 
 | Lane | `code` | `example_content` | `repo_docs` | `workflows` |
 |---|:--:|:--:|:--:|:--:|
-| **code-quality** (typecheck, lint, unit tests) | ✅ | — | — | ✅ |
-| **doc-sanity** (frontmatter, links, md-lint) | ✅¹ | ✅ | ✅ | ✅ |
-| **build-example** (integration: build + assert artifacts) | ✅ | ✅² | — | ✅ |
-| **deploy** (Pages, `main` only) | ✅ | ✅ | —³ | ✅ |
+| **code-quality** (typecheck, lint, unit tests) | yes | no | no | yes |
+| **doc-sanity** (frontmatter, links, md-lint) | yes¹ | yes | yes | yes |
+| **build-example** (integration: build + assert artifacts) | yes | yes² | no | yes |
+| **deploy** (Pages, `main` only) | yes | yes | no³ | yes |
 
-¹ Code changes run doc-sanity because a schema/validator change can invalidate
+¹ Code changes run doc-sanity because a schema or validator change can invalidate
 existing docs. It is build-free and cheap.
-² Deployed content must prove it still builds (catch invalid frontmatter / broken
-links that would break the live site).
-³ A change to non-deployed `repo_docs` does **not** redeploy the example.
+² Deployed content must prove it still builds, to catch invalid frontmatter or
+broken links that would break the live site.
+³ A change to non-deployed `repo_docs` does not redeploy the example.
 
 This satisfies the requirement directly:
 
-- **Doc-only PR** (only `repo_docs`): `doc-sanity` **only** — no tsc, no vitest,
-  no Astro build.
+- **Doc-only PR** (only `repo_docs`): `doc-sanity` only. No tsc, no vitest, no
+  Astro build.
 - **Deployed-content PR** (`example_content`): `doc-sanity` + `build-example`, but
   **no** `code-quality`.
 - **Code-only PR** (`code`): `code-quality` + `build-example` + `doc-sanity` (the
@@ -206,17 +213,8 @@ and console-error/failed-request rendering checks, all without Playwright.
 - `concurrency: { group: ci-${{ github.ref }}, cancel-in-progress: true }`.
 - pnpm store + Node cache; install deps only in lanes that need them.
 - `vitest` scoped to the toolkit; build scoped to `example`.
-- *(Future, if the graph grows)* Turborepo/Nx task caching — not warranted at
-  current size; plain pnpm + path filters is enough.
-
-## Settled decisions
-
-The strategy and settled parameters are recorded in
-[ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md): path-scoped lanes with a
-single `ci-ok` gate, build-on-deployed-content, Node 22+, `markdownlint` and
-`Vale` from the start, Pages on mainline only, and a nightly gated on the
-deployment SHA with Playwright deferred to M2. This page holds the design that
-implements those decisions.
+- *(Future, if the graph grows)* Turborepo/Nx task caching. Not warranted at the
+  current size; plain pnpm plus path filters is enough.
 
 ## Open questions
 

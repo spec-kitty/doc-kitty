@@ -26,6 +26,9 @@ frontmatter schema. This page expands the loader and schema the
   - Rewrites `README.md` to its section slug, so a section index renders at the
     directory route.
 - **`docKittyDocsSchema` — the frontmatter contract**
+  - This outline tracks the current frontmatter (`status`, `type`). The evolved
+    contract (`doc_status`, `kind`, and the rest) lands in M1; see the
+    [metadata model](./metadata-model.md).
   - Required fields: `title`, `description`, `status`, `updated`, `type`.
   - Enum validation for `status` and `type`; `type`-by-path expectations.
   - Optional families: `authors`, `related`, `tags`, `sources`, and the Kitty

@@ -41,7 +41,7 @@ remains reserved and frontmatter-free and is excluded from the collection.
 - A repo migrating from vanilla Common Docs must rename `index.md` → `README.md`
   and add frontmatter.
 
-## Alternatives Considered
+## Alternatives considered
 
 ### Option A: Keep index.md frontmatter-free, derive title from H1
 Closer to base Common Docs, but weakens the metadata-first goal.
