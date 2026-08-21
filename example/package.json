@@ -1,0 +1,19 @@
+{
+  "name": "example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Doc Kitty docsite — a worked example that consumes @commondocs-kitty/toolkit and deploys to GitHub Pages.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "validate": "node ../src/scripts/validate-frontmatter.mjs docs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.2.0",
+    "@astrojs/starlight": "^0.30.0",
+    "@commondocs-kitty/toolkit": "workspace:*",
+    "astro": "^5.2.0"
+  }
+}

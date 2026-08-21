@@ -1,0 +1,14 @@
+/* Doc Kitty theme overrides on top of Starlight's defaults.
+   Kept intentionally minimal — a neutral, high-contrast accent that reads well
+   for long-form docs. Tune the accent hues to taste. */
+:root {
+  --sl-color-accent-low: #dff0e8;
+  --sl-color-accent: #1f9e6a;
+  --sl-color-accent-high: #0d5c3c;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #0d2a1e;
+  --sl-color-accent: #34c98a;
+  --sl-color-accent-high: #b6f0d5;
+}

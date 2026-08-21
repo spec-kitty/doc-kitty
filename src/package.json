@@ -1,0 +1,44 @@
+{
+  "name": "@commondocs-kitty/toolkit",
+  "version": "0.0.0",
+  "description": "Reusable Astro + Starlight toolkit for the Common Docs — Kitty Variation convention: schema, README-as-index loader, and rss/llms.txt/agent-API route handlers.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./config": "./lib/config.ts",
+    "./schema": "./lib/schema.ts",
+    "./routes": "./lib/routes/index.ts",
+    "./styles/*": "./styles/*"
+  },
+  "files": [
+    "index.ts",
+    "lib",
+    "scripts",
+    "styles"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "astro": ">=5.0.0",
+    "@astrojs/starlight": ">=0.30.0"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.2.0",
+    "gray-matter": "^4.0.3",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@astrojs/starlight": "^0.30.0",
+    "astro": "^5.2.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
