@@ -1,0 +1,18 @@
+project:
+  uuid: 9d9292b2-03dc-4abd-bbcf-49249387fb1c
+  slug: doc-kitty
+  node_id: 6ad7860a01ff
+  build_id: ac6c4415-b320-5d99-ab63-ff3b72a23cd7
+mission_type_activations:
+- software-dev
+- documentation
+- research
+- plan
+vcs:
+  type: git
+agents:
+  available:
+  - claude
+  auto_commit: true
+  lint_on_edit: false
+charter: .kittify/charter/charter.yaml
