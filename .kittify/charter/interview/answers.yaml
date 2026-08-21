@@ -1,0 +1,110 @@
+schema_version: 1.0.0
+mission: software-dev
+profile: comprehensive
+answers:
+  project_intent: >-
+    doc-kitty is a reusable Astro + Starlight toolkit that renders a repository's
+    docs/ tree as a human-first, agent-supported documentation site. It implements
+    the "Common Docs — Kitty Variation" convention and solves for four outcomes:
+    structure, maintainability, agent interoperability, and flexibility. It emits
+    sitemap.xml, rss.xml, llms.txt, and a JSON agent-API (discovery, not retrieval).
+    The first consumer is the Spec Kitty product line; the framework is intended to
+    become a public, consumer-usable template. Three concerns are kept separate:
+    content (the docs/ tree), information architecture (docs/_meta/sections.yaml),
+    and presentation (a swappable theme layer). Out of scope: authoring the
+    documentation content itself, and hosting a retrieval/embedding (RAG) index.
+  languages_frameworks: >-
+    TypeScript on Astro + Starlight, built as a pnpm workspace (toolkit in src/,
+    worked example in example/). Node 22+ only — no Node 20, no version matrix. Zod
+    for the frontmatter schema; Vitest for unit tests. Static (SSG) output. Diagrams
+    render at build time to static SVG: Mermaid via @beoe/rehype-mermaid, PlantUML
+    via astro-plantuml against a self-hosted server. Slide decks are authored in
+    Markdown and pre-processed to reveal.js at build (vendored reveal.js, no CDN).
+    Docs quality tooling: markdownlint and Vale. Glossary sourced from Contextive
+    (.contextive/definitions.yaml).
+  testing_requirements: >-
+    Unit tests (Vitest) cover the toolkit's framework-agnostic logic: the metadata
+    model and helpers, the schema, and the pure parts of the route handlers.
+    Integration is a build of the example site that asserts the generated artifacts
+    (sitemap.xml, rss.xml, llms.txt, /api/*.json) and README-as-index routing.
+    Toolkit-only unit tests; the example is covered by the build-integration lane.
+    Playwright-based checks (click-through, visual regression, deep accessibility)
+    are deferred to the component-system milestone (M2).
+  quality_gates: >-
+    Path-scoped CI with a single ci-ok aggregate as the only required check. A
+    detect-changes step classifies each change (code, example_content, repo_docs,
+    workflows, ignored) and runs only the affected lanes: a documentation-only
+    change skips code checks, and a code-only change skips the documentation build.
+    example_content is deployed so it builds; repo_docs is not deployed so it runs
+    sanity only. Doc-sanity: frontmatter validation, internal link and `related`
+    integrity (the build fails on a dangling ref), markdownlint, and a Vale prose
+    stylecheck. A nightly smoke flow checks the deployed site (lychee for links,
+    Lighthouse for SEO and accessibility), gated to run only when the deployment
+    changed since the last run. Accessibility target: WCAG 2.2 AA.
+  review_policy: >-
+    Follow Common Docs discipline: plans hold future work, ADRs record decisions
+    (immutable — supersede, never edit), and architecture describes the present.
+    Every significant decision is recorded as an ADR. Documentation is reviewed for
+    both content soundness and writing quality by an architect-reviewer pass before
+    it is finalized. Writing must be audience-oriented and free of common AI-writing
+    tells (em-dash overuse, rule-of-three padding, hedging, puffery, filler,
+    boilerplate summaries); headings are sentence case; landings teach then link;
+    one idea per sentence.
+  performance_targets: >-
+    Static, JS-light pages. Diagrams and slide decks are pre-rendered to static
+    SVG/HTML at build so pages need no runtime JavaScript where it can be avoided.
+    The nightly Lighthouse run enforces SEO, performance, and accessibility
+    thresholds on the deployed site.
+  deployment_constraints: >-
+    Deploy the example site to GitHub Pages on the mainline branch only; no per-PR
+    preview deploys. Static output; Node 22+ and pnpm in CI. reveal.js is vendored
+    (no CDN) and PlantUML is self-hosted for privacy and reproducible offline
+    builds. Repository visibility (public vs private) and license are undecided; the
+    repo is currently private and marked UNLICENSED with no LICENSE file.
+  documentation_policy: >-
+    The project is a documentation toolkit and dogfoods its own convention. Common
+    Docs — Kitty Variation: README.md is the section index and carries frontmatter;
+    the repo-root docs/ tree is rendered directly; metadata is first-class. Required
+    frontmatter: title, description (50–180 chars), doc_status
+    (draft|active|deprecated|superseded), updated, type (authored and validated
+    against the section; open vocabulary — canonical values validated strictly,
+    unknown values warn), and kind (a required page-kind taxonomy: Tutorial, How-To,
+    Reference, Explanation, Hub, ADR, Changelog, Glossary, Presentation, Persona;
+    drives per-kind layout). The tree conforms to OKF v0.2. Apply Divio type
+    discipline, teach-then-link section landings, plain language, one concern per
+    file, and curate-by-delete. Living documentation: a behaviour change updates its
+    docs in the same change; a freshness signal (stale_after + updated) backstops
+    drift. Terminology stays consistent via a glossary sourced from Contextive; keep
+    the canonical terms in docs, specs, and code aligned and avoid overloaded
+    synonyms.
+  risk_boundaries: >-
+    The canonical structure is the officially supported focus. A project may adapt
+    it (use a subset or add sections) and the toolkit degrades gracefully (the
+    validator warns rather than fails), but adaptation is tolerated, not officially
+    supported. The theme layer controls presentation only; it never touches content,
+    the convention, or the section registry. Direct rendering of docs/ is the
+    default; a projection/redaction pipeline for publishing a filtered subset of a
+    private tree is optional and deferred (M8). No customer or client data is kept in
+    the repository (external research was sanitized on capture). The agent-API is
+    discovery, not retrieval — no embedding/RAG index is hosted. The most costly
+    failure is shipping a broken or misleading docsite, or a convention that rots
+    into the docs-next-to-code failure the project exists to prevent.
+  amendment_process: >-
+    The convention and its decisions are amendable by the maintainers through ADRs;
+    ADR-0004 established the amend-not-fork stance. ADRs are immutable once accepted;
+    changes are made by writing a new or superseding ADR (for example ADR-0009
+    supersedes the divio_type decision in ADR-0005). Canonical section additions are
+    recorded in ADR-0004's amendment log. Charter changes go through the charter
+    workflow.
+  exception_policy: >-
+    Deviation from the canonical structure is tolerated with graceful degradation:
+    the validator warns (does not fail) on unknown type values and non-canonical
+    sections, so a deviating project still builds. Such deviation is unsupported out
+    of the box, and non-canonical metadata is advisory rather than blocking. A
+    genuine exception to a gate is recorded as an ADR with its rationale.
+selected_paradigms: []
+selected_directives: []
+available_tools:
+  - git
+  - node
+  - pnpm
