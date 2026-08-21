@@ -24,6 +24,8 @@ also a worked example. The deliverable docsite lives, separately, in
   site plus feeds and an agent-API.
 - [Decision Records](./adr/) — why Starlight, README-as-index, root `docs/`,
   and the `agent` extension.
+- [Plans](./plans/) — forward design during the iteration phase: the roadmap and
+  per-feature specs (starting with the **CI/CD pipeline**).
 - [Guides](./guides/) — authoring a page, and adopting the toolkit.
 
 ## Quick reference
