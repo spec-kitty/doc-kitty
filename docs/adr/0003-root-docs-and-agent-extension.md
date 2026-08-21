@@ -40,7 +40,7 @@ polluting the core field set.
 - Reading content outside `src/content/docs` needs verified loader wiring per
   Starlight version.
 
-## Alternatives Considered
+## Alternatives considered
 
 ### Option A: Require docs under src/content/docs
 Cleaner for Astro, but forces every consumer to relocate their `docs/`.

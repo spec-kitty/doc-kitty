@@ -5,7 +5,7 @@
 agent-supported** documentation sites.
 
 Point it at a documentation tree that follows the convention and you get a
-polished docsite plus, out of the box:
+docsite plus, out of the box:
 
 - 🗺️ `sitemap.xml` — standard search-engine discovery
 - 📰 `rss.xml` — subscribe to documentation changes

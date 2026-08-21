@@ -5,7 +5,7 @@
   "type": "module",
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "exports": {
     ".": "./index.ts",

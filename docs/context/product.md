@@ -12,8 +12,8 @@ tags: [product]
 ## Problem
 
 The Common Docs convention gives a repo a well-structured `docs/` tree, but no
-polished, agent-aware way to publish it — and no generators for the discovery
-surfaces agents need.
+agent-aware way to publish it, and no generators for the discovery surfaces agents
+need.
 
 ## Users
 

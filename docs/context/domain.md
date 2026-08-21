@@ -14,7 +14,9 @@ tags: [glossary]
 - **Bundle** — a `docs/` tree conforming to OKF v0.2 (one repo, one bundle).
 - **Section** — a top-level directory under `docs/`.
 - **Section index** — the `README.md` at a section root (Kitty twist).
-- **Type** — the OKF-required frontmatter field naming a page's kind.
+- **Type** — the OKF-required frontmatter field naming a page's section/category
+  (for example `Context` or `ADR`). Distinct from `kind`, which names how to read
+  the page.
 - **Agent-API** — the generated `llms.txt` + `/api/*.json` discovery surface.
 - **Toolkit** — the `@commondocs-kitty/toolkit` library in [`../../src`](../../src).
 - **Charter / doctrine** — Spec Kitty governance artifacts this convention will

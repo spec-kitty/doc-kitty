@@ -33,7 +33,7 @@ What did we decide to do?
 ### Risks
 -
 
-## Alternatives Considered
+## Alternatives considered
 
 ### Option A: Name
 Why this was not chosen.

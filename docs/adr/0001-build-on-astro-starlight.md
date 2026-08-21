@@ -35,7 +35,7 @@ layer: a config preset, a content loader + schema, and route handlers.
 - Starlight is opinionated; the Kitty twists (README-as-index, root `docs/`)
   need custom loader wiring — see [ADR-0002](./0002-readme-as-index.md).
 
-## Alternatives Considered
+## Alternatives considered
 
 ### Option A: Custom content-collections build
 Full control, but reimplements nav/search/theme for no real gain.
