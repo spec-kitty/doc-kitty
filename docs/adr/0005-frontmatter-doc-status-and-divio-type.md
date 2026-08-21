@@ -61,7 +61,18 @@ repos and confuses both readers and tools.
 Fold reading mode into `type` as one axis. Rejected: section and reading mode are
 separate questions, and merging them drops one of the two.
 
+## Update (2026-08-21)
+
+During the same design session, `divio_type` was renamed to `kind` and grown into
+a page-kind taxonomy: the four Divio quadrants plus structural kinds (`Hub`,
+`ADR`, `Changelog`, `Glossary`, `Presentation`, `Persona`), required on every
+page, driving per-kind layout. The current shape lives in
+[the metadata model](../architecture/metadata-model.md). This ADR will be revised
+or superseded to record the final field name and vocabulary once the contract
+stops growing.
+
 ## References
 
 - [Convention](../context/convention.md)
 - [Roadmap](../plans/roadmap.md) (M1)
+- [Metadata model](../architecture/metadata-model.md)

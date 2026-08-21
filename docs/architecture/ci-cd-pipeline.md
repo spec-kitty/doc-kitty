@@ -125,7 +125,7 @@ flowchart TD
 Build-free, ordered cheap→thorough:
 
 1. **Frontmatter validation** — `validate-frontmatter.mjs` over `docs/` **and**
-   `example/docs/`: required fields, `doc_status` enum, `divio_type` enum,
+   `example/docs/`: required fields, `doc_status` enum, `kind` enum,
    `type`-by-path, bounded `description` length.
 2. **Link & reference integrity** — internal `.md`/route links resolve; `related`
    refs resolve (fail on dangling), mirroring the client's build-fail guarantee.

@@ -21,6 +21,6 @@ Component and pipeline designs (the CI/CD pipeline, the metadata model) live in
 [architecture](../architecture/). Product-feature specs, when we write them, go in
 `plans/features/`.
 
-> **Schema note.** These plans use the current frontmatter (`status`, `type`).
-> The confirmed `status`→`doc_status` rename and the added `divio_type` axis land
-> as part of M1; until then the repo stays on the current schema for consistency.
+> **Schema note.** These docs use the current frontmatter (`status`, `type`). The
+> confirmed `status`→`doc_status` rename and the added `kind` axis land as part of
+> M1; until then the repo stays on the current schema for consistency.

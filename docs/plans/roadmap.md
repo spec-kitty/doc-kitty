@@ -30,7 +30,7 @@ The decisions behind this plan are recorded as ADRs, not here:
 - [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md) — amend
   Common Docs; add `presentations/` and the `_meta/` registry.
 - [ADR-0005](../adr/0005-frontmatter-doc-status-and-divio-type.md) — `doc_status`
-  and `divio_type` (both land in M1).
+  and `kind` (renamed from `divio_type`; both land in M1).
 - [ADR-0006](../adr/0006-direct-render-default-projection-deferred.md) — direct
   render by default; projection deferred to M8.
 - [ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md) — the CI/CD strategy.
@@ -40,7 +40,7 @@ The decisions behind this plan are recorded as ADRs, not here:
 | Mission | Scope |
 |---|---|
 | **M0 — CI/CD foundation** | The pipeline below, stood up against the current scaffold so every later mission lands green. |
-| **M1 — Metadata & chrome foundation** | Schema (`doc_status`, `divio_type`, `audience`, `related {ref,note}`, `external_references`), `MarkdownContent`/`Head` overrides. |
+| **M1 — Metadata & chrome foundation** | Schema (`doc_status`, `kind`, `audience`, `related`, `external_references`, `banner`/`social_thumb`), `MarkdownContent`/`Head` overrides. |
 | **M2 — Component system & theme** | Atomic-design layering, token theme, frontend/a11y doctrine. |
 | **M3 — Audience + Related + External refs** | The three metadata-rendered relationship features + bibliography/tools catalogs. |
 | **M4 — Glossary & terminology** | `.contextive` source, glossary pages, remark auto-linking, search. |
