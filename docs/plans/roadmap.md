@@ -7,7 +7,7 @@ type: Plan
 authors:
   - stijn@sddevelopment.be
 related:
-  - plans/features/ci-cd-pipeline
+  - architecture/ci-cd-pipeline
 ---
 
 # Roadmap
@@ -20,8 +20,8 @@ Design-iteration phase — order and scope are provisional. Derived from the
 **Regardless of feature design, a working, well-thought-out CI/CD pipeline is the
 primary concern**: unit + integration tests, doc sanity checks, and example-site
 deployment, run **path-efficiently** (no code checks on a doc-only change, and
-vice versa). See [CI/CD Pipeline](./features/ci-cd-pipeline.md). This shapes the
-repo layout and every mission's "done" definition.
+vice versa). See [CI/CD Pipeline](../architecture/ci-cd-pipeline.md). This shapes
+the repo layout and every mission's "done" definition.
 
 ## Decisions
 

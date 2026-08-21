@@ -32,9 +32,9 @@ page:
 - [Loader and schema](./loader-and-schema.md) — how `docKittyDocsLoader` reads
   repo-root `docs/`, rewrites `README.md` to a section slug, and how
   `docKittyDocsSchema` validates frontmatter.
-- [Metadata model](./metadata-model.md) — `lib/metadata.ts`: the
-  framework-agnostic model plus publication gating, section ordering, and
-  agent-record shaping.
+- [Metadata model](./metadata-model.md) — the frontmatter contract every page
+  carries and how the toolkit reads it: publication gating, section ordering, and
+  agent-record shaping (`lib/metadata.ts`).
 - [Generators](./generators.md) — the four output surfaces
   (`sitemap.xml`, `rss.xml`, `llms.txt`, the agent-API) and their route
   handlers.
@@ -43,6 +43,12 @@ page:
   agent-API `<head>` links, and theming.
 - [Builder scripts](./builder-scripts.md) — `scaffold.mjs`, `new-doc.mjs`, and
   `validate-frontmatter.mjs`.
+
+## Build and delivery
+
+- [CI/CD Pipeline](./ci-cd-pipeline.md) — path-scoped tests, doc sanity checks,
+  and the example-site deployment; the design behind
+  [ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md).
 
 ## How this section relates to the overview
 

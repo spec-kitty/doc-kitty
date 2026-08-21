@@ -7,7 +7,7 @@ type: ADR
 authors:
   - stijn@sddevelopment.be
 related:
-  - plans/features/ci-cd-pipeline
+  - architecture/ci-cd-pipeline
   - adr/0005-frontmatter-doc-status-and-divio-type
 ---
 
@@ -26,7 +26,7 @@ must not trigger the documentation build.
 
 This ADR records the strategy and the settled parameters. The lane layout, job
 graph, and check lists live in the design:
-[CI/CD Pipeline](../plans/features/ci-cd-pipeline.md).
+[CI/CD Pipeline](../architecture/ci-cd-pipeline.md).
 
 ## Decision
 
@@ -71,4 +71,4 @@ which is the case the requirement calls out.
 
 ## References
 
-- [CI/CD Pipeline](../plans/features/ci-cd-pipeline.md)
+- [CI/CD Pipeline](../architecture/ci-cd-pipeline.md)

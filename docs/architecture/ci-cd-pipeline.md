@@ -1,9 +1,9 @@
 ---
 title: CI/CD Pipeline
-description: Efficient, path-scoped CI/CD for doc-kitty — tests, doc sanity checks, and example deployment.
+description: "Efficient, path-scoped CI/CD for doc-kitty: tests, doc sanity checks, and example deployment."
 status: draft
 updated: 2026-08-21
-type: Feature
+type: Architecture
 authors:
   - stijn@sddevelopment.be
 tags: [ci, cd, testing, github-actions]
@@ -16,11 +16,11 @@ related:
 
 ## Problem
 
-doc-kitty must ship with a **working, well-thought-out CI/CD pipeline** covering
-unit + integration tests, documentation sanity checks, and example-site
-deployment — run **as efficiently as possible**: a documentation-only change must
-not trigger code checks, and a code-only change must not trigger the
-documentation build. This is a primary, design-independent concern.
+doc-kitty must ship with a working CI/CD pipeline that runs unit and integration
+tests, documentation sanity checks, and example-site deployment. It must be
+efficient: a documentation-only change must not trigger code checks, and a
+code-only change must not trigger the documentation build. This is a primary
+concern, independent of the feature design.
 
 ## Constraints & goals
 
@@ -212,7 +212,7 @@ and console-error/failed-request rendering checks, all without Playwright.
 ## Settled decisions
 
 The strategy and settled parameters are recorded in
-[ADR-0007](../../adr/0007-ci-cd-path-scoped-lanes.md): path-scoped lanes with a
+[ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md): path-scoped lanes with a
 single `ci-ok` gate, build-on-deployed-content, Node 22+, `markdownlint` and
 `Vale` from the start, Pages on mainline only, and a nightly gated on the
 deployment SHA with Playwright deferred to M2. This page holds the design that

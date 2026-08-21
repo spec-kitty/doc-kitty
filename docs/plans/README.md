@@ -10,14 +10,16 @@ agent:
 
 # Plans
 
-The living design space for doc-kitty. **Future work only** — present-state design
-lives in [architecture](../architecture/), settled decisions in [adr](../adr/).
+Future work for doc-kitty: the roadmap and mission sequencing. Present-state and
+component design lives in [architecture](../architecture/), and settled decisions
+in [adr](../adr/).
 
-While the project is in design iteration, this is where features are shaped and
-refined before any implementation.
+- [Roadmap](./roadmap.md) — the phased plan (missions M0–M8) and the cross-cutting
+  CI/CD priority.
 
-- [Roadmap](./roadmap.md) — phased plan (missions M1–M8) and cross-cutting priorities.
-- [Features](./features/) — one design spec per feature, refined over passes.
+Component and pipeline designs (the CI/CD pipeline, the metadata model) live in
+[architecture](../architecture/). Product-feature specs, when we write them, go in
+`plans/features/`.
 
 > **Schema note.** These plans use the current frontmatter (`status`, `type`).
 > The confirmed `status`→`doc_status` rename and the added `divio_type` axis land

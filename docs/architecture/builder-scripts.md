@@ -30,4 +30,4 @@ validates frontmatter as a build-free CI gate. This page expands the scripts the
   enforce the same contract from the [loader and schema](./loader-and-schema.md);
   note where they overlap and where the validator goes further.
 - **Where they run** — locally for authors, and in the doc-sanity CI lane; see
-  the [CI/CD pipeline plan](../plans/features/ci-cd-pipeline.md).
+  the [CI/CD pipeline](./ci-cd-pipeline.md).
