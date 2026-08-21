@@ -1,34 +1,43 @@
 ---
 title: Agent-first documentation
-description: Why an AI-focused company treats AI agents as first-class documentation readers, not an afterthought.
-status: draft
+description: "Why an AI-focused company treats agents as first-class documentation readers, not an afterthought."
+status: active
 updated: 2026-08-21
 type: Context
-tags: [agents, motivation]
+tags: [agents, rationale]
 ---
 
 # Agent-first documentation
 
-Doc Kitty comes from Spec Kitty Inc, an AI-focused company. When AI agents read,
-write, and act on your docs every day, generating an agent-friendly
-documentation site is a no-brainer. Agents are first-class readers here, treated
-on par with humans, not bolted on afterward.
+Doc Kitty is built by Spec Kitty Inc, where AI agents do real work against project
+documentation. An agent that reads the docs to plan a change, answer a question,
+or check a decision is a reader with real needs. This page explains why Doc Kitty
+treats that reader as first-class.
 
-<!-- Outline — to be fleshed out. -->
+## Human-first, agent-supported
 
-- **The premise** — at an AI-first company, agents are constant consumers of
-  documentation; the docsite has two audiences from day one.
-- **Human-first, agent-supported** — humans still come first; agent support is
-  added without compromising the human reading experience.
-- **What agents need that humans do not**
-  - A single discovery entry point they can crawl (`llms.txt`).
-  - Structured, per-page metadata and clean raw Markdown (the JSON agent-API).
-  - Predictable structure and stable routes to reason over.
-- **Discovery, not retrieval** — Doc Kitty ships a browsable map, not an
-  embedding index; adopters keep control of any RAG layer.
-- **Metadata as the contract** — the `agent` frontmatter block tunes
-  discoverability, priority, and retrieval keywords per page.
-- **Why this is a competitive default, not a feature request** — the cost is low
-  because the metadata already exists; the payoff compounds as agent use grows.
-- **See also** — [what we solve for](./what-we-solve-for.md) and the agent-API
-  details in the [convention](./convention.md).
+The content is written for people. Agents read the same pages; they do not get a
+separate, lower-quality copy. What agents need on top of clear prose is structure
+they can rely on: a predictable tree, consistent metadata, and stable links.
+
+## Discovery, not retrieval
+
+Doc Kitty gives agents a map, not a search index. From the same frontmatter that
+drives navigation, it generates:
+
+- `sitemap.xml` for crawlers,
+- `rss.xml` for changes,
+- `llms.txt` as a compact index for language models,
+- a JSON agent-API (`/api/index.json` and per-page records) carrying each page's
+  metadata and a link to its raw Markdown.
+
+An agent can list the whole corpus from one file and fetch the exact page it
+needs. There is no embedding server to run and no chunking to tune, and it works
+for any crawler.
+
+## Why this is worth doing
+
+The metadata that makes docs browsable for people is most of what an agent needs.
+Emitting the discovery surfaces from that metadata costs little. For a company
+whose tools are agents, generating an agent-friendly site is the obvious move, not
+an add-on.

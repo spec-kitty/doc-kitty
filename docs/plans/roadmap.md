@@ -23,13 +23,17 @@ deployment, run **path-efficiently** (no code checks on a doc-only change, and
 vice versa). See [CI/CD Pipeline](./features/ci-cd-pipeline.md). This shapes the
 repo layout and every mission's "done" definition.
 
-## Confirmed decisions (2026-08-21)
+## Decisions
 
-- `status` → **`doc_status`** (enum unchanged), lands in M1.
-- Add **`divio_type`** (Tutorial|How-To|Reference|Explanation) alongside OKF
-  `type`, lands in M1.
-- **Direct render** is the foundation; the projection/redaction pipeline is
-  optional and deferred to M8.
+The decisions behind this plan are recorded as ADRs, not here:
+
+- [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md) — amend
+  Common Docs; add `presentations/` and the `_meta/` registry.
+- [ADR-0005](../adr/0005-frontmatter-doc-status-and-divio-type.md) — `doc_status`
+  and `divio_type` (both land in M1).
+- [ADR-0006](../adr/0006-direct-render-default-projection-deferred.md) — direct
+  render by default; projection deferred to M8.
+- [ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md) — the CI/CD strategy.
 
 ## Phased missions
 

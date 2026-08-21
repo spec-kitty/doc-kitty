@@ -209,36 +209,25 @@ and console-error/failed-request rendering checks, all without Playwright.
 - *(Future, if the graph grows)* Turborepo/Nx task caching — not warranted at
   current size; plain pnpm + path filters is enough.
 
-## Decisions
+## Settled decisions
 
-Resolved 2026-08-21:
+The strategy and settled parameters are recorded in
+[ADR-0007](../../adr/0007-ci-cd-path-scoped-lanes.md): path-scoped lanes with a
+single `ci-ok` gate, build-on-deployed-content, Node 22+, `markdownlint` and
+`Vale` from the start, Pages on mainline only, and a nightly gated on the
+deployment SHA with Playwright deferred to M2. This page holds the design that
+implements those decisions.
 
-1. **Deployed-content safety vs speed. ✅ Build.** `example_content` changes run
-   the full `build-example` (it is the live artifact).
-2. **Per-PR preview deploys. ✅ Skip.** Pages deploys on **mainline only**; no PR
-   previews.
-3. **Prose linting. ✅ Now.** `markdownlint` from day one **plus** a **Vale**
-   stylecheck (basic ruleset now, expanded later).
-4. **Node version. ✅ Node 22+ only, pnpm.** No Node 20 support — no matrix. Set
-   `engines.node` to `>=22` across the workspace; CI uses Node 22.
+## Open questions
 
-5. **"Broken style" scope + Playwright timing. ✅ Rendering integrity; Playwright
-   deferred to M2.** "Broken style" = rendering integrity on the deployed site
-   (*not* prose style — that's Vale in the PR lane). At **M0** it is covered by
-   Lighthouse best-practices audits (console errors + failed requests); full
-   **visual-regression** snapshots and all other Playwright-driven checks
-   (click-through, deep axe sweep, PR-lane a11y) land at **M2**.
-
-Still open (for iteration):
-
-6. **Smoke-run marker persistence.** Git ref (`smoke/last-run` tag / orphan branch)
-   vs `actions/cache` for the "deployed since last run" gate. (Recommend: git ref
-   — durable; cache eviction merely causes a harmless extra run.)
-7. **Where unit tests live.** Toolkit-only unit tests, example covered by the
-   build-integration lane. (Recommend: toolkit-only unit; example via integration.)
-8. **Fork PRs & secrets.** Test/build lanes need no secrets (must pass on fork
-   PRs); deploy + the nightly's Deployments-API/marker use `GITHUB_TOKEN` and run
-   only on the base repo.
+1. **Smoke-run marker persistence.** A git ref (`smoke/last-run` tag or orphan
+   branch) or `actions/cache` for the "deployed since last run" gate. A git ref is
+   durable; cache eviction only causes a harmless extra run. Leaning git ref.
+2. **Where unit tests live.** Toolkit-only unit tests, with the example covered by
+   the build-integration lane. Leaning toolkit-only unit, example via integration.
+3. **Fork PRs and secrets.** Test and build lanes need no secrets, so they must
+   pass on fork PRs. Deploy and the nightly's Deployments-API call use
+   `GITHUB_TOKEN` and run only on the base repo.
 
 ## Acceptance criteria (draft)
 

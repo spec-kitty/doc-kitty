@@ -1,36 +1,39 @@
 ---
 title: Why docs next to code rot
-description: The recurring failure of docs-next-to-code — structure too rigid to grow, contents too hard to browse.
-status: draft
+description: "Docs-next-to-code fails for two reasons: structure too rigid to grow, and contents too hard to browse."
+status: active
 updated: 2026-08-21
 type: Context
-tags: [problem, motivation]
+tags: [motivation, docs-as-code]
 ---
 
 # Why docs next to code rot
 
-Keeping docs in the repo, next to the code, is the right instinct. It usually
-fails anyway — not because the idea is wrong, but because the setup is too rigid
-to grow and the contents are too hard to browse. This page names that failure so
-the rest of the section can answer it.
+Keeping documentation in the repo, next to the code, is the right instinct. The
+docs are versioned with the code, reviewed in the same pull request, and edited by
+the people who changed the behaviour. Teams reach for this and expect the docs to
+stay current.
 
-<!-- Outline — to be fleshed out. -->
+They usually don't. The docs rot, people stop trusting them, and a doc no one
+trusts is worse than no doc at all. Two failures cause most of it.
 
-- **The promise of docs-next-to-code** — one source of truth, reviewed with the
-  code, versioned with the code.
-- **Where it breaks down**
-  - Structure that cannot bend: a flat folder or a fixed template that new
-    content does not fit, so it lands in the wrong place or nowhere.
-  - Contents that are hard to browse: a pile of Markdown with no predictable
-    shape, no landing pages, no navigation.
-  - Rot: docs drift from the code because nothing makes the cost of staleness
-    visible.
-  - Invisible to machines: no map an agent or a search engine can crawl.
-- **The two root causes** — not flexible enough, and hard to browse. Everything
-  else follows from these.
-- **Why "just add a wiki" does not fix it** — moves the docs away from the code,
-  reintroduces drift, and still lacks an agent-readable surface.
-- **What a fix must preserve** — docs stay next to the code; adoption stays
-  low-friction; structure adapts without a rewrite.
-- **Bridge** — how Doc Kitty answers each cause; see
-  [what we solve for](./what-we-solve-for.md).
+## The structure is too rigid to grow
+
+Many projects start with a flat folder or a fixed template. New topics have no
+obvious home, so pages land wherever the author happened to be working. A year
+later the folder is a junk drawer: nobody knows where a thing belongs, so nobody
+files it, so it never gets written.
+
+## The contents are too hard to browse
+
+A pile of Markdown with no index, no metadata, and no navigation cannot be
+browsed, only grepped. A reader who cannot find the page they need assumes it does
+not exist. New contributors give up, and so do agents.
+
+## What follows from this
+
+Both failures are about shape, not writing quality. Good prose does not rescue
+docs that readers cannot navigate or authors cannot place. Doc Kitty targets the
+shape: a clear default structure that stays browsable, and metadata that keeps it
+navigable and maintainable. The next page, [what Doc Kitty solves
+for](./what-we-solve-for.md), states the outcomes.
