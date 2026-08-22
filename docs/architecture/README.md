@@ -35,6 +35,8 @@ page:
 - [Metadata model](./metadata-model.md) — the frontmatter contract every page
   carries and how the toolkit reads it: publication gating, section ordering, and
   agent-record shaping (`lib/metadata.ts`).
+- [Section registry](./section-registry.md) — the `docs/_meta/sections.yaml`
+  schema: section label, order, type, and which surfaces each section feeds.
 - [Generators](./generators.md) — the four output surfaces
   (`sitemap.xml`, `rss.xml`, `llms.txt`, the agent-API) and their route
   handlers.

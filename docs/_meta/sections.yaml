@@ -1,0 +1,85 @@
+# Authored section registry for this docs tree.
+# Decouples display (label, order, feeds) and section type from the on-disk
+# folder layout. Reserved, non-content: excluded from the docs collection.
+# Schema and rules: docs/architecture/section-registry.md (ADR-0004).
+version: 1
+sections:
+  - id: context
+    label: Context
+    order: 10
+    type: Context
+    purpose: Why the toolkit exists, who it serves, and the convention it implements.
+
+  - id: architecture
+    label: Architecture
+    order: 20
+    type: Architecture
+    purpose: How the toolkit is built and the reasoning behind it.
+
+  - id: adr
+    label: Decision Records
+    order: 30
+    type: ADR
+    purpose: The immutable log of architectural decisions.
+
+  - id: plans
+    label: Plans
+    order: 40
+    type: Plan
+    purpose: Roadmap, feature designs, and user journeys.
+    feeds: [sitemap, llms, agent]   # planning churn stays out of the public RSS feed
+
+  - id: api
+    label: API
+    order: 50
+    type: API
+    purpose: The generated discovery surfaces and their contracts.
+
+  - id: configuration
+    label: Configuration
+    order: 60
+    type: Configuration
+    purpose: How a consuming site configures the toolkit.
+
+  - id: integrations
+    label: Integrations
+    order: 70
+    type: Integration
+    purpose: How the toolkit connects to external systems and tools.
+
+  - id: security
+    label: Security
+    order: 80
+    type: Security
+    purpose: Security posture, boundaries, and handling rules.
+
+  - id: guides
+    label: Guides
+    order: 90
+    type: Guide
+    purpose: Task-oriented how-tos and tutorials for authors and consumers.
+
+  - id: operations
+    label: Operations
+    order: 100
+    type: Operations
+    purpose: Running, deploying, and maintaining a docsite, with runbooks.
+
+  - id: migrations
+    label: Migrations
+    order: 110
+    type: Migration
+    purpose: Version-to-version migration guides for the contract and toolkit.
+
+  - id: presentations
+    label: Presentations
+    order: 115
+    type: Presentation
+    purpose: Markdown-authored reveal.js slide decks.
+    feeds: [sitemap, llms, agent]   # decks are discoverable but not RSS items
+
+  - id: changelog
+    label: Changelog
+    order: 120
+    type: Changelog
+    purpose: What changed and when, newest first.

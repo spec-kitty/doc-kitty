@@ -24,8 +24,10 @@ substrate — the slot surface and per-kind layout resolution — is now designe
 (ADR-0011, [theming.md](../architecture/theming.md), and the
 [Spec Kitty brand theme](../architecture/theming-spec-kitty-brand.md)), so the
 metadata chrome, personas, and the audience/related/reference blocks are unblocked.
-Slide decks now have their own pass on top of that substrate (ADR-0012). The next
-open Phase-1 gaps are the section registry and the catalog collections.
+Slide decks now have their own pass on top of that substrate (ADR-0012), and the
+section registry is specified (section-registry.md). The one remaining Phase-1 gap
+is the catalog collections (gap 4), deferred by decision until after this design PR
+lands.
 
 ## Ready to spec now
 
@@ -54,11 +56,13 @@ real decision), a new or expanded architecture doc, or a refinement.
    specified in [slide-decks.md](../architecture/slide-decks.md) and
    [ADR-0012](../adr/0012-slide-decks-static-reveal-from-markdown.md), on top of
    gap 1's substrate.
-3. **Section registry (`_meta/sections.yaml`).** Decided in ADR-0004 but the schema,
-   the loader, the `feeds` semantics, and `type`-to-section derivation are
-   undefined; the code still hardcodes the section order. Artifact: refine
+3. **Section registry (`_meta/sections.yaml`). — CLOSED (2026-08-22).** The schema,
+   the loader behaviour, the `feeds` semantics, and `type`-to-section derivation are
+   now specified in [section-registry.md](../architecture/section-registry.md), the
+   authored registry exists at `docs/_meta/sections.yaml`, and
    [loader-and-schema.md](../architecture/loader-and-schema.md) and
-   [generators.md](../architecture/generators.md).
+   [generators.md](../architecture/generators.md) now read it instead of a hardcoded
+   section order.
 4. **Catalog collections (`bibliography`, `tools`).** `external_references {type,id}`
    names them with no record schema, storage location, or resolution and failure
    rule. Blocks the Must/MVP audience-and-references feature. Artifact: a
@@ -91,8 +95,8 @@ real decision), a new or expanded architecture doc, or a refinement.
 ## Sequence of design passes
 
 - **Phase 1 (unblocks MVP speccing):** 1 (theme slot surface and per-kind layout) —
-  done; 2 (decks) — done; next 3 (section registry); then 4 (catalog collections);
-  backfill the outline docs.
+  done; 2 (decks) — done; 3 (section registry) — done; 4 (catalog collections) —
+  deferred until after this design PR lands; backfill the outline docs.
 - **Cross-cutting, before portals are scheduled:** 5 (CI persistence), 6 (portal
   ingestion).
 - **Later:** Markua ADR, diagrams, glossary, `_links`, doctrine.
