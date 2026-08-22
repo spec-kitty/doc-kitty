@@ -19,6 +19,6 @@ how it works, so a decision can cite them. They are not the present-state design
 - [Supporting Markua syntax](./markua-syntax-support.md) — how a curated subset of
   Markua (images, ids, asides, blurbs, icons) could render through remark, rehype,
   and Starlight components.
-- [A Markua book example (ars-rethorica)](./ars-rethorica-book-example.md) — using
-  a real open-license Markua book as example content, and the book-vs-docsite
-  content-type question it raises.
+- [Example content from ars-rethorica](./ars-rethorica-book-example.md) — convert
+  an open-license Markua book into realistic docsite example content; docsite-only,
+  with the book pipeline out of scope.

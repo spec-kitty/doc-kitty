@@ -306,6 +306,11 @@ profile, is the case for adopting the subset.
 
 ## Scope (in / out)
 
+Positioning: doc-kitty supports Markua for **docsites and presentations only**. It
+gives authors Leanpub syntax compatibility through syntax alignment, but it does
+not build a book or document pipeline; that would compete with Leanpub. See
+[Example content from ars-rethorica](./ars-rethorica-book-example.md).
+
 In scope (the subset that matches doc-kitty's needs):
 
 - Images: `![caption](path)`, `{alt:}`, `{title:}`, `{width:}`, `{height:}`,
