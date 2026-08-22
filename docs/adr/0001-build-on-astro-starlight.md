@@ -28,17 +28,21 @@ layer: a config preset, a content loader + schema, and route handlers.
 ## Consequences
 
 ### Positive
+
 - Batteries-included nav, search, theming.
 - Astro endpoints make feeds and the agent-API trivial at build time.
 
 ### Negative
+
 - Starlight is opinionated; the Kitty twists (README-as-index, root `docs/`)
   need custom loader wiring — see [ADR-0002](./0002-readme-as-index.md).
 
 ## Alternatives considered
 
 ### Option A: Custom content-collections build
+
 Full control, but reimplements nav/search/theme for no real gain.
 
 ## References
-- https://starlight.astro.build
+
+- <https://starlight.astro.build>

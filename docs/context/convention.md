@@ -32,7 +32,7 @@ The parts of Common Docs the Kitty Variation keeps exactly:
 - **A fixed, ordered `docs/` tree** of twelve sections, arranged for
   progressive disclosure (context → operations):
 
-  ```
+  ```text
   docs/
   ├── context/          # Why we exist, who we serve, domain vocabulary
   ├── architecture/     # Current system design (present tense)

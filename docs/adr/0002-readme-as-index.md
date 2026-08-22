@@ -32,11 +32,13 @@ remains reserved and frontmatter-free and is excluded from the collection.
 ## Consequences
 
 ### Positive
+
 - One file serves repo browsing and the rendered site.
 - Section indexes carry metadata, so they feed nav/RSS/agent-API like any page,
   and Starlight gets the title it needs.
 
 ### Negative
+
 - Diverges from Common Docs' frontmatter-free index rule (a documented twist).
 - A repo migrating from vanilla Common Docs must rename `index.md` → `README.md`
   and add frontmatter.
@@ -44,7 +46,9 @@ remains reserved and frontmatter-free and is excluded from the collection.
 ## Alternatives considered
 
 ### Option A: Keep index.md frontmatter-free, derive title from H1
+
 Closer to base Common Docs, but weakens the metadata-first goal.
 
 ## References
+
 - [Convention](../context/convention.md)

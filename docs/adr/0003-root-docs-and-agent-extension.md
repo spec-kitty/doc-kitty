@@ -33,20 +33,25 @@ polluting the core field set.
 ## Consequences
 
 ### Positive
+
 - Adopt-by-pointing: no file moves for an existing Common Docs repo.
 - Agent-API ordering/visibility is tunable per page.
 
 ### Negative
+
 - Reading content outside `src/content/docs` needs verified loader wiring per
   Starlight version.
 
 ## Alternatives considered
 
 ### Option A: Require docs under src/content/docs
+
 Cleaner for Astro, but forces every consumer to relocate their `docs/`.
 
 ### Option B: Derive agent priority from existing fields only
+
 Less surface, but no per-page control when it's wanted.
 
 ## References
+
 - [Convention](../context/convention.md)
