@@ -19,5 +19,6 @@ type: ADR
 | [0007](./0007-ci-cd-path-scoped-lanes.md) | Path-scoped CI/CD lanes | accepted | 2026-08-21 |
 | [0008](./0008-swappable-theme-layer.md) | Theme and chrome are a swappable, layered concern | accepted | 2026-08-21 |
 | [0009](./0009-finalize-metadata-contract.md) | Finalize the metadata contract (supersedes 0005's `divio_type`) | accepted | 2026-08-21 |
+| [0010](./0010-planning-kinds-and-moscow.md) | Planning page kinds (`Planning`/`Feature`/`User-Journey`) and a `moscow` field | accepted | 2026-08-22 |
 
 New ADRs copy [`template.md`](./template.md).

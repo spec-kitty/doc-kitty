@@ -40,6 +40,7 @@ put in frontmatter.
 | `banner` | no | `{ src, alt }` | page hero + default social image |
 | `social_thumb` | no | `{ src, alt } \| string` | OG / Twitter share image |
 | `agent` | no | `{ discoverable, priority, keywords }` | agent-API visibility/ordering |
+| `moscow` | no | `{ level: Must\|Should\|Could\|Won't, rationale }` | MVP/extended split and MoSCoW board on planning pages |
 | `tags` | no | `[string]` | agent-API, filtering |
 | `authors`, `resource`, `generated`, `verified`, `sources`, `stale_after` | no | as Common Docs | metadata, freshness |
 | `okf_version` | root only | `"0.2"` | OKF conformance marker |
@@ -81,7 +82,8 @@ declares its kind rather than being exempt:
 - Content quadrants: `Tutorial`, `How-To`, `Reference`, `Explanation`.
 - Structural kinds: `Hub` (a section index or list page: minimal prose, many
   links), `ADR`, `Changelog`, `Glossary`, `Presentation`, `Persona` (an audience
-  description).
+  description), and the planning kinds `Planning`, `Feature`, and `User-Journey`
+  (see [ADR-0010](../adr/0010-planning-kinds-and-moscow.md)).
 
 The vocabulary is open, like `type`: the validator checks the canonical set above
 and warns on an unknown value rather than failing.
@@ -184,6 +186,23 @@ feature; the shape is fixed here so the schema can carry it earlier.
 include or exclude it from `llms.txt` and the agent index, `priority` (0–1,
 default 0.5) to rank it, and `keywords` for retrieval terms beyond `tags`. Kitty
 extension, defined in [ADR-0003](../adr/0003-root-docs-and-agent-extension.md).
+
+## Planning metadata
+
+Planning pages (`kind: Planning`, `Feature`, `User-Journey`) can carry a `moscow`
+field for prioritization:
+
+```yaml
+moscow:
+  level: Must        # Must | Should | Could | Won't
+  rationale: One sentence on why this priority.
+```
+
+`level` is required when `moscow` is present, and `rationale` is required with it,
+so a priority never appears without its reason. `Won't` records something as out of
+the current scope, with the reason. See
+[ADR-0010](../adr/0010-planning-kinds-and-moscow.md). The `moscow` field is
+additive and can be authored now; the `kind` values follow the M1 migration.
 
 ## Sections and type
 
