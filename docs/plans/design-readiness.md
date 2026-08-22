@@ -19,10 +19,12 @@ mission, and where it does not, the artifact that would close the gap. It comes
 from a two-lens architectural review of the plan and the underlying design. Update
 it as gaps close.
 
-Verdict: M0 (CI/CD) and M1's contract are ready to spec. The presentation-layer
-Musts are not. Per-kind layout resolution is the shared substrate under slide
-decks, metadata chrome, personas, and the audience/related/reference blocks, so one
-gap propagates into four features.
+Verdict: M0 (CI/CD) and M1's contract are ready to spec. The shared presentation
+substrate — the slot surface and per-kind layout resolution — is now designed
+(ADR-0011, [theming.md](../architecture/theming.md), and the
+[Spec Kitty brand theme](../architecture/theming-spec-kitty-brand.md)), so the
+metadata chrome, personas, and the audience/related/reference blocks are unblocked.
+Slide decks still need their own pass on top of that substrate.
 
 ## Ready to spec now
 
@@ -40,13 +42,12 @@ real decision), a new or expanded architecture doc, or a refinement.
 
 ### Foundational, MVP-blocking
 
-1. **Component system and theme.** The curated slot surface (slot names, props, and
-   the Starlight override each maps to), the per-kind layout resolution mechanism
-   (how `kind` selects a template, how a theme overrides one, the fallback), and the
-   token catalog (`--dk-*` set, defaults, layering) are asserted but not specified.
-   Highest leverage: it unblocks decks, chrome, personas, and the relationship
-   blocks. Artifact: expand [theming.md](../architecture/theming.md), plus a small
-   ADR for the kind-to-layout resolution.
+1. **Component system and theme. — CLOSED (2026-08-22).** The curated slot surface,
+   the per-kind layout resolution mechanism, and the token catalog are now specified
+   in [theming.md](../architecture/theming.md) and [ADR-0011](../adr/0011-theme-slot-surface-and-per-kind-layouts.md),
+   with the first brand theme derived in [theming-spec-kitty-brand.md](../architecture/theming-spec-kitty-brand.md).
+   This was the highest-leverage gap; closing it unblocks chrome, personas, and the
+   relationship blocks. Decks (gap 2) still need their own pass.
 2. **Slide decks.** Essentially no design: no slide-splitting convention, no
    self-contained reveal.js integration strategy, no `Presentation` layout. A Must
    with almost nothing behind it. Artifact: a new `architecture/slide-decks.md` and
@@ -87,9 +88,9 @@ real decision), a new or expanded architecture doc, or a refinement.
 
 ## Sequence of design passes
 
-- **Phase 1 (unblocks MVP speccing):** 1 (theme slot surface and per-kind layout),
-  then 2 (decks); 3 (section registry); 4 (catalog collections); backfill the
-  outline docs.
+- **Phase 1 (unblocks MVP speccing):** 1 (theme slot surface and per-kind layout) —
+  done; next 2 (decks); then 3 (section registry); 4 (catalog collections); backfill
+  the outline docs.
 - **Cross-cutting, before portals are scheduled:** 5 (CI persistence), 6 (portal
   ingestion).
 - **Later:** Markua ADR, diagrams, glossary, `_links`, doctrine.
