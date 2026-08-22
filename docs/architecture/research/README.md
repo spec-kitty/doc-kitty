@@ -22,3 +22,8 @@ how it works, so a decision can cite them. They are not the present-state design
 - [Example content from ars-rethorica](./ars-rethorica-book-example.md) — convert
   an open-license Markua book into realistic docsite example content; docsite-only,
   with the book pipeline out of scope.
+- [Mission status portal for kittified repos](./mission-status-portal.md) —
+  generate a mission overview from a repo's Spec Kitty artifacts so the docsite
+  doubles as a status portal.
+- [QA portal (tests as documentation)](./qa-portal.md) — render test and BDD
+  results so the docsite also serves as a QA portal.
