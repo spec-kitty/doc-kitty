@@ -26,18 +26,23 @@ What did we decide to do? State it clearly and directly.
 ## Consequences
 
 ### Positive
+
 -
 
 ### Negative
+
 -
 
 ### Risks
+
 -
 
 ## Alternatives Considered
 
 ### Option A: Name
+
 Why this was not chosen.
 
 ## References
+
 -
