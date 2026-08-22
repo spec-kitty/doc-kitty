@@ -52,6 +52,12 @@ page:
   and the example-site deployment; the design behind
   [ADR-0007](../adr/0007-ci-cd-path-scoped-lanes.md).
 
+## Research
+
+- [Architecture research](./research/) — investigations that feed these designs and
+  the ADRs, starting with
+  [Astro Markdown extensions](./research/astro-markdown-extensions.md).
+
 ## How this section relates to the overview
 
 The overview is the single-page map of components and data flow; it stays the
