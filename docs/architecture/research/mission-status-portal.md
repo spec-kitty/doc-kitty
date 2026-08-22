@@ -1,6 +1,6 @@
 ---
 title: Mission status portal for kittified repos
-description: "Generate a mission overview from a repo's Spec Kitty artifacts so the docsite doubles as a status portal."
+description: "Generate a mission overview from a repo's Spec Kitty state so the docsite doubles as a status portal."
 status: draft
 updated: 2026-08-22
 type: Architecture
@@ -21,34 +21,49 @@ as a repository portal (docs, status, and QA), not only a docsite.
 
 ## The idea
 
-If the repo carries Spec Kitty artifacts, render a mission board and per-mission
-pages: mission name, phase, work-package progress, acceptance coverage, and links
-to the spec artifacts. It is a published, read-only counterpart to the live
-spec-kitty dashboard. Support is opt-in by presence: a non-kittified repo does not
-get the page; a kittified one does.
+If the repo carries Spec Kitty state, render a mission board and per-mission pages:
+mission name, phase, work-package progress, and links to the spec artifacts. It is
+a published, read-only counterpart to the live spec-kitty dashboard. Support is
+opt-in by presence: a non-kittified repo does not get the page; a kittified one
+does.
 
-## Data sources
+## Where the data lives
 
-- **`kitty-specs/<mission>/`** — the durable, committed mission specs: `spec.md`,
-  `plan.md`, tasks, `lanes.json` (work-package lanes and status),
-  `acceptance-matrix.json` (requirement coverage), `decisions/`. This is the
-  reliable source.
-- **`.kittify/` runtime and `kitty-ops/ops-index.jsonl`** — largely gitignored
-  (confirmed in this repo), so they are not reliably present in a checkout. Do not
-  depend on them for a static build.
+Spec Kitty state is not one JSON file. The relevant, git-tracked sources:
 
-## How to read the data (open decision)
+- **`kitty-specs/<mission>/`** — Spec Kitty's convention for committed mission
+  specs: `spec.md`, `plan.md`, `tasks.md`, `tasks/WP##-*.md`, `contracts/`,
+  `decisions/`. Tracked when present. Note it is not present in doc-kitty itself
+  yet, so detection must be presence-based.
+- **Work-package status** — carried in each work-package file's frontmatter
+  (`review_status`, `dependencies`), not a separate lanes file.
+- **The event log** — `.kittify/canonical-events.jsonl` is git-tracked and is the
+  authoritative machine-readable state (`.kittify/metadata.yaml` sets
+  `event_log_authority`).
 
-- **Option A — read the committed artifacts directly** (`lanes.json`,
-  `acceptance-matrix.json`, `spec.md` frontmatter). No spec-kitty dependency at
-  build, but coupled to those file formats, which are spec-kitty-versioned and move.
-- **Option B — call spec-kitty's own interface** at build (`spec-kitty status
-  --json`, `context`, or the orchestrator-api). A stable contract, but it requires
-  spec-kitty installed and a governed workspace during the build.
+There is **no `lanes.json` and no `acceptance-matrix.json`**; requirement (FR)
+coverage is derived at mission-review time, not stored as a file. Runtime state
+(`.kittify/runtime/`, `.kittify/events/`, `.kittify/.dashboard`) and
+`kitty-ops/ops-index.jsonl` are gitignored, so a static build cannot rely on them.
 
-Lean: prefer Option B where spec-kitty is available (a stable contract on a moving
-target), and fall back to Option A for a plain static snapshot. Build it as an
-optional "kittify integration" gated on artifact presence, not as core.
+## How to read it
+
+- `kitty-specs/` is **protected territory** in Spec Kitty doctrine: tooling that
+  iterates or recomputes state over existing `kitty-specs/*/` is flagged as a
+  violation pattern. A build that parses those files directly works against the
+  doctrine, not only against a moving file format.
+- Prefer the **orchestrator-api**, Spec Kitty's documented external-integration
+  surface. It gives a stable read without reaching into protected files, and needs
+  spec-kitty available at build.
+- A **direct read** of the committed sources (work-package frontmatter plus
+  `canonical-events.jsonl`) is a degraded, read-only fallback for when spec-kitty
+  is not available at build. Keep it version-guarded.
+
+## What it renders
+
+A mission board: mission name, phase, work-package progress, and last activity;
+per-mission pages linking the spec, plan, tasks, and decisions. FR coverage, if
+shown, is computed, not read from a stored matrix.
 
 ## Relationship to the spec-kitty dashboard
 
@@ -56,24 +71,35 @@ The dashboard is a live localhost daemon (`.kittify/.dashboard`); this portal is
 published, static, read-only view. Public status versus local live. Complementary,
 not a replacement.
 
-## Considerations and risks
+## Deploy target
 
-- **Format and version drift** — spec-kitty evolves; a direct file reader must be
-  version-guarded, which is why the CLI/API contract is preferred.
+This is a surface a **consuming kittified repo** renders on its own docsite, not a
+feature of doc-kitty's own site. doc-kitty ships the generator; the consuming
+repo's build produces the portal from its Spec Kitty state.
+
+## Privacy and access control
+
+The portal is a **generated surface** built from Spec Kitty artifacts, not from the
+`docs/` tree, so it needs its **own gating model**: which field on which artifact
+keeps a mission or work package off the published board. ADR-0006's projection
+(M8) redacts the authored `docs/` tree, and `doc_status` gates `docs/` pages; that
+is a related but different mechanism and does not cover this generated surface for
+free. See [ADR-0006](../../adr/0006-direct-render-default-projection-deferred.md).
+
+On a public GitHub Pages deploy there is no access control: anyone can read the
+board. Redaction must be provably complete before publish, and spec and decision
+bodies should be treated as potential secret carriers.
+
+## Considerations
+
 - **Freshness** — a build-time snapshot; stamp it "as of <commit/build>".
-- **Privacy** — mission specs can hold internal detail. The portal must respect
-  publication gating (`doc_status`) and any confidentiality needs, which ties to
-  the deferred projection/redaction path
-  ([ADR-0006](../adr/0006-direct-render-default-projection-deferred.md), M8).
-
-## Fit
-
-A new generated surface, like the agent-API, opt-in by presence. It makes doc-kitty
-a status portal for kittified repos, with the Spec Kitty product line as the first
-consumer. A candidate feature and mission after the core docsite ships.
+- **Version drift** — spec-kitty evolves; the orchestrator-api contract is the
+  stable read, and any direct file reader must be version-guarded.
 
 ## Open items
 
-- Read via committed files versus the spec-kitty CLI/API.
-- The board's scope (which fields and per-mission detail) and privacy gating.
+- Read via the orchestrator-api versus a direct committed-file fallback.
+- The portal's own gating model, and the public-deploy constraint (redaction
+  complete before publish; specs and decisions as potential secret carriers).
+- The board's scope (which fields, and how much per-mission detail).
 - Whether this is core or an optional kittify-integration module.
