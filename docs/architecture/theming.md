@@ -166,7 +166,9 @@ doc-kitty ships two themes in this repo:
   imported**: doc-kitty carries its own atomic-design components and `--dk-*` values
   matching that guide, with no dependency on the `spec-kitty-design` repository. The
   cost of self-containment is keeping the values in sync by hand if the guide
-  changes; the benefit is that doc-kitty stays standalone (ADR-0011).
+  changes; the benefit is that doc-kitty stays standalone (ADR-0011). The full
+  transcribed token mapping and chrome are in
+  [the Spec Kitty brand theme](./theming-spec-kitty-brand.md).
 
 ## Wiring
 

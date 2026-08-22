@@ -45,6 +45,8 @@ page:
   `validate-frontmatter.mjs`.
 - [Theming and chrome](./theming.md) — how a consumer rebrands the site without
   forking: the theme surface, layering, and the default-vs-brand split.
+- [Spec Kitty brand theme](./theming-spec-kitty-brand.md) — the first brand theme's
+  derived `--dk-*` values and atomic-design chrome, self-contained.
 
 ## Build and delivery
 
