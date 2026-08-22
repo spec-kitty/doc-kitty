@@ -37,7 +37,7 @@ put in frontmatter.
 | `audience` | no | `[{ profile, guidance_text }]` | "Who is this for" block |
 | `related` | no | `[string \| { ref, note }]` | on-page related block, agent-API |
 | `external_references` | no | `[{ url, title, note? } \| { type, id }]` | on-page references block |
-| `banner` | no | `{ src, alt }` | page hero + default social image |
+| `hero_image` | no | `{ src, alt }` | page hero + default social image |
 | `social_thumb` | no | `{ src, alt } \| string` | OG / Twitter share image |
 | `agent` | no | `{ discoverable, priority, keywords }` | agent-API visibility/ordering |
 | `moscow` | no | `{ level: Must\|Should\|Could\|Won't, rationale }` | MVP/extended split and MoSCoW board on planning pages |
@@ -134,23 +134,25 @@ A catalog record is the single source of truth for a citation, so the same sourc
 can be referenced from many pages and rendered consistently. Inline entries suit
 one-off links; catalog entries suit sources cited more than once.
 
-## Images: banner and social thumbnail
+## Images: hero image and social thumbnail
 
 Two optional image fields feed both the page display and its share metadata,
 following the Hugo reference where one image drives the on-page hero and the
-social card.
+social card. (`hero_image` was named `banner`; it was renamed to avoid a collision
+with Starlight's built-in `banner`, see
+[ADR-0011](../adr/0011-theme-slot-surface-and-per-kind-layouts.md).)
 
-`banner` is the image shown at the top of the page (a hero or header). It is an
+`hero_image` is the image shown at the top of the page (a hero or header). It is an
 object so it carries alt text, which accessibility requires:
 
 ```yaml
-banner:
+hero_image:
   src: ./assets/architecture-hero.webp
   alt: A layered diagram of the toolkit
 ```
 
 `social_thumb` is the image used for social and search share cards (Open Graph
-and Twitter). When it is omitted, the page falls back to `banner.src`, then to a
+and Twitter). When it is omitted, the page falls back to `hero_image.src`, then to a
 site-wide default:
 
 ```yaml
@@ -164,7 +166,7 @@ canonical URL. This is part of the metadata-driven chrome (M1).
 
 Image handling differs by purpose:
 
-- `banner` uses Astro's optimized image pipeline (colocated with the page or under
+- `hero_image` uses Astro's optimized image pipeline (colocated with the page or under
   a known assets path), so it is resized and served in a modern format.
 - `social_thumb` must resolve to a stable absolute URL, because crawlers fetch it
   directly. It resolves to a `public/` asset or the built absolute URL of the
@@ -242,5 +244,5 @@ for the Astro build. See [loader and schema](./loader-and-schema.md) and
 The metadata contract is finalized in
 [ADR-0009](../adr/0009-finalize-metadata-contract.md): the `kind` taxonomy (which
 supersedes ADR-0005's `divio_type`), the `related` and `external_references`
-shapes, the `banner`/`social_thumb` images, authored `type`, and freshness. This
+shapes, the `hero_image`/`social_thumb` images, authored `type`, and freshness. This
 page describes the contract; ADR-0009 records the decisions and their rationale.
