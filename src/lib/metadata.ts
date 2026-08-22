@@ -233,6 +233,18 @@ export function readmeToIndexId(entry: string): string {
   return asIndex.replace(/\/$/, '');
 }
 
+/**
+ * Astro's content store requires a non-empty entry id, so the bundle root
+ * (whose convention route slug is `""`) is stored under this reserved id —
+ * which is also Starlight's own root id, keeping it served at `/`.
+ */
+export const ROOT_ENTRY_ID = 'index';
+
+/** Map a stored Astro entry id back to the convention's route slug ("" for root). */
+export function slugFromEntryId(id: string): string {
+  return id === ROOT_ENTRY_ID ? '' : id;
+}
+
 /** Discoverable entries, grouped nothing — sorted by section then priority. */
 export function rankForAgents(entries: DocEntry[]): DocEntry[] {
   return entries

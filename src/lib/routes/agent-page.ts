@@ -13,14 +13,14 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import type { DocKittyFrontmatter } from '../metadata.js';
-import { pageSourceId, toAgentRecord } from '../metadata.js';
+import { pageSourceId, slugFromEntryId, toAgentRecord } from '../metadata.js';
 import { absolute } from './shared.js';
 
 export function agentPageRoute() {
   const getStaticPaths: GetStaticPaths = async () => {
     const entries = await getCollection('docs');
     return entries.map((entry) => ({
-      params: { slug: pageSourceId(entry.id) },
+      params: { slug: pageSourceId(slugFromEntryId(entry.id)) },
       props: { id: entry.id, body: entry.body ?? '' },
     }));
   };
@@ -37,7 +37,7 @@ export function agentPageRoute() {
     }
 
     const data = entry.data as unknown as DocKittyFrontmatter;
-    const record = toAgentRecord({ slug: id, data });
+    const record = toAgentRecord({ slug: slugFromEntryId(id), data });
     const payload = {
       ...record,
       url: absolute(site, record.route),
