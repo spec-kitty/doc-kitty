@@ -1,36 +1,158 @@
+# Path-scoped CI — detect-changes → 3 conditional lanes → ci-ok gate.
+#
+# Design: docs/architecture/ci-cd-pipeline.md; contracts under
+# kitty-specs/ci-cd-pipeline-01M0N1DZ/contracts/. The single required status check
+# is `ci-ok` (branch protection; documented by WP07). Everything else is a lane
+# that may skip — a skipped lane must never leave the required check pending.
+#
+# Fork-safety (FR-020): triggers on `pull_request` (NEVER pull_request_target) so
+# fork code never gains secret access; these lanes need no secrets. Least-privilege
+# top-level permissions; deploy/nightly live in separate workflows.
 name: CI
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
 
+# Least privilege: read the repo, nothing more. Fork PRs pass with no secrets.
+permissions:
+  contents: read
+
+# At most one in-progress run per ref; supersede older runs (NFR-006).
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-test:
+  # --- Classifier: always runs, never trigger-path-filtered (C-006). ----------
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      workflows: ${{ steps.derive.outputs.workflows }}
+      code: ${{ steps.derive.outputs.code }}
+      example_content: ${{ steps.derive.outputs.example_content }}
+      repo_docs: ${{ steps.derive.outputs.repo_docs }}
+      ignored: ${{ steps.derive.outputs.ignored }}
+      run_code_quality: ${{ steps.derive.outputs.run_code_quality }}
+      run_doc_sanity: ${{ steps.derive.outputs.run_doc_sanity }}
+      run_build_example: ${{ steps.derive.outputs.run_build_example }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # Multi-match path filter over the single source of globs (.github/filters.yml).
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: .github/filters.yml
+
+      # Collapse multi-match → first-match primary group and derive run_* signals.
+      # The precedence logic lives in the committed, unit-tested helper — not here.
+      - name: Derive change groups
+        id: derive
+        env:
+          FILTER_WORKFLOWS: ${{ steps.filter.outputs.workflows }}
+          FILTER_CODE: ${{ steps.filter.outputs.code }}
+          FILTER_EXAMPLE_CONTENT: ${{ steps.filter.outputs.example_content }}
+          FILTER_REPO_DOCS: ${{ steps.filter.outputs.repo_docs }}
+          FILTER_IGNORED: ${{ steps.filter.outputs.ignored }}
+        run: node .github/scripts/derive-change-groups.mjs
+
+  # --- Lane: code-quality (code || workflows). --------------------------------
+  code-quality:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.run_code_quality == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Enable Corepack (pnpm)
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Enable corepack
         run: corepack enable
-
-      - uses: actions/setup-node@v4
+      - name: Set up Node 22 + pnpm cache
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: pnpm
-
-      - name: Install
+      - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
-
-      - name: Validate docs frontmatter
-        run: pnpm validate
-
-      - name: Toolkit unit tests
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Unit tests
         run: pnpm test
 
+  # --- Lane: doc-sanity (code || example_content || repo_docs || workflows). ---
+  # BUILD-FREE: static validators only, no `astro build` (NFR-002).
+  doc-sanity:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.run_doc_sanity == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Enable corepack
+        run: corepack enable
+      - name: Set up Node 22 + pnpm cache
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+      - name: Validate frontmatter (docs)
+        run: pnpm validate:docs
+      - name: Validate frontmatter (example/docs)
+        run: pnpm validate:example
+      - name: Resolve internal links & related refs
+        run: pnpm validate:links
+      - name: Markdownlint (docs + example/docs)
+        run: pnpm exec markdownlint-cli2 "docs/**/*.md" "example/docs/**/*.md"
+      # Vale prose stylecheck; .vale.ini gates at error severity. `reporter: local`
+      # + fail_on_error keeps it within contents:read (no PR-write / no token need),
+      # so fork PRs pass.
+      - name: Vale prose stylecheck
+        uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
+        with:
+          files: docs example/docs
+          separator: " "
+          reporter: local
+          fail_on_error: true
+
+  # --- Lane: build-example (code || example_content || workflows). -------------
+  build-example:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.run_build_example == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # Shared build definition (WP03 composite; also reused by WP05 deploy).
       - name: Build example site
-        run: pnpm build
+        uses: ./.github/actions/build-example
+      # Artifact assertions run HERE (not in the composite) so the PR gate asserts
+      # while deploy reuses the pure build (contracts/build-example-action.contract.md).
+      - name: Assert build artifacts
+        run: pnpm assert:artifacts example/dist
+
+  # --- Gate: ci-ok — the single required status check (FR-012, C-005). --------
+  # Job id MUST stay exactly `ci-ok` (branch protection references this string).
+  ci-ok:
+    needs: [detect-changes, code-quality, doc-sanity, build-example]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # Explicit result evaluation via the committed, unit-tested helper. NOT a bare
+      # `always() + exit 0`: this exits non-zero on any lane failure/cancellation or
+      # a detect-changes that is not `success` (no all-skip false green).
+      - name: Evaluate ci-ok
+        env:
+          DETECT_CHANGES_RESULT: ${{ needs.detect-changes.result }}
+          CODE_QUALITY_RESULT: ${{ needs.code-quality.result }}
+          DOC_SANITY_RESULT: ${{ needs.doc-sanity.result }}
+          BUILD_EXAMPLE_RESULT: ${{ needs.build-example.result }}
+        run: node .github/scripts/ci-ok-decision.mjs

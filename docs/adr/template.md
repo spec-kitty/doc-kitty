@@ -25,18 +25,23 @@ What did we decide to do?
 ## Consequences
 
 ### Positive
+
 -
 
 ### Negative
+
 -
 
 ### Risks
+
 -
 
 ## Alternatives considered
 
 ### Option A: Name
+
 Why this was not chosen.
 
 ## References
+
 -

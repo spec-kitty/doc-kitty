@@ -11,7 +11,7 @@ import { glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
 import { docsSchema } from '@astrojs/starlight/schema';
-import { readmeToIndexId } from './metadata.js';
+import { readmeToIndexId, ROOT_ENTRY_ID } from './metadata.js';
 
 export { readmeToIndexId };
 
@@ -120,6 +120,7 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   return glob({
     base,
     pattern,
-    generateId: ({ entry }) => readmeToIndexId(entry),
+    // Astro rejects empty ids; the bundle root ("") is stored as ROOT_ENTRY_ID.
+    generateId: ({ entry }) => readmeToIndexId(entry) || ROOT_ENTRY_ID,
   });
 }

@@ -13,8 +13,13 @@
     "build": "pnpm --filter example build",
     "preview": "pnpm --filter example preview",
     "test": "pnpm --filter @commondocs-kitty/toolkit test",
-    "lint": "pnpm -r --if-present lint",
-    "validate": "pnpm --filter example run validate"
+    "typecheck": "pnpm --filter example typecheck",
+    "lint": "eslint src",
+    "validate": "pnpm --filter example run validate",
+    "validate:docs": "node src/scripts/validate-frontmatter.mjs docs",
+    "validate:example": "node src/scripts/validate-frontmatter.mjs example/docs",
+    "validate:links": "node src/scripts/check-links.mjs docs example/docs",
+    "assert:artifacts": "node src/scripts/assert-build-artifacts.mjs example/dist"
   },
   "keywords": [
     "astro",
@@ -25,5 +30,13 @@
     "llms-txt",
     "agent-docs"
   ],
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
+    "eslint": "^10.9.0",
+    "markdownlint-cli2": "^0.23.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0"
+  }
 }

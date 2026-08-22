@@ -1,0 +1,46 @@
+# Change-surface filters — the SINGLE source of the classifier globs.
+#
+# Format: dorny/paths-filter (https://github.com/dorny/paths-filter). Consumed by
+# the WP04 `detect-changes` job and reused by the WP05 deploy path gate — no glob
+# duplication anywhere else in the pipeline.
+#
+# These globs encode EXACTLY the binding change-surface map (spec.md
+# §"Change-surface map"). paths-filter is MULTI-match: one file may match several
+# of these groups. First-match precedence (workflows → code → example_content →
+# repo_docs → ignored) is NOT expressed here — it is applied deterministically by
+# `.github/scripts/derive-change-groups.mjs`, which this job invokes over the raw
+# per-group booleans. Keep the globs here; keep the precedence there.
+
+# workflows — CI logic itself changed → force every lane.
+workflows:
+  - '.github/workflows/**'
+
+# code — toolkit/site code or build config → code-quality + build-example + doc-sanity.
+code:
+  - 'src/**'
+  - 'example/src/**'
+  - 'example/*.ts'
+  - 'example/*.mjs'
+  - 'example/*.js'
+  - 'example/*.json'
+  - 'package.json'
+  - 'pnpm-lock.yaml'
+  - 'pnpm-workspace.yaml'
+  - 'tsconfig*.json'
+  - 'vitest.config.*'
+
+# example_content — deployed example content/assets → doc-sanity + build-example.
+example_content:
+  - 'example/docs/**'
+  - 'example/public/**'
+
+# repo_docs — non-deployed project docs → doc-sanity only.
+repo_docs:
+  - 'docs/**'
+  - 'agents/**'
+  - '*.md'
+
+# ignored — no CI lanes (detect-changes + ci-ok still run).
+ignored:
+  - 'research/**'
+  - '**/*.excalidraw'

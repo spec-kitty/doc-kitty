@@ -47,23 +47,23 @@ already plans to have.
 
 Markua syntax (quoted):
 
-```
+```text
 ![](palm-trees.jpg)
 ![Palm Trees](palm-trees.jpg)
 ![alt text for accessibility](image.png "Figure Title")
 ```
 
-```
+```text
 {alt: "a red apple", title: "The Original Mac"}
 ![](mac.jpg)
 ```
 
-```
+```text
 {width: "75%"}
 ![Palm Trees](palm-trees.jpg)
 ```
 
-```
+```text
 {float: right}
 ![Palm Trees](palm-trees.jpg)
 ```
@@ -98,17 +98,17 @@ best avoided; `fullbleed` has no clean web analog and is a candidate to drop.
 
 Markua syntax (quoted):
 
-```
+```text
 {id: foo}
 # Chapter Foo
 ```
 
-```
+```text
 {#bar}
 # Chapter Bar
 ```
 
-```
+```text
 Here [is lorem]{id: lorem}.
 
 This is ipsum{#ipsum}.
@@ -139,11 +139,11 @@ Effort: low. Risks: id collisions between `rehype-slug` output and explicit
 
 Markua syntax (quoted):
 
-```
+```text
 A> This is a short aside.
 ```
 
-```
+```text
 A> # A Longer Aside
 A>
 A> This is a longer aside.
@@ -151,7 +151,7 @@ A>
 A> It can have multiple paragraphs.
 ```
 
-```
+```text
 {aside}
 # A Note About Asides
 
@@ -176,12 +176,12 @@ form is nestable and needs balanced open/close handling.
 
 Markua syntax (quoted). Generic blurb, and the class form:
 
-```
+```text
 {class: warning}
 B> This is a warning!
 ```
 
-```
+```text
 {blurb, class: warning}
 This is a warning!
 {/blurb}

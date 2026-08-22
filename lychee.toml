@@ -1,0 +1,27 @@
+# lychee config for the nightly broken-link smoke (WP06 / FR-018).
+#
+# Scope: internal + external links on the LIVE published site. 0 dead links = pass.
+# The live URL(s) are supplied as CLI inputs by .github/workflows/nightly.yml
+# (derived from the GitHub Pages URL) — they are intentionally NOT hard-coded here,
+# so this file only carries check behaviour / noise-tuning knobs.
+
+# --- Robustness: tolerate slow / flaky hosts without false negatives. ----------
+max_redirects = 5
+max_retries = 2
+retry_wait_time = 2
+timeout = 30
+
+# --- Pass bar: 2xx are healthy. 429 (rate-limited) is accepted so external hosts
+# that throttle CI do not masquerade as dead links. Tunable in follow-up.
+accept = ["200..=299", "429"]
+
+# Cache within a single run so repeated external hosts are hit once.
+cache = true
+
+# --- Exclusions: unresolvable-in-CI schemes and loopback addresses. ------------
+exclude_mail = true
+exclude = [
+  "^https?://localhost",
+  "^https?://127\\.0\\.0\\.1",
+  "^https?://0\\.0\\.0\\.0",
+]

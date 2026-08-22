@@ -1,0 +1,14 @@
+extends: existence
+message: "Avoid the hedge '%s' — state the point directly."
+# Gated at error so it (and only it) turns the doc-sanity lane red. Kept tiny on
+# purpose; expand the token list as the house style firms up.
+level: error
+ignorecase: true
+tokens:
+  - obviously
+  - of course
+  - needless to say
+  - it goes without saying
+  - as everyone knows
+  - undoubtedly
+  - without a doubt

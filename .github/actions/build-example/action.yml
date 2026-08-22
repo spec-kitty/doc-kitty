@@ -1,0 +1,55 @@
+# Shared "build the example docsite" composite action.
+#
+# This is the SINGLE build definition (spec.md "Build definition" entity) reused
+# by both the WP04 build-example CI job and the WP05 deploy job, so that what the
+# PR gate builds is exactly what gets published (FR-015).
+#
+# Scope boundary (contracts/build-example-action.contract.md):
+#   - PURE BUILD. It does NOT run artifact assertions. `pnpm assert:artifacts`
+#     runs as a separate step in the WP04 build-example job, AFTER this action —
+#     so the PR gate asserts while deploy (WP05) reuses the build without
+#     inheriting the PR-gate assertion (a legitimate content-count change must
+#     not fail the mainline publish).
+#   - It does NOT self-checkout. Composite actions cannot; the caller MUST run
+#     `actions/checkout` before `uses: ./.github/actions/build-example`.
+#
+# Consumers: WP04 build-example job, WP05 deploy job.
+name: Build example docsite
+description: >-
+  Enable corepack, set up Node + pnpm cache, install with a frozen lockfile, and
+  run the shared `pnpm build`. Pure build; runs no assertions and no checkout.
+
+inputs:
+  node-version:
+    description: Node.js version to set up.
+    required: false
+    default: "22"
+  working-directory:
+    description: Directory to run the build from (repo root by default).
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - name: Enable corepack
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: corepack enable
+
+    # Pinned to a commit SHA (supply-chain hygiene). SHA = actions/setup-node@v4.4.0.
+    - name: Set up Node ${{ inputs.node-version }} with pnpm cache
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    - name: Install dependencies (frozen lockfile)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm install --frozen-lockfile
+
+    - name: Build the site
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm build

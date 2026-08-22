@@ -5,6 +5,7 @@
  */
 import { getCollection } from 'astro:content';
 import type { DocEntry, DocKittyFrontmatter } from '../metadata.js';
+import { slugFromEntryId } from '../metadata.js';
 
 /**
  * Load every docs entry as a `DocEntry`. With the README-as-index loader, an
@@ -13,7 +14,7 @@ import type { DocEntry, DocKittyFrontmatter } from '../metadata.js';
 export async function collectDocEntries(): Promise<DocEntry[]> {
   const entries = await getCollection('docs');
   return entries.map((entry) => ({
-    slug: entry.id,
+    slug: slugFromEntryId(entry.id),
     data: entry.data as unknown as DocKittyFrontmatter,
   }));
 }

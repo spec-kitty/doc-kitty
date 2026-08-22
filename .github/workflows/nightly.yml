@@ -1,0 +1,288 @@
+# Gated nightly smoke of the LIVE published site.
+#
+# Design: docs/architecture/ci-cd-pipeline.md; contract:
+# kitty-specs/ci-cd-pipeline-01M0N1DZ/contracts/nightly-smoke.contract.md.
+# Requirements: FR-016 (deploy-change gate + durable git-ref marker),
+# FR-017 (live SHA from the newest SUCCESSFUL github-pages deployment),
+# FR-018 (lychee + Lighthouse against the live URL, per-check thresholds),
+# FR-019 (always summarise/upload; issue ONLY on failure; never gates a merge),
+# FR-020 (base-repo-only by schedule/dispatch — forks cannot trigger this),
+# FR-021 (manual dispatch applies the same gate), C-007 (durable marker,
+# contents:write, must not retrigger workflows), C-009 (M0 = lychee + Lighthouse
+# only; no Playwright; perf/CWV is NOT a gate), NFR-005 (no new deploy ⇒ 0 checks).
+#
+# This workflow is schedule/dispatch only. It is NEVER a required status check and
+# cannot gate a merge: the check steps run under continue-on-error and failures are
+# surfaced via a tracking issue, not by failing a blocking run.
+name: Nightly smoke
+
+on:
+  schedule:
+    # 03:00 UTC nightly. Base repo only — scheduled/dispatch triggers never fire
+    # from forks, so no secret exposure (FR-020).
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+# Least privilege at the top; jobs widen only where strictly needed
+# (gate: deployments:read, marker: contents:write, report: issues:write).
+permissions:
+  contents: read
+
+# One nightly at a time; never cancel a run mid-marker-write.
+concurrency:
+  group: nightly-smoke
+  cancel-in-progress: false
+
+jobs:
+  # --- Gate: deploy-change short-circuit (FR-016/FR-017, NFR-005). -------------
+  # Distinct EARLY job. Reads the newest SUCCESSFUL github-pages deployment SHA and
+  # compares it to the durable marker ref refs/smoke/last-run. If unchanged, every
+  # downstream job is skipped ⇒ 0 link checks, 0 Lighthouse runs (NFR-005).
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: read
+    outputs:
+      changed: ${{ steps.decide.outputs.changed }}
+      live_sha: ${{ steps.decide.outputs.live_sha }}
+      site_url: ${{ steps.decide.outputs.site_url }}
+    steps:
+      - name: Resolve live deploy SHA, marker, and decide
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+
+          # Live URL derivation (documented assumption): this repo publishes as a
+          # PROJECT page, so the site lives at https://<owner>.github.io/<repo>/.
+          # A user/org ROOT page (repo literally named "<owner>.github.io") would
+          # instead be https://<owner>.github.io/ — adjust here if that ever changes.
+          repo_name="${REPO#*/}"
+          site_url="https://${OWNER}.github.io/${repo_name}/"
+          echo "site_url=${site_url}" >> "$GITHUB_OUTPUT"
+          echo "Derived live site URL: ${site_url}"
+
+          # Newest SUCCESSFUL/ACTIVE github-pages deployment SHA (FR-017). The
+          # Deployments list is newest-first; statuses list is newest-first too, so
+          # the first deployment whose latest status is success/active is the live one.
+          deployments="$(gh api "repos/${REPO}/deployments?environment=github-pages&per_page=100")"
+          live_sha=""
+          for id in $(echo "$deployments" | jq -r '.[].id'); do
+            state="$(gh api "repos/${REPO}/deployments/${id}/statuses?per_page=1" \
+              | jq -r '.[0].state // empty')"
+            if [ "$state" = "success" ] || [ "$state" = "active" ]; then
+              live_sha="$(echo "$deployments" | jq -r ".[] | select(.id==${id}) | .sha")"
+              break
+            fi
+          done
+          echo "live_sha=${live_sha}" >> "$GITHUB_OUTPUT"
+          echo "Live github-pages SHA: ${live_sha:-<none>}"
+
+          # Durable marker: the SHA smoked by the last run (C-007). Read via
+          # ls-remote so an arbitrary custom ref (refs/smoke/*) is returned.
+          marker="$(git ls-remote "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
+            "refs/smoke/last-run" | awk '{print $1}')"
+          echo "Marker refs/smoke/last-run: ${marker:-<missing>}"
+
+          # Decision (contract Gate steps 1-3):
+          #   no successful deploy      -> nothing to smoke (changed=false)
+          #   marker missing            -> first run, treat as changed (FR first-run)
+          #   live == marker            -> unchanged, short-circuit (NFR-005)
+          #   otherwise                 -> changed, run the suite
+          if [ -z "$live_sha" ]; then
+            changed=false
+            echo "No successful github-pages deployment yet — nothing to smoke."
+          elif [ -z "$marker" ]; then
+            changed=true
+            echo "Marker missing — first run, treating deployment as changed."
+          elif [ "$live_sha" = "$marker" ]; then
+            changed=false
+            echo "Live SHA == marker — no new deployment, short-circuiting (NFR-005)."
+          else
+            changed=true
+            echo "Live SHA != marker — new deployment, running the suite."
+          fi
+          echo "changed=${changed}" >> "$GITHUB_OUTPUT"
+
+  # --- Suite: lychee + Lighthouse against the LIVE URL (FR-018). ---------------
+  # Runs ONLY when the gate says the deployment changed. Check steps use
+  # continue-on-error so a threshold miss never fails this (non-required) workflow;
+  # results are captured and reported downstream.
+  smoke:
+    needs: gate
+    if: needs.gate.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      overall_pass: ${{ steps.result.outputs.overall_pass }}
+      lychee_ok: ${{ steps.result.outputs.lychee_ok }}
+      lighthouse_ok: ${{ steps.result.outputs.lighthouse_ok }}
+    env:
+      SITE_URL: ${{ needs.gate.outputs.site_url }}
+    steps:
+      # Checkout only to obtain lychee.toml + lighthouserc.json (config, not source).
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # Broken links against the live site (T031). We check the homepage and the
+      # sitemap index; internal + external links are followed per lychee.toml.
+      # fail:false — we own pass/fail via exit_code so this step never fails the job.
+      # (Crawl depth is tunable in follow-up; homepage + sitemap is the M0 baseline.)
+      - name: Broken-link check (lychee)
+        id: lychee
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --config ./lychee.toml --no-progress
+            ${{ env.SITE_URL }} ${{ env.SITE_URL }}sitemap-index.xml
+          fail: false
+          format: markdown
+          output: ./lychee-report.md
+          token: ${{ github.token }}
+
+      # Lighthouse CI (T032): SEO + accessibility subset + best-practices/console
+      # errors (rendering integrity). Thresholds live in lighthouserc.json and are
+      # CONSERVATIVE STARTING VALUES (seo/a11y/best-practices >= 0.9) — tune in a
+      # follow-up. Performance / Core-Web-Vitals is deliberately NOT collected or
+      # asserted (C-009: not an M0 gate). continue-on-error keeps this non-blocking.
+      - name: Lighthouse CI
+        id: lighthouse
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@512cc908a55bfb0ad231facca52adf3d3a651df4 # v12
+        with:
+          urls: ${{ env.SITE_URL }}
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: false
+
+      # Collapse both checks into a single pass/fail signal for downstream jobs.
+      - name: Evaluate results
+        id: result
+        env:
+          LYCHEE_EXIT: ${{ steps.lychee.outputs.exit_code }}
+          LH_OUTCOME: ${{ steps.lighthouse.outcome }}
+        run: |
+          set -euo pipefail
+          if [ "${LYCHEE_EXIT:-1}" = "0" ]; then lychee_ok=true; else lychee_ok=false; fi
+          if [ "${LH_OUTCOME}" = "success" ]; then lighthouse_ok=true; else lighthouse_ok=false; fi
+          if [ "$lychee_ok" = "true" ] && [ "$lighthouse_ok" = "true" ]; then
+            overall_pass=true
+          else
+            overall_pass=false
+          fi
+          echo "lychee_ok=${lychee_ok}" >> "$GITHUB_OUTPUT"
+          echo "lighthouse_ok=${lighthouse_ok}" >> "$GITHUB_OUTPUT"
+          echo "overall_pass=${overall_pass}" >> "$GITHUB_OUTPUT"
+
+      # ALWAYS write a Step Summary (T034 / FR-019).
+      - name: Step Summary
+        if: always()
+        env:
+          SITE_URL: ${{ env.SITE_URL }}
+          LIVE_SHA: ${{ needs.gate.outputs.live_sha }}
+          LYCHEE_OK: ${{ steps.result.outputs.lychee_ok }}
+          LIGHTHOUSE_OK: ${{ steps.result.outputs.lighthouse_ok }}
+        run: |
+          {
+            echo "## Nightly smoke"
+            echo ""
+            echo "- Site: ${SITE_URL}"
+            echo "- Deployed SHA: \`${LIVE_SHA}\`"
+            echo "- Broken links (lychee): ${LYCHEE_OK:-unknown}"
+            echo "- Lighthouse CI (SEO / a11y / best-practices): ${LIGHTHOUSE_OK:-unknown}"
+            echo ""
+            echo "_Performance / Core-Web-Vitals is not an M0 gate (C-009)._"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ALWAYS upload artifacts: lychee report + Lighthouse HTML/JSON (T034 / FR-019).
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nightly-smoke-reports
+          path: |
+            ./lychee-report.md
+            ./.lighthouseci
+          if-no-files-found: warn
+          retention-days: 30
+
+  # --- Marker update: record the smoked SHA (T033 / C-007). -------------------
+  # Runs after the suite COMPLETES (job result success — check failures are absorbed
+  # by continue-on-error, so a completed run always reaches here). Writing the SHA to
+  # the custom ref refs/smoke/last-run does NOT retrigger any workflow: this repo's
+  # push triggers are branches:[main] only, and custom refs under refs/smoke/* are
+  # not refs/heads/* or refs/tags/* — they never emit push/CI events (C-007).
+  update-marker:
+    needs: [gate, smoke]
+    if: needs.gate.outputs.changed == 'true' && needs.smoke.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Advance refs/smoke/last-run to the deployed SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          LIVE_SHA: ${{ needs.gate.outputs.live_sha }}
+        run: |
+          set -euo pipefail
+          echo "Setting refs/smoke/last-run -> ${LIVE_SHA}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
+            "${LIVE_SHA}:refs/smoke/last-run"
+
+  # --- Reporting: open/update ONE tracking issue on failure (T034 / FR-019). ---
+  # ONLY when a check missed its threshold. Never fails/gates anything.
+  report-failure:
+    needs: [gate, smoke]
+    if: needs.gate.outputs.changed == 'true' && needs.smoke.outputs.overall_pass == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the nightly-smoke tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SITE_URL: ${{ needs.gate.outputs.site_url }}
+          LIVE_SHA: ${{ needs.gate.outputs.live_sha }}
+          LYCHEE_OK: ${{ needs.smoke.outputs.lychee_ok }}
+          LIGHTHOUSE_OK: ${{ needs.smoke.outputs.lighthouse_ok }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Nightly smoke failures"
+
+          # Idempotent marker label; ignore if creation is a no-op.
+          gh label create nightly-smoke --color B60205 \
+            --description "Automated nightly smoke tracking issue" --force || true
+
+          body="$(printf '%s\n' \
+            "Nightly smoke found failures for the live deployment." \
+            "" \
+            "- Site: ${SITE_URL}" \
+            "- Deployed SHA: \`${LIVE_SHA}\`" \
+            "- Broken links (lychee): ${LYCHEE_OK}" \
+            "- Lighthouse CI (SEO / a11y / best-practices): ${LIGHTHOUSE_OK}" \
+            "" \
+            "Run + artifacts: ${RUN_URL}" \
+            "" \
+            "_This is a single rolling tracking issue; new failures append here._")"
+
+          # Find the ONE existing open tracking issue by exact title (T034).
+          existing="$(gh issue list --repo "${REPO}" --state open \
+            --search "in:title \"${title}\"" --json number,title \
+            --jq "map(select(.title == \"${title}\")) | .[0].number // empty")"
+
+          if [ -n "$existing" ]; then
+            echo "Updating existing tracking issue #${existing}"
+            gh issue comment "$existing" --repo "${REPO}" --body "$body"
+          else
+            echo "Creating new tracking issue"
+            gh issue create --repo "${REPO}" --title "$title" \
+              --label nightly-smoke --body "$body"
+          fi

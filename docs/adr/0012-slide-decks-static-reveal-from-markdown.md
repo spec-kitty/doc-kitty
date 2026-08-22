@@ -59,16 +59,19 @@ not survive the same source rendering as a plain document.
 ## Consequences
 
 ### Positive
+
 - Decks are authorable by anyone who writes Markdown, with no new DSL, and the
   source doubles as a readable outline.
 - Static output is accessible, indexable, offline-capable, and CSP-clean.
 - Decks inherit the active brand through the token catalog.
 
 ### Negative
+
 - A doc-kitty reveal theme must map `--dk-*` onto reveal's own variables, and that
   mapping is maintenance surface on a reveal upgrade.
 
 ### Risks
+
 - Decks render outside the Starlight frame, so Pagefind/search coverage of the deck
   route must be verified at build (the static DOM must stay crawlable).
 - The reveal.js version is a pinned dependency; upgrades need a smoke check of the
@@ -77,20 +80,24 @@ not survive the same source rendering as a plain document.
 ## Alternatives considered
 
 ### Option A: reveal.js client-side Markdown plugin
+
 Rejected. It fetches raw Markdown and builds slides at runtime, which gives worse
 accessibility, SEO, and no-JS behaviour, and less control over the output than a
 build-time transform.
 
 ### Option B: Hand-authored reveal HTML (the client approach)
+
 Rejected. Not authorable as content, not reviewable as Markdown, and it does not
 render as a plain document without JavaScript. This is the approach the discovery
 run flagged as not to be followed.
 
 ### Option C: MDX slide components
+
 Rejected. Heavier, couples decks to a component API, and breaks the clean-Markdown /
 Markua-compatible authoring the toolkit wants.
 
 ### Option D: A different deck engine (Marp, Slidev)
+
 Rejected. reveal.js was already chosen in ADR-0011 and aligns with the
 `presentations/` section and the existing ecosystem; changing engines is not a live
 question here.
