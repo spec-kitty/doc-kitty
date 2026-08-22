@@ -18,6 +18,7 @@ on:
 # Least privilege: read the repo, nothing more. Fork PRs pass with no secrets.
 permissions:
   contents: read
+  pull-requests: read # dorny/paths-filter lists a PR's changed files via the API
 
 # At most one in-progress run per ref; supersede older runs (NFR-006).
 concurrency:
@@ -110,16 +111,19 @@ jobs:
         run: pnpm validate:links
       - name: Markdownlint (docs + example/docs)
         run: pnpm exec markdownlint-cli2 "docs/**/*.md" "example/docs/**/*.md"
-      # Vale prose stylecheck; .vale.ini gates at error severity. `reporter: local`
-      # + fail_on_error keeps it within contents:read (no PR-write / no token need),
-      # so fork PRs pass.
+      # Vale prose stylecheck. Install the pinned binary and run it directly so the
+      # gate checks ALL files at error severity (per .vale.ini) on both push and PR.
+      # (The reviewdog-based vale-action uses filter_mode: added, which needs a PR
+      # diff and errors on push with "diff command is empty".) Needs no token, so
+      # fork PRs pass.
+      - name: Install Vale
+        run: |
+          VALE_VERSION=3.18.0
+          curl -sSfL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" -o /tmp/vale.tgz
+          sudo tar -xzf /tmp/vale.tgz -C /usr/local/bin vale
+          vale --version
       - name: Vale prose stylecheck
-        uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
-        with:
-          files: docs example/docs
-          separator: " "
-          reporter: local
-          fail_on_error: true
+        run: vale --minAlertLevel=error docs example/docs
 
   # --- Lane: build-example (code || example_content || workflows). -------------
   build-example:
