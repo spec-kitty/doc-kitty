@@ -285,11 +285,24 @@ live in the theme's curated component surface (ADR-0008), with per-kind renderin
 governed by ADR-0009. Reserve option (a) for later if the preprocessing proves
 too fragile against code blocks and nesting.
 
-One honest caveat on portability. doc-kitty prefers plain `.md` that renders on
-the repository host. Markua's `A>`, `{blurb}`, and `{...}` lines do not render on
-GitHub any more than they do in stock remark; they show as raw text. Supporting
-Markua is therefore a rendering feature of the doc-kitty pipeline, not a way to
-keep host-portable source. That trade-off should be explicit before adopting it.
+## Portability and fit
+
+Markua is superimposed on Markdown: it is a superset of CommonMark and GFM. A page
+written in plain CommonMark or GFM never touches Markua and renders everywhere,
+including the repository host, exactly as before. The support is invisible until an
+author opts into a Markua construct.
+
+The portability cost is therefore opt-in and local, not blanket. Only the
+Markua-specific lines (`A>`, `{blurb}`, `{...}`) are pipeline-only; on the host they
+show as raw text, as any non-CommonMark syntax would. Markua does not lower the
+portability of base content; it adds richer constructs that render through the
+doc-kitty pipeline when used, and fall back to plain text when they are not.
+
+This is a neater fit than the alternatives. Inline HTML clutters the source and is
+easy to get wrong; MDX couples content to a component set and stops the file being
+plain Markdown. Markua stays Markdown-native and degrades to readable text rather
+than to broken markup. That graceful degradation, plus the opt-in portability
+profile, is the case for adopting the subset.
 
 ## Scope (in / out)
 
