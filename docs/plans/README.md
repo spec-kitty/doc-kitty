@@ -16,6 +16,8 @@ in [adr](../adr/).
 
 - [Roadmap](./roadmap.md) — the phased plan (missions M0–M8) and the cross-cutting
   CI/CD priority.
+- [Design readiness](./design-readiness.md) — which features are ready to spec, and
+  the underdesigned aspects that need an ADR or design pass first.
 
 Component and pipeline designs (the CI/CD pipeline, the metadata model) live in
 [architecture](../architecture/). Product-feature specs, when we write them, go in
