@@ -9,8 +9,9 @@ moscow:
   rationale: Presentations are a first-class output pillar alongside docsites, required at launch.
 tags: [presentations, reveal-js]
 related:
+  - architecture/slide-decks
+  - adr/0012-slide-decks-static-reveal-from-markdown
   - adr/0004-amend-common-docs-as-extensible-variation
-  - architecture/research/astro-markdown-extensions
 ---
 
 # Slide decks (reveal.js)
@@ -20,6 +21,10 @@ section and render them as a distinct presentation surface.
 
 Scope: MVP.
 
-Design: [ADR-0004](../../adr/0004-amend-common-docs-as-extensible-variation.md), which
-adds `presentations/`, and
-[Astro Markdown extensions](../../architecture/research/astro-markdown-extensions.md).
+Design: [slide-decks.md](../../architecture/slide-decks.md) and
+[ADR-0012](../../adr/0012-slide-decks-static-reveal-from-markdown.md) (authoring
+convention + static reveal.js pipeline), on top of
+[ADR-0011](../../adr/0011-theme-slot-surface-and-per-kind-layouts.md) (the
+`Presentation` route + fallback) and
+[ADR-0004](../../adr/0004-amend-common-docs-as-extensible-variation.md) (the
+`presentations/` section).

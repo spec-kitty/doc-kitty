@@ -47,6 +47,8 @@ page:
   forking: the theme surface, layering, and the default-vs-brand split.
 - [Spec Kitty brand theme](./theming-spec-kitty-brand.md) — the first brand theme's
   derived `--dk-*` values and atomic-design chrome, self-contained.
+- [Slide decks](./slide-decks.md) — how a Markdown-authored deck becomes a static
+  reveal.js presentation: the splitting convention, the build pipeline, the fallback.
 
 ## Build and delivery
 

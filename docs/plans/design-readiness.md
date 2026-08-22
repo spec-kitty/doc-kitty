@@ -24,7 +24,8 @@ substrate — the slot surface and per-kind layout resolution — is now designe
 (ADR-0011, [theming.md](../architecture/theming.md), and the
 [Spec Kitty brand theme](../architecture/theming-spec-kitty-brand.md)), so the
 metadata chrome, personas, and the audience/related/reference blocks are unblocked.
-Slide decks still need their own pass on top of that substrate.
+Slide decks now have their own pass on top of that substrate (ADR-0012). The next
+open Phase-1 gaps are the section registry and the catalog collections.
 
 ## Ready to spec now
 
@@ -48,10 +49,11 @@ real decision), a new or expanded architecture doc, or a refinement.
    with the first brand theme derived in [theming-spec-kitty-brand.md](../architecture/theming-spec-kitty-brand.md).
    This was the highest-leverage gap; closing it unblocks chrome, personas, and the
    relationship blocks. Decks (gap 2) still need their own pass.
-2. **Slide decks.** Essentially no design: no slide-splitting convention, no
-   self-contained reveal.js integration strategy, no `Presentation` layout. A Must
-   with almost nothing behind it. Artifact: a new `architecture/slide-decks.md` and
-   an ADR (reveal strategy and splitting). Depends on 1.
+2. **Slide decks. — CLOSED (2026-08-22).** The slide-splitting convention, the
+   self-contained static reveal.js pipeline, and the `Presentation` layout are now
+   specified in [slide-decks.md](../architecture/slide-decks.md) and
+   [ADR-0012](../adr/0012-slide-decks-static-reveal-from-markdown.md), on top of
+   gap 1's substrate.
 3. **Section registry (`_meta/sections.yaml`).** Decided in ADR-0004 but the schema,
    the loader, the `feeds` semantics, and `type`-to-section derivation are
    undefined; the code still hardcodes the section order. Artifact: refine
@@ -89,8 +91,8 @@ real decision), a new or expanded architecture doc, or a refinement.
 ## Sequence of design passes
 
 - **Phase 1 (unblocks MVP speccing):** 1 (theme slot surface and per-kind layout) —
-  done; next 2 (decks); then 3 (section registry); 4 (catalog collections); backfill
-  the outline docs.
+  done; 2 (decks) — done; next 3 (section registry); then 4 (catalog collections);
+  backfill the outline docs.
 - **Cross-cutting, before portals are scheduled:** 5 (CI persistence), 6 (portal
   ingestion).
 - **Later:** Markua ADR, diagrams, glossary, `_links`, doctrine.

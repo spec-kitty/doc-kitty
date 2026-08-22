@@ -21,5 +21,6 @@ type: ADR
 | [0009](./0009-finalize-metadata-contract.md) | Finalize the metadata contract (supersedes 0005's `divio_type`) | accepted | 2026-08-21 |
 | [0010](./0010-planning-kinds-and-moscow.md) | Planning page kinds (`Planning`/`Feature`/`User-Journey`) and a `moscow` field | accepted | 2026-08-22 |
 | [0011](./0011-theme-slot-surface-and-per-kind-layouts.md) | Theme slot surface + per-kind layouts (+ `banner`→`hero_image`) | accepted | 2026-08-22 |
+| [0012](./0012-slide-decks-static-reveal-from-markdown.md) | Slide decks: static reveal.js built from Markdown | accepted | 2026-08-22 |
 
 New ADRs copy [`template.md`](./template.md).
