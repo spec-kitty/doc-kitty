@@ -1,3 +1,14 @@
+# Mainline-only, path-gated GitHub Pages deploy.
+#
+# Design: docs/architecture/ci-cd-pipeline.md; contracts under
+# kitty-specs/ci-cd-pipeline-01M0N1DZ/contracts/. Requirements: FR-013 (path-gated
+# mainline deploy), FR-014 (no redeploy for repo_docs-only), FR-015 (reuse the ONE
+# build definition), FR-020 (base-repo-only trigger), C-003 (mainline only),
+# NFR-007 (serialize publishes; never cancel an in-flight one).
+#
+# Fork-safety (FR-020): the `push` + `workflow_dispatch` triggers run only in the
+# base repo, never from fork PRs — so the Pages/OIDC permissions below are never
+# exposed to fork code. No `pull_request`/`pull_request_target` here.
 name: Deploy to GitHub Pages
 
 on:
@@ -5,42 +16,71 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Allow the workflow to publish to Pages.
+# Least privilege for Pages publishing via OIDC (id-token) — nothing more.
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# One deploy at a time; don't cancel an in-progress publish.
+# One Pages publish at a time; never cancel an in-progress publish (NFR-007).
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
+  # --- Path gate: classify the pushed change surface (FR-013/FR-014). ----------
+  # Reuses the SINGLE source of globs (.github/filters.yml, owned by WP04) via the
+  # SAME dorny/paths-filter pin as ci.yml — no glob duplication here. On a push,
+  # paths-filter diffs the pushed range (github.event.before..sha). The filter is
+  # skipped on manual workflow_dispatch, which forces a deploy (see build `if`).
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      example_content: ${{ steps.filter.outputs.example_content }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Filter changed paths
+        id: filter
+        if: github.event_name == 'push'
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: .github/filters.yml
+
+  # --- Build: only when a deployable group changed (or a manual dispatch). -----
+  # Gate = code || example_content || workflows (repo_docs-only push skips → no
+  # redeploy, FR-014). Reuses the shared composite build (FR-015) — NO second
+  # astro/pnpm build authored here, and NO `assert:artifacts` (that is the PR-gate
+  # step; contracts/build-example-action.contract.md).
   build:
+    needs: detect-changes
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      needs.detect-changes.outputs.code == 'true' ||
+      needs.detect-changes.outputs.example_content == 'true' ||
+      needs.detect-changes.outputs.workflows == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Composite actions do not self-checkout; the caller must checkout first.
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - name: Enable Corepack (pnpm)
-        run: corepack enable
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
+      # The ONE build definition, shared with the WP04 build-example CI lane, so
+      # what the PR gate builds is exactly what gets published (FR-015).
       - name: Build example site
-        run: pnpm build
+        uses: ./.github/actions/build-example
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: example/dist
 
+  # --- Deploy: publish the built artifact to Pages. ---------------------------
+  # Depends on build; when build is gated out (repo_docs-only push) this skips too,
+  # so no redeploy happens.
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -50,4 +90,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
