@@ -16,3 +16,6 @@ how it works, so a decision can cite them. They are not the present-state design
 
 - [Astro Markdown extensions](./astro-markdown-extensions.md) — how Astro and
   Starlight support custom Markdown syntax: callouts, rich images, and components.
+- [Supporting Markua syntax](./markua-syntax-support.md) — how a curated subset of
+  Markua (images, ids, asides, blurbs, icons) could render through remark, rehype,
+  and Starlight components.
