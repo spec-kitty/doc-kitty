@@ -56,7 +56,7 @@ alongside. The result is realistic, Markua-rich pages rendered as a docsite.
 
 Because *Rhetoric* is not software or project documentation, its natural section set
 (the three books) is a **custom** set, not the canonical twelve. Under
-[ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md) that is the
+[ADR-0004](../../adr/0004-amend-common-docs-as-extensible-variation.md) that is the
 tolerated-but-unsupported path, which raises one sub-question below.
 
 ## Where the converted content lives (sub-decision)

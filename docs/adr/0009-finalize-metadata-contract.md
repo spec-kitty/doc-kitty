@@ -78,6 +78,14 @@ not a design doc marked "pending reconciliation."
 Rejected for now. This is one cohesive finalization of a contract designed in a
 single pass. It can be split later if a field's decision is revisited.
 
+## Update (2026-08-22)
+
+The `banner` field in decision 4 was renamed to `hero_image` by
+[ADR-0011](./0011-theme-slot-surface-and-per-kind-layouts.md), to avoid a collision
+with Starlight's built-in `banner`. The shape and `social_thumb` fallback are
+unchanged; the fallback chain is now `social_thumb` → `hero_image.src` → site
+default.
+
 ## References
 
 - [Metadata model](../architecture/metadata-model.md)

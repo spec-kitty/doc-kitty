@@ -35,6 +35,8 @@ page:
 - [Metadata model](./metadata-model.md) — the frontmatter contract every page
   carries and how the toolkit reads it: publication gating, section ordering, and
   agent-record shaping (`lib/metadata.ts`).
+- [Section registry](./section-registry.md) — the `docs/_meta/sections.yaml`
+  schema: section label, order, type, and which surfaces each section feeds.
 - [Generators](./generators.md) — the four output surfaces
   (`sitemap.xml`, `rss.xml`, `llms.txt`, the agent-API) and their route
   handlers.
@@ -45,6 +47,10 @@ page:
   `validate-frontmatter.mjs`.
 - [Theming and chrome](./theming.md) — how a consumer rebrands the site without
   forking: the theme surface, layering, and the default-vs-brand split.
+- [Spec Kitty brand theme](./theming-spec-kitty-brand.md) — the first brand theme's
+  derived `--dk-*` values and atomic-design chrome, self-contained.
+- [Slide decks](./slide-decks.md) — how a Markdown-authored deck becomes a static
+  reveal.js presentation: the splitting convention, the build pipeline, the fallback.
 
 ## Build and delivery
 

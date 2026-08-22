@@ -75,7 +75,7 @@ Where the Kitty Variation deliberately diverges from Common Docs:
 | 3 | `docs/` is consumed by external OKF tooling | `docs/` is **rendered directly** by the toolkit (Astro reads repo-root `docs/`) | Point the toolkit at an existing Common Docs tree; no file moves. |
 | 4 | Metadata is descriptive | An optional **`agent`** block tunes discovery | Fine control over agent-API visibility/ordering without new top-level fields. |
 | 5 | Fixed 12-section set | **Canonical, supported default** — the core focus is docsites that follow the structure; amendable only by *canonical* additions recorded in ADRs. A project *may* adapt (subset, own sections) and the toolkit degrades gracefully, but that is **tolerated, not officially supported**. | Flexibility without abandoning structure — [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md). |
-| 6 | Nav is implied by the fixed tree | **Display derives from an authored registry**, `docs/_meta/sections.yaml` (`id` / `label` / `order` / `purpose` / `feeds`) | Decouple display concerns (labels, ordering, feeds) from on-disk structure; relabel/reorder without moving files. |
+| 6 | Nav is implied by the fixed tree | **Display derives from an authored registry**, `docs/_meta/sections.yaml` (`id` / `label` / `order` / `type` / `purpose` / `feeds`) — see the [section registry](../architecture/section-registry.md) | Decouple display concerns (labels, ordering, feeds) and section type from on-disk structure; relabel/reorder/refilter without moving files. |
 
 Reserved, **frontmatter-free / non-content** (excluded from the docs collection):
 `log.md` (an optional per-directory change log) and the **`docs/_meta/`**
