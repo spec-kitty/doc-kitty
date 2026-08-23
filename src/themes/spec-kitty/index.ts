@@ -90,6 +90,11 @@ export const specKittyTheme: DocKittyTheme = {
   customCss: [
     '@commondocs-kitty/toolkit/themes/spec-kitty/tokens.css',
     '@commondocs-kitty/toolkit/themes/spec-kitty/brand.css',
+    // Atom/molecule/organism class language + the T025 AA construction rules
+    // (WP05). After brand.css so component styling wins; carries the WP08 T046
+    // target-size/focus contract classes (.dk-related-card, .dk-reference-item,
+    // .dk-passport__field a) into the branded dist.
+    '@commondocs-kitty/toolkit/themes/spec-kitty/components/brand-components.css',
   ],
 
   // Assets ride Starlight-native `logo`/`favicon` (ADR-0015 decision 5): the header

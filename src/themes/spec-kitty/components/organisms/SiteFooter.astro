@@ -1,0 +1,109 @@
+---
+/*
+ * Site footer organism (WP05, T023) — the brand's `dk:site-footer` slot component.
+ *
+ * WHAT MAKES THIS THE NON-FAKEABLE PROOF. The theme wires this file at
+ * `slots['dk:site-footer']` (index.ts); the WP03 Footer carrier renders it via
+ * `slotComponents['dk:site-footer']`. This organism emits the OVERRIDE-UNIQUE class
+ * `dk-site-footer--brand` that the doc-kitty DEFAULT footer (Starlight's) never
+ * emits. That class appearing in the branded build is WP08's (T047) proof that
+ * `slotComponents` actually resolved THROUGH the carrier — do not rename it.
+ *
+ * The carrier renders `<SiteFooter />` with NO props, so every prop here is optional.
+ *
+ * BRAND CHROME: flat `surface`/`bg-nav`, a 1px hairline TOP border (depth from
+ * borders, not shadows), muted mono meta. SELF-CONTAINED styling lives in this
+ * file's scoped `<style>` (NOT the shared sheet) so the class proof AND the footer
+ * interactive AA rules ship the moment the slot resolves — independent of whether
+ * WP07 has wired brand-components.css into customCss. No `@spec-kitty/*`.
+ *
+ * AA (T025): the footer interactive targets (`.dk-site-footer__link`) carry a ≥24px
+ * min-height/min-width rule and a `:focus-visible` ring below — the brand footer/nav
+ * target-size + focus contract WP08 (T046) asserts.
+ */
+interface FooterLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  /** Optional muted mono meta line (e.g. a copyright or build stamp). */
+  meta?: string;
+  /** Optional footer navigation links. */
+  links?: FooterLink[];
+}
+
+const { meta, links = [] } = Astro.props;
+---
+
+<footer class="dk-site-footer dk-site-footer--brand" data-dk-footer="brand">
+  {
+    links.length > 0 && (
+      <nav class="dk-site-footer__nav" aria-label="Footer">
+        {links.map((link) => (
+          <a class="dk-site-footer__link" href={link.href}>
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    )
+  }
+  <div class="dk-site-footer__meta">
+    {meta && <span class="dk-site-footer__stamp">{meta}</span>}
+    <a class="dk-site-footer__link" href="#top">Back to top</a>
+  </div>
+  <slot />
+</footer>
+
+<style>
+  /* Flat brand footer: bg-nav surface, 1px hairline TOP border (no drop shadow). */
+  .dk-site-footer--brand {
+    margin-top: var(--dk-space-2xl);
+    padding: var(--dk-space-lg) 0;
+    border-top: 1px solid var(--dk-color-border);
+    background: var(--dk-color-bg-nav);
+    color: var(--dk-color-text-muted);
+    font-family: var(--dk-font-mono);
+    font-size: var(--dk-text-xs);
+  }
+
+  .dk-site-footer__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dk-space-xs) var(--dk-space-md);
+    margin-bottom: var(--dk-space-sm);
+  }
+
+  .dk-site-footer__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dk-space-xs) var(--dk-space-md);
+    color: var(--dk-color-text-muted);
+  }
+
+  .dk-site-footer__stamp {
+    font-family: var(--dk-font-mono);
+    color: var(--dk-color-text-muted);
+  }
+
+  /* Footer interactive targets — brand footer/nav AA contract (T025 / WP08 T046):
+     ≥24px min target + a :focus-visible ring. */
+  .dk-site-footer__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px; /* WCAG 2.5.8 target size */
+    min-width: 24px;
+    color: var(--dk-color-text-muted);
+    text-decoration: none;
+  }
+  .dk-site-footer__link:hover {
+    color: var(--dk-color-text);
+    text-decoration: underline;
+  }
+  .dk-site-footer__link:focus-visible {
+    outline: none;
+    box-shadow: var(--dk-shadow-focus);
+    border-radius: var(--dk-radius-sm);
+  }
+</style>

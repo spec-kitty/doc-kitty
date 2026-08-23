@@ -1,0 +1,324 @@
+/*
+ * Spec Kitty brand — the atomic-design COMPONENT LANGUAGE (WP05, T021–T025).
+ *
+ * This is the single source of truth for the brand's atom/molecule/organism CLASS
+ * language: the classes the `.astro` components under atoms/ molecules/ organisms/
+ * render, plus the WCAG 2.2 AA construction rules WP08 (T046) and WP09 (axe) verify.
+ *
+ * SELF-CONTAINMENT (C-005 / ADR-0011): every value is a `var(--dk-*)` read against
+ * WP04's brand token catalog (tokens.css / index.ts object tokens). Nothing here
+ * references `@spec-kitty/*`, a CDN, or the spec-kitty-design repo, and this sheet
+ * declares ZERO `--dk-*` / `--sl-*` tokens — it only CONSUMES them.
+ *
+ * ── HOW THIS SHEET SHIPS ──────────────────────────────────────────────────────
+ * This file is NOT self-loading. It must be listed in the theme's `customCss`
+ * (index.ts) AFTER brand.css so the class language + AA rules land in the branded
+ * build. index.ts is WP04's file, OUT of WP05's owned surface, so WP05 does NOT
+ * edit it — the one-line addition is REPORTED for WP07 to wire. Until then these
+ * components render correct MARKUP (the classes, the text labels, the semantics)
+ * but are unstyled; the branded build (WP07) activates the styling.
+ * The brand FOOTER organism (SiteFooter.astro) is the exception: it carries its
+ * own scoped styles so its non-fakeable `dk-site-footer--brand` proof and its
+ * footer-link AA rules ship the moment the slot resolves, independent of this sheet.
+ *
+ * ── THE AA CONSTRUCTION CONTRACT (T025) ───────────────────────────────────────
+ * axe cannot machine-verify target-size (WCAG 2.5.8) or visible focus, so those
+ * live here as CSS construction checks against STABLE class names. Every brand
+ * interactive target carries BOTH a ≥24px min-height/min-width rule AND a
+ * `:focus-visible` ring. WP08 (T046) scopes its assertions to exactly:
+ *   .dk-related-card      .dk-reference-item      .dk-passport__field a
+ *   + the brand footer/nav interactive targets (SiteFooter.astro scoped style).
+ * These names are the contract — do not rename them without updating WP08.
+ */
+
+/* ============================================================================
+ * ATOMS (T021) — the smallest brand building blocks, all AA.
+ * ========================================================================== */
+
+/* Eyebrow label — the brand's signature label (ALL-CAPS mono, wide tracking,
+ * muted). Heads every band and block: "WHO IS THIS FOR", "RELATED", persona
+ * field labels. Muted-on-bg is ≥7:1 in both modes (see tokens.css AA block). */
+.dk-eyebrow {
+  display: inline-block;
+  font-family: var(--dk-font-mono);
+  font-size: var(--dk-text-2xs);
+  font-weight: var(--dk-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--dk-tracking-caps);
+  color: var(--dk-color-text-muted);
+  line-height: var(--dk-leading-tight);
+}
+
+/* Status pill — `-*-bg` fill + PAIRED `-*` text, `--dk-radius-pill`. ALWAYS
+ * text-labelled, NEVER colour-only (WCAG 1.4.1): the tone class only tints; the
+ * visible status word is real text supplied in the markup. Each tone is a
+ * pre-verified AA `--dk-color-<state>` / `-bg` pair (tokens.css). */
+.dk-pill {
+  display: inline-block;
+  padding: var(--dk-space-3xs) var(--dk-space-xs);
+  border-radius: var(--dk-radius-pill);
+  font-size: var(--dk-text-xs);
+  font-weight: var(--dk-weight-semibold);
+  letter-spacing: var(--dk-tracking-caps);
+  text-transform: uppercase;
+  line-height: var(--dk-leading-tight);
+  white-space: nowrap;
+}
+.dk-pill--info {
+  color: var(--dk-color-info);
+  background: var(--dk-color-info-bg);
+}
+.dk-pill--success {
+  color: var(--dk-color-success);
+  background: var(--dk-color-success-bg);
+}
+.dk-pill--warning {
+  color: var(--dk-color-warning);
+  background: var(--dk-color-warning-bg);
+}
+.dk-pill--danger {
+  color: var(--dk-color-danger);
+  background: var(--dk-color-danger-bg);
+}
+.dk-pill--neutral {
+  color: var(--dk-color-neutral);
+  background: var(--dk-color-neutral-bg);
+}
+
+/* Kind tag — `--dk-radius-sm` chip, surface-inset bg, mono uppercase micro-label. */
+.dk-kind-tag {
+  display: inline-block;
+  padding: var(--dk-space-3xs) var(--dk-space-2xs);
+  border-radius: var(--dk-radius-sm);
+  background: var(--dk-color-surface-inset);
+  color: var(--dk-color-text-muted);
+  font-family: var(--dk-font-mono);
+  font-size: var(--dk-text-2xs);
+  font-weight: var(--dk-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--dk-tracking-caps);
+  line-height: var(--dk-leading-tight);
+}
+
+/* Hairline — 1px `--dk-color-border`; the brand's depth primitive (borders, not
+ * shadows). Usable as a divider element or a utility border. */
+.dk-hairline {
+  border: 0;
+  border-top: 1px solid var(--dk-color-border);
+  margin: var(--dk-space-md) 0;
+}
+
+/* Focus ring — the shared `:focus-visible` utility (3px yellow + offset via the
+ * per-mode `--dk-shadow-focus`). Attach to any interactive atom that does not
+ * already carry a component-specific focus rule below. */
+.dk-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus);
+  border-radius: var(--dk-radius-sm);
+}
+
+/* Icon — inline decorative glyphs inherit the context foreground; standalone
+ * meaning is never carried by the icon alone (an accessible name accompanies it). */
+.dk-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Screen-reader-only text — keeps a control's/label's meaning explicit without
+ * showing redundant text to sighted readers. */
+.dk-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================================
+ * MOLECULES (T022) — atoms composed into reusable brand molecules.
+ * ========================================================================== */
+
+/* Related-card — a CARD-WIDE `<a>`: title in `--dk-color-text-accent`, target
+ * description muted, optional kind tag. AA (T025): min target ≥24px + focus ring.
+ * The card is a single link (no nested interactive), so the card-wide target
+ * never swallows another control. */
+.dk-related-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dk-space-3xs);
+  min-height: 24px; /* WCAG 2.5.8 target size (T025 contract) */
+  padding: var(--dk-space-sm) var(--dk-space-md);
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-md);
+  background: var(--dk-color-surface-1);
+  text-decoration: none;
+  color: var(--dk-color-text);
+}
+.dk-related-card:hover {
+  border-color: var(--dk-color-border-strong);
+}
+.dk-related-card:focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus);
+}
+.dk-related-card__title {
+  color: var(--dk-color-text-accent);
+  font-weight: var(--dk-weight-semibold);
+}
+.dk-related-card__desc {
+  color: var(--dk-color-text-muted);
+  font-size: var(--dk-text-sm);
+}
+
+/* Reference-item — same card pattern as related-card: a card-wide `<a>` with a
+ * mono citation key and a decorative external-link icon (its accessible name is
+ * carried by adjacent text, never the icon alone). AA (T025): ≥24px + focus ring. */
+.dk-reference-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dk-space-xs);
+  min-height: 24px; /* WCAG 2.5.8 target size (T025 contract) */
+  padding: var(--dk-space-sm) var(--dk-space-md);
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-md);
+  background: var(--dk-color-surface-1);
+  text-decoration: none;
+  color: var(--dk-color-text);
+}
+.dk-reference-item:hover {
+  border-color: var(--dk-color-border-strong);
+}
+.dk-reference-item:focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus);
+}
+.dk-reference-item__key {
+  flex: none;
+  font-family: var(--dk-font-mono);
+  font-size: var(--dk-text-xs);
+  color: var(--dk-color-text-accent);
+}
+.dk-reference-item__desc {
+  color: var(--dk-color-text-muted);
+  font-size: var(--dk-text-sm);
+}
+.dk-reference-item__icon {
+  flex: none;
+  color: var(--dk-color-text-muted);
+}
+
+/* Field row — a semantic `<dl>` label/value pair (eyebrow-atom label + body
+ * value). Used by the Persona passport (WP06). The value may contain a link;
+ * the passport wraps its rows in `.dk-passport__field`, whose link AA rule is
+ * authored below even though Persona.astro lands in WP06. */
+.dk-field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--dk-space-3xs);
+  margin: 0 0 var(--dk-space-sm);
+}
+.dk-field-row > dt {
+  margin: 0;
+}
+.dk-field-row > dd {
+  margin: 0;
+  color: var(--dk-color-text);
+}
+
+/* Passport field link (T025 contract: `.dk-passport__field a`). Authored HERE
+ * so the target-size + focus construction ships with the component language;
+ * Persona.astro (WP06) applies the `.dk-passport__field` class to its rows. */
+.dk-passport__field a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px; /* WCAG 2.5.8 target size (T025 contract) */
+  min-width: 24px;
+  color: var(--dk-color-text-accent);
+}
+.dk-passport__field a:focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus);
+  border-radius: var(--dk-radius-sm);
+}
+
+/* ============================================================================
+ * ORGANISMS (T023) — larger chrome units. (The FOOTER organism carries its own
+ * scoped styles in organisms/SiteFooter.astro; the SITE HEADER supporting layout
+ * and the TYPED TINT PANELS live here.)
+ * ========================================================================== */
+
+/* Site header (supporting layout only — ADR-0015: NO Starlight `Header` override;
+ * the logo-in-nav + wordmark ride native config, restyled by brand.css). This
+ * class styles the optional self-contained header partial (organisms/SiteHeader.astro)
+ * for custom layouts; it does not register a header override. */
+.dk-site-header {
+  display: flex;
+  align-items: center;
+  gap: var(--dk-space-sm);
+}
+.dk-site-header__logo {
+  display: block;
+  height: 2rem;
+  width: auto;
+}
+.dk-site-header__wordmark {
+  font-family: var(--dk-font-display);
+  font-weight: var(--dk-weight-display, 800);
+  color: var(--dk-color-text-strong);
+}
+
+/* Typed tint panels — the four brand tints map onto doc-kitty's typed blocks to
+ * differentiate them WITHOUT colour-coding meaning: each panel carries a text
+ * eyebrow naming its type (so meaning is never colour-only, WCAG 1.4.1), and each
+ * pairs its background tint with its PAIRED foreground token (semantic-pairing
+ * rule). Tint → token mapping:
+ *   related              → sky    → info    pair  (blue family)
+ *   audience             → mint   → success pair  (green family)
+ *   callout / aside      → butter → warning pair  (haygold/butter family)
+ *   external-references  → lilac  → *no lilac/purple token exists in WP04's
+ *                                    catalog*; mapped to the neutral pair as a
+ *                                    documented, AA-verified placeholder.
+ *                                    See the OUT-OF-OWNED-FILES note in the WP05
+ *                                    report: a `--dk-color-tint-lilac` + paired
+ *                                    fg belongs in WP04's token catalog for exact
+ *                                    brand fidelity. */
+.dk-panel {
+  padding: var(--dk-space-md);
+  border-radius: var(--dk-radius-md);
+  border: 1px solid var(--dk-color-border);
+}
+.dk-panel > .dk-eyebrow {
+  display: block;
+  margin-bottom: var(--dk-space-xs);
+}
+.dk-panel--related {
+  /* sky */
+  background: var(--dk-color-info-bg);
+  color: var(--dk-color-info);
+}
+.dk-panel--audience {
+  /* mint */
+  background: var(--dk-color-success-bg);
+  color: var(--dk-color-success);
+}
+.dk-panel--callout {
+  /* butter */
+  background: var(--dk-color-warning-bg);
+  color: var(--dk-color-warning);
+}
+.dk-panel--external-references {
+  /* lilac — placeholder mapped to the neutral pair (no lilac token; see note) */
+  background: var(--dk-color-neutral-bg);
+  color: var(--dk-color-neutral);
+}

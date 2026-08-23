@@ -1,0 +1,38 @@
+---
+/*
+ * Typed tint panel organism (WP05, T023).
+ *
+ * The four brand tints map onto doc-kitty's typed blocks to differentiate them
+ * WITHOUT colour-coding meaning. Each panel:
+ *   - carries a TEXT eyebrow naming its type, so meaning is never colour-only
+ *     (WCAG 1.4.1);
+ *   - pairs its background tint with its PAIRED foreground token (semantic-pairing).
+ *
+ * Tint → token pair (see ../brand-components.css `.dk-panel--*`):
+ *   related             → sky    → info    pair
+ *   audience            → mint   → success pair
+ *   callout             → butter → warning pair
+ *   external-references → lilac  → neutral pair (documented placeholder — WP04's
+ *                                  catalog ships no lilac/purple token; see the
+ *                                  WP05 report's out-of-owned-files note).
+ *
+ * SCOPE GUARD (C-010): renders from PROPS/slot only; the M3 blocks stay UNWIRED to
+ * resolved `entry.data`. Self-contained (no `@spec-kitty/*`).
+ */
+type PanelType = 'related' | 'audience' | 'callout' | 'external-references';
+
+interface Props {
+  /** Which typed block this panel represents (drives the paired tint). */
+  type: PanelType;
+  /** The eyebrow label naming the panel — carries meaning as text (not colour). */
+  label: string;
+}
+
+const { type, label } = Astro.props;
+const cls = `dk-panel dk-panel--${type}`;
+---
+
+<section class={cls} data-panel-type={type}>
+  <span class="dk-eyebrow">{label}</span>
+  <slot />
+</section>

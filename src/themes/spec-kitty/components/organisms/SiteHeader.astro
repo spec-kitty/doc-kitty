@@ -1,0 +1,29 @@
+---
+/*
+ * Site header organism (WP05, T023) — STYLING/SUPPORTING PARTIAL ONLY.
+ *
+ * The brand's non-negotiable is a logo `<img>` in the top nav ALONGSIDE the
+ * wordmark. Per ADR-0015 that ships through Starlight-NATIVE `logo`/`title` config
+ * (forwarded by defineDocKittyIntegrations) and is restyled by brand.css — there is
+ * NO Starlight `Header`/`SiteTitle` override. This organism therefore does NOT
+ * register as a header override; it is an optional self-contained partial a custom
+ * layout may use, plus the supporting `.dk-site-header` CSS in ../brand-components.css.
+ *
+ * Self-contained (no `@spec-kitty/*`). The logo path is passed in by the caller.
+ */
+interface Props {
+  /** Logo image src (the consumer/theme carries its own copy of the mark). */
+  logoSrc: string;
+  /** Wordmark text — defaults to the brand name. */
+  wordmark?: string;
+  /** Home href for the header link. */
+  href?: string;
+}
+
+const { logoSrc, wordmark = 'Spec Kitty', href = '/' } = Astro.props;
+---
+
+<a class="dk-site-header dk-focus-ring" href={href} aria-label={wordmark}>
+  <img class="dk-site-header__logo" src={logoSrc} alt="" />
+  <span class="dk-site-header__wordmark">{wordmark}</span>
+</a>

@@ -1,0 +1,27 @@
+---
+/*
+ * Field-row molecule (WP05, T022).
+ *
+ * A semantic `<dl>` label/value pair: an eyebrow-atom `<dt>` label + a `<dd>` body
+ * value. Used by the Persona passport (WP06) — each rendered row is a self-contained
+ * `<dl>`/`<dt>`/`<dd>` association. The value slot may contain a link; the passport
+ * applies its `.dk-passport__field` class (whose link AA rule is authored in
+ * ../brand-components.css) to its rows.
+ *
+ * Styling: ../brand-components.css → `.dk-field-row`. Self-contained (no `@spec-kitty/*`).
+ */
+interface Props {
+  /** The field label — rendered in the eyebrow style inside the <dt>. */
+  label: string;
+  /** Optional extra class (e.g. `dk-passport__field` when used in the passport). */
+  class?: string;
+}
+
+const { label, class: extra } = Astro.props;
+const cls = ['dk-field-row', extra].filter(Boolean).join(' ');
+---
+
+<dl class={cls}>
+  <dt class="dk-eyebrow">{label}</dt>
+  <dd><slot /></dd>
+</dl>
