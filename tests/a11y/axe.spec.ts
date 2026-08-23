@@ -1,15 +1,23 @@
 // axe-core across the enumerated page set, in BOTH modes (WP09 T040).
 //
 // For each named route × each colour mode: drive+assert the mode, run axe-core with
-// the WCAG 2.2 AA tag set scoped to the doc-kitty chrome + content, and fail on any
-// violation of impact `serious` or `critical` (NFR-001, SC-002).
+// the WCAG 2.2 AA tag set over the WHOLE page — header, main, sidebar, TOC, and
+// footer, everywhere the doc-kitty bridge tokens apply — and fail on any violation
+// of impact `serious` or `critical` (NFR-001, SC-002).
 //
-// Non-vacuity guard: before analyzing we assert the scope targets actually exist, so
-// a mismatched `include` selector fails loudly instead of reporting a clean zero
-// against nothing.
+// Non-vacuity guard: before analyzing we assert the covered surfaces actually exist
+// (header/main/sidebar/footer), so an un-rendered region fails loudly instead of
+// letting axe report a clean zero against a page it never really scanned.
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { AXE_PAGES, WCAG_TAGS, CHROME_ROOT, CONTENT_ROOT } from './routes';
+import {
+  AXE_PAGES,
+  WCAG_TAGS,
+  CHROME_ROOT,
+  CONTENT_ROOT,
+  SIDEBAR_ROOT,
+  FOOTER_ROOT,
+} from './routes';
 import { gotoInMode, modeOf } from './mode';
 
 const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
@@ -22,21 +30,28 @@ for (const pageDef of AXE_PAGES) {
       // Drive + ASSERT the colour mode before doing anything else.
       await gotoInMode(page, pageDef.path, mode);
 
-      // --- Non-vacuity scope guard: the include targets must really exist. --------
-      await expect(
-        page.locator(CHROME_ROOT),
-        `axe scope target '${CHROME_ROOT}' must exist on ${pageDef.path}`,
-      ).toHaveCount(1);
-      const contentCount = await page.locator(CONTENT_ROOT).count();
-      expect(
-        contentCount,
-        `axe scope target '${CONTENT_ROOT}' must exist on ${pageDef.path}`,
-      ).toBeGreaterThanOrEqual(1);
+      // --- Non-vacuity scope guard: the surfaces axe must cover really exist. -----
+      // axe scans the whole page (below); this guard proves the page rendered the
+      // regions the coverage claims — header, main, sidebar, AND footer (the F2
+      // fix widened this past header + main). The TOC is not guarded (Starlight
+      // omits it on heading-less pages).
+      for (const [root, minCount] of [
+        [CHROME_ROOT, 1],
+        [CONTENT_ROOT, 1],
+        [SIDEBAR_ROOT, 1],
+        [FOOTER_ROOT, 1],
+      ] as const) {
+        const count = await page.locator(root).count();
+        expect(
+          count,
+          `axe scope surface '${root}' must exist on ${pageDef.path}`,
+        ).toBeGreaterThanOrEqual(minCount);
+      }
 
-      // --- Run axe over the doc-kitty chrome + content, both modes. ---------------
+      // --- Run axe over the WHOLE page (chrome + content + sidebar + TOC + footer),
+      //     both modes. No narrowing `.include()` — the whole enumerated page is
+      //     the coverage surface. ----------------------------------------------------
       const results = await new AxeBuilder({ page })
-        .include(CHROME_ROOT)
-        .include(CONTENT_ROOT)
         .withTags([...WCAG_TAGS])
         .analyze();
 

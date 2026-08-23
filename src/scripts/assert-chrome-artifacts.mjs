@@ -257,6 +257,15 @@ const BRAND_SHEET_SOURCES = [
   '../themes/spec-kitty/components/brand-components.css',
 ];
 
+// T035.1 reads the brand SOURCE sheet, NOT the concatenated dist. The generated
+// token sheet (emitTokenSheet) ALWAYS re-emits every mode-varying token under the
+// dark selector from theme.ts DEFAULT_DARK, so a dist scan is self-satisfying — it
+// can never catch a BRAND that omits a dark re-declaration. The brand's per-mode
+// colour lives in tokens.css (layered via customCss), so that source sheet is where
+// a missing dark token would actually leak the light value across modes; scope the
+// completeness check there, exactly as the zero-`--sl-*` check already reads source.
+const BRAND_TOKENS_SOURCE = '../themes/spec-kitty/tokens.css';
+
 // --- T046: brand interactive targets (WCAG 2.2 AA, NFR-001) ----------------
 // The brand's interactive target classes named in WP05 T025 (brand-components.css
 // + the SiteFooter organism). axe cannot machine-verify target-size (2.5.8) or a
@@ -278,6 +287,26 @@ const BRAND_INTERACTIVE_TARGETS = [
 const FOOTER_BRAND_MARKER = 'dk-site-footer--brand';
 // A branded published page that renders the footer (the site index).
 const FOOTER_PAGE = 'index.html';
+
+// --- F1 (footer composition) — Starlight article footer must survive ------------
+// The Footer carrier COMPOSES: it renders Starlight's article footer (Pagination /
+// EditLink / LastUpdated) AND the brand `dk:site-footer` band, never one instead of
+// the other. `pagination-links` is Starlight's Pagination wrapper — always emitted
+// on a normal doc page (the div renders even with no prev/next). Asserting it on a
+// content page that ALSO carries the brand footer marker proves the composition:
+// the either/or regression (brand band replaces the article footer) drops
+// `pagination-links` site-wide and flips this red. A content page (under a section,
+// so it has real pagination) is used, not the splash-y root index.
+const ARTICLE_FOOTER_PAGE = HERO_PAGE; // architecture/overview — a real doc page
+const ARTICLE_FOOTER_MARKER = 'pagination-links';
+
+// --- F2 (FR-009 theme site-default share image) ---------------------------------
+// On the branded build, the SITEDEFAULT page's og:image AND twitter:image must
+// derive from the THEME's assets.socialImage (the brand social-card), not the
+// toolkit-shipped social-default. The theme ships an SVG social-card, so the
+// resolved share URL is a hashed `/_astro/…social-card….svg`.
+const THEME_SOCIAL_MARKER = 'social-card';
+const TOOLKIT_DEFAULT_SOCIAL_MARKER = 'social-default';
 
 // ---------------------------------------------------------------------------
 
@@ -324,18 +353,36 @@ function ogImage(html) {
   return m ? m[1] : null;
 }
 
-/** Extract flat CSS rule blocks whose selector list contains `selectorNeedle`.
- * Returns `{ selector, body }[]`. Emitted doc-kitty chrome CSS is flat (no
- * nesting), so a simple non-brace scan is sufficient and lets the AA checks be
- * SCOPED to dk selectors instead of matching any rule in the concatenated CSS
- * (incl. Starlight's own). */
+/** True iff `needle` appears in `selector` as a WHOLE class/selector token — i.e.
+ * the match is not immediately followed by an identifier-continuation char
+ * (`[A-Za-z0-9_-]`). This is the F6 fix: substring matching let a sub-element rule
+ * false-satisfy an interactive-target check (`.dk-related-card` matched
+ * `.dk-related-card__title`), so the ≥24px / focus-ring AA proof could pass on a
+ * child element that isn't the interactive target. The leading `.`/`:` in every
+ * needle already anchors the start, so only the trailing boundary needs guarding. */
+function selectorHasToken(selector, needle) {
+  let from = 0;
+  for (;;) {
+    const idx = selector.indexOf(needle, from);
+    if (idx === -1) return false;
+    const after = selector[idx + needle.length];
+    if (after === undefined || !/[A-Za-z0-9_-]/.test(after)) return true;
+    from = idx + 1;
+  }
+}
+
+/** Extract flat CSS rule blocks whose selector list contains `selectorNeedle` as a
+ * WHOLE token (word-boundary; see `selectorHasToken`). Returns `{ selector, body }[]`.
+ * Emitted doc-kitty chrome CSS is flat (no nesting), so a simple non-brace scan is
+ * sufficient and lets the AA checks be SCOPED to dk selectors instead of matching
+ * any rule in the concatenated CSS (incl. Starlight's own). */
 function ruleBlocksFor(css, selectorNeedle) {
   const blocks = [];
   const re = /([^{}]+)\{([^{}]*)\}/g;
   let m;
   while ((m = re.exec(css)) !== null) {
     const selector = m[1];
-    if (selector.includes(selectorNeedle)) blocks.push({ selector, body: m[2] });
+    if (selectorHasToken(selector, selectorNeedle)) blocks.push({ selector, body: m[2] });
   }
   return blocks;
 }
@@ -501,10 +548,24 @@ export async function assertChromeArtifacts(distDir) {
   if (!socialOg.includes('getting-started-share')) {
     fail(`share image: social page og:image should derive from social_thumb, got ${socialOg}`);
   }
-  if (!siteOg.includes('social-default')) {
-    fail(`share image: site-default page og:image should be the shipped default, got ${siteOg}`);
+  // FR-009 (F2 fix): on the BRANDED build the site-default share image derives from
+  // the THEME's `assets.socialImage` (the brand social-card), NOT the toolkit's
+  // `social-default.png`. A regression that drops the theme socialImage forwarding
+  // (config → manifest → Head → HeadShare) collapses this back to `social-default`
+  // and flips the check red. See also the dedicated §12 assertion below.
+  if (!siteOg.includes('social-card')) {
+    fail(
+      `share image: site-default page og:image should derive from the theme socialImage ` +
+        `(brand social-card), got ${siteOg} — theme socialImage forwarding regressed (FR-009)`,
+    );
   }
-  ok(`share image: three distinct resolved og:image values (hero / social_thumb / site-default)`);
+  if (siteOg.includes('social-default')) {
+    fail(
+      `share image: site-default page og:image is still the toolkit default (${siteOg}) — the ` +
+        `theme socialImage did not override the site-default (FR-009 forwarding not wired)`,
+    );
+  }
+  ok(`share image: three distinct resolved og:image values (hero / social_thumb / theme site-default)`);
 
   // === 4) Four carriers active + token catalog completeness + bridge =========
   // Head carrier attests all four carriers were the ones Starlight rendered.
@@ -727,24 +788,41 @@ export async function assertChromeArtifacts(distDir) {
 
   // === 9) Mode-varying completeness + brand sheets set no --sl-* (FR-011/FR-004) =
   // (T035.1) Each mode-varying colour token must be re-declared under a dark
-  // selector in the emitted CSS: a dropped dark re-declaration would leak the
-  // light value into dark mode. (T035.2) The authored brand sheets must declare
-  // ZERO `--sl-*` — the bridge owns `--sl-*`.
-  const darkBodies = darkBlockBodies(css);
+  // selector in the BRAND SOURCE sheet (tokens.css): a dropped dark re-declaration
+  // there would leak the light value into dark mode. This reads source (not the
+  // dist) BECAUSE the emitter always re-emits the full DEFAULT_DARK set, so a dist
+  // scan is self-satisfying and could never catch a brand's omission (F5 fix).
+  // (T035.2) The authored brand sheets must declare ZERO `--sl-*` — the bridge owns
+  // `--sl-*`.
+  const scriptDir = path.dirname(new URL(import.meta.url).pathname);
+  const brandTokensAbs = path.resolve(scriptDir, BRAND_TOKENS_SOURCE);
+  let brandTokensSource;
+  try {
+    brandTokensSource = await readFile(brandTokensAbs, 'utf8');
+  } catch (err) {
+    fail(`mode-varying: could not read brand tokens sheet ${BRAND_TOKENS_SOURCE} (${err.code ?? err.message})`);
+  }
+  const darkBodies = darkBlockBodies(stripCssComments(brandTokensSource));
   if (darkBodies.length === 0) {
-    fail(`mode-varying: no [data-theme='dark'] selector block found in the emitted CSS (FR-011)`);
+    fail(
+      `mode-varying: no [data-theme='dark'] selector block found in the brand source sheet ` +
+        `${BRAND_TOKENS_SOURCE} (FR-011)`,
+    );
   }
   const darkJoined = darkBodies.join('\n');
   const missingDark = REQUIRED_MODE_VARYING.filter((t) => !darkJoined.includes(`${t}:`));
   if (missingDark.length > 0) {
     fail(
       `mode-varying: ${missingDark.length} mode-varying token(s) not re-declared under a dark ` +
-        `selector: ${missingDark.join(', ')} — the light value would leak into dark mode (FR-011)`,
+        `selector in ${BRAND_TOKENS_SOURCE}: ${missingDark.join(', ')} — the light value would ` +
+        `leak into dark mode (FR-011)`,
     );
   }
-  ok(`mode-varying: all ${REQUIRED_MODE_VARYING.length} mode-varying --dk-* tokens re-declared under dark`);
+  ok(
+    `mode-varying: all ${REQUIRED_MODE_VARYING.length} mode-varying --dk-* tokens re-declared under ` +
+      `dark in ${BRAND_TOKENS_SOURCE}`,
+  );
 
-  const scriptDir = path.dirname(new URL(import.meta.url).pathname);
   for (const rel of BRAND_SHEET_SOURCES) {
     const abs = path.resolve(scriptDir, rel);
     let source;
@@ -815,6 +893,68 @@ export async function assertChromeArtifacts(distDir) {
     );
   }
   ok(`footer override: brand footer marker \`${FOOTER_BRAND_MARKER}\` present on ${FOOTER_PAGE}`);
+
+  // === 12) Footer COMPOSES: article footer survives the brand band (F1) ==========
+  // The brand sets `dk:site-footer`; the Footer carrier must still render
+  // Starlight's ARTICLE footer (Pagination/EditLink/LastUpdated) — never replace it.
+  // Proof: on a content page, `pagination-links` (Starlight's Pagination) AND
+  // `dk-site-footer--brand` (the brand band) BOTH appear. The either/or regression
+  // drops the article footer site-wide and flips this red.
+  const articleFooterHtml = await readHtml(dir, ARTICLE_FOOTER_PAGE);
+  if (!articleFooterHtml.includes(ARTICLE_FOOTER_MARKER)) {
+    fail(
+      `footer compose: Starlight's article-footer marker \`${ARTICLE_FOOTER_MARKER}\` is absent on ` +
+        `${ARTICLE_FOOTER_PAGE} — the brand \`dk:site-footer\` band replaced the article footer ` +
+        `(pagination/edit-link/last-updated dropped site-wide). The Footer carrier must COMPOSE, ` +
+        `not either/or (F1 regression).`,
+    );
+  }
+  if (!articleFooterHtml.includes(FOOTER_BRAND_MARKER)) {
+    fail(
+      `footer compose: the brand band marker \`${FOOTER_BRAND_MARKER}\` is absent on ` +
+        `${ARTICLE_FOOTER_PAGE} — the brand footer did not render alongside the article footer`,
+    );
+  }
+  ok(
+    `footer compose: article footer (\`${ARTICLE_FOOTER_MARKER}\`) AND brand band ` +
+      `(\`${FOOTER_BRAND_MARKER}\`) both present on ${ARTICLE_FOOTER_PAGE} (composition, not either/or)`,
+  );
+
+  // === 13) Site-default share image derives from the THEME socialImage (FR-009) ==
+  // (F2) On the branded build the SITEDEFAULT page's og:image AND twitter:image must
+  // resolve from the theme's assets.socialImage (brand social-card), NOT the toolkit
+  // social-default. Dropping the forwarding (config → manifest → Head → HeadShare)
+  // collapses both back to social-default and flips this red.
+  const siteOgImage = ogImage(siteDefaultHtml);
+  const twMatch = siteDefaultHtml.match(/<meta\s+name="twitter:image"\s+content="([^"]*)"/i);
+  const siteTwitterImage = twMatch ? twMatch[1] : null;
+  if (!siteOgImage) {
+    fail(`theme site-default: og:image absent on ${SITEDEFAULT_PAGE} (FR-009)`);
+  }
+  if (!siteTwitterImage) {
+    fail(`theme site-default: twitter:image absent on ${SITEDEFAULT_PAGE} (FR-009)`);
+  }
+  for (const [label, val] of [
+    ['og:image', siteOgImage],
+    ['twitter:image', siteTwitterImage],
+  ]) {
+    if (!val.includes(THEME_SOCIAL_MARKER)) {
+      fail(
+        `theme site-default: ${label} on ${SITEDEFAULT_PAGE} does not derive from the theme ` +
+          `socialImage (expected a \`${THEME_SOCIAL_MARKER}\` asset), got ${val} — FR-009 forwarding regressed`,
+      );
+    }
+    if (val.includes(TOOLKIT_DEFAULT_SOCIAL_MARKER)) {
+      fail(
+        `theme site-default: ${label} on ${SITEDEFAULT_PAGE} is still the toolkit default ` +
+          `(\`${TOOLKIT_DEFAULT_SOCIAL_MARKER}\`), got ${val} — the theme socialImage did not override it (FR-009)`,
+      );
+    }
+  }
+  ok(
+    `theme site-default: og:image + twitter:image on ${SITEDEFAULT_PAGE} derive from the theme ` +
+      `socialImage (\`${THEME_SOCIAL_MARKER}\`), not the toolkit default (FR-009)`,
+  );
 }
 
 // Standalone entry point: `node src/scripts/assert-chrome-artifacts.mjs <distDir>`.

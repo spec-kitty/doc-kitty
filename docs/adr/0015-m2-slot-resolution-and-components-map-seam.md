@@ -63,8 +63,8 @@ draft) conflates *layout* resolution (genuinely one site) with *slot* resolution
    import site" in the `MarkdownContent` carrier resolves `kind → layout` and
    nothing else. M2 replaces the static `kind-layouts` module with the merged
    manifest **at that one site**, preserving the exact synchronous
-   `resolveLayout(kind): LayoutComponent` signature so the carrier body is
-   byte-unchanged.
+   `resolveLayout(kind): LayoutComponent` signature so the layout-resolution call
+   site is unchanged.
 
 2. **Slots resolve per-carrier, from the same merged manifest.** Each of the four
    carriers reads the merged manifest for the `dk:` slots it hosts and renders the

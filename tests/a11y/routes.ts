@@ -27,8 +27,17 @@ export const AXE_PAGES: ReadonlyArray<{ name: string; path: string }> = [
 // axe tag set — includes wcag22aa (SC-002 / NFR-001).
 export const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] as const;
 
-// Chrome + content roots the doc-kitty toolkit owns. axe is scoped to these so the
-// gate measures this mission's surface (and so an empty/mismatched scope fails the
-// non-vacuity guard rather than reporting a clean zero against nothing).
+// axe runs over the WHOLE enumerated page (no narrowing `.include()`), so every
+// doc-kitty bridge-token surface is covered — not just the header + main, but the
+// sidebar, the TOC, and the footer, where the same `--dk-*→--sl-*` tokens apply
+// (F2 fix: the earlier header.header + main scope missed those regions).
+//
+// These roots drive the NON-VACUITY guard only: before analyzing, each must exist
+// on the page, so a mismatched selector / an un-rendered region fails loudly
+// instead of reporting a clean zero against a page axe never really scanned. The
+// TOC is intentionally NOT guarded — Starlight omits it on pages with no headings,
+// so requiring it would be flaky; axe still covers it wherever it renders.
 export const CHROME_ROOT = 'header.header';
 export const CONTENT_ROOT = 'main';
+export const SIDEBAR_ROOT = 'nav.sidebar';
+export const FOOTER_ROOT = 'footer';

@@ -100,16 +100,20 @@ export const specKittyTheme: DocKittyTheme = {
   // Assets ride Starlight-native `logo`/`favicon` (ADR-0015 decision 5): the header
   // renders logo-in-nav with NO Header/SiteTitle override. doc-kitty carries its
   // OWN mark (self-authored SVG placeholders, not copied from spec-kitty-design).
-  // `fonts` is the declarative asset list; JetBrains Mono actually loads via the
-  // optional Google-Fonts @import in brand.css (brand-sanctioned; mono fallback
-  // covers its absence). No proprietary Falling Sky / Swansea files are shipped.
+  // `socialImage` is the FR-009 site-default share card (forwarded by
+  // defineDocKittyIntegrations → the virtual manifest → the Head carrier).
+  // `fonts` is EMPTY BY CHOICE: the brand ships no remote font URL — a Google-Fonts
+  // request would be non-deterministic for the visual baseline, and JetBrains Mono
+  // is optional (the `--dk-font-mono` fallback stack renders fine, consistent with
+  // the display/sans faces already on fallbacks). The FR-009 forwarding MECHANISM
+  // still exists (defineDocKittyIntegrations turns each `assets.fonts` entry into a
+  // `<link rel="stylesheet">`); a downstream theme that DOES ship font URLs gets
+  // them forwarded. No proprietary Falling Sky / Swansea files are shipped.
   assets: {
     logo: '@commondocs-kitty/toolkit/themes/spec-kitty/assets/logo.svg',
     favicon: '@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg',
     socialImage: '@commondocs-kitty/toolkit/themes/spec-kitty/assets/social-card.svg',
-    fonts: [
-      'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap',
-    ],
+    fonts: [],
   },
 
   // Brand footer organism — WP05 lands it at

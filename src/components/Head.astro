@@ -5,8 +5,10 @@
  * M1 is a thin pass-through: render Starlight's default <head>, then host
  * doc-kitty's own `dk:head` slot (WP03 fills it with the share/social meta —
  * og:image / twitter:image resolved by social_thumb → hero_image.src →
- * site-default). A stable `dk-chrome` marker proves — in the built HTML — that
- * the toolkit carrier loaded (not a silent fallback to Starlight's own Head).
+ * site-default, where the site-default is the theme's `assets.socialImage` when
+ * set, else the toolkit-shipped default — FR-009). A stable `dk-chrome` marker
+ * proves — in the built HTML — that the toolkit carrier loaded (not a silent
+ * fallback to Starlight's own Head).
  *
  * Reads page state from `Astro.locals.starlightRoute` (Starlight ≥0.30
  * route-data API), never through component props (the pre-0.30 pattern) — C-004.
@@ -14,7 +16,7 @@
  */
 import Default from '@astrojs/starlight/components/Head.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
-import { slotComponents } from 'virtual:doc-kitty/manifest';
+import { slotComponents, themeSocialImage } from 'virtual:doc-kitty/manifest';
 import HeadShare from './slots/HeadShare.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
@@ -23,7 +25,9 @@ const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
 // Per-carrier slot resolution (ADR-0015 decision 2): a theme may override
 // `dk:head` through the merged manifest. With no theme `slotComponents` is empty
 // → the doc-kitty default (HeadShare — the FR-009 og:image/twitter:image share
-// path) renders, byte-identical to M1.
+// path) renders. `themeSocialImage` (the theme's `assets.socialImage`, forwarded
+// below) becomes HeadShare's terminal site-default; with no theme it is undefined,
+// so the toolkit default ships (byte-identical to M1).
 const DkHead = slotComponents['dk:head'];
 
 // Convention frontmatter reaches entry.data via docsSchema({ extend }) (WP01);
@@ -55,6 +59,7 @@ const filePath = (entry as unknown as { filePath?: string }).filePath;
       socialThumb={data.social_thumb}
       filePath={filePath}
       title={data.title}
+      siteDefault={themeSocialImage}
     />
   )
 }

@@ -205,6 +205,19 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     ? [THEME_CSS_MODULE_ID, ...resolved.customCss.slice(1)]
     : resolved.customCss;
 
+  // FR-009 font forwarding (MECHANISM, not a brand mandate): each `assets.fonts`
+  // entry a theme declares is forwarded to Starlight's `<head>` as a
+  // `<link rel="stylesheet">`, so a theme that ships a (self-hosted or CDN) font
+  // stylesheet URL gets it loaded on every page. The Spec Kitty brand deliberately
+  // ships NO font URL — a remote @import/link would make the build non-deterministic
+  // for the visual baseline, and its faces render fine on fallback stacks — so this
+  // list is EMPTY there and no font <link> is emitted. The mechanism stays for
+  // downstream themes that DO choose to ship font URLs (self-contained/deterministic
+  // is a brand CHOICE, not a toolkit limitation).
+  const fontHead: NonNullable<StarlightUserConfig['head']> = (assets.fonts ?? []).map(
+    (href) => ({ tag: 'link', attrs: { rel: 'stylesheet', href } }),
+  );
+
   const starlightConfig: StarlightUserConfig = {
     title,
     ...(description ? { description } : {}),
@@ -215,14 +228,16 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // `starlight` escape hatch still wins (spread after these).
     ...(assets.logo ? { logo: { src: assets.logo } } : {}),
     ...(assets.favicon ? { favicon: assets.favicon } : {}),
-    head: discoveryHead,
+    head: [...discoveryHead, ...fontHead],
     customCss,
     ...overrides,
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
-    // four carriers, in EVERY case (with or without a theme). Asserted AFTER
-    // `...overrides` so the escape hatch cannot silently add a fifth carrier
-    // override — a theme addresses the carriers' `dk:` slots, never this map.
-    // WP08 automates this exactly-four invariant.
+    // four carriers, in EVERY case (with or without a theme). The exactly-four
+    // invariant is established HERE by config ordering — `components: carriers` is
+    // applied AFTER `...overrides`, so a consumer's escape hatch cannot silently add
+    // a fifth carrier override (a theme addresses the carriers' `dk:` slots, never
+    // this map). WP08's assertion proves the four are live in the built output; the
+    // ordering below is what makes them the only four.
     components: carriers,
   };
 
