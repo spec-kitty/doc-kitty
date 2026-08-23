@@ -2,7 +2,7 @@
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-23
 type: Architecture
 kind: Reference
 authors:
@@ -11,6 +11,7 @@ tags: [theme, chrome, branding, components, layouts]
 related:
   - adr/0008-swappable-theme-layer
   - adr/0011-theme-slot-surface-and-per-kind-layouts
+  - adr/0015-m2-slot-resolution-and-components-map-seam
   - architecture/metadata-model
 ---
 
@@ -92,12 +93,34 @@ through a merged virtual manifest; they never write a Starlight override directl
 a Starlight rename is a one-file fix in the carriers rather than a break in every
 theme.
 
+**Layouts and slots resolve at different sites** ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md)).
+Layouts resolve at a single site: the `MarkdownContent` carrier reads `entry.data.kind`
+and looks up `kind → layout` in the merged manifest, and nowhere else. Slots resolve
+per-carrier: each of the four carriers reads the merged manifest for the `dk:` slots it
+hosts and renders the theme's component (or doc-kitty's default) at those slot points.
+There is no second single site for slots. Through all of this the Starlight `components`
+map stays exactly the four carriers — a theme never registers a Starlight override, so
+all theme choice flows through the manifest the carriers read.
+
 **Pass-through slots** (a `dk:` name mapped 1:1 onto a Starlight override):
 `dk:head` (Head), `dk:site-header` (Header), `dk:site-title` (SiteTitle),
 `dk:social-links` (SocialIcons), `dk:site-footer` (Footer), `dk:announcement`
 (Banner), `dk:toc` / `dk:toc-mobile` (TableOfContents / MobileTableOfContents),
 `dk:pagination` (Pagination), `dk:last-updated` (LastUpdated), `dk:edit-link`
 (EditLink).
+
+**Sequencing** ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md),
+decision 4). The pass-through slots that map onto **non-carrier** Starlight overrides
+— `dk:site-header` (Header), `dk:site-title` (SiteTitle), `dk:announcement` (Banner),
+`dk:social-links` (SocialIcons), `dk:toc` (TableOfContents), `dk:pagination`
+(Pagination), `dk:last-updated` (LastUpdated), `dk:edit-link` (EditLink) — are
+sequenced past M2. Delivering them as `components` map entries would grow the map beyond
+the four carriers and break the ADR-0013 seam-3 invariant. A later mission registers
+doc-kitty-owned pass-through wrapper components onto those Starlight slots, so the map
+still holds only doc-kitty components. The pass-throughs that target carriers — `dk:head`
+(Head) and `dk:site-footer` (Footer) — and the own-chrome slots below ship in M2. The
+Spec Kitty brand header does not wait for the pass-through surface: it rides
+Starlight-native `logo`/`title` config (see §"Wiring").
 
 **Own-chrome slots** (composed inside the carriers, no native Starlight slot):
 
@@ -143,7 +166,10 @@ Component-level structure and token usage, all specified to WCAG 2.2 AA.
   card (`--dk-width-passport`, `--dk-radius-lg`, `--dk-shadow-lg`) with an accent
   identity strip, the persona name as an `<h1>` in `--dk-font-display`, and a
   label/value grid rendered as a `<dl>` so the field relationships are programmatic.
-  The avatar uses `hero_image.alt`.
+  The avatar uses `hero_image.alt`. **Shipped in M2** as the in-frame passport shell
+  rendering generic frontmatter into the `<dl>` grid. Persona-specific authoring
+  (dedicated persona fields) and the audience block that links personas to pages
+  remain M3.
 - **`Hub` — described link list** (in-frame). A lead paragraph, then a `<nav>` with
   an accessible name wrapping a list of described items (each the related-card
   pattern: title in `--dk-color-text-accent`, the target's own description in
@@ -164,13 +190,15 @@ doc-kitty ships two themes in this repo:
 
 - **Default** — a neutral, complete theme. It sets the whole `--dk-*` catalog so an
   unthemed site looks clean.
-- **Spec Kitty brand** — the first brand theme. It takes its visual style from the
-  `spec-kitty-design` brand guide, but is **self-contained and derived, not
-  imported**: doc-kitty carries its own atomic-design components and `--dk-*` values
-  matching that guide, with no dependency on the `spec-kitty-design` repository. The
-  cost of self-containment is keeping the values in sync by hand if the guide
-  changes; the benefit is that doc-kitty stays standalone (ADR-0011). The full
-  transcribed token mapping and chrome are in
+- **Spec Kitty brand** — the first brand theme, **shipped in M2**. It takes its
+  visual style from the `spec-kitty-design` brand guide, but is **self-contained and
+  derived, not imported**: doc-kitty carries its own atomic-design components and
+  `--dk-*` values matching that guide, with no dependency on the `spec-kitty-design`
+  repository. Both light and dark render at WCAG 2.2 AA — the dark column is
+  transcribed from the guide and the light column is doc-kitty's AA-checked
+  derivation, since the guide ships dark-only. The cost of self-containment is keeping
+  the values in sync by hand if the guide changes; the benefit is that doc-kitty stays
+  standalone (ADR-0011). The full transcribed token mapping and chrome are in
   [the Spec Kitty brand theme](./theming-spec-kitty-brand.md).
 
 ## Wiring
@@ -196,7 +224,13 @@ stylesheet carrying the `--dk-* → --sl-*` bridge. Forward `assets` to Starligh
 `logo`/`favicon` (and `socialImage` to `dk:head`), and `customCss` in precedence
 order. Point Starlight's `components` at doc-kitty's four carriers, and expose
 `slots`/`layouts` through a virtual manifest the carriers read. Starlight's
-`components` map is always doc-kitty's; all theme choice flows through the manifest.
+`components` map is always doc-kitty's four carriers; all theme choice flows through
+the manifest ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md)).
+
+The Spec Kitty brand header rides this `assets` forwarding: its logo-in-nav wordmark
+comes from Starlight-native `logo`/`title` config plus brand CSS, so a branded header
+renders in M2 without a `Header` override that would grow the `components` map past the
+four carriers.
 
 ## Version and risk notes
 
@@ -220,4 +254,6 @@ Verify against the pinned Starlight/Astro at build:
 - [ADR-0008](../adr/0008-swappable-theme-layer.md), the swappable-theme decision.
 - [ADR-0011](../adr/0011-theme-slot-surface-and-per-kind-layouts.md), the slot
   surface and per-kind layout resolution.
+- [ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md), the M2 slot
+  resolution split, pass-through sequencing, and the components-map seam.
 - [Metadata model](./metadata-model.md).
