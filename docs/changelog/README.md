@@ -14,6 +14,7 @@ agent:
 Notable changes to doc-kitty, newest first. The reasoning behind decisions lives in
 the [decision records](../adr/); this log records what changed and when.
 
+- [2026-08-23 — Metadata model and chrome (M1)](./2026-08-23-metadata-model-and-chrome.md)
 - [2026-08-22 — Markdown extensions research](./2026-08-22-markdown-extensions-research.md)
 
 The project's foundational design (the convention, ADRs 0001–0009, the charter, and
