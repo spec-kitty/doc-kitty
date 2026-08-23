@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import { defineDocKittyIntegrations } from '@commondocs-kitty/toolkit/config';
+import { specKittyTheme } from '@commondocs-kitty/toolkit/themes/spec-kitty/index.ts';
 
 // GitHub Pages: set these to your repo. For a project page the site is
 // https://<owner>.github.io and the base is /<repo>. For a user/org page or a
@@ -23,5 +24,6 @@ export default defineConfig({
     social: {
       github: 'https://github.com/OWNER/doc-kitty',
     },
+    theme: specKittyTheme,
   }),
 });
