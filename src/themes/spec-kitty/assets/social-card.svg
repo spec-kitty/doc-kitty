@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="doc-kitty social card">
+  <!--
+    doc-kitty's OWN default social/OG image (WP04, T018). Self-authored placeholder
+    forwarded via assets.socialImage → dk:head. Uses the brand palette (dark paper,
+    yellow scalpel accent). Not copied from spec-kitty-design; no external asset.
+  -->
+  <rect width="1200" height="630" fill="#0D0E11"/>
+  <rect x="0" y="0" width="1200" height="8" fill="#F5C518"/>
+  <g transform="translate(96 235)">
+    <rect x="0" y="0" width="120" height="120" rx="26" fill="#181A1F" stroke="#2B313B" stroke-width="3"/>
+    <rect x="34" y="26" width="52" height="60" rx="8" fill="#0D0E11" stroke="#353C48" stroke-width="4"/>
+    <path d="M44 66 h32 v14 l-16 -8 l-16 8 z" fill="#F5C518"/>
+  </g>
+  <text x="256" y="300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="72" font-weight="800" fill="#FFFFFF">Spec Kitty</text>
+  <text x="258" y="360" font-family="ui-monospace, monospace" font-size="30" letter-spacing="4.5" fill="#A9A9B0">DOCUMENTATION</text>
+</svg>

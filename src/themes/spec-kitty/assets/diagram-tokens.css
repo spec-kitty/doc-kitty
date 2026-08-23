@@ -1,0 +1,21 @@
+/*
+ * Spec Kitty brand — diagram token values (WP04, T018 / brand motif 6).
+ *
+ * doc-kitty's OWN copy of the brand's diagram colour roles for Mermaid / embedded
+ * architecture diagrams — transcribed by hand, NOT `sk-mermaid-theme.yaml` and with
+ * no dependency on `@spec-kitty/*`, a CDN, or the `spec-kitty-design` repo (C-005).
+ *
+ * Carried as `--dk-diagram-*` custom properties so a diagram-rendering surface can
+ * consume them the same way the rest of the chrome consumes `--dk-*`. Not wired
+ * into a renderer in M2 (no diagram theming ships yet); this is the brand's own
+ * value copy, ready for the surface that lands later. Values follow the brand's
+ * "yellow subgraph titles + node borders, blue edges, card-dark fills" motif.
+ */
+:root {
+  --dk-diagram-node-border: #F5C518;      /* yellow node / subgraph borders */
+  --dk-diagram-subgraph-title: #F5C518;   /* yellow subgraph titles */
+  --dk-diagram-edge: #A9C7E8;             /* blue edges / relations */
+  --dk-diagram-node-fill: #181A1F;        /* card-dark node fills */
+  --dk-diagram-node-text: #D6D6DA;        /* body text on node fills */
+  --dk-diagram-cluster-fill: #121317;     /* subgraph / cluster background */
+}
