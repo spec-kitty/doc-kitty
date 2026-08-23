@@ -1,9 +1,10 @@
 ---
 title: Selective/redacted publishing (projection)
 description: "A projection pipeline that publishes a filtered, redacted subset of a private docs tree."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Won't
   rationale: Only needed to publish a filtered subset of a private tree, so it is out of this scope and revisited on demand.

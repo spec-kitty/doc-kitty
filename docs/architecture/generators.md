@@ -1,9 +1,10 @@
 ---
 title: Generators
 description: The four generated surfaces — sitemap.xml, rss.xml, llms.txt, and the JSON agent-API — and their route handlers.
-status: draft
+doc_status: draft
 updated: 2026-08-21
 type: Architecture
+kind: Reference
 tags: [generators, sitemap, rss, llms-txt, agent-api]
 related:
   - architecture/overview

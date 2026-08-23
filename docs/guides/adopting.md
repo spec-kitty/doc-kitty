@@ -1,9 +1,10 @@
 ---
 title: Adopting the toolkit
 description: Bring Doc Kitty into another repository.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Guide
+kind: How-To
 tags: [adoption, setup]
 related:
   - adr/0003-root-docs-and-agent-extension

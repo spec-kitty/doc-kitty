@@ -1,0 +1,117 @@
+---
+/*
+ * dk:head share metadata (WP03 / FR-014).
+ *
+ * Emits the share-card image tags Starlight's default Head omits — `og:image`,
+ * `og:image:alt`, `twitter:image` (+ dimensions) — resolved through the
+ * fallback chain `social_thumb → hero_image.src → shipped site-default asset`.
+ * Starlight's own Head already emits `og:title`, `og:description`,
+ * `twitter:card=summary_large_image`, and the canonical URL, so those are NOT
+ * repeated here (one source per tag, no duplicates).
+ *
+ * The resolved image is emitted as a STABLE ABSOLUTE URL (NFR-003): optimized
+ * assets go through `getImage()` and are absolutised against `Astro.site`, so a
+ * crawler fetches a real, hashed `/_astro/…` file. The site-default asset ships
+ * inside the toolkit (`src/assets/social-default.png`) as the terminal fallback.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import siteDefaultSocial from '../../assets/social-default.png';
+import {
+  resolveColocatedKey,
+  matchGlobKey,
+  isAbsoluteOrRemote,
+} from './image-paths.ts';
+
+interface Props {
+  heroImage?: { src: string; alt: string };
+  socialThumb?: { src: string; alt: string } | string;
+  filePath?: string;
+  /** Page title, used as the fallback alt for a bare-string social_thumb. */
+  title?: string;
+}
+
+const { heroImage, socialThumb, filePath, title } = Astro.props;
+
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  '/docs/**/*.{png,jpg,jpeg,webp,avif,gif}',
+  { eager: true },
+);
+const keys = Object.keys(modules);
+
+function lookup(src: string): ImageMetadata | undefined {
+  const key = matchGlobKey(resolveColocatedKey(src, filePath), keys);
+  return key ? modules[key].default : undefined;
+}
+
+// Resolve the share image through social_thumb → hero_image → site-default.
+// `image` is an asset to optimize; `url` is a verbatim absolute/public URL
+// (a bare-string social_thumb that already points somewhere crawlable).
+let image: ImageMetadata | undefined;
+let literalUrl: string | undefined;
+let alt: string;
+
+if (typeof socialThumb === 'string') {
+  if (isAbsoluteOrRemote(socialThumb)) {
+    literalUrl = socialThumb;
+  } else {
+    image = lookup(socialThumb) ?? siteDefaultSocial;
+  }
+  alt = title ?? 'Share image';
+} else if (socialThumb) {
+  image = lookup(socialThumb.src) ?? siteDefaultSocial;
+  alt = socialThumb.alt;
+} else if (heroImage) {
+  image = lookup(heroImage.src) ?? siteDefaultSocial;
+  alt = heroImage.alt;
+} else {
+  image = siteDefaultSocial;
+  alt = 'Doc Kitty documentation';
+}
+
+const OG_WIDTH = 1200;
+const OG_HEIGHT = 630;
+
+let rawSrc: string | undefined;
+let width: number | undefined;
+let height: number | undefined;
+if (image) {
+  const optimized = await getImage({
+    src: image,
+    width: OG_WIDTH,
+    height: OG_HEIGHT,
+    format: 'png',
+  });
+  rawSrc = optimized.src;
+  width = OG_WIDTH;
+  height = OG_HEIGHT;
+} else if (literalUrl) {
+  rawSrc = literalUrl;
+}
+
+// Absolutise for crawlers: keep an already-absolute http(s) URL verbatim;
+// resolve a site-rooted optimized path against Astro.site.
+let absolute: string | undefined;
+if (rawSrc) {
+  if (/^https?:\/\//.test(rawSrc)) {
+    absolute = rawSrc;
+  } else if (Astro.site) {
+    absolute = new URL(rawSrc, Astro.site).href;
+  } else {
+    absolute = rawSrc;
+  }
+}
+---
+
+{
+  absolute && (
+    <Fragment>
+      <meta property="og:image" content={absolute} />
+      <meta property="og:image:alt" content={alt} />
+      {width && <meta property="og:image:width" content={String(width)} />}
+      {height && <meta property="og:image:height" content={String(height)} />}
+      <meta name="twitter:image" content={absolute} />
+      <meta name="twitter:image:alt" content={alt} />
+    </Fragment>
+  )
+}

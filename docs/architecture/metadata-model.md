@@ -1,9 +1,10 @@
 ---
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
-status: draft
+doc_status: draft
 updated: 2026-08-21
 type: Architecture
+kind: Reference
 authors:
   - stijn@sddevelopment.be
 tags: [metadata, frontmatter, schema]

@@ -1,10 +1,14 @@
 ---
 title: Getting started
 description: Install, run, and see the generated feeds and agent-API.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Guide
+kind: Tutorial
 tags: [setup, getting-started]
+social_thumb:
+  src: ./assets/getting-started-share.png
+  alt: The Getting started guide share card
 related:
   - architecture/overview
 ---

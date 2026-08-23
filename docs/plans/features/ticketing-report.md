@@ -1,9 +1,10 @@
 ---
 title: Ticketing report
 description: "A repository portal report over issue trackers, built on an adaptor layer with GitHub supported first."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Could
   rationale: A repository portal requiring adaptor work, with GitHub first.

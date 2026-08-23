@@ -13,8 +13,7 @@
  * build action (it is deliberately NOT part of the composite, so the WP05
  * deploy can reuse the pure build without inheriting this PR-gate assertion).
  *
- * Assertions target TODAY's example output shape/count (design "Test
- * taxonomy"). The M1 metadata-model chrome is explicitly out of scope (C-010).
+ * Assertions target the example output shape/count (design "Test taxonomy").
  *
  * Zero runtime dependencies: WP01 vendors no XML parser, so XML
  * well-formedness is checked at the string level by a small, honest,
@@ -24,6 +23,10 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+// WP05 out-of-map edit (recorded): the chrome + pagefind assertions live in their
+// own WP05-owned module to keep lane ownership clean; the main gate awaits them so
+// `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
+import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 
 // ---------------------------------------------------------------------------
 // Pinned expectations for today's example content (T015).
@@ -35,17 +38,27 @@ import process from 'node:process';
 // EXPECTED_INDEX_ENTRY_COUNT is pinned, not hand-waved. Cross-check (authoring
 // time), so a wrong build cannot silently lock in a wrong baseline:
 //   - example/docs holds 13 Markdown content files (README-as-index + pages);
-//   - exactly one is a draft — example/docs/adr/template.md (status: draft),
+//   - exactly one is a draft — example/docs/adr/template.md (doc_status: draft),
 //     which `isPublished()` excludes from the agent index;
 //   - 13 − 1 = 12 published, discoverable pages.
 // Independently verified against example/docs at authoring time: counting
-// non-draft *.md there yields 12, matching the emitted `count`. (The sitemap
-// reports 13 locs because @astrojs/sitemap crawls built HTML, including the
-// draft template page — so the sitemap is NOT the clean cross-check; the
-// published-Markdown count is.)
+// non-draft *.md there yields 12, matching the emitted `count`.
+//
+// Sitemap parity (WP02/T016): the @astrojs/sitemap `filter` now DROPS every
+// draft page's URL (INV-1), so the sitemap's page-URL count equals this same
+// published set — 12 — and the single draft page (adr/template) is absent from
+// it. Rationale for editing this WP01-owned file here: the filter and the
+// assertion that proves it must land together, or the boundary goes red (C-010).
 //
 // Bump this ONLY as a deliberate, reviewable act when example content changes.
 const EXPECTED_INDEX_ENTRY_COUNT = 12;
+
+// Sitemap page-URL count == the published set (draft excluded by the filter).
+const EXPECTED_SITEMAP_URL_COUNT = 12;
+
+// The single draft page (example/docs/adr/template.md, doc_status: draft). Its
+// route MUST NOT appear in the sitemap once the draft filter is in place.
+const DRAFT_ROUTE_MARKER = 'adr/template';
 
 // Required top-level keys of the agent index and their JS types.
 const EXPECTED_INDEX_SHAPE = {
@@ -56,8 +69,9 @@ const EXPECTED_INDEX_SHAPE = {
   pages: 'array',
 };
 
-// Required keys on each entry in `pages[]`.
-const EXPECTED_PAGE_KEYS = ['slug', 'route', 'section', 'title'];
+// Required keys on each entry in `pages[]` (each a string). `doc_status` and
+// `kind` land with the finalized metadata contract (ADR-0009 / C-010).
+const EXPECTED_PAGE_KEYS = ['slug', 'route', 'section', 'title', 'doc_status', 'kind'];
 
 // README-as-index proof: a section's README.md served at its directory route.
 // The ADR section's README H1 is "Decision Records"; it must appear in the HTML
@@ -220,6 +234,8 @@ async function main() {
   if (sitemaps.length === 0) {
     fail('sitemap: no sitemap*.xml file found at the dist root');
   }
+  let sitemapUrlCount = 0;
+  let draftSeenIn = null;
   for (const name of sitemaps) {
     const abs = path.join(distDir, name);
     await assertNonEmptyFile(abs, `sitemap ${name}`);
@@ -229,8 +245,29 @@ async function main() {
     } catch (err) {
       fail(`sitemap ${name}: not well-formed XML (${err.message})`);
     }
+    // Count page URLs only: page entries are <url>…</url>; the sitemap index
+    // uses <sitemap>…</sitemap>, so <url> never over-counts sub-sitemap refs.
+    sitemapUrlCount += (xml.match(/<url\b/g) ?? []).length;
+    if (xml.includes(DRAFT_ROUTE_MARKER)) draftSeenIn = name;
   }
   ok(`sitemap: ${sitemaps.length} file(s) present, non-empty, well-formed (${sitemaps.join(', ')})`);
+
+  // Draft-exclusion (INV-1 / WP02 filter): the draft route must be absent and
+  // the page-URL count must equal the published set.
+  if (draftSeenIn !== null) {
+    fail(
+      `sitemap: draft route "${DRAFT_ROUTE_MARKER}" is present in ${draftSeenIn} — ` +
+        `the @astrojs/sitemap draft filter must exclude every doc_status:draft page`,
+    );
+  }
+  if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
+    fail(
+      `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
+        `(the published set — 13 example files − 1 draft; if example content changed ` +
+        `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
+    );
+  }
+  ok(`sitemap: draft "${DRAFT_ROUTE_MARKER}" absent, ${sitemapUrlCount} page URL(s) (published set)`);
 
   // 2) rss.xml — present, well-formed.
   const rssAbs = path.join(distDir, 'rss.xml');
@@ -313,6 +350,10 @@ async function main() {
     fail(`known page: ${KNOWN_PAGE_RELPATH} does not look like a rendered HTML document`);
   }
   ok(`known page: ${KNOWN_PAGE_RELPATH} rendered to HTML`);
+
+  // 7) Chrome + pagefind assertions (WP05-owned module). Fails non-zero on the
+  // first stubbed/missing chrome element, same contract as the checks above.
+  await assertChromeArtifacts(distDir);
 
   process.stdout.write(`assert:artifacts: PASS — all build artifacts present and valid in ${distDir}\n`);
 }

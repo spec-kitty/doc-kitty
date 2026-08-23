@@ -1,9 +1,10 @@
 ---
 title: Example content from ars-rethorica
 description: "Convert an open-license Markua book into realistic docsite example content; the book/document pipeline is out of scope."
-status: active
+doc_status: active
 updated: 2026-08-22
 type: Architecture
+kind: Explanation
 tags: [markua, example, content, leanpub]
 related:
   - architecture/research/markua-syntax-support

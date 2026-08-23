@@ -1,9 +1,10 @@
 ---
 title: "ADR-0002: README-as-index (with frontmatter)"
 description: Use README.md as the section index, and give it frontmatter.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: ADR
+kind: ADR
 authors:
   - stijn@sddevelopment.be
 related:

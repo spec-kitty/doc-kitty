@@ -1,9 +1,10 @@
 ---
 title: Common Docs rendering (README-as-index)
 description: "Render the docs/ tree as a site, using each folder's README.md as its section index page."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Must
   rationale: The base of the toolkit; a docsite that does not render the tree is nothing.

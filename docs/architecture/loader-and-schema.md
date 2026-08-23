@@ -1,9 +1,10 @@
 ---
 title: Loader and schema
 description: How the toolkit reads repo-root docs/, rewrites README-as-index to a section slug, and validates frontmatter.
-status: draft
+doc_status: draft
 updated: 2026-08-21
 type: Architecture
+kind: Reference
 tags: [loader, schema, astro]
 related:
   - architecture/overview

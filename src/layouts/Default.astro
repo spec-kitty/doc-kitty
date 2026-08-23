@@ -1,0 +1,18 @@
+---
+/*
+ * Doc Kitty layout: Default (ADR-0013 single-layer substrate).
+ *
+ * The prose passthrough every `kind` resolves to in M1. It renders its slot
+ * unchanged, keeping the content inside Starlight's normal (searchable) flow
+ * (NFR-004) — no wrapper that would break Starlight's `.sl-markdown-content`
+ * selectors or Pagefind's `data-pagefind-body` region. WP04 adds bespoke
+ * per-kind layouts (e.g. `Hub`) registered in `kind-layouts.ts`; those wrap the
+ * content with their own structure but must preserve the same searchable-flow
+ * guarantee.
+ *
+ * Rendered by the `MarkdownContent` carrier, which forwards the Starlight route
+ * data as props. This layout needs none of it in M1, so it stays a pure slot.
+ */
+---
+
+<slot />

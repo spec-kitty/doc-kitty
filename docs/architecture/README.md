@@ -1,9 +1,10 @@
 ---
 title: Architecture
 description: "How the toolkit turns a Common Docs tree into a site plus feeds and an agent-API: the current design."
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Architecture
+kind: Hub
 agent:
   priority: 0.8
 ---

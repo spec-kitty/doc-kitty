@@ -4,3 +4,13 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
+# Hoist Astro's already-locked `sharp` image service (and its `@img/*` platform
+# binaries) to the workspace-root node_modules so the optimized-image pipeline
+# can resolve `sharp` from the `example` build. pnpm's strict linking otherwise
+# leaves this transitive optionalDependency of `astro` unresolvable from
+# `example`, which fails the build the moment a page uses an optimized image
+# (WP03 hero / share cards). No new dependency is added — `sharp` is already in
+# the lockfile; this only changes where it is linked.
+publicHoistPattern:
+  - "*sharp*"
+  - "@img/*"

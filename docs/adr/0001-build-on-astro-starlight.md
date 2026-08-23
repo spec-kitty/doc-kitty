@@ -1,9 +1,10 @@
 ---
 title: "ADR-0001: Build on Astro + Starlight"
 description: Chosen rendering stack for the toolkit.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: ADR
+kind: ADR
 authors:
   - stijn@sddevelopment.be
 ---

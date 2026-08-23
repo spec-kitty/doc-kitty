@@ -29,9 +29,10 @@
  */
 import { readdirSync, statSync, existsSync, readFileSync } from 'node:fs';
 import { join, relative, dirname, resolve, extname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 
-const EXTERNAL = /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|mailto:|tel:)/i;
+export const EXTERNAL = /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|mailto:|tel:)/i;
 const MD_EXT = /\.mdx?$/i;
 // Inline links `](target)` and `](target "title")`; also image links `![]()`,
 // which are filtered out later by extension (assets are out of scope).
@@ -73,7 +74,7 @@ function walk(dir) {
  * A route target may name a directory (its section index) or an extension-less
  * path; try the README-as-index and `.md`/`.mdx` forms.
  */
-function resolvesToDoc(candidate) {
+export function resolvesToDoc(candidate) {
   if (existsSync(candidate)) {
     // A directory is a route → require it exist (section index optional here;
     // frontmatter gate already checks any README it holds).
@@ -88,8 +89,36 @@ function resolvesToDoc(candidate) {
 }
 
 /** Strip a trailing `#anchor` / `?query` from a link target. */
-function stripFragment(target) {
+export function stripFragment(target) {
   return target.replace(/[?#].*$/, '');
+}
+
+/**
+ * Extract the resolvable ref string from one `related` entry — a bare slug or
+ * an object `{ ref, note }` (ADR-0009). Returns null for a non-string / missing
+ * ref (a shape the frontmatter validator, not this gate, rejects).
+ */
+export function relatedRefString(entry) {
+  const ref = typeof entry === 'string' ? entry : entry?.ref;
+  return typeof ref === 'string' ? ref : null;
+}
+
+/**
+ * Given a docs root and a page's parsed frontmatter, return the internal
+ * `related` refs that do not resolve to an existing doc/route.
+ */
+export function collectDanglingRelated(root, data) {
+  const dangling = [];
+  const related = data?.related;
+  if (!Array.isArray(related)) return dangling;
+  for (const entry of related) {
+    const ref = relatedRefString(entry);
+    if (ref === null) continue;
+    const id = stripFragment(ref.trim());
+    if (!id || EXTERNAL.test(ref.trim())) continue;
+    if (!resolvesToDoc(resolve(root, id))) dangling.push(ref);
+  }
+  return dangling;
 }
 
 /**
@@ -108,81 +137,91 @@ function docLinkTarget(rawTarget) {
   return target;
 }
 
-const roots = process.argv.slice(2);
-if (roots.length === 0) roots.push('docs', 'example/docs');
+/** CLI entry point: scan every `.md`/`.mdx` under each root for dangling refs. */
+export function run(argv) {
+  const roots = argv.slice(2);
+  if (roots.length === 0) roots.push('docs', 'example/docs');
 
-let dangling = 0;
-let checked = 0;
-let fileCount = 0;
+  let dangling = 0;
+  let checked = 0;
+  let fileCount = 0;
 
-for (const root of roots) {
-  let files;
-  try {
-    files = walk(root);
-  } catch (err) {
-    console.error(`✖ cannot read docs dir "${root}": ${err.message}`);
-    process.exit(2);
-  }
-  fileCount += files.length;
-
-  for (const file of files) {
-    const rel = relative('.', file);
-    const raw = readFileSync(file, 'utf8');
-
-    let parsed;
+  for (const root of roots) {
+    let files;
     try {
-      parsed = matter(raw);
-    } catch {
-      // A broken frontmatter block is the frontmatter gate's problem, not ours;
-      // scan the raw body for links so we still catch dangling links.
-      parsed = { data: {}, content: raw };
+      files = walk(root);
+    } catch (err) {
+      console.error(`✖ cannot read docs dir "${root}": ${err.message}`);
+      process.exit(2);
     }
+    fileCount += files.length;
 
-    // Template docs carry copy-me placeholder refs (`XXXX-title.md`, …) by
-    // design; their links/refs are scaffolding, not real targets.
-    const isTemplate =
-      parsed.data?.type === 'Template' || /(^|\/)template\.md$/i.test(rel);
-    if (isTemplate) continue;
+    for (const file of files) {
+      const rel = relative('.', file);
+      const raw = readFileSync(file, 'utf8');
 
-    // 1) Inline Markdown links in the body (code stripped so examples aren't links).
-    const body = stripCode(parsed.content);
-    let m;
-    INLINE_LINK.lastIndex = 0;
-    while ((m = INLINE_LINK.exec(body)) !== null) {
-      const target = docLinkTarget(m[1]);
-      if (target === null) continue;
-      checked++;
-      const candidate = resolve(dirname(file), target);
-      if (!resolvesToDoc(candidate)) {
-        dangling++;
-        console.error(`✖ ${rel}: dangling link → ${m[1]}`);
+      let parsed;
+      try {
+        parsed = matter(raw);
+      } catch {
+        // A broken frontmatter block is the frontmatter gate's problem, not ours;
+        // scan the raw body for links so we still catch dangling links.
+        parsed = { data: {}, content: raw };
       }
-    }
 
-    // 2) `related:` frontmatter refs — docs-root-relative ids, no extension.
-    const related = parsed.data?.related;
-    if (Array.isArray(related)) {
-      for (const ref of related) {
-        if (typeof ref !== 'string') continue;
-        const id = stripFragment(ref.trim());
-        if (!id || EXTERNAL.test(ref.trim())) continue;
+      // Template docs carry copy-me placeholder refs (`XXXX-title.md`, …) by
+      // design; their links/refs are scaffolding, not real targets.
+      const isTemplate =
+        parsed.data?.type === 'Template' || /(^|\/)template\.md$/i.test(rel);
+      if (isTemplate) continue;
+
+      // 1) Inline Markdown links in the body (code stripped so examples aren't links).
+      const body = stripCode(parsed.content);
+      let m;
+      INLINE_LINK.lastIndex = 0;
+      while ((m = INLINE_LINK.exec(body)) !== null) {
+        const target = docLinkTarget(m[1]);
+        if (target === null) continue;
         checked++;
-        const candidate = resolve(root, id);
+        const candidate = resolve(dirname(file), target);
         if (!resolvesToDoc(candidate)) {
           dangling++;
-          console.error(`✖ ${rel}: dangling related ref → ${ref}`);
+          console.error(`✖ ${rel}: dangling link → ${m[1]}`);
+        }
+      }
+
+      // 2) `related:` frontmatter refs — docs-root-relative ids, no extension.
+      // An entry is a bare slug or an object `{ ref, note }` (ADR-0009); both
+      // forms resolve, and a dangling object-form ref is an error too.
+      const related = parsed.data?.related;
+      if (Array.isArray(related)) {
+        for (const entry of related) {
+          const ref = relatedRefString(entry);
+          if (ref === null) continue;
+          const id = stripFragment(ref.trim());
+          if (!id || EXTERNAL.test(ref.trim())) continue;
+          checked++;
+          if (!resolvesToDoc(resolve(root, id))) {
+            dangling++;
+            console.error(`✖ ${rel}: dangling related ref → ${ref}`);
+          }
         }
       }
     }
   }
+
+  if (dangling) {
+    console.error(
+      `\n${dangling} dangling reference(s) across ${fileCount} file(s) (${checked} checked).`,
+    );
+    process.exit(1);
+  }
+  console.log(
+    `✓ ${checked} internal reference(s) resolve across ${fileCount} file(s) in ${roots.length} root(s): ${roots.join(', ')}.`,
+  );
 }
 
-if (dangling) {
-  console.error(
-    `\n${dangling} dangling reference(s) across ${fileCount} file(s) (${checked} checked).`,
-  );
-  process.exit(1);
+// Run the CLI only when invoked directly, so the module can be imported by tests.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  run(process.argv);
 }
-console.log(
-  `✓ ${checked} internal reference(s) resolve across ${fileCount} file(s) in ${roots.length} root(s): ${roots.join(', ')}.`,
-);

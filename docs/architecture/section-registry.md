@@ -1,7 +1,7 @@
 ---
 title: Section registry
 description: "The docs/_meta/sections.yaml schema: how sections are labelled, ordered, typed, and filtered into the generated surfaces."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Architecture
 kind: Reference

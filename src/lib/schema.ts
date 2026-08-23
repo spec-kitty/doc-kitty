@@ -32,7 +32,40 @@ export const DOC_TYPES = [
   'Runbook',
   'Migration',
   'Changelog',
+  'Presentation',
 ] as const;
+
+/**
+ * The canonical `kind` vocabulary (ADR-0009): the four Divio content quadrants
+ * plus the structural kinds. Open vocabulary — the site schema accepts any
+ * string; the standalone validator warns on a value outside this set. Exported
+ * for reuse by the per-kind layout map (WP02).
+ */
+export const KINDS = [
+  'Tutorial',
+  'How-To',
+  'Reference',
+  'Explanation',
+  'Hub',
+  'ADR',
+  'Changelog',
+  'Glossary',
+  'Presentation',
+  'Persona',
+  'Planning',
+  'Feature',
+  'User-Journey',
+] as const;
+
+export type Kind = (typeof KINDS)[number];
+
+/**
+ * Description upper bound (chars). Mirrors `DESCRIPTION_MAX` in
+ * `src/scripts/validate-frontmatter.mjs`; the schema/validator parity test
+ * (`src/tests/schema-validator-parity.test.ts`) fails if the two ever disagree
+ * on the `err/description-too-long.md` fixture, binding this value to the gate.
+ */
+export const DESCRIPTION_MAX = 180;
 
 const agentHints = z
   .object({
@@ -45,27 +78,73 @@ const agentHints = z
 /**
  * The Common Docs — Kitty Variation frontmatter fields, layered on Starlight's.
  *
- * Required by the convention: `title`, `description`, `status`, `updated`,
- * `type`. To keep partially-scaffolded stubs from breaking the build, `status`
- * defaults to `draft` and `updated`/`type` are lenient here; the standalone
- * `validate-frontmatter.mjs` gate enforces strict presence by path (e.g. the
- * bundle-root `README.md` is exempt from `type` and carries `okf_version`).
+ * Required by the convention: `title`, `description`, `doc_status`, `updated`,
+ * `type`, `kind`. To keep partially-scaffolded stubs from breaking the build,
+ * `doc_status` defaults to `draft` and `updated`/`type`/`kind` are lenient
+ * here; the standalone `validate-frontmatter.mjs` gate enforces strict presence
+ * by path (e.g. the bundle-root `README.md` is exempt from `type` and carries
+ * `okf_version`, but still requires `doc_status` and `kind`).
  */
 export const docKittyFields = {
   // `title` and `description` come from Starlight's own schema; description is
-  // re-declared required to match the convention.
-  description: z.string(),
-  status: z
+  // re-declared required to match the convention, with the same >180 upper bound
+  // the standalone validator enforces (parity test guards the two agree).
+  description: z.string().max(DESCRIPTION_MAX),
+  doc_status: z
     .enum(['draft', 'active', 'deprecated', 'superseded'])
     .default('draft'),
   updated: z.coerce.date().optional(),
-  type: z.enum(DOC_TYPES).optional(),
+  // Open vocabulary (FR-003): a non-canonical `type` is ADVISORY, not a build
+  // failure — the site schema accepts any string; the standalone validator warns
+  // on a value outside DOC_TYPES (which stays exported for that warn check).
+  type: z.string().optional(),
+  // Open vocabulary (ADR-0009): site schema is permissive, the standalone
+  // validator warns on a value outside `KINDS`.
+  kind: z.string().optional(),
   // Bundle-root README only.
   okf_version: z.string().optional(),
   authors: z.array(z.string()).optional(),
-  related: z.array(z.string()).optional(),
+  // A related ref is a bare slug or `{ ref, note? }` (ADR-0009). Ref integrity
+  // is enforced by the build and `check-links.mjs`, not by shape here.
+  related: z
+    .array(
+      z.union([
+        z.string(),
+        z.object({ ref: z.string(), note: z.string().optional() }),
+      ]),
+    )
+    .optional(),
+  external_references: z
+    .array(
+      z.union([
+        z.object({
+          url: z.string(),
+          title: z.string(),
+          note: z.string().optional(),
+        }),
+        z.object({ type: z.string(), id: z.string() }),
+      ]),
+    )
+    .optional(),
+  audience: z
+    .array(z.object({ profile: z.string(), guidance_text: z.string() }))
+    .optional(),
+  moscow: z
+    .object({
+      level: z.enum(['Must', 'Should', 'Could', "Won't"]),
+      rationale: z.string(),
+    })
+    .optional(),
+  // Page hero + default social image; `alt` is required for accessibility.
+  hero_image: z.object({ src: z.string(), alt: z.string() }).optional(),
+  social_thumb: z
+    .union([z.object({ src: z.string(), alt: z.string() }), z.string()])
+    .optional(),
   tags: z.array(z.string()).optional(),
-  resource: z.string().url().optional(),
+  // Plain string (not `.url()`): aligned with the standalone validator (the
+  // doc-sanity gate), so a non-URL `resource` does not pass validate but fail
+  // the build. Parity test guards this alignment going forward.
+  resource: z.string().optional(),
   generated: z
     .object({ by: z.string(), at: z.string() })
     .optional(),
@@ -73,7 +152,7 @@ export const docKittyFields = {
     .array(z.object({ by: z.string(), at: z.string() }))
     .optional(),
   sources: z
-    .array(z.object({ resource: z.string().url(), title: z.string() }))
+    .array(z.object({ resource: z.string(), title: z.string() }))
     .optional(),
   stale_after: z.coerce.date().optional(),
   // Kitty extension.

@@ -1,9 +1,10 @@
 ---
 title: What Doc Kitty solves for
 description: "The four outcomes Doc Kitty is built for: structure, maintainability, agent interoperability, and flexibility."
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Context
+kind: Explanation
 tags: [motivation, goals]
 ---
 

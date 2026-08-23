@@ -1,0 +1,66 @@
+---
+/*
+ * dk:page-hero slot body (WP03 / FR-012).
+ *
+ * Renders `entry.data.hero_image {src, alt}` above the <h1> through Astro's
+ * optimized image pipeline, so the emitted <img> carries a hashed `/_astro/…`
+ * src + `srcset` (NFR-003) and the required alt text (NFR-001). When the page
+ * sets no `hero_image`, or its `src` cannot be resolved to a colocated asset,
+ * this renders nothing.
+ *
+ * The consuming site's docs tree is globbed with a project-root-absolute pattern
+ * (`/docs/**`), so the lookup resolves against the CONSUMER's project — correct
+ * whether the toolkit runs from this workspace or is installed as a dependency.
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { resolveColocatedKey, matchGlobKey } from './image-paths.ts';
+
+interface Props {
+  heroImage?: { src: string; alt: string };
+  /** entry.filePath — the page path relative to the site root. */
+  filePath?: string;
+}
+
+const { heroImage, filePath } = Astro.props;
+
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  '/docs/**/*.{png,jpg,jpeg,webp,avif,gif}',
+  { eager: true },
+);
+const keys = Object.keys(modules);
+const matchedKey = heroImage
+  ? matchGlobKey(resolveColocatedKey(heroImage.src, filePath), keys)
+  : null;
+const image = matchedKey ? modules[matchedKey].default : undefined;
+---
+
+{
+  heroImage && image && (
+    <figure class="dk-hero">
+      <Image
+        class="dk-hero__img"
+        src={image}
+        alt={heroImage.alt}
+        widths={[480, 800, 1200]}
+        sizes="(max-width: 50rem) 100vw, 50rem"
+        loading="eager"
+      />
+    </figure>
+  )
+}
+
+<style>
+  .dk-hero {
+    margin: 0 0 var(--dk-space-lg);
+    max-width: var(--dk-width-band);
+  }
+  .dk-hero__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--dk-color-border);
+    border-radius: var(--dk-radius-lg);
+    box-shadow: var(--dk-shadow-md);
+  }
+</style>

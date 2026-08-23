@@ -1,9 +1,10 @@
 ---
 title: Starlight integration
 description: How defineDocKittyIntegrations wires Starlight, the sitemap preset, the feed and agent-API head links, and theming.
-status: draft
+doc_status: draft
 updated: 2026-08-21
 type: Architecture
+kind: Reference
 tags: [starlight, astro, integration]
 related:
   - architecture/overview

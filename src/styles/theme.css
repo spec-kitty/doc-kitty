@@ -1,14 +1,214 @@
-/* Doc Kitty theme overrides on top of Starlight's defaults.
-   Kept intentionally minimal — a neutral, high-contrast accent that reads well
-   for long-form docs. Tune the accent hues to taste. */
+/*
+ * Doc Kitty — the complete neutral Default token catalog + the `--dk-* → --sl-*`
+ * bridge (ADR-0013 single-layer substrate; theming.md "The token catalog").
+ *
+ * This is the ONE layer that must be complete: an unthemed site is fully styled
+ * from these values alone. Themes/consumers (M2) override `--dk-*` only; the
+ * bridge below copies each `--dk-*` into the `--sl-*` variable it drives, so a
+ * Starlight rename is a one-file fix here, not a break in every theme.
+ *
+ * Cascade (C-007, tokens-before-overrides): this sheet is loaded FIRST in
+ * `customCss` and, being user CSS, Starlight loads it last of all — so it wins
+ * over Starlight's built-in `--sl-*` defaults. M2 appends brand/consumer sheets
+ * AFTER this one in the array; they win by source order.
+ *
+ * Specificity note: Starlight is DARK-FIRST — its base `--sl-*` live under
+ * `:root` (specificity 0,1,0) and its LIGHT values under `:root[data-theme=
+ * 'light']` (0,2,0). A bridge written at plain `:root` would lose to Starlight's
+ * light block in light mode. The bridge is therefore written at `:root:root`
+ * (0,2,0), which always matches and — loaded last — beats Starlight's light
+ * block by source order, so the bridge wins in BOTH modes. Only the mode-varying
+ * COLOUR `--dk-*` tokens are redeclared under the dark selector; type, spacing,
+ * radius, widths, and shadow geometry are declared once.
+ *
+ * Colour choices: every state `text`/`-bg` pair and the accent/text pairs are
+ * picked to clear WCAG 2.2 AA (≥4.5:1 for body text; pills/large text ≥3:1) by
+ * construction, in both modes — the basis WP04's AA check relies on.
+ */
+
 :root {
-  --sl-color-accent-low: #dff0e8;
-  --sl-color-accent: #1f9e6a;
-  --sl-color-accent-high: #0d5c3c;
+  /* ---- Type: families (once) ------------------------------------------- */
+  --dk-font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --dk-font-mono:
+    ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  --dk-font-display: var(--dk-font-sans);
+
+  /* ---- Type: modular scale (once) -------------------------------------- */
+  --dk-text-2xs: 0.6875rem;
+  --dk-text-xs: 0.75rem;
+  --dk-text-sm: 0.875rem;
+  --dk-text-base: 1rem;
+  --dk-text-lg: 1.125rem;
+  --dk-text-xl: 1.25rem;
+  --dk-text-2xl: 1.5rem;
+  --dk-text-3xl: 1.875rem;
+  --dk-text-4xl: 2.25rem;
+
+  /* ---- Type: leading, weights, caps tracking (once) -------------------- */
+  --dk-leading-tight: 1.2;
+  --dk-leading-normal: 1.5;
+  --dk-leading-relaxed: 1.7;
+  --dk-weight-normal: 400;
+  --dk-weight-medium: 500;
+  --dk-weight-semibold: 600;
+  --dk-weight-bold: 700;
+  --dk-tracking-caps: 0.06em;
+
+  /* ---- Spacing: 4px ramp (once) ---------------------------------------- */
+  --dk-space-3xs: 0.125rem; /* 2px  */
+  --dk-space-2xs: 0.25rem; /* 4px  */
+  --dk-space-xs: 0.5rem; /* 8px  */
+  --dk-space-sm: 0.75rem; /* 12px */
+  --dk-space-md: 1rem; /* 16px */
+  --dk-space-lg: 1.5rem; /* 24px */
+  --dk-space-xl: 2rem; /* 32px */
+  --dk-space-2xl: 3rem; /* 48px */
+
+  /* ---- Radius (once) --------------------------------------------------- */
+  --dk-radius-sm: 0.25rem;
+  --dk-radius-md: 0.5rem;
+  --dk-radius-lg: 0.875rem;
+  --dk-radius-pill: 999px;
+
+  /* ---- Elevation: geometry once; neutral translucent ink works in both
+         modes (focus ring keys off the accent-low token, so it follows mode) - */
+  --dk-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
+  --dk-shadow-md: 0 2px 4px rgba(16, 24, 40, 0.06), 0 4px 8px rgba(16, 24, 40, 0.1);
+  --dk-shadow-lg: 0 4px 8px rgba(16, 24, 40, 0.08), 0 12px 24px rgba(16, 24, 40, 0.12);
+  --dk-shadow-focus: 0 0 0 3px var(--dk-color-accent-low);
+
+  /* ---- Layout widths (once) -------------------------------------------- */
+  --dk-width-content: 45rem;
+  --dk-width-sidebar: 18rem;
+  --dk-width-band: 50rem;
+  --dk-width-deck: 60rem;
+  --dk-width-passport: 32rem;
+
+  /* ===== Mode-varying COLOUR tokens — LIGHT (default) ==================== */
+
+  /* Surfaces */
+  --dk-color-bg: #ffffff;
+  --dk-color-bg-nav: #f7f8fa;
+  --dk-color-bg-sidebar: #f2f4f7;
+  --dk-color-surface-1: #f7f8fa;
+  --dk-color-surface-2: #eceef2;
+  --dk-color-surface-inset: #e4e7ec;
+  --dk-color-border: #d0d5dd;
+  --dk-color-border-strong: #98a2b3;
+
+  /* Text (on --dk-color-bg #fff: text ~9:1, strong ~17:1, muted ~6.5:1 — AA) */
+  --dk-color-text: #3a4149;
+  --dk-color-text-strong: #101828;
+  --dk-color-text-muted: #5a6069;
+  --dk-color-text-accent: var(--dk-color-accent-text);
+  --dk-color-text-invert: #ffffff;
+
+  /* Accent (accent-text #1d3d94 on #fff ~9:1 — AA for link/title text) */
+  --dk-color-accent-low: #e7effb;
+  --dk-color-accent: #3159c4;
+  --dk-color-accent-high: #1d3d94;
+  --dk-color-accent-text: #1d3d94;
+
+  /* State + paired -bg tint. Each fg on its -bg clears AA (≥4.5:1) by
+     construction: dark saturated fg on a very light (L>92%) tint. */
+  --dk-color-info: #14539e;
+  --dk-color-info-bg: #e8f1fb;
+  --dk-color-success: #146c3a;
+  --dk-color-success-bg: #e4f4ea;
+  --dk-color-warning: #8a4b00;
+  --dk-color-warning-bg: #fbecd2;
+  --dk-color-danger: #b42318;
+  --dk-color-danger-bg: #fbe9e7;
+  --dk-color-neutral: #3f4650;
+  --dk-color-neutral-bg: #eceef2;
 }
 
+/* ===== Mode-varying COLOUR tokens — DARK override ======================= */
 :root[data-theme='dark'] {
-  --sl-color-accent-low: #0d2a1e;
-  --sl-color-accent: #34c98a;
-  --sl-color-accent-high: #b6f0d5;
+  /* Surfaces */
+  --dk-color-bg: #131721;
+  --dk-color-bg-nav: #171c28;
+  --dk-color-bg-sidebar: #10141d;
+  --dk-color-surface-1: #1b212e;
+  --dk-color-surface-2: #232b3a;
+  --dk-color-surface-inset: #0d111a;
+  --dk-color-border: #2a3342;
+  --dk-color-border-strong: #3d4859;
+
+  /* Text (light fg on dark bg — AA) */
+  --dk-color-text: #c4cbd6;
+  --dk-color-text-strong: #f2f4f8;
+  --dk-color-text-muted: #9aa3b2;
+  --dk-color-text-invert: #131721;
+
+  /* Accent (accent-text #a9c2f7 on dark surface — AA) */
+  --dk-color-accent-low: #16233f;
+  --dk-color-accent: #7aa0f2;
+  --dk-color-accent-high: #cddbf9;
+  --dk-color-accent-text: #a9c2f7;
+
+  /* State + paired -bg tint (light fg on dark tint — AA by construction) */
+  --dk-color-info: #9cc3f5;
+  --dk-color-info-bg: #16273f;
+  --dk-color-success: #7fd6a3;
+  --dk-color-success-bg: #14301f;
+  --dk-color-warning: #ecc16a;
+  --dk-color-warning-bg: #33260c;
+  --dk-color-danger: #f2a79c;
+  --dk-color-danger-bg: #351613;
+  --dk-color-neutral: #aab3c2;
+  --dk-color-neutral-bg: #232b3a;
+}
+
+/*
+ * ===== The bridge: assign each --dk-* into its --sl-* counterpart ========
+ * Written at `:root:root` (0,2,0) so it beats Starlight's `[data-theme='light']`
+ * block by source order in light mode and its `:root` block in dark mode. The
+ * RHS reads whatever the --dk token resolved to for the active mode, so the
+ * bridge itself is declared once. Tokens with no --sl counterpart are
+ * doc-kitty-owned (consumed directly by chrome/layouts) and are not bridged.
+ */
+:root:root {
+  /* Surfaces */
+  --sl-color-bg: var(--dk-color-bg);
+  --sl-color-bg-nav: var(--dk-color-bg-nav);
+  --sl-color-bg-sidebar: var(--dk-color-bg-sidebar);
+  --sl-color-hairline: var(--dk-color-border);
+
+  /* Text */
+  --sl-color-text: var(--dk-color-text);
+  --sl-color-white: var(--dk-color-text-strong);
+  --sl-color-gray-2: var(--dk-color-text-muted);
+  --sl-color-text-accent: var(--dk-color-accent-text);
+
+  /* Accent */
+  --sl-color-accent-low: var(--dk-color-accent-low);
+  --sl-color-accent: var(--dk-color-accent);
+  --sl-color-accent-high: var(--dk-color-accent-high);
+
+  /* State (asides) */
+  --sl-color-blue: var(--dk-color-info);
+  --sl-color-green: var(--dk-color-success);
+  --sl-color-orange: var(--dk-color-warning);
+  --sl-color-red: var(--dk-color-danger);
+  --sl-color-gray-3: var(--dk-color-neutral);
+
+  /* Type families + scale (mapped by role) */
+  --sl-font: var(--dk-font-sans);
+  --sl-font-mono: var(--dk-font-mono);
+  --sl-text-xs: var(--dk-text-xs);
+  --sl-text-sm: var(--dk-text-sm);
+  --sl-text-base: var(--dk-text-base);
+  --sl-text-lg: var(--dk-text-lg);
+  --sl-text-xl: var(--dk-text-xl);
+  --sl-text-2xl: var(--dk-text-2xl);
+  --sl-text-3xl: var(--dk-text-3xl);
+  --sl-text-4xl: var(--dk-text-4xl);
+
+  /* Layout widths */
+  --sl-content-width: var(--dk-width-content);
+  --sl-sidebar-width: var(--dk-width-sidebar);
 }

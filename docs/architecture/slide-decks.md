@@ -1,7 +1,7 @@
 ---
 title: Slide decks
 description: "How a Markdown-authored deck becomes a static reveal.js presentation: the splitting convention, the build pipeline, and the fallback."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Architecture
 kind: Explanation

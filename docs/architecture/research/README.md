@@ -1,9 +1,10 @@
 ---
 title: Architecture research
 description: Investigations that inform architecture decisions but are not themselves the present-state design.
-status: active
+doc_status: active
 updated: 2026-08-22
 type: Architecture
+kind: Hub
 agent:
   priority: 0.5
 ---

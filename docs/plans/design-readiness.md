@@ -1,9 +1,10 @@
 ---
 title: Design readiness
 description: "Which features are ready to spec, and which underdesigned aspects need an ADR or design pass first."
-status: active
+doc_status: active
 updated: 2026-08-22
 type: Plan
+kind: Planning
 authors:
   - stijn@sddevelopment.be
 related:

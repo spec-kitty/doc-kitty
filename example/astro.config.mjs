@@ -16,6 +16,10 @@ export default defineConfig({
   integrations: defineDocKittyIntegrations({
     title: 'Doc Kitty Example',
     description: 'A minimal docsite built with the Common Docs — Kitty Variation.',
+    // Same value as `base` above, so the sitemap draft filter strips the base
+    // prefix and compares each page's route to the draft routes with ANCHORED
+    // equality (not a suffix match).
+    base: BASE,
     social: {
       github: 'https://github.com/OWNER/doc-kitty',
     },

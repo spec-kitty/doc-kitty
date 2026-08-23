@@ -1,9 +1,10 @@
 ---
 title: Product
 description: The problem this example solves and who it is for.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Context
+kind: Explanation
 tags: [product, vision]
 ---
 

@@ -1,0 +1,19 @@
+---
+/*
+ * Doc Kitty carrier: Footer (ADR-0013 substrate, theming.md slot surface).
+ *
+ * M1 is a thin pass-through: render Starlight's default footer, then host
+ * doc-kitty's own `dk:site-footer` slot (WP03+ fills it). Reads
+ * `Astro.locals.starlightRoute` (Starlight ≥0.30), never through component props
+ * (the pre-0.30 pattern) — C-004.
+ */
+import Default from '@astrojs/starlight/components/Footer.astro';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+---
+
+<Default {...route} />
+{/* dk:site-footer host point (WP03+ fills the body). */}
+<slot name="dk:site-footer" />

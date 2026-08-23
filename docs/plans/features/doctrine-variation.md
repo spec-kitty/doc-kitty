@@ -1,9 +1,10 @@
 ---
 title: Doctrine variation
 description: "Recast the docs convention as charter and doctrine so a project can govern its own documentation quality."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Should
   rationale: Recasts the convention into charter and doctrine for governance and quality.

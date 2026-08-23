@@ -1,9 +1,10 @@
 ---
 title: "ADR-0007: Path-scoped CI/CD lanes"
 description: Run each CI lane only for the change it can affect, gated by a single aggregate check.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: ADR
+kind: ADR
 authors:
   - stijn@sddevelopment.be
 related:

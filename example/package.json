@@ -13,12 +13,12 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",
-    "@astrojs/starlight": "^0.30.0",
     "@commondocs-kitty/toolkit": "workspace:*",
     "astro": "^5.2.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/starlight": "^0.32.6",
     "typescript": "^5.9.3"
   }
 }

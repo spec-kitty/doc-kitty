@@ -1,0 +1,44 @@
+---
+/*
+ * Doc Kitty carrier: MarkdownContent (ADR-0013 substrate, theming.md slot
+ * surface + per-kind layout resolution).
+ *
+ * This is the SINGLE per-kind layout resolution site (ADR-0013 extension point):
+ * read `entry.data.kind`, resolve it through the static `kind → layout` map, and
+ * wrap the content in that layout. In M1 the map is empty so every kind — the 6
+ * live `kind: Hub` pages included — resolves to `Default`. WP04 registers the
+ * `Hub` key; M2 swaps this static module for the merged virtual manifest AT THIS
+ * SAME import site, without touching the carrier.
+ *
+ * Also hosts doc-kitty's content-flanking slots (WP03 fills the bodies):
+ *   - `dk:audience`             before the content
+ *   - `dk:related`              after the content
+ *   - `dk:external-references`  after `dk:related`
+ * All render inside Starlight's searchable content region (NFR-004).
+ *
+ * Reads `Astro.locals.starlightRoute` (Starlight ≥0.30), never through
+ * component props (the pre-0.30 pattern) — C-004.
+ */
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { resolveLayout } from '../layouts/kind-layouts.ts';
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+// `kind` reaches entry.data only via the WP01 `docsSchema({ extend })` schema;
+// cast keeps this carrier framework-light without depending on the site's
+// generated collection types.
+const kind = (route.entry.data as { kind?: string }).kind;
+const Layout = resolveLayout(kind);
+---
+
+<Layout {...route}>
+  {/* dk:audience — host point before the content (WP03 fills the body). */}
+  <slot name="dk:audience" />
+
+  <Default {...route}><slot /></Default>
+
+  {/* dk:related + dk:external-references — host points after the content. */}
+  <slot name="dk:related" />
+  <slot name="dk:external-references" />
+</Layout>

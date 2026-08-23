@@ -1,0 +1,91 @@
+/*
+ * Doc Kitty — Hub layout styles (described-link list).
+ *
+ * AA by construction (NFR-001, WCAG 2.2 AA):
+ *   - Card link targets are ≥24px in both axes (§2.5.8 Target Size (Minimum)).
+ *   - A `:focus-visible` ring uses the `--dk-shadow-focus` token (§2.4.7).
+ *   - Only AA `--dk-*` token pairs from styles/theme.css are used: title in
+ *     `--dk-color-text-accent` (≈9:1 on bg), description/kind in
+ *     `--dk-color-text-muted` (≈6.5:1 on bg). Colour is never the only signal —
+ *     the kind pill also carries a border and its text label.
+ *
+ * The related-card pattern is INLINED here for M1 (DIRECTIVE_024, locality of
+ * change); M3 may extract a shared related-card primitive. Loaded by Hub.astro.
+ */
+
+.dk-hub {
+  margin-top: var(--dk-space-xl);
+}
+
+.dk-hub__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--dk-space-sm);
+}
+
+.dk-hub__item {
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * The whole card is one clickable target (card-wide link). `min-height` and
+ * `min-width` guarantee the ≥24px minimum even before padding; the padding
+ * makes the real target comfortably larger.
+ */
+.dk-hub__card {
+  display: grid;
+  gap: var(--dk-space-2xs);
+  min-height: 24px;
+  min-width: 24px;
+  padding: var(--dk-space-md);
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-md);
+  background: var(--dk-color-surface-1);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.dk-hub__card:hover {
+  border-color: var(--dk-color-border-strong);
+  background: var(--dk-color-surface-2);
+}
+
+.dk-hub__card:focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus);
+  border-color: var(--dk-color-accent);
+}
+
+.dk-hub__title {
+  color: var(--dk-color-text-accent);
+  font-size: var(--dk-text-lg);
+  font-weight: var(--dk-weight-semibold);
+  line-height: var(--dk-leading-tight);
+}
+
+.dk-hub__card:hover .dk-hub__title {
+  text-decoration: underline;
+}
+
+/* Text-labelled pill (never colour-only): border + label carry the meaning. */
+.dk-hub__kind {
+  justify-self: start;
+  color: var(--dk-color-text-muted);
+  background: var(--dk-color-surface-inset);
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-pill);
+  padding: var(--dk-space-3xs) var(--dk-space-xs);
+  font-size: var(--dk-text-2xs);
+  letter-spacing: var(--dk-tracking-caps);
+  text-transform: uppercase;
+}
+
+.dk-hub__desc {
+  color: var(--dk-color-text-muted);
+  line-height: var(--dk-leading-normal);
+}

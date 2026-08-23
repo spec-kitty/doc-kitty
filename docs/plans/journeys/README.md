@@ -1,9 +1,10 @@
 ---
 title: User journeys
 description: "The section for doc-kitty user-journey pages; a placeholder until the product's user flows firm up."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Plan
+kind: Hub
 agent:
   priority: 0.5
 ---

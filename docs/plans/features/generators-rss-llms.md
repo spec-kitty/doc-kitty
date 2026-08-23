@@ -1,9 +1,10 @@
 ---
 title: "Generators: RSS + llms.txt"
 description: "Build the agent- and human-facing discovery basics from the docs tree: rss.xml and llms.txt."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Must
   rationale: The agent- and human-facing discovery basics, and already scaffolded.

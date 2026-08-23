@@ -1,9 +1,10 @@
 ---
 title: Audience + related + external references
 description: "Render the audience, related, and external-references frontmatter as consistent on-page metadata blocks."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Must
   rationale: "Core to the human-first, agent-supported promise: audience targeting and rendered relationships ship at launch."

@@ -1,9 +1,10 @@
 ---
 title: Component system + swappable theme
 description: "A component and per-kind layout system with a swappable theme layer a consumer can rebrand without forking."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Must
   rationale: Theme swappability is a hard requirement (ADR-0008) and per-kind layouts underpin later features.

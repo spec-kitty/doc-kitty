@@ -2,7 +2,8 @@
 okf_version: "0.2"
 title: Doc Kitty — Toolkit Documentation
 description: Master entry point for the documentation of the Doc Kitty toolkit itself.
-status: active
+doc_status: active
+kind: Hub
 updated: 2026-08-21
 authors:
   - stijn@sddevelopment.be

@@ -1,9 +1,10 @@
 ---
 title: Builder scripts
 description: The command-line scripts that scaffold a docs tree, add a page, and validate frontmatter as a CI gate.
-status: draft
+doc_status: draft
 updated: 2026-08-21
 type: Architecture
+kind: Reference
 tags: [scripts, tooling, ci]
 related:
   - architecture/overview
