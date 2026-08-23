@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-08-23T04:59:16.153234Z",
+      "decision_id": "01M0PFSF9SKKY99FVQT86BJVE9",
+      "final_answer": "Intent Summary and M1/M2/M3 boundary confirmed by user: build the finalized metadata contract + validator + full migration (incl. convention.md) + slot substrate (4 carriers + kind->layout registry + Default layout) + dk:page-hero + dk:metadata-band + Head share-metadata + one bespoke Hub layout + neutral Default --dk-* token catalog + agent-API doc_status/kind + updated build assertions/tests; keep ci-ok green. Out: M3 relationship blocks/personas/catalog, M2 brand+layering+Persona/Presentation+Playwright.",
+      "input_key": "intent_summary_confirmed",
+      "mission_id": "01M0PFQT2HACYCTZN2MS6S9A16",
+      "mission_slug": "metadata-model-and-chrome-01M0PFQT",
+      "opened_by": "cli",
+      "options": [],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Confirm the M1 Intent Summary and the M1/M2/M3 scope boundary before the spec is written.",
+      "rationale": null,
+      "resolved_at": "2026-08-23T05:14:38.364276Z",
+      "resolved_by": null,
+      "slot_key": "specify.intent.summary",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M0PFQT2HACYCTZN2MS6S9A16",
+  "version": 1
+}

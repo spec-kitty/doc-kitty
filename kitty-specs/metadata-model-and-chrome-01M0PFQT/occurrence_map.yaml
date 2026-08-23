@@ -1,0 +1,110 @@
+# Occurrence map — bulk edit: frontmatter key `status` -> `doc_status`
+# Mission: metadata-model-and-chrome-01M0PFQT (change_mode: bulk_edit, C-006)
+# Every one of the 8 standard categories has an explicit action from the enum
+# {rename, rename_if_user_visible, manual_review, do_not_change}. Rename tooling
+# operates on GIT-TRACKED paths only (never the gitignored .worktrees/ M0 copies).
+#
+# NOTE: `kind` is ADDED (not renamed); it is an additive migration, tracked under
+# `additive_migration`, not in the rename categories.
+
+target:
+  term: "status"
+  replacement: "doc_status"
+  scope: "the frontmatter lifecycle field key and its code accessors"
+  enum_unchanged: [draft, active, deprecated, superseded]
+
+categories:
+
+  code_symbols:
+    action: rename
+    notes: >
+      Rename the field accessor and record property only; the TS type name
+      `DocStatus` stays (it already names the concept).
+    occurrences:
+      - "src/lib/schema.ts: docKittyFields.status -> doc_status (zod key)"
+      - "src/lib/metadata.ts: DocKittyFrontmatter.status?; isPublished reads data.status -> data.doc_status"
+      - "src/lib/metadata.ts: AgentRecord.status -> doc_status; toAgentRecord default 'active'"
+      - "src/lib/routes/rss.ts, llms-txt.ts, agent-index.ts: data.status / record status -> doc_status"
+      - "src/lib/routes/agent-page.ts: record payload status -> doc_status ONLY"
+
+  import_paths:
+    action: do_not_change
+    notes: "No module, package, or import path is named `status`."
+
+  filesystem_paths:
+    action: do_not_change
+    notes: >
+      No source file is named status.*. The mission-runtime `status.events.jsonl`
+      is unrelated spec-kitty state and is NOT touched.
+
+  serialized_keys:
+    action: rename
+    notes: "The YAML frontmatter key and the emitted agent-API JSON key."
+    occurrences:
+      - "docs frontmatter `status:` -> `doc_status:` (72 files, INCLUDING docs/README.md)"
+      - "example/docs frontmatter `status:` -> `doc_status:` (13 files, INCLUDING example/docs/README.md)"
+      - "agent-API JSON record key `status` -> `doc_status` (/api/index.json, /api/pages/*.json)"
+      - "src/scripts/assert-build-artifacts.mjs EXPECTED_PAGE_KEYS: add 'doc_status' (+ 'kind')"
+    note: >
+      85 frontmatter files total (72 + 13). The two bundle-root README.md files are
+      depth-1 and are MISSED by a bare `**/*.md` glob (git pathspec requires an
+      intermediate `/`); enumerate with `docs/*.md 'docs/**/*.md' example/docs/*.md
+      'example/docs/**/*.md'` and migrate both READMEs by name.
+
+  cli_commands:
+    action: do_not_change
+    notes: >
+      No doc-kitty CLI subcommand is named `status`. `spec-kitty status` is
+      unrelated host tooling and is NOT touched.
+
+  user_facing_strings:
+    action: rename
+    notes: >
+      Validator/report message text that names the field. The new dk:metadata-band
+      `doc_status` pill label is additive chrome copy (see additive_migration), not
+      a rename of an existing string.
+    occurrences:
+      - "src/scripts/validate-frontmatter.mjs: error/warning message text `status` -> `doc_status`"
+
+  tests_fixtures:
+    action: rename
+    occurrences:
+      - "src/tests/metadata.test.ts: ~11 occurrences -> doc_status"
+      - "src/tests/agent-api.test.ts: lines ~12,26,46 -> doc_status"
+      - "src/tests/fixtures/: NEW fixtures author doc_status directly (no rename)"
+
+  logs_telemetry:
+    action: rename
+    notes: "Only the validator's human-readable log lines reference the field name."
+    occurrences:
+      - "src/scripts/validate-frontmatter.mjs: logged field name -> doc_status"
+
+exceptions:
+  - path: "src/lib/routes/agent-page.ts"
+    action: do_not_change
+    match: "status: 404"
+    reason: "HTTP Response status code, NOT the frontmatter field — a decoy; DO NOT rename."
+  - path: "docs/adr/*.md"
+    action: do_not_change
+    match: "## Status heading + adr/README.md decision-status table"
+    reason: "ADR decision status (proposed/accepted), per convention.md ADR reconciliation — NOT the frontmatter field."
+  - path: ".worktrees/**"
+    action: do_not_change
+    match: "any status occurrence"
+    reason: "Gitignored M0 lane copies; rename tooling stays on git-tracked paths."
+
+# Additive (NOT a rename) — the `kind` field and generator templates
+additive_migration:
+  - "Add required `kind` to every migrated page (value chosen by section/content)"
+  - "src/scripts/scaffold.mjs (x3) + new-doc.mjs: emit doc_status + a kind placeholder"
+  - "Rename `banner` -> `hero_image` in any page that used it (none exist yet; guard)"
+  - "dk:metadata-band renders a doc_status pill label (new chrome copy)"
+
+verification:
+  - "git grep -nE '^status:' -- 'docs/*.md' 'docs/**/*.md' 'example/docs/*.md' 'example/docs/**/*.md' -> no matches"
+  - "git grep -L '^doc_status:' (and '^kind:') over the same depth-inclusive pathspecs -> no files listed"
+  - "docs/README.md AND example/docs/README.md each carry doc_status + kind, no status: (checked BY NAME — the bare **/*.md glob misses them)"
+  - "migrated set == 85 files (72 docs + 13 example/docs)"
+  - "src/lib/routes/agent-page.ts still returns HTTP status: 404"
+  - "docs/adr/*.md still carry the `## Status` body section"
+  - "doc-sanity + build-example green after the atomic cutover (C-010)"
