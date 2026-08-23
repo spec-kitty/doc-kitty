@@ -1,0 +1,107 @@
+---
+/*
+ * Doc Kitty layout: Hub — described-link list (ADR-0013 single-layer substrate;
+ * theming.md "Per-kind layouts", the one bespoke IN-FRAME layer shipped in M1).
+ *
+ * Renders in the NORMAL Starlight frame (sidebar, TOC, search, pagination stay
+ * intact) — it is not a `splash`. The `MarkdownContent` carrier resolves
+ * `kind: Hub` to this layout and forwards the Starlight route data as props
+ * (same contract as Default.astro).
+ *
+ * Structure (theming.md "The per-kind layouts" → Hub):
+ *   1. The page body's intro — the lead paragraph — rendered via `<slot />`
+ *      (Starlight's MarkdownContent flows the markdown here).
+ *   2. A named navigation landmark wrapping a list of described links to the
+ *      section's CHILD pages. Each item is the related-card pattern: title in
+ *      `--dk-color-text-accent`, the target page's own `description` in
+ *      `--dk-color-text-muted`, plus an optional `kind` tag. Card-wide, ≥24px
+ *      targets — styling in styles/hub.css.
+ *
+ * The card pattern is INLINED here for M1 (DIRECTIVE_024); M3 may extract a
+ * shared primitive — do not build it now.
+ *
+ * Search coverage (NFR-004) vs. the navigation landmark — recorded deviation
+ * (DIRECTIVE_010): theming.md specifies "a named `<nav>`", but Pagefind excludes
+ * the `<nav>` TAG by default (it is designed to drop site chrome — Starlight's
+ * own sidebar/header are `<nav>`s), which drops the child link text from the
+ * index and REGRESSES NFR-004 (the WP's headline risk — verified empirically:
+ * text inside `<nav>` is absent from the fragment, the same text in a non-`nav`
+ * element is present). So the landmark is expressed as `role="navigation"` +
+ * `aria-label` on a `<section>` — an IDENTICAL accessibility tree (a navigation
+ * landmark with an accessible name) that Pagefind indexes because the tag is not
+ * `nav`. Nothing carries `data-pagefind-ignore`; everything sits inside the
+ * carrier, which Starlight places in `<main data-pagefind-body>`, so the lead
+ * paragraph AND the child link text stay in Pagefind's indexed region.
+ *
+ * Child derivation: a child is a collection entry whose PARENT path equals this
+ * Hub's slug — i.e. the pages one level down, in the same first path segment.
+ * For the 2-level example tree this is exactly "same section" for every section
+ * Hub (context → product, domain); it also lets the bundle-root Hub list the
+ * section indexes instead of rendering an empty nav.
+ */
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { getCollection } from 'astro:content';
+import {
+  slugFromEntryId,
+  sectionOf,
+  sectionRank,
+  type DocKittyFrontmatter,
+} from '../lib/metadata.js';
+import '../styles/hub.css';
+
+const route = Astro.props as StarlightRoute;
+const currentSlug = slugFromEntryId(route.id);
+
+// Honour the site `base` when building child hrefs.
+const baseUrl = import.meta.env.BASE_URL.replace(/\/+$/, '');
+const hrefFor = (slug: string): string =>
+  slug === '' ? `${baseUrl}/` : `${baseUrl}/${slug}/`;
+
+const parentOf = (slug: string): string => {
+  const i = slug.lastIndexOf('/');
+  return i === -1 ? '' : slug.slice(0, i);
+};
+
+const children = (await getCollection('docs'))
+  .map((entry) => ({
+    slug: slugFromEntryId(entry.id),
+    data: entry.data as unknown as DocKittyFrontmatter,
+  }))
+  .filter((e) => e.slug !== currentSlug && parentOf(e.slug) === currentSlug)
+  .sort((a, b) => {
+    const bySection =
+      sectionRank(sectionOf(a.slug)) - sectionRank(sectionOf(b.slug));
+    if (bySection !== 0) return bySection;
+    return a.data.title.localeCompare(b.data.title);
+  });
+
+const navLabel =
+  currentSlug === '' ? 'Documentation sections' : 'In this section';
+---
+
+<slot />
+
+{
+  children.length > 0 && (
+    <section class="dk-hub" role="navigation" aria-label={navLabel}>
+      <ul class="dk-hub__list" role="list">
+        {children.map((child) => (
+          <li class="dk-hub__item">
+            <a class="dk-hub__card" href={hrefFor(child.slug)}>
+              <span class="dk-hub__title">{child.data.title}</span>
+              {/* Explicit spaces: adjacent inline spans render glued, which
+                  would merge title/kind/description into one Pagefind token and
+                  hurt search recall on the title word (NFR-004). */}
+              {child.data.kind && (
+                <>{' '}<span class="dk-hub__kind">{child.data.kind}</span></>
+              )}
+              {child.data.description && (
+                <>{' '}<span class="dk-hub__desc">{child.data.description}</span></>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

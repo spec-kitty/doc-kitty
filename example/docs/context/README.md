@@ -11,7 +11,6 @@ agent:
 
 # Context
 
-Domain and product context for the example project.
-
-- [Product](/context/product/) — problem, users, value proposition.
-- [Domain](/context/domain/) — the ubiquitous language.
+Domain and product context for the example project. The pages below map the
+"why" and the "what": the product problem this example solves, and the domain
+vocabulary it uses.

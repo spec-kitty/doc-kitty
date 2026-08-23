@@ -13,6 +13,7 @@
  * static module with the merged theme manifest at the same carrier import site.
  */
 import Default from './Default.astro';
+import Hub from './Hub.astro';
 
 /** An Astro layout component the carrier renders around the content slot. */
 type LayoutComponent = typeof Default;
@@ -22,9 +23,14 @@ type LayoutComponent = typeof Default;
  * `kind` string, so an unknown/absent kind simply misses the map and falls back
  * to `Default` in `resolveLayout`.
  *
- * EMPTY in M1. WP04 adds: `Hub: HubLayout`.
+ * WP04 recorded out-of-map edit: registers `Hub` now that `Hub.astro` exists, so
+ * the 6 live `kind: Hub` pages (the section READMEs, tagged by WP01) resolve to
+ * the bespoke in-frame Hub layout instead of `Default`. This is the single line
+ * the M1 header of this WP02-owned file anticipated ("WP04 adds: `Hub`").
  */
-export const kindLayouts: Record<string, LayoutComponent> = {};
+export const kindLayouts: Record<string, LayoutComponent> = {
+  Hub,
+};
 
 /** Resolve the layout for a page `kind`; unknown/absent → `Default`. */
 export function resolveLayout(kind: string | undefined): LayoutComponent {
