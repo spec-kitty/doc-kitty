@@ -33,6 +33,13 @@ export interface DocKittyOptions {
    * `docs/`, matching `docKittyDocsLoader`'s default.
    */
   docsDir?: string;
+  /**
+   * The site's Astro `base` (path prefix, e.g. `/doc-kitty`). The sitemap draft
+   * filter strips it from each page's pathname before comparing routes, so the
+   * comparison is ANCHORED to the exact doc route (not a suffix match). Pass the
+   * SAME value as `astro.config`'s `base`. Defaults to `/` (no prefix).
+   */
+  base?: string;
   /** Escape hatch: deep overrides merged over the Starlight defaults. */
   starlight?: Partial<StarlightUserConfig>;
 }
@@ -114,13 +121,27 @@ function draftRoutes(docsDir: string): Set<string> {
 }
 
 /**
- * Build the `@astrojs/sitemap` `filter`. It receives each candidate page's full
- * absolute URL; drop it when its path ends with a draft route. Suffix matching
- * is base-agnostic (works whether or not the site sets an Astro `base`) and safe
- * because doc route slugs are unique whole paths from the docs root.
+ * Normalize an Astro `base` to a leading-slash, no-trailing-slash prefix.
+ * `'/'` (or empty) → `''` (nothing to strip); `'/doc-kitty'`, `'doc-kitty'` and
+ * `'/doc-kitty/'` all → `'/doc-kitty'`.
  */
-function sitemapDraftFilter(docsDir: string): (page: string) => boolean {
+function normalizeBasePrefix(base: string): string {
+  return `/${base}/`.replace(/\/{2,}/g, '/').replace(/\/$/, '');
+}
+
+/**
+ * Build the `@astrojs/sitemap` `filter`. It receives each candidate page's full
+ * absolute URL. INV-1: drop a page iff its route (the pathname with the site
+ * `base` stripped) EQUALS a draft route exactly. The match is ANCHORED — a
+ * plain `endsWith` would over-exclude a published page whose slug tail coincides
+ * with a draft's (e.g. `/architecture/overview/` vs a draft `/overview/`).
+ */
+function sitemapDraftFilter(
+  docsDir: string,
+  base: string,
+): (page: string) => boolean {
   const routes = draftRoutes(docsDir);
+  const basePrefix = normalizeBasePrefix(base);
   return (page: string): boolean => {
     let pathname: string;
     try {
@@ -128,11 +149,13 @@ function sitemapDraftFilter(docsDir: string): (page: string) => boolean {
     } catch {
       pathname = page;
     }
-    const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`;
-    for (const route of routes) {
-      if (normalized.endsWith(route)) return false;
+    let normalized = pathname.endsWith('/') ? pathname : `${pathname}/`;
+    // Strip the site base prefix so what remains is the base-free doc route.
+    if (basePrefix && normalized.startsWith(`${basePrefix}/`)) {
+      normalized = normalized.slice(basePrefix.length) || '/';
     }
-    return true;
+    // Anchored equality: the route must BE a draft route, not merely end with one.
+    return !routes.has(normalized);
   };
 }
 
@@ -143,6 +166,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     social,
     sidebar,
     docsDir = 'docs',
+    base = '/',
     starlight: overrides,
   } = options;
 
@@ -163,6 +187,6 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   return [
     starlight(starlightConfig),
     // INV-1: draft pages are unpublished, so their URLs are excluded here.
-    sitemap({ filter: sitemapDraftFilter(docsDir) }),
+    sitemap({ filter: sitemapDraftFilter(docsDir, base) }),
   ];
 }

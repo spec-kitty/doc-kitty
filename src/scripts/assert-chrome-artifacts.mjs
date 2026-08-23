@@ -21,6 +21,9 @@ import { readFile, readdir } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
 import path from 'node:path';
 import process from 'node:process';
+// The canonical doc_status enum, imported (not hand-mirrored) from the standalone
+// validator so this gate cannot drift from the contract (DIRECTIVE_043).
+import { STATUSES } from './validate-frontmatter.mjs';
 
 // ---------------------------------------------------------------------------
 // The complete neutral Default `--dk-*` catalog (theming.md; src/styles/theme.css
@@ -148,9 +151,10 @@ const REQUIRED_BRIDGE = [
   ['--sl-sidebar-width', '--dk-width-sidebar'],
 ];
 
-// The canonical doc_status enum (ADR-0005). The metadata band must render one of
+// The canonical doc_status enum (ADR-0005) is `STATUSES` from the validator
+// (draft/active/deprecated/superseded). The metadata band must render one of
 // these as a TEXT label (not colour-only) on a published page.
-const DOC_STATUS_LABELS = ['active', 'draft', 'review', 'deprecated', 'archived'];
+const DOC_STATUS_LABELS = STATUSES;
 
 // Known demonstrator pages (relative to distDir). WP03 re-tagged these existing
 // example pages so each exercises one share-image fallback branch.
@@ -159,9 +163,18 @@ const SOCIAL_PAGE = path.join('guides', 'getting-started', 'index.html'); // soc
 const SITEDEFAULT_PAGE = path.join('context', 'index.html'); // neither → site-default
 const HUB_PAGE = path.join('context', 'index.html'); // kind: Hub
 
-// Pagefind Hub markers: the Hub page's URL and two child descriptions that must
-// survive into the searchable fragment index (NFR-004 / SC-004).
-const PAGEFIND_MARKERS = ['/context/', 'ubiquitous language', 'problem this example solves'];
+// The Hub page's own Pagefind fragment url. The child-card text below must live
+// in THIS fragment (not merely somewhere in the index) for NFR-004 / SC-004.
+const HUB_FRAGMENT_URL = '/context/';
+// The Hub's RENDERED child cards (title + kind + description). These are
+// card-UNIQUE: the `<Title> Explanation` adjacency and the full child
+// descriptions do NOT appear in the Hub's own lead paragraph, so if the Hub
+// stops indexing its described-link list (e.g. a `<nav>` regression that
+// Pagefind drops), they vanish from the Hub fragment and this check flips red.
+const HUB_CHILD_CARD_MARKERS = [
+  'Domain Explanation The ubiquitous language for the Common Docs',
+  'Product Explanation The problem this example solves and who it is for.',
+];
 
 // ---------------------------------------------------------------------------
 
@@ -206,6 +219,22 @@ async function readAllCss(distDir) {
 function ogImage(html) {
   const m = html.match(/<meta\s+property="og:image"\s+content="([^"]*)"/i);
   return m ? m[1] : null;
+}
+
+/** Extract flat CSS rule blocks whose selector list contains `selectorNeedle`.
+ * Returns `{ selector, body }[]`. Emitted doc-kitty chrome CSS is flat (no
+ * nesting), so a simple non-brace scan is sufficient and lets the AA checks be
+ * SCOPED to dk selectors instead of matching any rule in the concatenated CSS
+ * (incl. Starlight's own). */
+function ruleBlocksFor(css, selectorNeedle) {
+  const blocks = [];
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(css)) !== null) {
+    const selector = m[1];
+    if (selector.includes(selectorNeedle)) blocks.push({ selector, body: m[2] });
+  }
+  return blocks;
 }
 
 /** Return true if any min-height/min-width declaration in `css` is ≥ 24px.
@@ -358,15 +387,31 @@ export async function assertChromeArtifacts(distDir) {
   ok(`bridge: all ${REQUIRED_BRIDGE.length} --dk-* → --sl-* assignments present`);
 
   // === 5) AA by construction: ≥24px target rule + :focus-visible rule ========
-  if (!hasMinTarget24(css)) {
-    fail(`accessibility: no min-height/min-width ≥24px rule in the emitted CSS (NFR-001)`);
+  // SCOPED to doc-kitty's OWN chrome selectors: a ≥24px min-target or a
+  // :focus-visible rule anywhere in Starlight's bundled CSS must NOT satisfy
+  // these — the dk Hub card target and the dk focus ring specifically must hold
+  // (NFR-001). Removing them from src/styles/hub.css flips this red.
+  const dkCardBlocks = ruleBlocksFor(css, '.dk-hub__card');
+  if (dkCardBlocks.length === 0) {
+    fail(`accessibility: no .dk-hub__card rule in the emitted CSS (Hub target sizing missing, NFR-001)`);
   }
-  if (!css.includes(':focus-visible')) {
-    fail(`accessibility: no :focus-visible rule in the emitted CSS (NFR-001)`);
+  if (!dkCardBlocks.some((b) => hasMinTarget24(b.body))) {
+    fail(`accessibility: .dk-hub__card carries no min-height/min-width ≥24px target rule (NFR-001)`);
   }
-  ok(`accessibility: ≥24px target rule and :focus-visible rule present in emitted CSS`);
+  const dkFocusBlocks = ruleBlocksFor(css, ':focus-visible').filter((b) =>
+    /\.dk-/.test(b.selector),
+  );
+  if (dkFocusBlocks.length === 0) {
+    fail(`accessibility: no dk chrome :focus-visible rule in the emitted CSS (focus ring missing, NFR-001)`);
+  }
+  ok(`accessibility: .dk-hub__card ≥24px target rule and dk :focus-visible ring present in emitted CSS`);
 
-  // === 6) Hub body present in the built Pagefind fragment index ==============
+  // === 6) Hub CARDS present in the Hub page's OWN Pagefind fragment ===========
+  // Locate the fragment whose url IS the Hub page and assert THAT fragment
+  // carries the Hub's rendered child-link text. Scoping to the Hub fragment is
+  // the point: the child descriptions also live in the children's OWN fragments,
+  // so an any-fragment check would still pass if the Hub stopped indexing its
+  // cards (a `<nav>` regression). This binds NFR-004 / SC-004 to the Hub itself.
   const fragDir = path.join(dir, 'pagefind', 'fragment');
   let fragNames;
   try {
@@ -376,25 +421,35 @@ export async function assertChromeArtifacts(distDir) {
   }
   const fragFiles = fragNames.filter((n) => n.endsWith('.pf_fragment'));
   if (fragFiles.length === 0) fail('pagefind: no .pf_fragment files found');
-  let decoded = '';
+  let hubFragment = null;
   for (const n of fragFiles) {
     const buf = await readFile(path.join(fragDir, n));
     // Fragments are gzip-compressed Pagefind BINARY; decompress and string-search
     // the decoded text (never JSON.parse — the payload is not JSON).
+    let decoded;
     try {
-      decoded += gunzipSync(buf).toString('utf8');
+      decoded = gunzipSync(buf).toString('utf8');
     } catch (err) {
       fail(`pagefind: fragment ${n} did not gunzip (${err.message})`);
     }
+    const urlMatch = decoded.match(/"url":"([^"]*)"/);
+    if (urlMatch && urlMatch[1] === HUB_FRAGMENT_URL) {
+      hubFragment = decoded;
+      break;
+    }
   }
-  const missingMarkers = PAGEFIND_MARKERS.filter((m) => !decoded.includes(m));
-  if (missingMarkers.length > 0) {
+  if (hubFragment === null) {
+    fail(`pagefind: no fragment indexed for the Hub page ${HUB_FRAGMENT_URL} (Hub not indexed at all?)`);
+  }
+  const missingCards = HUB_CHILD_CARD_MARKERS.filter((m) => !hubFragment.includes(m));
+  if (missingCards.length > 0) {
     fail(
-      `pagefind: Hub markers absent from the fragment index: ` +
-        `${missingMarkers.map((m) => JSON.stringify(m)).join(', ')} (NFR-004 / SC-004)`,
+      `pagefind: the Hub fragment (${HUB_FRAGMENT_URL}) is missing rendered child-card text: ` +
+        `${missingCards.map((m) => JSON.stringify(m)).join(', ')} — the Hub stopped indexing ` +
+        `its described-link cards (NFR-004 / SC-004)`,
     );
   }
-  ok(`pagefind: Hub url + child descriptions present in the decompressed fragment index`);
+  ok(`pagefind: Hub fragment ${HUB_FRAGMENT_URL} contains its rendered child cards (title + description)`);
 }
 
 // Standalone entry point: `node src/scripts/assert-chrome-artifacts.mjs <distDir>`.

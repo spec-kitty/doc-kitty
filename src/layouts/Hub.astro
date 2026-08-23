@@ -45,6 +45,7 @@ import {
   slugFromEntryId,
   sectionOf,
   sectionRank,
+  isPublished,
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
 import '../styles/hub.css';
@@ -67,7 +68,15 @@ const children = (await getCollection('docs'))
     slug: slugFromEntryId(entry.id),
     data: entry.data as unknown as DocKittyFrontmatter,
   }))
-  .filter((e) => e.slug !== currentSlug && parentOf(e.slug) === currentSlug)
+  // INV-1 / US3: a Hub lists only PUBLISHED children — a draft child (e.g.
+  // adr/template) must never appear in the described-link list, mirroring the
+  // sitemap/agent-index draft exclusion (isPublished, the canonical predicate).
+  .filter(
+    (e) =>
+      e.slug !== currentSlug &&
+      parentOf(e.slug) === currentSlug &&
+      isPublished(e.data),
+  )
   .sort((a, b) => {
     const bySection =
       sectionRank(sectionOf(a.slug)) - sectionRank(sectionOf(b.slug));

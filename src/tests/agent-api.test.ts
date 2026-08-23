@@ -45,7 +45,9 @@ describe('toAgentRecord', () => {
     const record = toAgentRecord({ slug: 'x', data: { title: 'X' } });
     expect(record.description).toBe('');
     expect(record.type).toBeNull();
-    expect(record.doc_status).toBe('active');
+    // Absent doc_status defaults to 'draft' — consistent with isPublished's
+    // draft default (an unmarked page is a draft, not silently published).
+    expect(record.doc_status).toBe('draft');
     expect(record.kind).toBe('');
     expect(record.tags).toEqual([]);
     expect(record.related).toEqual([]);

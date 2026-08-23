@@ -4,13 +4,12 @@
  * Resolved at a SINGLE import site — the `MarkdownContent` carrier — which reads
  * `entry.data.kind` and wraps the content in `resolveLayout(kind)`.
  *
- * The map ships EMPTY in M1 (Default-only) on purpose: 6 `kind: Hub` pages are
- * already live after WP01's migration, and `Hub.astro` does NOT exist until
- * WP04. A `Hub: () => import('./Hub.astro')` entry here would fail Vite/Rollup
- * resolution and turn WP02's build red (violating C-010). So every kind — Hub
- * included — resolves to `Default` now; WP04 registers the `Hub` key as a
- * recorded out-of-map edit to THIS file once `Hub.astro` lands. M2 replaces this
- * static module with the merged theme manifest at the same carrier import site.
+ * Shipped state (M1, after WP04): `Hub` is the ONLY registered kind — the 6
+ * live `kind: Hub` pages (the section READMEs tagged by WP01) resolve to the
+ * bespoke in-frame `Hub.astro` layout. Every OTHER kind — known or unknown —
+ * falls back to `Default` via `resolveLayout`. M2 swaps this static module for
+ * the merged theme manifest at the single carrier import site (MarkdownContent),
+ * without changing that call site.
  */
 import Default from './Default.astro';
 import Hub from './Hub.astro';

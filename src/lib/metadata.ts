@@ -216,7 +216,7 @@ export function toAgentRecord(entry: DocEntry): AgentRecord {
     title: data.title,
     description: data.description ?? '',
     type: data.type ?? null,
-    doc_status: data.doc_status ?? 'active',
+    doc_status: data.doc_status ?? 'draft',
     kind: data.kind ?? '',
     tags: data.tags ?? [],
     related: data.related ?? [],

@@ -59,6 +59,14 @@ export const KINDS = [
 
 export type Kind = (typeof KINDS)[number];
 
+/**
+ * Description upper bound (chars). Mirrors `DESCRIPTION_MAX` in
+ * `src/scripts/validate-frontmatter.mjs`; the schema/validator parity test
+ * (`src/tests/schema-validator-parity.test.ts`) fails if the two ever disagree
+ * on the `err/description-too-long.md` fixture, binding this value to the gate.
+ */
+export const DESCRIPTION_MAX = 180;
+
 const agentHints = z
   .object({
     discoverable: z.boolean().default(true),
@@ -79,13 +87,17 @@ const agentHints = z
  */
 export const docKittyFields = {
   // `title` and `description` come from Starlight's own schema; description is
-  // re-declared required to match the convention.
-  description: z.string(),
+  // re-declared required to match the convention, with the same >180 upper bound
+  // the standalone validator enforces (parity test guards the two agree).
+  description: z.string().max(DESCRIPTION_MAX),
   doc_status: z
     .enum(['draft', 'active', 'deprecated', 'superseded'])
     .default('draft'),
   updated: z.coerce.date().optional(),
-  type: z.enum(DOC_TYPES).optional(),
+  // Open vocabulary (FR-003): a non-canonical `type` is ADVISORY, not a build
+  // failure — the site schema accepts any string; the standalone validator warns
+  // on a value outside DOC_TYPES (which stays exported for that warn check).
+  type: z.string().optional(),
   // Open vocabulary (ADR-0009): site schema is permissive, the standalone
   // validator warns on a value outside `KINDS`.
   kind: z.string().optional(),
@@ -129,7 +141,10 @@ export const docKittyFields = {
     .union([z.object({ src: z.string(), alt: z.string() }), z.string()])
     .optional(),
   tags: z.array(z.string()).optional(),
-  resource: z.string().url().optional(),
+  // Plain string (not `.url()`): aligned with the standalone validator (the
+  // doc-sanity gate), so a non-URL `resource` does not pass validate but fail
+  // the build. Parity test guards this alignment going forward.
+  resource: z.string().optional(),
   generated: z
     .object({ by: z.string(), at: z.string() })
     .optional(),
@@ -137,7 +152,7 @@ export const docKittyFields = {
     .array(z.object({ by: z.string(), at: z.string() }))
     .optional(),
   sources: z
-    .array(z.object({ resource: z.string().url(), title: z.string() }))
+    .array(z.object({ resource: z.string(), title: z.string() }))
     .optional(),
   stale_after: z.coerce.date().optional(),
   // Kitty extension.
