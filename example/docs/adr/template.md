@@ -1,9 +1,10 @@
 ---
 title: "ADR-NNNN: Title"
 description: Blank ADR to copy for a new decision record.
-status: draft
+doc_status: draft
 updated: 2026-08-21
 type: Template
+kind: ADR
 authors:
   - Name
 ---

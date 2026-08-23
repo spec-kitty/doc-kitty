@@ -1,9 +1,10 @@
 ---
 title: Markua syntax support (subset)
 description: "Support a practical subset of Markua so Leanpub-authored Markdown renders correctly in the docsite."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Should
   rationale: The stated near-term focus and Leanpub compatibility, but the base renders without it, so not a Must.

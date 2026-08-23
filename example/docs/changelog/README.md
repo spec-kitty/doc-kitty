@@ -1,9 +1,10 @@
 ---
 title: Changelog
 description: Release history for the example docsite.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Changelog
+kind: Hub
 ---
 
 # Changelog

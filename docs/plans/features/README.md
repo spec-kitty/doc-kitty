@@ -1,9 +1,10 @@
 ---
 title: Features
 description: "The doc-kitty feature pages, grouped by MoSCoW priority as set in the roadmap."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Hub
 agent:
   priority: 0.7
 ---

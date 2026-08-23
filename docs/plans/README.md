@@ -1,9 +1,10 @@
 ---
 title: Plans
 description: Forward-looking design and roadmap for doc-kitty — future work, not present state.
-status: draft
+doc_status: draft
 updated: 2026-08-21
 type: Plan
+kind: Hub
 agent:
   priority: 0.8
 ---

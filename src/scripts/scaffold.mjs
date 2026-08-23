@@ -44,6 +44,23 @@ function expectedType(relPath) {
   }
 }
 
+/**
+ * A sensible `kind` placeholder for a scaffolded page (ADR-0009 vocabulary).
+ * A section index is a `Hub`; otherwise the kind follows the section. `Reference`
+ * is the neutral default — the author refines it.
+ */
+function expectedKind(relPath, isIndex) {
+  if (isIndex) return 'Hub';
+  const section = relPath.split(sep)[0];
+  switch (section) {
+    case 'adr': return 'ADR';
+    case 'changelog': return 'Changelog';
+    case 'guides': return 'How-To';
+    case 'plans': return relPath.split(sep)[1] === 'features' ? 'Feature' : 'Planning';
+    default: return 'Reference';
+  }
+}
+
 // Section -> leaf files (README index is added automatically per directory).
 const SECTIONS = {
   context: ['product.md', 'domain.md', 'stakeholders.md'],
@@ -75,9 +92,10 @@ function leafFrontmatter(relPath, title) {
   return `---
 title: ${title}
 description: TODO one sentence describing what this document contains.
-status: draft
+doc_status: draft
 updated: ${today}
-${typeLine}generated:
+${typeLine}kind: ${expectedKind(relPath, false)}
+generated:
   by: agent/doc-kitty-scaffold
   at: ${now}
 ---
@@ -94,9 +112,10 @@ function indexFrontmatter(relPath, title, blurb) {
   return `---
 title: ${title}
 description: ${blurb}
-status: draft
+doc_status: draft
 updated: ${today}
-${typeLine}generated:
+${typeLine}kind: ${expectedKind(relPath, true)}
+generated:
   by: agent/doc-kitty-scaffold
   at: ${now}
 ---
@@ -125,8 +144,9 @@ write('README.md', `---
 okf_version: "0.2"
 title: Documentation
 description: Master entry point for this project's documentation.
-status: draft
+doc_status: draft
 updated: ${today}
+kind: Hub
 generated:
   by: agent/doc-kitty-scaffold
   at: ${now}

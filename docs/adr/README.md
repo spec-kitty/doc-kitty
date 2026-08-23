@@ -1,9 +1,10 @@
 ---
 title: Decision Records
 description: The immutable log of architectural decisions for the toolkit.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: ADR
+kind: Hub
 ---
 
 # Decision Records

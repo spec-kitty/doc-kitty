@@ -1,9 +1,10 @@
 ---
 title: Metadata model + chrome
 description: "The frontmatter contract every page carries, plus the metadata-driven page chrome the toolkit renders from it."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Must
   rationale: The contract every other feature reads and renders from.

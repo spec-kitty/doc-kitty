@@ -1,9 +1,10 @@
 ---
 title: Guides
 description: How-to guides for authoring docs and adopting the toolkit.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Guide
+kind: Hub
 agent:
   priority: 0.7
 ---

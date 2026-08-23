@@ -1,9 +1,10 @@
 ---
 title: Agent-first documentation
 description: "Why an AI-focused company treats agents as first-class documentation readers, not an afterthought."
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Context
+kind: Explanation
 tags: [agents, rationale]
 ---
 

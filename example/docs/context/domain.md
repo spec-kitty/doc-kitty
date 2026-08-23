@@ -1,9 +1,10 @@
 ---
 title: Domain
 description: The ubiquitous language for the Common Docs — Kitty Variation.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Context
+kind: Explanation
 tags: [glossary, domain]
 sources:
   - resource: https://github.com/velvet-tiger/common-docs

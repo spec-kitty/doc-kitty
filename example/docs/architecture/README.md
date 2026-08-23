@@ -1,9 +1,10 @@
 ---
 title: Architecture
 description: Current system design of the example docsite.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Architecture
+kind: Hub
 agent:
   priority: 0.8
 ---

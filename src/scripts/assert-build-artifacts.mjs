@@ -13,8 +13,7 @@
  * build action (it is deliberately NOT part of the composite, so the WP05
  * deploy can reuse the pure build without inheriting this PR-gate assertion).
  *
- * Assertions target TODAY's example output shape/count (design "Test
- * taxonomy"). The M1 metadata-model chrome is explicitly out of scope (C-010).
+ * Assertions target the example output shape/count (design "Test taxonomy").
  *
  * Zero runtime dependencies: WP01 vendors no XML parser, so XML
  * well-formedness is checked at the string level by a small, honest,
@@ -35,7 +34,7 @@ import process from 'node:process';
 // EXPECTED_INDEX_ENTRY_COUNT is pinned, not hand-waved. Cross-check (authoring
 // time), so a wrong build cannot silently lock in a wrong baseline:
 //   - example/docs holds 13 Markdown content files (README-as-index + pages);
-//   - exactly one is a draft — example/docs/adr/template.md (status: draft),
+//   - exactly one is a draft — example/docs/adr/template.md (doc_status: draft),
 //     which `isPublished()` excludes from the agent index;
 //   - 13 − 1 = 12 published, discoverable pages.
 // Independently verified against example/docs at authoring time: counting
@@ -56,8 +55,9 @@ const EXPECTED_INDEX_SHAPE = {
   pages: 'array',
 };
 
-// Required keys on each entry in `pages[]`.
-const EXPECTED_PAGE_KEYS = ['slug', 'route', 'section', 'title'];
+// Required keys on each entry in `pages[]` (each a string). `doc_status` and
+// `kind` land with the finalized metadata contract (ADR-0009 / C-010).
+const EXPECTED_PAGE_KEYS = ['slug', 'route', 'section', 'title', 'doc_status', 'kind'];
 
 // README-as-index proof: a section's README.md served at its directory route.
 // The ADR section's README H1 is "Decision Records"; it must appear in the HTML

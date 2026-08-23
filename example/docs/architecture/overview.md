@@ -1,9 +1,10 @@
 ---
 title: Overview
 description: How the example turns a Common Docs tree into a site plus feeds and an agent-API.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Architecture
+kind: Explanation
 tags: [astro, starlight, build]
 related:
   - guides/getting-started

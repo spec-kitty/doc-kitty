@@ -1,9 +1,10 @@
 ---
 title: Mission status portal
 description: "A repository portal view that surfaces spec-kitty mission status alongside the documentation."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Could
   rationale: A repository portal that depends on spec-kitty integration.

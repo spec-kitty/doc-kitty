@@ -1,9 +1,10 @@
 ---
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Architecture
+kind: Reference
 authors:
   - stijn@sddevelopment.be
 tags: [theme, chrome, branding, components, layouts]

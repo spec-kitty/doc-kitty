@@ -1,9 +1,10 @@
 ---
 title: Roadmap
 description: "Phased plan for doc-kitty, split into MVP and extended scope with MoSCoW priorities."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Plan
+kind: Planning
 authors:
   - stijn@sddevelopment.be
 related:

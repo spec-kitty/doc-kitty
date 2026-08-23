@@ -1,9 +1,10 @@
 ---
 title: Slide decks (reveal.js)
 description: "Author reveal.js slide decks in Markdown under presentations/ and render them as a distinct presentation surface."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Must
   rationale: Presentations are a first-class output pillar alongside docsites, required at launch.

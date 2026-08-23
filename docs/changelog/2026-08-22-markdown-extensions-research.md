@@ -1,9 +1,10 @@
 ---
 title: Markdown extensions research
 description: Added architecture research on Astro Markdown extensions, Markua support, and example content.
-status: active
+doc_status: active
 updated: 2026-08-22
 type: Changelog
+kind: Changelog
 tags: [research, markua, markdown]
 related:
   - architecture/research/markua-syntax-support

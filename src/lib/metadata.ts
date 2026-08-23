@@ -37,6 +37,9 @@ export type DocType =
 /** Common Docs lifecycle enum (note: differs from OKF's suggested set). */
 export type DocStatus = 'draft' | 'active' | 'deprecated' | 'superseded';
 
+/** A `related` entry: a bare slug or an object with an optional per-link note. */
+export type RelatedRef = string | { ref: string; note?: string };
+
 /** Kitty extension: fine control over the agent-API. */
 export interface AgentHints {
   /** Include in llms.txt / agent index. Default true. */
@@ -64,21 +67,23 @@ export interface SourceRef {
 
 /**
  * The Common Docs — Kitty Variation frontmatter, on top of Starlight's fields.
- * `title`, `description`, `status`, `updated`, `type` are the convention's
- * required fields (root `README.md` is exempt from `type` and instead carries
- * `okf_version`).
+ * `title`, `description`, `doc_status`, `updated`, `type`, `kind` are the
+ * convention's required fields (root `README.md` is exempt from `type` and
+ * instead carries `okf_version`, but still carries `doc_status` and `kind`).
  */
 export interface DocKittyFrontmatter {
   title: string;
   description?: string;
-  status?: DocStatus;
+  doc_status?: DocStatus;
   /** Last meaningful change, ISO `YYYY-MM-DD` or a Date. */
   updated?: string | Date;
   type?: DocType;
+  /** Page kind (open vocabulary, ADR-0009); drives per-kind layout. */
+  kind?: string;
   /** Only on the bundle-root `docs/README.md`. */
   okf_version?: string;
   authors?: string[];
-  related?: string[];
+  related?: RelatedRef[];
   tags?: string[];
   resource?: string;
   generated?: GeneratedStamp;
@@ -142,7 +147,7 @@ export function sectionRank(section: string): number {
 
 /** A page is published (crawlable / in sitemap) unless it is still a draft. */
 export function isPublished(data: DocKittyFrontmatter): boolean {
-  return (data.status ?? 'draft') !== 'draft';
+  return (data.doc_status ?? 'draft') !== 'draft';
 }
 
 /** A published page is exposed to agents unless it opts out. */
@@ -179,9 +184,10 @@ export interface AgentRecord {
   title: string;
   description: string;
   type: DocType | null;
-  status: DocStatus;
+  doc_status: DocStatus;
+  kind: string;
   tags: string[];
-  related: string[];
+  related: RelatedRef[];
   priority: number;
   updated: string | null;
   /** Link to the per-page JSON source for this page. */
@@ -210,7 +216,8 @@ export function toAgentRecord(entry: DocEntry): AgentRecord {
     title: data.title,
     description: data.description ?? '',
     type: data.type ?? null,
-    status: data.status ?? 'active',
+    doc_status: data.doc_status ?? 'active',
+    kind: data.kind ?? '',
     tags: data.tags ?? [],
     related: data.related ?? [],
     priority: agentPriority(data),

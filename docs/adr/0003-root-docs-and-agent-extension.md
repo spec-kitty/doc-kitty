@@ -1,9 +1,10 @@
 ---
 title: "ADR-0003: Render root docs/; add an agent extension"
 description: Read the repo-root docs/ tree directly, and add an optional agent frontmatter block.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: ADR
+kind: ADR
 authors:
   - stijn@sddevelopment.be
 related:

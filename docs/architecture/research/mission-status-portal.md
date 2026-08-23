@@ -1,9 +1,10 @@
 ---
 title: Mission status portal for kittified repos
 description: "Generate a mission overview from a repo's Spec Kitty state so the docsite doubles as a status portal."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Architecture
+kind: Explanation
 tags: [spec-kitty, portal, status, integration]
 related:
   - architecture/research/qa-portal

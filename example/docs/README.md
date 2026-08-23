@@ -2,7 +2,8 @@
 okf_version: "0.2"
 title: Doc Kitty Example
 description: Master entry point for the example docsite built with the Common Docs — Kitty Variation.
-status: active
+doc_status: active
+kind: Hub
 updated: 2026-08-21
 authors:
   - stijn@sddevelopment.be

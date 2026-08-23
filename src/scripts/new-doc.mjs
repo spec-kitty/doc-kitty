@@ -57,6 +57,23 @@ function expectedType(relPath) {
   }
 }
 
+/**
+ * A sensible `kind` placeholder for a new page (ADR-0009 vocabulary). A section
+ * index is a `Hub`; otherwise the kind follows the section. `Reference` is the
+ * neutral default — the author refines it (or passes `--kind`).
+ */
+function expectedKind(relPath, isSection) {
+  if (isSection) return 'Hub';
+  const section = relPath.split(sep)[0];
+  switch (section) {
+    case 'adr': return 'ADR';
+    case 'changelog': return 'Changelog';
+    case 'guides': return 'How-To';
+    case 'plans': return relPath.split(sep)[1] === 'features' ? 'Feature' : 'Planning';
+    default: return 'Reference';
+  }
+}
+
 const { _: positional, flags } = parseArgs(process.argv.slice(2));
 const slug = positional[0];
 if (!slug) {
@@ -72,6 +89,7 @@ const title =
 const relPath = flags.section ? join(slug, 'README.md') : `${slug}.md`;
 const target = join(base, relPath);
 const type = flags.type ?? expectedType(relPath);
+const kind = flags.kind ?? expectedKind(relPath, Boolean(flags.section));
 
 if (existsSync(target)) {
   console.error(`✖ refusing to overwrite existing file: ${target}`);
@@ -84,9 +102,10 @@ const typeLine = type ? `type: ${type}\n` : '';
 const frontmatter = `---
 title: ${title}
 description: TODO one sentence describing what this document contains.
-status: draft
+doc_status: draft
 updated: ${today}
-${typeLine}generated:
+${typeLine}kind: ${kind}
+generated:
   by: agent/doc-kitty-new-doc
   at: ${now}
 ---
@@ -98,4 +117,4 @@ TODO write this page.
 
 mkdirSync(dirname(target), { recursive: true });
 writeFileSync(target, frontmatter, 'utf8');
-console.log(`✓ created ${target}${type ? ` (type: ${type})` : ''}`);
+console.log(`✓ created ${target}${type ? ` (type: ${type}, kind: ${kind})` : ` (kind: ${kind})`}`);

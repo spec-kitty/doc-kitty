@@ -1,9 +1,10 @@
 ---
 title: Activating and operating CI/CD
 description: How a repository admin turns the CI/CD pipeline into a required merge gate and operates its path-scoped lanes.
-status: active
+doc_status: active
 updated: 2026-08-22
 type: Operations
+kind: How-To
 authors:
   - stijn@sddevelopment.be
 tags: [ci, cd, ops, github-actions]

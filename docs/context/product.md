@@ -1,9 +1,10 @@
 ---
 title: Product
 description: What the Doc Kitty toolkit is and who it serves.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Context
+kind: Explanation
 tags: [product]
 ---
 

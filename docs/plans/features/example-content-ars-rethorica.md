@@ -1,9 +1,10 @@
 ---
 title: Example content from ars-rethorica
 description: "Ship realistic Markua-authored example content drawn from the ars-rethorica book to showcase the docsite."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Could
   rationale: A realistic Markua showcase that depends on Markua support.

@@ -1,9 +1,10 @@
 ---
 title: Overview
 description: Components and data flow of the Doc Kitty toolkit.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Architecture
+kind: Explanation
 tags: [astro, starlight, okf]
 related:
   - context/convention

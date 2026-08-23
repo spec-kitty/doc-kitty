@@ -1,9 +1,10 @@
 ---
 title: Changelog
 description: Dated record of notable changes to the doc-kitty toolkit and its documentation.
-status: active
+doc_status: active
 updated: 2026-08-22
 type: Changelog
+kind: Hub
 agent:
   priority: 0.5
 ---

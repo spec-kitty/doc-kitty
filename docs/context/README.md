@@ -1,9 +1,10 @@
 ---
 title: Context
 description: Why Doc Kitty exists, what it solves for, the convention it renders, and why agents are first-class readers.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Context
+kind: Hub
 agent:
   priority: 0.9
 ---

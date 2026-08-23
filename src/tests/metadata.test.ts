@@ -28,21 +28,21 @@ describe('readmeToIndexId (README-as-index)', () => {
 
 describe('publication + agent discovery gating', () => {
   it('drafts are neither published nor discoverable', () => {
-    const draft = { title: 'x', status: 'draft' as const };
+    const draft = { title: 'x', doc_status: 'draft' as const };
     expect(isPublished(draft)).toBe(false);
     expect(isAgentDiscoverable(draft)).toBe(false);
   });
   it('active/deprecated/superseded are published', () => {
-    for (const status of ['active', 'deprecated', 'superseded'] as const) {
-      expect(isPublished({ title: 'x', status })).toBe(true);
+    for (const doc_status of ['active', 'deprecated', 'superseded'] as const) {
+      expect(isPublished({ title: 'x', doc_status })).toBe(true);
     }
   });
   it('agent.discoverable=false hides an active page from agents', () => {
-    const data = { title: 'x', status: 'active' as const, agent: { discoverable: false } };
+    const data = { title: 'x', doc_status: 'active' as const, agent: { discoverable: false } };
     expect(isPublished(data)).toBe(true);
     expect(isAgentDiscoverable(data)).toBe(false);
   });
-  it('missing status defaults to draft (unpublished)', () => {
+  it('missing doc_status defaults to draft (unpublished)', () => {
     expect(isPublished({ title: 'x' })).toBe(false);
   });
 });
@@ -77,10 +77,10 @@ describe('pageSourceId', () => {
 
 describe('ranking', () => {
   const entries: DocEntry[] = [
-    { slug: 'guides/deploy', data: { title: 'Deploy', status: 'active', agent: { priority: 0.2 }, updated: '2026-08-01' } },
-    { slug: '', data: { title: 'Home', status: 'active', agent: { priority: 0.9 }, updated: '2026-01-01' } },
-    { slug: 'draft', data: { title: 'Draft', status: 'draft' } },
-    { slug: 'context/domain', data: { title: 'Domain', status: 'active', agent: { priority: 0.5 }, updated: '2026-05-01' } },
+    { slug: 'guides/deploy', data: { title: 'Deploy', doc_status: 'active', agent: { priority: 0.2 }, updated: '2026-08-01' } },
+    { slug: '', data: { title: 'Home', doc_status: 'active', agent: { priority: 0.9 }, updated: '2026-01-01' } },
+    { slug: 'draft', data: { title: 'Draft', doc_status: 'draft' } },
+    { slug: 'context/domain', data: { title: 'Domain', doc_status: 'active', agent: { priority: 0.5 }, updated: '2026-05-01' } },
   ];
 
   it('rankForAgents drops drafts and orders by section then priority', () => {

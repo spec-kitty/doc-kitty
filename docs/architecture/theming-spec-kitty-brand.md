@@ -1,7 +1,7 @@
 ---
 title: Spec Kitty brand theme
 description: "The derived --dk-* values and atomic-design chrome for the Spec Kitty brand theme, transcribed from the brand guide and self-contained."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Architecture
 kind: Reference

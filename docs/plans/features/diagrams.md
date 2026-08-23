@@ -1,9 +1,10 @@
 ---
 title: Diagrams (Mermaid + PlantUML)
 description: "Render Mermaid and PlantUML diagrams at build time into self-contained, offline-safe output."
-status: draft
+doc_status: draft
 updated: 2026-08-22
 type: Feature
+kind: Feature
 moscow:
   level: Should
   rationale: High value for technical docs, and build-time and self-contained.

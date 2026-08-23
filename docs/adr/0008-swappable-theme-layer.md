@@ -1,9 +1,10 @@
 ---
 title: "ADR-0008: Theme and chrome are a swappable, layered concern"
 description: Consumers rebrand the docsite through a defined theme contract, without forking the toolkit.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: ADR
+kind: ADR
 authors:
   - stijn@sddevelopment.be
 related:

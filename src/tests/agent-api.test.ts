@@ -9,7 +9,8 @@ describe('toAgentRecord', () => {
         title: 'Deployment',
         description: 'How to ship to each environment.',
         type: 'Guide',
-        status: 'active',
+        doc_status: 'active',
+        kind: 'How-To',
         tags: ['ci'],
         related: ['operations/runbooks/deploy'],
         updated: '2026-08-01',
@@ -23,7 +24,8 @@ describe('toAgentRecord', () => {
       title: 'Deployment',
       description: 'How to ship to each environment.',
       type: 'Guide',
-      status: 'active',
+      doc_status: 'active',
+      kind: 'How-To',
       tags: ['ci'],
       related: ['operations/runbooks/deploy'],
       priority: 0.7,
@@ -43,7 +45,8 @@ describe('toAgentRecord', () => {
     const record = toAgentRecord({ slug: 'x', data: { title: 'X' } });
     expect(record.description).toBe('');
     expect(record.type).toBeNull();
-    expect(record.status).toBe('active');
+    expect(record.doc_status).toBe('active');
+    expect(record.kind).toBe('');
     expect(record.tags).toEqual([]);
     expect(record.related).toEqual([]);
     expect(record.priority).toBe(0.5);

@@ -1,9 +1,10 @@
 ---
 title: Common Docs — Kitty Variation
 description: The documentation convention Doc Kitty implements — base convention, Kitty twists, and enhancements.
-status: active
+doc_status: active
 updated: 2026-08-21
 type: Context
+kind: Reference
 tags: [convention, spec, metadata, okf]
 authors:
   - stijn@sddevelopment.be
@@ -101,13 +102,14 @@ Every file **except a frontmatter-free `log.md`** opens with YAML frontmatter.
 ---
 title: Short descriptive title
 description: One sentence describing what this document contains.
-status: draft | active | deprecated | superseded
+doc_status: draft | active | deprecated | superseded
 updated: YYYY-MM-DD
 type: <see Type values>
+kind: <see Kind values>
 ---
 ```
 
-`status` meanings: `draft` (WIP, not authoritative), `active` (current and
+`doc_status` meanings: `draft` (WIP, not authoritative), `active` (current and
 maintained), `deprecated` (no longer applies, kept for history), `superseded`
 (replaced — link the replacement in `related`).
 
@@ -139,10 +141,30 @@ maintained), `deprecated` (no longer applies, kept for history), `superseded`
 Section `README.md` files take their section's `type` (e.g. `context/README.md`
 → `Context`).
 
+### `kind` values
+
+`type` says where a page lives (its section); `kind` says what kind of page it
+is and how to read it. `kind` is **required on every page** — including the
+bundle-root `README.md` — and drives per-kind layout ([ADR-0009](../adr/0009-finalize-metadata-contract.md)).
+The vocabulary is open: the validator checks the canonical set and warns on an
+unknown value rather than failing.
+
+- **Content quadrants** (Divio): `Tutorial`, `How-To`, `Reference`,
+  `Explanation`.
+- **Structural kinds**: `Hub` (a section index or link list), `ADR`,
+  `Changelog`, `Glossary`, `Presentation`, `Persona`, and the planning kinds
+  `Planning`, `Feature`, `User-Journey`.
+
+A section `README.md` is a `Hub`; an ADR page is `kind: ADR`; a getting-started
+guide is a `Tutorial`; most prose pages are `Reference` or `Explanation`. `type`
+and `kind` are independent axes and may coincide (an ADR is `type: ADR`,
+`kind: ADR`) or differ (a guide is `type: Guide` with `kind: How-To`).
+
 ### The bundle root
 
 `docs/README.md` is exempt from `type` and instead carries `okf_version: "0.2"`
-alongside the standard required fields.
+alongside the standard required fields — it still carries `doc_status` and
+`kind` (`Hub`).
 
 ### Optional fields
 
@@ -171,10 +193,10 @@ Beyond rendering, the toolkit generates from this metadata:
 ### ADR status reconciliation
 
 Common Docs' ADR template uses an ADR-specific `status` (`proposed | accepted |
-…`). The Kitty Variation keeps every file on the one convention-wide `status`
-enum: frontmatter `status` records the *document* lifecycle (`active`), while
-the *decision* status lives in the ADR body's `## Status` section and the
-`adr/README.md` table.
+…`). The Kitty Variation keeps every file on the one convention-wide
+`doc_status` enum: frontmatter `doc_status` records the *document* lifecycle
+(`active`), while the *decision* status lives in the ADR body's `## Status`
+section and the `adr/README.md` table.
 
 ## 5. Relationship to `AGENTS.md`
 
