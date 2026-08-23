@@ -23,6 +23,10 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+// WP05 out-of-map edit (recorded): the chrome + pagefind assertions live in their
+// own WP05-owned module to keep lane ownership clean; the main gate awaits them so
+// `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
+import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 
 // ---------------------------------------------------------------------------
 // Pinned expectations for today's example content (T015).
@@ -346,6 +350,10 @@ async function main() {
     fail(`known page: ${KNOWN_PAGE_RELPATH} does not look like a rendered HTML document`);
   }
   ok(`known page: ${KNOWN_PAGE_RELPATH} rendered to HTML`);
+
+  // 7) Chrome + pagefind assertions (WP05-owned module). Fails non-zero on the
+  // first stubbed/missing chrome element, same contract as the checks above.
+  await assertChromeArtifacts(distDir);
 
   process.stdout.write(`assert:artifacts: PASS — all build artifacts present and valid in ${distDir}\n`);
 }
