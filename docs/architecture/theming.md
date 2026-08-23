@@ -109,9 +109,11 @@ theme.
 | `dk:related` | related-pages block | `entry.data.related[]` + resolved targets | `MarkdownContent`, after `<slot/>` |
 | `dk:external-references` | external/citation block | `entry.data.external_references[]` + catalog | `MarkdownContent`, after `dk:related` |
 
-The carriers read page state from `Astro.locals.starlightRoute` (the Starlight 0.30
-route-data API); custom frontmatter reaches `entry.data` only because the toolkit's
-schema extends `docsSchema({ extend })`.
+The carriers read page state from `Astro.locals.starlightRoute` (the Starlight
+route-data API, available from Starlight 0.32 — see
+[ADR-0014](../adr/0014-upgrade-starlight-for-route-data-api.md)); custom frontmatter
+reaches `entry.data` only because the toolkit's schema extends
+`docsSchema({ extend })`.
 
 ## Per-kind layout resolution
 
@@ -202,7 +204,7 @@ Verify against the pinned Starlight/Astro at build:
 
 - The four carrier overrides (`Head`, `PageTitle`, `MarkdownContent`, `Footer`) are
   the coupling points to re-verify on any Starlight bump; carriers must use
-  `Astro.locals.starlightRoute` (0.30), not the older `Astro.props`.
+  `Astro.locals.starlightRoute` (Starlight ≥0.32, ADR-0014), not the older `Astro.props`.
 - Custom frontmatter (`kind`, `hero_image`, `audience`, `related`,
   `external_references`) reaches `entry.data` only via `docsSchema({ extend })`; the
   toolkit must export the extend schema and the site must wire it.

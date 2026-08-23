@@ -1,0 +1,25 @@
+---
+/*
+ * Doc Kitty carrier: Head (ADR-0013 substrate, theming.md slot surface).
+ *
+ * M1 is a thin pass-through: render Starlight's default <head>, then host
+ * doc-kitty's own `dk:head` slot (WP03 fills it with the share/social meta —
+ * og:image / twitter:image resolved by social_thumb → hero_image.src →
+ * site-default). A stable `dk-chrome` marker proves — in the built HTML — that
+ * the toolkit carrier loaded (not a silent fallback to Starlight's own Head).
+ *
+ * Reads page state from `Astro.locals.starlightRoute` (Starlight ≥0.30
+ * route-data API), never through component props (the pre-0.30 pattern) — C-004.
+ * The cast types the locals field without widening to `any`.
+ */
+import Default from '@astrojs/starlight/components/Head.astro';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+---
+
+<Default {...route} />
+{/* Proof-of-carrier marker (greppable in dist HTML) + dk:head host point. */}
+<meta name="dk-chrome" content="doc-kitty-carriers" />
+<slot name="dk:head" />

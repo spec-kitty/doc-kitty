@@ -1,0 +1,32 @@
+---
+/*
+ * Doc Kitty carrier: PageTitle (ADR-0013 substrate, theming.md slot surface).
+ *
+ * Hosts two of doc-kitty's own-chrome slots around Starlight's <h1>:
+ *   - `dk:page-hero`    ABOVE the <h1> (WP03 renders entry.data.hero_image
+ *                        through the Astro image pipeline).
+ *   - `dk:metadata-band` BELOW the <h1> (WP03 renders the text-labelled
+ *                        doc_status pill + updated + description).
+ *
+ * M1 ships the EMPTY host structure only — WP03 adds the slot bodies, so the
+ * seams already exist and WP03 need not touch this carrier's shape. The band
+ * host lives inside the normal content flow so its text stays in Starlight's
+ * searchable region (NFR-004).
+ *
+ * Reads `Astro.locals.starlightRoute` (Starlight ≥0.30), never through
+ * component props (the pre-0.30 pattern) — C-004.
+ */
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+---
+
+{/* dk:page-hero — host point above <h1> (WP03 fills the hero body). */}
+<div class="dk-page-hero" data-dk-slot="dk:page-hero"><slot name="dk:page-hero" /></div>
+
+<Default {...route} />
+
+{/* dk:metadata-band — host point below <h1> (WP03 fills the band body). */}
+<div class="dk-metadata-band" data-dk-slot="dk:metadata-band"><slot name="dk:metadata-band" /></div>

@@ -38,13 +38,23 @@ import process from 'node:process';
 //     which `isPublished()` excludes from the agent index;
 //   - 13 − 1 = 12 published, discoverable pages.
 // Independently verified against example/docs at authoring time: counting
-// non-draft *.md there yields 12, matching the emitted `count`. (The sitemap
-// reports 13 locs because @astrojs/sitemap crawls built HTML, including the
-// draft template page — so the sitemap is NOT the clean cross-check; the
-// published-Markdown count is.)
+// non-draft *.md there yields 12, matching the emitted `count`.
+//
+// Sitemap parity (WP02/T016): the @astrojs/sitemap `filter` now DROPS every
+// draft page's URL (INV-1), so the sitemap's page-URL count equals this same
+// published set — 12 — and the single draft page (adr/template) is absent from
+// it. Rationale for editing this WP01-owned file here: the filter and the
+// assertion that proves it must land together, or the boundary goes red (C-010).
 //
 // Bump this ONLY as a deliberate, reviewable act when example content changes.
 const EXPECTED_INDEX_ENTRY_COUNT = 12;
+
+// Sitemap page-URL count == the published set (draft excluded by the filter).
+const EXPECTED_SITEMAP_URL_COUNT = 12;
+
+// The single draft page (example/docs/adr/template.md, doc_status: draft). Its
+// route MUST NOT appear in the sitemap once the draft filter is in place.
+const DRAFT_ROUTE_MARKER = 'adr/template';
 
 // Required top-level keys of the agent index and their JS types.
 const EXPECTED_INDEX_SHAPE = {
@@ -220,6 +230,8 @@ async function main() {
   if (sitemaps.length === 0) {
     fail('sitemap: no sitemap*.xml file found at the dist root');
   }
+  let sitemapUrlCount = 0;
+  let draftSeenIn = null;
   for (const name of sitemaps) {
     const abs = path.join(distDir, name);
     await assertNonEmptyFile(abs, `sitemap ${name}`);
@@ -229,8 +241,29 @@ async function main() {
     } catch (err) {
       fail(`sitemap ${name}: not well-formed XML (${err.message})`);
     }
+    // Count page URLs only: page entries are <url>…</url>; the sitemap index
+    // uses <sitemap>…</sitemap>, so <url> never over-counts sub-sitemap refs.
+    sitemapUrlCount += (xml.match(/<url\b/g) ?? []).length;
+    if (xml.includes(DRAFT_ROUTE_MARKER)) draftSeenIn = name;
   }
   ok(`sitemap: ${sitemaps.length} file(s) present, non-empty, well-formed (${sitemaps.join(', ')})`);
+
+  // Draft-exclusion (INV-1 / WP02 filter): the draft route must be absent and
+  // the page-URL count must equal the published set.
+  if (draftSeenIn !== null) {
+    fail(
+      `sitemap: draft route "${DRAFT_ROUTE_MARKER}" is present in ${draftSeenIn} — ` +
+        `the @astrojs/sitemap draft filter must exclude every doc_status:draft page`,
+    );
+  }
+  if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
+    fail(
+      `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
+        `(the published set — 13 example files − 1 draft; if example content changed ` +
+        `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
+    );
+  }
+  ok(`sitemap: draft "${DRAFT_ROUTE_MARKER}" absent, ${sitemapUrlCount} page URL(s) (published set)`);
 
   // 2) rss.xml — present, well-formed.
   const rssAbs = path.join(distDir, 'rss.xml');
