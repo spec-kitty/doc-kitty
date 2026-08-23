@@ -14,12 +14,31 @@
  */
 import Default from '@astrojs/starlight/components/Head.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import HeadShare from './slots/HeadShare.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
+
+// Convention frontmatter reaches entry.data via docsSchema({ extend }) (WP01);
+// Starlight's Props type doesn't know these fields, so read the share-relevant
+// slice through a narrow cast rather than widening to `any`.
+const entry = route.entry;
+const data = entry.data as unknown as {
+  title?: string;
+  hero_image?: { src: string; alt: string };
+  social_thumb?: { src: string; alt: string } | string;
+};
+const filePath = (entry as unknown as { filePath?: string }).filePath;
 ---
 
 <Default {...route} />
 {/* Proof-of-carrier marker (greppable in dist HTML) + dk:head host point. */}
 <meta name="dk-chrome" content="doc-kitty-carriers" />
+{/* WP03: og:image / twitter:image share metadata + fallback chain. */}
+<HeadShare
+  heroImage={data.hero_image}
+  socialThumb={data.social_thumb}
+  filePath={filePath}
+  title={data.title}
+/>
 <slot name="dk:head" />

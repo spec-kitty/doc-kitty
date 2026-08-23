@@ -1,0 +1,118 @@
+---
+/*
+ * dk:metadata-band slot body (WP03 / FR-013).
+ *
+ * A strip below the <h1> on published pages: a TEXT-LABELLED `doc_status` pill
+ * (the status word is real text, never colour-only — NFR-001), the `updated`
+ * date (mono, muted), and the page `description`. Styled with `--dk-*` tokens
+ * only (C-007); each status tone uses a pre-verified AA `--dk-color-<state>` /
+ * `-bg` pair, so the pill text clears contrast by construction.
+ *
+ * The carrier only mounts this on published pages; a draft page renders no band.
+ */
+interface Props {
+  docStatus?: string;
+  updated?: Date;
+  description?: string;
+}
+
+const { docStatus, updated, description } = Astro.props;
+
+const status = docStatus ?? 'draft';
+
+// doc_status → state tone. Unknown values fall back to the neutral tone; the
+// visible label is always the status word itself, so meaning never depends on
+// colour alone.
+const STATUS_TONE: Record<string, string> = {
+  active: 'success',
+  draft: 'warning',
+  deprecated: 'neutral',
+  superseded: 'info',
+};
+const tone = STATUS_TONE[status] ?? 'neutral';
+
+const updatedIso = updated
+  ? new Date(updated).toISOString().slice(0, 10)
+  : undefined;
+---
+
+<div class="dk-band" data-doc-status={status}>
+  <span class={`dk-band__status dk-band__status--${tone}`}>
+    <span class="dk-visually-hidden">Document status:</span>{status}
+  </span>
+  {
+    updatedIso && (
+      <time class="dk-band__updated" datetime={updatedIso}>
+        Updated {updatedIso}
+      </time>
+    )
+  }
+  {description && <span class="dk-band__desc">{description}</span>}
+</div>
+
+<style>
+  .dk-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--dk-space-xs) var(--dk-space-sm);
+    max-width: var(--dk-width-band);
+    margin: var(--dk-space-xs) 0 var(--dk-space-lg);
+    padding-bottom: var(--dk-space-xs);
+    border-bottom: 1px solid var(--dk-color-border);
+    font-size: var(--dk-text-sm);
+  }
+
+  .dk-band__status {
+    display: inline-block;
+    padding: var(--dk-space-3xs) var(--dk-space-xs);
+    border-radius: var(--dk-radius-pill);
+    font-size: var(--dk-text-xs);
+    font-weight: var(--dk-weight-semibold);
+    letter-spacing: var(--dk-tracking-caps);
+    text-transform: uppercase;
+    line-height: var(--dk-leading-tight);
+    white-space: nowrap;
+  }
+
+  .dk-band__status--success {
+    color: var(--dk-color-success);
+    background: var(--dk-color-success-bg);
+  }
+  .dk-band__status--warning {
+    color: var(--dk-color-warning);
+    background: var(--dk-color-warning-bg);
+  }
+  .dk-band__status--info {
+    color: var(--dk-color-info);
+    background: var(--dk-color-info-bg);
+  }
+  .dk-band__status--neutral {
+    color: var(--dk-color-neutral);
+    background: var(--dk-color-neutral-bg);
+  }
+
+  .dk-band__updated {
+    font-family: var(--dk-font-mono);
+    font-size: var(--dk-text-xs);
+    color: var(--dk-color-text-muted);
+  }
+
+  .dk-band__desc {
+    color: var(--dk-color-text-muted);
+  }
+
+  /* Screen-reader-only label; keeps the pill's meaning explicit without
+     showing redundant text to sighted readers. */
+  .dk-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

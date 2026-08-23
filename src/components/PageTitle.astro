@@ -18,15 +18,48 @@
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { isPublished } from '../lib/metadata.js';
+import PageHero from './slots/PageHero.astro';
+import MetadataBand from './slots/MetadataBand.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
+
+// The convention's frontmatter reaches entry.data only via docsSchema({ extend })
+// (WP01). Starlight's own Props type doesn't know those fields, so read the
+// WP03-relevant slice through a narrow cast rather than widening to `any`.
+const entry = route.entry;
+const data = entry.data as unknown as {
+  doc_status?: string;
+  updated?: Date;
+  description?: string;
+  hero_image?: { src: string; alt: string };
+};
+// entry.filePath (relative to the site root) locates colocated hero assets.
+const filePath = (entry as unknown as { filePath?: string }).filePath;
+const showBand = isPublished(data as Parameters<typeof isPublished>[0]);
 ---
 
-{/* dk:page-hero — host point above <h1> (WP03 fills the hero body). */}
-<div class="dk-page-hero" data-dk-slot="dk:page-hero"><slot name="dk:page-hero" /></div>
+{/* dk:page-hero — WP03 fills the body; a theme-provided slot still wins. */}
+<div class="dk-page-hero" data-dk-slot="dk:page-hero">
+  <slot name="dk:page-hero">
+    <PageHero heroImage={data.hero_image} filePath={filePath} />
+  </slot>
+</div>
 
 <Default {...route} />
 
-{/* dk:metadata-band — host point below <h1> (WP03 fills the band body). */}
-<div class="dk-metadata-band" data-dk-slot="dk:metadata-band"><slot name="dk:metadata-band" /></div>
+{/* dk:metadata-band — WP03 fills the body on published pages. */}
+<div class="dk-metadata-band" data-dk-slot="dk:metadata-band">
+  <slot name="dk:metadata-band">
+    {
+      showBand && (
+        <MetadataBand
+          docStatus={data.doc_status}
+          updated={data.updated}
+          description={data.description}
+        />
+      )
+    }
+  </slot>
+</div>

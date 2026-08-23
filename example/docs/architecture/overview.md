@@ -6,6 +6,9 @@ updated: 2026-08-21
 type: Architecture
 kind: Explanation
 tags: [astro, starlight, build]
+hero_image:
+  src: ./assets/overview-hero.png
+  alt: A layered diagram of the toolkit turning a docs tree into a site and feeds
 related:
   - guides/getting-started
 ---
