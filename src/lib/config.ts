@@ -6,8 +6,15 @@
  * chrome carriers) plus `@astrojs/sitemap` (with the draft-exclusion filter). A
  * site's `astro.config.mjs` spreads it and can override anything.
  *
- * Signature stays `(options)` in M1 — no `theme` parameter, no default→brand→
- * consumer merge, no virtual manifest. Those are Mission M2 (ADR-0013).
+ * M2 (ADR-0013/0015) adds an optional `theme`: `defineDocKittyIntegrations({
+ * theme })` resolves the `default → brand → consumer` merge (WP01's
+ * `resolveTheme`), emits the generated token sheet + `--dk-*→--sl-*` bridge
+ * (`emitTokenSheet`, delivered as a virtual CSS module by the manifest
+ * integration), and layers brand/consumer `customCss` AFTER it (seam 2). With NO
+ * theme the call is byte-compatible with M1 — the single static `theme.css`
+ * `customCss` entry and no generated sheet (NFR-002). The `components` map stays
+ * the four carriers in both cases (seam 3); theme `assets` ride Starlight-native
+ * `logo`/`favicon`/`title`, never a components override (ADR-0015 decision 4/5).
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -17,6 +24,8 @@ import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import { readmeToIndexId } from './metadata.js';
+import { resolveTheme, type DocKittyTheme } from './theme.js';
+import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 
 export interface DocKittyOptions {
   /** Site title shown in the header. */
@@ -42,6 +51,15 @@ export interface DocKittyOptions {
   base?: string;
   /** Escape hatch: deep overrides merged over the Starlight defaults. */
   starlight?: Partial<StarlightUserConfig>;
+  /**
+   * Optional theme: the `default → brand → consumer` layer resolved by WP01's
+   * `resolveTheme`. Omit for the byte-compatible M1 path (single static
+   * `theme.css`, no generated sheet). Providing a theme emits the merged token
+   * sheet + bridge and layers brand/consumer `customCss` after it (seam 2). Note
+   * the `components` map is FIXED at the four carriers regardless of theme (seam
+   * 3); the `starlight` escape hatch cannot add a fifth carrier override.
+   */
+  theme?: DocKittyTheme;
 }
 
 /** `<head>` links advertising the feeds and agent-API on every page. */
@@ -167,26 +185,55 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     sidebar,
     docsDir = 'docs',
     base = '/',
+    theme,
     starlight: overrides,
   } = options;
+
+  // Resolve the default → brand → consumer merge (WP01). `undefined` yields the
+  // byte-compatible M1 path: `generated === false`, `customCss` the single static
+  // entry, the Default catalog. Any theme yields `generated === true`.
+  const resolved = resolveTheme(theme);
+  const { assets } = resolved;
+
+  // Cascade order (seam 2, C-007 tokens-before-overrides):
+  //  - No theme  → the single static `theme.css` entry, byte-identical to M1.
+  //  - A theme   → the generated token sheet (virtual CSS module emitted by the
+  //    manifest integration, substituting `theme.css`) FIRST, then the merged
+  //    brand/consumer `customCss` (resolved.customCss[0] is the Default
+  //    `theme.css`, replaced here by the emitted sheet).
+  const customCss = resolved.generated
+    ? [THEME_CSS_MODULE_ID, ...resolved.customCss.slice(1)]
+    : resolved.customCss;
 
   const starlightConfig: StarlightUserConfig = {
     title,
     ...(description ? { description } : {}),
     ...(social ? { social } : {}),
     ...(sidebar ? { sidebar } : {}),
+    // Theme assets ride Starlight-native config (ADR-0015 decision 4/5): no
+    // Header/SiteTitle override, no components-map expansion. A consumer's own
+    // `starlight` escape hatch still wins (spread after these).
+    ...(assets.logo ? { logo: { src: assets.logo } } : {}),
+    ...(assets.favicon ? { favicon: assets.favicon } : {}),
     head: discoveryHead,
-    components: carriers,
-    // Token sheet FIRST (C-007, tokens-before-overrides): it declares the
-    // complete --dk-* catalog + the --dk-*→--sl-* bridge. Any future override
-    // sheet (M2 brand/consumer) is appended AFTER it so it wins by source order.
-    customCss: ['@commondocs-kitty/toolkit/styles/theme.css'],
+    customCss,
     ...overrides,
+    // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
+    // four carriers, in EVERY case (with or without a theme). Asserted AFTER
+    // `...overrides` so the escape hatch cannot silently add a fifth carrier
+    // override — a theme addresses the carriers' `dk:` slots, never this map.
+    // WP08 automates this exactly-four invariant.
+    components: carriers,
   };
 
   return [
     starlight(starlightConfig),
     // INV-1: draft pages are unpublished, so their URLs are excluded here.
     sitemap({ filter: sitemapDraftFilter(docsDir, base) }),
+    // Transport the merged `kind → layout` + `dk:slot → component` maps to the
+    // carriers as `virtual:doc-kitty/manifest` (synchronous `resolveLayout`, no
+    // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports
+    // the manifest even on the no-theme path (Hub registered, else Default).
+    docKittyManifest(resolved),
   ];
 }
