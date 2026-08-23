@@ -9,11 +9,27 @@
  */
 import Default from '@astrojs/starlight/components/Footer.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { slotComponents } from 'virtual:doc-kitty/manifest';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
+
+// Per-carrier slot resolution (ADR-0015 decision 2): a theme may override
+// `dk:site-footer` through the merged manifest. With no theme `slotComponents` is
+// empty → the doc-kitty default footer (Starlight's) renders. WP05's brand footer
+// organism carries an override-unique `dk-site-footer--brand` class the default
+// never emits; that class in the branded build is WP08's (T047) non-fakeable
+// proof that `slotComponents` actually resolved THROUGH this carrier.
+const SiteFooter = slotComponents['dk:site-footer'];
 ---
 
-<Default {...route} />
-{/* dk:site-footer host point (WP03+ fills the body). */}
+{/*
+  dk:site-footer marker: a build-visible attestation the Footer carrier is the one
+  rendering (WP08). Emitted on BOTH paths, so it alone does not prove resolution —
+  the brand-only `dk-site-footer--brand` class does.
+*/}
+<div data-dk-slot="dk:site-footer">
+  {SiteFooter ? <SiteFooter /> : <Default {...route} />}
+</div>
+{/* dk:site-footer named host point (a page/consumer may still inject). */}
 <slot name="dk:site-footer" />

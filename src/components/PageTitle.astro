@@ -18,12 +18,20 @@
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { slotComponents } from 'virtual:doc-kitty/manifest';
 import { isPublished } from '../lib/metadata.js';
 import PageHero from './slots/PageHero.astro';
 import MetadataBand from './slots/MetadataBand.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
+
+// Per-carrier slot resolution (ADR-0015 decision 2): a theme may override the two
+// M1 metadata slots through the merged manifest. With no theme `slotComponents`
+// is empty → the M1 slot components (`PageHero`, `MetadataBand`) render
+// unchanged, so the `data-dk-slot` hosts and band markers stay byte-identical.
+const PageHeroSlot = slotComponents['dk:page-hero'];
+const MetadataBandSlot = slotComponents['dk:metadata-band'];
 
 // The convention's frontmatter reaches entry.data only via docsSchema({ extend })
 // (WP01). Starlight's own Props type doesn't know those fields, so read the
@@ -40,25 +48,35 @@ const filePath = (entry as unknown as { filePath?: string }).filePath;
 const showBand = isPublished(data as Parameters<typeof isPublished>[0]);
 ---
 
-{/* dk:page-hero — WP03 fills the body; a theme-provided slot still wins. */}
+{/* dk:page-hero — theme override wins; else the M1 PageHero default. */}
 <div class="dk-page-hero" data-dk-slot="dk:page-hero">
   <slot name="dk:page-hero">
-    <PageHero heroImage={data.hero_image} filePath={filePath} />
+    {
+      PageHeroSlot ? (
+        <PageHeroSlot />
+      ) : (
+        <PageHero heroImage={data.hero_image} filePath={filePath} />
+      )
+    }
   </slot>
 </div>
 
 <Default {...route} />
 
-{/* dk:metadata-band — WP03 fills the body on published pages. */}
+{/* dk:metadata-band — theme override wins; else the M1 band on published pages. */}
 <div class="dk-metadata-band" data-dk-slot="dk:metadata-band">
   <slot name="dk:metadata-band">
     {
-      showBand && (
-        <MetadataBand
-          docStatus={data.doc_status}
-          updated={data.updated}
-          description={data.description}
-        />
+      MetadataBandSlot ? (
+        <MetadataBandSlot />
+      ) : (
+        showBand && (
+          <MetadataBand
+            docStatus={data.doc_status}
+            updated={data.updated}
+            description={data.description}
+          />
+        )
       )
     }
   </slot>

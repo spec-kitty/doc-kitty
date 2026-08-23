@@ -21,6 +21,7 @@
  */
 import Default from '@astrojs/starlight/components/MarkdownContent.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { slotComponents } from 'virtual:doc-kitty/manifest';
 import { resolveLayout } from '../layouts/kind-layouts.ts';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
@@ -30,15 +31,28 @@ const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
 // generated collection types.
 const kind = (route.entry.data as { kind?: string }).kind;
 const Layout = resolveLayout(kind);
+
+// M3 content-block host points (dk:audience / dk:related / dk:external-references)
+// consult the manifest for a THEMED component only — they stay UNWIRED to M3 data
+// (C-010): no read of entry.data.audience / related / external_references here.
+// With no matching theme slot each renders nothing, so the M1 output is
+// byte-identical and the layout-resolution body below is untouched (ADR-0015 seam
+// 1).
+const AudienceSlot = slotComponents['dk:audience'];
+const RelatedSlot = slotComponents['dk:related'];
+const ExternalRefsSlot = slotComponents['dk:external-references'];
 ---
 
 <Layout {...route}>
-  {/* dk:audience — host point before the content (WP03 fills the body). */}
+  {/* dk:audience — host point before the content; themed passthrough only (M3). */}
+  {AudienceSlot && <AudienceSlot />}
   <slot name="dk:audience" />
 
   <Default {...route}><slot /></Default>
 
-  {/* dk:related + dk:external-references — host points after the content. */}
+  {/* dk:related + dk:external-references — host points after the content (M3). */}
+  {RelatedSlot && <RelatedSlot />}
   <slot name="dk:related" />
+  {ExternalRefsSlot && <ExternalRefsSlot />}
   <slot name="dk:external-references" />
 </Layout>

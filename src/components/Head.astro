@@ -14,10 +14,17 @@
  */
 import Default from '@astrojs/starlight/components/Head.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { slotComponents } from 'virtual:doc-kitty/manifest';
 import HeadShare from './slots/HeadShare.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
+
+// Per-carrier slot resolution (ADR-0015 decision 2): a theme may override
+// `dk:head` through the merged manifest. With no theme `slotComponents` is empty
+// → the doc-kitty default (HeadShare — the FR-009 og:image/twitter:image share
+// path) renders, byte-identical to M1.
+const DkHead = slotComponents['dk:head'];
 
 // Convention frontmatter reaches entry.data via docsSchema({ extend }) (WP01);
 // Starlight's Props type doesn't know these fields, so read the share-relevant
@@ -32,13 +39,23 @@ const filePath = (entry as unknown as { filePath?: string }).filePath;
 ---
 
 <Default {...route} />
-{/* Proof-of-carrier marker (greppable in dist HTML) + dk:head host point. */}
+{/* Proof-of-carrier marker (greppable in dist HTML), always emitted. */}
 <meta name="dk-chrome" content="doc-kitty-carriers" />
-{/* WP03: og:image / twitter:image share metadata + fallback chain. */}
-<HeadShare
-  heroImage={data.hero_image}
-  socialThumb={data.social_thumb}
-  filePath={filePath}
-  title={data.title}
-/>
+{/*
+  dk:head slot: a theme override wins; otherwise the doc-kitty default — the
+  og:image / twitter:image share metadata + fallback chain (unchanged from M1,
+  proven by the three-distinct-og:image assertion).
+*/}
+{
+  DkHead ? (
+    <DkHead />
+  ) : (
+    <HeadShare
+      heroImage={data.hero_image}
+      socialThumb={data.social_thumb}
+      filePath={filePath}
+      title={data.title}
+    />
+  )
+}
 <slot name="dk:head" />
