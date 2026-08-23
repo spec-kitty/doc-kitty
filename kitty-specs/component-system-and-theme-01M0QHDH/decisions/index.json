@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-08-23T14:47:37.073172Z",
+      "decision_id": "01M0QHERVHZC8HQQGP7TGHN4CV",
+      "final_answer": "M2 ships the Persona per-kind LAYOUT shell (passport card: identity strip, <dl> field grid, avatar from hero_image.alt) resolved through the merged manifest, rendering existing M1 frontmatter fields. It proves manifest-driven per-kind-layout override with two bespoke layouts (Hub + Persona). M3 owns persona-PAGE authoring, audience-resolution, and the audience/related/external-reference BLOCKS plus the citation catalog. Boundary line: per-kind layout SHELLS = M2 (theme concern); content-resolution BLOCKS that resolve links to other pages = M3.",
+      "input_key": "persona_layout_boundary",
+      "mission_id": "01M0QHDH2H1SM31VEYRD8G1D8P",
+      "mission_slug": "component-system-and-theme-01M0QHDH",
+      "opened_by": "cli",
+      "options": [
+        "M2 ships the Persona layout shell; M3 owns persona pages + audience/related/reference blocks + citation catalog",
+        "Defer the Persona layout entirely to M3; M2 proves per-kind-layout override via Hub only",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Does the Persona per-kind LAYOUT (the passport shell resolved through the merged manifest) ship in M2 as a theme/brand organism, or defer entirely to M3 alongside persona authoring and audience-resolution?",
+      "rationale": null,
+      "resolved_at": "2026-08-23T14:50:37.619729Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.persona-layout-boundary",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M0QHDH2H1SM31VEYRD8G1D8P",
+  "version": 1
+}
