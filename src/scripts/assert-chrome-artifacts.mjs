@@ -176,6 +176,109 @@ const HUB_CHILD_CARD_MARKERS = [
   'Product Explanation The problem this example solves and who it is for.',
 ];
 
+// --- T033: Persona fixture (WP06) -----------------------------------------
+// The Persona fixture renders through the brand's `Persona` layout, whose
+// layout-UNIQUE marker is `.dk-passport` (bound to the layout, NOT a generic
+// <h1>/<dl> — a fallback-to-Default regression drops the passport and flips the
+// check red, SC-004). Its persona-UNIQUE string must live in the Persona page's
+// OWN url-scoped Pagefind fragment (NFR-004): the body is searchable, scoped to
+// this route (mirrors the HUB_FRAGMENT pattern). The fixture is a DRAFT — drafts
+// are excluded from the agent-index/sitemap but STILL render to HTML and are
+// Pagefind-indexed, so both proofs hold on a draft page.
+const PERSONA_PAGE = path.join('personas', 'example-persona', 'index.html');
+const PERSONA_LAYOUT_MARKER = 'dk-passport';
+const PERSONA_FRAGMENT_URL = '/personas/example-persona/';
+// WP06's recorded persona-unique string (acceptance.md). Persona-unique so it
+// cannot be satisfied by boilerplate shared with any other page's fragment.
+const PERSONA_UNIQUE_STRING = 'marzipan mapmaker passport sentinel';
+
+// --- T034: cascade-order discriminators (ADR-0013 seam 2) ------------------
+// The generated TOKEN sheet (emitTokenSheet) is the ONLY sheet that emits the
+// `--dk-*→--sl-*` bridge — brand/consumer sheets declare zero `--sl-*` (FR-004),
+// so a bridge assignment is a robust TOKEN-sheet-unique discriminator (hashed
+// filenames do not matter; we match by content). The `.dk-related-card` rule is
+// authored only in the brand component sheet (brand-components.css), so it is a
+// robust BRAND-sheet-unique discriminator. Seam 2 requires the token sheet's
+// declarations to precede the brand's, so tokens-before-overrides holds.
+const TOKEN_SHEET_DISCRIMINATOR = /--sl-color-accent\s*:\s*var\(\s*--dk-color-accent\s*\)/;
+const BRAND_SHEET_DISCRIMINATOR = /\.dk-related-card\s*\{/;
+
+// --- T035: mode-varying colour tokens (FR-011) -----------------------------
+// The mode-varying `--dk-*` colour subset — MIRRORS `theme.ts` DEFAULT_DARK keys
+// (the enumerated set `emitTokenSheet` re-declares under the dark selector), in
+// the same grouped order so a reviewer can diff by eye. Each MUST be re-declared
+// under a dark selector in the emitted CSS, else a brand override would silently
+// leak the light value into dark mode. Keep in sync with theme.ts DEFAULT_DARK.
+const REQUIRED_MODE_VARYING = [
+  // Surfaces
+  '--dk-color-bg',
+  '--dk-color-bg-nav',
+  '--dk-color-bg-sidebar',
+  '--dk-color-surface-1',
+  '--dk-color-surface-2',
+  '--dk-color-surface-inset',
+  '--dk-color-border',
+  '--dk-color-border-strong',
+  // Text
+  '--dk-color-text',
+  '--dk-color-text-strong',
+  '--dk-color-text-muted',
+  '--dk-color-text-invert',
+  // Accent
+  '--dk-color-accent-low',
+  '--dk-color-accent',
+  '--dk-color-accent-high',
+  '--dk-color-accent-text',
+  // State + paired -bg
+  '--dk-color-info',
+  '--dk-color-info-bg',
+  '--dk-color-success',
+  '--dk-color-success-bg',
+  '--dk-color-warning',
+  '--dk-color-warning-bg',
+  '--dk-color-danger',
+  '--dk-color-danger-bg',
+  '--dk-color-neutral',
+  '--dk-color-neutral-bg',
+];
+
+// The authored brand sheets (theme Layer 2). T035 asserts these declare ZERO
+// `--sl-*` (the `--dk-*→--sl-*` bridge is owned solely by the base token sheet;
+// a theme setting `--sl-*` directly is forbidden, FR-004/ADR-0011). Astro's
+// production build BUNDLES every customCss entry together with Starlight's own
+// `--sl-*`-heavy CSS into one hashed stylesheet, so the emitted dist cannot be
+// scoped back to "the brand sheet"; the authored source IS the served brand
+// sheet (nothing rewrites `--sl-*` between source and bundle), so the honest,
+// non-fakeable check reads the source brand sheets directly. Resolved relative
+// to this script (src/scripts/ → src/themes/spec-kitty/).
+const BRAND_SHEET_SOURCES = [
+  '../themes/spec-kitty/tokens.css',
+  '../themes/spec-kitty/brand.css',
+  '../themes/spec-kitty/components/brand-components.css',
+];
+
+// --- T046: brand interactive targets (WCAG 2.2 AA, NFR-001) ----------------
+// The brand's interactive target classes named in WP05 T025 (brand-components.css
+// + the SiteFooter organism). axe cannot machine-verify target-size (2.5.8) or a
+// visible focus indicator, so each MUST carry a ≥24px min-height/min-width rule
+// AND a `:focus-visible` ring in the emitted CSS. This list IS the contract —
+// a rename in brand-components.css / SiteFooter.astro must update it here.
+const BRAND_INTERACTIVE_TARGETS = [
+  '.dk-related-card',
+  '.dk-reference-item',
+  '.dk-passport__field a',
+  '.dk-site-footer__link',
+];
+
+// --- T047: brand footer slot-override observable (SC-004) ------------------
+// The override-unique class the brand's SiteFooter organism emits, rendered
+// through WP03's Footer carrier. Its presence proves `slotComponents` resolved
+// through the carrier: a stub that imports `slotComponents` but renders the
+// DEFAULT footer would not emit it, so this flips red.
+const FOOTER_BRAND_MARKER = 'dk-site-footer--brand';
+// A branded published page that renders the footer (the site index).
+const FOOTER_PAGE = 'index.html';
+
 // ---------------------------------------------------------------------------
 
 function fail(message) {
@@ -251,6 +354,54 @@ function hasMinTarget24(css) {
   return false;
 }
 
+/** The rendered stylesheet <link> hrefs on a page, in HEAD (source/cascade)
+ * order, excluding `media="print"` sheets. Used by the cascade-order check so
+ * the token/brand discriminators are compared in the order the browser applies
+ * them (T034). */
+function stylesheetHrefs(html) {
+  const hrefs = [];
+  const re = /<link\b[^>]*>/gi;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const tag = m[0];
+    if (!/\brel="stylesheet"/i.test(tag)) continue;
+    const media = tag.match(/\bmedia="([^"]*)"/i);
+    if (media && /\bprint\b/i.test(media[1])) continue;
+    const href = tag.match(/\bhref="([^"]*)"/i);
+    if (href) hrefs.push(href[1]);
+  }
+  return hrefs;
+}
+
+/** Map a stylesheet href to its dist `_astro/<file>.css` path, or null if the
+ * href is not an emitted `_astro` asset (base-prefix and hash agnostic). */
+function astroCssPath(distDir, href) {
+  const idx = href.indexOf('/_astro/');
+  if (idx === -1) return null;
+  const base = href.slice(idx + '/_astro/'.length);
+  if (!base.endsWith('.css')) return null;
+  return path.join(distDir, '_astro', base);
+}
+
+/** Extract the bodies of every `[data-theme…dark…]` selector block in `css`.
+ * The emitted chrome CSS is flat (no nesting), so a non-brace scan is sufficient.
+ * Minified selectors drop the quotes (`[data-theme=dark]`), so match loosely on
+ * the `data-theme` + `dark` pair. Used to prove each mode-varying token is
+ * re-declared under a dark selector (T035). */
+function darkBlockBodies(css) {
+  const bodies = [];
+  const re = /([^{}]*\[data-theme[^{}]*dark[^{}]*)\{([^{}]*)\}/gi;
+  let m;
+  while ((m = re.exec(css)) !== null) bodies.push(m[2]);
+  return bodies;
+}
+
+/** Strip CSS block comments, so a `--sl-*` mentioned only in prose does not read
+ * as a declaration (T035 brand-sheet scan). */
+function stripCssComments(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
 // ---------------------------------------------------------------------------
 
 export async function assertChromeArtifacts(distDir) {
@@ -285,16 +436,27 @@ export async function assertChromeArtifacts(distDir) {
   ok(`metadata band: rendered with text-labelled status "${labelHit}" on ${HERO_PAGE}`);
 
   // === 2) Optimized hero <img> (hashed /_astro/) with non-empty alt ==========
+  // Bind to the HERO image SPECIFICALLY via its own `dk-hero__img` class (the base
+  // PageHero chrome emits it — theme-agnostic, present with or without a brand),
+  // NOT "the first /_astro/ img". Under the brand the first /_astro/ img is the
+  // header LOGO (correctly `alt=""`), so a first-img selector would either read
+  // the logo's empty alt (false FAIL) or, worse, pass on a logo while the real
+  // hero shipped alt-less. Scoping to `dk-hero__img` keeps this non-fakeable: the
+  // hero must carry a hashed /_astro/ src AND a non-empty alt, and a hero that
+  // ships with an empty alt still flips this red (FR-005, NFR-001).
   const imgTags = heroHtml.match(/<img\b[^>]*>/gi) ?? [];
-  const heroImg = imgTags.find((tag) => /src="[^"]*\/_astro\/[^"]+"/i.test(tag));
+  const heroImg = imgTags.find((tag) => /\bclass="[^"]*\bdk-hero__img\b[^"]*"/i.test(tag));
   if (!heroImg) {
-    fail(`page hero: no optimized <img> with a hashed /_astro/ src on ${HERO_PAGE}`);
+    fail(`page hero: no <img class="dk-hero__img"> on ${HERO_PAGE} (hero slot not rendered?)`);
+  }
+  if (!/\bsrc="[^"]*\/_astro\/[^"]+"/i.test(heroImg)) {
+    fail(`page hero: the dk-hero__img on ${HERO_PAGE} has no hashed /_astro/ src (not the optimized image)`);
   }
   const altMatch = heroImg.match(/\balt="([^"]*)"/i);
   if (!altMatch || altMatch[1].trim().length === 0) {
-    fail(`page hero: optimized <img> on ${HERO_PAGE} has no non-empty alt (accessibility, FR-005)`);
+    fail(`page hero: dk-hero__img on ${HERO_PAGE} has no non-empty alt (accessibility, FR-005)`);
   }
-  ok(`page hero: optimized /_astro/ <img> with alt "${altMatch[1]}" on ${HERO_PAGE}`);
+  ok(`page hero: optimized dk-hero__img /_astro/ <img> with alt "${altMatch[1]}" on ${HERO_PAGE}`);
 
   // === 3) Head share tags present + og:image THREE DISTINCT across branches ===
   const requiredHeadTags = [
@@ -450,6 +612,209 @@ export async function assertChromeArtifacts(distDir) {
     );
   }
   ok(`pagefind: Hub fragment ${HUB_FRAGMENT_URL} contains its rendered child cards (title + description)`);
+
+  // === 7) Persona layout marker + persona-unique text in its OWN fragment =====
+  // (T033) Proof the Persona layout resolved (SC-004) and its body is searchable
+  // (NFR-004). Bound to the layout-UNIQUE `.dk-passport` marker (a fallback to
+  // Default drops it), and to the persona-unique string living in the Persona
+  // page's OWN url-scoped fragment (not merely somewhere in the index).
+  const personaHtml = await readHtml(dir, PERSONA_PAGE);
+  if (!personaHtml.includes(PERSONA_LAYOUT_MARKER)) {
+    fail(
+      `persona: layout-unique marker .${PERSONA_LAYOUT_MARKER} absent on ${PERSONA_PAGE} — the ` +
+        `Persona layout did not resolve (fell back to Default?), SC-004`,
+    );
+  }
+  let personaFragment = null;
+  for (const n of fragFiles) {
+    const buf = await readFile(path.join(fragDir, n));
+    let decoded;
+    try {
+      decoded = gunzipSync(buf).toString('utf8');
+    } catch (err) {
+      fail(`pagefind: fragment ${n} did not gunzip (${err.message})`);
+    }
+    const urlMatch = decoded.match(/"url":"([^"]*)"/);
+    if (urlMatch && urlMatch[1] === PERSONA_FRAGMENT_URL) {
+      personaFragment = decoded;
+      break;
+    }
+  }
+  if (personaFragment === null) {
+    fail(
+      `pagefind: no fragment indexed for the Persona page ${PERSONA_FRAGMENT_URL} — the draft ` +
+        `fixture must still be Pagefind-indexed (drafts are excluded only from the agent-index/sitemap)`,
+    );
+  }
+  if (!personaFragment.includes(PERSONA_UNIQUE_STRING)) {
+    fail(
+      `pagefind: the Persona fragment (${PERSONA_FRAGMENT_URL}) is missing its persona-unique string ` +
+        `${JSON.stringify(PERSONA_UNIQUE_STRING)} — the passport body left the searchable region (NFR-004)`,
+    );
+  }
+  ok(
+    `persona: .${PERSONA_LAYOUT_MARKER} marker on ${PERSONA_PAGE} and unique text in its own ` +
+      `fragment ${PERSONA_FRAGMENT_URL}`,
+  );
+
+  // === 8) Cascade order: token sheet BEFORE brand sheet (ADR-0013 seam 2) ======
+  // (T034) Identify the TOKEN sheet by a Default-only declaration (the
+  // `--dk-*→--sl-*` bridge — no brand sheet emits `--sl-*`) and the BRAND sheet by
+  // a brand-only declaration (`.dk-related-card`), then assert the token
+  // declarations precede the brand declarations in cascade order.
+  //
+  // Astro's PRODUCTION build bundles every `customCss` entry (generated token
+  // sheet + brand sheets) into ONE hashed stylesheet, so there is no separate
+  // per-sheet <link> to order in the multi-layer case — the seam-2 guarantee
+  // becomes a SOURCE-ORDER guarantee WITHIN that bundle. This check verifies that
+  // order NON-VACUOUSLY (it fails if either discriminator is absent, and fails if
+  // the brand declaration precedes the token declaration), whether the sheets are
+  // emitted as distinct <link>s (compare link order) or bundled (compare byte
+  // offset). [NOTE: the WP text asked this to ERROR on a single bundle to avoid a
+  // vacuous pass; the real branded build IS a single bundle, so erroring would
+  // fail the gate. The byte-offset check below is strictly STRONGER than a
+  // link-order check — it proves the actual declaration order the cascade depends
+  // on — and is reported as a deliberate, non-vacuous substitution.]
+  const cssHrefs = stylesheetHrefs(heroHtml);
+  let tokenLoc = null; // { file, offset }
+  let brandLoc = null;
+  for (let i = 0; i < cssHrefs.length; i += 1) {
+    const p = astroCssPath(dir, cssHrefs[i]);
+    if (p === null) continue;
+    let sheet;
+    try {
+      sheet = await readFile(p, 'utf8');
+    } catch {
+      continue;
+    }
+    if (tokenLoc === null) {
+      const tm = sheet.match(TOKEN_SHEET_DISCRIMINATOR);
+      if (tm) tokenLoc = { link: i, offset: tm.index };
+    }
+    if (brandLoc === null) {
+      const bm = sheet.match(BRAND_SHEET_DISCRIMINATOR);
+      if (bm) brandLoc = { link: i, offset: bm.index };
+    }
+  }
+  if (tokenLoc === null) {
+    fail(
+      `cascade: the token-sheet discriminator (${TOKEN_SHEET_DISCRIMINATOR}) was not found in any ` +
+        `stylesheet <link> on ${HERO_PAGE} — the generated token sheet/bridge is not being emitted (seam 2)`,
+    );
+  }
+  if (brandLoc === null) {
+    fail(
+      `cascade: the brand-sheet discriminator (${BRAND_SHEET_DISCRIMINATOR}) was not found in any ` +
+        `stylesheet <link> on ${HERO_PAGE} — the brand component sheet is not being emitted (seam 2)`,
+    );
+  }
+  const tokenBeforeBrand =
+    tokenLoc.link < brandLoc.link ||
+    (tokenLoc.link === brandLoc.link && tokenLoc.offset < brandLoc.offset);
+  if (!tokenBeforeBrand) {
+    fail(
+      `cascade: the brand sheet's declarations precede the token sheet's ` +
+        `(token @link${tokenLoc.link}:${tokenLoc.offset}, brand @link${brandLoc.link}:${brandLoc.offset}) — ` +
+        `tokens-before-overrides is violated (ADR-0013 seam 2 / C-007)`,
+    );
+  }
+  ok(
+    `cascade: token sheet precedes brand sheet ` +
+      (tokenLoc.link === brandLoc.link
+        ? `within the bundled stylesheet (byte offsets ${tokenLoc.offset} < ${brandLoc.offset})`
+        : `by <link> order (${tokenLoc.link} < ${brandLoc.link})`),
+  );
+
+  // === 9) Mode-varying completeness + brand sheets set no --sl-* (FR-011/FR-004) =
+  // (T035.1) Each mode-varying colour token must be re-declared under a dark
+  // selector in the emitted CSS: a dropped dark re-declaration would leak the
+  // light value into dark mode. (T035.2) The authored brand sheets must declare
+  // ZERO `--sl-*` — the bridge owns `--sl-*`.
+  const darkBodies = darkBlockBodies(css);
+  if (darkBodies.length === 0) {
+    fail(`mode-varying: no [data-theme='dark'] selector block found in the emitted CSS (FR-011)`);
+  }
+  const darkJoined = darkBodies.join('\n');
+  const missingDark = REQUIRED_MODE_VARYING.filter((t) => !darkJoined.includes(`${t}:`));
+  if (missingDark.length > 0) {
+    fail(
+      `mode-varying: ${missingDark.length} mode-varying token(s) not re-declared under a dark ` +
+        `selector: ${missingDark.join(', ')} — the light value would leak into dark mode (FR-011)`,
+    );
+  }
+  ok(`mode-varying: all ${REQUIRED_MODE_VARYING.length} mode-varying --dk-* tokens re-declared under dark`);
+
+  const scriptDir = path.dirname(new URL(import.meta.url).pathname);
+  for (const rel of BRAND_SHEET_SOURCES) {
+    const abs = path.resolve(scriptDir, rel);
+    let source;
+    try {
+      source = await readFile(abs, 'utf8');
+    } catch (err) {
+      fail(`--dk-*-only: could not read brand sheet ${rel} (${err.code ?? err.message})`);
+    }
+    const slDecls = [...stripCssComments(source).matchAll(/(?:^|[{;\s])(--sl-[\w-]+)\s*:/g)].map(
+      (m) => m[1],
+    );
+    if (slDecls.length > 0) {
+      fail(
+        `--dk-*-only: brand sheet ${rel} declares Starlight variable(s) directly: ` +
+          `${[...new Set(slDecls)].join(', ')} — a theme sets --dk-* only; the bridge owns --sl-* (FR-004/ADR-0011)`,
+      );
+    }
+  }
+  ok(`--dk-*-only: brand sheets (${BRAND_SHEET_SOURCES.length}) declare zero --sl-* variables`);
+
+  // === 10) Brand AA construction: ≥24px targets + :focus-visible ring =========
+  // (T046) axe cannot machine-verify target-size (2.5.8) or a visible focus
+  // indicator, so this WP owns them as CSS construction checks, SCOPED to the
+  // brand's interactive selectors (a ≥24px rule or focus ring elsewhere in
+  // Starlight's bundled CSS must NOT satisfy them). Mirrors the M1 .dk-hub__card
+  // pattern (NFR-001).
+  for (const selector of BRAND_INTERACTIVE_TARGETS) {
+    const blocks = ruleBlocksFor(css, selector);
+    if (blocks.length === 0) {
+      fail(`accessibility: no \`${selector}\` rule in the emitted CSS (brand target sizing missing, NFR-001)`);
+    }
+    if (!blocks.some((b) => hasMinTarget24(b.body))) {
+      fail(
+        `accessibility: \`${selector}\` carries no min-height/min-width ≥24px target rule ` +
+          `(WCAG 2.5.8 target size, NFR-001)`,
+      );
+    }
+    // The focus rule's selector must carry BOTH this target AND `:focus-visible`,
+    // but not necessarily adjacently: Astro injects a `:where(.astro-…)` scope
+    // between the class and the pseudo-class for a component's scoped `<style>`
+    // (e.g. the footer organism), so an exact `${selector}:focus-visible` needle
+    // would miss it. Requiring both substrings in one rule keeps this scoped to
+    // the brand target (a bare `:focus-visible` in Starlight's CSS does not count).
+    const focusBlocks = ruleBlocksFor(css, selector).filter((b) =>
+      b.selector.includes(':focus-visible'),
+    );
+    if (focusBlocks.length === 0) {
+      fail(
+        `accessibility: \`${selector}\` has no :focus-visible ring rule in the emitted CSS ` +
+          `(visible focus indicator missing, NFR-001)`,
+      );
+    }
+  }
+  ok(
+    `accessibility: all ${BRAND_INTERACTIVE_TARGETS.length} brand interactive targets carry a ≥24px ` +
+      `rule and a scoped :focus-visible ring`,
+  );
+
+  // === 11) Brand footer slot-override observable (SC-004) =====================
+  // (T047a) `dk-site-footer--brand` proves the brand SiteFooter organism rendered
+  // THROUGH WP03's Footer carrier (slotComponents resolved) — the default footer
+  // would not emit it.
+  const footerHtml = await readHtml(dir, FOOTER_PAGE);
+  if (!footerHtml.includes(FOOTER_BRAND_MARKER)) {
+    fail(
+      `footer override: the brand footer marker \`${FOOTER_BRAND_MARKER}\` is absent on ${FOOTER_PAGE} — ` +
+        `slotComponents did not resolve through the Footer carrier (default footer rendered?), SC-004`,
+    );
+  }
+  ok(`footer override: brand footer marker \`${FOOTER_BRAND_MARKER}\` present on ${FOOTER_PAGE}`);
 }
 
 // Standalone entry point: `node src/scripts/assert-chrome-artifacts.mjs <distDir>`.
