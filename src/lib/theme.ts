@@ -239,7 +239,12 @@ const BRIDGE: ReadonlyArray<readonly [string, string]> = [
   ['--sl-color-text', '--dk-color-text'],
   ['--sl-color-white', '--dk-color-text-strong'],
   ['--sl-color-gray-2', '--dk-color-text-muted'],
-  ['--sl-color-text-accent', '--dk-color-accent-text'],
+  // Starlight's accent TEXT colour (links, site title on the page/nav bg) must be
+  // the readable accent-on-background token --dk-color-text-accent (brand: #F5C518
+  // dark / #806508 light), NOT --dk-color-accent-text (ink ON the accent fill,
+  // #1A1408) — the latter is 1.01:1 on the dark nav. The WP09 axe lane caught this;
+  // --dk-color-accent-text is dk-owned (accent-fill foreground), unbridged. See ADR-0016.
+  ['--sl-color-text-accent', '--dk-color-text-accent'],
   // Accent
   ['--sl-color-accent-low', '--dk-color-accent-low'],
   ['--sl-color-accent', '--dk-color-accent'],

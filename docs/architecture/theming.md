@@ -66,7 +66,7 @@ Notation: **→ `--sl-x`** means the base layer copies this token into `--sl-x`;
 |---|---|---|
 | Surfaces | `--dk-color-bg`, `--dk-color-bg-nav`, `--dk-color-bg-sidebar`, `--dk-color-surface-1/-2/-inset`, `--dk-color-border`, `--dk-color-border-strong` | bg/nav/sidebar/border → `--sl-color-bg`/`-bg-nav`/`-bg-sidebar`/`-hairline`; surfaces (dk) |
 | Text | `--dk-color-text`, `-text-strong`, `-text-muted`, `-text-accent`, `-text-invert` | → `--sl-color-text`/`-white`/`-text-accent`; invert (dk) |
-| Accent | `--dk-color-accent-low/-/-high`, `-accent-text` | → `--sl-color-accent-low/-/-high`, `--sl-color-text-accent` |
+| Accent | `--dk-color-accent-low/-/-high`, `-accent-text` | → `--sl-color-accent-low/-/-high`; `-accent-text` (dk) — foreground ON the accent fill, not bridged (ADR-0016). `--sl-color-text-accent` is driven by `--dk-color-text-accent` (Text row), the readable accent-on-background colour. |
 | State | `--dk-color-info/success/warning/danger/neutral` + a `-bg` tint each | → `--sl-color-blue/green/orange/red/gray-3` (asides); tints (dk) |
 | Type | `--dk-font-sans/-mono/-display`, `--dk-text-2xs…4xl`, `--dk-leading-*`, `--dk-weight-*`, `--dk-tracking-caps` | families → `--sl-font`/`-font-mono`; scale maps by role to `--sl-text-*`; rest (dk) |
 | Spacing | `--dk-space-3xs…2xl` (4px ramp) | (dk) — Starlight has no spacing surface |

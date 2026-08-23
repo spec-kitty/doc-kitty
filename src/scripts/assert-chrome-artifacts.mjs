@@ -128,7 +128,7 @@ const REQUIRED_BRIDGE = [
   ['--sl-color-text', '--dk-color-text'],
   ['--sl-color-white', '--dk-color-text-strong'],
   ['--sl-color-gray-2', '--dk-color-text-muted'],
-  ['--sl-color-text-accent', '--dk-color-accent-text'],
+  ['--sl-color-text-accent', '--dk-color-text-accent'],
   ['--sl-color-accent-low', '--dk-color-accent-low'],
   ['--sl-color-accent', '--dk-color-accent'],
   ['--sl-color-accent-high', '--dk-color-accent-high'],
