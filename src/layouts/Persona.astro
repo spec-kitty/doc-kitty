@@ -1,0 +1,199 @@
+---
+/*
+ * Doc Kitty layout: Persona — the passport / character-sheet card (ADR-0013
+ * single-layer substrate; theming-spec-kitty-brand.md §Organisms "Persona
+ * passport"). The SECOND bespoke IN-FRAME layout after Hub — the mission's proof
+ * (SC-004) that the merged manifest generalises beyond `Hub`.
+ *
+ * Renders in the NORMAL Starlight frame (sidebar, TOC, search, pagination stay
+ * intact) — it is NOT a `splash` (ADR-0011: Persona is in-frame). The
+ * `MarkdownContent` carrier resolves `kind: Persona` to this layout and forwards
+ * the Starlight route data as props (same contract as Hub.astro / Default.astro:
+ * `Astro.locals.starlightRoute` upstream; this layout receives resolved props).
+ *
+ * Structure (theming-spec-kitty-brand.md §Organisms):
+ *   1. A bounded passport CARD (`--dk-width-passport`, `--dk-radius-lg`,
+ *      `--dk-shadow-lg`) carrying the layout-UNIQUE marker `.dk-passport` — the
+ *      non-fakeable Persona proof WP08 (T033/T047) binds to on the branded build
+ *      (Hub uses `.dk-hub__list`; Persona uses `.dk-passport`).
+ *   2. A top yellow accent identity strip (the brand "bow-tie" motif),
+ *      `--dk-color-accent`.
+ *   3. The persona NAME as `<h1>` in `--dk-font-display` (from `entry.data.title`).
+ *   4. An avatar whose `alt` comes from `hero_image.alt`, through the SAME
+ *      optimized-image pipeline as the M1 page hero (`import.meta.glob('/docs/**')`
+ *      + `astro:assets` Image). Missing/unresolved image → no `<img>` at all
+ *      (never an empty `alt` on a present image).
+ *   5. A `<dl>` field grid — one `.dk-passport__field` row per PRESENT generic
+ *      frontmatter field (`doc_status`, `updated`, `type`, `authors`, `tags`),
+ *      each row an eyebrow-label `<dt>` (`.dk-eyebrow`, WP05 atom) + `<dd>` value.
+ *      An absent field is OMITTED, never rendered empty.
+ *
+ * SCOPE (C-010): generic frontmatter fields ONLY. Persona-*attribute* fields
+ * (role, goals, responsibilities), audience resolution, and the audience/related
+ * blocks are M3 — this layout introduces NO new schema (`schema.ts` untouched).
+ *
+ * Search coverage (NFR-004 / C-007): the whole layout output — the passport card
+ * AND the `<slot />` body — sits inside the carrier, which Starlight places in
+ * `<main data-pagefind-body>`; nothing carries `data-pagefind-ignore`, so the
+ * name, field values, and the Markdown body all stay in Pagefind's indexed
+ * region. Mirrors Hub's in-frame content placement.
+ */
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { resolveColocatedKey, matchGlobKey } from '../components/slots/image-paths.ts';
+
+const route = Astro.props as StarlightRoute;
+const entry = route.entry;
+
+// The convention's frontmatter reaches entry.data only via docsSchema({ extend })
+// (WP01); Starlight's own Props type doesn't know those fields, so read the
+// generic slice through a narrow cast rather than widening to `any`.
+const data = entry.data as unknown as {
+  title: string;
+  doc_status?: string;
+  updated?: string | Date;
+  type?: string;
+  authors?: string[];
+  tags?: string[];
+  hero_image?: { src: string; alt: string };
+};
+// entry.filePath (relative to the site root) locates the colocated avatar asset.
+const filePath = (entry as unknown as { filePath?: string }).filePath;
+
+// Avatar through the M1 optimized-image pipeline (same approach as PageHero):
+// glob the CONSUMER's docs tree with a project-root-absolute pattern, then resolve
+// the page-relative `hero_image.src` to a glob key. Unresolved → no <img>.
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  '/docs/**/*.{png,jpg,jpeg,webp,avif,gif}',
+  { eager: true },
+);
+const keys = Object.keys(modules);
+const matchedKey = data.hero_image
+  ? matchGlobKey(resolveColocatedKey(data.hero_image.src, filePath), keys)
+  : null;
+const avatar = matchedKey ? modules[matchedKey].default : undefined;
+
+// Field grid: one row per PRESENT generic field, in a stable reading order.
+const asDate = (v: string | Date | undefined): string | undefined => {
+  if (!v) return undefined;
+  const d = v instanceof Date ? v : new Date(v);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10);
+};
+const fields: { label: string; value: string }[] = [];
+if (data.doc_status) fields.push({ label: 'Status', value: data.doc_status });
+const updated = asDate(data.updated);
+if (updated) fields.push({ label: 'Updated', value: updated });
+if (data.type) fields.push({ label: 'Type', value: data.type });
+if (data.authors && data.authors.length > 0)
+  fields.push({ label: 'Authors', value: data.authors.join(', ') });
+if (data.tags && data.tags.length > 0)
+  fields.push({ label: 'Tags', value: data.tags.join(', ') });
+---
+
+<section class="dk-passport">
+  {/* Yellow accent identity strip — the brand "bow-tie" motif; decorative. */}
+  <div class="dk-passport__strip" aria-hidden="true"></div>
+
+  <div class="dk-passport__header">
+    {
+      data.hero_image && avatar && (
+        <Image
+          class="dk-passport__avatar"
+          src={avatar}
+          alt={data.hero_image.alt}
+          widths={[128, 256]}
+          sizes="128px"
+          loading="eager"
+        />
+      )
+    }
+    <h1 class="dk-passport__name">{data.title}</h1>
+  </div>
+
+  {
+    fields.length > 0 && (
+      <dl class="dk-passport__fields">
+        {fields.map((f) => (
+          <div class="dk-passport__field">
+            <dt class="dk-eyebrow">{f.label}</dt>
+            <dd class="dk-passport__value">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+</section>
+
+{/* The Markdown body — inside the searchable content region (NFR-004). */}
+<slot />
+
+<style>
+  /* Bounded, elevated passport card — the ONE in-frame organism that uses -lg
+   * shadow (the brand prefers hairline depth elsewhere). Tokens resolve against
+   * the brand catalog on the branded build; the `.dk-passport` class is the
+   * layout-unique, non-fakeable marker WP08 binds to. */
+  .dk-passport {
+    max-width: var(--dk-width-passport);
+    margin: var(--dk-space-lg) 0;
+    border: 1px solid var(--dk-color-border);
+    border-radius: var(--dk-radius-lg);
+    background: var(--dk-color-surface-1);
+    box-shadow: var(--dk-shadow-lg);
+    overflow: hidden;
+  }
+
+  .dk-passport__strip {
+    height: var(--dk-space-xs);
+    background: var(--dk-color-accent);
+  }
+
+  .dk-passport__header {
+    display: flex;
+    align-items: center;
+    gap: var(--dk-space-md);
+    padding: var(--dk-space-md) var(--dk-space-lg) 0;
+  }
+
+  .dk-passport__avatar {
+    flex: none;
+    width: 4rem;
+    height: 4rem;
+    object-fit: cover;
+    border-radius: var(--dk-radius-md);
+    border: 1px solid var(--dk-color-border);
+  }
+
+  /* Name in the display family (weight 800 on the branded build). */
+  .dk-passport__name {
+    margin: 0;
+    font-family: var(--dk-font-display);
+    font-weight: var(--dk-weight-display, 800);
+    color: var(--dk-color-text-strong);
+  }
+
+  /* Field grid — semantic <dl>; each `.dk-passport__field` is one <dt>/<dd> row
+   * (the WP08 target for the passport link AA rule lives in brand-components.css
+   * as `.dk-passport__field a`). */
+  .dk-passport__fields {
+    margin: 0;
+    padding: var(--dk-space-md) var(--dk-space-lg) var(--dk-space-lg);
+    display: grid;
+    gap: var(--dk-space-sm);
+  }
+
+  .dk-passport__field {
+    display: grid;
+    gap: var(--dk-space-3xs);
+    margin: 0;
+  }
+
+  .dk-passport__field > dt {
+    margin: 0;
+  }
+
+  .dk-passport__value {
+    margin: 0;
+    color: var(--dk-color-text);
+  }
+</style>

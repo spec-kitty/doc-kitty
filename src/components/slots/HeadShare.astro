@@ -11,8 +11,10 @@
  *
  * The resolved image is emitted as a STABLE ABSOLUTE URL (NFR-003): optimized
  * assets go through `getImage()` and are absolutised against `Astro.site`, so a
- * crawler fetches a real, hashed `/_astro/…` file. The site-default asset ships
- * inside the toolkit (`src/assets/social-default.png`) as the terminal fallback.
+ * crawler fetches a real, hashed `/_astro/…` file. The terminal site-default is
+ * the THEME's `assets.socialImage` when a theme sets one (forwarded as the
+ * `siteDefault` prop by the Head carrier from the virtual manifest), otherwise the
+ * toolkit-shipped default (`src/assets/social-default.png`) — FR-009.
  */
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
@@ -29,9 +31,20 @@ interface Props {
   filePath?: string;
   /** Page title, used as the fallback alt for a bare-string social_thumb. */
   title?: string;
+  /**
+   * The theme's `assets.socialImage` (FR-009), forwarded by the Head carrier. When
+   * set it is the terminal site-default share image, overriding the toolkit
+   * default; when absent (no theme, or a theme without socialImage) the toolkit
+   * default is used, so the fallback chain is hero_image → social_thumb →
+   * (theme socialImage → toolkit default).
+   */
+  siteDefault?: ImageMetadata;
 }
 
-const { heroImage, socialThumb, filePath, title } = Astro.props;
+const { heroImage, socialThumb, filePath, title, siteDefault } = Astro.props;
+
+// The terminal site-default: the theme's socialImage when set, else the toolkit's.
+const defaultSocial = siteDefault ?? siteDefaultSocial;
 
 const modules = import.meta.glob<{ default: ImageMetadata }>(
   '/docs/**/*.{png,jpg,jpeg,webp,avif,gif}',
@@ -55,17 +68,17 @@ if (typeof socialThumb === 'string') {
   if (isAbsoluteOrRemote(socialThumb)) {
     literalUrl = socialThumb;
   } else {
-    image = lookup(socialThumb) ?? siteDefaultSocial;
+    image = lookup(socialThumb) ?? defaultSocial;
   }
   alt = title ?? 'Share image';
 } else if (socialThumb) {
-  image = lookup(socialThumb.src) ?? siteDefaultSocial;
+  image = lookup(socialThumb.src) ?? defaultSocial;
   alt = socialThumb.alt;
 } else if (heroImage) {
-  image = lookup(heroImage.src) ?? siteDefaultSocial;
+  image = lookup(heroImage.src) ?? defaultSocial;
   alt = heroImage.alt;
 } else {
-  image = siteDefaultSocial;
+  image = defaultSocial;
   alt = 'Doc Kitty documentation';
 }
 
@@ -76,15 +89,25 @@ let rawSrc: string | undefined;
 let width: number | undefined;
 let height: number | undefined;
 if (image) {
-  const optimized = await getImage({
-    src: image,
-    width: OG_WIDTH,
-    height: OG_HEIGHT,
-    format: 'png',
-  });
-  rawSrc = optimized.src;
-  width = OG_WIDTH;
-  height = OG_HEIGHT;
+  if (image.format === 'svg') {
+    // An SVG (e.g. the brand social-card) is emitted VERBATIM through the asset
+    // pipeline (getImage with NO transforms → passthrough, base-prefix correct):
+    // rasterizing SVG→PNG would be non-deterministic across the sharp toolchain, so
+    // we ship its hashed `/_astro/…svg` at its intrinsic card geometry (no OG
+    // width/height override).
+    const passthrough = await getImage({ src: image });
+    rawSrc = passthrough.src;
+  } else {
+    const optimized = await getImage({
+      src: image,
+      width: OG_WIDTH,
+      height: OG_HEIGHT,
+      format: 'png',
+    });
+    rawSrc = optimized.src;
+    width = OG_WIDTH;
+    height = OG_HEIGHT;
+  }
 } else if (literalUrl) {
   rawSrc = literalUrl;
 }

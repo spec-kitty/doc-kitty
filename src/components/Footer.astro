@@ -2,18 +2,47 @@
 /*
  * Doc Kitty carrier: Footer (ADR-0013 substrate, theming.md slot surface).
  *
- * M1 is a thin pass-through: render Starlight's default footer, then host
- * doc-kitty's own `dk:site-footer` slot (WP03+ fills it). Reads
- * `Astro.locals.starlightRoute` (Starlight ≥0.30), never through component props
- * (the pre-0.30 pattern) — C-004.
+ * COMPOSE, never replace: always render Starlight's default footer — the ARTICLE
+ * footer (Pagination, EditLink, LastUpdated) — and then, AFTER it, host
+ * doc-kitty's own `dk:site-footer` slot (WP05's brand band appends below). The
+ * `dk:site-footer` slot is ADDITIVE site chrome, NOT a replacement for the article
+ * footer; an either/or would drop Starlight's per-page pagination/edit-link/
+ * last-updated site-wide the moment a theme sets `dk:site-footer` (the brand does).
+ * This mirrors the sibling carriers (Head/PageTitle both render `<Default>` and
+ * then host their own slots around it). Reads `Astro.locals.starlightRoute`
+ * (Starlight ≥0.30), never through component props (the pre-0.30 pattern) — C-004.
  */
 import Default from '@astrojs/starlight/components/Footer.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { slotComponents } from 'virtual:doc-kitty/manifest';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
+
+// Per-carrier slot resolution (ADR-0015 decision 2): a theme may fill the
+// ADDITIVE `dk:site-footer` band through the merged manifest. With no theme
+// `slotComponents` is empty → the band host stays empty and only Starlight's
+// article footer (rendered unconditionally below) shows. WP05's brand footer
+// organism carries an override-unique `dk-site-footer--brand` class the default
+// never emits; that class in the branded build is WP08's (T047) non-fakeable
+// proof that `slotComponents` actually resolved THROUGH this carrier.
+const SiteFooter = slotComponents['dk:site-footer'];
 ---
 
+{/*
+  Starlight's article footer FIRST — pagination / edit-link / last-updated. Always
+  rendered so a theme's `dk:site-footer` band never displaces the per-page article
+  chrome (the F1 regression this composition fixes).
+*/}
 <Default {...route} />
-{/* dk:site-footer host point (WP03+ fills the body). */}
+{/*
+  dk:site-footer marker: a build-visible attestation the Footer carrier is the one
+  rendering (WP08). Emitted on BOTH paths, so it alone does not prove resolution —
+  the brand-only `dk-site-footer--brand` class does. The brand SiteFooter band
+  renders AFTER (below) the article footer; with no theme this host stays empty.
+*/}
+<div data-dk-slot="dk:site-footer">
+  {SiteFooter && <SiteFooter />}
+</div>
+{/* dk:site-footer named host point (a page/consumer may still inject). */}
 <slot name="dk:site-footer" />

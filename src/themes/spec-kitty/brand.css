@@ -1,0 +1,68 @@
+/*
+ * Spec Kitty brand — chrome CSS (WP04, T018 fonts + T019 native header accent).
+ *
+ * Listed in the theme's `customCss` (index.ts) AFTER tokens.css, so it layers over
+ * both the generated Default sheet and the brand token sheet and can read the
+ * resolved `--dk-*` values. It sets NO `--dk-*` / `--sl-*` tokens — only chrome
+ * rules that CONSUME them.
+ *
+ * SELF-CONTAINMENT (C-005) + DETERMINISM: nothing here references `@spec-kitty/*`,
+ * a Spec Kitty CDN, or the `spec-kitty-design` repo — and, deliberately, NO remote
+ * font request either. A Google-Fonts `@import` for JetBrains Mono was removed:
+ * it made every build depend on a network fetch (non-deterministic for the visual
+ * baseline) for a purely optional face. The `--dk-font-mono` stack (ui-monospace,
+ * SFMono-Regular, monospace) renders correctly and consistently, matching the
+ * display/sans faces which already rely on fallback stacks. A downstream site that
+ * wants JetBrains Mono self-hosts it via its own (Layer 3) `@font-face`, or ships
+ * the URL through the theme's `assets.fonts` (which `defineDocKittyIntegrations`
+ * forwards as a `<link rel="stylesheet">`) — the brand simply chooses not to.
+ *
+ * PROPRIETARY FONTS: Falling Sky / Swansea (display / sans) are NOT in this repo
+ * and are deliberately NOT loaded via `@font-face` from a CDN — inventing or
+ * hot-linking them would violate C-005 and their licence. `--dk-font-display` /
+ * `--dk-font-sans` name them first; the robust ui-sans-serif/system-ui fallback
+ * stack keeps every surface AA-correct without the font files. A downstream site
+ * that has licensed the files can add a self-hosted `@font-face` in its own
+ * (Layer 3) customCss without touching the brand.
+ */
+
+/*
+ * Native header (T019 / ADR-0015 decision 5). The logo-in-nav ships as an `<img>`
+ * through Starlight-NATIVE `logo` config (forwarded from `assets.logo` by
+ * defineDocKittyIntegrations) — there is NO `Header`/`SiteTitle` component
+ * override, so the Starlight `components` map stays exactly the four carriers.
+ * These rules only restyle Starlight's own header markup:
+ *   - the wordmark (the site `title`) in the display face at weight 800;
+ *   - the active nav item in the signal yellow — the one always-on yellow.
+ * Selectors target Starlight ≥0.32 header/nav markup; the themed build (WP07)
+ * confirms them against the pinned Starlight.
+ */
+
+/* Wordmark: the site title beside the logo, in the display face, weight 800. */
+.site-title,
+a.site-title {
+  font-family: var(--dk-font-display);
+  font-weight: var(--dk-weight-display, 800);
+}
+
+/*
+ * Active nav item. Starlight already fills the current sidebar item with
+ * `--sl-color-text-accent` (the brand accent — deep gold #806508 in light,
+ * signal yellow #F5C518 in dark) and pairs it with inverted text, which clears
+ * WCAG 2.2 AA in both modes. An earlier brand override forced the TEXT to the
+ * invariant yellow `--dk-color-accent`; on the light fill that is 3.4:1 (the axe
+ * lane caught it), and yellow-as-text only works on dark anyway (theming.md).
+ * So the current item keeps Starlight's contrast-safe accent fill — the fill is
+ * the brand signal — and the brand adds no colour override here.
+ */
+
+/*
+ * Focus ring — apply the brand's yellow focus token to every interactive target,
+ * with an offset so the ring clears the yellow-on-paper contrast trap in light
+ * mode. `--dk-shadow-focus` already carries the AA-correct per-mode value.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus);
+  border-radius: var(--dk-radius-sm);
+}

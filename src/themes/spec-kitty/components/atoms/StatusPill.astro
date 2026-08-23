@@ -1,0 +1,30 @@
+---
+/*
+ * Status pill atom (WP05, T021).
+ *
+ * `--dk-radius-pill`, `-*-bg` fill + PAIRED `-*` text. ALWAYS TEXT-LABELLED, never
+ * colour-only (WCAG 1.4.1): the `tone` only tints the pill; the meaning is the
+ * visible `label` text (mirrored to assistive tech). An optional visually-hidden
+ * `srPrefix` (e.g. "Document status:") names what the label denotes.
+ *
+ * Each tone resolves to a pre-verified AA `--dk-color-<state>` / `-bg` pair
+ * (tokens.css). Styling: ../brand-components.css → `.dk-pill` / `.dk-pill--<tone>`.
+ */
+type Tone = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+
+interface Props {
+  /** The visible, human-readable status word — required; carries the meaning. */
+  label: string;
+  /** Colour tone (a paired AA state). Defaults to neutral. Colour never sole carrier. */
+  tone?: Tone;
+  /** Optional screen-reader-only prefix naming the label, e.g. "Document status:". */
+  srPrefix?: string;
+}
+
+const { label, tone = 'neutral', srPrefix } = Astro.props;
+const cls = `dk-pill dk-pill--${tone}`;
+---
+
+<span class={cls} data-tone={tone}>
+  {srPrefix && <span class="dk-visually-hidden">{srPrefix} </span>}{label}
+</span>

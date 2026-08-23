@@ -140,11 +140,55 @@ jobs:
       # while deploy reuses the pure build (contracts/build-example-action.contract.md).
       - name: Assert build artifacts
         run: pnpm assert:artifacts example/dist
+      # Additive (WP09): publish the built dist so the a11y lane CONSUMES it rather
+      # than rebuilding (path-efficiency). This adds no assertion and does not change
+      # this lane's pass/fail semantics.
+      - name: Upload built dist for the a11y lane
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: example-dist
+          path: example/dist
+          retention-days: 1
+          include-hidden-files: true
+
+  # --- Lane: a11y (WP09) — axe-core + visual, both modes, on the built dist. ----
+  # Runs whenever build-example runs (same change surface: it consumes that lane's
+  # dist artifact instead of rebuilding). Executes inside the PINNED Playwright
+  # container so the visual baselines are reproducible bit-for-bit (T041). The only
+  # browser download is the explicit, Chromium-only `playwright install` step below
+  # (deny-by-default lifecycle discipline, DIRECTIVE_051 / NFR-005).
+  a11y:
+    needs: [detect-changes, build-example]
+    if: needs.detect-changes.outputs.run_build_example == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Enable corepack
+        run: corepack enable
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+      # Consume the build-example artifact rather than rebuilding (path-efficiency).
+      - name: Download built dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: example-dist
+          path: example/dist
+      # The ONE allowlisted browser download — Chromium only, explicit (never a
+      # silent postinstall). A no-op verify in the pinned image, kept for discipline.
+      - name: Install Chromium (explicit, allowlisted)
+        run: npx playwright install --with-deps chromium
+      - name: Run accessibility + visual lane
+        run: pnpm test:a11y
 
   # --- Gate: ci-ok — the single required status check (FR-012, C-005). --------
   # Job id MUST stay exactly `ci-ok` (branch protection references this string).
+  # WP09: `a11y` is a REQUIRED member — a red a11y turns ci-ok red (see the
+  # "Require a11y lane" step). The three-lane decision helper stays byte-unchanged.
   ci-ok:
-    needs: [detect-changes, code-quality, doc-sanity, build-example]
+    needs: [detect-changes, code-quality, doc-sanity, build-example, a11y]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -160,3 +204,16 @@ jobs:
           DOC_SANITY_RESULT: ${{ needs.doc-sanity.result }}
           BUILD_EXAMPLE_RESULT: ${{ needs.build-example.result }}
         run: node .github/scripts/ci-ok-decision.mjs
+      # WP09: enforce the a11y lane as a REQUIRED ci-ok member. Kept as a dedicated
+      # step (not folded into the three-lane helper, which lives in .github/scripts/
+      # outside this WP's surface) so ci-ok — the SINGLE required check — turns red on
+      # any blocking a11y result. A 'skipped' a11y (no rendered-chrome change) passes,
+      # matching the other lanes' skip semantics.
+      - name: Require a11y lane
+        env:
+          A11Y_RESULT: ${{ needs.a11y.result }}
+        run: |
+          case "$A11Y_RESULT" in
+            success|skipped) echo "a11y lane: $A11Y_RESULT (pass)";;
+            *) echo "ci-ok: RED — a11y lane is blocking with result '$A11Y_RESULT'"; exit 1;;
+          esac

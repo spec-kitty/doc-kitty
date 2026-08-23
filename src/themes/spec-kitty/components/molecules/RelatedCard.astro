@@ -1,0 +1,37 @@
+---
+/*
+ * Related-card molecule (WP05, T022).
+ *
+ * A CARD-WIDE `<a>`: title in `--dk-color-text-accent`, target description muted,
+ * optional kind tag. Built for Hub/brand chrome (the `dk:related` block later
+ * consumes this shape). AA (T025): the `.dk-related-card` class carries a ≥24px
+ * min target + a `:focus-visible` ring in ../brand-components.css.
+ *
+ * SCOPE GUARD (C-010): this molecule renders from PROPS only. It does NOT read
+ * `entry.data.related` — the M3 `dk:related` block stays UNWIRED to resolved data
+ * in M2. Self-contained (no `@spec-kitty/*`).
+ *
+ * The card is a single link with no nested interactive elements, so the card-wide
+ * target never swallows another control.
+ */
+interface Props {
+  /** Destination — a real href so the whole card is one ≥24px link target. */
+  href: string;
+  /** Visible title (accent). */
+  title: string;
+  /** Optional muted target description. */
+  description?: string;
+  /** Optional kind label rendered as a kind-tag chip. */
+  kind?: string;
+}
+
+import KindTag from '../atoms/KindTag.astro';
+
+const { href, title, description, kind } = Astro.props;
+---
+
+<a class="dk-related-card" href={href}>
+  <span class="dk-related-card__title">{title}</span>
+  {description && <span class="dk-related-card__desc">{description}</span>}
+  {kind && <KindTag label={kind} />}
+</a>

@@ -65,3 +65,7 @@ coverage/
 .kittify/workspaces/
 kitty-ops/ops-index.jsonl
 .worktrees/
+
+# Playwright (a11y lane) local output
+test-results/
+playwright-report/

@@ -1,0 +1,162 @@
+/*
+ * Spec Kitty brand theme — the brand's per-mode COLOUR palette (WP04, T016/T017/T020).
+ *
+ * DERIVED, NOT IMPORTED (C-005 / ADR-0011). Every hex below is transcribed by hand
+ * from the `spec-kitty-design` brand guide (see
+ * docs/architecture/theming-spec-kitty-brand.md) into doc-kitty's OWN token
+ * surface. There is NO build- or run-time dependency on `@spec-kitty/tokens`, a
+ * Spec Kitty CDN, or the `spec-kitty-design` repo. If the guide changes these are
+ * hand-synced (the accepted cost of self-containment).
+ *
+ * `--dk-*` ONLY. This sheet NEVER declares a `--sl-*` variable — the shipped base
+ * sheet (src/styles/theme.css) owns the `--dk-* → --sl-*` bridge.
+ *
+ * WHAT LIVES HERE vs IN index.ts. This file carries the MODE-VARYING colour tokens
+ * (both modes), because a colour that differs by mode cannot round-trip through
+ * `emitTokenSheet` (one value per key). The MODE-INVARIANT tokens — the type
+ * families, the display weight, caps tracking, the radius scale, and the invariant
+ * accent signal (`--dk-color-accent` #F5C518 + `--dk-color-accent-text` #1A1408) —
+ * are set as OBJECT `tokens` in index.ts so they flow into the generated Default
+ * sheet directly (and the accent signal is present in both its blocks). The full
+ * accent group is re-stated here too so the palette reads as one coherent block.
+ *
+ * CASCADE (how this wins). index.ts lists this file in `customCss`, which
+ * `defineDocKittyIntegrations` layers AFTER the generated Default sheet
+ * (`virtual:doc-kitty/theme.css`). So these plain-`:root` /
+ * `:root[data-theme='dark']` blocks beat the Default catalog by SOURCE ORDER — the
+ * exact mechanism the base sheet uses to beat Starlight ("loaded last … beats"),
+ * at plain specificity so a Layer-3 consumer loaded later still wins cleanly.
+ *
+ * DARK-MODE-FIRST. The brand ships dark values; the LIGHT column is doc-kitty's
+ * AA-checked derivation (the guide is dark-only) and is the review target. Measured
+ * WCAG 2.2 ratios are in the AA block at the foot of this file (T020).
+ *
+ * MODE-VARYING COMPLETENESS (T017). Every token below is declared for LIGHT on
+ * `:root` and RE-DECLARED for dark under `:root[data-theme='dark']`, so a value
+ * never silently leaks across modes. `--dk-shadow-focus` is a non-colour token that
+ * nonetheless varies by mode (translucent yellow vs solid deep gold), so it is
+ * re-declared too.
+ */
+
+:root {
+  /* ===== Mode-varying COLOUR tokens — LIGHT (derived, AA-checked) ============== */
+
+  /* Surfaces — warm paper family (derived; guide is dark-only) */
+  --dk-color-bg: #FBFAF7;
+  --dk-color-bg-nav: #F4F2ED;
+  --dk-color-bg-sidebar: #F4F2ED;
+  --dk-color-surface-1: #FFFFFF;
+  --dk-color-surface-2: #F1EEE7;
+  --dk-color-surface-inset: #ECE8DF;
+  --dk-color-border: #E2DDD1;
+  --dk-color-border-strong: #CFC8B8;
+
+  /* Text */
+  --dk-color-text: #1A1B1F;
+  --dk-color-text-strong: #0D0E11;
+  --dk-color-text-muted: #5B5B63;
+  /* Links: yellow is unusable as link text on paper (~1.3:1) — derive to deep gold. */
+  --dk-color-text-accent: #806508;
+  --dk-color-text-invert: #FBFAF7;
+
+  /* Accent — the brand's yellow signal. `accent` + `accent-text` are the SAME in
+     both modes (also set as object tokens in index.ts); `-low`/`-high` are per-mode. */
+  --dk-color-accent-low: #FDF3CF;   /* pale butter tint (derived) */
+  --dk-color-accent: #F5C518;       /* the signal yellow (both modes) */
+  --dk-color-accent-high: #C99A0E;  /* hover/strong (derived deep gold) */
+  --dk-color-accent-text: #1A1408;  /* dark ink on yellow (both modes) */
+
+  /* State + paired -bg tint (derived light: darkened fg on pale tint, AA ≥4.5:1).
+     warning maps to the brand's haygold (the brand has no orange). */
+  --dk-color-info: #2C5E86;
+  --dk-color-info-bg: #EAF1F8;
+  --dk-color-success: #2F6B3A;
+  --dk-color-success-bg: #E7F2E7;
+  --dk-color-warning: #7A5A0A;
+  --dk-color-warning-bg: #FBF0CF;
+  --dk-color-danger: #B3352F;
+  --dk-color-danger-bg: #FBE7E6;
+  --dk-color-neutral: #5B5B63;
+  --dk-color-neutral-bg: #EFEDE8;
+
+  /* Focus ring — light variant. DERIVED-CORRECTED: the guide's #C99A0E is only
+     2.48:1 on paper (fails the 3:1 non-text minimum), so the light ring uses the
+     deep gold #806508 (5.32:1 on bg, 5.55:1 on #fff). 3px with an offset so the
+     ring clears the yellow-on-paper contrast trap. Dark ring re-declared below. */
+  --dk-shadow-focus: 0 0 0 3px #806508;
+}
+
+/* ===== Mode-varying COLOUR tokens — DARK (transcribed from the guide) ========= */
+:root[data-theme='dark'] {
+  /* Surfaces */
+  --dk-color-bg: #0D0E11;
+  --dk-color-bg-nav: #121317;
+  --dk-color-bg-sidebar: #121317;
+  --dk-color-surface-1: #181A1F;
+  --dk-color-surface-2: #1C1F25;
+  --dk-color-surface-inset: #212830;
+  --dk-color-border: #2B313B;
+  --dk-color-border-strong: #353C48;
+
+  /* Text */
+  --dk-color-text: #D6D6DA;
+  --dk-color-text-strong: #FFFFFF;
+  --dk-color-text-muted: #A9A9B0;
+  --dk-color-text-accent: #F5C518;  /* yellow works as link text on dark only */
+  --dk-color-text-invert: #1A1408;
+
+  /* Accent */
+  --dk-color-accent-low: #2A2410;   /* deep butter tint bg */
+  --dk-color-accent: #F5C518;       /* same signal yellow */
+  --dk-color-accent-high: #FFD84D;  /* hover/strong (brighter on dark) */
+  --dk-color-accent-text: #1A1408;  /* same dark ink on yellow */
+
+  /* State + paired -bg tint (transcribed; danger -bg derived) */
+  --dk-color-info: #A9C7E8;
+  --dk-color-info-bg: #14202E;
+  --dk-color-success: #8FCB8F;
+  --dk-color-success-bg: #15241A;
+  --dk-color-warning: #D9B36A;
+  --dk-color-warning-bg: #2A2410;
+  --dk-color-danger: #E97373;
+  --dk-color-danger-bg: #2E1616;
+  --dk-color-neutral: #A9A9B0;
+  --dk-color-neutral-bg: #262C36;
+
+  /* Focus ring — dark variant (translucent yellow, transcribed). */
+  --dk-shadow-focus: 0 0 0 3px rgba(245, 197, 24, 0.55);
+}
+
+/*
+ * ============================ WCAG 2.2 AA self-check (T020) ===================
+ * Measured with the sRGB relative-luminance formula. The LIGHT column is the
+ * derived review target; DARK is transcribed. Threshold: body text ≥4.5:1,
+ * non-text / large ≥3:1. All pairs below PASS.
+ *
+ * LIGHT (derived)
+ *   text        #1A1B1F on bg #FBFAF7 ............... 16.48:1  (AAA)
+ *   text-strong #0D0E11 on bg #FBFAF7 ............... 18.49:1  (AAA)
+ *   text-muted  #5B5B63 on bg #FBFAF7 ................ 6.45:1  (AA);  on #fff 6.73:1
+ *   link (deep gold) #806508 on bg #FBFAF7 ........... 5.32:1  (AA);  on #fff 5.55:1
+ *   CTA ink #1A1408 on accent #F5C518 ............... 11.23:1  (AAA)
+ *   info    #2C5E86 on -bg #EAF1F8 .................... 6.04:1  (AA)
+ *   success #2F6B3A on -bg #E7F2E7 .................... 5.56:1  (AA)
+ *   warning #7A5A0A on -bg #FBF0CF .................... 5.61:1  (AA)
+ *   danger  #B3352F on -bg #FBE7E6 .................... 5.10:1  (AA)
+ *   neutral #5B5B63 on -bg #EFEDE8 .................... 5.75:1  (AA)
+ *   focus ring #806508 on bg #FBFAF7 (non-text) ...... 5.32:1  (≥3:1; guide's
+ *              #C99A0E was 2.48:1 — corrected up for AA)
+ *
+ * DARK (transcribed)
+ *   text        #D6D6DA on bg #0D0E11 ............... 13.32:1  (AAA)
+ *   text-strong #FFFFFF on bg #0D0E11 ............... 19.30:1  (AAA)
+ *   text-muted  #A9A9B0 on bg #0D0E11 ................ 8.26:1  (AAA)
+ *   link yellow #F5C518 on bg #0D0E11 ............... 11.84:1  (AAA)
+ *   CTA ink #1A1408 on accent #F5C518 ............... 11.23:1  (AAA)
+ *   info    #A9C7E8 on -bg #14202E .................... 9.42:1  (AAA)
+ *   success #8FCB8F on -bg #15241A .................... 8.55:1  (AAA)
+ *   warning #D9B36A on -bg #2A2410 .................... 7.81:1  (AAA)
+ *   danger  #E97373 on -bg #2E1616 .................... 5.77:1  (AA)
+ *   neutral #A9A9B0 on -bg #262C36 .................... 6.01:1  (AA)
+ * =============================================================================
+ */

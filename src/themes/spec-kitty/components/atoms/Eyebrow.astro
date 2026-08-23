@@ -1,0 +1,22 @@
+---
+/*
+ * Eyebrow label atom (WP05, T021).
+ *
+ * The brand's signature label: ALL-CAPS mono, wide tracking, muted colour. Heads
+ * every band and block ("WHO IS THIS FOR", "RELATED", persona field labels).
+ * Styling lives in the brand component sheet (../brand-components.css → `.dk-eyebrow`);
+ * this atom is pure, self-contained markup (no `@spec-kitty/*`). The visible label
+ * text is supplied by the caller, so meaning is always carried by text.
+ */
+interface Props {
+  /** Optional element tag — defaults to a <span>; pass 'p'/'dt' where semantics need it. */
+  as?: 'span' | 'p' | 'dt' | 'div';
+  class?: string;
+}
+
+const { as = 'span', class: extra } = Astro.props;
+const Tag = as;
+const cls = ['dk-eyebrow', extra].filter(Boolean).join(' ');
+---
+
+<Tag class={cls}><slot /></Tag>

@@ -14,6 +14,7 @@
     "./routes": "./lib/routes/index.ts",
     "./components/*": "./components/*",
     "./layouts/*": "./layouts/*",
+    "./themes/*": "./themes/*",
     "./assets/*": "./assets/*",
     "./styles/*": "./styles/*"
   },
@@ -23,6 +24,7 @@
     "scripts",
     "components",
     "layouts",
+    "themes",
     "assets",
     "styles"
   ],

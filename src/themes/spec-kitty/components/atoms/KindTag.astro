@@ -1,0 +1,20 @@
+---
+/*
+ * Kind tag atom (WP05, T021).
+ *
+ * A `--dk-radius-sm` chip on `surface-inset`, mono uppercase micro-label. Labels a
+ * page/entry KIND (e.g. "REFERENCE", "GUIDE"). The kind word is real text, so the
+ * chip never encodes meaning by colour alone. Styling: ../brand-components.css →
+ * `.dk-kind-tag`. Self-contained (no `@spec-kitty/*`).
+ */
+interface Props {
+  /** The kind word — required; carries the meaning as text. */
+  label: string;
+  class?: string;
+}
+
+const { label, class: extra } = Astro.props;
+const cls = ['dk-kind-tag', extra].filter(Boolean).join(' ');
+---
+
+<span class={cls}>{label}</span>

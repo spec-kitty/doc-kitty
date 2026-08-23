@@ -182,7 +182,7 @@
   --sl-color-text: var(--dk-color-text);
   --sl-color-white: var(--dk-color-text-strong);
   --sl-color-gray-2: var(--dk-color-text-muted);
-  --sl-color-text-accent: var(--dk-color-accent-text);
+  --sl-color-text-accent: var(--dk-color-text-accent);
 
   /* Accent */
   --sl-color-accent-low: var(--dk-color-accent-low);
