@@ -24,8 +24,10 @@ pnpm --filter example dev
    ```
 
    or vendor `src/` from this repo as a local workspace package.
-3. Edit `astro.config.mjs`: set `site`, `base`, `title`, and the GitHub links
-   (search for `OWNER`).
+3. Edit `astro.config.mjs`: set the `OWNER` / `REPO` constants at the top (they
+   drive `site`, `base` and the GitHub links) plus `title`. They ship pointing at
+   this repo, not at a placeholder — a literal `OWNER` would publish a canonical
+   URL and sitemap that 404.
 4. Replace `docs/**` with your own Common Docs — Kitty tree (or run the
    `scaffold.mjs` script to generate the empty structure), following the
    [convention](../docs).

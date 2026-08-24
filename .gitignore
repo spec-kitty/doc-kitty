@@ -69,3 +69,8 @@ kitty-ops/ops-index.jsonl
 # Playwright (a11y lane) local output
 test-results/
 playwright-report/
+
+# Nightly smoke tooling output, when the checks are reproduced locally against a
+# preview server (lychee.toml / lighthouserc.json are the committed configs).
+.lighthouseci/
+.lycheecache
