@@ -1,0 +1,16 @@
+{
+  "coordination_branch": "kitty/mission-audience-related-external-references-01M0S3F4",
+  "created_at": "2026-08-24T05:21:37.375151+00:00",
+  "flattened": false,
+  "friendly_name": "Audience, Related & External References",
+  "mission_id": "01M0S3F42YGRST73Y5R4T15VZA",
+  "mission_number": null,
+  "mission_slug": "audience-related-external-references-01M0S3F4",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "doc-kitty promises human-first, agent-supported docs. This mission makes a page state who it is for, what to read next, and what it draws on — turning frontmatter the earlier missions already validate into readable, accessible on-page blocks, with persona pages that give audiences a home and a shared citation catalog so a source is described once and cited consistently everywhere.",
+  "purpose_tldr": "Render each page's intended audience, related pages, and cited references as consistent, accessible on-page blocks, backed by persona pages and a shared citation catalog.",
+  "slug": "audience-related-external-references-01M0S3F4",
+  "target_branch": "feat/audience-related-external-references",
+  "topology": "coord"
+}
