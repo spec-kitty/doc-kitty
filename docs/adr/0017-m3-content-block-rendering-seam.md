@@ -40,11 +40,14 @@ silently change the theme-facing transport ADR-0015 pins. It also flagged a
 
 ## Decision
 
-1. **The three content blocks are doc-kitty-owned, carrier-body renders.** The
-   `MarkdownContent` carrier reads the resolved data (from the IC-01 pure resolvers)
-   and renders a doc-kitty default block body
-   (`src/components/slots/{Audience,Related,ExternalReferences}.astro`) inline. The
-   `.astro` bodies stay thin: resolve, then render.
+1. **The three content blocks are doc-kitty-owned, carrier-body renders that
+   self-resolve.** The `MarkdownContent` carrier renders a doc-kitty default block
+   body (`src/components/slots/{Audience,Related,ExternalReferences}.astro`) inline.
+   Because slot bodies take **no props** (ADR-0015), each body **self-resolves**: it
+   reads `Astro.locals.starlightRoute` for the page's `entry.data` and
+   `await getCollection('docs' | 'bibliography' | 'tools')` for the index/catalog,
+   then applies the IC-01 pure resolvers and renders. Nothing crosses the slot
+   boundary as a prop; the bodies stay thin (self-resolve, then render).
 
 2. **Theme influence over these three slots is by tokens/CSS, not component
    replacement.** The Spec Kitty brand already ships the tint panels
