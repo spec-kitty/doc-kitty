@@ -1,27 +1,35 @@
 ---
 /*
- * Reference-item molecule (WP05, T022).
+ * Reference-item molecule (WP05, T022; title-first accessible name T025).
  *
- * The related-card pattern for an external reference: a CARD-WIDE `<a>` with a mono
- * citation key, a muted description, and a decorative external-link icon. Built for
- * the `dk:external-references` block, which stays UNWIRED to resolved data in M2
- * (C-010) — this molecule renders from PROPS only, never `entry.data.external_references`.
+ * The related-card pattern for an external reference: a CARD-WIDE `<a>` whose
+ * LEADING (and therefore accessible) text is the human TITLE, with the mono
+ * citation key as a SECONDARY affordance and an optional muted meta line
+ * (author/year/container, or a note). Consumed by the `dk:external-references`
+ * block (ADR-0017 carrier-body); renders from PROPS only (self-contained, no
+ * `@spec-kitty/*`).
  *
- * AA (T025): the `.dk-reference-item` class carries a ≥24px min target + a
- * `:focus-visible` ring in ../brand-components.css. The external-link icon is
- * decorative (`aria-hidden`) — its accessible name is carried by the visible key
- * and description text, never the icon alone. Self-contained (no `@spec-kitty/*`).
+ * T025 / FR-009 (post-spec finding R2): the citation KEY must never be the
+ * leading or sole accessible name — the title leads. Inline references carry no
+ * key, so only the title (+ optional note) shows.
+ *
+ * AA (T025): `.dk-reference-item` carries a ≥24px min target + a `:focus-visible`
+ * ring in ../brand-components.css. The external-link icon is decorative
+ * (`aria-hidden`); its accessible name is carried by the visible title text, never
+ * the icon alone, plus a hidden "(opens in a new tab)".
  */
 interface Props {
   /** Destination URL — a real href so the whole item is one ≥24px link target. */
   href: string;
-  /** Mono citation key (e.g. a short slug or ref id). */
-  citationKey: string;
-  /** Optional muted description. */
-  description?: string;
+  /** Human title — the LEADING/accessible name (inline title or resolved record title). */
+  title: string;
+  /** Mono citation key (catalog citations only) — a SECONDARY affordance, never leading. */
+  citationKey?: string;
+  /** Optional muted meta line: author/year/container, or a note. */
+  meta?: string;
 }
 
-const { href, citationKey, description } = Astro.props;
+const { href, title, citationKey, meta } = Astro.props;
 const external = /^https?:\/\//.test(href);
 ---
 
@@ -30,8 +38,9 @@ const external = /^https?:\/\//.test(href);
   href={href}
   {...external ? { rel: 'noopener noreferrer', target: '_blank' } : {}}
 >
-  <span class="dk-reference-item__key">{citationKey}</span>
-  {description && <span class="dk-reference-item__desc">{description}</span>}
+  <span class="dk-reference-item__title">{title}</span>
+  {citationKey && <span class="dk-reference-item__key">{citationKey}</span>}
+  {meta && <span class="dk-reference-item__desc">{meta}</span>}
   {
     external && (
       <>

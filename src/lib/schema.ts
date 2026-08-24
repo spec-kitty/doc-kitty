@@ -7,7 +7,7 @@
  * README-as-index twist by rewriting entry ids at load time.
  */
 import { z } from 'zod';
-import { glob } from 'astro/loaders';
+import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
 import { docsSchema } from '@astrojs/starlight/schema';
@@ -155,6 +155,14 @@ export const docKittyFields = {
     .array(z.object({ resource: z.string(), title: z.string() }))
     .optional(),
   stale_after: z.coerce.date().optional(),
+  // Persona attribute fields (ADR-0019): present on `kind: Persona` pages.
+  // Kept OPTIONAL here — `kind` is open `z.string()`, so no clean per-kind
+  // discriminated union exists in the build schema; requiredness for
+  // `kind === Persona` is the standalone validator's job (WP03), preserving the
+  // schema (lenient) / validator (strict, contextual) parity M1 established.
+  role: z.string().optional(),
+  goals: z.array(z.string()).optional(),
+  responsibilities: z.array(z.string()).optional(),
   // Kitty extension.
   agent: agentHints,
 };
@@ -202,4 +210,73 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     // Astro rejects empty ids; the bundle root ("") is stored as ROOT_ENTRY_ID.
     generateId: ({ entry }) => readmeToIndexId(entry) || ROOT_ENTRY_ID,
   });
+}
+
+// ---------------------------------------------------------------------------
+// Citation catalog collections (ADR-0018)
+//
+// `bibliography` and `tools` are content-layer data collections, each loaded
+// from a single YAML file via Astro's `file()` loader (which parses YAML and
+// keys array items by their `id` field). The toolkit exports a zod schema + a
+// loader per collection — mirroring `docKittyDocsSchema()`/`docKittyDocsLoader()`
+// — so a consumer wires them into `content.config.ts` in one step.
+// ---------------------------------------------------------------------------
+
+/**
+ * Bibliography record fields (CSL-JSON-lite subset, ADR-0018). `id`/`title`/`url`
+ * are required; the rest are optional. `issued`/`accessed` are coerced to string
+ * so an unquoted YAML year (`2017`) or date (`2026-08-24`) survives validation.
+ */
+export const bibliographyFields = {
+  id: z.string(),
+  type: z.string().optional(),
+  title: z.string(),
+  authors: z.array(z.string()).optional(),
+  container: z.string().optional(),
+  url: z.string(),
+  issued: z.coerce.string().optional(),
+  accessed: z.coerce.string().optional(),
+  note: z.string().optional(),
+};
+
+/** Tools record fields (ADR-0018): `id`/`name`/`url` required, `note` optional. */
+export const toolsFields = {
+  id: z.string(),
+  name: z.string(),
+  url: z.string(),
+  note: z.string().optional(),
+};
+
+/**
+ * Zod schema for the `bibliography` collection. Pass to
+ * `defineCollection({ loader: docKittyBibliographyLoader(), schema: docKittyBibliographySchema() })`.
+ */
+export function docKittyBibliographySchema() {
+  return z.object(bibliographyFields);
+}
+
+/** Zod schema for the `tools` collection (see `docKittyBibliographySchema`). */
+export function docKittyToolsSchema() {
+  return z.object(toolsFields);
+}
+
+export interface DocKittyCatalogLoaderOptions {
+  /** Path (relative to the site root) to the catalog YAML file. */
+  path?: string;
+}
+
+/**
+ * Content loader for the `bibliography` collection. Reads a single YAML file
+ * (default `docs/_meta/bibliography.yaml`, the convention's registry home) and
+ * keys entries by their `id` field.
+ */
+export function docKittyBibliographyLoader(options: DocKittyCatalogLoaderOptions = {}) {
+  const { path = 'docs/_meta/bibliography.yaml' } = options;
+  return file(path);
+}
+
+/** Content loader for the `tools` collection (default `docs/_meta/tools.yaml`). */
+export function docKittyToolsLoader(options: DocKittyCatalogLoaderOptions = {}) {
+  const { path = 'docs/_meta/tools.yaml' } = options;
+  return file(path);
 }

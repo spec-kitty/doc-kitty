@@ -40,6 +40,41 @@ export type DocStatus = 'draft' | 'active' | 'deprecated' | 'superseded';
 /** A `related` entry: a bare slug or an object with an optional per-link note. */
 export type RelatedRef = string | { ref: string; note?: string };
 
+/** An `audience` entry: a reader profile slug + page-local guidance for them. */
+export interface AudienceEntry {
+  profile: string;
+  guidance_text: string;
+}
+
+/** MoSCoW priority levels used by the optional `moscow` frontmatter note. */
+export type MoscowLevel = 'Must' | 'Should' | 'Could' | "Won't";
+
+/** An optional MoSCoW prioritisation note attached to a page. */
+export interface MoscowNote {
+  level: MoscowLevel;
+  rationale: string;
+}
+
+/** An inline external reference — self-contained, no catalog lookup, no citation key. */
+export interface InlineReference {
+  url: string;
+  title: string;
+  note?: string;
+}
+
+/**
+ * A catalog external reference: the frozen ADR-0009 `{ type, id }` form. `type`
+ * here is the *catalog* discriminator (`biblio` | `tool`), deliberately distinct
+ * from the frontmatter section `type` axis (ADR-0018).
+ */
+export interface CatalogReference {
+  type: string;
+  id: string;
+}
+
+/** An `external_references` entry: inline (self-contained) or catalog (`{type,id}`). */
+export type ExternalReference = InlineReference | CatalogReference;
+
 /** Kitty extension: fine control over the agent-API. */
 export interface AgentHints {
   /** Include in llms.txt / agent index. Default true. */
@@ -84,6 +119,12 @@ export interface DocKittyFrontmatter {
   okf_version?: string;
   authors?: string[];
   related?: RelatedRef[];
+  /** Reader profiles this page addresses, with page-local guidance (ADR-0009). */
+  audience?: AudienceEntry[];
+  /** External references: inline or catalog citations (ADR-0009 / ADR-0018). */
+  external_references?: ExternalReference[];
+  /** Optional MoSCoW prioritisation note. */
+  moscow?: MoscowNote;
   tags?: string[];
   resource?: string;
   generated?: GeneratedStamp;
@@ -270,4 +311,166 @@ export function rankForFeed(entries: DocEntry[]): DocEntry[] {
   return entries
     .filter((e) => isPublished(e.data))
     .sort((a, b) => updatedMillis(b.data) - updatedMillis(a.data));
+}
+
+// ---------------------------------------------------------------------------
+// Resolution core (Astro-free)
+//
+// Pure resolvers for `related`, `audience` profiles, and `external_references`.
+// The build-free doc-sanity gates parity-duplicate these (WP02/WP03), so
+// NOTHING here may import Astro. The miss posture is asymmetric by design (spec
+// Assumptions): a dangling `related` ref or an unresolvable citation is
+// build-fatal (throws); a missing audience profile is soft (returns null, the
+// caller renders the humanized slug and warns).
+// ---------------------------------------------------------------------------
+
+/** A single target in the docs index the resolvers look references up in. */
+export interface DocIndexEntry {
+  slug: string;
+  title: string;
+  kind: string;
+  doc_status: DocStatus;
+  description?: string;
+}
+
+/** The docs index: resolution targets keyed by route slug. */
+export type DocsIndex = Record<string, DocIndexEntry>;
+
+/**
+ * A resolved related reference, as consumed by the agent surface (WP05) and the
+ * related-links block. Exported so a caller can type its enriched record against
+ * a shared type rather than an inline cast.
+ */
+export interface ResolvedRelated {
+  ref: string;
+  title: string;
+  kind: string;
+  doc_status: DocStatus;
+}
+
+/** A resolved related reference plus its card text (`note`-else-`description`). */
+export interface ResolvedRelatedCard extends ResolvedRelated {
+  note?: string;
+}
+
+/**
+ * Resolve a single `related` entry against the docs index.
+ *
+ * Precedence: the card text (`note`) is the entry's own `note` when present,
+ * else the target page's `description`. A miss is build-fatal (FR-004): a
+ * dangling reference must never be silently dropped.
+ */
+export function resolveRelated(ref: RelatedRef, index: DocsIndex): ResolvedRelatedCard {
+  const slug = typeof ref === 'string' ? ref : ref.ref;
+  const entryNote = typeof ref === 'string' ? undefined : ref.note;
+  const target = index[slug];
+  if (!target) {
+    throw new Error(
+      `resolveRelated: dangling related reference "${slug}" — no page with that slug in the docs index (build-fatal, FR-004).`,
+    );
+  }
+  const card: ResolvedRelatedCard = {
+    ref: slug,
+    title: target.title,
+    kind: target.kind,
+    doc_status: target.doc_status,
+  };
+  const note = entryNote ?? target.description;
+  if (note !== undefined) card.note = note;
+  return card;
+}
+
+/** A resolved audience-profile link. */
+export interface ResolvedProfile {
+  href: string;
+  title: string;
+}
+
+/** Humanize a profile slug for display: `"backend-dev"` → `"Backend Dev"`. */
+export function humanizeProfile(slug: string): string {
+  return slug
+    .split(/[-_/\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Resolve an audience `profile` slug to its persona page under
+ * `context/audience/<profile>`. A miss is SOFT: returns `null` so the caller can
+ * render the humanized slug and warn (the warn channel lands in WP04).
+ */
+export function resolveProfile(profile: string, index: DocsIndex): ResolvedProfile | null {
+  const slug = `context/audience/${profile}`;
+  const target = index[slug];
+  if (!target) return null;
+  return { href: routeFor(slug), title: target.title };
+}
+
+/** A bibliography catalog record (CSL-JSON-lite, ADR-0018). */
+export interface BibliographyRecord {
+  id: string;
+  type?: string;
+  title: string;
+  authors?: string[];
+  container?: string;
+  url: string;
+  issued?: string;
+  accessed?: string;
+  note?: string;
+}
+
+/** A tools catalog record (ADR-0018). */
+export interface ToolRecord {
+  id: string;
+  name: string;
+  url: string;
+  note?: string;
+}
+
+/** The loaded citation catalog: records keyed by their stable catalog id. */
+export interface CitationCatalog {
+  bibliography: Record<string, BibliographyRecord>;
+  tools: Record<string, ToolRecord>;
+}
+
+/** A resolved citation row: an inline reference, a biblio record, or a tool record. */
+export type ResolvedCitation = InlineReference | BibliographyRecord | ToolRecord;
+
+/**
+ * Resolve an `external_references` entry against the loaded catalog.
+ *
+ * An inline `{ url, title, note? }` is self-contained and passes through
+ * unchanged. A catalog `{ type, id }` selects a collection by its *catalog*
+ * `type`: `biblio` → `bibliography[id]`, `tool` → `tools[id]`. A missing id or
+ * an unknown catalog `type` is build-fatal (FR-008).
+ */
+export function resolveCitation(
+  extRef: ExternalReference,
+  catalog: CitationCatalog,
+): ResolvedCitation {
+  // Inline references carry their own url + title — no catalog lookup.
+  if ('url' in extRef) {
+    return extRef;
+  }
+  const { type: catalogType, id } = extRef;
+  if (catalogType === 'biblio') {
+    const record = catalog.bibliography[id];
+    if (!record) {
+      throw new Error(
+        `resolveCitation: no bibliography entry for id "${id}" (build-fatal, FR-008).`,
+      );
+    }
+    return record;
+  }
+  if (catalogType === 'tool') {
+    const record = catalog.tools[id];
+    if (!record) {
+      throw new Error(`resolveCitation: no tool entry for id "${id}" (build-fatal, FR-008).`);
+    }
+    return record;
+  }
+  throw new Error(
+    `resolveCitation: unknown catalog type "${catalogType}" (expected "biblio" or "tool") (build-fatal, FR-008).`,
+  );
 }

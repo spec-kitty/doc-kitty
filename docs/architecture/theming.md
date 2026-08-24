@@ -166,10 +166,12 @@ Component-level structure and token usage, all specified to WCAG 2.2 AA.
   card (`--dk-width-passport`, `--dk-radius-lg`, `--dk-shadow-lg`) with an accent
   identity strip, the persona name as an `<h1>` in `--dk-font-display`, and a
   label/value grid rendered as a `<dl>` so the field relationships are programmatic.
-  The avatar uses `hero_image.alt`. **Shipped in M2** as the in-frame passport shell
-  rendering generic frontmatter into the `<dl>` grid. Persona-specific authoring
-  (dedicated persona fields) and the audience block that links personas to pages
-  remain M3.
+  The avatar uses `hero_image.alt`. The in-frame passport shell **shipped in M2**;
+  the **dedicated persona attribute fields** (`role`, `goals`, `responsibilities`,
+  [ADR-0019](../adr/0019-persona-attribute-fields.md)) and the audience block that
+  links personas to pages **shipped in M3**. Personas live at their location of
+  record `context/audience/` ([ADR-0020](../adr/0020-persona-location-reconciliation.md)),
+  so an `audience` profile slug resolves against a page in the `context` section.
 - **`Hub` — described link list** (in-frame). A lead paragraph, then a `<nav>` with
   an accessible name wrapping a list of described items (each the related-card
   pattern: title in `--dk-color-text-accent`, the target's own description in
@@ -179,10 +181,32 @@ Component-level structure and token usage, all specified to WCAG 2.2 AA.
   slides stacked and scrollable, so content is never gated behind the deck
   interaction. Each slide has a heading; controls are real buttons.
 
-The chrome blocks follow the same token discipline: the metadata band renders
-`doc_status` as a text-labelled pill (never colour-only), the audience block titles a
-panel with persona links plus page-local `guidance_text`, and the related and
-external-reference blocks render resolved links as accessible, card-wide targets.
+The chrome blocks follow the same token discipline. The three content blocks
+(`dk:audience`, `dk:related`, `dk:external-references`) are **self-resolving carrier
+bodies** ([ADR-0017](../adr/0017-m3-content-block-rendering-seam.md)): each takes no
+props, reads the current page's frontmatter from `Astro.locals.starlightRoute`, and
+resolves against `getCollection(...)`, so a page renders a block simply by declaring
+the matching frontmatter — nothing is hand-authored in the body.
+
+- The metadata band renders `doc_status` as a text-labelled pill (never
+  colour-only).
+- The **audience** block is a labelled `<section>` (a region, not a nav): it titles
+  a panel with a persona link per profile plus the page-local `guidance_text`. A
+  profile with no persona page is a soft miss — it renders the humanized slug and
+  warns, never fails.
+- The **related** block is a navigation landmark of card-wide links named by the
+  resolved target **title** (never a bare slug); a dangling ref is build-fatal. A
+  target whose `doc_status` is `deprecated`/`superseded` carries a **text status
+  marker** on its card, so a reader sees a stale link is stale (the marker is bound
+  to the target's status, not painted on every card).
+- The **external references** block is a navigation landmark whose items lead with
+  the human **title**; the mono citation key is a secondary affordance for catalog
+  citations only. A missing catalog id or unknown type is build-fatal.
+
+All three blocks keep their link text inside Starlight's searchable content region,
+so a citing page's related and citation titles appear in that page's own Pagefind
+fragment. The `example/docs/architecture/blocks-demonstrator.md` page declares all
+three at once and is scanned by the accessibility lane.
 
 ## Shipped themes
 

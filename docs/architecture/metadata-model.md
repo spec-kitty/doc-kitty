@@ -135,6 +135,48 @@ A catalog record is the single source of truth for a citation, so the same sourc
 can be referenced from many pages and rendered consistently. Inline entries suit
 one-off links; catalog entries suit sources cited more than once.
 
+## Citation catalog
+
+The `{ type, id }` reference form resolves against two Astro content-layer **data
+collections**, each loaded from a single YAML file
+([ADR-0018](../adr/0018-citation-catalog-collections.md)):
+
+- `bibliography` ← `docs/_meta/bibliography.yaml`
+- `tools` ← `docs/_meta/tools.yaml`
+
+(both mirrored under `example/docs/_meta/` for the example site). The toolkit
+exports a zod schema and a loader for each — mirroring the `docs` collection — so a
+consumer wires all three into `content.config.ts` in one step. Records are keyed by
+their stable, unique `id`; a duplicate id is a fatal, ambiguous citation key.
+
+Record shapes:
+
+| Collection | Required | Optional |
+|---|---|---|
+| `bibliography` | `id`, `title`, `url` | `type`, `authors: string[]`, `container`, `issued`, `accessed`, `note` |
+| `tools` | `id`, `name`, `url` | `note` |
+
+**Resolution.** A catalog `type: biblio` resolves to `bibliography[id]`; `type:
+tool` resolves to `tools[id]`. An unresolvable `id`, or an unknown catalog `type`
+(anything but `biblio`/`tool`), is a **blocking build error** — and the build-free
+`validate-catalog.mjs` gate reports the same verdict, so a citation is caught in
+the fast `doc-sanity` lane before a build. Parity between the two arms is the
+contract (asserted in `src/tests/`). An inline `{ url, title, note? }` needs no
+catalog and carries **no citation key**.
+
+**Rendering.** Each reference item's accessible name **leads with the human title**
+(inline `title` or the resolved record `title`); the mono citation key is a
+secondary affordance shown only for catalog citations, never the leading or sole
+name. The block is an `External references` navigation landmark inside the
+searchable content region, so the resolved titles appear in the citing page's own
+search fragment.
+
+**Endpoint.** `/api/bibliography.json` projects the bibliography as
+`{ version, count, records[] }`, each record carrying at least `id`, `title`, and
+`url`. Because a catalog record carries no `doc_status`, this projection is emitted
+**outside** page-publication gating (FR-015): unlike `/api/index.json`, RSS, and
+the sitemap, it is not filtered by `draft`.
+
 ## Images: hero image and social thumbnail
 
 Two optional image fields feed both the page display and its share metadata,
@@ -176,12 +218,24 @@ Image handling differs by purpose:
 ## Audience
 
 `audience` is a list of `{ profile, guidance_text }`. `profile` is a kebab slug
-that must resolve to a persona page under `context/audience/<profile>.md`;
+that resolves to a persona page under `context/audience/<profile>.md`;
 `guidance_text` is the page-local note on what that reader should take from the
-page. A "Who is this for" block renders when the list is non-empty. Persona pages
-are the shared stakeholder descriptions. They live under `context/audience/`, a
-sub-location of the `context` section, and carry `kind: Persona`. This is an M3
-feature; the shape is fixed here so the schema can carry it earlier.
+page. A "Who is this for" block renders when the list is non-empty.
+
+Persona pages are the shared stakeholder descriptions. **Their location of record
+is `context/audience/`**, a sub-location of the `context` section, and they carry
+`kind: Persona`. [ADR-0020](../adr/0020-persona-location-reconciliation.md)
+reconciled this: personas relocated from a top-level `personas/` directory to
+`context/audience/` so a persona is a first-class member of the `context` section
+and an `audience` profile slug resolves against it directly. Persona attribute
+fields (`role`, `goals`, `responsibilities`) are defined in
+[ADR-0019](../adr/0019-persona-attribute-fields.md); the passport layout renders
+them.
+
+Profile resolution is a **soft miss** (FR-002): a `profile` with no persona page
+does not fail the build — the block renders the humanized slug and warns on the
+build log. This is deliberately asymmetric with the build-fatal `related` miss
+below, because an audience note is page guidance, not a navigational contract.
 
 ## Agent extension
 

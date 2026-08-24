@@ -1,0 +1,22 @@
+# Bibliography catalog (CSL-JSON-lite, ADR-0018).
+#
+# One record per source. `id` is a stable, unique citation key referenced from a
+# page's `external_references: [{ type: biblio, id: <id> }]`. `id`/`title`/`url`
+# are required; `type`/`authors`/`container`/`issued`/`accessed`/`note` optional.
+# A citation that names a missing id is a build-fatal error (FR-008) and is also
+# caught build-free by `validate-catalog.mjs` (doc-sanity).
+- id: divio-2017
+  type: webpage
+  title: The documentation system
+  authors: [Daniele Procida]
+  container: Divio
+  url: https://documentation.divio.com
+  issued: "2017"
+  accessed: "2026-08-24"
+  note: origin of the four-quadrant model
+- id: llms-txt-2024
+  type: webpage
+  title: The /llms.txt file
+  url: https://llmstxt.org
+  issued: "2024"
+  note: the agent-facing discovery index this toolkit emits

@@ -114,6 +114,12 @@ const REQUIRED_DK_TOKENS = [
   '--dk-color-danger-bg',
   '--dk-color-neutral',
   '--dk-color-neutral-bg',
+  // Block tint (external-references) — the `dk:external-references` block paints its
+  // panel with the lilac tint pair (brand-components.css §external-references, T026).
+  // Enumerated here for COMPLETENESS: dropping the lilac tint from the source sheet
+  // flips this check red, so the wired external-references block can never render
+  // untinted while the gate stays green (FR-017 / SC-003).
+  '--dk-color-tint-lilac',
 ];
 
 // The `--dk-* → --sl-*` bridge: each Starlight variable the base sheet assigns
@@ -177,20 +183,53 @@ const HUB_CHILD_CARD_MARKERS = [
 ];
 
 // --- T033: Persona fixture (WP06) -----------------------------------------
-// The Persona fixture renders through the brand's `Persona` layout, whose
+// The Persona page renders through the brand's `Persona` layout, whose
 // layout-UNIQUE marker is `.dk-passport` (bound to the layout, NOT a generic
 // <h1>/<dl> — a fallback-to-Default regression drops the passport and flips the
 // check red, SC-004). Its persona-UNIQUE string must live in the Persona page's
 // OWN url-scoped Pagefind fragment (NFR-004): the body is searchable, scoped to
-// this route (mirrors the HUB_FRAGMENT pattern). The fixture is a DRAFT — drafts
-// are excluded from the agent-index/sitemap but STILL render to HTML and are
-// Pagefind-indexed, so both proofs hold on a draft page.
-const PERSONA_PAGE = path.join('personas', 'example-persona', 'index.html');
+// this route (mirrors the HUB_FRAGMENT pattern). The persona now lives at
+// `context/audience/<slug>/` and is PUBLISHED (`doc_status: active`, reconciled
+// from draft in ADR-0020) — it appears on the agent-index/sitemap AND renders to
+// HTML and is Pagefind-indexed, so both proofs hold.
+const PERSONA_PAGE = path.join('context', 'audience', 'example-persona', 'index.html');
 const PERSONA_LAYOUT_MARKER = 'dk-passport';
-const PERSONA_FRAGMENT_URL = '/personas/example-persona/';
+const PERSONA_FRAGMENT_URL = '/context/audience/example-persona/';
 // WP06's recorded persona-unique string (acceptance.md). Persona-unique so it
 // cannot be satisfied by boilerplate shared with any other page's fragment.
 const PERSONA_UNIQUE_STRING = 'marzipan mapmaker passport sentinel';
+
+// --- T030: three-block demonstrator (WP06) ---------------------------------
+// The demonstrator (T032) is the ONE page that declares audience + related +
+// external_references, so all three block bodies render together and axe scans a
+// wired block page (post-spec R1). These checks bind the NON-FAKEABLE contract
+// markers the post-spec squad flagged: the title-led (not key-led) accessible
+// name (R2), the stale-target status marker on a real superseded target (FR-005),
+// and the citing page's OWN url-scoped Pagefind fragment coverage (NFR-003 / R6).
+const DEMO_PAGE = path.join('architecture', 'blocks-demonstrator', 'index.html');
+const DEMO_FRAGMENT_URL = '/architecture/blocks-demonstrator/';
+// The demonstrator's audience links the relocated persona (context/audience/).
+const DEMO_AUDIENCE_HREF = '/context/audience/example-persona/';
+// The stale related target: a REAL published `doc_status: superseded` page, so its
+// Related card carries the stale text marker (StatusPill visible word). Bound to
+// the target href so the marker is proven on the STALE card specifically.
+const DEMO_STALE_TARGET_HREF = '/architecture/superseded-note/';
+const DEMO_STALE_TARGET_TITLE = 'Superseded architecture note';
+const DEMO_STALE_STATUS_WORD = 'superseded';
+// A normal (current) related target — used to prove the stale marker is bound to
+// the target's status, NOT painted on every card (non-fakeable).
+const DEMO_CURRENT_TARGET_HREF = '/architecture/overview/';
+// The catalog citation on the demonstrator (biblio divio-2017): the resolved
+// human TITLE must LEAD the accessible name; the mono citation KEY is secondary.
+const DEMO_CITATION_TITLE = 'The documentation system';
+const DEMO_CITATION_KEY = 'divio-2017';
+// Related/citation titles that MUST appear in the demonstrator's OWN fragment
+// (they live in the block markup inside data-pagefind-body, NFR-003).
+const DEMO_OWN_FRAGMENT_TITLES = [
+  DEMO_STALE_TARGET_TITLE,
+  'Overview', // the current related target's title
+  DEMO_CITATION_TITLE,
+];
 
 // --- T034: cascade-order discriminators (ADR-0013 seam 2) ------------------
 // The generated TOKEN sheet (emitTokenSheet) is the ONLY sheet that emits the
@@ -351,6 +390,34 @@ async function readAllCss(distDir) {
 function ogImage(html) {
   const m = html.match(/<meta\s+property="og:image"\s+content="([^"]*)"/i);
   return m ? m[1] : null;
+}
+
+/** Return the FIRST `<a …>…</a>` element in `html` whose opening tag or inner
+ * markup contains `needle`, or null. Anchors here are the card-wide links the
+ * block molecules emit (dk-related-card / dk-reference-item), so scoping a check
+ * to "the card containing X" keeps it bound to that card, not the whole page. */
+function anchorContaining(html, needle) {
+  const re = /<a\b[^>]*>[\s\S]*?<\/a>/gi;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    if (m[0].includes(needle)) return m[0];
+  }
+  return null;
+}
+
+/** Return the FIRST `<a …>…</a>` in `html` that carries BOTH the class token
+ * `className` in its opening tag AND `href="<href>"`, or null. Scoping to the
+ * block molecule's own class token is what keeps a card check bound to the
+ * RENDERED card and not to a prose body link that happens to point at the same
+ * route (the demonstrator's prose links the same targets it lists). */
+function cardAnchor(html, className, href) {
+  const re = /<a\b([^>]*)>[\s\S]*?<\/a>/gi;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const open = m[1];
+    if (selectorHasToken(open, className) && open.includes(`href="${href}"`)) return m[0];
+  }
+  return null;
 }
 
 /** True iff `needle` appears in `selector` as a WHOLE class/selector token — i.e.
@@ -954,6 +1021,175 @@ export async function assertChromeArtifacts(distDir) {
   ok(
     `theme site-default: og:image + twitter:image on ${SITEDEFAULT_PAGE} derive from the theme ` +
       `socialImage (\`${THEME_SOCIAL_MARKER}\`), not the toolkit default (FR-009)`,
+  );
+
+  // === 14) Three-block demonstrator: audience + related + external-references ===
+  // (T030) The demonstrator (T032) is the one page declaring all three metadata
+  // arrays, so the three block bodies render together. These checks bind the
+  // NON-FAKEABLE markers the post-spec squad flagged: the audience labelled region,
+  // the stale-target status marker on a REAL superseded target (FR-005), the
+  // title-LED (never key-led) reference accessible name (R2), and the citing
+  // page's OWN url-scoped Pagefind fragment coverage (NFR-003 / R6).
+  const demoHtml = await readHtml(dir, DEMO_PAGE);
+
+  // 14a) Audience block — a labelled <section> (region, NOT a nav) with a heading
+  // and a reader list; the profile resolves to the relocated persona page.
+  const audienceSection = demoHtml.match(
+    /<section\b[^>]*aria-labelledby="dk-audience-heading"[^>]*>([\s\S]*?)<\/section>/i,
+  );
+  if (!audienceSection) {
+    fail(
+      `demonstrator: the audience <section> (aria-labelledby="dk-audience-heading") is absent on ` +
+        `${DEMO_PAGE} — the dk:audience block did not render (FR-001)`,
+    );
+  }
+  if (!/id="dk-audience-heading"[^>]*>\s*Who is this for/i.test(demoHtml)) {
+    fail(`demonstrator: the audience heading "Who is this for" is absent on ${DEMO_PAGE}`);
+  }
+  if (!audienceSection[1].includes('dk-audience__list')) {
+    fail(`demonstrator: the audience block has no dk-audience__list on ${DEMO_PAGE}`);
+  }
+  const audienceLink = anchorContaining(audienceSection[1], DEMO_AUDIENCE_HREF);
+  if (!audienceLink || !/\bclass="[^"]*\bdk-audience__profile\b/i.test(audienceLink)) {
+    fail(
+      `demonstrator: the audience profile did not resolve to the persona page ${DEMO_AUDIENCE_HREF} ` +
+        `on ${DEMO_PAGE} — resolveProfile did not link the relocated persona (FR-001)`,
+    );
+  }
+  ok(`demonstrator: audience <section> renders a heading + reader list linking ${DEMO_AUDIENCE_HREF}`);
+
+  // 14b) Related block — a `role="navigation"` landmark labelled "Related pages",
+  // title-named cards, a kind tag, and the stale-target status marker on the REAL
+  // superseded target. The stale marker MUST be bound to the target's status: it is
+  // present on the superseded card and ABSENT on the current card (non-fakeable).
+  if (!/role="navigation"[^>]*aria-label="Related pages"/i.test(demoHtml)) {
+    fail(
+      `demonstrator: the related landmark (role="navigation" aria-label="Related pages") is absent on ` +
+        `${DEMO_PAGE} — the dk:related block did not render (FR-004)`,
+    );
+  }
+  const staleCard = cardAnchor(demoHtml, 'dk-related-card', DEMO_STALE_TARGET_HREF);
+  if (!staleCard) {
+    fail(
+      `demonstrator: no related card links the stale target ${DEMO_STALE_TARGET_HREF} on ${DEMO_PAGE}`,
+    );
+  }
+  if (!new RegExp(`dk-related-card__title[^>]*>\\s*${DEMO_STALE_TARGET_TITLE}`, 'i').test(staleCard)) {
+    fail(
+      `demonstrator: the stale related card is not title-named "${DEMO_STALE_TARGET_TITLE}" on ` +
+        `${DEMO_PAGE} — the card must carry the resolved target TITLE, not a bare slug (FR-004)`,
+    );
+  }
+  if (!/dk-kind-tag[^>]*>/i.test(staleCard)) {
+    fail(`demonstrator: the stale related card carries no kind tag on ${DEMO_PAGE}`);
+  }
+  // The stale marker: a TEXT status word (StatusPill), not colour-only (WCAG 1.4.1).
+  const staleHasMarker = new RegExp(
+    `dk-pill[^>]*>[\\s\\S]*?Target status:\\s*<\\/span>\\s*${DEMO_STALE_STATUS_WORD}`,
+    'i',
+  ).test(staleCard);
+  if (!staleHasMarker) {
+    fail(
+      `demonstrator: the stale related card for ${DEMO_STALE_TARGET_HREF} carries no TEXT status ` +
+        `marker "${DEMO_STALE_STATUS_WORD}" on ${DEMO_PAGE} — the stale-target marker (FR-005) is missing`,
+    );
+  }
+  // Bind the marker to STATUS: the CURRENT (active) target must NOT carry it.
+  const currentCard = cardAnchor(demoHtml, 'dk-related-card', DEMO_CURRENT_TARGET_HREF);
+  if (!currentCard) {
+    fail(`demonstrator: no related card links the current target ${DEMO_CURRENT_TARGET_HREF} on ${DEMO_PAGE}`);
+  }
+  if (/Target status:/i.test(currentCard)) {
+    fail(
+      `demonstrator: the CURRENT related card (${DEMO_CURRENT_TARGET_HREF}) carries a stale status ` +
+        `marker on ${DEMO_PAGE} — the marker is painted on every card, not bound to doc_status (FR-005)`,
+    );
+  }
+  ok(
+    `demonstrator: related landmark with title-named cards + kind tag; stale marker ` +
+      `"${DEMO_STALE_STATUS_WORD}" on ${DEMO_STALE_TARGET_HREF} and ABSENT on the current target`,
+  );
+
+  // 14c) External-references block — a `role="navigation"` landmark labelled
+  // "External references"; the catalog reference item's LEADING (accessible) text
+  // is the resolved human TITLE, and the mono citation KEY follows it (never leads).
+  // This is the R2 non-fakeable check: swapping the order (key first) flips it red.
+  if (!/role="navigation"[^>]*aria-label="External references"/i.test(demoHtml)) {
+    fail(
+      `demonstrator: the external-references landmark (role="navigation" aria-label="External ` +
+        `references") is absent on ${DEMO_PAGE} — the dk:external-references block did not render (FR-006)`,
+    );
+  }
+  const citationItem = anchorContaining(demoHtml, `>${DEMO_CITATION_KEY}<`);
+  if (!citationItem) {
+    fail(
+      `demonstrator: no reference item carries the catalog citation key "${DEMO_CITATION_KEY}" on ` +
+        `${DEMO_PAGE} — the catalog citation did not resolve (FR-007)`,
+    );
+  }
+  const titleIdx = citationItem.search(
+    new RegExp(`dk-reference-item__title[^>]*>\\s*${DEMO_CITATION_TITLE}`, 'i'),
+  );
+  const keyIdx = citationItem.search(
+    new RegExp(`dk-reference-item__key[^>]*>\\s*${DEMO_CITATION_KEY}`, 'i'),
+  );
+  if (titleIdx === -1) {
+    fail(
+      `demonstrator: the catalog reference item's title span does not carry the resolved title ` +
+        `"${DEMO_CITATION_TITLE}" on ${DEMO_PAGE} — the accessible name is not the human title (R2/FR-009)`,
+    );
+  }
+  if (keyIdx === -1) {
+    fail(`demonstrator: the catalog reference item has no mono citation key span on ${DEMO_PAGE}`);
+  }
+  if (!(titleIdx < keyIdx)) {
+    fail(
+      `demonstrator: the mono citation key "${DEMO_CITATION_KEY}" LEADS the reference item's ` +
+        `accessible name on ${DEMO_PAGE} (title @${titleIdx}, key @${keyIdx}) — the human title MUST ` +
+        `lead, the key is a secondary affordance (R2/FR-009)`,
+    );
+  }
+  ok(
+    `demonstrator: external-references landmark; reference accessible name LEADS with the resolved ` +
+      `title "${DEMO_CITATION_TITLE}" (key "${DEMO_CITATION_KEY}" secondary)`,
+  );
+
+  // 14d) Own-fragment Pagefind coverage — the related + citation titles live in the
+  // block markup inside data-pagefind-body, so they must appear in the CITING page's
+  // OWN url-scoped fragment (NFR-003 / R6), not merely somewhere in the index. Scope
+  // to the demonstrator's fragment exactly as the Hub/Persona checks do.
+  let demoFragment = null;
+  for (const n of fragFiles) {
+    const buf = await readFile(path.join(fragDir, n));
+    let decoded;
+    try {
+      decoded = gunzipSync(buf).toString('utf8');
+    } catch (err) {
+      fail(`pagefind: fragment ${n} did not gunzip (${err.message})`);
+    }
+    const urlMatch = decoded.match(/"url":"([^"]*)"/);
+    if (urlMatch && urlMatch[1] === DEMO_FRAGMENT_URL) {
+      demoFragment = decoded;
+      break;
+    }
+  }
+  if (demoFragment === null) {
+    fail(
+      `pagefind: no fragment indexed for the demonstrator ${DEMO_FRAGMENT_URL} — the block page is ` +
+        `not Pagefind-indexed (NFR-003)`,
+    );
+  }
+  const missingDemoTitles = DEMO_OWN_FRAGMENT_TITLES.filter((t) => !demoFragment.includes(t));
+  if (missingDemoTitles.length > 0) {
+    fail(
+      `pagefind: the demonstrator fragment (${DEMO_FRAGMENT_URL}) is missing related/citation title(s): ` +
+        `${missingDemoTitles.map((m) => JSON.stringify(m)).join(', ')} — the block link text left the ` +
+        `citing page's own searchable region (NFR-003 / R6)`,
+    );
+  }
+  ok(
+    `pagefind: demonstrator fragment ${DEMO_FRAGMENT_URL} contains its related + citation titles ` +
+      `(${DEMO_OWN_FRAGMENT_TITLES.length} checked)`,
   );
 }
 

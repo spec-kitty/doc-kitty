@@ -1,13 +1,20 @@
 ---
 title: Marzipan the Mapmaker
-description: A worked Persona fixture that exercises the passport per-kind layout with only generic frontmatter fields.
-doc_status: draft
-updated: 2026-08-23
-type: Guide
+description: A worked Persona page exercising the passport per-kind layout with the role, goals, and responsibilities attribute fields.
+doc_status: active
+updated: 2026-08-24
+type: Context
 kind: Persona
 authors:
   - stijn@spec-kitty.ai
 tags: [persona, passport, fixture]
+role: A wayfinding documentarian who charts unfamiliar documentation trees for newcomers.
+goals:
+  - Find a reliable route through an unfamiliar documentation tree quickly.
+  - Trust that every landmark page is current and not a draft.
+responsibilities:
+  - Keeps the section map accurate as pages move or are renamed.
+  - Flags dead ends and orphaned pages back to the maintainers.
 hero_image:
   src: ./assets/marzipan-mapmaker.png
   alt: A stylised avatar of Marzipan the Mapmaker on warm paper with a yellow accent bar

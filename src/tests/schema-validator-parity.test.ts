@@ -61,6 +61,10 @@ const SHAPE_PARITY: { file: string; relPath: string; reject: boolean }[] = [
   { file: 'err/hero-no-alt.md', relPath: 'hero-no-alt.md', reject: true },
   { file: 'err/related-object-no-ref.md', relPath: 'related-object-no-ref.md', reject: true },
   { file: 'valid/valid.md', relPath: 'valid.md', reject: false },
+  // Persona with all required attribute fields (ADR-0019): both arms accept —
+  // the build schema treats role/goals/responsibilities as optional and the
+  // validator's kind-aware requiredness is satisfied.
+  { file: 'persona/valid-persona.md', relPath: 'valid-persona.md', reject: false },
 ];
 
 describe('schema/validator parity — shared shape contract (NFR-005)', () => {
@@ -86,6 +90,12 @@ describe('schema/validator parity — shared shape contract (NFR-005)', () => {
 const PRESENCE_LENIENT: { file: string; relPath: string }[] = [
   { file: 'err/missing-doc-status.md', relPath: 'missing-doc-status.md' },
   { file: 'err/missing-kind.md', relPath: 'missing-kind.md' },
+  // A persona missing a required attribute field (ADR-0019): the build schema
+  // is lenient (role/goals/responsibilities are optional there — schema.ts keeps
+  // no per-kind discriminated union), while the standalone validator enforces
+  // requiredness for `kind === Persona` and rejects. Same gate-only strict layer
+  // as the missing-kind / missing-doc-status cases.
+  { file: 'persona/missing-role.md', relPath: 'missing-role.md' },
 ];
 
 describe('schema/validator parity — presence is the gate-only strict layer', () => {

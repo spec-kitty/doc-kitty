@@ -109,6 +109,8 @@ jobs:
         run: pnpm validate:example
       - name: Resolve internal links & related refs
         run: pnpm validate:links
+      - name: Resolve citation catalog (external references)
+        run: pnpm validate:catalog
       - name: Markdownlint (docs + example/docs)
         run: pnpm exec markdownlint-cli2 "docs/**/*.md" "example/docs/**/*.md"
       # Vale prose stylecheck. Install the pinned binary and run it directly so the

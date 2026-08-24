@@ -202,6 +202,29 @@ export function validate(relPath, data) {
     warnings.push(`\`kind: ${data.kind}\` is not in the canonical set (${KINDS.join(', ')})`);
   }
 
+  // Kind-aware requiredness for `kind: Persona` (ADR-0019). The build zod schema
+  // stays lenient — these three persona-attribute fields are optional there — so
+  // requiredness lives HERE, the one place that already owns contextual presence
+  // rules (parity discipline, mirroring the strict `type`/`doc_status` handling
+  // above). `role` is a non-empty string; `goals`/`responsibilities` are non-empty
+  // string arrays. Enforced regardless of `doc_status`, so a draft persona is held
+  // to the same identity contract as a published one.
+  if (data.kind === 'Persona') {
+    if (typeof data.role !== 'string' || data.role.trim().length === 0) {
+      problems.push('`role`: persona requires a non-empty string');
+    }
+    for (const field of ['goals', 'responsibilities']) {
+      const value = data[field];
+      if (
+        !Array.isArray(value) ||
+        value.length === 0 ||
+        !value.every((item) => typeof item === 'string' && item.trim().length > 0)
+      ) {
+        problems.push(`\`${field}\`: persona requires a non-empty list of non-empty strings`);
+      }
+    }
+  }
+
   // Soft lower bound on description length (non-fatal).
   if (typeof data.description === 'string') {
     const len = data.description.trim().length;

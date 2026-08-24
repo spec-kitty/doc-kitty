@@ -1,0 +1,10 @@
+# Tools catalog for the example docsite (ADR-0018). Mirrors the toolkit's own
+# docs/_meta/tools.yaml shape.
+- id: revealjs
+  name: reveal.js
+  url: https://revealjs.com
+  note: the deck engine behind Presentation-kind pages
+- id: astro
+  name: Astro
+  url: https://astro.build
+  note: the content-first web framework this docsite builds on

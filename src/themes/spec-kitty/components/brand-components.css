@@ -203,6 +203,12 @@
   outline: none;
   box-shadow: var(--dk-shadow-focus);
 }
+/* Title LEADS the item — the accessible name (T025 / FR-009). */
+.dk-reference-item__title {
+  color: var(--dk-color-text);
+  font-weight: var(--dk-weight-semibold);
+}
+/* Citation key is a SECONDARY affordance (mono), never the leading text. */
 .dk-reference-item__key {
   flex: none;
   font-family: var(--dk-font-mono);
@@ -286,13 +292,9 @@
  *   related              → sky    → info    pair  (blue family)
  *   audience             → mint   → success pair  (green family)
  *   callout / aside      → butter → warning pair  (haygold/butter family)
- *   external-references  → lilac  → *no lilac/purple token exists in WP04's
- *                                    catalog*; mapped to the neutral pair as a
- *                                    documented, AA-verified placeholder.
- *                                    See the OUT-OF-OWNED-FILES note in the WP05
- *                                    report: a `--dk-color-tint-lilac` + paired
- *                                    fg belongs in WP04's token catalog for exact
- *                                    brand fidelity. */
+ *   external-references  → lilac  → the `--dk-color-tint-lilac` +
+ *                                    `--dk-color-tint-lilac-text` pair (T026),
+ *                                    AA-verified in both modes in tokens.css. */
 .dk-panel {
   padding: var(--dk-space-md);
   border-radius: var(--dk-radius-md);
@@ -318,7 +320,7 @@
   color: var(--dk-color-warning);
 }
 .dk-panel--external-references {
-  /* lilac — placeholder mapped to the neutral pair (no lilac token; see note) */
-  background: var(--dk-color-neutral-bg);
-  color: var(--dk-color-neutral);
+  /* lilac — the dedicated AA-verified tint pair (T026) */
+  background: var(--dk-color-tint-lilac);
+  color: var(--dk-color-tint-lilac-text);
 }

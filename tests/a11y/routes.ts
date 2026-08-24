@@ -9,19 +9,27 @@ export const BASE = '/doc-kitty';
 export const ROUTES = {
   // Brand home — the visual-regression baseline target (T041).
   home: `${BASE}/`,
-  // Persona fixture — the WP06 draft persona page (Marzipan the Mapmaker).
-  persona: `${BASE}/personas/example-persona/`,
+  // Persona page — the relocated, published persona (Marzipan the Mapmaker) at
+  // its design-of-record location under context/audience/ (ADR-0020).
+  persona: `${BASE}/context/audience/example-persona/`,
   // Hub page — the WP04 Hub layout.
   hub: `${BASE}/context/`,
   // Prose page — a standard Default-layout content page.
   prose: `${BASE}/guides/getting-started/`,
+  // Blocks demonstrator — the WP06 page that renders ALL THREE content blocks
+  // (audience + related + external-references) so axe scans a wired block page
+  // (post-spec R1). Without this route the block renderers were exercised by zero
+  // pages, making WP04's "blocks clear the a11y lane" vacuous.
+  blocks: `${BASE}/architecture/blocks-demonstrator/`,
 } as const;
 
-// The axe coverage set: Persona fixture + Hub + prose, run in BOTH modes.
+// The axe coverage set: Persona fixture + Hub + prose + blocks demonstrator, run
+// in BOTH modes.
 export const AXE_PAGES: ReadonlyArray<{ name: string; path: string }> = [
-  { name: 'Persona fixture (/personas/example-persona/)', path: ROUTES.persona },
+  { name: 'Persona (/context/audience/example-persona/)', path: ROUTES.persona },
   { name: 'Hub (/context/)', path: ROUTES.hub },
   { name: 'Prose (/guides/getting-started/)', path: ROUTES.prose },
+  { name: 'Blocks demonstrator (/architecture/blocks-demonstrator/)', path: ROUTES.blocks },
 ];
 
 // axe tag set — includes wcag22aa (SC-002 / NFR-001).

@@ -4,7 +4,7 @@
  * the metadata helpers.
  */
 import { getCollection } from 'astro:content';
-import type { DocEntry, DocKittyFrontmatter } from '../metadata.js';
+import type { DocEntry, DocKittyFrontmatter, DocsIndex } from '../metadata.js';
 import { slugFromEntryId } from '../metadata.js';
 
 /**
@@ -17,6 +17,27 @@ export async function collectDocEntries(): Promise<DocEntry[]> {
     slug: slugFromEntryId(entry.id),
     data: entry.data as unknown as DocKittyFrontmatter,
   }));
+}
+
+/**
+ * Flatten `DocEntry`s into the `DocsIndex` shape the resolvers consume: a map
+ * keyed by route slug whose values are `{ slug, title, kind, doc_status,
+ * description }`. Built from the FULL collection (not the discoverable subset)
+ * so a `related` ref to a non-discoverable page still resolves — a dangling ref
+ * is build-fatal by design (FR-004), never silently dropped.
+ */
+export function buildDocsIndex(entries: DocEntry[]): DocsIndex {
+  const index: DocsIndex = {};
+  for (const { slug, data } of entries) {
+    index[slug] = {
+      slug,
+      title: data.title,
+      kind: data.kind ?? '',
+      doc_status: data.doc_status ?? 'draft',
+      ...(data.description !== undefined ? { description: data.description } : {}),
+    };
+  }
+  return index;
 }
 
 /** Resolve an absolute URL for a route against the configured site. */
