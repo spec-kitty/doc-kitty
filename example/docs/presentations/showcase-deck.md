@@ -5,6 +5,9 @@ doc_status: active
 updated: 2026-08-24
 type: Presentation
 kind: Presentation
+hero_image:
+  src: ./assets/showcase-hero.png
+  alt: Layered diagram illustrating the doc-kitty slide-deck pipeline
 sidebar:
   hidden: true
 authors:

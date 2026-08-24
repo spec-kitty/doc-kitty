@@ -42,12 +42,14 @@ const heading = (n: MdNode, depth: number): boolean =>
   n.children?.some((c) => c.type === 'heading' && c.depth === depth) ?? false;
 
 describe('splitDeck — grouping', () => {
-  it('synthesizes a title slide from frontmatter (FR-003)', () => {
+  it('synthesizes a title slide from frontmatter incl. object hero_image (FR-003)', () => {
     const { children } = splitDeck(root(h(2, 'One')), {
       kind: 'Presentation',
       title: 'Deck Title',
       description: 'Sub',
-      hero_image: '/hero.png',
+      // `hero_image` is an OBJECT { src, alt } per the frozen contract (ADR-0011),
+      // never a string — a string is silently dropped (regression guard, F-01).
+      hero_image: { src: '/hero.png', alt: 'A hero' },
     });
     const title = children[0];
     expect(title.data.hName).toBe('section');
@@ -55,7 +57,18 @@ describe('splitDeck — grouping', () => {
     expect(title.children[0]).toMatchObject({ type: 'heading', depth: 1 });
     expect(title.children[0].children?.[0]).toMatchObject({ value: 'Deck Title' });
     const img = title.children[2]?.children?.[0];
-    expect(img).toMatchObject({ type: 'image', url: '/hero.png' });
+    expect(img).toMatchObject({ type: 'image', url: '/hero.png', alt: 'A hero' });
+  });
+
+  it('drops a hero_image with no src, and never reads it as a string (F-01)', () => {
+    const asString = splitDeck(root(h(2, 'One')), {
+      kind: 'Presentation',
+      title: 'T',
+      // @ts-expect-error — the contract is an object; a string must NOT produce an image
+      hero_image: '/legacy-string.png',
+    });
+    // title slide is just the heading (no image paragraph) when the shape is wrong
+    expect(asString.children[0].children.every((c) => c.type !== 'paragraph' || !c.children?.some((k) => k.type === 'image'))).toBe(true);
   });
 
   it('splits on `##` into ordered horizontal sections', () => {
@@ -207,6 +220,115 @@ describe('splitDeck — notes', () => {
     // the `Note:` prefix is stripped from the aside's text
     const text = aside?.children?.[0]?.children?.[0]?.value;
     expect(text).toBe('hidden speaker text');
+  });
+});
+
+describe('splitDeck — stack conversion migrates name + attributes (B-01/B-02/B-04)', () => {
+  it('a headingless `---` slide that gains `###` keeps its aria-label on the CONTENT slide, not the wrapper (B-01)', () => {
+    // --- opens a headingless slide (aria-label), then loose prose, then ### makes it a stack.
+    const { children } = splitDeck(
+      root(h(2, 'A'), hr(), p('loose'), h(3, 'Sub')),
+      DECK,
+    );
+    const stack = children[2]; // title, A, headingless-stack
+    expect(stack.children.every(isSection)).toBe(true);
+    // the wrapper stack is NOT the only named node: inner #1 (the content) carries the label
+    expect(props(stack)['aria-label']).toBeUndefined();
+    expect(props(stack.children[0])['aria-label']).toBe('Slide 3');
+  });
+
+  it('labels a headingless slide by NAVIGABLE ordinal, counting inner stack slides (B-02)', () => {
+    // title(1), A becomes a stack: A-content(2) + Sub(3); then --- headingless is slide 4.
+    const { children } = splitDeck(
+      root(h(2, 'A'), p('a'), h(3, 'Sub'), p('s'), hr(), p('after')),
+      DECK,
+    );
+    const headingless = children[children.length - 1];
+    expect(props(headingless)['aria-label']).toBe('Slide 4');
+  });
+
+  it('a `.slide` attribute on a `##` that later becomes a stack lands on inner #1, not the wrapper (B-04)', () => {
+    const { children } = splitDeck(
+      root(
+        h(2, 'A'),
+        html('<!-- .slide: data-background-color="#101828" -->'),
+        h(3, 'Sub'),
+      ),
+      DECK,
+    );
+    const stack = children[1];
+    // wrapper clean, background scoped to the content slide (no bleed across the stack)
+    expect(props(stack)['data-background-color']).toBeUndefined();
+    expect(props(stack.children[0])['data-background-color']).toBe('#101828');
+  });
+});
+
+describe('splitDeck — directive robustness (B-03/B-05)', () => {
+  it('warns on a misspelled directive NAME and consumes it (B-03 / FR-008)', () => {
+    const { children, warnings } = splitDeck(
+      root(h(2, 'A'), html('<!-- .slyde: data-x="1" -->')),
+      DECK,
+    );
+    expect(warnings.some((w) => /unknown deck directive/i.test(w.message))).toBe(true);
+    // the typo'd comment does not survive as inert markup in the slide
+    expect(children[1].children.some((c) => c.type === 'html')).toBe(false);
+  });
+
+  it('a leading `.element` warns rather than mutating the synthesized title node (B-05)', () => {
+    const { children, warnings } = splitDeck(
+      root(html('<!-- .element: class="fragment" -->'), h(2, 'A')),
+      DECK, // DECK has a title, so the title slide has synthesized children
+    );
+    expect(warnings.some((w) => /no preceding sibling/i.test(w.message))).toBe(true);
+    // the synthesized title heading/description carry no injected class
+    for (const kid of children[0].children) {
+      expect(kid.data?.hProperties?.class).toBeUndefined();
+    }
+  });
+});
+
+describe('splitDeck — directive security allowlist (S-01/S-02)', () => {
+  it('rejects (does not apply) an `on*` event-handler attribute (S-01)', () => {
+    const { children, warnings } = splitDeck(
+      root(h(2, 'A'), html('<!-- .slide: onclick="steal()" -->')),
+      DECK,
+    );
+    expect(props(children[1]).onclick).toBeUndefined();
+    expect(warnings.some((w) => /rejected unsafe/i.test(w.message))).toBe(true);
+  });
+
+  it('rejects an `on*` handler on a `.element` target too (S-01)', () => {
+    const bullet = p('b');
+    const { warnings } = splitDeck(
+      root(h(2, 'A'), bullet, html('<!-- .element: onmouseover="x" -->')),
+      DECK,
+    );
+    expect(bullet.data?.hProperties?.onmouseover).toBeUndefined();
+    expect(warnings.some((w) => /rejected unsafe/i.test(w.message))).toBe(true);
+  });
+
+  it('rejects a remote-content background attribute but keeps a local one (S-02)', () => {
+    const remote = splitDeck(
+      root(h(2, 'A'), html('<!-- .slide: data-background-iframe="https://evil.example" -->')),
+      DECK,
+    );
+    expect(props(remote.children[1])['data-background-iframe']).toBeUndefined();
+    expect(remote.warnings.some((w) => /rejected unsafe/i.test(w.message))).toBe(true);
+
+    const local = splitDeck(
+      root(h(2, 'B'), html('<!-- .slide: data-background-image="./local.png" -->')),
+      DECK,
+    );
+    expect(props(local.children[1])['data-background-image']).toBe('./local.png');
+  });
+
+  it('drops an unknown attribute (allowlist is load-bearing, not decorative) (S-01)', () => {
+    const { children, warnings } = splitDeck(
+      root(h(2, 'A'), html('<!-- .slide: contenteditable="true" -->')),
+      DECK,
+    );
+    expect(props(children[1]).contenteditable).toBeUndefined();
+    expect(warnings.some((w) => /unknown .*\(dropped\)/i.test(w.message))).toBe(true);
   });
 });
 

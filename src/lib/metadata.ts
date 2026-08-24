@@ -32,7 +32,8 @@ export type DocType =
   | 'Operations'
   | 'Runbook'
   | 'Migration'
-  | 'Changelog';
+  | 'Changelog'
+  | 'Presentation';
 
 /** Common Docs lifecycle enum (note: differs from OKF's suggested set). */
 export type DocStatus = 'draft' | 'active' | 'deprecated' | 'superseded';

@@ -32,8 +32,13 @@ import brandTokensHref from '@commondocs-kitty/toolkit/themes/spec-kitty/tokens.
 export const prerender = true;
 
 export async function getStaticPaths() {
+  // path + kind (ADR-0021 D1): a deck renders out-of-frame only when it is
+  // BOTH kind: Presentation AND filed under presentations/. Guarding the path
+  // here (defense-in-depth) means the route can never emit an out-of-contract
+  // deck whose URL wouldn't match the generators, even if the frontmatter
+  // validator gate is bypassed (a misfiled deck fails loudly / is not routed).
   const decks = (await getCollection('docs')).filter(
-    (entry) => entry.data.kind === 'Presentation',
+    (entry) => entry.data.kind === 'Presentation' && entry.id.startsWith('presentations/'),
   );
   return decks.map((entry) => ({
     params: deckRouteParams(entry),

@@ -89,3 +89,22 @@
   color: var(--dk-color-text-muted);
   line-height: var(--dk-leading-normal);
 }
+
+/* A deck child's `?print-pdf` export link: a secondary affordance beside the
+   card-wide anchor (FR-014). Sized to a ≥24px target with a visible focus ring,
+   the same accessibility floor as the card. */
+.dk-hub__aux {
+  display: inline-block;
+  margin-top: var(--dk-space-2xs);
+  min-height: 24px;
+  padding: var(--dk-space-3xs) var(--dk-space-xs);
+  color: var(--dk-color-text-accent);
+  font-size: var(--dk-text-xs);
+  text-decoration: underline;
+}
+
+.dk-hub__aux:focus-visible {
+  outline: 2px solid var(--dk-color-focus-ring, var(--dk-color-text-accent));
+  outline-offset: 2px;
+  border-radius: var(--dk-radius-xs, 2px);
+}
