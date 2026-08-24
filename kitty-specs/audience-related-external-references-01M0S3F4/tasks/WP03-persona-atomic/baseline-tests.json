@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP03",
+  "captured_at": "2026-08-24T10:01:05Z",
+  "base_branch": "feat/audience-related-external-references",
+  "base_commit": "27b9443a070298fd093c93fe4b8d29ea031c0f40",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
