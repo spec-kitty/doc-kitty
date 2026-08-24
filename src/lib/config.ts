@@ -26,6 +26,7 @@ import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import { readmeToIndexId } from './metadata.js';
 import { resolveTheme, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
+import { docKittyFavicon, faviconHref } from './favicon.js';
 
 export interface DocKittyOptions {
   /** Site title shown in the header. */
@@ -63,22 +64,33 @@ export interface DocKittyOptions {
 }
 
 /** `<head>` links advertising the feeds and agent-API on every page. */
-const discoveryHead: NonNullable<StarlightUserConfig['head']> = [
-  {
-    tag: 'link',
-    attrs: {
-      rel: 'alternate',
-      type: 'application/rss+xml',
-      title: 'RSS',
-      href: '/rss.xml',
+// These hrefs MUST carry the site `base`: they are emitted verbatim into
+// `<head>` (Starlight does not rewrite `head` entries the way it does `favicon`),
+// so a hardcoded `/rss.xml` 404s on every based deployment — which is exactly
+// what the nightly link smoke caught on the published `/doc-kitty/` site.
+function discoveryHead(basePrefix: string): NonNullable<StarlightUserConfig['head']> {
+  return [
+    {
+      tag: 'link',
+      attrs: {
+        rel: 'alternate',
+        type: 'application/rss+xml',
+        title: 'RSS',
+        href: `${basePrefix}/rss.xml`,
+      },
     },
-  },
-  // Advertise the agent index so crawlers/agents can find it from any page.
-  {
-    tag: 'link',
-    attrs: { rel: 'alternate', type: 'text/plain', title: 'llms.txt', href: '/llms.txt' },
-  },
-];
+    // Advertise the agent index so crawlers/agents can find it from any page.
+    {
+      tag: 'link',
+      attrs: {
+        rel: 'alternate',
+        type: 'text/plain',
+        title: 'llms.txt',
+        href: `${basePrefix}/llms.txt`,
+      },
+    },
+  ];
+}
 
 /**
  * The four chrome carriers doc-kitty registers with Starlight (ADR-0013). This
@@ -194,6 +206,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // entry, the Default catalog. Any theme yields `generated === true`.
   const resolved = resolveTheme(theme);
   const { assets } = resolved;
+  const faviconPath = faviconHref(assets.favicon);
 
   // Cascade order (seam 2, C-007 tokens-before-overrides):
   //  - No theme  → the single static `theme.css` entry, byte-identical to M1.
@@ -227,8 +240,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // Header/SiteTitle override, no components-map expansion. A consumer's own
     // `starlight` escape hatch still wins (spread after these).
     ...(assets.logo ? { logo: { src: assets.logo } } : {}),
-    ...(assets.favicon ? { favicon: assets.favicon } : {}),
-    head: [...discoveryHead, ...fontHead],
+    // `favicon` is NOT a specifier Starlight can resolve — it is a served path.
+    // `faviconHref` maps the theme's package asset to the one path
+    // `docKittyFavicon` emits below (Starlight applies `base` itself).
+    ...(faviconPath ? { favicon: faviconPath } : {}),
+    head: [...discoveryHead(normalizeBasePrefix(base)), ...fontHead],
     customCss,
     ...overrides,
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
@@ -250,5 +266,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports
     // the manifest even on the no-theme path (Hub registered, else Default).
     docKittyManifest(resolved),
+    // Make the theme's package-asset favicon actually servable at the path
+    // handed to Starlight above (no-op with no theme favicon, or when the theme
+    // points at a `public/` path the consumer already ships).
+    docKittyFavicon(assets.favicon, {}, base),
   ];
 }

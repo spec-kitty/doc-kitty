@@ -7,9 +7,15 @@ import { specKittyTheme } from '@commondocs-kitty/toolkit/themes/spec-kitty/inde
 // https://<owner>.github.io and the base is /<repo>. For a user/org page or a
 // custom domain, set `site` and drop `base`.
 //
-// TODO(adopter): replace OWNER with the GitHub account that hosts this repo.
-const SITE = 'https://OWNER.github.io';
-const BASE = '/doc-kitty';
+// TODO(adopter): replace `spec-kitty` with the GitHub account that hosts YOUR
+// fork. These are real values, not placeholders, because this example IS the
+// deployed doc-kitty docsite — a literal `OWNER` here shipped a canonical URL, a
+// sitemap and a repo link that all 404'd on the live site (caught by the nightly
+// link smoke, which resolves the true Pages URL from the deployment).
+const OWNER = 'spec-kitty';
+const REPO = 'doc-kitty';
+const SITE = `https://${OWNER}.github.io`;
+const BASE = `/${REPO}`;
 
 export default defineConfig({
   site: SITE,
@@ -22,7 +28,7 @@ export default defineConfig({
     // equality (not a suffix match).
     base: BASE,
     social: {
-      github: 'https://github.com/OWNER/doc-kitty',
+      github: `https://github.com/${OWNER}/${REPO}`,
     },
     theme: specKittyTheme,
   }),

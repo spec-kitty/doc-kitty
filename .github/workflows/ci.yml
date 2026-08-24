@@ -1,4 +1,4 @@
-# Path-scoped CI — detect-changes → 3 conditional lanes → ci-ok gate.
+# Path-scoped CI — detect-changes → 4 conditional lanes → ci-ok gate.
 #
 # Design: docs/architecture/ci-cd-pipeline.md; contracts under
 # kitty-specs/ci-cd-pipeline-01M0N1DZ/contracts/. The single required status check
@@ -185,8 +185,11 @@ jobs:
 
   # --- Gate: ci-ok — the single required status check (FR-012, C-005). --------
   # Job id MUST stay exactly `ci-ok` (branch protection references this string).
-  # WP09: `a11y` is a REQUIRED member — a red a11y turns ci-ok red (see the
-  # "Require a11y lane" step). The three-lane decision helper stays byte-unchanged.
+  # All FOUR lanes (code-quality, doc-sanity, build-example, a11y) are gated by the
+  # ONE decision helper — issue #7. There is deliberately no second inline gate here:
+  # `REQUIRED_LANES` in .github/scripts/ci-ok-decision.mjs is the single source of
+  # truth for what ci-ok enforces, and a lane whose `*_RESULT` is not threaded in
+  # below reads as `undefined` and fails the gate closed.
   ci-ok:
     needs: [detect-changes, code-quality, doc-sanity, build-example, a11y]
     if: always()
@@ -203,17 +206,5 @@ jobs:
           CODE_QUALITY_RESULT: ${{ needs.code-quality.result }}
           DOC_SANITY_RESULT: ${{ needs.doc-sanity.result }}
           BUILD_EXAMPLE_RESULT: ${{ needs.build-example.result }}
-        run: node .github/scripts/ci-ok-decision.mjs
-      # WP09: enforce the a11y lane as a REQUIRED ci-ok member. Kept as a dedicated
-      # step (not folded into the three-lane helper, which lives in .github/scripts/
-      # outside this WP's surface) so ci-ok — the SINGLE required check — turns red on
-      # any blocking a11y result. A 'skipped' a11y (no rendered-chrome change) passes,
-      # matching the other lanes' skip semantics.
-      - name: Require a11y lane
-        env:
           A11Y_RESULT: ${{ needs.a11y.result }}
-        run: |
-          case "$A11Y_RESULT" in
-            success|skipped) echo "a11y lane: $A11Y_RESULT (pass)";;
-            *) echo "ci-ok: RED — a11y lane is blocking with result '$A11Y_RESULT'"; exit 1;;
-          esac
+        run: node .github/scripts/ci-ok-decision.mjs

@@ -224,6 +224,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      # Written via the git-refs REST API, NOT `git push`: this job has no
+      # checkout, and `git push <url> <sha>:<ref>` needs a local repository (it
+      # died with "fatal: not a git repository", which is why the marker stayed
+      # missing and every nightly re-smoked the same deployment). The API needs no
+      # working tree and only `contents: write`.
       - name: Advance refs/smoke/last-run to the deployed SHA
         env:
           GH_TOKEN: ${{ github.token }}
@@ -232,8 +237,19 @@ jobs:
         run: |
           set -euo pipefail
           echo "Setting refs/smoke/last-run -> ${LIVE_SHA}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
-            "${LIVE_SHA}:refs/smoke/last-run"
+
+          # PATCH updates an existing ref; a 422 means it does not exist yet, so
+          # fall back to POST (create). `force` covers the non-fast-forward case
+          # when a deployment rolls back to an older SHA.
+          if gh api -X PATCH "repos/${REPO}/git/refs/smoke/last-run" \
+               -f "sha=${LIVE_SHA}" -F force=true >/dev/null 2>&1; then
+            echo "Marker updated."
+          else
+            echo "Marker absent — creating refs/smoke/last-run."
+            gh api -X POST "repos/${REPO}/git/refs" \
+              -f "ref=refs/smoke/last-run" -f "sha=${LIVE_SHA}" >/dev/null
+            echo "Marker created."
+          fi
 
   # --- Reporting: open/update ONE tracking issue on failure (T034 / FR-019). ---
   # ONLY when a check missed its threshold. Never fails/gates anything.
@@ -257,9 +273,13 @@ jobs:
           set -euo pipefail
           title="Nightly smoke failures"
 
-          # Idempotent marker label; ignore if creation is a no-op.
-          gh label create nightly-smoke --color B60205 \
-            --description "Automated nightly smoke tracking issue" --force || true
+          # Idempotent marker label. `--repo` is REQUIRED: with no checkout there
+          # is no git remote for gh to infer the repository from, so the bare form
+          # failed ("failed to run git: not a git repository"), the label was never
+          # created, and `gh issue create --label nightly-smoke` then died with
+          # "could not add label: not found" — taking this whole job down.
+          gh label create nightly-smoke --repo "${REPO}" --color B60205 \
+            --description "Automated nightly smoke tracking issue" --force
 
           body="$(printf '%s\n' \
             "Nightly smoke found failures for the live deployment." \

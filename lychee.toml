@@ -19,7 +19,12 @@ accept = ["200..=299", "429"]
 cache = true
 
 # --- Exclusions: unresolvable-in-CI schemes and loopback addresses. ------------
-exclude_mail = true
+# `mailto:` links are not resolvable from CI. lychee ≥0.16 spells this
+# `include_mail` (the old `exclude_mail` key is REJECTED as an unknown field, which
+# aborts the whole run before a single link is checked — that is what silently
+# turned the nightly red). `false` is also lychee's default; kept explicit so the
+# intent survives a future config sweep.
+include_mail = false
 exclude = [
   "^https?://localhost",
   "^https?://127\\.0\\.0\\.1",
