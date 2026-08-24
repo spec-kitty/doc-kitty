@@ -54,7 +54,7 @@ WP01 foundation ──┬── WP02 catalog ──┐
 | T029 | Keep `toAgentRecord` pure; enrichment in the route | WP05 | |
 | T030 | Three-block assertions in `assert-chrome-artifacts.mjs` (title-name, own-fragment, tint) | WP06 | |
 | T031 | Agent-record + `/api/bibliography.json` shape in `assert-build-artifacts.mjs`; final count pin | WP06 | |
-| T032 | Block demonstrator page (published, 3 blocks) + `AXE_PAGES` | WP06 | |
+| T032 | Block demonstrator page + superseded stale-target page + `AXE_PAGES` | WP06 | |
 | T033 | Catalog hit/miss/unknown-type + dangling-profile-warn fixtures (vitest) | WP06 | [P] |
 | T034 | Docs of record: `metadata-model.md` + `theming.md` | WP06 | [P] |
 

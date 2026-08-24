@@ -25,6 +25,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/scripts/
 create_intent:
 - example/docs/architecture/blocks-demonstrator.md
+- example/docs/architecture/superseded-note.md
 - src/tests/fixtures/catalog/missing-id.md
 - src/tests/fixtures/catalog/unknown-type.md
 - src/tests/fixtures/err/audience-dangling-profile.md
@@ -34,6 +35,7 @@ owned_files:
 - src/scripts/assert-build-artifacts.mjs
 - tests/a11y/**
 - example/docs/architecture/blocks-demonstrator.md
+- example/docs/architecture/superseded-note.md
 - docs/architecture/metadata-model.md
 - docs/architecture/theming.md
 - src/tests/fixtures/catalog/**
@@ -68,19 +70,28 @@ non-fakeable check (post-spec R2). Assert related/citation titles appear in the
 **citing page's own** url-scoped Pagefind fragment (NFR-003 / R6). Add
 `--dk-color-tint-lilac` to the enumerated `REQUIRED_DK_TOKENS` completeness set.
 
-### T031 — Agent-record + endpoint shape in `assert-build-artifacts.mjs`; final pins
-Extend `EXPECTED_PAGE_KEYS` for `audience`/`related`; assert the resolved-`related`
-as an array of objects (non-string), the bumped `version`, and the
-`/api/bibliography.json` per-record shape (`id`/`title`/`url`). Re-cross-check
-`EXPECTED_INDEX_ENTRY_COUNT`/`EXPECTED_SITEMAP_URL_COUNT` for the demonstrator's +1
-(on top of WP03's persona/hub delta).
+### T031 — Agent-record + endpoint shape in `assert-build-artifacts.mjs`; FINAL pins
+Assert `audience` + resolved-`related` on the record. **Do NOT append `related`/
+`audience` to `EXPECTED_PAGE_KEYS`** — its loop (`:323–327`) hard-asserts every listed
+key is a `string`, so an array/object key would red a correct build. Add a **bespoke
+shape assertion outside that loop**: `related` is an array of `{ref,title,kind,doc_status}`
+objects, `audience` an array of `{profile,guidance_text}`. Assert the **concrete**
+bumped `version` value (WP05/T028), not just its type. Assert the
+`/api/bibliography.json` per-record shape (`id`/`title`/`url`). This WP OWNS the
+**final** count pins: recompute `EXPECTED_INDEX_ENTRY_COUNT`/`EXPECTED_SITEMAP_URL_COUNT`
+for WP03's interim 14 **plus this WP's +2** (demonstrator +1, superseded-note +1 →
+**16**) and cross-check against the built `example/docs/`. Confirm the stale
+authoring comment WP03 corrected is still accurate.
 
-### T032 — Block demonstrator page + AXE_PAGES
-`example/docs/architecture/blocks-demonstrator.md` — a published page that declares
-`audience` (linking the relocated persona), `related` (incl. one stale target), and
-`external_references` (one inline + one catalog `{type,id}`), so it renders all three
-blocks. Add its route to `tests/a11y/routes.ts` `AXE_PAGES` so axe scans a wired
-block page (post-spec R1).
+### T032 — Block demonstrator page + stale target + AXE_PAGES
+`example/docs/architecture/blocks-demonstrator.md` — a published page declaring
+`audience` (linking the relocated persona), `related` (incl. the stale target below),
+and `external_references` (one inline + one catalog `{type,id}`), so it renders all
+three blocks. **Create the stale target** `example/docs/architecture/superseded-note.md`
+— a published page with `doc_status: superseded` — because `resolveRelated` fails the
+build on a dangling ref, so the stale-marker (T030/FR-005) needs a REAL superseded
+page to point at (none exists in the tree). Add the demonstrator's route to
+`tests/a11y/routes.ts` `AXE_PAGES` so axe scans a wired block page (post-spec R1).
 
 ### T033 — Resolver fixtures (by owning lane) [P]
 `src/tests/fixtures/catalog/missing-id.md`, `unknown-type.md` (build-fail cases) and

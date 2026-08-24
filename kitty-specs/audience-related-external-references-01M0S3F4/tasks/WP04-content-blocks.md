@@ -60,9 +60,18 @@ initialization, boundaries, directives, and tactics. Then read this WP,
 ## Objective
 
 Wire the three `dk:` content blocks **carrier-body** (ADR-0017) from the WP01
-resolvers. These blocks must clear the a11y axe lane (the demonstrator + assertions
-land in WP06). No transport change: `resolveLayout` stays synchronous; slot bodies
-take no props; the Starlight `components` map stays the four carriers.
+resolvers. No transport change: `resolveLayout` stays synchronous; slot bodies take
+**no props**; the Starlight `components` map stays the four carriers. Because bodies
+take no props, **each block body self-resolves**: read `Astro.locals.starlightRoute`
+for the page's `entry.data`, and `await getCollection('docs')` (plus `bibliography`/
+`tools` for citations) to build the index/catalog the WP01 resolvers need. Do NOT
+reach for `slotComponents` prop-threading (ADR-0015-incompatible).
+
+**a11y boundary honesty**: at WP04's own boundary no example page yet declares
+`audience`/`related`, so the axe lane does not scan these blocks here. The blocks are
+implemented and self-resolving in WP04; their **a11y axe verification lands in WP06**
+(which adds the demonstrator page + `AXE_PAGES` entry + the assertions). WP04's bar
+is: implemented correctly, existing a11y routes not regressed.
 
 ## Subtasks
 
@@ -84,9 +93,12 @@ failure (FR-002). Not a `<nav>`.
 ### T022 — `Related.astro` + `RelatedCard` props
 `<nav aria-label="Related pages">` + `<ul>/<li>` of `RelatedCard`s fed
 `resolveRelated` output. Card-wide `<a>`, accessible name = **resolved target title**
-(never a bare slug); show target `kind` + `note` (else `description`). A dangling ref
-must have already thrown at resolve (FR-004) — do not swallow. Give `RelatedCard`
-real props (it was props-only scaffolding in M2). Declared-direction only.
+(never a bare slug); show target `kind` + the resolved card text (`resolveRelated`
+already collapses `note`-else-`description` into one field — no separate `note` prop
+needed). A dangling ref must have already thrown at resolve (FR-004) — do not swallow.
+`RelatedCard.astro` already declares typed props (`href/title/description/kind`); wire
+them from resolved data and **add the stale-status prop** T023 needs (it has none
+today). Declared-direction only.
 
 ### T023 — Stale-target status marker [P]
 When a resolved related target's `doc_status ∈ {deprecated, superseded}`, render the
