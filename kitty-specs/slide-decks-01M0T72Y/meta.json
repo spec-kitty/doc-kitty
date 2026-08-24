@@ -1,0 +1,18 @@
+{
+  "baseline_merge_commit": "a28bf64a595bca41f4d79bbf12759740954b005c",
+  "created_at": "2026-08-24T15:44:07.124260+00:00",
+  "flattened": true,
+  "friendly_name": "Slide Decks (reveal.js)",
+  "mission_id": "01M0T72YEKQT75EGWED319T4ZB",
+  "mission_number": 1,
+  "mission_slug": "slide-decks-01M0T72Y",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "doc-kitty treats presentations as a first-class output pillar alongside the docsite. Mission M6 lets anyone author a deck in ordinary Markdown (kind: Presentation) and have the build split it into reveal.js slides, rendered out-of-frame with a mandatory no-JS linear fallback, themed through the site's own design tokens, and discoverable in sitemap, llms.txt, the agent API, and search — with no hand-authored slide HTML and no new authoring DSL.",
+  "purpose_tldr": "Authors write slide decks as plain Markdown; the build renders them as static, accessible reveal.js presentations.",
+  "slug": "slide-decks-01M0T72Y",
+  "status_phase": "1",
+  "target_branch": "feat/slide-decks",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-24T16:38:36.685121+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP05",
+  "captured_at": "2026-08-24T18:20:33Z",
+  "base_branch": "feat/slide-decks",
+  "base_commit": "8e216ef93cd3da0cd90331ed169df8e8b1cb2e9e",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
