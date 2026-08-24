@@ -46,15 +46,21 @@ Enrich the per-page agent record with `audience` and a **resolved** `related` ar
 ## Subtasks
 
 ### T027 — Compose `resolveRelated` in the route
-In the agent route(s) (which already call `getCollection('docs')`), build the docs
-index and enrich each record's `related` from raw refs to
-`{ ref, title, kind, doc_status }` via WP01's `resolveRelated`. Carry `audience` as
-authored. `toAgentRecord(entry)` stays **pure/single-entry** — do not edit it in
-`metadata.ts` (WP01 owns that file); do the enrichment in the route.
+In the agent route(s), build the docs index and enrich each record's `related` from
+raw refs to `{ ref, title, kind, doc_status }` via WP01's `resolveRelated`. Note the
+**index-shape adaptation**: `collectDocEntries()` (`shared.ts`) yields
+`DocEntry{ slug, data }`, but `resolveRelated` expects a flat
+`{ slug, title, kind, doc_status, description }` index — flatten before calling.
+Carry `audience` as authored. `toAgentRecord(entry)` stays **pure/single-entry** — do
+not edit `metadata.ts` (WP01-owned); enrich in the route. **Type honesty**: type the
+enriched record against WP01's exported `ResolvedRelated` type (not an inline `as`
+cast), so the emitted JSON does not diverge from a declared type.
 
 ### T028 — Bump the agent-API `version` [P]
-Increment the agent-API `version` (the seam in the index/route builders) because the
-published `related` shape changes for existing consumers (DIRECTIVE_018).
+The version is a **default**, not a literal in the example: `agentIndexRoute` falls
+through to `options.version ?? '1'` (`src/lib/routes/agent-index.ts:35`). Bump that
+**owned default** so every consumer's `related`-shape change is versioned
+(DIRECTIVE_018). WP06/T031 asserts the concrete new value (not just its type).
 
 ### T029 — Keep gating intact
 `doc_status` gating unchanged — a `draft` page stays absent from `/api/index.json`,

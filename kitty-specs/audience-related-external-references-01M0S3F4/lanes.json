@@ -58,7 +58,8 @@
         "example/docs/context/audience/**",
         "src/layouts/Persona.astro",
         "src/scripts/validate-frontmatter.mjs",
-        "src/tests/fixtures/persona/**"
+        "src/tests/fixtures/persona/**",
+        "src/tests/schema-validator-parity.test.ts"
       ],
       "predicted_surfaces": [
         "api",
@@ -127,6 +128,7 @@
         "docs/architecture/metadata-model.md",
         "docs/architecture/theming.md",
         "example/docs/architecture/blocks-demonstrator.md",
+        "example/docs/architecture/superseded-note.md",
         "src/scripts/assert-build-artifacts.mjs",
         "src/scripts/assert-chrome-artifacts.mjs",
         "src/tests/fixtures/catalog/**",
@@ -144,8 +146,8 @@
       "parallel_group": 3
     }
   ],
-  "computed_at": "2026-08-24T09:25:43.705514+00:00",
+  "computed_at": "2026-08-24T09:37:38.167355+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "2c7d9327aaeefa6eaebde6da18fa49651bb70b8d"
+  "planning_commit_sha": "acfd4c521162f122306536fdd8a2fc2a39dfe791"
 }

@@ -76,11 +76,14 @@ Pure function. Input: an `external_references` entry + the loaded catalog
 `tools[id]`. **Miss or unknown catalog `type`** → typed error → **build failure**
 (FR-008). Always qualify the catalog `type` distinctly from the frontmatter `type`.
 
-### T004 — `DocKittyFrontmatter` type sync [P]
+### T004 — `DocKittyFrontmatter` type sync + resolved-related type [P]
 Extend the `DocKittyFrontmatter` interface in `metadata.ts` with `audience`,
 `external_references`, and `moscow` so the framework-agnostic model matches the zod
-schema it feeds. Do **not** change `toAgentRecord` (kept pure; WP05 composes the
-route enrichment).
+schema it feeds (note: `schema.ts` already carries these zod fields — this syncs the
+TS interface). Do **not** change `toAgentRecord` (kept pure; WP05 composes the route
+enrichment). **Also export a resolved-related type** (e.g. `ResolvedRelated =
+{ ref, title, kind, doc_status }`) so WP05's route can type its enriched record
+honestly against a shared type rather than an inline cast.
 
 ### T005 — Schema surface in `schema.ts`
 Two additive changes (behind ADR-0018 / ADR-0019 — no frozen shape re-litigated):

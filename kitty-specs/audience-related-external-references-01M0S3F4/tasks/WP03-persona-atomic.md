@@ -23,7 +23,7 @@ subtasks:
 - T019
 history:
 - '2026-08-24: authored by /spec-kitty.tasks'
-agent_profile: frontend-freddy
+agent_profile: implementer-ivan
 authoritative_surface: example/docs/context/audience/
 create_intent:
 - example/docs/context/audience/README.md
@@ -35,6 +35,7 @@ owned_files:
 - src/scripts/validate-frontmatter.mjs
 - src/layouts/Persona.astro
 - src/tests/fixtures/persona/**
+- src/tests/schema-validator-parity.test.ts
 role: implementer
 tags: []
 tracker_refs: []
@@ -88,20 +89,36 @@ index, RSS, sitemap). Confirm it stays out of those surfaces.
 
 ### T018 — Rewrite the four hard-coded sites + recompute count pins
 Out-of-map edits (owned by WP06; **rationale**: the atomic relocation must rewrite
-these in the same WP to keep gates green):
+these in the same WP to keep gates green — WP06 depends transitively on WP03, so no
+parallel collision):
 - `src/scripts/assert-chrome-artifacts.mjs` — `PERSONA_PAGE` (:188) and
-  `PERSONA_FRAGMENT_URL` (:190) → the new `context/audience/<slug>/` path.
+  `PERSONA_FRAGMENT_URL` (:190) → the new `context/audience/<slug>/` path. **Also fix
+  the stale rationale comment (:185–187)** that calls the persona a *draft* — it is
+  now `active`.
 - `tests/a11y/routes.ts` — `ROUTES.persona` (:13) and the `AXE_PAGES` entry (:22) →
   the new route.
 - `src/scripts/assert-build-artifacts.mjs` — recompute `EXPECTED_INDEX_ENTRY_COUNT`
-  (:54) and `EXPECTED_SITEMAP_URL_COUNT` (:57) for this WP's published delta (persona
-  promoted +1, hub +1, retained draft 0) and **cross-check against `example/docs/`**.
-Keep the edits minimal (paths + numbers). WP06 later extends these files for the
-block/demonstrator assertions.
+  (:54) and `EXPECTED_SITEMAP_URL_COUNT` (:57) as an **interim** pin for this WP's
+  published delta (persona promoted +1, hub +1, retained draft 0 → baseline 12 → 14).
+  **WP06 owns the FINAL pin** (it adds the demonstrator + stale-target). **Also
+  correct the authoring cross-check comment (~:40–61)**: the tree currently holds
+  **14** `.md` files with **two** drafts (`adr/template.md` + the persona), i.e.
+  14 − 2 = 12 — the existing "13 files / one draft" narrative is wrong and must not be
+  inherited into the recompute. **Show the derivation** (published `.md` count minus
+  drafts) in the review notes so the pin is corroborated, not self-referential.
+
+The pin gate only detects drift from the constant, not truth — so the derivation is
+the real check. Keep the mechanical edits minimal (paths + numbers + the two comment
+corrections). WP06 later extends these files for the block/demonstrator assertions.
 
 ### T019 — Persona parity fixtures [P]
 `src/tests/fixtures/persona/valid-persona.md` (all fields) and `missing-role.md`
-(rejected by the validator). Add both to the schema/validator parity corpus.
+(rejected by the validator). Wire them into `src/tests/schema-validator-parity.test.ts`
+(now WP03-owned) in the **correct buckets**: `valid-persona.md` → `SHAPE_PARITY`
+(both build schema and validator accept). `missing-role.md` → **`PRESENCE_LENIENT`**
+(the zod schema is lenient/accepts — WP01 keeps persona fields optional — while the
+standalone validator rejects), exactly like `missing-kind.md`. Do **not** put
+`missing-role.md` in `SHAPE_PARITY` — it asserts build/gate agreement and would red.
 
 ## Branch Strategy
 
