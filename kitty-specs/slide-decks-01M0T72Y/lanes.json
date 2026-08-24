@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "mission_slug": "slide-decks-01M0T72Y",
+  "mission_id": "01M0T72YEKQT75EGWED319T4ZB",
+  "mission_branch": "kitty/mission-slide-decks-01M0T72Y",
+  "target_branch": "feat/slide-decks",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "example/astro.config.mjs",
+        "example/docs/presentations/draft-preview.md",
+        "example/src/content.config.ts",
+        "example/src/pages/presentations/[...slug].astro",
+        "package.json",
+        "pnpm-lock.yaml",
+        "src/layouts/DeckLayout.astro",
+        "src/lib/deck/deck-slug.ts",
+        "src/lib/deck/reveal-init.client.ts",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/styles/dk-reveal-theme.css"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/metadata.ts",
+        "src/lib/routes/rss.ts",
+        "src/tests/metadata-sections.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/remark/deck-split.internal.ts",
+        "src/lib/remark/deck-split.ts",
+        "src/tests/deck-split.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tests"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        ".markdownlint.jsonc",
+        ".vale.ini",
+        "example/docs/presentations/README.md",
+        "example/docs/presentations/showcase-deck.md",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/scripts/assert-chrome-artifacts.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "tests/a11y/deck.interaction.spec.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "docs/adr/0012-slide-decks-static-reveal-from-markdown.md",
+        "docs/architecture/slide-decks.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-08-24T16:33:05.477776+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "796c2f01aac03b19b2324ce152de06e1af7a10a7"
+}

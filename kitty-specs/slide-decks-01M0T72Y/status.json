@@ -1,0 +1,111 @@
+{
+  "event_count": 47,
+  "last_event_id": "01M0TJHE1E0JK3DZBZQ8ERXRTE",
+  "materialized_at": "2026-08-24T19:04:16.174958+00:00",
+  "mission_number": "",
+  "mission_slug": "slide-decks-01M0T72Y",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 6,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0TJG6KEE5DCE5Z85RV0W8S6",
+      "last_transition_at": "2026-08-24T19:03:35.790312+00:00",
+      "review_result": {
+        "reference": "Review passed: out-of-frame route go/no-go gate GREEN — built /presentations/draft-preview/index.html has .reveal>.slides, zero Starlight-shell markers, no duplicate-route error (pure specificity shadow, no Starlight exclusion needed). SSR-safe (no top-level reveal import in .astro; ?url CSS + browser-only dynamic import). URL parity oracle correct (deckSlug=full slug, deckRouteParams strips presentations/ prefix; fixes latent contract-snippet bug). reveal.js@6.0.1 exact-pinned in src/package.json (toolkit owns import — defensible), no @types, no CDN, no install scripts. AA hard gate recomputed: light 10.33:1 / dark 10.97:1. CSS non-leak verified (reveal core/theme/reset only on deck page). Pagefind body/ignore correct; draft excluded (18 indexed, counts unchanged). BA-8 validator blocking error + passing unit test. Print signal correct+documented (6.0.1 has no print/pdf.css; folded into core @media print via view:print). ADR-0021 desc trim 202->177 fixes genuine pre-existing schema.max(180) red, decision unchanged. Gates: typecheck 0err, lint clean, 108 tests pass, build 21 pages, assert:artifacts PASS.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 445240,
+      "shell_pid_created_at": "1787589507.77"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0TJGP8MBZK7CT5HEV1VAYM5",
+      "last_transition_at": "2026-08-24T19:03:51.828529+00:00",
+      "review_result": {
+        "reference": "Review passed: guard early-returns off non-Presentation pages (byte-identical docs corpus, verified by deep-equality test); grouping correct per contract (title slide from frontmatter, ##->horizontal, ###->stack with outer holding only inner sections and ## content as inner #1, ---->headingless+aria-label with hr consumed, ####+ in-slide, both edge cases pinned, order preserved); directives (.slide last-wins, .element preceding-sibling with no-sibling warn+skip, unknown warns never throws); Note:->aside direct child with data-pagefind-ignore; plugin REGISTERED net-new via astro:config:setup/updateConfig after gfm, live in integrations array; 15 real-function unit tests, no synthetic fixtures; only 4 owned files touched; independent typecheck+lint+test all green (118 pass). NOTE integration follow-up: DeckLayout wrapper section (WP01-owned) to be flattened in WP04",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 471944,
+      "shell_pid_created_at": "1787591595.01"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0TJGEDQH8GX9P4E11ZJGWJW",
+      "last_transition_at": "2026-08-24T19:03:43.799383+00:00",
+      "review_result": {
+        "reference": "Review passed: RSS excludes kind:Presentation via includedInRssFeed filter in rss.ts route body (rankForFeed untouched, RT-07); exclusion keyed on frontmatter kind not path (A-05); sitemap/llms/agent/Pagefind still include decks; presentations appended to SECTION_ORDER after changelog + SECTION_LABEL, no other section regrouped; metadata-sections.test.ts 8 tests green; gates: typecheck/lint clean, 111/111 tests. Authored missing issue-matrix (upstream reveal.js #3883 verified-already-fixed).",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 445801,
+      "shell_pid_created_at": "1787589556.3"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0TJGY7WQDKCM6NH6CDAEJQG",
+      "last_transition_at": "2026-08-24T19:03:59.996958+00:00",
+      "review_result": {
+        "reference": "Review passed: clean rebuild + assert:artifacts PASS with 18/18 pins (21 md - 3 drafts, independently cross-checked); DeckLayout flatten verified in built HTML (4 top-level .slides>section, section>section stack, ---slide aria-label='Slide 4', note aside data-pagefind-ignore, .slide bg + .element fragment applied, no Starlight shell); BA-2..BA-10 all independently re-verified non-vacuous (BA-3 slug-oracle parity+prefix-doubling guard, BA-4 sentinels each in exactly 1 emitted sheet deck-only, BA-5 real pagefind gunzip, BA-9 core reveal.css @media print + reveal-init print-pdf branch, BA-10 sidebar deck-absent/overview-present); markdownlint 0 issues + Vale (only DocKitty/Hedges error-level, deck has none) + validate:example/links green with NO lint-config loosening (.markdownlint.jsonc/.vale.ini unchanged); sidebar:{hidden:true} passthrough honored no astro.config edit; DeckLayout out-of-map edit removes only wrapper section, recorded; typecheck+lint+test 131/131 green; noted draft-preview D5 sidebar follow-up on feat (WP01-owned)",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 489774,
+      "shell_pid_created_at": "1787593221.85"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0TJH65W9ZMK18EZ2X9S3QR1",
+      "last_transition_at": "2026-08-24T19:04:08.124273+00:00",
+      "review_result": {
+        "reference": "Review passed: deck in AXE_PAGES (axe both modes), interaction spec covers keyboard/no-trap/reduced-motion/no-JS/SSR-DOM; NOTE WP01 follow-up on feat: DeckLayout must import theme.css so --dk-* resolve (deck currently unthemed)",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 512191,
+      "shell_pid_created_at": "1787595606.96"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M0TJHE1E0JK3DZBZQ8ERXRTE",
+      "last_transition_at": "2026-08-24T19:04:16.174958+00:00",
+      "review_result": {
+        "reference": "Cycle-2 fix verified: ### now correctly a vertical slide, stack = container; all resolved-questions accurate; owned files pass doc-sanity",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 520567,
+      "shell_pid_created_at": "1787596476.41"
+    }
+  }
+}
