@@ -12,5 +12,7 @@
   "purpose_tldr": "Render each page's intended audience, related pages, and cited references as consistent, accessible on-page blocks, backed by persona pages and a shared citation catalog.",
   "slug": "audience-related-external-references-01M0S3F4",
   "target_branch": "feat/audience-related-external-references",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-24T09:43:04.249658+00:00"
 }
