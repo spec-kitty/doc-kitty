@@ -9,8 +9,9 @@
  *   export const GET = agentIndexRoute({ title: 'My Docs' });
  */
 import type { APIRoute } from 'astro';
-import { rankForAgents, toAgentRecord } from '../metadata.js';
-import { absolute, collectDocEntries } from './shared.js';
+import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
+import { rankForAgents, resolveRelated, toAgentRecord } from '../metadata.js';
+import { absolute, buildDocsIndex, collectDocEntries } from './shared.js';
 
 export interface AgentIndexRouteOptions {
   title: string;
@@ -20,11 +21,30 @@ export interface AgentIndexRouteOptions {
 
 export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
   return async ({ site }) => {
-    const ranked = rankForAgents(await collectDocEntries());
+    const all = await collectDocEntries();
+    // Resolve against the full corpus, not just the discoverable subset, so a
+    // `related` ref into a non-discoverable page still resolves (FR-004).
+    const index = buildDocsIndex(all);
+    const ranked = rankForAgents(all);
     const pages = ranked.map((entry) => {
       const record = toAgentRecord(entry);
+      // Enrich in the route (composes WP01's resolveRelated); toAgentRecord
+      // stays pure/single-entry. Typed against the exported ResolvedRelated so
+      // the emitted JSON cannot diverge from a declared type (no `as` cast).
+      const related: ResolvedRelated[] = record.related.map((ref) => {
+        const resolved = resolveRelated(ref, index);
+        return {
+          ref: resolved.ref,
+          title: resolved.title,
+          kind: resolved.kind,
+          doc_status: resolved.doc_status,
+        };
+      });
+      const audience: AudienceEntry[] = entry.data.audience ?? [];
       return {
         ...record,
+        related,
+        audience,
         url: absolute(site, record.route),
         source: absolute(site, record.source),
       };
@@ -32,7 +52,10 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
 
     const body = {
       title: options.title,
-      version: options.version ?? '1',
+      // Bumped from '1': the `related` array changed shape (raw slugs →
+      // resolved objects) and records now carry `audience`, a
+      // published-contract change that consumers branch on (DIRECTIVE_018).
+      version: options.version ?? '2',
       generatedFrom: 'common-docs-kitty',
       count: pages.length,
       pages,

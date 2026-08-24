@@ -1,0 +1,14 @@
+# Tools catalog (ADR-0018).
+#
+# One record per tool/product. `id` is a stable, unique key referenced from a
+# page's `external_references: [{ type: tool, id: <id> }]`. `id`/`name`/`url`
+# are required; `note` optional. A citation naming a missing id is build-fatal
+# (FR-008) and is caught build-free by `validate-catalog.mjs` (doc-sanity).
+- id: revealjs
+  name: reveal.js
+  url: https://revealjs.com
+  note: the deck engine behind Presentation-kind pages
+- id: astro
+  name: Astro
+  url: https://astro.build
+  note: the content-first web framework this toolkit builds on

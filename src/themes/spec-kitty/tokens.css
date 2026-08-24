@@ -79,6 +79,12 @@
   --dk-color-neutral: #5B5B63;
   --dk-color-neutral-bg: #EFEDE8;
 
+  /* Tint pair — lilac (external-references block, T026). No lilac lives in the
+     brand's state palette, so this is a derived, AA-checked tint + paired
+     foreground (deep lilac ink on pale lilac). See the AA block at the foot. */
+  --dk-color-tint-lilac: #F1ECF9;
+  --dk-color-tint-lilac-text: #573E8F;
+
   /* Focus ring — light variant. DERIVED-CORRECTED: the guide's #C99A0E is only
      2.48:1 on paper (fails the 3:1 non-text minimum), so the light ring uses the
      deep gold #806508 (5.32:1 on bg, 5.55:1 on #fff). 3px with an offset so the
@@ -123,6 +129,10 @@
   --dk-color-neutral: #A9A9B0;
   --dk-color-neutral-bg: #262C36;
 
+  /* Tint pair — lilac (external-references block, T026); dark derivation. */
+  --dk-color-tint-lilac: #241C3A;
+  --dk-color-tint-lilac-text: #C3B0E8;
+
   /* Focus ring — dark variant (translucent yellow, transcribed). */
   --dk-shadow-focus: 0 0 0 3px rgba(245, 197, 24, 0.55);
 }
@@ -144,6 +154,7 @@
  *   warning #7A5A0A on -bg #FBF0CF .................... 5.61:1  (AA)
  *   danger  #B3352F on -bg #FBE7E6 .................... 5.10:1  (AA)
  *   neutral #5B5B63 on -bg #EFEDE8 .................... 5.75:1  (AA)
+ *   lilac (tint fg) #573E8F on tint #F1ECF9 .......... 7.27:1  (AAA, T026)
  *   focus ring #806508 on bg #FBFAF7 (non-text) ...... 5.32:1  (≥3:1; guide's
  *              #C99A0E was 2.48:1 — corrected up for AA)
  *
@@ -158,5 +169,6 @@
  *   warning #D9B36A on -bg #2A2410 .................... 7.81:1  (AAA)
  *   danger  #E97373 on -bg #2E1616 .................... 5.77:1  (AA)
  *   neutral #A9A9B0 on -bg #262C36 .................... 6.01:1  (AA)
+ *   lilac (tint fg) #C3B0E8 on tint #241C3A .......... 8.21:1  (AAA, T026)
  * =============================================================================
  */

@@ -19,6 +19,7 @@
     "validate:docs": "node src/scripts/validate-frontmatter.mjs docs",
     "validate:example": "node src/scripts/validate-frontmatter.mjs example/docs",
     "validate:links": "node src/scripts/check-links.mjs docs example/docs",
+    "validate:catalog": "node src/scripts/validate-catalog.mjs docs example/docs",
     "assert:artifacts": "node src/scripts/assert-build-artifacts.mjs example/dist",
     "test:a11y": "playwright test"
   },

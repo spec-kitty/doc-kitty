@@ -36,25 +36,35 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 // and its `count` must equal both `pages.length` and the number below.
 //
 // EXPECTED_INDEX_ENTRY_COUNT is pinned, not hand-waved. Cross-check (authoring
-// time), so a wrong build cannot silently lock in a wrong baseline:
-//   - example/docs holds 13 Markdown content files (README-as-index + pages);
-//   - exactly one is a draft — example/docs/adr/template.md (doc_status: draft),
-//     which `isPublished()` excludes from the agent index;
-//   - 13 − 1 = 12 published, discoverable pages.
-// Independently verified against example/docs at authoring time: counting
-// non-draft *.md there yields 12, matching the emitted `count`.
+// time), so a wrong build cannot silently lock in a wrong baseline. Derivation
+// from the published-`.md` count minus drafts (`isPublished()` excludes drafts
+// from the agent index):
+//   - PRE-WP03 baseline: example/docs held 14 Markdown files with TWO drafts —
+//     example/docs/adr/template.md AND the persona (draft, at its old
+//     personas/ location) — i.e. 14 − 2 = 12 published, discoverable pages.
+//   - WP03 (ADR-0020) INTERIM delta: the persona is promoted draft → active
+//     (+1 published) and relocates to context/audience/; an Audiences hub
+//     README is added (+1 published); one retained draft demonstrator persona is
+//     added (0 published — still draft). So 12 + 1 + 1 + 0 = 14.
+//   - WP06 (this WP) FINAL delta: the three-block demonstrator
+//     (architecture/blocks-demonstrator.md, published, +1) and its stale related
+//     target (architecture/superseded-note.md, published, +1) are added — both
+//     published, so +2. So 14 + 2 = 16.
+//   - POST-WP06 tree: 18 Markdown files with TWO drafts (adr/template +
+//     the retained draft persona) → 18 − 2 = 16 published, cross-checking the
+//     delta arithmetic above.
+// This is the FINAL pin (WP06 owns it; the WP03 interim pin was 14).
 //
-// Sitemap parity (WP02/T016): the @astrojs/sitemap `filter` now DROPS every
-// draft page's URL (INV-1), so the sitemap's page-URL count equals this same
-// published set — 12 — and the single draft page (adr/template) is absent from
-// it. Rationale for editing this WP01-owned file here: the filter and the
-// assertion that proves it must land together, or the boundary goes red (C-010).
+// Sitemap parity (WP02/T016): the @astrojs/sitemap `filter` DROPS every draft
+// page's URL (INV-1), so the sitemap's page-URL count equals this same published
+// set — 16 — and every draft page (adr/template + the retained draft persona) is
+// absent from it.
 //
 // Bump this ONLY as a deliberate, reviewable act when example content changes.
-const EXPECTED_INDEX_ENTRY_COUNT = 12;
+const EXPECTED_INDEX_ENTRY_COUNT = 16;
 
-// Sitemap page-URL count == the published set (draft excluded by the filter).
-const EXPECTED_SITEMAP_URL_COUNT = 12;
+// Sitemap page-URL count == the published set (drafts excluded by the filter).
+const EXPECTED_SITEMAP_URL_COUNT = 16;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.
@@ -69,9 +79,26 @@ const EXPECTED_INDEX_SHAPE = {
   pages: 'array',
 };
 
-// Required keys on each entry in `pages[]` (each a string). `doc_status` and
-// `kind` land with the finalized metadata contract (ADR-0009 / C-010).
+// Required STRING keys on each entry in `pages[]`. `doc_status` and `kind` land
+// with the finalized metadata contract (ADR-0009 / C-010). The enriched agent
+// surface (WP05/WP06) also adds `audience` and `related`, but those are ARRAYS of
+// objects — they are DELIBERATELY not listed here: this loop hard-asserts every
+// listed key is a `string` (below), so an array key would red a correct build.
+// They get a bespoke shape assertion outside that loop instead (agent-surface
+// contract).
 const EXPECTED_PAGE_KEYS = ['slug', 'route', 'section', 'title', 'doc_status', 'kind'];
+
+// The concrete agent-API `version`. WP05/T028 bumped the owned default from '1' to
+// '2' because `related` changed shape (raw slugs → resolved objects) and records
+// gained `audience` — a published-contract change consumers branch on (DIRECTIVE_018).
+// Pinned to the CONCRETE value, not just its type, so a silent re-bump/regress reds.
+const EXPECTED_AGENT_API_VERSION = '2';
+
+// `/api/bibliography.json` is a catalog projection emitted OUTSIDE page gating
+// (ADR-0018 / FR-015): { version, count, records[] } with each record carrying at
+// least id/title/url (catalog-and-citation contract).
+const BIBLIOGRAPHY_ENDPOINT_RELPATH = path.join('api', 'bibliography.json');
+const EXPECTED_BIBLIOGRAPHY_RECORD_KEYS = ['id', 'title', 'url'];
 
 // README-as-index proof: a section's README.md served at its directory route.
 // The ADR section's README H1 is "Decision Records"; it must appear in the HTML
@@ -263,7 +290,7 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 13 example files − 1 draft; if example content changed ` +
+        `(the published set — 18 example .md files − 2 drafts; if example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }
@@ -328,6 +355,113 @@ async function main() {
     }
   });
   ok(`agent index: valid JSON, expected shape, ${index.count} entries (pinned)`);
+
+  // 4a) Concrete agent-API version (WP05/T028 bump). Pinned to the exact value so a
+  // silent re-bump or regress is caught, not just "some string" (agent-surface
+  // contract / DIRECTIVE_018).
+  if (index.version !== EXPECTED_AGENT_API_VERSION) {
+    fail(
+      `agent index: version is ${JSON.stringify(index.version)}, expected ` +
+        `${JSON.stringify(EXPECTED_AGENT_API_VERSION)} — the enriched-record shape bump (raw slugs → ` +
+        `resolved related objects + audience) must carry version "2" (DIRECTIVE_018)`,
+    );
+  }
+  ok(`agent index: version pinned to "${index.version}" (enriched-record contract)`);
+
+  // 4b) BESPOKE shape for the ENRICHED array keys (agent-surface contract). These
+  // are arrays of objects, so they cannot live in the string-type loop above.
+  //   - related:  { ref, title, kind, doc_status }[]  — RESOLVED (never raw slugs)
+  //   - audience: { profile, guidance_text }[]        — carried as authored
+  // Asserted on EVERY page (the keys are always present, empty when unused), and at
+  // least one page must actually carry a non-empty resolved `related` so the
+  // enrichment is proven non-vacuously (the demonstrator does).
+  let sawResolvedRelated = false;
+  let sawAudience = false;
+  index.pages.forEach((page, idx) => {
+    if (!('related' in page) || !Array.isArray(page.related)) {
+      fail(`agent index: pages[${idx}].related must be an array (enriched record), got ${typeof page.related}`);
+    }
+    if (!('audience' in page) || !Array.isArray(page.audience)) {
+      fail(`agent index: pages[${idx}].audience must be an array (enriched record), got ${typeof page.audience}`);
+    }
+    for (const rel of page.related) {
+      if (rel === null || typeof rel !== 'object' || Array.isArray(rel)) {
+        fail(`agent index: pages[${idx}].related[] entry is not an object — related must be RESOLVED, not a raw slug string`);
+      }
+      for (const key of ['ref', 'title', 'kind', 'doc_status']) {
+        if (typeof rel[key] !== 'string') {
+          fail(
+            `agent index: pages[${idx}].related[] missing/typed key "${key}" ` +
+              `(resolved related is { ref, title, kind, doc_status }, all strings)`,
+          );
+        }
+      }
+      sawResolvedRelated = true;
+    }
+    for (const aud of page.audience) {
+      if (aud === null || typeof aud !== 'object' || Array.isArray(aud)) {
+        fail(`agent index: pages[${idx}].audience[] entry is not an object ({ profile, guidance_text })`);
+      }
+      for (const key of ['profile', 'guidance_text']) {
+        if (typeof aud[key] !== 'string') {
+          fail(`agent index: pages[${idx}].audience[] missing/typed key "${key}" (audience is { profile, guidance_text })`);
+        }
+      }
+      sawAudience = true;
+    }
+  });
+  if (!sawResolvedRelated) {
+    fail(
+      `agent index: no page carries a non-empty resolved \`related\` — the enrichment (resolveRelated in ` +
+        `the route) is unexercised; the demonstrator must contribute at least one resolved related object`,
+    );
+  }
+  if (!sawAudience) {
+    fail(
+      `agent index: no page carries a non-empty \`audience\` — the enriched audience field is unexercised; ` +
+        `the demonstrator must contribute at least one audience entry`,
+    );
+  }
+  ok(`agent index: enriched related[] ({ref,title,kind,doc_status}) + audience[] ({profile,guidance_text}) shapes valid`);
+
+  // 4c) /api/bibliography.json — a catalog projection OUTSIDE page gating: valid
+  // JSON, { version, count, records[] }, each record carrying id/title/url
+  // (catalog-and-citation contract / FR-015).
+  const biblioAbs = path.join(distDir, BIBLIOGRAPHY_ENDPOINT_RELPATH);
+  await assertNonEmptyFile(biblioAbs, `bibliography endpoint (${BIBLIOGRAPHY_ENDPOINT_RELPATH})`);
+  const biblioText = await readTextOrFail(biblioAbs, `bibliography endpoint (${BIBLIOGRAPHY_ENDPOINT_RELPATH})`);
+  let biblio;
+  try {
+    biblio = JSON.parse(biblioText);
+  } catch (err) {
+    fail(`bibliography endpoint: not valid JSON (${err.message})`);
+  }
+  if (biblio === null || typeof biblio !== 'object' || Array.isArray(biblio)) {
+    fail('bibliography endpoint: top level is not a JSON object');
+  }
+  if (typeof biblio.version !== 'string') {
+    fail(`bibliography endpoint: "version" should be a string, got ${typeof biblio.version}`);
+  }
+  if (!Array.isArray(biblio.records)) {
+    fail(`bibliography endpoint: "records" should be an array, got ${typeof biblio.records}`);
+  }
+  if (biblio.count !== biblio.records.length) {
+    fail(`bibliography endpoint: count (${biblio.count}) does not match records.length (${biblio.records.length})`);
+  }
+  if (biblio.records.length === 0) {
+    fail('bibliography endpoint: records is empty — the example bibliography catalog projects at least one record');
+  }
+  biblio.records.forEach((record, idx) => {
+    if (record === null || typeof record !== 'object' || Array.isArray(record)) {
+      fail(`bibliography endpoint: records[${idx}] is not an object`);
+    }
+    for (const key of EXPECTED_BIBLIOGRAPHY_RECORD_KEYS) {
+      if (typeof record[key] !== 'string') {
+        fail(`bibliography endpoint: records[${idx}].${key} should be a string, got ${typeof record[key]}`);
+      }
+    }
+  });
+  ok(`bibliography endpoint: valid JSON, { version, count, records[] }, ${biblio.count} record(s) with id/title/url`);
 
   // 5) README-as-index — a section README.md served at its directory route.
   const sectionIndexAbs = path.join(distDir, SECTION_INDEX_RELPATH);

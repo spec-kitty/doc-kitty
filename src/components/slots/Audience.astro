@@ -1,0 +1,109 @@
+---
+/*
+ * dk:audience block body (WP04, T021, ADR-0017 carrier-body).
+ *
+ * SELF-RESOLVING (ADR-0017): takes no props. Reads the current page's `audience`
+ * from `Astro.locals.starlightRoute` and builds the docs index from
+ * `getCollection('docs')`, then resolves each reader profile with the WP01
+ * resolver. Renders NOTHING when the page declares no audience.
+ *
+ * Miss posture (FR-002): a missing persona page is SOFT — render the humanized
+ * slug as plain text and warn on the build log (an observable channel), never
+ * fail. This is deliberately asymmetric with the build-fatal `related` miss.
+ *
+ * This is a `<section>` (a labelled region), NOT a `<nav>`: the audience block is
+ * page guidance, not a set of navigational links.
+ */
+import { getCollection } from 'astro:content';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import {
+  resolveProfile,
+  humanizeProfile,
+  slugFromEntryId,
+  type DocKittyFrontmatter,
+  type DocsIndex,
+} from '../../lib/metadata.js';
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+const data = route.entry.data as unknown as DocKittyFrontmatter;
+const audience = data.audience ?? [];
+
+// Build the docs index only when this page actually declares an audience.
+const index: DocsIndex = {};
+if (audience.length > 0) {
+  for (const entry of await getCollection('docs')) {
+    const slug = slugFromEntryId(entry.id);
+    const d = entry.data as unknown as DocKittyFrontmatter;
+    index[slug] = {
+      slug,
+      title: d.title,
+      kind: d.kind ?? '',
+      doc_status: d.doc_status ?? 'draft',
+      ...(d.description !== undefined ? { description: d.description } : {}),
+    };
+  }
+}
+
+const pageSlug = slugFromEntryId(route.entry.id);
+const rows = audience.map((entry) => {
+  const resolved = resolveProfile(entry.profile, index);
+  if (!resolved) {
+    // Soft miss (FR-002): observable build-log warning, never a build failure.
+    console.warn(
+      `[dk:audience] page "${pageSlug}" targets audience profile "${entry.profile}" ` +
+        `with no persona page under context/audience/ — rendering the humanized ` +
+        `slug (soft miss, FR-002).`,
+    );
+  }
+  return { entry, resolved };
+});
+---
+
+{
+  audience.length > 0 && (
+    <section
+      class="dk-panel dk-panel--audience dk-audience"
+      aria-labelledby="dk-audience-heading"
+    >
+      <p class="dk-eyebrow" id="dk-audience-heading">Who is this for</p>
+      <ul class="dk-audience__list">
+        {rows.map(({ entry, resolved }) => (
+          <li class="dk-audience__item">
+            {resolved ? (
+              <a class="dk-audience__profile" href={resolved.href}>
+                {resolved.title}
+              </a>
+            ) : (
+              <span class="dk-audience__profile dk-audience__profile--unresolved">
+                {humanizeProfile(entry.profile)}
+              </span>
+            )}
+            <span class="dk-audience__guidance"> — {entry.guidance_text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  /* Structural list reset — travels with the block so it holds under any theme.
+     Brand tint/typography lives on the `.dk-panel--audience` class (theme CSS). */
+  .dk-audience__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--dk-space-xs);
+  }
+  /* Link affordance not carried by colour alone (WCAG 1.4.1). */
+  .dk-audience__profile {
+    font-weight: var(--dk-weight-semibold);
+    color: inherit;
+  }
+  a.dk-audience__profile {
+    text-decoration: underline;
+  }
+</style>

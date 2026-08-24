@@ -11,6 +11,9 @@ social_thumb:
   alt: The Getting started guide share card
 related:
   - architecture/overview
+external_references:
+  - type: biblio
+    id: divio-2017
 ---
 
 # Getting started

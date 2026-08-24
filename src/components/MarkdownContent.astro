@@ -5,24 +5,32 @@
  *
  * This is the SINGLE per-kind layout resolution site (ADR-0013 extension point):
  * read `entry.data.kind`, resolve it through the static `kind → layout` map, and
- * wrap the content in that layout. In M1 the map is empty so every kind — the 6
- * live `kind: Hub` pages included — resolves to `Default`. WP04 registers the
- * `Hub` key; M2 swaps this static module for the merged virtual manifest AT THIS
- * SAME import site, without touching the carrier.
+ * wrap the content in that layout.
  *
- * Also hosts doc-kitty's content-flanking slots (WP03 fills the bodies):
+ * Also hosts doc-kitty's three data-driven content blocks (ADR-0017 carrier-body):
  *   - `dk:audience`             before the content
  *   - `dk:related`              after the content
  *   - `dk:external-references`  after `dk:related`
- * All render inside Starlight's searchable content region (NFR-004).
+ *
+ * WIRING (ADR-0017). These three blocks are doc-kitty-OWNED, carrier-body renders:
+ * the carrier mounts the default block body inline and the body SELF-RESOLVES from
+ * `Astro.locals.starlightRoute` + the content collections. No props cross the slot
+ * boundary (ADR-0015 keeps slot bodies prop-less and `resolveLayout` synchronous),
+ * so the old no-props `slotComponents` passthrough is RETIRED for exactly these
+ * three slots (it cannot carry data and would double-render). The named `<slot>`
+ * stays for authored MDX injection. Theme influence over these three is by
+ * tokens/CSS, not component replacement. All render inside Starlight's searchable
+ * content region (NFR-003/NFR-004).
  *
  * Reads `Astro.locals.starlightRoute` (Starlight ≥0.30), never through
  * component props (the pre-0.30 pattern) — C-004.
  */
 import Default from '@astrojs/starlight/components/MarkdownContent.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
-import { slotComponents } from 'virtual:doc-kitty/manifest';
 import { resolveLayout } from '../layouts/kind-layouts.ts';
+import Audience from './slots/Audience.astro';
+import Related from './slots/Related.astro';
+import ExternalReferences from './slots/ExternalReferences.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -31,28 +39,18 @@ const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
 // generated collection types.
 const kind = (route.entry.data as { kind?: string }).kind;
 const Layout = resolveLayout(kind);
-
-// M3 content-block host points (dk:audience / dk:related / dk:external-references)
-// consult the manifest for a THEMED component only — they stay UNWIRED to M3 data
-// (C-010): no read of entry.data.audience / related / external_references here.
-// With no matching theme slot each renders nothing, so the M1 output is
-// byte-identical and the layout-resolution body below is untouched (ADR-0015 seam
-// 1).
-const AudienceSlot = slotComponents['dk:audience'];
-const RelatedSlot = slotComponents['dk:related'];
-const ExternalRefsSlot = slotComponents['dk:external-references'];
 ---
 
 <Layout {...route}>
-  {/* dk:audience — host point before the content; themed passthrough only (M3). */}
-  {AudienceSlot && <AudienceSlot />}
+  {/* dk:audience — carrier-body block before the content; body self-resolves. */}
+  <Audience />
   <slot name="dk:audience" />
 
   <Default {...route}><slot /></Default>
 
-  {/* dk:related + dk:external-references — host points after the content (M3). */}
-  {RelatedSlot && <RelatedSlot />}
+  {/* dk:related + dk:external-references — carrier-body blocks after the content. */}
+  <Related />
   <slot name="dk:related" />
-  {ExternalRefsSlot && <ExternalRefsSlot />}
+  <ExternalReferences />
   <slot name="dk:external-references" />
 </Layout>

@@ -23,14 +23,20 @@
  *      optimized-image pipeline as the M1 page hero (`import.meta.glob('/docs/**')`
  *      + `astro:assets` Image). Missing/unresolved image → no `<img>` at all
  *      (never an empty `alt` on a present image).
- *   5. A `<dl>` field grid — one `.dk-passport__field` row per PRESENT generic
- *      frontmatter field (`doc_status`, `updated`, `type`, `authors`, `tags`),
- *      each row an eyebrow-label `<dt>` (`.dk-eyebrow`, WP05 atom) + `<dd>` value.
- *      An absent field is OMITTED, never rendered empty.
+ *   5. A `<dl>` field grid — one `.dk-passport__field` row per PRESENT field, in a
+ *      stable reading order: the persona-ATTRIBUTE fields first (`role`, `goals`,
+ *      `responsibilities` — ADR-0019), then the generic frontmatter fields
+ *      (`doc_status`, `updated`, `type`, `authors`, `tags`). Each row is an
+ *      eyebrow-label `<dt>` (`.dk-eyebrow`, WP05 atom) + a `<dd>` value; scalar
+ *      values render inline, list values (`goals`/`responsibilities`) render as a
+ *      `<ul>` so each item stays a discrete, screen-reader-navigable line. An
+ *      absent field is OMITTED, never rendered empty.
  *
- * SCOPE (C-010): generic frontmatter fields ONLY. Persona-*attribute* fields
- * (role, goals, responsibilities), audience resolution, and the audience/related
- * blocks are M3 — this layout introduces NO new schema (`schema.ts` untouched).
+ * SCOPE: the persona-attribute fields (`role`, `goals`, `responsibilities`) land
+ * in M3 per ADR-0019 — added to the build schema as OPTIONAL (schema.ts stays
+ * lenient) with requiredness enforced by the standalone validator; this layout
+ * renders them. Audience resolution and the audience/related blocks remain M3
+ * block work (a later WP) — this layout introduces NO new schema itself.
  *
  * Search coverage (NFR-004 / C-007): the whole layout output — the passport card
  * AND the `<slot />` body — sits inside the carrier, which Starlight places in
@@ -56,6 +62,9 @@ const data = entry.data as unknown as {
   type?: string;
   authors?: string[];
   tags?: string[];
+  role?: string;
+  goals?: string[];
+  responsibilities?: string[];
   hero_image?: { src: string; alt: string };
 };
 // entry.filePath (relative to the site root) locates the colocated avatar asset.
@@ -80,7 +89,17 @@ const asDate = (v: string | Date | undefined): string | undefined => {
   const d = v instanceof Date ? v : new Date(v);
   return Number.isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10);
 };
-const fields: { label: string; value: string }[] = [];
+// A value is either a scalar string (rendered inline) or a list of strings
+// (rendered as a <ul> so each item is a discrete, navigable line).
+const fields: { label: string; value: string | string[] }[] = [];
+// Persona-attribute fields first (ADR-0019) — the identity this passport exists
+// to carry. Required by the validator, so present on every real persona page.
+if (data.role) fields.push({ label: 'Role', value: data.role });
+if (data.goals && data.goals.length > 0)
+  fields.push({ label: 'Goals', value: data.goals });
+if (data.responsibilities && data.responsibilities.length > 0)
+  fields.push({ label: 'Responsibilities', value: data.responsibilities });
+// Generic frontmatter fields.
 if (data.doc_status) fields.push({ label: 'Status', value: data.doc_status });
 const updated = asDate(data.updated);
 if (updated) fields.push({ label: 'Updated', value: updated });
@@ -117,7 +136,17 @@ if (data.tags && data.tags.length > 0)
         {fields.map((f) => (
           <div class="dk-passport__field">
             <dt class="dk-eyebrow">{f.label}</dt>
-            <dd class="dk-passport__value">{f.value}</dd>
+            {Array.isArray(f.value) ? (
+              <dd class="dk-passport__value">
+                <ul class="dk-passport__list">
+                  {f.value.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </dd>
+            ) : (
+              <dd class="dk-passport__value">{f.value}</dd>
+            )}
           </div>
         ))}
       </dl>
@@ -195,5 +224,18 @@ if (data.tags && data.tags.length > 0)
   .dk-passport__value {
     margin: 0;
     color: var(--dk-color-text);
+  }
+
+  /* List-valued fields (goals, responsibilities) — each item a discrete line.
+   * Semantic <ul>; the marker sits inside the padding so it never clips. */
+  .dk-passport__list {
+    margin: 0;
+    padding-left: var(--dk-space-md);
+    display: grid;
+    gap: var(--dk-space-3xs);
+  }
+
+  .dk-passport__list > li {
+    margin: 0;
   }
 </style>

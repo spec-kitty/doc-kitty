@@ -1,0 +1,88 @@
+---
+/*
+ * dk:related block body (WP04, T022/T023, ADR-0017 carrier-body).
+ *
+ * SELF-RESOLVING (ADR-0017): takes no props. Reads the current page's `related`
+ * from `Astro.locals.starlightRoute` and builds the docs index from
+ * `getCollection('docs')`, then resolves each entry with the WP01 resolver.
+ * Renders NOTHING when the page declares no related refs.
+ *
+ * Miss posture (FR-004): a dangling `related` ref is BUILD-FATAL — `resolveRelated`
+ * throws, and this body does NOT swallow it. Each resolved card's accessible name
+ * is the resolved TARGET TITLE (never a bare slug); the card text is the collapsed
+ * `note`-else-`description` the resolver already produced. A stale target
+ * (`doc_status ∈ {deprecated, superseded}`) carries a TEXT status marker (T023).
+ *
+ * A landmark: `role="navigation"` + `aria-label` rather than a literal `<nav>` so
+ * the block's link text stays inside the citing page's Pagefind fragment (NFR-003);
+ * `role="navigation"` is the exact a11y mapping of `<nav>`.
+ */
+import { getCollection } from 'astro:content';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
+import {
+  resolveRelated,
+  slugFromEntryId,
+  type DocKittyFrontmatter,
+  type DocsIndex,
+} from '../../lib/metadata.js';
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+const data = route.entry.data as unknown as DocKittyFrontmatter;
+const related = data.related ?? [];
+
+const index: DocsIndex = {};
+if (related.length > 0) {
+  for (const entry of await getCollection('docs')) {
+    const slug = slugFromEntryId(entry.id);
+    const d = entry.data as unknown as DocKittyFrontmatter;
+    index[slug] = {
+      slug,
+      title: d.title,
+      kind: d.kind ?? '',
+      doc_status: d.doc_status ?? 'draft',
+      ...(d.description !== undefined ? { description: d.description } : {}),
+    };
+  }
+}
+
+// resolveRelated throws on a dangling ref (FR-004) — do NOT swallow.
+const cards = related.map((ref) => resolveRelated(ref, index));
+
+// A stale target reuses the MetadataBand status vocabulary as a TEXT marker.
+const STALE = new Set(['deprecated', 'superseded']);
+---
+
+{
+  related.length > 0 && (
+    <div class="dk-panel dk-panel--related dk-related" role="navigation" aria-label="Related pages">
+      <p class="dk-eyebrow">Related</p>
+      <ul class="dk-related__list">
+        {cards.map((card) => (
+          <li class="dk-related__item">
+            <RelatedCard
+              href={`/${card.ref}/`}
+              title={card.title}
+              description={card.note}
+              kind={card.kind}
+              staleStatus={STALE.has(card.doc_status) ? card.doc_status : undefined}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  /* Structural list reset — travels with the block (theme-independent). */
+  .dk-related__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--dk-space-sm);
+  }
+</style>

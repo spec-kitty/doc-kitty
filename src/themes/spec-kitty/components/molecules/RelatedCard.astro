@@ -1,37 +1,76 @@
 ---
 /*
- * Related-card molecule (WP05, T022).
+ * Related-card molecule (WP05, T022; stale marker T023).
  *
  * A CARD-WIDE `<a>`: title in `--dk-color-text-accent`, target description muted,
- * optional kind tag. Built for Hub/brand chrome (the `dk:related` block later
- * consumes this shape). AA (T025): the `.dk-related-card` class carries a ≥24px
- * min target + a `:focus-visible` ring in ../brand-components.css.
+ * optional kind tag, and an optional STALE-TARGET status marker. Consumed by the
+ * `dk:related` block (ADR-0017 carrier-body). AA (T025): the `.dk-related-card`
+ * class carries a ≥24px min target + a `:focus-visible` ring in
+ * ../brand-components.css.
  *
- * SCOPE GUARD (C-010): this molecule renders from PROPS only. It does NOT read
- * `entry.data.related` — the M3 `dk:related` block stays UNWIRED to resolved data
- * in M2. Self-contained (no `@spec-kitty/*`).
+ * Renders from PROPS only (self-contained; no `@spec-kitty/*`). The `dk:related`
+ * block resolves `entry.data.related` and feeds this molecule.
  *
- * The card is a single link with no nested interactive elements, so the card-wide
- * target never swallows another control.
+ * STALE MARKER (T023): when `staleStatus` is set (a `deprecated`/`superseded`
+ * target `doc_status`), render a TEXT status label reusing the MetadataBand status
+ * vocabulary/tone (deprecated → neutral, superseded → info) via the StatusPill
+ * atom. The status word is real text — meaning is never colour-only (WCAG 1.4.1).
+ *
+ * The card is a single link with no nested interactive elements (the status marker
+ * is a `<span>`), so the card-wide target never swallows another control.
  */
+type StaleStatus = 'deprecated' | 'superseded';
+
 interface Props {
   /** Destination — a real href so the whole card is one ≥24px link target. */
   href: string;
-  /** Visible title (accent). */
+  /** Visible title (accent) — the card's accessible name. */
   title: string;
-  /** Optional muted target description. */
+  /** Optional muted target description (`note`-else-`description`). */
   description?: string;
   /** Optional kind label rendered as a kind-tag chip. */
   kind?: string;
+  /** Optional stale-target status (`deprecated`/`superseded`) → text marker (T023). */
+  staleStatus?: StaleStatus;
 }
 
 import KindTag from '../atoms/KindTag.astro';
+import StatusPill from '../atoms/StatusPill.astro';
 
-const { href, title, description, kind } = Astro.props;
+const { href, title, description, kind, staleStatus } = Astro.props;
+
+// Reuse the MetadataBand status vocabulary so the stale marker reads consistently
+// with the page-level status band.
+const STALE_TONE: Record<StaleStatus, 'neutral' | 'info'> = {
+  deprecated: 'neutral',
+  superseded: 'info',
+};
 ---
 
 <a class="dk-related-card" href={href}>
   <span class="dk-related-card__title">{title}</span>
   {description && <span class="dk-related-card__desc">{description}</span>}
-  {kind && <KindTag label={kind} />}
+  {
+    (kind || staleStatus) && (
+      <span class="dk-related-card__meta">
+        {kind && <KindTag label={kind} />}
+        {staleStatus && (
+          <StatusPill
+            label={staleStatus}
+            tone={STALE_TONE[staleStatus]}
+            srPrefix="Target status:"
+          />
+        )}
+      </span>
+    )
+  }
 </a>
+
+<style>
+  .dk-related-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dk-space-2xs);
+  }
+</style>

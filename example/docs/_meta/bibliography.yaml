@@ -1,0 +1,19 @@
+# Bibliography catalog for the example docsite (CSL-JSON-lite, ADR-0018).
+# Mirrors the toolkit's own docs/_meta/bibliography.yaml shape. `divio-2017` is
+# cited by guides/getting-started.md — the record and its citation co-land so
+# the reference resolves at build (FR-007/008).
+- id: divio-2017
+  type: webpage
+  title: The documentation system
+  authors: [Daniele Procida]
+  container: Divio
+  url: https://documentation.divio.com
+  issued: "2017"
+  accessed: "2026-08-24"
+  note: origin of the four-quadrant model
+- id: llms-txt-2024
+  type: webpage
+  title: The /llms.txt file
+  url: https://llmstxt.org
+  issued: "2024"
+  note: the agent-facing discovery index this docsite emits

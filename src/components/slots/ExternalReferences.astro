@@ -1,0 +1,120 @@
+---
+/*
+ * dk:external-references block body (WP04, T024, ADR-0017 carrier-body).
+ *
+ * SELF-RESOLVING (ADR-0017): takes no props. Reads the current page's
+ * `external_references` from `Astro.locals.starlightRoute` and builds the citation
+ * catalog from `getCollection('bibliography')` + `getCollection('tools')`, then
+ * resolves each entry with the WP01 resolver. Renders NOTHING when the page
+ * declares no external references.
+ *
+ * Two entry shapes (ADR-0018): an INLINE `{ url, title, note? }` renders directly
+ * and has no citation key; a CATALOG `{ type, id }` renders from the resolved
+ * record (biblio → title + author/year/container muted; tool → name + note). A
+ * missing id or unknown catalog type is BUILD-FATAL (FR-008) — `resolveCitation`
+ * throws and this body does NOT swallow it.
+ *
+ * Each row's accessible name leads with the human TITLE (FR-009); the mono citation
+ * key is a secondary affordance. External links get `rel="noopener noreferrer"` +
+ * a hidden "(opens in a new tab)" via `ReferenceItem`. A landmark via
+ * `role="navigation"` (not a literal `<nav>`) keeps the titles in the citing page's
+ * Pagefind fragment (NFR-003).
+ */
+import { getCollection } from 'astro:content';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import ReferenceItem from '../../themes/spec-kitty/components/molecules/ReferenceItem.astro';
+import { buildCatalog } from '../../lib/catalog.js';
+import {
+  resolveCitation,
+  type DocKittyFrontmatter,
+  type BibliographyRecord,
+  type ToolRecord,
+  type InlineReference,
+} from '../../lib/metadata.js';
+
+interface ReferenceRow {
+  href: string;
+  title: string;
+  citationKey?: string;
+  meta?: string;
+}
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+const data = route.entry.data as unknown as DocKittyFrontmatter;
+const refs = data.external_references ?? [];
+
+let rows: ReferenceRow[] = [];
+if (refs.length > 0) {
+  const catalog = buildCatalog(
+    (await getCollection('bibliography')).map((e) => e.data as BibliographyRecord),
+    (await getCollection('tools')).map((e) => e.data as ToolRecord),
+  );
+
+  rows = refs.map((ref) => {
+    // resolveCitation throws on a miss / unknown type (FR-008) — do NOT swallow.
+    const resolved = resolveCitation(ref, catalog);
+
+    // Inline reference: self-contained, no catalog id / citation key.
+    if ('url' in ref) {
+      const inline = resolved as InlineReference;
+      const row: ReferenceRow = { href: inline.url, title: inline.title };
+      if (inline.note) row.meta = inline.note;
+      return row;
+    }
+
+    // Catalog reference: the frontmatter id is the mono citation key.
+    const citationKey = ref.id;
+    if ('name' in resolved) {
+      const tool = resolved as ToolRecord;
+      const row: ReferenceRow = { href: tool.url, title: tool.name, citationKey };
+      if (tool.note) row.meta = tool.note;
+      return row;
+    }
+
+    const biblio = resolved as BibliographyRecord;
+    const meta = [biblio.authors?.join(', '), biblio.issued, biblio.container]
+      .filter(Boolean)
+      .join(' · ');
+    const row: ReferenceRow = { href: biblio.url, title: biblio.title, citationKey };
+    if (meta) row.meta = meta;
+    return row;
+  });
+}
+---
+
+{
+  refs.length > 0 && (
+    <div
+      class="dk-panel dk-panel--external-references dk-references"
+      role="navigation"
+      aria-label="External references"
+    >
+      <p class="dk-eyebrow">External references</p>
+      <ul class="dk-references__list">
+        {rows.map((row) => (
+          <li class="dk-references__item">
+            <ReferenceItem
+              href={row.href}
+              title={row.title}
+              citationKey={row.citationKey}
+              meta={row.meta}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  /* Structural list reset — travels with the block (theme-independent). */
+  .dk-references__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--dk-space-sm);
+  }
+</style>

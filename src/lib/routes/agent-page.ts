@@ -12,9 +12,9 @@
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
-import type { DocKittyFrontmatter } from '../metadata.js';
-import { pageSourceId, slugFromEntryId, toAgentRecord } from '../metadata.js';
-import { absolute } from './shared.js';
+import type { AudienceEntry, DocKittyFrontmatter, ResolvedRelated } from '../metadata.js';
+import { pageSourceId, resolveRelated, slugFromEntryId, toAgentRecord } from '../metadata.js';
+import { absolute, buildDocsIndex, collectDocEntries } from './shared.js';
 
 export function agentPageRoute() {
   const getStaticPaths: GetStaticPaths = async () => {
@@ -38,8 +38,23 @@ export function agentPageRoute() {
 
     const data = entry.data as unknown as DocKittyFrontmatter;
     const record = toAgentRecord({ slug: slugFromEntryId(id), data });
+    // Resolve `related` against the full corpus and carry `audience` as
+    // authored. Enrichment is route-local; toAgentRecord stays pure.
+    const index = buildDocsIndex(await collectDocEntries());
+    const related: ResolvedRelated[] = record.related.map((ref) => {
+      const resolved = resolveRelated(ref, index);
+      return {
+        ref: resolved.ref,
+        title: resolved.title,
+        kind: resolved.kind,
+        doc_status: resolved.doc_status,
+      };
+    });
+    const audience: AudienceEntry[] = data.audience ?? [];
     const payload = {
       ...record,
+      related,
+      audience,
       url: absolute(site, record.route),
       authors: data.authors ?? [],
       keywords: data.agent?.keywords ?? [],
