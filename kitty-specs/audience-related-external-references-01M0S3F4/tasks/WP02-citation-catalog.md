@@ -9,7 +9,7 @@ requirement_refs:
 - FR-015
 planning_base_branch: feat/audience-related-external-references
 merge_target_branch: feat/audience-related-external-references
-branch_strategy: Planning artifacts were generated on feat/audience-related-external-references. This WP may branch from a dependency-specific base during /spec-kitty.implement, but completed changes merge back into feat/audience-related-external-references unless the human redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/audience-related-external-references. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/audience-related-external-references unless the human explicitly redirects the landing branch.
 subtasks:
 - T007
 - T008
