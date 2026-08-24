@@ -1,8 +1,8 @@
 ---
 title: Slide decks
 description: "How a Markdown-authored deck becomes a static reveal.js presentation: the splitting convention, the build pipeline, and the fallback."
-doc_status: draft
-updated: 2026-08-22
+doc_status: active
+updated: 2026-08-24
 type: Architecture
 kind: Explanation
 authors:
@@ -10,6 +10,8 @@ authors:
 tags: [presentations, reveal-js, slide-decks, markua]
 related:
   - adr/0012-slide-decks-static-reveal-from-markdown
+  - adr/0021-deck-routing-seam-out-of-frame-override
+  - adr/0022-reveal-integration-and-token-theme
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0004-amend-common-docs-as-extensible-variation
   - architecture/theming
@@ -35,10 +37,14 @@ Audience: contributors building the deck renderer, and authors writing decks.
 
 ## What a deck is
 
-A deck is a page with `kind: Presentation`. The `presentations/` section
-(`type: Presentation`) is its home, but the **switch is `kind`**: a `Presentation`
-page anywhere routes to the deck renderer, matching the per-kind resolution in
-[theming.md](./theming.md). A deck's frontmatter is the normal metadata contract;
+A deck is a page with `kind: Presentation` filed under `presentations/`. The
+`presentations/` section (`type: Presentation`) is its home, and the **switch is
+path + kind**: a `Presentation` page **under `presentations/`** routes out-of-frame
+to the deck renderer, while a `kind: Presentation` page filed elsewhere is a hard
+build error rather than a silent in-frame render
+([ADR-0021](../adr/0021-deck-routing-seam-out-of-frame-override.md), which narrows
+ADR-0012's earlier "anywhere" to path + kind). A deck's frontmatter is the normal
+metadata contract;
 `title`, `description`, and `hero_image` feed the title slide and the social card,
 and `doc_status: draft` gates the deck from sitemap and feeds like any other page.
 
@@ -141,21 +147,35 @@ resized and served in a modern format. A slide background references an optimize
 asset through the `.slide` directive, and `hero_image` can drive the title-slide
 background.
 
-## Open questions
+## Resolved questions
 
-Deferred, to resolve when the deck renderer is specced (M6), not now:
+The M6 deck-renderer spec settled the questions this page previously deferred:
 
-- The exact `--dk-*` → reveal-variable mapping surface, and whether a deck may
-  override the theme per file via a small `deck:` frontmatter block.
-- Whether vertical stacks (`###`) ship in v1 or are deferred to keep the first
-  renderer flat.
-- The reveal.js version pin and its upgrade cadence.
-- Verifying Pagefind coverage of the out-of-frame deck route at build.
+- **Vertical slides (`###`) ship in v1** — a `##` with `###` children forms a
+  vertical stack (the container). Down-navigation is part of the first renderer,
+  not deferred; the heading-driven convention above is the shipped behaviour.
+- **The `--dk-*` → reveal-variable mapping is defined; the per-file override is
+  deferred.** The doc-kitty reveal theme maps `--dk-*` onto reveal 6's `--r-*`
+  custom properties, scoped under `.reveal`
+  ([ADR-0022](../adr/0022-reveal-integration-and-token-theme.md)). A per-file
+  `deck:` frontmatter theme override stays **deferred**.
+- **reveal.js is pinned at `6.0.1` with a smoke-check upgrade cadence.** The version
+  is a self-hosted, pinned dependency; every upgrade runs a smoke check of the deck
+  route, the token mapping, and the a11y and print paths before the pin moves
+  ([ADR-0022](../adr/0022-reveal-integration-and-token-theme.md)).
+- **Pagefind coverage of the out-of-frame deck route is a build-time assertion.**
+  The build asserts the deck's slide text is indexable: the slide body carries
+  `data-pagefind-body` and non-content chrome carries `data-pagefind-ignore`, so the
+  out-of-frame route still contributes to search.
 
 ## References
 
 - [ADR-0012](../adr/0012-slide-decks-static-reveal-from-markdown.md), the deck
   authoring and pipeline decision.
+- [ADR-0021](../adr/0021-deck-routing-seam-out-of-frame-override.md), the
+  out-of-frame deck route and the path + kind switch.
+- [ADR-0022](../adr/0022-reveal-integration-and-token-theme.md), the reveal.js
+  integration, version pin, and `--dk-*` token theme.
 - [ADR-0011](../adr/0011-theme-slot-surface-and-per-kind-layouts.md), the
   `Presentation` route and the mandatory fallback.
 - [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md), the
