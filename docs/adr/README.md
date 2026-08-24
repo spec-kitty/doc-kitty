@@ -25,5 +25,11 @@ kind: Hub
 | [0012](./0012-slide-decks-static-reveal-from-markdown.md) | Slide decks: static reveal.js built from Markdown | accepted | 2026-08-22 |
 | [0013](./0013-m1-chrome-substrate-single-layer.md) | M1 chrome substrate: single-layer manifest + static token delivery | accepted | 2026-08-23 |
 | [0014](./0014-upgrade-starlight-for-route-data-api.md) | Upgrade Starlight to 0.32 for the route-data API | accepted | 2026-08-23 |
+| [0015](./0015-m2-slot-resolution-and-components-map-seam.md) | M2 slot resolution, pass-through surface, and the components-map seam | accepted | 2026-08-23 |
+| [0016](./0016-accent-text-bridge-correction.md) | Bridge `--sl-color-text-accent` from `--dk-color-text-accent` | accepted | 2026-08-23 |
+| [0017](./0017-m3-content-block-rendering-seam.md) | M3 content-block rendering seam (carrier-body, token-styled) | accepted | 2026-08-24 |
+| [0018](./0018-citation-catalog-collections.md) | Citation catalog collections (bibliography + tools) | accepted | 2026-08-24 |
+| [0019](./0019-persona-attribute-fields.md) | Persona attribute fields (role, goals, responsibilities) | accepted | 2026-08-24 |
+| [0020](./0020-persona-location-reconciliation.md) | Persona location reconciliation (`context/audience/`) | accepted | 2026-08-24 |
 
 New ADRs copy [`template.md`](./template.md).
