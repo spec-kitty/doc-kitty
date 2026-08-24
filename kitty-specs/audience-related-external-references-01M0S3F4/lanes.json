@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "mission_slug": "audience-related-external-references-01M0S3F4",
+  "mission_id": "01M0S3F42YGRST73Y5R4T15VZA",
+  "mission_branch": "kitty/mission-audience-related-external-references-01M0S3F4",
+  "target_branch": "feat/audience-related-external-references",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/metadata.ts",
+        "src/lib/schema.ts",
+        "src/tests/resolvers.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        ".github/workflows/ci.yml",
+        "docs/_meta/bibliography.yaml",
+        "docs/_meta/tools.yaml",
+        "example/docs/_meta/bibliography.yaml",
+        "example/docs/_meta/tools.yaml",
+        "example/src/content.config.ts",
+        "package.json",
+        "src/lib/catalog.ts",
+        "src/lib/routes/bibliography.ts",
+        "src/scripts/validate-catalog.mjs",
+        "src/tests/catalog.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "example/docs/context/audience/**",
+        "src/layouts/Persona.astro",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/fixtures/persona/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/components/MarkdownContent.astro",
+        "src/components/slots/Audience.astro",
+        "src/components/slots/ExternalReferences.astro",
+        "src/components/slots/Related.astro",
+        "src/themes/spec-kitty/components/brand-components.css",
+        "src/themes/spec-kitty/components/molecules/ReferenceItem.astro",
+        "src/themes/spec-kitty/components/molecules/RelatedCard.astro",
+        "src/themes/spec-kitty/tokens.css"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/routes/agent-index.ts",
+        "src/lib/routes/agent-page.ts",
+        "src/lib/routes/shared.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "docs/architecture/metadata-model.md",
+        "docs/architecture/theming.md",
+        "example/docs/architecture/blocks-demonstrator.md",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/scripts/assert-chrome-artifacts.mjs",
+        "src/tests/fixtures/catalog/**",
+        "src/tests/fixtures/err/audience-dangling-profile.md",
+        "tests/a11y/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-08-24T09:25:43.705514+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "2c7d9327aaeefa6eaebde6da18fa49651bb70b8d"
+}
