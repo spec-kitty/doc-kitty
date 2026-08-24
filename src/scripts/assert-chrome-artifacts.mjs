@@ -231,6 +231,34 @@ const DEMO_OWN_FRAGMENT_TITLES = [
   DEMO_CITATION_TITLE,
 ];
 
+// --- slide-decks WP04: published deck chrome assertions (BA-4/5/10) ---------
+// The published deck's out-of-frame document (renders through DeckLayout, not the
+// Starlight frame). Its own `data-pagefind-body` region is the indexed slides.
+const DECK_PAGE = path.join('presentations', 'showcase-deck', 'index.html');
+// Pagefind fragment urls are base-LESS (mirrors HUB_FRAGMENT_URL above).
+const DECK_FRAGMENT_URL = '/presentations/showcase-deck/';
+const DRAFT_DECK_FRAGMENT_URL = '/presentations/draft-preview/';
+// BA-4 sentinels: reveal 6's core viewport-hijack rule (unique to the emitted
+// reveal core sheet) and the token-map sheet's first `--dk-*→--r-*` bridge
+// assignment (unique to the emitted dk-reveal-theme sheet). Because each literal
+// lives in exactly ONE emitted sheet, matching it also proves no shared chunk a
+// doc page links re-emits it. Both sheets are `?url`-imported ONLY in DeckLayout.
+const REVEAL_CORE_SENTINEL = '.reveal-viewport{color:#000'; // ...overflow:hidden (viewport hijack)
+const REVEAL_TOKENMAP_SENTINEL = '--r-background-color: var(--dk-color-bg)';
+// Non-deck in-frame pages that must NOT link either reveal sheet (BA-4 non-leak
+// sample). All three are declared above; a doc page pulling in a reveal sheet is
+// the leak this guards against.
+const REVEAL_NON_DECK_PAGES = [HERO_PAGE, HUB_PAGE, SOCIAL_PAGE];
+// BA-5: the deck's unique INDEXED slide phrase and its speaker-note phrase (which
+// lives in the `<aside data-pagefind-ignore>` and must NOT be a search result).
+const DECK_SLIDE_PHRASE = 'quokka showcase sentinel';
+const DECK_NOTE_PHRASE = 'armadillo backstage secret';
+// BA-10: a sampled in-frame doc page; its rendered sidebar <nav> must EXCLUDE the
+// deck node (sidebar:{hidden:true}) and INCLUDE the overview hub node.
+const SIDEBAR_SAMPLE_PAGE = path.join('guides', 'getting-started', 'index.html');
+const DECK_SIDEBAR_NEEDLE = 'presentations/showcase-deck';
+const OVERVIEW_SIDEBAR_HREF_RE = /href="[^"]*\/presentations\/"/i;
+
 // --- T034: cascade-order discriminators (ADR-0013 seam 2) ------------------
 // The generated TOKEN sheet (emitTokenSheet) is the ONLY sheet that emits the
 // `--dk-*→--sl-*` bridge — brand/consumer sheets declare zero `--sl-*` (FR-004),
@@ -1191,6 +1219,139 @@ export async function assertChromeArtifacts(distDir) {
     `pagefind: demonstrator fragment ${DEMO_FRAGMENT_URL} contains its related + citation titles ` +
       `(${DEMO_OWN_FRAGMENT_TITLES.length} checked)`,
   );
+
+  // === 15) slide-decks WP04: published deck chrome (BA-4/5/10 + BA-7 pagefind) ==
+  // 15a) BA-4 — reveal-CSS non-leak. reveal's viewport-hijacking core sheet and the
+  // `--dk-*→--r-*` token-map sheet are `?url`-imported ONLY in DeckLayout, so they
+  // must be linked on the deck page and on NO non-deck page — and never hoisted into
+  // a shared chunk a doc page links (proven by each sentinel living in exactly ONE
+  // emitted sheet). A leak would put reveal's `overflow:hidden` on a doc page.
+  const astroCssDir = path.join(dir, '_astro');
+  let cssFileNames;
+  try {
+    cssFileNames = (await readdir(astroCssDir)).filter((n) => n.endsWith('.css'));
+  } catch (err) {
+    fail(`deck css: could not read ${path.join('_astro')} (${err.code ?? err.message}) — BA-4`);
+  }
+  const coreSheets = [];
+  const tokenSheets = [];
+  for (const n of cssFileNames) {
+    const sheet = await readFile(path.join(astroCssDir, n), 'utf8');
+    if (sheet.includes(REVEAL_CORE_SENTINEL)) coreSheets.push(n);
+    if (sheet.includes(REVEAL_TOKENMAP_SENTINEL)) tokenSheets.push(n);
+  }
+  if (coreSheets.length !== 1) {
+    fail(
+      `deck css: reveal core sentinel ${JSON.stringify(REVEAL_CORE_SENTINEL)} found in ${coreSheets.length} ` +
+        `emitted sheet(s) (${coreSheets.join(', ') || 'none'}), expected exactly 1 — a shared chunk would ` +
+        `duplicate reveal's viewport-hijack core CSS (BA-4)`,
+    );
+  }
+  if (tokenSheets.length !== 1) {
+    fail(
+      `deck css: token-map sentinel ${JSON.stringify(REVEAL_TOKENMAP_SENTINEL)} found in ${tokenSheets.length} ` +
+        `emitted sheet(s) (${tokenSheets.join(', ') || 'none'}), expected exactly 1 (dk-reveal-theme) — BA-4`,
+    );
+  }
+  const coreSheet = coreSheets[0];
+  const tokenSheet = tokenSheets[0];
+  const deckPageHtml = await readHtml(dir, DECK_PAGE);
+  if (!deckPageHtml.includes(coreSheet)) {
+    fail(`deck css: the deck page ${DECK_PAGE} does not link the reveal core sheet ${coreSheet} (BA-4)`);
+  }
+  if (!deckPageHtml.includes(tokenSheet)) {
+    fail(`deck css: the deck page ${DECK_PAGE} does not link the token-map sheet ${tokenSheet} (BA-4)`);
+  }
+  for (const page of REVEAL_NON_DECK_PAGES) {
+    const nonDeckHtml = await readHtml(dir, page);
+    if (nonDeckHtml.includes(coreSheet)) {
+      fail(
+        `deck css: reveal's core sheet ${coreSheet} is linked on the non-deck page ${page} — its ` +
+          `viewport-hijack (\`overflow:hidden\`) leaked out of the deck route (BA-4)`,
+      );
+    }
+    if (nonDeckHtml.includes(tokenSheet)) {
+      fail(`deck css: the reveal token-map sheet ${tokenSheet} is linked on the non-deck page ${page} (BA-4)`);
+    }
+  }
+  ok(
+    `deck css: reveal core (${coreSheet}) + token-map (${tokenSheet}) sheets linked ONLY on ${DECK_PAGE}, ` +
+      `each in exactly one emitted sheet — no leak onto ${REVEAL_NON_DECK_PAGES.length} sampled doc pages (BA-4)`,
+  );
+
+  // 15b) BA-5 — Pagefind: the deck's unique slide phrase resolves to the deck's own
+  // fragment; the speaker-note `<aside>` text is in NO fragment. And BA-7 pagefind
+  // half: the WP01 draft deck has NO fragment at all (page-level data-pagefind-ignore).
+  let deckFragment = null;
+  const notePhraseSeenIn = [];
+  let draftDeckFragmentSeen = false;
+  for (const n of fragFiles) {
+    const buf = await readFile(path.join(fragDir, n));
+    let decoded;
+    try {
+      decoded = gunzipSync(buf).toString('utf8');
+    } catch (err) {
+      fail(`pagefind: fragment ${n} did not gunzip (${err.message})`);
+    }
+    const urlMatch = decoded.match(/"url":"([^"]*)"/);
+    const url = urlMatch ? urlMatch[1] : '';
+    if (url === DECK_FRAGMENT_URL) deckFragment = decoded;
+    if (url === DRAFT_DECK_FRAGMENT_URL) draftDeckFragmentSeen = true;
+    if (decoded.includes(DECK_NOTE_PHRASE)) notePhraseSeenIn.push(url || n);
+  }
+  if (deckFragment === null) {
+    fail(
+      `pagefind: no fragment indexed for the published deck ${DECK_FRAGMENT_URL} — its \`.slides\` ` +
+        `data-pagefind-body region is not being indexed (BA-5)`,
+    );
+  }
+  if (!deckFragment.includes(DECK_SLIDE_PHRASE)) {
+    fail(
+      `pagefind: the deck fragment (${DECK_FRAGMENT_URL}) is missing its unique slide phrase ` +
+        `${JSON.stringify(DECK_SLIDE_PHRASE)} — the slide body left the searchable region (BA-5)`,
+    );
+  }
+  if (notePhraseSeenIn.length > 0) {
+    fail(
+      `pagefind: the speaker-note phrase ${JSON.stringify(DECK_NOTE_PHRASE)} is indexed in fragment(s) ` +
+        `${notePhraseSeenIn.join(', ')} — the note <aside> data-pagefind-ignore did not exclude it (BA-5)`,
+    );
+  }
+  if (draftDeckFragmentSeen) {
+    fail(
+      `pagefind: the draft deck ${DRAFT_DECK_FRAGMENT_URL} has a Pagefind fragment — its page-level ` +
+        `data-pagefind-ignore must exclude the whole draft deck from the index (BA-7)`,
+    );
+  }
+  ok(
+    `pagefind: deck fragment ${DECK_FRAGMENT_URL} indexes the slide phrase ${JSON.stringify(DECK_SLIDE_PHRASE)}, ` +
+      `the speaker-note text is not indexed, and the draft deck has no fragment (BA-5/BA-7)`,
+  );
+
+  // 15c) BA-10 — Sidebar exclusion (ADR-0021 D5). On a sampled in-frame doc page,
+  // the rendered sidebar <nav> must NOT carry the deck node (sidebar:{hidden:true}
+  // suppresses it, so the reader is never ejected out-of-frame with no signal) while
+  // the overview hub node IS present (it is the in-frame entry point).
+  const sidebarHtml = await readHtml(dir, SIDEBAR_SAMPLE_PAGE);
+  const navBlocks = sidebarHtml.match(/<nav\b[^>]*>[\s\S]*?<\/nav>/gi) ?? [];
+  if (navBlocks.length === 0) {
+    fail(`sidebar: no <nav> landmark on the sampled doc page ${SIDEBAR_SAMPLE_PAGE} (BA-10)`);
+  }
+  const navJoined = navBlocks.join('\n');
+  if (navJoined.includes(DECK_SIDEBAR_NEEDLE)) {
+    fail(
+      `sidebar: the deck node (${DECK_SIDEBAR_NEEDLE}) appears in the in-frame sidebar <nav> on ` +
+        `${SIDEBAR_SAMPLE_PAGE} — sidebar:{hidden:true} on the deck was not honored, so the reader is ` +
+        `ejected out-of-frame with no signal (ADR-0021 D5 / BA-10)`,
+    );
+  }
+  if (!OVERVIEW_SIDEBAR_HREF_RE.test(navJoined)) {
+    fail(
+      `sidebar: the presentations overview hub (/presentations/) is ABSENT from the in-frame sidebar <nav> ` +
+        `on ${SIDEBAR_SAMPLE_PAGE} — the overview is the in-frame entry point and must stay in the sidebar (BA-10)`,
+    );
+  }
+  ok(`sidebar: deck node absent, overview hub present in the in-frame sidebar on ${SIDEBAR_SAMPLE_PAGE} (BA-10)`);
 }
 
 // Standalone entry point: `node src/scripts/assert-chrome-artifacts.mjs <distDir>`.

@@ -1,0 +1,170 @@
+/*
+ * Doc Kitty reveal theme — the thin `--dk-* → --r-*` mapping sheet (ADR-0022
+ * decision 4). reveal 6 exposes its theme as `--r-*` custom properties; instead
+ * of forking a reveal SCSS theme (ADR-0022 Option B, rejected), this sheet
+ * expresses each `--r-*` reveal reads as `var(--dk-*)` from the active brand
+ * catalog, then applies the minimal look rules reveal's own theme files would —
+ * so a deck inherits the brand for free, in both light and dark, with no
+ * per-deck CSS.
+ *
+ * Scope note (why `:root`, not `.reveal`): reveal 6 makes the *viewport* the
+ * element it consumes `--r-background-color` on, and that viewport is
+ * `document.body` (reveal: `closest('.reveal-viewport') || document.body`) — an
+ * ANCESTOR of `.reveal`. CSS custom properties inherit downward only, so a
+ * `.reveal`-scoped map would never reach the viewport. The `--r-*` map therefore
+ * lives at `:root`. This does NOT weaken the isolation contract (ADR-0022 D5 /
+ * BA-4): the non-leak guard is that this sheet is imported ONLY by the deck
+ * layout (route-import isolation, emitted as its own `?url` asset), never by a
+ * documentation page — not selector scoping. The LOOK rules below stay scoped
+ * under `.reveal` / `.reveal-viewport` as belt-and-suspenders.
+ *
+ * Deck width: reveal sizes slides via its JS `width`/`height` config (a
+ * transform-scaled stage), not a CSS variable, so `--dk-width-deck`
+ * (src/styles/theme.css:87) is a no-op verify here — it exists and remains the
+ * canonical deck measure; this sheet references it as the slide content max so
+ * the token stays load-bearing rather than orphaned.
+ */
+
+:root {
+  /* Colors — the AA-verified brand pairs (theme.css). Background/text is the
+     hard-gated pair (WCAG 2.2 AA in both modes); heading uses the strong text
+     token, links the accent-text token — both AA on the deck background. */
+  --r-background-color: var(--dk-color-bg);
+  --r-main-color: var(--dk-color-text);
+  --r-heading-color: var(--dk-color-text-strong);
+  --r-link-color: var(--dk-color-text-accent);
+  --r-link-color-hover: var(--dk-color-accent-high);
+  --r-selection-background-color: var(--dk-color-accent-low);
+  --r-selection-color: var(--dk-color-text-strong);
+
+  /* Overlay chrome (speaker/help overlays) tracks the deck surface. */
+  --r-overlay-element-bg-color: var(--dk-color-surface-1);
+  --r-overlay-element-fg-color: var(--dk-color-text);
+
+  /* Fonts — the brand families. */
+  --r-main-font: var(--dk-font-sans);
+  --r-heading-font: var(--dk-font-display);
+  --r-code-font: var(--dk-font-mono);
+
+  /* Sizing — the brand modular scale. reveal's default main size is ~42px on a
+     960px stage; the token ramp keeps headings proportional. */
+  --r-main-font-size: 2rem;
+  --r-heading1-size: var(--dk-text-4xl);
+  --r-heading2-size: var(--dk-text-3xl);
+  --r-heading3-size: var(--dk-text-2xl);
+  --r-heading4-size: var(--dk-text-xl);
+  --r-heading-font-weight: var(--dk-weight-bold);
+  --r-heading-line-height: var(--dk-leading-tight);
+  --r-block-margin: var(--dk-space-lg);
+
+  /* Deck content measure (references the canonical token so it is not orphaned). */
+  --dk-deck-slide-measure: var(--dk-width-deck);
+}
+
+/* ---- Look rules (scoped, override reveal core's hardcoded #000/#fff) ------ */
+
+/* reveal makes <body> the viewport when no `.reveal-viewport` ancestor exists;
+   cover both so the deck background is the brand background, not core's #fff. */
+.reveal-viewport,
+body {
+  background: var(--r-background-color);
+}
+
+.reveal {
+  color: var(--r-main-color);
+  font-family: var(--r-main-font);
+  font-size: var(--r-main-font-size);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  color: var(--r-heading-color);
+  font-family: var(--r-heading-font);
+  font-weight: var(--r-heading-font-weight);
+  line-height: var(--r-heading-line-height);
+}
+
+.reveal h1 { font-size: var(--r-heading1-size); }
+.reveal h2 { font-size: var(--r-heading2-size); }
+.reveal h3 { font-size: var(--r-heading3-size); }
+.reveal h4 { font-size: var(--r-heading4-size); }
+
+.reveal a {
+  color: var(--r-link-color);
+  text-decoration: underline;
+}
+
+.reveal a:hover {
+  color: var(--r-link-color-hover);
+}
+
+.reveal code,
+.reveal pre {
+  font-family: var(--r-code-font);
+}
+
+.reveal .slides > section {
+  max-inline-size: var(--dk-deck-slide-measure);
+  margin-inline: auto;
+}
+
+/* ---- Deck navigation controls (real <button>s, AX-2) --------------------- */
+/* Our own labelled controls (reveal's built-in cluster is disabled in
+   reveal-init). Fixed bottom-right, ≥44px targets, brand-token surface, visible
+   focus ring. Hidden from the printed/PDF output. */
+.dk-deck-controls {
+  position: fixed;
+  right: var(--dk-space-lg);
+  bottom: var(--dk-space-lg);
+  display: flex;
+  gap: var(--dk-space-xs);
+  z-index: 30;
+}
+
+.dk-deck-controls button {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--dk-text-xl);
+  line-height: 1;
+  color: var(--dk-color-text);
+  background: var(--dk-color-surface-1);
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-md);
+  cursor: pointer;
+}
+
+.dk-deck-controls button:hover {
+  background: var(--dk-color-surface-2);
+}
+
+.dk-deck-controls button:focus-visible {
+  outline: 2px solid var(--dk-color-accent);
+  outline-offset: 2px;
+  box-shadow: var(--dk-shadow-focus);
+}
+
+@media print {
+  .dk-deck-controls {
+    display: none;
+  }
+}
+
+/* ---- Reduced motion (paired with reveal-init's `transition:'none'`) ------ */
+/* IX-2: under `prefers-reduced-motion: reduce`, the current slide's computed
+   `transition-duration` must be `0s`. Disable slide + fragment transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .slides section,
+  .reveal .slides section * {
+    transition: none !important;
+  }
+  .reveal .fragment {
+    transition: none !important;
+  }
+}

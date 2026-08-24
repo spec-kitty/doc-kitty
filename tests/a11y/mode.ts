@@ -56,3 +56,40 @@ export async function gotoInMode(page: Page, path: string, mode: Mode): Promise<
     expect(lum, `light mode background '${bg}' should be light`).toBeGreaterThan(160);
   }
 }
+
+// Both-modes drive for the OUT-OF-FRAME reveal deck (WP05).
+//
+// KNOWN DECK THEMING GAP (flagged for WP01/WP04 follow-up, NOT patched here — axe
+// passes as-is and WP05 owns only tests/a11y/*): DeckLayout links the `--dk-*→--r-*`
+// MAP (dk-reveal-theme.css) but NOT the `--dk-*` VALUE catalog (theme.css). So on
+// the standalone deck every `--r-*` resolves to an undefined `var(--dk-*)`, the deck
+// renders in reveal/UA defaults (transparent viewport, black text) with NO brand
+// background and NO real dark palette — setting `data-theme` currently has no visual
+// effect. axe still reports no serious/critical in BOTH schemes (a transparent page
+// is scored against axe's assumed white canvas), so AX-1's both-modes coverage is
+// satisfied at the harness level: this drive runs the deck under each project's
+// `colorScheme` and seeds `data-theme` so the SAME both-modes contract becomes
+// genuinely non-vacuous the moment the deck is themed (theme.css imported into
+// DeckLayout). A follow-up should import theme.css so the deck inherits the brand
+// (the AA-verified `--dk-color-bg/text` pairs) and gains a real dark mode.
+export async function gotoDeckInMode(page: Page, path: string, mode: Mode): Promise<void> {
+  // Seed the design's own theme attribute BEFORE any paint (forward-compatible:
+  // once theme.css is loaded, this is what switches the deck to its dark palette).
+  await page.addInitScript((m) => {
+    try {
+      document.documentElement.setAttribute('data-theme', m);
+    } catch {
+      /* pre-DOM — the post-goto set below still applies the attribute */
+    }
+  }, mode);
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', mode);
+
+  // The labelled deck region must actually have rendered (non-vacuity: axe never
+  // scans a page that failed to serve the deck). We deliberately do NOT assert a
+  // brand-background luminance here — see the theming-gap note above; the deck has
+  // no brand background to assert yet. When it does, add the luminance gate that
+  // `gotoInMode` uses for the Starlight shell.
+  await expect(page.locator('main.reveal')).toHaveCount(1);
+}

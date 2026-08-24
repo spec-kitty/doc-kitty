@@ -154,6 +154,7 @@ export const SECTION_ORDER = [
   'operations',
   'migrations',
   'changelog',
+  'presentations',
 ] as const;
 
 export const SECTION_LABEL: Record<string, string> = {
@@ -170,6 +171,7 @@ export const SECTION_LABEL: Record<string, string> = {
   operations: 'Operations',
   migrations: 'Migrations',
   changelog: 'Changelog',
+  presentations: 'Presentations',
 };
 
 /** The top-level section a slug belongs to ("" for the bundle root). */
@@ -311,6 +313,18 @@ export function rankForFeed(entries: DocEntry[]): DocEntry[] {
   return entries
     .filter((e) => isPublished(e.data))
     .sort((a, b) => updatedMillis(b.data) - updatedMillis(a.data));
+}
+
+/**
+ * RSS-only inclusion predicate (FR-011): a `kind: Presentation` deck is
+ * published on every surface (sitemap, llms.txt, agent API, Pagefind) EXCEPT
+ * the RSS feed. This is a standalone predicate the `rss.ts` route body applies;
+ * it deliberately does NOT touch {@link rankForFeed}, which must keep identical
+ * behaviour for the other feed surfaces (RT-07). Keyed on the frontmatter
+ * `kind`, never the section path, so a deck filed anywhere is still excluded.
+ */
+export function includedInRssFeed(entry: DocEntry): boolean {
+  return entry.data.kind !== 'Presentation';
 }
 
 // ---------------------------------------------------------------------------

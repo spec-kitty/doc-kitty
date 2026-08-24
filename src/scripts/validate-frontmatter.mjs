@@ -160,6 +160,7 @@ export function expectedType(relPath) {
     case 'operations': return parts[1] === 'runbooks' ? 'Runbook' : 'Operations';
     case 'migrations': return 'Migration';
     case 'changelog': return 'Changelog';
+    case 'presentations': return 'Presentation';
     default: return null;
   }
 }
@@ -200,6 +201,18 @@ export function validate(relPath, data) {
   // non-fatal, observably-printed warning (open vocabulary, ADR-0009).
   if (typeof data.kind === 'string' && data.kind.length > 0 && !KINDS.includes(data.kind)) {
     warnings.push(`\`kind: ${data.kind}\` is not in the canonical set (${KINDS.join(', ')})`);
+  }
+
+  // FR-022 / ADR-0021 D1: a `kind: Presentation` page MUST live under
+  // `presentations/`. This is the path+kind invariant the out-of-frame deck
+  // route override depends on — a `Presentation` filed anywhere else would be a
+  // silent in-frame render (the route only shadows `/presentations/*`), so it is
+  // a BLOCKING error, not a warning. The check keys off the first path segment,
+  // mirroring `sectionOf`; the bundle-root README (no slash) can never match.
+  if (data.kind === 'Presentation' && relPath.split('/')[0] !== 'presentations') {
+    problems.push(
+      '`kind: Presentation` must live under `presentations/` (ADR-0021 path+kind invariant, FR-022)',
+    );
   }
 
   // Kind-aware requiredness for `kind: Persona` (ADR-0019). The build zod schema
