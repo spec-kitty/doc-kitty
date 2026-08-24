@@ -2,7 +2,7 @@
 title: Changelog
 description: Dated record of notable changes to the doc-kitty toolkit and its documentation.
 doc_status: active
-updated: 2026-08-23
+updated: 2026-08-24
 type: Changelog
 kind: Hub
 agent:
@@ -14,6 +14,7 @@ agent:
 Notable changes to doc-kitty, newest first. The reasoning behind decisions lives in
 the [decision records](../adr/); this log records what changed and when.
 
+- [2026-08-24 — CI gate single-sourced, nightly smoke repaired](./2026-08-24-ci-gate-and-nightly-smoke-fixes.md)
 - [2026-08-23 — Component system and swappable theme (M2)](./2026-08-23-component-system-and-theme.md)
 - [2026-08-23 — Metadata model and chrome (M1)](./2026-08-23-metadata-model-and-chrome.md)
 - [2026-08-22 — Markdown extensions research](./2026-08-22-markdown-extensions-research.md)
