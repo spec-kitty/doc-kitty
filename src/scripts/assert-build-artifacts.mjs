@@ -46,25 +46,40 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 //     (+1 published) and relocates to context/audience/; an Audiences hub
 //     README is added (+1 published); one retained draft demonstrator persona is
 //     added (0 published — still draft). So 12 + 1 + 1 + 0 = 14.
-//   - WP06 (this WP) FINAL delta: the three-block demonstrator
+//   - audience-related mission FINAL delta: the three-block demonstrator
 //     (architecture/blocks-demonstrator.md, published, +1) and its stale related
 //     target (architecture/superseded-note.md, published, +1) are added — both
-//     published, so +2. So 14 + 2 = 16.
-//   - POST-WP06 tree: 18 Markdown files with TWO drafts (adr/template +
-//     the retained draft persona) → 18 − 2 = 16 published, cross-checking the
-//     delta arithmetic above.
-// This is the FINAL pin (WP06 owns it; the WP03 interim pin was 14).
+//     published, so +2. So 14 + 2 = 16 (the prior-mission published set).
+//   - slide-decks WP01 delta: a DRAFT smoke deck
+//     (presentations/draft-preview.md, doc_status: draft) is added — 0 published,
+//     +0 to both counts (BA-7: it must not move the pins).
+//   - slide-decks WP04 delta (THIS recompute, atomic — BA-1): the published
+//     showcase deck (presentations/showcase-deck.md, kind:Presentation,
+//     doc_status:active, +1 — it stays fully enumerated by Starlight and the
+//     generators; the deck route only shadows the URL, "shadow, not exclude")
+//     AND the presentations overview Hub (presentations/README.md, kind:Hub,
+//     doc_status:active, +1). Both published, so +2. So 16 + 2 = 18.
+//   - POST-WP04 tree: 21 Markdown files with THREE drafts (adr/template, the
+//     retained draft persona context/audience/draft-persona.md, and the WP01
+//     draft deck presentations/draft-preview.md) → 21 − 3 = 18 published,
+//     cross-checking the delta arithmetic above.
+// This is the slide-decks pin (WP04 owns it; the prior-mission pin was 16). Both
+// count-moving published pages of the slide-decks mission (the deck AND the
+// overview Hub) land in THIS one recompute — no later WP may add a count-moving
+// published page (BA-1 double-pin guard).
 //
-// Sitemap parity (WP02/T016): the @astrojs/sitemap `filter` DROPS every draft
-// page's URL (INV-1), so the sitemap's page-URL count equals this same published
-// set — 16 — and every draft page (adr/template + the retained draft persona) is
-// absent from it.
+// Sitemap parity (INV-1): the @astrojs/sitemap `filter` DROPS every draft page's
+// URL, so the sitemap's page-URL count equals this same published set — 18 — and
+// every draft page (adr/template + the draft persona + the draft deck) is absent
+// from it. The published showcase deck IS present in the sitemap (it is a normal
+// enumerated collection entry; the out-of-frame route only changes what HTML the
+// URL renders, not whether the URL is generated).
 //
 // Bump this ONLY as a deliberate, reviewable act when example content changes.
-const EXPECTED_INDEX_ENTRY_COUNT = 16;
+const EXPECTED_INDEX_ENTRY_COUNT = 18;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
-const EXPECTED_SITEMAP_URL_COUNT = 16;
+const EXPECTED_SITEMAP_URL_COUNT = 18;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.
@@ -109,6 +124,28 @@ const SECTION_INDEX_SOURCE = 'example/docs/adr/README.md';
 
 // A known content page (non-index) that must render to HTML.
 const KNOWN_PAGE_RELPATH = path.join('guides', 'getting-started', 'index.html');
+
+// --- slide-decks WP04: the published showcase deck ------------------------------
+// The published deck's canonical collection slug. `deckSlug(entry)` (WP01's
+// src/lib/deck/deck-slug.ts) is `slugFromEntryId(entry.id)`, and the agent index
+// emits that SAME `slug` for each page, so the shipped `slug` field IS deckSlug's
+// output — the shared oracle, read from the artifact rather than recomputed.
+//
+// [Recorded deviation — BA-3 oracle import] The contract asks BA-3 to `import`
+// deckSlug directly. This gate runs as `node src/scripts/assert-build-artifacts.mjs`
+// with NO TypeScript loader, and deck-slug.ts imports `../metadata.js` (a `.js`
+// specifier that resolves only to the `.ts` source under a bundler) — so a runtime
+// `import` of the helper throws ERR_MODULE_NOT_FOUND and would red every build.
+// The faithful substitute keeps ONE oracle: the deck's route/url parity is checked
+// against the agent index's own `slug` (== deckSlug's output) plus the canonical
+// `/${slug}/` reconstruction, which catches the prefix-doubling trap deckSlug
+// guards (a doubled route would be `/presentations/presentations/showcase-deck/`).
+const DECK_SLUG = 'presentations/showcase-deck';
+const DECK_ROUTE = `/${DECK_SLUG}/`; // canonical reconstruction — must equal the emitted route
+// The WP01 draft smoke deck: absent from every generator AND Pagefind (BA-7).
+const DRAFT_DECK_SLUG = 'presentations/draft-preview';
+// The published overview Hub route (BA-1 second count-moving page; BA-10 present).
+const OVERVIEW_ROUTE = '/presentations/';
 
 // ---------------------------------------------------------------------------
 
@@ -239,6 +276,59 @@ function assertWellFormedXml(text) {
   if (stack.length > 0) throw new Error(`unclosed element(s): ${stack.reverse().join(', ')}`);
 }
 
+// --- Deck slide-structure scanners (BA-2 flatten proof) --------------------
+// The emitted deck is flat HTML; these depth-aware scanners prove the transform's
+// slides are TOP-LEVEL `.slides > section` (not nested inside one wrapper) without
+// a DOM parser (NFR-006, zero deps).
+
+/** The inner HTML of the `.slides` container (balanced `<div>` scan), or null. */
+function extractSlidesInner(html) {
+  const open = html.match(/<div\b[^>]*\bclass="[^"]*\bslides\b[^"]*"[^>]*>/);
+  if (!open) return null;
+  const start = open.index + open[0].length;
+  const tagRe = /<\/?div\b[^>]*>/g;
+  tagRe.lastIndex = start;
+  let depth = 1;
+  let t;
+  while ((t = tagRe.exec(html)) !== null) {
+    depth += t[0].startsWith('</') ? -1 : 1;
+    if (depth === 0) return html.slice(start, t.index);
+  }
+  return html.slice(start);
+}
+
+/** Count DIRECT-child `<section>`s of the given inner HTML (section-depth 0). */
+function countDirectChildSections(inner) {
+  const re = /<\/?section\b[^>]*>/g;
+  let depth = 0;
+  let count = 0;
+  let m;
+  while ((m = re.exec(inner)) !== null) {
+    if (m[0].startsWith('</')) depth -= 1;
+    else {
+      if (depth === 0) count += 1;
+      depth += 1;
+    }
+  }
+  return count;
+}
+
+/** True iff some top-level `<section>` contains a nested `<section>` (a stack). */
+function hasNestedSectionStack(inner) {
+  const re = /<\/?section\b[^>]*>/g;
+  let depth = 0;
+  let nested = false;
+  let m;
+  while ((m = re.exec(inner)) !== null) {
+    if (m[0].startsWith('</')) depth -= 1;
+    else {
+      if (depth >= 1) nested = true;
+      depth += 1;
+    }
+  }
+  return nested;
+}
+
 // ---------------------------------------------------------------------------
 
 async function main() {
@@ -290,7 +380,7 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 18 example .md files − 2 drafts; if example content changed ` +
+        `(the published set — 21 example .md files − 3 drafts; if example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }
@@ -485,8 +575,180 @@ async function main() {
   }
   ok(`known page: ${KNOWN_PAGE_RELPATH} rendered to HTML`);
 
-  // 7) Chrome + pagefind assertions (WP05-owned module). Fails non-zero on the
-  // first stubbed/missing chrome element, same contract as the checks above.
+  // 7) slide-decks WP04: published-deck build-artifact assertions (BA-2/3/6/7/9).
+  // The published showcase deck renders OUT-OF-FRAME via the deck route yet stays a
+  // normal enumerated collection entry, so it is present in every published-set
+  // generator and absent from RSS; the WP01 draft deck is absent everywhere.
+  const llmsText = await readTextOrFail(llmsAbs, 'llms.txt');
+  const sitemapText = (
+    await Promise.all(
+      sitemaps.map((n) => readTextOrFail(path.join(distDir, n), `sitemap ${n}`)),
+    )
+  ).join('\n');
+  const indexJson = JSON.stringify(index);
+
+  // BA-2 — Route-uniqueness + flatten: exactly one HTML at /presentations/showcase-deck/,
+  // and it is the reveal deck document (`.reveal > .slides`), NOT the Starlight
+  // article shell. The transform's slides are TOP-LEVEL `.slides > section`
+  // (multiple horizontals + a `##`+`###` stack that nests `section > section`),
+  // never a single wrapper `<section>` that would collapse the deck into one
+  // vertical stack (the WP04 DeckLayout flatten).
+  const deckHtmlAbs = path.join(distDir, DECK_SLUG, 'index.html');
+  await assertNonEmptyFile(deckHtmlAbs, `deck route (${DECK_SLUG}/index.html)`);
+  const deckHtml = await readTextOrFail(deckHtmlAbs, `deck route (${DECK_SLUG})`);
+  const revealIdx = deckHtml.search(/class="[^"]*\breveal\b[^"]*"/);
+  const slidesIdx = deckHtml.search(/class="[^"]*\bslides\b[^"]*"/);
+  if (revealIdx === -1 || slidesIdx === -1 || !(revealIdx < slidesIdx)) {
+    fail(`deck route: ${DECK_SLUG}/index.html is not the reveal shell (.reveal > .slides missing or misordered) — BA-2`);
+  }
+  if (/sl-markdown-content/.test(deckHtml)) {
+    fail(
+      `deck route: ${DECK_SLUG}/index.html contains the Starlight article shell (sl-markdown-content) — ` +
+        `the deck is not rendering out-of-frame (BA-2)`,
+    );
+  }
+  const slidesInner = extractSlidesInner(deckHtml);
+  if (slidesInner === null) {
+    fail(`deck route: could not locate the .slides container in ${DECK_SLUG}/index.html (BA-2)`);
+  }
+  const topSections = countDirectChildSections(slidesInner);
+  if (topSections < 2) {
+    fail(
+      `deck route: .slides has ${topSections} direct-child <section>(s) — the transform's slides are nested ` +
+        `inside a single wrapper <section> instead of being TOP-LEVEL (reveal would collapse the deck into ` +
+        `one vertical stack). DeckLayout must render <Content/> as the direct child of .slides (BA-2 flatten)`,
+    );
+  }
+  if (!hasNestedSectionStack(slidesInner)) {
+    fail(
+      `deck route: no vertical stack (a top-level <section> containing nested <section>s) in ${DECK_SLUG} — ` +
+        `the ###-stack did not render (BA-2)`,
+    );
+  }
+  ok(
+    `deck route: single reveal deck at ${DECK_ROUTE} with ${topSections} top-level slides (flattened) + a ` +
+      `nested stack, not the Starlight shell (BA-2)`,
+  );
+
+  // BA-3 — URL parity via the deckSlug oracle (see the DECK_SLUG note). The
+  // canonical route is `/${DECK_SLUG}/`; the deck's agent-index entry, its llms.txt
+  // URL, and its emitted dist path must all agree, and the `presentations/` prefix
+  // must not double.
+  const refPage = index.pages.find(
+    (p) =>
+      p.section !== 'presentations' &&
+      typeof p.url === 'string' &&
+      typeof p.route === 'string' &&
+      p.url.endsWith(p.route),
+  );
+  if (!refPage) {
+    fail('deck URL parity: no non-deck reference page (url ending in route) to derive the site origin — BA-3');
+  }
+  const origin = refPage.url.slice(0, refPage.url.length - refPage.route.length);
+  const expectedDeckUrl = `${origin}${DECK_ROUTE}`;
+  const deckPage = index.pages.find((p) => p.slug === DECK_SLUG);
+  if (!deckPage) {
+    fail(`deck URL parity: the published deck (slug "${DECK_SLUG}") is absent from the agent index — it must stay enumerated (BA-3)`);
+  }
+  if (deckPage.route !== DECK_ROUTE) {
+    fail(
+      `deck URL parity: agent-index route is ${JSON.stringify(deckPage.route)}, expected ` +
+        `${JSON.stringify(DECK_ROUTE)} — the deck slug already carries "presentations/", so a route built ` +
+        `from the raw slug would DOUBLE the prefix (BA-3 prefix-doubling guard)`,
+    );
+  }
+  if (deckPage.url !== expectedDeckUrl) {
+    fail(
+      `deck URL parity: agent-index url is ${JSON.stringify(deckPage.url)}, expected ` +
+        `${JSON.stringify(expectedDeckUrl)} (absolute(site, ${DECK_ROUTE})) — BA-3`,
+    );
+  }
+  if (!llmsText.includes(`(${expectedDeckUrl})`)) {
+    fail(`deck URL parity: llms.txt does not list the deck at ${expectedDeckUrl} — the llms URL diverges from the agent API/route (BA-3)`);
+  }
+  const doubled = `/presentations${DECK_ROUTE}`; // /presentations/presentations/showcase-deck/
+  if (llmsText.includes(doubled) || sitemapText.includes(doubled) || indexJson.includes(doubled)) {
+    fail(`deck URL parity: the prefix-doubled path ${doubled} appears in a generator — deckRouteParams must strip the presentations/ prefix (BA-3)`);
+  }
+  ok(`deck URL parity: agent index + llms.txt + emitted route all resolve the deck to ${expectedDeckUrl} (one oracle, no prefix-doubling) (BA-3)`);
+
+  // BA-6 — RSS exclusion: the published deck URL is absent from rss.xml (the RSS
+  // route excludes kind: Presentation).
+  if (rss.includes(DECK_SLUG)) {
+    fail(`deck RSS exclusion: the published deck ${DECK_SLUG} appears in rss.xml — kind:Presentation must be excluded from the feed (BA-6)`);
+  }
+  ok(`deck RSS exclusion: ${DECK_SLUG} absent from rss.xml (BA-6)`);
+
+  // BA-7 — Draft deck exclusion (build generators): the WP01 draft deck is absent
+  // from sitemap, RSS, llms.txt, and the agent index; and it did NOT move the pins
+  // (proven by the count assertions above passing at 18 with the draft deck in the
+  // tree — it contributes 0). Its Pagefind-index absence is asserted in the chrome
+  // gate below (the BA-7 Pagefind half).
+  for (const [artifact, text] of [
+    ['sitemap', sitemapText],
+    ['rss.xml', rss],
+    ['llms.txt', llmsText],
+    ['agent index', indexJson],
+  ]) {
+    if (text.includes(DRAFT_DECK_SLUG)) {
+      fail(`draft deck exclusion: the draft deck ${DRAFT_DECK_SLUG} appears in ${artifact} — a doc_status:draft deck must be absent from every published-set generator (BA-7)`);
+    }
+  }
+  ok(`draft deck exclusion: ${DRAFT_DECK_SLUG} absent from sitemap/rss/llms/agent, and did not move the pins (BA-7)`);
+
+  // BA-9 — Print asset/bundle check. reveal 6.0.1 has NO separate print/pdf.css
+  // export; the print rules are folded into core reveal.css `@media print`, and the
+  // print VIEW is activated at runtime by reveal-init.client on `?print-pdf`. So the
+  // check is (a) an emitted _astro CSS asset carries the reveal core sentinel AND an
+  // `@media print` block (the bundled print rules), and (b) an emitted reveal-init
+  // JS chunk references `print-pdf` under the `view:'print'` branch. There is
+  // deliberately NO distinct ?print-pdf HTML artifact (SSG emits one page).
+  const astroDir = path.join(distDir, '_astro');
+  let astroEntries;
+  try {
+    astroEntries = await readdir(astroDir);
+  } catch (err) {
+    fail(`print asset: could not read ${path.join('_astro')} (${err.code ?? err.message}) — BA-9`);
+  }
+  // The reveal CORE sheet is pinned by the core-UNIQUE viewport-hijack literal
+  // `.reveal-viewport{color:#000` (the token-map sheet references `.reveal-viewport`
+  // as a selector and even carries its own `@media print`, so a bare substring would
+  // mis-identify it). The core sheet's `@media print` block is reveal 6's folded
+  // print stylesheet — there is no separate print/pdf.css.
+  const REVEAL_CORE_PRINT_SENTINEL = '.reveal-viewport{color:#000';
+  let printSheet = null;
+  for (const n of astroEntries.filter((f) => f.endsWith('.css'))) {
+    const sheet = await readFile(path.join(astroDir, n), 'utf8');
+    if (sheet.includes(REVEAL_CORE_PRINT_SENTINEL) && /@media\s+print/.test(sheet)) {
+      printSheet = n;
+      break;
+    }
+  }
+  if (printSheet === null) {
+    fail(
+      `print asset: no emitted _astro/*.css carries reveal's core sheet ` +
+        `(${JSON.stringify(REVEAL_CORE_PRINT_SENTINEL)}) WITH an @media print block — reveal 6 folds print ` +
+        `into core reveal.css, so the bundled print rules must ship (BA-9/FR-013)`,
+    );
+  }
+  let printChunk = null;
+  for (const n of astroEntries.filter((f) => f.endsWith('.js') && f.includes('reveal-init'))) {
+    const js = await readFile(path.join(astroDir, n), 'utf8');
+    if (js.includes('print-pdf') && /view:\s*["']print["']/.test(js)) {
+      printChunk = n;
+      break;
+    }
+  }
+  if (printChunk === null) {
+    fail(
+      `print asset: no emitted reveal-init client chunk references \`print-pdf\` under the \`view:'print'\` ` +
+        `branch — the ?print-pdf activation (FR-013) is not bundled (BA-9)`,
+    );
+  }
+  ok(`print asset: reveal core sheet (${printSheet}) ships @media print, and ${printChunk} activates the print view on ?print-pdf (BA-9)`);
+
+  // 8) Chrome + pagefind assertions (WP05-owned module + WP04 deck additions).
+  // Fails non-zero on the first stubbed/missing chrome element, same contract.
   await assertChromeArtifacts(distDir);
 
   process.stdout.write(`assert:artifacts: PASS — all build artifacts present and valid in ${distDir}\n`);

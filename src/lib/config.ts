@@ -23,10 +23,12 @@ import matter from 'gray-matter';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
+import type { AstroIntegration } from 'astro';
 import { readmeToIndexId } from './metadata.js';
 import { resolveTheme, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
+import deckSplit from './remark/deck-split.js';
 
 export interface DocKittyOptions {
   /** Site title shown in the header. */
@@ -189,6 +191,24 @@ function sitemapDraftFilter(
   };
 }
 
+/**
+ * Register the guarded slide-split remark transform globally (ADR-0012, FR-001).
+ * This is NET-NEW markdown plumbing — the preset had no `remarkPlugins` seam
+ * before decks. `updateConfig` APPENDS to `markdown.remarkPlugins`, so the plugin
+ * lands AFTER Astro's built-in remark-gfm (headings + thematic breaks already
+ * parsed) and before `mdast-util-to-hast`. The plugin itself is a strict no-op on
+ * any page whose `kind !== 'Presentation'` (its frontmatter guard), so this
+ * global registration leaves every documentation page byte-identical (C-005).
+ */
+const deckSplitIntegration: AstroIntegration = {
+  name: 'doc-kitty:deck-split',
+  hooks: {
+    'astro:config:setup': ({ updateConfig }) => {
+      updateConfig({ markdown: { remarkPlugins: [deckSplit] } });
+    },
+  },
+};
+
 export function defineDocKittyIntegrations(options: DocKittyOptions) {
   const {
     title,
@@ -259,6 +279,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
 
   return [
     starlight(starlightConfig),
+    // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
+    // that only acts on `kind: Presentation` pages and no-ops everywhere else.
+    deckSplitIntegration,
     // INV-1: draft pages are unpublished, so their URLs are excluded here.
     sitemap({ filter: sitemapDraftFilter(docsDir, base) }),
     // Transport the merged `kind → layout` + `dk:slot → component` maps to the

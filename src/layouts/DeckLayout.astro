@@ -1,0 +1,123 @@
+---
+/*
+ * Doc Kitty layout: DeckLayout — the OUT-OF-FRAME reveal.js shell (ADR-0021 /
+ * ADR-0022). Unlike the in-frame per-kind layouts (Default/Hub/Persona), this is
+ * a COMPLETE HTML document: the deck route renders it directly, shadowing
+ * Starlight's article frame for `/presentations/*`, so there is no Starlight
+ * chrome, sidebar, or `.sl-markdown-content` wrapper here.
+ *
+ * Structure: `.reveal > .slides > <section>` — the shape reveal enhances. WP02's
+ * slide TRANSFORM (splitting the body on `##`/`###` into one `<section>` per
+ * slide, plus the speaker-note `<aside>`) has landed, so `<Content />` already
+ * emits the deck's `<section>`s. It is rendered as the DIRECT child of `.slides`
+ * — NOT wrapped in an extra `<section>` — so reveal sees the transform's
+ * horizontal slides as top-level `.slides > section`, not a single vertical
+ * stack collapsed inside one wrapper (WP04 integration fix; BA-2).
+ *
+ * SSR-safety (ADR-0022 D3): reveal is NEVER imported at the top level of this
+ * file — it is loaded from the browser-only client `<script>` below, which
+ * dynamically imports `reveal-init.client`. A top-level `import Reveal` would
+ * pull a `document`/`window`-touching module into the SSG Node run and crash
+ * `astro build`.
+ *
+ * CSS isolation (ADR-0022 D5 / BA-4): reveal's reset + core sheets and the
+ * `--dk-*→--r-*` token map are imported with Vite's `?url` suffix and emitted as
+ * explicit `<link>`s in THIS document's head. Because they are referenced only
+ * here (never a global style, never a shared chunk a doc page links), reveal's
+ * viewport-hijacking core sheet (`html,body{overflow:hidden}`) cannot leak onto
+ * a documentation page.
+ *
+ * Token catalog on the out-of-frame route (ADR-0022 D4 / FR-009 / SC-004): the
+ * `--dk-*→--r-*` map only RESOLVES if the `--dk-*` VALUES are in scope, but the
+ * deck renders OUTSIDE the Starlight frame, so it never receives the global token
+ * sheet Starlight injects on doc pages. DeckLayout therefore links the toolkit's
+ * base `--dk-*` catalog (`theme.css`, light + dark) itself, and accepts a
+ * `tokenCss` list so the consumer's deck route can layer brand/consumer token
+ * overrides AFTER the base — the same default→brand→consumer order
+ * `defineDocKittyIntegrations` gives the frame. Order is load-bearing: base
+ * tokens → brand tokens → the `--dk-*→--r-*` map (which reads them).
+ *
+ * Pagefind (RT-05 / BA-5): a PUBLISHED deck exposes its slides to the index via
+ * `data-pagefind-body` on `.slides`; a DRAFT deck (T007 smoke) carries
+ * `data-pagefind-ignore` on the document root so its emitted HTML is not indexed
+ * at all. (The speaker-note `<aside>` gets its own `data-pagefind-ignore` when
+ * the transform lands in WP02.)
+ */
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+import { isPublished } from '../lib/metadata.js';
+// `?url`: emit each sheet as its own hashed asset linked ONLY from the deck
+// document — the route-import isolation that keeps reveal's core CSS off doc
+// pages (ADR-0022 D5). Never import these as bare (global) stylesheets.
+import revealResetHref from 'reveal.js/reset.css?url';
+import revealCoreHref from 'reveal.js/reveal.css?url';
+// Base `--dk-*` catalog (light + dark) — linked on the deck itself because the
+// out-of-frame route gets no global token injection (SC-004). Brand/consumer
+// layers arrive via the `tokenCss` prop and are linked AFTER this.
+import baseTokenHref from '../styles/theme.css?url';
+import deckThemeHref from '../styles/dk-reveal-theme.css?url';
+
+interface Props {
+  entry: CollectionEntry<'docs'>;
+  /**
+   * Ordered `--dk-*` token stylesheet hrefs to layer AFTER the base catalog
+   * (brand then consumer), mirroring `defineDocKittyIntegrations` for the frame.
+   * The consumer deck route passes its resolved theme token sheets here so the
+   * deck matches the active brand (ADR-0022 D4). Omitted → base catalog only.
+   */
+  tokenCss?: string[];
+}
+
+const { entry, tokenCss = [] } = Astro.props;
+const published = isPublished(entry.data);
+const { Content } = await render(entry);
+const title = entry.data.title;
+const description = entry.data.description ?? '';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {/* Draft decks are never indexed by crawlers (RT-05); Pagefind is handled
+        by the `data-pagefind-ignore` on the root below. */}
+    {!published && <meta name="robots" content="noindex" />}
+    <link rel="stylesheet" href={revealResetHref} />
+    <link rel="stylesheet" href={revealCoreHref} />
+    {/* Token catalog BEFORE the map: base `--dk-*`, then brand/consumer layers,
+        then `--dk-*→--r-*` (which reads them). See the header note (SC-004). */}
+    <link rel="stylesheet" href={baseTokenHref} />
+    {tokenCss.map((href) => (
+      <link rel="stylesheet" href={href} />
+    ))}
+    <link rel="stylesheet" href={deckThemeHref} />
+  </head>
+  <body {...(!published ? { 'data-pagefind-ignore': '' } : {})}>
+    <main class="reveal" aria-label={`${title} — slide deck`}>
+      {/* `data-pagefind-body` ONLY for a published deck: the slide content is
+          the indexed region. A draft is fully excluded via the root ignore. */}
+      {/* `<Content/>` is the DIRECT child of `.slides` (no wrapping `<section>`)
+          so the transform's slides are top-level `.slides > section` — see the
+          flatten note in the header comment (BA-2). */}
+      <div class="slides" {...(published ? { 'data-pagefind-body': '' } : {})}>
+        <Content />
+      </div>
+    </main>
+
+    {/* Real, labelled <button> controls (AX-2), wired to reveal in the client
+        init. Keyboard navigation (arrows/space/Esc) is reveal's, always on. */}
+    <nav class="dk-deck-controls" aria-label="Slide navigation">
+      <button type="button" class="dk-deck-prev" aria-label="Previous slide">‹</button>
+      <button type="button" class="dk-deck-next" aria-label="Next slide">›</button>
+    </nav>
+
+    {/* Browser-only: Astro bundles this script for the client; the dynamic
+        import keeps reveal (and its DOM access) out of the SSG build. */}
+    <script>
+      import('../lib/deck/reveal-init.client').then((m) => m.initDeck());
+    </script>
+  </body>
+</html>

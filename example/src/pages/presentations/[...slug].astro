@@ -1,0 +1,51 @@
+---
+/*
+ * Out-of-frame deck route (ADR-0021). A `kind: Presentation` page under
+ * `presentations/` renders here — as a chrome-free reveal deck — instead of
+ * through Starlight's article frame.
+ *
+ * Route mechanism (ADR-0021 D2/D3): this file is `presentations/[...slug].astro`,
+ * so by PATH SPECIFICITY it shadows Starlight's site-wide `[...slug]` catch-all
+ * for `/presentations/*` ONLY — every other URL still belongs to Starlight. The
+ * deck's collection entry stays fully enumerated by Starlight (and therefore by
+ * the generators); Astro route priority is what makes the deck win the URL. No
+ * entry is dropped from the collection — "shadow, not exclude".
+ *
+ * URL parity (ADR-0021 D4 / BA-3): the `getStaticPaths` params come from
+ * `deckRouteParams(entry)`, which strips the `presentations/` prefix the route
+ * file already contributes, so the emitted path reconstructs to
+ * `/${deckSlug(entry)}/` — byte-identical to the URL llms.txt and the agent API
+ * derive from the same collection slug. One helper, one source of truth.
+ */
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import DeckLayout from '@commondocs-kitty/toolkit/layouts/DeckLayout.astro';
+import { deckRouteParams } from '@commondocs-kitty/toolkit/deck/deck-slug';
+// The deck renders OUT of the Starlight frame, so it does not inherit the global
+// token injection. Pass this site's active-brand `--dk-*` sheets to DeckLayout so
+// the deck matches the brand (SC-004) — same brand tokens the frame layers after
+// the toolkit default catalog (which DeckLayout links itself).
+import brandTokensHref from '@commondocs-kitty/toolkit/themes/spec-kitty/tokens.css?url';
+
+// Prerender to static HTML (ADR-0021 D2 / ADR-0022 D3): the deck is baked at
+// build so reveal only ever ENHANCES existing DOM in the browser.
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const decks = (await getCollection('docs')).filter(
+    (entry) => entry.data.kind === 'Presentation',
+  );
+  return decks.map((entry) => ({
+    params: deckRouteParams(entry),
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'docs'>;
+}
+
+const { entry } = Astro.props as Props;
+---
+
+<DeckLayout entry={entry} tokenCss={[brandTokensHref]} />

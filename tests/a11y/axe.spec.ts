@@ -10,15 +10,8 @@
 // letting axe report a clean zero against a page it never really scanned.
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {
-  AXE_PAGES,
-  WCAG_TAGS,
-  CHROME_ROOT,
-  CONTENT_ROOT,
-  SIDEBAR_ROOT,
-  FOOTER_ROOT,
-} from './routes';
-import { gotoInMode, modeOf } from './mode';
+import { AXE_PAGES, WCAG_TAGS } from './routes';
+import { gotoInMode, gotoDeckInMode, modeOf } from './mode';
 
 const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
 
@@ -27,25 +20,28 @@ for (const pageDef of AXE_PAGES) {
     test(`no serious/critical WCAG 2.2 AA violations`, async ({ page }, testInfo) => {
       const mode = modeOf(testInfo.project.name);
 
-      // Drive + ASSERT the colour mode before doing anything else.
-      await gotoInMode(page, pageDef.path, mode);
+      // Drive + ASSERT the colour mode before doing anything else. The Starlight
+      // shell resolves the mode through its ThemeProvider (localStorage +
+      // data-theme); the out-of-frame deck has no such resolver, so its dark
+      // palette is driven by the design's own `data-theme` attribute. Either way
+      // the drive ASSERTS the mode genuinely rendered (non-vacuity).
+      if (pageDef.shell === 'deck') {
+        await gotoDeckInMode(page, pageDef.path, mode);
+      } else {
+        await gotoInMode(page, pageDef.path, mode);
+      }
 
       // --- Non-vacuity scope guard: the surfaces axe must cover really exist. -----
       // axe scans the whole page (below); this guard proves the page rendered the
-      // regions the coverage claims — header, main, sidebar, AND footer (the F2
-      // fix widened this past header + main). The TOC is not guarded (Starlight
-      // omits it on heading-less pages).
-      for (const [root, minCount] of [
-        [CHROME_ROOT, 1],
-        [CONTENT_ROOT, 1],
-        [SIDEBAR_ROOT, 1],
-        [FOOTER_ROOT, 1],
-      ] as const) {
+      // regions the coverage claims. The set is per-shell (routes.ts `guardRoots`):
+      // header/main/sidebar/footer for the Starlight shell; main.reveal/.slides/a
+      // rendered <section>/labelled nav buttons for the chrome-free deck.
+      for (const root of pageDef.guardRoots) {
         const count = await page.locator(root).count();
         expect(
           count,
           `axe scope surface '${root}' must exist on ${pageDef.path}`,
-        ).toBeGreaterThanOrEqual(minCount);
+        ).toBeGreaterThanOrEqual(1);
       }
 
       // --- Run axe over the WHOLE page (chrome + content + sidebar + TOC + footer),

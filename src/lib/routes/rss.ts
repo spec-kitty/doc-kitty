@@ -7,7 +7,7 @@
  *   export const GET = rssRoute({ title: 'My Docs', description: '…' });
  */
 import type { APIRoute } from 'astro';
-import { rankForFeed, sectionOf, updatedMillis, SECTION_LABEL } from '../metadata.js';
+import { rankForFeed, sectionOf, updatedMillis, SECTION_LABEL, includedInRssFeed } from '../metadata.js';
 import { absolute, collectDocEntries, xmlEscape } from './shared.js';
 
 export interface RssRouteOptions {
@@ -17,7 +17,12 @@ export interface RssRouteOptions {
 
 export function rssRoute(options: RssRouteOptions): APIRoute {
   return async ({ site }) => {
-    const entries = rankForFeed(await collectDocEntries());
+    // FR-011 (T013): exclude `kind: Presentation` decks from RSS *here* in the
+    // route body — `rankForFeed` stays untouched so sitemap/llms/agent keep the
+    // deck (RT-07). The exclusion predicate is a pure metadata helper so it is
+    // unit-testable without pulling in Astro; it keys on frontmatter `kind`,
+    // never the section path, so a deck filed anywhere is still excluded (A-05).
+    const entries = rankForFeed(await collectDocEntries()).filter(includedInRssFeed);
     const self = absolute(site, '/rss.xml');
     const home = absolute(site, '/');
 

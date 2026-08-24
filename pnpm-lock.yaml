@@ -63,6 +63,9 @@ importers:
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
+      reveal.js:
+        specifier: 6.0.1
+        version: 6.0.1
       zod:
         specifier: ^3.23.0
         version: 3.25.76
@@ -3353,6 +3356,9 @@ packages:
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
+
+  reveal.js@6.0.1:
+    resolution: {integrity: sha512-9eacArNIgqO2HGWOK+93gJNn+gvdGDVbSq+i2u3Ja9kjiHps0XNLpgYTZTYjKRH91uXy3clGimeGiw4umHG/tg==}
 
   rimraf@2.7.1:
     resolution: {integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==}
@@ -8167,6 +8173,8 @@ snapshots:
       unified: 11.0.5
 
   reusify@1.1.0: {}
+
+  reveal.js@6.0.1: {}
 
   rimraf@2.7.1:
     dependencies:
