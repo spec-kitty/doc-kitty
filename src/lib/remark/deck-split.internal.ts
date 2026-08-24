@@ -67,7 +67,8 @@ export interface DeckSection extends MdNode {
 export interface DeckFrontmatter {
   title?: string;
   description?: string;
-  hero_image?: string;
+  /** Page-hero image; the metadata contract shape is an object (ADR-0011). */
+  hero_image?: { src?: string; alt?: string };
   kind?: string;
   [key: string]: unknown;
 }
@@ -86,12 +87,18 @@ export interface SplitResult {
 
 const SLIDE_RE = /^<!--\s*\.slide:\s*(.+?)\s*-->$/;
 const ELEMENT_RE = /^<!--\s*\.element:\s*(.+?)\s*-->$/;
+// Any `<!-- .word: … -->` directive shape — used to catch a misspelled directive
+// NAME (e.g. `.slyde`) and warn rather than silently swallow it (FR-008).
+const DIRECTIVE_RE = /^<!--\s*\.([\w-]+):\s*.*-->$/;
 const NOTE_RE = /^Note:[ \t]?/;
 
-// Open vocabulary (ADR-0012 decision 3): reveal's slide/element attributes are
-// overwhelmingly `data-*`/`aria-*` plus a small set of global HTML attributes.
-// Anything outside this is likely an author typo → warn (never throw), but still
-// apply it so a genuinely-new attribute is not silently dropped.
+// The directive attribute surface is an allowlist, and it is LOAD-BEARING: an
+// attribute outside it is dropped (with a warning), not applied. This keeps the
+// static deck output safe even for a semi-trusted deck author and for downstream
+// toolkit consumers who sanitize their doc pages — the deck route is out-of-frame
+// and its attributes are injected post-parse via `hProperties`, so a rehype
+// sanitizer keyed on the HTML AST may not see them (security audit S-01). Reveal's
+// real slide/element attributes are `data-*`/`aria-*` plus a few global HTML attrs.
 const KNOWN_ATTR_PREFIX = /^(data-|aria-)/;
 const KNOWN_BARE_ATTR = new Set([
   'class',
@@ -105,8 +112,52 @@ const KNOWN_BARE_ATTR = new Set([
   'dir',
 ]);
 
-function isKnownAttr(key: string): boolean {
-  return KNOWN_ATTR_PREFIX.test(key) || KNOWN_BARE_ATTR.has(key);
+// Always-denied, regardless of the allowlist: `on*` event handlers are an XSS
+// vector and never a legitimate deck attribute; reveal's remote-content
+// background attributes pull off-origin content into a "self-contained" deck
+// (security audit S-01/S-02). A local (relative) background image/video is fine.
+const EVENT_HANDLER_RE = /^on/i;
+const REMOTE_URL_RE = /^\s*(?:https?:)?\/\//i;
+
+type AttrDisposition = 'apply' | 'deny' | 'unknown';
+
+function attrDisposition(key: string, val: string): AttrDisposition {
+  if (EVENT_HANDLER_RE.test(key)) return 'deny';
+  if (key === 'data-background-iframe') return 'deny';
+  if (
+    (key === 'data-background-image' || key === 'data-background-video') &&
+    REMOTE_URL_RE.test(val)
+  ) {
+    return 'deny';
+  }
+  if (KNOWN_ATTR_PREFIX.test(key) || KNOWN_BARE_ATTR.has(key)) return 'apply';
+  return 'unknown';
+}
+
+/**
+ * Merge parsed directive attributes onto `props`, enforcing the allowlist.
+ * Denied (`on*` / remote-background) and unknown attributes are dropped with a
+ * warning; known ones are applied (last-wins per key). Never throws.
+ */
+function applyAttrs(
+  props: Record<string, unknown>,
+  attrs: Record<string, string>,
+  kind: 'slide' | 'element',
+  node: MdNode,
+  warnings: SplitWarning[],
+): void {
+  for (const [key, val] of Object.entries(attrs)) {
+    const disposition = attrDisposition(key, val);
+    if (disposition === 'deny') {
+      warnings.push({ message: `Rejected unsafe .${kind} directive attribute "${key}"`, node });
+      continue;
+    }
+    if (disposition === 'unknown') {
+      warnings.push({ message: `Unknown .${kind} directive attribute "${key}" (dropped)`, node });
+      continue;
+    }
+    props[key] = val;
+  }
 }
 
 function section(
@@ -125,14 +176,23 @@ function titleChildren(fm: DeckFrontmatter): MdNode[] {
   if (typeof fm.description === 'string' && fm.description.length > 0) {
     kids.push({ type: 'paragraph', children: [{ type: 'text', value: fm.description }] });
   }
-  if (typeof fm.hero_image === 'string' && fm.hero_image.length > 0) {
+  // `hero_image` is an object `{ src, alt }` per the frozen metadata contract
+  // (ADR-0011), not a string — read `.src`/`.alt` (fall back to the title for a11y).
+  const heroSrc = fm.hero_image?.src;
+  if (typeof heroSrc === 'string' && heroSrc.length > 0) {
+    const heroAlt = fm.hero_image?.alt;
     kids.push({
       type: 'paragraph',
       children: [
         {
           type: 'image',
-          url: fm.hero_image,
-          alt: typeof fm.title === 'string' ? fm.title : '',
+          url: heroSrc,
+          alt:
+            typeof heroAlt === 'string' && heroAlt.length > 0
+              ? heroAlt
+              : typeof fm.title === 'string'
+                ? fm.title
+                : '',
         },
       ],
     });
@@ -196,6 +256,11 @@ export function splitDeck(root: MdRoot, frontmatter: DeckFrontmatter): SplitResu
   let stack = false; // is the current top-level section a vertical stack?
   let inner: DeckSection | null = null; // the open inner section when `stack`
   let lastBlock: MdNode | null = null; // `.element`'s preceding-sibling target
+  // Count of NAVIGABLE slides created so far (title + every horizontal + every
+  // inner beyond the stack's re-parented first). A headingless slide's fallback
+  // `aria-label` is its navigation ordinal, so it must count inner slides — not
+  // top-level sections, which undercounts once any stack exists (bug B-02).
+  let navCount = 0;
 
   const current = (): DeckSection => sections[sections.length - 1];
   // The innermost open slide: the inner section inside a stack, else the top one.
@@ -208,21 +273,29 @@ export function splitDeck(root: MdRoot, frontmatter: DeckFrontmatter): SplitResu
     sections.push(section(hProperties, [...initial]));
     stack = false;
     inner = null;
+    navCount += 1; // a new navigable top-level slide
     lastBlock = initial.length > 0 ? initial[initial.length - 1] : null;
   };
 
-  // `###`: ensure the current section is a stack (wrapping its existing content
-  // as inner #1 on first conversion), then open a fresh inner section.
+  // `###`: ensure the current section is a stack, then open a fresh inner section.
+  // On the FIRST conversion the section's accumulated content becomes inner #1 and
+  // — crucially — inherits the section's authored `hProperties` (its `aria-label`
+  // from a headingless `---`, and any `.slide` attributes), leaving the stack
+  // WRAPPER clean. Otherwise the reader lands on inner #1 with no accessible name
+  // (bug B-01) and a per-slide `.slide` background bleeds across the whole stack
+  // (bug B-04).
   const openInner = (heading: MdNode): void => {
     if (!stack) {
       const cur = current();
-      const firstInner = section({}, cur.children);
+      const firstInner = section({ ...cur.data.hProperties }, cur.children);
       cur.children = [firstInner];
+      cur.data.hProperties = {};
       stack = true;
     }
     const nextInner = section({}, [heading]);
     current().children.push(nextInner);
     inner = nextInner;
+    navCount += 1; // the `###` adds a new navigable inner slide
     lastBlock = heading;
   };
 
@@ -233,14 +306,8 @@ export function splitDeck(root: MdRoot, frontmatter: DeckFrontmatter): SplitResu
 
   const applySlide = (node: MdNode): void => {
     const body = isHtml(node) ? (SLIDE_RE.exec(node.value.trim())?.[1] ?? '') : '';
-    const attrs = parseAttrs(body);
-    const props = slide().data.hProperties;
-    for (const [key, val] of Object.entries(attrs)) {
-      if (!isKnownAttr(key)) {
-        warnings.push({ message: `Unknown .slide directive attribute "${key}"`, node });
-      }
-      props[key] = val; // multiple .slide directives merge, last-wins per key
-    }
+    // Multiple `.slide` directives merge onto the innermost slide, last-wins.
+    applyAttrs(slide().data.hProperties, parseAttrs(body), 'slide', node, warnings);
   };
 
   const applyElement = (node: MdNode): void => {
@@ -252,21 +319,17 @@ export function splitDeck(root: MdRoot, frontmatter: DeckFrontmatter): SplitResu
       return;
     }
     const body = isHtml(node) ? (ELEMENT_RE.exec(node.value.trim())?.[1] ?? '') : '';
-    const attrs = parseAttrs(body);
     const target = lastBlock;
     target.data ??= {};
     target.data.hProperties ??= {};
-    const props = target.data.hProperties;
-    for (const [key, val] of Object.entries(attrs)) {
-      if (!isKnownAttr(key)) {
-        warnings.push({ message: `Unknown .element directive attribute "${key}"`, node });
-      }
-      props[key] = val;
-    }
+    applyAttrs(target.data.hProperties, parseAttrs(body), 'element', node, warnings);
   };
 
   // The title slide is always slide #1 (FR-003); pre-`##` content appends to it.
+  // Its children are frontmatter-SYNTHESIZED, so they must not be a `.element`
+  // target — reset `lastBlock` so a leading `.element` warns/skips (bug B-05).
   openHorizontal({}, titleChildren(frontmatter));
+  lastBlock = null;
 
   for (const node of root.children) {
     if (isHtml(node) && SLIDE_RE.test(node.value.trim())) {
@@ -277,6 +340,17 @@ export function splitDeck(root: MdRoot, frontmatter: DeckFrontmatter): SplitResu
       applyElement(node); // consumed
       continue;
     }
+    if (isHtml(node)) {
+      // A `<!-- .word: … -->` directive whose name is neither `.slide` nor
+      // `.element` is almost always an author typo (e.g. `.slyde`). Warn and
+      // consume it so the intent isn't silently lost as inert markup (bug B-03 /
+      // FR-008); other HTML comments/blocks fall through to content unchanged.
+      const directive = DIRECTIVE_RE.exec(node.value.trim());
+      if (directive) {
+        warnings.push({ message: `Unknown deck directive ".${directive[1]}"`, node });
+        continue;
+      }
+    }
     if (isNote(node)) {
       // A note is chrome, a direct child of its slide, and NOT a `.element`
       // target — do not advance `lastBlock`.
@@ -285,8 +359,10 @@ export function splitDeck(root: MdRoot, frontmatter: DeckFrontmatter): SplitResu
     }
     if (node.type === 'thematicBreak') {
       // Headingless slide; the `<hr>` is consumed, an aria-label supplies the
-      // accessible name every slide needs (FR-001 / NFR-001).
-      openHorizontal({ 'aria-label': `Slide ${sections.length + 1}` }, []);
+      // accessible name every slide needs (FR-001 / NFR-001). `openHorizontal`
+      // increments `navCount` first, so the label is this slide's true ordinal.
+      openHorizontal({}, []);
+      current().data.hProperties['aria-label'] = `Slide ${navCount}`;
       continue;
     }
     if (node.type === 'heading' && node.depth === 2) {

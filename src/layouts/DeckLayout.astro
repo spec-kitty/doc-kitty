@@ -39,9 +39,9 @@
  *
  * Pagefind (RT-05 / BA-5): a PUBLISHED deck exposes its slides to the index via
  * `data-pagefind-body` on `.slides`; a DRAFT deck (T007 smoke) carries
- * `data-pagefind-ignore` on the document root so its emitted HTML is not indexed
- * at all. (The speaker-note `<aside>` gets its own `data-pagefind-ignore` when
- * the transform lands in WP02.)
+ * `data-pagefind-ignore` on `<body>` so its emitted HTML is not indexed at all.
+ * (The speaker-note `<aside>` gets its own `data-pagefind-ignore` from the
+ * transform.)
  */
 import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
@@ -117,7 +117,12 @@ const description = entry.data.description ?? '';
     {/* Browser-only: Astro bundles this script for the client; the dynamic
         import keeps reveal (and its DOM access) out of the SSG build. */}
     <script>
-      import('../lib/deck/reveal-init.client').then((m) => m.initDeck());
+      // If reveal fails to load/init, the server-rendered slide sections remain
+      // as the readable no-JS fallback (NFR-003) — so swallow the rejection to a
+      // console warning rather than surfacing an unhandled promise rejection.
+      import('../lib/deck/reveal-init.client')
+        .then((m) => m.initDeck())
+        .catch((err) => console.warn('[doc-kitty] deck enhancement failed:', err));
     </script>
   </body>
 </html>

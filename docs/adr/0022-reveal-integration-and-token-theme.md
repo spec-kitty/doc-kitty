@@ -54,18 +54,25 @@ so both the JS init and the CSS need deliberate confinement.
    `.reveal > .slides > section` DOM; it never produces the slides. Because directive
    attributes are baked into the static HTML before any JS runs, the build is immune to
    reveal's Vite/Rolldown directive-ordering hazard (reveal issue #3883).
-4. **The deck is themed by a `--dk-*` → `--r-*` mapping scoped to `.reveal`.** reveal 6
+4. **The deck is themed by a `--dk-*` → `--r-*` mapping declared at `:root`.** reveal 6
    exposes its theme as `--r-*` custom properties; the doc-kitty reveal theme is a thin
    sheet expressing `--r-*` as `var(--dk-*)` (background/text/heading/link colors,
-   body/heading fonts, sizing incl. the existing `--dk-width-deck`), scoped under
-   `.reveal`. The same file works for every brand (incl. Spec Kitty dark) with no
-   per-deck CSS. A per-file `deck:` frontmatter theme override is **deferred**.
+   body/heading fonts, sizing incl. the existing `--dk-width-deck`). The mapping is
+   declared at **`:root`**, not `.reveal`: reveal paints `--r-background-color` on
+   `document.body` (an ancestor of `.reveal`), so a `.reveal`-scoped map would never
+   reach the viewport background. The out-of-frame route also receives no global token
+   injection, so the deck layout links the resolved `--dk-*` catalog itself (base +
+   brand) ahead of the map. The same file works for every brand (incl. Spec Kitty dark)
+   with no per-deck CSS. A per-file `deck:` frontmatter theme override is **deferred**.
 5. **reveal's CSS is confined to the deck route.** reveal's **core** stylesheet and the
    token-mapping sheet are imported **only** by the deck layout — never a global style,
-   never hoisted into a shared chunk a documentation page links. Route-import isolation
-   is the primary guard (the core sheet's viewport hijack must never reach a doc page);
-   `.reveal` scoping is belt-and-suspenders for the mapping sheet. A build assertion over
-   `example/dist` enforces both (reveal's core sheet identified by a known signature).
+   never hoisted into a shared chunk a documentation page links. Because the map is
+   declared at `:root` (Decision 4), **route-import isolation is the sole guard** that
+   keeps it (and reveal's viewport-hijacking core sheet) off doc pages — there is no
+   selector-scope safety net, so the import must never be made global. A build assertion
+   over `example/dist` enforces this: each sheet appears in exactly one emitted asset,
+   linked on the deck page and on no sampled doc page (reveal's core sheet identified by
+   a known signature). The deck theme's own *look* rules stay `.reveal`-scoped.
 6. **Print/PDF is a bundled, query-gated import.** reveal's print stylesheet is imported
    as a bundled asset gated on `?print-pdf` (not reveal's path-based loader, which cannot
    resolve under Vite); the linear fallback is the printable baseline.

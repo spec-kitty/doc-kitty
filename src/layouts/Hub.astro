@@ -108,6 +108,14 @@ const navLabel =
                 <>{' '}<span class="dk-hub__desc">{child.data.description}</span></>
               )}
             </a>
+            {/* A deck child also gets its `?print-pdf` export link, auto-derived
+                from the collection — a sibling of the card-wide anchor, not a
+                nested one (FR-014). Only decks (kind: Presentation) have one. */}
+            {child.data.kind === 'Presentation' && (
+              <a class="dk-hub__aux" href={`${hrefFor(child.slug)}?print-pdf`}>
+                Print / PDF export
+              </a>
+            )}
           </li>
         ))}
       </ul>

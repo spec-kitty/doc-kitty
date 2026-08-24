@@ -15,12 +15,9 @@ overview is the in-frame entry point — it stays in the sidebar, while the deck
 themselves are suppressed from the sidebar so a reader is never ejected
 out-of-frame without a signal.
 
-The published decks below are derived from the content collection at build time
+The published decks are derived from the content collection at build time
 (no hand-kept manifest): every published `kind: Presentation` page is listed
-automatically, and drafts are omitted exactly as they are from the sitemap, RSS,
-and the agent index. Open a deck for its slides, or append `?print-pdf` to a
-deck's URL to export it as a print/PDF view — reveal folds its print rules into
-its core stylesheet, so no separate export page is built.
-
-- [Showcase Deck](/presentations/showcase-deck/) —
-  [print / PDF export](/presentations/showcase-deck/?print-pdf)
+automatically below, each with its `?print-pdf` export link, and drafts are
+omitted exactly as they are from the sitemap, RSS, and the agent index. Opening a
+deck shows its slides; the `?print-pdf` export folds reveal's print rules into its
+core stylesheet, so no separate export page is built.
