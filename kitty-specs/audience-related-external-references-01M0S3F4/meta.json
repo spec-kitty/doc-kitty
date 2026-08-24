@@ -1,8 +1,7 @@
 {
   "baseline_merge_commit": "186321bd8a9af2c255a64c4386fd37c294456255",
-  "coordination_branch": "kitty/mission-audience-related-external-references-01M0S3F4",
   "created_at": "2026-08-24T05:21:37.375151+00:00",
-  "flattened": false,
+  "flattened": true,
   "friendly_name": "Audience, Related & External References",
   "mission_id": "01M0S3F42YGRST73Y5R4T15VZA",
   "mission_number": null,
@@ -14,7 +13,6 @@
   "slug": "audience-related-external-references-01M0S3F4",
   "status_phase": "1",
   "target_branch": "feat/audience-related-external-references",
-  "topology": "coord",
   "vcs": "git",
   "vcs_locked_at": "2026-08-24T09:43:04.249658+00:00"
 }
