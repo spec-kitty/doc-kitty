@@ -38,6 +38,15 @@
 - [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
+## Post-spec squad (rev 2)
+
+- A four-lens adversarial squad (reviewer-renata, architect-alphonso,
+  planner-priti, lexical-larry) reviewed rev 1; findings in
+  `reviews/post-spec-squad.md`. Two BLOCKER-class green-boundary hazards (persona
+  relocation blast radius; unowned example count pin) plus the persona-status
+  decision and the agent-record seam were folded into rev 2. All items above
+  re-verified against rev 2.
+
 ## Notes
 
 - Three research-default decisions (soft-vs-hard resolution, declared-direction
