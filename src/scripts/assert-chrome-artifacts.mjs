@@ -120,6 +120,16 @@ const REQUIRED_DK_TOKENS = [
   // flips this check red, so the wired external-references block can never render
   // untinted while the gate stays green (FR-017 / SC-003).
   '--dk-color-tint-lilac',
+  // Diagram surfaces (ADR-0024, BD-5). Promoted from the retired orphan into the
+  // Default catalog + brand tokens.css; the render owner reads them into Mermaid
+  // themeVariables, so a diagram renders unthemed if any is dropped. Enumerated
+  // for COMPLETENESS: dropping one from the source sheet flips this check red.
+  '--dk-diagram-node-fill',
+  '--dk-diagram-node-border',
+  '--dk-diagram-node-text',
+  '--dk-diagram-edge',
+  '--dk-diagram-subgraph-title',
+  '--dk-diagram-cluster-fill',
 ];
 
 // The `--dk-* → --sl-*` bridge: each Starlight variable the base sheet assigns
@@ -307,6 +317,14 @@ const REQUIRED_MODE_VARYING = [
   '--dk-color-danger-bg',
   '--dk-color-neutral',
   '--dk-color-neutral-bg',
+  // Diagram surfaces (ADR-0024) — mode-varying, so re-declared under dark in the
+  // brand tokens.css; a dropped dark re-declaration would leak the light value.
+  '--dk-diagram-node-fill',
+  '--dk-diagram-node-border',
+  '--dk-diagram-node-text',
+  '--dk-diagram-edge',
+  '--dk-diagram-subgraph-title',
+  '--dk-diagram-cluster-fill',
 ];
 
 // The authored brand sheets (theme Layer 2). T035 asserts these declare ZERO
@@ -937,6 +955,27 @@ export async function assertChromeArtifacts(distDir) {
     }
   }
   ok(`--dk-*-only: brand sheets (${BRAND_SHEET_SOURCES.length}) declare zero --sl-* variables`);
+
+  // (BD-5, ADR-0024) The dark-only orphan `diagram-tokens.css` was retired: its
+  // `--dk-diagram-*` values now live in the Default catalog + brand tokens.css.
+  // Assert the orphan path is ABSENT so it cannot silently return as a second,
+  // unwired source of truth for the brand's diagram colours.
+  const ORPHAN_DIAGRAM_TOKENS = '../themes/spec-kitty/assets/diagram-tokens.css';
+  const orphanAbs = path.resolve(scriptDir, ORPHAN_DIAGRAM_TOKENS);
+  let orphanPresent = true;
+  try {
+    await readFile(orphanAbs, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') orphanPresent = false;
+    else fail(`orphan: could not stat ${ORPHAN_DIAGRAM_TOKENS} (${err.code ?? err.message})`);
+  }
+  if (orphanPresent) {
+    fail(
+      `orphan: retired diagram-tokens.css still present at ${ORPHAN_DIAGRAM_TOKENS} — the ` +
+        `--dk-diagram-* values live in the Default catalog + brand tokens.css now (ADR-0024)`,
+    );
+  }
+  ok(`orphan: retired diagram-tokens.css absent (ADR-0024 single source of truth)`);
 
   // === 10) Brand AA construction: ≥24px targets + :focus-visible ring =========
   // (T046) axe cannot machine-verify target-size (2.5.8) or a visible focus

@@ -18,6 +18,16 @@ This opening paragraph appends to the synthesized title slide, and carries the
 indexed slide sentinel **quokka showcase sentinel** that Pagefind must resolve to
 this deck's own URL.
 
+```mermaid
+%% title: Out-of-frame deck pipeline
+%% description: The Markdown deck feeds the slide transform, DeckLayout renders the out-of-frame reveal shell, and the shared render owner draws this diagram on the active first slide with the --dk-diagram-* tokens.
+flowchart LR
+  MD[showcase-deck.md] --> T[slide transform]
+  T --> DL[DeckLayout out-of-frame shell]
+  DL --> R[shared render owner]
+  R --> SVG[themed diagram on first slide]
+```
+
 ## Horizontal slide with directives
 
 The first `##` opens a fresh horizontal slide. A slide directive paints its

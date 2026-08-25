@@ -23,6 +23,7 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 // WP05 out-of-map edit (recorded): the chrome + pagefind assertions live in their
 // own WP05-owned module to keep lane ownership clean; the main gate awaits them so
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
@@ -59,27 +60,31 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 //     generators; the deck route only shadows the URL, "shadow, not exclude")
 //     AND the presentations overview Hub (presentations/README.md, kind:Hub,
 //     doc_status:active, +1). Both published, so +2. So 16 + 2 = 18.
-//   - POST-WP04 tree: 21 Markdown files with THREE drafts (adr/template, the
-//     retained draft persona context/audience/draft-persona.md, and the WP01
-//     draft deck presentations/draft-preview.md) → 21 − 3 = 18 published,
-//     cross-checking the delta arithmetic above.
-// This is the slide-decks pin (WP04 owns it; the prior-mission pin was 16). Both
-// count-moving published pages of the slide-decks mission (the deck AND the
-// overview Hub) land in THIS one recompute — no later WP may add a count-moving
-// published page (BA-1 double-pin guard).
+//   - slide-decks POST-WP04 tree: 21 Markdown files with THREE drafts (adr/template,
+//     the retained draft persona context/audience/draft-persona.md, and the WP01
+//     draft deck presentations/draft-preview.md) → 21 − 3 = 18 published.
+//   - diagrams WP04 delta (THIS recompute): the published diagram demonstrator
+//     (architecture/diagram-demonstrator.md, doc_status:active, +1) is added — the
+//     SOLE new published route of the M5 diagrams mission. The parallel deck WP05
+//     edits an ALREADY-published deck route (adds a diagram to it, adds no URL), so
+//     it moves no count. So 18 + 1 = 19.
+//   - POST-diagrams-WP04 tree: 22 Markdown files with THREE drafts (unchanged
+//     draft set) → 22 − 3 = 19 published, cross-checking the +1 delta above.
+// The diagram demonstrator is the ONE count-moving published page of the diagrams
+// mission (WP04 owns this +1; WP05 changes no count — BA/F5-sizing single-pin guard).
 //
 // Sitemap parity (INV-1): the @astrojs/sitemap `filter` DROPS every draft page's
-// URL, so the sitemap's page-URL count equals this same published set — 18 — and
+// URL, so the sitemap's page-URL count equals this same published set — 19 — and
 // every draft page (adr/template + the draft persona + the draft deck) is absent
 // from it. The published showcase deck IS present in the sitemap (it is a normal
 // enumerated collection entry; the out-of-frame route only changes what HTML the
 // URL renders, not whether the URL is generated).
 //
 // Bump this ONLY as a deliberate, reviewable act when example content changes.
-const EXPECTED_INDEX_ENTRY_COUNT = 18;
+const EXPECTED_INDEX_ENTRY_COUNT = 19;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
-const EXPECTED_SITEMAP_URL_COUNT = 18;
+const EXPECTED_SITEMAP_URL_COUNT = 19;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.
@@ -146,6 +151,59 @@ const DECK_ROUTE = `/${DECK_SLUG}/`; // canonical reconstruction — must equal 
 const DRAFT_DECK_SLUG = 'presentations/draft-preview';
 // The published overview Hub route (BA-1 second count-moving page; BA-10 present).
 const OVERVIEW_ROUTE = '/presentations/';
+
+// --- diagrams WP04: the published diagram demonstrator (BD-1/BD-2/BD-4) ----------
+// The demonstrator renders TWO diagrams spanning two guaranteed types, so the a11y
+// lane confirms Mermaid emits a labelled figure for more than one type. Its built
+// HTML is the browser-free proof surface: the raw `<pre class="mermaid">` source
+// (with injected accTitle/accDescr) + the `<figcaption>` caption must be present in
+// document order, and there must be NO rendered `<svg>` inside `figure.dk-diagram`
+// (an SVG in the STATIC file would prove a build-time render ran — i.e. NOT
+// browser-free; client-side rendering is the M5 premise, ADR-0023 / NFR-004).
+const DEMO_RELPATH = path.join('architecture', 'diagram-demonstrator', 'index.html');
+
+// The two demonstrator diagrams, in DOCUMENT ORDER, each keyed by the tokens the
+// no-JS degradation guarantee (FR-008/NFR-003) must preserve in the static HTML:
+//   - `keyword` — the diagram-TYPE declaration (proves the raw source survives),
+//   - `label`   — a concrete node/actor label from the page (real content, not just
+//                 a `<pre>` shell),
+//   - `caption` — the exact `<figcaption>` description span (the caption survives),
+//   - `accName` — the injected `accTitle` value (BD-1 accessible name in source).
+// Diagram 1 is the all-fields FLOWCHART (title present → accName ≠ description).
+// Diagram 2 is the description-only SEQUENCE (title ABSENT → accName == description,
+// the accTitle→description name fallback, proven on a non-flowchart type).
+const DEMO_DIAGRAMS = [
+  {
+    what: 'all-fields flowchart',
+    keyword: 'flowchart',
+    label: 'Docs tree',
+    caption: 'The docs tree is loaded once, fanned out to the site and the feeds, then Starlight emits the static HTML.',
+    accName: 'Build-and-publish pipeline', // from `%% title` (distinct from description)
+    nameIsFallback: false,
+  },
+  {
+    what: 'description-only sequence',
+    keyword: 'sequenceDiagram',
+    label: 'Reader',
+    caption: 'A reader requests a page and the static host returns pre-rendered HTML, with no server in the loop.',
+    accName: 'A reader requests a page and the static host returns pre-rendered HTML, with no server in the loop.',
+    nameIsFallback: true, // no `%% title` → accTitle falls back to the description
+  },
+];
+
+// --- BD-4: pinned diagram deps + no CDN -----------------------------------------
+// The toolkit manifest that DECLARES the diagram deps (exact pins, no `^`/`~`), and
+// the pnpm lockfile that RESOLVES them. Resolved relative to THIS script so the gate
+// does not depend on the caller's cwd.
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..');
+const TOOLKIT_MANIFEST = path.join(REPO_ROOT, 'src', 'package.json');
+const PNPM_LOCKFILE = path.join(REPO_ROOT, 'pnpm-lock.yaml');
+const PINNED_DIAGRAM_DEPS = { 'astro-mermaid': '2.1.0', mermaid: '11.17.1' };
+// A CDN import of mermaid in a shipped asset would defeat the self-contained,
+// no-external-runtime-request guarantee (NFR-004). Mermaid must be BUNDLED — an
+// `_astro/mermaid*.js` chunk — and no shipped JS may pull it from a CDN host.
+const CDN_MERMAID_RE = /https?:\/\/[a-z0-9.-]*(?:jsdelivr|unpkg|cdnjs|skypack|esm\.sh|jspm|googleapis)[^"'` )]*mermaid[^"'` )]*/i;
 
 // ---------------------------------------------------------------------------
 
@@ -329,6 +387,180 @@ function hasNestedSectionStack(inner) {
   return nested;
 }
 
+// --- Diagram figure scanner (BD-1/BD-2 / browser-free proof) ----------------
+/** Every `<figure class="dk-diagram">…</figure>` block in the HTML, in document
+ * order. Non-greedy to `</figure>`; the demonstrator figures hold no nested
+ * `<figure>`, so a flat match is exact for this corpus. */
+function extractDkDiagramFigures(html) {
+  const re = /<figure\b[^>]*\bclass="[^"]*\bdk-diagram\b[^"]*"[^>]*>[\s\S]*?<\/figure>/g;
+  return html.match(re) ?? [];
+}
+
+/**
+ * Assert the diagram demonstrator's STATIC HTML carries, for BOTH diagrams:
+ *   - BD-1: `<figure class="dk-diagram">` + `<pre class="mermaid">` with the
+ *     injected `accTitle`/`accDescr` a11y statements IN THE SOURCE;
+ *   - BD-2 (no-JS, real content): the diagram-TYPE keyword AND a concrete
+ *     node/actor label AND the `<figcaption>` description — in document order
+ *     (source inside the `<pre>`, caption after it) — so the meaning survives
+ *     without the client render;
+ *   - browser-free proof (NFR-004): NO rendered `<svg>` inside the figure — a
+ *     static SVG would prove a build-time render ran.
+ * Diagram 2 additionally proves the accTitle→description NAME FALLBACK on a
+ * non-flowchart type (accTitle value == the description).
+ */
+async function assertDiagramDemonstrator(distDir) {
+  const demoAbs = path.join(distDir, DEMO_RELPATH);
+  await assertNonEmptyFile(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
+  const html = await readTextOrFail(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
+
+  const figures = extractDkDiagramFigures(html);
+  if (figures.length !== DEMO_DIAGRAMS.length) {
+    fail(
+      `diagram demonstrator: found ${figures.length} <figure class="dk-diagram"> block(s), ` +
+        `expected ${DEMO_DIAGRAMS.length} (an all-fields flowchart + a description-only sequence) — BD-1`,
+    );
+  }
+
+  DEMO_DIAGRAMS.forEach((spec, i) => {
+    const fig = figures[i];
+    const tag = `diagram demonstrator: diagram ${i + 1} (${spec.what})`;
+
+    // BD-1 — figure carries the mermaid <pre> with injected acc-statements.
+    const preOpen = fig.indexOf('<pre class="mermaid">');
+    const preClose = fig.indexOf('</pre>');
+    if (preOpen === -1 || preClose === -1 || !(preOpen < preClose)) {
+      fail(`${tag}: no <pre class="mermaid"> source block inside the figure — BD-1`);
+    }
+    const source = fig.slice(preOpen, preClose); // the raw diagram source only
+    if (!source.includes('accTitle:')) {
+      fail(`${tag}: the mermaid source has no injected \`accTitle:\` statement (accessible name) — BD-1`);
+    }
+    if (!source.includes('accDescr:')) {
+      fail(`${tag}: the mermaid source has no injected \`accDescr:\` statement (accessible description) — BD-1`);
+    }
+    if (!source.includes(`accTitle: ${spec.accName}`)) {
+      fail(
+        `${tag}: injected accTitle is not "accTitle: ${spec.accName}" — the accessible name derived from ` +
+          `the ${spec.nameIsFallback ? 'description (title-absent FALLBACK)' : '%% title'} is wrong — BD-1`,
+      );
+    }
+    // Name-fallback proof (title-absent diagram): the accessible name IS the
+    // description, not a distinct title.
+    if (spec.nameIsFallback && !source.includes(`accDescr: ${spec.accName}`)) {
+      fail(
+        `${tag}: with no \`%% title\`, accTitle must fall back to the description — accTitle and accDescr ` +
+          `should both be the description text, proving the name fallback on a non-flowchart type — BD-1`,
+      );
+    }
+
+    // BD-2 — real source content: the diagram-TYPE keyword AND a concrete label
+    // are present INSIDE the <pre> (not just an empty shell).
+    const kwIdx = source.indexOf(spec.keyword);
+    const labelIdx = source.indexOf(spec.label);
+    if (kwIdx === -1) {
+      fail(`${tag}: the diagram-type keyword "${spec.keyword}" is absent from the static source — the raw source did not survive (BD-2 no-JS)`);
+    }
+    if (labelIdx === -1) {
+      fail(`${tag}: the concrete label "${spec.label}" is absent from the static source — the built <pre> is an empty shell, not the real diagram (BD-2 no-JS)`);
+    }
+    if (!(kwIdx < labelIdx)) {
+      fail(`${tag}: "${spec.keyword}" does not precede "${spec.label}" in the source — malformed diagram source (BD-2)`);
+    }
+
+    // BD-2 — the caption (figcaption description span) is present AND after the
+    // source, in document order (source first, caption below it).
+    const captionSpan = `<span class="dk-diagram__desc">${spec.caption}</span>`;
+    const captionIdx = fig.indexOf(captionSpan);
+    if (captionIdx === -1) {
+      fail(`${tag}: the <figcaption> description span "${spec.caption}" is absent — the caption did not survive to the static HTML (BD-2/FR-008)`);
+    }
+    if (!(preClose < captionIdx)) {
+      fail(`${tag}: the caption appears before the diagram source — source + caption are not in document order (BD-2)`);
+    }
+
+    // Browser-free proof (NFR-004): no rendered <svg> inside the static figure.
+    if (/<svg[\s>]/i.test(fig)) {
+      fail(
+        `${tag}: the STATIC figure contains a rendered <svg> — a build-time render ran, so the build is NOT ` +
+          `browser-free. M5 diagrams render CLIENT-SIDE only (ADR-0023 / NFR-004); the static file must carry ` +
+          `the raw source, never an SVG`,
+      );
+    }
+  });
+
+  ok(
+    `diagram demonstrator: ${figures.length} dk-diagram figure(s) — figure + <pre class="mermaid"> + injected ` +
+      `accTitle/accDescr; keyword+label+caption in document order; NO static <svg> (browser-free) (BD-1/BD-2/NFR-004)`,
+  );
+}
+
+/**
+ * BD-4 — the diagram deps are pinned to the exact versions and mermaid is
+ * bundled (no CDN). Proven three ways: the toolkit manifest declares exact pins,
+ * the lockfile resolves those same versions, and no shipped `_astro/*.js` asset
+ * pulls mermaid from a CDN host (a local `mermaid*.js` chunk is present instead).
+ */
+async function assertPinnedDepsNoCdn(distDir) {
+  // (a) Manifest declares the EXACT pins (no `^`/`~` range).
+  const manifestText = await readTextOrFail(TOOLKIT_MANIFEST, `toolkit manifest (${TOOLKIT_MANIFEST})`);
+  let manifest;
+  try {
+    manifest = JSON.parse(manifestText);
+  } catch (err) {
+    fail(`pinned deps: toolkit manifest is not valid JSON (${err.message}) — BD-4`);
+  }
+  const declared = { ...(manifest.dependencies ?? {}), ...(manifest.devDependencies ?? {}) };
+  for (const [name, version] of Object.entries(PINNED_DIAGRAM_DEPS)) {
+    if (declared[name] !== version) {
+      fail(
+        `pinned deps: src/package.json declares "${name}": ${JSON.stringify(declared[name])}, expected the exact ` +
+          `pin ${JSON.stringify(version)} (no range) — a floating diagram dep breaks the reproducible build (BD-4/NFR-004)`,
+      );
+    }
+  }
+
+  // (b) Lockfile RESOLVES those same versions (`name@version:` package key).
+  const lockText = await readTextOrFail(PNPM_LOCKFILE, `pnpm lockfile (${PNPM_LOCKFILE})`);
+  for (const [name, version] of Object.entries(PINNED_DIAGRAM_DEPS)) {
+    if (!lockText.includes(`${name}@${version}:`)) {
+      fail(
+        `pinned deps: pnpm-lock.yaml has no resolved \`${name}@${version}:\` entry — the lockfile does not ` +
+          `resolve the pinned version (BD-4)`,
+      );
+    }
+  }
+
+  // (c) No shipped JS asset pulls mermaid from a CDN; mermaid is bundled locally.
+  const astroDir = path.join(distDir, '_astro');
+  let astroEntries;
+  try {
+    astroEntries = await readdir(astroDir);
+  } catch (err) {
+    fail(`no-CDN: could not read ${path.join('_astro')} (${err.code ?? err.message}) — BD-4`);
+  }
+  const jsAssets = astroEntries.filter((f) => f.endsWith('.js'));
+  const hasBundledMermaid = astroEntries.some((f) => /^mermaid.*\.js$/i.test(f));
+  if (!hasBundledMermaid) {
+    fail(
+      `no-CDN: no bundled \`_astro/mermaid*.js\` chunk — mermaid must be BUNDLED (self-contained), not fetched ` +
+        `from a CDN at runtime (BD-4/NFR-004)`,
+    );
+  }
+  for (const n of jsAssets) {
+    const js = await readFile(path.join(astroDir, n), 'utf8');
+    const hit = js.match(CDN_MERMAID_RE);
+    if (hit) {
+      fail(`no-CDN: shipped asset _astro/${n} references a CDN mermaid URL (${hit[0]}) — mermaid must be bundled, no external runtime request (BD-4/NFR-004)`);
+    }
+  }
+  ok(
+    `pinned deps + no CDN: astro-mermaid@${PINNED_DIAGRAM_DEPS['astro-mermaid']} + ` +
+      `mermaid@${PINNED_DIAGRAM_DEPS.mermaid} pinned (manifest + lockfile), mermaid bundled locally, ` +
+      `no CDN reference in ${jsAssets.length} shipped JS asset(s) (BD-4)`,
+  );
+}
+
 // ---------------------------------------------------------------------------
 
 async function main() {
@@ -380,7 +612,7 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 21 example .md files − 3 drafts; if example content changed ` +
+        `(the published set — 22 example .md files − 3 drafts; if example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }
@@ -574,6 +806,14 @@ async function main() {
     fail(`known page: ${KNOWN_PAGE_RELPATH} does not look like a rendered HTML document`);
   }
   ok(`known page: ${KNOWN_PAGE_RELPATH} rendered to HTML`);
+
+  // 6a) diagrams WP04: the published diagram demonstrator — figure + injected
+  // acc-statements + no-JS source & caption in document order + browser-free
+  // (no static <svg>) (BD-1/BD-2/NFR-004).
+  await assertDiagramDemonstrator(distDir);
+
+  // 6b) diagrams WP04: pinned diagram deps + no CDN (BD-4/NFR-004).
+  await assertPinnedDepsNoCdn(distDir);
 
   // 7) slide-decks WP04: published-deck build-artifact assertions (BA-2/3/6/7/9).
   // The published showcase deck renders OUT-OF-FRAME via the deck route yet stays a

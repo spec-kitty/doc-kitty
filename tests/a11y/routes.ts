@@ -21,6 +21,11 @@ export const ROUTES = {
   // (post-spec R1). Without this route the block renderers were exercised by zero
   // pages, making WP04's "blocks clear the a11y lane" vacuous.
   blocks: `${BASE}/architecture/blocks-demonstrator/`,
+  // Diagram demonstrator — the mission M5 page (WP04) that renders TWO diagrams: a
+  // fully-annotated flowchart and a description-only sequence. Both fences carry
+  // `%%` metadata, so both render to a themed `<figure class="dk-diagram">` whose
+  // `<svg>` gains `aria-labelledby` (see the render-gate note on `AxePage`).
+  diagram: `${BASE}/architecture/diagram-demonstrator/`,
   // Slide deck — the published showcase reveal.js deck (WP05, AX-1/AX-2). This is
   // the OUT-OF-FRAME deck route (ADR-0021/0022): a COMPLETE standalone HTML
   // document, NOT the Starlight article shell — `main.reveal > .slides > section`,
@@ -55,6 +60,22 @@ export interface AxePage {
   path: string;
   shell: AxeShell;
   guardRoots: readonly string[];
+  // Render-gate (WP06 DX-1). A diagram renders CLIENT-SIDE, so on a diagram route
+  // axe must first WAIT for that render before scanning — otherwise it scores the
+  // bare `<pre>` and passes vacuously. `renderWait` is a locator awaited
+  // UNCONDITIONALLY in axe.spec.ts (never "if a figure exists, wait" — a gate that
+  // fires only when the element is already present can never fail). It is matched
+  // against `expect(...).toHaveCount(renderCount)`, so the gate is COUNT-AWARE: the
+  // demonstrator renders TWO diagrams, and a bare `.toBeVisible()`/`.first()` would
+  // strict-throw or gate only one. Metadata-eligibility: the gate locator
+  // `figure.dk-diagram svg[aria-labelledby]` ONLY appears when the fence carried
+  // `%%` metadata (the remark pass injects `accTitle`, and Mermaid sets
+  // `aria-labelledby` only when an accTitle is present). A scanned diagram route
+  // MUST therefore carry metadata on every fence — a bare fence would render an
+  // `aria-labelledby`-less `<svg>` and hang the count gate.
+  renderWait?: string;
+  // The EXACT number of gated diagrams the route renders (the `renderWait` count).
+  renderCount?: number;
 }
 
 // Starlight chrome roots (unchanged coverage): header + main + sidebar + footer,
@@ -87,14 +108,49 @@ const DECK_GUARD_ROOTS = [
   DECK_NAV_BUTTON_ROOT,
 ] as const;
 
-// The axe coverage set: the four in-frame Starlight surfaces + the out-of-frame
-// showcase deck, each run in BOTH colour modes.
+// The rendered-diagram non-vacuity root (WP06 F3): the client render's output — a
+// `<figure class="dk-diagram">` whose `<svg>` carries `aria-labelledby`. Added to a
+// diagram route's `guardRoots` so the scan's own non-vacuity contract covers a
+// RENDERED diagram, not just the page chrome. `guardRoots` uses instantaneous
+// `.count()` with NO auto-wait, so this must be evaluated AFTER the `renderWait`
+// gate (axe.spec.ts orders the gate first) or it would read zero before the render.
+export const DIAGRAM_SVG_ROOT = 'figure.dk-diagram svg[aria-labelledby]';
+const STARLIGHT_DIAGRAM_GUARD_ROOTS = [
+  ...STARLIGHT_GUARD_ROOTS,
+  DIAGRAM_SVG_ROOT,
+] as const;
+const DECK_DIAGRAM_GUARD_ROOTS = [...DECK_GUARD_ROOTS, DIAGRAM_SVG_ROOT] as const;
+
+// The axe coverage set: the four in-frame Starlight surfaces + the diagram
+// demonstrator (WP06 T020) + the out-of-frame showcase deck, each run in BOTH
+// colour modes. The diagram routes (demonstrator + deck) carry a `renderWait` gate
+// (awaited before axe scans) and a `guardRoots` extended with the rendered `<svg>`.
 export const AXE_PAGES: ReadonlyArray<AxePage> = [
   { name: 'Persona (/context/audience/example-persona/)', path: ROUTES.persona, shell: 'starlight', guardRoots: STARLIGHT_GUARD_ROOTS },
   { name: 'Hub (/context/)', path: ROUTES.hub, shell: 'starlight', guardRoots: STARLIGHT_GUARD_ROOTS },
   { name: 'Prose (/guides/getting-started/)', path: ROUTES.prose, shell: 'starlight', guardRoots: STARLIGHT_GUARD_ROOTS },
   { name: 'Blocks demonstrator (/architecture/blocks-demonstrator/)', path: ROUTES.blocks, shell: 'starlight', guardRoots: STARLIGHT_GUARD_ROOTS },
-  { name: 'Deck (/presentations/showcase-deck/)', path: ROUTES.deck, shell: 'deck', guardRoots: DECK_GUARD_ROOTS },
+  // WP06 T020 — the demonstrator renders TWO metadata-carrying diagrams, so the
+  // gate waits for count 2 before axe scans (both modes).
+  {
+    name: 'Diagram demonstrator (/architecture/diagram-demonstrator/)',
+    path: ROUTES.diagram,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_DIAGRAM_GUARD_ROOTS,
+    renderWait: DIAGRAM_SVG_ROOT,
+    renderCount: 2,
+  },
+  // WP06 T020 — the showcase deck was ALREADY scanned here; it is UPDATED (not
+  // duplicated) with the render-gate for its new first-slide diagram (title +
+  // description → one gated `<svg>`). Adding a second deck entry would be the trap.
+  {
+    name: 'Deck (/presentations/showcase-deck/)',
+    path: ROUTES.deck,
+    shell: 'deck',
+    guardRoots: DECK_DIAGRAM_GUARD_ROOTS,
+    renderWait: DIAGRAM_SVG_ROOT,
+    renderCount: 1,
+  },
 ];
 
 // axe tag set — includes wcag22aa (SC-002 / NFR-001).

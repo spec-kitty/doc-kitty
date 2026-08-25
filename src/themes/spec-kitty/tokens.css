@@ -85,6 +85,17 @@
   --dk-color-tint-lilac: #F1ECF9;
   --dk-color-tint-lilac-text: #573E8F;
 
+  /* Diagram surfaces (ADR-0024) — LIGHT (derived, AA-checked). The brand's
+     yellow/blue motif on paper: yellow is unusable on light (~1.3:1), so node
+     border + subgraph title derive to the deep gold link colour; edges use the
+     brand info-blue. See the AA block at the foot (T005/ADR-0024). */
+  --dk-diagram-node-fill: #FFFFFF;
+  --dk-diagram-node-border: #806508;
+  --dk-diagram-node-text: #1A1B1F;
+  --dk-diagram-edge: #2C5E86;
+  --dk-diagram-subgraph-title: #806508;
+  --dk-diagram-cluster-fill: #F4F2ED;
+
   /* Focus ring — light variant. DERIVED-CORRECTED: the guide's #C99A0E is only
      2.48:1 on paper (fails the 3:1 non-text minimum), so the light ring uses the
      deep gold #806508 (5.32:1 on bg, 5.55:1 on #fff). 3px with an offset so the
@@ -133,6 +144,16 @@
   --dk-color-tint-lilac: #241C3A;
   --dk-color-tint-lilac-text: #C3B0E8;
 
+  /* Diagram surfaces (ADR-0024) — DARK (the brand motif, transcribed from the
+     retired diagram-tokens.css orphan): yellow node borders + subgraph titles,
+     blue edges, card-dark node/cluster fills. AA at the foot (T005/ADR-0024). */
+  --dk-diagram-node-fill: #181A1F;
+  --dk-diagram-node-border: #F5C518;
+  --dk-diagram-node-text: #D6D6DA;
+  --dk-diagram-edge: #A9C7E8;
+  --dk-diagram-subgraph-title: #F5C518;
+  --dk-diagram-cluster-fill: #121317;
+
   /* Focus ring — dark variant (translucent yellow, transcribed). */
   --dk-shadow-focus: 0 0 0 3px rgba(245, 197, 24, 0.55);
 }
@@ -157,6 +178,11 @@
  *   lilac (tint fg) #573E8F on tint #F1ECF9 .......... 7.27:1  (AAA, T026)
  *   focus ring #806508 on bg #FBFAF7 (non-text) ...... 5.32:1  (≥3:1; guide's
  *              #C99A0E was 2.48:1 — corrected up for AA)
+ *   diagram node-text #1A1B1F on node-fill #FFFFFF .. 17.21:1  (AAA, ADR-0024)
+ *   diagram edge #2C5E86 on cluster #F4F2ED (non-text) 6.15:1  (≥3:1)
+ *   diagram title #806508 on cluster #F4F2ED (non-text) 4.96:1 (≥3:1)
+ *   diagram border #806508 on bg #FBFAF7 (non-text) .. 5.32:1  (≥3:1; on
+ *              cluster #F4F2ED 4.96:1)
  *
  * DARK (transcribed)
  *   text        #D6D6DA on bg #0D0E11 ............... 13.32:1  (AAA)
@@ -170,5 +196,9 @@
  *   danger  #E97373 on -bg #2E1616 .................... 5.77:1  (AA)
  *   neutral #A9A9B0 on -bg #262C36 .................... 6.01:1  (AA)
  *   lilac (tint fg) #C3B0E8 on tint #241C3A .......... 8.21:1  (AAA, T026)
+ *   diagram node-text #D6D6DA on node-fill #181A1F .. 12.01:1  (AAA, ADR-0024)
+ *   diagram edge #A9C7E8 on cluster #121317 (non-text) 10.63:1 (≥3:1)
+ *   diagram title #F5C518 on cluster #121317 (non-text) 11.39:1 (≥3:1)
+ *   diagram border #F5C518 on bg #0D0E11 (non-text) . 11.84:1  (≥3:1)
  * =============================================================================
  */

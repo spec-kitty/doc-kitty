@@ -124,6 +124,15 @@
   --dk-color-danger-bg: #fbe9e7;
   --dk-color-neutral: #3f4650;
   --dk-color-neutral-bg: #eceef2;
+
+  /* Diagram surfaces (ADR-0024) — LIGHT. Consumed by the render owner into
+     Mermaid themeVariables; AA pairs proven by src/tests/diagram-tokens.test.ts. */
+  --dk-diagram-node-fill: #eceef2;
+  --dk-diagram-node-border: #5b6472;
+  --dk-diagram-node-text: #1d2733;
+  --dk-diagram-edge: #33507f;
+  --dk-diagram-subgraph-title: #26324a;
+  --dk-diagram-cluster-fill: #eef1f6;
 }
 
 /* ===== Mode-varying COLOUR tokens — DARK override ======================= */
@@ -161,6 +170,15 @@
   --dk-color-danger-bg: #351613;
   --dk-color-neutral: #aab3c2;
   --dk-color-neutral-bg: #232b3a;
+
+  /* Diagram surfaces (ADR-0024) — DARK. Neutral motif on the dark page bg;
+     AA pairs proven by src/tests/diagram-tokens.test.ts. */
+  --dk-diagram-node-fill: #1e2532;
+  --dk-diagram-node-border: #8a94a6;
+  --dk-diagram-node-text: #dbe1ea;
+  --dk-diagram-edge: #8fb0f0;
+  --dk-diagram-subgraph-title: #aebfe0;
+  --dk-diagram-cluster-fill: #0e131c;
 }
 
 /*
