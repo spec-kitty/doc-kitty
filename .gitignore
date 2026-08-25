@@ -74,3 +74,4 @@ playwright-report/
 # preview server (lychee.toml / lighthouserc.json are the committed configs).
 .lighthouseci/
 .lycheecache
+test-results.rootorphan.*/

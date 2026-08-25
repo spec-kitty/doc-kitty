@@ -31,6 +31,37 @@ for (const pageDef of AXE_PAGES) {
         await gotoInMode(page, pageDef.path, mode);
       }
 
+      // --- Render-gate (DX-1): a diagram renders CLIENT-SIDE, so on a route that
+      //     declares `renderWait` we WAIT for that render before anything else.
+      //     Awaited UNCONDITIONALLY (not "if a figure exists, wait" — a gate that
+      //     fires only when the element is already there can never fail: a diagram
+      //     that silently failed to render would leave the bare `<pre>` and axe
+      //     would pass vacuously). COUNT-AWARE: the demonstrator renders two
+      //     diagrams, so we assert the exact count (a bare `.toBeVisible()` would
+      //     strict-throw on >1 and `.first()` would gate only one), that EACH is
+      //     visible, and that no `pre.mermaid` still holds its raw source (Mermaid
+      //     marks a node `data-processed` only AFTER it has replaced the source
+      //     text with the rendered `<svg>`). This precedes the guardRoots check
+      //     below so the rendered-svg guard root reads a non-zero count. ----------
+      if (pageDef.renderWait !== undefined) {
+        const expectedCount = pageDef.renderCount ?? 0;
+        const rendered = page.locator(pageDef.renderWait);
+        await expect(
+          rendered,
+          `render-gate '${pageDef.renderWait}' must resolve to ${expectedCount} diagram(s) on ${pageDef.path}`,
+        ).toHaveCount(expectedCount);
+        for (const svg of await rendered.all()) {
+          await expect(svg, `each gated diagram must be visible on ${pageDef.path}`).toBeVisible();
+        }
+        // Raw source consumed: every `pre.mermaid` is `data-processed` (its source
+        // text replaced by the rendered `<svg>`), so none still holds raw source.
+        const unprocessed = page.locator('pre.mermaid:not([data-processed="true"])');
+        await expect(
+          unprocessed,
+          `no pre.mermaid may still hold raw source on ${pageDef.path}`,
+        ).toHaveCount(0);
+      }
+
       // --- Non-vacuity scope guard: the surfaces axe must cover really exist. -----
       // axe scans the whole page (below); this guard proves the page rendered the
       // regions the coverage claims. The set is per-shell (routes.ts `guardRoots`):

@@ -115,14 +115,58 @@ const description = entry.data.description ?? '';
     </nav>
 
     {/* Browser-only: Astro bundles this script for the client; the dynamic
-        import keeps reveal (and its DOM access) out of the SSG build. */}
+        import keeps reveal (and its DOM access) out of the SSG build.
+
+        Diagrams inside the deck (FR-009 / M6 C-008) render AFTER reveal has
+        finished initialising, NOT concurrently. The out-of-frame shell bypasses
+        Starlight, so `config.ts`'s page-level `injectScript` never reaches it —
+        DeckLayout must drive the SAME shared render owner itself (WP03,
+        `diagram-render.client`; NFR-007 — no second render path). Ordering is
+        load-bearing for accessibility (NFR-001): reveal's initialise mutates the
+        `.slides` DOM, and a diagram rendered into a slide WHILE that is in flight
+        loses its injected `accTitle`/`accDescr` — Mermaid's `<title>`/`<desc>`
+        insertion throws mid-render, leaving a graph with NO accessible name.
+        Rendering once reveal's `initialize()` promise has settled avoids the
+        race (reveal does not strip an already-inserted `<title>`), so the
+        first-slide diagram keeps its `aria-labelledby` name. `.finally` (not
+        `.then`) so the diagram still renders if reveal itself failed — the shared
+        owner works standalone, and the server-rendered `<figure>`/`<pre>` remains
+        the no-JS fallback (NFR-003) either way. */}
     <script>
-      // If reveal fails to load/init, the server-rendered slide sections remain
-      // as the readable no-JS fallback (NFR-003) — so swallow the rejection to a
-      // console warning rather than surfacing an unhandled promise rejection.
+      // Render diagrams only once reveal's root carries `.ready` (its
+      // initialise() promise resolves a beat BEFORE the layout settles, and a
+      // diagram rendered into a still-settling slide loses its accessible name —
+      // see the note above). Bounded: fall through after a short wait so a page
+      // without reveal (or a reveal that never readies) still renders its diagram.
+      const renderDeckDiagrams = () =>
+        import('../lib/diagram/diagram-render.client')
+          .then((m) => m.initDiagrams())
+          .catch((err) => console.warn('[doc-kitty] deck diagram render failed:', err));
+
+      const whenRevealReady = () =>
+        new Promise((resolve) => {
+          const root = document.querySelector('.reveal');
+          if (!root || root.classList.contains('ready')) {
+            resolve(undefined);
+            return;
+          }
+          const done = () => {
+            observer.disconnect();
+            clearTimeout(fallback);
+            // One extra frame so reveal's post-ready layout has flushed.
+            requestAnimationFrame(() => resolve(undefined));
+          };
+          const observer = new MutationObserver(() => {
+            if (root.classList.contains('ready')) done();
+          });
+          observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+          const fallback = setTimeout(done, 3000);
+        });
+
       import('../lib/deck/reveal-init.client')
         .then((m) => m.initDeck())
-        .catch((err) => console.warn('[doc-kitty] deck enhancement failed:', err));
+        .catch((err) => console.warn('[doc-kitty] deck enhancement failed:', err))
+        .finally(() => whenRevealReady().then(renderDeckDiagrams));
     </script>
   </body>
 </html>

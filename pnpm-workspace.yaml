@@ -4,6 +4,8 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
+minimumReleaseAgeExclude:
+  - mermaid@11.17.1
 # Hoist Astro's already-locked `sharp` image service (and its `@img/*` platform
 # binaries) to the workspace-root node_modules so the optimized-image pipeline
 # can resolve `sharp` from the `example` build. pnpm's strict linking otherwise

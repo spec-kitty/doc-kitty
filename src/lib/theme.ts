@@ -184,6 +184,15 @@ const DEFAULT_BASE: Record<string, string> = {
   '--dk-color-danger-bg': '#fbe9e7',
   '--dk-color-neutral': '#3f4650',
   '--dk-color-neutral-bg': '#eceef2',
+  // Diagram surfaces (ADR-0024) — LIGHT values. Consumed by the render owner into
+  // Mermaid `themeVariables`; mode-varying, so re-declared in DEFAULT_DARK below.
+  // AA pairs proven by src/tests/diagram-tokens.test.ts.
+  '--dk-diagram-node-fill': '#eceef2',
+  '--dk-diagram-node-border': '#5b6472',
+  '--dk-diagram-node-text': '#1d2733',
+  '--dk-diagram-edge': '#33507f',
+  '--dk-diagram-subgraph-title': '#26324a',
+  '--dk-diagram-cluster-fill': '#eef1f6',
 };
 
 /**
@@ -219,6 +228,14 @@ const DEFAULT_DARK: Record<string, string> = {
   '--dk-color-danger-bg': '#351613',
   '--dk-color-neutral': '#aab3c2',
   '--dk-color-neutral-bg': '#232b3a',
+  // Diagram surfaces (ADR-0024) — DARK values. Neutral motif harmonising with the
+  // Default dark palette; AA pairs proven by src/tests/diagram-tokens.test.ts.
+  '--dk-diagram-node-fill': '#1e2532',
+  '--dk-diagram-node-border': '#8a94a6',
+  '--dk-diagram-node-text': '#dbe1ea',
+  '--dk-diagram-edge': '#8fb0f0',
+  '--dk-diagram-subgraph-title': '#aebfe0',
+  '--dk-diagram-cluster-fill': '#0e131c',
 };
 
 /** The enumerated mode-varying colour token names (re-declared under dark). */

@@ -19,6 +19,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
@@ -29,6 +30,8 @@ import { resolveTheme, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
 import deckSplit from './remark/deck-split.js';
+import diagramMeta from './remark/diagram-meta.js';
+import diagramFigure from './rehype/diagram-figure.js';
 
 export interface DocKittyOptions {
   /** Site title shown in the header. */
@@ -63,6 +66,16 @@ export interface DocKittyOptions {
    * 3); the `starlight` escape hatch cannot add a fifth carrier override.
    */
   theme?: DocKittyTheme;
+  /**
+   * Opt-in Mermaid diagrams (M5, ADR-0023/0024; FR-001). **Default off** — with
+   * it absent or `false` the integrations array carries ZERO diagram cost: no
+   * diagram integration, no markdown plugins, no injected render module (a
+   * diagram-free site stays byte-identical). Set `true` to wire the full seam:
+   * the WP02 `diagramMeta` (remark) + `diagramFigure` (rehype) plugins that turn
+   * a `%%`-annotated ```mermaid fence into an accessible `<figure>`, and the
+   * single client render owner (`diagram-render.client`) injected page-wide.
+   */
+  diagrams?: boolean;
 }
 
 /** `<head>` links advertising the feeds and agent-API on every page. */
@@ -209,6 +222,105 @@ const deckSplitIntegration: AstroIntegration = {
   },
 };
 
+/** Minimal structural mdast node — enough to find mermaid fences and recurse. */
+interface FenceMdastNode {
+  type: string;
+  lang?: string | null;
+  value?: string;
+  data?: Record<string, unknown>;
+  children?: FenceMdastNode[];
+}
+
+/**
+ * The **fence transform** (the single-render fallback, ADR-0023 F5 spike):
+ * astro-mermaid@2.1.0 injects its render script UNCONDITIONALLY (`autoTheme:
+ * false` disables its theme-watch, NOT its render), so adopting it would give
+ * two render loops with the wrong (non-token) colours — a straight NFR-007
+ * violation. We therefore drop astro-mermaid's runtime and do the fence→
+ * `<pre class="mermaid">` transform ourselves; the token-aware render owner
+ * (`diagram-render.client`) becomes the ONLY `mermaid.run` on the page.
+ *
+ * This runs at the mdast level (AFTER `diagramMeta`, which has already injected
+ * `accTitle`/`accDescr` into the fence body and stripped the `%%` metadata). It
+ * rewrites each `lang === 'mermaid'` code node's hast projection via
+ * `data.hName`/`hProperties`/`hChildren` so `mdast-util-to-hast` emits a real
+ * `<pre class="mermaid">…source…</pre>` ELEMENT — the exact shape `diagramFigure`
+ * (rehype) matches to build the `<figure>`. Rewriting the hast projection (not
+ * emitting a raw `html` node) keeps it a first-class element for the rehype pass
+ * AND sidesteps Starlight's expressive-code, which only claims `<pre><code>`
+ * blocks — a node whose projected tag is a bare `<pre class="mermaid">` is never
+ * a code block it recognises.
+ */
+function mermaidFenceTransform() {
+  return function transformer(tree: FenceMdastNode): void {
+    const walk = (node: FenceMdastNode): void => {
+      if (node.type === 'code' && node.lang === 'mermaid') {
+        node.data = {
+          ...(node.data ?? {}),
+          hName: 'pre',
+          hProperties: { className: ['mermaid'] },
+          hChildren: [{ type: 'text', value: node.value ?? '' }],
+        };
+        return; // code nodes are leaves.
+      }
+      if (Array.isArray(node.children)) {
+        for (const child of node.children) walk(child);
+      }
+    };
+    walk(tree);
+  };
+}
+
+/**
+ * The opt-in diagrams seam, registered ONLY when `defineDocKittyIntegrations({
+ * diagrams: true })` (FR-001). It wires the markdown pipeline —
+ * `remarkPlugins: [diagramMeta, mermaidFenceTransform]` (metadata parse BEFORE
+ * the fence transform) and `rehypePlugins: [diagramFigure]` (figure wrap AFTER)
+ * — and injects the single client render owner page-wide.
+ *
+ * **Footprint (NFR-006/FP-1)**: the injected module is loaded on every page, but
+ * it early-returns before touching `mermaid` on any page with no `pre.mermaid`,
+ * and pulls the `mermaid` chunk only via a dynamic `import()` inside that guard —
+ * so a diagram-free route never requests the library. The module is referenced
+ * by its absolute on-disk path (Astro's documented `injectScript` pattern) so it
+ * resolves without a package-exports entry.
+ *
+ * **Out-of-frame deck (NFR-001/NFR-007)**: `injectScript('page', …)` also lands
+ * on the deck route (a normal Astro page), but the deck must NOT render diagrams
+ * from here. A page-level render fires CONCURRENTLY with reveal.js's initialise,
+ * and a diagram drawn into a still-settling slide loses its injected
+ * `accTitle`/`accDescr` (Mermaid's `<title>`/`<desc>` insertion throws mid-render
+ * → a graph with no accessible name); it would also add a SECOND render loop
+ * (breaking NFR-007's one-loop-per-node). So the deck's page-level trigger is
+ * skipped — `DeckLayout` owns the deck's single, reveal-ready-ordered render.
+ * The guard keys on `main.reveal`, which exists only on the out-of-frame deck
+ * document; every in-frame doc page has no such element and renders as before.
+ */
+const diagramsIntegration: AstroIntegration = {
+  name: 'doc-kitty:diagrams',
+  hooks: {
+    'astro:config:setup': ({ updateConfig, injectScript }) => {
+      updateConfig({
+        markdown: {
+          remarkPlugins: [diagramMeta, mermaidFenceTransform],
+          rehypePlugins: [diagramFigure],
+        },
+      });
+      const renderOwner = fileURLToPath(
+        new URL('./diagram/diagram-render.client.ts', import.meta.url),
+      );
+      injectScript(
+        'page',
+        `import { initDiagrams } from ${JSON.stringify(renderOwner)};\n` +
+          // The out-of-frame deck (main.reveal) is rendered by DeckLayout AFTER
+          // reveal is ready; a page-level render here races reveal and drops the
+          // SVG's accessible name. Doc pages have no main.reveal and run normally.
+          `if (!document.querySelector('main.reveal')) initDiagrams();`,
+      );
+    },
+  },
+};
+
 export function defineDocKittyIntegrations(options: DocKittyOptions) {
   const {
     title,
@@ -218,6 +330,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     docsDir = 'docs',
     base = '/',
     theme,
+    diagrams = false,
     starlight: overrides,
   } = options;
 
@@ -278,6 +391,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   };
 
   return [
+    // Opt-in diagrams seam (FR-001): PREPENDED before Starlight when
+    // `diagrams: true`, so the diagram machinery sits ahead of `starlight()` in
+    // the integrations array (ordering contract). Omitted entirely when off —
+    // the spread below is then byte-identical to the pre-M5 array (zero cost).
+    ...(diagrams ? [diagramsIntegration] : []),
     starlight(starlightConfig),
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.

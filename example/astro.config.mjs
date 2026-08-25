@@ -31,5 +31,8 @@ export default defineConfig({
       github: `https://github.com/${OWNER}/${REPO}`,
     },
     theme: specKittyTheme,
+    // Opt-in Mermaid diagrams (M5): renders the `%%`-annotated ```mermaid fence
+    // on the Overview page as an accessible, token-themed `<figure>`.
+    diagrams: true,
   }),
 });

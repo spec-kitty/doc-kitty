@@ -19,6 +19,8 @@ The site is a static Astro + Starlight build driven entirely by the `docs/`
 tree.
 
 ```mermaid
+%% title: Build pipeline
+%% description: The docs/ tree feeds the toolkit loader, which fans out to Starlight, the sitemap, RSS, llms.txt, and the agent-API, then Starlight emits the static site.
 flowchart LR
   D[docs/**  README-as-index + frontmatter] --> L[toolkit loader]
   L --> S[Starlight  nav / search / theme]
