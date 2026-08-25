@@ -315,7 +315,11 @@ const diagramsIntegration: AstroIntegration = {
           // The out-of-frame deck (main.reveal) is rendered by DeckLayout AFTER
           // reveal is ready; a page-level render here races reveal and drops the
           // SVG's accessible name. Doc pages have no main.reveal and run normally.
-          `if (!document.querySelector('main.reveal')) initDiagrams();`,
+          // DR-2: `.catch` mirrors DeckLayout's pattern — a malformed diagram must
+          // surface a console warning, not an unhandled promise rejection.
+          `if (!document.querySelector('main.reveal')) {\n` +
+          `  initDiagrams().catch((e) => console.warn('[dk-diagram] render failed', e));\n` +
+          `}`,
       );
     },
   },

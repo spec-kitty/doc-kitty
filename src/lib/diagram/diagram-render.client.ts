@@ -25,7 +25,10 @@
  * So on each render we restore the ORIGINAL source (cached in a closure Map, kept
  * out of the DOM) and clear `data-processed` before re-running — the same single
  * `render()` closure re-runs on a `[data-theme]` toggle, leaving exactly one
- * `<svg>` per node in the current mode's colours.
+ * `<svg>` per node in the current mode's colours. A rapid toggle can fire the
+ * observer again before the previous async `run` settles; an in-flight guard
+ * (DR-4) coalesces that into a single follow-up render instead of letting two
+ * runs overlap on the same nodes.
  *
  * Shared surface: exported so `DeckLayout` (WP05) drives the identical loop from
  * its own browser-only `<script>` (deck tokens ride DeckLayout's base-token link).
@@ -78,7 +81,23 @@ export async function initDiagrams(): Promise<void> {
   const sources = new Map<HTMLElement, string>();
   nodes.forEach((node) => sources.set(node, node.textContent ?? ''));
 
+  // DR-4: the `[data-theme]` observer below fires `render` synchronously, and a
+  // rapid toggle can fire it again before the previous async `mermaid.run` has
+  // settled. Overlapping runs would restore-and-rewrite a node's source while
+  // the earlier run is mid-write — a possible double `<svg>` (NFR-007
+  // violation) or a thrown run. Guard with an in-flight flag and coalesce any
+  // request that arrives mid-render into a single follow-up run once the
+  // current one finishes, so two runs never touch the same nodes at once.
+  let isRendering = false;
+  let rerenderPending = false;
+
   const render = (): void => {
+    if (isRendering) {
+      rerenderPending = true;
+      return;
+    }
+    isRendering = true;
+
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
@@ -91,7 +110,19 @@ export async function initDiagrams(): Promise<void> {
       node.textContent = sources.get(node) ?? node.textContent ?? '';
       node.removeAttribute('data-processed');
     });
-    void mermaid.run({ nodes });
+    // DR-2: a rejected run (a malformed diagram) must surface a console warning
+    // instead of an unhandled promise rejection — the raw `<pre>` source stays
+    // visible for that node rather than silently vanishing.
+    mermaid
+      .run({ nodes })
+      .catch((e) => console.warn('[dk-diagram] render failed', e))
+      .finally(() => {
+        isRendering = false;
+        if (rerenderPending) {
+          rerenderPending = false;
+          render(); // coalesced re-render, run once the current one has settled.
+        }
+      });
   };
 
   render();
