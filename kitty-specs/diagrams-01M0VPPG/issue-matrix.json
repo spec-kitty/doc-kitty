@@ -1,0 +1,17 @@
+{
+  "rows": {
+    "#13": {
+      "evidence_ref": "spec.md C-002/C-008: build-time SVG render + PlantUML explicitly deferred out of this mission to tracked follow-up issue #13; not built by any WP here.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "deferred-with-followup",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,126 @@
+{
+  "event_count": 49,
+  "last_event_id": "01M0W15NF1Q4BC074ZXVX5MTTZ",
+  "materialized_at": "2026-08-25T08:39:13.633170+00:00",
+  "mission_number": "",
+  "mission_slug": "diagrams-01M0VPPG",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 7,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0W147ZQDZVXFFMBAAP5AQSX",
+      "last_transition_at": "2026-08-25T08:38:27.063431+00:00",
+      "review_result": {
+        "reference": "WP01 approved. Six --dk-diagram-* tokens promoted to Default catalog (theme.ts DEFAULT_BASE+DEFAULT_DARK, theme.css :root+[data-theme=dark]) and brand tokens.css, both modes verified. Orphan diagram-tokens.css deleted, zero importers. assert-chrome-artifacts extended (token catalog+6, mode-varying+6, orphan-absent) — build+assert green (75 catalog, 32 mode-varying). Contrast vitest invokes real resolveTheme/emitTokenSheet, 12 tests AA size-aware both modes; full suite 157/157. Deps astro-mermaid@2.1.0+mermaid@11.17.1 exact-pinned, frozen install consistent. NFR-004 verified: prod graph free of playwright/puppeteer/puppeteer-core; puppeteer-core only via lighthouse devDeps; peer range satisfied. Example untouched (diagrams off). Out-of-map deps in src/package.json + pnpm-workspace exclude both justified. Resolved deferred issue-matrix row #13 (deferred-with-followup) per spec C-008.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 750002,
+      "shell_pid_created_at": "1787639593.51"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0W14FHNREGRZ3CGCBKGPE0S",
+      "last_transition_at": "2026-08-25T08:38:34.805918+00:00",
+      "review_result": {
+        "reference": "Review APPROVE: transform exemplary — reserved-directive guard structurally sound + tested, title→description fallback, init/frontmatter placement, figure per contract, standalone (corpus byte-identical), 165 vitest green, no dead code. #13 deferred-with-followup.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 752371,
+      "shell_pid_created_at": "1787639715.42"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0W14YPZF6PD452PHERATH5G",
+      "last_transition_at": "2026-08-25T08:38:50.335955+00:00",
+      "review_result": {
+        "reference": "APPROVED. Spike FALLBACK ruled FAITHFUL & correctly implemented (ADR-0023 D1 + WP03 DoD sanction it): astro-mermaid@2.1.0 renders unconditionally with stock non-token themes (autoTheme:false disables theme-watch, not render) => adopting it = 2 loops in wrong colours (NFR-007 breach). Implementer dropped astro-mermaid runtime, wrote own mermaidFenceTransform (fence->pre.mermaid via mdast hName/hProperties/hChildren), made diagram-render.client the sole mermaid.run. Literal T010 'prepend mermaid()' satisfied by prepending own doc-kitty:diagrams integration BEFORE starlight() (index<starlight verified in test+source). Single loop NFR-007: exactly one .run({nodes}) in page chunk; startOnLoad:!0 lives ONLY in the 682KB mermaid vendor chunk (its default), our init sets startOnLoad:false; astro-mermaid absent as integration. Footprint NFR-006/FP-1: if(!nodes.length)return BEFORE await import('mermaid'); mermaid.core chunk statically unreferenced by BOTH diagram & diagram-free HTML. Build browser-free; pnpm lint exit 0; 182/182 vitest green. overview.md %%-named => <figure class=dk-diagram role=group> + injected accTitle 'Build pipeline'/accDescr + figcaption (self-named). Token map theme:'base'/securityLevel:'strict' per contract; MutationObserver restores source+clears data-processed => one svg/node. Anti-pattern checklist all PASS/N-A (runtime one-svg + FP-1 network gated by WP06 T019/T021 per DoD). NOTE: astro-mermaid@2.1.0 now an unused runtime dep post-fallback but WP01-owned & WP06 BD-4 asserts the pin => out of WP03 scope; acceptable.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 787701,
+      "shell_pid_created_at": "1787641350.13"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0W156ASXC414FK5NNDKP8F7",
+      "last_transition_at": "2026-08-25T08:38:58.137548+00:00",
+      "review_result": {
+        "reference": "Build+assert green: demonstrator publishes all-fields flowchart + title-absent sequence; BD-1 figure/pre/accTitle+accDescr, BD-2 no-JS keyword+label+caption in document order, browser-free no-svg proof, BD-4 pins astro-mermaid@2.1.0/mermaid@11.17.1 no CDN. Count 18->19 independently confirmed against dist sitemap(19)+agent index(19). Five mutation tests confirm assertions non-vacuous. Frontmatter/description(148)/headings compliant; validators green.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 802755,
+      "shell_pid_created_at": "1787642755.42"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0W15DWMH2YVVWX1XYECTNQ5",
+      "last_transition_at": "2026-08-25T08:39:05.876840+00:00",
+      "review_result": {
+        "reference": "Independent QA PASS. Single render path (NFR-007) VERIFIED: built deck imports the one shared diagram-render.client.v-TjHjMy.js chunk calling initDiagrams(), the same chunk referenced by page.m2k7Hagf.js (page pipeline) — no second render path. First-slide invariant (FR-009) VERIFIED: figure role=group / pre.mermaid sits between section 1 and section 2 in built dist HTML (active first slide). SSR a11y VERIFIED: server-injected accTitle/accDescr inside pre, plus figcaption. Tokens ride existing theme.css baseTokenHref link (no redundant deck wiring). No EXPECTED_*_COUNT touched; fence adds no section (6 sections, ordering intact). Build browser-free. Stale mode.ts comment correctly left for WP06.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 803185,
+      "shell_pid_created_at": "1787642793.74"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0W15NF1Q4BC074ZXVX5MTTZ",
+      "last_transition_at": "2026-08-25T08:39:13.633170+00:00",
+      "review_result": {
+        "reference": "APPROVED (independent QA, both shells). Render-gate DECLARATIVE+UNCONDITIONAL+COUNT-AWARE (keyed on renderWait!==undefined, not DOM presence; toHaveCount(renderCount)+each visible+pre.mermaid:not([data-processed]) count 0). NON-VACUITY EMPIRICALLY PROVEN: neutering dist render owner reds the demonstrator gate at toHaveCount(2), does NOT pass on bare <pre>. diagram.spec.ts: non-empty accessible name on TITLE-ABSENT sequence diagram BY IDENTITY (accTitle->description fallback, not vacuous); figure role=group+figcaption both shells; exactly one <svg>/pre.mermaid before+after [data-theme] toggle (NFR-007); footprint (mermaid chunk on diagram page, not on prose control; same-origin, no CDN). Deck UPDATED not duplicated (renderCount:1); guardRoots extended with rendered svg post-gate. 20 axe+diagram tests green both modes on fresh dist; pnpm test 182 green; lint clean; assert:artifacts PASS. OUT-OF-MAP RULING = JUSTIFIED minimal root-cause fixes for NFR-001 (both shells) surfaced by this terminal WP, recorded here (approved WPs not reopened): config.ts(WP03) guards page-level initDiagrams with if(!main.reveal) — no-op on doc pages, skips only deck race; DeckLayout still owns+renders deck diagram (VERIFIED rendered+named). DeckLayout.astro(WP05) renders after reveal .ready+1frame, .finally+3s fallback keeps no-JS fallback. diagram-demonstrator.md(WP04) tableOfContents:false suppresses unrelated Starlight target-size(2.5.8) chrome fail on a fixture. VISUAL-DRIFT FINDING: visual.spec.ts (WP09 lane, NOT WP06-owned) fails on brand HOME ratio 0.04 = host-vs-pinned-container font drift on a page WP06 never touched; passes in CI. NOT a WP06 defect. Anti-pattern checklist all PASS/N/A.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 816833,
+      "shell_pid_created_at": "1787643796.79"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M0W14Q5769HVVX3STVTDJ96B",
+      "last_transition_at": "2026-08-25T08:38:42.599474+00:00",
+      "review_result": {
+        "reference": "Docs of record complete. Feature page resolved to shipped client-side Mermaid v1 (bundled, no CDN, no build-time browser), opt-in preset, four-field %% metadata, --dk-diagram-* theming, decks included; deferrals point at issue #13 without restating design. Architecture page describes remark/rehype transform, single render owner + token->themeVariables map, opt-in seam, both shells (doc pipeline + DeckLayout), links ADR-0023+0024, carries CSP style-src unsafe-inline consumer note. Frontmatter matches siblings; doc-sanity all green (validate:docs 90 valid, links 584 resolve, catalog 3 resolve, markdownlint 0 issues). Out-of-map ADR-0023/0024 chore fixes confirmed metadata/formatting only (MD018 reflow + description trim under 180), no decision changed, justified to prevent merge-time doc-sanity failure.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 756241,
+      "shell_pid_created_at": "1787639751.44"
+    }
+  }
+}

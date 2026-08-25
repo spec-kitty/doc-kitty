@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "mission_slug": "diagrams-01M0VPPG",
+  "mission_id": "01M0VPPGS7NCZDN4Z8BFWD37MW",
+  "mission_branch": "kitty/mission-diagrams-01M0VPPG",
+  "target_branch": "feat/diagrams",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "src/lib/theme.ts",
+        "src/scripts/assert-chrome-artifacts.mjs",
+        "src/styles/theme.css",
+        "src/tests/diagram-tokens.test.ts",
+        "src/themes/spec-kitty/assets/diagram-tokens.css",
+        "src/themes/spec-kitty/tokens.css"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/rehype/diagram-figure.ts",
+        "src/lib/remark/diagram-meta.internal.ts",
+        "src/lib/remark/diagram-meta.ts",
+        "src/tests/diagram-meta.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "docs/architecture/diagrams.md",
+        "docs/plans/features/diagrams.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "example/astro.config.mjs",
+        "example/docs/architecture/overview.md",
+        "src/lib/config.ts",
+        "src/lib/diagram/diagram-render.client.ts",
+        "src/tests/diagram-preset.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "example/docs/architecture/diagram-demonstrator.md",
+        "src/scripts/assert-build-artifacts.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "example/docs/presentations/showcase-deck.md",
+        "src/layouts/DeckLayout.astro"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "tests/a11y/axe.spec.ts",
+        "tests/a11y/diagram.spec.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-08-25T06:25:09.522077+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "30bae22d935c09fb038108b2aa4afab0b581a461"
+}
