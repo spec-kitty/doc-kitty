@@ -15,8 +15,10 @@
  * </figure>
  * ```
  *
- * - `attribution` links to `source` when a source is present, otherwise it is
- *   plain text.
+ * - `attribution` links to `source` when a source is present AND its scheme
+ *   passes {@link safeHref}'s allowlist (`http:`/`https:`/`mailto:`/no scheme);
+ *   otherwise it is plain text (DIAG-SEC-01 — never emit a non-allowlisted
+ *   href, e.g. `javascript:`).
  * - The `<figcaption>` is OMITTED entirely when there is neither a description
  *   nor an attribution — an empty-safe figure (a diagram with no metadata still
  *   gets wrapped, just without a caption).
@@ -49,6 +51,39 @@ interface DiagramVFile {
     dkDiagrams?: FigureFields[];
     [key: string]: unknown;
   };
+}
+
+/**
+ * Deny-by-default scheme allowlist for `%% source:` values (DIAG-SEC-01).
+ * Mirrors `../remark/deck-split.internal.js`'s attribute allowlist precedent: a
+ * `%% source:` value is placed directly into an `<a href>`, so a `javascript:`/
+ * `data:`/`vbscript:` URI must never reach the DOM as a clickable link (a
+ * stored/DOM-XSS vector). Returns the trimmed value when its scheme is
+ * `http:`/`https:`/`mailto:`, or when the value has NO scheme at all (a
+ * relative/hash-only link, e.g. `#note` or `../file.md`); returns `undefined`
+ * for everything else. Robustness: strips control chars/whitespace throughout
+ * (not just the edges) before scheme-matching, so a scheme smuggled via
+ * embedded tabs/newlines (`java\tscript:`) still collapses to `javascript:`
+ * and is rejected — Chromium's own URL parser strips those characters, so a
+ * naive `^[a-z]+:` match on the raw string would under-reject.
+ */
+const ALLOWED_SCHEMES = new Set(['http:', 'https:', 'mailto:']);
+// Matches any ASCII control character (tab, newline, etc.) so a scheme
+// smuggled via embedded whitespace (e.g. a tab inside "java" + "script:")
+// collapses before the scheme check runs -- browsers do the same before
+// parsing a URL scheme, so a naive edge-trim would under-reject it.
+// eslint-disable-next-line no-control-regex -- intentional: strips control characters a scheme could be smuggled through.
+const CONTROL_CHARS_RE = /[\u0000-\u001f\u007f]+/g;
+export function safeHref(value: string): string | undefined {
+  const trimmed = value.trim();
+  const collapsed = trimmed.replace(CONTROL_CHARS_RE, '');
+  // Protocol-relative ("//host/...") is rejected outright: no explicit scheme
+  // to allowlist, but it resolves to a live, attacker-controlled origin.
+  if (collapsed.startsWith('//')) return undefined;
+  const match = /^([a-z][a-z0-9+.-]*:)/i.exec(collapsed);
+  if (!match) return trimmed; // no scheme -> relative/hash link, allow.
+  const scheme = match[1].toLowerCase();
+  return ALLOWED_SCHEMES.has(scheme) ? trimmed : undefined;
 }
 
 /** hast text node. */
@@ -92,10 +127,12 @@ function captionChildren(fields: FigureFields): HastNode[] | null {
   }
 
   if (fields.attribution !== undefined) {
+    // DIAG-SEC-01: only an allowlisted scheme becomes a clickable `<a href>`;
+    // a rejected (or absent) source falls back to plain text — never a
+    // non-allowlisted href (e.g. `javascript:`) reaches the DOM.
+    const href = fields.source !== undefined ? safeHref(fields.source) : undefined;
     const attrInner: HastNode =
-      fields.source !== undefined
-        ? element('a', { href: fields.source }, [text(fields.attribution)])
-        : text(fields.attribution);
+      href !== undefined ? element('a', { href }, [text(fields.attribution)]) : text(fields.attribution);
     children.push(element('span', { className: ['dk-diagram__attr'] }, [attrInner]));
   }
 

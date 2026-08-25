@@ -142,6 +142,24 @@ function declarationIndex(lines: string[]): number {
 }
 
 /**
+ * Belt-and-suspenders (DR-6): strip any `%%{`/`}%%` sequence a crafted
+ * `title`/`description` might carry — the sequence that opens/closes a Mermaid
+ * init directive — so an interpolated value can never smuggle one into the
+ * generated `accTitle:`/`accDescr:` line, and collapse any run of whitespace/
+ * control characters to a single space. A newline is already unreachable here
+ * (`META_LINE` only ever captures a single line's worth of value), but this
+ * guards defensively against any future caller that skips that regex. The
+ * accessible text otherwise passes through intact.
+ */
+function sanitizeAccValue(value: string): string {
+  return value
+    .replace(/%%\{|\}%%/g, '')
+    // eslint-disable-next-line no-control-regex -- intentional: collapses whitespace/control characters (see comment above).
+    .replace(/[\s\x00-\x1f\x7f]+/g, ' ')
+    .trim();
+}
+
+/**
  * Inject Mermaid `accTitle`/`accDescr` accessibility statements after the
  * diagram-type declaration line.
  *
@@ -154,8 +172,10 @@ export function injectAccStatements(code: string, fields: DiagramMeta): string {
   const name = fields.title ?? fields.description;
   if (name === undefined) return code;
 
-  const inject: string[] = [`accTitle: ${name}`];
-  if (fields.description !== undefined) inject.push(`accDescr: ${fields.description}`);
+  const inject: string[] = [`accTitle: ${sanitizeAccValue(name)}`];
+  if (fields.description !== undefined) {
+    inject.push(`accDescr: ${sanitizeAccValue(fields.description)}`);
+  }
 
   const lines = code.split('\n');
   const at = declarationIndex(lines);

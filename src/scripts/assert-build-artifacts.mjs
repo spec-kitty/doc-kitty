@@ -199,7 +199,7 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..');
 const TOOLKIT_MANIFEST = path.join(REPO_ROOT, 'src', 'package.json');
 const PNPM_LOCKFILE = path.join(REPO_ROOT, 'pnpm-lock.yaml');
-const PINNED_DIAGRAM_DEPS = { 'astro-mermaid': '2.1.0', mermaid: '11.17.1' };
+const PINNED_DIAGRAM_DEPS = { mermaid: '11.17.1' };
 // A CDN import of mermaid in a shipped asset would defeat the self-contained,
 // no-external-runtime-request guarantee (NFR-004). Mermaid must be BUNDLED — an
 // `_astro/mermaid*.js` chunk — and no shipped JS may pull it from a CDN host.
@@ -555,9 +555,8 @@ async function assertPinnedDepsNoCdn(distDir) {
     }
   }
   ok(
-    `pinned deps + no CDN: astro-mermaid@${PINNED_DIAGRAM_DEPS['astro-mermaid']} + ` +
-      `mermaid@${PINNED_DIAGRAM_DEPS.mermaid} pinned (manifest + lockfile), mermaid bundled locally, ` +
-      `no CDN reference in ${jsAssets.length} shipped JS asset(s) (BD-4)`,
+    `pinned deps + no CDN: mermaid@${PINNED_DIAGRAM_DEPS.mermaid} pinned (manifest + lockfile), ` +
+      `mermaid bundled locally, no CDN reference in ${jsAssets.length} shipped JS asset(s) (BD-4)`,
   );
 }
 
