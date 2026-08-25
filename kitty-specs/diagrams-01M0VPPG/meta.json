@@ -1,0 +1,18 @@
+{
+  "baseline_merge_commit": "efe86c6e4c7142ae10d2029a83b387492aaabf68",
+  "created_at": "2026-08-25T05:36:11.560356+00:00",
+  "flattened": true,
+  "friendly_name": "Diagrams (Mermaid)",
+  "mission_id": "01M0VPPGS7NCZDN4Z8BFWD37MW",
+  "mission_number": 2,
+  "mission_slug": "diagrams-01M0VPPG",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "doc-kitty renders a repository's docs tree as a human-first, agent-supported site. Mission M5 lets anyone author a diagram as a plain Markdown code fence and have it render (client-side in v1) as a brand-themed, accessible figure — with a caption and an accessible description authored in the diagram's own comment syntax — on both documentation pages and slide decks, with no external service and a readable no-JS fallback. Build-time static-SVG pre-render and PlantUML are a tracked follow-up (issue #13).",
+  "purpose_tldr": "Authors write Mermaid diagrams in Markdown; they render in the browser as themed, accessible figures on docs and slide decks.",
+  "slug": "diagrams-01M0VPPG",
+  "status_phase": "1",
+  "target_branch": "feat/diagrams",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-25T06:33:22.104320+00:00"
+}
