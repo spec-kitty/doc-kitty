@@ -1,0 +1,230 @@
+schema_version: 1
+mission_id: 01M0YCHB28NGGXJQ6K7NKMQ94C
+mission_slug: glossary-01M0YCHB
+mission_number:
+friendly_name: Glossary + Contextive
+mission_type: software-dev
+target_branch: feat/glossary
+created_at: '2026-08-27T07:34:18.920440+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-08-27T07:34:18.920440+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-004
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-005
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-006
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-007
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-014
+not_helpful:
+- id: n-009
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-023
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-001
+  category: process
+  summary: WP01 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-015
+  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-002
+  category: process
+  summary: WP02 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-016
+  details: WP WP02 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-003
+  category: process
+  summary: WP03 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-017
+  details: WP WP03 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-004
+  category: process
+  summary: WP04 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-018
+  details: WP WP04 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-005
+  category: process
+  summary: WP05 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-019
+  details: WP WP05 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-006
+  category: process
+  summary: WP06 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-020
+  details: WP WP06 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-007
+  category: process
+  summary: WP07 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-021
+  details: WP WP07 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-008
+  category: process
+  summary: WP08 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-022
+  details: WP WP08 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP01-loader-validation-anchor.md
+- id: e-006
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP02-pure-resolver.md
+- id: e-007
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP03-page-generator.md
+- id: e-008
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP04-autolink-plugin.md
+- id: e-009
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP05-term-directive.md
+- id: e-010
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP06-hover-preview-island.md
+- id: e-011
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP07-on-this-page-block.md
+- id: e-012
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP08-config-integration.md
+- id: e-013
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/tasks/WP09-terminal-example.md
+- id: e-014
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+- id: e-015
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z2J1FANJ09WEHSVJYPSFT6
+- id: e-016
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z36AQGST18XQ1YZ57RFQWE
+- id: e-017
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z392D4CVR7C8A6ZB7YHQ3K
+- id: e-018
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z3EQQ6KW6WB90KNH2S3NYB..01M0Z4F6HPJW8HMQXWT1ZJFBYS
+- id: e-019
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z3FSWF8BRF3QHJ8902GMYK..01M0Z4K04TBGBEQ1P21QTSNVGM
+- id: e-020
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z4SXAZ20E30N04W8DHE6BS..01M0Z5JD2BHF9QZW4GKHJ9T15V
+- id: e-021
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z4YZXK2F82JA68ZNZ2M3MV..01M0Z7AKSK5J4V1VP2CTZ0AEZC
+- id: e-022
+  kind: event_range
+  path: kitty-specs/glossary-01M0YCHB/status.events.jsonl
+  range: 01M0Z7GTPV67SPWTCMPPA0SFS6
+- id: e-023
+  kind: file
+  path: kitty-specs/glossary-01M0YCHB/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

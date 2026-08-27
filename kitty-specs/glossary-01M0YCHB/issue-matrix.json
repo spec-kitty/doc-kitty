@@ -1,0 +1,17 @@
+{
+  "rows": {
+    "#13": {
+      "evidence_ref": "Spec C-006: PlantUML + build-time static-SVG diagram rendering are explicitly out of M4 scope; #13 remains its own tracked follow-up (not addressed by this mission).",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "deferred-with-followup",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}

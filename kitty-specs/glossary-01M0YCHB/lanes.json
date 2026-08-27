@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "mission_slug": "glossary-01M0YCHB",
+  "mission_id": "01M0YCHB28NGGXJQ6K7NKMQ94C",
+  "mission_branch": "kitty/mission-glossary-01M0YCHB",
+  "target_branch": "feat/glossary",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/glossary/anchor.ts",
+        "src/lib/glossary/load.internal.ts",
+        "src/lib/glossary/load.ts",
+        "src/lib/glossary/types.ts",
+        "src/tests/glossary-anchor.test.ts",
+        "src/tests/glossary-load.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/glossary/resolve.ts",
+        "src/tests/glossary-resolve.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/glossary/generate.ts",
+        "src/tests/glossary-generate.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/remark/glossary-autolink.internal.ts",
+        "src/lib/remark/glossary-autolink.ts",
+        "src/tests/glossary-autolink.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "src/lib/remark/glossary-term.ts",
+        "src/tests/glossary-term.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/lib/glossary/preview.client.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "src/components/MarkdownContent.astro",
+        "src/components/slots/OnThisPage.astro"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/schema.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "docs/architecture/glossary.md",
+        "docs/plans/features/glossary-and-contextive.md",
+        "example/.contextive/**",
+        "example/docs/glossary-demo/**",
+        "example/docs/glossary/**",
+        "example/tests/fixtures/**",
+        "tests/a11y/glossary.spec.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h"
+      ],
+      "parallel_group": 5
+    }
+  ],
+  "computed_at": "2026-08-26T12:28:16.188747+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "5dbb15abfaa92b4606d248ba4599130c9272bf07"
+}

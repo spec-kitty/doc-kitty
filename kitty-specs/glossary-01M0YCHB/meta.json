@@ -1,0 +1,20 @@
+{
+  "baseline_merge_commit": "60b6397e3f22607f2998f60d41c02aaef72900ef",
+  "coordination_branch": "kitty/mission-glossary-01M0YCHB",
+  "created_at": "2026-08-26T06:36:19.401641+00:00",
+  "flattened": false,
+  "friendly_name": "Glossary + Contextive",
+  "mission_id": "01M0YCHB28NGGXJQ6K7NKMQ94C",
+  "mission_number": 3,
+  "mission_slug": "glossary-01M0YCHB",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Readers and agents meet domain terms throughout the docs with no shared definition at hand. M4 turns a single Contextive glossary file into browsable per-context glossary pages and auto-links the first use of each term per section, with hover previews and an auto per-page references block, so the site teaches its own vocabulary while authors maintain one file that also powers their IDE.",
+  "purpose_tldr": "A multi-context project glossary that auto-links domain terms across the docs, sourced from a Contextive definitions file.",
+  "slug": "glossary-01M0YCHB",
+  "status_phase": "1",
+  "target_branch": "feat/glossary",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-26T12:34:01.497644+00:00"
+}
