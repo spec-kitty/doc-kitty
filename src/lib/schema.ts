@@ -163,6 +163,17 @@ export const docKittyFields = {
   role: z.string().optional(),
   goals: z.array(z.string()).optional(),
   responsibilities: z.array(z.string()).optional(),
+  // Glossary page-local fields (ADR-0028, M4). Both OPTIONAL and purely additive:
+  // a page with neither validates and renders exactly as before (NFR-002).
+  //  - `glossary_context` names the bounded context the page belongs to, so the
+  //    auto-linker (ADR-0027) resolves a term to the right definition and can
+  //    settle a collision the page context covers. Not inherited in v1.
+  //  - `glossary_autolink` (absent = `true` at read sites) opts the whole page
+  //    out of auto-linking (FR-008); `:term` links still work and are still
+  //    listed. The site schema is lenient; an unknown `glossary_context` is a
+  //    build warning in the plugin layer, not a schema error.
+  glossary_context: z.string().optional(),
+  glossary_autolink: z.boolean().optional(),
   // Kitty extension.
   agent: agentHints,
 };

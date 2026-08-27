@@ -81,10 +81,14 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 // URL renders, not whether the URL is generated).
 //
 // Bump this ONLY as a deliberate, reviewable act when example content changes.
-const EXPECTED_INDEX_ENTRY_COUNT = 19;
+// WP09 (M4 glossary on-switch) adds SIX published pages — the three glossary-demo
+// pages and the three codegen'd glossary pages (the hub + one per context) — taking
+// the published set from 19 to 25.
+const EXPECTED_INDEX_ENTRY_COUNT = 25;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
-const EXPECTED_SITEMAP_URL_COUNT = 19;
+// WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
+const EXPECTED_SITEMAP_URL_COUNT = 25;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.

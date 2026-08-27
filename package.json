@@ -33,6 +33,12 @@
     "agent-docs"
   ],
   "license": "UNLICENSED",
+  "dependencies": {
+    "mdast-util-directive": "3.1.0",
+    "remark-directive": "4.0.0",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.5"
+  },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
     "@eslint/js": "^10.0.1",

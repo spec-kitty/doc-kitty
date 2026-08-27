@@ -1,0 +1,305 @@
+---
+/*
+ * dk "On this page" block (WP07, T024/T025; FR-010, NFR-004/005; ADR-0025 —
+ * ADR-0017 companion). The M4 per-page block: three labelled sub-lists —
+ * external references, related pages, and the DISTINCT glossary links the page
+ * used — rendered below the content, inside Starlight's searchable region
+ * (NFR-003) and complete with JS off (NFR-005).
+ *
+ * SELF-RESOLVING (ADR-0017): takes no props. Reads the current page's
+ * `entry.data` from `Astro.locals.starlightRoute` and the catalog/index from
+ * `getCollection('docs' | 'bibliography' | 'tools')`, exactly as the M3
+ * `ExternalReferences.astro`/`Related.astro` bodies do.
+ *
+ * COMPOSES M3 BY IMPORT (INV-G5): the refs/related sub-lists reuse the frozen M3
+ * resolvers (`resolveCitation`/`buildCatalog`, `resolveRelated`/`slugFromEntryId`)
+ * and molecules (`ReferenceItem`/`RelatedCard`) — this block NEVER edits an M3
+ * file, it replicates their self-resolving bodies over the shared resolvers. A
+ * dangling `related` / a missing citation id stays BUILD-FATAL (the resolvers
+ * throw; this body does NOT swallow).
+ *
+ * LINKS-USED = RENDER-TIME RE-DERIVE (post-squad A-1/A-2, ADR-0025 Decision 2):
+ * the `remarkPluginFrontmatter` channel is CLOSED (the docs schema strips an
+ * undeclared key and `entry.data` freezes at load), so this block does NOT read
+ * `route.entry.data.glossary_links_used`. Instead `linksForBody` re-runs the SAME
+ * transforms the build pipeline applies over `entry.body` — parse →
+ * `remarkDirective` → `glossary-term` (WP05) → `computePageLinks` (WP04) — and
+ * reuses those PURE exports (never `resolve.ts` alone, which has no section model
+ * and no directive pass → would drop `:term` links). NFR-004 determinism makes the
+ * re-derived list byte-identical to what the pipeline linked, `:term` links
+ * included. Each is a plain anchor to `/glossary/<context>/#<anchor>` (present
+ * with JS off; the WP06 hover island is orthogonal).
+ *
+ * OMIT-WHEN-EMPTY (FR-010): the whole block is omitted when all three sub-lists
+ * are empty, and any individual empty sub-list is omitted.
+ *
+ * The MOUNT is owned + presence-gated by the ADR-0013 carrier
+ * `MarkdownContent.astro` (WP07 T036): this block replaces the standalone
+ * `<Related/>`/`<ExternalReferences/>` only when the glossary is active, so a
+ * glossary-free build stays byte-identical (NFR-002). Nothing here renders the
+ * refs/related twice — the carrier guarantees single render.
+ */
+import process from 'node:process';
+import { getCollection } from 'astro:content';
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkDirective from 'remark-directive';
+
+import ReferenceItem from '../../themes/spec-kitty/components/molecules/ReferenceItem.astro';
+import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
+import { buildCatalog } from '../../lib/catalog.js';
+import {
+  resolveCitation,
+  resolveRelated,
+  slugFromEntryId,
+  type DocKittyFrontmatter,
+  type BibliographyRecord,
+  type ToolRecord,
+  type InlineReference,
+  type DocsIndex,
+} from '../../lib/metadata.js';
+import { loadGlossary } from '../../lib/glossary/load.js';
+import { DEFAULT_IGNORE_LIST } from '../../lib/glossary/ignore-list.js';
+import type { SharedTermIndex, GlossaryLinkUsed } from '../../lib/glossary/types.js';
+import glossaryTerm from '../../lib/remark/glossary-term.js';
+import {
+  computePageLinks,
+  collectLinksUsed,
+  type MdRoot,
+} from '../../lib/remark/glossary-autolink.internal.js';
+
+interface ReferenceRow {
+  href: string;
+  title: string;
+  citationKey?: string;
+  meta?: string;
+}
+
+/**
+ * The render-time re-derive (the SOLE links-used mechanism, ADR-0025 A-1/A-2).
+ * Runs the SAME transforms the pipeline applies over the page's raw `body`, reusing
+ * WP04/WP05's pure exports so "links used" cannot drift from "links inserted":
+ *   parse → remarkDirective → glossary-term (WP05) → computePageLinks (WP04).
+ * Returns the deduped, document-ordered `(surface, context, anchor, termName)` list
+ * — `:term` links included (the directive pre-pass is what makes them appear).
+ *
+ * `autolink === false` mirrors the WP04 wrapper's per-page opt-out: the auto-linker
+ * is off, so only author `:term` links are on the page — we run the directive pass
+ * then collect via `collectLinksUsed` (skipping the auto-link walk) to match.
+ */
+function linksForBody(
+  body: string,
+  pageContext: string | undefined,
+  index: SharedTermIndex,
+  ignoreList: ReadonlySet<string>,
+  autolink: boolean,
+): GlossaryLinkUsed[] {
+  // Parse to mdast with the directive extension active, so `:term[...]{...}`
+  // becomes a real `textDirective` node (never re-scanned prose) — the exact
+  // substrate the build pipeline hands `glossary-term`.
+  const processor = unified().use(remarkParse).use(remarkDirective);
+  const tree = processor.parse(body) as unknown as MdRoot;
+
+  // WP05: turn every resolvable `:term` directive into the shared glossary link
+  // node. A no-op message sink stands in for the vfile (warnings are the build
+  // pipeline's concern, not the render-time re-derive).
+  const silentFile = { message() {} };
+  (glossaryTerm({ index, ignoreList }) as (t: MdRoot, f: typeof silentFile) => void)(
+    tree,
+    silentFile,
+  );
+
+  // WP04: auto-link the first eligible occurrence per section AND collect every
+  // `data-glossary-term` node (auto-linked + `:term`). With the auto-linker opted
+  // out, collect the `:term` links already in the tree without adding auto-links.
+  return autolink
+    ? computePageLinks(tree, pageContext, index, ignoreList).linksUsed
+    : collectLinksUsed(tree);
+}
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
+  .starlightRoute;
+const data = route.entry.data as unknown as DocKittyFrontmatter & {
+  glossary_context?: string;
+  glossary_autolink?: boolean;
+  kind?: string;
+};
+
+// --- External references (composed M3 body, byte-for-byte behaviour) -----------
+const refs = data.external_references ?? [];
+let referenceRows: ReferenceRow[] = [];
+if (refs.length > 0) {
+  const catalog = buildCatalog(
+    (await getCollection('bibliography')).map((e) => e.data as BibliographyRecord),
+    (await getCollection('tools')).map((e) => e.data as ToolRecord),
+  );
+
+  referenceRows = refs.map((ref) => {
+    // resolveCitation throws on a miss / unknown type (FR-008) — do NOT swallow.
+    const resolved = resolveCitation(ref, catalog);
+    if ('url' in ref) {
+      const inline = resolved as InlineReference;
+      const row: ReferenceRow = { href: inline.url, title: inline.title };
+      if (inline.note) row.meta = inline.note;
+      return row;
+    }
+    const citationKey = ref.id;
+    if ('name' in resolved) {
+      const tool = resolved as ToolRecord;
+      const row: ReferenceRow = { href: tool.url, title: tool.name, citationKey };
+      if (tool.note) row.meta = tool.note;
+      return row;
+    }
+    const biblio = resolved as BibliographyRecord;
+    const meta = [biblio.authors?.join(', '), biblio.issued, biblio.container]
+      .filter(Boolean)
+      .join(' · ');
+    const row: ReferenceRow = { href: biblio.url, title: biblio.title, citationKey };
+    if (meta) row.meta = meta;
+    return row;
+  });
+}
+
+// --- Related pages (composed M3 body, byte-for-byte behaviour) -----------------
+const related = data.related ?? [];
+const docsIndex: DocsIndex = {};
+if (related.length > 0) {
+  for (const entry of await getCollection('docs')) {
+    const slug = slugFromEntryId(entry.id);
+    const d = entry.data as unknown as DocKittyFrontmatter;
+    docsIndex[slug] = {
+      slug,
+      title: d.title,
+      kind: d.kind ?? '',
+      doc_status: d.doc_status ?? 'draft',
+      ...(d.description !== undefined ? { description: d.description } : {}),
+    };
+  }
+}
+// resolveRelated throws on a dangling ref (FR-004) — do NOT swallow.
+const relatedCards = related.map((ref) => resolveRelated(ref, docsIndex));
+const STALE = new Set(['deprecated', 'superseded']);
+
+// --- Glossary links used (render-time re-derive; ADR-0025 A-1/A-2) -------------
+// The shared index is loaded at render the same way the build pipeline sources it
+// (WP01's `loadGlossary` over the site root). Absent definitions file → no index →
+// no glossary sub-list (dormant until WP09 lands `.contextive/definitions.yaml`).
+let glossaryLinks: GlossaryLinkUsed[] = [];
+const loaded = loadGlossary(process.cwd());
+// A deck is never auto-linked (AS-1/AS-4); `glossary_autolink: false` opts the page
+// out of auto-links (only `:term` survives). Both mirror the WP04 wrapper gates.
+if (
+  loaded.present &&
+  loaded.index.bySurface.size > 0 &&
+  data.kind !== 'Presentation' &&
+  typeof route.entry.body === 'string'
+) {
+  const autolink = data.glossary_autolink !== false;
+  const pageContext =
+    typeof data.glossary_context === 'string' ? data.glossary_context : undefined;
+  glossaryLinks = linksForBody(
+    route.entry.body,
+    pageContext,
+    loaded.index,
+    DEFAULT_IGNORE_LIST, // out-of-map (WP08): thread shared ignore-list so re-derive matches the pipeline (WP07 handoff)
+    autolink,
+  );
+}
+
+// Omit-when-empty (FR-010): render nothing at all when every sub-list is empty.
+const hasReferences = referenceRows.length > 0;
+const hasRelated = relatedCards.length > 0;
+const hasGlossary = glossaryLinks.length > 0;
+const hasAnything = hasReferences || hasRelated || hasGlossary;
+
+// Structural list reset applied INLINE (not via a scoped `<style>`): a `<style>`
+// block would enter the global CSS bundle even while this block is dormant,
+// shifting every page's stylesheet hash and breaking the byte-identical dormancy
+// NFR-002 requires until WP09 activates the glossary. Inline styles never reach the
+// bundle, so a glossary-free build stays byte-identical. Mirrors the M3 blocks'
+// list reset (list-style/margin/padding/flex/gap) which this block composes.
+const LIST_RESET =
+  'list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--dk-space-sm)';
+---
+
+{
+  /* Sub-list order is Related → External references → Glossary links, intentionally
+     matching the M3 carrier's existing block order (MarkdownContent renders <Related/>
+     then <ExternalReferences/>) so the active-glossary swap is a clean replacement and
+     the dormant path stays byte-identical (NFR-002). FR-010's enumeration
+     (external/related/glossary) is descriptive, not a normative render order; FR-010's
+     load-bearing "stable order" governs the glossary sub-list itself, which is
+     definition-order-then-first-appearance. */
+  hasAnything && (
+    <div class="dk-on-this-page">
+      {hasRelated && (
+        <div
+          class="dk-panel dk-panel--related dk-related"
+          role="navigation"
+          aria-label="Related pages"
+        >
+          <p class="dk-eyebrow">Related</p>
+          <ul class="dk-related__list" style={LIST_RESET}>
+            {relatedCards.map((card) => (
+              <li class="dk-related__item">
+                <RelatedCard
+                  href={`/${card.ref}/`}
+                  title={card.title}
+                  description={card.note}
+                  kind={card.kind}
+                  staleStatus={STALE.has(card.doc_status) ? card.doc_status : undefined}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {hasReferences && (
+        <div
+          class="dk-panel dk-panel--external-references dk-references"
+          role="navigation"
+          aria-label="External references"
+        >
+          <p class="dk-eyebrow">External references</p>
+          <ul class="dk-references__list" style={LIST_RESET}>
+            {referenceRows.map((row) => (
+              <li class="dk-references__item">
+                <ReferenceItem
+                  href={row.href}
+                  title={row.title}
+                  citationKey={row.citationKey}
+                  meta={row.meta}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {hasGlossary && (
+        <div
+          class="dk-panel dk-panel--glossary dk-glossary-links"
+          role="navigation"
+          aria-label="Glossary links used"
+        >
+          <p class="dk-eyebrow">Glossary links used</p>
+          <ul class="dk-glossary-links__list" style={LIST_RESET}>
+            {glossaryLinks.map((link) => (
+              <li class="dk-glossary-links__item">
+                <a
+                  class="dk-glossary-links__link"
+                  href={`/glossary/${link.context}/#${link.anchor}`}
+                >
+                  {link.termName}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
