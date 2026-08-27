@@ -7,6 +7,19 @@ settings:
 importers:
 
   .:
+    dependencies:
+      mdast-util-directive:
+        specifier: 3.1.0
+        version: 3.1.0(supports-color@5.5.0)
+      remark-directive:
+        specifier: 4.0.0
+        version: 4.0.0(supports-color@5.5.0)
+      remark-parse:
+        specifier: 11.0.0
+        version: 11.0.0(supports-color@5.5.0)
+      unified:
+        specifier: 11.0.5
+        version: 11.0.5
     devDependencies:
       '@axe-core/playwright':
         specifier: 4.13.0
@@ -3644,6 +3657,9 @@ packages:
 
   remark-directive@3.0.1:
     resolution: {integrity: sha512-gwglrEQEZcZYgVyG1tQuA+h58EZfq5CSULw7J90AFuCTyib1thgHPoqQ+h9iFvU6R+vnZ5oNFQR5QKgGpk741A==}
+
+  remark-directive@4.0.0:
+    resolution: {integrity: sha512-7sxn4RfF1o3izevPV1DheyGDD6X4c9hrGpfdUpm7uC++dqrnJxIZVkk7CoKqcLm0VUMAuOol7Mno3m6g8cfMuA==}
 
   remark-gfm@4.0.1:
     resolution: {integrity: sha512-1quofZ2RQ9EWdeN34S79+KExV1764+wCUGop5CPL1WGdD0ocPpu91lzPGbwWMECpEpd42kJGQwzRfyov9j4yNg==}
@@ -8857,6 +8873,15 @@ snapshots:
       '@types/mdast': 4.0.4
       mdast-util-directive: 3.1.0(supports-color@5.5.0)
       micromark-extension-directive: 3.0.2
+      unified: 11.0.5
+    transitivePeerDependencies:
+      - supports-color
+
+  remark-directive@4.0.0(supports-color@5.5.0):
+    dependencies:
+      '@types/mdast': 4.0.4
+      mdast-util-directive: 3.1.0(supports-color@5.5.0)
+      micromark-extension-directive: 4.0.0
       unified: 11.0.5
     transitivePeerDependencies:
       - supports-color

@@ -119,6 +119,11 @@ export const frontmatterSchema = z
       .array(z.object({ resource: z.string(), title: z.string() }))
       .optional(),
     stale_after: z.coerce.date().optional(),
+    // Glossary page-local fields (ADR-0028, M4) — mirrored from `docKittyFields`
+    // so the standalone gate and the site schema stay in parity. Both optional
+    // and additive: a page with neither validates exactly as before (NFR-002).
+    glossary_context: z.string().optional(),
+    glossary_autolink: z.boolean().optional(),
     agent: z
       .object({
         discoverable: z.boolean().optional(),
@@ -174,17 +179,38 @@ export function validate(relPath, data) {
   const warnings = [];
   const isRootReadme = relPath === 'README.md';
 
+  // Generated glossary pages (M4, ADR-0026): the codegen writes real Markdown
+  // under `<docs>/glossary/**` — the hub (`kind: Hub`) and one page per context
+  // (`kind: Glossary`). They are MACHINE-GENERATED reference pages that carry the
+  // minimal ADR-0026 frontmatter (title/description/kind/doc_status[/glossary_context])
+  // and, deliberately, no authored `updated` timestamp or path-`type` — a fabricated
+  // date would break the deterministic, byte-identical re-generation the mission
+  // pins (NFR-004). So they are exempt from the authored-metadata presence rules
+  // here, exactly as the bundle-root README and `log.md` are exempt above. This is
+  // the standalone gate's job (the build schema is already lenient on both fields);
+  // note the boundary is the `glossary/` segment, so the AUTHORED `glossary-demo/`
+  // pages are held to the full contract.
+  const isGeneratedGlossary =
+    relPath.split('/')[0] === 'glossary' &&
+    (data.kind === 'Glossary' || data.kind === 'Hub');
+
   const result = frontmatterSchema.safeParse(data);
   if (!result.success) {
     for (const issue of result.error.issues) {
+      // Generated glossary pages carry no `updated` by design — skip that issue.
+      if (isGeneratedGlossary && issue.path[0] === 'updated') continue;
       const where = issue.path.length ? `\`${issue.path.join('.')}\`: ` : '';
       problems.push(`${where}${issue.message}`);
     }
   }
 
   // Path-aware rules that schema.ts documents but leaves to this gate.
-  if (isRootReadme) {
-    if ('type' in data) warnings.push('bundle-root README should not carry `type`');
+  if (isRootReadme || isGeneratedGlossary) {
+    // Generated glossary pages carry no path-`type` (no authored section); the
+    // bundle-root README is exempt from `type` too. Neither warns on its absence.
+    if (isRootReadme && 'type' in data) {
+      warnings.push('bundle-root README should not carry `type`');
+    }
   } else if (!('type' in data)) {
     problems.push('missing required `type`');
   } else if (!DOC_TYPES.includes(data.type)) {

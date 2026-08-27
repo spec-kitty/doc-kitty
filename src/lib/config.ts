@@ -32,6 +32,16 @@ import { docKittyFavicon, faviconHref } from './favicon.js';
 import deckSplit from './remark/deck-split.js';
 import diagramMeta from './remark/diagram-meta.js';
 import diagramFigure from './rehype/diagram-figure.js';
+import remarkDirective from 'remark-directive';
+import { isGlossaryActive, loadGlossary } from './glossary/load.js';
+import { generateGlossaryPages } from './glossary/generate.js';
+import glossaryTerm from './remark/glossary-term.js';
+import glossaryAutolink from './remark/glossary-autolink.js';
+import { DEFAULT_IGNORE_LIST } from './glossary/ignore-list.js';
+import {
+  serializeDefinitionsPayload,
+  glossaryDefinitions,
+} from './glossary/definitions-payload.js';
 
 export interface DocKittyOptions {
   /** Site title shown in the header. */
@@ -325,6 +335,85 @@ const diagramsIntegration: AstroIntegration = {
   },
 };
 
+/**
+ * The presence-gated glossary seam (M4, the single integration owner — ADR-0025/
+ * 0026/0027/0028, contract `autolink-and-term.md`). It is added to the integrations
+ * array ONLY when a `.contextive/definitions.yaml` exists under the site root
+ * (`isGlossaryActive`), mirroring the `diagrams ? [diagramsIntegration] : []` shape:
+ * a glossary-free site contributes NOTHING here, so the array + corpus stay
+ * byte-identical to pre-M4 (NFR-002). There is deliberately **no** config toggle —
+ * the feature is presence-driven (C-005), so nothing in `DocKittyOptions` gates it.
+ *
+ * When active, its single `astro:config:setup` hook (pinned here — the content-layer
+ * glob `sync` runs after all config hooks, so generated files are on disk before
+ * `getCollection('docs')`, the sitemap filter, the sidebar, the agent API, and
+ * `llms.txt` read them):
+ *   (a) parses the definitions ONCE (`loadGlossary`, the single parse site INV-G1)
+ *       and codegens the hub + per-context pages into `<docsDir>/glossary/**`
+ *       (`generateGlossaryPages`). The generator is deterministic + idempotent
+ *       (no timestamp/`generated:` field), so a dev-watcher re-run rewrites
+ *       byte-identical files and never loops.
+ *   (b) registers the remark plugins in the PINNED order (`updateConfig` APPENDS
+ *       after Astro's built-in remark-gfm): `remarkDirective → glossary-term →
+ *       glossary-autolink`, threading the ONE shared index + `DEFAULT_IGNORE_LIST`
+ *       into both factories (FR-008), plus the `glossaryDefinitions` rehype plugin
+ *       that emits the hover-preview payload `<script>` (the WP06 island contract).
+ *   (c) injects the preview island page-wide (M5 `injectScript('page', …)` pattern),
+ *       referenced by absolute on-disk path; its own early-return keeps a
+ *       glossary-free page cost-free (NFR-003) and it is a no-op on the out-of-frame
+ *       deck (it keys on `a[data-glossary-term]`), so no `main.reveal` guard is
+ *       needed (unlike the diagram render). `.catch` mirrors the diagram owner.
+ */
+function glossaryIntegration(docsDir: string): AstroIntegration {
+  return {
+    name: 'doc-kitty:glossary',
+    hooks: {
+      'astro:config:setup': ({ updateConfig, injectScript }) => {
+        const root = process.cwd();
+        const loaded = loadGlossary(root);
+        // Defensive: the array-build gate already checked presence, but a file
+        // deleted between the two reads must still no-op cleanly.
+        if (!loaded.present) return;
+        const { index } = loaded;
+
+        // (a) Generate-before-glob: write docs/glossary/** now, in config:setup,
+        // resolved against the same cwd the sitemap draft-filter uses.
+        generateGlossaryPages(index, path.resolve(root, docsDir));
+
+        // (b) Pinned remark order (append after remark-gfm) + payload rehype.
+        // The shared index + DEFAULT_IGNORE_LIST thread into BOTH factories so the
+        // pipeline and WP07's render-time re-derive resolve identically (FR-008).
+        updateConfig({
+          markdown: {
+            remarkPlugins: [
+              remarkDirective,
+              [glossaryTerm, { index, ignoreList: DEFAULT_IGNORE_LIST }],
+              [glossaryAutolink, { index, ignoreList: DEFAULT_IGNORE_LIST }],
+            ],
+            rehypePlugins: [
+              [glossaryDefinitions, { json: serializeDefinitionsPayload(index) }],
+            ],
+          },
+        });
+
+        // (c) Inject the hover-preview island page-wide (absolute on-disk path).
+        const previewOwner = fileURLToPath(
+          new URL('./glossary/preview.client.ts', import.meta.url),
+        );
+        injectScript(
+          'page',
+          `import { initGlossaryPreview } from ${JSON.stringify(previewOwner)};\n` +
+            // `.catch` mirrors the diagram owner: a preview-init failure must surface
+            // a console warning, not an unhandled promise rejection. No `main.reveal`
+            // guard — the island keys on `a[data-glossary-term]`, so a deck with no
+            // glossary links is already a no-op and one with `:term` links gets it.
+            `initGlossaryPreview().catch((e) => console.warn('[dk-glossary] preview init failed', e));`,
+        );
+      },
+    },
+  };
+}
+
 export function defineDocKittyIntegrations(options: DocKittyOptions) {
   const {
     title,
@@ -394,12 +483,24 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     components: carriers,
   };
 
+  // Presence-gate (NFR-002): the glossary seam is added ONLY when a definitions
+  // file exists under the site root — the byte-identical twin of `diagrams: false`.
+  // Read once here (a cheap `existsSync`) so the array shape is decided BEFORE the
+  // build hooks run; the authoritative parse happens once inside the hook.
+  const glossaryActive = isGlossaryActive(process.cwd());
+
   return [
     // Opt-in diagrams seam (FR-001): PREPENDED before Starlight when
     // `diagrams: true`, so the diagram machinery sits ahead of `starlight()` in
     // the integrations array (ordering contract). Omitted entirely when off —
     // the spread below is then byte-identical to the pre-M5 array (zero cost).
     ...(diagrams ? [diagramsIntegration] : []),
+    // Presence-gated glossary seam (M4, ADR-0025/0026/0027/0028): PREPENDED before
+    // Starlight when `.contextive/definitions.yaml` exists, mirroring the diagrams
+    // shape. Omitted entirely when absent — the spread contributes NOTHING, so a
+    // glossary-free array + corpus is byte-identical to pre-M4 (NFR-002). WP09 lands
+    // the example definitions file; until then this is inert on the example.
+    ...(glossaryActive ? [glossaryIntegration(docsDir)] : []),
     starlight(starlightConfig),
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.

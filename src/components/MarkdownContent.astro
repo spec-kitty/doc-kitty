@@ -22,15 +22,31 @@
  * tokens/CSS, not component replacement. All render inside Starlight's searchable
  * content region (NFR-003/NFR-004).
  *
+ * M4 "ON THIS PAGE" MOUNT (WP07 T036, ADR-0025 Decision 1 / post-squad A-3). This
+ * carrier OWNS the mount of the glossary `<OnThisPage/>` block and presence-gates a
+ * SWAP of the after-content blocks on `isGlossaryActive()` (WP01's cheap
+ * `.contextive/definitions.yaml` presence check):
+ *   - glossary INACTIVE → render the existing standalone `<Related/>` +
+ *     `<ExternalReferences/>` exactly as before — BYTE-IDENTICAL (NFR-002 dormancy;
+ *     the swap flips only when WP09 lands the definitions file, D3).
+ *   - glossary ACTIVE → render `<OnThisPage/>` IN THEIR PLACE (it composes the same
+ *     M3 refs/related renderers plus the glossary-links-used sub-list), so
+ *     references/related are never double-rendered.
+ * The named `<slot name="dk:*">`s stay for authored MDX injection in both branches.
+ *
  * Reads `Astro.locals.starlightRoute` (Starlight ≥0.30), never through
  * component props (the pre-0.30 pattern) — C-004.
  */
+import process from 'node:process';
 import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import { Fragment } from 'astro/runtime/server/index.js';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { resolveLayout } from '../layouts/kind-layouts.ts';
+import { isGlossaryActive } from '../lib/glossary/load.js';
 import Audience from './slots/Audience.astro';
 import Related from './slots/Related.astro';
 import ExternalReferences from './slots/ExternalReferences.astro';
+import OnThisPage from './slots/OnThisPage.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -39,6 +55,24 @@ const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
 // generated collection types.
 const kind = (route.entry.data as { kind?: string }).kind;
 const Layout = resolveLayout(kind);
+
+// Presence gate (NFR-002): with no `.contextive/definitions.yaml` the glossary is
+// inactive and the after-content region stays byte-identical to pre-WP07.
+//
+// The swap is expressed by REBINDING which component sits in each after-content
+// position, NOT by wrapping the positions in `{…}` conditionals. Astro trims
+// whitespace around a `{expression}` differently than around a bare `<Element/>`,
+// so a `{cond ? … : …}` in the template would shift insignificant inter-element
+// whitespace and break the byte-identical dormancy NFR-002 requires. Keeping the
+// template as bare `<AfterRelated/>` / `<AfterExternalRefs/>` tags preserves the
+// exact element-whitespace handling of the pre-WP07 `<Related/>`/`<ExternalReferences/>`.
+//   - inactive → the two standalone M3 blocks, byte-identical to pre-WP07.
+//   - active   → `<OnThisPage/>` in the related position (it composes refs + related
+//     + the glossary-links sub-list); the external-references position becomes an
+//     empty `<Fragment/>` so refs/related are never double-rendered.
+const glossaryActive = isGlossaryActive(process.cwd());
+const AfterRelated = glossaryActive ? OnThisPage : Related;
+const AfterExternalRefs = glossaryActive ? Fragment : ExternalReferences;
 ---
 
 <Layout {...route}>
@@ -49,8 +83,8 @@ const Layout = resolveLayout(kind);
   <Default {...route}><slot /></Default>
 
   {/* dk:related + dk:external-references — carrier-body blocks after the content. */}
-  <Related />
+  <AfterRelated />
   <slot name="dk:related" />
-  <ExternalReferences />
+  <AfterExternalRefs />
   <slot name="dk:external-references" />
 </Layout>

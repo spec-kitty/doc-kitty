@@ -26,6 +26,15 @@ export const ROUTES = {
   // `%%` metadata, so both render to a themed `<figure class="dk-diagram">` whose
   // `<svg>` gains `aria-labelledby` (see the render-gate note on `AxePage`).
   diagram: `${BASE}/architecture/diagram-demonstrator/`,
+  // Glossary demonstrator — the CONTEXT-FREE page (WP09 T033). It declares NO
+  // `glossary_context`, so it carries BOTH a plain auto-link (`cargo`, single
+  // context) AND a `:term`-only forced link (`policy` → the hr context) that a
+  // context-free page could not have produced by resolution — the two halves the
+  // non-vacuity guard distinguishes (an unresolved `policy` would otherwise be
+  // plain). It also renders the "On this page" glossary sub-list and mounts the
+  // hover-preview island, so the axe scan, the 1.4.13 spec, the footprint twin,
+  // and the JS-off check all key on this one route.
+  glossaryDemo: `${BASE}/glossary-demo/cargo-and-collisions/`,
   // Slide deck — the published showcase reveal.js deck (WP05, AX-1/AX-2). This is
   // the OUT-OF-FRAME deck route (ADR-0021/0022): a COMPLETE standalone HTML
   // document, NOT the Starlight article shell — `main.reveal > .slides > section`,
@@ -121,6 +130,27 @@ const STARLIGHT_DIAGRAM_GUARD_ROOTS = [
 ] as const;
 const DECK_DIAGRAM_GUARD_ROOTS = [...DECK_GUARD_ROOTS, DIAGRAM_SVG_ROOT] as const;
 
+// Glossary non-vacuity (WP09 T033 / R-1, FR-014 — the M5 vacuous-green lesson).
+// A `:term` link is BYTE-IDENTICAL to an auto-link, so a bare `a[data-glossary-term]`
+// count proves NEITHER half distinctly (a pure auto-link page would satisfy it
+// vacuously). So the glossary route's guardRoots pin TWO selectors a link-free (or
+// `:term`-less) page cannot satisfy, evaluated by axe.spec's `.count()` gate BEFORE
+// the scan:
+//   1. an AUTO-LINK discriminator — `cargo` is a single-context term, so an
+//      `a[data-glossary-term="cargo"]` can ONLY have come from the auto-linker; and
+//   2. a `:term`-ONLY discriminator — the scanned page's own `glossary_context` is
+//      NOT `hr`, so an `a[data-glossary-context="hr"]` pointing at `/glossary/hr/#policy`
+//      can ONLY have come from an explicit `:term[policy]{context=hr}` (an unresolved
+//      `policy` collision would be plain text). A link-free page FAILS the gate.
+export const GLOSSARY_AUTOLINK_ROOT = 'a[data-glossary-term="cargo"]';
+export const GLOSSARY_TERM_ROOT =
+  'a[data-glossary-context="hr"][href*="/glossary/hr/#policy"]';
+const STARLIGHT_GLOSSARY_GUARD_ROOTS = [
+  ...STARLIGHT_GUARD_ROOTS,
+  GLOSSARY_AUTOLINK_ROOT,
+  GLOSSARY_TERM_ROOT,
+] as const;
+
 // The axe coverage set: the four in-frame Starlight surfaces + the diagram
 // demonstrator (WP06 T020) + the out-of-frame showcase deck, each run in BOTH
 // colour modes. The diagram routes (demonstrator + deck) carry a `renderWait` gate
@@ -139,6 +169,16 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     guardRoots: STARLIGHT_DIAGRAM_GUARD_ROOTS,
     renderWait: DIAGRAM_SVG_ROOT,
     renderCount: 2,
+  },
+  // WP09 T033 — the context-free glossary demonstrator, scanned in BOTH modes.
+  // No `renderWait`: glossary links are build-time SSR (not a client render), so
+  // the two non-vacuity guardRoots are present the moment the page serves and are
+  // checked by the `.count()` gate directly. A link-free page fails that gate.
+  {
+    name: 'Glossary demonstrator (/glossary-demo/cargo-and-collisions/)',
+    path: ROUTES.glossaryDemo,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GLOSSARY_GUARD_ROOTS,
   },
   // WP06 T020 — the showcase deck was ALREADY scanned here; it is UPDATED (not
   // duplicated) with the render-gate for its new first-slide diagram (title +

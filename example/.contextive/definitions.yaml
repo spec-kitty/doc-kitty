@@ -1,0 +1,50 @@
+# Contextive Community definitions (format v1) — the example glossary corpus.
+#
+# Landing THIS file is the atomic on-switch for the whole glossary seam: the
+# toolkit's integration is presence-gated on `.contextive/definitions.yaml`, so
+# until this file exists the example corpus is byte-identical to a glossary-free
+# site. It declares TWO bounded contexts with a real cross-context `policy`
+# collision, which the pages under `docs/glossary-demo/` exercise end to end.
+contexts:
+  - name: shipping
+    domainVisionStatement: How physical goods move from a seller to a buyer across carriers and borders.
+    terms:
+      - name: cargo
+        definition: |-
+          Goods carried by a vessel, aircraft, or vehicle under a single transport
+          arrangement. Cargo is booked, tracked, and insured as one unit from its
+          origin to its destination.
+        aliases:
+          - consignment
+        examples:
+          - A pallet of ceramics booked from Rotterdam to Osaka.
+          - A refrigerated container of vaccines moving under a cold-chain contract.
+        meta:
+          standard: https://www.iso.org/standard/64863.html
+      - name: freight
+        definition: |-
+          The charge a carrier levies to move cargo, and — by extension — the load
+          itself when it is described as revenue-bearing.
+        examples:
+          - Ocean freight quoted per twenty-foot equivalent unit.
+      - name: policy
+        definition: |-
+          A marine insurance contract that covers loss of or damage to cargo in
+          transit, bounded by the agreed route and mode of transport.
+        examples:
+          - An open marine cargo cover renewed each quarter.
+  - name: hr
+    domainVisionStatement: How the organisation hires, supports, and develops the people who work in it.
+    terms:
+      - name: policy
+        definition: |-
+          A written rule that governs how employees are expected to act — a leave
+          rule or a code of conduct, for instance — approved by the people team.
+        examples:
+          - A remote-work rule setting core collaboration hours.
+      - name: onboarding
+        definition: |-
+          The structured first weeks of a new hire's employment — access, training,
+          and introductions — until they can work without close guidance.
+        examples:
+          - A thirty-day plan with a named buddy and a week-one checklist.

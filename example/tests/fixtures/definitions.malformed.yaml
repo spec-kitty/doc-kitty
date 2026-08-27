@@ -1,0 +1,17 @@
+# A DELIBERATELY malformed Contextive definitions file (FR-002 / SC-006).
+#
+# It is kept OUT of the normal build on purpose — it does NOT live under
+# `.contextive/`, so the example site never loads it and the build stays green.
+# `src/tests/glossary-malformed-fixture.test.ts` copies it into a throwaway
+# `.contextive/definitions.yaml` and asserts `loadGlossary` throws build-fatally,
+# naming the offending context/term/field. The fault below: the `slot` term has
+# no `definition`, which the pinned schema rejects.
+contexts:
+  - name: warehouse
+    domainVisionStatement: How stored goods are located and retrieved.
+    terms:
+      - name: bin
+        definition: A labelled storage location on a rack.
+      - name: slot
+        aliases:
+          - pigeonhole
