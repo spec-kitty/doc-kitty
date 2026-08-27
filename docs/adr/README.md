@@ -31,5 +31,13 @@ kind: Hub
 | [0018](./0018-citation-catalog-collections.md) | Citation catalog collections (bibliography + tools) | accepted | 2026-08-24 |
 | [0019](./0019-persona-attribute-fields.md) | Persona attribute fields (role, goals, responsibilities) | accepted | 2026-08-24 |
 | [0020](./0020-persona-location-reconciliation.md) | Persona location reconciliation (`context/audience/`) | accepted | 2026-08-24 |
+| [0021](./0021-deck-routing-seam-out-of-frame-override.md) | Deck routing seam: out-of-frame route override | accepted | 2026-08-24 |
+| [0022](./0022-reveal-integration-and-token-theme.md) | Reveal integration and token theme | accepted | 2026-08-24 |
+| [0023](./0023-diagram-render-and-metadata-seam.md) | Client-side diagram rendering, one render owner, `%%`-metadata → accessible figure | accepted | 2026-08-25 |
+| [0024](./0024-diagram-token-promotion-and-brand-wiring.md) | Diagram token promotion and brand wiring | accepted | 2026-08-25 |
+| [0025](./0025-glossary-on-this-page-block-and-remark-render-channel.md) | Glossary "On this page" block + the remark→render data channel (ADR-0017 companion) | accepted | 2026-08-26 |
+| [0026](./0026-glossary-source-and-generation-seam.md) | Glossary source, validation, and codegen-into-collection generation seam | accepted | 2026-08-26 |
+| [0027](./0027-auto-link-resolution-scoping-and-term-directive.md) | Auto-link resolution, per-page scoping, and the `:term` directive | accepted | 2026-08-26 |
+| [0028](./0028-glossary-frontmatter-fields.md) | The `glossary_context` and `glossary_autolink` frontmatter fields | accepted | 2026-08-26 |
 
 New ADRs copy [`template.md`](./template.md).
