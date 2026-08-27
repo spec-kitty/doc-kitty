@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP05",
+  "captured_at": "2026-08-26T13:19:15Z",
+  "base_branch": "feat/glossary",
+  "base_commit": "cb30fa98d5ed898e1350f5b044d69c6116bded41",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

@@ -1,0 +1,156 @@
+{
+  "event_count": 76,
+  "last_event_id": "01M112A8WAEYPFPVEH9JN0XXMT",
+  "materialized_at": "2026-08-27T07:35:25.322351+00:00",
+  "mission_number": "",
+  "mission_slug": "glossary-01M0YCHB",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 9,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M1123NA27E6FS6DQ2E727GXC",
+      "last_transition_at": "2026-08-27T07:31:48.674707+00:00",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata): all criteria met, 206 tests green, dormant by design; #13 deferred-with-followup. --force clears coordination-file (status.events) churn only, not a code gate.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1274031,
+      "shell_pid_created_at": "1787747632.42"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M1123X4TV835WZE50YKCE9KA",
+      "last_transition_at": "2026-08-27T07:31:56.698060+00:00",
+      "review_result": {
+        "reference": "Review passed: pure resolveSurface, all 8 contract rules + FR-007/008/012; type-only types import + slug from anchor, no I/O/Astro (NFR-004); competing[] deterministically sorted; anchor always slug(termName) proven by WRONG-anchor seed; 10 exhaustive vitest green, full suite 216 passed; dormant by design; only 2 owned files touched. --force: lane-branch status-file churn only, not a code gate.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1303297,
+      "shell_pid_created_at": "1787749355.34"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M112450F8RE6GFNDMSY1FHR9",
+      "last_transition_at": "2026-08-27T07:32:04.751854+00:00",
+      "review_result": {
+        "reference": "Review passed: codegens glossary/index.md (kind:Hub, lists all contexts) + glossary/<slug>/index.md per context (kind:Glossary, self-declared glossary_context, doc_status:active) INTO outDocsDir as real files (no injectRoute). Definitions/meta rendered as Markdown body at deterministic slug(name) anchors reusing WP01 anchor.slug; domainVisionStatement rendered; meta http(s) URLs -> markdown links. Deterministic (name-sorted contexts, sorted meta keys, no Date.now/Map-order) + presence-gated (empty index -> [] writes nothing), Astro-free. P-1 CONFIRMED: no sections.yaml, no default-Reference-nav, M3-frozen metadata.ts untouched -- relies on Starlight tree-autogen. 8 vitest cases green, 214/214 total. Dormant (WP08 wires) as designed. No edits outside 2 owned files. --force used ONLY for auto-rebase status.json/status.events.jsonl coordination churn (commit 11eae95 R-STATUS-JSON-REMATERIALIZE), not WP03 source.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1304210,
+      "shell_pid_created_at": "1787749404.36"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M1124CP09SCXWEB819NY1RNH",
+      "last_transition_at": "2026-08-27T07:32:12.608768+00:00",
+      "review_result": {
+        "reference": "Review passed: pure computePageLinks in .internal (with optional onUnresolved sink for WP07); H2 section model + first-eligible-per-section, :term pre-seed dedup; whole-word case-insensitive regex incl multi-word terms; ancestor guard code/heading/link; correct link node /glossary/<ctx>/#slug(termName) + target/rel/data attrs; one greppable warning per distinct surface per page; deck/opt-out/presence gates in thin wrapper; NO frontmatter publish (A-1 honored); linksUsed scans all data-glossary-term nodes deduped+ordered (A-2). pnpm test green 248/248 incl 24 autolink. No edits outside 3 owned files. --force: status.json coordination churn only.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1325427,
+      "shell_pid_created_at": "1787750284.99"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M1124MA92W8T96B3D4QD23MF",
+      "last_transition_at": "2026-08-27T07:32:20.425063+00:00",
+      "review_result": {
+        "reference": "Review passed: :term remark-directive + exact-pinned deps. Pins remark-directive 4.0.0 + mdast-util-directive 3.1.0 (no caret); pnpm-lock committed; frozen-lockfile install clean. Supply-chain: mainstream unifiedjs/syntax-tree pkgs, no pre/post/install lifecycle scripts, no playwright/puppeteer in the new prod subgraph. glossary-term.ts emits byte-identical WP04 link node (url /glossary/<ctx>/#<anchor>; hProperties target=_blank rel=noopener data-glossary-term data-glossary-context; no title); resolves via WP02 resolveSurface against explicit context; link=false suppresses; unknown/missing/unresolved context warns non-fatal (never throws); counts-as-used via single data-glossary-term tree-scan (no file.data list); presence-gated no-op. 8 :term tests + full suite 232/232 green. --force: only kitty-specs coordination churn (contract+status.events carried via dep-lane merge) blocked the move; WP05 source touches only its 4 owned files.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1326637,
+      "shell_pid_created_at": "1787750330.22"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M1124W2P3J0DJJ63HT5RKFS9",
+      "last_transition_at": "2026-08-27T07:32:28.374071+00:00",
+      "review_result": {
+        "reference": "Review passed: footprint guard (early-return before dynamic import) confirmed; custom popover meets WCAG 2.2 1.4.13 by construction (hoverable 160ms bridge + popover mouseenter cancels close, Esc keydown dismiss, no auto-hide timer, persistent while hovered/focused); --dk-*/--sl-* tokens both modes; no href/target/click hijack (no-JS safe NFR-005); textContent-only injection-safe; adjacent preview-popover.client.ts declared+in-scope; definitions payload = documented WP08 handoff, not a defect; only 2 preview files changed; eslint 0, pnpm test 256 green. --force: blocker was pure coordination/status churn (status.json/events + leaked WP07 review file), no WP06 code.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1370211,
+      "shell_pid_created_at": "1787751609.17"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "lane": "done",
+      "last_event_id": "01M11253MV7B62ZF1R2EZC7ZPB",
+      "last_transition_at": "2026-08-27T07:32:36.123479+00:00",
+      "review_result": {
+        "reference": "Review passed (--force: blocker was pure coordination/status churn only — status.json + status.events.jsonl from R-STATUS-JSON-REMATERIALIZE auto-rebase, no WP07 code/spec content on the lane). INV-G5 holds: git log empty on all 6 frozen M3 files (ExternalReferences/Related.astro, metadata.ts, catalog.ts, ReferenceItem/RelatedCard) — OnThisPage composes by import (resolveCitation/resolveRelated/slugFromEntryId + buildCatalog from catalog.ts + molecules), self-resolving via Astro.locals.starlightRoute + getCollection. Links-used = true render-time re-derive: linksForBody over entry.body runs parse->remarkDirective->glossaryTerm(WP05)->computePageLinks/collectLinksUsed(WP04), collecting every data-glossary-term node (auto + :term); does NOT read route.entry.data.glossary_links_used (comments only) and does NOT use resolve.ts alone; index via loadGlossary at render. Presence-gated mount empirically byte-identical: rebuilt with base MarkdownContent swapped in, diff -rq of all 23 dist HTML files = ZERO differences (AfterRelated/AfterExternalRefs rebinding + bare tags + inline LIST_RESET, no <style>). Three labelled sub-lists, dedup by context+term, stable doc order, omit-when-empty (block + each), plain <a> anchors, no client:/script (NFR-005 SSR). pnpm test 256/256 green; eslint src exit 0; pnpm build exit 0 dormant (no on-this-page markup in dist, standalones intact). Only non-owned touch: package.json/pnpm-lock (unified/remark-parse/remark-directive/mdast-util-directive exact-pinned, all used; WP05 convention) — justified. COORD NOTE for WP08: when config wires a non-empty autolink ignore-list into glossaryAutolink registration, thread the SAME set into OnThisPage linksForBody (currently new Set(), correct dormant default — no config source exists yet).",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1371833,
+      "shell_pid_created_at": "1787751775.71"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M112A13NQD0NQNSNYKRYWGHZ",
+      "last_transition_at": "2026-08-27T07:35:17.365241+00:00",
+      "review_result": {
+        "reference": "Review passed (--force: pure status-churn only — committed kitty-specs status.json/status.events.jsonl on lane from auto-rebase R-STATUS-JSON-REMATERIALIZE; no code impact). Presence-gated byte-identity holds (committed PINNED_GLOSSARY_FREE_BASELINE in glossary-config.test.ts + dormant build verified: no glossary routes/island/payload in dist, standalone Related+ExternalReferences render, zero post-build drift). Pinned remark order remarkDirective->glossaryTerm->glossaryAutolink via updateConfig append, shared index+DEFAULT_IGNORE_LIST into both factories. generateGlossaryPages in astro:config:setup before glob; codegen guard proves no timestamp/generated + byte-identical re-runs. Payload rehype emits <script id=dk-glossary-definitions> {context:{term:plaintext}} keyed to data-glossary-context/term (island parity). Ignore-list reaches term+autolink+OnThisPage.linksForBody (one-line out-of-map edit w/ comment). Schema fields optional in docKittyDocsSchema+validate-frontmatter.mjs (parity green). No frozen-M3 edits. test 277 green, eslint 0, typecheck clean, dormant build ok.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1458418,
+      "shell_pid_created_at": "1787754456.98"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 3,
+      "lane": "done",
+      "last_event_id": "01M112A8WAEYPFPVEH9JN0XXMT",
+      "last_transition_at": "2026-08-27T07:35:25.322351+00:00",
+      "review_result": {
+        "reference": "Review passed: atomic on-switch verified LIVE. All gates green in pinned container — 279/279 unit tests (build-warning integration emits exactly ONE greppable collision line at build layer on fresh cache, exit 0; malformed-fixture throws naming warehouse/slot/definition), eslint 0 errors, typecheck 0 errors, example build exit 0 browser-free (31 pages), a11y 44/44 (axe scan of context-free demonstrator with TWO non-vacuity guardRoots + 1.4.13 both modes + footprint twin + JS-off). assert:artifacts PASS confirms count-pins 19->25 against real dist. Determinism: no git diff after build. Out-of-map edits justified (console.warn one-per-distinct-collision, validate-frontmatter parity+exemption, 4 M4-ADR copyedits); no frozen-M3 edits. --force for pure status.json/events coordination churn only.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 1483758,
+      "shell_pid_created_at": "1787755901.91"
+    }
+  }
+}
