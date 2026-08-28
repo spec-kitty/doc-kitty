@@ -25,6 +25,7 @@ const index: SharedTermIndex = {
       {
         slug: 'zebra',
         terms: [{ name: 'Stripe', definition: 'A **bold** band, see [docs](https://x).' }],
+        anchors: new Map([['Stripe', 'stripe']]),
       },
     ],
     [
@@ -35,6 +36,10 @@ const index: SharedTermIndex = {
           { name: 'Beta', definition: 'Uses `code` and _emphasis_.' },
           { name: 'Gamma', definition: 'Line one.\nLine two.' },
         ],
+        anchors: new Map([
+          ['Beta', 'beta'],
+          ['Gamma', 'gamma'],
+        ]),
       },
     ],
   ]),
@@ -55,6 +60,38 @@ describe('stripMarkdown', () => {
 
   it('collapses newlines/whitespace to single spaces', () => {
     expect(stripMarkdown('Line one.\n\nLine two.')).toBe('Line one. Line two.');
+  });
+
+  // Issue #16: the strip now parses through the SHARED gfm processor, so a
+  // definition previews EXACTLY as it renders — gfm constructs no longer leak.
+  it('drops gfm strikethrough markers, keeping the struck text', () => {
+    expect(stripMarkdown('A ~~struck~~ word.')).toBe('A struck word.');
+  });
+
+  it('flattens a gfm table to clean text (no literal `|` runs)', () => {
+    const table = '| A | B |\n| - | - |\n| 1 | 2 |';
+    const out = stripMarkdown(table);
+    // tableRow/tableCell are block boundaries, so cells separate with spaces and
+    // the pipe delimiters never survive as literal text.
+    expect(out).not.toContain('|');
+    expect(out).toBe('A B 1 2');
+  });
+
+  // Issue #20: the strip now RUNS the transformers (`runSync`), not just `.parse()`,
+  // so remark-smartypants curls typographic punctuation in the preview EXACTLY as
+  // the page renders it (`'`→`’`, `--`→ en/em dash, `...`→`…`) — locking
+  // preview↔render parity. A `.parse()`-only strip would leave straight quotes.
+  it('curls typographic punctuation via smartypants (preview↔render parity)', () => {
+    const out = stripMarkdown("Don't stop -- keep going...");
+    // Apostrophe curled to a right single quote; no straight apostrophe survives.
+    expect(out).toContain('’');
+    expect(out).not.toContain("'");
+    // `...` becomes a single horizontal-ellipsis glyph.
+    expect(out).toContain('…');
+    expect(out).not.toContain('...');
+    // `--` becomes an en/em dash (smartypants default) — never a literal double hyphen.
+    expect(out).not.toContain('--');
+    expect(/[–—]/.test(out)).toBe(true);
   });
 });
 

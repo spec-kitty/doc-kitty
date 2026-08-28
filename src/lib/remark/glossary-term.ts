@@ -88,21 +88,24 @@ function textOf(node: MdastNode): string {
 /**
  * The **shared** glossary link node — MUST stay byte-identical to the node the
  * auto-linker (WP04 `glossary-autolink.ts`) emits (contract `autolink-and-term.md`):
- * a `link` to `/glossary/<context>/#<anchor>` carrying `target="_blank"`,
+ * a `link` to `/glossary/<contextSlug>/#<anchor>` (the de-collided page slug, issue
+ * #17 finding #5 — never the raw context name) carrying `target="_blank"`,
  * `rel="noopener"` (FR-009) and the `data-glossary-term`/`data-glossary-context`
- * markers the hover island and the links-used tree-scan key on. If these two ever
+ * (+ `-anchor`/`-context-slug`) markers the hover island and the links-used
+ * tree-scan key on. If these two ever
  * diverge, the island / no-JS fallback / used-list treat the two link kinds
  * differently — the reviewer diffs them.
  */
 function glossaryLinkNode(
   context: string,
+  contextSlug: string,
   anchor: string,
   termName: string,
   children: MdastNode[],
 ): MdastNode {
   return {
     type: 'link',
-    url: `/glossary/${context}/#${anchor}`,
+    url: `/glossary/${contextSlug}/#${anchor}`,
     children,
     data: {
       hProperties: {
@@ -110,6 +113,8 @@ function glossaryLinkNode(
         rel: 'noopener',
         'data-glossary-term': termName,
         'data-glossary-context': context,
+        'data-glossary-anchor': anchor,
+        'data-glossary-context-slug': contextSlug,
       },
     },
   };
@@ -150,7 +155,13 @@ function transformDirective(
       Array.isArray(node.children) && node.children.length > 0
         ? node.children
         : [{ type: 'text', value: text }];
-    return glossaryLinkNode(resolution.context, resolution.anchor, resolution.termName, label);
+    return glossaryLinkNode(
+      resolution.context,
+      resolution.contextSlug,
+      resolution.anchor,
+      resolution.termName,
+      label,
+    );
   }
 
   // `unresolved` (context not among the surface's candidates) or `none` (not a

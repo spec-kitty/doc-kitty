@@ -47,6 +47,9 @@ vi.mock('../lib/glossary/load.js', () => ({
 
 vi.mock('../lib/glossary/generate.js', () => ({
   generateGlossaryPages: vi.fn(() => []),
+  // sections.ts imports this constant (F4); the mock must re-export it or
+  // config.ts (which pulls sections.ts) fails to load under this mock.
+  GLOSSARY_OUTPUT_DIRNAME: 'glossary',
 }));
 
 // Imported AFTER the mocks are declared (vi.mock is hoisted, so this is safe).
@@ -105,10 +108,17 @@ function runGlossarySetup(integrations: unknown[]): {
 /** A tiny, non-empty shared index — enough to exercise the active path. */
 const fakeIndex: SharedTermIndex = {
   bySurface: new Map([
-    ['term', [{ context: 'Ctx', anchor: 'term', termName: 'Term' }]],
+    ['term', [{ context: 'Ctx', contextSlug: 'ctx', anchor: 'term', termName: 'Term' }]],
   ]),
   contexts: new Map([
-    ['Ctx', { slug: 'ctx', terms: [{ name: 'Term', definition: 'A **thing**.' }] }],
+    [
+      'Ctx',
+      {
+        slug: 'ctx',
+        terms: [{ name: 'Term', definition: 'A **thing**.' }],
+        anchors: new Map([['Term', 'term']]),
+      },
+    ],
   ]),
 };
 

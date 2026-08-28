@@ -14,7 +14,6 @@
  * only resolves a surface it is handed.
  */
 import type { Resolution, SharedTermIndex } from './types.js';
-import { slug } from './anchor.js';
 
 export function resolveSurface(
   surface: string,
@@ -33,13 +32,15 @@ export function resolveSurface(
   if (candidates === undefined || candidates.length === 0) return { kind: 'none' };
 
   // Rule 4: exactly one candidate context → link it (FR-007). Rule 8: the anchor
-  // is always slug(termName) — the shared deterministic rule, never reinvented.
+  // and context page-slug are the AUTHORITATIVE, de-collided values the loader
+  // stored ONCE (issue #17) — returned verbatim, never recomputed here.
   if (candidates.length === 1) {
     const only = candidates[0];
     return {
       kind: 'link',
       context: only.context,
-      anchor: slug(only.termName),
+      contextSlug: only.contextSlug,
+      anchor: only.anchor,
       termName: only.termName,
     };
   }
@@ -53,7 +54,8 @@ export function resolveSurface(
       return {
         kind: 'link',
         context: match.context,
-        anchor: slug(match.termName),
+        contextSlug: match.contextSlug,
+        anchor: match.anchor,
         termName: match.termName,
       };
     }

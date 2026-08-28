@@ -39,5 +39,6 @@ kind: Hub
 | [0026](./0026-glossary-source-and-generation-seam.md) | Glossary source, validation, and codegen-into-collection generation seam | accepted | 2026-08-26 |
 | [0027](./0027-auto-link-resolution-scoping-and-term-directive.md) | Auto-link resolution, per-page scoping, and the `:term` directive | accepted | 2026-08-26 |
 | [0028](./0028-glossary-frontmatter-fields.md) | The `glossary_context` and `glossary_autolink` frontmatter fields | accepted | 2026-08-26 |
+| [0029](./0029-sidebar-autogenerate-content-root-coupling.md) | The registry sidebar prefixes autogenerate directories with `docsDir` | accepted | 2026-08-28 |
 
 New ADRs copy [`template.md`](./template.md).

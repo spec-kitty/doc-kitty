@@ -142,4 +142,46 @@ describe('generateGlossaryPages', () => {
     expect(hub).toContain('[Shipping](./shipping/)');
     expect(hub).toContain('[Billing](./billing/)');
   });
+
+  it('anchors colliding term names with the stored de-collided anchor (issue #17)', () => {
+    const out = makeOutDir();
+    const yaml = `contexts:
+  - name: Langs
+    terms:
+      - name: C
+        definition: A systems language.
+      - name: C++
+        definition: C with classes.
+      - name: C#
+        definition: A .NET language.
+`;
+    generateGlossaryPages(indexFrom(yaml), out);
+    const page = readFileSync(join(out, 'glossary', 'langs', 'index.md'), 'utf8');
+    expect(page).toContain('## C {#c}');
+    expect(page).toContain('## C++ {#c-2}');
+    expect(page).toContain('## C# {#c-3}');
+  });
+
+  it('two distinct context names sharing a base slug write two distinct dirs (issue #17 #4)', () => {
+    const out = makeOutDir();
+    const yaml = `contexts:
+  - name: Ops
+    terms:
+      - name: Alpha
+        definition: a
+  - name: Ops!
+    terms:
+      - name: Beta
+        definition: b
+`;
+    const written = generateGlossaryPages(indexFrom(yaml), out);
+    const rel = written.map((p) => relative(out, p));
+    // Hub + two DISTINCT context pages — no collision, no overwrite.
+    expect(rel).toContain(join('glossary', 'ops', 'index.md'));
+    expect(rel).toContain(join('glossary', 'ops-2', 'index.md'));
+    // No context page collides with the hub, and every path is unique on disk.
+    expect(rel).not.toContain(join('glossary', 'index.md', 'index.md'));
+    expect(new Set(rel).size).toBe(rel.length);
+    expect(listRelative(out)).toEqual([...rel].sort());
+  });
 });

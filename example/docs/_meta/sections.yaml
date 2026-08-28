@@ -1,0 +1,52 @@
+# Authored section registry for the EXAMPLE docsite.
+# Decouples display (label, order) from the on-disk folder layout: editing this
+# file alone relabels or reorders a nav group — no content move, no theme edit
+# (FR-013). Consumed by the Starlight sidebar and the discovery surfaces
+# (llms.txt / RSS / agent API). Reserved, non-content: excluded from the docs
+# collection. Schema and rules: docs/architecture/section-registry.md (ADR-0004).
+#
+# NOTE (issue #18): the glossary CONTENT folder stays `glossary/`; giving its
+# registry entry `label: Reference` ships it under a named "Reference" nav group
+# WITHOUT moving a single file. The `glossary-demo/` folder is intentionally NOT
+# listed here — it exercises the loader's graceful coverage path, appearing as a
+# humanized "Glossary Demo" group after the registered sections.
+#
+# Only `id` / `label` / `order` are consumed today. `type` is carried for the
+# deferred type-from-registry authority (ADR-0004/FR-003); `feeds` is carried for
+# the deferred per-surface filter. Both are documented deferrals, not yet wired.
+version: 1
+sections:
+  - id: context
+    label: Context
+    order: 10
+    type: Context
+
+  - id: architecture
+    label: Architecture
+    order: 20
+    type: Architecture
+
+  - id: adr
+    label: Decision Records
+    order: 30
+    type: ADR
+
+  - id: guides
+    label: Guides
+    order: 40
+    type: Guide
+
+  - id: presentations
+    label: Presentations
+    order: 50
+    type: Presentation
+
+  - id: glossary
+    label: Reference          # glossary content lives in glossary/, shown as "Reference"
+    order: 60
+    type: Glossary
+
+  - id: changelog
+    label: Changelog
+    order: 70
+    type: Changelog

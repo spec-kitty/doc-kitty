@@ -18,7 +18,11 @@
  * frontmatter — no re-implementation of the field contract in ad-hoc string
  * checks. Path-aware rules that `schema.ts` documents but leaves to this
  * standalone gate (strict `doc_status`/`kind` presence, `type` presence by path,
- * `type`-by-path agreement, bundle-root README exemptions) are applied on top.
+ * `type` agreement against the section-default derived from the `sections.yaml`
+ * registry, bundle-root README exemptions) are applied on top. The section
+ * default now comes from `<root>/_meta/sections.yaml` (issue #24) — see
+ * `loadSectionTypes`/`expectedType` — with the short sub-path subtype table kept
+ * in code; a registry-less tree falls back to the frozen section-type map.
  *
  *   - README.md is the section index and (Kitty twist) carries frontmatter.
  *   - The bundle-root README.md is exempt from `type` and may carry okf_version,
@@ -29,7 +33,7 @@
  * schema, the path rules, and the canonical vocabularies are exported, and the
  * CLI runner only executes when the file is invoked directly.
  */
-import { readdirSync, statSync, readFileSync } from 'node:fs';
+import { readdirSync, statSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
@@ -144,37 +148,96 @@ function walk(dir) {
   return out;
 }
 
-/** Expected `type` for a path relative to the docs root (null = unknown). */
-export function expectedType(relPath) {
+// Frozen fallback `section → type` map, used when no `sections.yaml` registry is
+// present (a registry-less tree still derives an expected `type`). MIRRORS the
+// section defaults the registry carries and `SECTION_TYPE` in src/lib/metadata.ts
+// — kept in sync by hand because that TS module cannot load in bare Node (same
+// discipline as the zod-shape mirror above). When a registry IS present, its
+// derived map is the authority and this is not consulted (issue #24).
+export const SECTION_TYPE = {
+  context: 'Context',
+  architecture: 'Architecture',
+  adr: 'ADR',
+  plans: 'Plan',
+  api: 'API',
+  configuration: 'Configuration',
+  integrations: 'Integration',
+  security: 'Security',
+  guides: 'Guide',
+  operations: 'Operations',
+  migrations: 'Migration',
+  changelog: 'Changelog',
+  presentations: 'Presentation',
+};
+
+/**
+ * Read `<docsRoot>/_meta/sections.yaml` and return its `id → type` map, or
+ * `null` when no registry is present (graceful fallback). Uses the SAME
+ * gray-matter wrap-in-fences trick `src/lib/sections.ts` and `validate-catalog.mjs`
+ * use to parse a top-level YAML mapping — no ad-hoc YAML parser. This is the
+ * #24 wiring: the registry, not a hardcoded switch, is the section-default
+ * `type` authority. Only entries that declare a string `type` are included.
+ */
+export function loadSectionTypes(docsRoot) {
+  const file = join(docsRoot, '_meta', 'sections.yaml');
+  if (!existsSync(file)) return null;
+  let sections;
+  try {
+    const raw = readFileSync(file, 'utf8');
+    const data = matter(['---', raw, '---', ''].join('\n')).data;
+    sections = data && typeof data === 'object' ? data.sections : undefined;
+  } catch {
+    return null; // an unreadable/unparseable registry → graceful fallback
+  }
+  if (!Array.isArray(sections)) return null;
+  const map = {};
+  for (const rec of sections) {
+    if (rec && typeof rec === 'object' && typeof rec.id === 'string' && typeof rec.type === 'string') {
+      map[rec.id] = rec.type;
+    }
+  }
+  return map;
+}
+
+/**
+ * Expected `type` for a path relative to the docs root (null = unknown).
+ *
+ * The section default comes from `typesBySection` — the registry-derived
+ * `id → type` map (issue #24); omitted, it falls back to the frozen
+ * {@link SECTION_TYPE}, so a registry-less tree still validates. The short,
+ * stable SUB-PATH subtype table is applied on top IN CODE (an ADR `template.md`
+ * → `Template`; `plans/epics/*` → `Epic`, `plans/features/*` → `Feature`;
+ * `operations/runbooks/*` → `Runbook`). Moving those subtypes into a registry
+ * `subtypes` field is a separate, deferred ADR item — not this op. Mirrors
+ * `expectedDocType` in src/lib/metadata.ts (bare-Node copy; the TS module cannot
+ * load here).
+ */
+export function expectedType(relPath, typesBySection = SECTION_TYPE) {
   const parts = relPath.split('/');
   const section = parts[0];
   const file = parts[parts.length - 1];
+  const sectionDefault = typesBySection[section] ?? null;
   switch (section) {
-    case 'context': return 'Context';
-    case 'architecture': return 'Architecture';
-    case 'adr': return file === 'template.md' ? 'Template' : 'ADR';
+    case 'adr': return file === 'template.md' ? 'Template' : sectionDefault;
     case 'plans':
       if (parts[1] === 'epics') return 'Epic';
       if (parts[1] === 'features') return 'Feature';
-      return 'Plan';
-    case 'api': return 'API';
-    case 'configuration': return 'Configuration';
-    case 'integrations': return 'Integration';
-    case 'security': return 'Security';
-    case 'guides': return 'Guide';
-    case 'operations': return parts[1] === 'runbooks' ? 'Runbook' : 'Operations';
-    case 'migrations': return 'Migration';
-    case 'changelog': return 'Changelog';
-    case 'presentations': return 'Presentation';
-    default: return null;
+      return sectionDefault;
+    case 'operations': return parts[1] === 'runbooks' ? 'Runbook' : sectionDefault;
+    default: return sectionDefault;
   }
 }
 
 /**
  * Validate one file's parsed frontmatter.
+ *
+ * `typesBySection` is the registry-derived section-default `type` map (issue #24)
+ * used to derive the expected `type`; it defaults to the frozen
+ * {@link SECTION_TYPE} so a caller with no registry (and the parity test, which
+ * calls `validate(relPath, data)`) still validates against the section defaults.
  * @returns {{problems: string[], warnings: string[]}}
  */
-export function validate(relPath, data) {
+export function validate(relPath, data, typesBySection = SECTION_TYPE) {
   const problems = [];
   const warnings = [];
   const isRootReadme = relPath === 'README.md';
@@ -217,7 +280,7 @@ export function validate(relPath, data) {
     // Open vocabulary: an unknown `type` degrades to an advisory warning.
     warnings.push(`\`type: ${data.type}\` is not in the canonical set (${DOC_TYPES.join(', ')})`);
   } else {
-    const want = expectedType(relPath);
+    const want = expectedType(relPath, typesBySection);
     if (want && data.type !== want) {
       warnings.push(`\`type: ${data.type}\` but path suggests \`${want}\``);
     }
@@ -296,6 +359,10 @@ export function run(argv) {
     }
     total += files.length;
 
+    // Section-default `type` authority for THIS root: the registry when present,
+    // else the frozen fallback so a registry-less tree still validates (issue #24).
+    const typesBySection = loadSectionTypes(root) ?? SECTION_TYPE;
+
     for (const file of files) {
       const rel = relative(root, file).split('\\').join('/');
       if (/(^|\/)log\.md$/i.test(rel)) continue; // reserved, frontmatter-free
@@ -309,7 +376,7 @@ export function run(argv) {
         failures++;
         continue;
       }
-      const { problems, warnings } = validate(rel, parsed.data ?? {});
+      const { problems, warnings } = validate(rel, parsed.data ?? {}, typesBySection);
       if (problems.length) {
         failures++;
         console.error(`✖ ${relative('.', file)}`);

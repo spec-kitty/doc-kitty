@@ -36,7 +36,7 @@
     "lint": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@astrojs/starlight": ">=0.32.0",
+    "@astrojs/starlight": ">=0.32.0 <0.33.0",
     "astro": ">=5.0.0"
   },
   "dependencies": {

@@ -25,7 +25,13 @@ import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import type { AstroIntegration } from 'astro';
-import { readmeToIndexId } from './metadata.js';
+import { readmeToIndexId, sectionOf } from './metadata.js';
+import {
+  loadSectionRegistry,
+  registryToSidebar,
+  sectionFeeds,
+  feedsSurface,
+} from './sections.js';
 import { resolveTheme, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
@@ -43,6 +49,18 @@ import {
   glossaryDefinitions,
 } from './glossary/definitions-payload.js';
 
+/**
+ * Internal cross-boundary signal (integration → standalone routes), NOT a public
+ * API. `defineDocKittyIntegrations` resolves `docsDir` to an absolute path and
+ * publishes it here at setup; the discovery routes' `docsRoot()` PREFERS it so the
+ * sitemap filter and the llms.txt/RSS/agent-index routes resolve the section
+ * registry from the SAME root (F3/F5 — closes #22's cross-surface split, where a
+ * consumer with `docsDir` ≠ the loader `base` could otherwise filter against two
+ * different `sections.yaml` files). Deliberately un-exported from `index.ts`: it is
+ * a runtime handoff between two config surfaces, never something a consumer sets.
+ */
+export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
+
 export interface DocKittyOptions {
   /** Site title shown in the header. */
   title: string;
@@ -56,6 +74,13 @@ export interface DocKittyOptions {
    * Directory (relative to the site root) holding the Common Docs tree — the
    * source of truth for which pages are drafts. Defaults to the convention's
    * `docs/`, matching `docKittyDocsLoader`'s default.
+   *
+   * INVARIANT: this MUST equal the `base` passed to `docKittyDocsLoader` in
+   * `content.config`. The registry-driven sidebar prefixes each autogenerate
+   * directory with this value to line up with Starlight's loader-base-relative
+   * route paths (see {@link SidebarAutogenGroup}); if `docsDir` and the loader
+   * `base` diverge, every nav group silently renders empty. It must be a plain
+   * root-relative path (not absolute); Astro's `root` must be the project root.
    */
   docsDir?: string;
   /**
@@ -176,6 +201,68 @@ function draftRoutes(docsDir: string): Set<string> {
 }
 
 /**
+ * The top-level CONTENT folders under the docs root (the candidate sidebar
+ * sections). Excludes the reserved, non-content `_meta/` (the registry's home)
+ * and any dotfolder. Returns `[]` if the docs root is absent, so sidebar
+ * synthesis degrades to nothing rather than throwing.
+ */
+function topLevelContentDirs(docsRoot: string): string[] {
+  let entries: string[];
+  try {
+    entries = readdirSync(docsRoot);
+  } catch {
+    return [];
+  }
+  return entries.filter((name) => {
+    if (name.startsWith('.') || name === '_meta') return false;
+    try {
+      return statSync(path.join(docsRoot, name)).isDirectory();
+    } catch {
+      return false;
+    }
+  });
+}
+
+/**
+ * Synthesize the DEFAULT Starlight `sidebar` from the section registry (FR-013,
+ * issue #18). Returns `undefined` when there is no `sections.yaml` under the docs
+ * root, so a registry-free site keeps Starlight's bare tree-autogeneration
+ * (byte-identical to before — NFR-002). With a registry, the sidebar is named,
+ * ordered groups (glossary → "Reference"), and any section can be relabelled or
+ * reordered by a `sections.yaml` edit alone (the id is bound to the folder name,
+ * so moving a section's content is still a file move). Per-page `sidebar`
+ * frontmatter (e.g. a deck's
+ * `sidebar: { hidden: true }`) is still honored inside each `autogenerate` group.
+ *
+ * Each group's `autogenerate.directory` is prefixed with `docsDir` (`docs/<id>`)
+ * so it matches Starlight's un-stripped `filePath` (`docs/<id>/…`) under the
+ * repo-`docs/` layout — without the prefix every group renders EMPTY (no hub link
+ * AND no child pages; see `SidebarAutogenGroup`). This restores each section's hub
+ * `/<id>/` (presentations, glossary) AND all its child pages, while `treeify`
+ * keeps hidden deck nodes out (BA-10 15c deck-absent; FR-013 15d glossary hub).
+ */
+function registrySidebar(
+  docsDir: string,
+): StarlightUserConfig['sidebar'] | undefined {
+  const docsRoot = path.resolve(process.cwd(), docsDir);
+  const registry = loadSectionRegistry(docsRoot);
+  if (!registry) return undefined;
+  // `topLevelContentDirs` is a SNAPSHOT of the on-disk dirs taken here, BEFORE the
+  // glossary integration codegens `<docsDir>/glossary/**` in its config:setup hook.
+  // `registryToSidebar` defaults to seeding the build-generated ids
+  // (BUILD_GENERATED_SECTION_IDS) so the glossary's "Reference" group survives even
+  // when a consumer `.gitignore`s the generated output (issue #23); a registered
+  // section that is neither on disk nor generated warns loudly instead of vanishing.
+  // `directoryPrefix` is the docsDir itself: routes' `filePath` is
+  // `<docsDir>/<id>/…` (astro-root-relative, un-stripped — Starlight assumes
+  // `src/content/docs`), so the autogenerate directory must carry the same prefix.
+  const groups = registryToSidebar(registry, topLevelContentDirs(docsRoot), {
+    directoryPrefix: docsDir,
+  });
+  return groups as unknown as StarlightUserConfig['sidebar'];
+}
+
+/**
  * Normalize an Astro `base` to a leading-slash, no-trailing-slash prefix.
  * `'/'` (or empty) → `''` (nothing to strip); `'/doc-kitty'`, `'doc-kitty'` and
  * `'/doc-kitty/'` all → `'/doc-kitty'`.
@@ -186,17 +273,34 @@ function normalizeBasePrefix(base: string): string {
 
 /**
  * Build the `@astrojs/sitemap` `filter`. It receives each candidate page's full
- * absolute URL. INV-1: drop a page iff its route (the pathname with the site
- * `base` stripped) EQUALS a draft route exactly. The match is ANCHORED — a
- * plain `endsWith` would over-exclude a published page whose slug tail coincides
- * with a draft's (e.g. `/architecture/overview/` vs a draft `/overview/`).
+ * absolute URL and returns TRUE to keep the page. A page is kept iff BOTH gates
+ * pass (INV-1 publication AND the section-level `feeds`):
+ *
+ *   1. **Draft gate.** Drop a page iff its route (the pathname with the site
+ *      `base` stripped) EQUALS a draft route exactly. The match is ANCHORED — a
+ *      plain `endsWith` would over-exclude a published page whose slug tail
+ *      coincides with a draft's (e.g. `/architecture/overview/` vs a draft
+ *      `/overview/`).
+ *   2. **`feeds` gate.** Drop a page whose section does not feed `sitemap`.
+ *      Resolved from `<docsDir>/_meta/sections.yaml`; a section that OMITS
+ *      `feeds` feeds ALL FOUR surfaces (absent = all, {@link feedsSurface}), and
+ *      an ABSENT registry means no feeds filtering at all — byte-compatible with
+ *      the pre-feeds sitemap (the example corpus declares no `feeds`, so this gate
+ *      drops nothing there).
+ *
+ * Exported so the composed draft+feeds gate is unit-testable without spinning up
+ * the whole Astro integrations array.
  */
-function sitemapDraftFilter(
+export function sitemapDraftFilter(
   docsDir: string,
   base: string,
 ): (page: string) => boolean {
   const routes = draftRoutes(docsDir);
   const basePrefix = normalizeBasePrefix(base);
+  // Load the registry from the SAME docs root the sidebar synthesis uses. Absent
+  // registry → `feeds` undefined → `feedsSurface` is always true (no filtering).
+  const registry = loadSectionRegistry(path.resolve(process.cwd(), docsDir));
+  const feeds = registry ? sectionFeeds(registry) : undefined;
   return (page: string): boolean => {
     let pathname: string;
     try {
@@ -210,7 +314,12 @@ function sitemapDraftFilter(
       normalized = normalized.slice(basePrefix.length) || '/';
     }
     // Anchored equality: the route must BE a draft route, not merely end with one.
-    return !routes.has(normalized);
+    if (routes.has(normalized)) return false;
+    // `feeds` gate: derive the section from the base-free route (first path
+    // segment; the root '/' → section '') and drop it if it does not feed sitemap.
+    const slug = normalized.replace(/^\//, '').replace(/\/$/, '');
+    if (!feedsSurface(feeds, sectionOf(slug), 'sitemap')) return false;
+    return true;
   };
 }
 
@@ -427,6 +536,17 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     starlight: overrides,
   } = options;
 
+  // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
+  // sitemap draft filter resolves internally (`path.resolve(process.cwd(),
+  // docsDir)` in both `draftRoutes` and its registry read), so writing it here
+  // guarantees the standalone routes' `docsRoot()` reads the section registry from
+  // the identical absolute path — not a separately-derived one. Set unconditionally
+  // so the signal always reflects the docsDir THIS integration was configured with
+  // (a single-site build calls this once; a later call with a different docsDir
+  // should win). Absent this call (standalone route render, route unit tests) the
+  // env stays unset and `docsRoot()` keeps #22's content-layer fallback verbatim.
+  process.env[DK_DOCS_ROOT_ENV] = path.resolve(process.cwd(), docsDir);
+
   // Resolve the default → brand → consumer merge (WP01). `undefined` yields the
   // byte-compatible M1 path: `generated === false`, `customCss` the single static
   // entry, the Default catalog. Any theme yields `generated === true`.
@@ -457,11 +577,18 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     (href) => ({ tag: 'link', attrs: { rel: 'stylesheet', href } }),
   );
 
+  // FR-013 (issue #18): with NO explicit `sidebar`, synthesize a named, ordered,
+  // relocatable sidebar from the section registry (glossary → "Reference"). The
+  // caller's explicit `sidebar` still wins; a registry-free site keeps Starlight's
+  // bare tree-autogeneration (registrySidebar → undefined). Resolved once here so
+  // the value is decided BEFORE the build hooks run.
+  const resolvedSidebar = sidebar ?? registrySidebar(docsDir);
+
   const starlightConfig: StarlightUserConfig = {
     title,
     ...(description ? { description } : {}),
     ...(social ? { social } : {}),
-    ...(sidebar ? { sidebar } : {}),
+    ...(resolvedSidebar ? { sidebar: resolvedSidebar } : {}),
     // Theme assets ride Starlight-native config (ADR-0015 decision 4/5): no
     // Header/SiteTitle override, no components-map expansion. A consumer's own
     // `starlight` escape hatch still wins (spread after these).

@@ -27,7 +27,7 @@
  * reuses those PURE exports (never `resolve.ts` alone, which has no section model
  * and no directive pass → would drop `:term` links). NFR-004 determinism makes the
  * re-derived list byte-identical to what the pipeline linked, `:term` links
- * included. Each is a plain anchor to `/glossary/<context>/#<anchor>` (present
+ * included. Each is a plain anchor to `/glossary/<contextSlug>/#<anchor>` (present
  * with JS off; the WP06 hover island is orthogonal).
  *
  * OMIT-WHEN-EMPTY (FR-010): the whole block is omitted when all three sub-lists
@@ -43,10 +43,6 @@ import process from 'node:process';
 import { getCollection } from 'astro:content';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkDirective from 'remark-directive';
-
 import ReferenceItem from '../../themes/spec-kitty/components/molecules/ReferenceItem.astro';
 import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
 import { buildCatalog } from '../../lib/catalog.js';
@@ -61,6 +57,7 @@ import {
   type DocsIndex,
 } from '../../lib/metadata.js';
 import { loadGlossary } from '../../lib/glossary/load.js';
+import { createPageProcessor } from '../../lib/glossary/page-processor.js';
 import { DEFAULT_IGNORE_LIST } from '../../lib/glossary/ignore-list.js';
 import type { SharedTermIndex, GlossaryLinkUsed } from '../../lib/glossary/types.js';
 import glossaryTerm from '../../lib/remark/glossary-term.js';
@@ -96,11 +93,19 @@ function linksForBody(
   ignoreList: ReadonlySet<string>,
   autolink: boolean,
 ): GlossaryLinkUsed[] {
-  // Parse to mdast with the directive extension active, so `:term[...]{...}`
-  // becomes a real `textDirective` node (never re-scanned prose) — the exact
-  // substrate the build pipeline hands `glossary-term`.
-  const processor = unified().use(remarkParse).use(remarkDirective);
-  const tree = processor.parse(body) as unknown as MdRoot;
+  // Build the shared re-derive processor (issue #16) and run BOTH phases —
+  // `runSync(parse(...))` (issue #20) — so the tree matches the build substrate:
+  //   - `.parse()` runs the SYNTAX extensions: the directive extension makes
+  //     `:term[...]{...}` a real `textDirective` node (never re-scanned prose) and
+  //     gfm makes a literal like `cargo@x.com` a guarded `link` node (no phantom).
+  //   - `.runSync()` runs the TRANSFORMERS: remark-smartypants curls typographic
+  //     punctuation (`'`, `--`, `...`) BEFORE the glossary passes match surfaces,
+  //     exactly as the build does — so a straight-quote surface key (e.g. `don't`)
+  //     no longer produces a phantom used-list entry the build never emits.
+  // remark-directive has no transformer, so `runSync` leaves the `textDirective`
+  // node intact for the `glossary-term` pass below.
+  const p = createPageProcessor({ directive: true });
+  const tree = p.runSync(p.parse(body)) as unknown as MdRoot;
 
   // WP05: turn every resolvable `:term` directive into the shared glossary link
   // node. A no-op message sink stands in for the vfile (warnings are the build
@@ -291,7 +296,7 @@ const LIST_RESET =
               <li class="dk-glossary-links__item">
                 <a
                   class="dk-glossary-links__link"
-                  href={`/glossary/${link.context}/#${link.anchor}`}
+                  href={`/glossary/${link.contextSlug}/#${link.anchor}`}
                 >
                   {link.termName}
                 </a>

@@ -9,6 +9,8 @@ export {
   docKittyDocsSchema,
   docKittyDocsLoader,
   docKittyFields,
+  expectedTypeForPath,
+  expectedTypeForPathInRoot,
 } from './lib/schema.js';
 export type { DocKittyLoaderOptions } from './lib/schema.js';
 
