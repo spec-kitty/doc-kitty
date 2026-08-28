@@ -29,8 +29,7 @@
  * order and `stripMarkdown` is pure, so the payload string is byte-identical
  * run-to-run — the dev-watcher idempotency the config hook relies on.
  */
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
+import { createPageProcessor } from './page-processor.js';
 import type { SharedTermIndex } from './types.js';
 
 /** The island's payload shape: context name → term name → plain-text definition. */
@@ -71,7 +70,12 @@ const BLOCK_TYPES = new Set([
  * output (NFR-004).
  */
 export function stripMarkdown(markdown: string): string {
-  const tree = unified().use(remarkParse).parse(markdown) as unknown as MdNode;
+  // Parse through the SHARED re-derive processor (issue #16) — gfm + smartypants,
+  // matching the build substrate — so a definition previews EXACTLY as it renders:
+  // strikethrough `~~x~~` drops its markers (not literal `~~`) and a GFM table's
+  // cells concatenate to clean text. No directive pass: definitions are plain gfm
+  // markdown (`:term` is a page-body escape hatch, never a definition).
+  const tree = createPageProcessor().parse(markdown) as unknown as MdNode;
   const parts: string[] = [];
   const walk = (node: MdNode): void => {
     if (node.type === 'text' || node.type === 'inlineCode') {

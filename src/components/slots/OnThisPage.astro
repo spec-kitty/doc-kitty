@@ -43,10 +43,6 @@ import process from 'node:process';
 import { getCollection } from 'astro:content';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkDirective from 'remark-directive';
-
 import ReferenceItem from '../../themes/spec-kitty/components/molecules/ReferenceItem.astro';
 import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
 import { buildCatalog } from '../../lib/catalog.js';
@@ -61,6 +57,7 @@ import {
   type DocsIndex,
 } from '../../lib/metadata.js';
 import { loadGlossary } from '../../lib/glossary/load.js';
+import { createPageProcessor } from '../../lib/glossary/page-processor.js';
 import { DEFAULT_IGNORE_LIST } from '../../lib/glossary/ignore-list.js';
 import type { SharedTermIndex, GlossaryLinkUsed } from '../../lib/glossary/types.js';
 import glossaryTerm from '../../lib/remark/glossary-term.js';
@@ -96,11 +93,13 @@ function linksForBody(
   ignoreList: ReadonlySet<string>,
   autolink: boolean,
 ): GlossaryLinkUsed[] {
-  // Parse to mdast with the directive extension active, so `:term[...]{...}`
-  // becomes a real `textDirective` node (never re-scanned prose) — the exact
-  // substrate the build pipeline hands `glossary-term`.
-  const processor = unified().use(remarkParse).use(remarkDirective);
-  const tree = processor.parse(body) as unknown as MdRoot;
+  // Parse to mdast through the SHARED re-derive processor (issue #16): gfm +
+  // smartypants (matching the build substrate) plus the directive extension, so
+  // `:term[...]{...}` becomes a real `textDirective` node (never re-scanned prose)
+  // AND a gfm autolink literal like `cargo@x.com` is a `link` node the auto-linker
+  // guards — never a phantom used-list entry. This is the exact substrate the build
+  // pipeline hands `glossary-term`.
+  const tree = createPageProcessor({ directive: true }).parse(body) as unknown as MdRoot;
 
   // WP05: turn every resolvable `:term` directive into the shared glossary link
   // node. A no-op message sink stands in for the vfile (warnings are the build

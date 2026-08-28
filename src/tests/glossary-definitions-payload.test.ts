@@ -61,6 +61,21 @@ describe('stripMarkdown', () => {
   it('collapses newlines/whitespace to single spaces', () => {
     expect(stripMarkdown('Line one.\n\nLine two.')).toBe('Line one. Line two.');
   });
+
+  // Issue #16: the strip now parses through the SHARED gfm processor, so a
+  // definition previews EXACTLY as it renders — gfm constructs no longer leak.
+  it('drops gfm strikethrough markers, keeping the struck text', () => {
+    expect(stripMarkdown('A ~~struck~~ word.')).toBe('A struck word.');
+  });
+
+  it('flattens a gfm table to clean text (no literal `|` runs)', () => {
+    const table = '| A | B |\n| - | - |\n| 1 | 2 |';
+    const out = stripMarkdown(table);
+    // tableRow/tableCell are block boundaries, so cells separate with spaces and
+    // the pipe delimiters never survive as literal text.
+    expect(out).not.toContain('|');
+    expect(out).toBe('A B 1 2');
+  });
 });
 
 describe('buildDefinitionsPayload', () => {
