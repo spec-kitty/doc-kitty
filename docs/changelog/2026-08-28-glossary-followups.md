@@ -54,7 +54,11 @@ their own bare `remark-parse` processors, diverging from the real build pipeline
   matcher / one shared slug" discipline.
 - **Closes the phantom used-list entry** for a gfm autolink literal (`cargo@x.com`
   stayed a text node under the bare parser and got linked) and the strikethrough/table
-  **preview divergence** in definitions.
+  **preview divergence** in definitions. gfm is a syntax extension, so it takes effect
+  under the re-derive's `.parse()`; `remark-smartypants` is a transformer and is
+  configured but not yet applied by the `.parse()` callers, leaving a narrow residual
+  phantom for surfaces with typographic punctuation (`'`, `--`, `...`) — tracked as a
+  follow-up.
 - `remark-gfm@4.0.1` and `remark-smartypants@3.0.3` are declared as direct deps, pinned
   to the versions Astro/Starlight resolve. **`remark-mdx` is deferred** (reduced
   scope): the corpus has no `.mdx` pages, so the MDX-expression phantom stays dormant
@@ -76,8 +80,10 @@ reordering a nav group is a data edit rather than a code change.
   humanized label); a registry-free site keeps Starlight's bare tree-autogeneration.
 - **The glossary ships under "Reference".** The example registry gives the `glossary`
   section `label: Reference`; its content folder stays `glossary/`. The sidebar,
-  `llms.txt`, the RSS `<category>` fallback, and the agent-API index all group and rank
-  it under "Reference".
+  `llms.txt`, and the RSS `<category>` fallback label it "Reference"; the agent-API
+  index applies the registry *order* only (a page's `section` field stays the folder
+  id `glossary`). The root Hub grid reads the same registry order, so the landing page
+  no longer diverges from the other surfaces.
 - **`metadata.ts` stayed pure.** `sectionRank`, `sectionLabel`, and `rankForAgents` now
   take the resolved order/labels as arguments and fall back to the frozen
   `SECTION_ORDER` / `SECTION_LABEL` constants when omitted, so the module remains

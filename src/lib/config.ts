@@ -204,8 +204,10 @@ function topLevelContentDirs(docsRoot: string): string[] {
  * issue #18). Returns `undefined` when there is no `sections.yaml` under the docs
  * root, so a registry-free site keeps Starlight's bare tree-autogeneration
  * (byte-identical to before — NFR-002). With a registry, the sidebar is named,
- * ordered groups (glossary → "Reference"), and any section is relocatable by a
- * `sections.yaml` edit alone. Per-page `sidebar` frontmatter (e.g. a deck's
+ * ordered groups (glossary → "Reference"), and any section can be relabelled or
+ * reordered by a `sections.yaml` edit alone (the id is bound to the folder name,
+ * so moving a section's content is still a file move). Per-page `sidebar`
+ * frontmatter (e.g. a deck's
  * `sidebar: { hidden: true }`) is still honored inside each `autogenerate` group.
  */
 function registrySidebar(

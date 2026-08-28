@@ -62,11 +62,11 @@ sections:
 
 | Field | Required | Meaning |
 |---|---|---|
-| `id` | yes | The section slug. Maps 1:1 to a top-level folder under `docs/`. |
+| `id` | yes | The section slug. Maps 1:1 to a top-level folder under `docs/`. The folder must exist on disk when the config is evaluated; a section whose pages are build-generated (e.g. the glossary) must have its folder committed, or its sidebar group is silently skipped. |
 | `label` | yes | Display name in the sidebar, section heading, and llms.txt group. |
 | `order` | yes | Integer sort key for nav and every section-ordered surface. Lower first. Gaps are allowed (10, 20, 30) so a section can be inserted without renumbering. |
 | `type` | no (deferred) | The canonical frontmatter `type` for pages in this section. Carried, but not yet consumed — see the deferral note below. |
-| `purpose` | no | One-line description. A fallback section blurb (carried; used opportunistically). |
+| `purpose` | no (deferred) | One-line description. Carried, but not yet consumed as a section blurb — nothing reads it today. |
 | `feeds` | no (deferred) | Which generated surfaces include this section's pages. Carried, but not yet consumed as a filter — see the deferral note below. |
 
 `version` marks the schema version so a future change is detectable.

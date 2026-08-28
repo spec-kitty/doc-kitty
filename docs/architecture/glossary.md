@@ -127,11 +127,15 @@ The glossary ships under a named **"Reference"** nav group (issue #18). The
 [section registry](./section-registry.md) (`_meta/sections.yaml`) simply gives the
 `glossary` section `label: Reference`, and the registry-driven Starlight sidebar
 (`src/lib/config.ts`) renders it as a named, ordered group `autogenerate`-ing from
-that same folder. Relabelling or relocating the group is now a `sections.yaml` edit
-alone — no content move, no theme edit.
+that same folder. Relabelling or reordering the group is now a `sections.yaml` edit
+alone — no theme edit. (The section id is the folder name, so moving the group's
+content on disk is still a file move.)
 
-The registry also drives the discovery surfaces (`llms.txt`, the RSS `<category>`
-fallback, and the agent-API index), so the glossary is grouped under "Reference"
-there too and ranks with a finite section order rather than falling through as an
-unknown section. The frozen `SECTION_ORDER` / `SECTION_LABEL` in `metadata.ts` remain
-as the no-registry fallback for a docs root without a `sections.yaml`.
+The registry also drives the discovery surfaces, but they consume it to different
+depths. `llms.txt` (group heading) and the RSS `<category>` fallback resolve the
+glossary's label to "Reference". The agent-API index applies the registry's section
+*order* only — a page's `section` field stays the bare folder id (`glossary`), so
+`/api/index.json` ranks the glossary with a finite order but does not relabel it.
+Either way the glossary no longer falls through as an unknown, last-ranked section.
+The frozen `SECTION_ORDER` / `SECTION_LABEL` in `metadata.ts` remain as the
+no-registry fallback for a docs root without a `sections.yaml`.

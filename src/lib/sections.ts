@@ -190,9 +190,11 @@ export interface SidebarAutogenGroup {
 /**
  * Build the Starlight `sidebar` from the registry — one named, ordered group per
  * section, each `autogenerate`-ing from that section's folder. This replaces bare
- * tree-autogen (folder-name group labels, source-order) with named, ordered,
- * RELOCATABLE groups: reordering or relabelling a section — e.g. the glossary
- * shipping under a "Reference" label — is a `sections.yaml` edit alone (FR-013).
+ * tree-autogen (folder-name group labels, source-order) with named, ordered
+ * groups that are RELABELABLE and REORDERABLE by a `sections.yaml` edit alone —
+ * e.g. the glossary shipping under a "Reference" label (FR-013). (The section id
+ * is bound to its on-disk folder name, so moving a section's folder still moves
+ * its content; only its label and order are pure data edits.)
  *
  * `presentDirs` is the set of top-level content folders that actually exist on
  * disk. A registry section with no folder is SKIPPED (Starlight's `autogenerate`
