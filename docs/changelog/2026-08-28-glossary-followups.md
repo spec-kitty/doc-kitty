@@ -97,11 +97,12 @@ The remaining registry axes — previously parsed-but-unconsumed deferrals — a
 wired, so `sections.yaml` is the single source of truth end-to-end:
 
 - **`type` is the section-default authority (#24).** `sectionTypes(registry)` feeds the
-  pure `expectedDocType`, and both validation surfaces — the standalone
-  `validate-frontmatter.mjs` gate (the former hardcoded `switch` mirror now reads the
-  registry) and the build-side `schema.ts` — derive a page's expected `type` from it.
-  Severity stays advisory (warn on mismatch); the frozen `SECTION_TYPE` is the
-  no-registry fallback. Sub-path subtypes stay in code per ADR-0004.
+  pure `expectedDocType`; the standalone `validate-frontmatter.mjs` gate (the former
+  hardcoded `switch` mirror, now reading the registry) runs that derivation and warns
+  on a mismatch, and `schema.ts` re-exports it (`expectedTypeForPath`) for a build-side
+  consumer to call. Severity stays advisory (warn, never fail); the frozen
+  `SECTION_TYPE` is the no-registry fallback. Sub-path subtypes stay in code per
+  ADR-0004.
 - **`feeds` is a per-surface filter.** Each of sitemap / RSS / llms / agent now composes
   the section's `feeds` set with per-page gating. A section that omits `feeds` feeds all
   four, and an absent registry filters nothing — so a site that declares no `feeds`
@@ -110,9 +111,13 @@ wired, so `sections.yaml` is the single source of truth end-to-end:
   the section `README` description ?? the registry `purpose` (README wins; neither → no
   line).
 - **The discovery surfaces honor `docsDir` (#22).** llms.txt, RSS, and the agent-API
-  index resolve the registry from the content root (via the content layer's `filePath`),
-  so a non-default docs directory no longer splits registry authority between the sidebar
-  and the surfaces.
+  index resolve the registry from the content root, so a non-default docs directory no
+  longer splits registry authority between the sidebar and the surfaces. The integration
+  publishes the resolved root as an internal `DK_DOCS_ROOT` signal that the sitemap
+  filter and the routes both read, so order/label/`feeds` are computed against one
+  `sections.yaml` even when `docsDir` and the loader `base` differ (closes the
+  cross-surface split the review flagged); a standalone route with no integration falls
+  back to the content-layer `filePath`, then `<cwd>/docs`.
 - **A build-generated section survives an uncommitted folder (#23).** The sidebar seeds
   known build-generated section ids (the glossary), so its "Reference" group no longer
   vanishes when the generated folder isn't committed; a genuinely missing registered

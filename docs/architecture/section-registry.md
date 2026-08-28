@@ -38,13 +38,14 @@ renders as a page.
 **What is wired today:** the loader (`src/lib/sections.ts`) parses the
 registry once and exposes the ordered section list (`sectionOrder`), the
 `id → label` map (`sectionLabels`), and — since issue #24 — the `id → type` map
-(`sectionTypes`). The Starlight sidebar (`src/lib/config.ts`) and the three
-discovery surfaces — `llms.txt`, the RSS `<category>` fallback, and the agent-API
-index — consume the order and labels (issue #18); the section-default **`type`** is
-now the registry's job too — `metadata.ts`'s pure `expectedDocType` and both
-validation surfaces (the standalone `validate-frontmatter.mjs` gate and the
-build-side `schema.ts`) derive a page's expected `type` from `sectionTypes`
-(issue #24). The last two fields are now wired too: **`feeds`** is a per-surface
+(`sectionTypes`). The Starlight sidebar (`src/lib/config.ts`) and `llms.txt` / the RSS
+`<category>` fallback consume the order **and** labels; the agent-API index consumes
+the **order only** — a page's `section` field stays the bare folder id, never the
+registry label (issue #18). The section-default **`type`** is now the registry's job
+too — `metadata.ts`'s pure `expectedDocType` derives a page's expected `type` from
+`sectionTypes`, the standalone `validate-frontmatter.mjs` gate runs that derivation
+and warns on a mismatch, and `schema.ts` re-exports it (`expectedTypeForPath`) for a
+build-side consumer to call (issue #24). The last two fields are now wired too: **`feeds`** is a per-surface
 filter (`sectionFeeds` + `feedsSurface`) the sitemap draft filter and the RSS /
 llms.txt / agent-index routes apply, and **`purpose`** is the llms.txt section
 blurb fallback (`sectionPurposes`). The frozen `SECTION_ORDER` / `SECTION_LABEL` /
@@ -107,13 +108,12 @@ A page's expected `type` is derived in two steps, most specific last:
 
    | Path pattern | `type` |
    |---|---|
-   | `adr/*` | `ADR` (the section default) |
    | `adr/template.md` | `Template` |
    | `plans/epics/*` | `Epic` |
    | `plans/features/*` | `Feature` |
    | `operations/runbooks/*` | `Runbook` |
 
-   Everything else takes its section default.
+   Everything else — including a plain `adr/*` record — takes its section default.
 
 Both validators check a page's declared `type` against the derived expectation and
 **warn on a mismatch** rather than failing, matching the open-vocabulary posture

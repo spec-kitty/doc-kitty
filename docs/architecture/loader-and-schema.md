@@ -44,10 +44,12 @@ frontmatter schema. This page expands the loader and schema the
   - Required fields: `title`, `description`, `status`, `updated`, `type`.
   - Enum validation for `status`. `type` is an open vocabulary: a value is checked
     against the canonical set (`DOC_TYPES`) and against the **section-default `type`
-    derived from the `sections.yaml` registry** (`expectedTypeForPath` in
-    `schema.ts`, `expectedDocType` in `metadata.ts`); both checks are advisory
-    (warn, never fail), and a registry-less tree falls back to the frozen
-    section-type map (issue #24 — see below).
+    derived from the `sections.yaml` registry**. The derivation is shared and pure
+    (`expectedDocType` in `metadata.ts`, re-exported as `expectedTypeForPath` from
+    `schema.ts` for build-side consumers); the check that actually **runs and warns**
+    today is the standalone `validate-frontmatter.mjs` gate (`pnpm validate:docs` /
+    `validate:example`). It is advisory (warn, never fail), and a registry-less tree
+    falls back to the frozen section-type map (issue #24 — see below).
   - Optional families: `authors`, `related`, `tags`, `sources`, and the Kitty
     `agent` block.
   - The bundle-root exemption: `docs/README.md` carries `okf_version`, not
