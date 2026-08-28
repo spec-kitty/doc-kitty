@@ -1,0 +1,117 @@
+# Update a11y visual baselines — on demand, then open a PR.
+#
+# The a11y lane (ci.yml) asserts each page against a committed Playwright visual
+# baseline (`tests/a11y/__screenshots__/**`). A deliberate UI change (a new nav
+# group, a reordered sidebar) legitimately shifts those bytes, so the baselines
+# must be REGENERATED — but only inside the pinned Playwright container, or the
+# screenshots differ by host/font rendering. Local regeneration is often blocked
+# (a broken or root-owned `node_modules`), so this workflow does it in CI and
+# hands the result back as a reviewable PR rather than pushing pixels silently.
+#
+# GitHub only exposes `workflow_dispatch` for workflows on the DEFAULT branch, so
+# this file must live on `main` to be runnable. Dispatch it with the branch whose
+# baselines you want to refresh; it checks that branch out, rebuilds the example,
+# regenerates the snapshots, and opens a PR back INTO that branch. Merging that PR
+# updates the baselines on the branch (e.g. a feature PR) so its a11y lane passes.
+#
+# Note: a PR opened by the default `GITHUB_TOKEN` does not itself re-trigger CI
+# (GitHub's recursion guard). That is fine here — the images ARE the output of the
+# a11y run that produced them; a reviewer can re-run the lane on the target branch
+# after merge if they want the green tick.
+name: Update a11y baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: Branch whose visual baselines to regenerate (a PR is opened against it).
+        required: true
+        default: fix/glossary-followups
+
+# Push a branch (contents) and open a PR (pull-requests).
+permissions:
+  contents: write
+  pull-requests: write
+
+# One regen per target branch; supersede an older in-flight run.
+concurrency:
+  group: update-a11y-baselines-${{ github.event.inputs.target_branch }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    # The SAME pinned image the a11y lane uses, so baselines are byte-reproducible.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ github.event.inputs.target_branch }}
+          fetch-depth: 0
+
+      # The repo is checked out under a different owner than the container user;
+      # mark it safe so the later git commit/push does not hit "dubious ownership".
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      # Produce example/dist — the a11y webServer (tests/a11y/serve-dist.mjs) serves
+      # this exact artifact; the snapshots are taken against it.
+      - name: Build example site
+        run: pnpm build
+
+      # A near no-op in the pinned image (browsers are baked in), kept for parity
+      # with the a11y lane's explicit, allowlisted Chromium install.
+      - name: Install Chromium (explicit, allowlisted)
+        run: npx playwright install --with-deps chromium
+
+      # --update-snapshots rewrites any differing/missing visual baseline and lets
+      # the run pass; a REAL a11y (axe) violation still fails the job, so we never
+      # bake in a broken page.
+      - name: Regenerate visual baselines
+        run: pnpm test:a11y --update-snapshots
+
+      - name: Detect baseline changes
+        id: diff
+        run: |
+          if [ -n "$(git status --porcelain tests/a11y/__screenshots__)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git status --porcelain tests/a11y/__screenshots__
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open PR with the updated baselines
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ github.event.inputs.target_branch }}
+        run: |
+          set -euo pipefail
+          BRANCH="ci/a11y-baselines-${TARGET//\//-}-${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add tests/a11y/__screenshots__
+          git commit -m "test(a11y): regenerate visual baselines for ${TARGET}"
+          git push origin "$BRANCH"
+          gh pr create \
+            --base "$TARGET" \
+            --head "$BRANCH" \
+            --title "test(a11y): regenerate visual baselines for ${TARGET}" \
+            --body "Automated regeneration of the Playwright visual baselines (\`tests/a11y/__screenshots__/**\`) in the pinned \`mcr.microsoft.com/playwright:v1.62.1-noble\` container, so the a11y lane on \`${TARGET}\` passes after a deliberate UI change.
+
+          Produced by the **Update a11y baselines** workflow (run ${{ github.run_id }}). Review the image diff, then merge into \`${TARGET}\`.
+
+          Note: this PR was opened by \`GITHUB_TOKEN\`, so CI does not auto-run on it; re-run the a11y lane on \`${TARGET}\` after merge if you want the green tick."
+
+      - name: Report no-op
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "Visual baselines already current for ${{ github.event.inputs.target_branch }} — no PR opened."
