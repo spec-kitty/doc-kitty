@@ -35,13 +35,24 @@ export interface Context {
  *
  * - `bySurface` — keyed by the **lowercased** surface (a term `name` OR any of its
  *   `aliases`; FR-012). The value is every candidate that surface could link to
- *   (more than one ⇒ a cross-context collision the resolver disambiguates).
+ *   (more than one ⇒ a cross-context collision the resolver disambiguates). Each
+ *   entry carries the AUTHORITATIVE, de-collided `anchor` and the context's
+ *   de-collided page-`contextSlug`, both computed ONCE in `buildIndex` (INV-G1):
+ *   every downstream site READS these instead of recomputing `slug(...)`.
  * - `contexts` — per-context data for page generation, keyed by the context's
- *   original-case `name`.
+ *   original-case `name`. `slug` is the de-collided page slug; `anchors` maps each
+ *   term `name` (unique per context — a duplicate is build-fatal) to its
+ *   de-collided anchor, so the generator reads the stored value.
  */
 export interface SharedTermIndex {
-  bySurface: Map<string, Array<{ context: string; anchor: string; termName: string }>>;
-  contexts: Map<string, { slug: string; terms: Term[]; domainVisionStatement?: string }>;
+  bySurface: Map<
+    string,
+    Array<{ context: string; contextSlug: string; anchor: string; termName: string }>
+  >;
+  contexts: Map<
+    string,
+    { slug: string; terms: Term[]; anchors: Map<string, string>; domainVisionStatement?: string }
+  >;
 }
 
 /**
@@ -57,7 +68,7 @@ export interface SharedTermIndex {
  * - `none` — not a term/alias, or ignore-listed (FR-008).
  */
 export type Resolution =
-  | { kind: 'link'; context: string; anchor: string; termName: string }
+  | { kind: 'link'; context: string; contextSlug: string; anchor: string; termName: string }
   | { kind: 'unresolved'; surface: string; competing: string[] }
   | { kind: 'none' };
 
@@ -72,6 +83,7 @@ export type Resolution =
 export interface GlossaryLinkUsed {
   surface: string;
   context: string;
+  contextSlug: string;
   anchor: string;
   termName: string;
 }

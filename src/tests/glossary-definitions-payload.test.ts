@@ -25,6 +25,7 @@ const index: SharedTermIndex = {
       {
         slug: 'zebra',
         terms: [{ name: 'Stripe', definition: 'A **bold** band, see [docs](https://x).' }],
+        anchors: new Map([['Stripe', 'stripe']]),
       },
     ],
     [
@@ -35,6 +36,10 @@ const index: SharedTermIndex = {
           { name: 'Beta', definition: 'Uses `code` and _emphasis_.' },
           { name: 'Gamma', definition: 'Line one.\nLine two.' },
         ],
+        anchors: new Map([
+          ['Beta', 'beta'],
+          ['Gamma', 'gamma'],
+        ]),
       },
     ],
   ]),

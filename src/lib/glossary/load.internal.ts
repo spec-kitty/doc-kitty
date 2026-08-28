@@ -152,35 +152,102 @@ export function parseDefinitionsYaml(text: string): unknown {
 }
 
 /**
+ * Assign `base` a unique slug within `assigned`, de-colliding deterministically in
+ * call (= source) order: the first claimant keeps `base`; each later collision gets
+ * `base-2`, `base-3`, …. The probe loop also guards **re-collision** — a term whose
+ * own name literally slugs to an already-taken suffix (e.g. a term named `C 2`
+ * slugging to `c-2` while a `C`/`C++` pair also wants `c-2`) — by skipping to the
+ * next free suffix. Pure and order-deterministic (INV-G2): same inputs → same slugs.
+ */
+function decollideSlug(base: string, assigned: Set<string>): string {
+  if (!assigned.has(base)) {
+    assigned.add(base);
+    return base;
+  }
+  let n = 2;
+  while (assigned.has(`${base}-${n}`)) n += 1;
+  const result = `${base}-${n}`;
+  assigned.add(result);
+  return result;
+}
+
+/**
  * Build the {@link SharedTermIndex} from the validated contexts **once** (INV-G1).
- * Names AND aliases share `bySurface`, keyed lowercased (FR-006/FR-012); every
- * entry's `anchor` is `slug(term.name)` (NFR-004). Insertion order follows the
- * source order, so the index is deterministic (INV-G2).
+ * Names AND aliases share `bySurface`, keyed lowercased (FR-006/FR-012). Anchors and
+ * context page-slugs are computed HERE and stored authoritatively (issue #17): the
+ * resolver, generator, and remark node-builders READ these values rather than each
+ * recomputing `slug(...)`. Within a context, terms are anchored in source order and
+ * colliding anchors are de-collided (`c`, `c-2`, `c-3`, …); distinct context names
+ * that slug to the same page-slug are de-collided the same way, so two contexts (or
+ * a context and the hub) can never write the same path. Insertion order follows the
+ * source order, so the whole index is deterministic (INV-G2).
+ *
+ * Build-fatal (loud v1 constraints — an all-non-Latin corpus fails here, by design):
+ *   - a term/context `name` that slugs to `""` (no `[a-z0-9]` characters), and
+ *   - two byte-identical term names inside one context (anchors could not be kept
+ *     distinct without silently guessing).
  */
 export function buildIndex(contexts: Context[]): SharedTermIndex {
   const bySurface: SharedTermIndex['bySurface'] = new Map();
   const contextMap: SharedTermIndex['contexts'] = new Map();
 
+  // De-collide distinct CONTEXT page-slugs across the whole corpus (source order).
+  const contextSlugs = new Set<string>();
+
   for (const context of contexts) {
-    contextMap.set(context.name, {
-      slug: slug(context.name),
-      terms: context.terms,
-      ...(context.domainVisionStatement !== undefined
-        ? { domainVisionStatement: context.domainVisionStatement }
-        : {}),
-    });
+    const contextBase = slug(context.name);
+    if (contextBase === '') {
+      throw new Error(
+        `Invalid glossary definitions (${PINNED_CONTEXTIVE_SCHEMA_VERSION}): ` +
+          `context "${context.name}": name produces an empty page slug ` +
+          `(no [a-z0-9] characters) — rename or transliterate`,
+      );
+    }
+    const contextSlug = decollideSlug(contextBase, contextSlugs);
+
+    // Per-context: unique term anchors (source order) + intra-context name guard.
+    const anchorSet = new Set<string>();
+    const anchors = new Map<string, string>();
 
     for (const term of context.terms) {
-      const anchor = slug(term.name);
+      // C-3: two byte-identical term names in one context cannot both anchor.
+      if (anchors.has(term.name)) {
+        throw new Error(
+          `Invalid glossary definitions (${PINNED_CONTEXTIVE_SCHEMA_VERSION}): ` +
+            `context "${context.name}" → term "${term.name}": duplicate term name in ` +
+            `this context — term names must be unique per context`,
+        );
+      }
+
+      const base = slug(term.name);
+      if (base === '') {
+        throw new Error(
+          `Invalid glossary definitions (${PINNED_CONTEXTIVE_SCHEMA_VERSION}): ` +
+            `context "${context.name}" → term "${term.name}": name produces an empty ` +
+            `anchor (no [a-z0-9] characters) — add a Latin-alphanumeric alias or transliterate`,
+        );
+      }
+      const anchor = decollideSlug(base, anchorSet);
+      anchors.set(term.name, anchor);
+
       const surfaces: string[] = [term.name, ...(term.aliases ?? [])];
       for (const surface of surfaces) {
         const key = surface.toLowerCase();
-        const entry = { context: context.name, anchor, termName: term.name };
+        const entry = { context: context.name, contextSlug, anchor, termName: term.name };
         const bucket = bySurface.get(key);
         if (bucket) bucket.push(entry);
         else bySurface.set(key, [entry]);
       }
     }
+
+    contextMap.set(context.name, {
+      slug: contextSlug,
+      terms: context.terms,
+      anchors,
+      ...(context.domainVisionStatement !== undefined
+        ? { domainVisionStatement: context.domainVisionStatement }
+        : {}),
+    });
   }
 
   return { bySurface, contexts: contextMap };

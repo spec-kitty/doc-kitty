@@ -33,10 +33,21 @@ const inlineCode = (value: string): MdNode => ({ type: 'inlineCode', value });
 const plainLink = (url: string, ...children: MdNode[]): MdNode => ({ type: 'link', url, children });
 const root = (...children: MdNode[]): MdRoot => ({ type: 'root', children });
 
-/** A `:term`-produced glossary link node (WP05's exact emitted shape). */
-const termLink = (surface: string, termName: string, context: string): MdNode => ({
+/**
+ * A `:term`-produced glossary link node (WP05's exact emitted shape) — including
+ * the `data-glossary-anchor` / `data-glossary-context-slug` markers the two node
+ * builders now carry (issue #17). `anchor` defaults to `slug`-of-surface for the
+ * simple lowercase fixtures here, but is passable for de-collided cases.
+ */
+const termLink = (
+  surface: string,
+  termName: string,
+  context: string,
+  anchor: string = surface,
+  contextSlug: string = context,
+): MdNode => ({
   type: 'link',
-  url: `/glossary/${context}/#${surface}`,
+  url: `/glossary/${contextSlug}/#${anchor}`,
   children: [text(surface)],
   data: {
     hProperties: {
@@ -44,26 +55,37 @@ const termLink = (surface: string, termName: string, context: string): MdNode =>
       rel: 'noopener',
       'data-glossary-term': termName,
       'data-glossary-context': context,
+      'data-glossary-anchor': anchor,
+      'data-glossary-context-slug': contextSlug,
     },
   },
 });
 
 // ---------------------------------------------------------------------------
-// index stub — `anchor` is deliberately WRONG (proves slug recompute)
+// index stub — anchor + contextSlug now carry the AUTHORITATIVE stored values the
+// linker READS (issue #17): the emitted URL/anchor come straight from these.
 // ---------------------------------------------------------------------------
 function indexOf(
-  bySurface: Record<string, Array<{ context: string; anchor: string; termName: string }>>,
+  bySurface: Record<
+    string,
+    Array<{ context: string; contextSlug: string; anchor: string; termName: string }>
+  >,
 ): SharedTermIndex {
   return { bySurface: new Map(Object.entries(bySurface)), contexts: new Map() };
 }
 
 const index = indexOf({
-  cargo: [{ context: 'shipping', anchor: 'WRONG', termName: 'Cargo' }],
+  cargo: [{ context: 'shipping', contextSlug: 'shipping', anchor: 'cargo', termName: 'Cargo' }],
   policy: [
-    { context: 'hr', anchor: 'WRONG', termName: 'Policy' },
-    { context: 'shipping', anchor: 'WRONG', termName: 'Policy' },
+    { context: 'hr', contextSlug: 'hr', anchor: 'policy', termName: 'Policy' },
+    { context: 'shipping', contextSlug: 'shipping', anchor: 'policy', termName: 'Policy' },
   ],
-  'bill of lading': [{ context: 'shipping', anchor: 'WRONG', termName: 'Bill of Lading' }],
+  'bill of lading': [
+    { context: 'shipping', contextSlug: 'shipping', anchor: 'bill-of-lading', termName: 'Bill of Lading' },
+  ],
+  // A de-collided term (C++ → stored anchor `c-2`, e.g. after a `C` term) — used to
+  // prove the linker emits, and collectLinksUsed reads back, the STORED anchor.
+  'c++': [{ context: 'langs', contextSlug: 'langs', anchor: 'c-2', termName: 'C++' }],
 });
 
 const EMPTY_IGNORE: ReadonlySet<string> = new Set();
@@ -192,16 +214,18 @@ describe('computePageLinks — opt-outs (FR-008)', () => {
 
 // ===========================================================================
 describe('computePageLinks — the shared link node (FR-009)', () => {
-  it('emits href + target/rel + data attrs; anchor recomputed via slug(termName)', () => {
+  it('emits href + target/rel + data attrs; anchor + slug READ from the stored index', () => {
     const tree = root(para(text('one cargo here')));
     computePageLinks(tree, undefined, index, EMPTY_IGNORE);
     const [link] = glossaryLinks(tree);
-    expect(link.url).toBe('/glossary/shipping/#cargo'); // NOT the WRONG index anchor
+    expect(link.url).toBe('/glossary/shipping/#cargo'); // stored contextSlug + anchor
     expect(link.data!.hProperties).toEqual({
       target: '_blank',
       rel: 'noopener',
       'data-glossary-term': 'Cargo',
       'data-glossary-context': 'shipping',
+      'data-glossary-anchor': 'cargo',
+      'data-glossary-context-slug': 'shipping',
     });
   });
 });
@@ -242,7 +266,10 @@ describe('computePageLinks — links-used incl. :term (ADR-0025 A-2)', () => {
   it('collects BOTH a :term link and an auto-link, in document order, deduped by term', () => {
     const tree = root(
       h2('S'),
-      para(termLink('bill of lading', 'Bill of Lading', 'shipping'), text(' and cargo moved')),
+      para(
+        termLink('bill of lading', 'Bill of Lading', 'shipping', 'bill-of-lading'),
+        text(' and cargo moved'),
+      ),
     );
     const { linksUsed } = computePageLinks(tree, undefined, index, EMPTY_IGNORE);
     expect(linkCount(tree)).toBe(2); // pre-existing :term + one auto-linked cargo
@@ -261,8 +288,53 @@ describe('computePageLinks — links-used incl. :term (ADR-0025 A-2)', () => {
   it('collectLinksUsed picks up a bare :term link even with no auto-links added', () => {
     const tree = root(para(termLink('cargo', 'Cargo', 'shipping')));
     expect(collectLinksUsed(tree)).toEqual([
-      { surface: 'cargo', context: 'shipping', anchor: 'cargo', termName: 'Cargo' },
+      {
+        surface: 'cargo',
+        context: 'shipping',
+        contextSlug: 'shipping',
+        anchor: 'cargo',
+        termName: 'Cargo',
+      },
     ]);
+  });
+
+  it('reads a DE-COLLIDED stored anchor from data-glossary-anchor, matching the heading id (issue #17)', () => {
+    // The auto-linker links `C++`; the emitted node + the used-list must carry the
+    // stored `c-2` anchor (NOT slug('C++')==='c'), so the link points at the real
+    // `## C++ {#c-2}` heading id the generator wrote.
+    const tree = root(para(text('Use C++ in production.')));
+    const { linksUsed } = computePageLinks(tree, undefined, index, EMPTY_IGNORE);
+    const [link] = glossaryLinks(tree);
+    expect(link.url).toBe('/glossary/langs/#c-2');
+    expect(link.data!.hProperties!['data-glossary-anchor']).toBe('c-2');
+    expect(linksUsed).toEqual([
+      {
+        surface: 'C++',
+        context: 'langs',
+        contextSlug: 'langs',
+        anchor: 'c-2',
+        termName: 'C++',
+      },
+    ]);
+  });
+});
+
+// ===========================================================================
+describe('computePageLinks — Unicode word boundaries (issue #17)', () => {
+  it('does NOT link a term abutting a non-Latin letter, but still links ASCII-punctuation adjacency', () => {
+    // `Cargoで` (trailing CJK) and `caféCargo` (leading accented letter) are INSIDE a
+    // word under Unicode boundaries → left plain. `Cargo.` and `(Cargo)` are not.
+    const notLinked = root(para(text('Cargoで shipped; caféCargo blended.')));
+    computePageLinks(notLinked, undefined, index, EMPTY_IGNORE);
+    expect(linkCount(notLinked)).toBe(0);
+
+    const dot = root(para(text('The Cargo. arrived')));
+    computePageLinks(dot, undefined, index, EMPTY_IGNORE);
+    expect(linkCount(dot)).toBe(1);
+
+    const paren = root(para(text('shipment (Cargo) here')));
+    computePageLinks(paren, undefined, index, EMPTY_IGNORE);
+    expect(linkCount(paren)).toBe(1);
   });
 });
 

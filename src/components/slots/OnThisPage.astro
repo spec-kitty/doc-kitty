@@ -27,7 +27,7 @@
  * reuses those PURE exports (never `resolve.ts` alone, which has no section model
  * and no directive pass → would drop `:term` links). NFR-004 determinism makes the
  * re-derived list byte-identical to what the pipeline linked, `:term` links
- * included. Each is a plain anchor to `/glossary/<context>/#<anchor>` (present
+ * included. Each is a plain anchor to `/glossary/<contextSlug>/#<anchor>` (present
  * with JS off; the WP06 hover island is orthogonal).
  *
  * OMIT-WHEN-EMPTY (FR-010): the whole block is omitted when all three sub-lists
@@ -291,7 +291,7 @@ const LIST_RESET =
               <li class="dk-glossary-links__item">
                 <a
                   class="dk-glossary-links__link"
-                  href={`/glossary/${link.context}/#${link.anchor}`}
+                  href={`/glossary/${link.contextSlug}/#${link.anchor}`}
                 >
                   {link.termName}
                 </a>

@@ -105,10 +105,17 @@ function runGlossarySetup(integrations: unknown[]): {
 /** A tiny, non-empty shared index — enough to exercise the active path. */
 const fakeIndex: SharedTermIndex = {
   bySurface: new Map([
-    ['term', [{ context: 'Ctx', anchor: 'term', termName: 'Term' }]],
+    ['term', [{ context: 'Ctx', contextSlug: 'ctx', anchor: 'term', termName: 'Term' }]],
   ]),
   contexts: new Map([
-    ['Ctx', { slug: 'ctx', terms: [{ name: 'Term', definition: 'A **thing**.' }] }],
+    [
+      'Ctx',
+      {
+        slug: 'ctx',
+        terms: [{ name: 'Term', definition: 'A **thing**.' }],
+        anchors: new Map([['Term', 'term']]),
+      },
+    ],
   ]),
 };
 

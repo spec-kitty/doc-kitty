@@ -21,8 +21,9 @@
  *     byte-identical files on every run — no `Date.now()`, no Map-iteration reliance.
  *   - Definitions/meta are emitted as Markdown **body** (never pre-escaped plain
  *     text) so FR-003/FR-004 route them through the site's real markdown pipeline;
- *     each term sits at a deterministic `#<anchor>` from the shared
- *     {@link slug} (a second slug impl would be a finding).
+ *     each term sits at its stored, de-collided `#<anchor>` — computed once by the
+ *     loader (issue #17) and read here, never recomputed (a second slug impl would
+ *     be a finding).
  *
  * It is **wired** by WP08's config hook (not here) and **dormant** until WP09 lands
  * the example `.contextive/definitions.yaml`.
@@ -30,7 +31,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { SharedTermIndex, Term } from './types.js';
-import { slug } from './anchor.js';
 
 /** YAML-safe double-quoted scalar (handles quotes, backslashes, colons, unicode). */
 function yamlString(value: string): string {
@@ -67,9 +67,8 @@ function renderMeta(meta: Record<string, string>): string[] {
   return ['**Meta:**', '', ...items];
 }
 
-/** Render one term as a Markdown section anchored at `slug(name)`. */
-function renderTerm(term: Term): string[] {
-  const anchor = slug(term.name);
+/** Render one term as a Markdown section anchored at its stored de-collided anchor. */
+function renderTerm(term: Term, anchor: string): string[] {
   const blocks: string[] = [`## ${term.name} {#${anchor}}`, '', term.definition];
 
   if (term.aliases && term.aliases.length > 0) {
@@ -106,7 +105,12 @@ function renderHub(contexts: Array<{ name: string; slug: string; vision?: string
 }
 
 /** A single context page: self-declared `glossary_context`, vision, term sections. */
-function renderContextPage(name: string, vision: string | undefined, terms: Term[]): string {
+function renderContextPage(
+  name: string,
+  vision: string | undefined,
+  terms: Term[],
+  anchors: Map<string, string>,
+): string {
   const head = frontmatter([
     ['title', yamlString(name)],
     ['description', yamlString(`Glossary terms for the ${name} context.`.slice(0, 180))],
@@ -117,7 +121,7 @@ function renderContextPage(name: string, vision: string | undefined, terms: Term
 
   const sections: string[] = [`# ${name}`];
   if (vision) sections.push('', vision);
-  for (const term of terms) sections.push('', ...renderTerm(term));
+  for (const term of terms) sections.push('', ...renderTerm(term, anchors.get(term.name) ?? ''));
 
   return `${head}\n\n${sections.join('\n')}\n`;
 }
@@ -136,7 +140,13 @@ export function generateGlossaryPages(index: SharedTermIndex, outDocsDir: string
 
   // Stable name-sorted context order → byte-identical output run-to-run (NFR-004).
   const contexts = [...index.contexts.entries()]
-    .map(([name, data]) => ({ name, slug: data.slug, vision: data.domainVisionStatement, terms: data.terms }))
+    .map(([name, data]) => ({
+      name,
+      slug: data.slug,
+      vision: data.domainVisionStatement,
+      terms: data.terms,
+      anchors: data.anchors,
+    }))
     .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
   const glossaryDir = join(outDocsDir, 'glossary');
@@ -151,7 +161,11 @@ export function generateGlossaryPages(index: SharedTermIndex, outDocsDir: string
     const contextDir = join(glossaryDir, context.slug);
     mkdirSync(contextDir, { recursive: true });
     const pagePath = join(contextDir, 'index.md');
-    writeFileSync(pagePath, renderContextPage(context.name, context.vision, context.terms), 'utf8');
+    writeFileSync(
+      pagePath,
+      renderContextPage(context.name, context.vision, context.terms, context.anchors),
+      'utf8',
+    );
     written.push(pagePath);
   }
 

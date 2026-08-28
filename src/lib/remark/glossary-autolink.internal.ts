@@ -23,7 +23,6 @@
  * text into link nodes, and collects the used-list.
  */
 import { resolveSurface } from '../glossary/resolve.js';
-import { slug } from '../glossary/anchor.js';
 import type { GlossaryLinkUsed, SharedTermIndex } from '../glossary/types.js';
 
 /**
@@ -52,9 +51,14 @@ export interface MdRoot extends MdNode {
 /** Called once per DISTINCT unresolved surface per page (the warning sink). */
 export type UnresolvedSink = (surface: string, competing: string[]) => void;
 
-/** The attribute the hover island / used-list key on, on every glossary link. */
+/** The attributes the hover island / used-list key on, on every glossary link. */
 const TERM_ATTR = 'data-glossary-term';
 const CONTEXT_ATTR = 'data-glossary-context';
+/** The AUTHORITATIVE, de-collided anchor + context page-slug (issue #17), carried on
+ * the node so `collectLinksUsed` and the "On this page" block READ them rather than
+ * recomputing `slug(...)` (which cannot know about de-collision). */
+const ANCHOR_ATTR = 'data-glossary-anchor';
+const CONTEXT_SLUG_ATTR = 'data-glossary-context-slug';
 
 /** Ancestor node types a rewrite must never descend into (FR-006). */
 function isGuardType(type: string): boolean {
@@ -119,9 +123,12 @@ function escapeRegExp(surface: string): string {
 /**
  * One combined whole-word, case-insensitive matcher over every known surface.
  * Longest surfaces first so a multi-word term wins over a single-word substring
- * of it. Boundaries are alphanumeric lookarounds, so "policyholder" never
- * matches "policy" (FR-006) while "Cargo"/"cargo" both do (case-insensitive).
- * `undefined` when the index has no surfaces (nothing to match).
+ * of it. Boundaries are **Unicode** letter/number lookarounds (`\p{L}\p{N}`, `u`
+ * flag), so "policyholder" never matches "policy" (FR-006) while "Cargo"/"cargo"
+ * both do (case-insensitive) — and, unlike an ASCII-only class, a term abutting a
+ * non-Latin letter (e.g. `Cargoで`, `caféCargo`) is correctly treated as inside a
+ * word and left unlinked, while ASCII punctuation adjacency (`Cargo.`, `(Cargo)`)
+ * still links. `undefined` when the index has no surfaces (nothing to match).
  */
 function buildSurfaceRegExp(index: SharedTermIndex): RegExp | undefined {
   const surfaces = Array.from(index.bySurface.keys());
@@ -131,19 +138,26 @@ function buildSurfaceRegExp(index: SharedTermIndex): RegExp | undefined {
     .sort((a, b) => b.length - a.length)
     .map(escapeRegExp)
     .join('|');
-  return new RegExp(`(?<![A-Za-z0-9])(?:${alternation})(?![A-Za-z0-9])`, 'gi');
+  return new RegExp(`(?<![\\p{L}\\p{N}])(?:${alternation})(?![\\p{L}\\p{N}])`, 'giu');
 }
 
-/** The shared link node both this plugin and `:term` (WP05) emit (FR-009). */
+/**
+ * The shared link node both this plugin and `:term` (WP05) emit (FR-009). The URL
+ * uses the context's de-collided page-SLUG (`contextSlug`) — the page actually lives
+ * at `/glossary/<slug>/`, so a raw context name with spaces/caps/`&` would 404
+ * (issue #17 finding #5). `data-glossary-context` keeps the original NAME (the hover
+ * payload keys on it). MUST stay byte-identical to `glossary-term.glossaryLinkNode`.
+ */
 function makeLinkNode(
   context: string,
+  contextSlug: string,
   anchor: string,
   termName: string,
   surface: string,
 ): MdNode {
   return {
     type: 'link',
-    url: `/glossary/${context}/#${anchor}`,
+    url: `/glossary/${contextSlug}/#${anchor}`,
     children: [{ type: 'text', value: surface }],
     data: {
       hProperties: {
@@ -151,6 +165,8 @@ function makeLinkNode(
         rel: 'noopener',
         [TERM_ATTR]: termName,
         [CONTEXT_ATTR]: context,
+        [ANCHOR_ATTR]: anchor,
+        [CONTEXT_SLUG_ATTR]: contextSlug,
       },
     },
   };
@@ -193,7 +209,7 @@ function expandTextNode(node: MdNode, w: Walk): MdNode[] {
     const res = resolveSurface(matched, w.pageContext, w.index, w.ignoreList);
     if (res.kind === 'link') {
       if (m.index > cursor) out.push({ type: 'text', value: value.slice(cursor, m.index) });
-      out.push(makeLinkNode(res.context, res.anchor, res.termName, matched));
+      out.push(makeLinkNode(res.context, res.contextSlug, res.anchor, res.termName, matched));
       w.linkedSurfaces.add(lower);
       cursor = m.index + matched.length;
       linked = true;
@@ -253,8 +269,10 @@ function seedFromExistingLinks(blocks: readonly MdNode[], linkedSurfaces: Set<st
  * link in the final tree — both this plugin's auto-links and pre-existing
  * `:term` links (ADR-0025 Decision 2 / post-squad A-2: a bare resolver re-derive
  * would drop `:term`). Distinct by term within its context; the surface recorded
- * is the first-appearance one. `anchor` is recomputed via the shared `slug`
- * (NFR-004), never trusted from the node.
+ * is the first-appearance one. `anchor` and `contextSlug` are READ from the node's
+ * stored `data-glossary-anchor` / `data-glossary-context-slug` (issue #17) — the
+ * authoritative de-collided values, never recomputed via `slug` (which cannot know
+ * about de-collision, so a re-derive would drift from the heading id).
  */
 export function collectLinksUsed(tree: MdNode): GlossaryLinkUsed[] {
   const seen = new Set<string>();
@@ -267,7 +285,9 @@ export function collectLinksUsed(tree: MdNode): GlossaryLinkUsed[] {
     const key = `${context} ${termName}`;
     if (seen.has(key)) return;
     seen.add(key);
-    result.push({ surface: textContent(node), context, anchor: slug(termName), termName });
+    const anchor = String(hp[ANCHOR_ATTR] ?? '');
+    const contextSlug = String(hp[CONTEXT_SLUG_ATTR] ?? '');
+    result.push({ surface: textContent(node), context, contextSlug, anchor, termName });
   });
   return result;
 }
