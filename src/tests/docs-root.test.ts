@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -14,9 +14,26 @@ vi.mock('astro:content', () => ({
   getCollection: async () => collectionEntries,
 }));
 
-import { docsRootFromSignal, docsRoot } from '../lib/routes/shared.js';
+import {
+  docsRootFromSignal,
+  docsRootFromSignals,
+  docsRoot,
+  DK_DOCS_ROOT_ENV,
+} from '../lib/routes/shared.js';
 
 const abs = (rel: string) => path.resolve(process.cwd(), rel);
+
+/**
+ * `DK_DOCS_ROOT` is process-global. The derivation/fallback suites assume it is
+ * UNSET (they exercise the content-layer signal), and the preference suite sets
+ * it explicitly — so snapshot + restore it around every test to keep them
+ * order-independent and to never leak into another test file's worker.
+ */
+const originalDocsRootEnv = process.env[DK_DOCS_ROOT_ENV];
+const restoreDocsRootEnv = (): void => {
+  if (originalDocsRootEnv === undefined) delete process.env[DK_DOCS_ROOT_ENV];
+  else process.env[DK_DOCS_ROOT_ENV] = originalDocsRootEnv;
+};
 
 describe('docsRootFromSignal', () => {
   it('derives a non-default docs root from a plain page filePath', () => {
@@ -59,10 +76,42 @@ describe('docsRootFromSignal', () => {
   });
 });
 
+describe('docsRootFromSignals (pure precedence, env-free/fs-free)', () => {
+  const filePathEntries: Array<{ id: string; filePath?: string }> = [
+    { id: 'index', filePath: 'documentation/README.md' },
+    { id: 'how-to/pages', filePath: 'documentation/how-to/pages.md' },
+  ];
+
+  it('prefers the integration-published root over the content-layer signal', () => {
+    // Even with content that would derive `documentation`, the published root wins.
+    expect(docsRootFromSignals(abs('published-docs'), filePathEntries)).toBe(
+      abs('published-docs'),
+    );
+  });
+
+  it('resolves a relative published root against cwd', () => {
+    expect(docsRootFromSignals('published-docs', [])).toBe(abs('published-docs'));
+  });
+
+  it('ignores an empty/whitespace published root and falls to the filePath signal', () => {
+    expect(docsRootFromSignals('   ', filePathEntries)).toBe(abs('documentation'));
+    expect(docsRootFromSignals(undefined, filePathEntries)).toBe(abs('documentation'));
+  });
+
+  it('returns null when neither signal resolves (caller supplies the default)', () => {
+    expect(docsRootFromSignals(undefined, [{ id: 'guides/deploy' }])).toBeNull();
+    expect(docsRootFromSignals(undefined, [])).toBeNull();
+  });
+});
+
 describe('docsRoot (resolver the discovery routes call)', () => {
   beforeEach(() => {
     collectionEntries.length = 0;
+    // These cases exercise the content-layer fallback: the integration signal
+    // must be absent so the fallback is reached (guardrail: preserve #22 exactly).
+    delete process.env[DK_DOCS_ROOT_ENV];
   });
+  afterEach(restoreDocsRootEnv);
 
   it('resolves the docs root from the loaded content, honoring a custom docsDir', async () => {
     collectionEntries.push(
@@ -81,5 +130,28 @@ describe('docsRoot (resolver the discovery routes call)', () => {
 
   it('falls back to `<cwd>/docs` for an empty corpus', async () => {
     expect(await docsRoot()).toBe(abs('docs'));
+  });
+});
+
+describe('docsRoot — prefers the integration-published DK_DOCS_ROOT (F3/F5)', () => {
+  beforeEach(() => {
+    collectionEntries.length = 0;
+  });
+  afterEach(restoreDocsRootEnv);
+
+  it('returns the published root even when the content-layer signal disagrees', async () => {
+    // Content would derive `documentation`, but the integration published a
+    // DIFFERENT root — the published truth (what the sitemap filter used) wins, so
+    // both surfaces resolve the registry from the SAME directory.
+    collectionEntries.push({ id: 'index', filePath: 'documentation/README.md' });
+    process.env[DK_DOCS_ROOT_ENV] = abs('published-docs');
+    expect(await docsRoot()).toBe(abs('published-docs'));
+  });
+
+  it('falls back to the content-layer derivation once the signal is unset', async () => {
+    // Round-trips the no-integration guarantee: deleting the env restores #22.
+    collectionEntries.push({ id: 'index', filePath: 'documentation/README.md' });
+    delete process.env[DK_DOCS_ROOT_ENV];
+    expect(await docsRoot()).toBe(abs('documentation'));
   });
 });

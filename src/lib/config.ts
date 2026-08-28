@@ -49,6 +49,18 @@ import {
   glossaryDefinitions,
 } from './glossary/definitions-payload.js';
 
+/**
+ * Internal cross-boundary signal (integration → standalone routes), NOT a public
+ * API. `defineDocKittyIntegrations` resolves `docsDir` to an absolute path and
+ * publishes it here at setup; the discovery routes' `docsRoot()` PREFERS it so the
+ * sitemap filter and the llms.txt/RSS/agent-index routes resolve the section
+ * registry from the SAME root (F3/F5 — closes #22's cross-surface split, where a
+ * consumer with `docsDir` ≠ the loader `base` could otherwise filter against two
+ * different `sections.yaml` files). Deliberately un-exported from `index.ts`: it is
+ * a runtime handoff between two config surfaces, never something a consumer sets.
+ */
+export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
+
 export interface DocKittyOptions {
   /** Site title shown in the header. */
   title: string;
@@ -504,6 +516,17 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     diagrams = false,
     starlight: overrides,
   } = options;
+
+  // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
+  // sitemap draft filter resolves internally (`path.resolve(process.cwd(),
+  // docsDir)` in both `draftRoutes` and its registry read), so writing it here
+  // guarantees the standalone routes' `docsRoot()` reads the section registry from
+  // the identical absolute path — not a separately-derived one. Set unconditionally
+  // so the signal always reflects the docsDir THIS integration was configured with
+  // (a single-site build calls this once; a later call with a different docsDir
+  // should win). Absent this call (standalone route render, route unit tests) the
+  // env stays unset and `docsRoot()` keeps #22's content-layer fallback verbatim.
+  process.env[DK_DOCS_ROOT_ENV] = path.resolve(process.cwd(), docsDir);
 
   // Resolve the default → brand → consumer merge (WP01). `undefined` yields the
   // byte-compatible M1 path: `generated === false`, `customCss` the single static

@@ -79,39 +79,61 @@ export function docsRootFromSignal(signal: DocsRootSignal): string | null {
 }
 
 /**
- * Resolve the docs root the discovery routes read the section registry from.
- *
- * WHY (issue #22): the sidebar registry (config.ts) is resolved against the
- * configurable `docsDir` option, but the three routes historically hardcoded
- * `path.join(process.cwd(), 'docs')`. A consumer with a non-default docs
- * directory therefore got a registry-driven SIDEBAR but DEFAULT-ordered/labeled
- * llms.txt/RSS/agent-index — the registry authority split across surfaces.
- *
- * A standalone `APIRoute` cannot read `docsDir`: it is passed to
- * `defineDocKittyIntegrations` in `astro.config`, and the loader's content root
- * is a SEPARATE `base` passed to `docKittyDocsLoader` in `content.config` — two
- * independent config surfaces with NO shared runtime handle (no env var, no
- * virtual module the integration exports for a route to read). The one signal a
- * route can trust is the content layer itself: `getCollection('docs')` already
- * honors the loader `base`, and each glob-loaded entry carries a `filePath`
- * reflecting the ACTUAL on-disk content root. Deriving the root from that keeps
- * the registry read from the SAME directory the content came from — correct for
- * any custom docs directory (a consumer sets loader `base` and `docsDir` to the
- * same folder by convention) with NO change to config.ts.
- *
- * CONSTRAINT: fully unifying `docsDir` and the loader `base` behind ONE option
- * would require a config.ts change (out of this op's lane); this resolver is the
- * cleanest correct fix that stays in the routes. If no entry exposes a
- * `filePath` (older loaders, an empty corpus), we fall back to the convention
- * default `<cwd>/docs` — byte-identical to the previous hardcoded behavior.
+ * The env var the integration publishes the authoritative docs root through
+ * (F3/F5). Kept in sync with `config.ts`'s `DK_DOCS_ROOT_ENV` by VALUE, not by
+ * import: `config.ts` runs in the `astro.config` surface where `astro:content`
+ * (which this module statically imports) does not resolve, so a shared import
+ * would drag that virtual module into the config graph. Two literals, one name.
  */
-export async function docsRoot(): Promise<string> {
-  const entries = (await getCollection('docs')) as unknown as DocsRootSignal[];
+export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
+
+/**
+ * Choose the docs root from the two signals a route can see, purely (fs-free,
+ * env-free) so the precedence is unit-testable without touching `process.env` or
+ * Astro. Precedence: the integration-published absolute root wins; else the
+ * content-layer `filePath` derivation (#22); else `null` for the caller's default.
+ */
+export function docsRootFromSignals(
+  publishedRoot: string | undefined,
+  entries: DocsRootSignal[],
+): string | null {
+  if (publishedRoot && publishedRoot.trim() !== '') {
+    return path.resolve(publishedRoot);
+  }
   for (const entry of entries) {
     const root = docsRootFromSignal(entry);
     if (root) return root;
   }
-  return path.join(process.cwd(), 'docs');
+  return null;
+}
+
+/**
+ * Resolve the docs root the discovery routes read the section registry from.
+ *
+ * WHY (issue #22 → F3/F5): the sidebar registry AND the sitemap draft/feeds
+ * filter (config.ts) resolve against the configurable `docsDir` option, but the
+ * three routes historically derived the root independently. Under the documented
+ * convention (`docsDir` == the loader `base`) the two agree; if a consumer sets
+ * them differently the sitemap and the routes could filter against DIFFERENT
+ * `sections.yaml` files — a silent cross-surface split (#22's own acknowledged
+ * limitation).
+ *
+ * The fix: the integration KNOWS the resolved `docsDir` and PUBLISHES it as
+ * `DK_DOCS_ROOT` (config.ts, at setup). This resolver PREFERS that published
+ * truth, so both surfaces resolve the identical absolute root. When it is unset —
+ * a standalone `APIRoute` rendered without the integration having run, or a route
+ * unit test — we fall back verbatim to #22's content-layer derivation: the one
+ * signal a route can otherwise trust is the content layer itself, since
+ * `getCollection('docs')` honors the loader `base` and each glob-loaded entry
+ * carries a `filePath` reflecting the ACTUAL on-disk content root. If no entry
+ * exposes a `filePath` either (older loaders, an empty corpus), we fall back to
+ * the convention default `<cwd>/docs` — byte-identical to the previous behavior
+ * (no env + no filePath → `<cwd>/docs`).
+ */
+export async function docsRoot(): Promise<string> {
+  const published = process.env[DK_DOCS_ROOT_ENV];
+  const entries = (await getCollection('docs')) as unknown as DocsRootSignal[];
+  return docsRootFromSignals(published, entries) ?? path.join(process.cwd(), 'docs');
 }
 
 /** Resolve an absolute URL for a route against the configured site. */
