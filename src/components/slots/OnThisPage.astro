@@ -93,13 +93,19 @@ function linksForBody(
   ignoreList: ReadonlySet<string>,
   autolink: boolean,
 ): GlossaryLinkUsed[] {
-  // Parse to mdast through the SHARED re-derive processor (issue #16): gfm +
-  // smartypants (matching the build substrate) plus the directive extension, so
-  // `:term[...]{...}` becomes a real `textDirective` node (never re-scanned prose)
-  // AND a gfm autolink literal like `cargo@x.com` is a `link` node the auto-linker
-  // guards — never a phantom used-list entry. This is the exact substrate the build
-  // pipeline hands `glossary-term`.
-  const tree = createPageProcessor({ directive: true }).parse(body) as unknown as MdRoot;
+  // Build the shared re-derive processor (issue #16) and run BOTH phases —
+  // `runSync(parse(...))` (issue #20) — so the tree matches the build substrate:
+  //   - `.parse()` runs the SYNTAX extensions: the directive extension makes
+  //     `:term[...]{...}` a real `textDirective` node (never re-scanned prose) and
+  //     gfm makes a literal like `cargo@x.com` a guarded `link` node (no phantom).
+  //   - `.runSync()` runs the TRANSFORMERS: remark-smartypants curls typographic
+  //     punctuation (`'`, `--`, `...`) BEFORE the glossary passes match surfaces,
+  //     exactly as the build does — so a straight-quote surface key (e.g. `don't`)
+  //     no longer produces a phantom used-list entry the build never emits.
+  // remark-directive has no transformer, so `runSync` leaves the `textDirective`
+  // node intact for the `glossary-term` pass below.
+  const p = createPageProcessor({ directive: true });
+  const tree = p.runSync(p.parse(body)) as unknown as MdRoot;
 
   // WP05: turn every resolvable `:term` directive into the shared glossary link
   // node. A no-op message sink stands in for the vfile (warnings are the build

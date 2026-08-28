@@ -76,6 +76,23 @@ describe('stripMarkdown', () => {
     expect(out).not.toContain('|');
     expect(out).toBe('A B 1 2');
   });
+
+  // Issue #20: the strip now RUNS the transformers (`runSync`), not just `.parse()`,
+  // so remark-smartypants curls typographic punctuation in the preview EXACTLY as
+  // the page renders it (`'`→`’`, `--`→ en/em dash, `...`→`…`) — locking
+  // preview↔render parity. A `.parse()`-only strip would leave straight quotes.
+  it('curls typographic punctuation via smartypants (preview↔render parity)', () => {
+    const out = stripMarkdown("Don't stop -- keep going...");
+    // Apostrophe curled to a right single quote; no straight apostrophe survives.
+    expect(out).toContain('’');
+    expect(out).not.toContain("'");
+    // `...` becomes a single horizontal-ellipsis glyph.
+    expect(out).toContain('…');
+    expect(out).not.toContain('...');
+    // `--` becomes an en/em dash (smartypants default) — never a literal double hyphen.
+    expect(out).not.toContain('--');
+    expect(/[–—]/.test(out)).toBe(true);
+  });
 });
 
 describe('buildDefinitionsPayload', () => {

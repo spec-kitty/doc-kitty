@@ -35,9 +35,11 @@ const index: SharedTermIndex = {
 };
 
 /** Run the SHARED re-derive path over `body` (mirrors `linksForBody`, autolink on):
- *  shared parse → glossary-term (no-op here, no `:term`) → computePageLinks. */
+ *  shared parse → runSync (transformers, incl. smartypants — issue #20) →
+ *  glossary-term (no-op here, no `:term`) → computePageLinks. */
 function sharedUsedList(body: string) {
-  const tree = createPageProcessor({ directive: true }).parse(body) as unknown as MdRoot;
+  const p = createPageProcessor({ directive: true });
+  const tree = p.runSync(p.parse(body)) as unknown as MdRoot;
   const silent = { message() {} };
   (glossaryTerm({ index }) as (t: MdRoot, f: typeof silent) => void)(tree, silent);
   return computePageLinks(tree, undefined, index, new Set()).linksUsed;
@@ -99,5 +101,55 @@ describe('createPageProcessor — gfm + smartypants sanity (no literal leakage)'
     expect(joined).not.toContain('"');
     expect(joined).toContain('“'); // “
     expect(joined).toContain('”'); // ”
+  });
+});
+
+// Issue #20 — the residual "curl phantom" #16 left open. A surface key with
+// typographic punctuation (a straight apostrophe) is stored raw (`term.name
+// .toLowerCase()`), but the build curls the PROSE (smartypants runs before the
+// auto-linker), so the straight-quote surface no longer matches → the build does
+// NOT link it. The pre-#20 `.parse()`-only re-derive skipped smartypants, kept the
+// prose straight, still matched → a PHANTOM used-list entry the build never emits.
+// Running the transformers (`runSync`) in the re-derive closes the class.
+const curlIndex: SharedTermIndex = {
+  bySurface: new Map([
+    // Surface stored with a straight apostrophe (the raw lower-cased term name).
+    ["don't", [{ context: 'jargon', contextSlug: 'jargon', anchor: 'dont', termName: "Don't" }]],
+  ]),
+  contexts: new Map(),
+};
+
+/** NEW shared re-derive (issue #20): parse → runSync (smartypants) → glossary passes. */
+function sharedUsedListCurl(body: string) {
+  const p = createPageProcessor({ directive: true });
+  const tree = p.runSync(p.parse(body)) as unknown as MdRoot;
+  const silent = { message() {} };
+  (glossaryTerm({ index: curlIndex }) as (t: MdRoot, f: typeof silent) => void)(tree, silent);
+  return computePageLinks(tree, undefined, curlIndex, new Set()).linksUsed;
+}
+
+/** The pre-#20 `.parse()`-ONLY control: smartypants is configured but NEVER run,
+ *  so the prose stays straight and the phantom re-appears — documents the fix. */
+function parseOnlyUsedListCurl(body: string) {
+  const tree = createPageProcessor({ directive: true }).parse(body) as unknown as MdRoot;
+  const silent = { message() {} };
+  (glossaryTerm({ index: curlIndex }) as (t: MdRoot, f: typeof silent) => void)(tree, silent);
+  return computePageLinks(tree, undefined, curlIndex, new Set()).linksUsed;
+}
+
+describe('createPageProcessor — smartypants transformer parity (issue #20 curl phantom)', () => {
+  // Prose mention with a STRAIGHT apostrophe; the build curls it to `don’t` before
+  // the auto-linker runs, so the straight-quote surface `don't` never matches.
+  const body = "You really don't say.";
+
+  it('shared runSync path matches the build: curled prose no longer matches the straight surface → no phantom', () => {
+    const used = sharedUsedListCurl(body);
+    expect(used).toHaveLength(0);
+  });
+
+  it('`.parse()`-only control diverges: smartypants never ran, so the straight surface still matches → phantom link', () => {
+    const used = parseOnlyUsedListCurl(body);
+    expect(used).toHaveLength(1);
+    expect(used[0].termName).toBe("Don't");
   });
 });
