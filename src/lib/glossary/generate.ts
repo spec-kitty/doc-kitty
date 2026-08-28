@@ -67,9 +67,22 @@ function renderMeta(meta: Record<string, string>): string[] {
   return ['**Meta:**', '', ...items];
 }
 
+/**
+ * Heading text for a term: collapse whitespace and neutralize `{`/`}` so an
+ * author-supplied `{#id}` (or a newline) embedded in the term name can never
+ * shadow or desync the heading id — the explicit `{#anchor}` below is the sole
+ * id source, and it is the stored, de-collided anchor.
+ */
+function headingText(name: string): string {
+  return name
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[{}]/g, (c) => `\\${c}`);
+}
+
 /** Render one term as a Markdown section anchored at its stored de-collided anchor. */
 function renderTerm(term: Term, anchor: string): string[] {
-  const blocks: string[] = [`## ${term.name} {#${anchor}}`, '', term.definition];
+  const blocks: string[] = [`## ${headingText(term.name)} {#${anchor}}`, '', term.definition];
 
   if (term.aliases && term.aliases.length > 0) {
     blocks.push('', `**Aliases:** ${term.aliases.join(', ')}`);
@@ -121,7 +134,19 @@ function renderContextPage(
 
   const sections: string[] = [`# ${name}`];
   if (vision) sections.push('', vision);
-  for (const term of terms) sections.push('', ...renderTerm(term, anchors.get(term.name) ?? ''));
+  for (const term of terms) {
+    // buildIndex assigns a de-collided anchor for every term and makes empty
+    // slugs / duplicate names build-fatal, so a missing entry is a broken
+    // invariant, not an author error — fail loud rather than ship `{#}`.
+    const anchor = anchors.get(term.name);
+    if (anchor === undefined) {
+      throw new Error(
+        `Glossary generation invariant: no anchor for term "${term.name}" in ` +
+          `context "${name}" — buildIndex must assign one for every term`,
+      );
+    }
+    sections.push('', ...renderTerm(term, anchor));
+  }
 
   return `${head}\n\n${sections.join('\n')}\n`;
 }
