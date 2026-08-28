@@ -6,12 +6,10 @@
  *   import { rssRoute } from '@commondocs-kitty/toolkit/routes';
  *   export const GET = rssRoute({ title: 'My Docs', description: '…' });
  */
-import path from 'node:path';
-import process from 'node:process';
 import type { APIRoute } from 'astro';
 import { rankForFeed, sectionOf, updatedMillis, sectionLabel, includedInRssFeed } from '../metadata.js';
 import { loadSectionRegistry, sectionLabels } from '../sections.js';
-import { absolute, collectDocEntries, xmlEscape } from './shared.js';
+import { absolute, collectDocEntries, docsRoot, xmlEscape } from './shared.js';
 
 export interface RssRouteOptions {
   title: string;
@@ -28,7 +26,8 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
     const entries = rankForFeed(await collectDocEntries()).filter(includedInRssFeed);
     // Registry-driven section labels for the item <category> fallback; a
     // registry-free root falls back to SECTION_LABEL inside sectionLabel (#18).
-    const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
+    // Resolved from the content layer so a custom docs directory is honored (#22).
+    const registry = loadSectionRegistry(await docsRoot());
     const labels = registry ? sectionLabels(registry) : undefined;
     const self = absolute(site, '/rss.xml');
     const home = absolute(site, '/');

@@ -9,8 +9,6 @@
  *   import { llmsTxtRoute } from '@commondocs-kitty/toolkit/routes';
  *   export const GET = llmsTxtRoute({ title: 'My Docs', description: '…' });
  */
-import path from 'node:path';
-import process from 'node:process';
 import type { APIRoute } from 'astro';
 import {
   rankForAgents,
@@ -19,7 +17,7 @@ import {
   sectionLabel,
 } from '../metadata.js';
 import { loadSectionRegistry, sectionLabels, sectionOrder } from '../sections.js';
-import { absolute, collectDocEntries } from './shared.js';
+import { absolute, collectDocEntries, docsRoot } from './shared.js';
 
 export interface LlmsTxtRouteOptions {
   title: string;
@@ -28,11 +26,12 @@ export interface LlmsTxtRouteOptions {
 
 export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
   return async ({ site }) => {
-    // The section registry (docs/_meta/sections.yaml) drives order + labels when
-    // present; a registry-free root falls back to the SECTION_ORDER/SECTION_LABEL
-    // defaults inside the metadata helpers (issue #18). `docs/` is the convention
-    // default root, resolved against the build cwd (the site root).
-    const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
+    // The section registry (<docsRoot>/_meta/sections.yaml) drives order + labels
+    // when present; a registry-free root falls back to the SECTION_ORDER/
+    // SECTION_LABEL defaults inside the metadata helpers (issue #18). The root is
+    // resolved from the content layer so a custom docs directory is honored (#22),
+    // not hardcoded to `docs/`.
+    const registry = loadSectionRegistry(await docsRoot());
     const order = registry ? sectionOrder(registry) : undefined;
     const labels = registry ? sectionLabels(registry) : undefined;
     const ranked = rankForAgents(await collectDocEntries(), order);

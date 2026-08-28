@@ -8,13 +8,11 @@
  *   import { agentIndexRoute } from '@commondocs-kitty/toolkit/routes';
  *   export const GET = agentIndexRoute({ title: 'My Docs' });
  */
-import path from 'node:path';
-import process from 'node:process';
 import type { APIRoute } from 'astro';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { rankForAgents, resolveRelated, toAgentRecord } from '../metadata.js';
 import { loadSectionRegistry, sectionOrder } from '../sections.js';
-import { absolute, buildDocsIndex, collectDocEntries } from './shared.js';
+import { absolute, buildDocsIndex, collectDocEntries, docsRoot } from './shared.js';
 
 export interface AgentIndexRouteOptions {
   title: string;
@@ -29,8 +27,9 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
     // `related` ref into a non-discoverable page still resolves (FR-004).
     const index = buildDocsIndex(all);
     // Registry-driven section order when present; else the SECTION_ORDER default
-    // inside rankForAgents (issue #18).
-    const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
+    // inside rankForAgents (issue #18). Resolve the registry from the SAME docs
+    // root the content came from so a custom docs directory is honored (#22).
+    const registry = loadSectionRegistry(await docsRoot());
     const order = registry ? sectionOrder(registry) : undefined;
     const ranked = rankForAgents(all, order);
     const pages = ranked.map((entry) => {
