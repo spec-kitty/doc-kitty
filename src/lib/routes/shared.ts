@@ -3,9 +3,11 @@
  * and adapt Astro entries to the framework-agnostic `DocEntry` shape used by
  * the metadata helpers.
  */
+import path from 'node:path';
+import process from 'node:process';
 import { getCollection } from 'astro:content';
 import type { DocEntry, DocKittyFrontmatter, DocsIndex } from '../metadata.js';
-import { slugFromEntryId } from '../metadata.js';
+import { readmeToIndexId, slugFromEntryId } from '../metadata.js';
 
 /**
  * Load every docs entry as a `DocEntry`. With the README-as-index loader, an
@@ -38,6 +40,100 @@ export function buildDocsIndex(entries: DocEntry[]): DocsIndex {
     };
   }
   return index;
+}
+
+/**
+ * The minimal content-layer entry shape the docs-root resolver reads: the store
+ * `id` (→ route slug) and the glob loader's `filePath` (relative to the project
+ * root). Kept local so the pure derivation is testable without pulling in Astro.
+ */
+export interface DocsRootSignal {
+  id: string;
+  filePath?: string;
+}
+
+/**
+ * Derive the absolute docs root from ONE content entry's `filePath` + store id,
+ * applying the same README-as-index rule the loader uses. Pure and fs-free, so
+ * it is unit-testable without Astro. Returns `null` when the entry carries no
+ * `filePath` signal (e.g. a non-glob loader), letting the caller fall back.
+ *
+ * The store id maps to the route slug (`slugFromEntryId`), and `filePath` is
+ * `<docsRoot>/<original path>` — so `readmeToIndexId(filePath)` yields
+ * `<docsRoot>/<slug>`, and stripping the slug tail leaves the docs root. This
+ * holds uniformly for `README.md` (index) and plain `.md` files because
+ * `readmeToIndexId` collapses both to the same slug the id already carries.
+ */
+export function docsRootFromSignal(signal: DocsRootSignal): string | null {
+  if (!signal.filePath) return null;
+  const slug = slugFromEntryId(signal.id);
+  // Normalize any OS separators to '/' so readmeToIndexId's '/'-anchored regex
+  // works, then strip the '<slug>' tail (plus its joining '/').
+  const normalized = readmeToIndexId(signal.filePath.split(/[\\/]/).join('/'));
+  const rootRel =
+    slug === ''
+      ? normalized
+      : normalized.slice(0, Math.max(0, normalized.length - slug.length - 1));
+  // rootRel === '' means the docs tree IS the project root (docsDir '.').
+  return path.resolve(process.cwd(), rootRel || '.');
+}
+
+/**
+ * The env var the integration publishes the authoritative docs root through
+ * (F3/F5). Kept in sync with `config.ts`'s `DK_DOCS_ROOT_ENV` by VALUE, not by
+ * import: `config.ts` runs in the `astro.config` surface where `astro:content`
+ * (which this module statically imports) does not resolve, so a shared import
+ * would drag that virtual module into the config graph. Two literals, one name.
+ */
+export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
+
+/**
+ * Choose the docs root from the two signals a route can see, purely (fs-free,
+ * env-free) so the precedence is unit-testable without touching `process.env` or
+ * Astro. Precedence: the integration-published absolute root wins; else the
+ * content-layer `filePath` derivation (#22); else `null` for the caller's default.
+ */
+export function docsRootFromSignals(
+  publishedRoot: string | undefined,
+  entries: DocsRootSignal[],
+): string | null {
+  if (publishedRoot && publishedRoot.trim() !== '') {
+    return path.resolve(publishedRoot);
+  }
+  for (const entry of entries) {
+    const root = docsRootFromSignal(entry);
+    if (root) return root;
+  }
+  return null;
+}
+
+/**
+ * Resolve the docs root the discovery routes read the section registry from.
+ *
+ * WHY (issue #22 → F3/F5): the sidebar registry AND the sitemap draft/feeds
+ * filter (config.ts) resolve against the configurable `docsDir` option, but the
+ * three routes historically derived the root independently. Under the documented
+ * convention (`docsDir` == the loader `base`) the two agree; if a consumer sets
+ * them differently the sitemap and the routes could filter against DIFFERENT
+ * `sections.yaml` files — a silent cross-surface split (#22's own acknowledged
+ * limitation).
+ *
+ * The fix: the integration KNOWS the resolved `docsDir` and PUBLISHES it as
+ * `DK_DOCS_ROOT` (config.ts, at setup). This resolver PREFERS that published
+ * truth, so both surfaces resolve the identical absolute root. When it is unset —
+ * a standalone `APIRoute` rendered without the integration having run, or a route
+ * unit test — we fall back verbatim to #22's content-layer derivation: the one
+ * signal a route can otherwise trust is the content layer itself, since
+ * `getCollection('docs')` honors the loader `base` and each glob-loaded entry
+ * carries a `filePath` reflecting the ACTUAL on-disk content root. If no entry
+ * exposes a `filePath` either (older loaders, an empty corpus), we fall back to
+ * the convention default `<cwd>/docs` — byte-identical to the previous behavior
+ * (no env + no filePath → `<cwd>/docs`).
+ */
+export async function docsRoot(): Promise<string> {
+  const published = process.env[DK_DOCS_ROOT_ENV];
+  const entries = (await getCollection('docs')) as unknown as DocsRootSignal[];
+  return docsRootFromSignals(published, entries) ?? path.join(process.cwd(), 'docs');
 }
 
 /** Resolve an absolute URL for a route against the configured site. */

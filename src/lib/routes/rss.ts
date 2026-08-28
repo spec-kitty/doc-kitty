@@ -7,8 +7,9 @@
  *   export const GET = rssRoute({ title: 'My Docs', description: '…' });
  */
 import type { APIRoute } from 'astro';
-import { rankForFeed, sectionOf, updatedMillis, SECTION_LABEL, includedInRssFeed } from '../metadata.js';
-import { absolute, collectDocEntries, xmlEscape } from './shared.js';
+import { rankForFeed, sectionOf, updatedMillis, sectionLabel, includedInRssFeed } from '../metadata.js';
+import { loadSectionRegistry, sectionLabels, sectionFeeds, feedsSurface } from '../sections.js';
+import { absolute, collectDocEntries, docsRoot, xmlEscape } from './shared.js';
 
 export interface RssRouteOptions {
   title: string;
@@ -22,7 +23,20 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
     // deck (RT-07). The exclusion predicate is a pure metadata helper so it is
     // unit-testable without pulling in Astro; it keys on frontmatter `kind`,
     // never the section path, so a deck filed anywhere is still excluded (A-05).
-    const entries = rankForFeed(await collectDocEntries()).filter(includedInRssFeed);
+    // Registry-driven section labels for the item <category> fallback; a
+    // registry-free root falls back to SECTION_LABEL inside sectionLabel (#18).
+    // Resolved from the content layer so a custom docs directory is honored (#22).
+    const registry = loadSectionRegistry(await docsRoot());
+    const labels = registry ? sectionLabels(registry) : undefined;
+    // Section-level `feeds` filter, composed ON TOP of the existing publication +
+    // kind gating: a page appears iff its section feeds `rss` AND it survives
+    // `rankForFeed` (published) AND `includedInRssFeed` (not a deck). A section
+    // that OMITS `feeds` feeds all four surfaces (absent = all), and an absent
+    // registry means `feeds` is undefined → no filtering (byte-compatible).
+    const feeds = registry ? sectionFeeds(registry) : undefined;
+    const entries = rankForFeed(await collectDocEntries())
+      .filter(includedInRssFeed)
+      .filter((entry) => feedsSurface(feeds, sectionOf(entry.slug), 'rss'));
     const self = absolute(site, '/rss.xml');
     const home = absolute(site, '/');
 
@@ -32,7 +46,7 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
         const millis = updatedMillis(entry.data);
         const pubDate = millis ? new Date(millis).toUTCString() : undefined;
         const section = sectionOf(entry.slug);
-        const category = entry.data.type ?? SECTION_LABEL[section] ?? 'Doc';
+        const category = entry.data.type ?? sectionLabel(section, labels) ?? 'Doc';
         return [
           '    <item>',
           `      <title>${xmlEscape(entry.data.title)}</title>`,

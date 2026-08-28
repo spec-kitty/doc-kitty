@@ -39,6 +39,8 @@
  * Hub (context → product, domain); it also lets the bundle-root Hub list the
  * section indexes instead of rendering an empty nav.
  */
+import path from 'node:path';
+import process from 'node:process';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { getCollection } from 'astro:content';
 import {
@@ -48,6 +50,7 @@ import {
   isPublished,
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
+import { loadSectionRegistry, sectionOrder } from '../lib/sections.js';
 import '../styles/hub.css';
 
 const route = Astro.props as StarlightRoute;
@@ -62,6 +65,13 @@ const parentOf = (slug: string): string => {
   const i = slug.lastIndexOf('/');
   return i === -1 ? '' : slug.slice(0, i);
 };
+
+// Section ordering follows the same registry the sidebar and discovery
+// surfaces read, so the root Hub grid never diverges from them (DIRECTIVE_044:
+// one source of truth). Falls back to the frozen SECTION_ORDER when no
+// registry is present, exactly like the routes.
+const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
+const order = registry ? sectionOrder(registry) : undefined;
 
 const children = (await getCollection('docs'))
   .map((entry) => ({
@@ -79,7 +89,8 @@ const children = (await getCollection('docs'))
   )
   .sort((a, b) => {
     const bySection =
-      sectionRank(sectionOf(a.slug)) - sectionRank(sectionOf(b.slug));
+      sectionRank(sectionOf(a.slug), order) -
+      sectionRank(sectionOf(b.slug), order);
     if (bySection !== 0) return bySection;
     return a.data.title.localeCompare(b.data.title);
   });
