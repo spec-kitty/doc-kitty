@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -8,6 +8,7 @@ import {
   sectionOrder,
   sectionLabels,
   registryToSidebar,
+  BUILD_GENERATED_SECTION_IDS,
   type SectionRegistry,
 } from '../lib/sections.js';
 
@@ -151,7 +152,9 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     // `faq` is registered but has no folder on disk → skipped (Starlight would
     // throw on an empty autogenerate directory).
     const present = ['context', 'architecture', 'adr', 'glossary'];
-    const sidebar = registryToSidebar(reg, present);
+    // `faq` is registered but absent and not generated → it warns; silence it so
+    // this test asserts only on the emitted-groups shape.
+    const sidebar = registryToSidebar(reg, present, { warn: () => {} });
     expect(sidebar).toEqual([
       { label: 'Context', autogenerate: { directory: 'context' } },
       { label: 'Architecture', autogenerate: { directory: 'architecture' } },
@@ -161,7 +164,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
   });
 
   it('labels the glossary group "Reference" pointing at the glossary/ folder', () => {
-    const sidebar = registryToSidebar(reg, ['glossary']);
+    const sidebar = registryToSidebar(reg, ['glossary'], { warn: () => {} });
     expect(sidebar).toContainEqual({
       label: 'Reference',
       autogenerate: { directory: 'glossary' },
@@ -169,12 +172,71 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
   });
 
   it('appends an on-disk folder with no registry entry (humanized), after registry groups', () => {
-    const sidebar = registryToSidebar(reg, ['context', 'glossary', 'glossary-demo']);
+    const sidebar = registryToSidebar(reg, ['context', 'glossary', 'glossary-demo'], {
+      // A section registered but neither present nor generated warns; silence it
+      // here so this test asserts only on the append behavior.
+      warn: () => {},
+    });
     // Registered groups first (in order), then the leftover, humanized + alpha.
     expect(sidebar[sidebar.length - 1]).toEqual({
       label: 'Glossary Demo',
       autogenerate: { directory: 'glossary-demo' },
     });
     expect(sidebar.map((g) => g.label)).toEqual(['Context', 'Reference', 'Glossary Demo']);
+  });
+
+  // --- issue #23: build-generated sections must not vanish silently ----------
+
+  it('emits a build-generated section group even when its folder is absent (issue #23)', () => {
+    // `glossary` is registered (order 60) but NOT on disk — its pages are codegen'd
+    // later, after config.ts snapshots the on-disk dirs. Seeded as generated, so
+    // the "Reference" group must still be emitted.
+    const present = ['context', 'architecture', 'faq', 'adr']; // every dir EXCEPT glossary
+    const sidebar = registryToSidebar(reg, present, { generatedIds: ['glossary'] });
+    expect(sidebar).toContainEqual({
+      label: 'Reference',
+      autogenerate: { directory: 'glossary' },
+    });
+    // The generated group keeps registry order (glossary is order 60 → last).
+    expect(sidebar.map((g) => g.label)).toEqual([
+      'Context',
+      'Architecture',
+      'FAQ',
+      'Decision Records',
+      'Reference',
+    ]);
+  });
+
+  it('seeds BUILD_GENERATED_SECTION_IDS by default (glossary survives an absent folder)', () => {
+    expect(BUILD_GENERATED_SECTION_IDS).toContain('glossary');
+    // No explicit generatedIds → the default seed is used; glossary absent on disk.
+    const sidebar = registryToSidebar(reg, ['context', 'architecture', 'faq', 'adr']);
+    expect(sidebar.map((g) => g.label)).toContain('Reference');
+  });
+
+  it('warns (naming the id) and skips a registered section that is neither on disk nor generated (issue #23)', () => {
+    const warnings: string[] = [];
+    // `faq` (order 25) is registered but not present and not a build-generated id.
+    const sidebar = registryToSidebar(reg, ['context', 'glossary'], {
+      generatedIds: ['glossary'],
+      warn: (m) => warnings.push(m),
+    });
+    // The group is skipped (Starlight would throw on a missing autogenerate dir)...
+    expect(sidebar.some((g) => g.autogenerate.directory === 'faq')).toBe(false);
+    // ...and a clear warning naming the id + the missing folder was emitted.
+    expect(warnings.some((w) => /"faq"/.test(w) && /missing/.test(w))).toBe(true);
+  });
+
+  it('defaults the missing-folder warning to console.warn', () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      // Only glossary present (as a generated id); the other registered sections
+      // are absent and not generated → console.warn for each.
+      registryToSidebar(reg, ['glossary'], { generatedIds: ['glossary'] });
+      expect(spy).toHaveBeenCalled();
+      expect(spy.mock.calls.some((c) => String(c[0]).includes('"faq"'))).toBe(true);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

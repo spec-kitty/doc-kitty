@@ -216,6 +216,12 @@ function registrySidebar(
   const docsRoot = path.resolve(process.cwd(), docsDir);
   const registry = loadSectionRegistry(docsRoot);
   if (!registry) return undefined;
+  // `topLevelContentDirs` is a SNAPSHOT of the on-disk dirs taken here, BEFORE the
+  // glossary integration codegens `<docsDir>/glossary/**` in its config:setup hook.
+  // `registryToSidebar` defaults to seeding the build-generated ids
+  // (BUILD_GENERATED_SECTION_IDS) so the glossary's "Reference" group survives even
+  // when a consumer `.gitignore`s the generated output (issue #23); a registered
+  // section that is neither on disk nor generated warns loudly instead of vanishing.
   const groups = registryToSidebar(registry, topLevelContentDirs(docsRoot));
   return groups as unknown as StarlightUserConfig['sidebar'];
 }

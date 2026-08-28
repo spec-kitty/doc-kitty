@@ -188,6 +188,43 @@ export interface SidebarAutogenGroup {
 }
 
 /**
+ * Section ids whose pages are GENERATED at build time rather than committed on
+ * disk (issue #23).
+ *
+ * The sidebar is synthesized from a snapshot of on-disk top-level content dirs
+ * taken when `defineDocKittyIntegrations()` is evaluated (`config.ts` →
+ * `topLevelContentDirs`). But the glossary integration codegens its pages into
+ * `<docsDir>/glossary/**` LATER, inside its `astro:config:setup` hook — after
+ * that snapshot. A consumer who `.gitignore`s the generated glossary output
+ * therefore has a `glossary` registry entry with no folder at snapshot time, and
+ * the old skip-if-absent rule made the whole "Reference" group vanish silently.
+ *
+ * Seeding the build-generated ids here lets `registryToSidebar` emit their groups
+ * even when the folder is not yet on disk. The value MIRRORS the literal folder
+ * name the generator writes to (`join(outDocsDir, 'glossary')` in
+ * `glossary/generate.ts`); that module hardcodes the string and exports no
+ * constant to import, so this is the single shared source of the id on the
+ * sidebar-synthesis side. Keep the two in sync if the generator's folder changes.
+ */
+export const BUILD_GENERATED_SECTION_IDS: readonly string[] = ['glossary'];
+
+/** Options for {@link registryToSidebar}. */
+export interface RegistryToSidebarOptions {
+  /**
+   * Section ids whose pages are build-generated (absent from `presentDirs` at
+   * snapshot time is expected, not an error). Defaults to
+   * {@link BUILD_GENERATED_SECTION_IDS}.
+   */
+  generatedIds?: readonly string[];
+  /**
+   * Sink for the non-fatal "registered section folder is missing" warning.
+   * Defaults to `console.warn` (a build-time signal a real typo/misconfig is
+   * visible instead of a group silently disappearing).
+   */
+  warn?: (message: string) => void;
+}
+
+/**
  * Build the Starlight `sidebar` from the registry — one named, ordered group per
  * section, each `autogenerate`-ing from that section's folder. This replaces bare
  * tree-autogen (folder-name group labels, source-order) with named, ordered
@@ -197,23 +234,45 @@ export interface SidebarAutogenGroup {
  * its content; only its label and order are pure data edits.)
  *
  * `presentDirs` is the set of top-level content folders that actually exist on
- * disk. A registry section with no folder is SKIPPED (Starlight's `autogenerate`
- * throws on a missing directory). A folder with no registry entry is APPENDED
- * after the registry groups with a humanized label (the graceful coverage-warning
- * posture of ADR-0004: unregistered folders are tolerated, not dropped).
+ * disk. A registry section with no folder falls into two cases (issue #23):
+ *   - a KNOWN build-generated section (e.g. the glossary, whose pages are codegen'd
+ *     later in the glossary integration's `config:setup`, AFTER `config.ts`
+ *     snapshots the on-disk dirs): its group is still emitted, so a consumer who
+ *     `.gitignore`s the generated output does not lose the group silently; and
+ *   - anything else (a typo or a not-yet-created folder): a build-time WARNING is
+ *     emitted naming the id, and the group is skipped (Starlight's `autogenerate`
+ *     throws on a missing directory) — loud, not silent.
+ * A folder with no registry entry is APPENDED after the registry groups with a
+ * humanized label (the graceful coverage-warning posture of ADR-0004:
+ * unregistered folders are tolerated, not dropped).
  */
 export function registryToSidebar(
   registry: SectionRegistry,
   presentDirs: readonly string[],
+  options: RegistryToSidebarOptions = {},
 ): SidebarAutogenGroup[] {
   const present = new Set(presentDirs);
+  const generated = new Set(options.generatedIds ?? BUILD_GENERATED_SECTION_IDS);
+  const warn =
+    options.warn ?? ((message: string) => console.warn(`[dk-sections] ${message}`));
   const claimed = new Set<string>();
   const groups: SidebarAutogenGroup[] = [];
 
   for (const entry of [...registry].sort(byOrderThenId)) {
-    if (!present.has(entry.id)) continue;
-    groups.push({ label: entry.label, autogenerate: { directory: entry.id } });
-    claimed.add(entry.id);
+    // Present on disk, or a build-generated section whose folder is legitimately
+    // absent at snapshot time → emit the group either way.
+    if (present.has(entry.id) || generated.has(entry.id)) {
+      groups.push({ label: entry.label, autogenerate: { directory: entry.id } });
+      claimed.add(entry.id);
+      continue;
+    }
+    // Neither on disk nor build-generated → a real typo/misconfig. Warn loudly
+    // (issue #23) instead of silently dropping the group.
+    warn(
+      `section "${entry.id}" is registered in sections.yaml but its folder is ` +
+        `missing under the docs root and it is not a build-generated section — ` +
+        `its sidebar group was skipped`,
+    );
   }
 
   for (const dir of [...present].filter((d) => !claimed.has(d)).sort()) {
