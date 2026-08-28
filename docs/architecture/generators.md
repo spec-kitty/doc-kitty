@@ -23,13 +23,18 @@ short endpoint file. This page expands the surfaces the
 <!-- Outline — to be fleshed out. One short section per surface. -->
 
 - **`sitemap.xml`** — every published page whose section feeds `sitemap`, via the
-  `@astrojs/sitemap` preset.
-- **`rss.xml`** — published pages whose section feeds `rss`, newest `updated`
-  first; the `rssRoute` handler and its item shape.
+  `@astrojs/sitemap` preset. Inclusion composes the per-page `doc_status` gate with
+  the section-level `feeds` filter (a section that omits `feeds` feeds all four
+  surfaces; an absent registry filters nothing).
+- **`rss.xml`** — published, non-deck pages newest `updated` first whose section
+  feeds `rss`; the `rssRoute` handler and its item shape. The `feeds` filter
+  composes with the publication state / `kind` gating.
 - **`llms.txt`** — discoverable pages whose section feeds `llms`, grouped by section
-  in registry `order` with the section `label` as the group heading and the section
-  `README` description (or the registry `purpose`) as its blurb; the `llmsTxtRoute`
-  handler; how the `agent` block filters and orders entries within a group.
+  in registry `order` with the section `label` as the group heading; the
+  `llmsTxtRoute` handler; how the `agent` block filters and orders entries within a
+  group. Each section group also emits a **blurb line** = the section `README`
+  description **??** the registry `purpose` (README wins; a section with neither
+  emits no blurb line).
 - **The agent-API** — `agentIndexRoute` and `agentPageRoute`:
   - `/api/index.json` — a browsable, structured map of the corpus, sections in
     registry order.
@@ -37,9 +42,9 @@ short endpoint file. This page expands the surfaces the
   - Discovery, not RAG: an agent finds the whole corpus from one file and fetches
     clean source for exactly what it needs.
 - **What every surface shares** — publication gating from the
-  [metadata model](./metadata-model.md), and section order and per-surface inclusion
-  from the [section registry](./section-registry.md)'s `order` and `feeds`. No
-  surface hardcodes the section list or re-implements the gating; a section's `feeds`
-  is the coarse filter and the per-page fields refine within it.
+  [metadata model](./metadata-model.md), section order from the
+  [section registry](./section-registry.md)'s `order`, and the registry's `feeds`
+  per-surface filter (composed on top of the per-page gating; absent = all four).
+  No surface hardcodes the section list.
 - **How a site mounts them** — two-line endpoint files plus the `<head>` links
   from `defineDocKittyIntegrations`.
