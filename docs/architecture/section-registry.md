@@ -44,11 +44,13 @@ index — consume the order and labels (issue #18); the section-default **`type`
 now the registry's job too — `metadata.ts`'s pure `expectedDocType` and both
 validation surfaces (the standalone `validate-frontmatter.mjs` gate and the
 build-side `schema.ts`) derive a page's expected `type` from `sectionTypes`
-(issue #24). The frozen `SECTION_ORDER` / `SECTION_LABEL` / `SECTION_TYPE`
-constants in `metadata.ts` are **demoted to a no-registry fallback**: a docs root
-with no `sections.yaml` still builds and validates against them. One field is
-authored but **not yet consumed** — `feeds` as a per-surface filter (see the
-deferral note below).
+(issue #24). The last two fields are now wired too: **`feeds`** is a per-surface
+filter (`sectionFeeds` + `feedsSurface`) the sitemap draft filter and the RSS /
+llms.txt / agent-index routes apply, and **`purpose`** is the llms.txt section
+blurb fallback (`sectionPurposes`). The frozen `SECTION_ORDER` / `SECTION_LABEL` /
+`SECTION_TYPE` constants in `metadata.ts` are **demoted to a no-registry
+fallback**: a docs root with no `sections.yaml` still builds and validates against
+them. Every authored field is now consumed.
 
 ## Schema
 
@@ -60,9 +62,9 @@ sections:
     label: Architecture       # required — display name in nav and headings
     order: 20                 # required — integer sort key; lower first
     type: Architecture        # optional — the section-default `type` (wired, issue #24)
-    purpose: >                # optional — one-line summary; a fallback section blurb
+    purpose: >                # optional — one-line summary; the llms.txt blurb fallback (wired)
       How the toolkit is built and why.
-    feeds: [sitemap, rss, llms, agent]   # optional (deferred) — surfaces this section feeds
+    feeds: [sitemap, rss, llms, agent]   # optional — surfaces this section feeds (wired); absent = all four
 ```
 
 | Field | Required | Meaning |
@@ -71,8 +73,8 @@ sections:
 | `label` | yes | Display name in the sidebar, section heading, and llms.txt group. |
 | `order` | yes | Integer sort key for nav and every section-ordered surface. Lower first. Gaps are allowed (10, 20, 30) so a section can be inserted without renumbering. |
 | `type` | no | The section-default frontmatter `type` for pages in this section (**wired**, issue #24). A page's expected `type` is this value (a section `README.md` takes it), refined by the short sub-path subtype table below. Omitting it means the section has no default expectation (the `type` check degrades to a no-op for that section). |
-| `purpose` | no (deferred) | One-line description. Carried, but not yet consumed as a section blurb — nothing reads it today. |
-| `feeds` | no (deferred) | Which generated surfaces include this section's pages. Carried, but not yet consumed as a filter — see the deferral note below. |
+| `purpose` | no | One-line description. **Wired** as the llms.txt section blurb FALLBACK: the emitted blurb is the section `README` description **??** this `purpose` (README wins). A section with neither gets no blurb line. |
+| `feeds` | no | Which generated surfaces include this section's pages (**wired**). **Omitting it feeds ALL FOUR surfaces** (absent = all). Composes with the per-page publication / `agent` gating — see the semantics below. |
 
 `version` marks the schema version so a future change is detectable.
 
@@ -124,12 +126,14 @@ per-section `subtypes` registry field is the one part still deferred — a follo
 ADR item — and can happen without a contract change if a section grows its own
 sub-kinds.
 
-## `feeds` semantics (DEFERRED)
+## `feeds` semantics (WIRED)
 
-> **Status: designed, not yet wired (issue #18).** `feeds` is parsed and carried,
-> but no surface yet drops a section by its `feeds` set — per-page publication and
-> `agent` gating remain the only filters. The section-level filter below is the
-> target for a follow-up.
+> **Status: wired.** `feeds` filters each generated surface. `sectionFeeds(registry)`
+> (`src/lib/sections.ts`) exposes the `id → feeds` map and `feedsSurface(feeds,
+> sectionId, surface)` applies the **absent = all four** default; the sitemap draft
+> filter (`src/lib/config.ts`) and the RSS / llms.txt / agent-index routes each
+> compose it with their existing per-page gating. An absent registry means no feeds
+> filtering at all (byte-compatible with the pre-feeds surfaces).
 
 `feeds` is a **coarse, section-level filter** over the four generated surfaces. It
 composes with the finer per-page gating; a page appears in a surface only when both
@@ -174,7 +178,8 @@ decks are discoverable without being feed items.
   required for nav/order/label).
 - **`type` on an entry** — optional; when present it is the section-default `type`
   authority (wired, above); when absent the section has no default `type`
-  expectation. `feeds` is carried but not yet consumed.
+  expectation. `purpose` and `feeds` are likewise optional and now consumed
+  (llms.txt blurb fallback; per-surface filter with absent = all four).
 
 ## References
 

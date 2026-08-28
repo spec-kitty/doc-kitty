@@ -7,12 +7,13 @@
  * and hands the ordered, validated section list to the discovery surfaces
  * (`llms.txt`, RSS, the agent-API index) and the Starlight sidebar.
  *
- * SCOPE: the registry drives **nav / order / label** (issue #18) and, since issue
- * #24, the section-default **`type`** authority — `sectionTypes` exposes the
+ * SCOPE: the registry drives **nav / order / label** (issue #18), the
+ * section-default **`type`** authority (issue #24) — `sectionTypes` exposes the
  * `id → type` map that `metadata.ts`'s `expectedDocType` and the standalone gate
- * derive a page's expected `type` from (ADR-0004/FR-003). The `feeds` per-surface
- * filter is still authored in the YAML but NOT yet consumed — see the DEFERRED
- * note at the foot of this file.
+ * derive a page's expected `type` from (ADR-0004/FR-003) — and now the last two
+ * consumers: the **`feeds`** per-surface filter (`sectionFeeds` + `feedsSurface`)
+ * and the **`purpose`** section blurb (`sectionPurposes`, the llms.txt README
+ * fallback). See the WIRED note at the foot of this file.
  *
  * Unlike `./metadata.ts` (deliberately Astro-free AND fs-free, isolation-tested),
  * this module MAY read the filesystem. `metadata.ts` must never import it; the
@@ -40,9 +41,19 @@ export interface SectionRegistryEntry {
    * the section type, and a few sub-path subtypes are applied on top in code.
    */
   type?: string;
-  /** One-line description; carried, not yet consumed as a section blurb. */
+  /**
+   * One-line description. Consumed as the section blurb in llms.txt — the
+   * FALLBACK when the section `README` has no `description` (README wins). See
+   * {@link sectionPurposes}.
+   */
   purpose?: string;
-  /** Surfaces this section feeds; carried, NOT yet consumed as a filter (DEFERRED). */
+  /**
+   * Which generated surfaces this section's pages feed — a coarse, section-level
+   * filter over `sitemap` / `rss` / `llms` / `agent` (WIRED). **Absent = ALL
+   * FOUR** (a section that omits `feeds` feeds every surface). Consumed through
+   * {@link sectionFeeds} + {@link feedsSurface}, composed with the finer per-page
+   * publication / `agent.discoverable` gating at each surface.
+   */
   feeds?: string[];
 }
 
@@ -192,6 +203,64 @@ export function sectionTypes(registry: SectionRegistry): Record<string, string> 
   return types;
 }
 
+/**
+ * The `id → purpose` map — the section blurb source (analogous to
+ * {@link sectionLabels}). Only entries that declare a `purpose` appear. It is the
+ * llms.txt blurb FALLBACK: the emitted section blurb is the section `README`
+ * description **??** this `purpose` (README wins). A section with neither gets no
+ * blurb line. Pass the result alongside the README descriptions in `llms-txt.ts`.
+ */
+export function sectionPurposes(registry: SectionRegistry): Record<string, string> {
+  const purposes: Record<string, string> = {};
+  for (const entry of registry) {
+    if (typeof entry.purpose === 'string') purposes[entry.id] = entry.purpose;
+  }
+  return purposes;
+}
+
+/** The four generated surfaces the section-level `feeds` filter gates. */
+export type FeedSurface = 'sitemap' | 'rss' | 'llms' | 'agent';
+
+/**
+ * The `id → feeds` map — ONLY sections that DECLARE a `feeds` list appear
+ * (analogous to {@link sectionLabels}). A section ABSENT from this map feeds ALL
+ * FOUR surfaces (absent = all); never treat a missing key as "feeds nothing".
+ * Always consult it through {@link feedsSurface}, which enforces that default.
+ */
+export function sectionFeeds(registry: SectionRegistry): Record<string, string[]> {
+  const feeds: Record<string, string[]> = {};
+  for (const entry of registry) {
+    if (Array.isArray(entry.feeds)) feeds[entry.id] = entry.feeds;
+  }
+  return feeds;
+}
+
+/**
+ * Does `sectionId` feed `surface`? The section-level `feeds` filter, with the
+ * CRITICAL DEFAULT that an ABSENT `feeds` entry feeds ALL FOUR surfaces:
+ *   - `feeds` undefined (no registry, or a registry-free root) → TRUE — no
+ *     filtering at all, so the surface stays byte-compatible with pre-feeds;
+ *   - the section declares NO `feeds` list (`feeds[sectionId]` undefined) → TRUE
+ *     (absent = all — the example corpus declares no `feeds`, so this keeps the
+ *     filter INERT on it, dropping nothing);
+ *   - the section declares a list → TRUE iff `surface` is in it.
+ *
+ * This is the COARSE half of the gate; each surface composes it with the finer
+ * per-page publication / `agent.discoverable` gating (a page appears iff BOTH
+ * allow it). Pass the map from {@link sectionFeeds} (or `undefined` when there is
+ * no registry) and the page's section (`sectionOf(slug)` from `./metadata.ts`).
+ */
+export function feedsSurface(
+  feeds: Record<string, string[]> | undefined,
+  sectionId: string,
+  surface: FeedSurface,
+): boolean {
+  if (!feeds) return true;
+  const list = feeds[sectionId];
+  if (list === undefined) return true;
+  return list.includes(surface);
+}
+
 /** Humanize a bare folder name for a leftover (unregistered) section group. */
 function humanizeSection(slug: string): string {
   return slug
@@ -314,7 +383,13 @@ export function registryToSidebar(
 //     (a section README takes the section type), with the short sub-path subtype
 //     table applied on top in code. Moving those sub-path subtypes into a
 //     per-section `subtypes` registry field is the one part still deferred.
-//   • `feeds` as a per-surface filter (section-registry.md "`feeds` semantics").
-//     Parsed and carried, but no surface yet drops a section by its `feeds` set.
+//   • `feeds` as a per-surface filter (section-registry.md "`feeds` semantics") —
+//     WIRED. `sectionFeeds` exposes the `id → feeds` map and `feedsSurface`
+//     applies the absent=all default; the sitemap draft filter (`config.ts`) and
+//     the RSS / llms.txt / agent-index routes each compose it with their existing
+//     per-page gating, so a section left out of a surface removes its pages there.
+//   • `purpose` as the section blurb (section-registry.md / generators.md) —
+//     WIRED. `sectionPurposes` exposes the `id → purpose` map; llms.txt emits a
+//     blurb per section group = README description ?? registry purpose.
 //   • MDX / remark-mdx — unrelated, tracked as issue #16.
 // ---------------------------------------------------------------------------

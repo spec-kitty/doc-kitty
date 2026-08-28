@@ -10,8 +10,8 @@
  */
 import type { APIRoute } from 'astro';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
-import { rankForAgents, resolveRelated, toAgentRecord } from '../metadata.js';
-import { loadSectionRegistry, sectionOrder } from '../sections.js';
+import { rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
+import { loadSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
 import { absolute, buildDocsIndex, collectDocEntries, docsRoot } from './shared.js';
 
 export interface AgentIndexRouteOptions {
@@ -31,7 +31,18 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
     // root the content came from so a custom docs directory is honored (#22).
     const registry = loadSectionRegistry(await docsRoot());
     const order = registry ? sectionOrder(registry) : undefined;
-    const ranked = rankForAgents(all, order);
+    // Section-level `feeds` filter, composed ON TOP of the per-page
+    // `agent.discoverable` gating rankForAgents already applies: a page appears
+    // iff its section feeds `agent` AND it is discoverable. A section that OMITS
+    // `feeds` feeds all four surfaces (absent = all); an absent registry means
+    // `feeds` is undefined → no filtering (byte-compatible). The `related`
+    // resolution index above stays the FULL corpus, so a `related` ref INTO a
+    // non-agent-fed section still resolves (FR-004) — only the emitted `pages`
+    // list is feeds-filtered.
+    const feeds = registry ? sectionFeeds(registry) : undefined;
+    const ranked = rankForAgents(all, order).filter((entry) =>
+      feedsSurface(feeds, sectionOf(entry.slug), 'agent'),
+    );
     const pages = ranked.map((entry) => {
       const record = toAgentRecord(entry);
       // Enrich in the route (composes WP01's resolveRelated); toAgentRecord

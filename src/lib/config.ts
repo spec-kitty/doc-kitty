@@ -25,8 +25,13 @@ import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import type { AstroIntegration } from 'astro';
-import { readmeToIndexId } from './metadata.js';
-import { loadSectionRegistry, registryToSidebar } from './sections.js';
+import { readmeToIndexId, sectionOf } from './metadata.js';
+import {
+  loadSectionRegistry,
+  registryToSidebar,
+  sectionFeeds,
+  feedsSurface,
+} from './sections.js';
 import { resolveTheme, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
@@ -237,17 +242,34 @@ function normalizeBasePrefix(base: string): string {
 
 /**
  * Build the `@astrojs/sitemap` `filter`. It receives each candidate page's full
- * absolute URL. INV-1: drop a page iff its route (the pathname with the site
- * `base` stripped) EQUALS a draft route exactly. The match is ANCHORED — a
- * plain `endsWith` would over-exclude a published page whose slug tail coincides
- * with a draft's (e.g. `/architecture/overview/` vs a draft `/overview/`).
+ * absolute URL and returns TRUE to keep the page. A page is kept iff BOTH gates
+ * pass (INV-1 publication AND the section-level `feeds`):
+ *
+ *   1. **Draft gate.** Drop a page iff its route (the pathname with the site
+ *      `base` stripped) EQUALS a draft route exactly. The match is ANCHORED — a
+ *      plain `endsWith` would over-exclude a published page whose slug tail
+ *      coincides with a draft's (e.g. `/architecture/overview/` vs a draft
+ *      `/overview/`).
+ *   2. **`feeds` gate.** Drop a page whose section does not feed `sitemap`.
+ *      Resolved from `<docsDir>/_meta/sections.yaml`; a section that OMITS
+ *      `feeds` feeds ALL FOUR surfaces (absent = all, {@link feedsSurface}), and
+ *      an ABSENT registry means no feeds filtering at all — byte-compatible with
+ *      the pre-feeds sitemap (the example corpus declares no `feeds`, so this gate
+ *      drops nothing there).
+ *
+ * Exported so the composed draft+feeds gate is unit-testable without spinning up
+ * the whole Astro integrations array.
  */
-function sitemapDraftFilter(
+export function sitemapDraftFilter(
   docsDir: string,
   base: string,
 ): (page: string) => boolean {
   const routes = draftRoutes(docsDir);
   const basePrefix = normalizeBasePrefix(base);
+  // Load the registry from the SAME docs root the sidebar synthesis uses. Absent
+  // registry → `feeds` undefined → `feedsSurface` is always true (no filtering).
+  const registry = loadSectionRegistry(path.resolve(process.cwd(), docsDir));
+  const feeds = registry ? sectionFeeds(registry) : undefined;
   return (page: string): boolean => {
     let pathname: string;
     try {
@@ -261,7 +283,12 @@ function sitemapDraftFilter(
       normalized = normalized.slice(basePrefix.length) || '/';
     }
     // Anchored equality: the route must BE a draft route, not merely end with one.
-    return !routes.has(normalized);
+    if (routes.has(normalized)) return false;
+    // `feeds` gate: derive the section from the base-free route (first path
+    // segment; the root '/' → section '') and drop it if it does not feed sitemap.
+    const slug = normalized.replace(/^\//, '').replace(/\/$/, '');
+    if (!feedsSurface(feeds, sectionOf(slug), 'sitemap')) return false;
+    return true;
   };
 }
 

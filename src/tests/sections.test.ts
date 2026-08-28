@@ -8,6 +8,9 @@ import {
   sectionOrder,
   sectionLabels,
   sectionTypes,
+  sectionPurposes,
+  sectionFeeds,
+  feedsSurface,
   registryToSidebar,
   BUILD_GENERATED_SECTION_IDS,
   type SectionRegistry,
@@ -158,6 +161,76 @@ describe('sectionOrder / sectionLabels derivations', () => {
     const types = sectionTypes(reg);
     expect('faq' in types).toBe(false);
     expect(types['faq']).toBeUndefined();
+  });
+});
+
+// A registry exercising `feeds` (a coarse per-surface filter) and `purpose` (the
+// llms.txt blurb fallback). `context` declares a SUBSET of surfaces; `guides`
+// OMITS `feeds` entirely (absent = all); `faq` declares neither `feeds` nor
+// `purpose`.
+const FEEDS_YAML = `version: 1
+sections:
+  - id: context
+    label: Context
+    order: 10
+    purpose: Why the toolkit exists.
+    feeds: [sitemap, llms]
+  - id: plans
+    label: Plans
+    order: 20
+    purpose: Roadmap and feature designs.
+    feeds: [sitemap, llms, agent]
+  - id: guides
+    label: Guides
+    order: 30
+    purpose: Task-oriented how-tos.
+  - id: faq
+    label: FAQ
+    order: 40
+`;
+
+describe('sectionPurposes / sectionFeeds / feedsSurface (feeds + purpose consumers)', () => {
+  const reg: SectionRegistry = parseSectionRegistry(FEEDS_YAML);
+
+  it('sectionPurposes maps id → purpose (only entries that declare one)', () => {
+    const purposes = sectionPurposes(reg);
+    expect(purposes['context']).toBe('Why the toolkit exists.');
+    expect(purposes['plans']).toBe('Roadmap and feature designs.');
+    expect(purposes['guides']).toBe('Task-oriented how-tos.');
+    // `faq` declares no purpose → absent from the map (no blurb fallback for it).
+    expect('faq' in purposes).toBe(false);
+  });
+
+  it('sectionFeeds maps id → surfaces, ONLY for sections that declare `feeds`', () => {
+    const feeds = sectionFeeds(reg);
+    expect(feeds['context']).toEqual(['sitemap', 'llms']);
+    expect(feeds['plans']).toEqual(['sitemap', 'llms', 'agent']);
+    // `guides` and `faq` omit `feeds` → absent from the map (absent = all).
+    expect('guides' in feeds).toBe(false);
+    expect('faq' in feeds).toBe(false);
+  });
+
+  it('feedsSurface: a section with `feeds:[sitemap,llms]` feeds those, not rss/agent', () => {
+    const feeds = sectionFeeds(reg);
+    expect(feedsSurface(feeds, 'context', 'sitemap')).toBe(true);
+    expect(feedsSurface(feeds, 'context', 'llms')).toBe(true);
+    expect(feedsSurface(feeds, 'context', 'rss')).toBe(false);
+    expect(feedsSurface(feeds, 'context', 'agent')).toBe(false);
+  });
+
+  it('feedsSurface: a section with NO `feeds` entry feeds ALL FOUR (absent = all)', () => {
+    const feeds = sectionFeeds(reg);
+    for (const surface of ['sitemap', 'rss', 'llms', 'agent'] as const) {
+      expect(feedsSurface(feeds, 'guides', surface)).toBe(true);
+      // A section id not in the registry at all is likewise absent = all.
+      expect(feedsSurface(feeds, 'unregistered', surface)).toBe(true);
+    }
+  });
+
+  it('feedsSurface: an ABSENT feeds map (no registry) never filters — every surface true', () => {
+    for (const surface of ['sitemap', 'rss', 'llms', 'agent'] as const) {
+      expect(feedsSurface(undefined, 'context', surface)).toBe(true);
+    }
   });
 });
 

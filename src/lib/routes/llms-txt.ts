@@ -16,7 +16,14 @@ import {
   sectionRank,
   sectionLabel,
 } from '../metadata.js';
-import { loadSectionRegistry, sectionLabels, sectionOrder } from '../sections.js';
+import {
+  loadSectionRegistry,
+  sectionLabels,
+  sectionOrder,
+  sectionPurposes,
+  sectionFeeds,
+  feedsSurface,
+} from '../sections.js';
 import { absolute, collectDocEntries, docsRoot } from './shared.js';
 
 export interface LlmsTxtRouteOptions {
@@ -34,7 +41,36 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     const registry = loadSectionRegistry(await docsRoot());
     const order = registry ? sectionOrder(registry) : undefined;
     const labels = registry ? sectionLabels(registry) : undefined;
-    const ranked = rankForAgents(await collectDocEntries(), order);
+    // Section blurb source (FALLBACK): the registry `purpose` per section — the
+    // emitted blurb is the section README description ?? this purpose (README
+    // wins). Empty when there is no registry.
+    const purposes: Record<string, string> = registry ? sectionPurposes(registry) : {};
+    // Section-level `feeds` filter, composed ON TOP of the per-page
+    // `agent.discoverable` gating rankForAgents applies: a section omitting
+    // `feeds` feeds all four surfaces (absent = all); an absent registry →
+    // `feeds` undefined → no filtering (byte-compatible).
+    const feeds = registry ? sectionFeeds(registry) : undefined;
+    const all = await collectDocEntries();
+    const ranked = rankForAgents(all, order).filter((entry) =>
+      feedsSurface(feeds, sectionOf(entry.slug), 'llms'),
+    );
+
+    // The section README description, keyed by section id — the PREFERRED blurb.
+    // A section README's route slug IS the section id (README-as-index), so an
+    // entry whose slug equals its own section is that section's README. Read from
+    // the FULL corpus so the blurb is available even if the README opts out of
+    // agent discovery. README description wins; the registry `purpose` is the
+    // fallback (see the per-group emit below).
+    const readmeDescriptions = new Map<string, string>();
+    for (const entry of all) {
+      if (
+        entry.slug !== '' &&
+        sectionOf(entry.slug) === entry.slug &&
+        entry.data.description
+      ) {
+        readmeDescriptions.set(entry.slug, entry.data.description);
+      }
+    }
 
     const lines: string[] = [`# ${options.title}`, ''];
     if (options.description) lines.push(`> ${options.description}`, '');
@@ -56,6 +92,12 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     for (const section of orderedSections) {
       const heading = sectionLabel(section, labels) ?? section;
       lines.push(`## ${heading}`, '');
+      // Section blurb: the README description ?? the registry purpose (README
+      // wins). Neither → no blurb line at all (no empty line). Emitted as a plain
+      // paragraph after the H2 and before the page list, matching the llms.txt
+      // section shape (the file-level `> summary` blockquote stays H1-only).
+      const blurb = readmeDescriptions.get(section) ?? purposes[section];
+      if (blurb) lines.push(blurb, '');
       for (const entry of sections.get(section)!) {
         const url = absolute(site, entry.slug === '' ? '/' : `/${entry.slug}/`);
         const note = entry.data.description ? `: ${entry.data.description}` : '';
