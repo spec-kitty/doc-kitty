@@ -3,12 +3,19 @@ import {
   sectionRank,
   sectionLabel,
   rankForAgents,
+  expectedDocType,
   SECTION_ORDER,
   SECTION_LABEL,
+  SECTION_TYPE,
   includedInRssFeed,
   type DocEntry,
 } from '../lib/metadata.js';
-import { parseSectionRegistry, sectionOrder, sectionLabels } from '../lib/sections.js';
+import {
+  parseSectionRegistry,
+  sectionOrder,
+  sectionLabels,
+  sectionTypes,
+} from '../lib/sections.js';
 
 // The section-registry contract (issue #18): the metadata helpers are PURE and
 // parameterized on the resolved order/labels. These tests assert the registry
@@ -130,6 +137,73 @@ describe('no-registry fallback (protects example/docs and registry-free roots)',
       'context/intro',
       'guides/deploy',
     ]);
+  });
+});
+
+// The section-default `type` authority (issue #24): expectedDocType is PURE and
+// parameterized on the registry-derived `id → type` map. The registry DRIVES the
+// section default; a no-map call falls back to the frozen SECTION_TYPE; a short
+// sub-path subtype table is applied on top in code either way.
+describe('registry drives section-default TYPE (expectedDocType)', () => {
+  // A registry whose `guides` type deliberately DIFFERS from the frozen fallback
+  // ('Guide') — proving the derivation follows the registry, not a hardcode.
+  const reg = parseSectionRegistry(`version: 1
+sections:
+  - id: architecture
+    label: Architecture
+    order: 20
+    type: Architecture
+  - id: adr
+    label: Decision Records
+    order: 30
+    type: ADR
+  - id: guides
+    label: Handbook
+    order: 40
+    type: Handbook
+  - id: plans
+    label: Plans
+    order: 50
+    type: Plan
+  - id: operations
+    label: Operations
+    order: 60
+    type: Operations
+`);
+  const types = sectionTypes(reg);
+
+  it('derives the section default from the registry', () => {
+    expect(expectedDocType('architecture/overview.md', types)).toBe('Architecture');
+    // A section README takes the section type.
+    expect(expectedDocType('architecture/README.md', types)).toBe('Architecture');
+  });
+
+  it('follows the registry when its type differs from the frozen fallback', () => {
+    // Frozen SECTION_TYPE maps guides → 'Guide'; the registry says 'Handbook'.
+    expect(SECTION_TYPE['guides']).toBe('Guide');
+    expect(expectedDocType('guides/deploy.md', types)).toBe('Handbook');
+  });
+
+  it('applies sub-path subtypes on top of the section default (kept in code)', () => {
+    expect(expectedDocType('adr/0001-some-decision.md', types)).toBe('ADR');
+    expect(expectedDocType('adr/template.md', types)).toBe('Template');
+    expect(expectedDocType('plans/epics/big.md', types)).toBe('Epic');
+    expect(expectedDocType('plans/features/thing.md', types)).toBe('Feature');
+    expect(expectedDocType('plans/roadmap.md', types)).toBe('Plan');
+    expect(expectedDocType('operations/runbooks/restart.md', types)).toBe('Runbook');
+    expect(expectedDocType('operations/deploy.md', types)).toBe('Operations');
+  });
+
+  it('returns null for a section absent from the registry (no expectation)', () => {
+    // `context` is not in this registry map → no section default, no check.
+    expect(expectedDocType('context/intro.md', types)).toBeNull();
+  });
+
+  it('falls back to the frozen SECTION_TYPE map when no map is passed', () => {
+    expect(expectedDocType('guides/deploy.md')).toBe('Guide');
+    expect(expectedDocType('context/intro.md')).toBe('Context');
+    expect(expectedDocType('adr/template.md')).toBe('Template');
+    expect(expectedDocType('operations/runbooks/x.md')).toBe('Runbook');
   });
 });
 

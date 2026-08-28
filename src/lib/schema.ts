@@ -11,7 +11,12 @@ import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
 import { docsSchema } from '@astrojs/starlight/schema';
-import { readmeToIndexId, ROOT_ENTRY_ID } from './metadata.js';
+import { readmeToIndexId, ROOT_ENTRY_ID, expectedDocType } from './metadata.js';
+import {
+  loadSectionRegistry,
+  sectionTypes,
+  type SectionRegistry,
+} from './sections.js';
 
 export { readmeToIndexId };
 
@@ -58,6 +63,40 @@ export const KINDS = [
 ] as const;
 
 export type Kind = (typeof KINDS)[number];
+
+/**
+ * The registry-derived section-default `type` expectation for a page path (issue
+ * #24). Runs in the Astro build context, so it consumes the section registry:
+ * `registry` is the parsed `sections.yaml` (pass `loadSectionRegistry(docsRoot)`),
+ * from which `sectionTypes` gives the section-default `id → type` authority; the
+ * sub-path subtypes are applied on top by the pure `expectedDocType`. A `null`
+ * registry (no `sections.yaml`) gracefully falls back to the frozen section-type
+ * map, so a registry-less tree still derives an expectation.
+ *
+ * This is ADVISORY, matching the open-vocabulary posture (FR-003, ADR-0004): the
+ * `type` field stays `z.string().optional()` in the schema, an unknown `type`
+ * remains a warning (the standalone gate prints it), and a mismatch against this
+ * expectation is a warning — never a hard schema error. `null` means "no
+ * section-default expectation" (unknown section), i.e. no check.
+ */
+export function expectedTypeForPath(
+  relPath: string,
+  registry: SectionRegistry | null,
+): string | null {
+  const typesBySection = registry ? sectionTypes(registry) : undefined;
+  return expectedDocType(relPath, typesBySection);
+}
+
+/**
+ * Convenience wrapper that loads `<docsRoot>/_meta/sections.yaml` and derives the
+ * expected `type` for `relPath` from it (issue #24). A missing registry falls
+ * back to the frozen section-type map. Reads the filesystem, so it is for the
+ * build/generator side; the pure {@link expectedTypeForPath} is the unit-testable
+ * core.
+ */
+export function expectedTypeForPathInRoot(relPath: string, docsRoot = 'docs'): string | null {
+  return expectedTypeForPath(relPath, loadSectionRegistry(docsRoot));
+}
 
 /**
  * Description upper bound (chars). Mirrors `DESCRIPTION_MAX` in

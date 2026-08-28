@@ -175,6 +175,72 @@ export const SECTION_LABEL: Record<string, string> = {
   presentations: 'Presentations',
 };
 
+/**
+ * Frozen fallback `section → type` map: the section-default `type` for each
+ * canonical section, used when no `sections.yaml` registry is present (a
+ * registry-less docs tree still derives an expected `type`). MIRRORS the section
+ * defaults the registry now carries; when a registry IS present, its
+ * `sectionTypes(registry)` map is the authority and this is not consulted (issue
+ * #24). Sub-path subtypes (ADR template, plan epics/features, ops runbooks) are
+ * NOT in this map — they are applied on top by {@link expectedDocType}.
+ */
+export const SECTION_TYPE: Record<string, string> = {
+  context: 'Context',
+  architecture: 'Architecture',
+  adr: 'ADR',
+  plans: 'Plan',
+  api: 'API',
+  configuration: 'Configuration',
+  integrations: 'Integration',
+  security: 'Security',
+  guides: 'Guide',
+  operations: 'Operations',
+  migrations: 'Migration',
+  changelog: 'Changelog',
+  presentations: 'Presentation',
+};
+
+/**
+ * The expected frontmatter `type` for a page path (null = no expectation).
+ *
+ * PURE and parameterized (issue #24): `typesBySection` is the resolved
+ * `id → type` map — pass `sectionTypes(registry)` (from `./sections.ts`) to make
+ * the registry the section-default authority; omitted, it falls back to the
+ * frozen {@link SECTION_TYPE}, so a docs root with no `sections.yaml` still
+ * derives an expectation. Never imports `./sections.ts`, so this module stays
+ * fs-free and Astro-free.
+ *
+ * Derivation is two steps, most specific last:
+ *   1. the section (first path segment) default from `typesBySection`;
+ *   2. a short, stable table of SUB-PATH subtypes applied on top, kept in code
+ *      (an ADR `template.md` → `Template`; `plans/epics/*` → `Epic`,
+ *      `plans/features/*` → `Feature`; `operations/runbooks/*` → `Runbook`).
+ * Moving the sub-path table into a registry `subtypes` field is a separate,
+ * deferred ADR item. An unknown section yields `null` (no section default, no
+ * override) — the caller treats a null expectation as "no check".
+ */
+export function expectedDocType(
+  relPath: string,
+  typesBySection: Record<string, string> = SECTION_TYPE,
+): string | null {
+  const parts = relPath.split('/');
+  const section = parts[0] ?? '';
+  const file = parts[parts.length - 1] ?? '';
+  const sectionDefault = typesBySection[section] ?? null;
+  switch (section) {
+    case 'adr':
+      return file === 'template.md' ? 'Template' : sectionDefault;
+    case 'plans':
+      if (parts[1] === 'epics') return 'Epic';
+      if (parts[1] === 'features') return 'Feature';
+      return sectionDefault;
+    case 'operations':
+      return parts[1] === 'runbooks' ? 'Runbook' : sectionDefault;
+    default:
+      return sectionDefault;
+  }
+}
+
 /** The top-level section a slug belongs to ("" for the bundle root). */
 export function sectionOf(slug: string): string {
   if (slug === '') return '';

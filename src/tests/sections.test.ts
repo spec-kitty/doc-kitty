@@ -7,6 +7,7 @@ import {
   loadSectionRegistry,
   sectionOrder,
   sectionLabels,
+  sectionTypes,
   registryToSidebar,
   BUILD_GENERATED_SECTION_IDS,
   type SectionRegistry,
@@ -142,6 +143,21 @@ describe('sectionOrder / sectionLabels derivations', () => {
       adr: 'Decision Records',
       glossary: 'Reference',
     });
+  });
+
+  it('sectionTypes maps id → type (the section-default type authority, issue #24)', () => {
+    const types = sectionTypes(reg);
+    expect(types['adr']).toBe('ADR');
+    expect(types['context']).toBe('Context');
+    expect(types['architecture']).toBe('Architecture');
+    expect(types['glossary']).toBe('Glossary');
+  });
+
+  it('sectionTypes omits an entry with no `type` (no section-default expectation)', () => {
+    // `faq` in REGISTRY_YAML declares no `type`.
+    const types = sectionTypes(reg);
+    expect('faq' in types).toBe(false);
+    expect(types['faq']).toBeUndefined();
   });
 });
 

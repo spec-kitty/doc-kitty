@@ -35,15 +35,20 @@ under a named "Reference" group — is a data edit, not a code change. `docs/_me
 reserved, non-content, and excluded from the docs collection, so the registry never
 renders as a page.
 
-**What is wired today (issue #18):** the loader (`src/lib/sections.ts`) parses the
-registry once and exposes the ordered section list (`sectionOrder`) and the
-`id → label` map (`sectionLabels`). The Starlight sidebar (`src/lib/config.ts`) and
-the three discovery surfaces — `llms.txt`, the RSS `<category>` fallback, and the
-agent-API index — consume it. The frozen `SECTION_ORDER` / `SECTION_LABEL` constants
-in `metadata.ts` are **demoted to a no-registry fallback**: a docs root with no
-`sections.yaml` still builds against them. Two fields are authored but **not yet
-consumed** — `type` as a validation authority and `feeds` as a per-surface filter
-(see the deferral notes below).
+**What is wired today:** the loader (`src/lib/sections.ts`) parses the
+registry once and exposes the ordered section list (`sectionOrder`), the
+`id → label` map (`sectionLabels`), and — since issue #24 — the `id → type` map
+(`sectionTypes`). The Starlight sidebar (`src/lib/config.ts`) and the three
+discovery surfaces — `llms.txt`, the RSS `<category>` fallback, and the agent-API
+index — consume the order and labels (issue #18); the section-default **`type`** is
+now the registry's job too — `metadata.ts`'s pure `expectedDocType` and both
+validation surfaces (the standalone `validate-frontmatter.mjs` gate and the
+build-side `schema.ts`) derive a page's expected `type` from `sectionTypes`
+(issue #24). The frozen `SECTION_ORDER` / `SECTION_LABEL` / `SECTION_TYPE`
+constants in `metadata.ts` are **demoted to a no-registry fallback**: a docs root
+with no `sections.yaml` still builds and validates against them. One field is
+authored but **not yet consumed** — `feeds` as a per-surface filter (see the
+deferral note below).
 
 ## Schema
 
@@ -54,7 +59,7 @@ sections:
   - id: architecture          # required — the folder name under docs/ (the section slug)
     label: Architecture       # required — display name in nav and headings
     order: 20                 # required — integer sort key; lower first
-    type: Architecture        # optional (deferred) — canonical `type` for the section
+    type: Architecture        # optional — the section-default `type` (wired, issue #24)
     purpose: >                # optional — one-line summary; a fallback section blurb
       How the toolkit is built and why.
     feeds: [sitemap, rss, llms, agent]   # optional (deferred) — surfaces this section feeds
@@ -65,52 +70,59 @@ sections:
 | `id` | yes | The section slug. Maps 1:1 to a top-level folder under `docs/`. The folder must exist on disk when the config is evaluated; a section whose pages are build-generated (e.g. the glossary) must have its folder committed, or its sidebar group is silently skipped. |
 | `label` | yes | Display name in the sidebar, section heading, and llms.txt group. |
 | `order` | yes | Integer sort key for nav and every section-ordered surface. Lower first. Gaps are allowed (10, 20, 30) so a section can be inserted without renumbering. |
-| `type` | no (deferred) | The canonical frontmatter `type` for pages in this section. Carried, but not yet consumed — see the deferral note below. |
+| `type` | no | The section-default frontmatter `type` for pages in this section (**wired**, issue #24). A page's expected `type` is this value (a section `README.md` takes it), refined by the short sub-path subtype table below. Omitting it means the section has no default expectation (the `type` check degrades to a no-op for that section). |
 | `purpose` | no (deferred) | One-line description. Carried, but not yet consumed as a section blurb — nothing reads it today. |
 | `feeds` | no (deferred) | Which generated surfaces include this section's pages. Carried, but not yet consumed as a filter — see the deferral note below. |
 
 `version` marks the schema version so a future change is detectable.
 
 The registry carries `type` in addition to the `id`/`label`/`order`/`purpose`/`feeds`
-set named in the convention, so that a future op can tie a section to its canonical
-type in one place and retire the loader's hardcoded path-to-type table.
+set named in the convention. This is now the **single place** a section's canonical
+type is declared: the loader's former hardcoded section-to-type table is retired to a
+no-registry fallback, and both validators derive the section default from here
+(issue #24).
 
-## `type`-to-section derivation (DEFERRED)
+## `type`-to-section derivation (WIRED)
 
-> **Status: designed, not yet wired (issue #18).** The loader parses and carries a
-> section's `type`, but nothing derives or validates a page's `type` against it yet.
-> This op scoped the registry to nav/order/label only; the design below is retained
-> as the target for a follow-up and is not a description of current behaviour.
+> **Status: wired (issue #24).** The registry is the section-default `type`
+> authority. `sectionTypes(registry)` (`src/lib/sections.ts`) exposes the
+> `id → type` map; the pure `expectedDocType(relPath, typesBySection)`
+> (`src/lib/metadata.ts`) derives a page's expected `type` from it; and both
+> validation surfaces consume it — the standalone `validate-frontmatter.mjs` gate
+> and the build-side `schema.ts` (`expectedTypeForPath`). A docs root with no
+> `sections.yaml` falls back to the frozen `SECTION_TYPE` map so it still
+> validates.
 
 A page's expected `type` is derived in two steps, most specific last:
 
 1. **Section default.** The section is the first path segment (`architecture/overview`
    → `architecture`); its registry entry's `type` is the default (`Architecture`). A
-   section `README.md` takes the section's `type`.
-2. **Sub-path overrides.** A few sections carry more than one `type` by sub-path.
-   These overrides are a short, documented table the loader applies on top of the
-   section default:
+   section `README.md` takes the section's `type`. A section with no `type` in the
+   registry has no default expectation, so the check is a no-op for it.
+2. **Sub-path subtypes.** A few sections carry more than one `type` by sub-path.
+   These are a short, documented table applied **in code** on top of the section
+   default:
 
    | Path pattern | `type` |
    |---|---|
-   | `adr/NNNN-*` | `ADR` |
-   | `adr/template` | `Template` |
-   | `plans/roadmap` | `Plan` |
+   | `adr/*` | `ADR` (the section default) |
+   | `adr/template.md` | `Template` |
    | `plans/epics/*` | `Epic` |
    | `plans/features/*` | `Feature` |
-   | `plans/journeys/*` | `User-Journey` |
    | `operations/runbooks/*` | `Runbook` |
 
    Everything else takes its section default.
 
-The schema validates a page's declared `type` against the derived expectation and
-**warns on a mismatch** rather than failing, matching the open-vocabulary posture
+Both validators check a page's declared `type` against the derived expectation and
+**warn on a mismatch** rather than failing, matching the open-vocabulary posture
 (ADR-0004): the canonical set is checked, deviation degrades gracefully. The
 bundle-root `docs/README.md` is exempt — it carries `okf_version`, not `type`.
 
-The sub-path overrides live in the loader today because they are few and stable;
-they can move into a per-section `subtypes` field in the registry later without a
-contract change if a section grows its own sub-kinds.
+The sub-path subtypes stay in code (mirrored in `metadata.ts` and, for bare Node,
+`validate-frontmatter.mjs`) because they are few and stable. Moving them into a
+per-section `subtypes` registry field is the one part still deferred — a follow-up
+ADR item — and can happen without a contract change if a section grows its own
+sub-kinds.
 
 ## `feeds` semantics (DEFERRED)
 
@@ -160,14 +172,15 @@ decks are discoverable without being feed items.
 - **Duplicate `order`** — a warning; the tie is broken by `id` alphabetically.
 - **Missing `id`, `label`, or `order` on an entry** — a build error (these three are
   required for nav/order/label).
-- **`type` on an entry** — currently optional and carried but not consumed (the
-  `type` authority is deferred, above). `feeds` is likewise carried, not consumed.
+- **`type` on an entry** — optional; when present it is the section-default `type`
+  authority (wired, above); when absent the section has no default `type`
+  expectation. `feeds` is carried but not yet consumed.
 
 ## References
 
 - [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md), which
   introduced the registry.
-- [Loader and schema](./loader-and-schema.md), which reads it for section order and
-  labels (`type` validation is deferred).
+- [Loader and schema](./loader-and-schema.md), which reads it for section order,
+  labels, and the section-default `type` validation.
 - [Generators](./generators.md), which order the discovery surfaces by it.
 - [The convention](../context/convention.md), section 2.

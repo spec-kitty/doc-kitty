@@ -42,21 +42,26 @@ frontmatter schema. This page expands the loader and schema the
     contract (`doc_status`, `kind`, and the rest) lands in M1; see the
     [metadata model](./metadata-model.md).
   - Required fields: `title`, `description`, `status`, `updated`, `type`.
-  - Enum validation for `status`. `type` is an open vocabulary validated against a
-    fixed set, **not** against the registry (registry-driven `type` is deferred —
-    see below).
+  - Enum validation for `status`. `type` is an open vocabulary: a value is checked
+    against the canonical set (`DOC_TYPES`) and against the **section-default `type`
+    derived from the `sections.yaml` registry** (`expectedTypeForPath` in
+    `schema.ts`, `expectedDocType` in `metadata.ts`); both checks are advisory
+    (warn, never fail), and a registry-less tree falls back to the frozen
+    section-type map (issue #24 — see below).
   - Optional families: `authors`, `related`, `tags`, `sources`, and the Kitty
     `agent` block.
   - The bundle-root exemption: `docs/README.md` carries `okf_version`, not
     `type`.
-- **`type`-to-section derivation (DEFERRED)** — the design is for a page's expected
-  `type` to come from the registry entry for its section, refined by a short sub-path
-  override table. This is **not yet wired** (issue #18 scoped the registry to
-  nav/order/label); the full, deferred rule is in
+- **`type`-to-section derivation (WIRED)** — a page's expected `type` comes from the
+  registry entry for its section, refined by a short sub-path subtype table kept in
+  code. This is **wired** (issue #24): `sectionTypes` → `expectedDocType` →
+  `expectedTypeForPath`. Only moving the sub-path subtypes into a registry
+  `subtypes` field remains deferred. The full rule is in
   [section-registry.md](./section-registry.md).
 - **Where validation happens** — build-time (schema) versus the standalone
-  `validate-frontmatter.mjs` CI gate; how they overlap. Neither reads the registry
-  for `type` today (that is the deferred authority above).
+  `validate-frontmatter.mjs` CI gate; how they overlap. **Both** now derive the
+  section-default `type` from the registry (issue #24), each with its own copy of the
+  sub-path subtype table (the `.mjs` gate cannot import the TS module in bare Node).
 - **Version-sensitive spots** — the exact loader API for README-as-index and
   pointing the collection at repo-root `docs/`; both tracked against the pinned
   Astro/Starlight versions. See [ADR-0002](../adr/0002-readme-as-index.md).

@@ -7,10 +7,12 @@
  * and hands the ordered, validated section list to the discovery surfaces
  * (`llms.txt`, RSS, the agent-API index) and the Starlight sidebar.
  *
- * SCOPE (this op — issue #18): the registry drives **nav / order / label** only.
- * The `type` axis (a section's canonical `type` as a validation authority,
- * ADR-0004/FR-003) and the `feeds` per-surface filter are still authored in the
- * YAML but NOT yet consumed — see the DEFERRED note at the foot of this file.
+ * SCOPE: the registry drives **nav / order / label** (issue #18) and, since issue
+ * #24, the section-default **`type`** authority — `sectionTypes` exposes the
+ * `id → type` map that `metadata.ts`'s `expectedDocType` and the standalone gate
+ * derive a page's expected `type` from (ADR-0004/FR-003). The `feeds` per-surface
+ * filter is still authored in the YAML but NOT yet consumed — see the DEFERRED
+ * note at the foot of this file.
  *
  * Unlike `./metadata.ts` (deliberately Astro-free AND fs-free, isolation-tested),
  * this module MAY read the filesystem. `metadata.ts` must never import it; the
@@ -32,8 +34,10 @@ export interface SectionRegistryEntry {
   /** Integer sort key; lower first. Gaps allowed so a section can be inserted. */
   order: number;
   /**
-   * The canonical frontmatter `type` for pages in this section. Carried, but NOT
-   * consumed as a validation authority yet (DEFERRED — see foot of file).
+   * The canonical frontmatter `type` for pages in this section — the
+   * section-default `type` authority (issue #24). Consumed via `sectionTypes`
+   * (this module) → `expectedDocType` (`./metadata.ts`); a section README takes
+   * the section type, and a few sub-path subtypes are applied on top in code.
    */
   type?: string;
   /** One-line description; carried, not yet consumed as a section blurb. */
@@ -168,6 +172,26 @@ export function sectionLabels(registry: SectionRegistry): Record<string, string>
   return labels;
 }
 
+/**
+ * The `id → type` map — the section-default `type` authority (issue #24).
+ *
+ * The registry is now the single source of a section's canonical frontmatter
+ * `type`: a page's expected `type` is its section entry's `type` (a section
+ * README takes the section type), with a few sub-path subtypes applied on top in
+ * code (`expectedDocType` in `./metadata.ts`). Only entries that declare a `type`
+ * appear here; a section without one has no section-default expectation (the
+ * check degrades to no-op, matching the open-vocabulary posture). Analogous to
+ * {@link sectionLabels}; pass the result as the `typesBySection` argument of
+ * `expectedDocType`.
+ */
+export function sectionTypes(registry: SectionRegistry): Record<string, string> {
+  const types: Record<string, string> = {};
+  for (const entry of registry) {
+    if (typeof entry.type === 'string') types[entry.id] = entry.type;
+  }
+  return types;
+}
+
 /** Humanize a bare folder name for a leftover (unregistered) section group. */
 function humanizeSection(slug: string): string {
   return slug
@@ -283,11 +307,13 @@ export function registryToSidebar(
 }
 
 // ---------------------------------------------------------------------------
-// DEFERRED (stated here so the code does not deepen the arch-doc myth):
-//   • `type`-from-registry as a validation authority (ADR-0004/FR-003 envisioned
-//     the registry as a THIRD consumer, deriving each page's expected `type`).
-//     Out of scope for issue #18 — kept to nav/order/label. The `type` field is
-//     parsed and carried, but nothing validates against it yet.
+// WIRED / DEFERRED (stated here so the code does not deepen the arch-doc myth):
+//   • `type`-from-registry as the section-default `type` authority (ADR-0004/
+//     FR-003) — WIRED (issue #24). `sectionTypes` exposes the `id → type` map;
+//     `metadata.ts`'s `expectedDocType` derives a page's expected `type` from it
+//     (a section README takes the section type), with the short sub-path subtype
+//     table applied on top in code. Moving those sub-path subtypes into a
+//     per-section `subtypes` registry field is the one part still deferred.
 //   • `feeds` as a per-surface filter (section-registry.md "`feeds` semantics").
 //     Parsed and carried, but no surface yet drops a section by its `feeds` set.
 //   • MDX / remark-mdx — unrelated, tracked as issue #16.
