@@ -80,6 +80,9 @@ jobs:
 
       - name: Detect baseline changes
         id: diff
+        # Pin bash: the container runs `run:` steps under `sh` (dash) by default,
+        # which lacks `set -o pipefail` and other bashisms used below.
+        shell: bash
         run: |
           if [ -n "$(git status --porcelain tests/a11y/__screenshots__)" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -90,6 +93,9 @@ jobs:
 
       - name: Open PR with the updated baselines
         if: steps.diff.outputs.changed == 'true'
+        # Pin bash — the pinned container defaults `run:` steps to `sh` (dash),
+        # which errors on `set -o pipefail`.
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TARGET: ${{ github.event.inputs.target_branch }}
