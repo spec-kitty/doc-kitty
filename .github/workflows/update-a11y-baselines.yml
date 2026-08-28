@@ -91,13 +91,14 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Open PR with the updated baselines
+      # Push the regenerated baselines to a fresh branch. Split from PR creation
+      # because the pinned Playwright container has NO `gh` CLI (exit 127) — the
+      # push uses git (present), the PR is opened via the REST client below.
+      - name: Commit and push the updated baselines
+        id: push
         if: steps.diff.outputs.changed == 'true'
-        # Pin bash — the pinned container defaults `run:` steps to `sh` (dash),
-        # which errors on `set -o pipefail`.
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TARGET: ${{ github.event.inputs.target_branch }}
         run: |
           set -euo pipefail
@@ -108,15 +109,39 @@ jobs:
           git add tests/a11y/__screenshots__
           git commit -m "test(a11y): regenerate visual baselines for ${TARGET}"
           git push origin "$BRANCH"
-          gh pr create \
-            --base "$TARGET" \
-            --head "$BRANCH" \
-            --title "test(a11y): regenerate visual baselines for ${TARGET}" \
-            --body "Automated regeneration of the Playwright visual baselines (\`tests/a11y/__screenshots__/**\`) in the pinned \`mcr.microsoft.com/playwright:v1.62.1-noble\` container, so the a11y lane on \`${TARGET}\` passes after a deliberate UI change.
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
-          Produced by the **Update a11y baselines** workflow (run ${{ github.run_id }}). Review the image diff, then merge into \`${TARGET}\`.
-
-          Note: this PR was opened by \`GITHUB_TOKEN\`, so CI does not auto-run on it; re-run the a11y lane on \`${TARGET}\` after merge if you want the green tick."
+      # Open the PR via the REST client (no `gh` in the container). Pinned SHA =
+      # actions/github-script@v7.0.1.
+      - name: Open PR with the updated baselines
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const target = context.payload.inputs.target_branch;
+            const head = ${{ toJSON(steps.push.outputs.branch) }};
+            const body = [
+              'Automated regeneration of the Playwright visual baselines ' +
+                '(`tests/a11y/__screenshots__/**`) in the pinned ' +
+                '`mcr.microsoft.com/playwright:v1.62.1-noble` container, so the a11y ' +
+                'lane on `' + target + '` passes after a deliberate UI change.',
+              '',
+              'Produced by the **Update a11y baselines** workflow (run ' +
+                context.runId + '). Review the image diff, then merge into `' +
+                target + '`.',
+              '',
+              'Note: opened by `GITHUB_TOKEN`, so CI does not auto-run on it; re-run ' +
+                'the a11y lane on `' + target + '` after merge for the green tick.',
+            ].join('\n');
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              base: target,
+              head,
+              title: 'test(a11y): regenerate visual baselines for ' + target,
+              body,
+            });
+            core.notice('Opened baseline PR #' + pr.data.number + ': ' + pr.data.html_url);
 
       - name: Report no-op
         if: steps.diff.outputs.changed == 'false'
