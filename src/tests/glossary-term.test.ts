@@ -5,27 +5,32 @@ import type { SharedTermIndex } from '../lib/glossary/types.js';
 
 /**
  * The `:term` plugin's only real dependency is the shared resolver, so we build
- * the same tiny stub `SharedTermIndex` the resolver's own suite uses. `anchor`
- * fields are deliberately WRONG to prove the emitted anchor comes from the
- * resolver's `slug(termName)` rule, never from the index entry.
+ * the same tiny stub `SharedTermIndex` the resolver's own suite uses. `anchor` and
+ * `contextSlug` are the AUTHORITATIVE stored values the resolver returns verbatim
+ * (issue #17); the emitted link node carries them straight through.
  */
 function indexOf(
-  bySurface: Record<string, Array<{ context: string; anchor: string; termName: string }>>,
+  bySurface: Record<
+    string,
+    Array<{ context: string; contextSlug: string; anchor: string; termName: string }>
+  >,
 ): SharedTermIndex {
   return { bySurface: new Map(Object.entries(bySurface)), contexts: new Map() };
 }
 
 const index = indexOf({
   // Single-candidate surface.
-  bill: [{ context: 'shipping', anchor: 'WRONG', termName: 'Bill of Lading' }],
+  bill: [
+    { context: 'shipping', contextSlug: 'shipping', anchor: 'bill-of-lading', termName: 'Bill of Lading' },
+  ],
   // Collision: `policy` lives in both `hr` and `shipping` — the linker refuses to
   // guess, but an explicit `:term{context=…}` forces the choice.
   policy: [
-    { context: 'shipping', anchor: 'WRONG', termName: 'Policy' },
-    { context: 'hr', anchor: 'WRONG', termName: 'Policy' },
+    { context: 'shipping', contextSlug: 'shipping', anchor: 'policy', termName: 'Policy' },
+    { context: 'hr', contextSlug: 'hr', anchor: 'policy', termName: 'Policy' },
   ],
   // Single-candidate surface used for the suppress case.
-  cargo: [{ context: 'shipping', anchor: 'WRONG', termName: 'Cargo' }],
+  cargo: [{ context: 'shipping', contextSlug: 'shipping', anchor: 'cargo', termName: 'Cargo' }],
 });
 
 /** A minimal remark VFile that records the skip-and-warn diagnostics. */
@@ -83,6 +88,8 @@ describe('glossaryTerm (:term directive)', () => {
           rel: 'noopener',
           'data-glossary-term': 'Bill of Lading',
           'data-glossary-context': 'shipping',
+          'data-glossary-anchor': 'bill-of-lading',
+          'data-glossary-context-slug': 'shipping',
         },
       },
     });
@@ -147,6 +154,8 @@ describe('glossaryTerm (:term directive)', () => {
           rel: 'noopener',
           'data-glossary-term': 'Policy',
           'data-glossary-context': 'hr',
+          'data-glossary-anchor': 'policy',
+          'data-glossary-context-slug': 'hr',
         },
       },
     };

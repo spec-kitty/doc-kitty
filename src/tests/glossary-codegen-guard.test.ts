@@ -29,11 +29,20 @@ const index: SharedTermIndex = {
           { name: 'Lane', definition: 'A **worktree** for one WP.' },
           { name: 'Mission', definition: 'A unit of governed work.' },
         ],
+        // issue #17: the generator reads the stored de-collided anchor per term.
+        anchors: new Map([
+          ['Lane', 'lane'],
+          ['Mission', 'mission'],
+        ]),
       },
     ],
     [
       'Authoring',
-      { slug: 'authoring', terms: [{ name: 'Frontmatter', definition: 'Page metadata.' }] },
+      {
+        slug: 'authoring',
+        terms: [{ name: 'Frontmatter', definition: 'Page metadata.' }],
+        anchors: new Map([['Frontmatter', 'frontmatter']]),
+      },
     ],
   ]),
 };

@@ -29,8 +29,7 @@
  * order and `stripMarkdown` is pure, so the payload string is byte-identical
  * run-to-run — the dev-watcher idempotency the config hook relies on.
  */
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
+import { createPageProcessor } from './page-processor.js';
 import type { SharedTermIndex } from './types.js';
 
 /** The island's payload shape: context name → term name → plain-text definition. */
@@ -71,7 +70,17 @@ const BLOCK_TYPES = new Set([
  * output (NFR-004).
  */
 export function stripMarkdown(markdown: string): string {
-  const tree = unified().use(remarkParse).parse(markdown) as unknown as MdNode;
+  // Run the SHARED re-derive processor's BOTH phases (issue #16 + #20) — gfm at
+  // parse, smartypants at run — matching the build substrate, so a definition
+  // previews EXACTLY as it renders: strikethrough `~~x~~` drops its markers (not
+  // literal `~~`), a GFM table's cells concatenate to clean text, AND typographic
+  // punctuation is curled (`'`→`’`, `--`→`—`, `...`→`…`) so the hover preview text
+  // is byte-for-byte the rendered text. `.parse()` alone would skip smartypants (a
+  // transformer), leaving straight quotes in the preview while the page renders
+  // curled. No directive pass: definitions are plain gfm markdown (`:term` is a
+  // page-body escape hatch, never a definition).
+  const p = createPageProcessor();
+  const tree = p.runSync(p.parse(markdown)) as unknown as MdNode;
   const parts: string[] = [];
   const walk = (node: MdNode): void => {
     if (node.type === 'text' || node.type === 'inlineCode') {

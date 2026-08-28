@@ -64,14 +64,21 @@ describe('loadGlossary', () => {
     expect(index.contexts.get('Billing')?.domainVisionStatement).toBeUndefined();
   });
 
-  it('keys aliases alongside names, both pointing at the term anchor (FR-012)', () => {
+  it('keys aliases alongside names, both carrying the stored anchor + contextSlug (FR-012)', () => {
     const result = loadGlossary(makeRoot(VALID_TWO_CONTEXT));
     if (!result.present) throw new Error('expected present');
     const byName = result.index.bySurface.get('cargo booking');
     const byAlias = result.index.bySurface.get('booking');
-    const expected = [{ context: 'Shipping', anchor: 'cargo-booking', termName: 'Cargo Booking' }];
+    const expected = [
+      {
+        context: 'Shipping',
+        contextSlug: 'shipping',
+        anchor: 'cargo-booking',
+        termName: 'Cargo Booking',
+      },
+    ];
     expect(byName).toEqual(expected);
-    // The alias resolves exactly like the name — same anchor (slug of the name).
+    // The alias resolves exactly like the name — same stored anchor (issue #17).
     expect(byAlias).toEqual(expected);
   });
 
@@ -103,6 +110,121 @@ describe('loadGlossary', () => {
   it('returns { present: false } with no throw when the file is absent (FR-001)', () => {
     const root = makeRoot(); // no definitions file written
     expect(loadGlossary(root)).toEqual({ present: false });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// issue #17 — per-context anchor de-collision + build-fatal empty/duplicate guards
+// ---------------------------------------------------------------------------
+describe('buildIndex de-collision + build-fatal guards (issue #17)', () => {
+  const C_FAMILY = `contexts:
+  - name: Langs
+    terms:
+      - name: C
+        definition: A systems language.
+      - name: C++
+        definition: C with classes.
+      - name: C#
+        definition: A .NET language.
+`;
+
+  it('de-collides colliding anchors in source order: c, c-2, c-3', () => {
+    const result = loadGlossary(makeRoot(C_FAMILY));
+    if (!result.present) throw new Error('expected present');
+    const langs = result.index.contexts.get('Langs');
+    // Stored, de-collided anchor per term name.
+    expect(langs?.anchors.get('C')).toBe('c');
+    expect(langs?.anchors.get('C++')).toBe('c-2');
+    expect(langs?.anchors.get('C#')).toBe('c-3');
+    // The same de-collided anchors propagate onto the bySurface entries.
+    expect(result.index.bySurface.get('c')?.[0].anchor).toBe('c');
+    expect(result.index.bySurface.get('c++')?.[0].anchor).toBe('c-2');
+    expect(result.index.bySurface.get('c#')?.[0].anchor).toBe('c-3');
+  });
+
+  it('is deterministic: two builds of the same input store identical anchors', () => {
+    const a = loadGlossary(makeRoot(C_FAMILY));
+    const b = loadGlossary(makeRoot(C_FAMILY));
+    if (!a.present || !b.present) throw new Error('expected present');
+    const anchorsOf = (r: typeof a) =>
+      r.present ? [...(r.index.contexts.get('Langs')?.anchors.entries() ?? [])] : [];
+    expect(anchorsOf(a)).toEqual([
+      ['C', 'c'],
+      ['C++', 'c-2'],
+      ['C#', 'c-3'],
+    ]);
+    expect(anchorsOf(a)).toEqual(anchorsOf(b));
+  });
+
+  it('guards re-collision: a term literally slugging to a taken suffix skips ahead', () => {
+    // Source order: `C 2` claims `c-2` first; then C, then C++ (both slug base `c`).
+    const yaml = `contexts:
+  - name: Langs
+    terms:
+      - name: C 2
+        definition: Claims c-2 literally.
+      - name: C
+        definition: Base c.
+      - name: C++
+        definition: Would want c-2, but it is taken.
+`;
+    const result = loadGlossary(makeRoot(yaml));
+    if (!result.present) throw new Error('expected present');
+    const langs = result.index.contexts.get('Langs');
+    expect(langs?.anchors.get('C 2')).toBe('c-2');
+    expect(langs?.anchors.get('C')).toBe('c');
+    expect(langs?.anchors.get('C++')).toBe('c-3'); // NOT c-2 — that was taken
+  });
+
+  it('de-collides distinct context names that slug to the same page slug', () => {
+    const yaml = `contexts:
+  - name: Ops
+    terms:
+      - name: Alpha
+        definition: a
+  - name: Ops!
+    terms:
+      - name: Beta
+        definition: b
+`;
+    const result = loadGlossary(makeRoot(yaml));
+    if (!result.present) throw new Error('expected present');
+    expect(result.index.contexts.get('Ops')?.slug).toBe('ops');
+    expect(result.index.contexts.get('Ops!')?.slug).toBe('ops-2');
+  });
+
+  it('is build-fatal when a term name produces an empty anchor (all non-Latin)', () => {
+    const yaml = `contexts:
+  - name: Shipping
+    terms:
+      - name: 製品
+        definition: A product, named only in CJK.
+`;
+    expect(() => loadGlossary(makeRoot(yaml))).toThrow(/term .* empty anchor/s);
+  });
+
+  it('is build-fatal when a context name produces an empty page slug (all non-Latin)', () => {
+    const yaml = `contexts:
+  - name: 製品
+    terms:
+      - name: Widget
+        definition: A widget.
+`;
+    expect(() => loadGlossary(makeRoot(yaml))).toThrow(/context .* empty page slug/s);
+  });
+
+  it('is build-fatal on two byte-identical term names in one context (C-3)', () => {
+    const yaml = `contexts:
+  - name: Shipping
+    terms:
+      - name: Cargo
+        definition: First.
+      - name: Cargo
+        definition: Duplicate name.
+`;
+    expect(() => loadGlossary(makeRoot(yaml))).toThrow(
+      /context "Shipping".*term "Cargo".*duplicate term name/s,
+    );
   });
 });
 

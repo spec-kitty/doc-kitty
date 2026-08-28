@@ -11,7 +11,10 @@ import type { SharedTermIndex } from '../lib/glossary/types.js';
  * keeps the stubs minimal and honest about what this function actually reads.
  */
 function indexOf(
-  bySurface: Record<string, Array<{ context: string; anchor: string; termName: string }>>,
+  bySurface: Record<
+    string,
+    Array<{ context: string; contextSlug: string; anchor: string; termName: string }>
+  >,
 ): SharedTermIndex {
   return {
     bySurface: new Map(Object.entries(bySurface)),
@@ -21,29 +24,47 @@ function indexOf(
 
 const EMPTY_IGNORE: ReadonlySet<string> = new Set();
 
-// `anchor` in the stub entries is deliberately a WRONG value so the tests prove
-// the resolver recomputes it via the shared slug(termName) rule (Rule 8), never
-// trusting the index entry's field.
+// issue #17 CONTRACT INVERSION: anchor + contextSlug are now the AUTHORITATIVE,
+// de-collided values the loader stored ONCE, and the resolver RETURNS THEM VERBATIM
+// (never recomputes slug(termName)). So the stubs carry the real de-collided values
+// — including a deliberately de-collided `c-2` — and the tests assert the resolver
+// hands back exactly what the index holds.
 const index = indexOf({
   // Single-candidate surface.
-  bill: [{ context: 'shipping', anchor: 'WRONG', termName: 'Bill of Lading' }],
+  bill: [
+    { context: 'shipping', contextSlug: 'shipping', anchor: 'bill-of-lading', termName: 'Bill of Lading' },
+  ],
   // Collision: `policy` lives in both `hr` and `shipping`.
   policy: [
-    { context: 'shipping', anchor: 'WRONG', termName: 'Policy' },
-    { context: 'hr', anchor: 'WRONG', termName: 'Policy' },
+    { context: 'shipping', contextSlug: 'shipping', anchor: 'policy', termName: 'Policy' },
+    { context: 'hr', contextSlug: 'hr', anchor: 'policy', termName: 'Policy' },
   ],
   // Alias: `consignment` is an alias of the `cargo` term (shares bySurface).
-  cargo: [{ context: 'shipping', anchor: 'WRONG', termName: 'Cargo' }],
-  consignment: [{ context: 'shipping', anchor: 'WRONG', termName: 'Cargo' }],
+  cargo: [{ context: 'shipping', contextSlug: 'shipping', anchor: 'cargo', termName: 'Cargo' }],
+  consignment: [{ context: 'shipping', contextSlug: 'shipping', anchor: 'cargo', termName: 'Cargo' }],
+  // A term whose stored anchor was DE-COLLIDED to `c-2` (e.g. C++ after C). The
+  // resolver must return `c-2` verbatim — proof it reads, never recomputes.
+  'c++': [{ context: 'langs', contextSlug: 'langs', anchor: 'c-2', termName: 'C++' }],
 });
 
 describe('resolveSurface', () => {
-  it('links a single-candidate surface (Rule 4), anchor = slug(termName)', () => {
+  it('links a single-candidate surface (Rule 4), returning the STORED anchor', () => {
     expect(resolveSurface('bill', undefined, index, EMPTY_IGNORE)).toEqual({
       kind: 'link',
       context: 'shipping',
+      contextSlug: 'shipping',
       anchor: 'bill-of-lading',
       termName: 'Bill of Lading',
+    });
+  });
+
+  it('returns a DE-COLLIDED stored anchor verbatim, never recomputing slug (issue #17)', () => {
+    expect(resolveSurface('c++', undefined, index, EMPTY_IGNORE)).toEqual({
+      kind: 'link',
+      context: 'langs',
+      contextSlug: 'langs',
+      anchor: 'c-2', // the stored value — slug('C++') would be 'c', which is WRONG here
+      termName: 'C++',
     });
   });
 
@@ -51,6 +72,7 @@ describe('resolveSurface', () => {
     expect(resolveSurface('policy', 'hr', index, EMPTY_IGNORE)).toEqual({
       kind: 'link',
       context: 'hr',
+      contextSlug: 'hr',
       anchor: 'policy',
       termName: 'Policy',
     });
@@ -58,6 +80,7 @@ describe('resolveSurface', () => {
     expect(resolveSurface('policy', 'shipping', index, EMPTY_IGNORE)).toEqual({
       kind: 'link',
       context: 'shipping',
+      contextSlug: 'shipping',
       anchor: 'policy',
       termName: 'Policy',
     });
@@ -84,9 +107,9 @@ describe('resolveSurface', () => {
     const a = resolveSurface('policy', undefined, index, EMPTY_IGNORE);
     const reordered = indexOf({
       policy: [
-        { context: 'zulu', anchor: 'WRONG', termName: 'Policy' },
-        { context: 'alpha', anchor: 'WRONG', termName: 'Policy' },
-        { context: 'mike', anchor: 'WRONG', termName: 'Policy' },
+        { context: 'zulu', contextSlug: 'zulu', anchor: 'policy', termName: 'Policy' },
+        { context: 'alpha', contextSlug: 'alpha', anchor: 'policy', termName: 'Policy' },
+        { context: 'mike', contextSlug: 'mike', anchor: 'policy', termName: 'Policy' },
       ],
     });
     const b = resolveSurface('policy', undefined, reordered, EMPTY_IGNORE);
@@ -111,7 +134,8 @@ describe('resolveSurface', () => {
     expect(viaAlias).toEqual({
       kind: 'link',
       context: 'shipping',
-      anchor: 'cargo', // anchor derives from the term name, not the alias surface
+      contextSlug: 'shipping',
+      anchor: 'cargo', // the term's stored anchor, shared by its alias entry
       termName: 'Cargo',
     });
     expect(viaAlias).toEqual(viaName);
