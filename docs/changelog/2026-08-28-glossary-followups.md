@@ -1,6 +1,6 @@
 ---
 title: Glossary follow-ups — anchor de-collision, build-parity, section registry
-description: Three M4 post-merge follow-ups land together — per-context anchor de-collision with an empty-slug guard (#17), render/build markdown-parse parity (#16), and the wired _meta/sections.yaml registry that ships the glossary under a "Reference" nav group (#18).
+description: The M4 glossary post-merge follow-ups land together — anchor de-collision + empty-slug guard (#17), render/build markdown-parse parity (#16), and the fully-wired _meta/sections.yaml registry driving nav, order, label, type, feeds, and blurbs (#18, #20–#24) with the glossary under a "Reference" group.
 doc_status: active
 updated: 2026-08-28
 type: Changelog
@@ -54,15 +54,17 @@ their own bare `remark-parse` processors, diverging from the real build pipeline
   matcher / one shared slug" discipline.
 - **Closes the phantom used-list entry** for a gfm autolink literal (`cargo@x.com`
   stayed a text node under the bare parser and got linked) and the strikethrough/table
-  **preview divergence** in definitions. gfm is a syntax extension, so it takes effect
-  under the re-derive's `.parse()`; `remark-smartypants` is a transformer and is
-  configured but not yet applied by the `.parse()` callers, leaving a narrow residual
-  phantom for surfaces with typographic punctuation (`'`, `--`, `...`) — tracked as a
-  follow-up.
+  **preview divergence** in definitions. Both re-derive sites now run the full
+  parse+transform phase (`runSync(parse(...))`), so `remark-gfm` (syntax) **and**
+  `remark-smartypants` (a transformer) both apply — matching the build, which curls
+  prose before autolinking. This also closes the residual curl-phantom for surfaces
+  with typographic punctuation (`don't`, `Rock 'n' Roll`) and gives definitions
+  preview↔render parity (#20).
 - `remark-gfm@4.0.1` and `remark-smartypants@3.0.3` are declared as direct deps, pinned
-  to the versions Astro/Starlight resolve. **`remark-mdx` is deferred** (reduced
-  scope): the corpus has no `.mdx` pages, so the MDX-expression phantom stays dormant
-  behind a reserved factory option.
+  to the versions Astro/Starlight resolve, with a guard test that fails if the pins
+  drift from Astro's resolution (#21). **`remark-mdx` is deferred** (reduced scope):
+  the corpus has no `.mdx` pages, so the MDX-expression phantom stays dormant behind a
+  reserved factory option.
 
 ## #18 — Section registry wired: "Reference" nav group
 
@@ -88,8 +90,46 @@ reordering a nav group is a data edit rather than a code change.
   take the resolved order/labels as arguments and fall back to the frozen
   `SECTION_ORDER` / `SECTION_LABEL` constants when omitted, so the module remains
   Astro-free and fs-free.
-- **Deferred:** `type`-from-registry as a validation authority (ADR-0004/FR-003) and
-  `feeds` as a per-surface filter are both parsed and carried but not yet consumed.
+
+## The registry now drives every consumer it was designed for (#22, #23, #24)
+
+The remaining registry axes — previously parsed-but-unconsumed deferrals — are now
+wired, so `sections.yaml` is the single source of truth end-to-end:
+
+- **`type` is the section-default authority (#24).** `sectionTypes(registry)` feeds the
+  pure `expectedDocType`, and both validation surfaces — the standalone
+  `validate-frontmatter.mjs` gate (the former hardcoded `switch` mirror now reads the
+  registry) and the build-side `schema.ts` — derive a page's expected `type` from it.
+  Severity stays advisory (warn on mismatch); the frozen `SECTION_TYPE` is the
+  no-registry fallback. Sub-path subtypes stay in code per ADR-0004.
+- **`feeds` is a per-surface filter.** Each of sitemap / RSS / llms / agent now composes
+  the section's `feeds` set with per-page gating. A section that omits `feeds` feeds all
+  four, and an absent registry filters nothing — so a site that declares no `feeds`
+  (including the example) is byte-inert.
+- **`purpose` is the llms.txt section blurb.** Each section group emits a blurb =
+  the section `README` description ?? the registry `purpose` (README wins; neither → no
+  line).
+- **The discovery surfaces honor `docsDir` (#22).** llms.txt, RSS, and the agent-API
+  index resolve the registry from the content root (via the content layer's `filePath`),
+  so a non-default docs directory no longer splits registry authority between the sidebar
+  and the surfaces.
+- **A build-generated section survives an uncommitted folder (#23).** The sidebar seeds
+  known build-generated section ids (the glossary), so its "Reference" group no longer
+  vanishes when the generated folder isn't committed; a genuinely missing registered
+  section now warns loudly instead of being dropped in silence.
+
+## Review hardening (pre-merge adversarial squad)
+
+A multi-lens pre-merge review (correctness, architecture, security, semantic) was folded
+in on the same branch:
+
+- The root **Hub grid** now reads the registry order, so the landing page no longer
+  diverges from the sidebar/discovery surfaces (the fourth section-order consumer).
+- `renderTerm` throws on a missing anchor (loud invariant) and neutralizes `{`/newline
+  in the heading text so an author-supplied `{#id}` can't shadow the stored anchor.
+- The three reconciled architecture docs were corrected to match the shipped code
+  (the agent-API applies order only, not the "Reference" label; `feeds`/`purpose`/`type`
+  no longer described as deferred).
 
 ## Notes for consumers
 
@@ -100,4 +140,4 @@ reordering a nav group is a data edit rather than a code change.
   must be regenerated in the pinned Playwright container
   (`pnpm test:a11y --update-snapshots`).
 
-Refs #16, #17, #18
+Refs #16, #17, #18, #20, #21, #22, #23, #24
