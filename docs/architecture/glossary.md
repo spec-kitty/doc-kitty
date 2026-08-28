@@ -120,13 +120,18 @@ meet that criterion. The anchors are plain links (`target="_blank"`,
 `rel="noopener"`), so with JavaScript disabled the click-through and the "On this
 page" list both still work (NFR-005).
 
-## Navigation and the deferred registry
+## Navigation and the section registry
 
-The `docs/glossary/` folder appears in the sidebar through Starlight
-**tree-autogeneration** — no registry entry needed. Relocating it into a named
-group ("under Reference") would need the `_meta/sections.yaml`
-[section registry](./section-registry.md), which is unwired today (the only live
-section identity is the M3-frozen `SECTION_ORDER`/`SECTION_LABEL` in
-`metadata.ts`). That relocation is a documented deviation, tracked as the
-`sections.yaml`-registry follow-up; see the
-[feature page](../plans/features/glossary-and-contextive.md).
+The glossary ships under a named **"Reference"** nav group (issue #18). The
+`docs/glossary/` **content folder is unchanged** — the
+[section registry](./section-registry.md) (`_meta/sections.yaml`) simply gives the
+`glossary` section `label: Reference`, and the registry-driven Starlight sidebar
+(`src/lib/config.ts`) renders it as a named, ordered group `autogenerate`-ing from
+that same folder. Relabelling or relocating the group is now a `sections.yaml` edit
+alone — no content move, no theme edit.
+
+The registry also drives the discovery surfaces (`llms.txt`, the RSS `<category>`
+fallback, and the agent-API index), so the glossary is grouped under "Reference"
+there too and ranks with a finite section order rather than falling through as an
+unknown section. The frozen `SECTION_ORDER` / `SECTION_LABEL` in `metadata.ts` remain
+as the no-registry fallback for a docs root without a `sections.yaml`.

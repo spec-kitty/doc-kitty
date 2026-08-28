@@ -26,6 +26,7 @@ import sitemap from '@astrojs/sitemap';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import type { AstroIntegration } from 'astro';
 import { readmeToIndexId } from './metadata.js';
+import { loadSectionRegistry, registryToSidebar } from './sections.js';
 import { resolveTheme, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
@@ -173,6 +174,48 @@ function draftRoutes(docsDir: string): Set<string> {
 
   walk(root);
   return routes;
+}
+
+/**
+ * The top-level CONTENT folders under the docs root (the candidate sidebar
+ * sections). Excludes the reserved, non-content `_meta/` (the registry's home)
+ * and any dotfolder. Returns `[]` if the docs root is absent, so sidebar
+ * synthesis degrades to nothing rather than throwing.
+ */
+function topLevelContentDirs(docsRoot: string): string[] {
+  let entries: string[];
+  try {
+    entries = readdirSync(docsRoot);
+  } catch {
+    return [];
+  }
+  return entries.filter((name) => {
+    if (name.startsWith('.') || name === '_meta') return false;
+    try {
+      return statSync(path.join(docsRoot, name)).isDirectory();
+    } catch {
+      return false;
+    }
+  });
+}
+
+/**
+ * Synthesize the DEFAULT Starlight `sidebar` from the section registry (FR-013,
+ * issue #18). Returns `undefined` when there is no `sections.yaml` under the docs
+ * root, so a registry-free site keeps Starlight's bare tree-autogeneration
+ * (byte-identical to before — NFR-002). With a registry, the sidebar is named,
+ * ordered groups (glossary → "Reference"), and any section is relocatable by a
+ * `sections.yaml` edit alone. Per-page `sidebar` frontmatter (e.g. a deck's
+ * `sidebar: { hidden: true }`) is still honored inside each `autogenerate` group.
+ */
+function registrySidebar(
+  docsDir: string,
+): StarlightUserConfig['sidebar'] | undefined {
+  const docsRoot = path.resolve(process.cwd(), docsDir);
+  const registry = loadSectionRegistry(docsRoot);
+  if (!registry) return undefined;
+  const groups = registryToSidebar(registry, topLevelContentDirs(docsRoot));
+  return groups as unknown as StarlightUserConfig['sidebar'];
 }
 
 /**
@@ -457,11 +500,18 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     (href) => ({ tag: 'link', attrs: { rel: 'stylesheet', href } }),
   );
 
+  // FR-013 (issue #18): with NO explicit `sidebar`, synthesize a named, ordered,
+  // relocatable sidebar from the section registry (glossary → "Reference"). The
+  // caller's explicit `sidebar` still wins; a registry-free site keeps Starlight's
+  // bare tree-autogeneration (registrySidebar → undefined). Resolved once here so
+  // the value is decided BEFORE the build hooks run.
+  const resolvedSidebar = sidebar ?? registrySidebar(docsDir);
+
   const starlightConfig: StarlightUserConfig = {
     title,
     ...(description ? { description } : {}),
     ...(social ? { social } : {}),
-    ...(sidebar ? { sidebar } : {}),
+    ...(resolvedSidebar ? { sidebar: resolvedSidebar } : {}),
     // Theme assets ride Starlight-native config (ADR-0015 decision 4/5): no
     // Header/SiteTitle override, no components-map expansion. A consumer's own
     // `starlight` escape hatch still wins (spread after these).

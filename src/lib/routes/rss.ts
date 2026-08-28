@@ -6,8 +6,11 @@
  *   import { rssRoute } from '@commondocs-kitty/toolkit/routes';
  *   export const GET = rssRoute({ title: 'My Docs', description: '…' });
  */
+import path from 'node:path';
+import process from 'node:process';
 import type { APIRoute } from 'astro';
-import { rankForFeed, sectionOf, updatedMillis, SECTION_LABEL, includedInRssFeed } from '../metadata.js';
+import { rankForFeed, sectionOf, updatedMillis, sectionLabel, includedInRssFeed } from '../metadata.js';
+import { loadSectionRegistry, sectionLabels } from '../sections.js';
 import { absolute, collectDocEntries, xmlEscape } from './shared.js';
 
 export interface RssRouteOptions {
@@ -23,6 +26,10 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
     // unit-testable without pulling in Astro; it keys on frontmatter `kind`,
     // never the section path, so a deck filed anywhere is still excluded (A-05).
     const entries = rankForFeed(await collectDocEntries()).filter(includedInRssFeed);
+    // Registry-driven section labels for the item <category> fallback; a
+    // registry-free root falls back to SECTION_LABEL inside sectionLabel (#18).
+    const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
+    const labels = registry ? sectionLabels(registry) : undefined;
     const self = absolute(site, '/rss.xml');
     const home = absolute(site, '/');
 
@@ -32,7 +39,7 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
         const millis = updatedMillis(entry.data);
         const pubDate = millis ? new Date(millis).toUTCString() : undefined;
         const section = sectionOf(entry.slug);
-        const category = entry.data.type ?? SECTION_LABEL[section] ?? 'Doc';
+        const category = entry.data.type ?? sectionLabel(section, labels) ?? 'Doc';
         return [
           '    <item>',
           `      <title>${xmlEscape(entry.data.title)}</title>`,

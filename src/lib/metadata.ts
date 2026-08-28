@@ -182,11 +182,37 @@ export function sectionOf(slug: string): string {
   return first ?? '';
 }
 
-/** Sort key for a section, honoring SECTION_ORDER (root first, unknown last). */
-export function sectionRank(section: string): number {
+/**
+ * Sort key for a section: root first (-1), then position in the section order,
+ * unknown last. PURE and parameterized (issue #18): `order` is the resolved list
+ * of section ids in display order — pass `sectionOrder(registry)` (from
+ * `./sections.ts`) to make the registry the authority. Omitted, it falls back to
+ * the frozen `SECTION_ORDER` constant, so a docs root with no `sections.yaml`
+ * still ranks (protecting the example/docs and any registry-free consumer). The
+ * param is `readonly string[]` because a runtime-derived order has no `as const`
+ * literal type.
+ */
+export function sectionRank(
+  section: string,
+  order: readonly string[] = SECTION_ORDER,
+): number {
   if (section === '') return -1;
-  const i = SECTION_ORDER.indexOf(section as (typeof SECTION_ORDER)[number]);
-  return i === -1 ? SECTION_ORDER.length : i;
+  const i = order.indexOf(section);
+  return i === -1 ? order.length : i;
+}
+
+/**
+ * Display label for a section. PURE and parameterized (issue #18): `labels` is the
+ * resolved `id → label` map — pass `sectionLabels(registry)` (from `./sections.ts`)
+ * to make the registry the authority (e.g. glossary → "Reference"). Omitted, it
+ * falls back to the frozen `SECTION_LABEL` map. Returns `undefined` for an unknown
+ * section so a caller keeps its own fallback (`?? section`, `?? 'Doc'`).
+ */
+export function sectionLabel(
+  section: string,
+  labels: Record<string, string> = SECTION_LABEL,
+): string | undefined {
+  return labels[section];
 }
 
 /** A page is published (crawlable / in sitemap) unless it is still a draft. */
@@ -296,12 +322,20 @@ export function slugFromEntryId(id: string): string {
   return id === ROOT_ENTRY_ID ? '' : id;
 }
 
-/** Discoverable entries, grouped nothing — sorted by section then priority. */
-export function rankForAgents(entries: DocEntry[]): DocEntry[] {
+/**
+ * Discoverable entries, grouped nothing — sorted by section then priority.
+ * `order` (the resolved section-id order, from `sectionOrder(registry)`) makes the
+ * registry the authority; omitted, it falls back to `SECTION_ORDER` (issue #18).
+ */
+export function rankForAgents(
+  entries: DocEntry[],
+  order?: readonly string[],
+): DocEntry[] {
   return entries
     .filter((e) => isAgentDiscoverable(e.data))
     .sort((a, b) => {
-      const bySection = sectionRank(sectionOf(a.slug)) - sectionRank(sectionOf(b.slug));
+      const bySection =
+        sectionRank(sectionOf(a.slug), order) - sectionRank(sectionOf(b.slug), order);
       if (bySection !== 0) return bySection;
       const byPriority = agentPriority(b.data) - agentPriority(a.data);
       if (byPriority !== 0) return byPriority;

@@ -9,13 +9,16 @@
  *   import { llmsTxtRoute } from '@commondocs-kitty/toolkit/routes';
  *   export const GET = llmsTxtRoute({ title: 'My Docs', description: '…' });
  */
+import path from 'node:path';
+import process from 'node:process';
 import type { APIRoute } from 'astro';
 import {
   rankForAgents,
   sectionOf,
   sectionRank,
-  SECTION_LABEL,
+  sectionLabel,
 } from '../metadata.js';
+import { loadSectionRegistry, sectionLabels, sectionOrder } from '../sections.js';
 import { absolute, collectDocEntries } from './shared.js';
 
 export interface LlmsTxtRouteOptions {
@@ -25,7 +28,14 @@ export interface LlmsTxtRouteOptions {
 
 export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
   return async ({ site }) => {
-    const ranked = rankForAgents(await collectDocEntries());
+    // The section registry (docs/_meta/sections.yaml) drives order + labels when
+    // present; a registry-free root falls back to the SECTION_ORDER/SECTION_LABEL
+    // defaults inside the metadata helpers (issue #18). `docs/` is the convention
+    // default root, resolved against the build cwd (the site root).
+    const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
+    const order = registry ? sectionOrder(registry) : undefined;
+    const labels = registry ? sectionLabels(registry) : undefined;
+    const ranked = rankForAgents(await collectDocEntries(), order);
 
     const lines: string[] = [`# ${options.title}`, ''];
     if (options.description) lines.push(`> ${options.description}`, '');
@@ -41,11 +51,11 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     }
 
     const orderedSections = [...sections.keys()].sort(
-      (a, b) => sectionRank(a) - sectionRank(b),
+      (a, b) => sectionRank(a, order) - sectionRank(b, order),
     );
 
     for (const section of orderedSections) {
-      const heading = SECTION_LABEL[section] ?? section;
+      const heading = sectionLabel(section, labels) ?? section;
       lines.push(`## ${heading}`, '');
       for (const entry of sections.get(section)!) {
         const url = absolute(site, entry.slug === '' ? '/' : `/${entry.slug}/`);

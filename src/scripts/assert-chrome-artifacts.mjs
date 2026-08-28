@@ -268,6 +268,13 @@ const DECK_NOTE_PHRASE = 'armadillo backstage secret';
 const SIDEBAR_SAMPLE_PAGE = path.join('guides', 'getting-started', 'index.html');
 const DECK_SIDEBAR_NEEDLE = 'presentations/showcase-deck';
 const OVERVIEW_SIDEBAR_HREF_RE = /href="[^"]*\/presentations\/"/i;
+// FR-013 (issue #18): the registry-driven sidebar ships the glossary under a NAMED
+// "Reference" nav group (example/docs/_meta/sections.yaml gives the `glossary`
+// section `label: Reference`). Assert a "Reference" group label AND the glossary
+// hub link (`/glossary/`, trailing-slash-anchored so `/glossary-demo/` cannot
+// satisfy it) are both present in the rendered sidebar <nav>.
+const REFERENCE_GROUP_LABEL_RE = />\s*Reference\s*</;
+const GLOSSARY_SIDEBAR_HREF_RE = /href="[^"]*\/glossary\/"/i;
 
 // --- T034: cascade-order discriminators (ADR-0013 seam 2) ------------------
 // The generated TOKEN sheet (emitTokenSheet) is the ONLY sheet that emits the
@@ -1391,6 +1398,27 @@ export async function assertChromeArtifacts(distDir) {
     );
   }
   ok(`sidebar: deck node absent, overview hub present in the in-frame sidebar on ${SIDEBAR_SAMPLE_PAGE} (BA-10)`);
+
+  // 15d) FR-013 (issue #18) — the glossary ships under a NAMED "Reference" nav
+  // group synthesized from the section registry. Conservative + precise: the
+  // sidebar <nav> must carry a group labelled exactly "Reference" AND a link to
+  // the glossary hub (/glossary/). A section is thus relocatable/relabelable by a
+  // sections.yaml edit alone — no content move, no theme edit.
+  if (!REFERENCE_GROUP_LABEL_RE.test(navJoined)) {
+    fail(
+      `sidebar: no "Reference" nav group in the sidebar on ${SIDEBAR_SAMPLE_PAGE} — the ` +
+        `registry-driven glossary→"Reference" label did not ship (FR-013 / issue #18)`,
+    );
+  }
+  if (!GLOSSARY_SIDEBAR_HREF_RE.test(navJoined)) {
+    fail(
+      `sidebar: the glossary hub (/glossary/) is ABSENT from the sidebar on ${SIDEBAR_SAMPLE_PAGE} — ` +
+        `the "Reference" group must contain the glossary (FR-013 / issue #18)`,
+    );
+  }
+  ok(
+    `sidebar: the glossary ships under a "Reference" nav group on ${SIDEBAR_SAMPLE_PAGE} (FR-013 / issue #18)`,
+  );
 }
 
 // Standalone entry point: `node src/scripts/assert-chrome-artifacts.mjs <distDir>`.
