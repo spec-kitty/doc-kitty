@@ -22,6 +22,7 @@
  * same wrap-in-fences trick, `validate-catalog.mjs` uses for its registry files.
  */
 import { existsSync, readFileSync } from 'node:fs';
+import { GLOSSARY_OUTPUT_DIRNAME } from './glossary/generate.js';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
@@ -293,13 +294,11 @@ export interface SidebarAutogenGroup {
  * the old skip-if-absent rule made the whole "Reference" group vanish silently.
  *
  * Seeding the build-generated ids here lets `registryToSidebar` emit their groups
- * even when the folder is not yet on disk. The value MIRRORS the literal folder
- * name the generator writes to (`join(outDocsDir, 'glossary')` in
- * `glossary/generate.ts`); that module hardcodes the string and exports no
- * constant to import, so this is the single shared source of the id on the
- * sidebar-synthesis side. Keep the two in sync if the generator's folder changes.
+ * even when the folder is not yet on disk. The id is the generator's own exported
+ * `GLOSSARY_OUTPUT_DIRNAME` (the single source of the folder name — review F4), so
+ * a rename of the generator's output folder updates this seed automatically.
  */
-export const BUILD_GENERATED_SECTION_IDS: readonly string[] = ['glossary'];
+export const BUILD_GENERATED_SECTION_IDS: readonly string[] = [GLOSSARY_OUTPUT_DIRNAME];
 
 /** Options for {@link registryToSidebar}. */
 export interface RegistryToSidebarOptions {

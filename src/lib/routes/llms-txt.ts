@@ -24,6 +24,7 @@ import {
   sectionFeeds,
   feedsSurface,
 } from '../sections.js';
+import { DESCRIPTION_MAX } from '../schema.js';
 import { absolute, collectDocEntries, docsRoot } from './shared.js';
 
 export interface LlmsTxtRouteOptions {
@@ -96,7 +97,12 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
       // wins). Neither → no blurb line at all (no empty line). Emitted as a plain
       // paragraph after the H2 and before the page list, matching the llms.txt
       // section shape (the file-level `> summary` blockquote stays H1-only).
-      const blurb = readmeDescriptions.get(section) ?? purposes[section];
+      // `purpose` comes from sections.yaml and is otherwise unvalidated, so
+      // collapse whitespace/newlines and cap length before emitting — a raw
+      // newline or a leading `#`/`-`/`>` would otherwise forge llms.txt structure
+      // (matching the single-line, length-bounded discipline of page `description`).
+      const rawBlurb = readmeDescriptions.get(section) ?? purposes[section];
+      const blurb = rawBlurb?.replace(/\s+/g, ' ').trim().slice(0, DESCRIPTION_MAX);
       if (blurb) lines.push(blurb, '');
       for (const entry of sections.get(section)!) {
         const url = absolute(site, entry.slug === '' ? '/' : `/${entry.slug}/`);

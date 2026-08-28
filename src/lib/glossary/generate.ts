@@ -32,6 +32,14 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { SharedTermIndex, Term } from './types.js';
 
+/**
+ * The top-level folder (a section id) this generator writes glossary pages into,
+ * under `<outDocsDir>/`. Exported as the single source of the name so the sidebar
+ * synthesis (`BUILD_GENERATED_SECTION_IDS` in `../sections.ts`) can seed it as a
+ * build-generated section without a second hardcoded literal (review F4).
+ */
+export const GLOSSARY_OUTPUT_DIRNAME = 'glossary';
+
 /** YAML-safe double-quoted scalar (handles quotes, backslashes, colons, unicode). */
 function yamlString(value: string): string {
   return JSON.stringify(value);
@@ -174,7 +182,7 @@ export function generateGlossaryPages(index: SharedTermIndex, outDocsDir: string
     }))
     .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
-  const glossaryDir = join(outDocsDir, 'glossary');
+  const glossaryDir = join(outDocsDir, GLOSSARY_OUTPUT_DIRNAME);
   const written: string[] = [];
 
   mkdirSync(glossaryDir, { recursive: true });
