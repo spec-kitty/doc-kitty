@@ -14,7 +14,7 @@ agent:
 Notable changes to doc-kitty, newest first. The reasoning behind decisions lives in
 the [decision records](../adr/); this log records what changed and when.
 
-- [2026-08-28 — Section registry wired: Reference nav group](./2026-08-28-section-registry-wired.md)
+- [2026-08-28 — Glossary follow-ups: anchor de-collision, build-parity, section registry](./2026-08-28-glossary-followups.md)
 - [2026-08-24 — M3 specified: audience, related & external references](./2026-08-24-m3-spec-audience-related-references.md)
 - [2026-08-24 — CI actions moved to the Node 24 runtime](./2026-08-24-ci-action-node24-bumps.md)
 - [2026-08-24 — CI gate single-sourced, nightly smoke repaired](./2026-08-24-ci-gate-and-nightly-smoke-fixes.md)
