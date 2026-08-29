@@ -215,12 +215,26 @@ function buildReplacement(img: HastNode): HastNode {
   return element('figure', figureProps, children);
 }
 
+/** The subset of the rehype VFile this plugin reads (Astro injects `data.astro`). */
+interface MarkuaFigureFile {
+  data?: { astro?: { frontmatter?: { kind?: unknown } } };
+}
+
 /**
  * Rehype plugin factory. Returns the transformer Astro runs over each page's
  * hast; assignable to Astro's `RehypePlugin` (a unified `Plugin<[], Root>`).
+ *
+ * Skips `kind: Presentation` (deck) pages: `deck-split` emits the deck's
+ * `hero_image` as a Markdown `image` node carrying its own accessibility `alt`,
+ * which is NOT authored Markua figure syntax. Wrapping it as a `dk-figure` would
+ * relocate that `alt` to a `<figcaption>` and empty the `<img alt>` (dropped by
+ * the image pipeline → an `image-alt` a11y violation), and add an unwanted caption
+ * to the title slide. Decks have their own content pipeline; the Markua figure
+ * seam is a docs-page construct. Mirrors the frontmatter guard in `deck-split`.
  */
 export default function markuaFigure() {
-  return function transformer(tree: HastNode): void {
+  return function transformer(tree: HastNode, file?: MarkuaFigureFile): void {
+    if (file?.data?.astro?.frontmatter?.kind === 'Presentation') return;
     const walk = (node: HastNode): void => {
       const children = node.children;
       if (!Array.isArray(children)) return;
