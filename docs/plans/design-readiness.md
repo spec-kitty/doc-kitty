@@ -83,8 +83,11 @@ real decision), a new or expanded architecture doc, or a refinement.
 
 ### Extension passes (Should/Could, less urgent)
 
-7. **Markua** — promote the research to an ADR (the preprocess-to-directive
-   approach) and pin the normaliser's block-detection rules.
+7. **Markua. — CLOSED (2026-08-29).** The preprocess-to-directive approach is
+   ratified and the normaliser's block-detection rules are pinned in
+   [ADR-0030](../adr/0030-markua-preprocess-to-directive.md), with the shipped
+   subset surface and its limits recorded in
+   [markua.md](../architecture/markua.md).
 8. **Diagrams** — the self-contained PlantUML approach is a real unmade decision
    (PlantUML normally needs Java or a Kroki server). Artifact: an ADR.
 9. **Glossary and Contextive** — near-greenfield: the `.contextive` loader and the

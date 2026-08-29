@@ -39,6 +39,11 @@ import deckSplit from './remark/deck-split.js';
 import diagramMeta from './remark/diagram-meta.js';
 import diagramFigure from './rehype/diagram-figure.js';
 import remarkDirective from 'remark-directive';
+import markuaNormalise from './remark/markua-normalise.js';
+import markuaAttributes from './remark/markua-attributes.js';
+import markuaCallouts from './remark/markua-callouts.js';
+import markuaFigure from './rehype/markua-figure.js';
+import markuaTocDemote from './rehype/markua-toc-demote.js';
 import { isGlossaryActive, loadGlossary } from './glossary/load.js';
 import { generateGlossaryPages } from './glossary/generate.js';
 import glossaryTerm from './remark/glossary-term.js';
@@ -111,6 +116,16 @@ export interface DocKittyOptions {
    * single client render owner (`diagram-render.client`) injected page-wide.
    */
   diagrams?: boolean;
+  /**
+   * Opt-in Markua syntax support (ADR-0030; FR-005/006/007/011). **Default off** —
+   * the byte-identical twin of `diagrams: false`. With it absent or `false` the
+   * whole Markua seam is omitted: no `remark-directive` owner (unless the glossary
+   * needs it), no `markuaNormalise → markuaAttributes → markuaCallouts` remark
+   * stage, no `markuaFigure`/`markuaTocDemote` rehype stage, so a Markua-free site
+   * stays byte-identical (NFR-001). Set `true` to wire the full seam; WP10 flips it
+   * on for the example.
+   */
+  markua?: boolean;
 }
 
 /** `<head>` links advertising the feeds and agent-API on every page. */
@@ -463,10 +478,12 @@ const diagramsIntegration: AstroIntegration = {
  *       (no timestamp/`generated:` field), so a dev-watcher re-run rewrites
  *       byte-identical files and never loops.
  *   (b) registers the remark plugins in the PINNED order (`updateConfig` APPENDS
- *       after Astro's built-in remark-gfm): `remarkDirective → glossary-term →
- *       glossary-autolink`, threading the ONE shared index + `DEFAULT_IGNORE_LIST`
- *       into both factories (FR-008), plus the `glossaryDefinitions` rehype plugin
- *       that emits the hover-preview payload `<script>` (the WP06 island contract).
+ *       after Astro's built-in remark-gfm): `glossary-term → glossary-autolink`,
+ *       threading the ONE shared index + `DEFAULT_IGNORE_LIST` into both factories
+ *       (FR-008), plus the `glossaryDefinitions` rehype plugin that emits the
+ *       hover-preview payload `<script>` (the WP06 island contract). `remarkDirective`
+ *       is registered ONCE by the shared `directiveIntegration` owner (ADR-0030),
+ *       prepended before this integration so the combined order still leads with it.
  *   (c) injects the preview island page-wide (M5 `injectScript('page', …)` pattern),
  *       referenced by absolute on-disk path; its own early-return keeps a
  *       glossary-free page cost-free (NFR-003) and it is a no-op on the out-of-frame
@@ -492,10 +509,15 @@ function glossaryIntegration(docsDir: string): AstroIntegration {
         // (b) Pinned remark order (append after remark-gfm) + payload rehype.
         // The shared index + DEFAULT_IGNORE_LIST thread into BOTH factories so the
         // pipeline and WP07's render-time re-derive resolve identically (FR-008).
+        // NOTE: `remarkDirective` is NO LONGER registered here — it is hoisted to
+        // the single `directiveIntegration` owner (gated on glossary OR markua,
+        // ADR-0030) and prepended BEFORE this integration, so the effective
+        // combined order is still `remarkDirective → glossary-term →
+        // glossary-autolink`. See the registration-site comment in
+        // `defineDocKittyIntegrations`.
         updateConfig({
           markdown: {
             remarkPlugins: [
-              remarkDirective,
               [glossaryTerm, { index, ignoreList: DEFAULT_IGNORE_LIST }],
               [glossaryAutolink, { index, ignoreList: DEFAULT_IGNORE_LIST }],
             ],
@@ -523,6 +545,72 @@ function glossaryIntegration(docsDir: string): AstroIntegration {
   };
 }
 
+/**
+ * The SINGLE `remark-directive` owner (ADR-0030 D-07). Both the glossary (its
+ * `:term` text-directive) and Markua (its `containerDirective` asides/callouts +
+ * the `{aside}`/`{blurb}` wrappers) need `remark-directive` registered, but it
+ * MUST be registered EXACTLY ONCE — a double registration (glossary + markua both
+ * adding it) or a silent non-registration is the ownership bug the squad flagged.
+ * So it is hoisted OUT of `glossaryIntegration` into this dedicated owner, added
+ * to the array gated on `(glossaryActive || markuaActive)` and PREPENDED before
+ * both the markua and glossary integrations. Because `updateConfig` APPENDS to
+ * `markdown.remarkPlugins`, prepending this owner keeps the combined order leading
+ * with `remarkDirective` — ahead of both Markua's `normalise → attributes →
+ * callouts` and the glossary's `term → autolink`, identical to the pre-hoist
+ * glossary order. With BOTH features off this integration is omitted entirely, so
+ * the array stays byte-identical (FR-011/NFR-001).
+ */
+const directiveIntegration: AstroIntegration = {
+  name: 'doc-kitty:remark-directive',
+  hooks: {
+    'astro:config:setup': ({ updateConfig }) => {
+      updateConfig({ markdown: { remarkPlugins: [remarkDirective] } });
+    },
+  },
+};
+
+/**
+ * The opt-in Markua seam, registered ONLY when `defineDocKittyIntegrations({
+ * markua: true })` (FR-011, ADR-0030). It wires the full Markua pipeline the
+ * approved WP02/03/04/06/07 plugins compose:
+ *   - **remark** (AFTER the shared `remarkDirective` owner, PINNED order):
+ *     `markuaNormalise` (compiles `A>`/`W>`… line-prefix runs and `{aside}`/
+ *     `{blurb}` wrappers into `containerDirective` nodes) → `markuaAttributes`
+ *     (attaches `{…}` attribute lists to their target) → `markuaCallouts` (routes
+ *     each container to its native-aside or theme-callout emission). This runs
+ *     BEFORE Starlight's own `remarkAsides` — see the prepend note below.
+ *   - **rehype** (USER stage, BEFORE Astro's built-in `rehypeImages` /
+ *     `rehypeHeadingIds`): `markuaFigure` (wraps each image in an accessible
+ *     `<figure>` reading the `hProperties` `markuaAttributes` wrote) and
+ *     `markuaTocDemote` (keeps a figure/aside heading out of the on-page ToC).
+ *     Running before `rehypeHeadingIds` lets an explicit `{#id}` win — that pass
+ *     only slugs a heading with NO id already set (C-005, proven in WP09).
+ *
+ * FORWARD RULE (research "shared-substrate note"): the glossary
+ * `createPageProcessor` and `OnThisPage.astro` re-derive from the RAW `entry.body`
+ * string, to which raw `A>`/`{blurb}`/`{…}` lines look like literal text. That is
+ * inert today (those surfaces need no Markua understanding for this mission), but
+ * ANY future surface that re-derives from `entry.body` MUST replay this Markua
+ * normalisation before deriving, or it will index/emit raw Markua as literal text.
+ */
+function markuaIntegration(): AstroIntegration {
+  return {
+    name: 'doc-kitty:markua',
+    hooks: {
+      'astro:config:setup': ({ updateConfig }) => {
+        updateConfig({
+          markdown: {
+            // Remark (after `remarkDirective`): normalise → attributes → callouts.
+            remarkPlugins: [markuaNormalise, markuaAttributes, markuaCallouts],
+            // Rehype (user stage, before `rehypeImages`/`rehypeHeadingIds`).
+            rehypePlugins: [markuaFigure, markuaTocDemote],
+          },
+        });
+      },
+    },
+  };
+}
+
 export function defineDocKittyIntegrations(options: DocKittyOptions) {
   const {
     title,
@@ -533,6 +621,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     base = '/',
     theme,
     diagrams = false,
+    markua = false,
     starlight: overrides,
   } = options;
 
@@ -616,12 +705,35 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // build hooks run; the authoritative parse happens once inside the hook.
   const glossaryActive = isGlossaryActive(process.cwd());
 
+  // Opt-in Markua seam (FR-011): the byte-identical twin of `diagrams: false`.
+  // With `markua` absent/false the whole seam below is omitted, so the array +
+  // corpus stay byte-identical (NFR-001). WP10 flips it on for the example.
+  const markuaActive = markua === true;
+
   return [
     // Opt-in diagrams seam (FR-001): PREPENDED before Starlight when
     // `diagrams: true`, so the diagram machinery sits ahead of `starlight()` in
     // the integrations array (ordering contract). Omitted entirely when off —
     // the spread below is then byte-identical to the pre-M5 array (zero cost).
     ...(diagrams ? [diagramsIntegration] : []),
+    // SINGLE `remark-directive` owner (ADR-0030 D-07): registered EXACTLY ONCE,
+    // gated on (glossary OR markua), and PREPENDED before BOTH the markua and
+    // glossary integrations. `updateConfig` APPENDS to `markdown.remarkPlugins`,
+    // so prepending this owner makes `remarkDirective` lead the combined order —
+    // ahead of Markua's `normalise → attributes → callouts` AND the glossary's
+    // `term → autolink` (identical to the pre-hoist glossary order). A double
+    // registration or a silent non-registration is the exact ownership bug the
+    // squad flagged; the `glossary-active / markua-inactive` counting assertion
+    // (markua-attributes.test.ts) locks it. Omitted when both features are off →
+    // byte-identical array (FR-011/NFR-001).
+    ...(glossaryActive || markuaActive ? [directiveIntegration] : []),
+    // Opt-in Markua seam (ADR-0030; FR-005/006/007/011): PREPENDED before
+    // Starlight when `markua: true`, mirroring the diagrams shape, so its remark
+    // plugins run BEFORE Starlight's `remarkAsides` — WP04's mapped-directive
+    // asides must already be present when `remarkAsides` visits (the native-aside
+    // consumption ordering; WP10's `T>`→`starlight-aside--tip` assertion fails
+    // loudly on a reorder). Omitted entirely when off — byte-identical (NFR-001).
+    ...(markuaActive ? [markuaIntegration()] : []),
     // Presence-gated glossary seam (M4, ADR-0025/0026/0027/0028): PREPENDED before
     // Starlight when `.contextive/definitions.yaml` exists, mirroring the diagrams
     // shape. Omitted entirely when absent — the spread contributes NOTHING, so a

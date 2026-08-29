@@ -15,10 +15,13 @@
  *  2. **Active wiring.** With a definitions file present, the `doc-kitty:glossary`
  *     integration is prepended before Starlight and its `astro:config:setup` hook
  *     (a) generates the glossary pages before the glob sync, (b) registers the
- *     remark plugins in the PINNED order `remarkDirective → glossary-term →
- *     glossary-autolink` (threading the ONE shared index + `DEFAULT_IGNORE_LIST`
- *     into both) plus the `glossaryDefinitions` rehype payload, and (c) injects the
- *     preview island page-wide.
+ *     remark plugins in the PINNED order `glossary-term → glossary-autolink`
+ *     (threading the ONE shared index + `DEFAULT_IGNORE_LIST` into both) plus the
+ *     `glossaryDefinitions` rehype payload, and (c) injects the preview island
+ *     page-wide. `remarkDirective` is hoisted to the single `directiveIntegration`
+ *     owner (ADR-0030 D-07) and prepended before this integration, so the combined
+ *     order still leads with it — proven by the counting assertion in
+ *     `markua-attributes.test.ts`.
  *
  * `@astrojs/starlight` is mocked (as in the sibling config tests) so the Starlight
  * entry is locatable; `../lib/glossary/load.js` and `.../generate.js` are mocked so
@@ -184,18 +187,23 @@ describe('defineDocKittyIntegrations glossary active wiring', () => {
     const { configs } = runGlossarySetup(defineDocKittyIntegrations({ title: 'Docs' }));
     const md = configs.find((c) => c.markdown)?.markdown;
     const remark = md?.remarkPlugins ?? [];
-    expect(remark).toHaveLength(3);
-    // 1. remarkDirective (so `:term` is a real directive node) FIRST.
-    expect(remark[0]).toBe(remarkDirective);
-    // 2. glossary-term, threaded with the shared index + DEFAULT_IGNORE_LIST.
-    expect(Array.isArray(remark[1])).toBe(true);
-    const term = remark[1] as [unknown, { index: unknown; ignoreList: unknown }];
+    // `remarkDirective` is NO LONGER registered here — it is hoisted to the single
+    // `directiveIntegration` owner (ADR-0030 D-07), prepended before this
+    // integration so the COMBINED order still leads with it (the combined-order
+    // single-owner assertion lives in markua-attributes.test.ts). This integration
+    // now registers exactly `glossary-term → glossary-autolink`, and — crucially —
+    // does NOT re-add the directive (a re-add would be the double-registration bug).
+    expect(remark).toHaveLength(2);
+    expect(remark).not.toContain(remarkDirective);
+    // 1. glossary-term, threaded with the shared index + DEFAULT_IGNORE_LIST.
+    expect(Array.isArray(remark[0])).toBe(true);
+    const term = remark[0] as [unknown, { index: unknown; ignoreList: unknown }];
     expect(term[0]).toBe(glossaryTerm);
     expect(term[1].index).toBe(fakeIndex);
     expect(term[1].ignoreList).toBe(DEFAULT_IGNORE_LIST);
-    // 3. glossary-autolink LAST, same index + ignore-list.
-    expect(Array.isArray(remark[2])).toBe(true);
-    const autolink = remark[2] as [unknown, { index: unknown; ignoreList: unknown }];
+    // 2. glossary-autolink LAST, same index + ignore-list.
+    expect(Array.isArray(remark[1])).toBe(true);
+    const autolink = remark[1] as [unknown, { index: unknown; ignoreList: unknown }];
     expect(autolink[0]).toBe(glossaryAutolink);
     expect(autolink[1].index).toBe(fakeIndex);
     expect(autolink[1].ignoreList).toBe(DEFAULT_IGNORE_LIST);

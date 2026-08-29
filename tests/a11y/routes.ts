@@ -52,6 +52,17 @@ export const ROUTES = {
   // circular. Deliberately NOT added to AXE_PAGES and given NO `renderWait` — it
   // has no diagram to gate on and a render-gate would hang forever.
   deckNoDiagram: `${BASE}/presentations/roadmap-deck/`,
+  // Markua showcase — the WP10 verification corpus (markua-syntax-support). One
+  // page exercising every coverage-matrix construct: the ten callout classes ×
+  // three input forms, asides (incl. a live nested `{aside}`), figures, crosslink
+  // ids, and icons. Scanned in BOTH modes; its guardRoots pin construct-specific
+  // selectors a Markua-free page cannot satisfy.
+  markuaShowcase: `${BASE}/guides/markua-showcase/`,
+  // Markua graceful-degradation page — the deliberately-malformed fixture
+  // (unknown icon / unbalanced wrapper / unsupported attr). Scanned for a11y so
+  // the degraded output (icon-less tip, literal `{aside}`, ignored `{fullbleed:}`)
+  // clears WCAG too.
+  markuaMalformed: `${BASE}/guides/markua-malformed/`,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -160,6 +171,33 @@ const STARLIGHT_GLOSSARY_GUARD_ROOTS = [
   GLOSSARY_TERM_ROOT,
 ] as const;
 
+// Markua non-vacuity (WP10 — the M5/glossary vacuous-green lesson). A Markua-free
+// page renders NONE of these, so a construct-free / preset-off regression makes
+// the `.count()` gate fail RED instead of reporting a clean zero. Three DISTINCT
+// render paths are pinned so a single broken path is caught, not masked:
+//   1. the NATIVE mapped path — a `T>` yields `starlight-aside--tip` ONLY when the
+//      markua plugins run before Starlight's remarkAsides (the ordering lock);
+//   2. the THEME-hast path — a `D>` yields `dk-callout--discussion` (proves the
+//      theme emitter, not a vacuous aside);
+//   3. the FIGURE path — `figure.dk-figure` (proves the image→figure rehype ran).
+export const MARKUA_ASIDE_TIP_ROOT = 'aside.starlight-aside--tip';
+export const MARKUA_THEME_DISCUSSION_ROOT = 'aside.dk-callout--discussion';
+export const MARKUA_FIGURE_ROOT = 'figure.dk-figure';
+const STARLIGHT_MARKUA_GUARD_ROOTS = [
+  ...STARLIGHT_GUARD_ROOTS,
+  MARKUA_ASIDE_TIP_ROOT,
+  MARKUA_THEME_DISCUSSION_ROOT,
+  MARKUA_FIGURE_ROOT,
+] as const;
+// The malformed page has no native tip (its tip carries an unknown icon → theme
+// `dk-callout--tip`) and a `dk-figure`; pin those two so its scan is non-vacuous.
+export const MARKUA_MALFORMED_TIP_ROOT = 'aside.dk-callout--tip';
+const STARLIGHT_MARKUA_MALFORMED_GUARD_ROOTS = [
+  ...STARLIGHT_GUARD_ROOTS,
+  MARKUA_MALFORMED_TIP_ROOT,
+  MARKUA_FIGURE_ROOT,
+] as const;
+
 // The axe coverage set: the four in-frame Starlight surfaces + the diagram
 // demonstrator (WP06 T020) + the out-of-frame showcase deck, each run in BOTH
 // colour modes. The diagram routes (demonstrator + deck) carry a `renderWait` gate
@@ -207,6 +245,25 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     // gate forever. The per-slide render of those nodes is locked in
     // diagram.spec.ts (T019/T020), not here.
     renderCount: 1,
+  },
+  // WP10 (markua) — the showcase corpus, scanned in BOTH modes. No `renderWait`:
+  // asides/callouts/figures/ids are build-time SSR (not a client render), so the
+  // three non-vacuity guardRoots (native tip, theme discussion, figure) are
+  // present the moment the page serves and are checked by the `.count()` gate. A
+  // Markua-free (or preset-off-regressed) page fails that gate.
+  {
+    name: 'Markua showcase (/guides/markua-showcase/)',
+    path: ROUTES.markuaShowcase,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_MARKUA_GUARD_ROOTS,
+  },
+  // WP10 (markua) — the graceful-degradation page: the degraded output (icon-less
+  // theme tip + a `dk-figure`) must clear WCAG too. Guarded on those two surfaces.
+  {
+    name: 'Markua graceful degradation (/guides/markua-malformed/)',
+    path: ROUTES.markuaMalformed,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_MARKUA_MALFORMED_GUARD_ROOTS,
   },
 ];
 

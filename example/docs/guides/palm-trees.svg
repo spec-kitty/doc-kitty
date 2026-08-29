@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180" role="img" aria-label="A stylised palm-lined beach">
+  <rect width="320" height="180" fill="#bfe6f2"/>
+  <rect y="120" width="320" height="60" fill="#f2e2bf"/>
+  <circle cx="260" cy="46" r="24" fill="#ffd873"/>
+  <g fill="#2f7d4f">
+    <path d="M70 120 C64 90 58 74 40 62 C60 66 70 78 74 92 C78 74 86 60 104 54 C88 66 80 82 78 100 Z"/>
+    <rect x="72" y="118" width="6" height="40" fill="#8a5a2b"/>
+  </g>
+  <g fill="#2f7d4f">
+    <path d="M150 120 C144 96 138 82 122 72 C140 74 150 84 154 96 C158 82 166 70 182 64 C168 74 160 88 158 104 Z"/>
+    <rect x="152" y="118" width="6" height="36" fill="#8a5a2b"/>
+  </g>
+</svg>
