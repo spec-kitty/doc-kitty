@@ -97,12 +97,18 @@ function serialiseInlineCode(value: string): string {
  * plain text (no `<strong>`/`<code>`), a link kept only its label (href dropped),
  * and an image soft-adjacent to `{/aside}` vanished entirely (no text descendant).
  *
- * The re-serialisation is deliberately NON-escaping: the marker prefix (`T>`,
- * `{/aside}`) lives in the leading `text` value and MUST survive verbatim for the
- * classifier to see it, and author text already arrives unescaped from the parse —
- * escaping it (e.g. `\>`) would break marker detection. Only the inline WRAPPERS
- * (emphasis/strong/delete/link/image/inlineCode) contribute their canonical
- * delimiters, which is exactly what the body re-parse needs to rebuild the markup.
+ * The re-serialisation ESCAPES markdown-active characters in author `text` so the
+ * body re-parse reproduces the literal source: text that carried a `\*`/`\_`/`\[`
+ * in the source arrives unescaped from the first parse, and re-emitting it raw would
+ * spuriously re-parse as emphasis / a link (integration defect FIX 1). Escaping the
+ * author text is SAFE for marker detection: the marker prefix (`T>`, `{/aside}`) is a
+ * structural whole-line/prefix token the classifier keys on (`^[A-Z]>(\s|$)` and a
+ * trimmed brace-equality for `{aside}`/`{blurb}`) — it is the FIRST token on the line
+ * and is detected/stripped structurally, never by parsing emphasis. The escaped
+ * metachars (`* _ [ ] `` ` `` and `\`) are none of `A`–`Z`, `>`, or the brace
+ * markers, so the prefix survives verbatim while the body regains fidelity. Inline
+ * WRAPPERS (emphasis/strong/delete/link/image/inlineCode) contribute their canonical
+ * delimiters unescaped, which is exactly what the body re-parse needs.
  */
 function serialiseInlineChildren(nodes: MdastNode[]): string {
   let out = '';
@@ -110,10 +116,40 @@ function serialiseInlineChildren(nodes: MdastNode[]): string {
   return out;
 }
 
+/**
+ * Backslash-escape the markdown-active characters in a literal `text` value so a
+ * re-parse reproduces the text VERBATIM (no spurious `<em>`/`<a>`). The set is the
+ * inline-active punctuation `\ * _ [ ] `` ` ``; the backslash is in the character
+ * class and each source char is visited once, so there is no double-escaping.
+ */
+function escapeInlineText(value: string): string {
+  return value.replace(/[\\*_`[\]]/g, '\\$&');
+}
+
+/**
+ * Render a link/image destination. Wrap it in `<…>` when it carries whitespace or
+ * unbalanced parentheses (the mdast-util-to-markdown convention) so the URL survives
+ * a re-parse instead of being truncated at the first space or stray `)`.
+ */
+function serialiseUrl(url: string): string {
+  if (url === '') return '';
+  let depth = 0;
+  let unbalanced = false;
+  for (const ch of url) {
+    if (ch === '(') depth++;
+    else if (ch === ')') {
+      depth--;
+      if (depth < 0) unbalanced = true;
+    }
+  }
+  if (depth !== 0) unbalanced = true;
+  return /\s/.test(url) || unbalanced ? `<${url}>` : url;
+}
+
 function serialiseInlineNode(n: MdastNode): string {
   switch (n.type) {
     case 'text':
-      return n.value ?? '';
+      return escapeInlineText(n.value ?? '');
     case 'inlineCode':
       return serialiseInlineCode(n.value ?? '');
     case 'break':
@@ -125,19 +161,40 @@ function serialiseInlineNode(n: MdastNode): string {
     case 'delete':
       return `~~${serialiseInlineChildren(n.children ?? [])}~~`;
     case 'link': {
+      // The label round-trips via child serialisation (text children already
+      // escape a literal `]`, so the label brackets stay balanced); the URL is
+      // angle-wrapped when needed so spaces/parens survive.
       const label = serialiseInlineChildren(n.children ?? []);
       const title = typeof n.title === 'string' && n.title.length > 0 ? ` "${n.title}"` : '';
-      return `[${label}](${(n.url as string) ?? ''}${title})`;
+      return `[${label}](${serialiseUrl((n.url as string) ?? '')}${title})`;
     }
     case 'image': {
+      // `alt` is a raw string (no children), so escape a literal `]` here to keep
+      // the label brackets balanced; the URL is angle-wrapped when needed.
+      const alt = escapeInlineText((n.alt as string) ?? '');
       const title = typeof n.title === 'string' && n.title.length > 0 ? ` "${n.title}"` : '';
-      return `![${(n.alt as string) ?? ''}](${(n.url as string) ?? ''}${title})`;
+      return `![${alt}](${serialiseUrl((n.url as string) ?? '')}${title})`;
+    }
+    case 'footnoteReference': {
+      // Round-trip the reference token `[^id]` instead of dropping it (the default
+      // branch had no children/value → ''), so it survives re-parse as its literal.
+      const id = String(n.identifier ?? n.label ?? '');
+      return `[^${id}]`;
+    }
+    case 'linkReference': {
+      // Round-trip `[label][ref]` (or the shortcut/collapsed form) instead of
+      // flattening to the bare label text.
+      const label = serialiseInlineChildren(n.children ?? []);
+      const ref = String(n.identifier ?? n.label ?? '');
+      if (n.referenceType === 'shortcut') return `[${label}]`;
+      if (n.referenceType === 'collapsed') return `[${label}][]`;
+      return `[${label}][${ref}]`;
     }
     case 'html':
       return n.value ?? '';
     default:
-      // Any other inline node (linkReference, footnote, …): recurse so nested
-      // text still survives; a leaf with a value contributes it verbatim.
+      // Any other inline node (footnote, …): recurse so nested text still
+      // survives; a leaf with a value contributes it verbatim.
       if (Array.isArray(n.children)) return serialiseInlineChildren(n.children);
       return n.value ?? '';
   }

@@ -464,6 +464,78 @@ describe('inline markup survives inside a line-prefix callout body (D1 class-gua
   });
 });
 
+// FIX 1 (serialiser escape-loss). The faithful-but-NON-escaping serialiser
+// corrupted line-prefix callout bodies whenever author text carried a markdown
+// metachar that was ESCAPED in the source (`\*`, `\_`, `\[`) or a literal `]`
+// inside a link label: re-emitting the (now-unescaped) text raw made the body
+// re-parse spuriously as emphasis / a link, and footnote/linkReference nodes
+// dropped entirely. The fix escapes inline text metachars, balances label
+// brackets, and round-trips footnote/reference tokens. Each case below FAILS on
+// the pre-fix (non-escaping) serialiser and passes after — while the marker
+// prefix is still detected (a real `W> *emph*` still renders emphasis).
+describe('escaped metachars stay literal inside a line-prefix body (FIX 1)', () => {
+  it('`\\*.\\*` in a T> body stays literal text — no spurious emphasis', () => {
+    const tree = runPlugin('T> The regex \\*.\\* matches\n');
+    const container = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(container?.name).toBe('tip');
+    expect(flatten(container).some((n) => n.type === 'emphasis')).toBe(false);
+    expect(nodeText(container)).toContain('*.*');
+  });
+
+  it('`\\_val\\_` in a T> body stays literal text — no spurious emphasis', () => {
+    const tree = runPlugin('T> use \\_val\\_ literal\n');
+    const container = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(flatten(container).some((n) => n.type === 'emphasis')).toBe(false);
+    expect(nodeText(container)).toContain('_val_');
+  });
+
+  it('an escaped `\\[label](not-a-link)` stays literal — no spurious link', () => {
+    const tree = runPlugin('T> see \\[label](not-a-link) x\n');
+    const container = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(flatten(container).some((n) => n.type === 'link')).toBe(false);
+    expect(nodeText(container)).toContain('[label](not-a-link)');
+  });
+
+  it('a `]`-in-label link round-trips with its URL intact (label brackets balanced)', () => {
+    const tree = runPlugin('T> [a\\]b](https://ex.com/x)\n');
+    const container = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    const link = flatten(container).find((n) => n.type === 'link') as MdNode | undefined;
+    expect(link, 'the link survives instead of being mangled').toBeTruthy();
+    expect(link?.url).toBe('https://ex.com/x');
+    expect(nodeText(link as MdNode)).toBe('a]b');
+  });
+
+  it('a real `W> *emph*` still classifies as caution AND renders the emphasis', () => {
+    const tree = runPlugin('W> *emph*\n');
+    const container = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(container?.name).toBe('caution');
+    expect(flatten(container).some((n) => n.type === 'emphasis' && nodeText(n) === 'emph')).toBe(
+      true,
+    );
+  });
+});
+
+describe('footnote / linkReference survive a line-prefix body (FIX 1)', () => {
+  it('a footnoteReference token survives instead of vanishing', () => {
+    const md = 'T> A tip with a footnote[^fn].\n\n[^fn]: The footnote text.\n';
+    const tree = runPlugin(md);
+    const container = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(container?.name).toBe('tip');
+    // Pre-fix the footnoteReference hit the default branch (no children/value) and
+    // returned '' — the token vanished. Now it round-trips as `[^fn]`.
+    expect(nodeText(container)).toContain('[^fn]');
+  });
+
+  it('a linkReference round-trips as `[label][ref]` instead of flattening to text', () => {
+    const md = 'T> See [the docs][d] for details.\n\n[d]: https://example.com\n';
+    const tree = runPlugin(md);
+    const container = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    // Pre-fix the linkReference flattened to its label only (`the docs`), losing
+    // the `[…][d]` reference syntax. Now the reference token survives.
+    expect(nodeText(container)).toContain('[the docs][d]');
+  });
+});
+
 describe('an image soft-adjacent to {/aside} survives (D1b class-guard)', () => {
   // No blank line before `{/aside}` → CommonMark merges the image and the close
   // marker into ONE paragraph. The text-only reconstruction dropped the image

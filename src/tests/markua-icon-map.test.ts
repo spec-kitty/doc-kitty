@@ -4,7 +4,13 @@
  * FR-010, NFR-002; contract `icon-map.md`).
  */
 import { describe, it, expect, vi } from 'vitest';
-import { lookup, resolveIcon, type IconMapEntry } from '../lib/markua/icon-map.js';
+import {
+  lookup,
+  resolveIcon,
+  iconGlyphSvg,
+  ICON_SEED,
+  type IconMapEntry,
+} from '../lib/markua/icon-map.js';
 
 // Re-derive the seed's mapping for fa-lightbulb from the contract rather than
 // hardcoding the Starlight name twice — keeps this test honest if the seed
@@ -96,36 +102,41 @@ describe('lookup — purity, determinism, and map integrity', () => {
     expect(() => lookup('fa-')).not.toThrow();
   });
 
-  it('has no duplicate fa keys in the seed (single source of truth)', async () => {
-    // Import the module's own seed indirectly: every fa- name lookup() accepts
-    // must resolve to exactly one starlight target, so re-deriving duplicates
-    // would surface as a lookup() inconsistency. As a direct structural check,
-    // re-import the entry shape and assert distinctness via a probe set built
-    // from known seed names exercised through lookup().
-    const probes = [
-      'fa-lightbulb',
-      'fa-info-circle',
-      'fa-exclamation-triangle',
-      'fa-exclamation-circle',
-      'fa-check',
-      'fa-times',
-      'fa-comments',
-      'fa-pencil',
-      'fa-star',
-      'fa-book',
-      'fa-terminal',
-      'fa-cog',
-    ];
-    const resolved = probes.map((fa) => lookup(fa));
-    expect(resolved.every((r) => r !== undefined)).toBe(true);
-    // Distinct fa keys must be independently addressable (no key collapsed onto
-    // another's value due to a duplicate-key overwrite in the source map).
-    expect(new Set(probes).size).toBe(probes.length);
+  it('has no duplicate fa keys in the seed (single source of truth)', () => {
+    // Derive the fa keys from the exported ICON_SEED itself rather than a re-typed
+    // probe literal, so a duplicate row added to the seed surfaces here directly.
+    const faKeys = ICON_SEED.map((entry) => entry.fa);
+    expect(new Set(faKeys).size).toBe(faKeys.length);
+    // Every seed fa key must be independently addressable through lookup().
+    expect(faKeys.every((fa) => lookup(fa) !== undefined)).toBe(true);
   });
 
   it('IconMapEntry shape is usable as a plain object literal (type-level smoke check)', () => {
     const entry: IconMapEntry = { fa: 'fa-example', starlight: 'example' };
     expect(entry.fa).toBe('fa-example');
     expect(entry.starlight).toBe('example');
+  });
+});
+
+// FIX 2 — seed ⊆ glyph parity guard (FR-009). ICON_SEED's starlight targets and
+// ICON_GLYPH_INNER's keys are two parallel hand-maintained lists. A future seed
+// row whose target has no curated glyph would make resolveIcon a HIT that emits
+// an EMPTY `dk-callout__icon` span (silently re-opening the empty-icon defect).
+// Close the class by construction: every seed target must have a well-formed
+// iconGlyphSvg. This also gives iconGlyphSvg its first direct unit coverage.
+describe('every ICON_SEED target has a curated glyph (FIX 2 parity guard)', () => {
+  it.each(ICON_SEED.map((e) => [e.fa, e.starlight] as const))(
+    '%s → %s has a well-formed <svg> glyph',
+    (_fa, starlight) => {
+      const svg = iconGlyphSvg(starlight);
+      expect(svg, `no curated glyph for seed target "${starlight}"`).toBeDefined();
+      expect(svg?.startsWith('<svg')).toBe(true);
+      expect(svg?.endsWith('</svg>')).toBe(true);
+    },
+  );
+
+  it('iconGlyphSvg returns undefined for an uncurated name and for undefined', () => {
+    expect(iconGlyphSvg('definitely-not-a-curated-icon')).toBeUndefined();
+    expect(iconGlyphSvg(undefined)).toBeUndefined();
   });
 });
