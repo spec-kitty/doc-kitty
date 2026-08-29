@@ -64,6 +64,27 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe('markuaFigure — skips Presentation (deck) pages', () => {
+  it('leaves a deck-emitted hero <img> untouched (keeps its alt; no dk-figure)', () => {
+    // deck-split emits hero_image as a Markdown image with its own a11y alt; it is
+    // NOT authored Markua figure syntax, so wrapping it would relocate+empty the alt
+    // (an image-alt violation on the title slide). Guard: kind === 'Presentation'.
+    const tree = imgTree({ src: 'hero.png', alt: 'Deck hero alt' });
+    const file = { data: { astro: { frontmatter: { kind: 'Presentation' } } } };
+    markuaFigure()(tree as never, file as never);
+    const img = findTag(tree, 'img');
+    expect(img?.properties?.alt).toBe('Deck hero alt'); // alt preserved, not relocated
+    expect(findTag(tree, 'figure')).toBeUndefined(); // never wrapped as a dk-figure
+  });
+
+  it('still wraps images on a non-Presentation (docs) page', () => {
+    const tree = imgTree({ src: 'palm.jpg', alt: 'Palm Trees' });
+    const file = { data: { astro: { frontmatter: { kind: 'Guide' } } } };
+    markuaFigure()(tree as never, file as never);
+    expect(findTag(tree, 'figure')).toBeDefined();
+  });
+});
+
 describe('markuaFigure — figure shape (US2 sc.1)', () => {
   it('wraps ![Palm Trees](palm-trees.jpg) into <figure> + <figcaption> + nested <img>', () => {
     const node = run(imgTree({ src: 'palm-trees.jpg', alt: 'Palm Trees' }));
