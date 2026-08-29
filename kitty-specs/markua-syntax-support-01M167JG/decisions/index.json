@@ -1,0 +1,55 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-08-29T07:44:33.751438Z",
+      "decision_id": "01M167MEEQMZYYP75E23CNK4MA",
+      "final_answer": "Map tip/warning/error/information to Starlight asides (tip/caution/danger/note); build a doc-kitty theme callout component (ADR-0008 curated surface) for the classes with no Starlight equivalent (discussion, question, exercise), plus generic B> and center.",
+      "input_key": "callout_rendering_home",
+      "mission_id": "01M167JGYD5JNS9BZ2JTY2N8G0",
+      "mission_slug": "markua-syntax-support-01M167JG",
+      "opened_by": "cli",
+      "options": [
+        "Starlight asides + build theme callout for extras",
+        "Starlight asides only; degrade extras to note",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Callouts: map only to Starlight's 4 built-in asides, or also build a doc-kitty theme callout component for the extra classes (discussion/question/exercise) in this mission?",
+      "rationale": null,
+      "resolved_at": "2026-08-29T08:05:45.287804Z",
+      "resolved_by": null,
+      "slot_key": "specify.callouts.rendering-home",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-08-29T07:44:38.445361Z",
+      "decision_id": "01M167MK1DKSG12YNW57HNXAY7",
+      "final_answer": "Ship a minimal curated Font Awesome to Starlight seed map (common names only); unmapped fa- names drop the icon (callout still renders) and emit a build-time warning. The map is designed to grow later.",
+      "input_key": "icon_support_depth",
+      "mission_id": "01M167JGYD5JNS9BZ2JTY2N8G0",
+      "mission_slug": "markua-syntax-support-01M167JG",
+      "opened_by": "cli",
+      "options": [
+        "Minimal seed map + graceful drop",
+        "Full curated map now",
+        "Defer icons to follow-up",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Icons ({icon: fa-name} on callouts): full curated Font Awesome to Starlight name map now, a minimal seed map plus graceful drop for unmapped names, or defer icons entirely to a follow-up?",
+      "rationale": null,
+      "resolved_at": "2026-08-29T08:05:48.665318Z",
+      "resolved_by": null,
+      "slot_key": "specify.icons.support-depth",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M167JGYD5JNS9BZ2JTY2N8G0",
+  "version": 1
+}

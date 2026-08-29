@@ -1,0 +1,17 @@
+{
+  "coordination_branch": "kitty/mission-markua-syntax-support-01M167JG",
+  "created_at": "2026-08-29T07:43:30.766000+00:00",
+  "flattened": false,
+  "friendly_name": "Markua syntax support (subset)",
+  "mission_id": "01M167JGYD5JNS9BZ2JTY2N8G0",
+  "mission_number": null,
+  "mission_slug": "markua-syntax-support-01M167JG",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Authors bringing Leanpub-authored Markdown into doc-kitty hit constructs that plain Markdown ignores (asides, callouts, figure images, crosslink ids, icons). This mission adds opt-in support for a curated Markua subset through Astro's remark/rehype extension points, so those pages render as intended while every existing plain-Markdown page renders exactly as before.",
+  "purpose_tldr": "Render a practical subset of Leanpub's Markua Markdown correctly in the docsite, without changing how plain Markdown renders.",
+  "slug": "markua-syntax-support-01M167JG",
+  "target_branch": "feat/markua-syntax-support",
+  "topology": "coord",
+  "vcs": "git"
+}
