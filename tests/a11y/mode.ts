@@ -59,19 +59,16 @@ export async function gotoInMode(page: Page, path: string, mode: Mode): Promise<
 
 // Both-modes drive for the OUT-OF-FRAME reveal deck (WP05).
 //
-// KNOWN DECK THEMING GAP (flagged for WP01/WP04 follow-up, NOT patched here — axe
-// passes as-is and WP05 owns only tests/a11y/*): DeckLayout links the `--dk-*→--r-*`
-// MAP (dk-reveal-theme.css) but NOT the `--dk-*` VALUE catalog (theme.css). So on
-// the standalone deck every `--r-*` resolves to an undefined `var(--dk-*)`, the deck
-// renders in reveal/UA defaults (transparent viewport, black text) with NO brand
-// background and NO real dark palette — setting `data-theme` currently has no visual
-// effect. axe still reports no serious/critical in BOTH schemes (a transparent page
-// is scored against axe's assumed white canvas), so AX-1's both-modes coverage is
-// satisfied at the harness level: this drive runs the deck under each project's
-// `colorScheme` and seeds `data-theme` so the SAME both-modes contract becomes
-// genuinely non-vacuous the moment the deck is themed (theme.css imported into
-// DeckLayout). A follow-up should import theme.css so the deck inherits the brand
-// (the AA-verified `--dk-color-bg/text` pairs) and gains a real dark mode.
+// DeckLayout now links BOTH the `--dk-*` VALUE catalog (theme.css) and the
+// `--dk-*→--r-*` MAP (dk-reveal-theme.css), so the deck resolves the brand palette
+// and `T023` (deck.interaction.spec) asserts the computed viewport/heading/footer
+// equal the resolved `--dk-*` tokens. This drive still runs the deck under each
+// project's `colorScheme` and seeds `data-theme` before paint so AX-1's both-modes
+// axe coverage holds. NOTE (separate, pre-existing gap): a *real* deck view carries
+// no theme-persistence script, so nothing sets `data-theme` on a live deck — the
+// dark palette is reachable only because this drive seeds the attribute; wiring a
+// deck theme toggle + a dark background-luminance gate is a tracked follow-up, not
+// this PR's scope.
 export async function gotoDeckInMode(page: Page, path: string, mode: Mode): Promise<void> {
   // Seed the design's own theme attribute BEFORE any paint (forward-compatible:
   // once theme.css is loaded, this is what switches the deck to its dark palette).

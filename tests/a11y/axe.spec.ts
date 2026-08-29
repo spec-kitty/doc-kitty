@@ -53,12 +53,35 @@ for (const pageDef of AXE_PAGES) {
         for (const svg of await rendered.all()) {
           await expect(svg, `each gated diagram must be visible on ${pageDef.path}`).toBeVisible();
         }
-        // Raw source consumed: every `pre.mermaid` is `data-processed` (its source
-        // text replaced by the rendered `<svg>`), so none still holds raw source.
-        const unprocessed = page.locator('pre.mermaid:not([data-processed="true"])');
+        // Raw source consumed IN THE CURRENT VIEW: every VISIBLE `pre.mermaid` is
+        // `data-processed` (its source text replaced by the rendered `<svg>`), so no
+        // raw mermaid source is exposed to the axe scan on the view being scanned.
+        //
+        // SLIDE-AWARE RECONCILIATION (#15): this file is not WP05-owned, but it must
+        // adapt to the shipped slide-aware deck render. On a DECK, slides 2+ are
+        // `display:none` at load and their diagrams render only on `slidechanged`
+        // (INV-SCOPE, diagram-render.client) — so a page-wide
+        // `:not([data-processed]) === 0` is now false BY DESIGN (those hidden nodes
+        // are the #15 fix, not a regression). Scoping to `:visible` preserves the
+        // test's real purpose — no raw source on the CURRENT view — while allowing
+        // the hidden, deliberately-unrendered slides. On a doc page every diagram is
+        // visible at load, so this stays exactly as strong as before (a diagram that
+        // silently failed to render would be visible AND unprocessed → still fails).
+        // Scope precisely: on a DECK, reveal keeps an adjacent slide in the DOM
+        // at a size Playwright counts as `:visible` even though it is not the
+        // slide the user sees — and that adjacent slide's diagram is deliberately
+        // unrendered until navigated to (slide-aware #15). So assert the raw-source
+        // guard on the PRESENT leaf only (`.reveal section.present`); on a doc page
+        // there is no `.reveal`, so fall back to the page-wide `:visible` scope.
+        const isDeck = (await page.locator('.reveal').count()) > 0;
+        const unprocessed = isDeck
+          ? page.locator(
+              '.reveal section.present pre.mermaid:not([data-processed="true"])',
+            )
+          : page.locator('pre.mermaid:not([data-processed="true"]):visible');
         await expect(
           unprocessed,
-          `no pre.mermaid may still hold raw source on ${pageDef.path}`,
+          `no raw-source pre.mermaid may remain on the current view of ${pageDef.path}`,
         ).toHaveCount(0);
       }
 
