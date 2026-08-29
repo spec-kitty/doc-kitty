@@ -1,0 +1,18 @@
+{
+  "baseline_merge_commit": "ac02d3897a78c2ec359c7a49baf0142ccd74902b",
+  "created_at": "2026-08-28T17:01:21.792436+00:00",
+  "flattened": true,
+  "friendly_name": "Reveal-deck remediation",
+  "mission_id": "01M14N38FYPNRM7SHD19YZS39S",
+  "mission_number": null,
+  "mission_slug": "reveal-deck-remediation-01M14N38",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The slide-deck feature shipped but the deployed example decks render with broken CSS, misplaced metadata, and a malfunctioning footer, and any diagram authored beyond the first slide mis-renders. This mission remediates those defects so the hosted decks are presentable and usable, and adds brief on-page guidance so readers know how to navigate and export them.",
+  "purpose_tldr": "Fix the reveal.js slide-deck rendering defects on the docsite and make deck diagrams render on every slide, not just the first.",
+  "slug": "reveal-deck-remediation-01M14N38",
+  "status_phase": "1",
+  "target_branch": "fix/reveal-deck-remediation",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-28T18:30:08.703570+00:00"
+}

@@ -1,0 +1,194 @@
+schema_version: 1
+mission_id: 01M14N38FYPNRM7SHD19YZS39S
+mission_slug: reveal-deck-remediation-01M14N38
+mission_number:
+friendly_name: Reveal-deck remediation
+mission_type: software-dev
+target_branch: fix/reveal-deck-remediation
+created_at: '2026-08-28T19:27:50.479985+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-08-28T19:27:50.479985+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-004
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-005
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-006
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-011
+not_helpful:
+- id: n-007
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-018
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-001
+  category: process
+  summary: WP01 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-012
+  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-002
+  category: process
+  summary: WP02 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-013
+  details: WP WP02 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-003
+  category: process
+  summary: WP03 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-014
+  details: WP WP03 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-004
+  category: process
+  summary: WP04 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-015
+  details: WP WP04 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-005
+  category: process
+  summary: WP05 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-016
+  details: WP WP05 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-006
+  category: process
+  summary: WP06 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-017
+  details: WP WP06 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/tasks/WP01-slide-aware-render-engine.md
+- id: e-006
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/tasks/WP02-deck-chrome-wiring-theme.md
+- id: e-007
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/tasks/WP03-title-metadata-suppression.md
+- id: e-008
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/tasks/WP04-deck-example-fixtures.md
+- id: e-009
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/tasks/WP05-behaviour-assertions.md
+- id: e-010
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/tasks/WP06-hub-instructional-banner.md
+- id: e-011
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/status.events.jsonl
+- id: e-012
+  kind: event_range
+  path: kitty-specs/reveal-deck-remediation-01M14N38/status.events.jsonl
+  range: 01M14VAX2BCBY5A7KSC5W2RSK0
+- id: e-013
+  kind: event_range
+  path: kitty-specs/reveal-deck-remediation-01M14N38/status.events.jsonl
+  range: 01M14VXVBGSWK59ZJ40VN05D2D..01M14W31G81KNY6QK8CXTPKDFF
+- id: e-014
+  kind: event_range
+  path: kitty-specs/reveal-deck-remediation-01M14N38/status.events.jsonl
+  range: 01M14TNYBR9QZ9Q9HQHFFHQBVF..01M14V7N1FW01N0XBW3H6G93H1
+- id: e-015
+  kind: event_range
+  path: kitty-specs/reveal-deck-remediation-01M14N38/status.events.jsonl
+  range: 01M14V9NFZFM1JY168KD151YY7
+- id: e-016
+  kind: event_range
+  path: kitty-specs/reveal-deck-remediation-01M14N38/status.events.jsonl
+  range: 01M14WY5RE2Q3KCH1MBFH8ZFBP..01M14X6D9M4J0JC5P9DQ0NR90A
+- id: e-017
+  kind: event_range
+  path: kitty-specs/reveal-deck-remediation-01M14N38/status.events.jsonl
+  range: 01M14TW5N1ARPFG8ZYA8429CW8..01M14V8BQQXSFXAQQ4121TN465
+- id: e-018
+  kind: file
+  path: kitty-specs/reveal-deck-remediation-01M14N38/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

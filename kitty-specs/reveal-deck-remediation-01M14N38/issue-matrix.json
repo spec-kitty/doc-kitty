@@ -1,0 +1,41 @@
+{
+  "rows": {
+    "#12": {
+      "evidence_ref": "#12b description suppressed (WP03); #12a/c deck theme look-rules + footer chrome (WP02 0441fa4); QOL hub how-to (WP06); locked by WP05 FR-001/FR-003 assertions.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP02"
+    },
+    "#13": {
+      "evidence_ref": "Out of scope per spec.md C-002; GitHub #13 stays open as follow-up.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "deferred-with-followup",
+      "wp": null
+    },
+    "#15": {
+      "evidence_ref": "Slide-aware render engine (WP01) + non-fakeable behaviour lock (WP05 67c1bbc): measured-geometry FR-004 proves slide-2/inner-stack diagrams render; INV-SCOPE prevents theme-toggle re-open.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}

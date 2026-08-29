@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "mission_slug": "reveal-deck-remediation-01M14N38",
+  "mission_id": "01M14N38FYPNRM7SHD19YZS39S",
+  "mission_branch": "kitty/mission-reveal-deck-remediation-01M14N38",
+  "target_branch": "fix/reveal-deck-remediation",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/deck/reveal-init.client.ts",
+        "src/lib/diagram/diagram-render.client.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/remark/deck-split.internal.ts",
+        "src/lib/remark/deck-split.ts",
+        "src/tests/deck-split.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "example/docs/presentations/roadmap-deck.md",
+        "example/docs/presentations/showcase-deck.md",
+        "src/scripts/assert-build-artifacts.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "example/docs/presentations/README.md",
+        "tests/a11y/presentations-hub.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/layouts/DeckLayout.astro",
+        "src/styles/dk-reveal-theme.css"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "tests/a11y/deck.interaction.spec.ts",
+        "tests/a11y/diagram.spec.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-08-28T18:10:27.704931+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "7af52ec8ff094da746ee566c1b8dc98f1ea6e60f"
+}
