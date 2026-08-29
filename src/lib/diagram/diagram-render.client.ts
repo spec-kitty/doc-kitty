@@ -142,20 +142,24 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
       return;
     }
 
-    // CLASS-CLOSURE (#15): render ONLY nodes whose container is boxed RIGHT NOW.
-    // A node still at width:0 at run time — `whenBoxed` fell through after
-    // MAX_SETTLE_FRAMES, a rapid-nav re-hid the slide in the one frame between
-    // `whenBoxed` resolving and this running, or a `[data-theme]` toggle re-ran the
-    // `visited` set which includes navigated-away (display:none) slides — is SKIPPED
-    // and left UNPROCESSED, so a later `slidechanged` retries it, instead of being
+    // CLASS-CLOSURE (#15): for the per-slide/theme paths, render ONLY nodes whose
+    // container is boxed RIGHT NOW. A node still at width:0 at run time — `whenBoxed`
+    // fell through after MAX_SETTLE_FRAMES, a rapid-nav re-hid the slide in the one
+    // frame between `whenBoxed` resolving and this running, or a `[data-theme]`
+    // toggle re-ran the `visited` set which includes navigated-away (display:none)
+    // slides — is SKIPPED and left UNPROCESSED, so a later `slidechanged` retries it,
+    // instead of being
     // laid out collapsed and marked `data-processed` forever (which re-opens #15).
-    // The three per-slide/print paths already gate on `whenBoxed`; this closes the
-    // residual races and the un-gated theme-observer path by construction, in the
-    // one place that ever calls `mermaid.run`.
-    const boxedNodes = scopeNodes.filter(
-      (node) => node.getBoundingClientRect().width > 0,
-    );
-    if (!boxedNodes.length) return;
+    // The per-slide paths already gate on `whenBoxed`; this closes the residual
+    // races and the un-gated theme-observer path by construction, in the one place
+    // that ever calls `mermaid.run`. Discriminator is `getClientRects().length`, NOT
+    // `width > 0`: a `display:none` (navigated-away / unvisited hidden) slide has NO
+    // client rect → skipped; a VISIBLE node that is only momentarily 0-width (a
+    // just-shown slide mid-layout, or every slide under `?print-pdf`) still has a
+    // client rect → rendered. A `width > 0` test conflated the two and dropped
+    // visible-but-settling diagrams (deck navigation + print) in slower renderers.
+    const runNodes = scopeNodes.filter((node) => node.getClientRects().length > 0);
+    if (!runNodes.length) return;
     isRendering = true;
 
     mermaid.initialize({
@@ -167,7 +171,7 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
     // Reset each in-scope node to its source + clear `data-processed` so `run`
     // re-renders it in the current mode's colours, ending with exactly one `<svg>`
     // per node. Mark it VISITED so a later theme toggle re-renders it (and only it).
-    for (const node of boxedNodes) {
+    for (const node of runNodes) {
       node.textContent = sources.get(node) ?? node.textContent ?? '';
       node.removeAttribute('data-processed');
       visited.add(node);
@@ -176,7 +180,7 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
     // instead of an unhandled promise rejection — the raw `<pre>` source stays
     // visible for that node rather than silently vanishing.
     mermaid
-      .run({ nodes: boxedNodes })
+      .run({ nodes: runNodes })
       .catch((e) => console.warn('[dk-diagram] render failed', e))
       .finally(() => {
         isRendering = false;
@@ -235,20 +239,32 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
     });
 
   if (controller?.isPrintView) {
-    // T004/T020: print view lays EVERY slide out at once (no `slidechanged` walk).
-    // Re-query `pre.mermaid` at render time — reveal's print/PDF layout can add a
-    // page (a cloned diagram-bearing slide) AFTER `.ready`, so the top-of-function
-    // `nodes` capture (the footprint guard) can miss it — cache any new node's raw
-    // source, then render EVERY node in ONE pass once they have all settled to a
-    // non-zero box, so the exported PDF holds every diagram (C3). Read the print
-    // flag off the controller — never recompute `/print-pdf/gi` here
-    // (INV-PRINT-OWNER). No `onSlideChange` in print mode (there is no navigation).
-    const printNodes = document.querySelectorAll<HTMLElement>('pre.mermaid');
-    printNodes.forEach((node) => {
-      if (!sources.has(node)) sources.set(node, node.textContent ?? '');
-    });
-    await whenBoxed(printNodes);
-    render(printNodes);
+    // T004/T020: print view lays EVERY slide out at once (no `slidechanged` walk),
+    // so render every node — read the print flag off the controller, never recompute
+    // `/print-pdf/gi` here (INV-PRINT-OWNER). Reveal builds the print pages around
+    // `.ready` and can ADD a cloned diagram page a beat AFTER our first pass; with no
+    // navigation in print mode there is nothing to retrigger a render, so a single
+    // pass drops the clone (raw Mermaid source in the exported PDF). Run a few
+    // BOUNDED re-passes: each re-queries `pre.mermaid`, caches any new clone's raw
+    // source, and renders whatever is still unprocessed (idempotent — a processed
+    // node is skipped), so the exported PDF holds every page's diagram (C3).
+    const renderPrintPass = async (): Promise<void> => {
+      const printNodes = document.querySelectorAll<HTMLElement>('pre.mermaid');
+      printNodes.forEach((node) => {
+        if (!sources.has(node)) sources.set(node, node.textContent ?? '');
+      });
+      const pending = Array.from(printNodes).filter(
+        (node) => !node.hasAttribute('data-processed'),
+      );
+      if (!pending.length) return;
+      await whenBoxed(pending);
+      render(pending);
+    };
+    await renderPrintPass();
+    for (let pass = 0; pass < 4; pass += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      await renderPrintPass();
+    }
   } else if (controller) {
     // T003: deck mode. Render the CURRENT leaf at ready — NOT slide 1 — so a
     // `hash:true` deep-link (`…/#/2`) that lands on slide 2 (no `slidechanged`

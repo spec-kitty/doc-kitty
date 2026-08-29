@@ -433,6 +433,9 @@ test.describe('Deck print-pdf renders every diagram in one pass (FR-004 / T020)'
     const mode: Mode = modeOf(testInfo.project.name);
     await gotoDeckReady(page, `${ROUTES.deck}?print-pdf`, mode);
 
+    // Reveal's `?print-pdf` view can ADD a print-page clone (an extra pre.mermaid)
+    // after `.ready`; every such node is a real print page and must render (else the
+    // exported PDF shows raw Mermaid source on that page). Count them all.
     const nodeCount = await page.locator('pre.mermaid').count();
     expect(nodeCount, 'the showcase deck must carry multiple diagram nodes').toBeGreaterThan(1);
 
