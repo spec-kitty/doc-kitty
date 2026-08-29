@@ -16,6 +16,11 @@ tags: [markua, showcase, fixture, reference]
 # collector never sees it), which does not depend on a rendered ToC.
 tableOfContents: false
 ---
+<!-- markdownlint-disable -->
+<!-- This is a Markua fixture: it deliberately contains Markua syntax (headings
+     inside asides/callouts, fenced code in wrappers, {#id} crosslinks, intentional
+     malformed constructs) that conventional markdownlint rules flag. Not conventional
+     Markdown; frontmatter + links are still validated by validate:docs/validate:links. -->
 
 # Markua showcase
 

@@ -10,6 +10,11 @@ tags: [markua, fixture, degradation]
 # short many-heading fixture — the diagram-demonstrator convention).
 tableOfContents: false
 ---
+<!-- markdownlint-disable -->
+<!-- This is a Markua fixture: it deliberately contains Markua syntax (headings
+     inside asides/callouts, fenced code in wrappers, {#id} crosslinks, intentional
+     malformed constructs) that conventional markdownlint rules flag. Not conventional
+     Markdown; frontmatter + links are still validated by validate:docs/validate:links. -->
 
 # Markua graceful degradation
 
