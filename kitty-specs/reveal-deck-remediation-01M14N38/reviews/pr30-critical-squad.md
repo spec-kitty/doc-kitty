@@ -23,6 +23,16 @@ T019 (367-376, 402-404) and T021 (561-564) removed the measured-internal-node-ge
 ### V3 [HIGH, renata] changelog overclaims
 `docs/changelog/2026-08-29-…:` "keep the svg-box check that still catches the zero-box defect" contradicts `diagram-render.client.ts:190-191`. FIX: if V2 restores the getBBox proof, reword to state the proof IS restored; else claim only "a diagram that fails to render at all is caught". (V2 chosen → reword to restored-proof.)
 
+> **OUTCOME (local a11y run, env repaired)**: the first class-closure cut used
+> `getBoundingClientRect().width > 0`, which skipped *visible-but-settling* diagrams in
+> a slower local Chromium — it broke deck navigation (T019) AND print (T020) locally
+> (CI's pinned container masked it). Fixed: the skip predicate is now
+> `getClientRects().length > 0` (empty ONLY for `display:none`, so a hidden slide is
+> skipped but a visible-but-0-width one still renders). Also found (debbie's print-clone
+> prediction, confirmed): reveal adds a print-page clone AFTER our single print pass, so
+> T020 saw 4 nodes / 3 svg — fixed with a bounded print re-pass loop. Full a11y lane now
+> 66/66 green locally.
+
 ### C1 [MEDIUM debbie ×2 / paula LOW-MED] whenBoxed timeout + never-retry re-arms #15
 `whenBoxed` proceeds after `MAX_SETTLE_FRAMES=30` even if unboxed; `render()` then marks the node `data-processed` + visited → `unprocessedIn` filters it out → NEVER retried. Same root cause as the rapid-nav resolve-after-hide race (render() runs after the node is hidden again). FIX (class-closure, DIRECTIVE_043): in `render()`, filter scope to nodes currently boxed (`getBoundingClientRect().width>0`) at run time; skip zero-box nodes (leave them unprocessed) so a later slidechanged retries. One change closes both races.
 
