@@ -40,6 +40,14 @@ background so the built `<section>` carries the applied attribute.
 
 <!-- .element: class="fragment" -->
 
+```mermaid
+%% title: Slide-two render check
+%% description: This second-slide diagram is hidden at load and must render only when the reader navigates to slide two — the exact node the FR-004 assertion selects by this sentence.
+flowchart LR
+  NAV[navigate to slide 2] --> EV[slidechanged fires]
+  EV --> RENDER[render owner draws THIS node]
+```
+
 ## Slide that becomes a vertical stack
 
 This paragraph is the first inner slide of the stack.
@@ -49,6 +57,14 @@ This paragraph is the first inner slide of the stack.
 A `###` heading converts the parent `##` slide into a vertical stack: the
 accumulated content becomes inner section one, and this heading opens inner
 section two.
+
+```mermaid
+%% title: Inner-stack render check
+%% description: This diagram lives on a vertical inner-stack leaf and must render when the reader descends into the stack — the nested-branch node the FR-004 vertical-nested assertion selects.
+flowchart TB
+  STACK[descend into vertical stack] --> LEAF[inner leaf becomes active]
+  LEAF --> RENDER[render owner draws the nested node]
+```
 
 ---
 

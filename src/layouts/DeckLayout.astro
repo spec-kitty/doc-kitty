@@ -107,6 +107,16 @@ const description = entry.data.description ?? '';
       </div>
     </main>
 
+    {/* Deck footer / bottom-banner (FR-003, C2). A SIBLING of `main.reveal`,
+        deliberately OUTSIDE `.slides` so reveal never sweeps it into the slide
+        DOM (no per-slide re-render, no accessible-slide-name interference,
+        IX-3b) and outside the `data-pagefind-body` region so its title text is
+        not indexed (BA-5). A single `contentinfo` landmark (a `<footer>` at
+        `<body>` scope) carrying the deck title — kept unique so a11y stays green
+        (NFR-004). Styled + positioned by `.dk-deck-footer` in the theme sheet so
+        it never overlaps the fixed controls. */}
+    <footer class="dk-deck-footer">{title}</footer>
+
     {/* Real, labelled <button> controls (AX-2), wired to reveal in the client
         init. Keyboard navigation (arrows/space/Esc) is reveal's, always on. */}
     <nav class="dk-deck-controls" aria-label="Slide navigation">
@@ -133,28 +143,33 @@ const description = entry.data.description ?? '';
         owner works standalone, and the server-rendered `<figure>`/`<pre>` remains
         the no-JS fallback (NFR-003) either way. */}
     <script>
-      // Render diagrams only once reveal's root carries `.ready` (its
-      // initialise() promise resolves a beat BEFORE the layout settles, and a
-      // diagram rendered into a still-settling slide loses its accessible name —
-      // see the note above). Bounded: fall through after a short wait so a page
-      // without reveal (or a reveal that never readies) still renders its diagram.
-      const renderDeckDiagrams = () =>
-        import('../lib/diagram/diagram-render.client')
-          .then((m) => m.initDiagrams())
-          .catch((err) => console.warn('[doc-kitty] deck diagram render failed:', err));
+      // Type-only import (erased at build — no runtime chunk). The runtime
+      // modules are DYNAMICALLY imported below so `reveal-init.client` keeps its
+      // own hashed chunk: it must stay route-isolated (ADR-0022 D5 — reveal's
+      // viewport-hijacking core CSS never co-bundles onto a doc page) AND its
+      // `?print-pdf` → `view:'print'` activation must ship in a chunk the build
+      // assertion can find by name (BA-9 / FR-013). A static import co-bundles it
+      // into DeckLayout's script chunk under a different filename, which breaks
+      // both invariants.
+      import type { DeckController } from '../lib/deck/reveal-init.client';
 
+      // Resolve once reveal's root carries `.ready` (its initialise() promise
+      // resolves a beat BEFORE the layout settles, and a diagram rendered into a
+      // still-settling slide loses its accessible name — see the note above).
+      // Bounded: fall through after a short wait so a page without reveal (or a
+      // reveal that never readies) still proceeds to render.
       const whenRevealReady = () =>
-        new Promise((resolve) => {
+        new Promise<void>((resolve) => {
           const root = document.querySelector('.reveal');
           if (!root || root.classList.contains('ready')) {
-            resolve(undefined);
+            resolve();
             return;
           }
           const done = () => {
             observer.disconnect();
             clearTimeout(fallback);
             // One extra frame so reveal's post-ready layout has flushed.
-            requestAnimationFrame(() => resolve(undefined));
+            requestAnimationFrame(() => resolve());
           };
           const observer = new MutationObserver(() => {
             if (root.classList.contains('ready')) done();
@@ -163,10 +178,46 @@ const description = entry.data.description ?? '';
           const fallback = setTimeout(done, 3000);
         });
 
-      import('../lib/deck/reveal-init.client')
-        .then((m) => m.initDeck())
-        .catch((err) => console.warn('[doc-kitty] deck enhancement failed:', err))
-        .finally(() => whenRevealReady().then(renderDeckDiagrams));
+      // PURE WIRE (A4): thread WP01's `DeckController` into the shared diagram
+      // render owner, and nothing else — DeckLayout gains ZERO reveal knowledge
+      // and holds NO slide state: it never subscribes to reveal events, reads
+      // the active leaf, or computes print state (all of that lives in WP01's
+      // reveal-init). The pinned shape (F5) resolves `controller` up front
+      // so an `initDeck()` rejection cannot strand it in the temporal dead zone:
+      // a caught failure simply leaves `controller` undefined, and
+      // `initDiagrams(undefined)` renders the WHOLE document once (the intended
+      // degraded whole-doc fallback when there is no controller — NOT a #15
+      // regression; #15 only concerns the enhanced deck where the controller
+      // exists and per-slide scoping applies). The `.reveal.ready` gate and its
+      // requestAnimationFrame beat are preserved so diagrams still render only
+      // AFTER reveal readies (INV-A11Y-ORDERING keeps the accTitle/accDescr
+      // insertion off the race), and the SSR `<figure>`/`<pre>` stays the no-JS
+      // fallback either way (INV-FALLBACK / NFR-003).
+      // `initDiagrams` first (its own chunk) so the degraded whole-doc render
+      // still runs even if reveal enhancement fails. Both are dynamic imports:
+      // string-literal specifiers Vite emits as distinct, route-only chunks.
+      const { initDiagrams } = await import('../lib/diagram/diagram-render.client');
+      let controller: DeckController | undefined;
+      try {
+        const { initDeck } = await import('../lib/deck/reveal-init.client');
+        controller = await initDeck();
+      } catch (err) {
+        console.warn('[doc-kitty] deck enhancement failed:', err);
+      }
+      await whenRevealReady();
+      await initDiagrams(controller);
+
+      // A11y (axe scrollable-region-focusable / WCAG 2.1.1): the deck theme gives
+      // a slide's code `<pre>` `overflow:auto`, and reveal's fixed stage can make a
+      // long block scroll — a scrollable region must be keyboard-reachable. Give
+      // each such block a tabindex so keyboard users can scroll it. Scoped off the
+      // rendered Mermaid `<pre>` (which becomes an `<svg>` figure, not a scroller).
+      // SSR fallback stays clean (no reveal stage → the block does not overflow).
+      document
+        .querySelectorAll<HTMLElement>('.reveal .slides section pre:not(.mermaid)')
+        .forEach((pre) => {
+          if (!pre.hasAttribute('tabindex')) pre.tabIndex = 0;
+        });
     </script>
   </body>
 </html>

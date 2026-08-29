@@ -59,6 +59,10 @@
 
   /* Deck content measure (references the canonical token so it is not orphaned). */
   --dk-deck-slide-measure: var(--dk-width-deck);
+
+  /* Height of the fixed footer band. Shared by the footer (its own block-size)
+     and the controls' `bottom` offset so the two never collide (T007). */
+  --dk-deck-footer-height: 2.5rem;
 }
 
 /* ---- Look rules (scoped, override reveal core's hardcoded #000/#fff) ------ */
@@ -112,6 +116,71 @@ body {
   margin-inline: auto;
 }
 
+/* Slide content presentation: give every slide breathing room and a readable
+   measure. WP05 asserts computed `padding` on `.reveal .slides section` is
+   non-zero, so this padding is load-bearing, not decorative (F5). Nested
+   vertical sections inherit the same spacing via the descendant selector. */
+.reveal .slides section {
+  padding-block: var(--dk-space-lg);
+  padding-inline: var(--dk-space-xl);
+  text-align: start;
+}
+
+/* Hero / title-slide imagery must fit INSIDE the reveal stage and never overflow
+   it (the R4 hero-overflow gap). Cap the block size safely within the stage and
+   let the image scale down preserving aspect ratio. WP05 asserts the title-slide
+   img height ≤ the reveal stage height — this constraint is what makes it hold.
+   Diagrams render as inline `<svg>` inside `<figure>`, so this `img` rule does
+   not touch them. */
+.reveal .slides section img {
+  max-inline-size: 100%;
+  max-block-size: 65vh;
+  block-size: auto;
+  object-fit: contain;
+}
+
+/* Lists: brand spacing + a sane hanging indent so bullets are legible. */
+.reveal .slides section :is(ul, ol) {
+  margin-block: var(--dk-space-md);
+  padding-inline-start: var(--dk-space-xl);
+}
+
+.reveal .slides section li + li {
+  margin-block-start: var(--dk-space-xs);
+}
+
+/* Code: a brand surface block so pre/code reads as a distinct region. Excludes
+   `pre.mermaid`: after `mermaid.run` the diagram's `<pre class="mermaid">` element
+   persists (its text is replaced by the `<svg>`), so an un-scoped rule would wrap
+   every diagram in a code card + border and give it `overflow:auto` (a spurious
+   scrollable region the `:not(.mermaid)` tabindex remedy in DeckLayout would then
+   NOT reach). Diagram presentation is owned by `figure.dk-diagram`, not here. */
+.reveal .slides section pre:not(.mermaid) {
+  margin-block: var(--dk-space-md);
+  padding: var(--dk-space-md);
+  background: var(--dk-color-surface-inset);
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-md);
+  font-size: var(--dk-text-lg);
+  line-height: var(--dk-leading-normal);
+  overflow: auto;
+}
+
+.reveal .slides section :not(pre) > code {
+  padding: var(--dk-space-3xs) var(--dk-space-2xs);
+  background: var(--dk-color-surface-inset);
+  border-radius: var(--dk-radius-sm);
+}
+
+/* Blockquote: an accent rule + muted ink, set off from body copy. */
+.reveal .slides section blockquote {
+  margin-block: var(--dk-space-md);
+  padding-inline-start: var(--dk-space-md);
+  border-inline-start: 4px solid var(--dk-color-accent);
+  color: var(--dk-color-text-muted);
+  font-style: italic;
+}
+
 /* ---- Deck navigation controls (real <button>s, AX-2) --------------------- */
 /* Our own labelled controls (reveal's built-in cluster is disabled in
    reveal-init). Fixed bottom-right, ≥44px targets, brand-token surface, visible
@@ -119,7 +188,10 @@ body {
 .dk-deck-controls {
   position: fixed;
   right: var(--dk-space-lg);
-  bottom: var(--dk-space-lg);
+  /* Sit ABOVE the fixed footer band so the two never overlap (T007): the
+     footer occupies the bottom `--dk-deck-footer-height`; the controls float a
+     `--dk-space-lg` gap above it. */
+  bottom: calc(var(--dk-space-lg) + var(--dk-deck-footer-height));
   display: flex;
   gap: var(--dk-space-xs);
   z-index: 30;
@@ -150,8 +222,38 @@ body {
   box-shadow: var(--dk-shadow-focus);
 }
 
+/* ---- Deck footer / bottom-banner (contentinfo landmark, FR-003/C2) ------- */
+/* A fixed brand-surface band pinned to the frame bottom, visible on every
+   slide. WP05 asserts its background resolves to a brand surface token
+   (`--dk-color-surface-1`). Reserve room on the right so its text never runs
+   under the fixed controls, and keep it a step below the controls in the stack
+   so an accidental overlap can never obscure their focus ring. Hidden in print,
+   consistent with the controls. */
+.dk-deck-footer {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  block-size: var(--dk-deck-footer-height);
+  padding-inline-start: var(--dk-space-lg);
+  /* clear the fixed bottom-right controls cluster */
+  padding-inline-end: calc(var(--dk-space-lg) + 8rem);
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-sm);
+  line-height: var(--dk-leading-normal);
+  color: var(--dk-color-text-muted);
+  background: var(--dk-color-surface-1);
+  border-block-start: 1px solid var(--dk-color-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media print {
-  .dk-deck-controls {
+  .dk-deck-controls,
+  .dk-deck-footer {
     display: none;
   }
 }

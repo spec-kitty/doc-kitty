@@ -232,11 +232,14 @@ test.describe('Deck pre-enhancement SSR axe (IX-3b / AX-2)', () => {
     await page.route('**/*.js', (route) => route.abort());
     await page.goto(DECK, { waitUntil: 'domcontentloaded' });
 
-    // Seed the design's theme attribute per mode (forward-compatible once the deck
-    // loads the --dk-* catalog; see the theming-gap note in mode.ts). We do NOT
-    // assert a brand-background luminance here — the deck is currently unthemed
-    // (transparent viewport, UA-default text) so there is no brand background to
-    // gate on; axe below still scores it clean under each project's colorScheme.
+    // Seed the design's theme attribute per mode. DeckLayout now links the base
+    // `--dk-*` catalog (theme.css) itself, so the out-of-frame deck IS themed: the
+    // brand background/ink apply even here, where every page SCRIPT is aborted but
+    // the `<link>`ed stylesheets still load. The brand computed-style values are
+    // locked directly in T023 (FR-001); this block asserts the SSR DOM's axe
+    // cleanliness under each project's colorScheme, so it does not re-assert the
+    // palette — it only drives `data-theme` so dark tokens (`:root[data-theme=…]`)
+    // resolve for the dark project's scan.
     await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);
 
     // Non-vacuity: reveal did NOT run, so no `.reveal.ready` — the DOM is SSR — and
@@ -282,5 +285,232 @@ test.describe('Deck pre-enhancement SSR axe (IX-3b / AX-2)', () => {
       blocking,
       `serious/critical WCAG violations on the deck SSR DOM (${mode})`,
     ).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Colour normalization for the FR-001 token assertions (T023, finding F3).
+//
+// `getComputedStyle(...).backgroundColor` returns `rgb(r, g, b)` (or
+// `rgba(r, g, b, a)`), while `getPropertyValue('--dk-color-bg')` returns the
+// authored `#rrggbb`. A raw string `===` would FALSELY fail on correct styling,
+// so both sides are parsed to a canonical `r,g,b` triple before comparing.
+// ---------------------------------------------------------------------------
+function toRgbTriple(value: string): string {
+  const v = value.trim();
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(v);
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `${r},${g},${b}`;
+  }
+  const rgb = /rgba?\(([^)]+)\)/i.exec(v);
+  if (rgb) {
+    const [r, g, b] = rgb[1].split(',').map((n) => Math.round(parseFloat(n.trim())));
+    return `${r},${g},${b}`;
+  }
+  throw new Error(`Cannot parse colour '${value}'`);
+}
+
+// ---------------------------------------------------------------------------
+// FR-002 (T017, contract C1) — the front-matter `description` is metadata ONLY:
+// present in `<head> meta[name="description"]` (its correct usage), and ABSENT
+// from the `.slides` text (it must NOT leak onto the title slide, deck-split
+// deliberately does not synthesize it into the body).
+// ---------------------------------------------------------------------------
+test.describe('Deck description is metadata, not slide text (FR-002 / T017)', () => {
+  test('the description is in <head> meta and absent from .slides text', async ({ page }) => {
+    await gotoLiveDeck(page);
+
+    // The deck's OWN description, read from its identity (the meta tag) — not a
+    // hardcoded literal — and required to be non-empty (the correct metadata use).
+    const description = await page
+      .locator('head meta[name="description"]')
+      .getAttribute('content');
+    expect(
+      (description ?? '').trim().length,
+      'the deck must carry a non-empty meta description',
+    ).toBeGreaterThan(0);
+    const desc = (description ?? '').trim();
+
+    // …and that exact string must NOT appear anywhere in the slide DOM's text
+    // (textContent covers hidden slides too, so a leak onto ANY slide fails — not
+    // just the visible title slide). FR-002: description is metadata, not content.
+    const slidesText = await page.locator(DECK_SLIDES_ROOT).evaluate(
+      (el) => el.textContent ?? '',
+    );
+    expect(
+      slidesText.includes(desc),
+      'the front-matter description must not leak into the slide text (FR-002)',
+    ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FR-003 (T018, contract C2, finding C5) — the deck footer is a real, visible,
+// title-bearing bottom band that survives navigation (it is a `<body>`-scope
+// sibling of `.slides`, so reveal never sweeps it into the per-slide DOM).
+// ---------------------------------------------------------------------------
+test.describe('Deck footer visible, titled, positioned, stable (FR-003 / T018)', () => {
+  const DECK_TITLE = 'Showcase Deck'; // entry.data.title of the showcase deck.
+
+  test('.dk-deck-footer is visible, carries the deck title, sits at the bottom, and is stable across nav', async ({
+    page,
+  }) => {
+    await gotoLiveDeck(page);
+
+    const footer = page.locator('footer.dk-deck-footer');
+
+    // VISIBLE — not merely present. An empty/`display:none` footer must FAIL here
+    // (a hidden-but-present footer would pass a bare `toHaveCount(1)`).
+    await expect(footer, 'the deck footer must be visible').toBeVisible();
+
+    // TITLED by IDENTITY — the footer text must contain the deck's own title, not
+    // "some footer" (C5): bind the assertion to `entry.data.title`.
+    const footerText = ((await footer.textContent()) ?? '').trim();
+    expect(footerText.length, 'the footer must have non-empty text').toBeGreaterThan(0);
+    expect(
+      footerText,
+      'the footer must carry the deck title (bound identity, not "some footer")',
+    ).toContain(DECK_TITLE);
+
+    // POSITIONED at the bottom (geometry) — its top edge sits in the lower region
+    // of the viewport (a fixed bottom band), proving it is a real bottom banner.
+    const viewportHeight = page.viewportSize()?.height ?? 800;
+    const box = await footer.boundingBox();
+    expect(box, 'the footer must have a bounding box').not.toBeNull();
+    expect(
+      box!.y,
+      'the footer top edge must be in the lower region of the viewport',
+    ).toBeGreaterThan(viewportHeight * 0.7);
+    // Its bottom edge reaches (near) the frame bottom.
+    expect(
+      box!.y + box!.height,
+      'the footer must extend to the bottom of the frame',
+    ).toBeGreaterThan(viewportHeight * 0.9);
+
+    // STABLE across navigation — advance past slide 1 and re-assert visibility +
+    // title. If the footer lived INSIDE `.slides`, reveal would re-render slides
+    // and the footer would not survive a slide change; being outside `.slides`, it
+    // does. This is the non-fakeable half of C5.
+    await page.keyboard.press('ArrowRight');
+    await expect(
+      footer,
+      'the footer must remain visible after navigating to slide 2+',
+    ).toBeVisible();
+    expect(
+      ((await footer.textContent()) ?? '').trim(),
+      'the footer title must be unchanged after navigation (not re-rendered per slide)',
+    ).toContain(DECK_TITLE);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FR-001 promoted (T023, findings C6/F3, NO screenshots per C-001) — the deck is
+// themed with the brand `--dk-*` catalog. Each observed computed style is
+// asserted EQUAL to the token it must resolve to (read from `:root` in the SAME
+// evaluate and normalized hex↔rgb, F3) — never a weak "≠ #000". The brand
+// resolved VALUES were recorded by WP02's T006 against the BUILT deck (light):
+//   --dk-color-bg          = #ffffff  → rgb(255, 255, 255)  (viewport background)
+//   --dk-color-text-strong = #101828  → rgb(16, 24, 40)     (active heading)
+//   --dk-color-surface-1   = #f7f8fa  → rgb(247, 248, 250)  (footer band)
+// The deck carries no `data-theme` here, so it renders in its light palette in
+// BOTH projects; the token-equality form is mode-agnostic and holds either way.
+// ---------------------------------------------------------------------------
+test.describe('Deck computed-style brand tokens (FR-001 / T023)', () => {
+  test('viewport bg, heading ink, footer band, font, and hero-fit resolve to brand tokens', async ({
+    page,
+  }) => {
+    await gotoLiveDeck(page);
+
+    // Read the observed computed value AND the resolved `:root` token in ONE
+    // evaluate, so the comparison is against the LIVE token, not a guessed literal.
+    const bg = await page.evaluate(() => {
+      const root = document.documentElement;
+      // reveal makes <body> (or `.reveal-viewport`) the deck viewport; the theme
+      // sheet paints both, so `body`'s computed background IS the deck background.
+      const observed = getComputedStyle(document.body).backgroundColor;
+      const token = getComputedStyle(root).getPropertyValue('--dk-color-bg').trim();
+      return { observed, token };
+    });
+    // The contract is "resolves to the BRAND token", not "equals a recorded literal":
+    // the example brand overrides --dk-color-bg (spec-kitty tokens.css → #FBFAF7), so
+    // a hardcoded #ffffff pins the wrong constant. Assert observed == the RUNTIME-
+    // resolved token (normalized). `toRgbTriple` throws on an empty/unparseable token,
+    // so this stays non-vacuous — a missing token fails loudly rather than passing.
+    expect(
+      toRgbTriple(bg.observed),
+      'the viewport background must equal the resolved --dk-color-bg brand token',
+    ).toBe(toRgbTriple(bg.token));
+
+    // Active-slide heading ink == resolved --dk-color-text-strong.
+    const heading = await page.evaluate(() => {
+      const root = document.documentElement;
+      const h = document.querySelector<HTMLElement>('.slides section.present :is(h1,h2,h3,h4,h5,h6)');
+      if (!h) throw new Error('no heading on the active slide');
+      const observed = getComputedStyle(h).color;
+      const token = getComputedStyle(root).getPropertyValue('--dk-color-text-strong').trim();
+      return { observed, token };
+    });
+    // Resolved-token equality only (same reasoning as the bg above): the brand
+    // overrides --dk-color-text-strong (#0D0E11), so the old #101828 literal was
+    // also a wrong pinned constant.
+    expect(
+      toRgbTriple(heading.observed),
+      'the active heading colour must equal the resolved --dk-color-text-strong brand token',
+    ).toBe(toRgbTriple(heading.token));
+
+    // `.reveal` font-family CONTAINS the brand sans (the first family of the
+    // --dk-font-sans stack) — the deck uses the brand type, not reveal's default.
+    const font = await page.evaluate(() => {
+      const root = document.documentElement;
+      const reveal = document.querySelector<HTMLElement>('.reveal');
+      if (!reveal) throw new Error('no .reveal root');
+      const observed = getComputedStyle(reveal).fontFamily;
+      // First concrete family in the --dk-font-sans stack (strip quotes).
+      const stack = getComputedStyle(root).getPropertyValue('--dk-font-sans').trim();
+      const firstFamily = stack.split(',')[0].trim().replace(/['"]/g, '');
+      return { observed, firstFamily };
+    });
+    expect(
+      font.observed.replace(/['"]/g, ''),
+      'the deck font-family must contain the brand sans (--dk-font-sans first family)',
+    ).toContain(font.firstFamily);
+
+    // Footer band background resolves to the brand surface token --dk-color-surface-1.
+    const footerBg = await page.evaluate(() => {
+      const root = document.documentElement;
+      const footer = document.querySelector<HTMLElement>('footer.dk-deck-footer');
+      if (!footer) throw new Error('no deck footer');
+      const observed = getComputedStyle(footer).backgroundColor;
+      const token = getComputedStyle(root).getPropertyValue('--dk-color-surface-1').trim();
+      return { observed, token };
+    });
+    // Resolved-token equality only (same reasoning as the bg above): the brand
+    // overrides --dk-color-surface-1 (#FFFFFF), so the old #f7f8fa literal was also
+    // a wrong pinned constant.
+    expect(
+      toRgbTriple(footerBg.observed),
+      'the footer band background must equal the resolved --dk-color-surface-1 brand token',
+    ).toBe(toRgbTriple(footerBg.token));
+
+    // Hero fit (R4): the title-slide image height must NOT overflow the reveal
+    // stage — the CSS caps it at 65vh, so it stays within the `.reveal` stage box.
+    const heroImg = page.locator('.slides section.present img').first();
+    await expect(heroImg, 'the title slide must render its hero image').toBeVisible();
+    const imgBox = await heroImg.boundingBox();
+    const stageHeight = await page.evaluate(() => {
+      const reveal = document.querySelector<HTMLElement>('.reveal');
+      return reveal ? reveal.getBoundingClientRect().height : 0;
+    });
+    expect(imgBox, 'the hero image must have a bounding box').not.toBeNull();
+    expect(stageHeight, 'the reveal stage must have a measurable height').toBeGreaterThan(0);
+    expect(
+      imgBox!.height,
+      'the title-slide hero image must fit inside the reveal stage (R4 hero-overflow gap)',
+    ).toBeLessThanOrEqual(stageHeight);
   });
 });

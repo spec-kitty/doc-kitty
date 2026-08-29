@@ -43,6 +43,15 @@ export const ROUTES = {
   // guard asserts the deck's OWN surfaces (the Starlight chrome roots do not exist
   // here) — adding it to AXE_PAGES is exactly what finally scans it.
   deck: `${BASE}/presentations/showcase-deck/`,
+  // Diagram-free PUBLISHED deck (WP05 T022 / NFR-002 / C7). The showcase deck
+  // proves diagrams RENDER; this deck proves the opposite footprint half — a deck
+  // with NO `mermaid` fence must resolve ZERO Mermaid runtime chunks on its route
+  // (the render owner's `if (!nodes.length) return;` short-circuits BEFORE
+  // `import('mermaid')`). It is the ONLY observable NFR-002 proof at deck level:
+  // FP-1's control route covers doc pages only, and citing the production guard is
+  // circular. Deliberately NOT added to AXE_PAGES and given NO `renderWait` — it
+  // has no diagram to gate on and a render-gate would hang forever.
+  deckNoDiagram: `${BASE}/presentations/roadmap-deck/`,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -189,6 +198,14 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     shell: 'deck',
     guardRoots: DECK_DIAGRAM_GUARD_ROOTS,
     renderWait: DIAGRAM_SVG_ROOT,
+    // KEEP THIS AT 1 (WP05 T024 / D2). The load-time render count is the
+    // TITLE-SLIDE diagram ONLY: the slide-2 and inner-stack diagrams WP04 added
+    // are `display:none` at deck-ready and render only on their `slidechanged`
+    // (INV-SCOPE, diagram-render.client), so they add NOTHING to the load-time
+    // count axe gates on. A naive bump to 2 would make `expect(...).toHaveCount(2)`
+    // wait for a second load-time `<svg>` that never appears — HANGING the axe
+    // gate forever. The per-slide render of those nodes is locked in
+    // diagram.spec.ts (T019/T020), not here.
     renderCount: 1,
   },
 ];

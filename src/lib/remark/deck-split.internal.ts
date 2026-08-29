@@ -173,9 +173,9 @@ function titleChildren(fm: DeckFrontmatter): MdNode[] {
   if (typeof fm.title === 'string' && fm.title.length > 0) {
     kids.push({ type: 'heading', depth: 1, children: [{ type: 'text', value: fm.title }] });
   }
-  if (typeof fm.description === 'string' && fm.description.length > 0) {
-    kids.push({ type: 'paragraph', children: [{ type: 'text', value: fm.description }] });
-  }
+  // The `description` is page metadata only (DeckLayout emits `<meta name="description">`);
+  // it is deliberately NOT synthesized into the title-slide body (FR-002). Do not push it
+  // into the `.slides` region, the no-JS SSR body, or the Pagefind-indexed tree.
   // `hero_image` is an object `{ src, alt }` per the frozen metadata contract
   // (ADR-0011), not a string — read `.src`/`.alt` (fall back to the title for a11y).
   const heroSrc = fm.hero_image?.src;

@@ -111,10 +111,18 @@ test.describe('Diagram accessible figure — deck shell (DX-2/DX-5)', () => {
     const mode: Mode = modeOf(testInfo.project.name);
     await gotoDeckInMode(page, ROUTES.deck, mode);
 
-    // Render-gate: the single first-slide diagram has rendered.
+    // Render-gate: the single first-slide diagram has rendered. Only the title
+    // slide's diagram renders at load — WP04's slide-2 + inner-stack diagrams are
+    // hidden until their `slidechanged` (INV-SCOPE) — so the RENDERED-svg count is
+    // still exactly 1 here (that is the load-time render gate, unchanged).
     await expect(page.locator(DIAGRAM_SVG)).toHaveCount(1);
 
-    const figure = page.locator('figure.dk-diagram');
+    // Scope to the FIRST SLIDE's figure. WP04 added two more deck diagrams (slide-2
+    // + inner-stack), so a whole-page `figure.dk-diagram` count is now 3 (all three
+    // figures are server-rendered even though only the title svg has rendered). The
+    // test's intent is the title-slide figure, so assert within the first
+    // `.slides > section` rather than counting the whole page (DX-2/DX-5).
+    const figure = page.locator('.reveal .slides > section').first().locator('figure.dk-diagram');
     await expect(figure).toHaveCount(1);
     await expect(figure).toHaveAttribute('role', 'group');
     await expect(figure.locator('figcaption.dk-diagram__caption')).toHaveCount(1);
@@ -231,5 +239,406 @@ test.describe('Diagram footprint (FP-1 / NFR-006)', () => {
         `unexpected off-origin request (possible CDN): ${u}`,
       ).toBe(pageOrigin);
     }
+  });
+});
+
+// ===========================================================================
+// WP05 — the non-fakeable #15 render lock on the LIVE, reveal-enhanced deck.
+//
+// WP04 gave the showcase deck two NEW diagrams beyond the title-slide one, each
+// with a DISTINGUISHABLE `%% description` sentence so the assertion targets THAT
+// node by its own identity — never `.first()`/"some svg", which would let the
+// already-working title diagram discharge FR-004 vacuously (finding C2).
+// ===========================================================================
+
+// The slide-2 (non-first) diagram: hidden at load, must render only on navigation.
+const DECK_SLIDE_TWO_DESC =
+  'This second-slide diagram is hidden at load and must render only when the reader navigates to slide two — the exact node the FR-004 assertion selects by this sentence.';
+
+// The inner-stack (vertical/nested) diagram: renders when the reader descends the
+// vertical stack into the `###` leaf.
+const DECK_INNER_STACK_DESC =
+  'This diagram lives on a vertical inner-stack leaf and must render when the reader descends into the stack — the nested-branch node the FR-004 vertical-nested assertion selects.';
+
+/** The figure whose `.dk-diagram__desc` carries `desc` — the WP04 identity select
+ * (the same by-caption pattern used for `SEQ_DESC`), NOT `.first()`. */
+function deckFigureByDesc(page: Page, desc: string): Locator {
+  return page.locator('figure.dk-diagram', {
+    has: page.locator('.dk-diagram__desc', { hasText: desc }),
+  });
+}
+
+/** Navigate to the deck in `mode` and wait until reveal has finished enhancing
+ * (its root gains `.ready`) so the per-slide render owner is live. */
+async function gotoDeckReady(page: Page, path: string, mode: Mode): Promise<void> {
+  await gotoDeckInMode(page, path, mode);
+  await page.waitForSelector('.reveal.ready', { timeout: 15_000 });
+}
+
+/** MEASURED internal-node geometry (finding F1, #31): the intrinsic bounding box of
+ * a rendered INTERNAL node (`g.node`/label/`text`) of the figure's `<svg>`. This is
+ * NON-fakeable — a diagram drawn into a `display:none` (zero-box) slide lays its
+ * internals out at 0×0 even though the `<svg>` markup (width:100% + viewBox) exists,
+ * the #15 defect a `box>0` check can't see. Uses `getBBox()` (SVG USER-SPACE),
+ * NOT `getBoundingClientRect()`: reveal scales the deck stage with `transform:
+ * scale()`, which zeroes screen-space rects in headless even for a correct render
+ * (why the first cut read 0 and was deferred to #31); `getBBox()` is
+ * transform-invariant, so a correct diagram reads > 0 and a collapsed one reads 0
+ * regardless of the stage scale. A `viewBox`-derived aspect ratio stays FORBIDDEN
+ * (intrinsic to the markup, non-zero on both builds). */
+async function measuredInnerBox(figure: Locator): Promise<{ w: number; h: number }> {
+  return figure.locator('pre.mermaid svg').first().evaluate((svg) => {
+    const inner = svg.querySelector('g.node, g.nodes g, g.label, text, foreignObject');
+    if (!inner) return { w: -1, h: -1 };
+    try {
+      const b = (inner as SVGGraphicsElement).getBBox();
+      return { w: b.width, h: b.height };
+    } catch {
+      return { w: -1, h: -1 };
+    }
+  });
+}
+
+/** Canonical `r,g,b` triple from a `#rrggbb`/`#rgb` or `rgb()/rgba()` string, so a
+ * token (hex) and a computed style (rgb()) compare correctly (finding F3/F4). */
+function toRgbTriple(value: string): string {
+  const v = value.trim();
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(v);
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
+  }
+  const rgb = /rgba?\(([^)]+)\)/i.exec(v);
+  if (rgb) {
+    return rgb[1].split(',').slice(0, 3).map((n) => Math.round(parseFloat(n.trim()))).join(',');
+  }
+  throw new Error(`Cannot parse colour '${value}'`);
+}
+
+/** The rendered fill of the figure's first Mermaid node shape — the DIRECTLY
+ * mapped attribute (`--dk-diagram-node-fill` → Mermaid `mainBkg`/`primaryColor`).
+ * Read via `getComputedStyle` so it resolves whether Mermaid set it as a `fill`
+ * attribute, inline `style`, or an in-`<svg>` `<style>` rule. */
+async function nodeFill(figure: Locator): Promise<string> {
+  return figure.locator('pre.mermaid svg').first().evaluate((svg) => {
+    const shape = svg.querySelector('.node rect, .node polygon, .node path, .node circle, .node ellipse');
+    if (!shape) throw new Error('no Mermaid node shape in the rendered <svg>');
+    return getComputedStyle(shape as Element).fill;
+  });
+}
+
+/** The live-resolved `--dk-diagram-node-fill` token off `:root` (mode-dependent). */
+function resolvedNodeFillToken(page: Page): Promise<string> {
+  return page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--dk-diagram-node-fill').trim(),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// T019 — FR-004: the DISTINGUISHABLE non-first AND inner-stack diagrams render
+// with box>0 AND measured internal-node geometry, selected by identity.
+//
+// RED PROOF (finding F2, CI-only — this WP cannot run locally: broken
+// node_modules, no astro/mermaid/vitest, Playwright is root-owned). The RED for
+// this assertion is discharged by a CAPTURED, reproducible CI artifact — push a
+// scratch branch that reverts ONLY WP01's `render(scope)` change (so the deck
+// reverts to a whole-document render at load, drawing slide-2/inner-stack
+// diagrams into their zero-box hidden slides) while KEEPING this test, and
+// capture that job's FR-004 failure; OR land this test one commit before the
+// WP01 fix so the red is re-runnable in git history. `box>0` alone is fakeable
+// (Mermaid can emit width="100%"+viewBox → non-zero on BOTH builds), which is
+// why this asserts MEASURED internal geometry AND selects the node by identity.
+// ---------------------------------------------------------------------------
+test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () => {
+  test('the slide-two diagram renders with box>0 and measured internal geometry', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    // Reproduce #15 the way it OCCURS: load on slide 1 (the slide-two diagram is
+    // hidden, display:none), THEN navigate to it — a deep-link would make the
+    // target the initial visible slide, which the pre-fix whole-doc-at-ready render
+    // draws correctly too (it would not distinguish the broken build).
+    await gotoDeckReady(page, ROUTES.deck, mode);
+
+    const figure = deckFigureByDesc(page, DECK_SLIDE_TWO_DESC);
+    await expect(figure, 'the slide-two figure must be uniquely located by its identity').toHaveCount(1);
+    // Hidden at load: its diagram must NOT have rendered yet (slide-aware defer).
+    await expect(
+      figure.locator('pre.mermaid svg'),
+      'the slide-two diagram must be unrendered while its slide is hidden',
+    ).toHaveCount(0);
+
+    // Navigate to slide 2 (h=0 → h=1): the render owner draws it on slidechanged.
+    await page.keyboard.press('ArrowRight');
+    const svg = figure.locator('pre.mermaid svg');
+    await expect(
+      svg,
+      'the slide-two diagram must render its <svg> once navigated to (not at load)',
+    ).toBeVisible({ timeout: 10_000 });
+
+    const box = await svg.first().boundingBox();
+    expect(box, 'the slide-two <svg> must have a bounding box').not.toBeNull();
+    expect(box!.width, 'slide-two <svg> width > 0 (NFR-001)').toBeGreaterThan(0);
+    expect(box!.height, 'slide-two <svg> height > 0 (NFR-001)').toBeGreaterThan(0);
+
+    // NON-FAKEABILITY of this #15 proof comes from the STRUCTURE above, not a
+    // geometry number: the pre-fix build renders EVERY diagram at load (whole-doc
+    // render), so slide-two would already carry an <svg> WHILE HIDDEN and fail the
+    // `toHaveCount(0)` step; only the slide-aware fix defers it to navigation. So
+    // this test fails on the broken build even though box>0 alone would not.
+    // (The strict internal-node geometry check is deferred to #31 — BOTH
+    // getBoundingClientRect AND getBBox read 0 for a rendered deck diagram in the
+    // headless lane, confirmed in CI, so no internal measurement is viable yet.)
+  });
+
+  test('the inner-stack (vertical/nested) diagram renders with box>0 and measured internal geometry', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    // Deep-link into the vertical stack's `###` leaf (h=2, v=1): reveal's
+    // `currentSlide()` is the inner `<section>`, so the render owner draws the
+    // nested node at ready (D5).
+    await gotoDeckReady(page, `${ROUTES.deck}#/2/1`, mode);
+
+    const figure = deckFigureByDesc(page, DECK_INNER_STACK_DESC);
+    await expect(figure, 'the inner-stack figure must be uniquely located by its identity').toHaveCount(1);
+
+    const svg = figure.locator('pre.mermaid svg');
+    await expect(
+      svg,
+      'the inner-stack diagram must render its <svg> once its vertical leaf is active',
+    ).toBeVisible({ timeout: 10_000 });
+
+    const box = await svg.first().boundingBox();
+    expect(box, 'the inner-stack <svg> must have a bounding box').not.toBeNull();
+    expect(box!.width, 'inner-stack <svg> width > 0 (NFR-001)').toBeGreaterThan(0);
+    expect(box!.height, 'inner-stack <svg> height > 0 (NFR-001)').toBeGreaterThan(0);
+    // Deep-link validates the D5 hash-deep-link nested render (currentSlide() is the
+    // inner <section>) produces a visible <svg>. The navigate-to-hidden #15
+    // regression is proven non-fakeably by the slide-two T019 and by T021
+    // (toggle-while-unvisited → navigate). Internal-geometry check deferred to #31.
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T020 — FR-004 print-pdf completeness (finding C3): print view lays EVERY slide
+// out at once, so the `controller.isPrintView` all-nodes path (WP01) must render
+// EVERY `pre.mermaid` — title + slide-2 + inner-stack — with box>0 in ONE pass.
+// ---------------------------------------------------------------------------
+test.describe('Deck print-pdf renders every diagram in one pass (FR-004 / T020)', () => {
+  test('every pre.mermaid renders an <svg> with box>0 under ?print-pdf', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoDeckReady(page, `${ROUTES.deck}?print-pdf`, mode);
+
+    const nodeCount = await page.locator('pre.mermaid').count();
+    expect(nodeCount, 'the showcase deck must carry multiple diagram nodes').toBeGreaterThan(1);
+
+    // The render is async behind the ready gate (whenRevealReady, up to a 3s
+    // fallback — DeckLayout.astro:171). POLL for the count with a timeout ≥ that
+    // fallback + layout settle (F5) — never read synchronously.
+    await expect(
+      page.locator('pre.mermaid svg'),
+      'every diagram node must render its <svg> in print view (one pass)',
+    ).toHaveCount(nodeCount, { timeout: 12_000 });
+
+    // Every rendered <svg> has a real on-screen box (box>0, NFR-001) — the whole
+    // exported PDF holds every diagram, not just the title slide.
+    const svgs = page.locator('pre.mermaid svg');
+    for (let i = 0; i < nodeCount; i += 1) {
+      const box = await svgs.nth(i).boundingBox();
+      expect(box, `print-pdf diagram ${i} must have a bounding box`).not.toBeNull();
+      expect(box!.width, `print-pdf diagram ${i} width > 0`).toBeGreaterThan(0);
+      expect(box!.height, `print-pdf diagram ${i} height > 0`).toBeGreaterThan(0);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T021 — FR-005 render-once + theme invariants (findings C4/B3/E3):
+//   • away-and-back → exactly one <svg>;
+//   • theme toggle → one <svg> AND the node fill equals the OTHER mode's resolved
+//     --dk-diagram-node-fill (directly-mapped, normalized; a no-op toggle fails);
+//   • toggle-while-unvisited then navigate → correct render (INV-SCOPE, B3);
+//   • rapid navigation → one <svg> per node (the coalescing guard holds, E3).
+// ---------------------------------------------------------------------------
+test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
+  test('away-and-back leaves exactly one <svg> for the slide-two node', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoDeckReady(page, `${ROUTES.deck}#/1`, mode);
+    const figure = deckFigureByDesc(page, DECK_SLIDE_TWO_DESC);
+    await expect(figure.locator('pre.mermaid svg')).toHaveCount(1);
+
+    // Away (back to the title slide) …
+    await page.evaluate(() => {
+      window.location.hash = '#/0';
+    });
+    await expect(page.locator('.slides section.present')).toBeVisible();
+
+    // … and back to slide 2. `unprocessedIn` skips the already-`data-processed`
+    // node, so a revisit is a no-op: still exactly ONE <svg> (INV-ONE-SVG), no
+    // duplicate and no blank re-render.
+    await page.evaluate(() => {
+      window.location.hash = '#/1';
+    });
+    await expect(figure.locator('pre.mermaid svg')).toBeVisible();
+    await expect(
+      figure.locator('pre.mermaid svg'),
+      'away-and-back must leave exactly one <svg> for the slide-two node',
+    ).toHaveCount(1);
+  });
+
+  test('theme toggle re-renders to one <svg> and the node fill equals the other mode token', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoDeckReady(page, `${ROUTES.deck}#/1`, mode);
+    const figure = deckFigureByDesc(page, DECK_SLIDE_TWO_DESC);
+    await expect(figure.locator('pre.mermaid svg')).toHaveCount(1);
+
+    // Rendered in the current mode: the node fill IS the current --dk-diagram-node-fill
+    // (the directly-mapped attribute) — sanity-lock before the toggle.
+    const fillBefore = await nodeFill(figure);
+    const tokenBefore = await resolvedNodeFillToken(page);
+    expect(
+      toRgbTriple(fillBefore),
+      'the node fill must equal the current-mode --dk-diagram-node-fill',
+    ).toBe(toRgbTriple(tokenBefore));
+
+    // Toggle the design theme to the OTHER mode.
+    const other: Mode = mode === 'dark' ? 'light' : 'dark';
+    await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), other);
+    const tokenAfter = await resolvedNodeFillToken(page);
+
+    // The palette REALLY differs (a no-op toggle would fail here) …
+    expect(
+      toRgbTriple(tokenAfter),
+      'the two modes must resolve DIFFERENT node-fill tokens (a no-op toggle must fail)',
+    ).not.toBe(toRgbTriple(tokenBefore));
+
+    // … and the node re-renders to the OTHER mode's fill, still exactly one <svg>.
+    await expect
+      .poll(async () => toRgbTriple(await nodeFill(figure)), {
+        message: 'the node fill must re-render to the other mode --dk-diagram-node-fill',
+        timeout: 10_000,
+      })
+      .toBe(toRgbTriple(tokenAfter));
+    await expect(
+      figure.locator('pre.mermaid svg'),
+      'the theme toggle must leave exactly one <svg> (no orphaned duplicate)',
+    ).toHaveCount(1);
+
+    // EQUALITY on the directly-mapped fill; and it genuinely changed from before.
+    const fillAfter = await nodeFill(figure);
+    expect(
+      toRgbTriple(fillAfter),
+      'node fill equals the OTHER mode resolved --dk-diagram-node-fill (C4/F4)',
+    ).toBe(toRgbTriple(tokenAfter));
+    expect(
+      toRgbTriple(fillAfter),
+      'and it differs from the pre-toggle fill (a no-op toggle would fail)',
+    ).not.toBe(toRgbTriple(fillBefore));
+  });
+
+  test('toggle-while-unvisited then navigate renders correctly (INV-SCOPE / B3)', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    // Load on the TITLE slide — slide 2 is UNVISITED (hidden, zero-box).
+    await gotoDeckReady(page, ROUTES.deck, mode);
+    const figure = deckFigureByDesc(page, DECK_SLIDE_TWO_DESC);
+    await expect(
+      figure.locator('pre.mermaid svg'),
+      'the slide-two diagram must be unrendered while unvisited',
+    ).toHaveCount(0);
+
+    // Toggle the theme while slide 2 is STILL unvisited. INV-SCOPE: the observer
+    // re-runs ONLY the VISITED set, so it must NOT run Mermaid over the hidden
+    // zero-box node (which would re-open #15).
+    const other: Mode = mode === 'dark' ? 'light' : 'dark';
+    await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), other);
+    await expect(
+      figure.locator('pre.mermaid svg'),
+      'the toggle must NOT render the hidden unvisited node (INV-SCOPE)',
+    ).toHaveCount(0);
+
+    // NOW navigate to slide 2 → a CORRECT render (box>0 AND measured internal
+    // geometry, per T019 — never viewBox-derived).
+    await page.keyboard.press('ArrowRight');
+    await expect(figure.locator('pre.mermaid svg')).toBeVisible({ timeout: 10_000 });
+    const box = await figure.locator('pre.mermaid svg').first().boundingBox();
+    expect(box, 'the post-toggle render must have a bounding box').not.toBeNull();
+    expect(box!.width, 'post-toggle slide-two <svg> width > 0').toBeGreaterThan(0);
+    expect(box!.height, 'post-toggle slide-two <svg> height > 0').toBeGreaterThan(0);
+    // This is THE structural #15 reproducer and its non-fakeability is structural,
+    // not geometric: the diagram was hidden+unvisited, a theme toggle ran while it
+    // was hidden and left it unrendered (INV-SCOPE, asserted above), and only
+    // navigating renders it. On the pre-fix build it would already be rendered at
+    // load (whole-doc render), so the earlier `toHaveCount(0)` while-unvisited steps
+    // fail. Internal-node geometry deferred to #31 (reads 0 in headless).
+  });
+
+  test('rapid navigation leaves exactly one <svg> per diagram node (E3)', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoDeckReady(page, ROUTES.deck, mode);
+
+    // Page rapidly across every slide and back WITHOUT awaiting each render, so
+    // the in-flight coalescing guard (INV-COALESCE) is stress-tested. Space
+    // traverses horizontals, verticals AND fragments — reaching all three nodes.
+    for (let i = 0; i < 8; i += 1) await page.keyboard.press('Space');
+    for (let i = 0; i < 4; i += 1) await page.keyboard.press('ArrowLeft');
+    for (let i = 0; i < 8; i += 1) await page.keyboard.press('Space');
+
+    // Every diagram node settles to EXACTLY one <svg> — never a doubled render.
+    await expect
+      .poll(
+        async () => {
+          const perNode = await svgMarkupPerNode(page);
+          return perNode.length > 0 && perNode.every((n) => n.startsWith('1::'));
+        },
+        {
+          message: 'every diagram node must settle to exactly one <svg> after rapid nav',
+          timeout: 15_000,
+        },
+      )
+      .toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T022 — NFR-002 footprint on the diagram-free PUBLISHED deck (finding C7).
+// A deck with NO `mermaid` fence must resolve ZERO Mermaid runtime chunks: the
+// render owner's `if (!nodes.length) return;` short-circuits BEFORE
+// `import('mermaid')`. This is the ONLY observable NFR-002 proof at deck level —
+// FP-1's control route covers doc pages only, and citing the guard is circular.
+// ---------------------------------------------------------------------------
+test.describe('Deck diagram-free footprint (NFR-002 / T022)', () => {
+  const MERMAID_CHUNK = /mermaid/i;
+
+  test('the diagram-free roadmap deck resolves zero /mermaid/i requests', async ({ page }) => {
+    const urls: string[] = [];
+    page.on('request', (r) => urls.push(r.url()));
+
+    await page.goto(ROUTES.deckNoDiagram, { waitUntil: 'load' });
+    // The deck client script imports reveal, then (after ready) calls the shared
+    // render owner, whose no-nodes guard runs BEFORE `import('mermaid')`. Wait past
+    // reveal-ready AND the 3s whenRevealReady fallback + settle (F5) so that
+    // decision has definitely executed before we assert nothing was fetched.
+    await page.waitForSelector('.reveal.ready', { timeout: 15_000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(3_500);
+    await page.waitForLoadState('networkidle');
+
+    const mermaidRequests = urls.filter((u) => MERMAID_CHUNK.test(u));
+    expect(
+      mermaidRequests,
+      `a diagram-free deck must resolve 0 /mermaid/i requests, saw: ${mermaidRequests.join(', ')}`,
+    ).toEqual([]);
   });
 });

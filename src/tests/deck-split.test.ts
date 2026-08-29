@@ -53,11 +53,27 @@ describe('splitDeck — grouping', () => {
     });
     const title = children[0];
     expect(title.data.hName).toBe('section');
-    // heading (h1) + description paragraph + hero image paragraph
+    // heading (h1) + hero image paragraph — the description is metadata only (FR-002),
+    // so the hero image is now title child index 1, not 2.
     expect(title.children[0]).toMatchObject({ type: 'heading', depth: 1 });
     expect(title.children[0].children?.[0]).toMatchObject({ value: 'Deck Title' });
-    const img = title.children[2]?.children?.[0];
+    const img = title.children[1]?.children?.[0];
     expect(img).toMatchObject({ type: 'image', url: '/hero.png', alt: 'A hero' });
+  });
+
+  it('never synthesizes the description as title-slide body text (FR-002)', () => {
+    const { children } = splitDeck(root(h(2, 'One')), {
+      kind: 'Presentation',
+      title: 'T',
+      description: 'LEAK-SENTINEL',
+    });
+    const title = children[0];
+    const hasDescPara = title.children.some(
+      (c) =>
+        c.type === 'paragraph' &&
+        (c.children?.some((k) => k.type === 'text' && k.value === 'LEAK-SENTINEL') ?? false),
+    );
+    expect(hasDescPara, 'the description must not appear as a title-slide paragraph').toBe(false);
   });
 
   it('drops a hero_image with no src, and never reads it as a string (F-01)', () => {
