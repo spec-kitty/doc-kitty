@@ -75,3 +75,6 @@ playwright-report/
 .lighthouseci/
 .lycheecache
 test-results.rootorphan.*/
+
+# Markua preset-off portability build (WP10 gate, transient)
+example/dist-nomarkua/

@@ -88,12 +88,17 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 //     (presentations/roadmap-deck.md, doc_status:active, +1) → 25 → 26. Its sibling
 //     showcase-deck edits only add diagrams INSIDE an already-published deck, so they
 //     move no count; roadmap-deck.md is the sole count-moving page of this mission.
-const EXPECTED_INDEX_ENTRY_COUNT = 26;
+//   - markua-syntax-support WP10 adds TWO published guides (guides/markua-showcase.md
+//     and guides/markua-malformed.md, both doc_status:active, +2) — the verification
+//     corpus for the Markua seam → 26 → 28. They are the only count-moving pages of
+//     this mission (the on-switch flips a preset; every other WP was dormant).
+const EXPECTED_INDEX_ENTRY_COUNT = 28;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
 // reveal-deck-remediation adds presentations/roadmap-deck.md (published, +1), 25 → 26.
-const EXPECTED_SITEMAP_URL_COUNT = 26;
+// markua-syntax-support WP10 adds the two published markua guides (+2), 26 → 28.
+const EXPECTED_SITEMAP_URL_COUNT = 28;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.
@@ -570,6 +575,259 @@ async function assertPinnedDepsNoCdn(distDir) {
 }
 
 // ---------------------------------------------------------------------------
+// markua-syntax-support WP10 — Markua verification gates over the built dist.
+// The named non-fakeable gates (plan IC-06): the T>→starlight-aside--tip
+// ordering lock, the identity-anchored figure width:75% __ASTRO_IMAGE_
+// round-trip, the no-new-client-JS footprint, per-variant discriminators, and
+// the SC-005 coverage manifest that maps each of the 35 data-model rows to a
+// specific dist-level assertion that fails RED if that row's behaviour
+// regresses. The byte-identical three-form proof (rows 5–14) and the axe scan
+// are Playwright's (tests/a11y/markua.spec.ts); the preset-off literal-text
+// portability (SC-003) and the malformed build-exits-0 warning (NFR-002) are
+// the build-result gate (src/scripts/assert-markua-builds.mjs) — they need a
+// second/cold build, not a dist read.
+const MARKUA_SHOWCASE_RELPATH = path.join('guides', 'markua-showcase', 'index.html');
+const MARKUA_MALFORMED_RELPATH = path.join('guides', 'markua-malformed', 'index.html');
+
+/** Count non-overlapping occurrences of a literal needle. */
+function countOccurrences(haystack, needle) {
+  return haystack.split(needle).length - 1;
+}
+
+/** The FIRST `<figure class="dk-figure …">…</figure>` block whose figcaption text
+ * equals `caption` — identity-anchored (never a whole-file substring scan). */
+function figureByCaption(html, caption) {
+  const figRe = /<figure\b[^>]*\bclass="[^"]*\bdk-figure\b[^"]*"[^>]*>[\s\S]*?<\/figure>/g;
+  for (const block of html.match(figRe) ?? []) {
+    if (block.includes(`<figcaption class="dk-figure__caption">${caption}</figcaption>`)) {
+      return block;
+    }
+  }
+  return null;
+}
+
+/** The `<img …>` tag inside a figure block, or null. */
+function imgTagOf(figureBlock) {
+  const m = figureBlock.match(/<img\b[^>]*>/);
+  return m ? m[0] : null;
+}
+
+/** The FIRST `<figure class="dk-figure …">…</figure>` block whose <img> `src`
+ * contains `srcSubstr` — identity-anchored by image source, boundary-safe (each
+ * figure block is matched whole, so it never spans across two figures). */
+function figureByImgSrc(html, srcSubstr) {
+  const figRe = /<figure\b[^>]*\bclass="[^"]*\bdk-figure\b[^"]*"[^>]*>[\s\S]*?<\/figure>/g;
+  for (const block of html.match(figRe) ?? []) {
+    const img = imgTagOf(block);
+    if (img && img.includes(srcSubstr)) return block;
+  }
+  return null;
+}
+
+async function assertMarkuaArtifacts(distDir) {
+  const showcaseAbs = path.join(distDir, MARKUA_SHOWCASE_RELPATH);
+  const malformedAbs = path.join(distDir, MARKUA_MALFORMED_RELPATH);
+  await assertNonEmptyFile(showcaseAbs, `markua showcase (${MARKUA_SHOWCASE_RELPATH})`);
+  await assertNonEmptyFile(malformedAbs, `markua malformed (${MARKUA_MALFORMED_RELPATH})`);
+  const showcase = await readTextOrFail(showcaseAbs, `markua showcase (${MARKUA_SHOWCASE_RELPATH})`);
+  const malformed = await readTextOrFail(malformedAbs, `markua malformed (${MARKUA_MALFORMED_RELPATH})`);
+
+  // --- Named gate: ordering lock (T> → starlight-aside--tip). A `T>` renders a
+  // NATIVE Starlight tip aside only because the markua remark plugins run BEFORE
+  // Starlight's remarkAsides (integration prepends markua before starlight()).
+  // A future array reorder makes this vanish — fails loudly (ADR-0030 Risk).
+  if (!showcase.includes('starlight-aside--tip')) {
+    fail(
+      'markua ordering lock: no `starlight-aside--tip` in the showcase — a bare `T>` did NOT render as a ' +
+        'native Starlight tip aside, so the markua plugins no longer run BEFORE remarkAsides (plugin reorder) — IC-06',
+    );
+  }
+
+  // --- Named gate: identity-anchored figure __ASTRO_IMAGE_ round-trip. Locate
+  // the palm-trees figure by its figcaption IDENTITY (NOT a substring scan for
+  // "width:75%" anywhere), then on THAT figure's final optimised <img> assert
+  // BOTH the width AND the alt survived — proving markuaFigure ran BEFORE
+  // rehypeImages and both properties rode the __ASTRO_IMAGE_ marker (NFR-004).
+  const palmFig = figureByCaption(showcase, 'Palm Trees');
+  if (palmFig === null) {
+    fail(
+      'markua figure round-trip: no `<figure class="dk-figure">` with figcaption "Palm Trees" in the showcase — ' +
+        'the local-image figure did not render (markuaFigure/markuaAttributes wiring) — rows 16/19',
+    );
+  }
+  const palmImg = imgTagOf(palmFig);
+  if (palmImg === null) {
+    fail('markua figure round-trip: the "Palm Trees" figure has no <img> — the optimised image was lost — row 16');
+  }
+  if (!/style="[^"]*width:\s*75%/.test(palmImg)) {
+    fail(
+      `markua figure round-trip: the "Palm Trees" <img> has no \`width: 75%\` style — the {width:} did NOT survive ` +
+        `the __ASTRO_IMAGE_ round-trip (markuaFigure must run BEFORE rehypeImages). img was: ${palmImg} — row 21/NFR-004`,
+    );
+  }
+  if (!/alt="[^"]*palm-lined tropical beach/.test(palmImg)) {
+    fail(
+      `markua figure round-trip: the "Palm Trees" <img> lost its {alt:} value on the SAME optimised img — ` +
+        `alt and width must survive together. img was: ${palmImg} — row 18/NFR-004`,
+    );
+  }
+  if (!/src="[^"]*palm-trees[^"]*\.svg/.test(palmImg)) {
+    fail(
+      `markua figure round-trip: the "Palm Trees" <img> src is not the optimised local palm-trees asset — the ` +
+        `local-optimise path did not run. img was: ${palmImg} — row 16`,
+    );
+  }
+
+  // --- Named gate: no new client-side JavaScript (NFR-005). Asides, callouts,
+  // figures and ids are build-time hast only — they ship ZERO client script.
+  // Assert no emitted JS asset is a markua island and the showcase mounts none.
+  const astroDir = path.join(distDir, '_astro');
+  let astroFiles = [];
+  try {
+    astroFiles = await readdir(astroDir);
+  } catch {
+    astroFiles = [];
+  }
+  const markuaJs = astroFiles.filter((f) => f.endsWith('.js') && /markua|callout|dk-figure/i.test(f));
+  if (markuaJs.length > 0) {
+    fail(
+      `markua footprint: emitted client JS chunk(s) ${JSON.stringify(markuaJs)} — the Markua seam must ship NO ` +
+        `client script (asides/callouts/figures/ids are build-time hast only) — NFR-005`,
+    );
+  }
+  if (/<script\b[^>]*\bsrc="[^"]*(markua|callout)[^"]*"/i.test(showcase)) {
+    fail('markua footprint: the showcase mounts a markua/callout client <script> — the seam ships no client JS — NFR-005');
+  }
+
+  // --- Named gate: per-variant discriminators. Each of the SIX theme variants is
+  // present as `<aside class="dk-callout dk-callout--{variant}">`, and each of the
+  // FOUR native mapped asides is present — so a single broken variant goes RED,
+  // not manifest-vacuously green.
+  for (const variant of ['discussion', 'question', 'exercise', 'generic', 'center']) {
+    const n = countOccurrences(showcase, `dk-callout dk-callout--${variant}"`);
+    if (n !== 3) {
+      fail(
+        `markua variant discriminator: expected exactly 3 \`dk-callout--${variant}\` theme callouts (the three-form ` +
+          `equivalence trio), found ${n} — a broken input form or variant routing — rows 5–14`,
+      );
+    }
+  }
+  if (countOccurrences(showcase, 'dk-callout dk-callout--aside"') < 3) {
+    fail('markua variant discriminator: fewer than 3 `dk-callout--aside` — the aside three-form trio is incomplete — rows 5–14');
+  }
+  for (const variant of ['tip', 'caution', 'danger', 'note']) {
+    const n = countOccurrences(showcase, `starlight-aside--${variant}`);
+    if (n !== 3) {
+      fail(
+        `markua variant discriminator: expected exactly 3 native \`starlight-aside--${variant}\` asides (the three ` +
+          `input forms of the mapped class), found ${n} — a broken fold or ordering regression — rows 5–14`,
+      );
+    }
+  }
+
+  // --- Named gate: markua-icon-render (FR-009 positive). The mapped icon
+  // {icon: fa-lightbulb} resolves (→ "rocket") and emits the dk-callout__icon
+  // child on the theme tip callout, carrying the resolved-name discriminator…
+  if (!/<aside class="dk-callout dk-callout--tip" id="icon-tip">[\s\S]*?dk-callout__icon"[^>]*data-icon="rocket"/.test(showcase)) {
+    fail(
+      'markua icon render: the `{icon: fa-lightbulb}` tip (#icon-tip) has no `dk-callout__icon` child with ' +
+        'data-icon="rocket" — the mapped icon did not resolve/render — row 32/FR-009',
+    );
+  }
+  // …AND rendering the ACTUAL glyph: the resolved Starlight icon inlined as an
+  // <svg class="dk-callout__icon-glyph"> inside that span (FR-009 requires the
+  // mapped icon to RENDER, not merely be named by data-icon).
+  if (!/data-icon="rocket"><svg[^>]*class="dk-callout__icon-glyph"[^>]*>\s*<path/.test(showcase)) {
+    fail(
+      'markua icon render: the #icon-tip icon span carries data-icon="rocket" but no inline ' +
+        '`<svg class="dk-callout__icon-glyph">…<path>` glyph — the mapped icon must render a VISIBLE glyph, ' +
+        'not just reserve the box — row 32/FR-009',
+    );
+  }
+
+  // --- SC-005 coverage manifest: each data-model.md row → the SPECIFIC dist-level
+  // assertion that FAILS RED if that row's behaviour regresses (not "a test
+  // exists"). Rows 5–14 (byte-identical three-form) and the axe scan are the
+  // Playwright spec's; row 33's build warning + row 35's preset-off portability
+  // are the build-result gate's — cross-referenced here so the denominator is the
+  // full 35-row matrix.
+  const showcaseHas = (needle) => showcase.includes(needle);
+  const COVERAGE_MANIFEST = [
+    { row: 1, what: 'aside A> single-line', ok: () => /dk-callout--aside">[\s\S]*?This is a short aside\./.test(showcase) },
+    { row: 2, what: 'aside A> multi + internal heading (title extracted)', ok: () => showcaseHas('dk-callout__title') && showcaseHas('Notes for the curious') },
+    { row: 3, what: 'nested {aside} inside {aside}', ok: () => {
+      const i = showcase.indexOf('id="a-wrapped-nested-aside"');
+      const seg = i === -1 ? '' : showcase.slice(i, i + 1400);
+      return countOccurrences(seg, 'dk-callout--aside"') >= 2; // parent + nested
+    } },
+    { row: 4, what: 'aside wrapping a fenced code block (code intact)', ok: () => showcaseHas('literal code, not a blockquote') },
+    { row: '5-14', what: '10 callout classes × 3 forms (byte-identical)', ok: () =>
+      ['tip', 'caution', 'danger', 'note'].every((v) => countOccurrences(showcase, `starlight-aside--${v}`) === 3) &&
+      ['discussion', 'question', 'exercise', 'generic', 'center'].every((v) => countOccurrences(showcase, `dk-callout dk-callout--${v}"`) === 3),
+      note: 'authoritative byte-identical proof is Playwright markua-three-form-equivalence' },
+    { row: 15, what: 'mapped class + {#id} routes to theme hast, id survives', ok: () => showcaseHas('<aside class="dk-callout dk-callout--tip" id="pinned-tip">') },
+    { row: 16, what: 'figure local optimised', ok: () => palmFig !== null && /src="[^"]*palm-trees[^"]*\.svg/.test(palmImg ?? '') },
+    { row: 17, what: 'figure web-URL passthrough', ok: () => /<img\b[^>]*src="https:\/\/example\.com\/mac\.jpg"/.test(showcase) },
+    { row: '18-25', what: 'figure attrs (alt/caption/title/width/height/align/class/#id)', ok: () => {
+      // Local palm figure carries alt(18)/title(20)/width(21)/align→center(23)/class(24)/#id(25).
+      const local = /alt="[^"]*palm-lined tropical beach/.test(palmImg ?? '') &&
+        /title="[^"]*On the shore/.test(palmImg ?? '') &&
+        /style="[^"]*width:\s*75%/.test(palmImg ?? '') &&
+        (palmFig ?? '').includes('dk-figure--center') &&
+        (palmFig ?? '').includes('featured') &&
+        (palmFig ?? '').includes('id="palm-fig"');
+      // Web mac figure (anchored by its src) carries caption-override(19)/
+      // height(22)/align→left, and passes the web URL through unoptimised.
+      const macFig = figureByImgSrc(showcase, 'https://example.com/mac.jpg');
+      const macImg = macFig ? imgTagOf(macFig) : null;
+      const web = macImg !== null &&
+        /style="[^"]*height:\s*240/.test(macImg) &&
+        (macFig ?? '').includes('dk-figure--left') &&
+        (macFig ?? '').includes('The original Macintosh');
+      return local && web;
+    } },
+    { row: 26, what: '{fullbleed:} silently ignored', ok: () => {
+      const fig = figureByCaption(showcase, 'Lighthouse');
+      return fig !== null && !/fullbleed/i.test(fig);
+    } },
+    { row: 27, what: 'crosslink id {#intro} + [text](#intro) resolves', ok: () => /<h2\b[^>]*id="intro"/.test(showcase) && showcaseHas('<a href="#intro">introduction</a>') },
+    { row: 28, what: 'crosslink id collision — explicit wins (single #overview)', ok: () => countOccurrences(showcase, 'id="overview"') === 1 && showcaseHas('<a href="#overview">overview</a>') },
+    { row: 29, what: 'auto heading id kept (no markua)', ok: () => /id="plain-heading-automatic-anchor"/.test(showcase) },
+    { row: 30, what: 'span id [text]{#id} + link resolves', ok: () => showcaseHas('<span id="beach-span">the beach</span>') && showcaseHas('<a href="#beach-span">beach span</a>') },
+    { row: 31, what: 'span id word{#id} trailing + link resolves', ok: () => showcaseHas('<span id="shoreline-span">shoreline</span>') && showcaseHas('<a href="#shoreline-span">shoreline span</a>') },
+    { row: 32, what: 'mapped icon renders GLYPH (fa-lightbulb → rocket <svg>)', ok: () => /dk-callout--tip" id="icon-tip">[\s\S]*?data-icon="rocket"><svg[^>]*class="dk-callout__icon-glyph"[^>]*>\s*<path/.test(showcase) },
+    { row: 33, what: 'unmapped icon dropped + build warning + exit 0', ok: () => malformed.includes('<aside class="dk-callout dk-callout--tip">') && !/(dk-callout--tip"[\s\S]{0,120}?dk-callout__icon)/.test(malformed),
+      note: 'the `fa-obscure-name` build WARNING + exit-0 are asserted by assert-markua-builds.mjs (cold build)' },
+    { row: 34, what: 'attr {#id} above {aside} wrapper lands on container', ok: () => showcaseHas('id="anchored-aside"') },
+    { row: 35, what: 'malformed unbalanced wrapper stays literal; preset-off portability', ok: () => malformed.includes('{aside}'),
+      note: 'the load-bearing literal-text SC-003 gate is preset-off in assert-markua-builds.mjs' },
+  ];
+
+  const failedRows = [];
+  for (const entry of COVERAGE_MANIFEST) {
+    let passed = false;
+    try {
+      passed = entry.ok() === true;
+    } catch (err) {
+      passed = false;
+    }
+    if (!passed) failedRows.push(`row ${entry.row} (${entry.what})`);
+  }
+  if (failedRows.length > 0) {
+    fail(
+      `markua SC-005 coverage manifest: ${failedRows.length} row(s) regressed — their fixture occurrence or the ` +
+        `named failing-on-regression assertion is gone:\n  - ${failedRows.join('\n  - ')}`,
+    );
+  }
+
+  ok(
+    `markua: ordering lock (T>→starlight-aside--tip), identity-anchored figure width:75%+alt __ASTRO_IMAGE_ ` +
+      `round-trip, no client JS, 6 theme + 4 native variant discriminators, icon-render, and all ` +
+      `${COVERAGE_MANIFEST.length} SC-005 coverage-matrix groups pass (rows 5–14 byte-identical proof in Playwright)`,
+  );
+}
+
+// ---------------------------------------------------------------------------
 
 async function main() {
   const distArg = process.argv[2];
@@ -822,6 +1080,11 @@ async function main() {
 
   // 6b) diagrams WP04: pinned diagram deps + no CDN (BD-4/NFR-004).
   await assertPinnedDepsNoCdn(distDir);
+
+  // 6c) markua-syntax-support WP10: the Markua verification gates — ordering
+  // lock, identity-anchored figure round-trip, no-new-client-JS, per-variant
+  // discriminators, icon-render, and the SC-005 coverage manifest (IC-06).
+  await assertMarkuaArtifacts(distDir);
 
   // 7) slide-decks WP04: published-deck build-artifact assertions (BA-2/3/6/7/9).
   // The published showcase deck renders OUT-OF-FRAME via the deck route yet stays a

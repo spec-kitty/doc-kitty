@@ -41,6 +41,17 @@
  * remark-mdx is DEFERRED (issue #16 reduced scope): the corpus has no `.mdx` pages,
  * so the MDX-expression phantom stays dormant — the reserved `mdx` option below
  * marks where it would slot in.
+ *
+ * MARKUA is NOT mirrored here (opt-in preset, see the FORWARD RULE in the
+ * markuaIntegration docstring in `config.ts`). This factory does NOT run the Markua
+ * normaliser/attribute passes, so a page that uses Markua constructs re-derives with
+ * `A>`/`{blurb}`/`{...}` as literal text. This is inert TODAY — the corpus places no
+ * autolinkable term surface (or `:term`) inside a Markua callout body, and Markua
+ * fixtures set `tableOfContents:false` so `OnThisPage` is not exercised on them. But
+ * any FUTURE re-derive parity work (or a page mixing glossary terms with Markua
+ * callouts) MUST decide to either mirror the Markua passes here or record a conscious
+ * exclusion — the same "mirror the build remark stack" obligation gfm/smartypants
+ * above already carry. Tracked as a follow-up.
  */
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
