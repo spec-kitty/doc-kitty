@@ -38,7 +38,7 @@ export interface IconMapEntry {
  * remaining rows below are confirmed to exist verbatim in `Icons`. The row count
  * is not load-bearing (contract); the graceful-drop behaviour is.
  */
-const ICON_SEED: readonly IconMapEntry[] = [
+export const ICON_SEED: readonly IconMapEntry[] = [
   { fa: 'fa-lightbulb', starlight: 'rocket' },
   { fa: 'fa-info-circle', starlight: 'information' },
   { fa: 'fa-exclamation-triangle', starlight: 'warning' },
