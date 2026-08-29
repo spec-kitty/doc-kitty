@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-08-29T10:39:43Z",
+  "base_branch": "feat/markua-syntax-support",
+  "base_commit": "fbce0dad181af5ed148288b71ddc0d99bed6838c",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
