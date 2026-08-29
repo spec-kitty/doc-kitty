@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-08-28T18:30:29Z",
+  "base_branch": "fix/reveal-deck-remediation",
+  "base_commit": "501ea5922150547d6cb9307a17140ce03e184952",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

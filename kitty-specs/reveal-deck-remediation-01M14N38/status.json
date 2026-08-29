@@ -1,0 +1,111 @@
+{
+  "event_count": 43,
+  "last_event_id": "01M14XET8JJMGCM73HDERRQ83N",
+  "materialized_at": "2026-08-28T19:27:29.042470+00:00",
+  "mission_number": "",
+  "mission_slug": "reveal-deck-remediation-01M14N38",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 6,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M14XDK07YVTKEG1B4WYWFBG7",
+      "last_transition_at": "2026-08-28T19:26:48.839261+00:00",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata: DeckController facade, single mermaid.run, INV-SCOPE visited-set only, footprint guard intact); orchestrator force past lane-hygiene infra gate",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 2834701,
+      "shell_pid_created_at": "1787941794.19"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M14XEJF4WDBHPAD0TAMWRZCT",
+      "last_transition_at": "2026-08-28T19:27:21.060074+00:00",
+      "review_result": {
+        "reference": "Review passed: FR-003 footer is a sibling of main.reveal, outside .slides and data-pagefind-body, single contentinfo carrying entry.data.title, hides @media print; FR-001 client is a pure wire (controller=await initDeck() in try/catch; whenRevealReady(); initDiagrams(controller)) with ZERO slide state, .reveal.ready gate + initDiagrams(undefined) degraded fallback preserved; T009 look rules added only in dk-reveal-theme.css (theme.css byte-untouched, BA-4 sentinel --r-background-color:var(--dk-color-bg) intact), every selector scoped under .reveal/.dk-deck-*/:root, all referenced --dk-* tokens defined; footer/controls collision avoided via --dk-deck-footer-height offset, both print-hidden; recorded LIGHT values match theme.css (bg #ffffff, text-strong #101828, surface-1 #f7f8fa) for WP05 T023; only the 2 in-scope files changed.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 2880942,
+      "shell_pid_created_at": "1787943056.75"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M14XDTZE624W0RDGBKARBW36",
+      "last_transition_at": "2026-08-28T19:26:57.006373+00:00",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata, merits); orchestrator force past lane-hygiene infra gate after issue-matrix reconciled",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 2838786,
+      "shell_pid_created_at": "1787941883.16"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M14XE2KNZ55582ASB6QQMQDG",
+      "last_transition_at": "2026-08-28T19:27:04.821244+00:00",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata, merits: 2 distinguishable diagrams on slide-2+inner-stack, renderCount stays 1, sentinels intact, pins 25->26); orchestrator force past infra gate, issue-matrix reconciled",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 2840934,
+      "shell_pid_created_at": "1787941926.66"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M14XET8JJMGCM73HDERRQ83N",
+      "last_transition_at": "2026-08-28T19:27:29.042470+00:00",
+      "review_result": {
+        "reference": "Review passed: WP05 non-fakeable behaviour lock verified. T019 uses MEASURED internal-node geometry (getBoundingClientRect on g.node/label/text via measuredInnerBox), never viewBox-derived; nodes selected by WP04 identity sentences (DECK_SLIDE_TWO_DESC/DECK_INNER_STACK_DESC), which match the fixtures exactly; a zero-box hidden-slide render fails (bites on #15). T021 theme-toggle asserts directly-mapped node fill == other-mode resolved --dk-diagram-node-fill (hex<->rgb normalized) AND a no-op toggle fails (tokenAfter!=tokenBefore). T020 polls toHaveCount with 12s timeout then asserts every pre.mermaid box>0. T022 roadmap-deck route added to routes.ts, asserts 0 /mermaid/i. T023 computed styles equal resolved --dk-* tokens and the recorded values (255,255,255 / 16,24,40 / 247,248,250); hero<=stage. T024 renderCount stays 1 (WHY comment added, not bumped); slideSentinels match built deck. T017/T018 non-fakeable. RED mechanic documented in-code (scratch-branch revert of WP01 render(scope)); CI-only per env hazard.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 2922492,
+      "shell_pid_created_at": "1787943895.01"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M14XEAGJ5R1KT4YFEZFKB8JT",
+      "last_transition_at": "2026-08-28T19:27:12.914629+00:00",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata, merits); orchestrator force past lane-hygiene infra gate after issue-matrix reconciled",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "shell_pid": 2840934,
+      "shell_pid_created_at": "1787941926.66"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-08-28T17:03:01.813231Z",
+      "decision_id": "01M14N6A5NPZW8ZYGCT8JVVYWD",
+      "final_answer": "Add automated Playwright DOM/behavior assertions to lock the fixes (deck footer present; no front-matter description leaking onto the title slide; exactly one <svg> per diagram; a slide-2+ diagram renders to non-zero-box SVG after slidechanged), but do NOT regenerate or add visual/a11y baselines. Visual/CSS correctness is judged by manual review on the built example. Keeps the a11y baseline set stable.",
+      "input_key": "verification_regression_rigor",
+      "mission_id": "01M14N38FYPNRM7SHD19YZS39S",
+      "mission_slug": "reveal-deck-remediation-01M14N38",
+      "opened_by": "cli",
+      "options": [
+        "Automated regression coverage on deck route + hub (extend Playwright deck.interaction spec + a11y visual baselines)",
+        "Manual visual acceptance on the built example only",
+        "Automated DOM/behavior assertions but no new visual baselines"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "How should the deck rendering fixes (#12/#15) be verified and locked against regression?",
+      "rationale": null,
+      "resolved_at": "2026-08-28T17:24:55.786193Z",
+      "resolved_by": null,
+      "slot_key": "specify.verification.regression-rigor",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M14N38FYPNRM7SHD19YZS39S",
+  "version": 1
+}
