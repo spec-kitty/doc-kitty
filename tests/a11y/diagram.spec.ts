@@ -19,6 +19,7 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { ROUTES } from './routes';
 import { gotoInMode, gotoDeckInMode, modeOf, type Mode } from './mode';
+import { toRgbTriple, nodeFill, EMPTY_COLOUR_SENTINEL } from './helpers/colour';
 
 // The description-only (title-ABSENT) diagram on the demonstrator: a SEQUENCE
 // diagram whose caption/description is this exact sentence. Selecting the figure by
@@ -299,35 +300,6 @@ async function measuredInnerBox(figure: Locator): Promise<{ w: number; h: number
   });
 }
 
-/** Canonical `r,g,b` triple from a `#rrggbb`/`#rgb` or `rgb()/rgba()` string, so a
- * token (hex) and a computed style (rgb()) compare correctly (finding F3/F4). */
-function toRgbTriple(value: string): string {
-  const v = value.trim();
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(v);
-  if (hex) {
-    let h = hex[1];
-    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
-    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
-  }
-  const rgb = /rgba?\(([^)]+)\)/i.exec(v);
-  if (rgb) {
-    return rgb[1].split(',').slice(0, 3).map((n) => Math.round(parseFloat(n.trim()))).join(',');
-  }
-  throw new Error(`Cannot parse colour '${value}'`);
-}
-
-/** The rendered fill of the figure's first Mermaid node shape — the DIRECTLY
- * mapped attribute (`--dk-diagram-node-fill` → Mermaid `mainBkg`/`primaryColor`).
- * Read via `getComputedStyle` so it resolves whether Mermaid set it as a `fill`
- * attribute, inline `style`, or an in-`<svg>` `<style>` rule. */
-async function nodeFill(figure: Locator): Promise<string> {
-  return figure.locator('pre.mermaid svg').first().evaluate((svg) => {
-    const shape = svg.querySelector('.node rect, .node polygon, .node path, .node circle, .node ellipse');
-    if (!shape) throw new Error('no Mermaid node shape in the rendered <svg>');
-    return getComputedStyle(shape as Element).fill;
-  });
-}
-
 /** The live-resolved `--dk-diagram-node-fill` token off `:root` (mode-dependent). */
 function resolvedNodeFillToken(page: Page): Promise<string> {
   return page.evaluate(() =>
@@ -505,7 +477,20 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
 
     // Rendered in the current mode: the node fill IS the current --dk-diagram-node-fill
     // (the directly-mapped attribute) — sanity-lock before the toggle.
-    const fillBefore = await nodeFill(figure);
+    //
+    // PIN (C34): this baseline is REUSED below as the "genuinely changed" guard, so
+    // it must resolve to a REAL triple, never the not-ready sentinel — read via
+    // `nodeFill` (never throws) + `toPass` (retries the whole callback), fail-on-
+    // sentinel, so a still-settling initial render is retried rather than silently
+    // accepted as the baseline (which would degrade that guard to trivially-true).
+    let fillBefore = '';
+    await expect(async () => {
+      fillBefore = await nodeFill(figure);
+      expect(
+        toRgbTriple(fillBefore),
+        'the pre-toggle baseline fill must resolve to a real, parsed colour',
+      ).not.toBe(EMPTY_COLOUR_SENTINEL);
+    }).toPass({ timeout: 10_000 });
     const tokenBefore = await resolvedNodeFillToken(page);
     expect(
       toRgbTriple(fillBefore),
@@ -517,19 +502,25 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
     await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), other);
     const tokenAfter = await resolvedNodeFillToken(page);
 
-    // The palette REALLY differs (a no-op toggle would fail here) …
+    // The palette REALLY differs (a no-op toggle would fail here) — this guard is
+    // NOT retried (a synchronous read of already-resolved CSS tokens), so a no-op
+    // toggle still fails immediately rather than being masked by a retry.
     expect(
       toRgbTriple(tokenAfter),
       'the two modes must resolve DIFFERENT node-fill tokens (a no-op toggle must fail)',
     ).not.toBe(toRgbTriple(tokenBefore));
 
     // … and the node re-renders to the OTHER mode's fill, still exactly one <svg>.
-    await expect
-      .poll(async () => toRgbTriple(await nodeFill(figure)), {
-        message: 'the node fill must re-render to the other mode --dk-diagram-node-fill',
-        timeout: 10_000,
-      })
-      .toBe(toRgbTriple(tokenAfter));
+    // Read via `nodeFill` (never throws) + `toPass` (retries the WHOLE callback on
+    // any failure) — NOT a raw `expect.poll` with a throwing read, which ABORTS on
+    // the transient `Cannot parse colour ''` mid the async Mermaid re-render flush
+    // (the #34 flake). `toPass` still fails for real if the fill never converges on
+    // `tokenAfter` (a genuine colour divergence is not masked, only the transient
+    // not-ready read is tolerated).
+    await expect(async () => {
+      const f = toRgbTriple(await nodeFill(figure));
+      expect(f).toBe(toRgbTriple(tokenAfter));
+    }).toPass({ timeout: 10_000 });
     await expect(
       figure.locator('pre.mermaid svg'),
       'the theme toggle must leave exactly one <svg> (no orphaned duplicate)',

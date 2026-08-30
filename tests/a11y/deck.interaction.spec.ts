@@ -18,6 +18,7 @@ import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { ROUTES, WCAG_TAGS, DECK_SLIDES_ROOT } from './routes';
 import { modeOf, type Mode } from './mode';
+import { toRgbTriple } from './helpers/colour';
 
 const DECK = ROUTES.deck;
 const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
@@ -295,25 +296,9 @@ test.describe('Deck pre-enhancement SSR axe (IX-3b / AX-2)', () => {
 // `rgba(r, g, b, a)`), while `getPropertyValue('--dk-color-bg')` returns the
 // authored `#rrggbb`. A raw string `===` would FALSELY fail on correct styling,
 // so both sides are parsed to a canonical `r,g,b` triple before comparing.
+// `toRgbTriple` is the shared helper (./helpers/colour, #34) — these are settled-
+// page reads (no async re-render flush in play here), so they're used directly.
 // ---------------------------------------------------------------------------
-function toRgbTriple(value: string): string {
-  const v = value.trim();
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(v);
-  if (hex) {
-    let h = hex[1];
-    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
-    const r = parseInt(h.slice(0, 2), 16);
-    const g = parseInt(h.slice(2, 4), 16);
-    const b = parseInt(h.slice(4, 6), 16);
-    return `${r},${g},${b}`;
-  }
-  const rgb = /rgba?\(([^)]+)\)/i.exec(v);
-  if (rgb) {
-    const [r, g, b] = rgb[1].split(',').map((n) => Math.round(parseFloat(n.trim())));
-    return `${r},${g},${b}`;
-  }
-  throw new Error(`Cannot parse colour '${value}'`);
-}
 
 // ---------------------------------------------------------------------------
 // FR-002 (T017, contract C1) — the front-matter `description` is metadata ONLY:
@@ -439,8 +424,9 @@ test.describe('Deck computed-style brand tokens (FR-001 / T023)', () => {
     // The contract is "resolves to the BRAND token", not "equals a recorded literal":
     // the example brand overrides --dk-color-bg (spec-kitty tokens.css → #FBFAF7), so
     // a hardcoded #ffffff pins the wrong constant. Assert observed == the RUNTIME-
-    // resolved token (normalized). `toRgbTriple` throws on an empty/unparseable token,
-    // so this stays non-vacuous — a missing token fails loudly rather than passing.
+    // resolved token (normalized). `toRgbTriple` maps an empty/unparseable token to
+    // a sentinel that can never equal a real triple (helpers/colour, #34), so this
+    // stays non-vacuous — a missing token fails the equality rather than passing.
     expect(
       toRgbTriple(bg.observed),
       'the viewport background must equal the resolved --dk-color-bg brand token',
