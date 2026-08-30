@@ -68,6 +68,14 @@ Selective/redacted publishing (the projection pipeline) and a book/manuscript
 content type. The first is only needed to publish a filtered subset of a private
 tree; the second competes with Leanpub, which we are not doing.
 
+> **Note — Markua support ≠ an in-tool book type.** Declining an in-tool
+> book/manuscript type does **not** forgo Leanpub. Markua support (below,
+> Should/MVP) keeps the docs source **Markua-clean**, which makes **authoring a
+> book or course on Leanpub from the same source materially easier** later — an
+> export/reuse path, not doc-kitty becoming a publisher. That Leanpub-export
+> dividend is in scope *because* Markua is; the in-tool book *content type* stays
+> out.
+
 ## Prioritized features (MoSCoW)
 
 | Feature | Mission | MoSCoW | Scope | Rationale |
@@ -93,3 +101,28 @@ tree; the second competes with Leanpub, which we are not doing.
 
 Each row has (or will have) a [feature page](./features/) carrying its `moscow`
 label and rationale in frontmatter.
+
+## Adoption enablers (from the spec-kitty proving ground)
+
+The spec-kitty adoption study
+([research](../architecture/research/spec-kitty-adoption-proof.md)) surfaced a set
+of **doc-kitty-side changes that reduce adoption friction for a real, large
+consumer** — most of which also fix doc-kitty's own bugs (a dogfooding dividend).
+Each is filed on the tracker.
+
+| Enabler | Friction it removes | Priority | Issue |
+|---|---|---|---|
+| Loader accepts `index.md` as the section index (alongside `README.md`) | Spares an adopter renaming ~60 section indexes + rewriting ~1,589 links/redirects | Should | [#37](https://github.com/spec-kitty/doc-kitty/issues/37) |
+| `type`/`kind` optional + `type` derived from the section registry | Avoids forcing two required frontmatter fields onto a large corpus (~790 docs) | Should | [#38](https://github.com/spec-kitty/doc-kitty/issues/38) |
+| Add `durable` to the `doc_status` enum | Never-retire throughline docs otherwise hard-fail the schema | Must (additive) | [#39](https://github.com/spec-kitty/doc-kitty/issues/39) |
+| Overridable `type`/`kind` vocabulary (neutralize `Feature` for Mission-canon adopters) | Lets a canon-bound adopter avoid a prohibited term; fixes an internal inconsistency | Should | [#40](https://github.com/spec-kitty/doc-kitty/issues/40) |
+| Tolerate `adr/<era>/NNNN-` ADR paths | Adopters with >100 era-partitioned ADRs keep their structure | Should | [#41](https://github.com/spec-kitty/doc-kitty/issues/41) |
+| First-class redirect-coverage gate for migrating adopters | The highest-risk migration item (URL-scheme change) has no equivalent today | Should | [#42](https://github.com/spec-kitty/doc-kitty/issues/42) |
+| Resolve LICENSE (`UNLICENSED` → add LICENSE file) | Hard blocker: no adopter can vendor doc-kitty code until licensed | Must (blocker) | [#43](https://github.com/spec-kitty/doc-kitty/issues/43) |
+| Doc-honesty fixes (ADR-0030 in index; `AGENTS.md` `status`→`doc_status` + full section list; README "early scaffold" drift) | Curated-not-wiki integrity — the repo's own convention | Should | [#44](https://github.com/spec-kitty/doc-kitty/issues/44) |
+
+Sequencing for a large-consumer adoption: the loader/vocab/enum items (#37–#41)
+shrink adopter churn; **LICENSE (#43) and the redirect gate (#42) are the two hard
+gates**; the doc-honesty items (#44) are quick self-consistency fixes. See the
+research doc's phased recommendation for how these line up with a reference
+adoption.
