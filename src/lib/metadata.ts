@@ -14,6 +14,7 @@
  * in isolation and reused by the builder scripts. The zod schema that validates
  * real frontmatter lives in `./schema.ts` and mirrors these types.
  */
+import { isPresentationEntry } from './deck/is-presentation.js';
 
 /** OKF `type` — the one required-by-OKF field. One value per Common Docs section. */
 export type DocType =
@@ -425,7 +426,7 @@ export function rankForFeed(entries: DocEntry[]): DocEntry[] {
  * `kind`, never the section path, so a deck filed anywhere is still excluded.
  */
 export function includedInRssFeed(entry: DocEntry): boolean {
-  return entry.data.kind !== 'Presentation';
+  return !isPresentationEntry(entry);
 }
 
 // ---------------------------------------------------------------------------

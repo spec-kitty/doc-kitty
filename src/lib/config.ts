@@ -44,6 +44,7 @@ import markuaAttributes from './remark/markua-attributes.js';
 import markuaCallouts from './remark/markua-callouts.js';
 import markuaFigure from './rehype/markua-figure.js';
 import markuaTocDemote from './rehype/markua-toc-demote.js';
+import { guardDeck } from './markua/deck-guard.js';
 import { isGlossaryActive, loadGlossary } from './glossary/load.js';
 import { generateGlossaryPages } from './glossary/generate.js';
 import glossaryTerm from './remark/glossary-term.js';
@@ -586,12 +587,12 @@ const directiveIntegration: AstroIntegration = {
  *     Running before `rehypeHeadingIds` lets an explicit `{#id}` win — that pass
  *     only slugs a heading with NO id already set (C-005, proven in WP09).
  *
- * FORWARD RULE (research "shared-substrate note"): the glossary
- * `createPageProcessor` and `OnThisPage.astro` re-derive from the RAW `entry.body`
- * string, to which raw `A>`/`{blurb}`/`{…}` lines look like literal text. That is
- * inert today (those surfaces need no Markua understanding for this mission), but
- * ANY future surface that re-derives from `entry.body` MUST replay this Markua
- * normalisation before deriving, or it will index/emit raw Markua as literal text.
+ * FORWARD RULE: any surface that re-derives from the RAW `entry.body` string
+ * (raw `A>`/`{blurb}`/`{…}` lines read as literal text there) must replay this
+ * Markua normalisation before deriving. This is no longer enforced by prose:
+ * the re-derive-parity guard (`glossary-substrate-parity.test.ts`, S-04) is the
+ * authority — it reds if a build remark stage is not mirrored or consciously
+ * excluded, so prose and gate cannot drift.
  */
 function markuaIntegration(): AstroIntegration {
   return {
@@ -601,9 +602,11 @@ function markuaIntegration(): AstroIntegration {
         updateConfig({
           markdown: {
             // Remark (after `remarkDirective`): normalise → attributes → callouts.
-            remarkPlugins: [markuaNormalise, markuaAttributes, markuaCallouts],
+            // `.map(guardDeck)` makes EVERY member a deck no-op (C36a/C36f) —
+            // never `deckSplit`/`remarkDirective` (out of scope).
+            remarkPlugins: [markuaNormalise, markuaAttributes, markuaCallouts].map(guardDeck),
             // Rehype (user stage, before `rehypeImages`/`rehypeHeadingIds`).
-            rehypePlugins: [markuaFigure, markuaTocDemote],
+            rehypePlugins: [markuaFigure, markuaTocDemote].map(guardDeck),
           },
         });
       },

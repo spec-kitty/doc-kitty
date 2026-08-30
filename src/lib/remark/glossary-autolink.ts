@@ -34,6 +34,7 @@ import {
   type MdRoot,
 } from './glossary-autolink.internal.js';
 import type { SharedTermIndex } from '../glossary/types.js';
+import { isPresentationFile } from '../deck/is-presentation.js';
 
 /** Options WP08 supplies at registration (the shared index + ignore-list). */
 export interface GlossaryAutolinkOptions {
@@ -67,7 +68,7 @@ export default function glossaryAutolink(options: GlossaryAutolinkOptions = {}) 
 
     const frontmatter = file.data?.astro?.frontmatter;
     // Deck no-op — a slide is never auto-linked (AS-1/AS-4).
-    if (frontmatter?.kind === 'Presentation') return;
+    if (isPresentationFile(file)) return;
     // Per-page opt-out — the whole plugin is a no-op for this page (FR-008).
     if (frontmatter?.glossary_autolink === false) return;
 
