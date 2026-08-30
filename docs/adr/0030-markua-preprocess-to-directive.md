@@ -177,9 +177,8 @@ could swallow a `###` slide boundary. This is now resolved:
   Markua-agnostic already or own the deck-splitting concern outright.
 - **(b) decks-Markua-capable is deferred.** Making decks genuinely Markua-aware
   (composing the Markua passes with `deckSplit`, a deck-Markua fixture, and the
-  associated a11y coverage) is feature-sized and out of scope here. Tracked as a
-  follow-up issue (to be filed at consolidation — the orchestrator opens the
-  tracker issue against the merged state and backfills its number/link here).
+  associated a11y coverage) is feature-sized and out of scope here. Tracked as
+  follow-up issue #47.
 - This amendment does not change the Decision or Risks above; it resolves the
   deck-scope ambiguity the original Positioning language left open.
 
