@@ -1,0 +1,32 @@
+{
+  "accept_commit": "077c568e660ec09f52db6788ef46f719146a9feb",
+  "acceptance_history": [
+    {
+      "accept_commit": "077c568e660ec09f52db6788ef46f719146a9feb",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-08-30T07:16:17.333487+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "1181d26ca17b7573aeb974c2ce7ee9d96b1a1a2f"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-08-30T07:16:17.333487+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "1181d26ca17b7573aeb974c2ce7ee9d96b1a1a2f",
+  "baseline_merge_commit": "6fd064e209c132566c1277bc7aeed02529b8b0c4",
+  "created_at": "2026-08-30T05:13:46.752924+00:00",
+  "flattened": true,
+  "friendly_name": "Post-Markua Hardening",
+  "mission_id": "01M18HD2G0ZEW57XYN24BV7SQT",
+  "mission_number": null,
+  "mission_slug": "post-markua-hardening-01M18HD2",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "After the Markua-subset feature merged (PR #33), three follow-ups were filed: a flaky a11y deck-diagram theme-toggle test (#34), a hand-maintained re-derive parse mirror that drifts from the build remark stack by convention (#35), and an asymmetric Markua deck-scope guard where only one of five passes is deck-aware (#36). This mission closes each as a defect class with a regression test, keeps base behaviour and the merged Markua feature intact, and records the deck-scope decision (decks are Markua-agnostic for now).",
+  "purpose_tldr": "Resolve three follow-up issues from the Markua merge so the a11y lane stops flaking and the Markua/re-derive boundaries are structurally guarded.",
+  "slug": "post-markua-hardening-01M18HD2",
+  "status_phase": "1",
+  "target_branch": "feat/post-markua-hardening",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-30T05:55:19.807371+00:00"
+}

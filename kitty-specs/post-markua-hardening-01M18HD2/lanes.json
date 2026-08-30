@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "mission_slug": "post-markua-hardening-01M18HD2",
+  "mission_id": "01M18HD2G0ZEW57XYN24BV7SQT",
+  "mission_branch": "kitty/mission-post-markua-hardening-01M18HD2",
+  "target_branch": "feat/post-markua-hardening",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "tests/a11y/deck.interaction.spec.ts",
+        "tests/a11y/diagram.spec.ts",
+        "tests/a11y/helpers/colour.test.ts",
+        "tests/a11y/helpers/colour.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/deck/is-presentation.ts",
+        "src/lib/markua/deck-guard.ts",
+        "src/lib/metadata.ts",
+        "src/lib/rehype/markua-figure.ts",
+        "src/lib/remark/glossary-autolink.ts",
+        "src/tests/deck-guard.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/remark/markua-attributes.ts",
+        "src/tests/markua-attributes.test.ts",
+        "src/tests/markua-callouts.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/glossary/page-processor.ts",
+        "src/tests/glossary-substrate-parity.test.ts",
+        "src/tests/helpers/remark-stack.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "docs/adr/0025-glossary-on-this-page-block-and-remark-render-channel.md",
+        "docs/adr/0030-markua-preprocess-to-directive.md",
+        "docs/architecture/glossary.md",
+        "docs/architecture/markua.md",
+        "docs/architecture/research/markua-syntax-support.md",
+        "docs/architecture/slide-decks.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-08-30T05:45:10.241344+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "3f55a27c3f0338eea412ef1b0254a62ee3c4da49"
+}
