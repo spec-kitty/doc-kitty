@@ -2,7 +2,7 @@
 title: Glossary
 description: "How the glossary surface fits together: the load-once index, the shared resolver behind thin plugins, codegen into the docs collection, and the render-time links-used re-derive."
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-30
 type: Architecture
 kind: Explanation
 authors:
@@ -106,6 +106,14 @@ list is byte-identical to what the pipeline linked â€” `:term` links included â€
 `external_references`/`related` renderers **by import** (an ADR-0017 companion); it
 never edits an M3-owned file, and it is presence-gated so a glossary-free build
 stays byte-identical.
+
+That "cannot drift" claim is enforced, not just asserted: a structural re-derive
+parity guard (`src/tests/glossary-substrate-parity.test.ts`) fails the build if a
+build-time remark stage is neither mirrored by the re-derive path nor recorded as a
+keyed, conscious exclusion. `page-processor.ts` exports `REDERIVE_REMARK_PLUGINS`
+as the single source of truth for the mirrored set, so the two stage lists cannot
+silently diverge (see [ADR-0025](../adr/0025-glossary-on-this-page-block-and-remark-render-channel.md)
+Decision 2).
 
 ## Hover preview footprint
 

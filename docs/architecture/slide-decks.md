@@ -2,7 +2,7 @@
 title: Slide decks
 description: "How a Markdown-authored deck becomes a static reveal.js presentation: the splitting convention, the build pipeline, and the fallback."
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-30
 type: Architecture
 kind: Explanation
 authors:
@@ -14,7 +14,9 @@ related:
   - adr/0022-reveal-integration-and-token-theme
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0004-amend-common-docs-as-extensible-variation
+  - adr/0030-markua-preprocess-to-directive
   - architecture/theming
+  - architecture/markua
 ---
 
 # Slide decks
@@ -47,6 +49,16 @@ ADR-0012's earlier "anywhere" to path + kind). A deck's frontmatter is the norma
 metadata contract;
 `title`, `description`, and `hero_image` feed the title slide and the social card,
 and `doc_status: draft` gates the deck from sitemap and feeds like any other page.
+
+**Decks are currently Markua-agnostic.** The [Markua subset](./markua.md) is
+scoped to docsite pages only: all five Markua passes no-op on a `kind:
+Presentation` page through the shared `isPresentationFile()`/`guardDeck()` guard
+at the plugin registration site, so a Markua marker written inside deck content
+is left untouched rather than partially interpreted — a `{…}` line is never
+spliced and a `{aside}` wrapper never swallows a `###` slide boundary. This is a
+deliberate scope decision ([ADR-0030](../adr/0030-markua-preprocess-to-directive.md)
+Consequences), not an accident of ordering; deck-Markua support is tracked as a
+follow-up.
 
 ## The slide-splitting convention
 

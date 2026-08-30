@@ -2,7 +2,7 @@
 title: "ADR-0030: Render Markua by preprocessing to remark-directive"
 description: Support a curated Markua subset by compiling its non-CommonMark blocks into remark-directive containers plus a small attribute-list plugin, rather than a micromark extension.
 doc_status: active
-updated: 2026-08-29
+updated: 2026-08-30
 type: ADR
 kind: ADR
 authors:
@@ -157,6 +157,31 @@ ToC-heading-exclusion demotion pass (there is no native aside-heading exclusion)
   with `astro:assets` via the native glob loader's page-relative resolution (lower risk
   than first carried); the figure concern proves a local and a web image both render,
   the local one optimised, with `{width:}` surviving the `__ASTRO_IMAGE_` round-trip.
+
+### Amendment (2026-08-30, post-markua-hardening): deck scope resolved as (a) Markua-agnostic
+
+The Positioning section of the [research note](../architecture/research/markua-syntax-support.md)
+scoped Markua to "docsites and presentations", but no deck fixture ever exercised
+it, and the three Markua remark passes run **before** `deckSplit` — worse than
+inert, since a `{…}` slide line could be silently spliced or a `{aside}` wrapper
+could swallow a `###` slide boundary. This is now resolved:
+
+- **Decision (a) — decks are Markua-agnostic.** All five Markua passes
+  (`markuaNormalise`, `markuaAttributes`, `markuaCallouts`, `markuaFigure`,
+  `markuaTocDemote`) no-op on a `kind: Presentation` page. Implemented as one
+  shared `isPresentationFile()` predicate plus a `guardDeck()` wrapper applied at
+  the plugin registration arrays (`config.ts`'s remark and rehype arrays), so
+  deck-agnosticism is a property of array membership rather than a per-plugin
+  body check — a future 6th pass is guarded automatically by construction.
+  `deckSplit` and `remarkDirective` are intentionally **not** wrapped: they are
+  Markua-agnostic already or own the deck-splitting concern outright.
+- **(b) decks-Markua-capable is deferred.** Making decks genuinely Markua-aware
+  (composing the Markua passes with `deckSplit`, a deck-Markua fixture, and the
+  associated a11y coverage) is feature-sized and out of scope here. Tracked as a
+  follow-up issue (to be filed at consolidation — the orchestrator opens the
+  tracker issue against the merged state and backfills its number/link here).
+- This amendment does not change the Decision or Risks above; it resolves the
+  deck-scope ambiguity the original Positioning language left open.
 
 ## Alternatives considered
 

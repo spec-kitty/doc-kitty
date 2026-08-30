@@ -2,7 +2,7 @@
 title: Markua subset
 description: "The curated, opt-in Markua subset doc-kitty renders: the five constructs, the callout mapping, the build-time pipeline, and — explicitly — what is out of scope."
 doc_status: active
-updated: 2026-08-29
+updated: 2026-08-30
 type: Architecture
 kind: Explanation
 authors:
@@ -194,6 +194,15 @@ ignored, where noted) rather than as intended Leanpub output:
   are not honoured.
 - **Inline `:fa-name:` icons** — only `{icon: fa-name}` on a callout is
   supported; a standalone inline Font Awesome shorthand is not.
+- **Presentation pages (`kind: Presentation`)** — decks are **Markua-agnostic**.
+  All five passes (`markuaNormalise`, `markuaAttributes`, `markuaCallouts`,
+  `markuaFigure`, `markuaTocDemote`) no-op on a deck page through one shared
+  `isPresentationFile()` predicate and a `guardDeck()` wrapper applied at the
+  plugin registration arrays in `config.ts`, so a Markua marker (`{…}`, `W>`,
+  `{aside}`) inside deck content is left untouched rather than silently spliced
+  or swallowing a slide boundary. This is a deliberate scope decision
+  ([ADR-0030](../adr/0030-markua-preprocess-to-directive.md) Consequences), not
+  an oversight — deck-Markua support is tracked as a follow-up.
 
 An attribute the subset does not honour for its target (any of the above, plus
 any other key not listed in the [attribute-list contract](../../kitty-specs/markua-syntax-support-01M167JG/contracts/attribute-list-plugin.md))

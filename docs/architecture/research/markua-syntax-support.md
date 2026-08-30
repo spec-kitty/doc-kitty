@@ -2,7 +2,7 @@
 title: Supporting Markua syntax
 description: "How doc-kitty could support a curated subset of Markua (images, ids, asides, blurbs, icons) through remark, rehype, and Starlight."
 doc_status: active
-updated: 2026-08-22
+updated: 2026-08-30
 type: Architecture
 kind: Explanation
 tags: [markua, markdown, remark, starlight, images, asides]
@@ -311,6 +311,15 @@ Positioning: doc-kitty supports Markua for **docsites and presentations only**. 
 gives authors Leanpub syntax compatibility through syntax alignment, but it does
 not build a book or document pipeline; that would compete with Leanpub. See
 [Example content from ars-rethorica](./ars-rethorica-book-example.md).
+
+> **Scope breadcrumb (2026-08-30, post-markua-hardening).** This "presentations"
+> positioning was never implemented and has been superseded: decks
+> (`kind: Presentation`) are currently **Markua-agnostic** — all five Markua
+> passes no-op on deck pages ([ADR-0030](../../adr/0030-markua-preprocess-to-directive.md)
+> Consequences, decision (a)) — and [slide-decks.md](../slide-decks.md) is the
+> docs of record for deck scope. Deck-Markua support remains a tracked, deferred
+> follow-up (b); read this paragraph as the original research framing, not the
+> shipped behaviour.
 
 In scope (the subset that matches doc-kitty's needs):
 

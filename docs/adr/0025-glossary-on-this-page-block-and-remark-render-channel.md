@@ -2,7 +2,7 @@
 title: "ADR-0025: The \"On this page\" block and the remark→render data channel (ADR-0017 companion)"
 description: A doc-kitty-owned carrier-body block composes the M3 references/related renderers and re-derives the glossary links a page used at render time, never editing M3-owned files.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-30
 type: ADR
 kind: ADR
 authors:
@@ -122,6 +122,13 @@ does not, and joining them is the risk.
 - The datum is re-derived by the **same pure functions** the pipeline runs (`glossary-term` +
   `computePageLinks`), so "links used" cannot drift from "links inserted" — same
   functions, same `(body, context, index)` — and `:term` links are included.
+- **Enforcement (post-markua-hardening, WP03).** This claim is no longer only a
+  design intent: `src/tests/glossary-substrate-parity.test.ts` fails the build if a
+  build-time remark stage is registered but neither mirrored by the re-derive path
+  nor recorded as a keyed, conscious exclusion. `page-processor.ts` exports
+  `REDERIVE_REMARK_PLUGINS` as the single source of the mirrored set (the `MIRRORED`
+  classification is derived from it, not hand-listed), so the re-derive stage list
+  and the build stage list cannot silently diverge.
 
 ### Negative
 
