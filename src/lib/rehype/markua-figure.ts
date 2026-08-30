@@ -80,6 +80,7 @@
  * `theme.css` by WP05.
  */
 import { safeHref } from './diagram-figure.js';
+import { isPresentationFile } from '../deck/is-presentation.js';
 
 /** Minimal structural hast node — enough to find/replace `<img>`s. */
 interface HastNode {
@@ -234,7 +235,7 @@ interface MarkuaFigureFile {
  */
 export default function markuaFigure() {
   return function transformer(tree: HastNode, file?: MarkuaFigureFile): void {
-    if (file?.data?.astro?.frontmatter?.kind === 'Presentation') return;
+    if (isPresentationFile(file)) return;
     const walk = (node: HastNode): void => {
       const children = node.children;
       if (!Array.isArray(children)) return;
