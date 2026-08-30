@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP02",
+  "captured_at": "2026-08-30T05:56:37Z",
+  "base_branch": "feat/post-markua-hardening",
+  "base_commit": "7af69d7464a654a499f5b1d04af09acb74c203de",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-08-30T05:14:27.492349Z",
+      "decision_id": "01M18HEA94W7DVZBX3CD5GY5AV",
+      "final_answer": "(a) decks are Markua-agnostic now: guard all five Markua passes off Presentation pages via one shared predicate + a registration-site guardDeck wrap; (b) decks-Markua-capable is filed as a tracked follow-up issue.",
+      "input_key": "deck_markua_scope",
+      "mission_id": "01M18HD2G0ZEW57XYN24BV7SQT",
+      "mission_slug": "post-markua-hardening-01M18HD2",
+      "opened_by": "cli",
+      "options": [
+        "(a) decks Markua-agnostic now",
+        "(b) decks Markua-capable",
+        "(a) now, (b) filed follow-up"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Is the deck (Presentation) route in scope for Markua slide content, or Markua-agnostic?",
+      "rationale": null,
+      "resolved_at": "2026-08-30T05:14:40.017993Z",
+      "resolved_by": null,
+      "slot_key": "specify.deck-scope.markua-applicability",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M18HD2G0ZEW57XYN24BV7SQT",
+  "version": 1
+}
