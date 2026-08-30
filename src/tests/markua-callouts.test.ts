@@ -15,7 +15,11 @@
  * `remarkAsides` to render.
  */
 import { describe, it, expect, vi } from 'vitest';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
 import markuaCallouts from '../lib/remark/markua-callouts.js';
+import markuaNormalise from '../lib/remark/markua-normalise.js';
 import {
   resolveCalloutTarget,
   decideEmission,
@@ -47,6 +51,26 @@ function run(node: MdastLike): MdastLike {
   const tree: MdastLike = { type: 'root', children: [node] };
   markuaCallouts()(tree);
   return (tree.children as MdastLike[])[0];
+}
+
+/**
+ * Run RAW Markdown through the real `markuaNormalise` fold (not a hand-built
+ * synthetic node) and return the resulting root's first child — the actual
+ * `containerDirective` the normaliser emits. C36e / D-04b: this is what makes
+ * form 1 (`W>`) and form 3 (`{blurb, class: warning}`) below genuinely distinct
+ * PRE-normalisation inputs (different Markdown source) rather than two
+ * hand-built, byte-identical `directive('caution')` nodes — the vacuous shape
+ * the pre-fix test had. If the normalise fold breaks (e.g. the class→directive
+ * mapping or the wrapper-marker regex), this helper's output changes and the
+ * equivalence assertion below reds.
+ */
+function normalise(md: string): MdastLike {
+  const tree = unified().use(remarkParse).use(remarkGfm).parse(md) as unknown as {
+    type: string;
+    children: MdastLike[];
+  };
+  markuaNormalise()(tree as never);
+  return tree.children[0];
 }
 
 /** Read the `className` list off a node's emitted `hProperties`. */
@@ -142,13 +166,20 @@ describe('theme-callout emission — the six theme classes (T014, hast shape)', 
 
 describe('three-input-form equivalence (FR-004)', () => {
   it('W>, {class: warning}+B>, {blurb, class: warning} all emit the identical caution result', () => {
-    // Form 1 (`W>`): WP02 folds the letter to the `caution` directive name.
-    const formLinePrefix = run(directive('caution'));
-    // Form 2 (`{class: warning}` + `B>`): arrives as the generic directive with a
-    // recognised `class` attribute WP04 folds to `warning` → `caution`.
+    // Form 1 (`W>`): a REAL `W> …` line, folded by the actual `markuaNormalise`
+    // pass (not a hand-built `directive('caution')`) so this form's
+    // pre-normalisation input is genuinely its own Markdown source (C36e).
+    const formLinePrefix = run(normalise('W> Be careful.'));
+    // Form 2 (`{class: warning}` + `B>`): `markuaNormalise` leaves the `{class:}`
+    // line raw for WP08 (`markua-attributes`) to fold onto the `generic`
+    // container's `attributes` — that fold is out of `markua-callouts`' own
+    // scope, so its POST-fold shape (what `markua-callouts` actually receives)
+    // is modelled directly, distinctly from forms 1/3.
     const formClassAttr = run(directive('generic', { class: 'warning' }));
-    // Form 3 (`{blurb, class: warning}`): WP02 folds the wrapper class to `caution`.
-    const formWrapper = run(directive('caution'));
+    // Form 3 (`{blurb, class: warning}`): a DIFFERENT real Markdown source from
+    // form 1 — a wrapper, not a line-prefix run — folded by the same real
+    // `markuaNormalise` pass. Distinct pre-normalisation input, same result.
+    const formWrapper = run(normalise('{blurb, class: warning}\n\nBe careful.\n\n{/blurb}'));
 
     // All three take the identical native-aside path (bare, no id/icon).
     for (const node of [formLinePrefix, formClassAttr, formWrapper]) {

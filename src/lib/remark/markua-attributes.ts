@@ -153,10 +153,37 @@ function attachToBlock(target: MdastNode, attrs: AttrList): void {
 }
 
 /**
- * Fold the block-form attribute lists in ONE block-level sibling list: each LONE
- * attribute-list paragraph (its entire trimmed text parses as `{…}`) attaches to
- * the following block and is spliced out. Whitespace-only paragraphs between are
- * not skipped — the attribute list must be IMMEDIATELY above its target.
+ * Merge a coalesced run of stacked `{…}` attribute lists into one, nearest-wins:
+ * `list` is in document order (index 0 = farthest from the target, last = the
+ * one immediately above the target). For a conflicting key the nearer list's
+ * value overrides the farther one's, in both the `entries` and the resolved
+ * `id` channel (mirrors `entries.id`, since `parseAttrList` keeps the two in
+ * sync — see `markua-attributes.internal.ts`).
+ */
+function mergeAttrLists(list: AttrList[]): AttrList {
+  let entries: Record<string, string> = {};
+  let id: string | undefined;
+  for (const attrs of list) {
+    entries = { ...entries, ...attrs.entries };
+    if (attrs.id !== undefined) id = attrs.id;
+  }
+  return { entries, id };
+}
+
+/**
+ * Fold the block-form attribute lists in ONE block-level sibling list: a RUN of
+ * consecutive LONE attribute-list paragraphs (each one's entire trimmed text
+ * parses as `{…}`) immediately above one target attaches as a single merged
+ * (nearest-wins) attribute list, and the whole run is spliced out. Whitespace-
+ * only paragraphs between are not skipped — the run must be IMMEDIATELY above
+ * its target.
+ *
+ * Two (or more) stacked attribute-list paragraphs above one block used to be
+ * folded one step at a time: the outer attached to the inner (itself an
+ * attribute-list paragraph, not a real target) and was then spliced out with
+ * it, silently losing the outer's attributes. Coalescing the whole run before
+ * attaching — and merging `entries`/`id` with nearest-wins — fixes that without
+ * touching any target that only ever had a single attribute list above it.
  *
  * The pass RECURSES into `containerDirective` children (defect D2, fixed here): a
  * WP02 `{aside}`/`{blurb}` wrapper is a block-level container whose body is its own
@@ -167,13 +194,37 @@ function attachToBlock(target: MdastNode, attrs: AttrList): void {
  */
 function applyBlockFormsToChildren(children: MdastNode[]): MdastNode[] {
   const kept: MdastNode[] = [];
-  for (let i = 0; i < children.length; i += 1) {
+  let i = 0;
+  while (i < children.length) {
     const node = children[i];
     if (node.type === 'paragraph') {
       const attrs = parseAttrList(paragraphText(node));
-      if (attrs && i + 1 < children.length) {
-        attachToBlock(children[i + 1], attrs);
-        continue; // drop the consumed attribute paragraph.
+      if (attrs) {
+        // Look ahead for more lone attribute-list paragraphs stacked directly
+        // above the same target, coalescing the whole run before attaching.
+        const run: AttrList[] = [attrs];
+        let j = i + 1;
+        while (j < children.length && children[j].type === 'paragraph') {
+          const siblingAttrs = parseAttrList(paragraphText(children[j]));
+          if (!siblingAttrs) break;
+          run.push(siblingAttrs);
+          j += 1;
+        }
+        if (j < children.length) {
+          attachToBlock(children[j], mergeAttrLists(run));
+          // Advance past the whole coalesced run (not past the target itself)
+          // so the target is still visited exactly once, on the next
+          // iteration, for its own recursion/keep handling below — this is
+          // what avoids double-processing any spliced-out run member.
+          i = j;
+          continue;
+        }
+        // The run ran off the end of the sibling list with no target to
+        // attach to — every paragraph in it stays as literal text, same as
+        // the pre-existing single-paragraph trailing case.
+        for (let k = i; k < j; k += 1) kept.push(children[k]);
+        i = j;
+        continue;
       }
     }
     // Recurse into wrapper containers so a nested attribute list folds too.
@@ -181,6 +232,7 @@ function applyBlockFormsToChildren(children: MdastNode[]): MdastNode[] {
       node.children = applyBlockFormsToChildren(node.children);
     }
     kept.push(node);
+    i += 1;
   }
   return kept;
 }
