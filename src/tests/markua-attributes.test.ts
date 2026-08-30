@@ -291,6 +291,49 @@ describe('markuaAttributes — block form nested inside a wrapper (D2)', () => {
   });
 });
 
+// #36.2 / C36d: two `{…}` attribute-list paragraphs stacked directly above ONE
+// target used to fold one step at a time — the outer attached to the inner
+// (itself an attribute-list paragraph, not a real target) and was spliced out
+// WITH it, silently losing the outer's attributes. This FAILS on the pre-fix
+// `applyBlockFormsToChildren` (only `alt` would land; `width` is lost).
+describe('markuaAttributes — stacked attribute-list paragraphs coalesce (C36d)', () => {
+  it('{width:"50%"} then {alt:"x"} stacked above one image → both attributes land (merged, nearest-wins)', () => {
+    const tree = transform('{width: "50%"}\n\n{alt: "x"}\n\n![cap](pic.png)\n');
+    // Both attribute-list paragraphs are consumed → only the image paragraph left.
+    expect(tree.children).toHaveLength(1);
+    const img = tree.children?.[0].children?.[0] as Node;
+    expect(img.type).toBe('image');
+    const props = hProps(img);
+    expect(props.width).toBe('50%');
+    expect(props.markuaAlt).toBe('x');
+  });
+
+  it('nearest-wins: the list closer to the target overrides a conflicting key from the farther one', () => {
+    const tree = transform('{width: "50%"}\n\n{width: "75%", alt: "near"}\n\n![cap](pic.png)\n');
+    const img = tree.children?.[0].children?.[0] as Node;
+    const props = hProps(img);
+    // The nearer list's width (75%) wins over the farther one's (50%).
+    expect(props.width).toBe('75%');
+    expect(props.markuaAlt).toBe('near');
+  });
+
+  it('three stacked attribute-list paragraphs above one heading all fold (id nearest-wins)', () => {
+    const tree = transform('{id: "far"}\n\n{class: warning}\n\n{id: "near"}\n\n# Heading\n');
+    expect(tree.children).toHaveLength(1);
+    const heading = tree.children?.[0] as Node;
+    expect(heading.type).toBe('heading');
+    // Only `id` is honoured on a bare heading; the nearest of the two ids wins.
+    expect(hProps(heading).id).toBe('near');
+  });
+
+  it('a trailing run of attribute-list paragraphs with no target stays literal text', () => {
+    const tree = transform('{width: "50%"}\n\n{alt: "x"}\n');
+    expect(tree.children).toHaveLength(2);
+    expect(tree.children?.[0].type).toBe('paragraph');
+    expect(tree.children?.[1].type).toBe('paragraph');
+  });
+});
+
 // ===========================================================================
 // 5. Config wiring — the two MANDATORY committed assertions
 // ===========================================================================
@@ -436,17 +479,23 @@ describe('config wiring — markua ACTIVE (prepend before Starlight + pinned ord
     expect(n).not.toContain('doc-kitty:glossary');
   });
 
+  // The markua arrays are wrapped `[...].map(guardDeck)` (WP02, C36f), so each
+  // member is a deck-guard whose real identity is reachable via `.__inner`
+  // (C36c). These wiring assertions look THROUGH the wrap — exactly as the S-04
+  // parity enumerator does — so they still pin the real plugins and their order.
+  const deckInner = (e: unknown): unknown => (e as { __inner?: unknown })?.__inner ?? e;
+
   it('registers remarkDirective once, then markua remark in the pinned order', () => {
     const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true });
     const remark = combinedRemark(arr, ['doc-kitty:remark-directive', 'doc-kitty:markua']);
     expect(remark.filter((e) => e === remarkDirective).length).toBe(1);
-    // remarkDirective → markuaNormalise → markuaAttributes → markuaCallouts.
-    expect(remark).toEqual([remarkDirective, markuaNormalise, markuaAttributes, markuaCallouts]);
+    // remarkDirective (unwrapped) → markuaNormalise → markuaAttributes → markuaCallouts.
+    expect(remark.map(deckInner)).toEqual([remarkDirective, markuaNormalise, markuaAttributes, markuaCallouts]);
   });
 
   it('registers the markua rehype stage as [figure, tocDemote]', () => {
     const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true });
     const cfg = runSetup(arr, 'doc-kitty:markua').find((c) => c.markdown?.rehypePlugins);
-    expect(cfg?.markdown?.rehypePlugins).toEqual([markuaFigure, markuaTocDemote]);
+    expect((cfg?.markdown?.rehypePlugins ?? []).map(deckInner)).toEqual([markuaFigure, markuaTocDemote]);
   });
 });
