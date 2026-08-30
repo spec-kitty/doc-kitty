@@ -42,22 +42,48 @@
  * so the MDX-expression phantom stays dormant — the reserved `mdx` option below
  * marks where it would slot in.
  *
- * MARKUA is NOT mirrored here (opt-in preset, see the FORWARD RULE in the
- * markuaIntegration docstring in `config.ts`). This factory does NOT run the Markua
- * normaliser/attribute passes, so a page that uses Markua constructs re-derives with
- * `A>`/`{blurb}`/`{...}` as literal text. This is inert TODAY — the corpus places no
- * autolinkable term surface (or `:term`) inside a Markua callout body, and Markua
- * fixtures set `tableOfContents:false` so `OnThisPage` is not exercised on them. But
- * any FUTURE re-derive parity work (or a page mixing glossary terms with Markua
- * callouts) MUST decide to either mirror the Markua passes here or record a conscious
- * exclusion — the same "mirror the build remark stack" obligation gfm/smartypants
- * above already carry. Tracked as a follow-up.
+ * PARITY IS ENFORCED, not by convention. Which build remark stages this factory
+ * mirrors (and which are consciously NOT mirrored — the Markua passes, the diagram
+ * passes, the glossary term/autolink passes, deck-split) is a STRUCTURAL guard:
+ * `src/tests/glossary-substrate-parity.test.ts` enumerates the build's remark stack
+ * and fails if any stage is neither mirrored here nor a keyed, justified conscious
+ * exclusion, and a behavioural golden-tree catches a WRONG exclusion (issue #35,
+ * contract C35). The durable single source that guard derives its `MIRRORED` set
+ * from is {@link REDERIVE_REMARK_PLUGINS} below — this factory consumes the SAME
+ * array, so the two cannot silently disagree.
  */
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkSmartypants from 'remark-smartypants';
 import remarkDirective from 'remark-directive';
+
+/** When a mirrored plugin is attached: always, or only under `opts.directive`. */
+type RemarkPluginWhen = 'always' | 'directive';
+
+/**
+ * REDERIVE_REMARK_PLUGINS — the single, ordered source of truth for the build
+ * remark stages the re-derive substrate replays, over the base `remarkParse`.
+ *
+ * `createPageProcessor` CONSUMES this array (it is not a doc comment), and the
+ * parity guard (`glossary-substrate-parity.test.ts`) DERIVES its `MIRRORED` set
+ * from the same array — never a hand-list — so what the substrate actually replays
+ * and what the guard believes it replays cannot drift apart (issue #35 / D-1, C35,
+ * S-04). Adding a mirror here automatically classifies the matching build stage as
+ * `MIRRORED`; removing one demands a conscious exclusion or reds the guard.
+ *
+ * `always` plugins ride every processor; `directive` plugins are attached only when
+ * the caller passes `{ directive: true }` (the "links used" re-derive needs
+ * `:term[...]{...}` as a real `textDirective`; the definitions strip does not).
+ */
+export const REDERIVE_REMARK_PLUGINS: ReadonlyArray<{
+  plugin: import('unified').Plugin;
+  when: RemarkPluginWhen;
+}> = [
+  { plugin: remarkGfm, when: 'always' },
+  { plugin: remarkSmartypants, when: 'always' },
+  { plugin: remarkDirective, when: 'directive' },
+];
 
 /** Which optional passes the caller needs beyond the always-on gfm + smartypants. */
 export interface PageProcessorOptions {
@@ -76,7 +102,12 @@ export interface PageProcessorOptions {
  * what delivers smartypants parity — see the module note (issue #20).
  */
 export function createPageProcessor(opts: PageProcessorOptions = {}) {
-  let p = unified().use(remarkParse).use(remarkGfm).use(remarkSmartypants);
-  if (opts.directive) p = p.use(remarkDirective);
-  return p;
+  // Consume the single REDERIVE_REMARK_PLUGINS source (never an inline list), so
+  // this factory and the parity guard share one authority (issue #35 / D-1).
+  // Applied as one PluggableList after the base parser — same runtime pipeline as
+  // the former `.use(gfm).use(smartypants)[.use(directive)]` chain.
+  const plugins = REDERIVE_REMARK_PLUGINS.filter(
+    ({ when }) => when === 'always' || (when === 'directive' && opts.directive),
+  ).map(({ plugin }) => plugin);
+  return unified().use(remarkParse).use(plugins);
 }
