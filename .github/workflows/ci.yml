@@ -109,6 +109,8 @@ jobs:
         run: pnpm validate:example
       - name: Resolve internal links & related refs
         run: pnpm validate:links
+      - name: Assert the ADR index is regeneration-clean (lockfile check)
+        run: pnpm validate:adr-index
       - name: Resolve citation catalog (external references)
         run: pnpm validate:catalog
       - name: Markdownlint (docs + example/docs)
