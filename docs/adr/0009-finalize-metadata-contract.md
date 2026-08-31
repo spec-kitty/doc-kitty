@@ -87,8 +87,35 @@ with Starlight's built-in `banner`. The shape and `social_thumb` fallback are
 unchanged; the fallback chain is now `social_thumb` → `hero_image.src` → site
 default.
 
+## Update (2026-08-31) — `type` and `kind` are optional (#38/#40)
+
+The QOL adoption-enabler mission (issues #38/#40) amends decisions 1 and 5 of the
+finalized contract so an adopter is not forced to hand-annotate two required
+fields across a large corpus:
+
+- **`kind` is OPTIONAL** (decision 1 said "required on every page"). The standalone
+  gate no longer requires `kind`; an absent `kind` is accepted (there is no
+  derivation source for it). When present it must still be a non-empty string, and
+  the open-vocabulary warn on an unknown value is unchanged. The site zod schema
+  was already lenient here; this aligns the gate with it.
+- **`type` is OPTIONAL and section-DERIVED** (decision 5 said "`type` is
+  authored"). When a page omits `type`, the gate derives the effective type from
+  the section registry; an authored `type` wins, and an authored-vs-derived
+  mismatch is an advisory `warnings[]` entry, not a hard error. A root/orphan page
+  with no derivable type is accepted as deterministically untyped. The rationale
+  and the absent-derivation behavior are recorded in
+  [ADR-0004](./0004-amend-common-docs-as-extensible-variation.md).
+- **Vocabulary override.** `type`/`kind` terms are aliasable/forbiddable per
+  consumer via `_meta/vocabulary.yaml`, applied to authored and derived values —
+  see [ADR-0031](./0031-vocabulary-override.md).
+
+Backward compatibility holds: a page that already declares `type`/`kind` validates
+exactly as before, and with no `_meta/vocabulary.yaml` the shipped defaults apply
+unchanged (`Feature` stays valid).
+
 ## References
 
 - [Metadata model](../architecture/metadata-model.md)
 - [ADR-0004](./0004-amend-common-docs-as-extensible-variation.md),
-  [ADR-0005](./0005-frontmatter-doc-status-and-divio-type.md)
+  [ADR-0005](./0005-frontmatter-doc-status-and-divio-type.md),
+  [ADR-0031](./0031-vocabulary-override.md)

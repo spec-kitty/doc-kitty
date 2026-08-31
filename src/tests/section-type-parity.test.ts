@@ -72,6 +72,42 @@ describe('section-type parity: metadata.ts ⇔ validate-frontmatter.mjs', () => 
   );
 });
 
+// #41 / FR-011 (C-003): era-partitioned ADR trees (`adr/<era>/NNNN-*.md`) keep
+// their `ADR` typing at ANY depth, and the basename-keyed `template.md` subtype
+// still resolves under an era folder. This is a GUARD ONLY — it pins the existing
+// first-path-segment switch on BOTH the ts (`expectedDocType`) and mjs
+// (`expectedType`) derivations so a future refactor cannot silently break one
+// copy, and it fails if the mapping is ever broadened to an `adr/**` glob (which
+// would clobber the `template.md` subtype). It does NOT change the mapping.
+describe('depth-tolerant ADR typing (#41 / FR-011 guard, both twins)', () => {
+  const ERA_CASES: [string, string][] = [
+    ['adr/3.x/0001-foo.md', 'ADR'],
+    ['adr/3.x/0007-some-decision.md', 'ADR'],
+    ['adr/2.x/legacy/0003-deep.md', 'ADR'],
+    ['adr/3.x/template.md', 'Template'],
+  ];
+
+  it.each(ERA_CASES)(
+    '%s → %s on the ts derivation (expectedDocType)',
+    (relPath, want) => {
+      expect(expectedDocType(relPath)).toBe(want);
+    },
+  );
+
+  it.each(ERA_CASES)(
+    '%s → %s on the mjs derivation (expectedType)',
+    (relPath, want) => {
+      expect(expectedType(relPath, MJS_SECTION_TYPE)).toBe(want);
+    },
+  );
+
+  it('the two derivations agree on every era path (twin parity)', () => {
+    for (const [relPath] of ERA_CASES) {
+      expect(expectedDocType(relPath)).toBe(expectedType(relPath, MJS_SECTION_TYPE));
+    }
+  });
+});
+
 describe('section-type / DOC_TYPES coupling (review N3)', () => {
   // Guard the one intentional gap the round-2 correctness lens flagged: the
   // registry's `glossary → Glossary` section-default `type` is NOT in the

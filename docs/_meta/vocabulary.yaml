@@ -1,0 +1,36 @@
+# Vocabulary override (#40 / ADR-0031) — the `type`/`kind` term seam.
+#
+# This is doc-kitty's OWN, shipped-default vocabulary: it declares NO aliases and
+# NO forbidden terms, so every canonical `type`/`kind` value (including `Feature`)
+# stays valid and the corpus validates exactly as before (NFR-002). It exists to
+# document the seam a consumer overrides.
+#
+# The standalone gate (`validate-frontmatter.mjs`) reads `<docsRoot>/_meta/vocabulary.yaml`
+# without an Astro build and resolves `default → consumer`. The resolver is
+# applied to the EFFECTIVE `type` — whether the value was AUTHORED or DERIVED from
+# the section registry — in the order derive-if-absent → resolve → validate.
+#
+# A consumer whose governance forbids a term doc-kitty ships (e.g. a Mission-canon
+# adopter for whom `Feature` is a forbidden term) drops a `_meta/vocabulary.yaml`
+# into their own docs root, for example:
+#
+#   types:
+#     aliases:
+#       Feature: Mission     # authored OR derived "Feature" resolves to "Mission"
+#     forbidden:
+#       - Feature            # an effective type of "Feature" fails, naming the alias
+#   kinds:
+#     aliases: {}
+#     forbidden: []
+#
+# Semantics: `forbidden` is checked on the raw term and takes precedence (a banned
+# term fails even when aliased — the alias then supplies the replacement to name);
+# an alias otherwise neutralizes the term; an unlisted term passes through. An
+# absent file means the shipped defaults below.
+
+types:
+  aliases: {}
+  forbidden: []
+kinds:
+  aliases: {}
+  forbidden: []

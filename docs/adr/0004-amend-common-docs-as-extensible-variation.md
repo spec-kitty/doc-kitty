@@ -121,6 +121,38 @@ tolerated, not supported.
 |---|---|---|---|---|
 | `presentations/` | `Presentation` | appended (after `changelog`) | ADR-0004 | Markdown-authored reveal.js slide decks. |
 
+## Update (2026-08-31) — `type` is optional and registry-derived (#38/#40)
+
+The QOL adoption-enabler mission (issues #38/#40) amends the "required `type`"
+stance recorded in the Decision above. An adopter migrating a large existing
+corpus should not be forced to hand-annotate `type` on every file, so:
+
+- **`type` is OPTIONAL and section-DERIVED.** When a page omits `type`, the
+  standalone gate derives the effective type from the section registry
+  (`_meta/sections.yaml` → `expectedDocType`), filling ONLY the absent case. An
+  explicitly authored `type` always wins; a disagreement with the derived type
+  stays an ADVISORY warning (never a hard failure), preserving the open-vocabulary
+  posture this ADR already established. `kind` is likewise optional (there is no
+  derivation source for it — an absent `kind` is simply accepted).
+- **Absent-derivation is deterministic "untyped".** Type derivation is NOT total:
+  a page at the repo root or under an unregistered/orphan section has no section
+  to derive from. The chosen behavior (Edge Cases, US1 AS-3) is to ACCEPT such a
+  page as deterministically **untyped** — the gate reports no problem and an
+  explicit `null` effective type (never a crash, never a fabricated or empty
+  type). This keeps corpus onboarding unblocked without inventing a garbage value.
+- **Vocabulary is overridable per consumer.** A consumer whose governance forbids
+  a term doc-kitty ships (e.g. `Feature`) can alias/neutralize/forbid it through a
+  declarative `_meta/vocabulary.yaml`, applied to authored AND derived values. The
+  mechanism and its `default → consumer` resolution are recorded in
+  [ADR-0031](./0031-vocabulary-override.md). `Feature` remains a valid default
+  term; the override is opt-in and absent → shipped defaults unchanged (NFR-002).
+
+OKF interoperability is preserved: OKF requires a non-empty `type` on emitted
+records, and the toolkit still resolves an effective type for every non-orphan
+page; the relaxation is about AUTHORING cost, not the emitted contract. See also
+[ADR-0009](./0009-finalize-metadata-contract.md) (the frontmatter contract) for
+the field-level restatement.
+
 ## Alternatives considered
 
 ### Option A: Adhere strictly to Common Docs
