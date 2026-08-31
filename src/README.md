@@ -5,10 +5,11 @@ repository installs or copies in. See the runnable
 [`../example`](../example) for how it's wired together, and
 [`../docs/architecture`](../docs/architecture) for how it works.
 
-> **Structure-first scaffold.** The files here define the intended API surface
-> and are annotated where they depend on exact Astro/Starlight versions to be
-> verified when the build toolchain is wired up. Nothing here has been built or
-> installed yet.
+The toolkit ships a working build: the Starlight config preset, the metadata
+schema and README-as-index loader, the `rss` / `llms.txt` / agent-API route
+handlers, and the scaffold/validate/new-doc scripts are all built and covered by
+the test suite, which runs in CI alongside frontmatter validation and
+accessibility checks.
 
 ## Layout
 
