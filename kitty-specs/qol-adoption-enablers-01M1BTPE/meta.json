@@ -1,0 +1,18 @@
+{
+  "baseline_merge_commit": "91bed398ffebfaf45a59e81579794290a28ec9e9",
+  "created_at": "2026-08-31T11:53:54.897323+00:00",
+  "flattened": true,
+  "friendly_name": "QOL Adoption-Enabler Cluster",
+  "mission_id": "01M1BTPEYFPJ6G0DPY7P7JPBY1",
+  "mission_number": null,
+  "mission_slug": "qol-adoption-enablers-01M1BTPE",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "A demanding real adopter (the spec-kitty proving ground) surfaced quality-of-life gaps that also fix doc-kitty's own inconsistencies: required type/kind frontmatter forced onto a large corpus, a hardcoded vocabulary that collides with a Mission-canon adopter's forbidden 'Feature' term, a hand-maintained ADR index that drifts, and stale AGENTS.md/README claims. This mission lands those enablers so first-adopter churn drops and doc-kitty dogfoods its own convention.",
+  "purpose_tldr": "Cut doc-kitty adoption friction and fix doc-honesty drift: optional/overridable frontmatter, a generated ADR index, and depth-tolerant ADR typing.",
+  "slug": "qol-adoption-enablers-01M1BTPE",
+  "status_phase": "1",
+  "target_branch": "feat/qol-adoption-enablers",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-31T13:33:23.588489+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP03",
+  "captured_at": "2026-08-31T14:06:55Z",
+  "base_branch": "feat/qol-adoption-enablers",
+  "base_commit": "76e4b8c324082dde5e89cf1d299c61649d9ba3e4",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

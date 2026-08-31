@@ -1,0 +1,172 @@
+{
+  "mission_slug": "qol-adoption-enablers-01M1BTPE",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP01: schema-validator-parity + optional-type fixtures; no-type doc derives section type; 607 green",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP01: missing-kind fixture RETARGETED to accept (validatorRejects===false && buildRejects===false)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP01: authored-vs-derived mismatch asserted via structured warnings[] (not console)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP01: vocabulary-resolver.test.ts non-default fixture; override applies to authored AND derived; gate-only",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP01: forbidden/alias Feature neutralization proven via fixtures (authored+derived)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "manual_review",
+      "evidence": "WP02: reviewable classification of all 19 plans/features pages (19 correct-feature, 0 corrections); no new warnings; reviewer-verified suspects",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP03: adr-index-generator.test.ts (idempotent, number-ordered, recursive); generate-adr-index.mjs --check exit 0; docs/adr/README.md=0001..0032",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP03: adr-referential-integrity.test.ts both polarities (valid passes, dangling fails) via collectDanglingRelated",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "manual_review",
+      "evidence": "WP04: AGENTS.md doc_status + kind + 13 sections + AMENDED optional-frontmatter contract; reviewer cross-checked vs validate-frontmatter.mjs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "manual_review",
+      "evidence": "WP04: README.md + src/README.md reframed (no early-scaffold); UNLICENSED stated honestly, no implied license",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP01: section-type-parity depth guard on BOTH twins; adr/<era>/NNNN->ADR; mapping unchanged (C-003)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "manual_review",
+      "evidence": "WP03: docs/context/convention.md states ADR table is generated (living-docs sync)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013 verified by the delivered tests/gates (see evidence)",
+      "proof_type": "automated_test",
+      "evidence": "WP03: assert-build-artifacts asserts BUILT /adr/ HTML links ADR-0001 (Hub auto-list, non-fakeable by source grep); example table removed",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "notes": "Verified post-implement/review; full suite 622 green."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-1",
+      "description": "No existing test deleted or weakened to pass (missing-kind retargeted, not removed)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "verification_method": "schema-validator-parity.test.ts: missing-kind fixture present as accept assertion (not removed); suite 622 green"
+    },
+    {
+      "invariant_id": "NI-2",
+      "description": "Feature remains a valid type; plans/features->Feature derivation unchanged",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "verification_method": "metadata.ts/validate-frontmatter.mjs: plans/features->Feature switch unchanged; Feature in DOC_TYPES; section-type-parity green"
+    },
+    {
+      "invariant_id": "NI-3",
+      "description": "No bijection/hand-maintenance ADR-index gate introduced (C-004); sync-check is lockfile-style",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "verification_method": "WP03 review: no bijection gate; generate-adr-index.mjs --check is regenerate-clean lockfile; stale table reds"
+    },
+    {
+      "invariant_id": "NI-4",
+      "description": "metadata.ts fs-free boundary preserved (vocab not threaded through ts derivation)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-08-31T14:00:00+00:00",
+      "verification_method": "metadata.ts has no sections.ts import (fs-free); vocab wired only in mjs validate()"
+    }
+  ]
+}

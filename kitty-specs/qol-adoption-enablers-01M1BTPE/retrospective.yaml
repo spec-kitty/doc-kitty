@@ -1,0 +1,156 @@
+schema_version: 1
+mission_id: 01M1BTPEYFPJ6G0DPY7P7JPBY1
+mission_slug: qol-adoption-enablers-01M1BTPE
+mission_number:
+friendly_name: QOL Adoption-Enabler Cluster
+mission_type: software-dev
+target_branch: feat/qol-adoption-enablers
+created_at: '2026-08-31T14:36:52.494669+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-08-31T14:36:52.494669+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-009
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-009
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-009
+- id: h-004
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-009
+not_helpful:
+- id: n-005
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-014
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-001
+  category: process
+  summary: WP01 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-010
+  details: WP WP01 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-002
+  category: process
+  summary: WP02 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-011
+  details: WP WP02 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-003
+  category: process
+  summary: WP03 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-012
+  details: WP WP03 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-004
+  category: process
+  summary: WP04 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-013
+  details: WP WP04 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/tasks/WP01-frontmatter-contract.md
+- id: e-006
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/tasks/WP02-own-corpus-correction.md
+- id: e-007
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/tasks/WP03-adr-index-generator.md
+- id: e-008
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/tasks/WP04-doc-honesty-prose.md
+- id: e-009
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/status.events.jsonl
+- id: e-010
+  kind: event_range
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/status.events.jsonl
+  range: 01M1C1DTWY0RRXMVWJGN41CVX4..01M1C2634YAY7QHX44ZZR8KT59
+- id: e-011
+  kind: event_range
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/status.events.jsonl
+  range: 01M1C2S5XFCJJREXYWZP1SNSGT..01M1C2YKW5RZCRCST30STQM19P
+- id: e-012
+  kind: event_range
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/status.events.jsonl
+  range: 01M1C33RBP5MDGCJ9T8PJVNZK8..01M1C39ZDZFKA35CQM9075M00A
+- id: e-013
+  kind: event_range
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/status.events.jsonl
+  range: 01M1C2Q08TQWMMA80VABR9P7Y3..01M1C2Z3VW76NEX98PVQP9YTC9
+- id: e-014
+  kind: file
+  path: kitty-specs/qol-adoption-enablers-01M1BTPE/analysis-report.md
+generator_version: '1.0'
+provenance_history: []
