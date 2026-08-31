@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "mission_slug": "qol-adoption-enablers-01M1BTPE",
+  "mission_id": "01M1BTPEYFPJ6G0DPY7P7JPBY1",
+  "mission_branch": "kitty/mission-qol-adoption-enablers-01M1BTPE",
+  "target_branch": "feat/qol-adoption-enablers",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "_meta/vocabulary.yaml",
+        "docs/adr/0004-amend-common-docs-as-extensible-variation.md",
+        "docs/adr/0009-*.md",
+        "docs/adr/0031-vocabulary-override.md",
+        "src/lib/metadata.ts",
+        "src/lib/schema.ts",
+        "src/lib/sections.ts",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/metadata-sections.test.ts",
+        "src/tests/schema-validator-parity.test.ts",
+        "src/tests/section-type-parity.test.ts",
+        "src/tests/type-registry-authority.test.ts",
+        "src/tests/vocabulary-resolver.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "docs/plans/features/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        ".github/workflows/ci.yml",
+        "docs/adr/0032-adr-index-generation.md",
+        "docs/adr/README.md",
+        "docs/context/convention.md",
+        "example/docs/adr/README.md",
+        "package.json",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/scripts/generate-adr-index.mjs",
+        "src/tests/adr-index-generator.test.ts",
+        "src/tests/adr-referential-integrity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "AGENTS.md",
+        "README.md",
+        "src/README.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-08-31T13:26:50.607616+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "3bbad3d1ac5feb6969a0514276cf3dd609df59ab"
+}
