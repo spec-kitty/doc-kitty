@@ -219,6 +219,144 @@ export function sectionPurposes(registry: SectionRegistry): Record<string, strin
   return purposes;
 }
 
+// ---------------------------------------------------------------------------
+// Vocabulary override (#40) — `<docsRoot>/_meta/vocabulary.yaml`
+//
+// A declarative, on-disk override that aliases / neutralizes / forbids `type`
+// and `kind` terms, resolved `default → consumer` and read WITHOUT an Astro
+// build (contracts/vocabulary-override.md). It is applied to BOTH authored and
+// section-DERIVED values by the standalone gate (FR-004/FR-005). This is the
+// CANONICAL resolver unit; a hand-mirrored twin lives in
+// `src/scripts/validate-frontmatter.mjs` (same discipline as `sections.yaml`),
+// and NFR-004 pins that the two resolve identical YAML identically.
+// ---------------------------------------------------------------------------
+
+/** The registry file, relative to a docs root (`<docsRoot>/_meta/vocabulary.yaml`). */
+export const VOCABULARY_REGISTRY_RELPATH = path.join('_meta', 'vocabulary.yaml');
+
+/** The result of resolving a single term against one vocabulary axis. */
+export interface VocabularyResolution {
+  /**
+   * The effective term after applying the alias. `undefined` when the input was
+   * `undefined`, or when the term is forbidden with no alias to redirect to.
+   */
+  effective: string | undefined;
+  /** True when the RAW input term is on the axis's `forbidden` list. */
+  forbidden: boolean;
+  /** The raw input term when an alias (or a forbid) rewrote it; else absent. */
+  aliasedFrom?: string;
+}
+
+/** A resolver over the two vocabulary axes (`type` and `kind`). */
+export interface VocabularyResolver {
+  resolveType(term: string | undefined): VocabularyResolution;
+  resolveKind(term: string | undefined): VocabularyResolution;
+}
+
+/** One parsed axis: alias map + forbidden set. */
+interface VocabularyAxis {
+  aliases: Record<string, string>;
+  forbidden: Set<string>;
+}
+
+/**
+ * Build a single-axis resolver. Semantics (contracts/vocabulary-override.md):
+ *   - `forbidden` is checked on the RAW input term and takes precedence, so a
+ *     banned term fails even when an alias would otherwise redirect it (the alias
+ *     then merely SUPPLIES the replacement to name in the failure);
+ *   - an alias rewrites the term to its replacement (the neutralize path);
+ *   - an unlisted term passes through unchanged (identity).
+ * An empty axis is the identity resolver (the shipped default → `Feature` valid).
+ */
+function makeAxisResolver(axis: VocabularyAxis): (term: string | undefined) => VocabularyResolution {
+  return (term) => {
+    if (term === undefined) return { effective: undefined, forbidden: false };
+    const aliasTarget = axis.aliases[term];
+    const forbidden = axis.forbidden.has(term);
+    const effective = aliasTarget !== undefined ? aliasTarget : forbidden ? undefined : term;
+    const result: VocabularyResolution = { effective, forbidden };
+    if (aliasTarget !== undefined) result.aliasedFrom = term;
+    return result;
+  };
+}
+
+/** Parse one axis mapping (`{ aliases?, forbidden? }`) with clear validation. */
+function parseVocabularyAxis(raw: unknown, axisName: string, source: string): VocabularyAxis {
+  const axis: VocabularyAxis = { aliases: {}, forbidden: new Set() };
+  if (raw == null) return axis;
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(`${source}: vocabulary "${axisName}" must be a mapping with optional "aliases"/"forbidden"`);
+  }
+  const { aliases, forbidden } = raw as Record<string, unknown>;
+  if (aliases != null) {
+    if (typeof aliases !== 'object' || Array.isArray(aliases)) {
+      throw new Error(`${source}: vocabulary "${axisName}.aliases" must be a mapping of term → replacement`);
+    }
+    for (const [from, to] of Object.entries(aliases as Record<string, unknown>)) {
+      if (typeof to !== 'string') {
+        throw new Error(`${source}: vocabulary "${axisName}.aliases.${from}" must map to a string term`);
+      }
+      axis.aliases[from] = to;
+    }
+  }
+  if (forbidden != null) {
+    if (!Array.isArray(forbidden)) {
+      throw new Error(`${source}: vocabulary "${axisName}.forbidden" must be a list of terms`);
+    }
+    for (const term of forbidden) {
+      if (typeof term !== 'string') {
+        throw new Error(`${source}: vocabulary "${axisName}.forbidden" entries must be strings`);
+      }
+      axis.forbidden.add(term);
+    }
+  }
+  return axis;
+}
+
+/**
+ * Parse a `vocabulary.yaml` body (the raw file text) into a {@link VocabularyResolver}.
+ *
+ * Exported for the parity twin + unit tests. Uses the same wrap-in-fences
+ * gray-matter trick as {@link parseSectionRegistry}. A malformed axis (a
+ * non-mapping `types`/`kinds`, a non-string alias target, a non-list `forbidden`)
+ * throws a clear, actionable error rather than falling back silently.
+ */
+export function parseVocabulary(raw: string, source = 'vocabulary.yaml'): VocabularyResolver {
+  const data = matter(['---', raw, '---', ''].join('\n')).data as
+    | { types?: unknown; kinds?: unknown }
+    | null;
+  if (data != null && (typeof data !== 'object' || Array.isArray(data))) {
+    throw new Error(`${source}: vocabulary must be a YAML mapping with optional "types"/"kinds"`);
+  }
+  const typeAxis = parseVocabularyAxis(data?.types, 'types', source);
+  const kindAxis = parseVocabularyAxis(data?.kinds, 'kinds', source);
+  return {
+    resolveType: makeAxisResolver(typeAxis),
+    resolveKind: makeAxisResolver(kindAxis),
+  };
+}
+
+/** The identity resolver (no aliases, no forbidden terms) — the shipped default. */
+export function identityVocabulary(): VocabularyResolver {
+  return parseVocabulary('');
+}
+
+/**
+ * Load and parse `<docsRoot>/_meta/vocabulary.yaml` into a {@link VocabularyResolver}.
+ *
+ * A MISSING file is graceful: returns the {@link identityVocabulary} resolver so
+ * the shipped default applies unchanged and `Feature` stays valid (NFR-002). A
+ * present-but-malformed file THROWS (it is authored, and a silent skip would hide
+ * the mistake). Reads the filesystem via the same `gray-matter` path as
+ * {@link loadSectionRegistry}; no new dependency.
+ */
+export function loadVocabulary(docsRoot: string): VocabularyResolver {
+  const file = path.join(docsRoot, VOCABULARY_REGISTRY_RELPATH);
+  if (!existsSync(file)) return identityVocabulary();
+  const raw = readFileSync(file, 'utf8');
+  return parseVocabulary(raw, path.relative(process.cwd(), file));
+}
+
 /** The four generated surfaces the section-level `feeds` filter gates. */
 export type FeedSurface = 'sitemap' | 'rss' | 'llms' | 'agent';
 

@@ -97,7 +97,11 @@ export const frontmatterSchema = z
     // schema error — matching the site schema's graceful-degradation posture
     // (ADR-0004, metadata-model.md).
     type: z.string().optional(),
-    kind: z.string().min(1, 'must be a non-empty string'),
+    // `kind` is OPTIONAL (#38 / FR-002): an adopter is not forced to add a second
+    // required field corpus-wide, matching the already-lenient site schema. When
+    // present it must still be a non-empty string; when absent it is accepted (no
+    // derivation source exists for `kind`).
+    kind: z.string().min(1, 'must be a non-empty string').optional(),
     okf_version: z.string().optional(),
     authors: z.array(z.string()).optional(),
     related: z.array(relatedRef).optional(),
@@ -228,6 +232,89 @@ export function expectedType(relPath, typesBySection = SECTION_TYPE) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Vocabulary override (#40) — hand-mirrored twin of `loadVocabulary` in
+// src/lib/sections.ts. The TS module cannot load in bare Node, so the resolver
+// is duplicated here (same discipline as the SECTION_TYPE / zod-shape mirrors);
+// src/tests/vocabulary-resolver.test.ts pins the two twins to identical RESOLVED
+// output for identical YAML (NFR-004). See sections.ts for the full contract.
+// ---------------------------------------------------------------------------
+
+/** Build a single-axis resolver (forbidden checked on the raw term; alias rewrites). */
+function makeAxisResolver(axis) {
+  return (term) => {
+    if (term === undefined) return { effective: undefined, forbidden: false };
+    const aliasTarget = axis.aliases[term];
+    const forbidden = axis.forbidden.has(term);
+    const effective = aliasTarget !== undefined ? aliasTarget : forbidden ? undefined : term;
+    const result = { effective, forbidden };
+    if (aliasTarget !== undefined) result.aliasedFrom = term;
+    return result;
+  };
+}
+
+/** Parse one axis mapping (`{ aliases?, forbidden? }`) with clear validation. */
+function parseVocabularyAxis(raw, axisName, source) {
+  const axis = { aliases: {}, forbidden: new Set() };
+  if (raw == null) return axis;
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(`${source}: vocabulary "${axisName}" must be a mapping with optional "aliases"/"forbidden"`);
+  }
+  const { aliases, forbidden } = raw;
+  if (aliases != null) {
+    if (typeof aliases !== 'object' || Array.isArray(aliases)) {
+      throw new Error(`${source}: vocabulary "${axisName}.aliases" must be a mapping of term → replacement`);
+    }
+    for (const [from, to] of Object.entries(aliases)) {
+      if (typeof to !== 'string') {
+        throw new Error(`${source}: vocabulary "${axisName}.aliases.${from}" must map to a string term`);
+      }
+      axis.aliases[from] = to;
+    }
+  }
+  if (forbidden != null) {
+    if (!Array.isArray(forbidden)) {
+      throw new Error(`${source}: vocabulary "${axisName}.forbidden" must be a list of terms`);
+    }
+    for (const term of forbidden) {
+      if (typeof term !== 'string') {
+        throw new Error(`${source}: vocabulary "${axisName}.forbidden" entries must be strings`);
+      }
+      axis.forbidden.add(term);
+    }
+  }
+  return axis;
+}
+
+/** Parse a `vocabulary.yaml` body into a `{ resolveType, resolveKind }` resolver. */
+export function parseVocabulary(raw, source = 'vocabulary.yaml') {
+  const data = matter(['---', raw, '---', ''].join('\n')).data;
+  if (data != null && (typeof data !== 'object' || Array.isArray(data))) {
+    throw new Error(`${source}: vocabulary must be a YAML mapping with optional "types"/"kinds"`);
+  }
+  const typeAxis = parseVocabularyAxis(data?.types, 'types', source);
+  const kindAxis = parseVocabularyAxis(data?.kinds, 'kinds', source);
+  return {
+    resolveType: makeAxisResolver(typeAxis),
+    resolveKind: makeAxisResolver(kindAxis),
+  };
+}
+
+/** The identity resolver (no aliases, no forbidden) — the shipped default vocab. */
+export const IDENTITY_VOCAB = parseVocabulary('');
+
+/**
+ * Load `<docsRoot>/_meta/vocabulary.yaml` into a resolver. A MISSING file →
+ * {@link IDENTITY_VOCAB} (shipped default, `Feature` valid, NFR-002); a
+ * present-but-malformed file THROWS (authored — a silent skip would hide it).
+ */
+export function loadVocabulary(docsRoot) {
+  const file = join(docsRoot, '_meta', 'vocabulary.yaml');
+  if (!existsSync(file)) return IDENTITY_VOCAB;
+  const raw = readFileSync(file, 'utf8');
+  return parseVocabulary(raw, relative(process.cwd(), file));
+}
+
 /**
  * Validate one file's parsed frontmatter.
  *
@@ -235,9 +322,19 @@ export function expectedType(relPath, typesBySection = SECTION_TYPE) {
  * used to derive the expected `type`; it defaults to the frozen
  * {@link SECTION_TYPE} so a caller with no registry (and the parity test, which
  * calls `validate(relPath, data)`) still validates against the section defaults.
- * @returns {{problems: string[], warnings: string[]}}
+ *
+ * `vocab` is the vocabulary override resolver (#40); it defaults to
+ * {@link IDENTITY_VOCAB} so a caller with no `_meta/vocabulary.yaml` (and the
+ * existing tests) behaves exactly as before. The resolver is applied to the
+ * EFFECTIVE `type` — whether authored or section-derived — in the contract order
+ * derive-if-absent → resolve (alias then forbidden) → validate.
+ *
+ * @returns {{problems: string[], warnings: string[], effective: string | null | undefined}}
+ *   `effective` is the resolved effective `type`: a string, `null` for a
+ *   deterministically-untyped page (orphan/root with no derivation), or
+ *   `undefined` for a `type`-exempt page (bundle-root README / generated glossary).
  */
-export function validate(relPath, data, typesBySection = SECTION_TYPE) {
+export function validate(relPath, data, typesBySection = SECTION_TYPE, vocab = IDENTITY_VOCAB) {
   const problems = [];
   const warnings = [];
   const isRootReadme = relPath === 'README.md';
@@ -267,23 +364,59 @@ export function validate(relPath, data, typesBySection = SECTION_TYPE) {
     }
   }
 
-  // Path-aware rules that schema.ts documents but leaves to this gate.
+  // Path-aware `type` rules (schema.ts documents but leaves them to this gate),
+  // now OPTIONAL + section-DERIVED + vocabulary-OVERRIDABLE (#38/#40). Contract
+  // order: derive-if-absent → resolve (alias then forbidden) → validate.
+  //   • `type` is optional. Absent → derive from the section registry (fills ONLY
+  //     the absent case). Authored → the authored value wins.
+  //   • The vocabulary override (#40) resolves the EFFECTIVE value — authored OR
+  //     derived — so a forbidden term fails and an aliased term is neutralized on
+  //     both paths (FR-004/FR-005).
+  //   • A mismatch between an authored `type` and the derived expectation stays an
+  //     ADVISORY `warnings[]` entry (authored wins, FR-003), never a hard problem.
+  //   • When derivation yields nothing (root/orphan, no registered section), the
+  //     page is accepted as deterministically UNTYPED (`effective === null`) — no
+  //     crash, no fabricated type (US1 AS-3; documented in ADR-0004).
+  //
+  // `effective` is the resolved effective `type`; it stays `undefined` for a
+  // `type`-exempt page (bundle-root README / generated glossary).
+  let effective;
   if (isRootReadme || isGeneratedGlossary) {
     // Generated glossary pages carry no path-`type` (no authored section); the
     // bundle-root README is exempt from `type` too. Neither warns on its absence.
     if (isRootReadme && 'type' in data) {
       warnings.push('bundle-root README should not carry `type`');
     }
-  } else if (!('type' in data)) {
-    problems.push('missing required `type`');
-  } else if (!DOC_TYPES.includes(data.type)) {
-    // Open vocabulary: an unknown `type` degrades to an advisory warning.
-    warnings.push(`\`type: ${data.type}\` is not in the canonical set (${DOC_TYPES.join(', ')})`);
   } else {
-    const want = expectedType(relPath, typesBySection);
-    if (want && data.type !== want) {
-      warnings.push(`\`type: ${data.type}\` but path suggests \`${want}\``);
+    const authored = 'type' in data ? data.type : undefined;
+    const derived = expectedType(relPath, typesBySection); // may be null (orphan)
+    // The effective source: authored wins, else the derived value (null → untyped).
+    const source = authored !== undefined ? authored : derived ?? undefined;
+    const resolved = vocab.resolveType(source);
+    effective = resolved.effective ?? null;
+
+    if (resolved.forbidden) {
+      // Forbidden by the vocabulary override — a hard problem naming the override
+      // and, when an alias supplies one, the allowed replacement (FR-005).
+      const raw = resolved.aliasedFrom ?? source;
+      const replacement = resolved.effective ? ` — use \`${resolved.effective}\` instead` : '';
+      problems.push(`\`type: ${raw}\` is forbidden by the vocabulary override${replacement}`);
+    } else if (authored !== undefined) {
+      // An authored value present: canonical-set + mismatch-vs-derived advisories,
+      // computed on the RESOLVED values so the override is honored on both sides.
+      const effAuthored = resolved.effective;
+      if (effAuthored !== undefined && !DOC_TYPES.includes(effAuthored)) {
+        // Open vocabulary: an unknown `type` degrades to an advisory warning.
+        warnings.push(`\`type: ${effAuthored}\` is not in the canonical set (${DOC_TYPES.join(', ')})`);
+      } else if (derived != null) {
+        const effDerived = vocab.resolveType(derived).effective;
+        if (effAuthored !== effDerived) {
+          warnings.push(`\`type: ${effAuthored}\` but path suggests \`${effDerived}\``);
+        }
+      }
     }
+    // Authored absent: the derived (or null) value is accepted silently — no
+    // "missing required `type`" problem (the #38 relaxation).
   }
 
   // `kind` is required (enforced by the schema above); an unknown value is a
@@ -337,7 +470,7 @@ export function validate(relPath, data, typesBySection = SECTION_TYPE) {
     }
   }
 
-  return { problems, warnings };
+  return { problems, warnings, effective };
 }
 
 /** CLI entry point: validate every `.md`/`.mdx` under each given root. */
@@ -362,6 +495,9 @@ export function run(argv) {
     // Section-default `type` authority for THIS root: the registry when present,
     // else the frozen fallback so a registry-less tree still validates (issue #24).
     const typesBySection = loadSectionTypes(root) ?? SECTION_TYPE;
+    // Vocabulary override for THIS root (#40): `<root>/_meta/vocabulary.yaml` when
+    // present, else the shipped-default identity resolver (`Feature` valid).
+    const vocab = loadVocabulary(root);
 
     for (const file of files) {
       const rel = relative(root, file).split('\\').join('/');
@@ -376,7 +512,7 @@ export function run(argv) {
         failures++;
         continue;
       }
-      const { problems, warnings } = validate(rel, parsed.data ?? {}, typesBySection);
+      const { problems, warnings } = validate(rel, parsed.data ?? {}, typesBySection, vocab);
       if (problems.length) {
         failures++;
         console.error(`✖ ${relative('.', file)}`);

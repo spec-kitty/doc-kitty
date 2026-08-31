@@ -65,6 +65,14 @@ const SHAPE_PARITY: { file: string; relPath: string; reject: boolean }[] = [
   // the build schema treats role/goals/responsibilities as optional and the
   // validator's kind-aware requiredness is satisfied.
   { file: 'persona/valid-persona.md', relPath: 'valid-persona.md', reject: false },
+  // RETARGETED (#38 / NFR-001): `kind` is now OPTIONAL in the standalone gate,
+  // matching the already-lenient build schema, so a page that omits `kind` is
+  // ACCEPTED on BOTH arms. This case was formerly in PRESENCE_LENIENT (gate
+  // rejects). It was MOVED here — not deleted — so a positive assertion pins the
+  // new contract: this row reds the moment `kind` becomes required again on
+  // either side. (`type: Context` is present and canonical; the unregistered
+  // `missing-kind.md` path derives nothing, so no mismatch warning fires.)
+  { file: 'err/missing-kind.md', relPath: 'missing-kind.md', reject: false },
 ];
 
 describe('schema/validator parity — shared shape contract (NFR-005)', () => {
@@ -89,7 +97,9 @@ describe('schema/validator parity — shared shape contract (NFR-005)', () => {
 // rejecting them, the assertion flips red.
 const PRESENCE_LENIENT: { file: string; relPath: string }[] = [
   { file: 'err/missing-doc-status.md', relPath: 'missing-doc-status.md' },
-  { file: 'err/missing-kind.md', relPath: 'missing-kind.md' },
+  // NOTE: `err/missing-kind.md` used to live here (gate-only strict rejection).
+  // #38 made `kind` optional in the gate, so it was RETARGETED to the SHAPE_PARITY
+  // accept path above (reject: false) — not deleted. See the comment there.
   // A persona missing a required attribute field (ADR-0019): the build schema
   // is lenient (role/goals/responsibilities are optional there — schema.ts keeps
   // no per-kind discriminated union), while the standalone validator enforces
@@ -150,5 +160,46 @@ describe('advisory warnings — pass (exit 0) on both arms but observably printe
     for (const { needle } of WARNINGS) {
       expect(output).toContain(needle);
     }
+  });
+});
+
+// #38 — optional, section-derived `type` + optional `kind` (US1 AS-1/2/3, FR-001/
+// FR-002/FR-003). The gate no longer requires `type`; when absent it derives from
+// the section registry (filling ONLY the absent case), accepts an absent `kind`,
+// honors an authored `type` (authored wins), and reports an authored-vs-derived
+// mismatch through the STRUCTURED `warnings[]` — never a hard problem, never
+// console text. The absent-derivation (orphan) case is deterministic "untyped".
+describe('optional/derived frontmatter contract (#38)', () => {
+  it('AS-1: a registered-section page with no type and no kind passes; effective type is the section-derived type', () => {
+    const data = parse('optional/registered-no-type-no-kind.md');
+    // Under a registered section (frozen fallback: architecture → Architecture),
+    // the absent `type` is derived and the absent `kind` is accepted.
+    const { problems, warnings, effective } = validate('architecture/registered.md', data);
+    expect(problems).toEqual([]);
+    expect(effective).toBe('Architecture');
+    // No mismatch warning: nothing was authored to disagree with the derivation.
+    expect(warnings.some((w) => /path suggests/.test(w))).toBe(false);
+  });
+
+  it('AS-2: an authored type that conflicts with the derived type passes with a STRUCTURED mismatch warning (authored wins)', () => {
+    const data = parse('optional/authored-type-conflict.md');
+    // Authored `type: Guide` under architecture/ (derives Architecture).
+    const { problems, warnings, effective } = validate('architecture/authored-type-conflict.md', data);
+    expect(problems).toEqual([]);
+    // Authored value wins — the effective type is the authored `Guide`.
+    expect(effective).toBe('Guide');
+    // The mismatch is observable on the structured return, not console text.
+    expect(warnings).toContain('`type: Guide` but path suggests `Architecture`');
+  });
+
+  it('AS-3: an orphan page with no derivable type is accepted as deterministically untyped (no crash, no garbage type)', () => {
+    const data = parse('optional/orphan-no-type.md');
+    // `orphan-no-type.md` has no registered section → derivation yields nothing.
+    const { problems, warnings, effective } = validate('orphan-no-type.md', data);
+    expect(problems).toEqual([]);
+    // The explicit "untyped" marker is a null effective type — never a fabricated
+    // or empty string.
+    expect(effective).toBeNull();
+    expect(warnings.some((w) => /path suggests/.test(w))).toBe(false);
   });
 });
