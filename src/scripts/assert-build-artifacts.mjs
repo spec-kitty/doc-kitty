@@ -140,6 +140,12 @@ const EXPECTED_BIBLIOGRAPHY_RECORD_KEYS = ['id', 'title', 'url'];
 const SECTION_INDEX_RELPATH = path.join('adr', 'index.html');
 const SECTION_INDEX_MARKER = 'Decision Records';
 const SECTION_INDEX_SOURCE = 'example/docs/adr/README.md';
+// #44 / FR-013 / SC-003b: the example ADR README dropped its hand table, so the
+// `kind: Hub` layout must AUTO-LIST the ADRs on build. The example's ADR-0001
+// renders at /adr/0001-use-astro-starlight/. That link is NOT in the source
+// Markdown (the prose links /adr/template/, not 0001), so a built link to it can
+// ONLY come from the Hub auto-list — non-fakeable by grepping source Markdown.
+const SECTION_INDEX_HUB_LINK = 'adr/0001-use-astro-starlight/';
 
 // A known content page (non-index) that must render to HTML.
 const KNOWN_PAGE_RELPATH = path.join('guides', 'getting-started', 'index.html');
@@ -1062,6 +1068,18 @@ async function main() {
     );
   }
   ok(`README-as-index: ${SECTION_INDEX_SOURCE} served at /adr/ (marker "${SECTION_INDEX_MARKER}" present)`);
+
+  // README-as-index, Hub auto-list proof (SC-003b): with the hand table removed,
+  // the built /adr/ HTML must still link ADR-0001 — that link can only come from
+  // the `kind: Hub` layout auto-listing the sibling ADRs.
+  if (!sectionHtml.includes(SECTION_INDEX_HUB_LINK)) {
+    fail(
+      `Hub auto-list: ${SECTION_INDEX_RELPATH} does not contain a link to "${SECTION_INDEX_HUB_LINK}" — ` +
+        `after ${SECTION_INDEX_SOURCE} dropped its hand table, the kind: Hub layout must auto-list the ADRs ` +
+        `(SC-003b); a missing link means the Hub is not rendering the ADR index`,
+    );
+  }
+  ok(`Hub auto-list: /adr/ links ADR-0001 ("${SECTION_INDEX_HUB_LINK}") from the Hub layout, not a hand table (SC-003b)`);
 
   // 6) A known content page rendered to HTML.
   const knownAbs = path.join(distDir, KNOWN_PAGE_RELPATH);

@@ -196,7 +196,17 @@ Common Docs' ADR template uses an ADR-specific `status` (`proposed | accepted |
 …`). The Kitty Variation keeps every file on the one convention-wide
 `doc_status` enum: frontmatter `doc_status` records the *document* lifecycle
 (`active`), while the *decision* status lives in the ADR body's `## Status`
-section and the `adr/README.md` table.
+section.
+
+The `adr/README.md` index table is **generated, not hand-maintained**: the ADR
+files are the source of truth, and `src/scripts/generate-adr-index.mjs` derives
+the `ID | Title | Status | Date` table from each ADR's frontmatter (`title`,
+`updated`) and body `## Status`. A lockfile-style sync-check
+(`generate-adr-index.mjs --check`, wired into CI as `validate:adr-index`) reds
+if the committed table drifts from the ADR sources — re-run the generator and
+commit. The example tree instead drops its table and lets the `kind: Hub` layout
+auto-list, because only the example tree is Astro-rendered (see
+[ADR-0032](../adr/0032-adr-index-generation.md)).
 
 ## 5. Relationship to `AGENTS.md`
 

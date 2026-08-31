@@ -11,8 +11,7 @@ kind: Hub
 
 ADRs are never edited once accepted — a new ADR supersedes an old one.
 
-| ID | Title | Status | Date |
-|----|-------|--------|------|
-| [0001](/adr/0001-use-astro-starlight/) | Build on Astro + Starlight | accepted | 2026-08-21 |
+This page is a `kind: Hub` index: the ADRs below are listed automatically by the
+Hub layout on build, so there is no hand-maintained table to keep in sync.
 
 To add one, copy [`template.md`](/adr/template/) to `NNNN-short-title.md`.
