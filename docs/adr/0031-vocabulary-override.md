@@ -18,8 +18,8 @@ related:
 
 ## Status
 
-**Accepted** — 2026-08-31. Introduced by the QOL adoption-enabler mission (issue
-#40); amends the vocabulary posture of
+**Accepted** — 2026-08-31. Introduced by the QOL adoption-enabler mission
+(issue #40); amends the vocabulary posture of
 [ADR-0004](./0004-amend-common-docs-as-extensible-variation.md) and
 [ADR-0009](./0009-finalize-metadata-contract.md).
 
