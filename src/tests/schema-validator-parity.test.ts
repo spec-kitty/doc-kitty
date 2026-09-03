@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import { z } from 'zod';
-import { validate } from '../scripts/validate-frontmatter.mjs';
+import { validate, SECTION_TYPE } from '../scripts/validate-frontmatter.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
@@ -201,5 +201,61 @@ describe('optional/derived frontmatter contract (#38)', () => {
     // or empty string.
     expect(effective).toBeNull();
     expect(warnings.some((w) => /path suggests/.test(w))).toBe(false);
+  });
+});
+
+// adopter-loader-migration WP01 (T007) — extend the schema/validator parity
+// twin to cover the NEW basename + subtypes options: both arms must keep
+// agreeing on SHAPE acceptance when the gate is called with the new `options`
+// (FR-001/FR-005), and the new options must not introduce a shape-level
+// divergence from the build schema (which has no path/basename awareness at
+// all — it validates frontmatter SHAPE only, so a genuine parity risk here is
+// the new 5th `validate()` param accidentally changing the DEFAULT verdict).
+describe('index-basename + subtypes options do not perturb shape parity (NFR-001/NFR-005)', () => {
+  it('a root index.md (opted-in basename) is exempt from `type`, same as README.md, on the gate; the build schema is path-agnostic on both', () => {
+    const data = {
+      title: 'Docs',
+      description: 'a'.repeat(60),
+      updated: '2026-09-01',
+      doc_status: 'active',
+      kind: 'Hub',
+      okf_version: '0.2',
+    };
+    const readme = validate('README.md', data);
+    const index = validate('index.md', data, undefined, undefined, {
+      indexBasename: ['README', 'index'],
+    });
+    expect(readme.problems).toEqual([]);
+    expect(index.problems).toEqual([]);
+    // The build schema has no path awareness — a bare shape check accepts
+    // either filename identically (parity is trivially true here BY DESIGN;
+    // pinned so a future path-aware build-schema change is a deliberate one).
+    expect(buildRejects(data)).toBe(false);
+  });
+
+  it('a page with NO authored type under an active registry subtypes rule: both arms accept (the #38 optional-type contract extended to subtypes)', () => {
+    const data = {
+      title: 'Missions overview',
+      description: 'a'.repeat(60),
+      updated: '2026-09-01',
+      doc_status: 'active',
+      kind: 'Planning',
+    };
+    const subtypesBySection = { plans: [{ match: 'missions', type: 'Mission' }] };
+    const { problems, effective } = validate(
+      'plans/missions/overview.md',
+      data,
+      SECTION_TYPE,
+      undefined,
+      { subtypesBySection },
+    );
+    expect(problems).toEqual([]);
+    expect(effective).toBe('Mission');
+    expect(buildRejects(data)).toBe(false);
+  });
+
+  it('the 5-arg options form is opt-in: the bare 2-arg call (used throughout this suite) is unaffected', () => {
+    const data = parse('valid/valid.md');
+    expect(validate('valid.md', data)).toEqual(validate('valid.md', data, SECTION_TYPE));
   });
 });

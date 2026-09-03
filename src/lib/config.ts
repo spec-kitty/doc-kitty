@@ -25,7 +25,7 @@ import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import type { AstroIntegration } from 'astro';
-import { readmeToIndexId, sectionOf } from './metadata.js';
+import { readmeToIndexId, sectionOf, type IndexBasenameOption } from './metadata.js';
 import {
   loadSectionRegistry,
   registryToSidebar,
@@ -127,6 +127,16 @@ export interface DocKittyOptions {
    * on for the example.
    */
   markua?: boolean;
+  /**
+   * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
+   * `"README"` only — byte-identical to today's behaviour (NFR-003). MUST
+   * match the `indexBasename` passed to `docKittyDocsLoader` in
+   * `content.config.ts` (the same invariant `docsDir` already carries): the
+   * sitemap draft filter here and the content loader there derive routes
+   * independently, and a mismatch would make a drafted `index.md` page's URL
+   * disagree between the two.
+   */
+  indexBasename?: IndexBasenameOption;
 }
 
 /** `<head>` links advertising the feeds and agent-API on every page. */
@@ -179,7 +189,7 @@ const carriers: NonNullable<StarlightUserConfig['components']> = {
  * page is published iff `doc_status !== 'draft'`, so a draft's URL must not
  * appear in the sitemap.
  */
-function draftRoutes(docsDir: string): Set<string> {
+function draftRoutes(docsDir: string, indexBasename?: IndexBasenameOption): Set<string> {
   const root = path.resolve(process.cwd(), docsDir);
   const routes = new Set<string>();
 
@@ -204,7 +214,10 @@ function draftRoutes(docsDir: string): Set<string> {
       // Mirror the schema default: absent status is treated as draft.
       if ((data.doc_status ?? 'draft') !== 'draft') continue;
       const rel = path.relative(root, abs).split(path.sep).join('/');
-      const slug = readmeToIndexId(rel);
+      // Same basename config as the content loader (FR-003) — an `index.md`
+      // draft under an opted-in basename must exclude the SAME route the
+      // loader would give it a slug for.
+      const slug = readmeToIndexId(rel, { indexBasename });
       // The bundle root is never a draft; skip the root ('') to avoid a
       // catch-all '/' suffix that would match every URL.
       if (slug === '') continue;
@@ -310,8 +323,9 @@ function normalizeBasePrefix(base: string): string {
 export function sitemapDraftFilter(
   docsDir: string,
   base: string,
+  indexBasename?: IndexBasenameOption,
 ): (page: string) => boolean {
-  const routes = draftRoutes(docsDir);
+  const routes = draftRoutes(docsDir, indexBasename);
   const basePrefix = normalizeBasePrefix(base);
   // Load the registry from the SAME docs root the sidebar synthesis uses. Absent
   // registry → `feeds` undefined → `feedsSurface` is always true (no filtering).
@@ -625,6 +639,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     theme,
     diagrams = false,
     markua = false,
+    indexBasename,
     starlight: overrides,
   } = options;
 
@@ -748,7 +763,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.
     deckSplitIntegration,
     // INV-1: draft pages are unpublished, so their URLs are excluded here.
-    sitemap({ filter: sitemapDraftFilter(docsDir, base) }),
+    sitemap({ filter: sitemapDraftFilter(docsDir, base, indexBasename) }),
     // Transport the merged `kind → layout` + `dk:slot → component` maps to the
     // carriers as `virtual:doc-kitty/manifest` (synchronous `resolveLayout`, no
     // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports

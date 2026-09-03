@@ -201,33 +201,53 @@ export const SECTION_TYPE: Record<string, string> = {
   presentations: 'Presentation',
 };
 
+/** One registry `subtypes` rule (E-02): a first-sub-path-segment → `type` mapping. */
+export interface SectionSubtypeRule {
+  /** The first sub-path segment under the section folder, e.g. `"missions"`. */
+  match: string;
+  /** The `type` a page under that sub-path derives. */
+  type: string;
+}
+
 /**
  * The expected frontmatter `type` for a page path (null = no expectation).
  *
- * PURE and parameterized (issue #24): `typesBySection` is the resolved
- * `id → type` map — pass `sectionTypes(registry)` (from `./sections.ts`) to make
- * the registry the section-default authority; omitted, it falls back to the
- * frozen {@link SECTION_TYPE}, so a docs root with no `sections.yaml` still
- * derives an expectation. Never imports `./sections.ts`, so this module stays
- * fs-free and Astro-free.
+ * PURE and parameterized (issue #24, and now FR-005/D-03): `typesBySection` is
+ * the resolved `id → type` map — pass `sectionTypes(registry)` (from
+ * `./sections.ts`) to make the registry the section-default authority; omitted,
+ * it falls back to the frozen {@link SECTION_TYPE}, so a docs root with no
+ * `sections.yaml` still derives an expectation. `subtypesBySection` is the
+ * resolved `id → subtypes[]` map — pass `sectionSubtypes(registry)`; omitted,
+ * no registry subtypes apply. Never imports `./sections.ts`, so this module
+ * stays fs-free and Astro-free.
  *
- * Derivation is two steps, most specific last:
- *   1. the section (first path segment) default from `typesBySection`;
- *   2. a short, stable table of SUB-PATH subtypes applied on top, kept in code
- *      (an ADR `template.md` → `Template`; `plans/epics/*` → `Epic`,
- *      `plans/features/*` → `Feature`; `operations/runbooks/*` → `Runbook`).
- * Moving the sub-path table into a registry `subtypes` field is a separate,
- * deferred ADR item. An unknown section yields `null` (no section default, no
- * override) — the caller treats a null expectation as "no check".
+ * Derivation order (E-06, most specific first):
+ *   1. a registry `subtypes[].match` on the first sub-path segment
+ *      (`subtypesBySection`) — the data-driven rename path (FR-005);
+ *   2. a short, stable BUILT-IN table of sub-path subtypes kept in code (an
+ *      ADR `template.md` → `Template`; `plans/epics/*` → `Epic`,
+ *      `plans/features/*` → `Feature`; `operations/runbooks/*` → `Runbook`) —
+ *      the fallback, unaffected when a registry has no `subtypes` (C-001/NFR-003);
+ *   3. the section (first path segment) default from `typesBySection`.
+ * An unknown section yields `null` (no section default, no override) — the
+ * caller treats a null expectation as "no check".
  */
 export function expectedDocType(
   relPath: string,
   typesBySection: Record<string, string> = SECTION_TYPE,
+  subtypesBySection?: Record<string, SectionSubtypeRule[]>,
 ): string | null {
   const parts = relPath.split('/');
   const section = parts[0] ?? '';
   const file = parts[parts.length - 1] ?? '';
   const sectionDefault = typesBySection[section] ?? null;
+
+  const registryRules = subtypesBySection?.[section];
+  if (registryRules && parts.length > 1) {
+    const rule = registryRules.find((r) => r.match === parts[1]);
+    if (rule) return rule.type;
+  }
+
   switch (section) {
     case 'adr':
       return file === 'template.md' ? 'Template' : sectionDefault;
@@ -364,17 +384,144 @@ export function toAgentRecord(entry: DocEntry): AgentRecord {
 }
 
 /**
+ * The default section-index basename (FR-002, C-001): `README.md` stays the
+ * default so doc-kitty's own tree and an existing adopter are byte-identical
+ * with no `indexBasename` configured (NFR-003).
+ */
+export const DEFAULT_INDEX_BASENAME = 'README';
+
+/**
+ * One or more section-index basenames (no extension), matched
+ * case-insensitively against a file's leaf name. A single string or a set —
+ * `['README', 'index']` lets one build collapse BOTH conventions at once
+ * (data-model E-01, contract C-IB, anti-laziness M2). Omitted/default is the
+ * single basename `"README"`.
+ */
+export type IndexBasenameOption = string | string[];
+
+/** Options every index-detecting helper below shares. */
+export interface IndexBasenameOptions {
+  indexBasename?: IndexBasenameOption;
+}
+
+/** Normalize the option to a non-empty ordered list (config order = priority). */
+function normalizeIndexBasenames(indexBasename?: IndexBasenameOption): string[] {
+  const list =
+    indexBasename === undefined
+      ? [DEFAULT_INDEX_BASENAME]
+      : Array.isArray(indexBasename)
+        ? indexBasename
+        : [indexBasename];
+  return list.length > 0 ? list : [DEFAULT_INDEX_BASENAME];
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** A case-insensitive `(^|/)(basename1|basename2|…)$` matcher over the configured set. */
+function indexBasenamePattern(basenames: string[]): RegExp {
+  return new RegExp(`(^|/)(${basenames.map(escapeRegExp).join('|')})$`, 'i');
+}
+
+/**
  * Map a file path under the content root to its route slug, applying the
- * README-as-index rule.
+ * configurable index-basename rule (FR-001/FR-002, D-01). Case-insensitive.
  *
+ * With the default (`indexBasename` omitted → `"README"` only):
  *   "README.md"              -> ""              (bundle root)
  *   "architecture/README.md" -> "architecture"
  *   "architecture/overview.md" -> "architecture/overview"
+ *
+ * With `indexBasename: ['README', 'index']`, `architecture/index.md` ALSO
+ * collapses to `"architecture"`. A file whose basename is not in the
+ * configured set is never collapsed — a stray `index.md` under the default
+ * stays an ordinary page (NFR-003).
+ *
+ * This helper is sibling-unaware: when a directory holds MORE THAN ONE
+ * configured-basename file (the collision case, E-05), use
+ * {@link resolveIndexEntries} instead, which resolves the collision
+ * deterministically across the whole file list.
  */
-export function readmeToIndexId(entry: string): string {
+export function readmeToIndexId(entry: string, options: IndexBasenameOptions = {}): string {
   const withoutExt = entry.replace(/\.mdx?$/i, '');
-  const asIndex = withoutExt.replace(/(^|\/)README$/i, '$1');
+  const pattern = indexBasenamePattern(normalizeIndexBasenames(options.indexBasename));
+  const asIndex = withoutExt.replace(pattern, '$1');
   return asIndex.replace(/\/$/, '');
+}
+
+/** One resolved both-index collision (E-05): a directory with 2+ candidates. */
+export interface IndexCollision {
+  /** The directory the collision occurred in ('' for the bundle root). */
+  dir: string;
+  /** The path that won and became the section index. */
+  winner: string;
+  /** The rest — demoted to ordinary pages. */
+  demoted: string[];
+}
+
+/** The result of a whole-tree, collision-aware index resolution. */
+export interface ResolveIndexEntriesResult {
+  /** Every input path mapped to its resolved route-slug id. */
+  ids: Map<string, string>;
+  /** Every directory where more than one configured basename was present. */
+  collisions: IndexCollision[];
+}
+
+/**
+ * Collision-aware, whole-tree twin of {@link readmeToIndexId} (E-05, FR-004).
+ * Given every Markdown path under a content root, resolves each to its route
+ * slug id, but when a directory contains MULTIPLE configured-basename
+ * candidates (e.g. both `README.md` and `index.md`), the file matching the
+ * EARLIEST-configured basename wins the section-index id; the rest are
+ * demoted to ordinary pages (their id keeps the basename segment) and
+ * reported in `collisions`, so the ambiguity is never silently resolved.
+ *
+ * Deterministic: a tie between same-rank basenames (e.g. case variants) is
+ * broken by path sort order. Fs-free — the caller supplies the path list (a
+ * directory walk), keeping this module Astro/fs-free.
+ */
+export function resolveIndexEntries(
+  paths: readonly string[],
+  options: IndexBasenameOptions = {},
+): ResolveIndexEntriesResult {
+  const basenames = normalizeIndexBasenames(options.indexBasename);
+  const pattern = indexBasenamePattern(basenames);
+
+  const byDir = new Map<string, string[]>();
+  for (const p of paths) {
+    const withoutExt = p.replace(/\.mdx?$/i, '');
+    if (!pattern.test(withoutExt)) continue;
+    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
+    const list = byDir.get(dir) ?? [];
+    list.push(p);
+    byDir.set(dir, list);
+  }
+
+  const rankOf = (file: string): number => {
+    const base = file.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
+    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
+    return idx === -1 ? basenames.length : idx;
+  };
+
+  const demoted = new Set<string>();
+  const collisions: IndexCollision[] = [];
+  for (const [dir, files] of byDir) {
+    if (files.length <= 1) continue;
+    const sorted = [...files].sort((a, b) => rankOf(a) - rankOf(b) || a.localeCompare(b));
+    const [winner, ...rest] = sorted;
+    for (const loser of rest) demoted.add(loser);
+    collisions.push({ dir, winner: winner!, demoted: rest });
+  }
+
+  const ids = new Map<string, string>();
+  for (const p of paths) {
+    ids.set(
+      p,
+      demoted.has(p) ? p.replace(/\.mdx?$/i, '') : readmeToIndexId(p, options),
+    );
+  }
+  return { ids, collisions };
 }
 
 /**

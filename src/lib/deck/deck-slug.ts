@@ -18,6 +18,15 @@
  *
  * Framework-light: it depends only on `slugFromEntryId` (Astro-free), so the
  * same helper runs in the build assertion and the deck route alike.
+ *
+ * FR-003 index-basename note: this helper takes NO `indexBasename` — it is
+ * already basename-agnostic. `entry.id` is the content loader's ALREADY
+ * resolved id (`docKittyDocsLoader`'s `generateId`, which DOES apply the
+ * configured basename); `slugFromEntryId` only special-cases the bundle-root
+ * sentinel. A deck section indexed by `index.md` (e.g.
+ * `presentations/showcase/index.md` under an opted-in basename) therefore
+ * already collapses to `presentations/showcase` upstream, before this helper
+ * ever sees it — verified by `deck-slug.test.ts`'s basename-composition case.
  */
 import { slugFromEntryId } from '../metadata.js';
 

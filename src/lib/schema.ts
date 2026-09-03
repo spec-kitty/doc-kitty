@@ -6,15 +6,26 @@
  * `docKittyDocsLoader` reads the repo-root `docs/` tree and implements the
  * README-as-index twist by rewriting entry ids at load time.
  */
+import { readdirSync, statSync } from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
 import { z } from 'zod';
 import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
 import { docsSchema } from '@astrojs/starlight/schema';
-import { readmeToIndexId, ROOT_ENTRY_ID, expectedDocType } from './metadata.js';
+import {
+  readmeToIndexId,
+  resolveIndexEntries,
+  ROOT_ENTRY_ID,
+  expectedDocType,
+  type IndexBasenameOption,
+} from './metadata.js';
 import {
   loadSectionRegistry,
   sectionTypes,
+  sectionSubtypes,
+  sectionIds,
   type SectionRegistry,
 } from './sections.js';
 
@@ -79,23 +90,53 @@ export type Kind = (typeof KINDS)[number];
  * expectation is a warning — never a hard schema error. `null` means "no
  * section-default expectation" (unknown section), i.e. no check.
  */
+export interface ExpectedTypeForPathOptions {
+  /**
+   * Sink for the non-fatal "renamed to an unregistered section id" warning
+   * (US2-AS5). Defaults to `console.warn`, matching `sections.ts`'s `warn`
+   * option pattern.
+   */
+  warn?: (message: string) => void;
+}
+
 export function expectedTypeForPath(
   relPath: string,
   registry: SectionRegistry | null,
+  options: ExpectedTypeForPathOptions = {},
 ): string | null {
   const typesBySection = registry ? sectionTypes(registry) : undefined;
-  return expectedDocType(relPath, typesBySection);
+  const subtypesBySection = registry ? sectionSubtypes(registry) : undefined;
+  if (registry) {
+    // US2-AS5: a registry IS present, so an id with NO entry at all (not
+    // merely one that omits `type`/`subtypes`, e.g. `faq`) is the documented
+    // "renamed to an unregistered id" condition — surfaced as a warning, never
+    // a silent mis-type or a hard failure.
+    const section = relPath.split('/')[0] ?? '';
+    if (section !== '' && !sectionIds(registry).has(section)) {
+      const warn = options.warn ?? ((m: string) => console.warn(`[dk-metadata] ${m}`));
+      warn(
+        `section "${section}" (from "${relPath}") is not registered in sections.yaml — ` +
+          `falling back to the documented default (untyped); if this is a renamed section, ` +
+          `add a registry entry for "${section}"`,
+      );
+    }
+  }
+  return expectedDocType(relPath, typesBySection, subtypesBySection);
 }
 
 /**
  * Convenience wrapper that loads `<docsRoot>/_meta/sections.yaml` and derives the
- * expected `type` for `relPath` from it (issue #24). A missing registry falls
- * back to the frozen section-type map. Reads the filesystem, so it is for the
- * build/generator side; the pure {@link expectedTypeForPath} is the unit-testable
- * core.
+ * expected `type` for `relPath` from it (issue #24, FR-005). A missing registry
+ * falls back to the frozen section-type map. Reads the filesystem, so it is for
+ * the build/generator side; the pure {@link expectedTypeForPath} is the
+ * unit-testable core.
  */
-export function expectedTypeForPathInRoot(relPath: string, docsRoot = 'docs'): string | null {
-  return expectedTypeForPath(relPath, loadSectionRegistry(docsRoot));
+export function expectedTypeForPathInRoot(
+  relPath: string,
+  docsRoot = 'docs',
+  options: ExpectedTypeForPathOptions = {},
+): string | null {
+  return expectedTypeForPath(relPath, loadSectionRegistry(docsRoot), options);
 }
 
 /**
@@ -236,13 +277,59 @@ export interface DocKittyLoaderOptions {
   base?: string;
   /** Glob patterns to include. */
   pattern?: string | string[];
+  /**
+   * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
+   * `"README"` only — byte-identical to today's behaviour (NFR-003). Set
+   * `'index'` or `['README', 'index']` to also accept `index.md`
+   * (case-insensitive) as a section index.
+   */
+  indexBasename?: IndexBasenameOption;
+}
+
+/** Recursively list every `.md`/`.mdx` path under `absBase`, relative to it (`/`-joined). */
+function walkMarkdownPaths(absBase: string): string[] {
+  const out: string[] = [];
+  const walk = (dir: string, rel: string): void => {
+    let names: string[];
+    try {
+      names = readdirSync(dir);
+    } catch {
+      return; // base absent → an empty content tree (glob() itself no-ops too)
+    }
+    for (const name of names) {
+      const abs = path.join(dir, name);
+      const relPath = rel ? `${rel}/${name}` : name;
+      let isDir: boolean;
+      try {
+        isDir = statSync(abs).isDirectory();
+      } catch {
+        continue;
+      }
+      if (isDir) {
+        walk(abs, relPath);
+        continue;
+      }
+      if (/\.mdx?$/i.test(name) && !/(^|\/)log\.md$/i.test(relPath)) out.push(relPath);
+    }
+  };
+  walk(absBase, '');
+  return out;
 }
 
 /**
- * Content loader that globs Markdown under `base` and applies README-as-index.
+ * Content loader that globs Markdown under `base` and applies the configurable
+ * index-basename rule (FR-001/FR-002/FR-003/FR-004).
  *
  * The reserved `log.md` (an optional, frontmatter-free change log) is excluded
  * so it never fails schema validation.
+ *
+ * Both-index collision (E-05, FR-004): the id map is resolved ONCE, lazily, via
+ * a synchronous pre-scan of `base` (`resolveIndexEntries`) — Astro's
+ * `generateId` callback sees one entry at a time with no sibling context, so a
+ * directory holding BOTH configured basenames needs the whole-tree resolution
+ * to pick a deterministic winner and demote the rest, exactly like the
+ * `validate-frontmatter.mjs` twin (D-02/D-06). A collision is reported via
+ * `console.warn` at scan time (not silently resolved).
  *
  * NOTE: depending on the installed Starlight version, Starlight may expect its
  * own `docsLoader()` wrapper or a specific way to point the `docs` collection
@@ -253,12 +340,36 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   const {
     base = 'docs',
     pattern = ['**/*.{md,mdx}', '!**/log.md'],
+    indexBasename,
   } = options;
+
+  let resolvedIds: Map<string, string> | null = null;
+  const resolveIds = (): Map<string, string> => {
+    if (resolvedIds) return resolvedIds;
+    const absBase = path.resolve(process.cwd(), base);
+    const paths = walkMarkdownPaths(absBase);
+    const { ids, collisions } = resolveIndexEntries(paths, { indexBasename });
+    for (const collision of collisions) {
+      const label = collision.dir === '' ? '(bundle root)' : collision.dir;
+      console.warn(
+        `[dk-loader] both "${collision.winner}" and ${collision.demoted
+          .map((d) => `"${d}"`)
+          .join(', ')} are section-index candidates in ${label} — "${collision.winner}" wins ` +
+          `as the section index; the rest are ordinary pages (E-05).`,
+      );
+    }
+    resolvedIds = ids;
+    return ids;
+  };
+
   return glob({
     base,
     pattern,
     // Astro rejects empty ids; the bundle root ("") is stored as ROOT_ENTRY_ID.
-    generateId: ({ entry }) => readmeToIndexId(entry) || ROOT_ENTRY_ID,
+    generateId: ({ entry }) => {
+      const id = resolveIds().get(entry) ?? readmeToIndexId(entry, { indexBasename });
+      return id || ROOT_ENTRY_ID;
+    },
   });
 }
 

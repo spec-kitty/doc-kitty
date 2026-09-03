@@ -15,6 +15,7 @@ import {
   sectionOf,
   sectionRank,
   sectionLabel,
+  type IndexBasenameOption,
 } from '../metadata.js';
 import {
   loadSectionRegistry,
@@ -30,6 +31,15 @@ import { absolute, collectDocEntries, docsRoot } from './shared.js';
 export interface LlmsTxtRouteOptions {
   title: string;
   description?: string;
+  /**
+   * The section-index basename(s) (FR-003): forwarded to `docsRoot()` so the
+   * registry (order/labels/purposes) resolves from the SAME root the content
+   * loader used, when a custom `indexBasename` moves that root's derivation
+   * (e.g. an `index.md`-only docs tree). The per-entry blurb detection below is
+   * basename-agnostic by construction — it keys off the already-resolved entry
+   * `slug` shape, not a raw filename — so no other change is needed here.
+   */
+  indexBasename?: IndexBasenameOption;
 }
 
 export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
@@ -39,7 +49,7 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     // SECTION_LABEL defaults inside the metadata helpers (issue #18). The root is
     // resolved from the content layer so a custom docs directory is honored (#22),
     // not hardcoded to `docs/`.
-    const registry = loadSectionRegistry(await docsRoot());
+    const registry = loadSectionRegistry(await docsRoot(options.indexBasename));
     const order = registry ? sectionOrder(registry) : undefined;
     const labels = registry ? sectionLabels(registry) : undefined;
     // Section blurb source (FALLBACK): the registry `purpose` per section — the

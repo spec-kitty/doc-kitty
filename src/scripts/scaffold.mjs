@@ -9,6 +9,7 @@
  * Usage:
  *   node scripts/scaffold.mjs [base]            # default base: docs
  *   node scripts/scaffold.mjs docs --sections context,architecture,guides
+ *   node scripts/scaffold.mjs docs --index-basename index   # FR-001/FR-003
  */
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
@@ -19,6 +20,14 @@ const sectionsFlag = (() => {
   const i = argv.indexOf('--sections');
   return i !== -1 && argv[i + 1] ? argv[i + 1].split(',').map((s) => s.trim()) : null;
 })();
+// FR-001/FR-002/FR-003: the basename this tool scaffolds section indexes as.
+// Default `README` reproduces today's output exactly (NFR-003); pass
+// `--index-basename index` to scaffold an `index.md`-indexed tree instead.
+const indexBasename = (() => {
+  const i = argv.indexOf('--index-basename');
+  return i !== -1 && argv[i + 1] ? argv[i + 1] : 'README';
+})();
+const indexFilename = `${indexBasename}.md`;
 
 function expectedType(relPath) {
   const parts = relPath.split(sep);
@@ -139,8 +148,8 @@ function write(relPath, content) {
   written.push(relPath);
 }
 
-// Bundle-root README (okf_version, exempt from `type`).
-write('README.md', `---
+// Bundle-root index (okf_version, exempt from `type`).
+write(indexFilename, `---
 okf_version: "0.2"
 title: Documentation
 description: Master entry point for this project's documentation.
@@ -166,13 +175,13 @@ for (const section of chosen) {
   const leaves = SECTIONS[section];
   if (!leaves) { console.warn(`⚠ unknown section "${section}" — skipped`); continue; }
 
-  write(join(section, 'README.md'), indexFrontmatter(join(section, 'README.md'), titleize(section), `The ${section} section.`));
+  write(join(section, indexFilename), indexFrontmatter(join(section, indexFilename), titleize(section), `The ${section} section.`));
 
   for (const leaf of leaves) {
     if (leaf.endsWith('/')) {
-      // nested directory with its own README
+      // nested directory with its own section index
       const sub = leaf.slice(0, -1);
-      const rel = join(section, sub, 'README.md');
+      const rel = join(section, sub, indexFilename);
       write(rel, indexFrontmatter(rel, titleize(sub), `The ${section}/${sub} section.`));
       if (section === 'operations' && sub === 'runbooks') {
         for (const rb of RUNBOOKS) {
