@@ -1,0 +1,78 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-09-03T20:38:50.705418Z",
+      "decision_id": "01M1MFXSJHAYEFYCDCC5NKS8JT",
+      "final_answer": "Structural single source: a shared pure-ESM core imported by both the bare-Node gate (validate-frontmatter.mjs) and the toolkit libs (sections.ts loadVocabulary, metadata.ts expectedDocType), so vocabulary + type-derivation divergence is impossible by construction. The NFR-004 resolved-vocabulary parity test becomes a redundant guard (kept as a cheap regression guard or removed if structurally moot).",
+      "input_key": "consolidation_acceptance_bar",
+      "mission_id": "01M1MFVTZGD9KQ6QWYV54ZDBQH",
+      "mission_slug": "metadata-vocab-hub-consolidation-01M1MFVT",
+      "opened_by": "cli",
+      "options": [
+        "Structural single source (divergence impossible by construction; parity test becomes a redundant guard or is removed)",
+        "Reduce duplication but keep NFR-004 parity test as the safety net",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "For #49, what is the done-bar for eliminating the mjs\u2194ts vocabulary/type split-brain?",
+      "rationale": null,
+      "resolved_at": "2026-09-03T20:41:08.108149Z",
+      "resolved_by": null,
+      "slot_key": "specify.consolidation.acceptance-bar",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-09-03T20:38:55.660561Z",
+      "decision_id": "01M1MFXYDCDHXXHW00XK6FJT9Y",
+      "final_answer": "Full lifecycle: the status-aware ADR Hub card surfaces Proposed/Accepted/Superseded/Deprecated status plus date, and orders children by ADR number, so a multi-ADR rendered tree reaches parity with the generated own-tree table.",
+      "input_key": "adr_hub_status_scope",
+      "mission_id": "01M1MFVTZGD9KQ6QWYV54ZDBQH",
+      "mission_slug": "metadata-vocab-hub-consolidation-01M1MFVT",
+      "opened_by": "cli",
+      "options": [
+        "Full lifecycle badge (Proposed/Accepted/Superseded/Deprecated) + date, matching the generated own-tree table",
+        "Just Accepted vs not (minimal badge) + number ordering",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "For #50, how much of the ADR lifecycle should the status-aware Hub card surface?",
+      "rationale": null,
+      "resolved_at": "2026-09-03T20:41:11.122180Z",
+      "resolved_by": null,
+      "slot_key": "specify.adr-hub.status-scope",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-09-03T22:08:26.906878Z",
+      "decision_id": "01M1MN1VRT868Q6H6Z7DRGKCZ6",
+      "final_answer": "Two-layer shared pure-ESM core: (1) a fs-free derivation/enum core (canonical STATUSES/DOC_TYPES/KINDS, frozen SECTION_TYPE fallback, expectedDocType + adr/plans/operations sub-path switch, and the pure vocabulary/axis resolver functions) that metadata.ts and schema.ts import \u2014 preserving metadata.ts's documented fs-free purity contract; (2) a thin fs-loader layer (loadVocabulary, loadSectionRegistry, sectionTypes/sectionSubtypes readers) that reads _meta/*.yaml, imported by sections.ts and the bare-Node validate-frontmatter.mjs gate. Both layers are plain .mjs so the gate imports them directly with no Astro/build context; TS consumers get types via a hand-written .d.ts (no repo-wide allowJs). Codegen rejected: it reintroduces the generated-twin staleness #49 exists to eliminate.",
+      "input_key": "consolidation_core_structure",
+      "mission_id": "01M1MFVTZGD9KQ6QWYV54ZDBQH",
+      "mission_slug": "metadata-vocab-hub-consolidation-01M1MFVT",
+      "opened_by": "cli",
+      "options": [
+        "Two-layer: fs-free derivation/enum core (metadata.ts imports) + thin fs-loader layer (sections.ts + gate import) \u2014 preserves the fs-free invariant",
+        "Single core incl. fs reads (sections.ts + gate import); metadata.ts imports only pure re-exports \u2014 fewer files, mildly bends the boundary",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "#49 shared pure-ESM core structure vs metadata.ts's documented fs-free purity boundary \u2014 how to reconcile?",
+      "rationale": null,
+      "resolved_at": "2026-09-03T22:26:22.775855Z",
+      "resolved_by": null,
+      "slot_key": "plan.consolidation.core-structure",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M1MFVTZGD9KQ6QWYV54ZDBQH",
+  "version": 1
+}
