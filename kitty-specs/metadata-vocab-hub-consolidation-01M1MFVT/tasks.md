@@ -67,9 +67,9 @@ Record completion with `spec-kitty agent tasks mark-status T0xx --status done` (
 - **Dependencies**: WP01.
 - **Prompt**: `tasks/WP02-rewire-and-delete-twin.md` (~190 lines).
 
-### WP03 — Collapse parity tests to single-impl unit tests (#49 IC-03)
+### WP03 — Retarget parity tests to the single core (keep genuine two-arm guards) (#49 IC-03)
 
-- **Goal**: The three parity guards lose their second implementation; rewrite them to pin the one core's behavior (keep the assertions, drop the twin comparison).
+- **Goal**: Retarget `vocabulary-resolver` + `section-type-parity` to the single core **with literal oracles** (keeping the validate-applies-to-derived and full-corpus assertions); **keep `schema-validator-parity` two-armed** (its field shapes stay independent — squad F1) and add a `durable`-accepts row.
 - **Priority**: P2.
 - **Independent test**: full vitest green; each rewritten test still exercises the resolved-output/path-corpus/shape assertions against the single core.
 - **Subtasks**: T013–T016.
