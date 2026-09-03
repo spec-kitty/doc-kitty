@@ -16,8 +16,10 @@ subtasks:
 - T020
 - T021
 - T022
+- T023
 history:
 - created by /spec-kitty.tasks
+- amended by post-tasks adversarial squad (F5, F6 — number single-source + inclusion reconciliation)
 agent_profile: frontend-freddy
 authoritative_surface: src/
 create_intent:
@@ -35,46 +37,50 @@ tracker_refs: []
 
 ## ⚡ Do This First: Load Agent Profile
 
-Before reading anything else, load your assigned profile via `/ad-hoc-profile-load frontend-freddy` (role: implementer). Apply its identity, boundaries, and the charter directives (`spec-kitty charter context --action implement --json`); state which you applied. You are a browser-side implementer with accessibility discipline — the status badge must be legible and accessible in both themes.
+Before reading anything else, load your assigned profile via `/ad-hoc-profile-load frontend-freddy` (role: implementer). Apply its identity, boundaries, and the charter directives (`spec-kitty charter context --action implement --json`); state which you applied. You are a browser-side implementer with accessibility discipline — the badge must be legible/accessible in both themes.
 
 ## Objective
 
-Make the ADR Hub card **order by ADR number** and show **full lifecycle status + date**, so a multi-ADR rendered hub matches the generated own-tree table 1:1 — achieved by **reusing the ADR-index generator's extraction** (single source), not by re-parsing independently. Independent of Lane A (runs in parallel). Read `../spec.md` (FR-006, FR-007, NFR-004; C-005), `../plan.md` (IC-05), `../research.md` (Decision D3), and `../data-model.md` (ADR entry + extractor contract).
+Make the ADR Hub card **order by ADR number** and show **full lifecycle status + date**, matching the generated own-tree table 1:1 — by **reusing one extractor** across the generator and Hub (single source for number, status, AND date), not by re-parsing. Independent of Lane A. Read `../spec.md` (FR-006, FR-007, NFR-004; C-005), `../plan.md` (IC-05), `../research.md` (Decision D3 + **D4 findings F5/F6**), and `../data-model.md`.
 
-## Critical context (file:line)
+## Critical context (squad-verified — file:line)
 
-- `src/layouts/Hub.astro` today: builds `children` from `getCollection('docs')` reading only `entry.data` (frontmatter), and **sorts alphabetically by title** (`:90-96`, `a.data.title.localeCompare(b.data.title)`). It does **not** read page bodies — so a body-only `## Status` is currently unreachable. Astro content entries expose `.body` (raw markdown); use it for ADR children.
-- `src/scripts/generate-adr-index.mjs` already extracts ADR number + `## Status` + date at full fidelity for the generated own-tree table. **Export** that extraction as a reusable function (e.g. `extractAdrMeta(rawMarkdown, {slug, frontmatter}) → {number,status,date}|null`) and have BOTH the generator and Hub.astro call it — this is what makes the rendered hub and the generated table agree by construction (NFR-004). Keep the generator's existing output byte-identical (its tests `adr-index-generator.test.ts` must stay green).
-- ADR children are identified by kind/section — inspect how ADRs are tagged (frontmatter `kind`, or the `adr/` section). Gate all new ordering/badging behind that check so **non-ADR Hub listings keep alphabetical-by-title** (C-005).
-- Styling uses `src/styles/hub.css` (imported at `Hub.astro:54`) and the `--dk-*` token catalog. Search coverage (Pagefind/NFR) discipline in the existing file's header comment still applies — do not wrap content in a raw `<nav>`.
+- `Hub.astro:76-96`: builds `children` from `getCollection('docs')` reading only `entry.data`, sorts **alphabetically by title** (`:90-96`), and filters `isPublished` (`:84-89`, drafts excluded). It does NOT read bodies — use `entry.body` for ADR children.
+- `generate-adr-index.mjs`: today derives **number from the FILENAME** (`ADR_FILE = /^(\d{4})-…/` on the basename, `discoverAdrs` `:89-108`), **status from the body** (`extractStatusToken`), **date from frontmatter**; and it **skips** number-less files and `type: Template` (`:94,:97`), regardless of `doc_status`. Hub has no filename — only `slugFromEntryId(entry.id)`.
+- **F6 — number must be single-sourced too:** `extractAdrMeta` must be the SOLE source of `number` for BOTH callers. Route the generator's number derivation through the extractor as well (feed it the same `slug`/basename that carries the `NNNN-` prefix). Otherwise the generator parses number from filename while Hub parses from slug → a NEW split-brain on the exact field NFR-004 orders by.
+- **F5 — reconcile inclusion so 1:1 is true, not falsifiable:** the generator includes every numbered non-Template ADR regardless of `doc_status`, while Hub filters `isPublished`. Align them: Hub's ADR grouping must **exclude number-less and `type:Template`** pages exactly as `discoverAdrs` does, and **NFR-004's 1:1 invariant is scoped to the published+numbered set** (a draft numbered ADR legitimately appears in the generated table but not the hub — call this out in the test, don't assert 1:1 across it). Do not silently append number-less ADR cards claiming parity.
 
 ## Subtasks
 
 ### T017 — Export the shared extractor from `generate-adr-index.mjs`
-Refactor the generator's inline number/status/date parsing into an exported `extractAdrMeta(...)`; the generator calls it. Prove the generator's output is unchanged (`adr-index-generator.test.ts` green).
+Refactor number+status+date parsing into an exported `extractAdrMeta(...)` used by the generator itself (number included, per F6). Prove the generator's output is byte-identical (`adr-index-generator.test.ts` green).
 
 ### T018 — Derive ADR meta + order by number in `Hub.astro`
-For ADR-kind children, read `entry.body`, call `extractAdrMeta`, and sort ADR children by `number` ascending (replacing the alphabetical sort for that group only). Non-ADR children keep the existing section-rank then title sort.
+For ADR-kind children, read `entry.body`, call `extractAdrMeta`, and sort by `number` ascending (that group only). Non-ADR children keep the existing section-rank→title sort. Exclude number-less + `type:Template` from the ADR group (F5, matching `discoverAdrs`).
 
 ### T019 — Render status badge + date
-Add a lifecycle status badge (Proposed / Accepted / Superseded / Deprecated) and the date to each ADR card. Missing number or unparseable `## Status` ⇒ render the card unbadged / appended at the end — never break the hub.
+Badge Proposed/Accepted/Superseded/Deprecated + date on each ADR card, rendering the plain token (e.g. `Accepted`, not `**Accepted**`). Empty/unparseable status ⇒ unbadged (never break the hub).
 
 ### T020 — Gate to ADR-only + no regressions
-Ensure the ordering/badging only applies to the ADR kind/section; the single-ADR example demo (`example/docs/adr/`) still renders correctly; non-ADR hubs are byte-unchanged.
+Ordering/badging apply only to the ADR kind/section; non-ADR hubs byte-unchanged; the single-ADR example demo (`example/docs/adr/`) still renders correctly. Respect the existing Pagefind/search-coverage discipline in `Hub.astro` (no raw `<nav>`, keep child text indexable).
 
 ### T021 — Badge styles in `hub.css`
-Add badge styling using `--dk-*` tokens; legible contrast in light and dark; ≥24px hit-area rules of the existing card pattern preserved. No new dependency.
+`--dk-*` tokens; legible contrast light + dark; preserve the card pattern's ≥24px target. No new dependency.
 
-### T022 — Tests `src/tests/hub-adr-card.test.ts`
-Cover: (a) ≥2 ADRs render in ADR-number order; (b) status + date match `extractAdrMeta`/the generated table 1:1 (NFR-004); (c) missing number/status falls back gracefully; (d) a non-ADR hub is unaffected; (e) the single-ADR demo does not regress.
+### T022 — Tests `src/tests/hub-adr-card.test.ts` (F5 render-real-output)
+Render **Hub's actual ADR-child pipeline output** (order + badge + date) and compare to `extractAdrMeta`/the generated table — NOT `extractAdrMeta` vs itself. Rows: (a) ≥2 ADRs in number order; (b) status+date match the extractor 1:1 for the published+numbered set; (c) body-only `## Status` is reached (proves Hub reads `entry.body`); (d) a `superseded` badge renders; (e) empty-status → unbadged; (f) `type:Template` under `adr/` is excluded (no template card); (g) a **draft numbered ADR** is in the generated table but NOT the hub (documents the scoped invariant, F5); (h) a non-ADR hub is unaffected; (i) single-ADR demo unchanged.
+
+### T023 — Single-source enforcement gate (F5)
+Add an assertion (in `hub-adr-card.test.ts` or extend WP01's single-source gate pattern) that `Hub.astro` imports `extractAdrMeta` from `generate-adr-index.mjs` and contains **no** independent `## Status`/`\d{4}-` number-parsing regex — so a future re-parse reds the suite (NFR-001 for #50).
 
 ## Definition of Done
-- `extractAdrMeta` is the single source used by both the generator and `Hub.astro`.
-- ADR hubs order by number and show status + date matching the generated table 1:1; non-ADR hubs and the single-ADR demo are unchanged.
-- `hub-adr-card.test.ts` + `adr-index-generator.test.ts` green; Astro build green (or CI-verified with a note if local `node_modules` is broken).
-- `spec-kitty agent tasks mark-status T017 … T022 --status done`.
+- `extractAdrMeta` is the sole source of number+status+date for both the generator and `Hub.astro`; generator output byte-identical (`adr-index-generator.test.ts` green).
+- ADR hubs order by number, badge status+date, match the generated table 1:1 over the published+numbered set; number-less/Template excluded on both sides; non-ADR hubs + single-ADR demo unchanged.
+- The fidelity test renders Hub's real output; the single-source gate reds on a re-parse.
+- `hub-adr-card.test.ts` + `adr-index-generator.test.ts` green; Astro build + `astro check` green (or CI-verified with a note).
+- `spec-kitty agent tasks mark-status T017 … T023 --status done`.
 
 ## Risks / reviewer guidance
-- **New split-brain risk**: if Hub.astro re-parses ADR status instead of reusing `extractAdrMeta`, it recreates exactly the kind of divergence this mission exists to remove — reviewer must confirm single-sourcing.
-- Fidelity is the headline assertion (NFR-004): the test must compare against the generator's extractor output, not a hand-written expectation, so drift is caught.
-- Respect the existing Pagefind/search-coverage comment in `Hub.astro` — do not regress indexability with the badge markup.
+- **New split-brain** is the headline risk (F6): reviewer confirms number/status/date ALL come from `extractAdrMeta`, not a Hub-local parse (T023 enforces).
+- **Fidelity tautology** (F5): the test must exercise Hub's rendered output, not compare the extractor to itself.
+- Confirm the draft/number-less/Template reconciliation so NFR-004's 1:1 is a true invariant over its scoped set.

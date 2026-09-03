@@ -11,11 +11,10 @@
         "WP01"
       ],
       "write_scope": [
-        "src/lib/vocabulary-core.d.ts",
         "src/lib/vocabulary-core.mjs",
-        "src/lib/vocabulary-loader.d.ts",
         "src/lib/vocabulary-loader.mjs",
-        "src/tests/vocabulary-core.test.ts"
+        "src/tests/vocabulary-core.test.ts",
+        "src/tests/vocabulary-single-source.test.ts"
       ],
       "predicted_surfaces": [
         "api",
@@ -38,7 +37,6 @@
       ],
       "predicted_surfaces": [
         "api",
-        "app-shell",
         "artifact-rendering",
         "legacy-cleanup"
       ],
@@ -54,7 +52,8 @@
         "src/lib/metadata.ts",
         "src/lib/schema.ts",
         "src/lib/sections.ts",
-        "src/scripts/validate-frontmatter.mjs"
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/metadata.test.ts"
       ],
       "predicted_surfaces": [
         "api",
@@ -78,8 +77,7 @@
       ],
       "predicted_surfaces": [
         "api",
-        "legacy-cleanup",
-        "tests"
+        "legacy-cleanup"
       ],
       "depends_on_lanes": [
         "lane-b"
@@ -87,8 +85,8 @@
       "parallel_group": 2
     }
   ],
-  "computed_at": "2026-09-03T22:44:16.454503+00:00",
+  "computed_at": "2026-09-03T23:03:55.773076+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "fcf3c22bc284f7bc0b34fc0f9db6b5c610f3fce0"
+  "planning_commit_sha": "aa6bc9efe7f0ad0547000039ef943f39ef6a3e89"
 }

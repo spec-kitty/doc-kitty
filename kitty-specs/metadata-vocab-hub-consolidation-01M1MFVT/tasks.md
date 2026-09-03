@@ -17,30 +17,33 @@ MVP = **WP01** (the shared core; everything else builds on or beside it).
 
 ## Subtask Index
 
+> **Amended by the post-tasks adversarial squad** (see research.md §D4, findings F1–F13). Key changes: no `.d.ts` sidecars (allowJs is global — use JSDoc-const + derived unions); WP01 gains a golden-master oracle + a single-source/purity gate; WP03 keeps `schema-validator-parity` two-armed (not collapsed) and adds literal oracles; WP04 single-sources the ADR *number* too and reconciles Hub/generator inclusion; `metadata.test.ts` gains a `durable`-published test (owned by WP02).
+
 | ID | Description | WP | Parallel |
 | --- | --- | --- | --- |
-| T001 | Create fs-free `vocabulary-core.mjs` (enums incl. `durable`, SECTION_TYPE, expectedDocType, pure resolver, index-basename) | WP01 |  |
-| T002 | Hand-write `vocabulary-core.d.ts` | WP01 |  |
-| T003 | Create `vocabulary-loader.mjs` (loadVocabulary, loadSectionRegistry, sectionTypes/subtypes) | WP01 |  |
-| T004 | Hand-write `vocabulary-loader.d.ts` | WP01 |  |
-| T005 | Unit tests `vocabulary-core.test.ts` pinning core behavior | WP01 |  |
+| T001 | Create fs-free `vocabulary-core.mjs` (JSDoc-const enums incl. `durable`, SECTION_TYPE, expectedDocType, pure resolver, index-basename) | WP01 |  |
+| T002 | Create `vocabulary-loader.mjs` (loadVocabulary, loadSectionRegistry, sectionTypes/subtypes) | WP01 |  |
+| T003 | Golden-master `vocabulary-core.test.ts` — literal oracles (independent drift catch, F3) | WP01 |  |
+| T004 | Single-source + purity gate `vocabulary-single-source.test.ts` (F8/F9/NFR-001) | WP01 |  |
+| T005 | Confirm literal-tuple typing compiles under `astro check` (F6/F7 spike) | WP01 |  |
 | T006 | Prove fs-free purity + bare-Node importability | WP01 |  |
-| T007 | Rewire `schema.ts` onto core (drop enum literals) | WP02 |  |
-| T008 | Rewire `metadata.ts` onto fs-free core; add `durable` to union; `isPublished` counts durable published | WP02 |  |
-| T009 | Rewire `sections.ts` (re-export core+loader; preserve semantics) | WP02 |  |
-| T010 | Rewire `validate-frontmatter.mjs` onto core+loader; delete the ~700-line twin | WP02 |  |
-| T011 | Prove gate runs under bare `node`; all gates + build green | WP02 |  |
-| T012 | Verify `durable` end-to-end (validates + published) | WP02 |  |
-| T013 | Rewrite `vocabulary-resolver.test.ts` (NFR-004 parity → single-impl unit) | WP03 |  |
-| T014 | Rewrite `section-type-parity.test.ts` → single-core unit | WP03 |  |
-| T015 | Rewrite `schema-validator-parity.test.ts` (NFR-005 → single-impl unit) | WP03 |  |
+| T007 | Rewire `schema.ts` onto core (`z.enum(STATUSES)`, drop literals) | WP02 |  |
+| T008 | Rewire `metadata.ts` onto fs-free core; **derive** `DocStatus`/`DocType` via `typeof …[number]` (durable flows in) | WP02 |  |
+| T009 | Rewire `sections.ts` (re-export core+loader; preserve API) | WP02 |  |
+| T010 | Rewire `validate-frontmatter.mjs` onto core+loader; delete twin; keep `STATUSES`/`expectedType` aliases | WP02 |  |
+| T011 | Prove bare-Node; `assert-build` + `assert-chrome` + build + `astro check` green | WP02 |  |
+| T012 | `durable` end-to-end + committed `metadata.test.ts` published assertion (F10) | WP02 |  |
+| T013 | Retarget `vocabulary-resolver.test.ts`; KEEP validate-applies-to-derived assertions (F4) | WP03 |  |
+| T014 | Retarget `section-type-parity.test.ts` with per-row literal oracles + all blocks (F2) | WP03 |  |
+| T015 | `schema-validator-parity.test.ts`: KEEP two-arm; add `durable`-accepts row (F1) | WP03 |  |
 | T016 | Confirm no coverage lost; full vitest green | WP03 |  |
-| T017 | Export `extractAdrMeta` from `generate-adr-index.mjs` (single-source extraction) | WP04 | [P] |
-| T018 | `Hub.astro`: derive ADR meta from `entry.body`; order ADR children by number | WP04 | [P] |
+| T017 | Export `extractAdrMeta` (number+status+date) from `generate-adr-index.mjs`; sole source both callers (F6) | WP04 | [P] |
+| T018 | `Hub.astro`: derive ADR meta from `entry.body`; order by number; exclude number-less/Template (F5) | WP04 | [P] |
 | T019 | Render status badge + date; graceful fallback | WP04 | [P] |
 | T020 | Gate ADR ordering/badging to ADR-kind only; non-ADR + single-ADR unchanged | WP04 | [P] |
 | T021 | `hub.css` badge styles (--dk-* tokens, dual-theme legible) | WP04 | [P] |
-| T022 | `hub-adr-card.test.ts` (ordering, 1:1 fidelity, fallback, no-regress) | WP04 | [P] |
+| T022 | `hub-adr-card.test.ts` — render Hub's real output vs extractor; edge rows incl. draft/Template (F5) | WP04 | [P] |
+| T023 | Single-source enforcement gate: Hub imports `extractAdrMeta`, no independent parse (F5/NFR-001) | WP04 | [P] |
 
 Record completion with `spec-kitty agent tasks mark-status T0xx --status done` (single or batch). Rows above are references, not checkboxes.
 

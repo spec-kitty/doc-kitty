@@ -1,6 +1,6 @@
 ---
 work_package_id: WP03
-title: Collapse parity tests to single-impl unit tests (#49 IC-03)
+title: 'Retarget parity tests to the single core (keep coverage, keep genuine two-arm guards) (#49 IC-03)'
 dependencies:
 - WP02
 requirement_refs:
@@ -16,53 +16,59 @@ subtasks:
 - T016
 history:
 - created by /spec-kitty.tasks
+- amended by post-tasks adversarial squad (F1, F2, F3, F4 — premise corrected)
 agent_profile: node-norris
+role: implementer
+agent: claude
 authoritative_surface: src/tests/
-create_intent: []
 execution_mode: code_change
 owned_files:
 - src/tests/vocabulary-resolver.test.ts
 - src/tests/section-type-parity.test.ts
 - src/tests/schema-validator-parity.test.ts
-role: implementer
+create_intent: []
 tags: []
 tracker_refs: []
 ---
 
 ## ⚡ Do This First: Load Agent Profile
 
-Before reading anything else, load your assigned profile via `/ad-hoc-profile-load node-norris` (role: implementer). Apply its identity, boundaries, and the charter directives (`spec-kitty charter context --action implement --json`); state which you applied. Guiding rule: **preserve coverage** — these tests move from "two implementations agree" to "the one implementation is correct". Do not weaken assertions to make them pass.
+Before reading anything else, load your assigned profile via `/ad-hoc-profile-load node-norris` (role: implementer). Apply its identity, boundaries, and the charter directives (`spec-kitty charter context --action implement --json`); state which you applied. **Guiding rule: PRESERVE COVERAGE.** These tests move from "two implementations agree" to "the one implementation is correct" — but only where the second implementation actually went away. Do NOT weaken or delete assertions to make tests pass.
 
 ## Objective
 
-After WP02 there is a single vocabulary/type-derivation implementation, so the three twin-parity guards no longer have a second side to compare. Rewrite each as an ordinary unit test that pins the single core's behavior — keeping the resolved-output, path-corpus, and shape assertions. Read `../research.md` (D1 done-bar, C-003: "rewritten as ordinary unit tests, not deleted") and WP01's `vocabulary-core.test.ts` (avoid duplicating what it already covers; these three retain their own distinctive assertions). **Depends on WP02.**
+After WP02 there is a single vocabulary/type-derivation implementation, so the twin-comparisons that compared metadata.ts-vs-gate go tautological. Retarget them to pin the single core's behavior **with literal oracles** — and KEEP the two guards that are still genuinely two-armed. Read `../research.md` (D1 done-bar; **D4 findings F1–F4**, which correct the naive "collapse everything" plan) and WP01's `vocabulary-core.test.ts` (avoid duplicating; these three keep their distinctive assertions). **Depends on WP02.**
+
+> **Premise correction (squad F1):** WP02 single-sources only the enums / `SECTION_TYPE` / `expectedType` / resolver / index-basename. It does **NOT** merge the two zod **field-shape** objects — `docKittyFields` (schema.ts) and the gate's `frontmatterSchema` stay independent. So `schema-validator-parity` is **still a genuine two-arm guard** and must NOT be collapsed.
 
 ## Critical context (file:line)
 
-- `src/tests/vocabulary-resolver.test.ts` — today imports `loadVocabulary` from both `../lib/sections.js` (`:5`) and `../scripts/validate-frontmatter.mjs` (`:6-10`); the `NFR-004 — mjs and ts twins resolve the SAME YAML identically` block (`:227-258`) writes a temp `_meta/vocabulary.yaml` (non-default `ALIAS_YAML`, `:45-50`) and asserts both sides agree on `effective`, forbidden verdict, and kind axis. **Rewrite**: load the ONE resolver (via the core/loader) and assert the SAME resolved outputs on the SAME non-default YAML — keep the alias/forbidden/kind assertions; drop the second import.
-- `src/tests/section-type-parity.test.ts` — imports `SECTION_TYPE`/`expectedDocType` from `metadata.ts` and `SECTION_TYPE`/`expectedType` from the gate (`:21-36`), asserts the two frozen maps `toEqual` (`:38-40`) and runs a shared path CORPUS (`:44+`). **Rewrite**: assert the single `SECTION_TYPE` + run the same corpus through the single `expectedDocType`; drop the twin comparison.
-- `src/tests/schema-validator-parity.test.ts` — binds gate `validate()` (arm A) to `z.object(docKittyFields)` from `schema.ts` (arm B). **Rewrite**: since both arms now derive from the same core shape, assert the single validation behavior over the accept/reject fixture set; keep the fixtures.
+- `vocabulary-resolver.test.ts`: the `NFR-004 mjs-vs-ts twins` block (`:227-258`, non-default `ALIAS_YAML` `:45-50`) becomes tautological → retarget to the ONE resolver, keeping `effective`/forbidden/kind assertions. **BUT** also KEEP the gate-wiring assertions US2-1 (`:153-169`, authored forbidden→aliased term fails naming the replacement) and US2-3 (`:190-207`, a `plans/features` page with NO `type` resolves to the overridden type through `validate()`): these prove `validate()` APPLIES the resolver to DERIVED values (FR-004/FR-005) — single-sourcing the resolver does NOT structurally guarantee the gate still calls it, so these are not redundant (F4).
+- `section-type-parity.test.ts`: the `SECTION_TYPE toEqual` (`:38-40`) and "both derivations agree" (`:109-113`) ARE now structurally guaranteed → those specific compares may drop. **Everything else must gain literal oracles** (F2): the 19-row path CORPUS (`:67-77`) asserts only `A===B` today with **no per-row literal** — add an explicit expected type to every row; the era-partitioned depth cases (`:87-114`, #41/FR-011); the DOC_TYPES-coupling guard (`:124-131`); and the index-basename/collision/registry-subtypes parity blocks (`:138-196`) — several of these compared metadata.ts helpers to gate helpers and are non-tautological ONLY if rewritten with literal expectations.
+- `schema-validator-parity.test.ts` (F1): **KEEP two-arm.** `docKittyFields` (schema.ts) and `frontmatterSchema` (gate) remain independently hand-maintained field shapes; the PRESENCE_LENIENT block (`:98-119`, build-lenient vs gate-strict) is an INTENTIONAL divergence that cannot be a single-impl test. Only the enum-derived rows (`bad-doc-status`, and a NEW `durable`-accepts row) are now single-sourced. Change nothing structural here except adding the `durable`-accepts case.
 
 ## Subtasks
 
-### T013 — Rewrite `vocabulary-resolver.test.ts`
-Single-resolver unit test over the non-default alias YAML; retain `effective`/forbidden/kind-axis assertions. Remove the `validate-frontmatter.mjs` twin import.
+### T013 — Retarget `vocabulary-resolver.test.ts`
+Replace the twin-parity block with single-resolver assertions over the non-default alias YAML (keep `effective`/forbidden/kind). **KEEP US2-1 and US2-3** gate-wiring assertions (validate() applies override to derived values). Remove only the second-implementation import, not the wiring checks.
 
-### T014 — Rewrite `section-type-parity.test.ts`
-Single `SECTION_TYPE` + `expectedDocType` corpus test (adr/plans/operations/unknown→null). Remove the twin map compare. (If it now overlaps `vocabulary-core.test.ts`, keep the richer corpus here and trim the duplicate in the core test, or rename this file's `describe` to reflect it's the corpus suite — coordinate so coverage is retained, not doubled or dropped.)
+### T014 — Retarget `section-type-parity.test.ts` with literal oracles
+Add an explicit expected value to every CORPUS row and every era-depth case. Retain (as single-impl, literal-asserted): DOC_TYPES-coupling, index-basename root/collision behavior, registry-subtypes rule firing vs built-in fall-through. Drop only the now-structural `SECTION_TYPE toEqual` / "derivations agree" compares. If this overlaps WP01's `vocabulary-core.test.ts`, keep the richer corpus in ONE place and reference it — do not double-maintain or drop.
 
-### T015 — Rewrite `schema-validator-parity.test.ts`
-Single-shape validation unit test over the existing accept/reject fixtures; add a `durable`-accepts case (ties to #39). Remove the dual-arm comparison.
+### T015 — `schema-validator-parity.test.ts`: keep two-arm, add `durable` (F1)
+Do NOT collapse. Keep both arms and the PRESENCE_LENIENT divergence intact. Add a `durable`-accepts fixture row (accepted by both the gate and the build schema). That is the only change.
 
 ### T016 — Confirm no coverage lost + full green
-Diff old vs new assertions; every distinctive check (alias resolution, forbidden verdict, kind axis, path corpus, accept/reject fixtures) still exists somewhere. Run the full vitest suite green (or CI-verify with a note if local `node_modules` is broken).
+Diff old vs new assertions across all three files: every distinctive property (alias resolution, forbidden verdict, kind axis, full path corpus with literals, era cases, DOC_TYPES coupling, index-basename/collision, registry-subtypes, the two-arm field-shape divergence, accept/reject fixtures, `durable`) still exists. Full vitest green (or CI-verified with a note).
 
 ## Definition of Done
-- The three test files no longer import a second implementation; each pins the single core.
-- Every pre-existing assertion is preserved (retargeted, not deleted); a `durable`-accepts case added.
-- Full vitest suite green (or CI-verified).
+- `vocabulary-resolver` + `section-type-parity` retargeted to the single core **with literal oracles**; gate-wiring (validate-applies-to-derived) assertions preserved.
+- `schema-validator-parity` remains a genuine two-arm guard; only a `durable`-accepts row added.
+- No assertion silently dropped except the two provably-structural `section-type-parity` compares; a written note in the PR/DoD lists exactly what was dropped and why it is now structural.
+- Full vitest green (or CI-verified).
 - `spec-kitty agent tasks mark-status T013 T014 T015 T016 --status done`.
 
 ## Risks / reviewer guidance
-- Reviewer: confirm this is coverage-preserving — compare the new assertions against the deleted parity blocks line-by-line. Deleting an assertion because "there's only one impl now" is only valid when the property is structurally guaranteed; the resolved-output/corpus/fixture properties are NOT structural and must stay.
-- Do not fold all three into one file — keep the three distinct suites (resolver, section-type, schema/validator) for locality.
+- Reviewer: this is the highest coverage-loss-risk WP. Compare new assertions against the deleted parity blocks line-by-line; a literal-less `A===A` retarget is deletion-in-disguise.
+- Reviewer: verify `schema-validator-parity` was NOT collapsed (F1) and the resolver-wiring US2-1/US2-3 assertions survive (F4).
+- Keep the three suites separate (resolver / section-type / schema-validator) for locality.
