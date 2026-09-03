@@ -1,0 +1,41 @@
+# Committed URL baseline (E-04, FR-008, NFR-005) for the redirect-coverage gate
+# (contracts/redirect-coverage-gate.md). Consumed by:
+#   node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist
+#
+# This is a pre-change SNAPSHOT of URLs that must keep resolving. It is
+# version-controlled and hand-authored — the gate NEVER regenerates it from the
+# current build (NFR-005): a self-referential baseline can never fail against
+# real drift (D-07).
+#
+# WP02 seeds a self-contained fixture (data-model.md E-08 / anti-laziness M4):
+# every entry below references a URL that already exists in the example TODAY.
+#
+# WP04 out-of-map edit (recorded, justified per E-08 — this file is WP02-owned):
+# extends the baseline with the T020 rename's OLD urls (plans/features ->
+# plans/missions), using the frozen E-08 datum. Added in the same change that
+# creates the redirect entries in astro.config.mjs and the new content in
+# plans/missions/, so the gate is never red between merges.
+#
+# Direct, currently-live pages (no redirect involved) — proves the gate's
+# baseline-covers-itself path stays green as the example evolves.
+/
+/adr/
+/architecture/
+/context/
+/guides/
+/guides/getting-started/
+
+# Redirect-covered fixture (E-03): an old alias URL that never had its own
+# content — it exists ONLY via the redirect declared in astro.config.mjs,
+# pointing at the (already-live) getting-started guide above. Proves the gate
+# mechanism end to end (pass + both failure modes) independently of any
+# rename WP.
+/guides/old-getting-started/
+
+# WP04 rename fixture (E-08, T021): the section `plans/features/` was renamed
+# to `plans/missions/` (registry-data-only, SC-002). These old URLs exist only
+# via the redirects declared in astro.config.mjs, pointing at the real pages
+# now at plans/missions/. This is the real end-to-end rename->redirect proof
+# (WP02's fixture above proves the gate mechanism independently of any rename).
+/plans/features/mission-alpha/
+/plans/features/mission-beta/

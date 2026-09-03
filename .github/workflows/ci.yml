@@ -144,6 +144,13 @@ jobs:
       # while deploy reuses the pure build (contracts/build-example-action.contract.md).
       - name: Assert build artifacts
         run: pnpm assert:artifacts example/dist
+      # Redirect-coverage gate (adopter-loader-migration #42, WP02 — FR-010, NFR-002).
+      # Runs HERE, after the build produced dist/, so the target-aware chain
+      # resolution has real content/redirect stubs to walk. Bare Node, reads the
+      # committed baseline (example/url-baseline.txt, NFR-005) — spawns no
+      # additional Astro build itself.
+      - name: Assert redirect coverage
+        run: node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist
       # Additive (WP09): publish the built dist so the a11y lane CONSUMES it rather
       # than rebuilding (path-efficiency). This adds no assertion and does not change
       # this lane's pass/fail semantics.

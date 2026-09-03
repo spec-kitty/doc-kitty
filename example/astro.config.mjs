@@ -26,10 +26,34 @@ const BASE = `/${REPO}`;
 const MARKUA_ON = process.env.DK_MARKUA !== 'off';
 const OUT_DIR = process.env.DK_OUTDIR ? `./${process.env.DK_OUTDIR}` : undefined;
 
+// Redirect-coverage fixture (adopter-loader-migration #42, WP02 — FR-009,
+// data-model.md E-03/E-08). Astro's native `redirects` config emits a static
+// redirect stub for each entry (D-04); `src/scripts/check-redirect-coverage.mjs`
+// walks the committed `example/url-baseline.txt` against the built `dist/` and
+// follows this map's target chain to a live terminus (target-aware — a
+// redirect to a dead page is a live 404, closed by construction per B1).
+//
+// WP02 seeds a SELF-CONTAINED fixture (E-08): the "from" is an old alias URL
+// that never had its own content, and the "to" is a page that already exists
+// today — green standalone, independent of any later rename WP.
+//
+// WP04 out-of-map edit (recorded, justified per E-08 — this file is WP02-owned):
+// extends the map for its section rename (plans/features -> plans/missions),
+// per the frozen E-08 datum. `plans/features/` did not exist in the example
+// before WP04, so these two entries are added by WP04 in the SAME change that
+// creates `plans/missions/` — there is no intermediate commit where the old
+// URL exists without its redirect (never red between merges).
+const REDIRECTS = {
+  '/guides/old-getting-started/': '/guides/getting-started/',
+  '/plans/features/mission-alpha/': '/plans/missions/mission-alpha/',
+  '/plans/features/mission-beta/': '/plans/missions/mission-beta/',
+};
+
 export default defineConfig({
   site: SITE,
   base: BASE,
   ...(OUT_DIR ? { outDir: OUT_DIR } : {}),
+  redirects: REDIRECTS,
   integrations: defineDocKittyIntegrations({
     title: 'Doc Kitty Example',
     description: 'A minimal docsite built with the Common Docs — Kitty Variation.',
@@ -49,5 +73,11 @@ export default defineConfig({
     // until this flip. `DK_MARKUA=off` builds the same corpus preset-off for the
     // SC-003 literal-text portability gate.
     markua: MARKUA_ON,
+    // WP01 flexible-section-identity (adopter-loader-migration #42, anti-laziness
+    // M3): both basenames collapse to their section slug in the SAME build, so
+    // WP04's `index.md`-based rename target coexists with the existing
+    // README-based sections. WP02 owns this line; WP04 supplies the `index.md`
+    // content only (data-model.md E-08 ownership split).
+    indexBasename: ['README', 'index'],
   }),
 });
