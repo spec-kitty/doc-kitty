@@ -78,8 +78,9 @@ redirect, the failing target — iff at least one baselined URL is `uncovered`.
 It runs in bare Node with **no** Astro build context (it reads the already-built
 `dist/`, it does not invoke Astro itself), performs no network access, and is
 deterministic across repeat runs, adding no more than a few seconds to the
-existing `doc-sanity` CI job. It is wired into CI alongside the other bare-Node
-sanity gates as an explicit step, the same operational shape as the
+`build-example` CI job. It is wired there as an explicit step **after** the
+build-artifacts assertion — the gate reads `example/dist/`, which only
+`build-example` produces — the same operational shape as the
 [ADR-0032](./0032-adr-index-generation.md) lockfile-style `--check`.
 
 ### 4. Rename churn is covered by the same machinery
