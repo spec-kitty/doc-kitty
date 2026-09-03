@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: metadata-vocab-hub-consolidation-01M1MFVT
 mission_id: 01M1MFVTZGD9KQ6QWYV54ZDBQH
-generated_at: '2026-09-03T23:07:58.196850+00:00'
+generated_at: '2026-09-03T23:10:30.643838+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -15,22 +15,18 @@ input_artifacts:
     sha256: 26c07e356850d8989f14dfdff81a52f5e83d491b7e451006f6ba361eadb17bb9
   tasks.md:
     path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/tasks.md
-    sha256: adeccff88f4c794373ac6d4c21e6c1277795ce79808228e77c4b4badbdc8bfde
+    sha256: de7be6524b69e60b867421e04ad7ec1d0a3ca75e219eb10fffb7d8e52aa38565
   charter:
     path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:
-  medium: 0
-  critical: 0
-  low: 2
+  low: 1
   high: 0
+  critical: 0
+  medium: 0
   info: 0
 findings:
-- id: C1
-  severity: low
-  category: inconsistency
-  summary: tasks.md WP03 Work-Packages summary still says 'collapse parity tests to single-impl', contradicting the squad-corrected WP03 prompt (schema-validator-parity stays two-armed).
 - id: C2
   severity: low
   category: inconsistency
@@ -43,8 +39,9 @@ findings:
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |----|----------|----------|-------------|---------|----------------|
-| C1 | Inconsistency | LOW | tasks.md:70-72 | WP03 Work-Packages summary reads "Collapse parity tests to single-impl … lose their second implementation", but the corrected WP03 prompt + research §D4/F1 KEEP `schema-validator-parity` two-armed and only retarget the other two with literal oracles. | Reword the tasks.md WP03 summary to "Retarget parity tests to the single core; keep the genuine two-arm field-shape guard" to match the authoritative WP03 prompt. |
 | C2 | Inconsistency | LOW | spec.md:C-003 | Constraint C-003 states the NFR-004 parity test "becomes a redundant guard … or removed" generically; the refined disposition (research §D4) is: `vocabulary-resolver` + `section-type-parity` retargeted with literal oracles, `schema-validator-parity` KEPT two-arm, plus a new `vocabulary-single-source` gate. | No blocker — the WP prompts carry the precise disposition. Optionally tighten C-003 wording in a later spec touch-up. |
+
+> Note: an earlier draft flagged a tasks.md WP03 summary drift (C1); it was corrected in commit before this recording, so it is not carried as an open finding.
 
 **Coverage Summary Table:**
 
