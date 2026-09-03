@@ -153,6 +153,28 @@ page; the relaxation is about AUTHORING cost, not the emitted contract. See also
 [ADR-0009](./0009-finalize-metadata-contract.md) (the frontmatter contract) for
 the field-level restatement.
 
+## Update (2026-09-03) — the "tolerated, not supported" stance is reversed for two named adaptations (#37/#48)
+
+The adopter-loader-migration mission (issues #37/#48) amends the Decision
+above. Item 4 held that a project's own section-set adaptation is "tolerated,
+not supported" — the toolkit degrades gracefully on deviation but is not built
+for it. **That stance is now reversed for exactly two adaptations**, which move
+from tolerated-degradation to first-class, tested, documented toolkit
+capability:
+
+- an `index.md`-named section index (alongside the `README.md` default), via a
+  configurable `indexBasename` option;
+- a renamed section folder — including a sub-path subtype rename such as
+  `plans/features` → `plans/missions` — carried through a registry `subtypes`
+  field, so the rename is a data edit rather than a derivation-code edit.
+
+The full decision, the mechanism, and the reversal in context are recorded in
+[ADR-0033](./0033-flexible-section-identity.md), which also partially supersedes
+[ADR-0002](./0002-readme-as-index.md). Item 4's general posture is otherwise
+**unchanged**: an adaptation not named above (an unregistered section, an
+unrecognized `type`) remains tolerated-not-supported graceful degradation, not
+an invitation to arbitrary adaptation.
+
 ## Alternatives considered
 
 ### Option A: Adhere strictly to Common Docs

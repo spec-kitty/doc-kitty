@@ -44,6 +44,20 @@ remains reserved and frontmatter-free and is excluded from the collection.
 - A repo migrating from vanilla Common Docs must rename `index.md` → `README.md`
   and add frontmatter.
 
+## Update (2026-09-03) — superseded in part by ADR-0033 (`indexBasename`)
+
+The adopter-loader-migration mission (issues #37/#48) amends the "use
+`README.md`" stance above: **`README.md` remains the default** section-index
+basename (this ADR's rationale — one file for repo browsing and the rendered
+site — still holds and is why it stays the default), but it is no longer the
+**only** recognized basename. A configurable, case-insensitive `indexBasename`
+option additionally accepts `index.md`, so a project whose convention already
+names section indexes `index.md` needs no file renames. See
+[ADR-0033](./0033-flexible-section-identity.md) for the full decision, the
+per-surface honoring list, and the both-files-present collision rule. This
+Decision above is otherwise unchanged and is **superseded in part**, not
+replaced.
+
 ## Alternatives considered
 
 ### Option A: Keep index.md frontmatter-free, derive title from H1
@@ -53,3 +67,5 @@ Closer to base Common Docs, but weakens the metadata-first goal.
 ## References
 
 - [Convention](../context/convention.md)
+- [ADR-0033](./0033-flexible-section-identity.md) — the partial supersession
+  recorded above.
