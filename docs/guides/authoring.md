@@ -48,8 +48,9 @@ A directory's landing page is its `README.md` by default. If your tree already
 names section indexes `index.md`, set the `indexBasename` loader option to
 `"index"` instead of renaming every file — matching is case-insensitive and
 `README` stays the default so an unconfigured tree is unaffected. Every
-index-detecting surface (the loader, the validator, the link checker, the
-scaffolder, `new-doc.mjs`) honours the configured basename. See
+index-detecting surface (the loader, the validator, the scaffolder,
+`new-doc.mjs`) honours the configured basename; the link checker accepts either
+basename unconditionally. See
 [ADR-0033](../adr/0033-flexible-section-identity.md) and the
 [convention](../context/convention.md#2-kitty-twists).
 

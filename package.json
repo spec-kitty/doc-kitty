@@ -17,7 +17,7 @@
     "lint": "eslint src",
     "validate": "pnpm --filter example run validate",
     "validate:docs": "node src/scripts/validate-frontmatter.mjs docs",
-    "validate:example": "node src/scripts/validate-frontmatter.mjs example/docs",
+    "validate:example": "node src/scripts/validate-frontmatter.mjs example/docs --index-basename README,index",
     "validate:links": "node src/scripts/check-links.mjs docs example/docs",
     "validate:adr-index": "node src/scripts/generate-adr-index.mjs --check",
     "validate:catalog": "node src/scripts/validate-catalog.mjs docs example/docs",

@@ -81,8 +81,10 @@ Every surface that detects a section index honors the configured basename, so an
 `index.md` tree is never half-recognized (the partial-adoption trap): the content
 loader and route-slug derivation, `draftRoutes`, the `docs/`-root helper, the
 `llms.txt` description emitter, the bare-Node frontmatter validator gate
-(including its root-index exemption), the link checker (`check-links.mjs`), the
-scaffolder, and the new-doc tool. The bare-Node gate gets its own hand-mirrored
+(including its root-index exemption), the scaffolder, and the new-doc tool. (The
+link checker, `check-links.mjs`, accepts either basename unconditionally — it has
+no per-root config surface, and accepting both is a safe superset for a link
+resolver.) The bare-Node gate gets its own hand-mirrored
 detection twin — it runs with no Astro build context and cannot import the
 build-coupled loader helper — guarded by the derivation-twin parity tests
 (consistent with the twin discipline [ADR-0031](./0031-vocabulary-override.md)

@@ -68,7 +68,7 @@ build-artifact gate stay green.
   live page nor a redirect whose *target* resolves — a redirect chain is
   followed to its live terminus, so a redirect pointing at a dead page is
   caught rather than waved through. The gate runs with no Astro build
-  context, adds only a few seconds to the `doc-sanity` job, and covers the
+  context, adds only a few seconds to the `build-example` job, and covers the
   URL churn a section rename (above) produces. Greenfield
   [ADR-0034](../adr/0034-redirect-coverage-gate.md).
 
