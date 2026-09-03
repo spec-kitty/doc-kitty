@@ -32,6 +32,8 @@ owned_files:
 - src/lib/metadata.ts
 - src/lib/sections.ts
 - src/scripts/validate-frontmatter.mjs
+- src/scripts/new-doc.mjs
+- src/scripts/scaffold.mjs
 - src/tests/metadata.test.ts
 create_intent: []
 tags: []
@@ -68,8 +70,9 @@ Import `SECTION_TYPE`, `expectedDocType`, and the enum tuples from `../lib/vocab
 ### T009 — Rewire `sections.ts`
 Re-export loader + resolver from `vocabulary-loader.mjs`/`vocabulary-core.mjs`; delete the now-duplicated inline resolver/loader bodies (`:294-415`) while preserving every exported name/signature.
 
-### T010 — Rewire the gate + delete the twin
+### T010 — Rewire the gate + delete the twin (all four twins — WP01 finding)
 In `validate-frontmatter.mjs`, replace the duplicated blocks with imports from core + loader; **delete** the twin. Keep the `export { STATUSES }` re-export (assert-chrome:26) and add `export { expectedDocType as expectedType }` (F12). The gate must run under plain `node` (imports resolve to `.mjs`, never `.ts`).
+**Also rewire the 3rd/4th twins WP01 surfaced:** `src/scripts/new-doc.mjs` and `src/scripts/scaffold.mjs` each carry their own hardcoded `expectedType` switch — import `expectedDocType` from `../lib/vocabulary-core.mjs` in both and delete their local copies (they are bare-Node scripts, so the `.mjs` core imports cleanly). WP01's single-source gate uses a **shrink-only ratchet**, so removing these twins simply drops the offender count below baseline and the gate stays green — you do NOT need to edit the WP01-owned `vocabulary-single-source.test.ts`. (A later cleanup can tighten the baseline to empty; if you do choose to, note it as a justified out-of-map edit.) If either script legitimately needs behavior the core lacks, keep it as-is with a one-line rationale — but prefer full rewire so NFR-001 is truly met.
 
 ### T011 — Prove bare-Node + gates green
 Run the frontmatter gate under bare `node` on the example tree (no Astro import pulled in); run `validate-frontmatter`, `assert-build-artifacts.mjs`, **`assert-chrome-artifacts.mjs`** (F12), Astro build, and `astro check`. All green (or CI-verified with a clear note if local env broken).
