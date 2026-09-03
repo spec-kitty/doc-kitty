@@ -6,7 +6,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import { getCollection } from 'astro:content';
-import type { DocEntry, DocKittyFrontmatter, DocsIndex } from '../metadata.js';
+import type { DocEntry, DocKittyFrontmatter, DocsIndex, IndexBasenameOption } from '../metadata.js';
 import { readmeToIndexId, slugFromEntryId } from '../metadata.js';
 
 /**
@@ -61,15 +61,22 @@ export interface DocsRootSignal {
  * The store id maps to the route slug (`slugFromEntryId`), and `filePath` is
  * `<docsRoot>/<original path>` — so `readmeToIndexId(filePath)` yields
  * `<docsRoot>/<slug>`, and stripping the slug tail leaves the docs root. This
- * holds uniformly for `README.md` (index) and plain `.md` files because
- * `readmeToIndexId` collapses both to the same slug the id already carries.
+ * holds uniformly for the configured index basename(s) and plain `.md` files
+ * because `readmeToIndexId` collapses each to the same slug the id already
+ * carries — `indexBasename` MUST be the same option the loader that produced
+ * `signal.id` was configured with, or the tail-strip math disagrees (FR-003).
  */
-export function docsRootFromSignal(signal: DocsRootSignal): string | null {
+export function docsRootFromSignal(
+  signal: DocsRootSignal,
+  indexBasename?: IndexBasenameOption,
+): string | null {
   if (!signal.filePath) return null;
   const slug = slugFromEntryId(signal.id);
   // Normalize any OS separators to '/' so readmeToIndexId's '/'-anchored regex
   // works, then strip the '<slug>' tail (plus its joining '/').
-  const normalized = readmeToIndexId(signal.filePath.split(/[\\/]/).join('/'));
+  const normalized = readmeToIndexId(signal.filePath.split(/[\\/]/).join('/'), {
+    indexBasename,
+  });
   const rootRel =
     slug === ''
       ? normalized
@@ -96,12 +103,13 @@ export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
 export function docsRootFromSignals(
   publishedRoot: string | undefined,
   entries: DocsRootSignal[],
+  indexBasename?: IndexBasenameOption,
 ): string | null {
   if (publishedRoot && publishedRoot.trim() !== '') {
     return path.resolve(publishedRoot);
   }
   for (const entry of entries) {
-    const root = docsRootFromSignal(entry);
+    const root = docsRootFromSignal(entry, indexBasename);
     if (root) return root;
   }
   return null;
@@ -130,10 +138,12 @@ export function docsRootFromSignals(
  * the convention default `<cwd>/docs` — byte-identical to the previous behavior
  * (no env + no filePath → `<cwd>/docs`).
  */
-export async function docsRoot(): Promise<string> {
+export async function docsRoot(indexBasename?: IndexBasenameOption): Promise<string> {
   const published = process.env[DK_DOCS_ROOT_ENV];
   const entries = (await getCollection('docs')) as unknown as DocsRootSignal[];
-  return docsRootFromSignals(published, entries) ?? path.join(process.cwd(), 'docs');
+  return (
+    docsRootFromSignals(published, entries, indexBasename) ?? path.join(process.cwd(), 'docs')
+  );
 }
 
 /** Resolve an absolute URL for a route against the configured site. */

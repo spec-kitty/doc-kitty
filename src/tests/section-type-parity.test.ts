@@ -22,11 +22,16 @@ import { describe, it, expect } from 'vitest';
 import {
   SECTION_TYPE as METADATA_SECTION_TYPE,
   expectedDocType,
+  readmeToIndexId,
+  resolveIndexEntries,
 } from '../lib/metadata.ts';
 import { DOC_TYPES } from '../lib/schema.ts';
 import {
   SECTION_TYPE as MJS_SECTION_TYPE,
   expectedType,
+  isRootIndex,
+  isIndexPath,
+  detectIndexCollisions,
 } from '../scripts/validate-frontmatter.mjs';
 
 describe('section-type parity: metadata.ts ⇔ validate-frontmatter.mjs', () => {
@@ -122,6 +127,70 @@ describe('section-type / DOC_TYPES coupling (review N3)', () => {
         DOC_TYPES.includes(type as (typeof DOC_TYPES)[number]),
         `frozen SECTION_TYPE['${section}'] = '${type}' must be in DOC_TYPES`,
       ).toBe(true);
+    }
+  });
+});
+
+// adopter-loader-migration WP01 (T007) — extend the parity twin to cover the
+// NEW index-basename detection + registry-subtypes derivation this mission
+// adds (D-06, NFR-001). 0 drift between `src/lib/metadata.ts` and
+// `src/scripts/validate-frontmatter.mjs` on every case below.
+describe('index-basename detection parity: readmeToIndexId/isRootIndex ⇔ isIndexPath/isRootIndex (both twins)', () => {
+  const DEFAULT_CASES = ['README.md', 'index.md', 'guides/README.md', 'guides/index.md'];
+  const OPTED_IN_CASES = ['README.md', 'index.md', 'guides/README.md', 'guides/index.md', 'guides/Index.md'];
+
+  it.each(DEFAULT_CASES)('%s: root-index verdict agrees under the DEFAULT basename', (relPath) => {
+    const tsIsRoot = readmeToIndexId(relPath) === '' && !relPath.includes('/');
+    expect(tsIsRoot).toBe(isRootIndex(relPath));
+  });
+
+  it.each(OPTED_IN_CASES)(
+    '%s: root-index verdict agrees under an OPTED-IN ["README","index"] basename',
+    (relPath) => {
+      const opts = { indexBasename: ['README', 'index'] };
+      const tsIsRoot = readmeToIndexId(relPath, opts) === '' && !relPath.includes('/');
+      expect(tsIsRoot).toBe(isRootIndex(relPath, ['README', 'index']));
+    },
+  );
+
+  it.each(OPTED_IN_CASES)('%s: index-path detection agrees (whole-tree collision inputs)', (relPath) => {
+    // `resolveIndexEntries`'s per-path candidacy test mirrors `isIndexPath`.
+    const { ids } = resolveIndexEntries([relPath], { indexBasename: ['README', 'index'] });
+    const tsCollapsed = ids.get(relPath) !== relPath.replace(/\.mdx?$/i, '');
+    expect(tsCollapsed).toBe(isIndexPath(relPath, ['README', 'index']));
+  });
+
+  it('both-index collision resolution agrees (E-05): same winner, same demoted set', () => {
+    const paths = ['guides/README.md', 'guides/index.md', 'guides/deploy.md', 'index.md', 'README.md'];
+    const tsResult = resolveIndexEntries(paths, { indexBasename: ['README', 'index'] });
+    const mjsResult = detectIndexCollisions(paths, ['README', 'index']);
+    expect(mjsResult).toEqual(tsResult.collisions);
+  });
+});
+
+// adopter-loader-migration WP01 (T007) — registry `subtypes` derivation
+// parity (E-02/E-06/FR-005/D-03): a sub-path rename resolved identically by
+// both twins, with the built-in table intact as the fallback.
+describe('registry-subtypes derivation parity: expectedDocType ⇔ expectedType (both twins)', () => {
+  const typesBySection = { plans: 'Plan' };
+  const subtypesBySection = { plans: [{ match: 'missions', type: 'Mission' }] };
+
+  const CASES = [
+    'plans/missions/x.md', // registry subtypes rule fires
+    'plans/features/small.md', // registry has no rule for "features" here → falls to built-in table
+    'plans/epics/big.md', // built-in table (registry declares no epics rule)
+    'plans/roadmap.md', // section default
+  ];
+
+  it.each(CASES)('%s: expectedDocType ≡ expectedType under an active registry subtypes map', (relPath) => {
+    expect(expectedDocType(relPath, typesBySection, subtypesBySection)).toBe(
+      expectedType(relPath, typesBySection, subtypesBySection),
+    );
+  });
+
+  it('absent subtypesBySection: both twins fall through to the built-in table identically', () => {
+    for (const relPath of CASES) {
+      expect(expectedDocType(relPath, typesBySection)).toBe(expectedType(relPath, typesBySection));
     }
   });
 });

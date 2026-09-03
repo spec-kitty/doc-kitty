@@ -56,6 +56,84 @@ export const KINDS = [
   'Planning', 'Feature', 'User-Journey',
 ];
 
+// ---------------------------------------------------------------------------
+// Index-basename detection (D-02) — the bare-Node twin of `readmeToIndexId` /
+// `resolveIndexEntries` in `src/lib/metadata.ts`. The TS module cannot load in
+// bare Node, so the detection + collision logic is hand-mirrored here (same
+// discipline as the SECTION_TYPE mirror above); the parity test pins the two
+// to identical output for identical input (D-06).
+// ---------------------------------------------------------------------------
+
+/** FR-002/C-001: the default is `README` ONLY — byte-identical to today (NFR-003). */
+export const DEFAULT_INDEX_BASENAME = ['README'];
+
+function normalizeIndexBasenames(indexBasename) {
+  const list =
+    indexBasename === undefined
+      ? DEFAULT_INDEX_BASENAME
+      : Array.isArray(indexBasename)
+        ? indexBasename
+        : [indexBasename];
+  return list.length > 0 ? list : DEFAULT_INDEX_BASENAME;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function indexBasenamePattern(basenames) {
+  return new RegExp(`(^|/)(${basenames.map(escapeRegExp).join('|')})$`, 'i');
+}
+
+/** Does `relPath` (ext included) name a configured section-index candidate? */
+export function isIndexPath(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
+  const withoutExt = relPath.replace(/\.mdx?$/i, '');
+  return indexBasenamePattern(normalizeIndexBasenames(indexBasename)).test(withoutExt);
+}
+
+/**
+ * The root-index exemption twin (US1-AS4): is `relPath` a BUNDLE-ROOT index
+ * file (no directory segment) under the configured basename(s)? Mirrors the
+ * root special-casing `ROOT_ENTRY_ID`/`readmeToIndexId` give the bundle root
+ * in `src/lib/metadata.ts`.
+ */
+export function isRootIndex(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
+  return !relPath.includes('/') && isIndexPath(relPath, indexBasename);
+}
+
+/**
+ * Both-index collision detection (E-05, FR-004) — the bare-Node twin of
+ * `resolveIndexEntries`'s collision half. Given every relPath under a root,
+ * groups index-candidates by directory and reports every directory holding
+ * MORE THAN ONE configured basename; the EARLIEST-configured basename wins
+ * (ties broken by path sort), matching the TS loader's resolution exactly.
+ */
+export function detectIndexCollisions(relPaths, indexBasename = DEFAULT_INDEX_BASENAME) {
+  const basenames = normalizeIndexBasenames(indexBasename);
+  const pattern = indexBasenamePattern(basenames);
+  const byDir = new Map();
+  for (const p of relPaths) {
+    const withoutExt = p.replace(/\.mdx?$/i, '');
+    if (!pattern.test(withoutExt)) continue;
+    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
+    const list = byDir.get(dir) ?? [];
+    list.push(p);
+    byDir.set(dir, list);
+  }
+  const rank = (f) => {
+    const base = f.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
+    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
+    return idx === -1 ? basenames.length : idx;
+  };
+  const collisions = [];
+  for (const [dir, files] of byDir) {
+    if (files.length <= 1) continue;
+    const sorted = [...files].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+    collisions.push({ dir, winner: sorted[0], demoted: sorted.slice(1) });
+  }
+  return collisions;
+}
+
 // Convention (docs/architecture/metadata-model.md): description is 50–180 chars.
 // The upper bound is enforced as an error (a bounded description is the CI
 // guardrail that matters); the lower bound is a non-fatal warning so short-but-
@@ -204,23 +282,61 @@ export function loadSectionTypes(docsRoot) {
 }
 
 /**
+ * Read `<docsRoot>/_meta/sections.yaml` and return its `id → subtypes[]` map,
+ * or `null` when no registry is present. Mirrors `sectionSubtypes` in
+ * `src/lib/sections.ts` (E-02, FR-005, D-03) — only entries that declare a
+ * `subtypes` list of `{match, type}` are included.
+ */
+export function loadSectionSubtypes(docsRoot) {
+  const file = join(docsRoot, '_meta', 'sections.yaml');
+  if (!existsSync(file)) return null;
+  let sections;
+  try {
+    const raw = readFileSync(file, 'utf8');
+    const data = matter(['---', raw, '---', ''].join('\n')).data;
+    sections = data && typeof data === 'object' ? data.sections : undefined;
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(sections)) return null;
+  const map = {};
+  for (const rec of sections) {
+    if (rec && typeof rec === 'object' && typeof rec.id === 'string' && Array.isArray(rec.subtypes)) {
+      map[rec.id] = rec.subtypes.filter(
+        (r) => r && typeof r === 'object' && typeof r.match === 'string' && typeof r.type === 'string',
+      );
+    }
+  }
+  return map;
+}
+
+/**
  * Expected `type` for a path relative to the docs root (null = unknown).
  *
  * The section default comes from `typesBySection` — the registry-derived
  * `id → type` map (issue #24); omitted, it falls back to the frozen
- * {@link SECTION_TYPE}, so a registry-less tree still validates. The short,
- * stable SUB-PATH subtype table is applied on top IN CODE (an ADR `template.md`
- * → `Template`; `plans/epics/*` → `Epic`, `plans/features/*` → `Feature`;
- * `operations/runbooks/*` → `Runbook`). Moving those subtypes into a registry
- * `subtypes` field is a separate, deferred ADR item — not this op. Mirrors
+ * {@link SECTION_TYPE}, so a registry-less tree still validates.
+ *
+ * Derivation order (E-06, most specific first): a registry `subtypes[].match`
+ * on the first sub-path segment (`subtypesBySection`, FR-005/D-03) → the
+ * short, stable BUILT-IN sub-path table kept IN CODE (an ADR `template.md` →
+ * `Template`; `plans/epics/*` → `Epic`, `plans/features/*` → `Feature`;
+ * `operations/runbooks/*` → `Runbook`) → the section default. Mirrors
  * `expectedDocType` in src/lib/metadata.ts (bare-Node copy; the TS module cannot
  * load here).
  */
-export function expectedType(relPath, typesBySection = SECTION_TYPE) {
+export function expectedType(relPath, typesBySection = SECTION_TYPE, subtypesBySection) {
   const parts = relPath.split('/');
   const section = parts[0];
   const file = parts[parts.length - 1];
   const sectionDefault = typesBySection[section] ?? null;
+
+  const registryRules = subtypesBySection?.[section];
+  if (registryRules && parts.length > 1) {
+    const rule = registryRules.find((r) => r.match === parts[1]);
+    if (rule) return rule.type;
+  }
+
   switch (section) {
     case 'adr': return file === 'template.md' ? 'Template' : sectionDefault;
     case 'plans':
@@ -329,15 +445,31 @@ export function loadVocabulary(docsRoot) {
  * EFFECTIVE `type` — whether authored or section-derived — in the contract order
  * derive-if-absent → resolve (alias then forbidden) → validate.
  *
+ * `options.indexBasename` is the configured section-index basename(s)
+ * (FR-001/FR-002/D-01/D-02); defaults to `DEFAULT_INDEX_BASENAME` (`README`
+ * only), so the root-index exemption below is byte-identical to today
+ * (NFR-003). `options.subtypesBySection` is the registry `id → subtypes[]` map
+ * (E-02/FR-005/D-03), consulted by `expectedType` ahead of the built-in
+ * sub-path table. `options.knownSectionIds` is the FULL registered-id set
+ * (US2-AS5) — when supplied (a real registry was loaded) and the page's
+ * section is not in it, a warning is surfaced naming the unregistered id.
+ *
  * @returns {{problems: string[], warnings: string[], effective: string | null | undefined}}
  *   `effective` is the resolved effective `type`: a string, `null` for a
  *   deterministically-untyped page (orphan/root with no derivation), or
- *   `undefined` for a `type`-exempt page (bundle-root README / generated glossary).
+ *   `undefined` for a `type`-exempt page (bundle-root index / generated glossary).
  */
-export function validate(relPath, data, typesBySection = SECTION_TYPE, vocab = IDENTITY_VOCAB) {
+export function validate(
+  relPath,
+  data,
+  typesBySection = SECTION_TYPE,
+  vocab = IDENTITY_VOCAB,
+  options = {},
+) {
+  const { indexBasename = DEFAULT_INDEX_BASENAME, subtypesBySection, knownSectionIds } = options;
   const problems = [];
   const warnings = [];
-  const isRootReadme = relPath === 'README.md';
+  const isRootReadme = isRootIndex(relPath, indexBasename);
 
   // Generated glossary pages (M4, ADR-0026): the codegen writes real Markdown
   // under `<docs>/glossary/**` — the hub (`kind: Hub`) and one page per context
@@ -388,8 +520,22 @@ export function validate(relPath, data, typesBySection = SECTION_TYPE, vocab = I
       warnings.push('bundle-root README should not carry `type`');
     }
   } else {
+    // US2-AS5: a real registry was supplied (`knownSectionIds`) but this
+    // page's section isn't registered at all — the documented "renamed to an
+    // unregistered id" condition, surfaced as a warning (never a silent
+    // mis-type, never a hard failure). Distinct from the ordinary orphan case
+    // (no registry at all / a registry-less frozen fallback), which stays
+    // silent, matching AS-3.
+    const section = relPath.split('/')[0];
+    if (knownSectionIds && !knownSectionIds.has(section)) {
+      warnings.push(
+        `section "${section}" (from "${relPath}") is not registered in sections.yaml — ` +
+          `falling back to the documented default (untyped); if this is a renamed section, ` +
+          `add a registry entry for "${section}"`,
+      );
+    }
     const authored = 'type' in data ? data.type : undefined;
-    const derived = expectedType(relPath, typesBySection); // may be null (orphan)
+    const derived = expectedType(relPath, typesBySection, subtypesBySection); // may be null (orphan)
     // The effective source: authored wins, else the derived value (null → untyped).
     const source = authored !== undefined ? authored : derived ?? undefined;
     const resolved = vocab.resolveType(source);
@@ -473,10 +619,28 @@ export function validate(relPath, data, typesBySection = SECTION_TYPE, vocab = I
   return { problems, warnings, effective };
 }
 
+/**
+ * Parse `--index-basename README,index` off argv into the option shape
+ * `validate()`/`isRootIndex` accept, plus the remaining positional roots.
+ * Absent → `undefined` (validate()'s own default, `README` only — NFR-003).
+ */
+function parseCliArgs(argv) {
+  const args = argv.slice(2);
+  const flagIdx = args.indexOf('--index-basename');
+  let indexBasename;
+  let roots = args;
+  if (flagIdx !== -1) {
+    const value = args[flagIdx + 1];
+    indexBasename = value ? value.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+    roots = [...args.slice(0, flagIdx), ...args.slice(flagIdx + 2)];
+  }
+  return { roots, indexBasename };
+}
+
 /** CLI entry point: validate every `.md`/`.mdx` under each given root. */
 export function run(argv) {
-  const roots = argv.slice(2);
-  if (roots.length === 0) roots.push('docs');
+  const { roots: parsedRoots, indexBasename } = parseCliArgs(argv);
+  const roots = parsedRoots.length === 0 ? ['docs'] : parsedRoots;
 
   let failures = 0;
   let warned = 0;
@@ -494,10 +658,39 @@ export function run(argv) {
 
     // Section-default `type` authority for THIS root: the registry when present,
     // else the frozen fallback so a registry-less tree still validates (issue #24).
-    const typesBySection = loadSectionTypes(root) ?? SECTION_TYPE;
+    const registryTypes = loadSectionTypes(root);
+    const typesBySection = registryTypes ?? SECTION_TYPE;
+    // Registry `subtypes` (E-02/FR-005) for THIS root — `undefined` when no
+    // registry is present.
+    const subtypesBySection = loadSectionSubtypes(root) ?? undefined;
+    // NOTE (US2-AS5): `validate()`'s `knownSectionIds` option DELIBERATELY is
+    // NOT wired into this default CLI run. doc-kitty's own corpus and the
+    // example both carry real, LONG-STANDING unregistered top-level folders
+    // (`ops`, `glossary-demo`, …) that ADR-0004 explicitly tolerates — this
+    // gate cannot distinguish "unregistered by design" from "renamed and
+    // forgot to register", so wiring it here would manufacture a false-positive
+    // warning on every existing gate run (an NFR-003 regression in spirit, even
+    // though it would not fail the gate). The capability is real and tested
+    // (`section-rename.test.ts`, `validate()`'s `knownSectionIds` option) for a
+    // caller that DOES have that positive signal (e.g. a scoped rename check).
     // Vocabulary override for THIS root (#40): `<root>/_meta/vocabulary.yaml` when
     // present, else the shipped-default identity resolver (`Feature` valid).
     const vocab = loadVocabulary(root);
+
+    const rels = files.map((f) => relative(root, f).split('\\').join('/'));
+
+    // E-05/FR-004: both-index collision — the configured basename wins, the
+    // rest are demoted; report every collision as a warning (never silent).
+    for (const collision of detectIndexCollisions(rels, indexBasename)) {
+      warned++;
+      const label = collision.dir === '' ? '(root)' : collision.dir;
+      console.warn(
+        `⚠ ${root}: both "${collision.winner}" and ${collision.demoted
+          .map((d) => `"${d}"`)
+          .join(', ')} are section-index candidates in ${label} — "${collision.winner}" wins ` +
+          `as the section index; the rest are ordinary pages (E-05).`,
+      );
+    }
 
     for (const file of files) {
       const rel = relative(root, file).split('\\').join('/');
@@ -512,7 +705,10 @@ export function run(argv) {
         failures++;
         continue;
       }
-      const { problems, warnings } = validate(rel, parsed.data ?? {}, typesBySection, vocab);
+      const { problems, warnings } = validate(rel, parsed.data ?? {}, typesBySection, vocab, {
+        indexBasename,
+        subtypesBySection,
+      });
       if (problems.length) {
         failures++;
         console.error(`✖ ${relative('.', file)}`);

@@ -5,11 +5,14 @@
  * Usage:
  *   node scripts/new-doc.mjs <slug> [--title "Title"] [--type Guide]
  *                                    [--base docs] [--section]
+ *                                    [--index-basename index]
  *
  *   <slug>       path under the docs root, e.g. "guides/deployment"
- *   --section    create the directory's README.md (section index) instead of
- *                "<slug>.md"
+ *   --section    create the directory's section-index file (default
+ *                README.md; FR-001/FR-003) instead of "<slug>.md"
  *   --type       override the type inferred from the path
+ *   --index-basename  the section-index basename to target with --section
+ *                (default README — NFR-003)
  *
  * Examples:
  *   node scripts/new-doc.mjs guides/deployment --title "Deployment"
@@ -86,7 +89,10 @@ const title =
   flags.title ??
   slug.split('/').pop().replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
-const relPath = flags.section ? join(slug, 'README.md') : `${slug}.md`;
+// FR-001/FR-002/FR-003: the basename a --section target is created under.
+// Default `README` reproduces today's output exactly (NFR-003).
+const indexBasename = typeof flags['index-basename'] === 'string' ? flags['index-basename'] : 'README';
+const relPath = flags.section ? join(slug, `${indexBasename}.md`) : `${slug}.md`;
 const target = join(base, relPath);
 const type = flags.type ?? expectedType(relPath);
 const kind = flags.kind ?? expectedKind(relPath, Boolean(flags.section));

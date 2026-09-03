@@ -26,6 +26,7 @@ import { GLOSSARY_OUTPUT_DIRNAME } from './glossary/generate.js';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
+import type { SectionSubtypeRule } from './metadata.js';
 
 /** One authored section: its slug, display label, and integer sort key. */
 export interface SectionRegistryEntry {
@@ -56,6 +57,16 @@ export interface SectionRegistryEntry {
    * publication / `agent.discoverable` gating at each surface.
    */
   feeds?: string[];
+  /**
+   * Optional sub-path → `type` rules (E-02, FR-005, D-03): a page under
+   * `<id>/<seg>/…` whose `<seg>` matches a rule's `match` derives that rule's
+   * `type`, ahead of the built-in sub-path table (`expectedDocType` in
+   * `./metadata.ts`, E-06). Absent ⇒ the built-in table applies unchanged
+   * (backward-compatible; doc-kitty's own tree is a no-op, NFR-003). This is
+   * the mechanism that makes a sub-path rename (`plans/features` →
+   * `plans/missions`) a data edit, not a derivation-code edit (SC-002).
+   */
+  subtypes?: SectionSubtypeRule[];
 }
 
 /** The resolved registry: entries sorted by `order`, tie-broken by `id`. */
@@ -113,7 +124,7 @@ export function parseSectionRegistry(
     if (rec == null || typeof rec !== 'object') {
       throw new Error(`${src}: a section entry is not a mapping (${JSON.stringify(rec)})`);
     }
-    const { id, label, order, type, purpose, feeds } = rec as Record<string, unknown>;
+    const { id, label, order, type, purpose, feeds, subtypes } = rec as Record<string, unknown>;
 
     if (typeof id !== 'string' || id === '') {
       throw new Error(`${src}: a section entry is missing a string "id"`);
@@ -143,6 +154,24 @@ export function parseSectionRegistry(
     if (typeof purpose === 'string') entry.purpose = purpose;
     if (Array.isArray(feeds)) {
       entry.feeds = feeds.filter((f): f is string => typeof f === 'string');
+    }
+    if (subtypes !== undefined) {
+      if (!Array.isArray(subtypes)) {
+        throw new Error(`${src}: section "${id}" "subtypes" must be a YAML list of {match, type}`);
+      }
+      entry.subtypes = subtypes.map((rule, i) => {
+        if (rule == null || typeof rule !== 'object') {
+          throw new Error(`${src}: section "${id}" subtypes[${i}] is not a mapping`);
+        }
+        const { match, type: ruleType } = rule as Record<string, unknown>;
+        if (typeof match !== 'string' || match === '') {
+          throw new Error(`${src}: section "${id}" subtypes[${i}] is missing a string "match"`);
+        }
+        if (typeof ruleType !== 'string' || ruleType === '') {
+          throw new Error(`${src}: section "${id}" subtypes[${i}] is missing a string "type"`);
+        }
+        return { match, type: ruleType };
+      });
     }
     entries.push(entry);
   }
@@ -202,6 +231,34 @@ export function sectionTypes(registry: SectionRegistry): Record<string, string> 
     if (typeof entry.type === 'string') types[entry.id] = entry.type;
   }
   return types;
+}
+
+/**
+ * The `id → subtypes[]` map — the deferred seam wired (E-02, FR-005, D-03).
+ * Only entries that declare `subtypes` appear; pass the result as the
+ * `subtypesBySection` argument of `expectedDocType` (`./metadata.ts`), ahead of
+ * the built-in sub-path table (E-06). A page whose section declares no
+ * `subtypes` falls straight through to that built-in table, unaffected.
+ */
+export function sectionSubtypes(
+  registry: SectionRegistry,
+): Record<string, SectionSubtypeRule[]> {
+  const subtypes: Record<string, SectionSubtypeRule[]> = {};
+  for (const entry of registry) {
+    if (Array.isArray(entry.subtypes)) subtypes[entry.id] = entry.subtypes;
+  }
+  return subtypes;
+}
+
+/**
+ * The full set of registered section ids — the "is this id actually
+ * registered?" signal US2-AS5's rename-with-no-registry-entry warning needs
+ * (as opposed to `sectionTypes`/`sectionSubtypes`, which only carry entries
+ * that declare a `type`/`subtypes` — a registered, deliberately typeless
+ * section like `faq` must NOT warn).
+ */
+export function sectionIds(registry: SectionRegistry): Set<string> {
+  return new Set(registry.map((entry) => entry.id));
 }
 
 /**
@@ -581,8 +638,13 @@ export function registryToSidebar(
 //     FR-003) — WIRED (issue #24). `sectionTypes` exposes the `id → type` map;
 //     `metadata.ts`'s `expectedDocType` derives a page's expected `type` from it
 //     (a section README takes the section type), with the short sub-path subtype
-//     table applied on top in code. Moving those sub-path subtypes into a
-//     per-section `subtypes` registry field is the one part still deferred.
+//     table applied on top in code.
+//   • per-section `subtypes` (E-02, FR-005, D-03) — WIRED (adopter-loader-
+//     migration WP01). `sectionSubtypes` exposes the `id → subtypes[]` map;
+//     `metadata.ts`'s `expectedDocType` consults it BEFORE the built-in sub-path
+//     table (E-06), so a sub-path rename (`plans/features` → `plans/missions`)
+//     is a registry data edit, not a derivation-code edit (SC-002). Absent
+//     `subtypes` ⇒ the built-in table applies unchanged (NFR-003).
 //   • `feeds` as a per-surface filter (section-registry.md "`feeds` semantics") —
 //     WIRED. `sectionFeeds` exposes the `id → feeds` map and `feedsSurface`
 //     applies the absent=all default; the sitemap draft filter (`config.ts`) and

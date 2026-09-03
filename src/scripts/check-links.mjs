@@ -32,6 +32,14 @@ import { join, relative, dirname, resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 
+// FR-003: a directory-link target resolves via EITHER configured index
+// basename. `README` is the default; `index` is accepted unconditionally too
+// (this gate has no per-root config surface), so an opted-in `index.md` tree
+// (FR-001) was already covered before this mission — kept as an explicit,
+// documented list rather than two bare literals so a reviewer can see the
+// full FR-003 surface in one place.
+export const INDEX_BASENAMES = ['README', 'index'];
+
 export const EXTERNAL = /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|mailto:|tel:)/i;
 const MD_EXT = /\.mdx?$/i;
 // Inline links `](target)` and `](target "title")`; also image links `![]()`,
@@ -83,8 +91,7 @@ export function resolvesToDoc(candidate) {
   return (
     existsSync(`${candidate}.md`) ||
     existsSync(`${candidate}.mdx`) ||
-    existsSync(join(candidate, 'README.md')) ||
-    existsSync(join(candidate, 'index.md'))
+    INDEX_BASENAMES.some((basename) => existsSync(join(candidate, `${basename}.md`)))
   );
 }
 
