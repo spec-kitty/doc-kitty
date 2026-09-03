@@ -1,0 +1,18 @@
+{
+  "baseline_merge_commit": "2a70fdacfff78ada3e469cbb396992743dc46e34",
+  "created_at": "2026-09-03T12:29:48.162781+00:00",
+  "flattened": true,
+  "friendly_name": "Adopter loader & migration",
+  "mission_id": "01M1KKYAR1D3Z5WPRC8Y55F6RY",
+  "mission_number": null,
+  "mission_slug": "adopter-loader-migration-01M1KKYA",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "A demanding real adopter (the spec-kitty proving ground) cannot move to doc-kitty without renaming ~60 index.md files to README.md, reworking section folders its governance names differently, and risking ~1,589 dead URLs when .html paths become clean URLs. This mission removes those three friction points as first-class supported toolkit capabilities — accept index.md as a section index, let a section-folder rename carry its derived type and routes, and ship a redirect-coverage gate that fails CI before an adopter serves a live 404. Each also fixes a doc-kitty inconsistency (the dogfooding dividend).",
+  "purpose_tldr": "Let adopters bring an existing docs tree to doc-kitty without renaming index files, fighting folder renames, or breaking URLs.",
+  "slug": "adopter-loader-migration-01M1KKYA",
+  "status_phase": "1",
+  "target_branch": "feat/adopter-loader-migration",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-03T13:20:25.387592+00:00"
+}
