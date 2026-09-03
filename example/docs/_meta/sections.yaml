@@ -11,9 +11,13 @@
 # listed here — it exercises the loader's graceful coverage path, appearing as a
 # humanized "Glossary Demo" group after the registered sections.
 #
-# Only `id` / `label` / `order` are consumed today. `type` is carried for the
-# deferred type-from-registry authority (ADR-0004/FR-003); `feeds` is carried for
-# the deferred per-surface filter. Both are documented deferrals, not yet wired.
+# `id` / `label` / `order` / `type` / `feeds` / `purpose` are all WIRED (issue
+# #24; see src/lib/sections.ts's "WIRED / DEFERRED" note). `subtypes` (a
+# per-section list of `{match, type}` sub-path rules) is ALSO wired
+# (adopter-loader-migration-01M1KKYA WP01, E-02/FR-005) — consulted by
+# `expectedDocType`/`expectedType` ahead of the built-in sub-path table, so a
+# sub-path rename is a registry-DATA edit, not a derivation-code edit (SC-002;
+# see the `plans` entry below).
 version: 1
 sections:
   - id: context
@@ -30,6 +34,22 @@ sections:
     label: Decision Records
     order: 30
     type: ADR
+
+  # WP04 (adopter-loader-migration-01M1KKYA #37/#48/#42): worked-example section
+  # demonstrating FR-012/SC-001/SC-002. `plans/index.md` is the section index
+  # (no README.md here) and `plans/missions/` was renamed from `plans/features/`
+  # via `git mv` — the `subtypes` rule below is the ONLY reason its pages derive
+  # `type: Mission` instead of falling through to the built-in `plans/features`
+  # -> `Feature` table (data-model.md E-08 frozen datum; `plans/features/` did
+  # not previously exist in the example, so WP04 created it fresh per that
+  # datum's fallback instruction).
+  - id: plans
+    label: Plans
+    order: 35
+    type: Plan
+    subtypes:
+      - match: missions
+        type: Mission
 
   - id: guides
     label: Guides
