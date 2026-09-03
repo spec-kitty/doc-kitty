@@ -43,5 +43,7 @@ kind: Hub
 | [0030](./0030-markua-preprocess-to-directive.md) | ADR-0030: Render Markua by preprocessing to remark-directive | Accepted | 2026-08-30 |
 | [0031](./0031-vocabulary-override.md) | ADR-0031: Consumer-overridable type/kind vocabulary | Accepted | 2026-08-31 |
 | [0032](./0032-adr-index-generation.md) | ADR-0032: Generate the ADR index; two-tree mechanism with a lockfile sync-check | Accepted | 2026-08-31 |
+| [0033](./0033-flexible-section-identity.md) | ADR-0033: Flexible section identity — configurable index basename and first-class section rename | Accepted | 2026-09-03 |
+| [0034](./0034-redirect-coverage-gate.md) | ADR-0034: Redirect-coverage primitive — committed baseline, native redirects, target-aware bare-Node gate | Accepted | 2026-09-03 |
 
 New ADRs copy [`template.md`](./template.md).
