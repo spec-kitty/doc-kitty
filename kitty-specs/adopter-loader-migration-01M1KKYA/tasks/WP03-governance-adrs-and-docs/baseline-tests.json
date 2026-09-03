@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP03",
+  "captured_at": "2026-09-03T18:15:08Z",
+  "base_branch": "feat/adopter-loader-migration",
+  "base_commit": "ddf11fc06bd2e80f401e7be0eacbf8bc8afe5278",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

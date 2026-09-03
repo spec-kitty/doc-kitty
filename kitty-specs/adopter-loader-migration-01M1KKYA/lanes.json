@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "mission_slug": "adopter-loader-migration-01M1KKYA",
+  "mission_id": "01M1KKYAR1D3Z5WPRC8Y55F6RY",
+  "mission_branch": "kitty/mission-adopter-loader-migration-01M1KKYA",
+  "target_branch": "feat/adopter-loader-migration",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/deck/deck-slug.ts",
+        "src/lib/metadata.ts",
+        "src/lib/routes/llms-txt.ts",
+        "src/lib/routes/shared.ts",
+        "src/lib/schema.ts",
+        "src/lib/sections.ts",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/scripts/check-links.mjs",
+        "src/scripts/new-doc.mjs",
+        "src/scripts/scaffold.mjs",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/index-basename.test.ts",
+        "src/tests/schema-validator-parity.test.ts",
+        "src/tests/section-rename.test.ts",
+        "src/tests/section-type-parity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        ".github/workflows/ci.yml",
+        "example/astro.config.mjs",
+        "example/url-baseline.txt",
+        "src/scripts/check-redirect-coverage.mjs",
+        "src/tests/redirect-coverage.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "docs/adr/**",
+        "docs/changelog/**",
+        "docs/context/convention.md",
+        "docs/guides/authoring.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "example/docs/**",
+        "src/tests/example-adopter.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-09-03T13:17:17.115113+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "6eeb991dde459cc73112c5ae3a73dcaf002e6e57"
+}
