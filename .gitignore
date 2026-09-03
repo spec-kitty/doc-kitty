@@ -78,3 +78,8 @@ test-results.rootorphan.*/
 
 # Markua preset-off portability build (WP10 gate, transient)
 example/dist-nomarkua/
+
+# WP04 worked-example test build (adopter-loader-migration-01M1KKYA, transient) —
+# a dedicated DK_OUTDIR so src/tests/example-adopter.test.ts's own `astro build`
+# never races glossary-build-warning.test.ts's concurrent build of example/dist.
+example/dist-wp04-adopter-example-test/
