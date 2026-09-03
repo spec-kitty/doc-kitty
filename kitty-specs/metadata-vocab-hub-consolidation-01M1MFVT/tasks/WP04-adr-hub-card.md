@@ -8,7 +8,7 @@ requirement_refs:
 - NFR-004
 planning_base_branch: feat/metadata-vocab-hub-consolidation
 merge_target_branch: feat/metadata-vocab-hub-consolidation
-branch_strategy: Planning artifacts were generated on feat/metadata-vocab-hub-consolidation. This WP is independent of Lane A and may run in parallel; completed changes merge back into feat/metadata-vocab-hub-consolidation unless the human redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/metadata-vocab-hub-consolidation. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/metadata-vocab-hub-consolidation unless the human explicitly redirects the landing branch.
 subtasks:
 - T017
 - T018
