@@ -54,30 +54,34 @@ kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/
 ```
 src/
 ├── lib/
-│   ├── vocabulary-core.mjs      # NEW — fs-free derivation/enum core:
-│   │                            #   STATUSES/DOC_TYPES/KINDS, SECTION_TYPE,
+│   ├── vocabulary-core.mjs      # NEW — fs-free derivation/enum core (JSDoc-const literal
+│   │                            #   tuples): STATUSES/DOC_TYPES/KINDS, SECTION_TYPE,
 │   │                            #   expectedDocType + adr/plans/operations switch,
 │   │                            #   pure vocabulary/axis resolver, index-basename logic
-│   ├── vocabulary-core.d.ts     # NEW — hand-written types for TS consumers
 │   ├── vocabulary-loader.mjs    # NEW — fs-loader layer: loadVocabulary,
 │   │                            #   loadSectionRegistry, sectionTypes/sectionSubtypes
-│   ├── vocabulary-loader.d.ts   # NEW — types for the loader layer
-│   ├── schema.ts                # EDIT — import enums/shape from vocabulary-core (drop literals)
-│   ├── metadata.ts              # EDIT — import fs-free core (stays fs-free; add `durable`)
-│   └── sections.ts              # EDIT — re-export from core + loader (canonical semantics preserved)
+│   ├── schema.ts                # EDIT — z.enum(STATUSES); import enums from core (drop literals)
+│   ├── metadata.ts              # EDIT — import fs-free core; DERIVE DocStatus/DocType via
+│   │                            #   typeof …[number] (stays fs-free; durable flows in)
+│   └── sections.ts              # EDIT — re-export from core + loader (semantics preserved)
 ├── scripts/
-│   ├── validate-frontmatter.mjs # EDIT — import core + loader; delete the ~700-line twin
-│   └── generate-adr-index.mjs   # EDIT — export the ADR number/status/date extractor for reuse
+│   ├── validate-frontmatter.mjs # EDIT — import core + loader; delete ~700-line twin; keep aliases
+│   └── generate-adr-index.mjs   # EDIT — export extractAdrMeta (number+status+date) for reuse
 ├── layouts/
 │   └── Hub.astro                # EDIT — ADR-kind: order by number + status/date badge (reuse extractor)
+├── styles/
+│   └── hub.css                  # EDIT — ADR status-badge styles (--dk-* tokens)
 └── tests/
-    ├── vocabulary-resolver.test.ts   # REWRITE — NFR-004 parity → single-impl unit test
-    ├── section-type-parity.test.ts   # REWRITE — parity → unit test of the one core
-    ├── schema-validator-parity.test.ts # REWRITE — NFR-005 parity → unit test
-    └── hub-adr-card.test.ts          # NEW/EXTEND — ADR ordering + status/date fidelity
+    ├── vocabulary-core.test.ts       # NEW — golden-master oracle (literal expected values)
+    ├── vocabulary-single-source.test.ts # NEW — 0-duplicate + fs-free/Astro-free purity gate
+    ├── metadata.test.ts              # EDIT (WP02) — durable-published assertion
+    ├── vocabulary-resolver.test.ts   # RETARGET — single core; KEEP validate-applies-to-derived
+    ├── section-type-parity.test.ts   # RETARGET — literal oracles per row + all blocks
+    ├── schema-validator-parity.test.ts # KEEP two-arm (field shapes stay independent) + durable row
+    └── hub-adr-card.test.ts          # NEW — render Hub's real output vs extractor; single-source gate
 ```
 
-**Structure Decision**: Single project. Two new pure-ESM modules under `src/lib/` implement the two-layer core; the gate and toolkit become thin importers. `.d.ts` sidecars give TS consumers types without a repo-wide `allowJs`. No new packages, no build step, no codegen.
+**Structure Decision**: Single project. Two new pure-ESM modules under `src/lib/` implement the two-layer core; the gate and toolkit become thin importers. `allowJs` is already global (astro strict preset), so TS types come from the `.mjs` source itself — enum arrays carry JSDoc-const literal-tuple types and the `metadata.ts` unions are **derived** (`typeof STATUSES[number]`), eliminating the type-layer twin; **no `.d.ts` sidecars** (they would be ignored for a `./x.mjs` specifier). No new packages, no build step, no codegen. (Squad-corrected — see research.md §D4/F6.)
 
 ## Complexity Tracking
 

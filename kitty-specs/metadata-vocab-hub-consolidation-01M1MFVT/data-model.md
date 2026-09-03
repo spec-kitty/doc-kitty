@@ -36,7 +36,7 @@ export function identityVocabulary() : VocabularyResolver                    // 
 // index-basename detection (pure): isIndexPath, isRootIndex, detectIndexCollisions, ...
 ```
 
-Types shipped via hand-written `vocabulary-core.d.ts` (no repo-wide `allowJs`).
+Types come from the `.mjs` source itself under the repo-global `allowJs`: enum arrays are JSDoc-const literal tuples (`export const STATUSES = /** @type {const} */ ([...])`) so `z.enum(STATUSES)` and `typeof STATUSES[number]` work; **no `.d.ts` sidecar** (ignored for a `.mjs` specifier). `metadata.ts` derives `DocStatus = typeof STATUSES[number]` / `DocType = typeof DOC_TYPES[number]` — no hand-listed union twin. (Squad-corrected, research.md §D4/F6-F8.)
 
 ## Contract: fs-loader layer — `src/lib/vocabulary-loader.mjs`
 
@@ -63,12 +63,14 @@ Derived per rendered ADR child by the **shared extractor** exported from `genera
 | `title`, `slug`, `kind` | frontmatter (`entry.data`) + `entry.body` for status | card label / gating |
 
 - **Ordering**: ADR-kind children sort by `number` ascending; non-ADR listings keep alphabetical-by-title (C-005).
-- **Fallback**: missing `number` or `## Status` ⇒ rendered unbadged / appended, never a hub break (spec Edge Cases).
-- **Fidelity invariant (NFR-004)**: because Hub and the generated own-tree table call one extractor, ordering/status/date match 1:1.
+- **Inclusion (squad F5/F6)**: Hub's ADR group **excludes** number-less pages and `type:Template`, exactly as the generator's `discoverAdrs` does — so the two sides list the same set. Empty/unparseable `## Status` ⇒ rendered unbadged (not excluded). `number` comes ONLY from `extractAdrMeta` (same input on both sides), never a Hub-local parse.
+- **Fidelity invariant (NFR-004)**: because Hub and the generated own-tree table call one extractor over the same inclusion rule, ordering/status/date match 1:1 **over the published+numbered set**. A draft numbered ADR appears in the generated table but not the (isPublished-filtered) hub — the invariant is scoped accordingly, not asserted across that gap.
 
 ## Contract: shared ADR extractor — `src/scripts/generate-adr-index.mjs`
 
 ```
 export function extractAdrMeta(rawMarkdown, { slug, frontmatter }) : { number, status, date } | null
-  // single source for BOTH the generated own-tree table and Hub.astro's ADR card
+  // SOLE source of number + status + date for BOTH the generated own-tree table
+  // and Hub.astro's ADR card. `number` derived from the NNNN- prefix carried by
+  // slug/basename identically on both sides (returns null → excluded, matching discoverAdrs).
 ```
