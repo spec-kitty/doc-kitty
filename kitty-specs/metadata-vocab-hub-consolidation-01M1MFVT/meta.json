@@ -12,5 +12,7 @@
   "purpose_tldr": "Close three deferred adoption enablers: eliminate the mjs↔ts vocabulary split-brain, add the durable doc_status, and make the ADR Hub card number-ordered and status-aware.",
   "slug": "metadata-vocab-hub-consolidation-01M1MFVT",
   "target_branch": "feat/metadata-vocab-hub-consolidation",
-  "topology": "coord"
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-03T23:11:54.461263+00:00"
 }
