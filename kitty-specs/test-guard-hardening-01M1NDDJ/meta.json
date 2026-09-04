@@ -1,0 +1,32 @@
+{
+  "accept_commit": "6f1e6fc4be2210a60e18f0fbd215a7f18e2fded9",
+  "acceptance_history": [
+    {
+      "accept_commit": "6f1e6fc4be2210a60e18f0fbd215a7f18e2fded9",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-09-04T05:51:31.060283+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "33f33690c387f714c9286137cd6edfbc305b9e4e"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-09-04T05:51:31.060283+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "33f33690c387f714c9286137cd6edfbc305b9e4e",
+  "baseline_merge_commit": "489fffc74f0f660ebd23d83ba5232e3b5f0397fa",
+  "created_at": "2026-09-04T05:14:16.561912+00:00",
+  "flattened": true,
+  "friendly_name": "Test-Guard Hardening",
+  "mission_id": "01M1NDDJKHT8Y56ED8K74GGMN3",
+  "mission_number": null,
+  "mission_slug": "test-guard-hardening-01M1NDDJ",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Both surfaced by the metadata-vocab-hub-consolidation pre-PR review squad. #53: Hub.astro filters isPublished but no test catches its removal. #54: two build-spawning vitest suites flake under default file-parallelism. Small, independent, test/config-only.",
+  "purpose_tldr": "Close two quality follow-ups from the metadata-vocab-hub mission: guard Hub draft-exclusion with a real test (#53) and remove the CI vitest parallel-build flake (#54).",
+  "slug": "test-guard-hardening-01M1NDDJ",
+  "status_phase": "1",
+  "target_branch": "feat/test-guard-hardening",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-04T05:22:12.857147+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP02",
+  "captured_at": "2026-09-04T05:24:47Z",
+  "base_branch": "feat/test-guard-hardening",
+  "base_commit": "54124bd655b96f6869765bbe636b32e33998766e",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
