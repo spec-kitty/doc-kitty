@@ -25,6 +25,7 @@
   "purpose_context": "Bundles three issues (#49, #39, #50) deferred from the qol-adoption-enablers mission and surfaced by the spec-kitty adoption study. Together they reduce adopter friction and fix doc-kitty's own dogfooding gaps on the metadata → vocabulary → Hub-rendering surface.",
   "purpose_tldr": "Close three deferred adoption enablers: eliminate the mjs↔ts vocabulary split-brain, add the durable doc_status, and make the ADR Hub card number-ordered and status-aware.",
   "slug": "metadata-vocab-hub-consolidation-01M1MFVT",
+  "status_phase": "1",
   "target_branch": "feat/metadata-vocab-hub-consolidation",
   "topology": "coord",
   "vcs": "git",
