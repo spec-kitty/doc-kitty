@@ -47,5 +47,6 @@ kind: Hub
 | [0034](./0034-redirect-coverage-gate.md) | ADR-0034: Redirect-coverage primitive — committed baseline, native redirects, target-aware bare-Node gate | Accepted | 2026-09-03 |
 | [0035](./0035-vocabulary-core-consolidation.md) | ADR-0035: Single-sourced vocabulary/type-derivation core (two-layer pure-ESM) | Accepted | 2026-09-04 |
 | [0036](./0036-diagram-figure-ownership.md) | ADR-0036: Diagram-figure ownership — one node type per pipeline stage | Accepted | 2026-09-04 |
+| [0037](./0037-base-aware-link-fail-closed-gate.md) | ADR-0037: Base-aware internal links and a fail-closed, built-output link gate | Accepted | 2026-09-04 |
 
 New ADRs copy [`template.md`](./template.md).
