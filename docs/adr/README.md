@@ -46,5 +46,6 @@ kind: Hub
 | [0033](./0033-flexible-section-identity.md) | ADR-0033: Flexible section identity — configurable index basename and first-class section rename | Accepted | 2026-09-03 |
 | [0034](./0034-redirect-coverage-gate.md) | ADR-0034: Redirect-coverage primitive — committed baseline, native redirects, target-aware bare-Node gate | Accepted | 2026-09-03 |
 | [0035](./0035-vocabulary-core-consolidation.md) | ADR-0035: Single-sourced vocabulary/type-derivation core (two-layer pure-ESM) | Accepted | 2026-09-04 |
+| [0036](./0036-diagram-figure-ownership.md) | ADR-0036: Diagram-figure ownership — one node type per pipeline stage | Accepted | 2026-09-04 |
 
 New ADRs copy [`template.md`](./template.md).
