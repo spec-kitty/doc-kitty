@@ -15,21 +15,30 @@
  *   regeneration-clean gate). This is genuine generation, NOT a hand-maintained
  *   bijection gate (#44 / research Decision 5 / C-004).
  *
- * Source of truth per ADR:
- *   - number  ← filename `NNNN-*.md` (recursive; era subfolders included)
- *   - title   ← frontmatter `title`
+ * Source of truth per ADR (all three via the SHARED {@link extractAdrMeta}):
+ *   - number  ← the `NNNN-` prefix on the filename/slug leaf (recursive; era
+ *               subfolders included) — the SOLE number source for BOTH this
+ *               generator AND `Hub.astro` (squad F6: no second number parse).
+ *   - title   ← frontmatter `title` (generator-only; not part of the meta triple)
  *   - status  ← body `## Status` (first token, `**`-stripped)
  *   - date    ← frontmatter `updated`, UTC-sliced to `YYYY-MM-DD` (idempotent)
+ *
+ * Single source (#50, D3/F5/F6): `extractAdrMeta` is the one extractor for
+ * number+status+date. `discoverAdrs` (this generator) and `buildAdrHubCards`
+ * (consumed by `Hub.astro`) both route through it, so the generated own-tree
+ * table and the rendered hub match 1:1 by construction over the published+
+ * numbered set — never a re-parse on either side.
  *
  * Zero new dependencies: `gray-matter` is already vendored (used by the
  * frontmatter gate); everything else is string/regex work.
  */
 import { readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, relative, extname } from 'node:path';
+import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 
-const ADR_FILE = /^(\d{4})-.*\.mdx?$/i;
+/** The `NNNN-` ADR number prefix on a filename/slug leaf — the SOLE number source (F6). */
+const ADR_NUMBER = /^(\d{4})-/;
 const MD_EXT = /\.mdx?$/i;
 
 /** Recursively collect `.md`/`.mdx` files under `dir`. */
@@ -77,35 +86,109 @@ export function formatUpdated(updated) {
   return Number.isNaN(d.getTime()) ? s : d.toISOString().slice(0, 10);
 }
 
+/**
+ * The SOLE extractor of an ADR's `{ number, status, date }` triple, shared by the
+ * own-tree generator ({@link discoverAdrs}) and the Hub layout
+ * ({@link buildAdrHubCards} → `Hub.astro`). Single-sourcing all three fields —
+ * `number` included (squad F6) — makes the generated table and the rendered hub
+ * match 1:1 by construction, and removes the split-brain #50 targets.
+ *
+ * - `number` comes from the `NNNN-` prefix on the leaf of `slug` (a filename on
+ *   the generator side, a route slug on the Hub side — both carry the prefix).
+ * - `status` is the first token of the body `## Status` section.
+ * - `date` is the frontmatter `updated`, UTC-sliced to `YYYY-MM-DD`.
+ *
+ * Returns `null` for a page that is NOT an included ADR — number-less (README,
+ * `template.md`, any non-`NNNN-` file) or `type: Template` — so both callers
+ * apply the SAME inclusion rule `discoverAdrs` always had.
+ *
+ * @param {string} rawMarkdown  The ADR body (frontmatter already stripped:
+ *   `matter(...).content` on the generator side, `entry.body` on the Hub side).
+ * @param {{ slug?: string, frontmatter?: any }} [ctx]
+ * @returns {{ number: string, status: string, date: string } | null}
+ */
+export function extractAdrMeta(rawMarkdown, { slug = '', frontmatter = {} } = {}) {
+  const leaf = String(slug).split('/').pop()?.replace(MD_EXT, '') ?? '';
+  const m = leaf.match(ADR_NUMBER);
+  if (!m) return null; // number-less (README, template.md, non-ADR) — excluded
+  if (frontmatter?.type === 'Template') return null; // Template excluded
+  return {
+    number: m[1],
+    status: extractStatusToken(String(rawMarkdown ?? '')),
+    date: formatUpdated(frontmatter?.updated),
+  };
+}
+
 /** Escape a table cell so a `|` in a title cannot break the Markdown row. */
 function escapeCell(value) {
   return String(value).replace(/\|/g, '\\|').trim();
 }
 
 /**
- * Discover every ADR under `adrDir` (recursive), excluding `template.md` and any
- * `type: Template` file, returning entries ordered by ascending ADR number.
+ * Discover every ADR under `adrDir` (recursive), excluding `README.md`,
+ * `template.md`, and any `type: Template` file, returning entries ordered by
+ * ascending ADR number. Number+status+date come SOLELY from {@link extractAdrMeta}
+ * (the same extractor the Hub uses); only `title`/`relpath` are generator-local.
  */
 export function discoverAdrs(adrDir) {
   const entries = [];
   for (const file of walk(adrDir)) {
     const base = file.slice(file.lastIndexOf('/') + 1);
-    const m = base.match(ADR_FILE);
-    if (!m) continue; // README.md, template.md, and non-ADR files are excluded
     const raw = readFileSync(file, 'utf8');
     const parsed = matter(raw);
-    if (parsed.data?.type === 'Template') continue;
+    const meta = extractAdrMeta(parsed.content, { slug: base, frontmatter: parsed.data ?? {} });
+    if (!meta) continue; // number-less or type:Template — excluded (single-sourced)
     const relpath = relative(adrDir, file).split('\\').join('/');
     entries.push({
-      number: m[1],
+      number: meta.number,
       title: String(parsed.data?.title ?? '').trim(),
-      status: extractStatusToken(parsed.content),
-      date: formatUpdated(parsed.data?.updated),
+      status: meta.status,
+      date: meta.date,
       relpath,
     });
   }
   entries.sort((a, b) => a.number.localeCompare(b.number));
   return entries;
+}
+
+/**
+ * Build the ordered, single-sourced ADR cards a `kind: Hub` ADR section renders.
+ * This is the ADR-child pipeline `Hub.astro` ACTUALLY calls — kept here (not
+ * re-implemented in the `.astro`) so the hub and the generated own-tree table
+ * derive from ONE extractor and ONE inclusion rule.
+ *
+ * Mirrors {@link discoverAdrs}: number+status+date come from {@link extractAdrMeta}
+ * (returning `null` excludes number-less pages and `type: Template`), and the
+ * result is ordered by ADR number ascending. So over the published+numbered set
+ * the rendered hub matches the generated table 1:1 (NFR-004, squad F5/F6). The
+ * inclusion/ordering key (`number`) is never re-derived in `Hub.astro`.
+ *
+ * @param {Array<{ slug?: string, data?: any, body?: string }>} adrChildren
+ *   The Hub's ADR-kind children: route `slug`, frontmatter `data`, and `body`
+ *   (the Astro entry body — where the conventional `## Status` lives).
+ * @returns {Array<{ slug: string, title: string, description?: string, kind?: string, number: string, status: string, date: string }>}
+ */
+export function buildAdrHubCards(adrChildren) {
+  const cards = [];
+  for (const child of adrChildren ?? []) {
+    const data = child?.data ?? {};
+    const meta = extractAdrMeta(child?.body ?? '', {
+      slug: child?.slug ?? '',
+      frontmatter: data,
+    });
+    if (!meta) continue; // number-less or Template — excluded, matching discoverAdrs
+    cards.push({
+      slug: String(child?.slug ?? ''),
+      title: String(data.title ?? ''),
+      description: data.description,
+      kind: data.kind,
+      number: meta.number,
+      status: meta.status,
+      date: meta.date,
+    });
+  }
+  cards.sort((a, b) => a.number.localeCompare(b.number));
+  return cards;
 }
 
 /** Render the `ID | Title | Status | Date` table (no trailing newline). */

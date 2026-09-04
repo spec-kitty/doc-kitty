@@ -1,0 +1,79 @@
+{
+  "mission_slug": "metadata-vocab-hub-consolidation-01M1MFVT",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Single canonical core src/lib/vocabulary-core.mjs; vocabulary-single-source.test.ts gate reds on any 2nd definition. WP01 approved (reviewer-renata).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T00:49:08.410369+00:00",
+      "notes": "Verified by per-WP review (reviewer-renata) + green vitest/astro check; CI is authoritative test runner."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "schema.ts/metadata.ts/sections.ts + validate-frontmatter.mjs all import the core; ~700-line twin + new-doc/scaffold twins deleted. vitest 762 green. WP02 approved.",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T00:49:08.410369+00:00",
+      "notes": "Verified by per-WP review (reviewer-renata) + green vitest/astro check; CI is authoritative test runner."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Behavior byte-identical vs deleted twin (golden-master vocabulary-core.test.ts + reviewer spot-diff). WP02/WP03 approved.",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T00:49:08.410369+00:00",
+      "notes": "Verified by per-WP review (reviewer-renata) + green vitest/astro check; CI is authoritative test runner."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "durable in single-sourced STATUSES; z.enum(STATUSES) + bare-node gate accept it; metadata.test.ts durable-accepts row. WP01/WP02 approved.",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T00:49:08.410369+00:00",
+      "notes": "Verified by per-WP review (reviewer-renata) + green vitest/astro check; CI is authoritative test runner."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "isPublished({doc_status:'durable'})===true asserted in metadata.test.ts; durable in published loop. WP02 approved.",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T00:49:08.410369+00:00",
+      "notes": "Verified by per-WP review (reviewer-renata) + green vitest/astro check; CI is authoritative test runner."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Hub ADR children ordered by number via extractAdrMeta; hub-adr-card.test.ts ordering row. WP04 approved.",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T00:49:08.410369+00:00",
+      "notes": "Verified by per-WP review (reviewer-renata) + green vitest/astro check; CI is authoritative test runner."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "ADR status+date badge from extractAdrMeta, 1:1 with generated table; hub-adr-card.test.ts fidelity rows. WP04 approved.",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T00:49:08.410369+00:00",
+      "notes": "Verified by per-WP review (reviewer-renata) + green vitest/astro check; CI is authoritative test runner."
+    }
+  ],
+  "negative_invariants": []
+}

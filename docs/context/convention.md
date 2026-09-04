@@ -124,7 +124,7 @@ Every file **except a frontmatter-free `log.md`** opens with YAML frontmatter.
 ---
 title: Short descriptive title
 description: One sentence describing what this document contains.
-doc_status: draft | active | deprecated | superseded
+doc_status: draft | active | deprecated | superseded | durable
 updated: YYYY-MM-DD
 type: <see Type values>
 kind: <see Kind values>
@@ -133,10 +133,13 @@ kind: <see Kind values>
 
 `doc_status` meanings: `draft` (WIP, not authoritative), `active` (current and
 maintained), `deprecated` (no longer applies, kept for history), `superseded`
-(replaced — link the replacement in `related`).
+(replaced — link the replacement in `related`), `durable` (a never-retire
+throughline — a foundational document expected to stay current indefinitely, so
+adopters can mark it without hard-failing the strict enum; see
+[ADR-0035](../adr/0035-vocabulary-core-consolidation.md)).
 
 > **Publication:** `draft` pages are excluded from `sitemap.xml`, `rss.xml`, and
-> the agent-API. `active` / `deprecated` / `superseded` are published.
+> the agent-API. `active` / `deprecated` / `superseded` / `durable` are published.
 
 ### `type` values
 

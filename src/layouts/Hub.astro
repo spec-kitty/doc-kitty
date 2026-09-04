@@ -51,6 +51,13 @@ import {
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
 import { loadSectionRegistry, sectionOrder } from '../lib/sections.js';
+// The ADR card's number+status+date and number-ordering come from the SHARED
+// extractor pipeline in the ADR-index generator — NOT a Hub-local parse. This is
+// the single source #50 mandates (D3/F5/F6): `buildAdrHubCards` is defined solely
+// in terms of `extractAdrMeta`, the same extractor the own-tree table uses, so
+// the two match 1:1 by construction. Re-deriving status/number here would recreate
+// the split-brain this mission removes (guarded by hub-adr-card.test.ts, T023).
+import { buildAdrHubCards } from '../scripts/generate-adr-index.mjs';
 import '../styles/hub.css';
 
 const route = Astro.props as StarlightRoute;
@@ -73,27 +80,73 @@ const parentOf = (slug: string): string => {
 const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
 const order = registry ? sectionOrder(registry) : undefined;
 
-const children = (await getCollection('docs'))
+// A rendered card. ADR cards additionally carry the lifecycle `status` badge and
+// `date` derived by the shared extractor; non-ADR cards leave both undefined, so
+// their markup is byte-identical to before (T020).
+interface HubCard {
+  slug: string;
+  title: string;
+  description?: string;
+  kind?: string;
+  /** ADR lifecycle status token (Proposed/Accepted/Superseded/Deprecated); '' ⇒ unbadged. */
+  status?: string;
+  /** ADR date (YYYY-MM-DD). */
+  date?: string;
+}
+
+// INV-1 / US3: a Hub lists only PUBLISHED children — a draft child (e.g.
+// adr/template) must never appear in the described-link list, mirroring the
+// sitemap/agent-index draft exclusion (isPublished, the canonical predicate).
+const publishedChildren = (await getCollection('docs')).filter((entry) => {
+  const slug = slugFromEntryId(entry.id);
+  return (
+    slug !== currentSlug &&
+    parentOf(slug) === currentSlug &&
+    isPublished(entry.data as unknown as DocKittyFrontmatter)
+  );
+});
+
+const isAdrKind = (data: DocKittyFrontmatter): boolean => data.kind === 'ADR';
+
+// ADR children (C-005: gated to the ADR kind only): number+status+date and the
+// number-ascending order come SOLELY from the shared pipeline — the SAME one the
+// own-tree generator uses — so the hub matches the generated table 1:1 over the
+// published+numbered set (NFR-004). `buildAdrHubCards` returns null-excluded
+// (number-less + `type:Template`) exactly as `discoverAdrs`, so both sides list
+// the same set (squad F5/F6). The `## Status` it reads lives in `entry.body`.
+const adrCards: HubCard[] = buildAdrHubCards(
+  publishedChildren
+    .filter((entry) => isAdrKind(entry.data as unknown as DocKittyFrontmatter))
+    .map((entry) => ({
+      slug: slugFromEntryId(entry.id),
+      data: entry.data,
+      body: (entry as { body?: string }).body ?? '',
+    })),
+);
+
+// Non-ADR children keep the existing section-rank → title sort. In a non-ADR hub
+// (no ADR-kind children) this IS the whole list, byte-identical to before (T020).
+const otherCards: HubCard[] = publishedChildren
+  .filter((entry) => !isAdrKind(entry.data as unknown as DocKittyFrontmatter))
   .map((entry) => ({
     slug: slugFromEntryId(entry.id),
     data: entry.data as unknown as DocKittyFrontmatter,
   }))
-  // INV-1 / US3: a Hub lists only PUBLISHED children — a draft child (e.g.
-  // adr/template) must never appear in the described-link list, mirroring the
-  // sitemap/agent-index draft exclusion (isPublished, the canonical predicate).
-  .filter(
-    (e) =>
-      e.slug !== currentSlug &&
-      parentOf(e.slug) === currentSlug &&
-      isPublished(e.data),
-  )
   .sort((a, b) => {
     const bySection =
       sectionRank(sectionOf(a.slug), order) -
       sectionRank(sectionOf(b.slug), order);
     if (bySection !== 0) return bySection;
     return a.data.title.localeCompare(b.data.title);
-  });
+  })
+  .map((entry) => ({
+    slug: entry.slug,
+    title: entry.data.title,
+    description: entry.data.description,
+    kind: entry.data.kind,
+  }));
+
+const children: HubCard[] = [...adrCards, ...otherCards];
 
 const navLabel =
   currentSlug === '' ? 'Documentation sections' : 'In this section';
@@ -108,21 +161,32 @@ const navLabel =
         {children.map((child) => (
           <li class="dk-hub__item">
             <a class="dk-hub__card" href={hrefFor(child.slug)}>
-              <span class="dk-hub__title">{child.data.title}</span>
+              <span class="dk-hub__title">{child.title}</span>
               {/* Explicit spaces: adjacent inline spans render glued, which
-                  would merge title/kind/description into one Pagefind token and
-                  hurt search recall on the title word (NFR-004). */}
-              {child.data.kind && (
-                <>{' '}<span class="dk-hub__kind">{child.data.kind}</span></>
+                  would merge title/kind/status/description into one Pagefind token
+                  and hurt search recall on the title word (NFR-004). */}
+              {child.kind && (
+                <>{' '}<span class="dk-hub__kind">{child.kind}</span></>
               )}
-              {child.data.description && (
-                <>{' '}<span class="dk-hub__desc">{child.data.description}</span></>
+              {/* ADR-only: lifecycle status badge + date. The status token comes
+                  from the shared extractor; empty/unparseable ⇒ unbadged (never
+                  breaks the hub, T019). The word itself carries the meaning —
+                  colour is only reinforcement (never colour-only), so it stays
+                  legible in both themes. */}
+              {child.status && (
+                <>{' '}<span class="dk-hub__badge" data-adr-status={child.status.toLowerCase()}>{child.status}</span></>
+              )}
+              {child.date && (
+                <>{' '}<span class="dk-hub__date">{child.date}</span></>
+              )}
+              {child.description && (
+                <>{' '}<span class="dk-hub__desc">{child.description}</span></>
               )}
             </a>
             {/* A deck child also gets its `?print-pdf` export link, auto-derived
                 from the collection — a sibling of the card-wide anchor, not a
                 nested one (FR-014). Only decks (kind: Presentation) have one. */}
-            {child.data.kind === 'Presentation' && (
+            {child.kind === 'Presentation' && (
               <a class="dk-hub__aux" href={`${hrefFor(child.slug)}?print-pdf`}>
                 Print / PDF export
               </a>

@@ -90,6 +90,56 @@
   line-height: var(--dk-leading-normal);
 }
 
+/*
+ * ADR lifecycle status badge (#50). AA by construction, both themes:
+ *   - the STATUS WORD is the primary signal — never colour-only (WCAG §1.4.1).
+ *     Text is `--dk-color-text-strong` on `--dk-color-surface-inset`, the same
+ *     high-contrast pairing family as the kind pill, so it is legible whatever
+ *     the accent tint.
+ *   - a left accent bar (`border-left`) tints per status using the semantic
+ *     `--dk-color-{success,info,warning,danger}` tokens as REINFORCEMENT only;
+ *     an unmapped/empty status keeps the neutral border and still reads.
+ * `min-height` keeps the badge on the card's ≥24px vertical rhythm; the card
+ * anchor remains the (unchanged) ≥24px interactive target.
+ */
+.dk-hub__badge {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  color: var(--dk-color-text-strong);
+  background: var(--dk-color-surface-inset);
+  border: 1px solid var(--dk-color-border);
+  border-left: 3px solid var(--dk-color-neutral);
+  border-radius: var(--dk-radius-sm);
+  padding: var(--dk-space-3xs) var(--dk-space-xs);
+  font-size: var(--dk-text-2xs);
+  font-weight: var(--dk-weight-medium);
+  letter-spacing: var(--dk-tracking-caps);
+  text-transform: uppercase;
+}
+
+.dk-hub__badge[data-adr-status='accepted'] {
+  border-left-color: var(--dk-color-success);
+}
+.dk-hub__badge[data-adr-status='proposed'] {
+  border-left-color: var(--dk-color-info);
+}
+.dk-hub__badge[data-adr-status='superseded'] {
+  border-left-color: var(--dk-color-warning);
+}
+.dk-hub__badge[data-adr-status='deprecated'] {
+  border-left-color: var(--dk-color-danger);
+}
+
+/* ADR date: quiet, muted, tabular so a column of dates aligns. */
+.dk-hub__date {
+  justify-self: start;
+  color: var(--dk-color-text-muted);
+  font-size: var(--dk-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
 /* A deck child's `?print-pdf` export link: a secondary affordance beside the
    card-wide anchor (FR-014). Sized to a ≥24px target with a visible focus ring,
    the same accessibility floor as the card. */

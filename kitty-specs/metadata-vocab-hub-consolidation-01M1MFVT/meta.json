@@ -1,0 +1,32 @@
+{
+  "accept_commit": "f4e4026d7b74e6ece82f043533fb5c7f2ff213dc",
+  "acceptance_history": [
+    {
+      "accept_commit": "f4e4026d7b74e6ece82f043533fb5c7f2ff213dc",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-09-04T00:49:53.075979+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "3356c6b0e169707a215b66e11b80454048ffcd7c"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-09-04T00:49:53.075979+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "3356c6b0e169707a215b66e11b80454048ffcd7c",
+  "baseline_merge_commit": "3931d6e3b996c87491c46fdf6ecf7aefa8f4d50f",
+  "created_at": "2026-09-03T20:37:46.608743+00:00",
+  "flattened": true,
+  "friendly_name": "Metadata / Vocabulary / Hub Consolidation",
+  "mission_id": "01M1MFVTZGD9KQ6QWYV54ZDBQH",
+  "mission_number": null,
+  "mission_slug": "metadata-vocab-hub-consolidation-01M1MFVT",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Bundles three issues (#49, #39, #50) deferred from the qol-adoption-enablers mission and surfaced by the spec-kitty adoption study. Together they reduce adopter friction and fix doc-kitty's own dogfooding gaps on the metadata → vocabulary → Hub-rendering surface.",
+  "purpose_tldr": "Close three deferred adoption enablers: eliminate the mjs↔ts vocabulary split-brain, add the durable doc_status, and make the ADR Hub card number-ordered and status-aware.",
+  "slug": "metadata-vocab-hub-consolidation-01M1MFVT",
+  "status_phase": "1",
+  "target_branch": "feat/metadata-vocab-hub-consolidation",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-03T23:11:54.461263+00:00"
+}

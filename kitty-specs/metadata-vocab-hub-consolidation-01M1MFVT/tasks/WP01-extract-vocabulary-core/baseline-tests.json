@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-09-03T23:12:20Z",
+  "base_branch": "feat/metadata-vocab-hub-consolidation",
+  "base_commit": "804ef0d88bdeb2c93c30ec790996205be8339ac5",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

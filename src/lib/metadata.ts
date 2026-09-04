@@ -15,29 +15,30 @@
  * real frontmatter lives in `./schema.ts` and mirrors these types.
  */
 import { isPresentationEntry } from './deck/is-presentation.js';
+// The section vocabulary + type-derivation lives in ONE fs-free, Astro-free place
+// (#49 IC-01/IC-02): `vocabulary-core.mjs`. `metadata.ts` stays fs-free by
+// importing ONLY the pure core (never `sections.ts`/the loader). The `DocType`/
+// `DocStatus` unions are DERIVED from the core's JSDoc-const tuples (F7/F8) — so
+// `durable` (#39/FR-004) flows in from the single core array with no edit here —
+// and `SECTION_TYPE`/`expectedDocType` are re-exported so this module's public
+// surface (consumed via `index.ts`'s `export *`) is unchanged (NFR-001).
+import {
+  STATUSES,
+  DOC_TYPES,
+  SECTION_TYPE,
+  expectedDocType,
+} from './vocabulary-core.mjs';
+
+export { SECTION_TYPE, expectedDocType };
 
 /** OKF `type` — the one required-by-OKF field. One value per Common Docs section. */
-export type DocType =
-  | 'Context'
-  | 'Architecture'
-  | 'ADR'
-  | 'Template'
-  | 'Plan'
-  | 'Epic'
-  | 'Feature'
-  | 'API'
-  | 'Configuration'
-  | 'Integration'
-  | 'Security'
-  | 'Guide'
-  | 'Operations'
-  | 'Runbook'
-  | 'Migration'
-  | 'Changelog'
-  | 'Presentation';
+export type DocType = (typeof DOC_TYPES)[number];
 
-/** Common Docs lifecycle enum (note: differs from OKF's suggested set). */
-export type DocStatus = 'draft' | 'active' | 'deprecated' | 'superseded';
+/**
+ * Common Docs lifecycle enum (note: differs from OKF's suggested set). Derived
+ * from the single-sourced core tuple, so `durable` (#39) is added in ONE place.
+ */
+export type DocStatus = (typeof STATUSES)[number];
 
 /** A `related` entry: a bare slug or an object with an optional per-link note. */
 export type RelatedRef = string | { ref: string; note?: string };
@@ -176,90 +177,23 @@ export const SECTION_LABEL: Record<string, string> = {
   presentations: 'Presentations',
 };
 
-/**
- * Frozen fallback `section → type` map: the section-default `type` for each
- * canonical section, used when no `sections.yaml` registry is present (a
- * registry-less docs tree still derives an expected `type`). MIRRORS the section
- * defaults the registry now carries; when a registry IS present, its
- * `sectionTypes(registry)` map is the authority and this is not consulted (issue
- * #24). Sub-path subtypes (ADR template, plan epics/features, ops runbooks) are
- * NOT in this map — they are applied on top by {@link expectedDocType}.
- */
-export const SECTION_TYPE: Record<string, string> = {
-  context: 'Context',
-  architecture: 'Architecture',
-  adr: 'ADR',
-  plans: 'Plan',
-  api: 'API',
-  configuration: 'Configuration',
-  integrations: 'Integration',
-  security: 'Security',
-  guides: 'Guide',
-  operations: 'Operations',
-  migrations: 'Migration',
-  changelog: 'Changelog',
-  presentations: 'Presentation',
-};
+// `SECTION_TYPE` (the frozen fallback `section → type` map) and `expectedDocType`
+// (the pure section→type derivation, most-specific-first: registry subtypes →
+// built-in sub-path table → section default) are single-sourced in
+// `vocabulary-core.mjs` and re-exported above. Their behavior is unchanged
+// (DISCIPLINED_REFACTORING): the twin that used to live here was byte-identical.
 
-/** One registry `subtypes` rule (E-02): a first-sub-path-segment → `type` mapping. */
+/**
+ * One registry `subtypes` rule (E-02): a first-sub-path-segment → `type` mapping.
+ * Structurally identical to the core's `SectionSubtypeRule` typedef; kept as a
+ * named interface here because `sections.ts` imports it as a TS type from this
+ * module (it is not a canonical single-source symbol).
+ */
 export interface SectionSubtypeRule {
   /** The first sub-path segment under the section folder, e.g. `"missions"`. */
   match: string;
   /** The `type` a page under that sub-path derives. */
   type: string;
-}
-
-/**
- * The expected frontmatter `type` for a page path (null = no expectation).
- *
- * PURE and parameterized (issue #24, and now FR-005/D-03): `typesBySection` is
- * the resolved `id → type` map — pass `sectionTypes(registry)` (from
- * `./sections.ts`) to make the registry the section-default authority; omitted,
- * it falls back to the frozen {@link SECTION_TYPE}, so a docs root with no
- * `sections.yaml` still derives an expectation. `subtypesBySection` is the
- * resolved `id → subtypes[]` map — pass `sectionSubtypes(registry)`; omitted,
- * no registry subtypes apply. Never imports `./sections.ts`, so this module
- * stays fs-free and Astro-free.
- *
- * Derivation order (E-06, most specific first):
- *   1. a registry `subtypes[].match` on the first sub-path segment
- *      (`subtypesBySection`) — the data-driven rename path (FR-005);
- *   2. a short, stable BUILT-IN table of sub-path subtypes kept in code (an
- *      ADR `template.md` → `Template`; `plans/epics/*` → `Epic`,
- *      `plans/features/*` → `Feature`; `operations/runbooks/*` → `Runbook`) —
- *      the fallback, unaffected when a registry has no `subtypes` (C-001/NFR-003);
- *   3. the section (first path segment) default from `typesBySection`.
- * An unknown section yields `null` (no section default, no override) — the
- * caller treats a null expectation as "no check".
- */
-export function expectedDocType(
-  relPath: string,
-  typesBySection: Record<string, string> = SECTION_TYPE,
-  subtypesBySection?: Record<string, SectionSubtypeRule[]>,
-): string | null {
-  const parts = relPath.split('/');
-  const section = parts[0] ?? '';
-  const file = parts[parts.length - 1] ?? '';
-  const sectionDefault = typesBySection[section] ?? null;
-
-  const registryRules = subtypesBySection?.[section];
-  if (registryRules && parts.length > 1) {
-    const rule = registryRules.find((r) => r.match === parts[1]);
-    if (rule) return rule.type;
-  }
-
-  switch (section) {
-    case 'adr':
-      return file === 'template.md' ? 'Template' : sectionDefault;
-    case 'plans':
-      if (parts[1] === 'epics') return 'Epic';
-      if (parts[1] === 'features') return 'Feature';
-      return sectionDefault;
-    case 'operations':
-      return parts[1] === 'runbooks' ? 'Runbook' : sectionDefault;
-    default:
-      return sectionDefault;
-  }
 }
 
 /** The top-level section a slug belongs to ("" for the bundle root). */

@@ -1,22 +1,36 @@
 /**
- * Parity gate for the section-default `type` authority (review F2/N3).
+ * Section-default `type` authority — behavior pin (review F2/N3; WP03 retarget).
  *
  * Issue #24 made `sections.yaml` the section-default `type` authority, but a
- * registry-LESS tree still validates against a frozen fallback map — and that
- * fallback now lives in TWO hand-mirrored copies plus a duplicated sub-path
- * subtype switch:
+ * registry-LESS tree still validates against a frozen fallback map + a sub-path
+ * subtype switch. This map + derivation ONCE lived in two hand-mirrored copies
+ * (`SECTION_TYPE`/`expectedDocType` in `src/lib/metadata.ts` and
+ * `SECTION_TYPE`/`expectedType` in `src/scripts/validate-frontmatter.mjs`), and
+ * this suite was a twin-parity guard asserting the two copies agreed.
  *
- *   - `SECTION_TYPE` + `expectedDocType` in `src/lib/metadata.ts` (the pure TS core,
- *     used by the build-side `schema.ts` derivation), and
- *   - `SECTION_TYPE` + `expectedType` in `src/scripts/validate-frontmatter.mjs`
- *     (a bare-Node copy, because the TS module cannot load in the standalone gate).
+ * RETARGETED (WP03 / #49 IC-03, F2/F3): WP01/WP02 single-sourced the enum,
+ * `SECTION_TYPE`, and `expectedDocType` into the fs-free `vocabulary-core.mjs`.
+ * `metadata.ts` re-exports `SECTION_TYPE`/`expectedDocType`, and
+ * `validate-frontmatter.mjs` re-exports the SAME `expectedDocType` under the
+ * alias `expectedType`. So a copy-vs-copy comparison is now tautological (one
+ * implementation). This suite is retargeted to pin the ONE derivation's output
+ * with LITERAL oracles — a per-row expected `type` on the whole path corpus, the
+ * era-depth cases, the DOC_TYPES coupling, and the index-basename/registry-
+ * subtypes behavior — so extraction drift in the single core still reds it.
  *
- * The two are bound only by prose ("keep in sync by hand"). A one-sided edit would
- * make the CI gate and the build-side derivation silently disagree on a page's
- * expected `type` for every registry-less consumer — the round-1 whack-a-field
- * hazard, one level down. This test is the missing guard: it pins the two frozen
- * maps and the two derivations to each other, the way `remark-version-pin.test.ts`
- * pins #20/#21's parallel-pipeline mirror.
+ * DROPPED as now-structural (single-sourcing makes them tautological):
+ *   - `MJS_SECTION_TYPE toEqual METADATA_SECTION_TYPE` — the two names are the
+ *     SAME frozen object (both re-export `vocabulary-core.mjs`'s `SECTION_TYPE`).
+ *   - the corpus / era "both derivations agree" A===B compares — `expectedType`
+ *     IS `expectedDocType` (a re-export alias); this fact is asserted ONCE below
+ *     (`expect(expectedType).toBe(expectedDocType)`) instead of per row, and the
+ *     behavioral content is preserved as literal oracles.
+ *
+ * STILL A GENUINE TWO-ARM GUARD (kept + literal-asserted): the index-basename
+ * detection block compares `metadata.ts`'s INDEPENDENT TS implementations
+ * (`readmeToIndexId`/`resolveIndexEntries`) against `vocabulary-core.mjs`'s
+ * `isRootIndex`/`isIndexPath`/`detectIndexCollisions` — two distinct
+ * implementations, so their agreement is NOT structural and is retained.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -27,64 +41,63 @@ import {
 } from '../lib/metadata.ts';
 import { DOC_TYPES } from '../lib/schema.ts';
 import {
-  SECTION_TYPE as MJS_SECTION_TYPE,
   expectedType,
   isRootIndex,
   isIndexPath,
   detectIndexCollisions,
 } from '../scripts/validate-frontmatter.mjs';
 
-describe('section-type parity: metadata.ts ⇔ validate-frontmatter.mjs', () => {
-  it('the two frozen SECTION_TYPE fallback maps are byte-identical', () => {
-    expect(MJS_SECTION_TYPE).toEqual(METADATA_SECTION_TYPE);
+describe('section-type derivation — single-sourced core (metadata.ts ⇔ gate alias)', () => {
+  // Single, explicit proof of the single-sourcing that makes the former
+  // per-row copy-vs-copy compares tautological: the gate's `expectedType`
+  // export is the SAME function object as `metadata.ts`'s `expectedDocType`
+  // (both re-export `vocabulary-core.mjs`). This replaces the dropped
+  // "derivations agree" assertions with one identity check; the LITERAL
+  // oracles below then pin the behavior of that one function.
+  it('the gate `expectedType` export is the same binding as `expectedDocType`', () => {
+    expect(expectedType).toBe(expectedDocType);
   });
 
-  // A shared path corpus exercising every section default plus every sub-path
-  // subtype override the two derivations apply in code. If either copy drifts,
-  // one of these rows diverges.
-  const CORPUS = [
-    'context/overview.md',
-    'architecture/section-registry.md',
-    'adr/0004-amend.md', // section default (ADR), NOT the template override
-    'adr/template.md', // sub-path override → Template
-    'plans/roadmap.md', // section default (Plan)
-    'plans/epics/big.md', // sub-path override → Epic
-    'plans/features/small.md', // sub-path override → Feature
-    'api/index.md',
-    'configuration/setup.md',
-    'integrations/tracker.md',
-    'security/policy.md',
-    'guides/how-to.md',
-    'operations/notes.md', // section default (Operations)
-    'operations/runbooks/restart.md', // sub-path override → Runbook
-    'migrations/v2.md',
-    'changelog/2026-08-28-x.md',
-    'presentations/deck.md',
-    'unregistered-section/page.md', // no default → null on both
-    'glossary/shipping/index.md', // registry-only section, no frozen default → null
+  // The whole-path corpus, now with a per-row LITERAL expected type (F2): every
+  // section default plus every sub-path subtype override the derivation applies.
+  // A drift in the single core reds the specific row whose mapping changed.
+  const CORPUS: [string, string | null][] = [
+    ['context/overview.md', 'Context'],
+    ['architecture/section-registry.md', 'Architecture'],
+    ['adr/0004-amend.md', 'ADR'], // section default (ADR), NOT the template override
+    ['adr/template.md', 'Template'], // sub-path override → Template
+    ['plans/roadmap.md', 'Plan'], // section default (Plan)
+    ['plans/epics/big.md', 'Epic'], // sub-path override → Epic
+    ['plans/features/small.md', 'Feature'], // sub-path override → Feature
+    ['api/index.md', 'API'],
+    ['configuration/setup.md', 'Configuration'],
+    ['integrations/tracker.md', 'Integration'],
+    ['security/policy.md', 'Security'],
+    ['guides/how-to.md', 'Guide'],
+    ['operations/notes.md', 'Operations'], // section default (Operations)
+    ['operations/runbooks/restart.md', 'Runbook'], // sub-path override → Runbook
+    ['migrations/v2.md', 'Migration'],
+    ['changelog/2026-08-28-x.md', 'Changelog'],
+    ['presentations/deck.md', 'Presentation'],
+    ['unregistered-section/page.md', null], // no default → null
+    ['glossary/shipping/index.md', null], // registry-only section, no frozen default → null
   ];
 
   it.each(CORPUS)(
-    'expectedDocType ≡ expectedType (frozen fallback) for %s',
-    (relPath) => {
-      // Both called with the frozen fallback (no registry arg), so they must agree
-      // path-for-path. expectedDocType takes the map; expectedType defaults to the
-      // .mjs frozen map — pass it explicitly for symmetry.
-      expect(expectedDocType(relPath)).toBe(
-        expectedType(relPath, MJS_SECTION_TYPE),
-      );
+    'expectedDocType(%s) === frozen-fallback literal',
+    (relPath, want) => {
+      expect(expectedDocType(relPath)).toBe(want);
     },
   );
 });
 
 // #41 / FR-011 (C-003): era-partitioned ADR trees (`adr/<era>/NNNN-*.md`) keep
 // their `ADR` typing at ANY depth, and the basename-keyed `template.md` subtype
-// still resolves under an era folder. This is a GUARD ONLY — it pins the existing
-// first-path-segment switch on BOTH the ts (`expectedDocType`) and mjs
-// (`expectedType`) derivations so a future refactor cannot silently break one
-// copy, and it fails if the mapping is ever broadened to an `adr/**` glob (which
-// would clobber the `template.md` subtype). It does NOT change the mapping.
-describe('depth-tolerant ADR typing (#41 / FR-011 guard, both twins)', () => {
+// still resolves under an era folder. This pins the existing first-path-segment
+// switch on the single derivation with LITERAL oracles — it fails if the mapping
+// is ever broadened to an `adr/**` glob (which would clobber the `template.md`
+// subtype). It does NOT change the mapping.
+describe('depth-tolerant ADR typing (#41 / FR-011 guard, literal oracles)', () => {
   const ERA_CASES: [string, string][] = [
     ['adr/3.x/0001-foo.md', 'ADR'],
     ['adr/3.x/0007-some-decision.md', 'ADR'],
@@ -93,24 +106,11 @@ describe('depth-tolerant ADR typing (#41 / FR-011 guard, both twins)', () => {
   ];
 
   it.each(ERA_CASES)(
-    '%s → %s on the ts derivation (expectedDocType)',
+    'expectedDocType(%s) === %s at any depth',
     (relPath, want) => {
       expect(expectedDocType(relPath)).toBe(want);
     },
   );
-
-  it.each(ERA_CASES)(
-    '%s → %s on the mjs derivation (expectedType)',
-    (relPath, want) => {
-      expect(expectedType(relPath, MJS_SECTION_TYPE)).toBe(want);
-    },
-  );
-
-  it('the two derivations agree on every era path (twin parity)', () => {
-    for (const [relPath] of ERA_CASES) {
-      expect(expectedDocType(relPath)).toBe(expectedType(relPath, MJS_SECTION_TYPE));
-    }
-  });
 });
 
 describe('section-type / DOC_TYPES coupling (review N3)', () => {
@@ -131,66 +131,103 @@ describe('section-type / DOC_TYPES coupling (review N3)', () => {
   });
 });
 
-// adopter-loader-migration WP01 (T007) — extend the parity twin to cover the
-// NEW index-basename detection + registry-subtypes derivation this mission
-// adds (D-06, NFR-001). 0 drift between `src/lib/metadata.ts` and
-// `src/scripts/validate-frontmatter.mjs` on every case below.
-describe('index-basename detection parity: readmeToIndexId/isRootIndex ⇔ isIndexPath/isRootIndex (both twins)', () => {
-  const DEFAULT_CASES = ['README.md', 'index.md', 'guides/README.md', 'guides/index.md'];
-  const OPTED_IN_CASES = ['README.md', 'index.md', 'guides/README.md', 'guides/index.md', 'guides/Index.md'];
+// index-basename detection is a GENUINE TWO-ARM guard (F2 retained): `metadata.ts`
+// carries its OWN TS implementation (`readmeToIndexId`/`resolveIndexEntries`,
+// built on local `normalizeIndexBasenames`/`indexBasenamePattern`), while the gate
+// imports `isRootIndex`/`isIndexPath`/`detectIndexCollisions` from
+// `vocabulary-core.mjs`. These are DISTINCT implementations, so their agreement is
+// not structural — kept, and every row now pins an explicit LITERAL verdict too.
+describe('index-basename detection: metadata.ts TS impl ⇔ core mjs impl (two-arm + literals)', () => {
+  // [path, expected-root-index-under-DEFAULT-basename]
+  const DEFAULT_CASES: [string, boolean][] = [
+    ['README.md', true],
+    ['index.md', false],
+    ['guides/README.md', false],
+    ['guides/index.md', false],
+  ];
+  // [path, expected-root-index, expected-index-path] under opted-in ["README","index"]
+  const OPTED_CASES: [string, boolean, boolean][] = [
+    ['README.md', true, true],
+    ['index.md', true, true],
+    ['guides/README.md', false, true],
+    ['guides/index.md', false, true],
+    ['guides/Index.md', false, true],
+  ];
 
-  it.each(DEFAULT_CASES)('%s: root-index verdict agrees under the DEFAULT basename', (relPath) => {
-    const tsIsRoot = readmeToIndexId(relPath) === '' && !relPath.includes('/');
-    expect(tsIsRoot).toBe(isRootIndex(relPath));
-  });
-
-  it.each(OPTED_IN_CASES)(
-    '%s: root-index verdict agrees under an OPTED-IN ["README","index"] basename',
-    (relPath) => {
-      const opts = { indexBasename: ['README', 'index'] };
-      const tsIsRoot = readmeToIndexId(relPath, opts) === '' && !relPath.includes('/');
-      expect(tsIsRoot).toBe(isRootIndex(relPath, ['README', 'index']));
+  it.each(DEFAULT_CASES)(
+    '%s: root-index verdict = %s under the DEFAULT basename (both arms)',
+    (relPath, wantRoot) => {
+      const tsIsRoot = readmeToIndexId(relPath) === '' && !relPath.includes('/');
+      expect(tsIsRoot).toBe(wantRoot); // metadata.ts TS arm
+      expect(isRootIndex(relPath)).toBe(wantRoot); // core mjs arm
     },
   );
 
-  it.each(OPTED_IN_CASES)('%s: index-path detection agrees (whole-tree collision inputs)', (relPath) => {
-    // `resolveIndexEntries`'s per-path candidacy test mirrors `isIndexPath`.
-    const { ids } = resolveIndexEntries([relPath], { indexBasename: ['README', 'index'] });
-    const tsCollapsed = ids.get(relPath) !== relPath.replace(/\.mdx?$/i, '');
-    expect(tsCollapsed).toBe(isIndexPath(relPath, ['README', 'index']));
-  });
+  it.each(OPTED_CASES)(
+    '%s: root-index=%s, index-path=%s under an OPTED-IN ["README","index"] basename (both arms)',
+    (relPath, wantRoot, wantIndexPath) => {
+      const opts = { indexBasename: ['README', 'index'] };
+      const tsIsRoot = readmeToIndexId(relPath, opts) === '' && !relPath.includes('/');
+      // `resolveIndexEntries`'s per-path candidacy test mirrors `isIndexPath`.
+      const { ids } = resolveIndexEntries([relPath], opts);
+      const tsIsIndexPath = ids.get(relPath) !== relPath.replace(/\.mdx?$/i, '');
+      // metadata.ts TS arm …
+      expect(tsIsRoot).toBe(wantRoot);
+      expect(tsIsIndexPath).toBe(wantIndexPath);
+      // … core mjs arm.
+      expect(isRootIndex(relPath, ['README', 'index'])).toBe(wantRoot);
+      expect(isIndexPath(relPath, ['README', 'index'])).toBe(wantIndexPath);
+    },
+  );
 
-  it('both-index collision resolution agrees (E-05): same winner, same demoted set', () => {
+  it('both-index collision resolution (E-05): literal winner/demoted, and both arms agree', () => {
     const paths = ['guides/README.md', 'guides/index.md', 'guides/deploy.md', 'index.md', 'README.md'];
+    const EXPECTED = [
+      { dir: 'guides', winner: 'guides/README.md', demoted: ['guides/index.md'] },
+      { dir: '', winner: 'README.md', demoted: ['index.md'] },
+    ];
     const tsResult = resolveIndexEntries(paths, { indexBasename: ['README', 'index'] });
     const mjsResult = detectIndexCollisions(paths, ['README', 'index']);
-    expect(mjsResult).toEqual(tsResult.collisions);
+    // Literal oracle: README wins over index at each directory (earliest-configured
+    // basename), the other is demoted; root and `guides/` both collide.
+    expect(tsResult.collisions).toEqual(EXPECTED); // metadata.ts TS arm
+    expect(mjsResult).toEqual(EXPECTED); // core mjs arm
   });
 });
 
-// adopter-loader-migration WP01 (T007) — registry `subtypes` derivation
-// parity (E-02/E-06/FR-005/D-03): a sub-path rename resolved identically by
-// both twins, with the built-in table intact as the fallback.
-describe('registry-subtypes derivation parity: expectedDocType ⇔ expectedType (both twins)', () => {
+// registry `subtypes` derivation (E-02/E-06/FR-005/D-03): a sub-path rename
+// resolved by the single derivation, with the built-in table intact as the
+// fallback. Retargeted from a copy-vs-copy compare to LITERAL oracles.
+describe('registry-subtypes derivation — rule-firing vs built-in fall-through (literal oracles)', () => {
   const typesBySection = { plans: 'Plan' };
   const subtypesBySection = { plans: [{ match: 'missions', type: 'Mission' }] };
 
-  const CASES = [
-    'plans/missions/x.md', // registry subtypes rule fires
-    'plans/features/small.md', // registry has no rule for "features" here → falls to built-in table
-    'plans/epics/big.md', // built-in table (registry declares no epics rule)
-    'plans/roadmap.md', // section default
+  // [path, expected-with-active-subtypes-map]
+  const WITH_SUBTYPES: [string, string][] = [
+    ['plans/missions/x.md', 'Mission'], // registry subtypes rule fires
+    ['plans/features/small.md', 'Feature'], // no rule for "features" → built-in table
+    ['plans/epics/big.md', 'Epic'], // built-in table (no epics rule)
+    ['plans/roadmap.md', 'Plan'], // section default
+  ];
+  // [path, expected-with-NO-subtypes-map] (built-in table only)
+  const NO_SUBTYPES: [string, string][] = [
+    ['plans/missions/x.md', 'Plan'], // no rule → section default (no built-in missions subtype)
+    ['plans/features/small.md', 'Feature'],
+    ['plans/epics/big.md', 'Epic'],
+    ['plans/roadmap.md', 'Plan'],
   ];
 
-  it.each(CASES)('%s: expectedDocType ≡ expectedType under an active registry subtypes map', (relPath) => {
-    expect(expectedDocType(relPath, typesBySection, subtypesBySection)).toBe(
-      expectedType(relPath, typesBySection, subtypesBySection),
-    );
-  });
+  it.each(WITH_SUBTYPES)(
+    'expectedDocType(%s) === %s under an active registry subtypes map',
+    (relPath, want) => {
+      expect(expectedDocType(relPath, typesBySection, subtypesBySection)).toBe(want);
+    },
+  );
 
-  it('absent subtypesBySection: both twins fall through to the built-in table identically', () => {
-    for (const relPath of CASES) {
-      expect(expectedDocType(relPath, typesBySection)).toBe(expectedType(relPath, typesBySection));
-    }
-  });
+  it.each(NO_SUBTYPES)(
+    'expectedDocType(%s) === %s with NO subtypes map (built-in table fall-through)',
+    (relPath, want) => {
+      expect(expectedDocType(relPath, typesBySection)).toBe(want);
+    },
+  );
 });

@@ -20,6 +20,13 @@
  */
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
+// Single source of truth (#49 IC-02/NFR-001): the section→type derivation lives
+// in `vocabulary-core.mjs`. This bare-Node scaffolder imports it (the core is
+// fs-free `.mjs`, so it resolves under plain `node`) instead of carrying its own
+// hardcoded `expectedType` switch. The core also derives `presentations` →
+// `Presentation`, which this tool's old local switch omitted — an additive
+// alignment with the canonical map (NFR-002: no existing value's meaning changes).
+import { expectedDocType } from '../lib/vocabulary-core.mjs';
 
 function parseArgs(argv) {
   const args = { _: [], flags: {} };
@@ -33,31 +40,6 @@ function parseArgs(argv) {
     } else args._.push(a);
   }
   return args;
-}
-
-/** Expected `type` for a slug path (null = unknown / bundle root). */
-function expectedType(relPath) {
-  const parts = relPath.split(sep);
-  const section = parts[0];
-  const file = parts[parts.length - 1];
-  switch (section) {
-    case 'context': return 'Context';
-    case 'architecture': return 'Architecture';
-    case 'adr': return file === 'template.md' ? 'Template' : 'ADR';
-    case 'plans':
-      if (parts[1] === 'epics') return 'Epic';
-      if (parts[1] === 'features') return 'Feature';
-      return 'Plan';
-    case 'api': return 'API';
-    case 'configuration': return 'Configuration';
-    case 'integrations': return 'Integration';
-    case 'security': return 'Security';
-    case 'guides': return 'Guide';
-    case 'operations': return parts[1] === 'runbooks' ? 'Runbook' : 'Operations';
-    case 'migrations': return 'Migration';
-    case 'changelog': return 'Changelog';
-    default: return null;
-  }
 }
 
 /**
@@ -94,7 +76,7 @@ const title =
 const indexBasename = typeof flags['index-basename'] === 'string' ? flags['index-basename'] : 'README';
 const relPath = flags.section ? join(slug, `${indexBasename}.md`) : `${slug}.md`;
 const target = join(base, relPath);
-const type = flags.type ?? expectedType(relPath);
+const type = flags.type ?? expectedDocType(relPath.split(sep).join('/'));
 const kind = flags.kind ?? expectedKind(relPath, Boolean(flags.section));
 
 if (existsSync(target)) {

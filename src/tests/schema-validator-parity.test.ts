@@ -89,6 +89,32 @@ describe('schema/validator parity — shared shape contract (NFR-005)', () => {
   }
 });
 
+// #39 / FR-004 (WP03 add): `durable` is a new lifecycle status, added in exactly
+// ONE place — the shared `STATUSES` enum in `vocabulary-core.mjs` — from which
+// BOTH the build schema (`z.enum(STATUSES)` in schema.ts's `docKittyFields`) and
+// the standalone gate (its own `z.enum(STATUSES)`) derive. This pins that both
+// arms ACCEPT `durable`, the way `err/bad-doc-status.md` above pins both arms
+// REJECT an unknown status. It is authored inline (not a fixture) to stay within
+// this suite's owned files; the shape is otherwise a canonical valid page.
+describe('schema/validator parity — the new `durable` status is accepted on both arms (#39)', () => {
+  it('doc_status: durable — build schema accepts AND the gate accepts', () => {
+    const data: Record<string, unknown> = {
+      title: 'A durable, never-retired reference',
+      description: 'x'.repeat(60),
+      updated: '2026-09-01',
+      doc_status: 'durable',
+      type: 'Context',
+      kind: 'Reference',
+    };
+    // Arm B (build schema, schema.ts) …
+    expect(buildRejects(data)).toBe(false);
+    // Arm A (standalone gate) …
+    expect(validatorRejects('context/durable-ref.md', data)).toBe(false);
+    // … and the two arms agree (no divergence on the shared enum).
+    expect(buildRejects(data)).toBe(validatorRejects('context/durable-ref.md', data));
+  });
+});
+
 // Documented, INTENTIONAL divergence (schema.ts comment): the build schema is
 // deliberately lenient on presence so partially-scaffolded stubs still build
 // (`doc_status` defaults to draft; `kind`/`updated` are optional), while the

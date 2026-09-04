@@ -2,9 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { loadVocabulary as loadVocabularyTs } from '../lib/sections.js';
 import {
-  loadVocabulary as loadVocabularyMjs,
+  loadVocabulary,
   validate,
   SECTION_TYPE,
 } from '../scripts/validate-frontmatter.mjs';
@@ -17,11 +16,16 @@ import {
  * standalone gate WITHOUT an Astro build, and applied to BOTH authored and
  * section-DERIVED values (FR-004/FR-005).
  *
- * Two hand-mirrored twins carry the resolver — `loadVocabulary` in
- * `src/lib/sections.ts` (the canonical unit) and its copy in
- * `src/scripts/validate-frontmatter.mjs` (the bare-Node gate). NFR-004 requires
- * they resolve the SAME YAML to the SAME result — asserted here on the RESOLVED
- * output, not on any static default array.
+ * SINGLE-SOURCED (#49 IC-02, WP01/WP02): the resolver + its fs loader now live
+ * in ONE place — `vocabulary-core.mjs`'s `makeAxisResolver`/`parseVocabulary`
+ * and `vocabulary-loader.mjs`'s `loadVocabulary` — re-exported through both
+ * `src/lib/sections.ts` and `src/scripts/validate-frontmatter.mjs`. The former
+ * mjs-vs-ts twin-parity block (NFR-004) is therefore RETARGETED to pin the ONE
+ * resolver's RESOLVED output with LITERAL oracles over a non-default YAML (see
+ * the final describe). The gate-wiring assertions below are NOT retargeted: they
+ * prove `validate()` still APPLIES this resolver to authored AND section-derived
+ * values (FR-004/FR-005) — a property single-sourcing the resolver does not
+ * guarantee (F4).
  */
 
 /** Write a `<docsRoot>/_meta/vocabulary.yaml` into a fresh temp dir and return it. */
@@ -58,11 +62,11 @@ const FORBID_YAML = `types:
     - Feature
 `;
 
-describe('loadVocabulary resolver unit — sections.ts (canonical)', () => {
+describe('loadVocabulary resolver unit — the single core (vocabulary-loader/-core)', () => {
   it('aliases a type term to its replacement (authored OR derived)', () => {
     const dir = withVocabulary(ALIAS_YAML);
     try {
-      const vocab = loadVocabularyTs(dir);
+      const vocab = loadVocabulary(dir);
       const r = vocab.resolveType('Feature');
       expect(r.effective).toBe('Mission');
       expect(r.forbidden).toBe(false);
@@ -75,7 +79,7 @@ describe('loadVocabulary resolver unit — sections.ts (canonical)', () => {
   it('forbids a type term and names the replacement', () => {
     const dir = withVocabulary(FORBID_YAML);
     try {
-      const vocab = loadVocabularyTs(dir);
+      const vocab = loadVocabulary(dir);
       const r = vocab.resolveType('Feature');
       expect(r.forbidden).toBe(true);
       // The alias supplies the replacement to name in the failure message.
@@ -88,7 +92,7 @@ describe('loadVocabulary resolver unit — sections.ts (canonical)', () => {
   it('passes an unlisted term through unchanged', () => {
     const dir = withVocabulary(ALIAS_YAML);
     try {
-      const vocab = loadVocabularyTs(dir);
+      const vocab = loadVocabulary(dir);
       const r = vocab.resolveType('Guide');
       expect(r.effective).toBe('Guide');
       expect(r.forbidden).toBe(false);
@@ -101,7 +105,7 @@ describe('loadVocabulary resolver unit — sections.ts (canonical)', () => {
   it('resolves an undefined term to undefined (no crash)', () => {
     const dir = withVocabulary(ALIAS_YAML);
     try {
-      const vocab = loadVocabularyTs(dir);
+      const vocab = loadVocabulary(dir);
       const r = vocab.resolveType(undefined);
       expect(r.effective).toBeUndefined();
       expect(r.forbidden).toBe(false);
@@ -113,7 +117,7 @@ describe('loadVocabulary resolver unit — sections.ts (canonical)', () => {
   it('absent file → identity resolver, `Feature` stays valid (NFR-002)', () => {
     const dir = withVocabulary(null);
     try {
-      const vocab = loadVocabularyTs(dir);
+      const vocab = loadVocabulary(dir);
       const r = vocab.resolveType('Feature');
       expect(r.effective).toBe('Feature');
       expect(r.forbidden).toBe(false);
@@ -125,7 +129,7 @@ describe('loadVocabulary resolver unit — sections.ts (canonical)', () => {
   it('malformed file (non-mapping `types`) throws a clear error, not a silent default', () => {
     const dir = withVocabulary(`types: not-a-mapping\n`);
     try {
-      expect(() => loadVocabularyTs(dir)).toThrow(/vocabulary/i);
+      expect(() => loadVocabulary(dir)).toThrow(/vocabulary/i);
     } finally {
       cleanup(dir);
     }
@@ -139,7 +143,7 @@ describe('loadVocabulary resolver unit — sections.ts (canonical)', () => {
     - Legacy
 `);
     try {
-      const vocab = loadVocabularyTs(dir);
+      const vocab = loadVocabulary(dir);
       expect(vocab.resolveKind('Feature').effective).toBe('Capability');
       expect(vocab.resolveKind('Legacy').forbidden).toBe(true);
       expect(vocab.resolveKind('Reference').effective).toBe('Reference');
@@ -153,7 +157,7 @@ describe('gate wiring — resolver applied inside validate() (FR-004/FR-005)', (
   it('US2-1: an AUTHORED forbidden→aliased term fails naming the replacement', () => {
     const dir = withVocabulary(FORBID_YAML);
     try {
-      const vocab = loadVocabularyMjs(dir);
+      const vocab = loadVocabulary(dir);
       const { problems } = validate(
         'plans/features/thing.md',
         { title: 'X', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27', type: 'Feature', kind: 'Feature' },
@@ -171,7 +175,7 @@ describe('gate wiring — resolver applied inside validate() (FR-004/FR-005)', (
   it('US2-1 (alias only): an authored aliased term passes with the effective replacement', () => {
     const dir = withVocabulary(ALIAS_YAML);
     try {
-      const vocab = loadVocabularyMjs(dir);
+      const vocab = loadVocabulary(dir);
       const { problems, warnings, effective } = validate(
         'plans/features/thing.md',
         { title: 'X', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27', type: 'Feature', kind: 'Feature' },
@@ -190,7 +194,7 @@ describe('gate wiring — resolver applied inside validate() (FR-004/FR-005)', (
   it('US2-3: the override reaches DERIVED values — a plans/features page with NO type resolves to Mission, no warning', () => {
     const dir = withVocabulary(ALIAS_YAML);
     try {
-      const vocab = loadVocabularyMjs(dir);
+      const vocab = loadVocabulary(dir);
       const { problems, warnings, effective } = validate(
         'plans/features/thing.md',
         { title: 'X', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27', kind: 'Reference' },
@@ -209,7 +213,7 @@ describe('gate wiring — resolver applied inside validate() (FR-004/FR-005)', (
   it('US2-4: no override file → default vocabulary, `Feature` stays valid', () => {
     const dir = withVocabulary(null);
     try {
-      const vocab = loadVocabularyMjs(dir);
+      const vocab = loadVocabulary(dir);
       const { problems, effective } = validate(
         'plans/features/thing.md',
         { title: 'X', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27', type: 'Feature', kind: 'Feature' },
@@ -224,33 +228,41 @@ describe('gate wiring — resolver applied inside validate() (FR-004/FR-005)', (
   });
 });
 
-describe('NFR-004 — mjs and ts twins resolve the SAME YAML identically (resolved output)', () => {
-  it('both resolvers alias Feature → Mission for the same non-default YAML', () => {
+// RETARGETED (WP03 / #49 IC-03, F3): this block used to load the resolver from
+// BOTH `sections.ts` (ts) and `validate-frontmatter.mjs` (mjs) and assert the two
+// twins resolved the same YAML identically. WP01/WP02 single-sourced the resolver
+// into `vocabulary-core.mjs`/`vocabulary-loader.mjs`, so a twin comparison is now
+// tautological (both imports are the SAME function). It is RETARGETED — not
+// deleted — to pin the ONE resolver's RESOLVED output with LITERAL oracles over
+// the non-default `ALIAS_YAML` (alias / forbidden / kind axes) so extraction
+// drift in the single core still reds this suite. NFR-004's "same YAML → same
+// result" guarantee is now structural (one implementation); its BEHAVIORAL
+// content is preserved below as explicit literals.
+describe('NFR-004 (retargeted) — the single resolver pins RESOLVED output over a non-default YAML', () => {
+  it('resolves alias / forbidden / kind literally for ALIAS_YAML', () => {
     const dir = withVocabulary(ALIAS_YAML);
     try {
-      const ts = loadVocabularyTs(dir);
-      const mjs = loadVocabularyMjs(dir);
-      // Assert on the RESOLVED output, not the static default arrays.
-      expect(ts.resolveType('Feature').effective).toBe('Mission');
-      expect(mjs.resolveType('Feature').effective).toBe('Mission');
-      expect(mjs.resolveType('Feature').effective).toBe(ts.resolveType('Feature').effective);
-      // And they agree on the forbidden term's verdict, too.
-      expect(mjs.resolveType('Epic').forbidden).toBe(ts.resolveType('Epic').forbidden);
-      expect(ts.resolveType('Epic').forbidden).toBe(true);
-      // Kind axis parity as well.
-      expect(mjs.resolveKind('Reference').effective).toBe(ts.resolveKind('Reference').effective);
+      const vocab = loadVocabulary(dir);
+      // Alias axis: Feature → Mission, not forbidden.
+      expect(vocab.resolveType('Feature').effective).toBe('Mission');
+      expect(vocab.resolveType('Feature').forbidden).toBe(false);
+      // Forbidden term verdict (ALIAS_YAML forbids `Epic`): a distinct literal the
+      // unit block above never exercises over ALIAS_YAML.
+      expect(vocab.resolveType('Epic').forbidden).toBe(true);
+      // Kind axis is unconfigured in ALIAS_YAML → identity (unlisted passthrough).
+      expect(vocab.resolveKind('Reference').effective).toBe('Reference');
+      expect(vocab.resolveKind('Reference').forbidden).toBe(false);
     } finally {
       cleanup(dir);
     }
   });
 
-  it('both resolvers agree on the identity (absent-file) case', () => {
+  it('resolves the identity (absent-file) case to the input term unchanged', () => {
     const dir = withVocabulary(null);
     try {
-      const ts = loadVocabularyTs(dir);
-      const mjs = loadVocabularyMjs(dir);
-      expect(mjs.resolveType('Feature').effective).toBe(ts.resolveType('Feature').effective);
-      expect(mjs.resolveType('Feature').effective).toBe('Feature');
+      const vocab = loadVocabulary(dir);
+      expect(vocab.resolveType('Feature').effective).toBe('Feature');
+      expect(vocab.resolveType('Feature').forbidden).toBe(false);
     } finally {
       cleanup(dir);
     }
