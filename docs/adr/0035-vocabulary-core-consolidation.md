@@ -47,8 +47,8 @@ Extract a **single canonical, two-layer pure-ESM core** that both sides import:
 
 1. **`src/lib/vocabulary-core.mjs`** — a dependency-light, **fs-free and
    Astro-free** module holding the canonical `STATUSES`/`DOC_TYPES`/`KINDS`
-   (as JSDoc-`const` literal tuples), the frozen `SECTION_TYPE`, `expectedDocType`
-   + the sub-path switch, the pure vocabulary/axis resolver, and the
+   (as JSDoc-`const` literal tuples), the frozen `SECTION_TYPE`, the
+   `expectedDocType` sub-path switch, the pure vocabulary/axis resolver, and the
    index-basename helpers. Safe for `metadata.ts` and `schema.ts` to import
    without breaking the fs-free boundary.
 2. **`src/lib/vocabulary-loader.mjs`** — the thin `node:fs` layer
