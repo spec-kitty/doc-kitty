@@ -23,6 +23,7 @@
     "validate:adr-index": "node src/scripts/generate-adr-index.mjs --check",
     "validate:catalog": "node src/scripts/validate-catalog.mjs docs example/docs",
     "assert:artifacts": "node src/scripts/assert-build-artifacts.mjs example/dist",
+    "assert:no-broken-links": "node src/scripts/assert-no-broken-links.mjs example/dist --base /doc-kitty --site https://spec-kitty.github.io",
     "assert:markua": "node src/scripts/assert-markua-builds.mjs",
     "test:a11y": "playwright test"
   },
