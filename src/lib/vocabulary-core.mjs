@@ -36,10 +36,12 @@
  *   - resolver: `sections.ts:294-415` (`makeAxisResolver` /
  *     `parseVocabularyAxis` / `parseVocabulary` / `identityVocabulary`, incl.
  *     the gray-matter wrap-in-fences trick);
- *   - index-basename helpers: `metadata.ts:407-525` (`readmeToIndexId` /
- *     `resolveIndexEntries` + the `ROOT_ENTRY_ID` root-slug mapping) and the
- *     bare-Node detection twin `validate-frontmatter.mjs:60-135`
- *     (`isIndexPath` / `isRootIndex` / `detectIndexCollisions`).
+ *   - index-basename DETECTION helpers: the bare-Node half
+ *     `validate-frontmatter.mjs:60-135` (`isIndexPath` / `isRootIndex` /
+ *     `detectIndexCollisions`). The id-MAPPING half (`readmeToIndexId` /
+ *     `resolveIndexEntries` / `slugFromEntryId` / `ROOT_ENTRY_ID`) is the
+ *     Astro-side entry-id surface and stays owned by `metadata.ts` — not
+ *     duplicated here.
  *
  * @module vocabulary-core
  */
@@ -421,30 +423,11 @@ function indexBasenamePattern(basenames) {
 }
 
 /**
- * Map a file path under the content root to its route slug, applying the
- * configurable index-basename rule (FR-001/FR-002, D-01). Case-insensitive.
- *
- * With the default (`indexBasename` omitted → `"README"` only):
- *   "README.md"                -> ""              (bundle root)
- *   "architecture/README.md"   -> "architecture"
- *   "architecture/overview.md" -> "architecture/overview"
- *
- * Sibling-unaware: for the multi-candidate collision case (E-05) use
- * {@link resolveIndexEntries} instead.
- *
- * @param {string} entry
- * @param {IndexBasenameOptions} [options={}]
- * @returns {string}
- */
-export function readmeToIndexId(entry, options = {}) {
-  const withoutExt = entry.replace(/\.mdx?$/i, '');
-  const pattern = indexBasenamePattern(normalizeIndexBasenames(options.indexBasename));
-  const asIndex = withoutExt.replace(pattern, '$1');
-  return asIndex.replace(/\/$/, '');
-}
-
-/**
  * One resolved both-index collision (E-05): a directory with 2+ candidates.
+ * The id-mapping index helpers (`readmeToIndexId` / `resolveIndexEntries` /
+ * `slugFromEntryId` / `ROOT_ENTRY_ID`) live in `metadata.ts`, which owns the
+ * Astro-side entry-id surface; this core carries only the bare-Node detection
+ * half below, so this typedef is retained for `detectIndexCollisions`.
  *
  * @typedef {object} IndexCollision
  * @property {string} dir The directory the collision occurred in ('' for root).
@@ -453,89 +436,8 @@ export function readmeToIndexId(entry, options = {}) {
  */
 
 /**
- * The result of a whole-tree, collision-aware index resolution.
- *
- * @typedef {object} ResolveIndexEntriesResult
- * @property {Map<string, string>} ids Every input path mapped to its slug id.
- * @property {IndexCollision[]} collisions Every directory with >1 candidate.
- */
-
-/**
- * Collision-aware, whole-tree twin of {@link readmeToIndexId} (E-05, FR-004).
- * Given every Markdown path under a content root, resolves each to its route
- * slug id; when a directory contains MULTIPLE configured-basename candidates
- * (e.g. both `README.md` and `index.md`), the file matching the EARLIEST-
- * configured basename wins the section-index id; the rest are demoted to ordinary
- * pages (their id keeps the basename segment) and reported in `collisions`, so
- * the ambiguity is never silently resolved. A tie between same-rank basenames is
- * broken by path sort order. Fs-free — the caller supplies the path list.
- *
- * @param {readonly string[]} paths
- * @param {IndexBasenameOptions} [options={}]
- * @returns {ResolveIndexEntriesResult}
- */
-export function resolveIndexEntries(paths, options = {}) {
-  const basenames = normalizeIndexBasenames(options.indexBasename);
-  const pattern = indexBasenamePattern(basenames);
-
-  /** @type {Map<string, string[]>} */
-  const byDir = new Map();
-  for (const p of paths) {
-    const withoutExt = p.replace(/\.mdx?$/i, '');
-    if (!pattern.test(withoutExt)) continue;
-    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
-    const list = byDir.get(dir) ?? [];
-    list.push(p);
-    byDir.set(dir, list);
-  }
-
-  /** @param {string} file */
-  const rankOf = (file) => {
-    const base = file.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
-    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
-    return idx === -1 ? basenames.length : idx;
-  };
-
-  /** @type {Set<string>} */
-  const demoted = new Set();
-  /** @type {IndexCollision[]} */
-  const collisions = [];
-  for (const [dir, files] of byDir) {
-    if (files.length <= 1) continue;
-    const sorted = [...files].sort((a, b) => rankOf(a) - rankOf(b) || a.localeCompare(b));
-    const [winner, ...rest] = sorted;
-    for (const loser of rest) demoted.add(loser);
-    collisions.push({ dir, winner: /** @type {string} */ (winner), demoted: rest });
-  }
-
-  /** @type {Map<string, string>} */
-  const ids = new Map();
-  for (const p of paths) {
-    ids.set(p, demoted.has(p) ? p.replace(/\.mdx?$/i, '') : readmeToIndexId(p, options));
-  }
-  return { ids, collisions };
-}
-
-/**
- * Astro's content store requires a non-empty entry id, so the bundle root
- * (whose convention route slug is `""`) is stored under this reserved id —
- * which is also Starlight's own root id, keeping it served at `/`.
- */
-export const ROOT_ENTRY_ID = 'index';
-
-/**
- * Map a stored Astro entry id back to the convention's route slug ("" for root).
- *
- * @param {string} id
- * @returns {string}
- */
-export function slugFromEntryId(id) {
-  return id === ROOT_ENTRY_ID ? '' : id;
-}
-
-/**
  * Does `relPath` (ext included) name a configured section-index candidate? The
- * bare-Node detection twin of the {@link readmeToIndexId} pattern
+ * bare-Node detection half of the section-index basename rule
  * (`validate-frontmatter.mjs:89-92`).
  *
  * @param {string} relPath
@@ -562,9 +464,9 @@ export function isRootIndex(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
 }
 
 /**
- * Both-index collision detection (E-05, FR-004) — the flat-list bare-Node twin
- * of {@link resolveIndexEntries}'s collision half
- * (`validate-frontmatter.mjs:111-135`). Groups index-candidates by directory and
+ * Both-index collision detection (E-05, FR-004) — the flat-list bare-Node
+ * collision detector (`validate-frontmatter.mjs:111-135`), mirroring the
+ * collision half of metadata.ts's `resolveIndexEntries`. Groups index-candidates by directory and
  * reports every directory holding MORE THAN ONE configured basename; the
  * EARLIEST-configured basename wins (ties broken by path sort), matching the
  * loader's resolution exactly.

@@ -22,13 +22,9 @@ import {
   parseVocabulary,
   identityVocabulary,
   makeAxisResolver,
-  readmeToIndexId,
-  resolveIndexEntries,
   detectIndexCollisions,
   isRootIndex,
   isIndexPath,
-  slugFromEntryId,
-  ROOT_ENTRY_ID,
   DEFAULT_INDEX_BASENAME,
 } from '../lib/vocabulary-core.mjs';
 
@@ -157,20 +153,6 @@ describe('index-basename detection (metadata.ts:407-525 + validate-frontmatter t
     expect(DEFAULT_INDEX_BASENAME).toBe('README');
   });
 
-  it('readmeToIndexId collapses README to the section slug (default)', () => {
-    expect(readmeToIndexId('README.md')).toBe('');
-    expect(readmeToIndexId('architecture/README.md')).toBe('architecture');
-    expect(readmeToIndexId('architecture/overview.md')).toBe('architecture/overview');
-    // A stray index.md is NOT collapsed under the default (NFR-003).
-    expect(readmeToIndexId('architecture/index.md')).toBe('architecture/index');
-  });
-
-  it('readmeToIndexId collapses index too when opted in', () => {
-    expect(readmeToIndexId('architecture/index.md', { indexBasename: ['README', 'index'] })).toBe(
-      'architecture',
-    );
-  });
-
   it('isRootIndex verdict: default (README only) vs opted-in [README, index]', () => {
     // Default: README at root is the bundle root; a stray index.md is not.
     expect(isRootIndex('README.md')).toBe(true);
@@ -189,30 +171,11 @@ describe('index-basename detection (metadata.ts:407-525 + validate-frontmatter t
     expect(isIndexPath('guides/index.md', ['README', 'index'])).toBe(true);
   });
 
-  it('resolveIndexEntries picks the earliest-configured basename as winner and demotes the rest', () => {
-    const paths = ['guide/README.md', 'guide/index.md', 'guide/page.md'];
-    const { ids, collisions } = resolveIndexEntries(paths, {
-      indexBasename: ['README', 'index'],
-    });
-    expect(collisions).toEqual([
-      { dir: 'guide', winner: 'guide/README.md', demoted: ['guide/index.md'] },
-    ]);
-    expect(ids.get('guide/README.md')).toBe('guide'); // winner → section index
-    expect(ids.get('guide/index.md')).toBe('guide/index'); // demoted → ordinary page
-    expect(ids.get('guide/page.md')).toBe('guide/page'); // untouched ordinary page
-  });
-
-  it('detectIndexCollisions (flat twin) reports the same winner + demoted set', () => {
+  it('detectIndexCollisions reports the collision winner + demoted set', () => {
     const paths = ['guide/README.md', 'guide/index.md', 'guide/page.md'];
     expect(detectIndexCollisions(paths, ['README', 'index'])).toEqual([
       { dir: 'guide', winner: 'guide/README.md', demoted: ['guide/index.md'] },
     ]);
-  });
-
-  it('slugFromEntryId maps the reserved root entry id back to the empty slug', () => {
-    expect(ROOT_ENTRY_ID).toBe('index');
-    expect(slugFromEntryId('index')).toBe('');
-    expect(slugFromEntryId('architecture')).toBe('architecture');
   });
 });
 
