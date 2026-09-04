@@ -2,7 +2,7 @@
   "event_count": 28,
   "last_event_id": "01M1MYEV4TV9K91B3H6E0P8R7S",
   "materialized_at": "2026-09-04T00:52:49.434287+00:00",
-  "mission_number": "4",
+  "mission_number": "",
   "mission_slug": "metadata-vocab-hub-consolidation-01M1MFVT",
   "mission_type": "software-dev",
   "summary": {
@@ -20,129 +20,62 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
       "force_count": 1,
       "lane": "done",
       "last_event_id": "01M1MYE3V30TRKKP53B5V13TXJ",
       "last_transition_at": "2026-09-04T00:52:25.571282+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP01 ready: two-layer pure-ESM vocabulary core + golden-master oracle + single-source/purity gate. Verified locally: node --check passes both .mjs; all matter-free oracle assertions (expectedDocType, index-basename, makeAxisResolver) executed GREEN against the imported core; single-source gate simulated GREEN (purity + shrink-only ratchet + no-rot). node_modules is EMPTY locally so vitest/astro check/full bare-Node import (needs gray-matter) could NOT run -- CI is the verifier. Ratchet baseline pins metadata.ts/schema.ts/sections.ts/validate-frontmatter.mjs; FINDING: new-doc.mjs + scaffold.mjs each carry a 3rd/4th expectedType twin -- WP02 to decide consolidate-or-keep. No consumer edited.",
-        "Review PASS (reviewer-renata): behavior-preserving two-layer core; golden-master + single-source/purity gates; durable single-sourced; no blockers. --force overrides the derived-status.json lane-hygiene catch-22 (restoring it passed the review-rebase but blocks approve; deletion re-triggers the rebase refusal). Issue-matrix seeded in-mission; CI verifies vitest+astro check."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review PASS (reviewer-renata): behavior-preserving two-layer core; golden-master + single-source/purity gates; durable single-sourced; no blockers. --force overrides the derived-status.json lane-hygiene catch-22 (restoring it passed the review-rebase but blocks approve; deletion re-triggers the rebase refusal). Issue-matrix seeded in-mission; CI verifies vitest+astro check.",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 490731,
-      "shell_pid_created_at": "1788478328.63",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done",
-        "T006": "done"
-      }
+      "shell_pid": 477303,
+      "shell_pid_created_at": "1788477106.07"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
       "force_count": 1,
       "lane": "done",
       "last_event_id": "01M1MYEKEK1FVCPT2AHF82EW53",
       "last_transition_at": "2026-09-04T00:52:41.555321+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP02 ready (impl commit dd2fe9d). All 4 twins deleted; schema/metadata/sections/gate/new-doc/scaffold rewired onto WP01 vocabulary-core.mjs/vocabulary-loader.mjs; single-source baseline emptied to {}. DocType/DocStatus derived via typeof X[number]; z.enum(STATUSES); durable flows from the one core array; isPublished durable=published VERIFIED (no branch). sections.ts STRICT authored-registry validation PRESERVED (only vocab resolver re-exported from core); gate uses lenient loader for bare-Node path. new-doc/scaffold rewired onto expectedDocType (adds presentations->Presentation, additive). Gates ran LOCALLY: vitest 762 passed, eslint clean, astro check 0/0/0, bare-node gate exit 0 over docs+example/docs, example build complete, assert-build PASS, assert-chrome PASS. Justified out-of-map edit: emptied WP01-owned vocabulary-single-source.test.ts baseline (rot-guard requires it once twins gone).",
-        "Review passed (forced past the known derived-status.json lane-hygiene catch-22 only — the sole block was coordination kitty-specs/status.json + status.events.jsonl auto-committed on lane-b during the review rebase [R-STATUS-JSON-REMATERIALIZE], NOT any WP02 code file). CODE VERDICT: all DoD met. Rewired schema.ts/metadata.ts/sections.ts + bare-node gate + new-doc/scaffold onto WP01 vocabulary-core.mjs/vocabulary-loader.mjs; all four twins deleted (canonical symbols defined only in core; single-source baseline={} and rot-guard green). Behavior parity proven vs WP01 golden-master literals AND spot-diff of old gate twin (expectedType/resolver/enums/SECTION_TYPE byte-identical; only intended change=durable appended). Unions derived typeof STATUSES/DOC_TYPES[number]; metadata.ts fs-free (imports only vocabulary-core.mjs). Strict authored-registry validation preserved in sections.ts; gate keeps lenient try/catch fallback. z.enum(STATUSES) typechecks. durable published+validates in metadata.test.ts; 4 prior statuses unchanged. Independently ran (offline install): vitest 762/762, eslint clean, astro check 0 errors (after clearing stray example/dist), bare-node gate valid docs(112)+example(34), assert-build PASS, assert-chrome PASS. LOW non-blocking: (1) lenient gate registry reader now needs full well-formed entry via loader vs old id+type-only, divergence only on malformed registries the strict build rejects anyway; (2) scaffolders now emit type:Presentation (old switch omitted), documented additive. WP01-owned single-source test edit emptying LEGACY_TWIN_DEFINITIONS is the required justified out-of-map edit. Note for WP03: rebase onto this."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review passed (forced past the known derived-status.json lane-hygiene catch-22 only — the sole block was coordination kitty-specs/status.json + status.events.jsonl auto-committed on lane-b during the review rebase [R-STATUS-JSON-REMATERIALIZE], NOT any WP02 code file). CODE VERDICT: all DoD met. Rewired schema.ts/metadata.ts/sections.ts + bare-node gate + new-doc/scaffold onto WP01 vocabulary-core.mjs/vocabulary-loader.mjs; all four twins deleted (canonical symbols defined only in core; single-source baseline={} and rot-guard green). Behavior parity proven vs WP01 golden-master literals AND spot-diff of old gate twin (expectedType/resolver/enums/SECTION_TYPE byte-identical; only intended change=durable appended). Unions derived typeof STATUSES/DOC_TYPES[number]; metadata.ts fs-free (imports only vocabulary-core.mjs). Strict authored-registry validation preserved in sections.ts; gate keeps lenient try/catch fallback. z.enum(STATUSES) typechecks. durable published+validates in metadata.test.ts; 4 prior statuses unchanged. Independently ran (offline install): vitest 762/762, eslint clean, astro check 0 errors (after clearing stray example/dist), bare-node gate valid docs(112)+example(34), assert-build PASS, assert-chrome PASS. LOW non-blocking: (1) lenient gate registry reader now needs full well-formed entry via loader vs old id+type-only, divergence only on malformed registries the strict build rejects anyway; (2) scaffolders now emit type:Presentation (old switch omitted), documented additive. WP01-owned single-source test edit emptying LEGACY_TWIN_DEFINITIONS is the required justified out-of-map edit. Note for WP03: rebase onto this.",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 518033,
-      "shell_pid_created_at": "1788480795.42",
-      "subtasks": {
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done",
-        "T011": "done",
-        "T012": "done"
-      }
+      "shell_pid": 504445,
+      "shell_pid_created_at": "1788479208.39"
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
       "force_count": 1,
       "lane": "done",
       "last_event_id": "01M1MYEV4TV9K91B3H6E0P8R7S",
       "last_transition_at": "2026-09-04T00:52:49.434287+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP03 ready. Verification: full vitest 756/756 green (56 files), eslint 0 on all 3 files, astro check 0 errors/0 warnings (after clearing stray example/dist-*). vocabulary-resolver: dropped 2nd-impl import (loadVocabularyTs from sections.js); NFR-004 twin block retargeted to single-resolver LITERAL oracles (alias Feature->Mission, Epic forbidden===true, kind identity, absent-file identity); US2-1/US2-1-alias/US2-3/US2-4 gate-wiring (validate applies resolver to authored AND derived) PRESERVED. section-type-parity: per-row LITERAL expected type on 19-row corpus + era-depth cases + registry-subtypes rule-firing vs built-in fall-through; index-basename KEPT as genuine two-arm (metadata.ts independent TS impl vs core mjs) with literals added; DOC_TYPES coupling unchanged. schema-validator: KEPT two-arm - SHAPE_PARITY + PRESENCE_LENIENT divergence untouched; ONLY added durable-accepts row (inline, both arms accept). DROPPED only as structurally guaranteed: (1) MJS_SECTION_TYPE toEqual METADATA_SECTION_TYPE (same re-exported core object); (2) corpus/era A===B derivations-agree compares (expectedType IS expectedDocType re-export alias) -> replaced by ONE expect(expectedType).toBe(expectedDocType) identity + literal oracles. Commit fa750b7 (tests); lane-hygiene status.json/planning-artifact cleanup in 7ed2e2c/c3ccc56.",
-        "Review passed (forced ONLY past the derived-status.json lane catch-22 — committed kitty-specs status.json/status.events.jsonl from R-STATUS-JSON-REMATERIALIZE auto-rebase, commit 95be488; NO code issue). COVERAGE PRESERVED. F1: schema-validator-parity NOT collapsed — SHAPE_PARITY + PRESENCE_LENIENT build-lenient/gate-strict divergence intact; only additive durable-accepts two-arm row. F2: section-type-parity CORPUS/era/registry-subtypes carry explicit literal oracles (43 tests green = every literal validated vs real core). F4: vocabulary-resolver US2-1/US2-3 validate-applies-to-derived preserved. Index-basename kept genuine two-arm (metadata.ts local TS impl vs core mjs) + literal winner/demoted. Dropped only provably-structural compares (SECTION_TYPE toEqual, A===B derivation-agree) — expectedType is literal re-export alias of expectedDocType; replaced by one identity check. Independently ran vitest 756/756 + eslint clean; astro check OOMs locally (env memory ceiling, CI is typecheck verifier), WP03 test files type-clean under bare tsc."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review passed (forced ONLY past the derived-status.json lane catch-22 — committed kitty-specs status.json/status.events.jsonl from R-STATUS-JSON-REMATERIALIZE auto-rebase, commit 95be488; NO code issue). COVERAGE PRESERVED. F1: schema-validator-parity NOT collapsed — SHAPE_PARITY + PRESENCE_LENIENT build-lenient/gate-strict divergence intact; only additive durable-accepts two-arm row. F2: section-type-parity CORPUS/era/registry-subtypes carry explicit literal oracles (43 tests green = every literal validated vs real core). F4: vocabulary-resolver US2-1/US2-3 validate-applies-to-derived preserved. Index-basename kept genuine two-arm (metadata.ts local TS impl vs core mjs) + literal winner/demoted. Dropped only provably-structural compares (SECTION_TYPE toEqual, A===B derivation-agree) — expectedType is literal re-export alias of expectedDocType; replaced by one identity check. Independently ran vitest 756/756 + eslint clean; astro check OOMs locally (env memory ceiling, CI is typecheck verifier), WP03 test files type-clean under bare tsc.",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 534350,
-      "shell_pid_created_at": "1788482395.12",
-      "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done",
-        "T016": "done"
-      }
+      "shell_pid": 524678,
+      "shell_pid_created_at": "1788481439.16"
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
       "force_count": 1,
       "lane": "done",
       "last_event_id": "01M1MYEBRQBPSPDQMSJEAECATG",
       "last_transition_at": "2026-09-04T00:52:33.687594+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP04 ready: single-sourced extractAdrMeta (number+status+date) across generator (discoverAdrs) + Hub pipeline (buildAdrHubCards, the fn Hub.astro calls); ADR number-ordering + status/date badge; number-less+Template excluded both sides; fidelity test renders Hub's real pipeline vs the generated table (not extractor-vs-itself) + single-source gate reds on a Hub-local re-parse. VERIFIED LOCALLY in lane worktree (fresh pnpm install from offline store): toolkit vitest 738/738 green (incl. adr-index-generator byte-identical + hub-adr-card 13/13 and example-build tests that render Hub.astro); eslint clean; astro check 0/0/0. CI should confirm the same gates.",
-        "Review passed. extractAdrMeta sole source of number+status+date for both discoverAdrs and Hub via buildAdrHubCards; Hub.astro no independent parse (T023 gate reds on re-parse). Number-less + type:Template excluded both sides; ADR ordered by number; non-ADR hubs byte-unchanged; single-ADR demo intact. Badge AA both themes, empty-status unbadged, no raw nav. Fidelity test compares Hub real pipeline output to generated table incl draft-numbered scoped-invariant + exclusion rows. Independently ran gates: vitest 738/738, eslint clean, astro check 0 errors. --force overrides only the coordination status.json rematerialize catch-22 (status.json absent on planning branch)."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review passed. extractAdrMeta sole source of number+status+date for both discoverAdrs and Hub via buildAdrHubCards; Hub.astro no independent parse (T023 gate reds on re-parse). Number-less + type:Template excluded both sides; ADR ordered by number; non-ADR hubs byte-unchanged; single-ADR demo intact. Badge AA both themes, empty-status unbadged, no raw nav. Fidelity test compares Hub real pipeline output to generated table incl draft-numbered scoped-invariant + exclusion rows. Independently ran gates: vitest 738/738, eslint clean, astro check 0 errors. --force overrides only the coordination status.json rematerialize catch-22 (status.json absent on planning branch).",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 491397,
-      "shell_pid_created_at": "1788478398.82",
-      "subtasks": {
-        "T017": "done",
-        "T018": "done",
-        "T019": "done",
-        "T020": "done",
-        "T021": "done",
-        "T022": "done",
-        "T023": "done"
-      }
+      "shell_pid": 478019,
+      "shell_pid_created_at": "1788477179.23"
     }
   }
 }
