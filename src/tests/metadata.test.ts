@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { z } from 'zod';
 import {
   readmeToIndexId,
   isPublished,
@@ -11,6 +12,8 @@ import {
   rankForFeed,
   type DocEntry,
 } from '../lib/metadata.js';
+import { docKittyFields } from '../lib/schema.js';
+import { validate } from '../scripts/validate-frontmatter.mjs';
 
 describe('readmeToIndexId (README-as-index)', () => {
   it('maps the bundle-root README to the empty slug', () => {
@@ -32,10 +35,16 @@ describe('publication + agent discovery gating', () => {
     expect(isPublished(draft)).toBe(false);
     expect(isAgentDiscoverable(draft)).toBe(false);
   });
-  it('active/deprecated/superseded are published', () => {
-    for (const doc_status of ['active', 'deprecated', 'superseded'] as const) {
+  it('active/deprecated/superseded/durable are published', () => {
+    // `durable` (#39/FR-004) is a never-retire throughline status; it is
+    // PUBLISHED like the other non-draft statuses — this is a VERIFY of the
+    // existing `!== 'draft'` rule, not a special-case branch (F10/F11).
+    for (const doc_status of ['active', 'deprecated', 'superseded', 'durable'] as const) {
       expect(isPublished({ title: 'x', doc_status })).toBe(true);
     }
+  });
+  it('durable is published (positive assertion, #39/FR-004)', () => {
+    expect(isPublished({ title: 'x', doc_status: 'durable' })).toBe(true);
   });
   it('agent.discoverable=false hides an active page from agents', () => {
     const data = { title: 'x', doc_status: 'active' as const, agent: { discoverable: false } };
@@ -92,5 +101,30 @@ describe('ranking', () => {
   it('rankForFeed drops drafts and sorts by updated desc', () => {
     const ranked = rankForFeed(entries).map((e) => e.slug);
     expect(ranked).toEqual(['guides/deploy', 'context/domain', '']);
+  });
+});
+
+describe('durable end-to-end (#39/FR-004): a durable doc validates on both arms', () => {
+  // `durable` now lives in ONE place — the core `STATUSES` tuple — from which the
+  // build schema's `z.enum(STATUSES)` (via `docKittyFields`) and the standalone
+  // gate's re-derived enum both flow. A durable page must therefore pass BOTH the
+  // build schema (zod) and the bare-Node gate, with no problems (NFR-002: the
+  // four prior statuses keep their meaning; `durable` is purely additive).
+  const durableDoc = {
+    title: 'A Durable Reference',
+    description:
+      'A never-retire throughline document that stays published across the entire lifecycle of the project.',
+    doc_status: 'durable',
+    updated: '2026-09-04',
+    type: 'Guide',
+    kind: 'Reference',
+  };
+
+  it('the build schema (schema.ts field shape) accepts doc_status: durable', () => {
+    expect(z.object(docKittyFields).safeParse(durableDoc).success).toBe(true);
+  });
+
+  it('the standalone gate reports no problems for a durable page', () => {
+    expect(validate('guides/durable-reference.md', durableDoc).problems).toEqual([]);
   });
 });

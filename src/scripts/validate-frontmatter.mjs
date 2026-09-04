@@ -33,106 +33,67 @@
  * schema, the path rules, and the canonical vocabularies are exported, and the
  * CLI runner only executes when the file is invoked directly.
  */
-import { readdirSync, statSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync, statSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { z } from 'zod';
+// Single source of truth (#49 IC-02): the canonical vocabulary sets, the
+// section→type derivation, the vocabulary resolver, and the index-basename
+// detection all live in the fs-free `vocabulary-core.mjs`; the filesystem
+// readers (`loadVocabulary`, `loadSectionRegistry` + the lenient `sectionTypes`/
+// `sectionSubtypes`) live in `vocabulary-loader.mjs`. This gate imports them and
+// keeps NO hand-mirrored twin — the ~700-line duplicate this file used to carry
+// is gone; its logic is imported, byte-for-byte, from the one core.
+import {
+  STATUSES,
+  DOC_TYPES,
+  KINDS,
+  SECTION_TYPE,
+  expectedDocType,
+  isIndexPath,
+  isRootIndex,
+  detectIndexCollisions,
+  identityVocabulary,
+  parseVocabulary,
+} from '../lib/vocabulary-core.mjs';
+import {
+  loadVocabulary,
+  loadSectionRegistry,
+  sectionTypes,
+  sectionSubtypes,
+} from '../lib/vocabulary-loader.mjs';
 
-// Mirrors `STATUSES`/`DOC_TYPES`/`KINDS` in src/lib/schema.ts (kept in sync by
-// hand because that TS module imports Astro and cannot be loaded in bare Node;
-// parity is enforced by src/tests/schema-validator-parity.test.ts).
-export const STATUSES = ['draft', 'active', 'deprecated', 'superseded'];
-export const DOC_TYPES = [
-  'Context', 'Architecture', 'ADR', 'Template', 'Plan', 'Epic', 'Feature',
-  'API', 'Configuration', 'Integration', 'Security', 'Guide', 'Operations',
-  'Runbook', 'Migration', 'Changelog', 'Presentation',
-];
-// The canonical `kind` vocabulary (ADR-0009): four Divio quadrants + structural
-// kinds. Open vocabulary — an unknown value warns, it does not fail.
-export const KINDS = [
-  'Tutorial', 'How-To', 'Reference', 'Explanation',
-  'Hub', 'ADR', 'Changelog', 'Glossary', 'Presentation', 'Persona',
-  'Planning', 'Feature', 'User-Journey',
-];
+// Re-exported so existing importers keep their `validate-frontmatter.mjs` path
+// while the definitions stay single-sourced in the core (NFR-001):
+//   - `STATUSES` → assert-chrome-artifacts.mjs's `DOC_STATUS_LABELS`;
+//   - `expectedType` (the core's `expectedDocType`, aliased) → section-type-parity
+//     / deck-validator / section-rename tests, kept until WP03 rewrites them (F12);
+//   - `SECTION_TYPE`/`DOC_TYPES`/`KINDS`/`parseVocabulary`/`loadVocabulary`/the
+//     index-basename helpers → the parity + example-adopter test suites.
+export {
+  STATUSES,
+  DOC_TYPES,
+  KINDS,
+  SECTION_TYPE,
+  isIndexPath,
+  isRootIndex,
+  detectIndexCollisions,
+  parseVocabulary,
+  loadVocabulary,
+};
+export { expectedDocType as expectedType };
 
-// ---------------------------------------------------------------------------
-// Index-basename detection (D-02) — the bare-Node twin of `readmeToIndexId` /
-// `resolveIndexEntries` in `src/lib/metadata.ts`. The TS module cannot load in
-// bare Node, so the detection + collision logic is hand-mirrored here (same
-// discipline as the SECTION_TYPE mirror above); the parity test pins the two
-// to identical output for identical input (D-06).
-// ---------------------------------------------------------------------------
-
-/** FR-002/C-001: the default is `README` ONLY — byte-identical to today (NFR-003). */
+/**
+ * FR-002/C-001: the default is `README` ONLY — byte-identical to today (NFR-003).
+ * Kept as the gate's own `['README']` array form (the core's default is the
+ * equivalent `'README'` string; `normalizeIndexBasenames` treats them
+ * identically) because `index-basename.test.ts` pins this export to `['README']`.
+ */
 export const DEFAULT_INDEX_BASENAME = ['README'];
 
-function normalizeIndexBasenames(indexBasename) {
-  const list =
-    indexBasename === undefined
-      ? DEFAULT_INDEX_BASENAME
-      : Array.isArray(indexBasename)
-        ? indexBasename
-        : [indexBasename];
-  return list.length > 0 ? list : DEFAULT_INDEX_BASENAME;
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function indexBasenamePattern(basenames) {
-  return new RegExp(`(^|/)(${basenames.map(escapeRegExp).join('|')})$`, 'i');
-}
-
-/** Does `relPath` (ext included) name a configured section-index candidate? */
-export function isIndexPath(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
-  const withoutExt = relPath.replace(/\.mdx?$/i, '');
-  return indexBasenamePattern(normalizeIndexBasenames(indexBasename)).test(withoutExt);
-}
-
-/**
- * The root-index exemption twin (US1-AS4): is `relPath` a BUNDLE-ROOT index
- * file (no directory segment) under the configured basename(s)? Mirrors the
- * root special-casing `ROOT_ENTRY_ID`/`readmeToIndexId` give the bundle root
- * in `src/lib/metadata.ts`.
- */
-export function isRootIndex(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
-  return !relPath.includes('/') && isIndexPath(relPath, indexBasename);
-}
-
-/**
- * Both-index collision detection (E-05, FR-004) — the bare-Node twin of
- * `resolveIndexEntries`'s collision half. Given every relPath under a root,
- * groups index-candidates by directory and reports every directory holding
- * MORE THAN ONE configured basename; the EARLIEST-configured basename wins
- * (ties broken by path sort), matching the TS loader's resolution exactly.
- */
-export function detectIndexCollisions(relPaths, indexBasename = DEFAULT_INDEX_BASENAME) {
-  const basenames = normalizeIndexBasenames(indexBasename);
-  const pattern = indexBasenamePattern(basenames);
-  const byDir = new Map();
-  for (const p of relPaths) {
-    const withoutExt = p.replace(/\.mdx?$/i, '');
-    if (!pattern.test(withoutExt)) continue;
-    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
-    const list = byDir.get(dir) ?? [];
-    list.push(p);
-    byDir.set(dir, list);
-  }
-  const rank = (f) => {
-    const base = f.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
-    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
-    return idx === -1 ? basenames.length : idx;
-  };
-  const collisions = [];
-  for (const [dir, files] of byDir) {
-    if (files.length <= 1) continue;
-    const sorted = [...files].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
-    collisions.push({ dir, winner: sorted[0], demoted: sorted.slice(1) });
-  }
-  return collisions;
-}
+/** The shipped-default identity resolver (no aliases/forbidden) — `Feature` valid. */
+export const IDENTITY_VOCAB = identityVocabulary();
 
 // Convention (docs/architecture/metadata-model.md): description is 50–180 chars.
 // The upper bound is enforced as an error (a bounded description is the CI
@@ -230,206 +191,53 @@ function walk(dir) {
   return out;
 }
 
-// Frozen fallback `section → type` map, used when no `sections.yaml` registry is
-// present (a registry-less tree still derives an expected `type`). MIRRORS the
-// section defaults the registry carries and `SECTION_TYPE` in src/lib/metadata.ts
-// — kept in sync by hand because that TS module cannot load in bare Node (same
-// discipline as the zod-shape mirror above). When a registry IS present, its
-// derived map is the authority and this is not consulted (issue #24).
-export const SECTION_TYPE = {
-  context: 'Context',
-  architecture: 'Architecture',
-  adr: 'ADR',
-  plans: 'Plan',
-  api: 'API',
-  configuration: 'Configuration',
-  integrations: 'Integration',
-  security: 'Security',
-  guides: 'Guide',
-  operations: 'Operations',
-  migrations: 'Migration',
-  changelog: 'Changelog',
-  presentations: 'Presentation',
-};
+// `SECTION_TYPE` (the frozen fallback map) and `expectedType` (the core's
+// `expectedDocType`, aliased) are imported + re-exported at the top of this file:
+// there is no twin here any more, so the bare-Node gate and the Astro-side
+// toolkit derive `type` from the ONE core (NFR-001). Behavior is unchanged
+// (DISCIPLINED_REFACTORING) — the deleted copies were byte-identical.
 
 /**
  * Read `<docsRoot>/_meta/sections.yaml` and return its `id → type` map, or
- * `null` when no registry is present (graceful fallback). Uses the SAME
- * gray-matter wrap-in-fences trick `src/lib/sections.ts` and `validate-catalog.mjs`
- * use to parse a top-level YAML mapping — no ad-hoc YAML parser. This is the
- * #24 wiring: the registry, not a hardcoded switch, is the section-default
- * `type` authority. Only entries that declare a string `type` are included.
+ * `null` when no registry is present (graceful fallback). Delegates to the shared
+ * LENIENT filesystem reader `loadSectionRegistry` (`vocabulary-loader.mjs`), which
+ * reproduces this gate's original skip-malformed / null-on-non-array posture, then
+ * projects it with `sectionTypes`. The `try/catch → null` preserves the gate's
+ * prior graceful fallback on an unreadable/unparseable registry (the strict,
+ * fail-loud authored-registry validation lives in `sections.ts`, on the build
+ * path). Only entries that declare a string `type` appear. Signature unchanged
+ * (`example-adopter.test.ts` imports it).
  */
 export function loadSectionTypes(docsRoot) {
-  const file = join(docsRoot, '_meta', 'sections.yaml');
-  if (!existsSync(file)) return null;
-  let sections;
+  let registry;
   try {
-    const raw = readFileSync(file, 'utf8');
-    const data = matter(['---', raw, '---', ''].join('\n')).data;
-    sections = data && typeof data === 'object' ? data.sections : undefined;
+    registry = loadSectionRegistry(docsRoot);
   } catch {
-    return null; // an unreadable/unparseable registry → graceful fallback
+    return null; // unreadable/unparseable registry → graceful fallback (as before)
   }
-  if (!Array.isArray(sections)) return null;
-  const map = {};
-  for (const rec of sections) {
-    if (rec && typeof rec === 'object' && typeof rec.id === 'string' && typeof rec.type === 'string') {
-      map[rec.id] = rec.type;
-    }
-  }
-  return map;
+  return registry ? sectionTypes(registry) : null;
 }
 
 /**
- * Read `<docsRoot>/_meta/sections.yaml` and return its `id → subtypes[]` map,
- * or `null` when no registry is present. Mirrors `sectionSubtypes` in
- * `src/lib/sections.ts` (E-02, FR-005, D-03) — only entries that declare a
- * `subtypes` list of `{match, type}` are included.
+ * Read `<docsRoot>/_meta/sections.yaml` and return its `id → subtypes[]` map, or
+ * `null` when no registry is present. The subtypes twin of {@link loadSectionTypes}
+ * (E-02, FR-005, D-03), delegating to the same shared lenient reader.
  */
 export function loadSectionSubtypes(docsRoot) {
-  const file = join(docsRoot, '_meta', 'sections.yaml');
-  if (!existsSync(file)) return null;
-  let sections;
+  let registry;
   try {
-    const raw = readFileSync(file, 'utf8');
-    const data = matter(['---', raw, '---', ''].join('\n')).data;
-    sections = data && typeof data === 'object' ? data.sections : undefined;
+    registry = loadSectionRegistry(docsRoot);
   } catch {
     return null;
   }
-  if (!Array.isArray(sections)) return null;
-  const map = {};
-  for (const rec of sections) {
-    if (rec && typeof rec === 'object' && typeof rec.id === 'string' && Array.isArray(rec.subtypes)) {
-      map[rec.id] = rec.subtypes.filter(
-        (r) => r && typeof r === 'object' && typeof r.match === 'string' && typeof r.type === 'string',
-      );
-    }
-  }
-  return map;
+  return registry ? sectionSubtypes(registry) : null;
 }
 
-/**
- * Expected `type` for a path relative to the docs root (null = unknown).
- *
- * The section default comes from `typesBySection` — the registry-derived
- * `id → type` map (issue #24); omitted, it falls back to the frozen
- * {@link SECTION_TYPE}, so a registry-less tree still validates.
- *
- * Derivation order (E-06, most specific first): a registry `subtypes[].match`
- * on the first sub-path segment (`subtypesBySection`, FR-005/D-03) → the
- * short, stable BUILT-IN sub-path table kept IN CODE (an ADR `template.md` →
- * `Template`; `plans/epics/*` → `Epic`, `plans/features/*` → `Feature`;
- * `operations/runbooks/*` → `Runbook`) → the section default. Mirrors
- * `expectedDocType` in src/lib/metadata.ts (bare-Node copy; the TS module cannot
- * load here).
- */
-export function expectedType(relPath, typesBySection = SECTION_TYPE, subtypesBySection) {
-  const parts = relPath.split('/');
-  const section = parts[0];
-  const file = parts[parts.length - 1];
-  const sectionDefault = typesBySection[section] ?? null;
-
-  const registryRules = subtypesBySection?.[section];
-  if (registryRules && parts.length > 1) {
-    const rule = registryRules.find((r) => r.match === parts[1]);
-    if (rule) return rule.type;
-  }
-
-  switch (section) {
-    case 'adr': return file === 'template.md' ? 'Template' : sectionDefault;
-    case 'plans':
-      if (parts[1] === 'epics') return 'Epic';
-      if (parts[1] === 'features') return 'Feature';
-      return sectionDefault;
-    case 'operations': return parts[1] === 'runbooks' ? 'Runbook' : sectionDefault;
-    default: return sectionDefault;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Vocabulary override (#40) — hand-mirrored twin of `loadVocabulary` in
-// src/lib/sections.ts. The TS module cannot load in bare Node, so the resolver
-// is duplicated here (same discipline as the SECTION_TYPE / zod-shape mirrors);
-// src/tests/vocabulary-resolver.test.ts pins the two twins to identical RESOLVED
-// output for identical YAML (NFR-004). See sections.ts for the full contract.
-// ---------------------------------------------------------------------------
-
-/** Build a single-axis resolver (forbidden checked on the raw term; alias rewrites). */
-function makeAxisResolver(axis) {
-  return (term) => {
-    if (term === undefined) return { effective: undefined, forbidden: false };
-    const aliasTarget = axis.aliases[term];
-    const forbidden = axis.forbidden.has(term);
-    const effective = aliasTarget !== undefined ? aliasTarget : forbidden ? undefined : term;
-    const result = { effective, forbidden };
-    if (aliasTarget !== undefined) result.aliasedFrom = term;
-    return result;
-  };
-}
-
-/** Parse one axis mapping (`{ aliases?, forbidden? }`) with clear validation. */
-function parseVocabularyAxis(raw, axisName, source) {
-  const axis = { aliases: {}, forbidden: new Set() };
-  if (raw == null) return axis;
-  if (typeof raw !== 'object' || Array.isArray(raw)) {
-    throw new Error(`${source}: vocabulary "${axisName}" must be a mapping with optional "aliases"/"forbidden"`);
-  }
-  const { aliases, forbidden } = raw;
-  if (aliases != null) {
-    if (typeof aliases !== 'object' || Array.isArray(aliases)) {
-      throw new Error(`${source}: vocabulary "${axisName}.aliases" must be a mapping of term → replacement`);
-    }
-    for (const [from, to] of Object.entries(aliases)) {
-      if (typeof to !== 'string') {
-        throw new Error(`${source}: vocabulary "${axisName}.aliases.${from}" must map to a string term`);
-      }
-      axis.aliases[from] = to;
-    }
-  }
-  if (forbidden != null) {
-    if (!Array.isArray(forbidden)) {
-      throw new Error(`${source}: vocabulary "${axisName}.forbidden" must be a list of terms`);
-    }
-    for (const term of forbidden) {
-      if (typeof term !== 'string') {
-        throw new Error(`${source}: vocabulary "${axisName}.forbidden" entries must be strings`);
-      }
-      axis.forbidden.add(term);
-    }
-  }
-  return axis;
-}
-
-/** Parse a `vocabulary.yaml` body into a `{ resolveType, resolveKind }` resolver. */
-export function parseVocabulary(raw, source = 'vocabulary.yaml') {
-  const data = matter(['---', raw, '---', ''].join('\n')).data;
-  if (data != null && (typeof data !== 'object' || Array.isArray(data))) {
-    throw new Error(`${source}: vocabulary must be a YAML mapping with optional "types"/"kinds"`);
-  }
-  const typeAxis = parseVocabularyAxis(data?.types, 'types', source);
-  const kindAxis = parseVocabularyAxis(data?.kinds, 'kinds', source);
-  return {
-    resolveType: makeAxisResolver(typeAxis),
-    resolveKind: makeAxisResolver(kindAxis),
-  };
-}
-
-/** The identity resolver (no aliases, no forbidden) — the shipped default vocab. */
-export const IDENTITY_VOCAB = parseVocabulary('');
-
-/**
- * Load `<docsRoot>/_meta/vocabulary.yaml` into a resolver. A MISSING file →
- * {@link IDENTITY_VOCAB} (shipped default, `Feature` valid, NFR-002); a
- * present-but-malformed file THROWS (authored — a silent skip would hide it).
- */
-export function loadVocabulary(docsRoot) {
-  const file = join(docsRoot, '_meta', 'vocabulary.yaml');
-  if (!existsSync(file)) return IDENTITY_VOCAB;
-  const raw = readFileSync(file, 'utf8');
-  return parseVocabulary(raw, relative(process.cwd(), file));
-}
+// The vocabulary resolver (`makeAxisResolver`/`parseVocabulary`/`loadVocabulary`)
+// and `IDENTITY_VOCAB` are single-sourced in `vocabulary-core.mjs` /
+// `vocabulary-loader.mjs` and imported/re-exported at the top — the hand-mirrored
+// twin this file used to carry (and the NFR-004 parity test that guarded it) is
+// retired now that both sides resolve through the one implementation.
 
 /**
  * Validate one file's parsed frontmatter.
@@ -535,7 +343,7 @@ export function validate(
       );
     }
     const authored = 'type' in data ? data.type : undefined;
-    const derived = expectedType(relPath, typesBySection, subtypesBySection); // may be null (orphan)
+    const derived = expectedDocType(relPath, typesBySection, subtypesBySection); // may be null (orphan)
     // The effective source: authored wins, else the derived value (null → untyped).
     const source = authored !== undefined ? authored : derived ?? undefined;
     const resolved = vocab.resolveType(source);

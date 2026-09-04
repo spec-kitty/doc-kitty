@@ -13,6 +13,12 @@
  */
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
+// Single source of truth (#49 IC-02/NFR-001): import the section→type derivation
+// from `vocabulary-core.mjs` (fs-free `.mjs`, resolves under plain `node`) rather
+// than carrying a hardcoded `expectedType` switch. The core additionally derives
+// `presentations` → `Presentation`, which this tool's old switch omitted — an
+// additive alignment with the canonical map (NFR-002).
+import { expectedDocType } from '../lib/vocabulary-core.mjs';
 
 const argv = process.argv.slice(2);
 const base = argv.find((a) => !a.startsWith('--')) ?? 'docs';
@@ -28,30 +34,6 @@ const indexBasename = (() => {
   return i !== -1 && argv[i + 1] ? argv[i + 1] : 'README';
 })();
 const indexFilename = `${indexBasename}.md`;
-
-function expectedType(relPath) {
-  const parts = relPath.split(sep);
-  const section = parts[0];
-  const file = parts[parts.length - 1];
-  switch (section) {
-    case 'context': return 'Context';
-    case 'architecture': return 'Architecture';
-    case 'adr': return file === 'template.md' ? 'Template' : 'ADR';
-    case 'plans':
-      if (parts[1] === 'epics') return 'Epic';
-      if (parts[1] === 'features') return 'Feature';
-      return 'Plan';
-    case 'api': return 'API';
-    case 'configuration': return 'Configuration';
-    case 'integrations': return 'Integration';
-    case 'security': return 'Security';
-    case 'guides': return 'Guide';
-    case 'operations': return parts[1] === 'runbooks' ? 'Runbook' : 'Operations';
-    case 'migrations': return 'Migration';
-    case 'changelog': return 'Changelog';
-    default: return null;
-  }
-}
 
 /**
  * A sensible `kind` placeholder for a scaffolded page (ADR-0009 vocabulary).
@@ -96,7 +78,7 @@ function titleize(name) {
 }
 
 function leafFrontmatter(relPath, title) {
-  const type = expectedType(relPath);
+  const type = expectedDocType(relPath.split(sep).join('/'));
   const typeLine = type ? `type: ${type}\n` : '';
   return `---
 title: ${title}
@@ -116,7 +98,7 @@ TODO write this page.
 }
 
 function indexFrontmatter(relPath, title, blurb) {
-  const type = expectedType(relPath);
+  const type = expectedDocType(relPath.split(sep).join('/'));
   const typeLine = type ? `type: ${type}\n` : '';
   return `---
 title: ${title}

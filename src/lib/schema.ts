@@ -28,50 +28,18 @@ import {
   sectionIds,
   type SectionRegistry,
 } from './sections.js';
+// Canonical vocabulary sets live in ONE place (#49 IC-01/IC-02): the fs-free,
+// Astro-free `vocabulary-core.mjs`. `schema.ts` consumes them rather than
+// hand-mirroring — `z.enum(STATUSES)` and `Kind` derive straight from the
+// core's JSDoc-const literal tuples (WP01 T005 pre-verified the tuple typing).
+import { STATUSES, DOC_TYPES, KINDS } from './vocabulary-core.mjs';
 
 export { readmeToIndexId };
 
-export const DOC_TYPES = [
-  'Context',
-  'Architecture',
-  'ADR',
-  'Template',
-  'Plan',
-  'Epic',
-  'Feature',
-  'API',
-  'Configuration',
-  'Integration',
-  'Security',
-  'Guide',
-  'Operations',
-  'Runbook',
-  'Migration',
-  'Changelog',
-  'Presentation',
-] as const;
-
-/**
- * The canonical `kind` vocabulary (ADR-0009): the four Divio content quadrants
- * plus the structural kinds. Open vocabulary — the site schema accepts any
- * string; the standalone validator warns on a value outside this set. Exported
- * for reuse by the per-kind layout map (WP02).
- */
-export const KINDS = [
-  'Tutorial',
-  'How-To',
-  'Reference',
-  'Explanation',
-  'Hub',
-  'ADR',
-  'Changelog',
-  'Glossary',
-  'Presentation',
-  'Persona',
-  'Planning',
-  'Feature',
-  'User-Journey',
-] as const;
+// Re-exported from the core so existing importers (`section-type-parity.test.ts`,
+// `type-registry-authority.test.ts`, the per-kind layout `Kind` type) keep their
+// `schema.ts` import path while the definition stays single-sourced (NFR-001).
+export { DOC_TYPES, KINDS };
 
 export type Kind = (typeof KINDS)[number];
 
@@ -170,9 +138,11 @@ export const docKittyFields = {
   // re-declared required to match the convention, with the same >180 upper bound
   // the standalone validator enforces (parity test guards the two agree).
   description: z.string().max(DESCRIPTION_MAX),
-  doc_status: z
-    .enum(['draft', 'active', 'deprecated', 'superseded'])
-    .default('draft'),
+  // Single-sourced lifecycle enum (#49 IC-02 / #39): `z.enum(STATUSES)` derives
+  // straight from the core's literal-tuple `STATUSES`, so `durable` (#39/FR-004)
+  // is added in ONE place. WP01 T005 pre-verified the tuple typing under
+  // `astro check`.
+  doc_status: z.enum(STATUSES).default('draft'),
   updated: z.coerce.date().optional(),
   // Open vocabulary (FR-003): a non-canonical `type` is ADVISORY, not a build
   // failure — the site schema accepts any string; the standalone validator warns
