@@ -1,0 +1,65 @@
+{
+  "rows": {
+    "#13": {
+      "evidence_ref": "C-005: build-time SVG intentionally out of scope, deferred to #13 (client-side Mermaid retained)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "deferred-with-followup",
+      "wp": null
+    },
+    "#31": {
+      "evidence_ref": "C-004: #31 deferred internal-node-geometry assertions intentionally NOT re-enabled by this mission",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "deferred-with-followup",
+      "wp": null
+    },
+    "#59": {
+      "evidence_ref": "commit 280eba2; retype code->dkMermaid emits single <pre class=mermaid> (no stray <pre>); gates T006 no-pre-wraps-figure(x3 pages)+T007 no-<pre>-ancestor(GREEN 4/4)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    },
+    "#60": {
+      "evidence_ref": "commit 280eba2; dk-components.css .dk-diagram* rules (sans font, white-space:normal, muted, C-003 general tokens); gate T008 computed-style docs+deck + T006 CSS-delivery",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    },
+    "#68": {
+      "evidence_ref": "commit 280eba2; DK_COMPONENTS_CSS_SHEET as customCss[1], survives config.ts slice(1) brand slot-0 replacement (themed+default), DeckLayout explicit link; gate T006 bundled-AND-linked on branded showcase+demonstrator",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}

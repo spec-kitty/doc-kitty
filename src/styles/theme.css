@@ -134,50 +134,9 @@
   --dk-diagram-subgraph-title: #26324a;
   --dk-diagram-cluster-fill: #eef1f6;
 
-  /* ---- Markua theme callouts (ADR-0030, contract callout-mapping.md) ----
-     WP04 emits `<aside class="dk-callout dk-callout--{variant}">` as raw hast
-     (no `Callout.astro` — the four-carrier `components` lock, ADR-0013/0015,
-     forecloses a component render). This is the ONLY styling surface for that
-     DOM. Role tokens are deliberately expressed via `var(--dk-color-*)` (not
-     literal hex): those tokens are already mode-aware, so aliasing them keeps
-     one AA-proven source of truth instead of duplicating hex per mode — unlike
-     the `--dk-diagram-*` surfaces above, which hand concrete hex to Mermaid's
-     JS themeVariables and therefore cannot alias a CSS custom property. */
-  --dk-callout-bg: var(--dk-color-surface-1);
-  --dk-callout-border: var(--dk-color-border-strong);
-  --dk-callout-text: var(--dk-color-text);
-  --dk-callout-title: var(--dk-color-text-strong);
-  --dk-callout-icon: var(--dk-color-text-muted);
-
-  /* Mapped-name fallback accents (the four Starlight-named variants used only
-     on the attribute-bearing mapped path, callout-mapping.md "Mapped-name
-     fallback variants") — aliased to the site's existing state colours /
-     Starlight's own `--sl-color-purple-high` so the fallback echoes the
-     native aside it stands in for (tip=purple is Starlight's own default;
-     `-high` is Starlight's own text-accent cut of that hue — the one it uses
-     for `.starlight-aside__title`/icon colour, already AA-proven by
-     Starlight — not the mid-tone `--sl-color-purple` it reserves for the
-     border/background source; caution/danger/note reuse this file's
-     AA-proven warning/danger/info pairs). */
-  --dk-callout-tip-accent: var(--sl-color-purple-high, #4c1d95);
-  --dk-callout-caution-accent: var(--dk-color-warning);
-  --dk-callout-danger-accent: var(--dk-color-danger);
-  --dk-callout-note-accent: var(--dk-color-info);
-
-  /* Six theme-variant accents (callout-mapping.md "the six theme variants") —
-     new hues, chosen distinct from each other AND from the state colours
-     above (info/success/warning/danger) so a reader never confuses a theme
-     callout for a mapped aside. Each clears WCAG 2.2 AA (>=4.5:1) as a title/
-     icon/border colour on `--dk-color-bg` by construction (verified: light
-     ratios 5.7:1-12.4:1). `center` is deliberately a neutral slate (it is a
-     layout instruction, not a content-type semantic) rather than a saturated
-     hue. */
-  --dk-callout-aside-accent: #226277;
-  --dk-callout-discussion-accent: #412277;
-  --dk-callout-question-accent: #776622;
-  --dk-callout-exercise-accent: #772245;
-  --dk-callout-generic-accent: #223e77;
-  --dk-callout-center-accent: #4a5264;
+  /* Markua theme callout (`--dk-callout-*`) tokens RELOCATED to
+     `dk-components.css` (diagram-component-css remediation, finding #1) — see
+     the relocation note below, where the rules already live. */
 }
 
 /* ===== Mode-varying COLOUR tokens — DARK override ======================= */
@@ -225,20 +184,9 @@
   --dk-diagram-subgraph-title: #aebfe0;
   --dk-diagram-cluster-fill: #0e131c;
 
-  /* Markua theme callouts — DARK. Only the six theme-variant accents are
-     literal hex here: the role tokens and the four mapped-name fallback
-     accents above are `var(--dk-color-*)`/`var(--sl-color-*)` aliases that
-     already resolve to their dark value under this same selector, so
-     redeclaring them here would just repeat the alias. Light ratios were
-     5.7:1-12.4:1 on `--dk-color-bg`; these dark pairs are the light-fg-on-
-     dark-bg counterparts, chosen the same way (>=4.5:1 on `--dk-color-bg`
-     dark, distinct hues from each other and from the state colours). */
-  --dk-callout-aside-accent: #90c4d5;
-  --dk-callout-discussion-accent: #a990d5;
-  --dk-callout-question-accent: #d5c790;
-  --dk-callout-exercise-accent: #d590ad;
-  --dk-callout-generic-accent: #90a7d5;
-  --dk-callout-center-accent: #adb4c2;
+  /* Markua theme callout DARK accents RELOCATED to `dk-components.css`
+     alongside their light defaults (finding #1) — see the relocation note
+     below. */
 }
 
 /*
@@ -293,166 +241,16 @@
 
 /*
  * ===== Markua theme callouts (`.dk-callout*`) ===========================
- * Styles WP04's emitted hast (contract `callout-mapping.md` "Emitted
- * theme-callout hast"); mirrors `rehype/diagram-figure.ts`'s `<figure
- * class="dk-diagram">` pattern — there is NO `Callout.astro` (the four-carrier
- * Starlight `components` lock, ADR-0013/0015, forecloses a component render;
- * see the contract's "Why hast, not an `.astro` component"). This is a
- * theme-surface change (ADR-0008/0009), token-driven throughout so a
- * consumer theme overrides only `--dk-callout-*`.
- *
- * DOM (fixed by the contract):
- *   <aside class="dk-callout dk-callout--{variant}" id?>
- *     <span class="dk-callout__icon">…</span>   <!-- optional -->
- *     <p class="dk-callout__title">{title}</p>  <!-- optional -->
- *     <div class="dk-callout__body">…</div>
- *   </aside>
- *
- * Layout: icon + title share row 1 (CSS Grid, auto-placed — no wrapper
- * element WP04 does not emit); body always spans the full row below. DOM
- * order (icon, title, body) equals visual/reading order in every variant,
- * including `dk-callout--center`, so no `order` property is used and screen
- * reader/keyboard reading order is never reshuffled (T020 a11y bar).
- *
- * `<aside>` landmark: WP04 emits a bare `<aside>`, which the HTML AAM already
- * exposes as a `complementary` landmark with no extra markup needed here —
- * this file styles presentation only and does not add ARIA.
+ * Both the RULES and the `--dk-callout-*` TOKENS live in `dk-components.css`
+ * (diagram-component-css mission, #68/C-002; remediation finding #1) — a
+ * brand theme replaces this file's `customCss` slot entirely when active, so
+ * anything left here (rule OR token) is silently dropped on a branded build.
+ * The tokens moved alongside their rules so `.dk-callout { background:
+ * var(--dk-callout-bg) }` always has a value to resolve, branded or not — a
+ * rule with no token declaring its custom property resolves to nothing (no
+ * background, `border-style: none`), which is exactly the defect that sent
+ * the tokens here too. See `dk-components.css` for both blocks.
  */
-.dk-callout {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: var(--dk-space-xs);
-  row-gap: var(--dk-space-2xs);
-  margin: var(--dk-space-lg) 0;
-  padding: var(--dk-space-md) var(--dk-space-lg);
-  border-inline-start: 0.25rem solid var(--dk-callout-border);
-  border-radius: var(--dk-radius-sm);
-  background-color: var(--dk-callout-bg);
-  color: var(--dk-callout-text);
-}
-
-.dk-callout__icon {
-  grid-column: 1;
-  grid-row: 1;
-  display: inline-flex;
-  align-self: center;
-  width: 1.25em;
-  height: 1.25em;
-  color: var(--dk-callout-icon);
-  /* The callout emits the resolved Starlight icon as an inline `<svg
-     class="dk-callout__icon-glyph" fill="currentColor">` inside this span
-     (FR-009), so the glyph inherits `color` above. `data-icon` names the
-     resolved icon for tooling. */
-  flex-shrink: 0;
-}
-.dk-callout__icon-glyph {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.dk-callout__title {
-  grid-column: 1 / -1; /* fallback: full width when no icon precedes it */
-  margin: 0;
-  font-size: var(--dk-text-lg);
-  font-weight: var(--dk-weight-semibold);
-  line-height: var(--dk-leading-tight);
-  color: var(--dk-callout-title);
-}
-/* Higher-specificity override: sits beside the icon on row 1 when present. */
-.dk-callout__icon + .dk-callout__title {
-  grid-column: 2;
-}
-
-.dk-callout__body {
-  grid-column: 1 / -1;
-  color: var(--dk-callout-text);
-  line-height: var(--dk-leading-normal);
-}
-.dk-callout__body > :first-child {
-  margin-top: 0;
-}
-.dk-callout__body > :last-child {
-  margin-bottom: 0;
-}
-/* WP06 ToC-demotion note: a heading inside a callout body is demoted by a
-   doc-kitty rehype pass to `role="heading"`/`aria-level` (not an `h_n`), so
-   it stays out of the on-this-page ToC while remaining a heading to
-   assistive tech (callout-mapping.md "Heading exclusion"). The demoted node
-   keeps whatever heading-level styling the base content stylesheet already
-   applies via its `role="heading"`/`aria-level` — this rule set does not
-   hide it, resize it away, or otherwise fight the demotion; it only sets the
-   ambient text colour so a demoted heading matches `dk-callout__body` prose
-   instead of clashing with the callout's accent. */
-.dk-callout__body [role='heading'] {
-  color: inherit;
-}
-
-/* ---- Six theme variants (callout-mapping.md's canonical set) ---------- */
-.dk-callout--aside {
-  --dk-callout-border: var(--dk-callout-aside-accent);
-  --dk-callout-title: var(--dk-callout-aside-accent);
-  --dk-callout-icon: var(--dk-callout-aside-accent);
-}
-.dk-callout--discussion {
-  --dk-callout-border: var(--dk-callout-discussion-accent);
-  --dk-callout-title: var(--dk-callout-discussion-accent);
-  --dk-callout-icon: var(--dk-callout-discussion-accent);
-}
-.dk-callout--question {
-  --dk-callout-border: var(--dk-callout-question-accent);
-  --dk-callout-title: var(--dk-callout-question-accent);
-  --dk-callout-icon: var(--dk-callout-question-accent);
-}
-.dk-callout--exercise {
-  --dk-callout-border: var(--dk-callout-exercise-accent);
-  --dk-callout-title: var(--dk-callout-exercise-accent);
-  --dk-callout-icon: var(--dk-callout-exercise-accent);
-}
-.dk-callout--generic {
-  --dk-callout-border: var(--dk-callout-generic-accent);
-  --dk-callout-title: var(--dk-callout-generic-accent);
-  --dk-callout-icon: var(--dk-callout-generic-accent);
-}
-.dk-callout--center {
-  --dk-callout-border: var(--dk-callout-center-accent);
-  --dk-callout-title: var(--dk-callout-center-accent);
-  --dk-callout-icon: var(--dk-callout-center-accent);
-  /* Centered layout (Markua `C>` / `{class: center}`): collapse to a single
-     column so icon/title/body stack and centre together, rather than the
-     icon-beside-title two-column layout the other nine variants use. DOM
-     order is unchanged, so reading/keyboard order still matches the visual
-     stack (T020: "does not break reading order"). */
-  grid-template-columns: 1fr;
-  justify-items: center;
-  text-align: center;
-}
-.dk-callout--center .dk-callout__icon,
-.dk-callout--center .dk-callout__icon + .dk-callout__title {
-  grid-column: 1;
-}
-
-/* ---- Four mapped-name fallback variants (attribute-bearing mapped path) */
-.dk-callout--tip {
-  --dk-callout-border: var(--dk-callout-tip-accent);
-  --dk-callout-title: var(--dk-callout-tip-accent);
-  --dk-callout-icon: var(--dk-callout-tip-accent);
-}
-.dk-callout--caution {
-  --dk-callout-border: var(--dk-callout-caution-accent);
-  --dk-callout-title: var(--dk-callout-caution-accent);
-  --dk-callout-icon: var(--dk-callout-caution-accent);
-}
-.dk-callout--danger {
-  --dk-callout-border: var(--dk-callout-danger-accent);
-  --dk-callout-title: var(--dk-callout-danger-accent);
-  --dk-callout-icon: var(--dk-callout-danger-accent);
-}
-.dk-callout--note {
-  --dk-callout-border: var(--dk-callout-note-accent);
-  --dk-callout-title: var(--dk-callout-note-accent);
-  --dk-callout-icon: var(--dk-callout-note-accent);
-}
 
 /*
  * ===== Markua figures (`.dk-figure*`) ====================================

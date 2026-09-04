@@ -46,6 +46,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
 import { isPublished } from '../lib/metadata.js';
+import { GLOBAL_COMPONENT_SHEETS, DK_COMPONENTS_CSS_SHEET } from '../lib/theme.js';
 // `?url`: emit each sheet as its own hashed asset linked ONLY from the deck
 // document — the route-import isolation that keeps reveal's core CSS off doc
 // pages (ADR-0022 D5). Never import these as bare (global) stylesheets.
@@ -55,7 +56,36 @@ import revealCoreHref from 'reveal.js/reveal.css?url';
 // out-of-frame route gets no global token injection (SC-004). Brand/consumer
 // layers arrive via the `tokenCss` prop and are linked AFTER this.
 import baseTokenHref from '../styles/theme.css?url';
+// Global component CSS (`.dk-callout*` + `.dk-diagram*`) — the standalone sheet
+// `config.ts` layers into `customCss` as its OWN entry for in-frame docs (#68/
+// C-002). The out-of-frame deck route never receives that global injection, so
+// DeckLayout links it explicitly here (diagram-component-css mission #59/#60/#68).
+import dkComponentsHref from '../styles/dk-components.css?url';
 import deckThemeHref from '../styles/dk-reveal-theme.css?url';
+
+// Single-owner list (`theme.ts` `GLOBAL_COMPONENT_SHEETS`, finding #2 review):
+// every global component sheet must reach BOTH the in-frame `customCss`
+// injection (`config.ts`, via `DEFAULT_LAYER`) and this out-of-frame deck
+// route. Vite's `?url` imports must be static string literals, so each sheet
+// still needs its own hand-written import above — this map is the SINGLE place
+// that ties a `GLOBAL_COMPONENT_SHEETS` specifier to its resolved href, and the
+// iteration below THROWS at build time if a specifier has no entry here, so an
+// addition to the shared list that forgets the deck fails LOUD instead of
+// silently shipping an unstyled deck.
+const GLOBAL_COMPONENT_HREFS: Record<string, string> = {
+  [DK_COMPONENTS_CSS_SHEET]: dkComponentsHref,
+};
+const globalComponentHrefs = GLOBAL_COMPONENT_SHEETS.map((specifier) => {
+  const href = GLOBAL_COMPONENT_HREFS[specifier];
+  if (href === undefined) {
+    throw new Error(
+      `DeckLayout: no statically-imported href registered for global component sheet ` +
+        `'${specifier}' (theme.ts GLOBAL_COMPONENT_SHEETS) — add a \`?url\` import above ` +
+        `and register it in GLOBAL_COMPONENT_HREFS.`,
+    );
+  }
+  return href;
+});
 
 interface Props {
   entry: CollectionEntry<'docs'>;
@@ -91,6 +121,14 @@ const description = entry.data.description ?? '';
         then `--dk-*→--r-*` (which reads them). See the header note (SC-004). */}
     <link rel="stylesheet" href={baseTokenHref} />
     {tokenCss.map((href) => (
+      <link rel="stylesheet" href={href} />
+    ))}
+    {/* Global component CSS (.dk-callout + .dk-diagram rules) AFTER the token
+        catalog (it consumes those tokens) and BEFORE the deck-specific reveal
+        theme (so a future deck-scoped override still wins by source order)
+        (#59/#60/#68). Iterates the single-owner GLOBAL_COMPONENT_SHEETS list
+        (theme.ts) rather than hard-coding one link, per finding #2. */}
+    {globalComponentHrefs.map((href) => (
       <link rel="stylesheet" href={href} />
     ))}
     <link rel="stylesheet" href={deckThemeHref} />

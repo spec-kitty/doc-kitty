@@ -7,13 +7,21 @@
  * and renders nothing.
  *
  * Two paths:
- *  - `resolveTheme(undefined)` — the byte-compatible M1 degenerate case: the
- *    single static `customCss` entry, the Default `--dk-*` catalog, and NO
- *    generated sheet (`generated: false`). WP02 reads that flag to skip emission.
+ *  - `resolveTheme(undefined)` — the M1-degenerate no-theme case: the Default
+ *    `--dk-*` catalog and NO generated sheet (`generated: false`; WP02 reads that
+ *    flag to skip emission). `customCss` carries the Default layer's TWO static
+ *    entries — the token catalog (`DEFAULT_TOKEN_SHEET`) and the global
+ *    component-rule sheet (`DK_COMPONENTS_CSS_SHEET`, diagram-component-css
+ *    mission NFR-004) — superseding the older single-entry byte-compat guarantee
+ *    (M2 NFR-002); the invariant tests were updated deliberately, not silently
+ *    broken.
  *  - `resolveTheme(theme)` — flatten `extends`, merge over the shipped Default,
  *    and `emitTokenSheet(resolved)` produces a stylesheet that re-declares the
  *    merged `--dk-*` catalog + the `--dk-*→--sl-*` bridge, fully substituting
- *    `theme.css` so brand/consumer `customCss` can layer after it.
+ *    `theme.css` so brand/consumer `customCss` can layer after it. `config.ts`
+ *    replaces only the `customCss` entry matching `DEFAULT_TOKEN_SHEET` by
+ *    IDENTITY (finding #3) — never a fixed index — so the component sheet and
+ *    every later brand/consumer sheet ride through untouched (C-002).
  *
  * The Default catalog + bridge below MIRROR `src/styles/theme.css` (the shipped
  * source of truth). ADR-0011's `--dk-*`-only rule is enforced: a theme sets
@@ -94,11 +102,39 @@ export interface ResolvedTheme {
 }
 
 /**
- * The M1 static token-sheet specifier. `resolveTheme(undefined).customCss` must
- * deep-equal `[DEFAULT_TOKEN_SHEET]` byte-for-byte (NFR-002); it is also the
- * Default layer's sole `customCss` contribution in every themed merge.
+ * The M1 static token-sheet specifier, present once in every merged
+ * `customCss` (the Default layer's first entry). `config.ts` replaces THIS
+ * specific entry — matched by IDENTITY, not position (finding #3) — with the
+ * generated token sheet when a theme is active, so its position within
+ * `customCss` is not load-bearing for that replacement.
  */
 export const DEFAULT_TOKEN_SHEET = '@commondocs-kitty/toolkit/styles/theme.css';
+
+/**
+ * The standalone global component-rule sheet (`.dk-callout*` + `.dk-diagram*`,
+ * diagram-component-css mission / #59/#60/#68). One entry of
+ * `GLOBAL_COMPONENT_SHEETS` below — deliberately never matched by
+ * `config.ts`'s token-sheet replacement (only `DEFAULT_TOKEN_SHEET` is) — so
+ * it survives that replacement and bundles into branded docs on both the
+ * no-theme and themed paths (C-002). `DeckLayout` links it explicitly for the
+ * out-of-frame deck route, which gets no global `customCss` injection.
+ */
+export const DK_COMPONENTS_CSS_SHEET = '@commondocs-kitty/toolkit/styles/dk-components.css';
+
+/**
+ * The single-owner list of GLOBAL component-rule sheets — every static sheet
+ * (besides the token sheet) that must reach BOTH delivery surfaces: the
+ * in-frame docs `customCss` injection (`config.ts`, via `DEFAULT_LAYER`
+ * below) and the out-of-frame deck route (`DeckLayout.astro`, which gets no
+ * global `customCss` injection at all and so links each entry explicitly).
+ * Today this holds exactly one sheet (`DK_COMPONENTS_CSS_SHEET`); a future
+ * second global component sheet is added HERE, not independently in each
+ * consumer — `DeckLayout` maps over this list against its own statically
+ * `?url`-imported hrefs and throws at build time if an entry has no matching
+ * import, so an out-of-sync addition fails loud instead of silently missing
+ * the deck (finding #2, diagram-component-css review).
+ */
+export const GLOBAL_COMPONENT_SHEETS: readonly string[] = [DK_COMPONENTS_CSS_SHEET];
 
 /**
  * The Default `--dk-*` catalog — LIGHT / base values, in declaration order.
@@ -288,10 +324,13 @@ const BRIDGE: ReadonlyArray<readonly [string, string]> = [
   ['--sl-sidebar-width', '--dk-width-sidebar'],
 ];
 
-/** The shipped Default layer: full catalog + the single static token sheet. */
+/** The shipped Default layer: full catalog + its static sheets — the token
+ * catalog (brand-replaceable, matched by IDENTITY not position — see
+ * `config.ts`'s `customCss` derivation) followed by every `GLOBAL_COMPONENT_SHEETS`
+ * entry (survives brand token-sheet replacement — NFR-004/C-002). */
 const DEFAULT_LAYER: DocKittyTheme = {
   tokens: { ...DEFAULT_BASE },
-  customCss: [DEFAULT_TOKEN_SHEET],
+  customCss: [DEFAULT_TOKEN_SHEET, ...GLOBAL_COMPONENT_SHEETS],
 };
 
 /**
@@ -365,10 +404,12 @@ export function mergeLayers(layers: DocKittyTheme[]): ResolvedTheme {
 /**
  * Resolve a theme into a `ResolvedTheme`.
  *
- * `undefined` → the byte-compatible M1 degenerate path (NFR-002): the Default
- * catalog, `customCss = [DEFAULT_TOKEN_SHEET]`, and `generated: false` so the
- * caller skips emission. Any provided theme (including `{}`) merges over the
- * shipped Default and yields `generated: true` — `{}` simply adds nothing extra.
+ * `undefined` → the M1-degenerate no-theme path: the Default catalog,
+ * `customCss = [DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET]` (NFR-004 — the
+ * component sheet ships alongside the token sheet even with no theme active),
+ * and `generated: false` so the caller skips emission. Any provided theme
+ * (including `{}`) merges over the shipped Default and yields `generated: true`
+ * — `{}` simply adds nothing extra.
  */
 export function resolveTheme(theme?: DocKittyTheme): ResolvedTheme {
   if (theme === undefined) {

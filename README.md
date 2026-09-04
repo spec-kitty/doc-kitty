@@ -46,7 +46,18 @@ pnpm dev        # runs the example docsite
 pnpm build      # builds example/ -> static site + sitemap + rss + agent-API
 pnpm test       # toolkit unit tests
 pnpm validate   # check docs frontmatter against the convention
+pnpm clean      # clear ALL build caches before a from-scratch build (see note below)
 ```
+
+> [!NOTE]
+> Astro's content layer persists a render cache at
+> `example/node_modules/.astro/` (and Vite pre-bundles some deps under
+> `example/node_modules/.vite/`) — both survive `rm -rf example/.astro
+> example/dist`, since they live under `node_modules/`. If a page's rendered
+> output looks stale after editing the toolkit (`src/`) while a content file
+> itself didn't change, run `pnpm clean` (not just a `dist`/`.astro` wipe)
+> before rebuilding. A fresh `pnpm install` (CI, a new clone) never hits this —
+> only a long-lived local checkout can.
 
 ## License
 

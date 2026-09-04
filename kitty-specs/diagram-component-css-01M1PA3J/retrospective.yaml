@@ -1,0 +1,118 @@
+schema_version: 1
+mission_id: 01M1PA3JC2SX50KXRS4C60ZAQ5
+mission_slug: diagram-component-css-01M1PA3J
+mission_number:
+friendly_name: Diagram markup + component-CSS delivery fixes
+mission_type: software-dev
+target_branch: fix/diagram-component-css
+created_at: '2026-09-04T14:57:43.194056+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-09-04T14:57:43.194056+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-007
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-007
+not_helpful:
+- id: n-003
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-010
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-001
+  category: process
+  summary: WP01 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-008
+  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-002
+  category: process
+  summary: WP02 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-009
+  details: WP WP02 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/tasks/WP01-diagram-markup-and-component-css.md
+- id: e-006
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/tasks/WP02-adr-and-changelog.md
+- id: e-007
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/status.events.jsonl
+- id: e-008
+  kind: event_range
+  path: kitty-specs/diagram-component-css-01M1PA3J/status.events.jsonl
+  range: 01M1PDNTMZB15BDSFA3K9041FP
+- id: e-009
+  kind: event_range
+  path: kitty-specs/diagram-component-css-01M1PA3J/status.events.jsonl
+  range: 01M1PEDWAACEW9NX6JB83SKR4G
+- id: e-010
+  kind: file
+  path: kitty-specs/diagram-component-css-01M1PA3J/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

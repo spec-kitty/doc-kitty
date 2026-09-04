@@ -6,14 +6,22 @@
  * remark pass ({@link ../remark/diagram-meta}) stashed on `file.data.dkDiagrams`:
  *
  * ```html
- * <figure class="dk-diagram" role="group">
+ * <figure class="dk-diagram" role="group" aria-labelledby="dk-diagram-caption-{N}">
  *   <pre class="mermaid">…source (accTitle/accDescr injected)…</pre>
- *   <figcaption class="dk-diagram__caption">
+ *   <figcaption class="dk-diagram__caption" id="dk-diagram-caption-{N}">
  *     <span class="dk-diagram__desc">{description}</span>
  *     <span class="dk-diagram__attr"><a href="{source}">{attribution}</a></span>
  *   </figcaption>
  * </figure>
  * ```
+ *
+ * `role="group"` overrides `<figure>`'s native figcaption-based accessible-name
+ * computation (HTML-AAM), so a captioned figure carries an explicit
+ * `aria-labelledby` back to its `<figcaption>` (a stable, per-page-unique id
+ * keyed off document order) — restoring the name the ARIA override took away.
+ * A caption-less figure (the empty-safe case below) has neither id nor
+ * `aria-labelledby`: it was unnamed before this fix too, and the wrapped SVG
+ * keeps its own `accTitle`/`accDescr` name either way, so no content is lost.
  *
  * - `attribution` links to `source` when a source is present AND its scheme
  *   passes {@link safeHref}'s allowlist (`http:`/`https:`/`mailto:`/no scheme);
@@ -139,18 +147,23 @@ function captionChildren(fields: FigureFields): HastNode[] | null {
   return children.length > 0 ? children : null;
 }
 
-/** Wrap a mermaid `<pre>` in the accessible `<figure>` (+ optional caption). */
-function buildFigure(pre: HastNode, fields: FigureFields): HastNode {
+/** Wrap a mermaid `<pre>` in the accessible `<figure>` (+ optional caption).
+ * `index` is this diagram's 0-based document-order position (the same counter
+ * the caller matches against `file.data.dkDiagrams`), reused to mint a stable,
+ * per-page-unique caption id for `aria-labelledby` — see the header note on
+ * why `role="group"` needs one. */
+function buildFigure(pre: HastNode, fields: FigureFields, index: number): HastNode {
   const children: HastNode[] = [pre];
   const caption = captionChildren(fields);
+  const properties: Record<string, unknown> = { className: ['dk-diagram'], role: 'group' };
   if (caption) {
-    children.push(element('figcaption', { className: ['dk-diagram__caption'] }, caption));
+    const captionId = `dk-diagram-caption-${index}`;
+    children.push(
+      element('figcaption', { className: ['dk-diagram__caption'], id: captionId }, caption),
+    );
+    properties['aria-labelledby'] = captionId;
   }
-  return element(
-    'figure',
-    { className: ['dk-diagram'], role: 'group' },
-    children,
-  );
+  return element('figure', properties, children);
 }
 
 /**
@@ -168,7 +181,7 @@ export default function diagramFigure() {
       for (let k = 0; k < children.length; k++) {
         const child = children[k];
         if (isMermaidPre(child)) {
-          children[k] = buildFigure(child, diagrams[index] ?? {});
+          children[k] = buildFigure(child, diagrams[index] ?? {}, index);
           index++;
           // Do not descend into the wrapped `<pre>` (it is a leaf we just moved).
         } else {

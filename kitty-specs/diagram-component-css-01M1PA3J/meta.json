@@ -1,0 +1,32 @@
+{
+  "accept_commit": "68606d02c3b9ea77db5fb0b490c9abc7e507fd0e",
+  "acceptance_history": [
+    {
+      "accept_commit": "68606d02c3b9ea77db5fb0b490c9abc7e507fd0e",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-09-04T14:56:13.589478+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "32e790955f87772e5360eee4c5071036b4e5e210"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-09-04T14:56:13.589478+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "32e790955f87772e5360eee4c5071036b4e5e210",
+  "baseline_merge_commit": "76b459d0d7a57609e9be2ce91c5bfc7879269a0c",
+  "created_at": "2026-09-04T13:35:37.347325+00:00",
+  "flattened": true,
+  "friendly_name": "Diagram markup + component-CSS delivery fixes",
+  "mission_id": "01M1PA3JC2SX50KXRS4C60ZAQ5",
+  "mission_number": null,
+  "mission_slug": "diagram-component-css-01M1PA3J",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The example docsite ships malformed diagram markup (every Mermaid figure is wrapped in a stray code-block box) and, because branding replaces the base stylesheet, global component styles (callouts today, diagrams next) never reach branded docs pages. This mission makes the diagram figure well-formed and ensures component CSS survives branding on both in-frame docs and out-of-frame decks. Closes #59, #60, #68.",
+  "purpose_tldr": "Diagrams and Markua callouts render correctly on branded docs and decks — no double-boxed diagrams, no unstyled components.",
+  "slug": "diagram-component-css-01M1PA3J",
+  "status_phase": "1",
+  "target_branch": "fix/diagram-component-css",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-04T13:49:27.629506+00:00"
+}

@@ -606,6 +606,99 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// T008 (diagram-component-css WP01, #60) — the caption READS AS PROSE, not
+// code: computed `font-family` is non-monospace and computed `white-space` is
+// not `pre`, and the figure is not nested inside a `<pre>` ("code-card") — on
+// BOTH the in-frame docs shell (the diagram demonstrator) and the out-of-frame
+// deck (the showcase deck's first-slide diagram). This is the APPLIED-proof
+// that complements the build-artifact CSS-delivery gate (T006, which proves
+// the rule is bundled AND linked — "bundled ≠ applied" is the false-green
+// trap) and the diagram-pipeline unit's #59 no-<pre>-ancestor proof (T007,
+// static hast). Deliberately does NOT re-enable #31's deferred internal-node-
+// geometry assertions (C-004) — this checks TYPOGRAPHY, not layout geometry.
+// ---------------------------------------------------------------------------
+test.describe('Diagram caption typography (#60) — docs + deck', () => {
+  // A generic monospace family name/keyword — matches the shipped `--dk-font-mono`
+  // stack (`ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, 'Liberation
+  // Mono', monospace`) and any equivalent browser-default monospace stack, so this
+  // catches BOTH "the caption never got the sans override" and "the deck cascade
+  // clobbered it back to monospace".
+  const MONOSPACE_RE = /mono|consolas|menlo|courier|sfmono|sf mono/i;
+
+  /** Computed `font-family` + `white-space` of `locator`'s FIRST match, plus
+   * whether that element sits inside a `<pre>` ("code-card") anywhere up its
+   * ancestor chain. */
+  async function captionComputedStyle(
+    locator: Locator,
+  ): Promise<{ fontFamily: string; whiteSpace: string; hasPreAncestor: boolean }> {
+    return locator.first().evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        fontFamily: cs.fontFamily,
+        whiteSpace: cs.whiteSpace,
+        hasPreAncestor: el.closest('pre') !== null,
+      };
+    });
+  }
+
+  test('docs diagram page: caption is non-monospace, non-`pre` white-space, not inside a code-card', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoInMode(page, ROUTES.diagram, mode);
+    await expect(page.locator(DIAGRAM_SVG)).toHaveCount(2);
+
+    const caption = page.locator('figcaption.dk-diagram__caption').first();
+    await expect(caption, 'the demonstrator must render at least one caption').toHaveCount(1);
+
+    const style = await captionComputedStyle(caption);
+    expect(
+      style.fontFamily,
+      `docs caption font-family "${style.fontFamily}" must not be monospace`,
+    ).not.toMatch(MONOSPACE_RE);
+    expect(
+      style.whiteSpace,
+      `docs caption white-space "${style.whiteSpace}" must not be \`pre\` (preformatted)`,
+    ).not.toBe('pre');
+    expect(
+      style.hasPreAncestor,
+      'the docs caption must not be nested inside a <pre> (code-card)',
+    ).toBe(false);
+  });
+
+  test('deck (showcase-deck): first-slide caption is non-monospace, non-`pre` white-space, not inside a code-card', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoDeckInMode(page, ROUTES.deck, mode);
+    await expect(page.locator(DIAGRAM_SVG)).toHaveCount(1);
+
+    // Scope to the FIRST SLIDE's figure (mirrors the "deck shell (DX-2/DX-5)"
+    // test above — the deck carries 3 figures total, only the title one has
+    // rendered at load).
+    const caption = page
+      .locator('.reveal .slides > section')
+      .first()
+      .locator('figcaption.dk-diagram__caption');
+    await expect(caption, 'the deck title-slide figure must carry a caption').toHaveCount(1);
+
+    const style = await captionComputedStyle(caption);
+    expect(
+      style.fontFamily,
+      `deck caption font-family "${style.fontFamily}" must not be monospace`,
+    ).not.toMatch(MONOSPACE_RE);
+    expect(
+      style.whiteSpace,
+      `deck caption white-space "${style.whiteSpace}" must not be \`pre\` (preformatted)`,
+    ).not.toBe('pre');
+    expect(
+      style.hasPreAncestor,
+      'the deck caption must not be nested inside a <pre> (code-card)',
+    ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // T022 — NFR-002 footprint on the diagram-free PUBLISHED deck (finding C7).
 // A deck with NO `mermaid` fence must resolve ZERO Mermaid runtime chunks: the
 // render owner's `if (!nodes.length) return;` short-circuits BEFORE
