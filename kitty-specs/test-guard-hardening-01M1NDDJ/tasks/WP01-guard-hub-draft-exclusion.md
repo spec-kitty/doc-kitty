@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: feat/test-guard-hardening
 merge_target_branch: feat/test-guard-hardening
 branch_strategy: Planning artifacts for this mission were generated on feat/test-guard-hardening. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/test-guard-hardening unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-test-guard-hardening-01M1NDDJ
+base_commit: c6cafb6da51273fdf5a4d82030a88ac3c74a2a1e
+created_at: '2026-09-04T05:22:15.951138+00:00'
 subtasks:
 - T001
 - T002
