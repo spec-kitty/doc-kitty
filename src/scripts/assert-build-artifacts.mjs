@@ -182,6 +182,11 @@ const OVERVIEW_ROUTE = '/presentations/';
 // browser-free; client-side rendering is the M5 premise, ADR-0023 / NFR-004).
 const DEMO_RELPATH = path.join('architecture', 'diagram-demonstrator', 'index.html');
 
+// --- diagram-component-css WP01: the third diagram page (#59/T006) --------------
+// `architecture/overview.md` carries its own ```mermaid fence and, pre-WP01, was
+// in NO test lane — the double-`<pre>` defect (#59) could regress there silently.
+const ARCH_OVERVIEW_RELPATH = path.join('architecture', 'overview', 'index.html');
+
 // The two demonstrator diagrams, in DOCUMENT ORDER, each keyed by the tokens the
 // no-JS degradation guarantee (FR-008/NFR-003) must preserve in the static HTML:
 //   - `keyword` — the diagram-TYPE declaration (proves the raw source survives),
@@ -447,7 +452,16 @@ async function assertDiagramDemonstrator(distDir) {
     const tag = `diagram demonstrator: diagram ${i + 1} (${spec.what})`;
 
     // BD-1 — figure carries the mermaid <pre> with injected acc-statements.
-    const preOpen = fig.indexOf('<pre class="mermaid">');
+    // Attribute-tolerant match (not an exact-string search): post-WP01, this is
+    // now the ONLY `<pre>` in the figure (the #59 fix), so Starlight's generic
+    // `rehypeRtlCodeSupport` pass (which SKIPS descending into an already-
+    // matched `<pre>`'s children) correctly reaches it and adds `dir="ltr"` —
+    // previously that attribute landed on the stray OUTER `<pre>` instead,
+    // never on this inner one, which is why an exact-string match happened to
+    // work before. The precise attribute set is not this gate's concern (T006
+    // covers the double-wrap and CSS-delivery invariants); only tag identity is.
+    const preOpenMatch = /<pre class="mermaid"[^>]*>/.exec(fig);
+    const preOpen = preOpenMatch ? preOpenMatch.index : -1;
     const preClose = fig.indexOf('</pre>');
     if (preOpen === -1 || preClose === -1 || !(preOpen < preClose)) {
       fail(`${tag}: no <pre class="mermaid"> source block inside the figure — BD-1`);
@@ -834,6 +848,207 @@ async function assertMarkuaArtifacts(distDir) {
 }
 
 // ---------------------------------------------------------------------------
+// diagram-component-css WP01 — T006 build-artifact gates (#59/#60/#68).
+//
+// Both gates close the mutation-dead zone D5 identified: today's 7 diagram
+// gates all match INSIDE `<figure>` and none check for a wrapping `<pre>` or
+// for CSS delivery, so #59 and #68 shipped with nothing red. Each function
+// below is self-contained (does its own file reads) so it is independently
+// provable RED on the pre-fix build (T001-T004 not yet landed) and GREEN
+// after — not merely riding along inside another assertion's success.
+// ---------------------------------------------------------------------------
+
+// The historic double-wrap defect (#59): a still-`code`-typed mermaid mdast
+// node's `hName` projection ran through mdast-util-to-hast's `code` handler,
+// which unconditionally wraps its own output in an EXTRA outer `<pre>` —
+// producing `<pre><figure class="dk-diagram">…</figure></pre>`. This is the
+// exact pattern quickstart.md's manual verification grep checks
+// (`<pre[^>]*>\s*<figure[^>]*dk-diagram`); asserted here as a build gate so a
+// regression fails CI, not just a human's spot-check.
+const PRE_WRAPS_DK_DIAGRAM_RE = /<pre\b[^>]*>\s*<figure\b[^>]*\bdk-diagram\b/;
+
+/** Fail if `html` contains a `<pre>` directly wrapping a `<figure class="dk-diagram">`
+ * (the #59 double-wrap defect). `label` names the page in the failure message. */
+function assertNoPreWrapsDkDiagram(html, label) {
+  const hit = PRE_WRAPS_DK_DIAGRAM_RE.exec(html);
+  if (hit) {
+    fail(
+      `${label}: found "${hit[0]}…" — a <pre> directly wraps <figure class="dk-diagram"> (the #59 double-wrap ` +
+        `defect: a still-\`code\`-typed mermaid node's hName projection ran through mdast-util-to-hast's \`code\` ` +
+        `handler, which adds its OWN outer <pre>) — FR-001/C-001`,
+    );
+  }
+}
+
+/**
+ * T006 (#59, red-first): across ALL 3 diagram pages (deck, architecture/overview,
+ * architecture/diagram-demonstrator) assert no `<pre>` directly wraps a
+ * `<figure class="dk-diagram">` — the double-wrap defect the fence-transform
+ * retype (T001) fixes at its origin. `architecture/overview` was, pre-WP01, in
+ * NO test lane at all.
+ */
+async function assertNoStrayPreWrapsDiagramFigures(distDir) {
+  const pages = [
+    { relpath: path.join(DECK_SLUG, 'index.html'), label: `deck (${DECK_SLUG})` },
+    { relpath: ARCH_OVERVIEW_RELPATH, label: `architecture overview (${ARCH_OVERVIEW_RELPATH})` },
+    { relpath: DEMO_RELPATH, label: `diagram demonstrator (${DEMO_RELPATH})` },
+  ];
+  for (const { relpath, label } of pages) {
+    const abs = path.join(distDir, relpath);
+    await assertNonEmptyFile(abs, label);
+    const html = await readTextOrFail(abs, label);
+    assertNoPreWrapsDkDiagram(html, label);
+  }
+  ok(
+    'diagram markup: no <pre> wraps <figure class="dk-diagram"> on the deck, architecture/overview, or ' +
+      'the diagram demonstrator (#59/FR-001)',
+  );
+}
+
+/** Every `<link rel="stylesheet" href="…">` href on a page, attribute-order-agnostic. */
+function linkedStylesheetHrefs(html) {
+  const hrefs = [];
+  const re = /<link\b[^>]*>/g;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const tag = m[0];
+    if (!/\brel="stylesheet"/.test(tag)) continue;
+    const hrefMatch = /\bhref="([^"]+)"/.exec(tag);
+    if (hrefMatch) hrefs.push(hrefMatch[1]);
+  }
+  return hrefs;
+}
+
+/**
+ * T006 (#60/#68, red-first): a branded docs page that renders a callout/diagram
+ * must LINK a stylesheet that actually CONTAINS the corresponding component
+ * rules — "bundled ≠ applied" is the false-green trap (a sheet merely existing
+ * under `_astro/` proves nothing if the page never links it — #68; a page
+ * linking SOME sheet proves nothing if that sheet lacks the rule — #60, the
+ * stylesheet was never written). Checked on two identity-anchored pages: the
+ * markua showcase (renders `.dk-callout`) and the diagram demonstrator
+ * (renders `.dk-diagram__caption`).
+ */
+async function assertComponentCssDelivered(distDir) {
+  const astroDir = path.join(distDir, '_astro');
+  let cssFiles;
+  try {
+    cssFiles = (await readdir(astroDir)).filter((f) => f.endsWith('.css'));
+  } catch (err) {
+    fail(`component CSS delivery: could not read ${path.join('_astro')} (${err.code ?? err.message}) — #60/#68`);
+  }
+
+  const sheetsWithRule = async (selectorText) => {
+    const hits = [];
+    for (const f of cssFiles) {
+      const css = await readFile(path.join(astroDir, f), 'utf8');
+      if (css.includes(selectorText)) hits.push(f);
+    }
+    return hits;
+  };
+
+  const calloutSheets = await sheetsWithRule('.dk-callout');
+  const diagramCaptionSheets = await sheetsWithRule('.dk-diagram__caption');
+
+  if (calloutSheets.length === 0) {
+    fail(
+      `component CSS delivery: no shipped _astro/*.css contains \`.dk-callout\` rules — the component sheet was ` +
+        `not built/bundled at all (#68)`,
+    );
+  }
+
+  // Finding #1 (pre-merge review, red-first): a shipped sheet can contain the
+  // `.dk-callout` SELECTOR text while every custom property those rules read
+  // (`var(--dk-callout-bg)`, etc.) resolves to nothing, because the TOKEN
+  // declarations were left behind in `theme.css` — a sheet the branded build
+  // never links (its token-sheet slot is replaced by the generated brand
+  // sheet, which does not emit `--dk-callout-*`). "Rules present" is not
+  // "rules applied": this asserts the DECLARATION (`--dk-callout-bg: value;`),
+  // not just a `var(--dk-callout-bg)` USAGE, is present in a sheet that also
+  // links from the branded page — i.e. the tokens the rules consume actually
+  // ship. A `var(--dk-callout-bg)` reference has no trailing `:`, so this
+  // regex (which requires the colon) cannot be satisfied by usage alone.
+  const CALLOUT_TOKEN_DECLARATIONS = [
+    /--dk-callout-bg:\s*[^;]+;/,
+    /--dk-callout-border:\s*[^;]+;/,
+    /--dk-callout-aside-accent:\s*[^;]+;/,
+  ];
+  const sheetsWithCalloutTokens = async () => {
+    const hits = [];
+    for (const f of cssFiles) {
+      const css = await readFile(path.join(astroDir, f), 'utf8');
+      if (CALLOUT_TOKEN_DECLARATIONS.every((re) => re.test(css))) hits.push(f);
+    }
+    return hits;
+  };
+  const calloutTokenSheets = await sheetsWithCalloutTokens();
+  if (calloutTokenSheets.length === 0) {
+    fail(
+      `component CSS delivery: no shipped _astro/*.css declares the \`--dk-callout-*\` TOKENS ` +
+        `(--dk-callout-bg/-border/-aside-accent) that \`.dk-callout\` rules consume — the rules are ` +
+        `bundled (in ${JSON.stringify(calloutSheets)}) but the custom properties they read resolve to ` +
+        `nothing on a branded build (no background, border-style: none, all variants render identically) ` +
+        `— the tokens were left behind in a sheet the branded build never links (#68 finding #1)`,
+    );
+  }
+  if (diagramCaptionSheets.length === 0) {
+    fail(
+      `component CSS delivery: no shipped _astro/*.css contains \`.dk-diagram__caption\` rules — the caption ` +
+        `stylesheet is missing (#60)`,
+    );
+  }
+
+  const showcaseAbs = path.join(distDir, MARKUA_SHOWCASE_RELPATH);
+  await assertNonEmptyFile(showcaseAbs, `markua showcase (${MARKUA_SHOWCASE_RELPATH})`);
+  const showcaseHtml = await readTextOrFail(showcaseAbs, `markua showcase (${MARKUA_SHOWCASE_RELPATH})`);
+  const showcaseLinks = linkedStylesheetHrefs(showcaseHtml);
+  const showcaseLinksCallout = showcaseLinks.some((href) => calloutSheets.some((f) => href.includes(f)));
+  if (!showcaseLinksCallout) {
+    fail(
+      `component CSS delivery: the markua showcase (${MARKUA_SHOWCASE_RELPATH}) renders \`.dk-callout\` markup ` +
+        `but links no stylesheet containing \`.dk-callout\` rules (bundled in ${JSON.stringify(calloutSheets)}, ` +
+        `but not linked from this page's <head>) — the brand slot-0 replacement is dropping the component ` +
+        `sheet (#68)`,
+    );
+  }
+  // Finding #1: "rules present ≠ tokens resolve" — the showcase must link a
+  // sheet that ALSO declares the `--dk-callout-*` tokens, not merely a sheet
+  // that contains the rule selectors (see CALLOUT_TOKEN_DECLARATIONS above).
+  const showcaseLinksCalloutTokens = showcaseLinks.some((href) =>
+    calloutTokenSheets.some((f) => href.includes(f)),
+  );
+  if (!showcaseLinksCalloutTokens) {
+    fail(
+      `component CSS delivery: the markua showcase (${MARKUA_SHOWCASE_RELPATH}) links a \`.dk-callout\`-bearing ` +
+        `sheet, but none of its linked sheets DECLARES the \`--dk-callout-*\` tokens those rules consume ` +
+        `(token-declaring sheets bundled: ${JSON.stringify(calloutTokenSheets)}) — on this branded build the ` +
+        `callout rules apply with every custom property unresolved (no background, no colour stripe) (#68 ` +
+        `finding #1)`,
+    );
+  }
+
+  const demoAbs = path.join(distDir, DEMO_RELPATH);
+  await assertNonEmptyFile(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
+  const demoHtml = await readTextOrFail(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
+  const demoLinks = linkedStylesheetHrefs(demoHtml);
+  const demoLinksDiagramCaption = demoLinks.some((href) => diagramCaptionSheets.some((f) => href.includes(f)));
+  if (!demoLinksDiagramCaption) {
+    fail(
+      `component CSS delivery: the diagram demonstrator (${DEMO_RELPATH}) renders \`.dk-diagram\` figures but ` +
+        `links no stylesheet containing \`.dk-diagram__caption\` rules (bundled in ` +
+        `${JSON.stringify(diagramCaptionSheets)}, but not linked from this page's <head>) — the caption sheet ` +
+        `is not reaching branded docs (#60/#68)`,
+    );
+  }
+
+  ok(
+    'component CSS delivery: the markua showcase links a `.dk-callout`-bearing sheet that ALSO declares the ' +
+      '`--dk-callout-*` tokens those rules consume, the diagram demonstrator links a `.dk-diagram__caption`-' +
+      'bearing sheet (#60/#68, finding #1)',
+  );
+}
+
+// ---------------------------------------------------------------------------
 
 async function main() {
   const distArg = process.argv[2];
@@ -1098,6 +1313,14 @@ async function main() {
 
   // 6b) diagrams WP04: pinned diagram deps + no CDN (BD-4/NFR-004).
   await assertPinnedDepsNoCdn(distDir);
+
+  // 6b2) diagram-component-css WP01 (#59/T006, red-first): no <pre> wraps
+  // <figure class="dk-diagram"> across all 3 diagram pages.
+  await assertNoStrayPreWrapsDiagramFigures(distDir);
+
+  // 6b3) diagram-component-css WP01 (#60/#68/T006, red-first): component CSS is
+  // actually bundled AND linked on the branded pages that render it.
+  await assertComponentCssDelivered(distDir);
 
   // 6c) markua-syntax-support WP10: the Markua verification gates — ordering
   // lock, identity-anchored figure round-trip, no-new-client-JS, per-variant

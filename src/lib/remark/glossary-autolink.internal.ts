@@ -60,10 +60,19 @@ const CONTEXT_ATTR = 'data-glossary-context';
 const ANCHOR_ATTR = 'data-glossary-anchor';
 const CONTEXT_SLUG_ATTR = 'data-glossary-context-slug';
 
-/** Ancestor node types a rewrite must never descend into (FR-006). */
+/** Ancestor node types a rewrite must never descend into (FR-006). `dkMermaid`
+ * (the diagram-meta remark pass's retyped mermaid code node, `config.ts`
+ * `node.type = 'dkMermaid'`) is guarded defensively alongside `code`: it is a
+ * leaf whose source lives in `data.hChildren` rather than mdast `children`, so
+ * the walk never actually descends into it today — but naming it here closes
+ * the gap by construction instead of relying on that incidental leaf shape. */
 function isGuardType(type: string): boolean {
   return (
-    type === 'code' || type === 'inlineCode' || type === 'heading' || type === 'link'
+    type === 'code' ||
+    type === 'inlineCode' ||
+    type === 'heading' ||
+    type === 'link' ||
+    type === 'dkMermaid'
   );
 }
 

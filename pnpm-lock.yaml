@@ -98,9 +98,18 @@ importers:
       astro:
         specifier: ^5.2.0
         version: 5.18.2(@types/node@24.13.3)(rollup@4.62.5)(supports-color@5.5.0)(typescript@5.9.3)(yaml@2.9.0)
+      mdast-util-to-hast:
+        specifier: 13.2.1
+        version: 13.2.1
+      remark-parse:
+        specifier: 11.0.0
+        version: 11.0.0(supports-color@5.5.0)
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+      unified:
+        specifier: 11.0.5
+        version: 11.0.5
       vitest:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@24.13.3)(supports-color@5.5.0)

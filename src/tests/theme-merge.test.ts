@@ -5,6 +5,7 @@ import {
   mergeLayers,
   emitTokenSheet,
   DEFAULT_TOKEN_SHEET,
+  DK_COMPONENTS_CSS_SHEET,
   type DocKittyTheme,
 } from '../lib/theme.js';
 
@@ -61,9 +62,10 @@ describe('resolveTheme — per-key last-wins (default → brand → consumer)', 
 });
 
 describe('resolveTheme — customCss concatenation order', () => {
-  it('concatenates base → brand → consumer', () => {
+  it('concatenates base (token sheet + component sheet, NFR-004) → brand → consumer', () => {
     expect(resolveTheme(consumer).customCss).toEqual([
       DEFAULT_TOKEN_SHEET,
+      DK_COMPONENTS_CSS_SHEET,
       'acme/brand.css',
       'site/site.css',
     ]);
@@ -71,7 +73,7 @@ describe('resolveTheme — customCss concatenation order', () => {
 
   it('two-layer chain (default → brand) proves flattening order', () => {
     const r = resolveTheme(brand);
-    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, 'acme/brand.css']);
+    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET, 'acme/brand.css']);
     expect(r.tokens['--dk-color-accent']).toBe('#ff5722');
   });
 });
@@ -91,11 +93,19 @@ describe('resolveTheme — tokens shallow-merge', () => {
   });
 });
 
-describe('resolveTheme — no-theme byte-compat (NFR-002)', () => {
-  it('undefined yields the single static customCss and no generated sheet', () => {
+describe('resolveTheme — no-theme default path (NFR-002 superseded by NFR-004)', () => {
+  // Pre-diagram-component-css, `resolveTheme(undefined).customCss` was a single
+  // static entry, byte-for-byte (the old NFR-002 guarantee). This mission
+  // DELIBERATELY changes that shape (#68/C-002): the Default layer now ships a
+  // SECOND static sheet — the global component-rule sheet — alongside the token
+  // sheet, so component CSS (`.dk-callout*`/`.dk-diagram*`) reaches a branded
+  // build too (it must survive `config.ts`'s brand slot-0 replacement, which
+  // only replaces `customCss[0]`). This test asserts the NEW two-entry shape;
+  // the token/bridge contract below is unaffected.
+  it('undefined yields the token sheet + component sheet, no generated sheet', () => {
     const r = resolveTheme(undefined);
-    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET]); // deep-equal, single entry
-    expect(r.customCss).toHaveLength(1);
+    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET]); // deep-equal, two entries (NFR-004)
+    expect(r.customCss).toHaveLength(2);
     expect(r.generated).toBe(false); // WP02 skips emission
   });
 
@@ -109,7 +119,7 @@ describe('resolveTheme — no-theme byte-compat (NFR-002)', () => {
   it('empty object {} is NOT the no-theme path: merges, generated:true, nothing extra', () => {
     const r = resolveTheme({});
     expect(r.generated).toBe(true); // routed through the Default merge
-    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET]); // adds nothing extra
+    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET]); // adds nothing extra
     expect(r.tokens['--dk-color-bg']).toBe('#ffffff'); // Default catalog present
   });
 });

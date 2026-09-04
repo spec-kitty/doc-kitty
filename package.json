@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "pnpm --filter example dev",
     "build": "pnpm --filter example build",
+    "clean": "rm -rf example/.astro example/dist example/node_modules/.astro example/node_modules/.vite",
     "preview": "pnpm --filter example preview",
     "test": "pnpm --filter @commondocs-kitty/toolkit test",
     "typecheck": "pnpm --filter example typecheck",

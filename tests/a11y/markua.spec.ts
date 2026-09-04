@@ -106,6 +106,51 @@ test.describe('markua-theme-variant-discriminators (six variants)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// markua-callout-tokens-applied (finding #1, diagram-component-css pre-merge
+// review) — the "rules present ≠ tokens resolve" trap: shipping the
+// `.dk-callout` RULES proves nothing if the `--dk-callout-*` custom
+// properties they read resolve to nothing on this branded build (the example
+// site builds with `specKittyTheme`, astro.config.mjs). An unresolved
+// `var(--dk-callout-bg)` computes `background-color` back to its initial
+// value (`rgba(0, 0, 0, 0)`, transparent); an unresolved `var(--dk-callout-
+// border)` inside the `border-inline-start: 0.25rem solid var(...)` shorthand
+// makes the WHOLE shorthand invalid at computed-value time, so the browser
+// drops it back to `border-style: none` / `width: 0px`. Real, non-initial
+// values here are the "applied", not just "shipped", proof.
+// ---------------------------------------------------------------------------
+test.describe('markua-callout-tokens-applied (finding #1, branded build)', () => {
+  test('dk-callout--aside has a non-empty background and a visible border-inline-start', async ({ page }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoInMode(page, ROUTES.markuaShowcase, mode);
+
+    const callout = page.locator('aside.dk-callout.dk-callout--aside').first();
+    await expect(callout).toBeVisible();
+
+    const styles = await callout.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        backgroundColor: cs.backgroundColor,
+        borderInlineStartStyle: cs.borderInlineStartStyle,
+        borderInlineStartWidth: cs.borderInlineStartWidth,
+      };
+    });
+
+    expect(
+      styles.backgroundColor,
+      `computed background-color must not be the unresolved-token fallback (transparent); got '${styles.backgroundColor}'`,
+    ).not.toBe('rgba(0, 0, 0, 0)');
+    expect(
+      styles.borderInlineStartStyle,
+      `computed border-inline-start-style must be 'solid' (an unresolved token collapses the shorthand to 'none'); got '${styles.borderInlineStartStyle}'`,
+    ).toBe('solid');
+    expect(
+      styles.borderInlineStartWidth,
+      `computed border-inline-start-width must not collapse to 0px; got '${styles.borderInlineStartWidth}'`,
+    ).not.toBe('0px');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // markua-icon-render (FR-009 positive) — {icon: fa-lightbulb} resolves to the
 // Starlight "rocket" and emits the dk-callout__icon child on the theme tip.
 // ---------------------------------------------------------------------------

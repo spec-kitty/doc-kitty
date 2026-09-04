@@ -32,7 +32,7 @@ import {
   sectionFeeds,
   feedsSurface,
 } from './sections.js';
-import { resolveTheme, type DocKittyTheme } from './theme.js';
+import { resolveTheme, DEFAULT_TOKEN_SHEET, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
 import deckSplit from './remark/deck-split.js';
@@ -391,26 +391,53 @@ interface FenceMdastNode {
  *
  * This runs at the mdast level (AFTER `diagramMeta`, which has already injected
  * `accTitle`/`accDescr` into the fence body and stripped the `%%` metadata). It
- * rewrites each `lang === 'mermaid'` code node's hast projection via
- * `data.hName`/`hProperties`/`hChildren` so `mdast-util-to-hast` emits a real
- * `<pre class="mermaid">…source…</pre>` ELEMENT — the exact shape `diagramFigure`
- * (rehype) matches to build the `<figure>`. Rewriting the hast projection (not
- * emitting a raw `html` node) keeps it a first-class element for the rehype pass
- * AND sidesteps Starlight's expressive-code, which only claims `<pre><code>`
+ * RETYPES each `lang === 'mermaid'` code node OFF `code` (to `dkMermaid`) before
+ * projecting `data.hName`/`hProperties`/`hChildren` onto it, so `mdast-util-to-
+ * hast` emits a real, SINGLE `<pre class="mermaid">…source…</pre>` ELEMENT — the
+ * exact shape `diagramFigure` (rehype) matches to build the `<figure>`.
+ *
+ * **Truth about the retype (#59, C-001, verified against `mdast-util-to-hast`
+ * 13.2.1 `handlers/code.js:43,46`)**: a node LEFT typed `code` still runs through
+ * that package's own `code` handler, which applies the projected `data.*` to the
+ * element it builds and then UNCONDITIONALLY wraps that element in its OWN outer
+ * `<pre>` — so a still-`code`-typed node carrying `hName:'pre'` double-wraps
+ * (`<pre><pre class="mermaid">…`), and rehype's `diagramFigure` then nests that
+ * inside `<figure>`, producing the stray `<pre><figure class="dk-diagram">…
+ * </figure></pre>` this fixes. Retyping the node routes it through the generic/
+ * unknown-node handler instead, which honours `data.hName`/`hProperties`/
+ * `hChildren` VERBATIM with no extra wrapper — emitting the single clean
+ * `<pre class="mermaid">` `diagramFigure` expects. Rewriting the hast projection
+ * (not emitting a raw `html` node) keeps it a first-class element for the rehype
+ * pass AND sidesteps Starlight's expressive-code, which only claims `<pre><code>`
  * blocks — a node whose projected tag is a bare `<pre class="mermaid">` is never
- * a code block it recognises.
+ * a code block it recognises (the retype only strengthens that sidestep: it is
+ * no longer even `type: 'code'`). `diagramMeta` runs BEFORE this transform
+ * (pinned plugin order) and keys on `type === 'code' && lang === 'mermaid'`, so
+ * it still sees the node in its original shape — unaffected by the retype.
+ *
+ * Exported (only) so `src/tests/diagram-pipeline.test.ts` (T007) can run this
+ * EXACT function through the real `diagramMeta → mermaidFenceTransform →
+ * mdast-util-to-hast → diagramFigure` chain — a hand-built hast fixture (as
+ * `diagram-figure.test.ts` uses) cannot exercise this remark→hast boundary,
+ * where the #59 defect actually lives.
  */
-function mermaidFenceTransform() {
+export function mermaidFenceTransform() {
   return function transformer(tree: FenceMdastNode): void {
     const walk = (node: FenceMdastNode): void => {
       if (node.type === 'code' && node.lang === 'mermaid') {
+        // Retype OFF `code` FIRST (see the header note above) — otherwise
+        // mdast-util-to-hast's own `code` handler double-wraps the projection
+        // in an extra `<pre>` (#59). `diagram-render.client`'s `pre.mermaid`
+        // selector is unaffected (it matches on the emitted class, not the
+        // mdast node type).
+        node.type = 'dkMermaid';
         node.data = {
           ...(node.data ?? {}),
           hName: 'pre',
           hProperties: { className: ['mermaid'] },
           hChildren: [{ type: 'text', value: node.value ?? '' }],
         };
-        return; // code nodes are leaves.
+        return; // leaf — a retyped mermaid node has no meaningful children to walk.
       }
       if (Array.isArray(node.children)) {
         for (const child of node.children) walk(child);
@@ -655,20 +682,30 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   process.env[DK_DOCS_ROOT_ENV] = path.resolve(process.cwd(), docsDir);
 
   // Resolve the default → brand → consumer merge (WP01). `undefined` yields the
-  // byte-compatible M1 path: `generated === false`, `customCss` the single static
-  // entry, the Default catalog. Any theme yields `generated === true`.
+  // M1-degenerate path: `generated === false`, `customCss` the Default layer's
+  // two static entries (token sheet + component sheet, NFR-004). Any theme
+  // yields `generated === true`.
   const resolved = resolveTheme(theme);
   const { assets } = resolved;
   const faviconPath = faviconHref(assets.favicon);
 
   // Cascade order (seam 2, C-007 tokens-before-overrides):
-  //  - No theme  → the single static `theme.css` entry, byte-identical to M1.
+  //  - No theme  → the Default layer's two static entries verbatim: the token
+  //    sheet (`theme.css`) then the component sheet (`dk-components.css`).
   //  - A theme   → the generated token sheet (virtual CSS module emitted by the
   //    manifest integration, substituting `theme.css`) FIRST, then the merged
-  //    brand/consumer `customCss` (resolved.customCss[0] is the Default
-  //    `theme.css`, replaced here by the emitted sheet).
+  //    brand/consumer `customCss` unchanged. The replacement is IDENTITY-based
+  //    (whichever entry === `DEFAULT_TOKEN_SHEET` becomes `THEME_CSS_MODULE_ID`),
+  //    not positional — `resolveTheme`'s `DEFAULT_LAYER.customCss` shape is an
+  //    internal detail of `theme.ts` (see `GLOBAL_COMPONENT_SHEETS`), so this
+  //    must not assume the token sheet sits at a fixed index. Every other entry
+  //    — the component sheet (`DK_COMPONENTS_CSS_SHEET`) and any brand/consumer
+  //    sheet — rides through untouched, so the component sheet survives the
+  //    brand replacement and reaches branded docs (#68/C-002); `DeckLayout`
+  //    links it explicitly for the out-of-frame deck route, which gets no
+  //    global `customCss` injection.
   const customCss = resolved.generated
-    ? [THEME_CSS_MODULE_ID, ...resolved.customCss.slice(1)]
+    ? resolved.customCss.map((sheet) => (sheet === DEFAULT_TOKEN_SHEET ? THEME_CSS_MODULE_ID : sheet))
     : resolved.customCss;
 
   // FR-009 font forwarding (MECHANISM, not a brand mandate): each `assets.fonts`
