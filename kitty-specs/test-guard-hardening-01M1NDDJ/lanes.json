@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "mission_slug": "test-guard-hardening-01M1NDDJ",
+  "mission_id": "01M1NDDJKHT8Y56ED8K74GGMN3",
+  "mission_branch": "kitty/mission-test-guard-hardening-01M1NDDJ",
+  "target_branch": "feat/test-guard-hardening",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/layouts/Hub.astro",
+        "src/lib/hub-children.mjs",
+        "src/tests/hub-children.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/vitest.config.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tests"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-04T05:20:45.337146+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "4e343c1fd3921df5861f63f814801ba3e8a2ab5d"
+}
