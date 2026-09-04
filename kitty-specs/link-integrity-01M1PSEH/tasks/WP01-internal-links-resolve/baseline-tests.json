@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-09-04T18:12:19Z",
+  "base_branch": "fix/link-integrity",
+  "base_commit": "591047c6458e8b2bf7dbaf30bace85aae104f5cc",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

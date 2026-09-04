@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "mission_slug": "link-integrity-01M1PSEH",
+  "mission_id": "01M1PSEH7Q72MYA6V7WF8FQW5S",
+  "mission_branch": "kitty/mission-link-integrity-01M1PSEH",
+  "target_branch": "fix/link-integrity",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "example/docs/**",
+        "src/components/slots/Audience.astro",
+        "src/components/slots/OnThisPage.astro",
+        "src/components/slots/Related.astro",
+        "src/lib/config.ts",
+        "src/lib/glossary/generate.ts",
+        "src/lib/glossary/preview-popover.client.ts",
+        "src/lib/glossary/preview.client.ts",
+        "src/lib/glossary/resolve.ts",
+        "src/lib/metadata.ts",
+        "src/lib/remark/glossary-autolink.internal.ts",
+        "src/lib/remark/glossary-autolink.ts",
+        "src/lib/remark/glossary-term.ts",
+        "src/lib/with-base.ts",
+        "src/tests/link-integrity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        ".github/workflows/ci.yml",
+        "docs/adr/**",
+        "docs/changelog/**",
+        "package.json",
+        "src/scripts/assert-no-broken-links.mjs",
+        "src/scripts/check-links.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-09-04T18:10:58.483395+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "1afb840d8f52f6e0165e57954714682cd9d5fbd0"
+}

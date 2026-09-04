@@ -1,0 +1,59 @@
+{
+  "mission_slug": "link-integrity-01M1PSEH",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Glossary term links base-prefixed via shared glossaryTermUrl; 0 base-less /glossary in dist (WP01, opus-approved).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T20:06:14.652597+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Glossary anchors resolve: block-form generate.ts, no literal {#}, ids not doubled (WP01).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T20:06:23.745075+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Component links (Related/OnThisPage/Audience) base-prefixed via one withBase; routeFor kept base-less for agent-API (WP01).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T20:06:32.962836+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Authored links resolve via rehype base-absolute-links plugin (root-absolute + base-prefix); 8 links verified in dist (WP01 review-2).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T20:06:42.510479+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "assert-no-broken-links base-aware URL-resolved dist gate + tightened check-links; red->green proven (WP02, gate reviewed).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T20:06:51.542091+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

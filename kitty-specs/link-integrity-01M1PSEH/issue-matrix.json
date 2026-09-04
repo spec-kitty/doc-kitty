@@ -1,0 +1,41 @@
+{
+  "rows": {
+    "#61": {
+      "evidence_ref": "WP01 re-review: base-prefix glossary(shared glossaryTermUrl)+components(withBase)+authored links(rehype base-absolute-links plugin); clean build shows 0 base-less internal hrefs site-wide, authored links resolve to /doc-kitty/... routes",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    },
+    "#62": {
+      "evidence_ref": "Fail-closed built-output link gate (FR-005/C-005) is WP02 scope (owns check-links.mjs + new assert-no-broken-links.mjs + ci.yml); WP02 still planned. Out of WP01 scope.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "in-mission",
+      "wp": "WP02"
+    },
+    "#63": {
+      "evidence_ref": "WP01 re-review: generate.ts emits block-form heading attribute; dist glossary pages contain no literal {# and ids not doubled (id=cargo not cargo-cargo); glossary-anchor.test.ts green",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}
