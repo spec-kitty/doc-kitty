@@ -2,9 +2,9 @@
   "event_count": 14,
   "last_event_id": "01M1NFK5FB6QZ29VT157BA11DF",
   "materialized_at": "2026-09-04T05:52:16.875452+00:00",
-  "mission_number": "4",
+  "mission_number": "",
   "mission_slug": "test-guard-hardening-01M1NDDJ",
-  "mission_type": "software-dev",
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,62 +20,34 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "done",
       "last_event_id": "01M1NFJY2GK41GC8JXJJSKTC4Q",
       "last_transition_at": "2026-09-04T05:52:09.296535+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP01 ready: pure selectHubChildren (src/lib/hub-children.mjs) + Hub.astro wired (byte-identical render, ADR-number ordering via buildAdrHubCards preserved). MUTATION-CHECK: deleting the isPublished clause leaks a draft numbered ADR (adr/0009-wip) + draft non-ADR (adr/template) and REDS hub-children.test.ts; restored -> green. LOCAL (lane worktree, pnpm install --offline OK): pnpm -C src test hub-children green (2); full pnpm -C src test --no-file-parallelism green (767 tests / 58 files); pnpm typecheck (astro check) 0 errors after clearing stray example/dist-wp04-adopter-example-test; pnpm lint exit 0. All local; CI authoritative. Lane-hygiene: removed inherited coordination status.json from lane per guard remedy.",
-        "APPROVED (forced past derived-status.json lane-hygiene catch-22 only — blocker is committed status.events.jsonl/status.json from the R-STATUS-JSON-REMATERIALIZE auto-rebase, NOT code). Mutation-verified: reviewer removed the isPublished clause -> hub-children.test.ts REDS (draft ADR adr/0009-wip + draft non-ADR adr/template leak), restored -> GREEN. Test exercises the REAL imported selectHubChildren; covers draft numbered ADR + draft non-ADR excluded, published kept + section/title ordered. Byte-identical extraction (buildAdrHubCards fully re-sorts ADRs by number; non-ADR filter-after-stable-sort preserves order). Full vitest 767/767 green, lint clean, hub-adr-card gate green. Files disjoint from WP02. typecheck (astro check) OOMs env-only; type-soundness verified by reasoning + CI."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/test-guard-hardening-01M1NDDJ/tasks/WP01-guard-hub-draft-exclusion/review-cycle-1.md",
         "reference": "review-cycle://test-guard-hardening-01M1NDDJ/WP01-guard-hub-draft-exclusion/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 690603,
-      "shell_pid_created_at": "1788500508.1",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done"
-      }
+      "shell_pid": 654838,
+      "shell_pid_created_at": "1788499324.46"
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M1NFK5FB6QZ29VT157BA11DF",
       "last_transition_at": "2026-09-04T05:52:16.875452+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP02 ready (fileParallelism:false, #54; 765/765 x2, no race; wall-clock ~28s vs ~10.5s = ~2.6x above soft NFR-003, inherent build serialization — reviewer to weigh). --force: derived-status lane-hygiene catch-22, not a code issue.",
-        "Review PASS (reviewer-renata): fileParallelism:false, #54 flake fixed (765/765 x2, no race, 2.1.9-valid). NFR-003 accepted (soft target; 28s not pathological; per-suite outDir fix noted as optional follow-up). --force: derived-status lane catch-22 only."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/test-guard-hardening-01M1NDDJ/tasks/WP02-vitest-flake-isolation/review-cycle-1.md",
         "reference": "review-cycle://test-guard-hardening-01M1NDDJ/WP02-vitest-flake-isolation/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 683671,
-      "shell_pid_created_at": "1788500298.64",
-      "subtasks": {
-        "T005": "done",
-        "T006": "done"
-      }
+      "shell_pid": 656718,
+      "shell_pid_created_at": "1788499460.95"
     }
   }
 }
