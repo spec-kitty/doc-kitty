@@ -1,0 +1,39 @@
+{
+  "mission_slug": "test-guard-hardening-01M1NDDJ",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "selectHubChildren extracted + mutation-true hub-children.test.ts (WP01, reviewer-reran mutation).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T05:50:23.934799+00:00",
+      "notes": "Per-WP review (reviewer-renata) + green vitest/eslint; astro check via CI."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "draft numbered ADR + draft non-ADR excluded via the real predicate; published kept (WP01).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T05:50:23.934799+00:00",
+      "notes": "Per-WP review (reviewer-renata) + green vitest/eslint; astro check via CI."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "fileParallelism:false; example-adopter+glossary-build-warning green x2, no race (WP02).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T05:50:23.934799+00:00",
+      "notes": "Per-WP review (reviewer-renata) + green vitest/eslint; astro check via CI."
+    }
+  ],
+  "negative_invariants": []
+}

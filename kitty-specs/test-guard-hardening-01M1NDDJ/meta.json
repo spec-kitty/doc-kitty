@@ -25,7 +25,6 @@
   "purpose_context": "Both surfaced by the metadata-vocab-hub-consolidation pre-PR review squad. #53: Hub.astro filters isPublished but no test catches its removal. #54: two build-spawning vitest suites flake under default file-parallelism. Small, independent, test/config-only.",
   "purpose_tldr": "Close two quality follow-ups from the metadata-vocab-hub mission: guard Hub draft-exclusion with a real test (#53) and remove the CI vitest parallel-build flake (#54).",
   "slug": "test-guard-hardening-01M1NDDJ",
-  "status_phase": "1",
   "target_branch": "feat/test-guard-hardening",
   "topology": "coord",
   "vcs": "git",

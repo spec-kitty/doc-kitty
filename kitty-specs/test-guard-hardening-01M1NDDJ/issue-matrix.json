@@ -1,0 +1,53 @@
+{
+  "rows": {
+    "#50": {
+      "evidence_ref": "Context ref only; #50 delivered+closed by the metadata-vocab-hub mission (PR #55, merged)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "verified-already-fixed",
+      "wp": null
+    },
+    "#53": {
+      "evidence_ref": "WP01 approved: selectHubChildren extracted + mutation-true hub-children.test.ts (reviewer re-ran: removing isPublished reds it). Commit 41d2449.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    },
+    "#54": {
+      "evidence_ref": "WP02 review: src/vitest.config.ts fileParallelism:false serializes the two astro-build suites; full vitest suite 765/765 green across 2 consecutive runs (~28s wall each), example-adopter + glossary-build-warning deterministic, no race. Mechanism valid in vitest 2.1.9. eslint exit 0.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP02"
+    },
+    "#55": {
+      "evidence_ref": "Context ref: PR #55 (metadata-vocab-hub) already merged to main; not fixed by this mission",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "verified-already-fixed",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}

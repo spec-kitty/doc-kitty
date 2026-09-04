@@ -45,11 +45,9 @@ import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { getCollection } from 'astro:content';
 import {
   slugFromEntryId,
-  sectionOf,
-  sectionRank,
-  isPublished,
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
+import { selectHubChildren } from '../lib/hub-children.mjs';
 import { loadSectionRegistry, sectionOrder } from '../lib/sections.js';
 // The ADR card's number+status+date and number-ordering come from the SHARED
 // extractor pipeline in the ADR-index generator — NOT a Hub-local parse. This is
@@ -67,11 +65,6 @@ const currentSlug = slugFromEntryId(route.id);
 const baseUrl = import.meta.env.BASE_URL.replace(/\/+$/, '');
 const hrefFor = (slug: string): string =>
   slug === '' ? `${baseUrl}/` : `${baseUrl}/${slug}/`;
-
-const parentOf = (slug: string): string => {
-  const i = slug.lastIndexOf('/');
-  return i === -1 ? '' : slug.slice(0, i);
-};
 
 // Section ordering follows the same registry the sidebar and discovery
 // surfaces read, so the root Hub grid never diverges from them (DIRECTIVE_044:
@@ -97,14 +90,19 @@ interface HubCard {
 // INV-1 / US3: a Hub lists only PUBLISHED children — a draft child (e.g.
 // adr/template) must never appear in the described-link list, mirroring the
 // sitemap/agent-index draft exclusion (isPublished, the canonical predicate).
-const publishedChildren = (await getCollection('docs')).filter((entry) => {
-  const slug = slugFromEntryId(entry.id);
-  return (
-    slug !== currentSlug &&
-    parentOf(slug) === currentSlug &&
-    isPublished(entry.data as unknown as DocKittyFrontmatter)
-  );
-});
+// The parent-of-current filter + section-rank→title sort now live in the pure,
+// importable `selectHubChildren` (#53), so the guard test exercises Hub's REAL
+// selection instead of a replica; this is a behaviour-preserving extraction —
+// the rendered output stays byte-identical (C-001).
+const publishedChildren = selectHubChildren(
+  (await getCollection('docs')).map((entry) => ({
+    slug: slugFromEntryId(entry.id),
+    data: entry.data as unknown as DocKittyFrontmatter,
+    body: (entry as { body?: string }).body ?? '',
+  })),
+  currentSlug,
+  order,
+);
 
 const isAdrKind = (data: DocKittyFrontmatter): boolean => data.kind === 'ADR';
 
@@ -116,29 +114,19 @@ const isAdrKind = (data: DocKittyFrontmatter): boolean => data.kind === 'ADR';
 // the same set (squad F5/F6). The `## Status` it reads lives in `entry.body`.
 const adrCards: HubCard[] = buildAdrHubCards(
   publishedChildren
-    .filter((entry) => isAdrKind(entry.data as unknown as DocKittyFrontmatter))
+    .filter((entry) => isAdrKind(entry.data))
     .map((entry) => ({
-      slug: slugFromEntryId(entry.id),
+      slug: entry.slug,
       data: entry.data,
-      body: (entry as { body?: string }).body ?? '',
+      body: entry.body,
     })),
 );
 
-// Non-ADR children keep the existing section-rank → title sort. In a non-ADR hub
-// (no ADR-kind children) this IS the whole list, byte-identical to before (T020).
+// Non-ADR children keep the section-rank → title order established by
+// `selectHubChildren`. In a non-ADR hub (no ADR-kind children) this IS the whole
+// list, byte-identical to before (T020).
 const otherCards: HubCard[] = publishedChildren
-  .filter((entry) => !isAdrKind(entry.data as unknown as DocKittyFrontmatter))
-  .map((entry) => ({
-    slug: slugFromEntryId(entry.id),
-    data: entry.data as unknown as DocKittyFrontmatter,
-  }))
-  .sort((a, b) => {
-    const bySection =
-      sectionRank(sectionOf(a.slug), order) -
-      sectionRank(sectionOf(b.slug), order);
-    if (bySection !== 0) return bySection;
-    return a.data.title.localeCompare(b.data.title);
-  })
+  .filter((entry) => !isAdrKind(entry.data))
   .map((entry) => ({
     slug: entry.slug,
     title: entry.data.title,
