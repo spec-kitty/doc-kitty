@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "mission_slug": "diagram-component-css-01M1PA3J",
+  "mission_id": "01M1PA3JC2SX50KXRS4C60ZAQ5",
+  "mission_branch": "kitty/mission-diagram-component-css-01M1PA3J",
+  "target_branch": "fix/diagram-component-css",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/layouts/DeckLayout.astro",
+        "src/lib/config.ts",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/styles/dk-components.css",
+        "src/styles/theme.css",
+        "src/tests/diagram-pipeline.test.ts",
+        "src/tests/theme-merge.test.ts",
+        "tests/a11y/diagram.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "docs/adr/**",
+        "docs/changelog/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-09-04T13:47:08.600617+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "ddb851c924067fa88b8fcdb5e3199704accf7acf"
+}

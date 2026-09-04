@@ -1,0 +1,59 @@
+{
+  "mission_slug": "diagram-component-css-01M1PA3J",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Retype mermaid node off code -> single <pre class=mermaid>, no <pre> ancestor; assert:artifacts + diagram-pipeline unit (WP01, opus-reviewed, mutation-true).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T14:55:11.241108+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "dk-diagram__caption styled non-mono/wrapping; Playwright computed-style on docs+deck (WP01 T008).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T14:55:20.689353+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "dk-components.css as own customCss entry + DeckLayout link; branded docs+deck ship .dk-callout+.dk-diagram; CSS-delivery assert (WP01).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T14:55:30.474705+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Existing showcase-deck (3 mermaid diagrams) exercised by the deck computed-style check (WP01 T008).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T14:55:39.875264+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "Red-first build-artifact no-<pre>+CSS-delivery asserts, pipeline unit, Playwright computed-style; all proven RED->GREEN (WP01).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-04T14:55:49.637121+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
