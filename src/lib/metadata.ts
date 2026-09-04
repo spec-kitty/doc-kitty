@@ -15,6 +15,7 @@
  * real frontmatter lives in `./schema.ts` and mirrors these types.
  */
 import { isPresentationEntry } from './deck/is-presentation.js';
+import { withBase } from './with-base.js';
 // The section vocabulary + type-derivation lives in ONE fs-free, Astro-free place
 // (#49 IC-01/IC-02): `vocabulary-core.mjs`. `metadata.ts` stays fs-free by
 // importing ONLY the pure core (never `sections.ts`/the loader). The `DocType`/
@@ -285,6 +286,17 @@ export interface AgentRecord {
   source: string;
 }
 
+/**
+ * The BASE-LESS, canonical site route for a docs-collection slug. Deliberately
+ * NOT base-prefixed here: the agent-API `route` field (`toAgentRecord`, below)
+ * is a committed contract read by `assert-build-artifacts.mjs` (BA-3 deck-route-
+ * parity) and `agent-api.test.ts` as the base-less canonical path — combining it
+ * with the base is that consumer's own concern (`absolute(site, route)`, out of
+ * this WP's owned surface). `resolveProfile` (Audience's href, #61/C-002) is the
+ * on-page-navigation consumer, so IT routes through `withBase` at its own return
+ * site instead — keeping this shared helper's base-less contract intact for the
+ * agent-API while still fixing the actual reader-facing 404.
+ */
 function routeFor(slug: string): string {
   return slug === '' ? '/' : `/${slug}/`;
 }
@@ -596,12 +608,16 @@ export function humanizeProfile(slug: string): string {
  * Resolve an audience `profile` slug to its persona page under
  * `context/audience/<profile>`. A miss is SOFT: returns `null` so the caller can
  * render the humanized slug and warn (the warn channel lands in WP04).
+ *
+ * `href` is base-prefixed via `withBase` (#61, C-002) — this is an actual
+ * reader-facing on-page link (Audience.astro renders it verbatim), unlike
+ * `routeFor`'s base-less agent-API contract.
  */
 export function resolveProfile(profile: string, index: DocsIndex): ResolvedProfile | null {
   const slug = `context/audience/${profile}`;
   const target = index[slug];
   if (!target) return null;
-  return { href: routeFor(slug), title: target.title };
+  return { href: withBase(routeFor(slug)), title: target.title };
 }
 
 /** A bibliography catalog record (CSL-JSON-lite, ADR-0018). */

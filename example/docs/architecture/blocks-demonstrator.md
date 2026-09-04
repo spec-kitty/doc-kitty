@@ -26,12 +26,12 @@ This page exists to render all three doc-kitty content blocks on one route so th
 accessibility lane can scan them together (post-spec R1). It declares:
 
 - an **audience** block linking the relocated
-  [example persona](../context/audience/example-persona), so the audience
+  [example persona](/context/audience/example-persona/), so the audience
   `<section>` renders a heading and a reader list;
 - a **related** block pointing at the
-  [superseded architecture note](superseded-note) — a real `superseded` page, so
+  [superseded architecture note](/architecture/superseded-note/) — a real `superseded` page, so
   its Related card carries the stale-target status marker — plus the
-  [architecture overview](overview) as a normal, current target;
+  [architecture overview](/architecture/overview/) as a normal, current target;
 - an **external references** block with one inline reference (no catalog key) and
   one catalog citation resolved from the bibliography, so a resolved title and a
   mono citation key both appear.

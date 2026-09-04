@@ -41,7 +41,7 @@
  * the shared index (no index → early return), so until WP08 wires it the built
  * corpus is byte-identical (NFR-002).
  */
-import { resolveSurface } from '../glossary/resolve.js';
+import { resolveSurface, glossaryTermUrl } from '../glossary/resolve.js';
 import type { SharedTermIndex } from '../glossary/types.js';
 
 /**
@@ -75,6 +75,13 @@ export interface GlossaryTermOptions {
   index?: SharedTermIndex;
   /** Ignore-listed surfaces (lowercased); passed straight to the resolver. */
   ignoreList?: ReadonlySet<string>;
+  /**
+   * The site's already-normalized base prefix (#61, C-001) — `config.ts` threads
+   * `normalizeBasePrefix(base)` here so an emitted `:term` link carries it, kept
+   * single-sourced with the auto-linker via the shared `glossaryTermUrl` builder.
+   * Defaults to `''` (no base).
+   */
+  base?: string;
 }
 
 /** Concatenate the text of a directive's label children (`:term[here]`). */
@@ -95,6 +102,9 @@ function textOf(node: MdastNode): string {
  * tree-scan key on. If these two ever
  * diverge, the island / no-JS fallback / used-list treat the two link kinds
  * differently — the reviewer diffs them.
+ * `basePrefix` (#61, C-001) is threaded from the plugin factory's `base` option —
+ * the ONE shared `glossaryTermUrl` builder keeps this and the auto-linker's
+ * emitted href single-sourced.
  */
 function glossaryLinkNode(
   context: string,
@@ -102,10 +112,11 @@ function glossaryLinkNode(
   anchor: string,
   termName: string,
   children: MdastNode[],
+  basePrefix: string,
 ): MdastNode {
   return {
     type: 'link',
-    url: `/glossary/${contextSlug}/#${anchor}`,
+    url: glossaryTermUrl(basePrefix, contextSlug, anchor),
     children,
     data: {
       hProperties: {
@@ -130,6 +141,7 @@ function transformDirective(
   file: TermVFile,
   index: SharedTermIndex,
   ignoreList: ReadonlySet<string>,
+  basePrefix: string,
 ): MdastNode {
   const text = textOf(node);
   const attributes = node.attributes ?? {};
@@ -161,6 +173,7 @@ function transformDirective(
       resolution.anchor,
       resolution.termName,
       label,
+      basePrefix,
     );
   }
 
@@ -179,7 +192,7 @@ function transformDirective(
  * mdast; assignable to Astro's `RemarkPlugin` (a unified `Plugin<[opts], Root>`).
  */
 export default function glossaryTerm(options: GlossaryTermOptions = {}) {
-  const { index, ignoreList = new Set<string>() } = options;
+  const { index, ignoreList = new Set<string>(), base: basePrefix = '' } = options;
 
   return function transformer(tree: MdastNode, file: TermVFile): void {
     // Presence-gated (NFR-002): no shared index → no-op, corpus byte-identical.
@@ -193,7 +206,7 @@ export default function glossaryTerm(options: GlossaryTermOptions = {}) {
         if (child.type === 'textDirective' && child.name === 'term') {
           // Replace the directive in place; the emitted node is a leaf (link with
           // its own label children, or a text node) — nothing further to descend.
-          children[i] = transformDirective(child, file, index, ignoreList);
+          children[i] = transformDirective(child, file, index, ignoreList, basePrefix);
         } else {
           walk(child);
         }

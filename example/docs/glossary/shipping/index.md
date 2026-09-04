@@ -10,7 +10,9 @@ doc_status: active
 
 How physical goods move from a seller to a buyer across carriers and borders.
 
-## cargo {#cargo}
+{#cargo}
+
+## cargo
 
 Goods carried by a vessel, aircraft, or vehicle under a single transport
 arrangement. Cargo is booked, tracked, and insured as one unit from its
@@ -27,7 +29,9 @@ origin to its destination.
 
 - **standard:** [https://www.iso.org/standard/64863.html](https://www.iso.org/standard/64863.html)
 
-## freight {#freight}
+{#freight}
+
+## freight
 
 The charge a carrier levies to move cargo, and — by extension — the load
 itself when it is described as revenue-bearing.
@@ -36,7 +40,9 @@ itself when it is described as revenue-bearing.
 
 - Ocean freight quoted per twenty-foot equivalent unit.
 
-## policy {#policy}
+{#policy}
+
+## policy
 
 A marine insurance contract that covers loss of or damage to cargo in
 transit, bounded by the agreed route and mode of transport.

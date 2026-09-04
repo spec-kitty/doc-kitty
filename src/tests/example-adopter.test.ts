@@ -91,10 +91,23 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
     // cache or example/dist — glossary-build-warning.test.ts owns clearing those
     // and may be building concurrently; see the WP04_OUT_DIR_NAME comment above).
     rmSync(EXAMPLE_DIST, { recursive: true, force: true });
+    // review-cycle-1 boy-scout fix: Vitest's OWN process env carries a
+    // `BASE_URL` variable (it mirrors Vite's client `import.meta.env.BASE_URL`
+    // for Node-environment tests, defaulting to `/`). A naive `...process.env`
+    // passthrough leaks that into this REAL `astro build` child process, where
+    // it silently overrides the site's actually-configured `base` (`/doc-kitty`)
+    // for every SSR-rendered `import.meta.env.BASE_URL` read (`withBase`'s
+    // source) — the built pages then render EVERY component href base-less,
+    // independent of and invisible before review-cycle-1's Fix B (the first
+    // assertion to bind an EXACT base-prefixed href). Stripping it here lets
+    // the child compute its own base from `example/astro.config.mjs`, matching
+    // every other (non-spawned-under-Vitest) build of this same site.
+    const childEnv = { ...process.env };
+    delete childEnv.BASE_URL;
     buildResult = spawnSync('pnpm', ['--filter', 'example', 'build'], {
       cwd: REPO_ROOT,
       encoding: 'utf8',
-      env: { ...process.env, DK_OUTDIR: WP04_OUT_DIR_NAME },
+      env: { ...childEnv, DK_OUTDIR: WP04_OUT_DIR_NAME },
     });
   }, 180_000);
 

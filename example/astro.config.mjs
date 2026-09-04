@@ -43,10 +43,19 @@ const OUT_DIR = process.env.DK_OUTDIR ? `./${process.env.DK_OUTDIR}` : undefined
 // before WP04, so these two entries are added by WP04 in the SAME change that
 // creates `plans/missions/` — there is no intermediate commit where the old
 // URL exists without its redirect (never red between merges).
+// review-cycle-1 Fix C (out-of-map edit, justified per E-08 — this file is
+// WP02-owned): Astro's `redirects` config auto-prefixes the `from` key with
+// `base`, but does NOT auto-prefix the `to` target — it is emitted verbatim
+// into both the generated redirect stub's fallback link AND its canonical URL
+// (`site` + `to`). With `to` left base-less, all three redirects landed on a
+// base-less dist href (a live 404 on a based deployment) — the same class of
+// bug #61 fixed for glossary/component hrefs, here in the one remaining
+// base-less surface. `BASE` is prepended so the target agrees with every other
+// in-site link on this site.
 const REDIRECTS = {
-  '/guides/old-getting-started/': '/guides/getting-started/',
-  '/plans/features/mission-alpha/': '/plans/missions/mission-alpha/',
-  '/plans/features/mission-beta/': '/plans/missions/mission-beta/',
+  '/guides/old-getting-started/': `${BASE}/guides/getting-started/`,
+  '/plans/features/mission-alpha/': `${BASE}/plans/missions/mission-alpha/`,
+  '/plans/features/mission-beta/': `${BASE}/plans/missions/mission-beta/`,
 };
 
 export default defineConfig({

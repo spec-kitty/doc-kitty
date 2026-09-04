@@ -223,12 +223,16 @@ const DEMO_AUDIENCE_HREF = '/context/audience/example-persona/';
 // The stale related target: a REAL published `doc_status: superseded` page, so its
 // Related card carries the stale text marker (StatusPill visible word). Bound to
 // the target href so the marker is proven on the STALE card specifically.
-const DEMO_STALE_TARGET_HREF = '/architecture/superseded-note/';
+// review-cycle-1 Fix B (out-of-map edit; assert-chrome-artifacts.mjs is shared
+// gate surface, not WP01-owned): base-prefixed to `/doc-kitty/…` because the
+// Related card now (correctly) emits a base-prefixed href — the base-prefix
+// change legitimately changed the emitted href these exact-match checks bind to.
+const DEMO_STALE_TARGET_HREF = '/doc-kitty/architecture/superseded-note/';
 const DEMO_STALE_TARGET_TITLE = 'Superseded architecture note';
 const DEMO_STALE_STATUS_WORD = 'superseded';
 // A normal (current) related target — used to prove the stale marker is bound to
 // the target's status, NOT painted on every card (non-fakeable).
-const DEMO_CURRENT_TARGET_HREF = '/architecture/overview/';
+const DEMO_CURRENT_TARGET_HREF = '/doc-kitty/architecture/overview/';
 // The catalog citation on the demonstrator (biblio divio-2017): the resolved
 // human TITLE must LEAD the accessible name; the mono citation KEY is secondary.
 const DEMO_CITATION_TITLE = 'The documentation system';

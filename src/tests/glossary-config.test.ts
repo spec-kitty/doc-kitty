@@ -142,9 +142,16 @@ describe('defineDocKittyIntegrations glossary presence-gate (byte-identity, R-4)
     // PINNED baseline — the pre-M4 named-integration order for the plain
     // (no theme, no diagrams) path. A future unconditional glossary registration
     // makes this list grow and this assertion fails loudly.
+    //
+    // review-cycle-1 Fix A (WP01 FR-004/SC-002) intentionally grows this list:
+    // `doc-kitty:base-absolute-links` is the ONE new always-on entry (not
+    // presence/opt-in-gated like the glossary/diagrams/markua seams) — it
+    // base-prefixes authored root-absolute markdown links on every build, so it
+    // is present in every named-array shape, glossary-free or not.
     const PINNED_GLOSSARY_FREE_BASELINE = [
       '@astrojs/starlight',
       'doc-kitty:deck-split',
+      'doc-kitty:base-absolute-links',
       '@astrojs/sitemap',
       'doc-kitty:manifest',
       'doc-kitty:favicon',

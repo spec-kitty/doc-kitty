@@ -11,7 +11,7 @@ related:
 
 # Mission Beta
 
-Like [Mission Alpha](./mission-alpha/), this page lived at
+Like [Mission Alpha](/plans/missions/mission-alpha/), this page lived at
 `plans/features/mission-beta.md` before the section was renamed to
 `plans/missions/` (E-08). Both this page's inline link and its `related:`
 frontmatter entry point at the post-rename path — `check-links.mjs` asserts
