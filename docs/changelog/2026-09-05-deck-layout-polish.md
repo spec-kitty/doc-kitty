@@ -1,6 +1,6 @@
 ---
 title: "Deck & layout polish — legible deck, fitted title slide, wide-screen cap"
-description: "Closes #65/#66/#67 — the showcase deck follows light/dark and fits its stage with a vertical-stack affordance, wide viewports get a capped/centered reading frame, and the Persona layout renders one clean identity card."
+description: "The deck follows light/dark and fits its stage with a stack cue, wide screens cap the reading frame, and Persona renders one clean identity card (#65/#66/#67)."
 doc_status: active
 updated: 2026-09-05
 type: Changelog
