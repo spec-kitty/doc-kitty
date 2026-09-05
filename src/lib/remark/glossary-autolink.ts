@@ -42,6 +42,12 @@ export interface GlossaryAutolinkOptions {
   index?: SharedTermIndex;
   /** Lowercased surfaces never linked (FR-008); defaults to empty. */
   ignoreList?: ReadonlySet<string>;
+  /**
+   * The site's already-normalized base prefix (#61, C-001) — `config.ts` threads
+   * `normalizeBasePrefix(base)` here so every emitted link href carries it.
+   * Defaults to `''` (no base), keeping a base-less site byte-identical.
+   */
+  base?: string;
 }
 
 /** The subset of the remark VFile this plugin reads (Astro injects `data.astro`). */
@@ -61,6 +67,7 @@ interface GlossaryVFile {
 export default function glossaryAutolink(options: GlossaryAutolinkOptions = {}) {
   const index = options.index;
   const ignoreList = options.ignoreList ?? new Set<string>();
+  const basePrefix = options.base ?? '';
 
   return function transformer(tree: MdRoot, file: GlossaryVFile): void {
     // Presence gate: no shared corpus ⇒ nothing to link (NFR-002).
@@ -77,16 +84,23 @@ export default function glossaryAutolink(options: GlossaryAutolinkOptions = {}) 
         ? frontmatter.glossary_context
         : undefined;
 
-    computePageLinks(tree, pageContext, index, ignoreList, (surface, competing) => {
-      const warning = formatUnresolvedWarning(surface, competing);
-      // NFR-007 lives at the BUILD layer: the collision must be a greppable line a
-      // build gate can assert on. Astro does NOT forward remark `file.message`
-      // diagnostics to the console, so ALSO write the pinned line to stderr. The
-      // pure core dedups (once per distinct surface per page), so this stays a
-      // single line per collision; it is non-fatal — the build still exits 0
-      // (INV-G3 skip-and-warn). `file.message` is retained for any dev overlay.
-      file.message(warning);
-      console.warn(warning);
-    });
+    computePageLinks(
+      tree,
+      pageContext,
+      index,
+      ignoreList,
+      (surface, competing) => {
+        const warning = formatUnresolvedWarning(surface, competing);
+        // NFR-007 lives at the BUILD layer: the collision must be a greppable line a
+        // build gate can assert on. Astro does NOT forward remark `file.message`
+        // diagnostics to the console, so ALSO write the pinned line to stderr. The
+        // pure core dedups (once per distinct surface per page), so this stays a
+        // single line per collision; it is non-fatal — the build still exits 0
+        // (INV-G3 skip-and-warn). `file.message` is retained for any dev overlay.
+        file.message(warning);
+        console.warn(warning);
+      },
+      basePrefix,
+    );
   };
 }

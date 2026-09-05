@@ -22,7 +22,7 @@
  * models sections, applies the ancestor + whole-word guards, rewrites eligible
  * text into link nodes, and collects the used-list.
  */
-import { resolveSurface } from '../glossary/resolve.js';
+import { resolveSurface, glossaryTermUrl } from '../glossary/resolve.js';
 import type { GlossaryLinkUsed, SharedTermIndex } from '../glossary/types.js';
 
 /**
@@ -156,6 +156,8 @@ function buildSurfaceRegExp(index: SharedTermIndex): RegExp | undefined {
  * at `/glossary/<slug>/`, so a raw context name with spaces/caps/`&` would 404
  * (issue #17 finding #5). `data-glossary-context` keeps the original NAME (the hover
  * payload keys on it). MUST stay byte-identical to `glossary-term.glossaryLinkNode`.
+ * `basePrefix` (#61, C-001) is threaded from `computePageLinks` — the ONE shared
+ * `glossaryTermUrl` builder keeps this and `:term`'s emitted href single-sourced.
  */
 function makeLinkNode(
   context: string,
@@ -163,10 +165,11 @@ function makeLinkNode(
   anchor: string,
   termName: string,
   surface: string,
+  basePrefix: string,
 ): MdNode {
   return {
     type: 'link',
-    url: `/glossary/${contextSlug}/#${anchor}`,
+    url: glossaryTermUrl(basePrefix, contextSlug, anchor),
     children: [{ type: 'text', value: surface }],
     data: {
       hProperties: {
@@ -192,6 +195,8 @@ interface Walk {
   linkedSurfaces: Set<string>;
   /** Surfaces already warned about on THIS PAGE (lowercased) — dedup NFR-007. */
   readonly warnedSurfaces: Set<string>;
+  /** The site's already-normalized base prefix (#61, C-001); `''` when none. */
+  readonly basePrefix: string;
 }
 
 /**
@@ -218,7 +223,9 @@ function expandTextNode(node: MdNode, w: Walk): MdNode[] {
     const res = resolveSurface(matched, w.pageContext, w.index, w.ignoreList);
     if (res.kind === 'link') {
       if (m.index > cursor) out.push({ type: 'text', value: value.slice(cursor, m.index) });
-      out.push(makeLinkNode(res.context, res.contextSlug, res.anchor, res.termName, matched));
+      out.push(
+        makeLinkNode(res.context, res.contextSlug, res.anchor, res.termName, matched, w.basePrefix),
+      );
       w.linkedSurfaces.add(lower);
       cursor = m.index + matched.length;
       linked = true;
@@ -322,6 +329,13 @@ export function formatUnresolvedWarning(name: string, competing: readonly string
  * page; the wrapper wires it to `file.message`, WP07's re-derive omits it. This
  * function does NOT read frontmatter, touch Astro, or publish to any channel —
  * the wrapper owns the deck/opt-out/presence gates and the vfile.
+ *
+ * `basePrefix` (#61, C-001) is the site's already-normalized base, threaded from
+ * `config.ts` via the build wrapper (`glossary-autolink.ts`) so every emitted link
+ * node's `url` carries it (through the shared `glossaryTermUrl` builder). Defaults
+ * to `''` (no base) — WP07's render-time re-derive (`OnThisPage.astro`) omits it
+ * because it only reads `linksUsed`'s `contextSlug`/`anchor` (never the discarded
+ * tree's `url`) to build its own base-aware href.
  */
 export function computePageLinks(
   tree: MdRoot,
@@ -329,6 +343,7 @@ export function computePageLinks(
   index: SharedTermIndex,
   ignoreList: ReadonlySet<string>,
   onUnresolved?: UnresolvedSink,
+  basePrefix = '',
 ): { tree: MdRoot; linksUsed: GlossaryLinkUsed[] } {
   const re = buildSurfaceRegExp(index);
   if (re === undefined) {
@@ -349,6 +364,7 @@ export function computePageLinks(
       onUnresolved,
       linkedSurfaces,
       warnedSurfaces,
+      basePrefix,
     };
     for (const block of blocks) {
       linkifyNode(block, isGuardType(block.type), w);

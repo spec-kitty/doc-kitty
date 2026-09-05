@@ -8,6 +8,7 @@ import process from 'node:process';
 import { getCollection } from 'astro:content';
 import type { DocEntry, DocKittyFrontmatter, DocsIndex, IndexBasenameOption } from '../metadata.js';
 import { readmeToIndexId, slugFromEntryId } from '../metadata.js';
+import { withBase } from '../with-base.js';
 
 /**
  * Load every docs entry as a `DocEntry`. With the README-as-index loader, an
@@ -146,10 +147,28 @@ export async function docsRoot(indexBasename?: IndexBasenameOption): Promise<str
   );
 }
 
-/** Resolve an absolute URL for a route against the configured site. */
+/**
+ * Resolve an absolute URL for a route against the configured site.
+ *
+ * WHY (pre-PR review, #61/#62 completeness gap): RSS, llms.txt, and the
+ * agent-API JSON all compose their emitted absolute URLs through this one
+ * function, but `path` here is deliberately the BASE-LESS `routeFor`/
+ * `toAgentRecord` contract (see `metadata.ts`'s `routeFor` doc comment, which
+ * names combining it with the base as "that consumer's own concern"). Without
+ * this step, every emitted feed/index absolute URL 404'd on a based
+ * deployment even though the on-page `<a href>`s (`withBase`, #61/C-002) and
+ * the `<head>` feed-discovery links (`discoveryHead`, config.ts) were already
+ * base-prefixed.
+ *
+ * Routes through `withBase` — the SAME single base-prefix helper every
+ * component uses — so this seam cannot independently clone/drift from it
+ * (DIRECTIVE_024/#61's own root cause). `withBase` is idempotent, so a path
+ * that already carries the base (or carries no base when none is configured)
+ * passes through unchanged.
+ */
 export function absolute(site: URL | undefined, path: string): string {
   const base = site ?? new URL('http://localhost:4321');
-  return new URL(path, base).href;
+  return new URL(withBase(path), base).href;
 }
 
 /** Minimal XML text escaping for feed content. */

@@ -56,6 +56,40 @@ const MAX_CHAIN_DEPTH = 10;
 const REDIRECT_STUB_RE =
   /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta http-equiv="refresh" content="\d+;\s*url=([^"]*)"/i;
 
+// review-cycle-1 Fix C follow-through (out-of-map; this script is the
+// coverage-gate half of the same base-prefix fix `astro.config.mjs`'s
+// `REDIRECTS` map needed): the stub's fallback link also carries the ORIGINAL
+// request path — `redirectTemplate`'s `from` — as
+// `Redirecting from <code>{fromPath}</code> to <code>{target}</code>`.
+// `fromPath` is Astro's own base-INCLUDED pathname (the same base the `to`
+// target may now legitimately carry, since #61-class hrefs need the base to
+// be live in a browser). This gate's baseline/chain keys stay in the
+// BASE-AGNOSTIC "route" space (matching `urlToDistFile`'s dist-file-structure
+// convention — dist never nests a `base/` directory), so a base-prefixed
+// target must be re-normalized back to that space before the chain
+// continues. See {@link stripKnownBase}.
+const FROM_CODE_RE = /Redirecting from <code>([^<]*)<\/code>/i;
+
+/**
+ * Derive the site base from the stub's embedded `fromPath` (the request path
+ * Astro actually served, base-included) by diffing it against `lookupKey` —
+ * the base-agnostic route this file was already found at. If `fromPath` ends
+ * with `lookupKey`, the leading remainder is the base; strip that SAME prefix
+ * off `rawTarget` when present. No-ops (returns `rawTarget` unchanged) when
+ * there is no `fromPath` to compare (older/synthetic stub fixtures — see
+ * `redirect-coverage.test.ts`), when it doesn't end with `lookupKey`, or when
+ * `rawTarget` doesn't actually carry that prefix — never invents a strip.
+ */
+export function stripKnownBase(fromPath, lookupKey, rawTarget) {
+  if (!fromPath) return rawTarget;
+  const from = normalizeUrlPath(fromPath);
+  const key = normalizeUrlPath(lookupKey);
+  if (from.length <= key.length || !from.endsWith(key)) return rawTarget;
+  const base = from.slice(0, from.length - key.length);
+  if (!base || !rawTarget.startsWith(base)) return rawTarget;
+  return rawTarget.slice(base.length) || '/';
+}
+
 /**
  * Normalize a baseline/redirect-target entry to a site-absolute POSIX path.
  * Strips a scheme+host if one was pasted in by mistake; defensive only — every
@@ -123,7 +157,11 @@ export function inspectDistUrl(distDir, urlPath, redirectMap) {
   if (!existsSync(file)) return { kind: 'missing' };
   const html = readFileSync(file, 'utf8');
   const m = html.match(REDIRECT_STUB_RE);
-  if (m) return { kind: 'redirect', target: normalizeUrlPath(m[1]) };
+  if (m) {
+    const fromMatch = html.match(FROM_CODE_RE);
+    const target = stripKnownBase(fromMatch?.[1], urlPath, m[1]);
+    return { kind: 'redirect', target: normalizeUrlPath(target) };
+  }
   return { kind: 'page' };
 }
 

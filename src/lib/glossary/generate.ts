@@ -88,9 +88,26 @@ function headingText(name: string): string {
     .replace(/[{}]/g, (c) => `\\${c}`);
 }
 
-/** Render one term as a Markdown section anchored at its stored de-collided anchor. */
+/**
+ * Render one term as a Markdown section anchored at its stored de-collided
+ * anchor. Emits the **block-form** attribute-list line (`markua-attributes.ts`
+ * §Block form) — a lone `{#anchor}` paragraph immediately above the heading —
+ * rather than the inline `## name {#anchor}` form, since this toolkit's
+ * attribute-list plugin only consumes the block form (#63, D3): the inline form
+ * is never parsed, so it doubled the slugger's heading id (`cargo-cargo`) and
+ * rendered the literal `{#cargo}` as visible text. Block-form attaches `id` to
+ * the immediately-following heading and is spliced out of the tree, so neither
+ * artifact reaches the reader — the visible heading text (`headingText`) is
+ * unchanged.
+ */
 function renderTerm(term: Term, anchor: string): string[] {
-  const blocks: string[] = [`## ${headingText(term.name)} {#${anchor}}`, '', term.definition];
+  const blocks: string[] = [
+    `{#${anchor}}`,
+    '',
+    `## ${headingText(term.name)}`,
+    '',
+    term.definition,
+  ];
 
   if (term.aliases && term.aliases.length > 0) {
     blocks.push('', `**Aliases:** ${term.aliases.join(', ')}`);

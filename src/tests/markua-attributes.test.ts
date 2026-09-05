@@ -410,9 +410,14 @@ describe('config wiring — markua OFF byte-identity (FR-011, the diagrams:false
   // PINNED baseline: the plain (no theme, no diagrams, no glossary, no markua)
   // named-integration order. A future UNCONDITIONAL markua/directive registration
   // makes this list grow and this assertion fails loudly.
+  //
+  // review-cycle-1 Fix A (WP01 FR-004/SC-002) intentionally grows this list:
+  // `doc-kitty:base-absolute-links` is the ONE new always-on entry (unlike
+  // markua/directive, it is never gated) — present in every named-array shape.
   const PINNED_BOTH_OFF_BASELINE = [
     '@astrojs/starlight',
     'doc-kitty:deck-split',
+    'doc-kitty:base-absolute-links',
     '@astrojs/sitemap',
     'doc-kitty:manifest',
     'doc-kitty:favicon',

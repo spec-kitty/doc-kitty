@@ -1,0 +1,32 @@
+{
+  "accept_commit": "8530936f4c1718aef3e513845147a502bb8e7877",
+  "acceptance_history": [
+    {
+      "accept_commit": "8530936f4c1718aef3e513845147a502bb8e7877",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-09-04T20:07:15.785060+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "c8581c6c4b1fa785125213c9031d11cd9b6148ff"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-09-04T20:07:15.785060+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "c8581c6c4b1fa785125213c9031d11cd9b6148ff",
+  "baseline_merge_commit": "19c690d910d5c397829eb6f1a2504f6fe8aa100e",
+  "created_at": "2026-09-04T18:03:45.271750+00:00",
+  "flattened": true,
+  "friendly_name": "Internal link integrity — base-prefix, relative-link & glossary-anchor 404s",
+  "mission_id": "01M1PSEH7Q72MYA6V7WF8FQW5S",
+  "mission_number": null,
+  "mission_slug": "link-integrity-01M1PSEH",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The example docsite ships many broken internal links: glossary term links and hand-authored section links omit the /doc-kitty base and 404; relative links on leaf pages resolve as children and 404; glossary term headings render literal {#anchor} text with doubled ids so fragments never resolve; and the link-check gate reports success while all of it is broken. This mission makes internal links resolve and makes the gate fail-closed. Closes #61, #62, #63.",
+  "purpose_tldr": "Internal links stop 404-ing: glossary terms, section links, and relative links resolve under the site base, and the link gate catches breakage instead of passing it.",
+  "slug": "link-integrity-01M1PSEH",
+  "status_phase": "1",
+  "target_branch": "fix/link-integrity",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-04T18:11:55.464274+00:00"
+}

@@ -38,6 +38,7 @@ import { docKittyFavicon, faviconHref } from './favicon.js';
 import deckSplit from './remark/deck-split.js';
 import diagramMeta from './remark/diagram-meta.js';
 import diagramFigure from './rehype/diagram-figure.js';
+import baseAbsoluteLinks from './rehype/base-absolute-links.js';
 import remarkDirective from 'remark-directive';
 import markuaNormalise from './remark/markua-normalise.js';
 import markuaAttributes from './remark/markua-attributes.js';
@@ -371,6 +372,35 @@ const deckSplitIntegration: AstroIntegration = {
   },
 };
 
+/**
+ * The always-on authored-content base-prefix seam (review-cycle-1, WP01
+ * FR-004/SC-002). Unlike the diagrams/markua/glossary seams, this is NOT
+ * opt-in and NOT presence-gated: every doc-kitty site can carry hand-authored,
+ * root-absolute internal links in its markdown body (`/architecture/overview/`),
+ * and on a based deployment those 404 verbatim unless something base-prefixes
+ * them at the rendered-HTML seam (mirrors the diagram/glossary shape of a
+ * global markdown plugin, but always registered — like `deckSplitIntegration`
+ * below, whose no-op guard is per-page rather than per-config). With NO base
+ * configured (`base: '/'`, the default) `normalizeBasePrefix` collapses to
+ * `''` and the plugin's own guard makes it a strict no-op — a base-less site's
+ * corpus stays byte-identical (NFR-001-shaped, even though this integration
+ * itself is unconditional).
+ */
+function baseAbsoluteLinksIntegration(base: string): AstroIntegration {
+  return {
+    name: 'doc-kitty:base-absolute-links',
+    hooks: {
+      'astro:config:setup': ({ updateConfig }) => {
+        updateConfig({
+          markdown: {
+            rehypePlugins: [[baseAbsoluteLinks, { base: normalizeBasePrefix(base) }]],
+          },
+        });
+      },
+    },
+  };
+}
+
 /** Minimal structural mdast node — enough to find mermaid fences and recurse. */
 interface FenceMdastNode {
   type: string;
@@ -521,7 +551,9 @@ const diagramsIntegration: AstroIntegration = {
  *       byte-identical files and never loops.
  *   (b) registers the remark plugins in the PINNED order (`updateConfig` APPENDS
  *       after Astro's built-in remark-gfm): `glossary-term → glossary-autolink`,
- *       threading the ONE shared index + `DEFAULT_IGNORE_LIST` into both factories
+ *       threading the ONE shared index + `DEFAULT_IGNORE_LIST` + the site's
+ *       already-normalized base prefix (#61, C-001 — the same `normalizeBasePrefix`
+ *       pattern `discoveryHead` uses for `/rss.xml`/`/llms.txt`) into both factories
  *       (FR-008), plus the `glossaryDefinitions` rehype plugin that emits the
  *       hover-preview payload `<script>` (the WP06 island contract). `remarkDirective`
  *       is registered ONCE by the shared `directiveIntegration` owner (ADR-0030),
@@ -532,7 +564,7 @@ const diagramsIntegration: AstroIntegration = {
  *       deck (it keys on `a[data-glossary-term]`), so no `main.reveal` guard is
  *       needed (unlike the diagram render). `.catch` mirrors the diagram owner.
  */
-function glossaryIntegration(docsDir: string): AstroIntegration {
+function glossaryIntegration(docsDir: string, base: string): AstroIntegration {
   return {
     name: 'doc-kitty:glossary',
     hooks: {
@@ -549,19 +581,22 @@ function glossaryIntegration(docsDir: string): AstroIntegration {
         generateGlossaryPages(index, path.resolve(root, docsDir));
 
         // (b) Pinned remark order (append after remark-gfm) + payload rehype.
-        // The shared index + DEFAULT_IGNORE_LIST thread into BOTH factories so the
-        // pipeline and WP07's render-time re-derive resolve identically (FR-008).
+        // The shared index + DEFAULT_IGNORE_LIST + basePrefix thread into BOTH
+        // factories so the pipeline and WP07's render-time re-derive resolve
+        // identically (FR-008) and every emitted term href carries the site base
+        // (#61) through the ONE shared `glossaryTermUrl` builder both factories call.
         // NOTE: `remarkDirective` is NO LONGER registered here — it is hoisted to
         // the single `directiveIntegration` owner (gated on glossary OR markua,
         // ADR-0030) and prepended BEFORE this integration, so the effective
         // combined order is still `remarkDirective → glossary-term →
         // glossary-autolink`. See the registration-site comment in
         // `defineDocKittyIntegrations`.
+        const basePrefix = normalizeBasePrefix(base);
         updateConfig({
           markdown: {
             remarkPlugins: [
-              [glossaryTerm, { index, ignoreList: DEFAULT_IGNORE_LIST }],
-              [glossaryAutolink, { index, ignoreList: DEFAULT_IGNORE_LIST }],
+              [glossaryTerm, { index, ignoreList: DEFAULT_IGNORE_LIST, base: basePrefix }],
+              [glossaryAutolink, { index, ignoreList: DEFAULT_IGNORE_LIST, base: basePrefix }],
             ],
             rehypePlugins: [
               [glossaryDefinitions, { json: serializeDefinitionsPayload(index) }],
@@ -794,11 +829,15 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // shape. Omitted entirely when absent — the spread contributes NOTHING, so a
     // glossary-free array + corpus is byte-identical to pre-M4 (NFR-002). WP09 lands
     // the example definitions file; until then this is inert on the example.
-    ...(glossaryActive ? [glossaryIntegration(docsDir)] : []),
+    ...(glossaryActive ? [glossaryIntegration(docsDir, base)] : []),
     starlight(starlightConfig),
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.
     deckSplitIntegration,
+    // Always-on authored-content base-prefix seam (review-cycle-1, FR-004/
+    // SC-002): base-prefixes every root-absolute internal `<a href>` a rendered
+    // markdown page emits. No-ops when no `base` is configured.
+    baseAbsoluteLinksIntegration(base),
     // INV-1: draft pages are unpublished, so their URLs are excluded here.
     sitemap({ filter: sitemapDraftFilter(docsDir, base, indexBasename) }),
     // Transport the merged `kind → layout` + `dk:slot → component` maps to the

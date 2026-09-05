@@ -19,4 +19,4 @@ under `plans/missions/`. That registry rule is the only reason this path
 derives `Mission` instead of falling through to the built-in
 `plans/features` -> `Feature` table.
 
-See also [Mission Beta](./mission-beta/).
+See also [Mission Beta](/plans/missions/mission-beta/).

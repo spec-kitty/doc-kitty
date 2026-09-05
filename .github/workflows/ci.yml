@@ -144,6 +144,15 @@ jobs:
       # while deploy reuses the pure build (contracts/build-example-action.contract.md).
       - name: Assert build artifacts
         run: pnpm assert:artifacts example/dist
+      # Base-aware, built-output link gate (link-integrity #62, WP02 — FR-005,
+      # NFR-003/004). Runs HERE, after the build, because it walks the RENDERED
+      # `example/dist/**/*.html` — the pre-build `validate:links` (doc-sanity
+      # lane) resolves against the filesystem and never sees a component- or
+      # glossary-generated href, which is exactly why it shipped ~30 live 404s
+      # green. Mutation-true: RED on a base-less/wrongly-relative internal
+      # link, GREEN once it resolves as a URL against the site base.
+      - name: Assert no broken internal links
+        run: pnpm assert:no-broken-links
       # Redirect-coverage gate (adopter-loader-migration #42, WP02 — FR-010, NFR-002).
       # Runs HERE, after the build produced dist/, so the target-aware chain
       # resolution has real content/redirect stubs to walk. Bare Node, reads the

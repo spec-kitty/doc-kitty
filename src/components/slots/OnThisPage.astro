@@ -27,8 +27,9 @@
  * reuses those PURE exports (never `resolve.ts` alone, which has no section model
  * and no directive pass → would drop `:term` links). NFR-004 determinism makes the
  * re-derived list byte-identical to what the pipeline linked, `:term` links
- * included. Each is a plain anchor to `/glossary/<contextSlug>/#<anchor>` (present
- * with JS off; the WP06 hover island is orthogonal).
+ * included. Each is a plain anchor built from the ONE shared `glossaryTermUrl`
+ * builder (#61, C-001) composed with `withBase` (present with JS off; the WP06
+ * hover island is orthogonal).
  *
  * OMIT-WHEN-EMPTY (FR-010): the whole block is omitted when all three sub-lists
  * are empty, and any individual empty sub-list is omitted.
@@ -59,6 +60,7 @@ import {
 import { loadGlossary } from '../../lib/glossary/load.js';
 import { createPageProcessor } from '../../lib/glossary/page-processor.js';
 import { DEFAULT_IGNORE_LIST } from '../../lib/glossary/ignore-list.js';
+import { glossaryTermUrl } from '../../lib/glossary/resolve.js';
 import type { SharedTermIndex, GlossaryLinkUsed } from '../../lib/glossary/types.js';
 import glossaryTerm from '../../lib/remark/glossary-term.js';
 import {
@@ -66,6 +68,7 @@ import {
   collectLinksUsed,
   type MdRoot,
 } from '../../lib/remark/glossary-autolink.internal.js';
+import { withBase } from '../../lib/with-base.js';
 
 interface ReferenceRow {
   href: string;
@@ -250,7 +253,7 @@ const LIST_RESET =
             {relatedCards.map((card) => (
               <li class="dk-related__item">
                 <RelatedCard
-                  href={`/${card.ref}/`}
+                  href={withBase(`/${card.ref}/`)}
                   title={card.title}
                   description={card.note}
                   kind={card.kind}
@@ -296,7 +299,7 @@ const LIST_RESET =
               <li class="dk-glossary-links__item">
                 <a
                   class="dk-glossary-links__link"
-                  href={`/glossary/${link.contextSlug}/#${link.anchor}`}
+                  href={withBase(glossaryTermUrl('', link.contextSlug, link.anchor))}
                 >
                   {link.termName}
                 </a>

@@ -16,5 +16,5 @@ resolves to a real page whose `doc_status` is `superseded`.
 
 Because `resolveRelated` fails the build on a dangling reference, the stale-target
 status marker (FR-005) needs an actual superseded page to point at. This is that
-page: the [blocks demonstrator](blocks-demonstrator) links here to show the
+page: the [blocks demonstrator](/architecture/blocks-demonstrator/) links here to show the
 superseded marker on a Related card.

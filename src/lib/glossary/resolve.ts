@@ -15,6 +15,25 @@
  */
 import type { Resolution, SharedTermIndex } from './types.js';
 
+/**
+ * `glossaryTermUrl` — the ONE base-aware glossary term-URL builder (#61/#63,
+ * C-001, NFR-002). Shared by the auto-linker (`glossary-autolink.internal.ts`),
+ * the `:term` directive (`glossary-term.ts`), and the "On this page" glossary
+ * sub-list (`OnThisPage.astro`), so the three surfaces can never diverge in URL
+ * shape (the exact clone-drift D1 identifies as #61's root cause).
+ *
+ * `basePrefix` is the site's ALREADY-NORMALIZED base — `''` for no base,
+ * `/doc-kitty` for a based deployment. The remark-plugin callers thread it in
+ * explicitly (via `config.ts`'s `normalizeBasePrefix`, C-001 — these modules stay
+ * Astro-free/pure, no `import.meta.env` read); `.astro` callers compose this with
+ * `withBase()` instead. This function does no normalization itself — it is a
+ * pure string join, so a caller passing an already-doubled or malformed prefix
+ * gets that reflected verbatim (the callers own normalization).
+ */
+export function glossaryTermUrl(basePrefix: string, contextSlug: string, anchor: string): string {
+  return `${basePrefix}/glossary/${contextSlug}/#${anchor}`;
+}
+
 export function resolveSurface(
   surface: string,
   pageContext: string | undefined,

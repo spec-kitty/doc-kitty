@@ -103,12 +103,20 @@ describe('generateGlossaryPages', () => {
     expect(page).toContain('kind: Glossary');
   });
 
-  it('emits each term at a deterministic slug(name) anchor', () => {
+  it('emits each term at a deterministic slug(name) anchor, in the BLOCK-form attribute (#63)', () => {
     const out = makeOutDir();
     generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out);
     const page = readFileSync(join(out, 'glossary', 'shipping', 'index.md'), 'utf8');
-    expect(page).toContain(`## Cargo Booking {#${slug('Cargo Booking')}}`);
-    expect(page).toContain(`## Bill of Lading {#${slug('Bill of Lading')}}`);
+    // Block form: a lone `{#anchor}` attribute-list paragraph immediately above
+    // the heading (markua-attributes.ts §Block form) — NOT the inline
+    // `## name {#anchor}` form, which this toolkit's attribute-list plugin never
+    // consumes (#63, D3: the inline form doubles the slugger's id and renders the
+    // literal `{#…}` as text).
+    expect(page).toContain(`{#${slug('Cargo Booking')}}\n\n## Cargo Booking`);
+    expect(page).toContain(`{#${slug('Bill of Lading')}}\n\n## Bill of Lading`);
+    // Never the inline form.
+    expect(page).not.toContain(`## Cargo Booking {#${slug('Cargo Booking')}}`);
+    expect(page).not.toContain(`## Bill of Lading {#${slug('Bill of Lading')}}`);
   });
 
   it('renders the definition as Markdown body (not HTML-escaped to text)', () => {
@@ -157,9 +165,9 @@ describe('generateGlossaryPages', () => {
 `;
     generateGlossaryPages(indexFrom(yaml), out);
     const page = readFileSync(join(out, 'glossary', 'langs', 'index.md'), 'utf8');
-    expect(page).toContain('## C {#c}');
-    expect(page).toContain('## C++ {#c-2}');
-    expect(page).toContain('## C# {#c-3}');
+    expect(page).toContain('{#c}\n\n## C');
+    expect(page).toContain('{#c-2}\n\n## C++');
+    expect(page).toContain('{#c-3}\n\n## C#');
   });
 
   it('two distinct context names sharing a base slug write two distinct dirs (issue #17 #4)', () => {

@@ -1,0 +1,141 @@
+schema_version: 1
+mission_id: 01M1PSEH7Q72MYA6V7WF8FQW5S
+mission_slug: link-integrity-01M1PSEH
+mission_number:
+friendly_name: Internal link integrity — base-prefix, relative-link & glossary-anchor 404s
+mission_type: software-dev
+target_branch: fix/link-integrity
+created_at: '2026-09-04T20:08:26.201208+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-09-04T20:08:26.201208+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-007
+not_helpful:
+- id: n-005
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-012
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-004
+  category: implementation
+  summary: WP01 needed 2 implementation cycles
+  evidence_refs:
+  - e-011
+  details: WP WP01 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-002
+  category: process
+  summary: WP01 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-009
+  details: WP WP01 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-003
+  category: process
+  summary: WP02 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-010
+  details: WP WP02 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP01 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-008
+  details: WP WP01 was sent back from review to planning 1 time(s).
+gaps:
+- id: g-001
+  category: doc
+  summary: data-model.md absent
+  evidence_refs:
+  - e-002
+  details: spec.md declares domain entities but data-model.md is missing. A data model document clarifies domain entity
+    relationships.
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/tasks/WP01-internal-links-resolve.md
+- id: e-006
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/tasks/WP02-fail-closed-link-gate.md
+- id: e-007
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/status.events.jsonl
+- id: e-008
+  kind: event_range
+  path: kitty-specs/link-integrity-01M1PSEH/status.events.jsonl
+  range: 01M1PW9ABPE8EQQ49QTMSV409N
+- id: e-009
+  kind: event_range
+  path: kitty-specs/link-integrity-01M1PSEH/status.events.jsonl
+  range: 01M1PW9ABPE8EQQ49QTMSV409N..01M1PYHQ9RW4AHV39G51YS98HD
+- id: e-010
+  kind: event_range
+  path: kitty-specs/link-integrity-01M1PSEH/status.events.jsonl
+  range: 01M1Q0DCG0SGJWE3390HV5HZWN
+- id: e-011
+  kind: event_range
+  path: kitty-specs/link-integrity-01M1PSEH/status.events.jsonl
+  range: implementation_cycles
+- id: e-012
+  kind: file
+  path: kitty-specs/link-integrity-01M1PSEH/analysis-report.md
+generator_version: '1.0'
+provenance_history: []
