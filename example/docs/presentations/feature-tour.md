@@ -11,7 +11,7 @@ authors:
   - stijn@sddevelopment.be
 ---
 
-## Already structured. Now it's a site.
+## Already structured — now it's a site
 
 **Your `docs/` tree already has structure. doc-kitty turns it into a site — on brand, agent-readable, self-maintaining — without a redesign.**
 
@@ -92,7 +92,7 @@ Note: only the Default layer is required to be complete — an unthemed site is 
 - Speaker notes and per-slide directives are plain Markdown and HTML comments.
 - Live example: `example/docs/presentations/showcase-deck.md`.
 
-## Dark by default. Yellow with intent.
+## Dark by default, yellow with intent
 
 - Dark mode is the canonical surface; light mode is a derived, AA-checked companion.
 - Yellow (`#F5C518`) marks CTAs, active nav, focus rings, and the passport strip — never body text.
