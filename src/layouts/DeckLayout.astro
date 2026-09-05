@@ -96,9 +96,20 @@ interface Props {
    * deck matches the active brand (ADR-0022 D4). Omitted → base catalog only.
    */
   tokenCss?: string[];
+  /**
+   * Ordered brand/consumer deck LOOK sheet hrefs to layer AFTER the neutral
+   * `--dk-*→--r-*` map (`deckThemeHref` below), mirroring the `tokenCss`
+   * seam and the mission's C-001 separability principle: a house-style sheet
+   * wins by SOURCE ORDER (plain specificity, loaded last) without touching
+   * `dk-reveal-theme.css` itself, so the neutral default stays byte-unchanged
+   * and independently selectable. Route-isolated — only linked when the
+   * consumer's deck route passes it, exactly like `tokenCss`. Omitted → the
+   * deck renders the neutral default look only.
+   */
+  deckThemeCss?: string[];
 }
 
-const { entry, tokenCss = [] } = Astro.props;
+const { entry, tokenCss = [], deckThemeCss = [] } = Astro.props;
 const published = isPublished(entry.data);
 const { Content } = await render(entry);
 const title = entry.data.title;
@@ -110,6 +121,30 @@ const description = entry.data.description ?? '';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Deck theme selection (house-theme seam): the out-of-frame deck has no
+        Starlight theme script, so without this it can only follow
+        `prefers-color-scheme` via `@media` rules — and a brand's `[data-theme]`
+        colour block (tokens.css) never fires on it. This inline, pre-paint
+        script mirrors the viewer's OS preference onto `data-theme`, so the deck
+        resolves the SAME `:root[data-theme='dark']` brand palette the in-frame
+        chrome uses (winning by specificity over the neutral sheet's
+        `@media (prefers-color-scheme: dark)` fallback), and a `data-theme`
+        toggle re-themes the deck. No-JS falls back to the light `:root` palette
+        (still legible — the demo slide uses theme tokens). Inline so it runs
+        before first paint (no flash); route-isolated to the deck document. */}
+    <script is:inline>
+      try {
+        var d = document.documentElement;
+        var mq = window.matchMedia('(prefers-color-scheme: dark)');
+        var apply = function () {
+          d.setAttribute('data-theme', mq.matches ? 'dark' : 'light');
+        };
+        apply();
+        mq.addEventListener('change', apply);
+      } catch (e) {
+        /* pre-DOM or no matchMedia: leave data-theme unset → light :root palette */
+      }
+    </script>
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     {/* Draft decks are never indexed by crawlers (RT-05); Pagefind is handled
@@ -132,6 +167,13 @@ const description = entry.data.description ?? '';
       <link rel="stylesheet" href={href} />
     ))}
     <link rel="stylesheet" href={deckThemeHref} />
+    {/* Brand/consumer deck LOOK sheets (e.g. the spec-kitty house theme) layer
+        AFTER the neutral --dk→--r map so they win by source order — the deck's
+        house style stays selectable independently of the docsite chrome,
+        route-isolated exactly like tokenCss above. */}
+    {deckThemeCss.map((href) => (
+      <link rel="stylesheet" href={href} />
+    ))}
   </head>
   <body {...(!published ? { 'data-pagefind-ignore': '' } : {})}>
     <main class="reveal" aria-label={`${title} — slide deck`}>

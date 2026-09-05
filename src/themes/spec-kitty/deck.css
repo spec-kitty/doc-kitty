@@ -1,0 +1,244 @@
+/*
+ * Spec Kitty brand — deck HOUSE STYLE (exploratory, feat/deck-house-theme).
+ *
+ * WHAT THIS IS: the brand's Presentation-deck look, derived from
+ * docs/architecture/theming-spec-kitty-brand.md §"Presentation deck" ("dark
+ * surface-page slides, display 800 headings, mono eyebrows, yellow
+ * active-bullet/progress") + the six "Signature brand motifs" (yellow as a
+ * scalpel; ALL-CAPS mono eyebrows at 0.15em tracking; flat dark surfaces +
+ * 1px hairline depth, no gradients/shadows; pill/chip/card/passport shape
+ * language). It is the brand's OWN look, self-contained (C-005 / ADR-0011) —
+ * no dependency on `@spec-kitty/tokens` or the `spec-kitty-design` repo.
+ *
+ * LAYERING: this sheet LAYERS ON TOP of `dk-reveal-theme.css` (the neutral
+ * default `--dk-*→--r-*` map + base look rules) and MUST be linked AFTER it —
+ * DeckLayout's `deckThemeCss` prop guarantees that order. `dk-reveal-theme.css`
+ * itself is NEVER edited by this sheet: a consumer who does not pass
+ * `deckThemeCss` still gets the neutral deck untouched. This sheet only adds
+ * brand-specific accents on top, at plain `:root` / element specificity, so it
+ * wins by SOURCE ORDER alone (no `!important`, no ID/attr escalation needed).
+ *
+ * ROUTE ISOLATION: reached ONLY via the out-of-frame deck route's
+ * `deckThemeCss` prop (example/src/pages/presentations/[...slug].astro) — never
+ * added to config.ts `customCss`, theme.ts `GLOBAL_COMPONENT_SHEETS`, or any
+ * in-frame path. In-frame docsite chrome must stay byte-unchanged.
+ *
+ * WHY FONT (+ TRACKING) TOKENS ARE RE-DECLARED HERE: index.ts's mode-invariant
+ * object `tokens` (`--dk-font-display`, `--dk-font-sans`, `--dk-font-mono`,
+ * `--dk-weight-display`, `--dk-tracking-caps`) flow into the IN-FRAME generated
+ * sheet ONLY (`emitTokenSheet`). The out-of-frame deck route never links that
+ * generated sheet — it links `theme.css` + `tokens.css` (the mode-VARYING
+ * colour catalog) via DeckLayout's `tokenCss` seam instead — so today a deck
+ * renders those object tokens at the shipped Default's values, not the
+ * brand's. This sheet mirrors the exact values from
+ * src/themes/spec-kitty/index.ts (keep the fallback stacks verbatim; hand-sync
+ * if index.ts changes) so the deck gets the brand type + eyebrow tracking the
+ * in-frame chrome already has.
+ *
+ * HOW THE BRAND DARK PALETTE REACHES THE DECK: `tokens.css`'s brand LIGHT colours
+ * live on plain `:root` (they apply on the deck unconditionally), but its brand
+ * DARK colours are gated on `:root[data-theme='dark']`. The out-of-frame deck
+ * historically carried NO `data-theme`, so that brand-dark block never fired and
+ * `dk-reveal-theme.css`'s `@media (prefers-color-scheme: dark)` fallback supplied
+ * the shipped DEFAULT dark palette (blue accent) — off-brand. This sheet does NOT
+ * re-declare the dark colours; instead DeckLayout now runs a tiny inline script
+ * that mirrors `prefers-color-scheme` onto `data-theme`, so `tokens.css`'s
+ * `:root[data-theme='dark']` brand block applies on the deck and wins the neutral
+ * `@media` fallback BY SPECIFICITY (0,2,0 > 0,1,0). That keeps the brand palette
+ * single-sourced in `tokens.css` (no duplication here) and lets a `data-theme`
+ * toggle re-theme the deck (the a11y suite drives modes that way).
+ */
+
+:root {
+  /* Mirrors index.ts `tokens` (mode-invariant object tokens) — verbatim,
+     fallback stacks included — because the out-of-frame route does not
+     receive them any other way. See the header note above. */
+  --dk-font-display: "Falling Sky", "Swansea", ui-sans-serif, system-ui, sans-serif;
+  --dk-font-sans: "Swansea", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --dk-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --dk-weight-display: 800;
+  /* Eyebrow convention (ALL-CAPS mono, wide tracking) — the Default's inherited
+     0.06em is not the brand's 0.15em; the eyebrow footer motif below depends
+     on this. */
+  --dk-tracking-caps: 0.15em;
+}
+
+/* ---- Brand typography ------------------------------------------------- */
+/* `dk-reveal-theme.css` already routes `.reveal`'s body font and
+   `.reveal h1..h6`'s font through `--r-main-font`/`--r-heading-font`, which
+   are themselves `var(--dk-font-*)` — so redeclaring the tokens above at
+   `:root` already re-points those indirections. These rules restate the
+   family assignment directly (belt-and-suspenders, matches brand.css's
+   `.site-title` pattern for the in-frame wordmark) and add the brand's
+   DISPLAY WEIGHT, which the neutral sheet does not carry (it uses
+   `--dk-weight-bold` / 700 for every heading level). Scoped to h1-h3 only —
+   the brand calls out "display 800 headings" for the major slide headings,
+   not every nested heading level. */
+.reveal {
+  font-family: var(--dk-font-sans);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  font-family: var(--dk-font-display);
+  font-weight: var(--dk-weight-display, 800);
+}
+
+/* ---- ALL-CAPS mono eyebrow motif --------------------------------------- */
+/* The deck footer already carries the deck title on every slide (FR-003) —
+   restyle it as the brand's signature eyebrow band (mono, uppercase, wide
+   tracking, muted ink) rather than plain body copy. Layout (position, size,
+   border, background) stays owned by `dk-reveal-theme.css`; this restates
+   the type treatment AND bumps size + alignment:
+   - `--dk-text-2xs` (~11px) reads too small in the 2.5rem footer band at the
+     brand's wider 0.15em tracking; `--dk-text-xs` (12px) is still a proper
+     eyebrow but holds up better at that tracking.
+   - The neutral sheet's `.dk-deck-footer` uses `padding-inline-start:
+     var(--dk-space-lg)` (24px), but slide content
+     (`.reveal .slides section`) uses `padding-inline: var(--dk-space-xl)`
+     (32px) — an 8px mismatch that reads as a misaligned eyebrow against the
+     slide's left text edge. Overriding to `--dk-space-xl` here lines the
+     footer eyebrow up with the content edge above it, brand-deck only (the
+     neutral default's own alignment is untouched). */
+.dk-deck-footer {
+  font-family: var(--dk-font-mono);
+  font-size: var(--dk-text-xs);
+  padding-inline-start: var(--dk-space-xl);
+  text-transform: uppercase;
+  letter-spacing: var(--dk-tracking-caps);
+  color: var(--dk-color-text-muted);
+}
+
+/* ---- Yellow-as-scalpel accents ------------------------------------------ */
+/* The brand's one always-on colour, used sparingly and never as decorative
+   filler (signature motif 1). No gradients or drop shadows anywhere below
+   (motif 3) — flat fills / hairline borders only. */
+
+/* Active-bullet: the brand's list marker in the signal yellow. */
+.reveal .slides section :is(ul) > li::marker {
+  color: var(--dk-color-accent);
+}
+
+/* Progress bar: reveal fills `.progress span` from the element's `color`
+   (background-color: currentColor in reveal's core CSS) — colouring the
+   container is enough, no need to target the span. Verified against the
+   built reveal.js 6.0.1 core sheet. */
+.reveal .progress {
+  color: var(--dk-color-accent);
+}
+
+/* Title-slide identity strip (the "bow-tie" motif, T158/passport parallel):
+   a short centred yellow bar above the deck's opening h1, echoing the
+   Persona passport's identity strip. `.slides > section:first-of-type`
+   targets the deck's first top-level slide in the built DOM (verified
+   against example/dist/presentations/showcase-deck/index.html — the
+   transform emits `<section><h1>…` as the first child of `.slides`, with no
+   extra wrapper); reveal's vertical-stack nesting only ever adds nested
+   `<section>`s, never re-orders or re-wraps this first slide, so the
+   selector holds pre- and post-enhancement. Deliberately small (4rem × 4px,
+   pill-capped) — a strip, not a rule across the slide. Left-aligned (not
+   centred): slides are `text-align: start`, so the strip sits above the LEFT
+   edge of the title text — a deliberate identity mark, aligned with the h1,
+   rather than a centred bar floating away from the left-set heading. */
+.reveal .slides > section:first-of-type h1::before {
+  content: '';
+  display: block;
+  inline-size: 4rem;
+  block-size: 4px;
+  background: var(--dk-color-accent);
+  border-radius: var(--dk-radius-pill);
+  margin: 0 0 var(--dk-space-md);
+}
+
+/* Section-slide kicker: the SAME identity mark, scaled down, on every slide
+ * h2 — so a content/section slide reads as branded, not just the title
+ * slide (the strip above was previously a one-off). Same pill-capped yellow
+ * bar family as the h1 strip (h1: 4rem×4px; h2: 2.5rem×3px, a full step down
+ * since h2 is a repeating in-body motif, not a one-time identity mark).
+ * Left-aligned to match the h1 strip and the slide's `text-align: start`
+ * heading. Decorative only (no text content, `content: ''`) — axe/AT never
+ * see it, contrast is not applicable (it is not text), so this carries no
+ * a11y burden.
+ *
+ * Collision check against the built DOM
+ * (example/dist/presentations/showcase-deck/index.html):
+ *  - Fragments (`.fragment`) in the showcase deck are applied to `<ul>` /
+ *    list wrappers via `.element: class="fragment"`, never to `h2` itself —
+ *    `::before` on `h2` sits above the fragment-controlled content, not
+ *    inside it, so fragment visibility toggling (opacity via `.visible`)
+ *    never hides or fights this pseudo-element.
+ *  - Diagram figures (`figure.dk-diagram`) are siblings AFTER the heading in
+ *    the transform's slide markup, never wrapped by or wrapping an `h2`, so
+ *    the kicker cannot appear twice or land inside the figure's own caption
+ *    layout.
+ *  - The title slide's `h1` keeps its own selector/size above; this rule is
+ *    scoped to `h2` only, so the two never double up on the same heading. */
+.reveal .slides section h2::before {
+  content: '';
+  display: block;
+  inline-size: 2.5rem;
+  block-size: 3px;
+  background: var(--dk-color-accent);
+  border-radius: var(--dk-radius-pill);
+  margin-block-end: var(--dk-space-sm);
+}
+
+/* ---- Title hero framing (brand card shape) ------------------------------ */
+/* The title slide's hero `<img>` currently bleeds as a raw rectangle; give
+ * every slide image the brand card treatment instead — hairline border +
+ * lg radius, the same shape language as chips/cards elsewhere in the brand
+ * (motif 4). NO shadow (motif 3: flat + hairline, never drop shadow).
+ * Scoped to `img` only: rendered Mermaid diagrams are inline `<svg>` inside
+ * `figure.dk-diagram` (verified against `rehype/diagram-figure.ts`'s output
+ * shape and the neutral sheet's own note on this), so this never touches
+ * diagram presentation. Purely additive to the neutral sheet's existing
+ * `.reveal .slides section img` rule (`max-inline-size: 100%`,
+ * `max-block-size: min(60%, 65vh)`, `object-fit: contain`) — that sizing
+ * behaviour is untouched; this only adds a border + radius on top. */
+.reveal .slides section img {
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-lg);
+}
+
+/* ---- Heading presence (display-weight compensation) --------------------- */
+/* The brand display font (Falling Sky/Swansea) is not shipped, so headings
+ * fall back to the system-sans stack — 800 alone reads close to 700 without
+ * the brand's real display cut. A small negative tracking + the brand's
+ * tight leading restates some of that display presence without touching
+ * font-size tokens. Deliberately subtle (-0.01em) — legibility first. Scoped
+ * to h1/h2 (the "major slide headings" the brand calls out), not h3+. */
+.reveal h1,
+.reveal h2 {
+  letter-spacing: -0.01em;
+  line-height: var(--dk-leading-tight);
+}
+
+/* ---- Blockquote brand touch ---------------------------------------------- */
+/* The neutral sheet's blockquote rule already reads `var(--dk-color-accent)`
+ * for its border colour, so on this brand deck it already resolves to the
+ * signal yellow via the token cascade (tokens.css `--dk-color-accent`
+ * #F5C518) — no colour override is actually needed. What differs is the
+ * WEIGHT of the rule: the neutral sheet uses 4px; the brand's flatter,
+ * more restrained accent language reads better at 3px (a scalpel, not a
+ * slab — motif 1). This overrides only that thickness, at the same
+ * `border-inline-start` property, so it wins by source order. */
+.reveal .slides section blockquote {
+  border-inline-start: 3px solid var(--dk-color-accent);
+}
+
+/* Flat + hairline discipline (motif 3): deliberately no rules here touch
+   `dk-reveal-theme.css`'s existing surface-inset + border code treatment —
+   it already matches the brand's flat/hairline aesthetic. Nothing in this
+   sheet adds a gradient or drop shadow. */
+
+/* ---- Print + reduced motion -------------------------------------------- */
+/* The identity strip is decorative and static (no transition/animation), so
+   it needs no reduced-motion guard of its own — it never moves. It is
+   pseudo-content on the title heading, not a separate fixed element, so the
+   existing `@media print` block in `dk-reveal-theme.css` (which hides the
+   controls/footer) does not need to hide it either; printing the title
+   slide's accent bar is consistent with printing everything else on that
+   slide. Nothing added by this sheet is animated, so no additional
+   `prefers-reduced-motion` guard is required beyond the neutral sheet's
+   existing one. */

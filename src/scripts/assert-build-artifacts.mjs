@@ -92,13 +92,16 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 //     and guides/markua-malformed.md, both doc_status:active, +2) — the verification
 //     corpus for the Markua seam → 26 → 28. They are the only count-moving pages of
 //     this mission (the on-switch flips a preset; every other WP was dormant).
-const EXPECTED_INDEX_ENTRY_COUNT = 28;
+//   - deck-house-theme adds one published feature-showcase deck
+//     (presentations/feature-tour.md, doc_status:active, +1) → 28 → 29.
+const EXPECTED_INDEX_ENTRY_COUNT = 29;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
 // reveal-deck-remediation adds presentations/roadmap-deck.md (published, +1), 25 → 26.
 // markua-syntax-support WP10 adds the two published markua guides (+2), 26 → 28.
-const EXPECTED_SITEMAP_URL_COUNT = 28;
+// deck-house-theme adds presentations/feature-tour.md (published, +1), 28 → 29.
+const EXPECTED_SITEMAP_URL_COUNT = 29;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.
