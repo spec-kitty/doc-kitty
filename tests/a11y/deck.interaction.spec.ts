@@ -144,6 +144,72 @@ test.describe('Deck keyboard interaction (IX-1)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// FR-006 (D-06 / C-AFFORD-1) — the vertical-stack affordance: the `.dk-deck-up`/
+// `.dk-deck-down` buttons stay `hidden` on a FLAT slide (no vertical route
+// either way) and show/hide PER-DIRECTION once the reader is inside the
+// "Slide that becomes a vertical stack" `###` stack, mirroring reveal's own
+// `availableRoutes()` (reveal-init.client's `updateStackAffordance`). Both
+// buttons carry their aria-labels regardless of visibility — a hidden button
+// is still a real, labelled control, not removed from the DOM.
+// ---------------------------------------------------------------------------
+test.describe('Deck vertical-stack affordance (FR-006)', () => {
+  test('up/down stay hidden on a flat slide and show per-direction inside the vertical stack', async ({
+    page,
+  }) => {
+    await gotoLiveDeck(page);
+
+    const up = page.locator('.dk-deck-up');
+    const down = page.locator('.dk-deck-down');
+
+    // Both controls carry their labels regardless of hidden state.
+    await expect(up).toHaveAttribute('aria-label', 'Up (previous slide in stack)');
+    await expect(down).toHaveAttribute('aria-label', 'Down (next slide in stack)');
+
+    // The title slide (h=0) is FLAT — no vertical route in either direction —
+    // so both affordance buttons must stay hidden.
+    await expect(up, 'up must be hidden on a flat slide').toBeHidden();
+    await expect(down, 'down must be hidden on a flat slide').toBeHidden();
+
+    // Jump straight to the vertical stack's TOP leaf (h=3, v=0 — the stack sits
+    // at h=3 now: deck-layout-polish's title-slide reshape inserted the
+    // 'Out-of-frame deck pipeline' diagram slide at h=1, shifting every later
+    // horizontal slide by +1). A direct hash navigation (the same mechanism the
+    // "away-and-back" test in diagram.spec.ts uses) sidesteps h=2's fragment —
+    // an ArrowRight press there is fragment-aware (`next()`) and would reveal
+    // the fragment instead of advancing, landing one hop short.
+    await page.evaluate(() => {
+      window.location.hash = '#/3';
+    });
+    await expect(
+      page.locator(`${LEAF_SLIDE}.present`, {
+        hasText: 'This paragraph is the first inner slide of the stack.',
+      }),
+      'the #/3 hash must land on the stack head leaf',
+    ).toBeVisible();
+
+    // At the TOP of the stack: a down route exists (a second inner leaf sits
+    // below), so down is shown; no up route yet (nothing above), so up stays
+    // hidden.
+    await expect(down, 'down must be shown at the top of the vertical stack').toBeVisible();
+    await expect(up, 'up must stay hidden on the stack head leaf').toBeHidden();
+
+    // Descend into the stack (h=3, v=1): the second inner leaf gains an up
+    // route back to the leaf above it.
+    await page.evaluate(() => {
+      window.location.hash = '#/3/1';
+    });
+    await expect(
+      page.locator(`${LEAF_SLIDE}.present`, { hasText: 'Inner stack slide' }),
+      'the #/3/1 hash must land on the stack’s second inner leaf',
+    ).toBeVisible();
+    await expect(
+      up,
+      'up must be shown on an inner leaf that has a leaf above it',
+    ).toBeVisible();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // IX-2 — under prefers-reduced-motion: reduce, the current slide's transition is 0s.
 // ---------------------------------------------------------------------------
 test.describe('Deck reduced motion (IX-2)', () => {

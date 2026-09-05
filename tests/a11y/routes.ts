@@ -227,24 +227,26 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     shell: 'starlight',
     guardRoots: STARLIGHT_GLOSSARY_GUARD_ROOTS,
   },
-  // WP06 T020 — the showcase deck was ALREADY scanned here; it is UPDATED (not
-  // duplicated) with the render-gate for its new first-slide diagram (title +
-  // description → one gated `<svg>`). Adding a second deck entry would be the trap.
+  // WP06 T020 — the showcase deck was ALREADY scanned here. WP02 (deck-layout-
+  // polish) reshaped the title slide to a plain h1 + hero image so it carries
+  // NO diagram: the first `## Out-of-frame deck pipeline` diagram moved to
+  // slide 2. Deck diagrams render LAZILY on `slidechanged` (INV-SCOPE,
+  // diagram-render.client) — a diagram on a not-yet-visited slide is simply
+  // not in the DOM — so the view axe actually scans here (the load-time title
+  // slide) now renders ZERO diagrams. A `renderWait`/`renderCount` gate would
+  // therefore either read 0 (vacuous) or HANG waiting for a load-time `<svg>`
+  // that never appears. So this entry drops both: `guardRoots` uses the plain
+  // `DECK_GUARD_ROOTS` (no rendered-svg root — there is nothing to guard for
+  // at load), and there is no render-gate at all. The per-slide diagram
+  // render + accessible-name/geometry/theme-token coverage for ALL THREE deck
+  // diagrams (slide 2, slide 3, and the inner-stack leaf) is owned by
+  // diagram.spec.ts, which navigates the live deck before asserting — not
+  // here.
   {
     name: 'Deck (/presentations/showcase-deck/)',
     path: ROUTES.deck,
     shell: 'deck',
-    guardRoots: DECK_DIAGRAM_GUARD_ROOTS,
-    renderWait: DIAGRAM_SVG_ROOT,
-    // KEEP THIS AT 1 (WP05 T024 / D2). The load-time render count is the
-    // TITLE-SLIDE diagram ONLY: the slide-2 and inner-stack diagrams WP04 added
-    // are `display:none` at deck-ready and render only on their `slidechanged`
-    // (INV-SCOPE, diagram-render.client), so they add NOTHING to the load-time
-    // count axe gates on. A naive bump to 2 would make `expect(...).toHaveCount(2)`
-    // wait for a second load-time `<svg>` that never appears — HANGING the axe
-    // gate forever. The per-slide render of those nodes is locked in
-    // diagram.spec.ts (T019/T020), not here.
-    renderCount: 1,
+    guardRoots: DECK_GUARD_ROOTS,
   },
   // WP10 (markua) — the showcase corpus, scanned in BOTH modes. No `renderWait`:
   // asides/callouts/figures/ids are build-time SSR (not a client render), so the
