@@ -18,7 +18,11 @@
  *      (Hub uses `.dk-hub__list`; Persona uses `.dk-passport`).
  *   2. A top yellow accent identity strip (the brand "bow-tie" motif),
  *      `--dk-color-accent`.
- *   3. The persona NAME as `<h1>` in `--dk-font-display` (from `entry.data.title`).
+ *   3. The persona NAME as `<h1 id="_top">` in `--dk-font-display` (from
+ *      `entry.data.title`). WP04 (FR-009/010/011): `PageTitle.astro` renders NO
+ *      identity output on `kind: Persona` pages (no hero, no Starlight `<h1>`, no
+ *      band), so this is the page's SINGLE `<h1>` — it carries `id="_top"`, the
+ *      skip-link / back-to-top target Starlight's own title normally provides.
  *   4. An avatar whose `alt` comes from `hero_image.alt`, through the SAME
  *      optimized-image pipeline as the M1 page hero (`import.meta.glob('/docs/**')`
  *      + `astro:assets` Image). Missing/unresolved image → no `<img>` at all
@@ -127,7 +131,7 @@ if (data.tags && data.tags.length > 0)
         />
       )
     }
-    <h1 class="dk-passport__name">{data.title}</h1>
+    <h1 class="dk-passport__name" id="_top">{data.title}</h1>
   </div>
 
   {
