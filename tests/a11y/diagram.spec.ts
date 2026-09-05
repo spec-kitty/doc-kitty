@@ -102,28 +102,32 @@ test.describe('Diagram accessible figure — doc shell (DX-2)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// DX-2/DX-5 (deck shell) — the out-of-frame deck's first-slide diagram is a named
-// accessible figure too.
+// DX-2/DX-5 (deck shell) — the out-of-frame deck's 'Out-of-frame deck pipeline'
+// diagram (slide 2 — deck-layout-polish reshaped the title slide to h1 + hero
+// ONLY, so it carries no diagram; the first diagram moved one slide later) is
+// a named accessible figure too.
 // ---------------------------------------------------------------------------
 test.describe('Diagram accessible figure — deck shell (DX-2/DX-5)', () => {
-  test('the deck first-slide diagram is a named figure with a caption', async ({
+  test("the deck 'Out-of-frame deck pipeline' diagram (slide 2) is a named figure with a caption", async ({
     page,
   }, testInfo) => {
     const mode: Mode = modeOf(testInfo.project.name);
-    await gotoDeckInMode(page, ROUTES.deck, mode);
+    // Deep-link straight to slide 2 (h=1): the title slide (h=0) now carries NO
+    // diagram (h1 + hero image only), so nothing renders at load unless we
+    // navigate to (or deep-link into) the slide that has one.
+    await gotoDeckInMode(page, `${ROUTES.deck}#/1`, mode);
 
-    // Render-gate: the single first-slide diagram has rendered. Only the title
-    // slide's diagram renders at load — WP04's slide-2 + inner-stack diagrams are
-    // hidden until their `slidechanged` (INV-SCOPE) — so the RENDERED-svg count is
-    // still exactly 1 here (that is the load-time render gate, unchanged).
+    // Render-gate: the slide-2 diagram has rendered. It is the ONLY visited deck
+    // slide, so the RENDERED-svg count is exactly 1 here — WP04's slide-3 +
+    // inner-stack diagrams stay hidden until their own `slidechanged`
+    // (INV-SCOPE), unaffected by this deep-link.
     await expect(page.locator(DIAGRAM_SVG)).toHaveCount(1);
 
-    // Scope to the FIRST SLIDE's figure. WP04 added two more deck diagrams (slide-2
-    // + inner-stack), so a whole-page `figure.dk-diagram` count is now 3 (all three
-    // figures are server-rendered even though only the title svg has rendered). The
-    // test's intent is the title-slide figure, so assert within the first
-    // `.slides > section` rather than counting the whole page (DX-2/DX-5).
-    const figure = page.locator('.reveal .slides > section').first().locator('figure.dk-diagram');
+    // Scope to SLIDE 2's figure (index 1). The deck carries 3 `figure.dk-diagram`
+    // nodes total (all three are server-rendered even though only this one has
+    // its `<svg>`), so assert within `.slides > section` at index 1 rather than
+    // counting the whole page (DX-2/DX-5).
+    const figure = page.locator('.reveal .slides > section').nth(1).locator('figure.dk-diagram');
     await expect(figure).toHaveCount(1);
     await expect(figure).toHaveAttribute('role', 'group');
     await expect(figure.locator('figcaption.dk-diagram__caption')).toHaveCount(1);
@@ -327,10 +331,11 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
     page,
   }, testInfo) => {
     const mode: Mode = modeOf(testInfo.project.name);
-    // Reproduce #15 the way it OCCURS: load on slide 1 (the slide-two diagram is
-    // hidden, display:none), THEN navigate to it — a deep-link would make the
-    // target the initial visible slide, which the pre-fix whole-doc-at-ready render
-    // draws correctly too (it would not distinguish the broken build).
+    // Reproduce #15 the way it OCCURS: load on slide 1 (the title slide — the
+    // slide-two diagram, now at h=2, is hidden, display:none), THEN navigate to
+    // it — a deep-link would make the target the initial visible slide, which
+    // the pre-fix whole-doc-at-ready render draws correctly too (it would not
+    // distinguish the broken build).
     await gotoDeckReady(page, ROUTES.deck, mode);
 
     const figure = deckFigureByDesc(page, DECK_SLIDE_TWO_DESC);
@@ -341,7 +346,12 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
       'the slide-two diagram must be unrendered while its slide is hidden',
     ).toHaveCount(0);
 
-    // Navigate to slide 2 (h=0 → h=1): the render owner draws it on slidechanged.
+    // Navigate to slide 2 (h=0 → h=1 → h=2): deck-layout-polish's title-slide
+    // reshape inserted the 'Out-of-frame deck pipeline' diagram slide at h=1, so
+    // the slide-two diagram (the "Horizontal slide with directives" slide) is
+    // now ONE hop further, at h=2. The render owner draws it on the slidechanged
+    // that lands there.
+    await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');
     const svg = figure.locator('pre.mermaid svg');
     await expect(
@@ -368,10 +378,12 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
     page,
   }, testInfo) => {
     const mode: Mode = modeOf(testInfo.project.name);
-    // Deep-link into the vertical stack's `###` leaf (h=2, v=1): reveal's
+    // Deep-link into the vertical stack's `###` leaf (h=3, v=1 — the
+    // deck-layout-polish title-slide reshape shifted every horizontal slide
+    // index by +1, so the vertical stack moved from h=2 to h=3): reveal's
     // `currentSlide()` is the inner `<section>`, so the render owner draws the
     // nested node at ready (D5).
-    await gotoDeckReady(page, `${ROUTES.deck}#/2/1`, mode);
+    await gotoDeckReady(page, `${ROUTES.deck}#/3/1`, mode);
 
     const figure = deckFigureByDesc(page, DECK_INNER_STACK_DESC);
     await expect(figure, 'the inner-stack figure must be uniquely located by its identity').toHaveCount(1);
@@ -444,7 +456,10 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
     page,
   }, testInfo) => {
     const mode: Mode = modeOf(testInfo.project.name);
-    await gotoDeckReady(page, `${ROUTES.deck}#/1`, mode);
+    // Slide-two (the "Horizontal slide with directives" slide) sits at h=2 now
+    // — deck-layout-polish's title-slide reshape inserted the 'Out-of-frame deck
+    // pipeline' diagram slide at h=1, shifting it one hop later.
+    await gotoDeckReady(page, `${ROUTES.deck}#/2`, mode);
     const figure = deckFigureByDesc(page, DECK_SLIDE_TWO_DESC);
     await expect(figure.locator('pre.mermaid svg')).toHaveCount(1);
 
@@ -454,11 +469,11 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
     });
     await expect(page.locator('.slides section.present')).toBeVisible();
 
-    // … and back to slide 2. `unprocessedIn` skips the already-`data-processed`
-    // node, so a revisit is a no-op: still exactly ONE <svg> (INV-ONE-SVG), no
-    // duplicate and no blank re-render.
+    // … and back to slide 2 (h=2). `unprocessedIn` skips the already-
+    // `data-processed` node, so a revisit is a no-op: still exactly ONE <svg>
+    // (INV-ONE-SVG), no duplicate and no blank re-render.
     await page.evaluate(() => {
-      window.location.hash = '#/1';
+      window.location.hash = '#/2';
     });
     await expect(figure.locator('pre.mermaid svg')).toBeVisible();
     await expect(
@@ -471,7 +486,8 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
     page,
   }, testInfo) => {
     const mode: Mode = modeOf(testInfo.project.name);
-    await gotoDeckReady(page, `${ROUTES.deck}#/1`, mode);
+    // h=2: see the away-and-back test above for why slide-two moved from h=1.
+    await gotoDeckReady(page, `${ROUTES.deck}#/2`, mode);
     const figure = deckFigureByDesc(page, DECK_SLIDE_TWO_DESC);
     await expect(figure.locator('pre.mermaid svg')).toHaveCount(1);
 
@@ -560,8 +576,10 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
       'the toggle must NOT render the hidden unvisited node (INV-SCOPE)',
     ).toHaveCount(0);
 
-    // NOW navigate to slide 2 → a CORRECT render (box>0 AND measured internal
-    // geometry, per T019 — never viewBox-derived).
+    // NOW navigate to slide 2 (h=0 → h=1 → h=2, slide-two having moved one hop
+    // later per the T019 comment above) → a CORRECT render (box>0 AND measured
+    // internal geometry, per T019 — never viewBox-derived).
+    await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');
     await expect(figure.locator('pre.mermaid svg')).toBeVisible({ timeout: 10_000 });
     const box = await figure.locator('pre.mermaid svg').first().boundingBox();
@@ -666,21 +684,23 @@ test.describe('Diagram caption typography (#60) — docs + deck', () => {
     ).toBe(false);
   });
 
-  test('deck (showcase-deck): first-slide caption is non-monospace, non-`pre` white-space, not inside a code-card', async ({
+  test('deck (showcase-deck): slide-2 caption is non-monospace, non-`pre` white-space, not inside a code-card', async ({
     page,
   }, testInfo) => {
     const mode: Mode = modeOf(testInfo.project.name);
-    await gotoDeckInMode(page, ROUTES.deck, mode);
+    // deck-layout-polish reshaped the title slide to h1 + hero ONLY (no
+    // diagram), so deep-link to slide 2 (h=1, the 'Out-of-frame deck pipeline'
+    // slide) — the first slide that actually has one.
+    await gotoDeckInMode(page, `${ROUTES.deck}#/1`, mode);
     await expect(page.locator(DIAGRAM_SVG)).toHaveCount(1);
 
-    // Scope to the FIRST SLIDE's figure (mirrors the "deck shell (DX-2/DX-5)"
-    // test above — the deck carries 3 figures total, only the title one has
-    // rendered at load).
+    // Scope to SLIDE 2's figure (mirrors the "deck shell (DX-2/DX-5)" test
+    // above — the deck carries 3 figures total, only this one has rendered).
     const caption = page
       .locator('.reveal .slides > section')
-      .first()
+      .nth(1)
       .locator('figcaption.dk-diagram__caption');
-    await expect(caption, 'the deck title-slide figure must carry a caption').toHaveCount(1);
+    await expect(caption, 'the deck slide-2 figure must carry a caption').toHaveCount(1);
 
     const style = await captionComputedStyle(caption);
     expect(

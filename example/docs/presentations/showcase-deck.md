@@ -14,9 +14,12 @@ authors:
   - stijn@sddevelopment.be
 ---
 
-This opening paragraph appends to the synthesized title slide, and carries the
-indexed slide sentinel **quokka showcase sentinel** that Pagefind must resolve to
-this deck's own URL.
+## Out-of-frame deck pipeline
+
+This paragraph is the body of this deck's second slide — the synthesized title
+slide (slide 1, h1 + hero image only) carries no body text of its own — and it
+carries the indexed slide sentinel **quokka showcase sentinel** that Pagefind
+must resolve to this deck's own URL.
 
 ```mermaid
 %% title: Out-of-frame deck pipeline
@@ -33,7 +36,7 @@ flowchart LR
 The first `##` opens a fresh horizontal slide. A slide directive paints its
 background so the built `<section>` carries the applied attribute.
 
-<!-- .slide: data-background-color="#101828" -->
+<!-- .slide: data-background-color="var(--dk-color-surface-2)" -->
 
 - Slides are pre-rendered at build; reveal only enhances them.
 - This list is revealed as a fragment.

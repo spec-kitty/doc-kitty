@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "mission_slug": "deck-layout-polish-01M1R1EB",
+  "mission_id": "01M1R1EBEKDB3S777SP9ZBWDQD",
+  "mission_branch": "kitty/mission-deck-layout-polish-01M1R1EB",
+  "target_branch": "feat/deck-layout-polish",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/styles/dk-reveal-theme.css",
+        "src/tests/deck-theme-parity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "docs/changelog/2026-09-05-deck-layout-polish.md",
+        "src/styles/dk-components.css"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/components/PageTitle.astro",
+        "src/layouts/Persona.astro"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "example/docs/presentations/showcase-deck.md",
+        "src/layouts/DeckLayout.astro",
+        "src/lib/deck/reveal-init.client.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-09-05T06:19:18.441603+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "46c4b4b398776842c016062f3c21105ee8be7674"
+}

@@ -64,11 +64,15 @@ export async function gotoInMode(page: Page, path: string, mode: Mode): Promise<
 // and `T023` (deck.interaction.spec) asserts the computed viewport/heading/footer
 // equal the resolved `--dk-*` tokens. This drive still runs the deck under each
 // project's `colorScheme` and seeds `data-theme` before paint so AX-1's both-modes
-// axe coverage holds. NOTE (separate, pre-existing gap): a *real* deck view carries
-// no theme-persistence script, so nothing sets `data-theme` on a live deck — the
-// dark palette is reachable only because this drive seeds the attribute; wiring a
-// deck theme toggle + a dark background-luminance gate is a tracked follow-up, not
-// this PR's scope.
+// axe coverage holds. UPDATE (deck-layout-polish): the deck now has a REAL,
+// OS-preference-driven dark mechanism — `dk-reveal-theme.css`'s own
+// `@media (prefers-color-scheme: dark)` block (duplicated-but-guarded against
+// theme.css, see `src/tests/deck-theme-parity.test.ts`), plus theme.css's
+// `:root[data-theme='dark']` block (also linked on the deck) — so a live deck
+// genuinely goes dark under the OS preference with no script involved. Seeding
+// `data-theme` here still validly drives dark in tests: it is a strict superset
+// of the OS-preference path (same tokens, explicit rather than media-queried),
+// so this drive continues to exercise the deck's real dark palette.
 export async function gotoDeckInMode(page: Page, path: string, mode: Mode): Promise<void> {
   // Seed the design's own theme attribute BEFORE any paint (forward-compatible:
   // once theme.css is loaded, this is what switches the deck to its dark palette).

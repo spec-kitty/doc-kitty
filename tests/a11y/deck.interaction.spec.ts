@@ -17,7 +17,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { ROUTES, WCAG_TAGS, DECK_SLIDES_ROOT } from './routes';
-import { modeOf, type Mode } from './mode';
+import { modeOf, gotoDeckInMode, type Mode } from './mode';
 import { toRgbTriple } from './helpers/colour';
 
 const DECK = ROUTES.deck;
@@ -140,6 +140,103 @@ test.describe('Deck keyboard interaction (IX-1)', () => {
       focusEscaped,
       'focus must be able to leave the deck controls (no keyboard trap)',
     ).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FR-006 (D-06 / C-AFFORD-1) — the vertical-stack affordance: the `.dk-deck-up`/
+// `.dk-deck-down` buttons stay `hidden` on a FLAT slide (no vertical route
+// either way) and show/hide PER-DIRECTION once the reader is inside the
+// "Slide that becomes a vertical stack" `###` stack, mirroring reveal's own
+// `availableRoutes()` (reveal-init.client's `updateStackAffordance`). Both
+// buttons carry their aria-labels regardless of visibility — a hidden button
+// is still a real, labelled control, not removed from the DOM.
+// ---------------------------------------------------------------------------
+test.describe('Deck vertical-stack affordance (FR-006)', () => {
+  test('up/down stay hidden on a flat slide and show per-direction inside the vertical stack', async ({
+    page,
+  }) => {
+    await gotoLiveDeck(page);
+
+    const up = page.locator('.dk-deck-up');
+    const down = page.locator('.dk-deck-down');
+
+    // Both controls carry their labels regardless of hidden state.
+    await expect(up).toHaveAttribute('aria-label', 'Up (previous slide in stack)');
+    await expect(down).toHaveAttribute('aria-label', 'Down (next slide in stack)');
+
+    // The title slide (h=0) is FLAT — no vertical route in either direction —
+    // so both affordance buttons must stay hidden.
+    await expect(up, 'up must be hidden on a flat slide').toBeHidden();
+    await expect(down, 'down must be hidden on a flat slide').toBeHidden();
+
+    // Jump straight to the vertical stack's TOP leaf (h=3, v=0 — the stack sits
+    // at h=3 now: deck-layout-polish's title-slide reshape inserted the
+    // 'Out-of-frame deck pipeline' diagram slide at h=1, shifting every later
+    // horizontal slide by +1). A direct hash navigation (the same mechanism the
+    // "away-and-back" test in diagram.spec.ts uses) sidesteps h=2's fragment —
+    // an ArrowRight press there is fragment-aware (`next()`) and would reveal
+    // the fragment instead of advancing, landing one hop short.
+    await page.evaluate(() => {
+      window.location.hash = '#/3';
+    });
+    await expect(
+      page.locator(`${LEAF_SLIDE}.present`, {
+        hasText: 'This paragraph is the first inner slide of the stack.',
+      }),
+      'the #/3 hash must land on the stack head leaf',
+    ).toBeVisible();
+
+    // At the TOP of the stack: a down route exists (a second inner leaf sits
+    // below), so down is shown; no up route yet (nothing above), so up stays
+    // hidden.
+    await expect(down, 'down must be shown at the top of the vertical stack').toBeVisible();
+    await expect(up, 'up must stay hidden on the stack head leaf').toBeHidden();
+
+    // Descend into the stack (h=3, v=1): the second inner leaf gains an up
+    // route back to the leaf above it.
+    await page.evaluate(() => {
+      window.location.hash = '#/3/1';
+    });
+    await expect(
+      page.locator(`${LEAF_SLIDE}.present`, { hasText: 'Inner stack slide' }),
+      'the #/3/1 hash must land on the stack’s second inner leaf',
+    ).toBeVisible();
+    await expect(
+      up,
+      'up must be shown on an inner leaf that has a leaf above it',
+    ).toBeVisible();
+
+    // The stack has exactly TWO inner leaves (v=0, v=1 — verified against the
+    // showcase deck's own `###` structure: one `##` slide plus one nested
+    // `###` heading). `#/3/1` is therefore the stack's LAST leaf: there is no
+    // v=2 below it, so — mirroring reveal's own `availableRoutes()` the
+    // affordance wiring reads (reveal-init.client's `updateStackAffordance`)
+    // — down must stay hidden here, per the actual stack depth rather than an
+    // assumption of "always both visible inside a stack".
+    await expect(
+      down,
+      'down must stay hidden on the stack’s last inner leaf (no v=2 exists)',
+    ).toBeHidden();
+
+    // Leaving the stack for a FLAT slide must restore the flat-slide state:
+    // both affordance buttons return to hidden (they are not "stuck shown"
+    // from having been inside the stack).
+    await page.evaluate(() => {
+      window.location.hash = '#/0';
+    });
+    await expect(
+      page.locator(`${LEAF_SLIDE}.present`),
+      'the #/0 hash must land back on a flat slide',
+    ).toBeVisible();
+    await expect(
+      up,
+      'up must return to hidden after navigating back to a flat slide',
+    ).toBeHidden();
+    await expect(
+      down,
+      'down must return to hidden after navigating back to a flat slide',
+    ).toBeHidden();
   });
 });
 
@@ -498,5 +595,141 @@ test.describe('Deck computed-style brand tokens (FR-001 / T023)', () => {
       imgBox!.height,
       'the title-slide hero image must fit inside the reveal stage (R4 hero-overflow gap)',
     ).toBeLessThanOrEqual(stageHeight);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Demo-slide background legibility (#65) — durable contrast guard.
+//
+// #65 fixed a raw-hex `data-background-color` on the showcase deck's
+// "Horizontal slide with directives" demo slide by pointing it at
+// `var(--dk-color-surface-2)`. Until now that fix carried only a static
+// no-raw-hex grep (deck-theme-parity.test.ts's "#65" describe) plus the
+// palette-parity guard — nothing asserted the token actually RESOLVES, on the
+// LIVE deck, to a real colour with legible text contrast. This closes that
+// gap durably: a future token change that resolves `--dk-color-surface-2` to
+// a bad-contrast (or unresolved) colour now fails a real assertion, not just
+// a screenshot diff.
+//
+// The demo slide is located BY ITS OWN HEADING TEXT, not a hardcoded hash —
+// deck-layout-polish already shifted this slide's index once (the title-slide
+// reshape inserted a diagram slide before it), so pinning a hash blindly would
+// silently drift onto the wrong slide on the next reshape.
+// ---------------------------------------------------------------------------
+
+/** WCAG relative luminance of an `r,g,b` (each 0-255) triple. */
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  const channel = (c: number): number => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const [rl, gl, bl] = [channel(r), channel(g), channel(b)];
+  return 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
+}
+
+/** WCAG contrast ratio between two `r,g,b` triples (order-independent). */
+function contrastRatio(
+  a: [number, number, number],
+  b: [number, number, number],
+): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  const [lighter, darker] = la >= lb ? [la, lb] : [lb, la];
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/** Parse a computed `rgb()`/`rgba()`/`#hex` colour string into an `[r,g,b]`
+ *  triple, reusing the shared `toRgbTriple` normalizer (helpers/colour). Throws
+ *  on an unparseable value — callers here read settled computed styles on an
+ *  already-visible, already-navigated slide, so a throw signals a real bug
+ *  rather than a transient not-ready read (unlike the Mermaid-render polling
+ *  `nodeFill` idiom, there is no async re-render to retry past here). */
+function parseComputedRgb(value: string): [number, number, number] {
+  const triple = toRgbTriple(value);
+  const parts = triple.split(',').map(Number);
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) {
+    throw new Error(`Cannot parse computed colour '${value}' (triple '${triple}')`);
+  }
+  return [parts[0], parts[1], parts[2]];
+}
+
+test.describe('Deck demo-slide background legibility (#65)', () => {
+  test('the demo slide background resolves to a real colour with legible text contrast', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoDeckInMode(page, DECK, mode);
+
+    // Locate the demo slide by its own heading text (see header note above).
+    const DEMO_HEADING = 'Horizontal slide with directives';
+    const leaves = page.locator(LEAF_SLIDE);
+    const leafCount = await leaves.count();
+    let demoIndex = -1;
+    for (let i = 0; i < leafCount; i += 1) {
+      const text = await leaves.nth(i).locator('h1,h2,h3,h4,h5,h6').first().textContent();
+      if (text?.trim() === DEMO_HEADING) {
+        demoIndex = i;
+        break;
+      }
+    }
+    expect(
+      demoIndex,
+      `a leaf slide headed "${DEMO_HEADING}" must exist on the showcase deck`,
+    ).toBeGreaterThanOrEqual(0);
+
+    await page.evaluate((i) => {
+      window.location.hash = `#/${i}`;
+    }, demoIndex);
+    await expect(
+      page.locator(`${LEAF_SLIDE}.present`, { hasText: DEMO_HEADING }),
+      `slide #/${demoIndex} must be the "${DEMO_HEADING}" slide`,
+    ).toBeVisible();
+
+    // The ACTIVE TOP-LEVEL slide-background — a direct child of `.backgrounds`.
+    // reveal also tracks a "present" background on the not-yet-visited vertical
+    // stack's currently-indicated inner leaf (independent of horizontal
+    // position), so a bare `.present` selector can match two elements; scoping
+    // to a direct `.backgrounds` child selects only the real, currently-shown
+    // slide's own background.
+    const activeBackground = page.locator(
+      '.reveal > .backgrounds > .slide-background.present',
+    );
+    await expect(
+      activeBackground,
+      'exactly one top-level slide-background must be active',
+    ).toHaveCount(1);
+
+    const bgColor = await activeBackground.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+    // Mirrors the "unresolved-token fallback" idiom in markua.spec.ts: an
+    // unresolved `var(--dk-color-surface-2)` computes `background-color` back
+    // to its initial value, transparent — a raw string check (not the
+    // triple-normalized `toRgbTriple`, which would fold `rgba(0,0,0,0)` into a
+    // real-looking `0,0,0` triple) catches exactly that regression.
+    expect(
+      bgColor,
+      `computed background-color must not be the unresolved-token fallback (transparent); got '${bgColor}'`,
+    ).not.toBe('rgba(0, 0, 0, 0)');
+
+    // A text element ON THE SAME SLIDE, for the contrast comparison. The
+    // heading is used rather than the slide's list items: the list carries
+    // reveal's `fragment` class (`<!-- .element: class="fragment" -->` in the
+    // showcase deck source) and stays `visibility: hidden` until the reader
+    // advances into it, so it is not a stable "always-visible text" target —
+    // the heading is.
+    const textEl = page
+      .locator(`${LEAF_SLIDE}.present`)
+      .locator('h1,h2,h3,h4,h5,h6')
+      .first();
+    await expect(textEl, 'the demo slide must render a heading to measure contrast against').toBeVisible();
+    const textColor = await textEl.evaluate((el) => getComputedStyle(el).color);
+
+    const ratio = contrastRatio(parseComputedRgb(bgColor), parseComputedRgb(textColor));
+    expect(
+      ratio,
+      `demo slide text (${textColor}) on its background (${bgColor}) must clear WCAG AA ` +
+        `4.5:1 in ${mode} mode; got ${ratio.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });

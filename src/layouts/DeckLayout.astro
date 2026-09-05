@@ -160,6 +160,12 @@ const description = entry.data.description ?? '';
     <nav class="dk-deck-controls" aria-label="Slide navigation">
       <button type="button" class="dk-deck-prev" aria-label="Previous slide">‹</button>
       <button type="button" class="dk-deck-next" aria-label="Next slide">›</button>
+      {/* Vertical-stack affordance (D-06 / C-AFFORD-1): hidden by default, both
+          buttons start `hidden` here — the client controller (reveal-init.client,
+          T005) toggles it on init + `slidechanged` from `availableRoutes()`, so a
+          flat slide shows no misleading up/down cue. */}
+      <button type="button" class="dk-deck-up" aria-label="Up (previous slide in stack)" hidden>▲</button>
+      <button type="button" class="dk-deck-down" aria-label="Down (next slide in stack)" hidden>▼</button>
     </nav>
 
     {/* Browser-only: Astro bundles this script for the client; the dynamic

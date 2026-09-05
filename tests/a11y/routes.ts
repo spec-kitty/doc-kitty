@@ -148,7 +148,12 @@ const STARLIGHT_DIAGRAM_GUARD_ROOTS = [
   ...STARLIGHT_GUARD_ROOTS,
   DIAGRAM_SVG_ROOT,
 ] as const;
-const DECK_DIAGRAM_GUARD_ROOTS = [...DECK_GUARD_ROOTS, DIAGRAM_SVG_ROOT] as const;
+
+// The deck's diagram-slide axe entry (below, Renata's finding) additionally
+// guards the rendered diagram `<svg>` root, on top of the plain deck surfaces —
+// so that scan's own non-vacuity contract covers a RENDERED deck diagram, not
+// just the deck chrome.
+const DECK_DIAGRAM_SLIDE_GUARD_ROOTS = [...DECK_GUARD_ROOTS, DIAGRAM_SVG_ROOT] as const;
 
 // Glossary non-vacuity (WP09 T033 / R-1, FR-014 — the M5 vacuous-green lesson).
 // A `:term` link is BYTE-IDENTICAL to an auto-link, so a bare `a[data-glossary-term]`
@@ -227,23 +232,45 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     shell: 'starlight',
     guardRoots: STARLIGHT_GLOSSARY_GUARD_ROOTS,
   },
-  // WP06 T020 — the showcase deck was ALREADY scanned here; it is UPDATED (not
-  // duplicated) with the render-gate for its new first-slide diagram (title +
-  // description → one gated `<svg>`). Adding a second deck entry would be the trap.
+  // WP06 T020 — the showcase deck was ALREADY scanned here. WP02 (deck-layout-
+  // polish) reshaped the title slide to a plain h1 + hero image so it carries
+  // NO diagram: the first `## Out-of-frame deck pipeline` diagram moved to
+  // slide 2. Deck diagrams render LAZILY on `slidechanged` (INV-SCOPE,
+  // diagram-render.client) — a diagram on a not-yet-visited slide is simply
+  // not in the DOM — so the view axe actually scans here (the load-time title
+  // slide) now renders ZERO diagrams. A `renderWait`/`renderCount` gate would
+  // therefore either read 0 (vacuous) or HANG waiting for a load-time `<svg>`
+  // that never appears. So this entry drops both: `guardRoots` uses the plain
+  // `DECK_GUARD_ROOTS` (no rendered-svg root — there is nothing to guard for
+  // at load), and there is no render-gate at all. The per-slide diagram
+  // render + accessible-name/geometry/theme-token coverage for ALL THREE deck
+  // diagrams (slide 2, slide 3, and the inner-stack leaf) is owned by
+  // diagram.spec.ts, which navigates the live deck before asserting — not
+  // here.
   {
     name: 'Deck (/presentations/showcase-deck/)',
     path: ROUTES.deck,
     shell: 'deck',
-    guardRoots: DECK_DIAGRAM_GUARD_ROOTS,
+    guardRoots: DECK_GUARD_ROOTS,
+  },
+  // Renata's pre-PR finding (deck-layout-polish squad): the bare-deck entry
+  // above deliberately drops the render-gate (see its comment) because the
+  // load-time title slide renders zero diagrams — but that means the axe lane
+  // no longer covers a RENDERED deck diagram's enhanced DOM at all. This
+  // SECOND deck entry deep-links to `#/1` (the 'Out-of-frame deck pipeline'
+  // slide, the first slide carrying a diagram) so `gotoDeckInMode` lands there
+  // on load — reveal's `hash:true` config reads the URL hash at `initialize()`,
+  // so the deck opens directly on that slide (verified: the diagram's `<svg
+  // aria-labelledby>` is already in the DOM immediately after `.reveal.ready`,
+  // no `slidechanged` navigation needed) — and the render-gate below waits for
+  // it before axe scans. `guardRoots` extends the plain deck surfaces with the
+  // rendered-svg root so the scan is non-vacuous for the diagram too.
+  {
+    name: 'Deck — diagram slide (#/1)',
+    path: `${ROUTES.deck}#/1`,
+    shell: 'deck',
+    guardRoots: DECK_DIAGRAM_SLIDE_GUARD_ROOTS,
     renderWait: DIAGRAM_SVG_ROOT,
-    // KEEP THIS AT 1 (WP05 T024 / D2). The load-time render count is the
-    // TITLE-SLIDE diagram ONLY: the slide-2 and inner-stack diagrams WP04 added
-    // are `display:none` at deck-ready and render only on their `slidechanged`
-    // (INV-SCOPE, diagram-render.client), so they add NOTHING to the load-time
-    // count axe gates on. A naive bump to 2 would make `expect(...).toHaveCount(2)`
-    // wait for a second load-time `<svg>` that never appears — HANGING the axe
-    // gate forever. The per-slide render of those nodes is locked in
-    // diagram.spec.ts (T019/T020), not here.
     renderCount: 1,
   },
   // WP10 (markua) — the showcase corpus, scanned in BOTH modes. No `renderWait`:

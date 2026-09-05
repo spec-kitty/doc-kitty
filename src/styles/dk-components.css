@@ -327,3 +327,42 @@
 .dk-diagram__attr a {
   color: var(--dk-color-text-accent);
 }
+
+/*
+ * ===== Wide-screen frame cap (#67, deck-layout-polish research D-07) ======
+ * Targets Starlight's OWN `.main-frame` element — verified in the built DOM
+ * (`example/dist/**\/index.html`: `class="main-frame astro-…"`); it is
+ * full-bleed at every width and wraps `[sidebar-pane | main-pane]`, so
+ * capping + centering this one band centers sidebar and content together
+ * (C-005). There is no `.main-frame` rule anywhere in `src/` before this.
+ *
+ * This lives here, in the base GLOBAL component sheet, and NOT in
+ * `brand-components.css` or `theme.css`: page-width capping is a base
+ * layout concern, not brand identity, and (per this sheet's own header
+ * above, and the diagram-component-css mission outcome) a brand swap
+ * replaces `theme.css`'s `customCss` slot outright — a rule placed there
+ * would silently vanish on a branded build. Keeping it in this
+ * survives-branding sheet means an unbranded consumer keeps the cap too.
+ *
+ * Scoped inside the media query so viewports below 100rem stay byte-
+ * unchanged from `main` (C-WIDE-1) — do not hoist `max-width`/`margin-inline`
+ * out of this block. No sidebar-resize affordance is added here (C-007,
+ * explicitly out of scope for this fix).
+ *
+ * Header investigated, NOT capped: `header.header` (the fixed top bar) was
+ * measured (Playwright, 1600/1920/2560) both before and after this rule.
+ * Its own internal nav grid (`.header.astro-…`'s `--__main-column-fr` calc)
+ * never re-centers relative to `.main-frame` — but capping+centering the
+ * outer `<header>` (`position:fixed; inset-inline-start:0; width:100%`) to
+ * match made it visibly WORSE: it detaches the header's left edge from the
+ * sidebar's true (unmoved, fixed) left edge, so the header appears to float
+ * disconnected from the sidebar below it, while its internal search-bar
+ * alignment does not improve. Left untouched: the full-bleed header reads
+ * as ordinary persistent chrome and stays byte-identical to `main`.
+ */
+@media (min-width: 100rem) {
+  .main-frame {
+    max-width: 90rem;
+    margin-inline: auto;
+  }
+}

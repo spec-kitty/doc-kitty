@@ -15,6 +15,24 @@
  *
  * Reads `Astro.locals.starlightRoute` (Starlight ≥0.30), never through
  * component props (the pre-0.30 pattern) — C-004.
+ *
+ * WP04 (FR-009/010/011): `kind: Persona` pages get NO identity render from this
+ * carrier at all — no hero, no Starlight `<h1>`, no band. `Persona.astro`'s
+ * passport card is the sole identity header for those pages (its own `<h1
+ * id="_top">` takes over the skip-link / back-to-top target Starlight's title
+ * normally provides). Each of the three top-level sections is gated with its
+ * OWN `{!isPersona && …}` expression, kept separate rather than merged into one
+ * wrapping `<Fragment>` — the inter-section blank lines are literal text nodes
+ * at the template's top level, and folding multiple elements into a single JSX
+ * expression together collapses that whitespace. On a non-Persona page every
+ * element, class, attribute, and the `#_top` anchor render exactly as they did
+ * before this carrier's `{!isPersona && …}` gating was introduced — the output
+ * is structurally, visually, and semantically identical to main's — but the
+ * gating itself collapses some INERT inter-block whitespace (squad-verified
+ * against main's built HTML), so the two are NOT byte-identical. Keeping the
+ * three sections separate holds that whitespace as close to unchanged as
+ * possible without overclaiming a byte-for-byte guarantee (mirrors the
+ * dormancy discipline in MarkdownContent.astro).
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
@@ -38,6 +56,7 @@ const MetadataBandSlot = slotComponents['dk:metadata-band'];
 // WP03-relevant slice through a narrow cast rather than widening to `any`.
 const entry = route.entry;
 const data = entry.data as unknown as {
+  kind?: string;
   doc_status?: string;
   updated?: Date;
   description?: string;
@@ -46,38 +65,51 @@ const data = entry.data as unknown as {
 // entry.filePath (relative to the site root) locates colocated hero assets.
 const filePath = (entry as unknown as { filePath?: string }).filePath;
 const showBand = isPublished(data as Parameters<typeof isPublished>[0]);
+const isPersona = data.kind === 'Persona';
 ---
 
-{/* dk:page-hero — theme override wins; else the M1 PageHero default. */}
-<div class="dk-page-hero" data-dk-slot="dk:page-hero">
-  <slot name="dk:page-hero">
-    {
-      PageHeroSlot ? (
-        <PageHeroSlot />
-      ) : (
-        <PageHero heroImage={data.hero_image} filePath={filePath} />
-      )
-    }
-  </slot>
-</div>
+{
+  !isPersona && (
+    <>
+      {/* dk:page-hero — theme override wins; else the M1 PageHero default. */}
+      <div class="dk-page-hero" data-dk-slot="dk:page-hero">
+        <slot name="dk:page-hero">
+          {
+            PageHeroSlot ? (
+              <PageHeroSlot />
+            ) : (
+              <PageHero heroImage={data.hero_image} filePath={filePath} />
+            )
+          }
+        </slot>
+      </div>
+    </>
+  )
+}
 
-<Default {...route} />
+{!isPersona && <Default {...route} />}
 
-{/* dk:metadata-band — theme override wins; else the M1 band on published pages. */}
-<div class="dk-metadata-band" data-dk-slot="dk:metadata-band">
-  <slot name="dk:metadata-band">
-    {
-      MetadataBandSlot ? (
-        <MetadataBandSlot />
-      ) : (
-        showBand && (
-          <MetadataBand
-            docStatus={data.doc_status}
-            updated={data.updated}
-            description={data.description}
-          />
-        )
-      )
-    }
-  </slot>
-</div>
+{
+  !isPersona && (
+    <>
+      {/* dk:metadata-band — theme override wins; else the M1 band on published pages. */}
+      <div class="dk-metadata-band" data-dk-slot="dk:metadata-band">
+        <slot name="dk:metadata-band">
+          {
+            MetadataBandSlot ? (
+              <MetadataBandSlot />
+            ) : (
+              showBand && (
+                <MetadataBand
+                  docStatus={data.doc_status}
+                  updated={data.updated}
+                  description={data.description}
+                />
+              )
+            )
+          }
+        </slot>
+      </div>
+    </>
+  )
+}

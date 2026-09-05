@@ -26,7 +26,7 @@
  * `initDeck()` returns a NARROW `DeckController`, never the raw `Reveal` object —
  * so this module stays the sole `import('reveal.js')` site and `DeckLayout` / the
  * diagram renderer gain ZERO reveal knowledge (it is a narrow facade for exactly
- * that reason). The facade exposes three members and nothing else:
+ * that reason). The facade exposes these members and nothing else:
  *   - `onSlideChange(cb)` subscribes to reveal 6.0.1's `slidechanged` event and
  *     invokes `cb(event.currentSlide)` — fires on horizontal AND vertical index
  *     changes (`currentSlide` is the active leaf `<section>`).
@@ -37,6 +37,14 @@
  *     predicate that sets `view:'print'`) and exposed as a field: reveal-init is the
  *     SINGLE owner of print state (INV-PRINT-OWNER). The renderer READS this flag and
  *     never recomputes the regex — killing a whack-a-field drift hazard.
+ *
+ * The vertical-stack affordance (D-06 / C-AFFORD-1) is wired ENTIRELY inside
+ * `initDeck()`: `updateStackAffordance` reads reveal's OWN `availableRoutes()`
+ * (`{left,right,up,down}`) via the raw `DeckInstance` and toggles the deck's
+ * `.dk-deck-up`/`.dk-deck-down` buttons directly, on init and on every
+ * `slidechanged`. That route-availability read is NOT exposed on the
+ * `DeckController` facade below — no caller outside this module needs it, so
+ * the facade stays exactly as narrow as its actual callers require.
  */
 
 /** reveal 6 config keys this initializer sets (a thin, typed subset). */
@@ -59,8 +67,15 @@ interface DeckInstance {
   initialize(): Promise<unknown>;
   prev(): void;
   next(): void;
+  /** Vertical-stack navigation (D-06 / C-AFFORD-1) — wired to the deck's own
+   *  labelled `.dk-deck-up`/`.dk-deck-down` buttons, mirroring prev/next. */
+  up(): void;
+  down(): void;
   on(type: string, cb: (event: { currentSlide: Element }) => void): void;
   getCurrentSlide(): Element | null;
+  /** reveal 6's navigability query — `{left,right,up,down}` — read on init and
+   *  on every `slidechanged` to show/hide the vertical-stack affordance. */
+  availableRoutes(): { left: boolean; right: boolean; up: boolean; down: boolean };
 }
 
 /**
@@ -84,7 +99,10 @@ export interface DeckController {
  * `transition-duration: 0s` (paired with the `@media (prefers-reduced-motion:
  * reduce)` block in `dk-reveal-theme.css`). Print activates reveal's print view.
  * The deck's own `<button class="dk-deck-prev|next">` controls are wired to reveal
- * here. Returns a narrow `DeckController` (see the header note) — never the raw
+ * here, as are the `dk-deck-up|down` vertical-stack affordance buttons (D-06):
+ * their `hidden` attribute is toggled on init and on every `slidechanged` from
+ * reveal's `availableRoutes()`, so the affordance only shows on a stacked slide.
+ * Returns a narrow `DeckController` (see the header note) — never the raw
  * `Reveal` object.
  */
 export async function initDeck(): Promise<DeckController> {
@@ -129,6 +147,25 @@ export async function initDeck(): Promise<DeckController> {
   document
     .querySelector<HTMLButtonElement>('.dk-deck-next')
     ?.addEventListener('click', () => deck.next());
+
+  // Vertical-stack affordance (D-06 / C-AFFORD-1): the deck's own labelled
+  // `.dk-deck-up`/`.dk-deck-down` buttons, wired the same way as prev/next.
+  const upButton = document.querySelector<HTMLButtonElement>('.dk-deck-up');
+  const downButton = document.querySelector<HTMLButtonElement>('.dk-deck-down');
+  upButton?.addEventListener('click', () => deck.up());
+  downButton?.addEventListener('click', () => deck.down());
+
+  // Show up/down only when that route actually exists, so a flat slide shows
+  // no misleading cue (C-AFFORD-1). Run once for the initial slide (deep-link
+  // safe — `hash:true` means the initial active leaf may not be slide 1 and
+  // `slidechanged` does not fire for it) and again on every `slidechanged`.
+  const updateStackAffordance = () => {
+    const routes = deck.availableRoutes();
+    if (upButton) upButton.hidden = !routes.up;
+    if (downButton) downButton.hidden = !routes.down;
+  };
+  updateStackAffordance();
+  deck.on('slidechanged', updateStackAffordance);
 
   return {
     // `slidechanged` carries the active leaf as `event.currentSlide` (fires on

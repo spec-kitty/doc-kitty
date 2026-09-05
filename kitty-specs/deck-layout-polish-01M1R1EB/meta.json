@@ -1,0 +1,18 @@
+{
+  "coordination_branch": "kitty/mission-deck-layout-polish-01M1R1EB",
+  "created_at": "2026-09-05T05:42:42.387804+00:00",
+  "flattened": false,
+  "friendly_name": "Deck & Layout Polish",
+  "mission_id": "01M1R1EBEKDB3S777SP9ZBWDQD",
+  "mission_number": null,
+  "mission_slug": "deck-layout-polish-01M1R1EB",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "A 2026-09-04 docsite review found three visible-quality defects in the published doc-kitty site. The showcase reveal.js deck has a demo slide whose forced dark background makes its body text unreadable; the deck's title slide crams too much content and clips a diagram off the stage; and on wide monitors the reading column is stranded far left inside a large empty gutter. This mission remediates all three so the published docsite reads correctly for every viewer and at every viewport, with the fixes verified by an actual browser pixel pass.",
+  "purpose_tldr": "Fix three confirmed docsite-review defects: an invisible deck slide, an overflowing title slide, and content marooned on wide screens.",
+  "slug": "deck-layout-polish-01M1R1EB",
+  "target_branch": "feat/deck-layout-polish",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-05T06:21:54.808608+00:00"
+}
