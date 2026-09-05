@@ -89,11 +89,22 @@
 /* The deck footer already carries the deck title on every slide (FR-003) —
    restyle it as the brand's signature eyebrow band (mono, uppercase, wide
    tracking, muted ink) rather than plain body copy. Layout (position, size,
-   border, background) stays owned by `dk-reveal-theme.css`; this only
-   restates the type treatment. */
+   border, background) stays owned by `dk-reveal-theme.css`; this restates
+   the type treatment AND bumps size + alignment:
+   - `--dk-text-2xs` (~11px) reads too small in the 2.5rem footer band at the
+     brand's wider 0.15em tracking; `--dk-text-xs` (12px) is still a proper
+     eyebrow but holds up better at that tracking.
+   - The neutral sheet's `.dk-deck-footer` uses `padding-inline-start:
+     var(--dk-space-lg)` (24px), but slide content
+     (`.reveal .slides section`) uses `padding-inline: var(--dk-space-xl)`
+     (32px) — an 8px mismatch that reads as a misaligned eyebrow against the
+     slide's left text edge. Overriding to `--dk-space-xl` here lines the
+     footer eyebrow up with the content edge above it, brand-deck only (the
+     neutral default's own alignment is untouched). */
 .dk-deck-footer {
   font-family: var(--dk-font-mono);
-  font-size: var(--dk-text-2xs);
+  font-size: var(--dk-text-xs);
+  padding-inline-start: var(--dk-space-xl);
   text-transform: uppercase;
   letter-spacing: var(--dk-tracking-caps);
   color: var(--dk-color-text-muted);
@@ -138,6 +149,82 @@
   background: var(--dk-color-accent);
   border-radius: var(--dk-radius-pill);
   margin: 0 0 var(--dk-space-md);
+}
+
+/* Section-slide kicker: the SAME identity mark, scaled down, on every slide
+ * h2 — so a content/section slide reads as branded, not just the title
+ * slide (the strip above was previously a one-off). Same pill-capped yellow
+ * bar family as the h1 strip (h1: 4rem×4px; h2: 2.5rem×3px, a full step down
+ * since h2 is a repeating in-body motif, not a one-time identity mark).
+ * Left-aligned to match the h1 strip and the slide's `text-align: start`
+ * heading. Decorative only (no text content, `content: ''`) — axe/AT never
+ * see it, contrast is not applicable (it is not text), so this carries no
+ * a11y burden.
+ *
+ * Collision check against the built DOM
+ * (example/dist/presentations/showcase-deck/index.html):
+ *  - Fragments (`.fragment`) in the showcase deck are applied to `<ul>` /
+ *    list wrappers via `.element: class="fragment"`, never to `h2` itself —
+ *    `::before` on `h2` sits above the fragment-controlled content, not
+ *    inside it, so fragment visibility toggling (opacity via `.visible`)
+ *    never hides or fights this pseudo-element.
+ *  - Diagram figures (`figure.dk-diagram`) are siblings AFTER the heading in
+ *    the transform's slide markup, never wrapped by or wrapping an `h2`, so
+ *    the kicker cannot appear twice or land inside the figure's own caption
+ *    layout.
+ *  - The title slide's `h1` keeps its own selector/size above; this rule is
+ *    scoped to `h2` only, so the two never double up on the same heading. */
+.reveal .slides section h2::before {
+  content: '';
+  display: block;
+  inline-size: 2.5rem;
+  block-size: 3px;
+  background: var(--dk-color-accent);
+  border-radius: var(--dk-radius-pill);
+  margin-block-end: var(--dk-space-sm);
+}
+
+/* ---- Title hero framing (brand card shape) ------------------------------ */
+/* The title slide's hero `<img>` currently bleeds as a raw rectangle; give
+ * every slide image the brand card treatment instead — hairline border +
+ * lg radius, the same shape language as chips/cards elsewhere in the brand
+ * (motif 4). NO shadow (motif 3: flat + hairline, never drop shadow).
+ * Scoped to `img` only: rendered Mermaid diagrams are inline `<svg>` inside
+ * `figure.dk-diagram` (verified against `rehype/diagram-figure.ts`'s output
+ * shape and the neutral sheet's own note on this), so this never touches
+ * diagram presentation. Purely additive to the neutral sheet's existing
+ * `.reveal .slides section img` rule (`max-inline-size: 100%`,
+ * `max-block-size: min(60%, 65vh)`, `object-fit: contain`) — that sizing
+ * behaviour is untouched; this only adds a border + radius on top. */
+.reveal .slides section img {
+  border: 1px solid var(--dk-color-border);
+  border-radius: var(--dk-radius-lg);
+}
+
+/* ---- Heading presence (display-weight compensation) --------------------- */
+/* The brand display font (Falling Sky/Swansea) is not shipped, so headings
+ * fall back to the system-sans stack — 800 alone reads close to 700 without
+ * the brand's real display cut. A small negative tracking + the brand's
+ * tight leading restates some of that display presence without touching
+ * font-size tokens. Deliberately subtle (-0.01em) — legibility first. Scoped
+ * to h1/h2 (the "major slide headings" the brand calls out), not h3+. */
+.reveal h1,
+.reveal h2 {
+  letter-spacing: -0.01em;
+  line-height: var(--dk-leading-tight);
+}
+
+/* ---- Blockquote brand touch ---------------------------------------------- */
+/* The neutral sheet's blockquote rule already reads `var(--dk-color-accent)`
+ * for its border colour, so on this brand deck it already resolves to the
+ * signal yellow via the token cascade (tokens.css `--dk-color-accent`
+ * #F5C518) — no colour override is actually needed. What differs is the
+ * WEIGHT of the rule: the neutral sheet uses 4px; the brand's flatter,
+ * more restrained accent language reads better at 3px (a scalpel, not a
+ * slab — motif 1). This overrides only that thickness, at the same
+ * `border-inline-start` property, so it wins by source order. */
+.reveal .slides section blockquote {
+  border-inline-start: 3px solid var(--dk-color-accent);
 }
 
 /* Flat + hairline discipline (motif 3): deliberately no rules here touch
