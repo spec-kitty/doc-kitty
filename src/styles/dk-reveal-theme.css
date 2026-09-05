@@ -65,6 +65,71 @@
   --dk-deck-footer-height: 2.5rem;
 }
 
+/* ---- Dark-scheme palette (route-isolated, D-01/D-02) ---------------------- */
+/* The deck route has NO theme script (it is out-of-frame and never loads
+ * Starlight's runtime), so it cannot key off `:root[data-theme='dark']` the
+ * way in-frame pages do — it follows the viewer's OS/browser
+ * `prefers-color-scheme` directly, and this block only needs to restate the
+ * `--dk-color-*` / `--dk-diagram-*` VALUES: the `--dk-* → --r-*` map above
+ * already reads them, so redeclaring them here flips the whole deck (bg,
+ * text, headings, links, surfaces, diagrams) for free.
+ *
+ * This duplicates `theme.css`'s `:root[data-theme='dark']` block, which is a
+ * real tension with DIRECTIVE_001 (one source of truth) — resolved by making
+ * the duplication PARITY-GUARDED rather than silent: every value below must
+ * stay byte-identical to `theme.css`, and `src/tests/deck-theme-parity.test.ts`
+ * parses both sheets and fails the build the moment they drift. Treat
+ * `theme.css`'s dark block as the source; copy changes here, don't hand-edit
+ * this block independently.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Surfaces */
+    --dk-color-bg: #131721;
+    --dk-color-bg-nav: #171c28;
+    --dk-color-bg-sidebar: #10141d;
+    --dk-color-surface-1: #1b212e;
+    --dk-color-surface-2: #232b3a;
+    --dk-color-surface-inset: #0d111a;
+    --dk-color-border: #2a3342;
+    --dk-color-border-strong: #3d4859;
+
+    /* Text (light fg on dark bg — AA) */
+    --dk-color-text: #c4cbd6;
+    --dk-color-text-strong: #f2f4f8;
+    --dk-color-text-muted: #9aa3b2;
+    --dk-color-text-invert: #131721;
+
+    /* Accent (accent-text #a9c2f7 on dark surface — AA) */
+    --dk-color-accent-low: #16233f;
+    --dk-color-accent: #7aa0f2;
+    --dk-color-accent-high: #cddbf9;
+    --dk-color-accent-text: #a9c2f7;
+
+    /* State + paired -bg tint (light fg on dark tint — AA by construction) */
+    --dk-color-info: #9cc3f5;
+    --dk-color-info-bg: #16273f;
+    --dk-color-success: #7fd6a3;
+    --dk-color-success-bg: #14301f;
+    --dk-color-warning: #ecc16a;
+    --dk-color-warning-bg: #33260c;
+    --dk-color-danger: #f2a79c;
+    --dk-color-danger-bg: #351613;
+    --dk-color-neutral: #aab3c2;
+    --dk-color-neutral-bg: #232b3a;
+
+    /* Diagram surfaces (ADR-0024) — DARK. Same tokens `figure.dk-diagram`
+       consumes on in-frame pages; kept in step so a deck's Mermaid output
+       reads the same as the documentation site's dark rendering. */
+    --dk-diagram-node-fill: #1e2532;
+    --dk-diagram-node-border: #8a94a6;
+    --dk-diagram-node-text: #dbe1ea;
+    --dk-diagram-edge: #8fb0f0;
+    --dk-diagram-subgraph-title: #aebfe0;
+    --dk-diagram-cluster-fill: #0e131c;
+  }
+}
+
 /* ---- Look rules (scoped, override reveal core's hardcoded #000/#fff) ------ */
 
 /* reveal makes <body> the viewport when no `.reveal-viewport` ancestor exists;
@@ -127,14 +192,18 @@ body {
 }
 
 /* Hero / title-slide imagery must fit INSIDE the reveal stage and never overflow
-   it (the R4 hero-overflow gap). Cap the block size safely within the stage and
-   let the image scale down preserving aspect ratio. WP05 asserts the title-slide
-   img height ≤ the reveal stage height — this constraint is what makes it hold.
-   Diagrams render as inline `<svg>` inside `<figure>`, so this `img` rule does
-   not touch them. */
+   it (the R4 hero-overflow gap; D-04). reveal gives `.slides > section` a
+   DEFINITE pixel height (the transform-scaled stage, ~700px) — `vh` measures
+   the browser viewport instead, which is what let the title-slide hero
+   overflow. A percentage resolves against that definite-height section, so
+   `60%` tracks the stage; `65vh` stays as a belt-and-suspenders secondary
+   bound for the (rare) case the stage is taller than the viewport. WP05
+   asserts the title-slide img height ≤ the reveal stage height — this
+   constraint is what makes it hold. Diagrams render as inline `<svg>` inside
+   `<figure>`, so this `img` rule does not touch them. */
 .reveal .slides section img {
   max-inline-size: 100%;
-  max-block-size: 65vh;
+  max-block-size: min(60%, 65vh);
   block-size: auto;
   object-fit: contain;
 }
@@ -184,7 +253,12 @@ body {
 /* ---- Deck navigation controls (real <button>s, AX-2) --------------------- */
 /* Our own labelled controls (reveal's built-in cluster is disabled in
    reveal-init). Fixed bottom-right, ≥44px targets, brand-token surface, visible
-   focus ring. Hidden from the printed/PDF output. */
+   focus ring. Hidden from the printed/PDF output. WP02 renders the vertical-
+   stack `.dk-deck-up`/`.dk-deck-down` pair (D-06) as more `<button>`s inside
+   this same container, alongside the existing ‹/› pair — the flex row + `gap`
+   below already lays out any number of buttons cleanly, so no layout change
+   is needed here; see the `.dk-deck-up`/`.dk-deck-down` rules further down for
+   their hidden-by-default behaviour. */
 .dk-deck-controls {
   position: fixed;
   right: var(--dk-space-lg);
@@ -222,6 +296,22 @@ body {
   box-shadow: var(--dk-shadow-focus);
 }
 
+/* Vertical-stack affordance (`.dk-deck-up`, `.dk-deck-down`, D-06) — the extra
+   up/down pair WP02 renders inside `.dk-deck-controls`, wired to
+   `deck.up()`/`deck.down()`. As plain `<button>`s inside `.dk-deck-controls`
+   they already inherit the 2.75rem target, brand surface/border, hover, and
+   focus-visible ring from the rules above — no separate look rules are
+   needed. WP02 starts them `hidden` and toggles the attribute against
+   reveal's `availableRoutes()` so no misleading cue shows when a slide has no
+   vertical route (FR-006). The explicit `[hidden]` rule below is required
+   because `.dk-deck-controls button { display: inline-flex }` is an AUTHOR
+   rule and would otherwise beat the user-agent's `[hidden] { display: none }`
+   default (author styles always win over UA styles, specificity aside). */
+.dk-deck-controls .dk-deck-up[hidden],
+.dk-deck-controls .dk-deck-down[hidden] {
+  display: none;
+}
+
 /* ---- Deck footer / bottom-banner (contentinfo landmark, FR-003/C2) ------- */
 /* A fixed brand-surface band pinned to the frame bottom, visible on every
    slide. WP05 asserts its background resolves to a brand surface token
@@ -253,7 +343,9 @@ body {
 
 @media print {
   .dk-deck-controls,
-  .dk-deck-footer {
+  .dk-deck-footer,
+  .dk-deck-up,
+  .dk-deck-down {
     display: none;
   }
 }
