@@ -1,0 +1,101 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-09-05T05:43:20.456702Z",
+      "decision_id": "01M1R1FGM81MZ8F6PEPP3EAZSH",
+      "final_answer": "Title slide = h1 + hero image only. Move BOTH the intro paragraph (carries the Pagefind 'quokka showcase sentinel' \u2014 must stay indexed on a published slide) and the first 'Out-of-frame pipeline' Mermaid diagram onto a new following ## slide. Also cap whole-slide content in stage units so no slide overflows.",
+      "input_key": "title_slide_reshape",
+      "mission_id": "01M1R1EBEKDB3S777SP9ZBWDQD",
+      "mission_slug": "deck-layout-polish-01M1R1EB",
+      "opened_by": "cli",
+      "options": [
+        "Move the first Mermaid diagram to its own slide (keep the hero on the title)",
+        "Drop/shrink the hero image (keep the diagram flow near the top)",
+        "Both: hero on title slide, move BOTH intro paragraph and diagram off"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "For #66, how should the overflowing title slide be reduced to a title + one focal element?",
+      "rationale": null,
+      "resolved_at": "2026-09-05T05:49:36.027471Z",
+      "resolved_by": null,
+      "slot_key": "specify.deck.title-slide-reshape",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-09-05T05:43:23.388131Z",
+      "decision_id": "01M1R1FKFW64JM0898BP8MAEVF",
+      "final_answer": "Cap + center the whole frame on wide viewports only (approx max-width 90rem above a 100rem breakpoint); keep the 45rem reading measure unchanged. Verify the real Starlight frame class in the built DOM before choosing the selector.",
+      "input_key": "wide_cap_depth",
+      "mission_id": "01M1R1EBEKDB3S777SP9ZBWDQD",
+      "mission_slug": "deck-layout-polish-01M1R1EB",
+      "opened_by": "cli",
+      "options": [
+        "Cap + center the frame only (max-width ~90rem, min-width 100rem)",
+        "Cap + center AND bump the content measure on wide screens",
+        "Cap + center with a different breakpoint/max-width"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "For #67, how far should the wide-screen fix go?",
+      "rationale": null,
+      "resolved_at": "2026-09-05T05:49:38.911895Z",
+      "resolved_by": null,
+      "slot_key": "specify.layout.wide-cap-depth",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-09-05T05:43:26.328067Z",
+      "decision_id": "01M1R1FPBRG131SD9WC9DFC8DE",
+      "final_answer": "Add a real theme mechanism to the out-of-frame deck (follow prefers-color-scheme, reusing the existing dark --dk-* catalog) WITHOUT regressing in-frame Starlight theming or the a11y gates; AND change showcase-deck.md's hardcoded data-background-color=#101828 to a theme-flipping brand surface token so the demo slide is legible in BOTH light and dark. Both parts are required: dark-mode alone leaves the navy hardcode failing for light-preference viewers.",
+      "input_key": "deck_contrast_fix",
+      "mission_id": "01M1R1EBEKDB3S777SP9ZBWDQD",
+      "mission_slug": "deck-layout-polish-01M1R1EB",
+      "opened_by": "cli",
+      "options": [
+        "Use a light brand surface token as the demo background (theme-consistent, legible)",
+        "Keep a dark background but pair a hardcoded light foreground on that slide",
+        "Add a real dark-mode mechanism to the deck (larger scope)"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "For #65, how should the demo background slide be made legible against the deck's (always-light) text?",
+      "rationale": null,
+      "resolved_at": "2026-09-05T05:49:41.818832Z",
+      "resolved_by": null,
+      "slot_key": "specify.deck.contrast-fix",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-09-05T05:50:09.307652Z",
+      "decision_id": "01M1R1VZWVEM0Y1CTXQXXE66Q0",
+      "final_answer": "Yes. The out-of-frame deck's theme/style mechanism (including its prefers-color-scheme dark-mode) is implemented in the route-isolated deck sheet(s) that only DeckLayout links \u2014 NOT in the shared global theme.css/chrome layer. In-frame Starlight chrome theming is untouched, and a consumer can create/select deck styles independently of docsite chrome. This is a first-class design constraint for the #65 deck-theme work.",
+      "input_key": "deck_style_separation",
+      "mission_id": "01M1R1EBEKDB3S777SP9ZBWDQD",
+      "mission_slug": "deck-layout-polish-01M1R1EB",
+      "opened_by": "cli",
+      "options": [
+        "Yes: deck theme lives in the route-isolated deck sheet, independent of shared chrome tokens",
+        "No: fold deck theming into the shared global token layer"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Should deck styling/theme be creatable and selectable separately from the docsite (Starlight) chrome?",
+      "rationale": null,
+      "resolved_at": "2026-09-05T05:50:12.233377Z",
+      "resolved_by": null,
+      "slot_key": "specify.deck.style-separation",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M1R1EBEKDB3S777SP9ZBWDQD",
+  "version": 1
+}

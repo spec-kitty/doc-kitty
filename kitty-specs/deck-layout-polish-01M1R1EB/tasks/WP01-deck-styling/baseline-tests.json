@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-09-05T06:22:20Z",
+  "base_branch": "feat/deck-layout-polish",
+  "base_commit": "538a370e4329d93082aa6a86e6baf2b4b3c4b27c",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
