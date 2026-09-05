@@ -148,7 +148,12 @@ const STARLIGHT_DIAGRAM_GUARD_ROOTS = [
   ...STARLIGHT_GUARD_ROOTS,
   DIAGRAM_SVG_ROOT,
 ] as const;
-const DECK_DIAGRAM_GUARD_ROOTS = [...DECK_GUARD_ROOTS, DIAGRAM_SVG_ROOT] as const;
+
+// The deck's diagram-slide axe entry (below, Renata's finding) additionally
+// guards the rendered diagram `<svg>` root, on top of the plain deck surfaces —
+// so that scan's own non-vacuity contract covers a RENDERED deck diagram, not
+// just the deck chrome.
+const DECK_DIAGRAM_SLIDE_GUARD_ROOTS = [...DECK_GUARD_ROOTS, DIAGRAM_SVG_ROOT] as const;
 
 // Glossary non-vacuity (WP09 T033 / R-1, FR-014 — the M5 vacuous-green lesson).
 // A `:term` link is BYTE-IDENTICAL to an auto-link, so a bare `a[data-glossary-term]`
@@ -247,6 +252,26 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.deck,
     shell: 'deck',
     guardRoots: DECK_GUARD_ROOTS,
+  },
+  // Renata's pre-PR finding (deck-layout-polish squad): the bare-deck entry
+  // above deliberately drops the render-gate (see its comment) because the
+  // load-time title slide renders zero diagrams — but that means the axe lane
+  // no longer covers a RENDERED deck diagram's enhanced DOM at all. This
+  // SECOND deck entry deep-links to `#/1` (the 'Out-of-frame deck pipeline'
+  // slide, the first slide carrying a diagram) so `gotoDeckInMode` lands there
+  // on load — reveal's `hash:true` config reads the URL hash at `initialize()`,
+  // so the deck opens directly on that slide (verified: the diagram's `<svg
+  // aria-labelledby>` is already in the DOM immediately after `.reveal.ready`,
+  // no `slidechanged` navigation needed) — and the render-gate below waits for
+  // it before axe scans. `guardRoots` extends the plain deck surfaces with the
+  // rendered-svg root so the scan is non-vacuous for the diagram too.
+  {
+    name: 'Deck — diagram slide (#/1)',
+    path: `${ROUTES.deck}#/1`,
+    shell: 'deck',
+    guardRoots: DECK_DIAGRAM_SLIDE_GUARD_ROOTS,
+    renderWait: DIAGRAM_SVG_ROOT,
+    renderCount: 1,
   },
   // WP10 (markua) — the showcase corpus, scanned in BOTH modes. No `renderWait`:
   // asides/callouts/figures/ids are build-time SSR (not a client render), so the

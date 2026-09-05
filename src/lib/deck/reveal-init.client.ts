@@ -37,9 +37,14 @@
  *     predicate that sets `view:'print'`) and exposed as a field: reveal-init is the
  *     SINGLE owner of print state (INV-PRINT-OWNER). The renderer READS this flag and
  *     never recomputes the regex — killing a whack-a-field drift hazard.
- *   - `availableRoutes()` (D-06 / C-AFFORD-1) reads reveal's `availableRoutes()`
- *     (`{left,right,up,down}`) so a caller can show/hide the vertical-stack
- *     affordance without ever touching the raw `Reveal` instance.
+ *
+ * The vertical-stack affordance (D-06 / C-AFFORD-1) is wired ENTIRELY inside
+ * `initDeck()`: `updateStackAffordance` reads reveal's OWN `availableRoutes()`
+ * (`{left,right,up,down}`) via the raw `DeckInstance` and toggles the deck's
+ * `.dk-deck-up`/`.dk-deck-down` buttons directly, on init and on every
+ * `slidechanged`. That route-availability read is NOT exposed on the
+ * `DeckController` facade below — no caller outside this module needs it, so
+ * the facade stays exactly as narrow as its actual callers require.
  */
 
 /** reveal 6 config keys this initializer sets (a thin, typed subset). */
@@ -85,9 +90,6 @@ export interface DeckController {
   isPrintView: boolean;
   /** reveal's current leaf slide — the initial one may not be slide 1 (deep-link). */
   currentSlide(): Element | null;
-  /** Route availability (D-06 / C-AFFORD-1), read from reveal's `availableRoutes()`.
-   *  The inert (no `.reveal` root) controller reports every route as unavailable. */
-  availableRoutes(): { left: boolean; right: boolean; up: boolean; down: boolean };
 }
 
 /**
@@ -112,7 +114,6 @@ export async function initDeck(): Promise<DeckController> {
       onSlideChange: () => {},
       isPrintView: false,
       currentSlide: () => null,
-      availableRoutes: () => ({ left: false, right: false, up: false, down: false }),
     };
   }
 
@@ -175,8 +176,5 @@ export async function initDeck(): Promise<DeckController> {
     isPrintView: printPdf,
     // The `.present` leaf — may not be slide 1 under a `hash:true` deep-link.
     currentSlide: () => deck.getCurrentSlide(),
-    // Route availability (D-06); callers can also read this directly if they
-    // need to react to route changes beyond the built-in button wiring above.
-    availableRoutes: () => deck.availableRoutes(),
   };
 }
