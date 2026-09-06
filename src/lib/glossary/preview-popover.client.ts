@@ -45,8 +45,9 @@ const CLOSE_DELAY_MS = 160;
 /** Gap (px) kept between the anchor and the popover — also the caret's stand-off. */
 const GAP_PX = 6;
 /** Half-width (px) of the caret triangle drawn by the `::before`/`::after` pair in
- * `ensureStyle` below; kept as one constant so the JS-computed horizontal offset
- * and the CSS border widths can never drift apart (#64 T004). */
+ * `ensureStyle` below. Both the JS-computed horizontal caret offset AND the caret's
+ * CSS border widths are derived from this one constant (the `ensureStyle` template
+ * interpolates it), so the drawn triangle and the clamp can never drift (#64 T004). */
 const CARET_HALF_PX = 8;
 
 /** The per-page definitions payload: context → termName → plain definition text. */
@@ -136,25 +137,25 @@ function ensureStyle(): void {
     }
     /* placement "bottom": the popover sits BELOW the term, caret points UP. */
     .dk-glossary-popover[data-placement='bottom']::before {
-      top: -8px;
-      border-width: 0 8px 8px 8px;
+      top: -${CARET_HALF_PX}px;
+      border-width: 0 ${CARET_HALF_PX}px ${CARET_HALF_PX}px ${CARET_HALF_PX}px;
       border-bottom-color: var(--dk-color-border, var(--sl-color-hairline, #cbccd1));
     }
     .dk-glossary-popover[data-placement='bottom']::after {
-      top: -6px;
-      border-width: 0 7px 7px 7px;
+      top: -${CARET_HALF_PX - 2}px;
+      border-width: 0 ${CARET_HALF_PX - 1}px ${CARET_HALF_PX - 1}px ${CARET_HALF_PX - 1}px;
       border-bottom-color: var(--dk-color-surface-1, var(--sl-color-bg, #ffffff));
     }
     /* placement "top": the popover sits ABOVE the term (viewport-bottom flip,
      * #64 T005), caret points DOWN. */
     .dk-glossary-popover[data-placement='top']::before {
-      bottom: -8px;
-      border-width: 8px 8px 0 8px;
+      bottom: -${CARET_HALF_PX}px;
+      border-width: ${CARET_HALF_PX}px ${CARET_HALF_PX}px 0 ${CARET_HALF_PX}px;
       border-top-color: var(--dk-color-border, var(--sl-color-hairline, #cbccd1));
     }
     .dk-glossary-popover[data-placement='top']::after {
-      bottom: -6px;
-      border-width: 7px 7px 0 7px;
+      bottom: -${CARET_HALF_PX - 2}px;
+      border-width: ${CARET_HALF_PX - 1}px ${CARET_HALF_PX - 1}px 0 ${CARET_HALF_PX - 1}px;
       border-top-color: var(--dk-color-surface-1, var(--sl-color-bg, #ffffff));
     }
   `;
@@ -213,9 +214,13 @@ export function mountGlossaryPreview(
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
     const fitsBelow = spaceBelow >= popoverHeight + GAP_PX;
-    // Flip above only when it does not fit below; if NEITHER side fits (a
-    // popover taller than the viewport), prefer whichever side has more room.
-    const placeAbove = !fitsBelow && spaceAbove > spaceBelow;
+    const fitsAbove = spaceAbove >= popoverHeight + GAP_PX;
+    // Flip above only when it does not fit below AND genuinely fits above. When
+    // NEITHER side fits (a definition taller than the space on both sides), stay
+    // below: the overflow then extends the document downward and stays
+    // scroll-reachable, whereas flipping up would push the popover top above the
+    // viewport top where the text can never be reached (#64 T005).
+    const placeAbove = !fitsBelow && fitsAbove;
 
     if (placeAbove) {
       popover.style.top = `${rect.top + window.scrollY - popoverHeight - GAP_PX}px`;
