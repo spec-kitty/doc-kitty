@@ -82,7 +82,15 @@ describe('shared glossary link-node parity (C-001)', () => {
     const term = termNode();
     // href is single-sourced (glossaryTermUrl) — assert it matches too.
     expect(term.url).toBe(auto.url);
-    // The load-bearing invariant: the two independent builders agree on the shape.
+    // The load-bearing invariant: the two independent builders agree on the shape,
+    // including the aria-label a11y affordance (#77, C-002, NFR-001).
     expect(term.data?.hProperties).toEqual(auto.data?.hProperties);
+  });
+
+  it('both emitters carry the identical aria-label affordance for the fixture term (#77)', () => {
+    const auto = autolinkNode();
+    const term = termNode();
+    expect(auto.data?.hProperties?.['aria-label']).toBe('cargo, glossary term');
+    expect(term.data?.hProperties?.['aria-label']).toBe('cargo, glossary term');
   });
 });

@@ -89,6 +89,7 @@ describe('glossaryTerm (:term directive)', () => {
           'data-glossary-context': 'shipping',
           'data-glossary-anchor': 'bill-of-lading',
           'data-glossary-context-slug': 'shipping',
+          'aria-label': 'bill, glossary term',
         },
       },
     });
@@ -154,6 +155,7 @@ describe('glossaryTerm (:term directive)', () => {
           'data-glossary-context': 'hr',
           'data-glossary-anchor': 'policy',
           'data-glossary-context-slug': 'hr',
+          'aria-label': 'policy, glossary term',
         },
       },
     };

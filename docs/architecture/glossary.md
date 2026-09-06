@@ -133,6 +133,17 @@ underline (styled in the base component sheet so it survives brand swaps); the
 class emits from the single shared link-node shape, so auto-links and `:term`
 directives stay byte-identical downstream and the re-derive parity guard holds.
 
+The shared link node (`src/lib/glossary/link-node.ts`, issue #79) is now the ONE
+place both emitters (`glossary-autolink.internal.ts`'s auto-linker and
+`glossary-term.ts`'s `:term` directive) build from, and it carries an
+`aria-label` = `"<visible text>, glossary term"` (issue #77) alongside the
+`dk-glossary-link` class and `data-glossary-*` markers. The affordance makes the
+term/link distinction perceivable to assistive technology non-visually — the
+dotted underline and `help` cursor are otherwise visual-only cues. It is an
+attribute, not an extra text child, so it is present in the server-rendered HTML
+(no-JS-safe) and never enters the `textContent`-based links-used surface or its
+count-pins.
+
 ## Navigation and the section registry
 
 The glossary ships under a named **"Reference"** nav group (issue #18). The
