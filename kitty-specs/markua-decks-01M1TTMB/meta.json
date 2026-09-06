@@ -1,0 +1,16 @@
+{
+  "coordination_branch": "kitty/mission-markua-decks-01M1TTMB",
+  "created_at": "2026-09-06T07:41:22.226613+00:00",
+  "flattened": false,
+  "friendly_name": "Markua-capable decks",
+  "mission_id": "01M1TTMBDJKYDDJHRX56CTAWEM",
+  "mission_number": null,
+  "mission_slug": "markua-decks-01M1TTMB",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Today Markua constructs (asides, callouts, figures, attribute lists) are deliberately inert on presentation pages, so deck authors cannot use the concise authoring syntax the rest of the docsite enjoys. This mission makes deck slides genuinely Markua-capable — the same author-friendly markers render the intended, accessible constructs on a slide — closing the option-(b) follow-up (#47) left open when decks were first shipped as Markua-agnostic.",
+  "purpose_tldr": "Make slide-deck content honour the same Markua authoring shortcuts the docsite already supports.",
+  "slug": "markua-decks-01M1TTMB",
+  "target_branch": "feat/markua-decks",
+  "topology": "coord"
+}
