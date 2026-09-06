@@ -61,6 +61,22 @@ describe('splitDeck — grouping', () => {
     expect(img).toMatchObject({ type: 'image', url: '/hero.png', alt: 'A hero' });
   });
 
+  it('tags the synthesized hero image with data-deck-hero (D4/C-COMPOSE-05, WP02 T005)', () => {
+    // markuaFigure (rehype) reads this via mdast-util-to-hast's default image
+    // handler, which folds mdast `data.hProperties` onto the hast `properties` —
+    // so this is the discriminator that lets markuaFigure skip only the hero.
+    const { children } = splitDeck(root(h(2, 'One')), {
+      kind: 'Presentation',
+      title: 'Deck Title',
+      hero_image: { src: '/hero.png', alt: 'A hero' },
+    });
+    const title = children[0];
+    const img = title.children[1]?.children?.[0];
+    expect(img?.data?.hProperties?.['data-deck-hero']).toBe('');
+    // url/alt stay identical alongside the tag.
+    expect(img).toMatchObject({ type: 'image', url: '/hero.png', alt: 'A hero' });
+  });
+
   it('never synthesizes the description as title-slide body text (FR-002)', () => {
     const { children } = splitDeck(root(h(2, 'One')), {
       kind: 'Presentation',
@@ -110,7 +126,7 @@ describe('splitDeck — grouping', () => {
     expect(stack.children.every(isSection)).toBe(true);
     // inner #1 = the `##` slide's own content (heading + prose)
     expect(heading(stack.children[0], 2)).toBe(true);
-    expect(stack.children[0].children.map((c) => c.type)).toContain('paragraph');
+    expect((stack.children[0].children ?? []).map((c) => c.type)).toContain('paragraph');
     // inner #2 = the `###`
     expect(heading(stack.children[1], 3)).toBe(true);
   });
@@ -199,7 +215,48 @@ describe('splitDeck — directives', () => {
     );
     const para = children[1].children.find((c) => c.type === 'paragraph');
     expect(para?.data?.hProperties?.class).toBe('fragment');
+    // Regression guard for the FIX A collision case below: a node with NO prior
+    // `className` still gets the plain raw `class` key, never `className`.
+    expect(para?.data?.hProperties?.className).toBeUndefined();
     expect(warnings).toHaveLength(0);
+  });
+
+  it('FIX A: a `.element: class="…"` MERGES into an existing `className` array (deck callout collision) instead of writing a duplicate raw `class` key', () => {
+    // A Markua callout (`markua-callouts.ts`, `emitThemeCallout`) rewrites its
+    // directive to `data.hName: 'aside'` / `data.hProperties.className:
+    // ['dk-callout', 'dk-callout--tip']` BEFORE `deckSplit` ever sees it. A
+    // reveal `<!-- .element: class="fragment" -->` immediately after it used to
+    // write a second, RAW `class` key next to that array —
+    // `<aside class="dk-callout dk-callout--tip" class="fragment">` — invalid
+    // markup that silently drops the fragment (a browser keeps only the first
+    // `class` attribute). This node mirrors that emitted callout shape.
+    const calloutNode: MdNode = {
+      type: 'containerDirective',
+      data: { hName: 'aside', hProperties: { className: ['dk-callout', 'dk-callout--tip'] } },
+      children: [],
+    };
+    const { children, warnings } = splitDeck(
+      root(h(2, 'A'), calloutNode, html('<!-- .element: class="fragment" -->')),
+      DECK,
+    );
+    const aside = children[1].children.find((c) => c.type === 'containerDirective');
+    expect(props(aside as MdNode).className).toEqual(['dk-callout', 'dk-callout--tip', 'fragment']);
+    expect(props(aside as MdNode).class).toBeUndefined(); // no duplicate raw `class` key
+    expect(warnings).toHaveLength(0);
+  });
+
+  it('FIX A: the merge dedupes a token already present in `className`', () => {
+    const calloutNode: MdNode = {
+      type: 'containerDirective',
+      data: { hName: 'aside', hProperties: { className: ['dk-callout', 'fragment'] } },
+      children: [],
+    };
+    const { children } = splitDeck(
+      root(h(2, 'A'), calloutNode, html('<!-- .element: class="fragment" -->')),
+      DECK,
+    );
+    const aside = children[1].children.find((c) => c.type === 'containerDirective');
+    expect(props(aside as MdNode).className).toEqual(['dk-callout', 'fragment']);
   });
 
   it('warns and skips a `.element` directive with no preceding sibling', () => {

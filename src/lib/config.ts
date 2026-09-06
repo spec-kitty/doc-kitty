@@ -678,11 +678,25 @@ function markuaIntegration(): AstroIntegration {
         updateConfig({
           markdown: {
             // Remark (after `remarkDirective`): normalise → attributes → callouts.
-            // `.map(guardDeck)` makes EVERY member a deck no-op (C36a/C36f) —
-            // never `deckSplit`/`remarkDirective` (out of scope).
-            remarkPlugins: [markuaNormalise, markuaAttributes, markuaCallouts].map(guardDeck),
+            // Registered BARE (#47, FR-003/FR-006): each of the four content
+            // passes is now intentionally deck-capable — `markuaNormalise`
+            // terminates a wrapper at a slide boundary instead of swallowing it
+            // (D3/C-COMPOSE-03), `markuaAttributes` is boundary-safe by
+            // construction (D2), and `markuaCallouts` forces the self-contained
+            // `dk-callout` theme path on a deck (D5/C-COMPOSE-04) — their
+            // deck-safety is proven by their own unit tests, not by a
+            // registration-site guard. `deckSplit`/`remarkDirective` are NEVER
+            // wrapped — both are out of scope for this guard by design.
+            remarkPlugins: [markuaNormalise, markuaAttributes, markuaCallouts],
             // Rehype (user stage, before `rehypeImages`/`rehypeHeadingIds`).
-            rehypePlugins: [markuaFigure, markuaTocDemote].map(guardDeck),
+            // `markuaFigure` is also registered BARE (D4/C-COMPOSE-05): it wraps
+            // every slide body image as a `dk-figure` and skips only the
+            // `data-deck-hero`-tagged synthesized title-slide hero via its own
+            // structural discriminator. `markuaTocDemote` stays `guardDeck`-wrapped
+            // (D6/C-COMPOSE-06): a deck has no on-page ToC, so the pass has
+            // nothing to do there — this is the retained predicate/wrapper proof
+            // (FR-006) for the one pass that stays deck-agnostic.
+            rehypePlugins: [markuaFigure, guardDeck(markuaTocDemote)],
           },
         });
       },

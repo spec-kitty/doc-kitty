@@ -1,12 +1,16 @@
 /**
  * `guardDeck` — the registration-site wrapper that makes a unified plugin a
- * no-op on Presentation (deck) pages (S-02, C36a/C36c/C36f).
+ * no-op on Presentation (deck) pages (S-02, C36c).
  *
- * Applied at the Markua registration ARRAYS (`config.ts` remark `:604` / rehype
- * `:606`) via `[...].map(guardDeck)`, so deck-agnosticism is a property of array
- * membership, not of any individual transformer body. This closes the N-1 guard
- * hole permanently: a 6th pass added to either array is auto-guarded (and C36f
- * reds if it is added OUTSIDE `.map(guardDeck)`).
+ * Since #47 / ADR-0038 (decks are Markua-capable), this wraps ONE pass:
+ * `markuaTocDemote` in the rehype array (`config.ts:685`) — the sole Markua pass
+ * that stays deck-agnostic, because a deck route has no on-page table of contents
+ * to demote a figure/aside heading out of. The four content passes
+ * (`markuaNormalise`, `markuaAttributes`, `markuaCallouts`, `markuaFigure`) are
+ * registered BARE and are intentionally deck-CAPABLE: they gain deck-awareness by
+ * DELEGATION (reading `isPresentationFile` in their own bodies to alter behaviour),
+ * not by this no-op wrap. Adding a new deck-agnostic pass means wrapping it here
+ * explicitly; a new deck-capable pass is registered bare.
  *
  * NEVER wrap `deckSplit`/`deckSplitIntegration` (the deck processor) or the
  * unwrapped `remarkDirective` — both are out of scope by design.

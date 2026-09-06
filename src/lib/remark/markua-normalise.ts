@@ -33,6 +33,16 @@
  * No new dependency: the tree walk is hand-rolled (no `unist-util-visit`) and
  * the inner-Markdown compile reuses the already-pinned `unified` /
  * `remark-parse` / `remark-gfm` (research supply-chain).
+ *
+ * Deck-aware wrapper boundary (T001, C-COMPOSE-03, research D3): on a
+ * `kind: Presentation` page (detected here via `isPresentationFile`, never
+ * imported into the pure `.internal.ts` module), an `{aside}`/`{blurb}` wrapper
+ * that would otherwise swallow a slide-boundary placeholder (a heading depth 2
+ * or 3, or a `thematicBreak` — `deckSplit`'s own boundary rule) instead closes BEFORE
+ * it, leaving the boundary node in `root.children` for `deckSplit` to see, and
+ * records a `file.message` warning. Off a deck this is a strict no-op: the
+ * predicate passed to `normaliseDocument` is `undefined`, so behaviour is
+ * byte-identical to before this change (NFR-001).
  */
 import { unified, type Processor } from 'unified';
 import remarkParse from 'remark-parse';
@@ -40,8 +50,10 @@ import remarkGfm from 'remark-gfm';
 import {
   classifyLine,
   normaliseDocument,
+  type BoundaryPredicate,
   type NormBlock,
 } from './markua-normalise.internal.js';
+import { isPresentationFile } from '../deck/is-presentation.js';
 
 /** Minimal structural mdast node — enough to walk children and read text. */
 interface MdastNode {
@@ -64,6 +76,17 @@ interface ContainerDirective extends MdastNode {
   name: string;
   attributes: Record<string, string>;
   children: MdastNode[];
+}
+
+/**
+ * The subset of the remark VFile this plugin reads (Astro injects `data.astro`)
+ * to detect a deck (T001, D3) via {@link isPresentationFile}, and re-emits a
+ * wrapper-boundary warning through `file.message` (unified's VFile API), the
+ * same channel `deckSplit` uses for its own warnings.
+ */
+interface MarkuaNormaliseVFile {
+  data?: { astro?: { frontmatter?: { kind?: unknown } } };
+  message(reason: string): unknown;
 }
 
 // A sentinel wrapping an opaque node's stored index. `\uE000` is a Private-Use
@@ -274,6 +297,49 @@ function buildLineStream(children: MdastNode[]): { lines: string[]; opaque: Mdas
   return { lines, opaque };
 }
 
+/**
+ * Resolve a placeholder LINE to "is this a slide-boundary node" (T001,
+ * C-COMPOSE-03, research D3) — a `heading` of depth 2 or 3, or a
+ * `thematicBreak`, mirroring `deckSplit`'s own boundary rule EXACTLY
+ * (`deck-split.internal.ts` splits only on `depth === 2` or `depth === 3`; a
+ * depth-1 `#` stays IN-slide, `deck-split.internal.ts:377/381`). This is the
+ * ONLY place a placeholder is resolved back to its stored node for boundary
+ * purposes; `markua-normalise.internal.ts` never sees the node, only the line
+ * and this predicate's answer, so the pure module stays Astro/mdast-free.
+ */
+function boundaryPlaceholderPredicate(opaque: MdastNode[]): BoundaryPredicate {
+  return (line: string): boolean => {
+    const m = PLACEHOLDER_RE.exec(line);
+    if (!m) return false;
+    const node = opaque[Number(m[1])];
+    if (!node) return false;
+    return (node.type === 'heading' && (node.depth === 2 || node.depth === 3)) ||
+      node.type === 'thematicBreak';
+  };
+}
+
+/** The single wrapper-boundary warning text (C-COMPOSE-03), reused verbatim so
+ * every termination site reports identically. */
+const BOUNDARY_WARNING =
+  'Markua {aside}/{blurb} cannot span a slide boundary; closed at the boundary.';
+
+/**
+ * Walk the normalised block tree (BEFORE {@link renderBlocks} erases the flag —
+ * a rendered `containerDirective` carries no such marker) collecting one warning
+ * per wrapper that closed early at a slide boundary (T001). Only ever non-empty
+ * when `isDeck`, since `terminatedAtBoundary` is only ever set when a
+ * `BoundaryPredicate` was supplied to {@link normaliseDocument}.
+ */
+function collectBoundaryWarnings(blocks: NormBlock[]): string[] {
+  const warnings: string[] = [];
+  for (const block of blocks) {
+    if (block.kind !== 'container') continue;
+    if (block.terminatedAtBoundary) warnings.push(BOUNDARY_WARNING);
+    warnings.push(...collectBoundaryWarnings(block.children));
+  }
+  return warnings;
+}
+
 /** Render normalised blocks back to mdast nodes, resolving placeholders. */
 function renderBlocks(
   blocks: NormBlock[],
@@ -335,12 +401,22 @@ export default function markuaNormalise() {
   // smartypants/directive (the container names are constructed directly).
   const processor = unified().use(remarkParse).use(remarkGfm) as unknown as Processor;
 
-  return function transformer(tree: MdastRoot): void {
+  return function transformer(tree: MdastRoot, file?: MarkuaNormaliseVFile): void {
     const children = tree.children;
     if (!Array.isArray(children) || !hasMarkuaMarker(children)) return; // byte-identical no-op
 
     const { lines, opaque } = buildLineStream(children);
-    const blocks = normaliseDocument(lines);
+    // T001 (C-COMPOSE-03, D3): deck-awareness enters ONLY here, via
+    // `isPresentationFile` — the pure `.internal.ts` state machine never reads
+    // `file` and only ever receives a plain `BoundaryPredicate` function. Off a
+    // deck `isBoundaryLine` is `undefined`, so `normaliseDocument` behaves
+    // exactly as it did before T001 (byte-identical, NFR-001).
+    const isDeck = isPresentationFile(file);
+    const isBoundaryLine = isDeck ? boundaryPlaceholderPredicate(opaque) : undefined;
+    const blocks = normaliseDocument(lines, isBoundaryLine);
+    if (isDeck) {
+      for (const warning of collectBoundaryWarnings(blocks)) file?.message?.(warning);
+    }
     tree.children = renderBlocks(blocks, opaque, processor);
   };
 }

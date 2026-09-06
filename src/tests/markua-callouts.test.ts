@@ -46,10 +46,18 @@ function heading(depth: number, value: string): MdastLike {
   return { type: 'heading', depth, children: [{ type: 'text', value }] };
 }
 
+/** A fake deck/non-deck VFile, mirroring `deck-split.test.ts`'s scope-guard shape. */
+function fakeFile(kind: string): { data: { astro: { frontmatter: { kind: string } } } } {
+  return { data: { astro: { frontmatter: { kind } } } };
+}
+
 /** Run the plugin over a single directive wrapped in a root, returning the mutated node. */
-function run(node: MdastLike): MdastLike {
+function run(
+  node: MdastLike,
+  file?: { data: { astro: { frontmatter: { kind: string } } } },
+): MdastLike {
   const tree: MdastLike = { type: 'root', children: [node] };
-  markuaCallouts()(tree);
+  markuaCallouts()(tree, file as never);
   return (tree.children as MdastLike[])[0];
 }
 
@@ -277,5 +285,235 @@ describe('first-heading title extraction (T015)', () => {
   it('extractLeadingHeadingTitle leaves a non-heading-led body untouched', () => {
     const body = [para('no heading here')];
     expect(extractLeadingHeadingTitle(body)).toEqual({ body });
+  });
+});
+
+// --- T002/T004: forced dk-callout theme path on a deck (D5, C-COMPOSE-04) --
+
+describe('decideEmission(forceTheme) — the unit seam (T002)', () => {
+  it('never returns native mode when forceTheme is set, for every mapped starlight name', () => {
+    for (const [, starlightName] of MAPPED) {
+      expect(decideEmission({ name: starlightName }, true).mode).toBe('theme');
+    }
+  });
+
+  it('defaults to false — decideEmission(directive) alone is unchanged (byte-identical off-deck seam)', () => {
+    expect(decideEmission({ name: 'tip' })).toEqual(formNative('tip'));
+  });
+});
+
+describe('markuaCallouts on a deck — forced theme emission (T002, D5, C-COMPOSE-04)', () => {
+  const deckFile = fakeFile('Presentation');
+
+  it('routes every mapped class through the theme hast on a deck, never leaving it native', () => {
+    for (const [, starlightName] of MAPPED) {
+      const node = run(directive(starlightName), deckFile);
+      expect((node.data as { hName?: string } | undefined)?.hName).toBe('aside');
+      expect(classes(node)).toEqual(['dk-callout', `dk-callout--${starlightName}`]);
+      expect(node.name).toBe('dk-callout');
+    }
+  });
+
+  it('still routes the six theme classes through the theme hast on a deck (unaffected superset)', () => {
+    for (const variant of THEME) {
+      const node = run(directive(variant), deckFile);
+      expect(classes(node)).toEqual(['dk-callout', `dk-callout--${variant}`]);
+    }
+  });
+
+  it('off a deck (no file, or an explicit non-Presentation file), a bare mapped class still takes the native path', () => {
+    const node = run(directive('tip'));
+    expect(node.name).toBe('tip');
+    expect((node.data as { hName?: string } | undefined)?.hName).toBeUndefined();
+
+    const node2 = run(directive('caution'), fakeFile('Doc'));
+    expect(node2.name).toBe('caution');
+    expect((node2.data as { hName?: string } | undefined)?.hName).toBeUndefined();
+  });
+
+  it('an attribute-bearing mapped class on a deck still uses its mapped fallback variant (unchanged shape)', () => {
+    const node = run(directive('tip', { id: 'my-anchor' }), deckFile);
+    expect(classes(node)).toEqual(['dk-callout', 'dk-callout--tip']);
+    expect((node.data as { hProperties?: { id?: string } } | undefined)?.hProperties?.id).toBe(
+      'my-anchor',
+    );
+  });
+});
+
+// --- T003/T004: accessible name on an empty dk-callout (NFR-001) -----------
+
+describe('accessible name on an empty dk-callout aside (T003)', () => {
+  // A THEME class (not a bare mapped one): it always takes the theme path
+  // regardless of deck/attributes, so these exercise `emitThemeCallout` directly.
+  it('adds an aria-label naming the variant when the body is empty and there is no title', () => {
+    const node = run(directive('aside', {}, []));
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBe('Aside callout');
+  });
+
+  it('adds no aria-label when body content is present (the ordinary case)', () => {
+    const node = run(directive('aside', {}, [para('some body')]));
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBeUndefined();
+  });
+
+  it('adds no aria-label when an explicit title is present, even with an empty body', () => {
+    const node = run(directive('aside', { title: 'Explicit' }, []));
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBeUndefined();
+  });
+
+  it('the empty-body case is exactly what a T001 boundary-terminated deck wrapper can produce (theme-only variant)', () => {
+    // `{aside}` immediately followed by a slide boundary (T001) yields a
+    // container with zero children; forced onto the theme path on a deck (T002).
+    // `aside` is a theme-only variant (not one of the four Starlight-mapped
+    // names), so FIX 1's default-title fallback does not apply here — the
+    // aria-label stays the accessible-name mechanism for this case.
+    const node = run(directive('aside', {}, []), fakeFile('Presentation'));
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBe('Aside callout');
+  });
+
+  it('a MAPPED variant with an empty body on a deck gets a default title, and (FIX B) that title is also its aria-label', () => {
+    // Same T001 boundary-terminated shape, but for a Starlight-mapped variant:
+    // the default `dk-callout__title` ("Tip") supplies the visible title node;
+    // FIX B additionally mirrors it onto `aria-label` so the `<aside>` itself
+    // (not just its sibling `<p>`) carries a real accessible name — the
+    // titleless-empty aria-label fallback above stays reserved for the
+    // untyped/theme-only case (title still undefined there), so the two never
+    // collide.
+    const node = run(directive('tip', {}, []), fakeFile('Presentation'));
+    const title = childByClass(node, 'dk-callout__title');
+    const titleText = (title?.data as { hChildren?: MdastLike[] } | undefined)?.hChildren?.[0]
+      ?.value;
+    expect(titleText).toBe('Tip');
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBe('Tip');
+  });
+});
+
+// --- FIX 1 (pre-PR squad): mapped deck callouts get a default title so ------
+// --- severity is conveyed textually, not colour-only (WCAG 1.4.1) ----------
+
+describe('default title for a bare mapped callout on a deck (FIX 1, C-COMPOSE-04, NFR-001/US1)', () => {
+  const deckFile = fakeFile('Presentation');
+
+  it('emits a dk-callout__title with the humanized type name for every mapped variant on a deck', () => {
+    for (const [, starlightName] of MAPPED) {
+      const node = run(directive(starlightName), deckFile);
+      const title = childByClass(node, 'dk-callout__title');
+      expect(title).toBeDefined();
+      const titleText = (title?.data as { hChildren?: MdastLike[] } | undefined)?.hChildren?.[0]
+        ?.value;
+      expect(titleText).toBe(`${starlightName.charAt(0).toUpperCase()}${starlightName.slice(1)}`);
+    }
+  });
+
+  it('does NOT add a default title off a deck (byte-identical, NFR-002) — the native path has no title node at all', () => {
+    const node = run(directive('caution'));
+    // Off-deck this stays on the native path entirely (no dk-callout markup).
+    expect((node.data as { hName?: string } | undefined)?.hName).toBeUndefined();
+    expect(node.name).toBe('caution');
+  });
+
+  it('does NOT add a default title off a deck even for an attribute-bearing mapped callout (theme path, but off-deck)', () => {
+    const node = run(directive('caution', { id: 'anchor' }));
+    expect((node.data as { hName?: string } | undefined)?.hName).toBe('aside');
+    expect(childByClass(node, 'dk-callout__title')).toBeUndefined();
+  });
+
+  it('does NOT title the theme-only variants (not one of the four Starlight-mapped names), even on a deck', () => {
+    for (const variant of THEME) {
+      const node = run(directive(variant), deckFile);
+      expect(childByClass(node, 'dk-callout__title')).toBeUndefined();
+    }
+  });
+
+  it('an explicit {title:} attribute still wins over the default on a deck', () => {
+    const node = run(directive('tip', { title: 'Heads up' }), deckFile);
+    const title = childByClass(node, 'dk-callout__title');
+    const titleText = (title?.data as { hChildren?: MdastLike[] } | undefined)?.hChildren?.[0]
+      ?.value;
+    expect(titleText).toBe('Heads up');
+  });
+
+  it('a leading-heading-extracted title still wins over the default on a deck', () => {
+    const node = run(
+      directive('danger', {}, [heading(2, 'Extracted title'), para('body')]),
+      deckFile,
+    );
+    const title = childByClass(node, 'dk-callout__title');
+    const titleText = (title?.data as { hChildren?: MdastLike[] } | undefined)?.hChildren?.[0]
+      ?.value;
+    expect(titleText).toBe('Extracted title');
+  });
+});
+
+// --- FIX B (2nd-squad remediation): a real accessible NAME on a titled ------
+// --- dk-callout <aside>, forceTheme-gated (NFR-001/US1, NFR-002) -----------
+
+describe('FIX B — accessible name on a TITLED dk-callout aside', () => {
+  it('on a deck, a mapped callout aside carries aria-label = its default title (the type word)', () => {
+    const node = run(directive('caution'), fakeFile('Presentation'));
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBe('Caution');
+  });
+
+  it('off a deck, the same attribute-bearing mapped callout (forced onto the theme path by {#id}, no default-title fallback) gets NO aria-label — NFR-002 byte-identical', () => {
+    // `id` forces the theme path even off-deck (attribute tradeoff routing,
+    // `decideEmission`'s `hasRoutingAttribute`); FIX 1's default-title fallback
+    // is forceTheme-gated, so no title exists here and FIX B's branch — gated on
+    // `forceTheme`, not merely "titled" — never fires. This is today's shipped
+    // off-deck shape, unchanged by FIX B.
+    const node = run(directive('caution', { id: 'anchor' }));
+    expect((node.data as { hName?: string } | undefined)?.hName).toBe('aside');
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBeUndefined();
+  });
+
+  it('names a themed callout by its EXPLICIT {title:} on a deck', () => {
+    const node = run(directive('tip', { title: 'Heads up' }), fakeFile('Presentation'));
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBe('Heads up');
+  });
+
+  it('does NOT add an aria-label off-deck for the identical explicit-title theme callout — NFR-002 byte-identical', () => {
+    const node = run(directive('aside', { title: 'Explicit' }, []));
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBeUndefined();
+  });
+
+  it('names a themed callout by its EXTRACTED leading-heading title on a deck', () => {
+    const node = run(
+      directive('danger', {}, [heading(2, 'Extracted title'), para('body')]),
+      fakeFile('Presentation'),
+    );
+    const hProperties = (node.data as { hProperties?: Record<string, unknown> } | undefined)
+      ?.hProperties;
+    expect(hProperties?.['aria-label']).toBe('Extracted title');
+  });
+});
+
+// --- FIX E (2nd-squad remediation): icon + default-title compose -----------
+
+describe('FIX E — icon + default-title compose on a bare mapped deck callout', () => {
+  it('a mapped callout with {icon:} and no explicit title renders BOTH the icon and the default title, on a deck', () => {
+    const node = run(directive('tip', { icon: 'fa-lightbulb' }), fakeFile('Presentation'));
+    const icon = childByClass(node, 'dk-callout__icon');
+    expect(icon).toBeDefined();
+    const title = childByClass(node, 'dk-callout__title');
+    expect(title).toBeDefined();
+    const titleText = (title?.data as { hChildren?: MdastLike[] } | undefined)?.hChildren?.[0]
+      ?.value;
+    expect(titleText).toBe('Tip');
   });
 });
