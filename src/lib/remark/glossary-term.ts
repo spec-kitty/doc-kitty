@@ -94,14 +94,17 @@ function textOf(node: MdastNode): string {
 
 /**
  * The **shared** glossary link node — MUST stay byte-identical to the node the
- * auto-linker (WP04 `glossary-autolink.ts`) emits (contract `autolink-and-term.md`):
- * a `link` to `/glossary/<contextSlug>/#<anchor>` (the de-collided page slug, issue
- * #17 finding #5 — never the raw context name) carrying `target="_blank"`,
- * `rel="noopener"` (FR-009) and the `data-glossary-term`/`data-glossary-context`
- * (+ `-anchor`/`-context-slug`) markers the hover island and the links-used
- * tree-scan key on. If these two ever
- * diverge, the island / no-JS fallback / used-list treat the two link kinds
- * differently — the reviewer diffs them.
+ * auto-linker (WP04 `glossary-autolink.ts` / `glossary-autolink.internal.ts`)
+ * emits (contract `autolink-and-term.md`): a `link` to
+ * `/glossary/<contextSlug>/#<anchor>` (the de-collided page slug, issue #17
+ * finding #5 — never the raw context name) carrying a `dk-glossary-link` class
+ * (glossary-term-ux mission, #64, FR-001/FR-003) and the
+ * `data-glossary-term`/`data-glossary-context` (+ `-anchor`/`-context-slug`)
+ * markers the hover island and the links-used tree-scan key on. Term links
+ * resolve to an internal glossary page, so — unlike an external reference —
+ * they carry no `target`/`rel` (#64 FR-004): same-tab navigation, like every
+ * other internal link. If these two ever diverge, the island / no-JS fallback /
+ * used-list treat the two link kinds differently — the reviewer diffs them.
  * `basePrefix` (#61, C-001) is threaded from the plugin factory's `base` option —
  * the ONE shared `glossaryTermUrl` builder keeps this and the auto-linker's
  * emitted href single-sourced.
@@ -120,8 +123,7 @@ function glossaryLinkNode(
     children,
     data: {
       hProperties: {
-        target: '_blank',
-        rel: 'noopener',
+        class: 'dk-glossary-link',
         'data-glossary-term': termName,
         'data-glossary-context': context,
         'data-glossary-anchor': anchor,

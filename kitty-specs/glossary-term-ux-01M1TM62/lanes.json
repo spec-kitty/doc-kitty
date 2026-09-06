@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "mission_slug": "glossary-term-ux-01M1TM62",
+  "mission_id": "01M1TM62HYPS2WSAHGYXMYATJR",
+  "mission_branch": "kitty/mission-glossary-term-ux-01M1TM62",
+  "target_branch": "feat/glossary-term-ux",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/changelog/2026-09-06-glossary-term-ux.md",
+        "src/lib/glossary/preview-popover.client.ts",
+        "src/lib/remark/glossary-autolink.ts",
+        "src/lib/remark/glossary-term.ts",
+        "src/styles/dk-components.css"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-06T05:52:53.582746+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "ed80e50eb8efdc4f5edfc4b34448164f670873a9"
+}

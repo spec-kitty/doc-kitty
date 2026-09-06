@@ -15,9 +15,10 @@
  *
  * ## No-JS safety (NFR-005)
  * The island only ADDS the preview behaviour. The anchors WP04/WP05 emit are plain
- * links (`target="_blank" rel="noopener"`, href `/glossary/<ctx>/#<anchor>`) that
- * work with JS off; this module never rewrites `href`/`target` and never hijacks
- * click, so the full-definition-in-a-new-tab path is unchanged.
+ * same-tab links (`class="dk-glossary-link"`, `data-glossary-*` markers, href
+ * `/glossary/<ctx>/#<anchor>`, no `target`/`rel` — #64) that work with JS off; this
+ * module never rewrites `href` and never hijacks click, so the full-definition
+ * click-through resolves in the same tab whether or not JS is present.
  *
  * ## Definition source (self-contained, NFR-006)
  * The anchors carry `data-glossary-term` / `data-glossary-context` markers but NOT

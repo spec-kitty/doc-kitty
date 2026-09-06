@@ -117,16 +117,21 @@ Decision 2).
 
 ## Hover preview footprint
 
-Each glossary anchor carries only `data-glossary-term` and
-`data-glossary-context`; the definition text rides a single per-page JSON payload
+Each glossary anchor carries a `dk-glossary-link` class plus
+`data-glossary-term` / `data-glossary-context` markers (#64); the definition text
+rides a single per-page JSON payload
 (`<script type="application/json" id="dk-glossary-definitions">`). The preview
 island is injected page-wide but early-returns before pulling its heavier chunk on
 any page with no glossary links, so a glossary-free route never requests the
 popover code (NFR-003). The preview is a custom element built to WCAG 2.2 1.4.13 —
 hoverable, Esc-dismissible, and persistent — because the `title` attribute cannot
-meet that criterion. The anchors are plain links (`target="_blank"`,
-`rel="noopener"`), so with JavaScript disabled the click-through and the "On this
-page" list both still work (NFR-005).
+meet that criterion. The anchors are plain **same-tab** internal links (no
+`target`/`rel` — the definition page lives under the same site, #64), so with
+JavaScript disabled the click-through and the "On this page" list both still work
+(NFR-005). The `dk-glossary-link` class gives the term a distinct-but-quiet dotted
+underline (styled in the base component sheet so it survives brand swaps); the
+class emits from the single shared link-node shape, so auto-links and `:term`
+directives stay byte-identical downstream and the re-derive parity guard holds.
 
 ## Navigation and the section registry
 

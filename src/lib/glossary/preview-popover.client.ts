@@ -42,6 +42,13 @@ const POPOVER_ID = 'dk-glossary-popover';
 /** The close-delay (ms) that makes the popover hoverable — long enough for the
  * pointer to cross the gap from the anchor onto the popover (1.4.13 hoverable). */
 const CLOSE_DELAY_MS = 160;
+/** Gap (px) kept between the anchor and the popover — also the caret's stand-off. */
+const GAP_PX = 6;
+/** Half-width (px) of the caret triangle drawn by the `::before`/`::after` pair in
+ * `ensureStyle` below. Both the JS-computed horizontal caret offset AND the caret's
+ * CSS border widths are derived from this one constant (the `ensureStyle` template
+ * interpolates it), so the drawn triangle and the clamp can never drift (#64 T004). */
+const CARET_HALF_PX = 8;
 
 /** The per-page definitions payload: context → termName → plain definition text. */
 type DefinitionPayload = Record<string, Record<string, string> | undefined>;
@@ -108,6 +115,49 @@ function ensureStyle(): void {
       pointer-events: auto;
     }
     .dk-glossary-popover[hidden] { display: none; }
+
+    /* Caret (#64 T004) — a small triangle pointing from the popover at the
+     * term, built from a two-layer border trick: ::before draws the outline
+     * (border colour), ::after draws a 1px-smaller fill on top (surface
+     * colour), so the caret reads as a seamless extension of the popover's
+     * own border + background in both themes. Horizontal placement is driven
+     * by the '--dk-glossary-caret-left' custom property the positioning code
+     * sets per-anchor; vertical placement + direction flip with
+     * '[data-placement]' (#64 T005). */
+    .dk-glossary-popover::before,
+    .dk-glossary-popover::after {
+      content: '';
+      position: absolute;
+      left: var(--dk-glossary-caret-left, 1rem);
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-color: transparent;
+    }
+    /* placement "bottom": the popover sits BELOW the term, caret points UP. */
+    .dk-glossary-popover[data-placement='bottom']::before {
+      top: -${CARET_HALF_PX}px;
+      border-width: 0 ${CARET_HALF_PX}px ${CARET_HALF_PX}px ${CARET_HALF_PX}px;
+      border-bottom-color: var(--dk-color-border, var(--sl-color-hairline, #cbccd1));
+    }
+    .dk-glossary-popover[data-placement='bottom']::after {
+      top: -${CARET_HALF_PX - 2}px;
+      border-width: 0 ${CARET_HALF_PX - 1}px ${CARET_HALF_PX - 1}px ${CARET_HALF_PX - 1}px;
+      border-bottom-color: var(--dk-color-surface-1, var(--sl-color-bg, #ffffff));
+    }
+    /* placement "top": the popover sits ABOVE the term (viewport-bottom flip,
+     * #64 T005), caret points DOWN. */
+    .dk-glossary-popover[data-placement='top']::before {
+      bottom: -${CARET_HALF_PX}px;
+      border-width: ${CARET_HALF_PX}px ${CARET_HALF_PX}px 0 ${CARET_HALF_PX}px;
+      border-top-color: var(--dk-color-border, var(--sl-color-hairline, #cbccd1));
+    }
+    .dk-glossary-popover[data-placement='top']::after {
+      bottom: -${CARET_HALF_PX - 2}px;
+      border-width: ${CARET_HALF_PX - 1}px ${CARET_HALF_PX - 1}px 0 ${CARET_HALF_PX - 1}px;
+      border-top-color: var(--dk-color-surface-1, var(--sl-color-bg, #ffffff));
+    }
   `;
   document.head.appendChild(style);
 }
@@ -150,15 +200,51 @@ export function mountGlossaryPreview(
     popover.hidden = true;
   };
 
-  /** Position the popover just below the anchor, clamped into the viewport. */
+  /**
+   * Position the popover relative to the anchor, flipping above it when it
+   * would overflow the viewport bottom (#64 T005), and point the caret at the
+   * anchor's horizontal center (#64 T004). MUST run after `popover.hidden =
+   * false` so `offsetHeight`/`offsetWidth` reflect the real, laid-out size —
+   * measuring a `hidden` element always yields zero.
+   */
   const position = (anchor: HTMLAnchorElement): void => {
     const rect = anchor.getBoundingClientRect();
-    // Reveal for measurement, then place; margin keeps a hoverable gap small.
-    popover.style.top = `${rect.bottom + window.scrollY + 6}px`;
+    const popoverHeight = popover.offsetHeight;
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const fitsBelow = spaceBelow >= popoverHeight + GAP_PX;
+    const fitsAbove = spaceAbove >= popoverHeight + GAP_PX;
+    // Flip above only when it does not fit below AND genuinely fits above. When
+    // NEITHER side fits (a definition taller than the space on both sides), stay
+    // below: the overflow then extends the document downward and stays
+    // scroll-reachable, whereas flipping up would push the popover top above the
+    // viewport top where the text can never be reached (#64 T005).
+    const placeAbove = !fitsBelow && fitsAbove;
+
+    if (placeAbove) {
+      popover.style.top = `${rect.top + window.scrollY - popoverHeight - GAP_PX}px`;
+      popover.dataset.placement = 'top'; // caret points DOWN at the term
+    } else {
+      popover.style.top = `${rect.bottom + window.scrollY + GAP_PX}px`;
+      popover.dataset.placement = 'bottom'; // caret points UP at the term
+    }
+
     const maxLeft =
       window.scrollX + document.documentElement.clientWidth - popover.offsetWidth - 8;
     const left = rect.left + window.scrollX;
-    popover.style.left = `${Math.max(window.scrollX + 8, Math.min(left, maxLeft))}px`;
+    const clampedLeft = Math.max(window.scrollX + 8, Math.min(left, maxLeft));
+    popover.style.left = `${clampedLeft}px`;
+
+    // Caret x: the anchor's horizontal center, clamped so the triangle never
+    // hangs off either edge of the (possibly clamped-away-from-the-anchor)
+    // popover box.
+    const anchorCenter = rect.left + rect.width / 2 + window.scrollX;
+    const caretLeft = Math.max(
+      CARET_HALF_PX,
+      Math.min(anchorCenter - clampedLeft, popover.offsetWidth - CARET_HALF_PX),
+    );
+    popover.style.setProperty('--dk-glossary-caret-left', `${caretLeft}px`);
   };
 
   const show = (anchor: HTMLAnchorElement): void => {

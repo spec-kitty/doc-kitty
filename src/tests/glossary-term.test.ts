@@ -84,8 +84,7 @@ describe('glossaryTerm (:term directive)', () => {
       children: [{ type: 'text', value: 'bill' }],
       data: {
         hProperties: {
-          target: '_blank',
-          rel: 'noopener',
+          class: 'dk-glossary-link',
           'data-glossary-term': 'Bill of Lading',
           'data-glossary-context': 'shipping',
           'data-glossary-anchor': 'bill-of-lading',
@@ -150,8 +149,7 @@ describe('glossaryTerm (:term directive)', () => {
       children: [{ type: 'text', value: 'policy' }],
       data: {
         hProperties: {
-          target: '_blank',
-          rel: 'noopener',
+          class: 'dk-glossary-link',
           'data-glossary-term': 'Policy',
           'data-glossary-context': 'hr',
           'data-glossary-anchor': 'policy',

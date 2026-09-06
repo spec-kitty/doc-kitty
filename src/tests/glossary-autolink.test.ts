@@ -51,8 +51,7 @@ const termLink = (
   children: [text(surface)],
   data: {
     hProperties: {
-      target: '_blank',
-      rel: 'noopener',
+      class: 'dk-glossary-link',
       'data-glossary-term': termName,
       'data-glossary-context': context,
       'data-glossary-anchor': anchor,
@@ -213,15 +212,14 @@ describe('computePageLinks — opt-outs (FR-008)', () => {
 });
 
 // ===========================================================================
-describe('computePageLinks — the shared link node (FR-009)', () => {
-  it('emits href + target/rel + data attrs; anchor + slug READ from the stored index', () => {
+describe('computePageLinks — the shared link node (FR-009, #64 FR-001/FR-004)', () => {
+  it('emits href + the dk-glossary-link class + data attrs, no target/rel; anchor + slug READ from the stored index', () => {
     const tree = root(para(text('one cargo here')));
     computePageLinks(tree, undefined, index, EMPTY_IGNORE);
     const [link] = glossaryLinks(tree);
     expect(link.url).toBe('/glossary/shipping/#cargo'); // stored contextSlug + anchor
     expect(link.data!.hProperties).toEqual({
-      target: '_blank',
-      rel: 'noopener',
+      class: 'dk-glossary-link',
       'data-glossary-term': 'Cargo',
       'data-glossary-context': 'shipping',
       'data-glossary-anchor': 'cargo',
