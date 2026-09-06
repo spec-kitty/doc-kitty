@@ -144,6 +144,26 @@ test.describe('Glossary popover placement + caret (#78)', () => {
     }, POPOVER);
   }
 
+  /** Read the active-placement pseudo-element's border WIDTH (px) — the caret
+   * triangle's geometry. Colour alone can read non-transparent even with a
+   * zero-width (invisible) triangle, so the placement tests also assert the
+   * drawn side has real width (post-squad fold, debugger-debbie A3). */
+  async function pseudoBorderWidthPx(
+    page: Page,
+    pseudo: '::before' | '::after',
+    side: 'borderBottomWidth' | 'borderTopWidth',
+  ): Promise<number> {
+    const raw = await page.evaluate(
+      ({ selector, pseudo, side }) => {
+        const el = document.querySelector(selector);
+        if (el === null) throw new Error(`element not found: ${selector}`);
+        return getComputedStyle(el, pseudo)[side as 'borderBottomWidth' | 'borderTopWidth'];
+      },
+      { selector: POPOVER, pseudo, side },
+    );
+    return Number.parseFloat(raw);
+  }
+
   test('a term high in the viewport places the popover below, with an upward caret', async ({
     page,
   }, testInfo) => {
@@ -156,6 +176,19 @@ test.describe('Glossary popover placement + caret (#78)', () => {
     const link = page.locator(CARGO_LINK).first();
     const popover = page.locator(POPOVER);
     await link.scrollIntoViewIfNeeded();
+
+    // HONEST precondition (symmetric with the flip test): the anchor really has
+    // ample space below, so a green 'bottom' means position() chose the below
+    // branch on purpose — not the "neither side fits" fallback, and not a layout
+    // shift that quietly moved this term low. Fails loudly if that stops holding.
+    const spaceBelow = await link.evaluate(
+      (el) => window.innerHeight - el.getBoundingClientRect().bottom,
+    );
+    expect(
+      spaceBelow,
+      'precondition: the high term has ample space below it',
+    ).toBeGreaterThan(200);
+
     await link.hover();
     await expect(popover).toBeVisible();
     await expect(
@@ -180,6 +213,13 @@ test.describe('Glossary popover placement + caret (#78)', () => {
       await pseudoBorderColor(page, '::after', 'borderTopColor'),
       '::after border-top-color stays transparent for placement=bottom',
     ).toBe('rgba(0, 0, 0, 0)');
+
+    // Caret proxy 3 (geometry): the drawn side has real width, so a zero-width
+    // (invisible) triangle can't pass on colour alone.
+    expect(
+      await pseudoBorderWidthPx(page, '::after', 'borderBottomWidth'),
+      '::after border-bottom-width is non-zero for placement=bottom',
+    ).toBeGreaterThan(0);
   });
 
   test('a term forced low in the viewport flips the popover above, with a downward caret', async ({
@@ -237,6 +277,12 @@ test.describe('Glossary popover placement + caret (#78)', () => {
       await pseudoBorderColor(page, '::after', 'borderBottomColor'),
       '::after border-bottom-color stays transparent for placement=top',
     ).toBe('rgba(0, 0, 0, 0)');
+
+    // Caret proxy 3 (geometry): the drawn (upward) side has real width.
+    expect(
+      await pseudoBorderWidthPx(page, '::after', 'borderTopWidth'),
+      '::after border-top-width is non-zero for placement=top',
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -377,5 +423,40 @@ test.describe('Glossary observable count-pins (T034)', () => {
     // The pinned control route stays term-free (guards the footprint twin).
     await page.goto(ROUTES.prose, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('a[data-glossary-term]')).toHaveCount(0);
+  });
+
+  // SC-001 / FR-001 — the AT-perceivable affordance is present in the SERVED HTML
+  // (no JS needed): every glossary term anchor carries aria-label ending
+  // ", glossary term", and no ordinary content link does. (post-squad fold,
+  // reviewer-renata: closes the rendered-attribute acceptance at the DOM layer.)
+  test('every glossary term anchor exposes the aria-label affordance; ordinary links do not', async ({
+    page,
+  }) => {
+    await page.goto(ROUTES.glossaryDemo, { waitUntil: 'domcontentloaded' });
+
+    // All 4 glossary anchors (3 auto-linked cargo + 1 :term policy) carry the
+    // affordance — count them, then require ALL of them to end in the suffix.
+    const termAnchors = page.locator('a[data-glossary-term]');
+    const termCount = await termAnchors.count();
+    expect(termCount, 'the demonstrator carries glossary term anchors').toBe(4);
+    await expect(
+      page.locator('a[data-glossary-term][aria-label$=", glossary term"]'),
+      'every glossary term anchor carries the aria-label affordance',
+    ).toHaveCount(termCount);
+
+    // Non-vacuity + negative: ordinary (non-term) links exist in <main> (the
+    // On-this-page block, nav, etc.), and none of them carry the glossary
+    // affordance — the attribute is scoped to term links only. The non-vacuity
+    // check spans the SAME set the negative filters, so the negative can't pass
+    // vacuously. (The demonstrator's .sl-markdown-content happens to hold only
+    // glossary links, so it is deliberately NOT the scope here.)
+    await expect(
+      page.locator('main a:not([data-glossary-term])'),
+      'the demonstrator has ordinary (non-term) links in <main> (non-vacuous negative)',
+    ).not.toHaveCount(0);
+    await expect(
+      page.locator('main a:not([data-glossary-term])[aria-label$=", glossary term"]'),
+      'no ordinary content link carries the glossary-term affordance',
+    ).toHaveCount(0);
   });
 });

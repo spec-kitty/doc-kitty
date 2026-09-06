@@ -76,10 +76,11 @@ export function glossaryLinkNode(
     'data-glossary-context-slug': contextSlug,
   };
   // Attribute only — never a child node (FR-005). A resolved glossary link
-  // always has a surface, so an empty `visibleText` is a defensive guard, not a
-  // normal path; when it occurs, omit the attribute entirely rather than emit a
-  // dangling ", glossary term" with no leading text (spec Edge Cases).
-  if (visibleText.length > 0) {
+  // always has a surface, so an empty (or whitespace-only, per spec Edge Cases)
+  // `visibleText` is a defensive guard, not a normal path; when it occurs, omit
+  // the attribute entirely rather than emit a dangling ", glossary term" with no
+  // leading text.
+  if (visibleText.trim().length > 0) {
     hProperties['aria-label'] = `${visibleText}, glossary term`;
   }
 
