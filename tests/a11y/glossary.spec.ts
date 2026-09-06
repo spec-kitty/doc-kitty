@@ -102,6 +102,145 @@ test.describe('Glossary hover preview — WCAG 2.2 1.4.13 (both modes)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Popover placement + caret regression guard (#78, guarding #64 T004/T005).
+// `position()` (preview-popover.client.ts) sets `data-placement` to 'bottom'
+// (ample room below) or 'top' (viewport-bottom flip: spaceBelow < popoverHeight
+// && spaceAbove > spaceBelow), and draws the caret via ::before/::after
+// pseudo-elements keyed on `[data-placement]` — there is NO caret element, so
+// the caret is asserted through two observable proxies: the popover's own
+// `--dk-glossary-caret-left` custom property, and the active-placement
+// pseudo-element's non-transparent border colour (border-bottom-color for
+// 'bottom', border-top-color for 'top'). Both modes, per the sibling pattern.
+// ---------------------------------------------------------------------------
+test.describe('Glossary popover placement + caret (#78)', () => {
+  type BorderSide = 'borderBottomColor' | 'borderTopColor';
+
+  /** Read a pseudo-element's computed border colour for one side. Chromium
+   * resolves the sheet's `border-color: transparent` base to the literal
+   * `'rgba(0, 0, 0, 0)'`, so a real, placement-specific override reads as a
+   * distinct (non-transparent) colour string. */
+  async function pseudoBorderColor(
+    page: Page,
+    pseudo: '::before' | '::after',
+    side: BorderSide,
+  ): Promise<string> {
+    return page.evaluate(
+      ({ selector, pseudo, side }) => {
+        const el = document.querySelector(selector);
+        if (el === null) throw new Error(`element not found: ${selector}`);
+        return getComputedStyle(el, pseudo)[side as BorderSide];
+      },
+      { selector: POPOVER, pseudo, side },
+    );
+  }
+
+  /** Read the popover's own `--dk-glossary-caret-left` custom property (the
+   * caret's horizontal-offset proxy) straight off its computed style. */
+  async function caretLeftProperty(page: Page): Promise<string> {
+    return page.evaluate((selector) => {
+      const el = document.querySelector(selector);
+      if (el === null) throw new Error(`element not found: ${selector}`);
+      return getComputedStyle(el).getPropertyValue('--dk-glossary-caret-left').trim();
+    }, POPOVER);
+  }
+
+  test('a term high in the viewport places the popover below, with an upward caret', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoInMode(page, ROUTES.glossaryDemo, mode);
+    await waitForIslandMounted(page);
+
+    // High in the viewport (first H2 section): ample space below at the default
+    // viewport size, so position() must NOT flip.
+    const link = page.locator(CARGO_LINK).first();
+    const popover = page.locator(POPOVER);
+    await link.scrollIntoViewIfNeeded();
+    await link.hover();
+    await expect(popover).toBeVisible();
+    await expect(
+      popover,
+      'ample space below places the popover below the term',
+    ).toHaveAttribute('data-placement', 'bottom');
+
+    // Caret proxy 1: the horizontal-offset custom property is set.
+    expect(
+      await caretLeftProperty(page),
+      '--dk-glossary-caret-left is set for the bottom-placed popover',
+    ).not.toBe('');
+
+    // Caret proxy 2: the 'bottom' placement's ::after fill draws a real
+    // border-bottom-color (the caret triangle pointing UP at the term); the
+    // unused border-top-color stays the sheet's transparent default.
+    expect(
+      await pseudoBorderColor(page, '::after', 'borderBottomColor'),
+      '::after border-bottom-color is drawn (not transparent) for placement=bottom',
+    ).not.toBe('rgba(0, 0, 0, 0)');
+    expect(
+      await pseudoBorderColor(page, '::after', 'borderTopColor'),
+      '::after border-top-color stays transparent for placement=bottom',
+    ).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  test('a term forced low in the viewport flips the popover above, with a downward caret', async ({
+    page,
+  }, testInfo) => {
+    const mode: Mode = modeOf(testInfo.project.name);
+    await gotoInMode(page, ROUTES.glossaryDemo, mode);
+    await waitForIslandMounted(page);
+
+    // Force position()'s flip condition (spaceBelow < popoverHeight &&
+    // spaceAbove > spaceBelow): a short viewport, with the LAST cargo term
+    // (final H2 section) scrolled to the viewport's bottom edge.
+    const VIEWPORT_HEIGHT = 400;
+    await page.setViewportSize({ width: 1000, height: VIEWPORT_HEIGHT });
+    const link = page.locator(CARGO_LINK).last();
+    await link.evaluate((el) => el.scrollIntoView({ block: 'end' }));
+
+    // HONEST precondition (T008): the anchor really is low in the (short)
+    // viewport BEFORE we open the popover, so a layout change that stops
+    // reproducing this "low term" condition fails loudly here rather than
+    // silently re-testing the 'bottom' case.
+    const rectBottom = await link.evaluate((el) => el.getBoundingClientRect().bottom);
+    expect(
+      rectBottom,
+      'precondition: the anchor sits in the bottom slice of the short viewport',
+    ).toBeGreaterThan(VIEWPORT_HEIGHT * 0.85);
+    expect(
+      rectBottom,
+      'precondition: the anchor has not been scrolled past the viewport',
+    ).toBeLessThanOrEqual(VIEWPORT_HEIGHT + 1); // +1px: sub-pixel layout rounding
+
+    const popover = page.locator(POPOVER);
+    await link.hover();
+    await expect(popover).toBeVisible();
+    await expect(
+      popover,
+      'insufficient space below flips the popover above the term',
+    ).toHaveAttribute('data-placement', 'top');
+
+    // Caret proxy 1: the horizontal-offset custom property is still set for
+    // the flipped popover.
+    expect(
+      await caretLeftProperty(page),
+      '--dk-glossary-caret-left is set for the top-placed (flipped) popover',
+    ).not.toBe('');
+
+    // Caret proxy 2: the 'top' placement's ::after fill draws a real
+    // border-top-color (the caret triangle pointing DOWN at the term); the
+    // unused border-bottom-color stays the sheet's transparent default.
+    expect(
+      await pseudoBorderColor(page, '::after', 'borderTopColor'),
+      '::after border-top-color is drawn (not transparent) for placement=top',
+    ).not.toBe('rgba(0, 0, 0, 0)');
+    expect(
+      await pseudoBorderColor(page, '::after', 'borderBottomColor'),
+      '::after border-bottom-color stays transparent for placement=top',
+    ).toBe('rgba(0, 0, 0, 0)');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // NFR-003 / FP-1 (footprint twin) + R-6 (pinned term-free control route).
 // ---------------------------------------------------------------------------
 test.describe('Glossary preview footprint (NFR-003 / R-6)', () => {
