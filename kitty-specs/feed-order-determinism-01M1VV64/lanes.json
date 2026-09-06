@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "mission_slug": "feed-order-determinism-01M1VV64",
+  "mission_id": "01M1VV64YKHYATQXGWY54PPRMP",
+  "mission_branch": "kitty/mission-feed-order-determinism-01M1VV64",
+  "target_branch": "feat/feed-order-determinism",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/metadata.ts",
+        "src/lib/routes/shared.ts",
+        "src/tests/metadata.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-06T17:12:49.530598+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "084a36798f51faeb481481c83364134d29384d67"
+}
