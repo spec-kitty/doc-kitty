@@ -6,7 +6,7 @@ requirement_refs:
 - FR-004
 planning_base_branch: feat/glossary-a11y-followups
 merge_target_branch: feat/glossary-a11y-followups
-branch_strategy: direct-to-feat
+branch_strategy: Planning artifacts for this mission were generated on feat/glossary-a11y-followups. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/glossary-a11y-followups unless the human explicitly redirects the landing branch.
 subtasks:
 - T007
 - T008

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "mission_slug": "glossary-a11y-followups-01M1V8Y9",
+  "mission_id": "01M1V8Y9CEPZ10S13GR2YG8JTM",
+  "mission_branch": "kitty/mission-glossary-a11y-followups-01M1V8Y9",
+  "target_branch": "feat/glossary-a11y-followups",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/architecture/glossary.md",
+        "src/lib/glossary/link-node.ts",
+        "src/lib/remark/glossary-autolink.internal.ts",
+        "src/lib/remark/glossary-term.ts",
+        "src/tests/glossary-autolink.test.ts",
+        "src/tests/glossary-link-node-parity.test.ts",
+        "src/tests/glossary-term.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "tests/a11y/glossary.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-06T12:13:05.676668+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "3718f0edf75e533390deb0affd11cbab1ea7e437"
+}
