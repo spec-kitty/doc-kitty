@@ -103,6 +103,18 @@ describe('parseAttrList — {…} grammar', () => {
     expect(parseAttrList('{align: left}')?.entries.align).toBe('left');
   });
 
+  it('strips SmartyPants-curled delimiter quotes off a value (#81)', () => {
+    // Astro's SmartyPants runs over the raw `{alt: "…"}` text before this parser,
+    // curling the straight delimiter quotes. They must not leak into the value
+    // (which becomes the <img alt> accessible name).
+    expect(parseAttrList('{alt: “a palm-lined beach”}')?.entries.alt).toBe('a palm-lined beach');
+    expect(parseAttrList('{alt: ‘a beach’}')?.entries.alt).toBe('a beach');
+    // Straight quotes still strip; a bare value with a curly apostrophe inside is
+    // untouched (only a matched surrounding pair is a delimiter).
+    expect(parseAttrList('{alt: "a beach"}')?.entries.alt).toBe('a beach');
+    expect(parseAttrList('{alt: it’s bare}')?.entries.alt).toBe('it’s bare');
+  });
+
   it('treats {#id} as equivalent to {id: id}', () => {
     const shorthand = parseAttrList('{#bar}');
     const explicit = parseAttrList('{id: bar}');
@@ -122,6 +134,19 @@ describe('parseAttrList — {…} grammar', () => {
     const r = parseAttrList('{alt: "a, b", width: "10%"}');
     expect(r?.entries.alt).toBe('a, b');
     expect(r?.entries.width).toBe('10%');
+  });
+
+  it('does not split on a comma inside a SmartyPants-curled quoted value (#81)', () => {
+    // After SmartyPants curls the delimiters, an intra-value comma must still be
+    // protected — otherwise the whole list drops to literal text for adopters who
+    // write comma-containing alt text.
+    const r = parseAttrList('{alt: “A cat, sitting”, width: 50%}');
+    expect(r?.entries.alt).toBe('A cat, sitting');
+    expect(r?.entries.width).toBe('50%');
+    // A bare apostrophe must NOT open a quote and swallow the separator.
+    const bare = parseAttrList('{alt: it’s fine, width: 40%}');
+    expect(bare?.entries.alt).toBe('it’s fine');
+    expect(bare?.entries.width).toBe('40%');
   });
 
   it('returns null for content that is not an attribute list (left as text)', () => {

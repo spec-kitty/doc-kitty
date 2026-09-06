@@ -38,16 +38,34 @@ const KEY_RE = /^[\w-]+$/;
 function splitTopLevel(body: string): string[] {
   const out: string[] = [];
   let current = '';
-  let inQuote = false;
+  // The closing quote we are waiting for while inside a value; `undefined` when
+  // at top level. We protect commas inside a straight `"…"` (authored) OR a curly
+  // `“…”` pair — the latter is what SmartyPants produces from a `{alt: "A cat,
+  // sitting"}` value before this parser runs (#81), so without it the internal
+  // comma would split the list and drop it to literal text. We deliberately do
+  // NOT treat single quotes as openers here: a straight `'` or curly `‘/’` would
+  // misfire on a bare apostrophe (`it's`, `it’s`) and swallow a real separator.
+  let closer: string | undefined;
   for (const ch of body) {
-    if (ch === '"') {
-      inQuote = !inQuote;
+    if (closer === undefined) {
+      if (ch === '"') {
+        closer = '"';
+        current += ch;
+        continue;
+      }
+      if (ch === '“') {
+        closer = '”';
+        current += ch;
+        continue;
+      }
+      if (ch === ',') {
+        out.push(current);
+        current = '';
+        continue;
+      }
+    } else if (ch === closer) {
+      closer = undefined;
       current += ch;
-      continue;
-    }
-    if (ch === ',' && !inQuote) {
-      out.push(current);
-      current = '';
       continue;
     }
     current += ch;
@@ -57,12 +75,32 @@ function splitTopLevel(body: string): string[] {
 }
 
 /**
- * Strip a single layer of surrounding double quotes from a value; a bare value is
- * returned verbatim (so `%` survives on both `75%` and `"75%"`).
+ * The delimiter-quote pairs `stripQuotes` recognises. Straight `"`/`'` are the
+ * authored forms; the typographic pairs (`“…”`, `‘…’`) are what Astro's
+ * SmartyPants produces when it runs over the raw `{alt: "…"}` text BEFORE this
+ * parser sees it — without them a `{alt: "…"}` value would keep its curly
+ * delimiter quotes inside the `<img alt>` accessible name (#81).
+ */
+const QUOTE_PAIRS: ReadonlyArray<readonly [open: string, close: string]> = [
+  ['"', '"'],
+  ['“', '”'], // “ … ”
+  ["'", "'"],
+  ['‘', '’'], // ‘ … ’
+];
+
+/**
+ * Strip a single layer of surrounding quotes from a value; a bare value is
+ * returned verbatim (so `%` survives on both `75%` and `"75%"`). Recognises both
+ * straight and typographic quote pairs (#81) so a SmartyPants-curled delimiter is
+ * still treated as a delimiter, not part of the value.
  */
 function stripQuotes(value: string): string {
-  if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
-    return value.slice(1, -1);
+  if (value.length >= 2) {
+    for (const [open, close] of QUOTE_PAIRS) {
+      if (value.startsWith(open) && value.endsWith(close)) {
+        return value.slice(open.length, value.length - close.length);
+      }
+    }
   }
   return value;
 }
