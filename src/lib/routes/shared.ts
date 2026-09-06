@@ -7,19 +7,29 @@ import path from 'node:path';
 import process from 'node:process';
 import { getCollection } from 'astro:content';
 import type { DocEntry, DocKittyFrontmatter, DocsIndex, IndexBasenameOption } from '../metadata.js';
-import { readmeToIndexId, slugFromEntryId } from '../metadata.js';
+import { readmeToIndexId, slugFromEntryId, sortBySlug } from '../metadata.js';
 import { withBase } from '../with-base.js';
 
 /**
  * Load every docs entry as a `DocEntry`. With the README-as-index loader, an
  * entry's `id` is already the route slug ("" for the root, "how-to/pages", …).
+ *
+ * ORDER: slug ascending, regardless of the collection's own order (#85; contract:
+ * `kitty-specs/feed-order-determinism-01M1VV64/contracts/feed-order.md`). The
+ * content store is filled in the completion order of Astro's concurrent glob
+ * loader, so its insertion order is build-timing noise; sorting here makes every
+ * downstream surface order-stable BY CONSTRUCTION rather than one comparator at
+ * a time. Consumers may treat this as a stable baseline but MUST still sort by
+ * their own total key when they need a different order.
  */
 export async function collectDocEntries(): Promise<DocEntry[]> {
   const entries = await getCollection('docs');
-  return entries.map((entry) => ({
-    slug: slugFromEntryId(entry.id),
-    data: entry.data as unknown as DocKittyFrontmatter,
-  }));
+  return sortBySlug(
+    entries.map((entry) => ({
+      slug: slugFromEntryId(entry.id),
+      data: entry.data as unknown as DocKittyFrontmatter,
+    })),
+  );
 }
 
 /**

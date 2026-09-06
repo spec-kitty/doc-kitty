@@ -104,6 +104,67 @@ describe('ranking', () => {
   });
 });
 
+/**
+ * #85 — `rankForFeed`'s comparator must be TOTAL. Sorting on `updated` alone
+ * left tied items in INPUT order, and the input is the Astro content store,
+ * filled in the completion order of a concurrent glob loader: two clean builds
+ * of an unchanged tree emitted different `rss.xml` bytes. These tests pin the
+ * order as a function of the CONTENT only, by ranking deterministic permutations
+ * of the same list and demanding one answer.
+ *
+ * The permutations are hand-built (reverse, even-then-odd interleave, rotation),
+ * never `Math.random`, so a failure is reproducible rather than a flake.
+ */
+describe('rankForFeed total order (#85)', () => {
+  // Four published entries; THREE share `updated: 2026-06-01`, so the tie path
+  // is what is actually under test, plus one strictly newer entry whose slug
+  // ('a-newest') sorts FIRST alphabetically — so an accidental slug-only sort
+  // would still pass while a lost date key would not.
+  const tied: DocEntry[] = [
+    { slug: 'zebra', data: { title: 'Zebra', doc_status: 'active', updated: '2026-06-01' } },
+    { slug: 'a-newest', data: { title: 'Newest', doc_status: 'active', updated: '2026-07-01' } },
+    { slug: 'alpha', data: { title: 'Alpha', doc_status: 'active', updated: '2026-06-01' } },
+    { slug: 'middle', data: { title: 'Middle', doc_status: 'active', updated: '2026-06-01' } },
+  ];
+  const expected = ['a-newest', 'alpha', 'middle', 'zebra'];
+
+  const reversed = [...tied].reverse();
+  const interleaved = [
+    ...tied.filter((_, i) => i % 2 === 0),
+    ...tied.filter((_, i) => i % 2 === 1),
+  ];
+  const rotated = [...tied.slice(2), ...tied.slice(0, 2)];
+
+  it('ranks every permutation of the same entries identically', () => {
+    const slugs = (list: DocEntry[]) => rankForFeed(list).map((e) => e.slug);
+    expect(slugs(tied)).toEqual(expected);
+    expect(slugs(reversed)).toEqual(expected);
+    expect(slugs(interleaved)).toEqual(expected);
+    expect(slugs(rotated)).toEqual(expected);
+  });
+
+  it('breaks updated ties by ascending slug, and a newer entry still wins', () => {
+    const ranked = rankForFeed(reversed);
+    // Newer date beats the alphabetical tie group regardless of input position.
+    expect(ranked[0]!.slug).toBe('a-newest');
+    // The three tied entries are in ascending slug order among themselves.
+    expect(ranked.slice(1).map((e) => e.slug)).toEqual(['alpha', 'middle', 'zebra']);
+  });
+
+  it('orders undated entries last, among themselves by slug', () => {
+    const withUndated: DocEntry[] = [
+      { slug: 'y-undated', data: { title: 'Y', doc_status: 'active' } },
+      ...tied,
+      { slug: 'b-undated', data: { title: 'B', doc_status: 'active' } },
+    ];
+    expect(rankForFeed(withUndated).map((e) => e.slug)).toEqual([
+      ...expected,
+      'b-undated',
+      'y-undated',
+    ]);
+  });
+});
+
 describe('durable end-to-end (#39/FR-004): a durable doc validates on both arms', () => {
   // `durable` now lives in ONE place — the core `STATUSES` tuple — from which the
   // build schema's `z.enum(STATUSES)` (via `docKittyFields`) and the standalone

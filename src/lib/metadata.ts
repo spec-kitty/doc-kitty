@@ -503,11 +503,61 @@ export function rankForAgents(
     });
 }
 
-/** Published entries, most-recently-updated first, for feeds. */
+/**
+ * Order two route slugs deterministically, ascending.
+ *
+ * WHY a bare `<`/`>` compare and not `localeCompare` (#85/C-001): a UTF-16
+ * code-unit comparison (what JS relational operators do) is locale-INDEPENDENT
+ * by construction, so CI, a contributor's machine and a container with a
+ * different `LANG` all agree on the order.
+ * `localeCompare` without an explicit locale reads the runtime default and can
+ * therefore rank the same two slugs differently on two machines — which is the
+ * very class of nondeterminism this helper exists to remove.
+ *
+ * Slugs are unique per entry, so any comparator that falls through to this one
+ * is TOTAL: for two distinct entries it never returns 0 (contract:
+ * `kitty-specs/feed-order-determinism-01M1VV64/contracts/feed-order.md`).
+ * Shared by {@link rankForFeed} and {@link sortBySlug} so the feed order and
+ * the collected-entry order can never drift apart.
+ */
+export function compareSlug(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/**
+ * Copy of `entries` ordered by ascending slug: the stable baseline
+ * `collectDocEntries` applies to the whole collection before any consumer sees
+ * it (contract: `kitty-specs/feed-order-determinism-01M1VV64/contracts/feed-order.md`).
+ * Non-mutating, and Astro-free HERE so the ordering contract is unit-testable
+ * without mocking `astro:content`.
+ */
+export function sortBySlug(entries: DocEntry[]): DocEntry[] {
+  return [...entries].sort((a, b) => compareSlug(a.slug, b.slug));
+}
+
+/**
+ * Published entries for feeds. ORDER: `updated` descending (most recent first),
+ * then slug ascending.
+ *
+ * WHY the slug tiebreak (#85): the primary key alone is NOT a total comparator —
+ * most pages share an `updated` date (22 of 26 feed items in the demonstrator),
+ * and `Array#sort` is stable, so tied items kept their INPUT order. That input
+ * is `getCollection('docs')`, whose store Astro's glob loader fills in the
+ * completion order of a concurrent read+render pool — i.e. build-timing noise.
+ * Two clean builds of an unchanged tree therefore emitted different `rss.xml`
+ * bytes. Breaking ties on the unique slug makes the comparator total, so the
+ * feed order is a function of the content alone and byte-oracles on the built
+ * corpus are trustworthy. Entries without `updated` sort last (millis 0) and
+ * among themselves by slug.
+ */
 export function rankForFeed(entries: DocEntry[]): DocEntry[] {
   return entries
     .filter((e) => isPublished(e.data))
-    .sort((a, b) => updatedMillis(b.data) - updatedMillis(a.data));
+    .sort((a, b) => {
+      const byUpdated = updatedMillis(b.data) - updatedMillis(a.data);
+      if (byUpdated !== 0) return byUpdated;
+      return compareSlug(a.slug, b.slug);
+    });
 }
 
 /**
