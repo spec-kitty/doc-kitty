@@ -2,15 +2,17 @@
 title: Markua subset
 description: "The curated, opt-in Markua subset doc-kitty renders: the five constructs, the callout mapping, the build-time pipeline, and — explicitly — what is out of scope."
 doc_status: active
-updated: 2026-08-30
+updated: 2026-09-06
 type: Architecture
 kind: Explanation
 authors:
   - stijn@sddevelopment.be
-tags: [markua, leanpub, callouts, figures, remark, rehype]
+tags: [markua, leanpub, callouts, figures, remark, rehype, slide-decks]
 related:
   - adr/0030-markua-preprocess-to-directive
+  - adr/0038-decks-markua-capable
   - architecture/theming
+  - architecture/slide-decks
   - architecture/research/markua-syntax-support
 ---
 
@@ -159,6 +161,37 @@ does not already carry an `id`, so this is native precedence — no `rehype-slug
 dependency, no ordering shim. A heading with no Markua id syntax keeps receiving
 its auto-generated anchor exactly as it does today.
 
+## Markua on slide decks
+
+The four Markua content passes — `markuaNormalise`, `markuaAttributes`,
+`markuaCallouts`, `markuaFigure` — act on a `kind: Presentation` deck's slide
+content exactly as they do on a docs page: a `W>` aside, an `{aside}…{/aside}`
+wrapper, a `{…}` attribute list, and a figure image all render their intended,
+accessible construct on the slide they were authored in. `markuaTocDemote`
+stays the one exception, still guarded off decks — a deck route has no
+on-page table of contents for it to demote a heading out of.
+
+Two deck-specific seams make this safe:
+
+- **Callouts on a deck always render as the self-contained `dk-callout`
+  theme path**, never a native Starlight aside — the out-of-frame deck route
+  loads no `starlight-aside` CSS, so a native aside would render unstyled on a
+  slide.
+- **A slide body figure wraps as an accessible `<figure>`; the synthesized
+  title-slide hero image never does** — wrapping the hero would relocate its
+  `alt` into a `<figcaption>` and empty `<img alt>`. The two are structurally
+  identical, so the hero carries an explicit internal tag as the sole
+  discriminator.
+
+The one authoring constraint deck-Markua adds: **an `{aside}`/`{blurb}`
+wrapper cannot span a slide boundary.** Opening one and closing it past a
+`##`/`###`/`---` would otherwise swallow that boundary, merging two slides.
+Instead, the wrapper closes at the boundary and the build emits a warning —
+the boundary itself is never consumed. The decision, the composition with
+`deckSplit`, and the full rationale live in
+[ADR-0038](../adr/0038-decks-markua-capable.md); the authoring convention and
+slide-splitting rules are in [Slide decks](./slide-decks.md).
+
 ## Graceful degradation
 
 Nothing in this subset can fail the build. An unrecognised or malformed
@@ -194,15 +227,6 @@ ignored, where noted) rather than as intended Leanpub output:
   are not honoured.
 - **Inline `:fa-name:` icons** — only `{icon: fa-name}` on a callout is
   supported; a standalone inline Font Awesome shorthand is not.
-- **Presentation pages (`kind: Presentation`)** — decks are **Markua-agnostic**.
-  All five passes (`markuaNormalise`, `markuaAttributes`, `markuaCallouts`,
-  `markuaFigure`, `markuaTocDemote`) no-op on a deck page through one shared
-  `isPresentationFile()` predicate and a `guardDeck()` wrapper applied at the
-  plugin registration arrays in `config.ts`, so a Markua marker (`{…}`, `W>`,
-  `{aside}`) inside deck content is left untouched rather than silently spliced
-  or swallowing a slide boundary. This is a deliberate scope decision
-  ([ADR-0030](../adr/0030-markua-preprocess-to-directive.md) Consequences), not
-  an oversight — deck-Markua support is tracked as a follow-up.
 
 An attribute the subset does not honour for its target (any of the above, plus
 any other key not listed in the [attribute-list contract](../../kitty-specs/markua-syntax-support-01M167JG/contracts/attribute-list-plugin.md))

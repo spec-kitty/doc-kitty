@@ -2,7 +2,7 @@
 title: Slide decks
 description: "How a Markdown-authored deck becomes a static reveal.js presentation: the splitting convention, the build pipeline, and the fallback."
 doc_status: active
-updated: 2026-08-30
+updated: 2026-09-06
 type: Architecture
 kind: Explanation
 authors:
@@ -14,7 +14,7 @@ related:
   - adr/0022-reveal-integration-and-token-theme
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0004-amend-common-docs-as-extensible-variation
-  - adr/0030-markua-preprocess-to-directive
+  - adr/0038-decks-markua-capable
   - architecture/theming
   - architecture/markua
 ---
@@ -50,15 +50,38 @@ metadata contract;
 `title`, `description`, and `hero_image` feed the title slide and the social card,
 and `doc_status: draft` gates the deck from sitemap and feeds like any other page.
 
-**Decks are currently Markua-agnostic.** The [Markua subset](./markua.md) is
-scoped to docsite pages only: all five Markua passes no-op on a `kind:
-Presentation` page through the shared `isPresentationFile()`/`guardDeck()` guard
-at the plugin registration site, so a Markua marker written inside deck content
-is left untouched rather than partially interpreted — a `{…}` line is never
-spliced and a `{aside}` wrapper never swallows a `###` slide boundary. This is a
-deliberate scope decision ([ADR-0030](../adr/0030-markua-preprocess-to-directive.md)
-Consequences), not an accident of ordering; deck-Markua support is tracked as a
-follow-up.
+## Markua on slides
+
+A deck author can use the [Markua subset](./markua.md) inside slide content: a
+`W>` line-prefix aside, an `{aside}…{/aside}` wrapper, a `{…}` attribute list,
+and a Markua figure image all render their intended, accessible construct on
+the slide they were authored in, the same way they would on a docs page.
+Two things render differently on a deck than off one — a callout always
+renders as the self-contained `dk-callout` theme aside (never a native
+Starlight aside, since the out-of-frame deck route loads no
+`starlight-aside` CSS), and the synthesized title-slide hero image is never
+wrapped as a figure, so it keeps its populated `alt` and gains no caption.
+
+**The one boundary constraint: an `{aside}`/`{blurb}` wrapper cannot span a
+slide boundary.** Opening a wrapper and closing it past the `##`/`###`/`---`
+that starts the next slide would otherwise merge the two slides by consuming
+the boundary. Instead, the wrapper closes at the boundary and the build emits
+a warning; the boundary line itself is always preserved for the splitting
+convention below to see. Because of this, an `{…}` attribute line meant to
+decorate a slide heading (for example a custom `{#id}`) must sit **outside**
+any `{aside}`/`{blurb}` wrapper — an attribute line written *inside* a wrapper
+decorates the wrapper's own next block, never the slide heading beyond the
+boundary.
+
+**Authoring gotcha:** a `{…}` attribute line targeting a paragraph (not a
+heading) needs a blank line before that paragraph. Without it, CommonMark's
+lazy continuation merges the attribute line into the same paragraph as its
+target, so the line is never recognised as its own attribute directive and is
+left as literal text instead of being applied.
+
+The full decision — why Markua still runs before the slide-splitting
+transform below, and why each of these seams exists — is
+[ADR-0038](../adr/0038-decks-markua-capable.md).
 
 ## The slide-splitting convention
 
