@@ -22,7 +22,8 @@
  * models sections, applies the ancestor + whole-word guards, rewrites eligible
  * text into link nodes, and collects the used-list.
  */
-import { resolveSurface, glossaryTermUrl } from '../glossary/resolve.js';
+import { resolveSurface } from '../glossary/resolve.js';
+import { glossaryLinkNode } from '../glossary/link-node.js';
 import type { GlossaryLinkUsed, SharedTermIndex } from '../glossary/types.js';
 
 /**
@@ -151,17 +152,19 @@ function buildSurfaceRegExp(index: SharedTermIndex): RegExp | undefined {
 }
 
 /**
- * The shared link node both this plugin and `:term` (WP05) emit (FR-009). The URL
- * uses the context's de-collided page-SLUG (`contextSlug`) — the page actually lives
- * at `/glossary/<slug>/`, so a raw context name with spaces/caps/`&` would 404
- * (issue #17 finding #5). `data-glossary-context` keeps the original NAME (the hover
- * payload keys on it). MUST stay byte-identical to `glossary-term.glossaryLinkNode`
- * — including the `dk-glossary-link` class (glossary-term-ux mission, #64,
- * FR-001/FR-003) and the absence of `target`/`rel`: a term link resolves to an
- * internal glossary page, so it opens same-tab like any other internal link
- * (#64 FR-004), unlike this file's docstring precedent from before that mission.
- * `basePrefix` (#61, C-001) is threaded from `computePageLinks` — the ONE shared
- * `glossaryTermUrl` builder keeps this and `:term`'s emitted href single-sourced.
+ * The shared link node both this plugin and `:term` (WP05) emit (FR-009), built by
+ * the ONE shared builder ({@link glossaryLinkNode}, `../glossary/link-node.ts`,
+ * issue #79) — the source of the shape lives there, including the `dk-glossary-link`
+ * class (glossary-term-ux mission, #64, FR-001/FR-003), the absence of
+ * `target`/`rel` (#64 FR-004), and the `aria-label` a11y affordance (#77). This
+ * function only wraps the auto-linker's `surface: string` into the shared builder's
+ * `children` shape — the one per-caller delta (contract `shared-link-node.md`).
+ * The URL uses the context's de-collided page-SLUG (`contextSlug`) — the page
+ * actually lives at `/glossary/<slug>/`, so a raw context name with spaces/caps/`&`
+ * would 404 (issue #17 finding #5). `data-glossary-context` keeps the original NAME
+ * (the hover payload keys on it). `basePrefix` (#61, C-001) is threaded from
+ * `computePageLinks` through to the shared builder's `glossaryTermUrl` call, so this
+ * and `:term`'s emitted href stay single-sourced.
  */
 function makeLinkNode(
   context: string,
@@ -171,20 +174,14 @@ function makeLinkNode(
   surface: string,
   basePrefix: string,
 ): MdNode {
-  return {
-    type: 'link',
-    url: glossaryTermUrl(basePrefix, contextSlug, anchor),
-    children: [{ type: 'text', value: surface }],
-    data: {
-      hProperties: {
-        class: 'dk-glossary-link',
-        [TERM_ATTR]: termName,
-        [CONTEXT_ATTR]: context,
-        [ANCHOR_ATTR]: anchor,
-        [CONTEXT_SLUG_ATTR]: contextSlug,
-      },
-    },
-  };
+  return glossaryLinkNode(
+    context,
+    contextSlug,
+    anchor,
+    termName,
+    [{ type: 'text', value: surface }],
+    basePrefix,
+  ) as unknown as MdNode;
 }
 
 /** The per-page/per-section state threaded through the walk. */

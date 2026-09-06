@@ -224,6 +224,7 @@ describe('computePageLinks — the shared link node (FR-009, #64 FR-001/FR-004)'
       'data-glossary-context': 'shipping',
       'data-glossary-anchor': 'cargo',
       'data-glossary-context-slug': 'shipping',
+      'aria-label': 'cargo, glossary term',
     });
   });
 });

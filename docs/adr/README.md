@@ -49,5 +49,6 @@ kind: Hub
 | [0036](./0036-diagram-figure-ownership.md) | ADR-0036: Diagram-figure ownership — one node type per pipeline stage | Accepted | 2026-09-04 |
 | [0037](./0037-base-aware-link-fail-closed-gate.md) | ADR-0037: Base-aware internal links and a fail-closed, built-output link gate | Accepted | 2026-09-04 |
 | [0038](./0038-decks-markua-capable.md) | ADR-0038: Decks are Markua-capable | Accepted | 2026-09-06 |
+| [0039](./0039-glossary-link-node-aria-label.md) | ADR-0039: One shared glossary link-node builder + aria-label term affordance | Accepted | 2026-09-06 |
 
 New ADRs copy [`template.md`](./template.md).
