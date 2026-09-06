@@ -1,20 +1,26 @@
 /**
- * Live cross-emitter parity guard (C-001 "shared link-node shape").
+ * Live cross-emitter parity guard (C-001 "shared link-node shape") — a RE-FORK
+ * guard.
  *
  * The auto-linker (`computePageLinks` in `glossary-autolink.internal.ts`) and the
- * `:term` directive (`glossary-term.ts`) each build the glossary link node from
- * their own inline builder (`makeLinkNode` / `glossaryLinkNode`). The contract is
- * that both emit a BYTE-IDENTICAL `hProperties` bag + href so the hover island,
- * the no-JS fallback, and the links-used tree-scan treat auto-links and `:term`
- * links uniformly, and so the On-this-page re-derive matches the build output.
+ * `:term` directive (`glossary-term.ts`) both delegate to the ONE shared builder
+ * (`glossaryLinkNode`, `src/lib/glossary/link-node.ts`, issue #79); the only
+ * per-caller delta is how each wraps its visible label into `children`. The
+ * contract is that both emit a BYTE-IDENTICAL `hProperties` bag + href so the
+ * hover island, the no-JS fallback, and the links-used tree-scan treat auto-links
+ * and `:term` links uniformly, and so the On-this-page re-derive matches the
+ * build output.
  *
- * The per-builder suites (`glossary-autolink.test.ts`, `glossary-term.test.ts`)
- * each pin their own builder to a hardcoded literal — but nothing there compares
- * the TWO ACTUAL builders against each other, so a coordinated edit of both
- * literals could let the emitters drift while both suites stayed green. This test
- * closes that hole structurally (DIRECTIVE_043): it invokes both real emitters on
- * an equivalent input and asserts their emitted node shape is equal. Fork either
- * builder and this fails — regardless of the golden literals.
+ * What each guard actually proves, post-extraction:
+ *   - the `toEqual` below is a **re-fork guard**: while both emitters delegate it
+ *     is trivially satisfied, and it fails the moment either one stops delegating
+ *     and grows its own inline builder that drifts (DIRECTIVE_043). It does NOT,
+ *     on its own, catch a change made once inside the shared builder — that
+ *     change reaches both emitters identically.
+ *   - the literal `aria-label` assertion in THIS file plus the two per-builder
+ *     goldens (`glossary-autolink.test.ts`, `glossary-term.test.ts`, each pinning
+ *     its emitter's bag to a hardcoded literal) are what catch an `aria-label`
+ *     drop or drift originating in the shared builder itself.
  */
 import { describe, it, expect } from 'vitest';
 import { computePageLinks, type MdNode, type MdRoot } from '../lib/remark/glossary-autolink.internal.js';

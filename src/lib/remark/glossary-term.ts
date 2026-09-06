@@ -42,7 +42,7 @@
  * corpus is byte-identical (NFR-002).
  */
 import { resolveSurface } from '../glossary/resolve.js';
-import { glossaryLinkNode } from '../glossary/link-node.js';
+import { glossaryLinkNode, textOf } from '../glossary/link-node.js';
 import type { SharedTermIndex } from '../glossary/types.js';
 
 /**
@@ -85,36 +85,14 @@ export interface GlossaryTermOptions {
   base?: string;
 }
 
-/** Concatenate the text of a directive's label children (`:term[here]`). */
-function textOf(node: MdastNode): string {
-  if (node.type === 'text') return node.value ?? '';
-  const children = node.children;
-  if (Array.isArray(children)) return children.map(textOf).join('');
-  return '';
-}
-
-/**
- * The **shared** glossary link node — built by the ONE shared builder
- * ({@link glossaryLinkNode}, `../glossary/link-node.ts`, issue #79) so this and
- * the auto-linker (WP04 `glossary-autolink.ts` / `glossary-autolink.internal.ts`)
- * stay byte-identical (contract `shared-link-node.md`): a `link` to
- * `/glossary/<contextSlug>/#<anchor>` (the de-collided page slug, issue #17
- * finding #5 — never the raw context name) carrying a `dk-glossary-link` class
- * (glossary-term-ux mission, #64, FR-001/FR-003), the
- * `data-glossary-term`/`data-glossary-context` (+ `-anchor`/`-context-slug`)
- * markers the hover island and the links-used tree-scan key on, and (new, #77)
- * an `aria-label` a11y affordance. Term links resolve to an internal glossary
- * page, so — unlike an external reference — they carry no `target`/`rel` (#64
- * FR-004): same-tab navigation, like every other internal link. `basePrefix`
- * (#61, C-001) is threaded from the plugin factory's `base` option through to the
- * shared builder's `glossaryTermUrl` call, keeping this and the auto-linker's
- * emitted href single-sourced.
- */
-
 /**
  * Turn one `:term` directive into its replacement node: a shared link node, or a
  * plain-text node (suppressed, missing-context, or unresolved). Warnings are
  * non-fatal `file.message`s in a stable greppable form.
+ *
+ * The link node itself is delegated to {@link glossaryLinkNode}
+ * (`../glossary/link-node.ts`, #79) — the single authored place for its shape,
+ * href and `aria-label`.
  */
 function transformDirective(
   node: MdastNode,
@@ -154,7 +132,7 @@ function transformDirective(
       resolution.termName,
       label,
       basePrefix,
-    ) as unknown as MdastNode;
+    );
   }
 
   // `unresolved` (context not among the surface's candidates) or `none` (not a

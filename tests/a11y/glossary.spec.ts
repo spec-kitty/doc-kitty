@@ -144,6 +144,93 @@ test.describe('Glossary popover placement + caret (#78)', () => {
     }, POPOVER);
   }
 
+  /** The caret's clamp half-width in `preview-popover.client.ts` (`CARET_HALF_PX`):
+   * the caret offset is clamped to `[CARET_HALF_PX, popover.offsetWidth - CARET_HALF_PX]`. */
+  const CARET_HALF_PX = 8;
+
+  interface CaretGeometry {
+    /** `--dk-glossary-caret-left`, px — the caret's offset from the popover's left edge. */
+    caretLeft: number;
+    /** The popover's viewport-relative left edge. */
+    popoverLeft: number;
+    /** The popover's border-box width. */
+    popoverWidth: number;
+    /** The OPENED anchor's viewport-relative horizontal centre. */
+    anchorCenterX: number;
+  }
+
+  /** Read the caret offset, the popover's box and the anchor's centre in ONE
+   * page evaluation, so all three numbers come from the same layout. Both rects
+   * are viewport-relative (`getBoundingClientRect`), so the page scroll cancels
+   * out of `anchorCenterX - popoverLeft` exactly as it does out of the client's
+   * page-space `anchorCenter - clampedLeft`. */
+  async function caretGeometry(
+    page: Page,
+    anchorSelector: string,
+    which: 'first' | 'last',
+  ): Promise<CaretGeometry> {
+    return page.evaluate(
+      ({ popoverSelector, anchorSelector, which }) => {
+        const popover = document.querySelector(popoverSelector);
+        if (popover === null) throw new Error(`element not found: ${popoverSelector}`);
+        const anchors = Array.from(document.querySelectorAll(anchorSelector));
+        const anchor = which === 'first' ? anchors[0] : anchors[anchors.length - 1];
+        if (!anchor) throw new Error(`element not found: ${anchorSelector}`);
+        const popoverRect = popover.getBoundingClientRect();
+        const anchorRect = anchor.getBoundingClientRect();
+        return {
+          caretLeft: Number.parseFloat(
+            getComputedStyle(popover).getPropertyValue('--dk-glossary-caret-left'),
+          ),
+          popoverLeft: popoverRect.left,
+          popoverWidth: popoverRect.width,
+          anchorCenterX: anchorRect.left + anchorRect.width / 2,
+        };
+      },
+      { popoverSelector: POPOVER, anchorSelector, which },
+    );
+  }
+
+  /** Assert the caret actually AIMS at the term: inside the popover's
+   * `[CARET_HALF_PX, width - CARET_HALF_PX]` band AND at the anchor's centre —
+   * or, when that centre falls outside the band (the popover was clamped away
+   * from the anchor at a viewport edge), at the band edge the client clamps to.
+   *
+   * This is what a bare `caretLeft >= 8` could not prove: that assertion is
+   * satisfied by construction — `Math.max(CARET_HALF_PX, …)` guarantees it — and
+   * stays green on a caret pinned to the floor while the term sits elsewhere.
+   * These assertions fail in that case.
+   *
+   * Tolerance is 1px: the client clamps against the integer `offsetWidth` while
+   * this reads the fractional `getBoundingClientRect().width`, and both rects
+   * carry sub-pixel layout rounding. */
+  function expectCaretAimsAtAnchor(geo: CaretGeometry, placement: string): void {
+    const lo = CARET_HALF_PX;
+    const hi = geo.popoverWidth - CARET_HALF_PX;
+    expect(
+      geo.caretLeft,
+      `caret stays ${CARET_HALF_PX}px clear of the popover's LEFT edge (placement=${placement})`,
+    ).toBeGreaterThanOrEqual(lo);
+    expect(
+      geo.caretLeft,
+      `caret stays ${CARET_HALF_PX}px clear of the popover's RIGHT edge (placement=${placement})`,
+    ).toBeLessThanOrEqual(hi);
+
+    const wanted = geo.anchorCenterX - geo.popoverLeft;
+    if (wanted >= lo && wanted <= hi) {
+      expect(
+        Math.abs(geo.caretLeft - wanted),
+        `caret sits AT the term's horizontal centre, ${wanted.toFixed(2)}px into the popover (placement=${placement})`,
+      ).toBeLessThanOrEqual(1);
+    } else {
+      const edge = wanted < lo ? lo : hi;
+      expect(
+        Math.abs(geo.caretLeft - edge),
+        `the term's centre (${wanted.toFixed(2)}px) is outside the caret band, so the caret clamps to ${edge.toFixed(2)}px (placement=${placement})`,
+      ).toBeLessThanOrEqual(1);
+    }
+  }
+
   /** Read the active-placement pseudo-element's border WIDTH (px) — the caret
    * triangle's geometry. Colour alone can read non-transparent even with a
    * zero-width (invisible) triangle, so the placement tests also assert the
@@ -196,11 +283,16 @@ test.describe('Glossary popover placement + caret (#78)', () => {
       'ample space below places the popover below the term',
     ).toHaveAttribute('data-placement', 'bottom');
 
-    // Caret proxy 1: the horizontal-offset custom property is set.
+    // Caret proxy 1: the horizontal-offset custom property is a SANE px length —
+    // a merely non-empty value (e.g. `''`) would be a false green.
+    const bottomCaretLeft = await caretLeftProperty(page);
     expect(
-      await caretLeftProperty(page),
-      '--dk-glossary-caret-left is set for the bottom-placed popover',
-    ).not.toBe('');
+      bottomCaretLeft,
+      '--dk-glossary-caret-left is a px length for the bottom-placed popover',
+    ).toMatch(/^\d+(\.\d+)?px$/);
+
+    // …and it AIMS at this term, not merely at the 8px clamp floor.
+    expectCaretAimsAtAnchor(await caretGeometry(page, CARGO_LINK, 'first'), 'bottom');
 
     // Caret proxy 2: the 'bottom' placement's ::after fill draws a real
     // border-bottom-color (the caret triangle pointing UP at the term); the
@@ -259,12 +351,16 @@ test.describe('Glossary popover placement + caret (#78)', () => {
       'insufficient space below flips the popover above the term',
     ).toHaveAttribute('data-placement', 'top');
 
-    // Caret proxy 1: the horizontal-offset custom property is still set for
-    // the flipped popover.
+    // Caret proxy 1: the horizontal-offset custom property is still a sane px
+    // length for the flipped popover.
+    const topCaretLeft = await caretLeftProperty(page);
     expect(
-      await caretLeftProperty(page),
-      '--dk-glossary-caret-left is set for the top-placed (flipped) popover',
-    ).not.toBe('');
+      topCaretLeft,
+      '--dk-glossary-caret-left is a px length for the top-placed (flipped) popover',
+    ).toMatch(/^\d+(\.\d+)?px$/);
+
+    // …and it AIMS at the LAST cargo term this test opened, not at the clamp floor.
+    expectCaretAimsAtAnchor(await caretGeometry(page, CARGO_LINK, 'last'), 'top');
 
     // Caret proxy 2: the 'top' placement's ::after fill draws a real
     // border-top-color (the caret triangle pointing DOWN at the term); the
