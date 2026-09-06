@@ -23,7 +23,7 @@
  * text into link nodes, and collects the used-list.
  */
 import { resolveSurface } from '../glossary/resolve.js';
-import { glossaryLinkNode } from '../glossary/link-node.js';
+import { glossaryLinkNode, textOf } from '../glossary/link-node.js';
 import type { GlossaryLinkUsed, SharedTermIndex } from '../glossary/types.js';
 
 /**
@@ -92,15 +92,6 @@ function visit(node: MdNode, fn: (node: MdNode) => void): void {
   if (Array.isArray(children)) {
     for (const child of children) visit(child, fn);
   }
-}
-
-/** Concatenated text of a node's subtree — a link node's visible surface. */
-function textContent(node: MdNode): string {
-  let out = '';
-  visit(node, (n) => {
-    if (n.type === 'text' && typeof n.value === 'string') out += n.value;
-  });
-  return out;
 }
 
 /**
@@ -181,7 +172,7 @@ function makeLinkNode(
     termName,
     [{ type: 'text', value: surface }],
     basePrefix,
-  ) as unknown as MdNode;
+  );
 }
 
 /** The per-page/per-section state threaded through the walk. */
@@ -275,7 +266,7 @@ function linkifyNode(node: MdNode, blocked: boolean, w: Walk): void {
 function seedFromExistingLinks(blocks: readonly MdNode[], linkedSurfaces: Set<string>): void {
   for (const block of blocks) {
     visit(block, (n) => {
-      if (isGlossaryLink(n)) linkedSurfaces.add(textContent(n).toLowerCase());
+      if (isGlossaryLink(n)) linkedSurfaces.add(textOf(n).toLowerCase());
     });
   }
 }
@@ -298,12 +289,12 @@ export function collectLinksUsed(tree: MdNode): GlossaryLinkUsed[] {
     const hp = node.data!.hProperties!;
     const termName = String(hp[TERM_ATTR]);
     const context = String(hp[CONTEXT_ATTR] ?? '');
-    const key = `${context} ${termName}`;
+    const key = `${context}\x00${termName}`;
     if (seen.has(key)) return;
     seen.add(key);
     const anchor = String(hp[ANCHOR_ATTR] ?? '');
     const contextSlug = String(hp[CONTEXT_SLUG_ATTR] ?? '');
-    result.push({ surface: textContent(node), context, contextSlug, anchor, termName });
+    result.push({ surface: textOf(node), context, contextSlug, anchor, termName });
   });
   return result;
 }

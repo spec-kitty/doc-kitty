@@ -9,15 +9,23 @@
  * It also carries the AT-perceivable term affordance (issue #77, decision
  * `01M1V8ZYHJYYVGY438PB166WAX`, C-002): `hProperties['aria-label']` = the link's
  * visible text + `, glossary term`. It is an ATTRIBUTE only — never an extra
- * `text` child — so it never enters the `textContent`-based links-used surface
+ * `text` child — so it never enters the {@link textOf}-based links-used surface
  * (FR-005) and the visible `children` the link renders are unchanged.
  *
  * Lives beside `glossaryTermUrl` (this module's sibling `resolve.ts`) — the
  * glossary bounded context's home for pure, framework-free logic (C-003).
  *
- * Deliberately hand-rolled structural types (no `@types/mdast` dependency, D3):
- * the two callers' own local `MdNode`/`MdastNode` interfaces are structurally
- * assignable to {@link LinkChild} / {@link GlossaryLinkNode} without a shared
+ * Deliberately hand-rolled structural types (no `@types/mdast` dependency, D3).
+ * Assignability runs in BOTH directions, for two different reasons (issue #83).
+ * Inbound — the callers' own local `MdNode` / `MdastNode` nodes flow into
+ * {@link LinkChild} — is plain structural width: `LinkChild` asks only for
+ * `type` (+ optional `value` / `children`), which those interfaces have, so
+ * nothing special is needed. Outbound — the builder's return value flows
+ * {@link GlossaryLinkNode} → `MdNode` / `MdastNode`, both of which declare
+ * `[key: string]: unknown` — needs an index signature on the source type, and
+ * `GlossaryLinkNode` gets one implicitly by being a `type` alias (an
+ * `interface` would need an explicit one, at the cost of excess-property
+ * checking here). Neither direction needs a cast, and neither needs a shared
  * runtime dependency — the `diagram-meta.internal` / pre-existing two-builder
  * precedent this extraction collapses.
  */
@@ -31,19 +39,41 @@ export interface LinkChild {
   [key: string]: unknown;
 }
 
-/** The `link` node shape both emitters return — minimal, structural (no `@types/mdast`). */
-export interface GlossaryLinkNode {
+/** The `link` node shape both emitters return — minimal, structural (no `@types/mdast`).
+ * A `type` alias, not an `interface`, on purpose (#83): TypeScript gives object-literal
+ * type aliases an implicit string index signature, so the value is assignable to the
+ * callers' local `MdNode` / `MdastNode` (which declare `[key: string]: unknown`) with no
+ * cast — while, unlike an explicit index signature on an interface, the alias keeps
+ * excess-property checking on this module's own `return {…}` literal. */
+export type GlossaryLinkNode = {
   type: 'link';
   url: string;
   children: LinkChild[];
-  data: {
-    hProperties: Record<string, unknown>;
-  };
-}
+  data: { hProperties: Record<string, unknown> };
+};
 
-/** Concatenated text of a node's subtree — mirrors the callers' own `textOf`/`textContent`. */
-function textOf(node: LinkChild): string {
-  if (node.type === 'text') return node.value ?? '';
+/**
+ * THE subtree-text helper (issue #83) — the single authored place the glossary
+ * derives a node's plain text. It feeds this builder's `aria-label` visible
+ * text, the auto-linker's links-used surface and per-section already-linked
+ * seed (`../remark/glossary-autolink.internal.ts`), and the `:term` directive's
+ * label, warning strings, suppress form and fallback label
+ * (`../remark/glossary-term.ts`), so the accessible name and the recorded
+ * surface cannot drift apart (FR-001/FR-002). It replaced three equivalent
+ * private copies; it is no longer a "mirror" of anything.
+ *
+ * Semantics: a `text` node is a LEAF whose `value` contributes only when it is
+ * a string (otherwise `''` — not producible by real mdast); every other node
+ * concatenates `textOf(child)` over its `children` in document order; a node
+ * with neither yields `''` — including a node whose text lives only in
+ * `data.hChildren` (e.g. the Markua `markuaSpan` leaf), which therefore
+ * contributes nothing; that is a pre-existing blind spot shared by all three
+ * former copies, recorded here rather than changed. The parameter is the
+ * minimal structural {@link LinkChild}, so both callers pass their own
+ * `MdNode` / `MdastNode` nodes with no cast.
+ */
+export function textOf(node: LinkChild): string {
+  if (node.type === 'text') return typeof node.value === 'string' ? node.value : '';
   const children = node.children;
   if (Array.isArray(children)) return children.map(textOf).join('');
   return '';

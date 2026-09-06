@@ -22,15 +22,23 @@ export function glossaryLinkNode(
   `children = [{ type: 'text', value: surface }]` (only per-caller delta).
 - Href stays single-sourced through `glossaryTermUrl` (C-004) — the builder does
   not re-implement URL construction.
-- The return type is a minimal structural node shape assignable to both callers'
-  local `MdNode` / `MdastNode` interfaces (no `@types/mdast` dependency, D3).
+- The return type (`GlossaryLinkNode`) is a minimal structural node shape,
+  declared as a `type` alias rather than an `interface`: TypeScript gives an
+  object-literal type alias an implicit string index signature, which is what
+  makes it assignable to both callers' local `MdNode` / `MdastNode` interfaces
+  (which declare `[key: string]: unknown`) with **no cast** — as of #83; before
+  #83 it was an interface, which gets no such implicit signature, so both call
+  sites laundered the value through `as unknown as`. The alias also keeps
+  excess-property checking on the builder's own `return {…}` literal, which an
+  explicit index signature on an interface would have cost. Still no
+  `@types/mdast` dependency (D3).
 
 ## The a11y affordance (IC-02, FR-001/002/005, NFR-005, C-002)
 
 - `hProperties['aria-label'] = `${visibleText}, glossary term`` where
   `visibleText` is the concatenated text of `children`.
 - MUST be an attribute only — no extra `text` child node (FR-005: the
-  `textContent`-based links-used surface and its count-pins are unchanged).
+  `textOf`-based links-used surface and its count-pins are unchanged).
 - MUST lead with the exact visible text (NFR-005: accessible name stays in sync).
 - Present in server-rendered HTML with JS disabled (FR-002).
 - Applied uniformly to auto-links and `:term` links → the cross-emitter parity
