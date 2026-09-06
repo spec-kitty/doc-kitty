@@ -21,6 +21,7 @@
 // `.mjs` importer. `metadata` is itself fs/Astro-free, so importing the canonical
 // `isPublished`/`sectionOf`/`sectionRank` keeps this module pure and single-sourced.
 import { isPublished, sectionOf, sectionRank } from './metadata';
+import { buildAdrHubCards } from '../scripts/generate-adr-index.mjs';
 
 /** The parent slug of a route slug ('' for a top-level page or the root). */
 const parentOf = (slug) => {
@@ -61,4 +62,34 @@ export function selectHubChildren(entries, currentSlug, order) {
       if (bySection !== 0) return bySection;
       return a.data.title.localeCompare(b.data.title);
     });
+}
+
+/**
+ * Compose a Hub's ADR-kind children into the ADR `HubCard[]` — `Hub.astro`'s
+ * ADR-card composition, extracted verbatim (#57, DISCIPLINED_REFACTORING): the
+ * ADR-kind gate over the (already `selectHubChildren`-selected) children, then
+ * `buildAdrHubCards` for the number+status+date derivation. This is the ONE
+ * definition both `Hub.astro` and the guard test (`hub-adr-card.test.ts`)
+ * exercise, closing the replica-drift #57 flags — a regression in Hub's real
+ * ADR composition now reds the test instead of a hand-kept copy of it.
+ *
+ * `buildAdrHubCards` itself stays the single source for number/status/date
+ * (#50): this function only reproduces the WIRING around it, never the parsing.
+ *
+ * @param {readonly { slug: string, data: { kind?: string }, body: string }[]} publishedChildren
+ *   Children already filtered to this hub (`selectHubChildren`'s output, or an
+ *   equivalent published+parent-scoped set in a test).
+ * @returns {ReturnType<typeof buildAdrHubCards>} The composed ADR `HubCard[]`,
+ *   number-ordered, byte-identical to what `Hub.astro` builds today (C-001).
+ */
+export function selectAdrHubCards(publishedChildren) {
+  return buildAdrHubCards(
+    publishedChildren
+      .filter((entry) => entry.data.kind === 'ADR')
+      .map((entry) => ({
+        slug: entry.slug,
+        data: entry.data,
+        body: entry.body,
+      })),
+  );
 }

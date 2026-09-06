@@ -280,20 +280,29 @@ async function gotoDeckReady(page: Page, path: string, mode: Mode): Promise<void
   await page.waitForSelector('.reveal.ready', { timeout: 15_000 });
 }
 
-/** MEASURED internal-node geometry (finding F1, #31): the intrinsic bounding box of
- * a rendered INTERNAL node (`g.node`/label/`text`) of the figure's `<svg>`. This is
- * NON-fakeable — a diagram drawn into a `display:none` (zero-box) slide lays its
- * internals out at 0×0 even though the `<svg>` markup (width:100% + viewBox) exists,
- * the #15 defect a `box>0` check can't see. Uses `getBBox()` (SVG USER-SPACE),
- * NOT `getBoundingClientRect()`: reveal scales the deck stage with `transform:
- * scale()`, which zeroes screen-space rects in headless even for a correct render
- * (why the first cut read 0 and was deferred to #31); `getBBox()` is
- * transform-invariant, so a correct diagram reads > 0 and a collapsed one reads 0
- * regardless of the stage scale. A `viewBox`-derived aspect ratio stays FORBIDDEN
- * (intrinsic to the markup, non-zero on both builds). */
+/** MEASURED internal-node geometry (finding F1, #31 — RE-ENABLED): the intrinsic
+ * bounding box of a rendered INTERNAL NODE SHAPE (`g.node`) inside the figure's
+ * `<svg>`. This is NON-fakeable — a diagram drawn into a `display:none` (zero-box)
+ * slide lays its internals out at 0×0 even though the `<svg>` markup (width:100% +
+ * viewBox) exists, the #15 defect a `box>0` check can't see. Uses `getBBox()` (SVG
+ * USER-SPACE), NOT `getBoundingClientRect()`: reveal scales the deck stage with
+ * `transform: scale()`, which zeroes screen-space rects in headless even for a
+ * correct render; `getBBox()` is transform-invariant, so a correct diagram reads
+ * > 0 and a collapsed one reads 0 regardless of the stage scale.
+ *
+ * WORKING APPROACH (verified empirically, #31): `getBBox()` on `g.node` — the
+ * Mermaid node-shape group (the `<rect>`/`<polygon>`/etc a node's shape lives in)
+ * — measures NONZERO in headless (confirmed: slide-2 pipeline 195×54, inner-stack
+ * 245×54). The EARLIER trap was measuring `foreignObject`/`<text>`/`.nodeLabel`
+ * (Mermaid v10+'s label containers), which read 0 (or throw) in headless — that is
+ * why the first cut of this helper appeared non-viable and the assertions were
+ * deferred to #31. `g.node` is the fix: select it directly, never fall back to
+ * foreignObject/text/label. A `viewBox`-derived aspect ratio stays FORBIDDEN
+ * (intrinsic to the markup, non-zero on both builds, so it can't distinguish a
+ * collapsed mis-render). */
 async function measuredInnerBox(figure: Locator): Promise<{ w: number; h: number }> {
   return figure.locator('pre.mermaid svg').first().evaluate((svg) => {
-    const inner = svg.querySelector('g.node, g.nodes g, g.label, text, foreignObject');
+    const inner = svg.querySelector('g.node');
     if (!inner) return { w: -1, h: -1 };
     try {
       const b = (inner as SVGGraphicsElement).getBBox();
@@ -369,9 +378,14 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
     // render), so slide-two would already carry an <svg> WHILE HIDDEN and fail the
     // `toHaveCount(0)` step; only the slide-aware fix defers it to navigation. So
     // this test fails on the broken build even though box>0 alone would not.
-    // (The strict internal-node geometry check is deferred to #31 — BOTH
-    // getBoundingClientRect AND getBBox read 0 for a rendered deck diagram in the
-    // headless lane, confirmed in CI, so no internal measurement is viable yet.)
+    // MEASURED internal-node geometry (#31, re-enabled): `getBBox()` on the
+    // rendered `g.node` shape measures nonzero in headless (unlike
+    // foreignObject/text/nodeLabel, which read 0) — a collapsed mis-render (#15)
+    // would give it a 0×0 box, so this is the non-fakeable proof #31 wanted, IN
+    // ADDITION to the outer box>0 and identity checks above.
+    const inner = await measuredInnerBox(figure);
+    expect(inner.w, 'slide-two measured internal-node width > 0 (#31)').toBeGreaterThan(0);
+    expect(inner.h, 'slide-two measured internal-node height > 0 (#31)').toBeGreaterThan(0);
   });
 
   test('the inner-stack (vertical/nested) diagram renders with box>0 and measured internal geometry', async ({
@@ -401,7 +415,11 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
     // Deep-link validates the D5 hash-deep-link nested render (currentSlide() is the
     // inner <section>) produces a visible <svg>. The navigate-to-hidden #15
     // regression is proven non-fakeably by the slide-two T019 and by T021
-    // (toggle-while-unvisited → navigate). Internal-geometry check deferred to #31.
+    // (toggle-while-unvisited → navigate).
+    // MEASURED internal-node geometry (#31, re-enabled) — see measuredInnerBox.
+    const inner = await measuredInnerBox(figure);
+    expect(inner.w, 'inner-stack measured internal-node width > 0 (#31)').toBeGreaterThan(0);
+    expect(inner.h, 'inner-stack measured internal-node height > 0 (#31)').toBeGreaterThan(0);
   });
 });
 
@@ -591,7 +609,11 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
     // was hidden and left it unrendered (INV-SCOPE, asserted above), and only
     // navigating renders it. On the pre-fix build it would already be rendered at
     // load (whole-doc render), so the earlier `toHaveCount(0)` while-unvisited steps
-    // fail. Internal-node geometry deferred to #31 (reads 0 in headless).
+    // fail.
+    // MEASURED internal-node geometry (#31, re-enabled) — see measuredInnerBox.
+    const inner = await measuredInnerBox(figure);
+    expect(inner.w, 'post-toggle measured internal-node width > 0 (#31)').toBeGreaterThan(0);
+    expect(inner.h, 'post-toggle measured internal-node height > 0 (#31)').toBeGreaterThan(0);
   });
 
   test('rapid navigation leaves exactly one <svg> per diagram node (E3)', async ({
@@ -632,8 +654,9 @@ test.describe('Deck render-once + theme invariants (FR-005 / T021)', () => {
 // that complements the build-artifact CSS-delivery gate (T006, which proves
 // the rule is bundled AND linked — "bundled ≠ applied" is the false-green
 // trap) and the diagram-pipeline unit's #59 no-<pre>-ancestor proof (T007,
-// static hast). Deliberately does NOT re-enable #31's deferred internal-node-
-// geometry assertions (C-004) — this checks TYPOGRAPHY, not layout geometry.
+// static hast). Deliberately does NOT add #31's measured internal-node-geometry
+// assertions here (C-004) — those live on T019/T021 above; this checks
+// TYPOGRAPHY, not layout geometry.
 // ---------------------------------------------------------------------------
 test.describe('Diagram caption typography (#60) — docs + deck', () => {
   // A generic monospace family name/keyword — matches the shipped `--dk-font-mono`

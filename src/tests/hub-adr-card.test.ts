@@ -8,8 +8,8 @@ import {
   extractAdrMeta,
   discoverAdrs,
   buildAdrTable,
-  buildAdrHubCards,
 } from '../scripts/generate-adr-index.mjs';
+import { selectAdrHubCards } from '../lib/hub-children.mjs';
 import { isPublished } from '../lib/metadata.js';
 
 /**
@@ -28,6 +28,7 @@ import { isPublished } from '../lib/metadata.js';
 
 const HUB = fileURLToPath(new URL('../layouts/Hub.astro', import.meta.url));
 const GENERATOR = fileURLToPath(new URL('../scripts/generate-adr-index.mjs', import.meta.url));
+const HUB_CHILDREN = fileURLToPath(new URL('../lib/hub-children.mjs', import.meta.url));
 
 interface AdrSpec {
   file: string;
@@ -68,18 +69,18 @@ interface HubChild {
 }
 
 /**
- * Hub.astro's ACTUAL ADR-child pipeline, verbatim (Hub composes exactly these
- * calls): published-filter → ADR-kind gate → `buildAdrHubCards`. Reproducing the
- * wiring (not the parsing) is what "render Hub's real output" means at the unit
- * layer — the vitest harness is node-only and never renders `.astro` (the DOM is
- * covered by the example build in CI).
+ * Hub.astro's ACTUAL ADR-child pipeline: published-filter → `selectAdrHubCards`
+ * (#57 — the ADR-kind gate + `buildAdrHubCards` call, extracted verbatim from
+ * Hub.astro's own composition into `../lib/hub-children.mjs`). This test now
+ * calls the SAME importable unit `Hub.astro` calls — not a hand-kept replica of
+ * it — so a regression in Hub's real ADR composition reds this test. The
+ * `isPublished` pre-filter reproduces `selectHubChildren`'s published gate
+ * (covered on its own in hub-children.test.ts); it is not part of the ADR
+ * composition itself.
  */
 function hubAdrCards(children: HubChild[]) {
-  return buildAdrHubCards(
-    children
-      .filter((c) => isPublished(c.data as never))
-      .filter((c) => c.data.kind === 'ADR')
-      .map((c) => ({ slug: c.slug, data: c.data, body: c.body })),
+  return selectAdrHubCards(
+    children.filter((c) => isPublished(c.data as never)),
   );
 }
 
@@ -346,9 +347,10 @@ describe('ADR Hub card — number order, status+date badge, single-sourced (T017
   });
 });
 
-describe('single-source enforcement gate (T023, NFR-001 for #50)', () => {
+describe('single-source enforcement gate (T023, NFR-001 for #50; #57 composition)', () => {
   const hubSrc = readFileSync(HUB, 'utf8');
   const genSrc = readFileSync(GENERATOR, 'utf8');
+  const hubChildrenSrc = readFileSync(HUB_CHILDREN, 'utf8');
 
   /** Strip block, line, and JSX comments so prose that mentions ADR shapes
    *  (e.g. a comment saying the extractor reads `## Status`) is not mistaken for
@@ -357,8 +359,16 @@ describe('single-source enforcement gate (T023, NFR-001 for #50)', () => {
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
 
-  it('Hub.astro sources ADR meta from the shared extractor module', () => {
+  it('Hub.astro sources its ADR-card composition from the shared importable unit (#57)', () => {
+    // Hub.astro no longer calls buildAdrHubCards (or filters ADR-kind children)
+    // itself — it imports the composed unit from hub-children.mjs...
     expect(hubSrc).toMatch(
+      /import\s*\{[^}]*\bselectAdrHubCards\b[^}]*\}\s*from\s*['"]\.\.\/lib\/hub-children\.mjs['"]/,
+    );
+    // ...and that unit is, in turn, defined solely in terms of the shared
+    // extractor pipeline (buildAdrHubCards → extractAdrMeta), so the chain of
+    // custody down to the single source (#50) is unbroken.
+    expect(hubChildrenSrc).toMatch(
       /import\s*\{[^}]*\bbuildAdrHubCards\b[^}]*\}\s*from\s*['"]\.\.\/scripts\/generate-adr-index\.mjs['"]/,
     );
   });

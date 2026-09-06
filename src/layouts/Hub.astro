@@ -47,15 +47,8 @@ import {
   slugFromEntryId,
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
-import { selectHubChildren } from '../lib/hub-children.mjs';
+import { selectHubChildren, selectAdrHubCards } from '../lib/hub-children.mjs';
 import { loadSectionRegistry, sectionOrder } from '../lib/sections.js';
-// The ADR card's number+status+date and number-ordering come from the SHARED
-// extractor pipeline in the ADR-index generator — NOT a Hub-local parse. This is
-// the single source #50 mandates (D3/F5/F6): `buildAdrHubCards` is defined solely
-// in terms of `extractAdrMeta`, the same extractor the own-tree table uses, so
-// the two match 1:1 by construction. Re-deriving status/number here would recreate
-// the split-brain this mission removes (guarded by hub-adr-card.test.ts, T023).
-import { buildAdrHubCards } from '../scripts/generate-adr-index.mjs';
 import '../styles/hub.css';
 
 const route = Astro.props as StarlightRoute;
@@ -109,18 +102,11 @@ const isAdrKind = (data: DocKittyFrontmatter): boolean => data.kind === 'ADR';
 // ADR children (C-005: gated to the ADR kind only): number+status+date and the
 // number-ascending order come SOLELY from the shared pipeline — the SAME one the
 // own-tree generator uses — so the hub matches the generated table 1:1 over the
-// published+numbered set (NFR-004). `buildAdrHubCards` returns null-excluded
-// (number-less + `type:Template`) exactly as `discoverAdrs`, so both sides list
-// the same set (squad F5/F6). The `## Status` it reads lives in `entry.body`.
-const adrCards: HubCard[] = buildAdrHubCards(
-  publishedChildren
-    .filter((entry) => isAdrKind(entry.data))
-    .map((entry) => ({
-      slug: entry.slug,
-      data: entry.data,
-      body: entry.body,
-    })),
-);
+// published+numbered set (NFR-004). The ADR-kind gate + `buildAdrHubCards` call
+// is the single importable composition `selectAdrHubCards` (#57) — the same unit
+// the guard test (hub-adr-card.test.ts) now exercises, so a regression in this
+// wiring reds the test instead of a hand-kept replica.
+const adrCards: HubCard[] = selectAdrHubCards(publishedChildren);
 
 // Non-ADR children keep the section-rank → title order established by
 // `selectHubChildren`. In a non-ADR hub (no ADR-kind children) this IS the whole
