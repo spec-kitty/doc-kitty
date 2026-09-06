@@ -1,0 +1,114 @@
+{
+  "mission_slug": "glossary-builder-ergonomics-01M1VGEM",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "One exported subtree-text helper in the glossary lib",
+      "proof_type": "code_review",
+      "evidence": "`export function textOf` at src/lib/glossary/link-node.ts; grep over src/lib/glossary + src/lib/remark/glossary-* \u2192 exactly one definition (SC-001)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula/debbie squad)",
+      "verified_at": "2026-09-06T14:39:21.771197+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "All three call sites route through it",
+      "proof_type": "automated_test",
+      "evidence": "textContent (autolink) and local textOf (:term) deleted; seedFromExistingLinks/collectLinksUsed/transformDirective import textOf; pnpm test 943/943 incl. parity + goldens; corpus hash identical 233/234, rss.xml order-only (D4)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula/debbie squad)",
+      "verified_at": "2026-09-06T14:39:21.771197+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "No unknown cast at the builder call sites",
+      "proof_type": "automated_test",
+      "evidence": "grep 'as unknown as' over both remark modules \u2192 0 (file now text after NUL escape); tsc -p src/tsconfig.json: 30 errors = baseline, none in lib/glossary or lib/remark; probes: no-cast assignment compiles, typo key rejected (TS2353)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula/debbie squad)",
+      "verified_at": "2026-09-06T14:39:21.771197+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Contract wording matches the shipped types",
+      "proof_type": "code_review",
+      "evidence": "kitty-specs/glossary-a11y-followups-01M1V8Y9/contracts/shared-link-node.md return-type bullet rewritten (type alias, implicit index signature, no cast as of #83); renata review confirmed accurate",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula/debbie squad)",
+      "verified_at": "2026-09-06T14:39:21.771197+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Caret offset sanity (optional)",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/glossary.spec.ts: px regex + one-evaluate geometry check (clamp band, anchor-centre \u00b11px); 16/16 in light+dark; mutation probe (caret pinned to floor) fails all 4 placement tests",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula/debbie squad)",
+      "verified_at": "2026-09-06T14:39:21.771197+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Parity docstring accuracy (optional)",
+      "proof_type": "code_review",
+      "evidence": "src/tests/glossary-link-node-parity.test.ts header rewritten as re-fork guard; assertions unchanged; debbie lens verified the literal aria-label assertion exists (L96-100)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula/debbie squad)",
+      "verified_at": "2026-09-06T14:39:21.771197+00:00",
+      "notes": ""
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "C-001",
+      "description": "Behaviour-preserving: no hProperties/aria-label/href/children/warning/links-used change",
+      "verification_method": "custom_command",
+      "verification_command": "pnpm clean && pnpm build && sha256sum example/dist/** (compare vs pre-change build; rss.xml item-sorted)",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 2: sh: 1: Syntax error: \"(\" unexpected",
+      "verified_ref": "feat/glossary-builder-ergonomics",
+      "verified_surface_kind": "primary",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "C-002",
+      "description": "No dependency added (no @types/mdast)",
+      "verification_method": "custom_command",
+      "verification_command": "git diff main..HEAD --name-only | grep -c 'package.json\\|pnpm-lock' \u2192 0",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 2: grep: \u2192: No such file or directory\ngrep: 0: No such file or directory",
+      "verified_ref": "feat/glossary-builder-ergonomics",
+      "verified_surface_kind": "primary",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "C-003",
+      "description": "Glossary bounded context only",
+      "verification_method": "custom_command",
+      "verification_command": "git show --stat HEAD -- src tests | grep -v 'glossary' \u2192 nothing",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 2: grep: \u2192: No such file or directory\ngrep: nothing: No such file or directory",
+      "verified_ref": "feat/glossary-builder-ergonomics",
+      "verified_surface_kind": "primary",
+      "provenance_origin": "recorded"
+    },
+    {
+      "invariant_id": "C-004",
+      "description": "Both emitters still delegate to the one shared builder",
+      "verification_method": "custom_command",
+      "verification_command": "cd src && pnpm test -- glossary-link-node-parity glossary-substrate-parity",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: RUN  v2.1.9 /home/stijn/Documents/_code/SDD/fork/doc-kitty/src\n\n \u2713 |fast| tests/remark-version-pin.test.ts (1 test) 3ms\n \u2713 |fast| tests/diagram-meta.test.ts (22 tests) 5ms\n \u2713 |fast| tests/vocabulary-c",
+      "verified_ref": "feat/glossary-builder-ergonomics",
+      "verified_surface_kind": "primary",
+      "provenance_origin": "recorded"
+    }
+  ]
+}

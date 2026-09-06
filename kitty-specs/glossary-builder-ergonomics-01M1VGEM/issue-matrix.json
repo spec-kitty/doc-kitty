@@ -1,0 +1,29 @@
+{
+  "rows": {
+    "#79": {
+      "evidence_ref": "closed by PR #84 (shared builder extraction); #83 is its ergonomics follow-up",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "verified-already-fixed",
+      "wp": null
+    },
+    "#83": {
+      "evidence_ref": "commit c2b0e80: one exported textOf, cast-free call sites, contract wording; 943/943, tsc delta 0, corpus identical",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}

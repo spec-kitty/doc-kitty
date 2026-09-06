@@ -1,0 +1,55 @@
+{
+  "event_count": 7,
+  "last_event_id": "01M1VJDANA8P7HD1ZFNREEHX8M",
+  "materialized_at": "2026-09-06T14:36:57.898619+00:00",
+  "mission_number": "",
+  "mission_slug": "glossary-builder-ergonomics-01M1VGEM",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 1,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "assignee": "claude-orchestrator",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M1VJDANA8P7HD1ZFNREEHX8M",
+      "last_transition_at": "2026-09-06T14:36:57.898619+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "direct-to-feat implement via fresh opus implementer-ivan",
+        "implemented; renata review + paula/debbie squad",
+        "Done override: direct-to-feat single_branch delivery: no lane branch; implementation committed directly on the target branch (c2b0e80)"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://glossary-builder-ergonomics-01M1VGEM/WP01-consolidate-text-helper-and-casts/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done"
+      }
+    }
+  }
+}

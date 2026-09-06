@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "mission_slug": "glossary-builder-ergonomics-01M1VGEM",
+  "mission_id": "01M1VGEMVDK9HXQCACXRQJZEFX",
+  "mission_branch": "kitty/mission-glossary-builder-ergonomics-01M1VGEM",
+  "target_branch": "feat/glossary-builder-ergonomics",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/glossary/link-node.ts",
+        "src/lib/remark/glossary-autolink.internal.ts",
+        "src/lib/remark/glossary-term.ts",
+        "src/tests/glossary-link-node-parity.test.ts",
+        "tests/a11y/glossary.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-06T14:08:31.203251+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "55b3f0b94c91e5de3a6c92d292be655cd32c7483"
+}
