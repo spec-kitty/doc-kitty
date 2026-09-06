@@ -1,0 +1,31 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-09-06T11:52:22.322990Z",
+      "decision_id": "01M1V8ZYHJYYVGY438PB166WAX",
+      "final_answer": "aria-label composed from the link's visible text + ', glossary term' \u2014 an attribute on the shared builder, so both emitters stay byte-identical and the textContent-based links-used re-derive is untouched; SSR/no-JS-safe.",
+      "input_key": "term_affordance_mechanism",
+      "mission_id": "01M1V8Y9CEPZ10S13GR2YG8JTM",
+      "mission_slug": "glossary-a11y-followups-01M1V8Y9",
+      "opened_by": "cli",
+      "options": [
+        "aria-label composed from link text (attribute; no textContent pollution)",
+        "visually-hidden text child (span.dk-visually-hidden)",
+        "aria-roledescription on the anchor",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "How should a glossary term link be made distinguishable from an ordinary link for assistive technology (SSR/no-JS, single shared builder)?",
+      "rationale": null,
+      "resolved_at": "2026-09-06T12:04:26.211633Z",
+      "resolved_by": null,
+      "slot_key": "specify.a11y.term-affordance-mechanism",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M1V8Y9CEPZ10S13GR2YG8JTM",
+  "version": 1
+}
