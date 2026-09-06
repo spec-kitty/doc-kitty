@@ -25,6 +25,15 @@ Settles post-spec squad findings **AS-1** (remark ordering + guards) and **AS-2*
 [ADR-0026](./0026-glossary-source-and-generation-seam.md); feeds the used-terms list to
 [ADR-0025](./0025-glossary-on-this-page-block-and-remark-render-channel.md).
 
+> **Addendum (2026-09-06, #64 term-link UX).** The emitted link node described
+> below no longer carries `target="_blank"` / `rel="noopener"`: glossary targets
+> are internal, so the shared node emits a plain **same-tab** link that now also
+> carries a `dk-glossary-link` class (for the distinct-but-quiet dotted-underline
+> affordance). The single-shared-node invariant this ADR establishes is unchanged
+> — the class + dropped `target`/`rel` were applied at that one shared shape, so
+> auto-links and `:term` stay byte-identical. Read every `target="_blank"`,
+> `rel="noopener"` mention in the Decision below as superseded by this note.
+
 ## Context
 
 The auto-linker turns a term/alias occurrence in prose into a `/glossary/<context>/#<term>`

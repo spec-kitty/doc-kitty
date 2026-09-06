@@ -329,6 +329,34 @@
 }
 
 /*
+ * ===== Glossary term links (`.dk-glossary-link`) =========================
+ * glossary-term-ux mission (#64, FR-001/FR-002/FR-003, C-002). Styles the
+ * shared link node BOTH `glossary-autolink`(`.internal`) and the `:term`
+ * directive (`glossary-term.ts`) emit — one class, applied at the one shared
+ * node shape, so an auto-link and an authored `:term` link render identically
+ * (the "indistinguishable downstream" invariant, docs/architecture/glossary.md).
+ *
+ * Distinct-but-quiet by design: `color` is left UNSET so the anchor inherits
+ * Starlight's own `--sl-color-text-accent` (aliased to `--dk-color-text-accent`
+ * in theme.css, already AA-proven in both themes) — the exact colour an
+ * ordinary content link uses. The only presentational delta is the dotted,
+ * offset underline plus a `help` cursor, which reads as "hover for a
+ * definition" without competing with normal navigation links. Because no
+ * colour is overridden, this rule cannot regress contrast in either theme by
+ * construction, and it touches no selector but `.dk-glossary-link` itself — no
+ * ordinary link anywhere is restyled.
+ *
+ * Lives in this base GLOBAL component sheet (not `brand-components.css`, not
+ * `theme.css`'s `customCss` slot-0 token sheet) for the same reason as the
+ * `.dk-callout*`/`.dk-diagram*` families above: it must survive a brand swap.
+ */
+.dk-glossary-link {
+  text-decoration: underline dotted;
+  text-underline-offset: 0.15em;
+  cursor: help;
+}
+
+/*
  * ===== Wide-screen frame cap (#67, deck-layout-polish research D-07) ======
  * Targets Starlight's OWN `.main-frame` element — verified in the built DOM
  * (`example/dist/**\/index.html`: `class="main-frame astro-…"`); it is

@@ -155,7 +155,11 @@ function buildSurfaceRegExp(index: SharedTermIndex): RegExp | undefined {
  * uses the context's de-collided page-SLUG (`contextSlug`) — the page actually lives
  * at `/glossary/<slug>/`, so a raw context name with spaces/caps/`&` would 404
  * (issue #17 finding #5). `data-glossary-context` keeps the original NAME (the hover
- * payload keys on it). MUST stay byte-identical to `glossary-term.glossaryLinkNode`.
+ * payload keys on it). MUST stay byte-identical to `glossary-term.glossaryLinkNode`
+ * — including the `dk-glossary-link` class (glossary-term-ux mission, #64,
+ * FR-001/FR-003) and the absence of `target`/`rel`: a term link resolves to an
+ * internal glossary page, so it opens same-tab like any other internal link
+ * (#64 FR-004), unlike this file's docstring precedent from before that mission.
  * `basePrefix` (#61, C-001) is threaded from `computePageLinks` — the ONE shared
  * `glossaryTermUrl` builder keeps this and `:term`'s emitted href single-sourced.
  */
@@ -173,8 +177,7 @@ function makeLinkNode(
     children: [{ type: 'text', value: surface }],
     data: {
       hProperties: {
-        target: '_blank',
-        rel: 'noopener',
+        class: 'dk-glossary-link',
         [TERM_ATTR]: termName,
         [CONTEXT_ATTR]: context,
         [ANCHOR_ATTR]: anchor,
