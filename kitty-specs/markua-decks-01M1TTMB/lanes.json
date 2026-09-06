@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "mission_slug": "markua-decks-01M1TTMB",
+  "mission_id": "01M1TTMBDJKYDDJHRX56CTAWEM",
+  "mission_branch": "kitty/mission-markua-decks-01M1TTMB",
+  "target_branch": "feat/markua-decks",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/remark/markua-callouts.internal.ts",
+        "src/lib/remark/markua-callouts.ts",
+        "src/lib/remark/markua-normalise.internal.ts",
+        "src/lib/remark/markua-normalise.ts",
+        "src/tests/markua-callouts.test.ts",
+        "src/tests/markua-normalise.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/rehype/markua-figure.ts",
+        "src/lib/remark/deck-split.internal.ts",
+        "src/tests/deck-split.test.ts",
+        "src/tests/markua-figure.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/markua/deck-guard.ts",
+        "src/tests/deck-guard.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "example/docs/presentations/markua-deck.md",
+        "tests/a11y/deck-markua.spec.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "docs/adr/0038-decks-markua-capable.md",
+        "docs/architecture/markua.md",
+        "docs/architecture/slide-decks.md",
+        "docs/changelog/2026-09-06-markua-decks.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-09-06T08:06:58.183103+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "fcb800ca4b79edb6a8638d0ecc43fd7e40240002"
+}

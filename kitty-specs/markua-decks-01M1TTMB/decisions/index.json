@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-09-06T07:42:20.028202Z",
+      "decision_id": "01M1TTP3VW0WFZMCGFJPKGJK32",
+      "final_answer": "Full surface, subset proven: the deck-capable contract covers the entire Markua surface the four content passes (normalise/attributes/callouts/figure) handle \u2014 no per-construct deck carve-outs \u2014 while the shipped fixture + a11y gate exercise the representative subset ({\u2026} attributes, W> aside, {aside} wrapper, ![](\u2026){alt:} figure) as proof.",
+      "input_key": "deck_markua_construct_surface",
+      "mission_id": "01M1TTMBDJKYDDJHRX56CTAWEM",
+      "mission_slug": "markua-decks-01M1TTMB",
+      "opened_by": "cli",
+      "options": [
+        "Full surface handled by the deck-capable passes",
+        "Named subset only",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Which Markua constructs must become deck-capable \u2014 the full surface the four content passes handle, or the named representative subset?",
+      "rationale": null,
+      "resolved_at": "2026-09-06T07:45:57.967457Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.construct-surface",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M1TTMBDJKYDDJHRX56CTAWEM",
+  "version": 1
+}
