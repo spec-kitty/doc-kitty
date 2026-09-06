@@ -1,0 +1,90 @@
+{
+  "mission_slug": "feed-order-determinism-01M1VV64",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Total, locale-independent feed comparator",
+      "proof_type": "automated_test",
+      "evidence": "compareSlug (UTF-16 code-unit) tiebreak in rankForFeed; metadata.test.ts shuffle tests (3) fail without it (mutation-verified); slug uniqueness proven from schema.ts id guard + injective slugFromEntryId (renata)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula squad)",
+      "verified_at": "2026-09-06T17:29:19.490696+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "collectDocEntries slug-sorted",
+      "proof_type": "automated_test",
+      "evidence": "sortBySlug (metadata.ts, Astro-free) applied in collectDocEntries; collect-doc-entries-order.test.ts (3) incl. mocked adapter with reversed store; consumers grep'd \u2014 all re-sort or key by slug",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula squad)",
+      "verified_at": "2026-09-06T17:29:19.490696+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Regression test pins the order",
+      "proof_type": "automated_test",
+      "evidence": "949/949 unit tests (68 files, +6); deterministic permutations only, no Math.random",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review; paula squad)",
+      "verified_at": "2026-09-06T17:29:19.490696+00:00",
+      "notes": ""
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NFR-001",
+      "description": "rss.xml byte-identical across two clean builds of the same tree",
+      "verification_method": "custom_command",
+      "verification_command": "pnpm clean && pnpm build (x2) && sha256sum example/dist/rss.xml",
+      "result": "confirmed_absent",
+      "evidence": "post-change builds 1/2/3: rss.xml hash identical; correctly ordered (updated desc, ties by slug)",
+      "verified_ref": "9b6883c",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "NFR-002",
+      "description": "Corpus delta caused by this change confined to rss.xml item order",
+      "verification_method": "custom_command",
+      "verification_command": "sha256sum diff vs pre-change baseline; rss.xml items sorted-compare",
+      "result": "confirmed_absent",
+      "evidence": "final build vs baseline: only rss.xml differs; sorted item multiset + envelope identical. sitemap-0.xml intermittently differs for an unrelated pre-existing reason (#87), absent in the final comparison",
+      "verified_ref": "9b6883c",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "NFR-003",
+      "description": "Full gate suite green",
+      "verification_method": "custom_command",
+      "verification_command": "pnpm test; pnpm lint; validate:*; pnpm build; assert:*; test:a11y",
+      "result": "confirmed_absent",
+      "evidence": "949/949 unit; lint 0 errors; validate:* pass; assert:artifacts/no-broken-links/markua pass; test:a11y 165/168 \u2014 2 known font-flaky brand-home visual baselines + 1 load-induced diagram rapid-nav flake (28/28 twice in isolation); CI is the verifier",
+      "verified_ref": "9b6883c",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-002",
+      "description": "No dependency change",
+      "verification_method": "custom_command",
+      "verification_command": "git diff main..HEAD --name-only | grep -c 'package.json\\|pnpm-lock' \u2192 0",
+      "result": "confirmed_absent",
+      "evidence": "no package.json / lockfile in the diff",
+      "verified_ref": "9b6883c",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-003",
+      "description": "Scope: metadata.ts, routes/shared.ts, their tests only",
+      "verification_method": "custom_command",
+      "verification_command": "git show --stat 9b6883c",
+      "result": "confirmed_absent",
+      "evidence": "4 files: metadata.ts, routes/shared.ts, metadata.test.ts, collect-doc-entries-order.test.ts; rankForAgents/routes untouched (\u2192 #88)",
+      "verified_ref": "9b6883c",
+      "verified_surface_kind": "branch"
+    }
+  ]
+}
