@@ -9,6 +9,7 @@
  * optimisation — is WP10's build assertion, not asserted here.)
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { toHast } from 'mdast-util-to-hast';
 import markuaFigure from '../lib/rehype/markua-figure.js';
 
 interface HastNode {
@@ -64,24 +65,107 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('markuaFigure — skips Presentation (deck) pages', () => {
-  it('leaves a deck-emitted hero <img> untouched (keeps its alt; no dk-figure)', () => {
-    // deck-split emits hero_image as a Markdown image with its own a11y alt; it is
-    // NOT authored Markua figure syntax, so wrapping it would relocate+empty the alt
-    // (an image-alt violation on the title slide). Guard: kind === 'Presentation'.
-    const tree = imgTree({ src: 'hero.png', alt: 'Deck hero alt' });
-    const file = { data: { astro: { frontmatter: { kind: 'Presentation' } } } };
-    markuaFigure()(tree as never, file as never);
+describe('markuaFigure — deck hero-exclusion (D4/C-COMPOSE-05, #47)', () => {
+  it('leaves the tagged deck hero <img> untouched (keeps its alt; no dk-figure, no figcaption)', () => {
+    // deck-split.internal.ts (T005) tags the synthesized hero image with
+    // `data-deck-hero` (an mdast `data.hProperties` key that surfaces as this hast
+    // `properties` key). It is NOT authored Markua figure syntax; wrapping it would
+    // relocate+empty the alt (an image-alt violation) and add an unwanted caption to
+    // the title slide (INV-2). The discriminator is the explicit tag, not page `kind`.
+    const tree = imgTree({ src: 'hero.png', alt: 'Deck hero alt', 'data-deck-hero': '' });
+    markuaFigure()(tree as never);
     const img = findTag(tree, 'img');
     expect(img?.properties?.alt).toBe('Deck hero alt'); // alt preserved, not relocated
     expect(findTag(tree, 'figure')).toBeUndefined(); // never wrapped as a dk-figure
+    expect(findTag(tree, 'figcaption')).toBeUndefined(); // no caption added to the title slide
+    // The enclosing lone-image <p> is left in place, not replaced.
+    expect(tree.children![0].tagName).toBe('p');
   });
 
-  it('still wraps images on a non-Presentation (docs) page', () => {
-    const tree = imgTree({ src: 'palm.jpg', alt: 'Palm Trees' });
-    const file = { data: { astro: { frontmatter: { kind: 'Guide' } } } };
-    markuaFigure()(tree as never, file as never);
+  it('wraps a deck BODY image (no data-deck-hero tag) as a dk-figure — the pass runs on decks', () => {
+    // #47 reverses the prior blanket `kind: Presentation` self-guard: markuaFigure
+    // now runs on decks and wraps every image except the explicitly-tagged hero.
+    const tree = imgTree({ src: 'slide-body.jpg', alt: 'Body image caption' });
+    markuaFigure()(tree as never);
     expect(findTag(tree, 'figure')).toBeDefined();
+    expect(findTag(tree, 'figcaption')).toBeDefined();
+  });
+
+  it('still wraps a plain (non-deck) docs-page image (no regression from the removed guard)', () => {
+    const tree = imgTree({ src: 'palm.jpg', alt: 'Palm Trees' });
+    markuaFigure()(tree as never);
+    expect(findTag(tree, 'figure')).toBeDefined();
+  });
+
+  it('FIX D: skips a bare hero <img> that is a DIRECT child (not wrapped in <p>) — covers the defensive branch', () => {
+    // Real `deck-split.internal.ts` output always emits the hero as a
+    // lone-image `<p>` (handled by the `loneImageParagraph` branch above); the
+    // transformer's `else if (isImg(child)) { if (isHeroImg(child)) continue; }`
+    // branch never fires from real input today. It exists as a structural
+    // safety net should a future emission shape ever place the tagged hero
+    // directly in `root.children` (no wrapping `<p>`) — this test feeds exactly
+    // that shape so the branch is covered and its behaviour (skip, untouched)
+    // is pinned rather than left as dead, unverified code.
+    const tree: HastNode = {
+      type: 'root',
+      children: [
+        { type: 'element', tagName: 'img', properties: { src: 'hero.png', alt: 'Deck hero alt', 'data-deck-hero': '' }, children: [] },
+      ],
+    };
+    markuaFigure()(tree as never);
+    const img = findTag(tree, 'img');
+    expect(img?.properties?.alt).toBe('Deck hero alt'); // untouched
+    expect(findTag(tree, 'figure')).toBeUndefined(); // never wrapped
+    expect(tree.children![0].tagName).toBe('img'); // node itself, not replaced
+  });
+});
+
+// --- FIX 5 (pre-PR squad): the hero tag's mdast→hast round-trip is asserted --
+// at the unit tier via the REAL `mdast-util-to-hast`, not a hand-built hast
+// fixture — so a future key rename (`data-deck-hero` renamed on one side of the
+// seam, or a switch away from `data.hProperties`) fails here rather than only
+// surfacing in the browser-level deck a11y gate.
+describe('FIX 5 — data-deck-hero survives the REAL mdast-util-to-hast round-trip', () => {
+  it('a paragraph > image mdast node tagged data.hProperties["data-deck-hero"] compiles to a hast <img> carrying the property verbatim (un-camelCased)', () => {
+    // Exactly the shape `deck-split.internal.ts` `titleChildren` synthesizes
+    // (deck-split.internal.ts:190-207): a bare mdast `image` node (no `data.hName`
+    // override — the default image handler applies) whose `data.hProperties`
+    // carries the empty-string-valued `data-deck-hero` tag, wrapped in a
+    // `paragraph`.
+    const mdastTree = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: 'image',
+              url: 'hero.png',
+              alt: 'Deck hero alt',
+              data: { hProperties: { 'data-deck-hero': '' } },
+            },
+          ],
+        },
+      ],
+    };
+
+    const hastTree = toHast(mdastTree as never, { allowDangerousHtml: false }) as HastNode;
+    const img = findTag(hastTree, 'img');
+
+    expect(img, 'mdast-util-to-hast must compile the image node to a hast <img>').toBeDefined();
+    // Presence, not truthiness — the tag's value is the empty string, which is
+    // falsy but still a set property. `in` is what `isHeroImg` checks.
+    expect(img?.properties && 'data-deck-hero' in img.properties).toBe(true);
+    expect(img?.properties?.['data-deck-hero']).toBe('');
+    // The key must survive VERBATIM — un-camelCased — as `markuaFigure`'s
+    // `isHeroImg` reads the literal hyphenated key, not a camelCased `dataDeckHero`.
+    expect(img?.properties?.dataDeckHero).toBeUndefined();
+    expect(img?.properties?.alt).toBe('Deck hero alt');
+
+    // And the full pipeline: markuaFigure must recognise and skip it.
+    markuaFigure()(hastTree as never);
+    expect(findTag(hastTree, 'figure')).toBeUndefined();
+    expect(findTag(hastTree, 'img')?.properties?.alt).toBe('Deck hero alt');
   });
 });
 

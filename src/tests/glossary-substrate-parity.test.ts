@@ -235,6 +235,39 @@ describe('re-derive parity — enumeration is real, not vacuous', () => {
 });
 
 // ===========================================================================
+// 1b. FIX 3 (pre-PR squad, C-COMPOSE-01 / FR-003): markua-before-deckSplit
+// ordering is pinned by a DIRECT assertion. The classification above pins the
+// ordering only TRANSITIVELY (via `deckSplit`'s `boundary` exclusion); this
+// asserts the actual array positions so a reorder in `config.ts` (moving
+// `markuaIntegration()` after `deckSplitIntegration`, or vice versa) fails
+// loudly here rather than only surfacing as a downstream behavioural drift.
+// ===========================================================================
+describe('FIX 3 — markua-before-deckSplit ordering is pinned directly (C-COMPOSE-01)', () => {
+  it('every Markua content pass is registered strictly BEFORE deckSplit in the combined remark order', () => {
+    const { stages } = buildStack();
+    const indexOfPlugin = (plugin: unknown): number => stages.findIndex((s) => s.plugin === plugin);
+
+    const deckSplitIndex = indexOfPlugin(deckSplit);
+    expect(deckSplitIndex, 'deckSplit must be enumerated at all').toBeGreaterThanOrEqual(0);
+
+    for (const [name, plugin] of [
+      ['markuaNormalise', markuaNormalise],
+      ['markuaAttributes', markuaAttributes],
+      ['markuaCallouts', markuaCallouts],
+    ] as const) {
+      const pluginIndex = indexOfPlugin(plugin);
+      expect(pluginIndex, `${name} must be enumerated at all`).toBeGreaterThanOrEqual(0);
+      expect(
+        pluginIndex,
+        `${name} (index ${pluginIndex}) must run BEFORE deckSplit (index ${deckSplitIndex}) — ` +
+          `C-COMPOSE-01 requires the Markua content passes to compose on the FLAT mdast body ` +
+          `deckSplit has not yet sectioned (research D1). A reorder in config.ts must fail loudly here.`,
+      ).toBeLessThan(deckSplitIndex);
+    }
+  });
+});
+
+// ===========================================================================
 // 2. Every build remark stage is classified (red-on-unclassified).
 // ===========================================================================
 describe('re-derive parity — every build remark stage is classified', () => {

@@ -80,7 +80,6 @@
  * `theme.css` by WP05.
  */
 import { safeHref } from './diagram-figure.js';
-import { isPresentationFile } from '../deck/is-presentation.js';
 
 /** Minimal structural hast node — enough to find/replace `<img>`s. */
 interface HastNode {
@@ -121,6 +120,20 @@ function str(value: unknown): string | undefined {
 /** True for an `<img>` element node. */
 function isImg(node: HastNode): boolean {
   return node.type === 'element' && node.tagName === 'img';
+}
+
+/**
+ * True for the synthesized deck title-slide hero `<img>` (D4/C-COMPOSE-05):
+ * `deck-split.internal.ts` tags it with `data.hProperties['data-deck-hero']`,
+ * which mdast-util-to-hast surfaces as hast `properties['data-deck-hero']`.
+ * Presence is what matters, not truthiness — the tag's value is the empty
+ * string, which is falsy but still a set property (`in`, not a truthy check).
+ * A plain body `![caption](src)` image is structurally identical to the hero
+ * (both are a lone image in a paragraph), so this explicit tag is the only
+ * reliable discriminator between "wrap it" and "leave it alone".
+ */
+function isHeroImg(node: HastNode): boolean {
+  return isImg(node) && node.properties !== undefined && 'data-deck-hero' in node.properties;
 }
 
 /** True for a `<p>` whose only element child is a single `<img>` (a block
@@ -216,26 +229,27 @@ function buildReplacement(img: HastNode): HastNode {
   return element('figure', figureProps, children);
 }
 
-/** The subset of the rehype VFile this plugin reads (Astro injects `data.astro`). */
-interface MarkuaFigureFile {
-  data?: { astro?: { frontmatter?: { kind?: unknown } } };
-}
-
 /**
  * Rehype plugin factory. Returns the transformer Astro runs over each page's
  * hast; assignable to Astro's `RehypePlugin` (a unified `Plugin<[], Root>`).
  *
- * Skips `kind: Presentation` (deck) pages: `deck-split` emits the deck's
+ * Runs on every page, decks included (D4/C-COMPOSE-05; #47 reverses the prior
+ * blanket `kind: Presentation` self-guard). The ONE thing this pass must never
+ * do is wrap the deck's synthesized title-slide hero image: `deck-split` emits
  * `hero_image` as a Markdown `image` node carrying its own accessibility `alt`,
- * which is NOT authored Markua figure syntax. Wrapping it as a `dk-figure` would
- * relocate that `alt` to a `<figcaption>` and empty the `<img alt>` (dropped by
- * the image pipeline → an `image-alt` a11y violation), and add an unwanted caption
- * to the title slide. Decks have their own content pipeline; the Markua figure
- * seam is a docs-page construct. Mirrors the frontmatter guard in `deck-split`.
+ * which is NOT authored Markua figure syntax. Wrapping it as a `dk-figure`
+ * would relocate that `alt` to a `<figcaption>` and empty the `<img alt>`
+ * (dropped by the image pipeline → an `image-alt` a11y violation), and add an
+ * unwanted caption to the title slide (INV-2). Because the hero is
+ * structurally identical to a plain body `![caption](src)` image, "lacks
+ * Markua attributes" cannot distinguish them — so `deck-split.internal.ts`
+ * tags the hero with `data-deck-hero` and this pass skips exactly that image
+ * (and its enclosing lone-image `<p>`, left unreplaced) via {@link isHeroImg}.
+ * Every other slide body image — including one that happens to sit alone on
+ * the title slide — wraps as a `dk-figure` exactly as on a docs page.
  */
 export default function markuaFigure() {
-  return function transformer(tree: HastNode, file?: MarkuaFigureFile): void {
-    if (isPresentationFile(file)) return;
+  return function transformer(tree: HastNode): void {
     const walk = (node: HastNode): void => {
       const children = node.children;
       if (!Array.isArray(children)) return;
@@ -243,9 +257,11 @@ export default function markuaFigure() {
         const child = children[k];
         const loneImg = loneImageParagraph(child);
         if (loneImg !== null) {
+          if (isHeroImg(loneImg)) continue; // the deck hero — leave the <p> untouched (INV-2).
           // Block figure: replace the whole <p> so <figure> is not nested in <p>.
           children[k] = buildReplacement(loneImg);
         } else if (isImg(child)) {
+          if (isHeroImg(child)) continue; // defensive: deck-split always emits the hero lone.
           children[k] = buildReplacement(child);
         } else {
           walk(child);

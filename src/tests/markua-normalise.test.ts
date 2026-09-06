@@ -26,6 +26,27 @@ import {
   CLASS_TO_DIRECTIVE,
   type NormBlock,
 } from '../lib/remark/markua-normalise.internal.js';
+import {
+  splitDeck,
+  type MdNode as DeckMdNode,
+  type MdRoot as DeckMdRoot,
+  type DeckFrontmatter,
+} from '../lib/remark/deck-split.internal.js';
+
+/** A fake deck/non-deck VFile, mirroring `deck-split.test.ts`'s `makeFile`. */
+function makeFile(kind: string) {
+  const messages: string[] = [];
+  return {
+    messages,
+    file: {
+      data: { astro: { frontmatter: { kind } } },
+      message(reason: string) {
+        messages.push(reason);
+        return reason;
+      },
+    },
+  };
+}
 
 // --- helpers ---------------------------------------------------------------
 
@@ -551,4 +572,267 @@ describe('an image soft-adjacent to {/aside} survives (D1b class-guard)', () => 
     expect((images[0] as MdNode).url).toBe('palm.svg');
     expect((images[0] as MdNode).alt).toBe('Palm Trees');
   });
+});
+
+// --- T001/T004: deck-aware wrapper boundary stop (C-COMPOSE-03, D3) --------
+//
+// The pure state machine has no mdast/opaque-node concept — the caller (the
+// `.ts` plugin wrapper) resolves a placeholder LINE to "is this a slide
+// boundary" and passes that decision in as `isBoundaryLine`. A literal marker
+// line stands in for a resolved boundary placeholder at this level.
+
+describe('normaliseDocument — deck-aware wrapper boundary stop (T001)', () => {
+  const isBoundary = (line: string): boolean => line === '##BOUNDARY##';
+
+  it('stops the wrapper before a boundary line, leaving it out of the container and unconsumed', () => {
+    const blocks = normaliseDocument(
+      ['{aside}', 'before', '##BOUNDARY##', 'after', '{/aside}'],
+      isBoundary,
+    );
+
+    expect(blocks).toHaveLength(2);
+    const [aside, rest] = blocks;
+    expect(aside.kind).toBe('container');
+    if (aside.kind !== 'container') return;
+    expect(aside.source).toBe('wrapper-aside');
+    expect(aside.terminatedAtBoundary).toBe(true);
+    // Only the pre-boundary body was consumed.
+    expect(aside.children).toEqual([{ kind: 'raw', lines: ['before'] }]);
+
+    // The boundary line (and everything after) is NOT inside the container — it
+    // comes back out as ordinary/raw content, exactly as `deckSplit` needs it.
+    expect(rest.kind).toBe('raw');
+    if (rest.kind === 'raw') {
+      expect(rest.lines).toEqual(['##BOUNDARY##', 'after', '{/aside}']);
+    }
+  });
+
+  it('without a boundary predicate (off-deck), the SAME input swallows the marker line whole (pre-T001 behaviour)', () => {
+    const blocks = normaliseDocument(['{aside}', 'before', '##BOUNDARY##', 'after', '{/aside}']);
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0].kind).toBe('container');
+    if (blocks[0].kind !== 'container') return;
+    expect(blocks[0].terminatedAtBoundary).toBeUndefined();
+    const raw = blocks[0].children.find((c) => c.kind === 'raw');
+    expect(raw?.kind === 'raw' && raw.lines).toContain('##BOUNDARY##');
+  });
+
+  it('a boundary that never appears leaves a balanced wrapper unaffected (predicate present, no-op)', () => {
+    const blocks = normaliseDocument(['{aside}', 'body only', '{/aside}'], isBoundary);
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0].kind).toBe('container');
+    if (blocks[0].kind !== 'container') return;
+    expect(blocks[0].terminatedAtBoundary).toBeUndefined();
+  });
+
+  it('a nested SAME-type wrapper still stops at the boundary, closing every open level', () => {
+    const blocks = normaliseDocument(
+      ['{aside}', 'outer', '{aside}', 'inner', '##BOUNDARY##', 'unreached', '{/aside}', '{/aside}'],
+      isBoundary,
+    );
+    expect(blocks).toHaveLength(2);
+    const [aside] = blocks;
+    expect(aside.kind).toBe('container');
+    if (aside.kind !== 'container') return;
+    expect(aside.terminatedAtBoundary).toBe(true);
+    const rawText = aside.children
+      .filter((c): c is Extract<NormBlock, { kind: 'raw' }> => c.kind === 'raw')
+      .flatMap((c) => c.lines);
+    expect(rawText).toContain('outer');
+    expect(rawText).toContain('{aside}'); // the nested open, never balanced here, stays literal
+    expect(rawText).toContain('inner');
+    expect(rawText).not.toContain('unreached');
+  });
+
+  it('a boundary as the very first body line degrades to an empty container, never throws', () => {
+    let blocks: NormBlock[] = [];
+    expect(() => {
+      blocks = normaliseDocument(['{aside}', '##BOUNDARY##'], isBoundary);
+    }).not.toThrow();
+    expect(blocks[0].kind).toBe('container');
+    if (blocks[0].kind !== 'container') return;
+    expect(blocks[0].children).toEqual([]);
+    expect(blocks[0].terminatedAtBoundary).toBe(true);
+  });
+
+  it('line-prefix runs are unaffected by the boundary predicate (already boundary-safe, untouched logic)', () => {
+    // A placeholder line never matches `^[A-Z]>`, so it already ends a run
+    // today unconditionally — passing `isBoundaryLine` must not change that.
+    const blocks = normaliseDocument(['W> one', '##BOUNDARY##', 'W> two'], isBoundary);
+    expect(directiveNames(blocks)).toEqual(['caution', 'caution']);
+  });
+});
+
+describe('markuaNormalise on a deck — plugin-level wrapper boundary stop (T001, C-COMPOSE-03)', () => {
+  it('closes the wrapper before a `###` boundary, leaving the heading top-level, and warns', () => {
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(
+      '{aside}\n\nsome note\n\n### Slide\n\nafter\n\n{/aside}\n',
+    ) as unknown as { type: string; children: MdNode[] };
+    const { file, messages } = makeFile('Presentation');
+    markuaNormalise()(tree as never, file as never);
+
+    const heading = tree.children.find((c) => c.type === 'heading');
+    expect(heading, 'the boundary heading stays a top-level node').toBeTruthy();
+    expect((heading as MdNode).depth).toBe(3);
+    expect(nodeText(heading as MdNode)).toBe('Slide');
+
+    const aside = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(aside?.name).toBe('aside');
+    expect(nodeText(aside)).toContain('some note');
+    expect(nodeText(aside)).not.toContain('Slide');
+
+    expect(messages).toEqual([
+      'Markua {aside}/{blurb} cannot span a slide boundary; closed at the boundary.',
+    ]);
+  });
+
+  it('a `---` thematicBreak boundary is treated the same way', () => {
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(
+      '{aside}\n\nnote\n\n---\n\n{/aside}\n',
+    ) as unknown as { type: string; children: MdNode[] };
+    const { file, messages } = makeFile('Presentation');
+    markuaNormalise()(tree as never, file as never);
+
+    expect(tree.children.some((c) => c.type === 'thematicBreak')).toBe(true);
+    expect(messages.some((m) => /cannot span a slide boundary/.test(m))).toBe(true);
+  });
+
+  it('FIX 2: a depth-1 `#` inside a wrapper on a deck is NOT a boundary — absorbed as body, like off-deck', () => {
+    // deckSplit only reacts to depth 2/3 (`deck-split.internal.ts:377/381`); a
+    // depth-1 heading stays IN-slide. The C-COMPOSE-03 predicate must match that
+    // exactly, not `depth <= 3`, or a `{aside}` containing an authored `# Heading`
+    // would wrongly terminate + warn where deckSplit splits nothing.
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(
+      '{aside}\n\nsome note\n\n# Not a boundary\n\nmore note\n\n{/aside}\n',
+    ) as unknown as { type: string; children: MdNode[] };
+    const { file, messages } = makeFile('Presentation');
+    markuaNormalise()(tree as never, file as never);
+
+    // No boundary was crossed, so no warning and no top-level heading — the
+    // depth-1 heading was absorbed into the wrapper body, exactly as off-deck.
+    expect(messages).toHaveLength(0);
+    expect(tree.children.some((c) => c.type === 'heading')).toBe(false);
+
+    const aside = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(aside?.name).toBe('aside');
+    expect(nodeText(aside)).toContain('some note');
+    expect(nodeText(aside)).toContain('Not a boundary');
+    expect(nodeText(aside)).toContain('more note');
+  });
+
+  it('FIX 2: depth 2 (`##`) and depth 3 (`###`) still terminate the wrapper on a deck', () => {
+    for (const marker of ['##', '###']) {
+      const tree = unified().use(remarkParse).use(remarkGfm).parse(
+        `{aside}\n\nsome note\n\n${marker} Slide\n\nafter\n\n{/aside}\n`,
+      ) as unknown as { type: string; children: MdNode[] };
+      const { file, messages } = makeFile('Presentation');
+      markuaNormalise()(tree as never, file as never);
+
+      const heading = tree.children.find((c) => c.type === 'heading');
+      expect(heading, `depth ${marker.length} heading stays a top-level boundary node`).toBeTruthy();
+      expect((heading as MdNode).depth).toBe(marker.length);
+      expect(messages).toEqual([
+        'Markua {aside}/{blurb} cannot span a slide boundary; closed at the boundary.',
+      ]);
+    }
+  });
+
+  it('off a deck (no file at all — the existing plugin contract), the heading is swallowed as before', () => {
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(
+      '{aside}\n\nsome note\n\n### Slide\n\nafter\n\n{/aside}\n',
+    ) as unknown as { type: string; children: MdNode[] };
+    markuaNormalise()(tree as never); // no `file` argument at all
+
+    expect(tree.children.some((c) => c.type === 'heading')).toBe(false);
+    const aside = tree.children.find((c) => c.type === 'containerDirective') as MdNode;
+    expect(nodeText(aside)).toContain('Slide');
+  });
+
+  it('off a deck via an explicit non-Presentation file, behaviour and warnings are unchanged', () => {
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(
+      '{aside}\n\nsome note\n\n### Slide\n\n{/aside}\n',
+    ) as unknown as { type: string; children: MdNode[] };
+    const { file, messages } = makeFile('Doc');
+    markuaNormalise()(tree as never, file as never);
+
+    expect(tree.children.some((c) => c.type === 'heading')).toBe(false);
+    expect(messages).toHaveLength(0);
+  });
+});
+
+// --- FIX C (2nd-squad remediation): boundary-predicate PARITY guard ---------
+//
+// The slide-boundary rule is stated TWICE — once as `markua-normalise.ts`'s
+// `boundaryPlaceholderPredicate` (a heading depth 2 or 3, or a `thematicBreak`),
+// and once inline in `deck-split.internal.ts`'s `splitDeck` loop (which SPLITS
+// on exactly the same shape). Nothing ties the two definitions together, so a
+// future edit to either one (e.g. widening `deckSplit` to also split on `####`)
+// could silently desync them: a wrapper would then close at a line `deckSplit`
+// no longer treats as a boundary, or vice versa. This test derives BOTH
+// verdicts operationally — from the REAL plugin and the REAL `splitDeck`, never
+// from a hand-copied expression — so a drift in either implementation reds.
+describe('boundary-predicate parity guard (FIX C) — markua-normalise agrees with deckSplit', () => {
+  const DECK_FM: DeckFrontmatter = { kind: 'Presentation', title: 'Deck' };
+
+  const deckHeading = (depth: number, value: string): DeckMdNode => ({
+    type: 'heading',
+    depth,
+    children: [{ type: 'text', value }],
+  });
+  const deckThematicBreak = (): DeckMdNode => ({ type: 'thematicBreak' });
+  const deckRoot = (...children: DeckMdNode[]): DeckMdRoot => ({ type: 'root', children });
+
+  /** Count every `deckSection` node in the tree, at any nesting depth (a
+   * top-level horizontal slide and a nested inner/stack slide are both
+   * `deckSection`s — `deck-split.internal.ts`'s `section()`). */
+  function countSections(nodes: DeckMdNode[]): number {
+    let n = 0;
+    for (const node of nodes) {
+      if (node.type === 'deckSection') {
+        n += 1;
+        n += countSections((node.children ?? []) as DeckMdNode[]);
+      }
+    }
+    return n;
+  }
+
+  /** Ground truth from the REAL `splitDeck`: does appending `node` after an
+   * already-open `##` slide open a NEW section (top-level or inner) — i.e. does
+   * `deckSplit` treat it as a slide boundary — versus being absorbed as content
+   * inside the existing slide? */
+  function deckSplitTreatsAsBoundary(node: DeckMdNode): boolean {
+    const base = countSections(splitDeck(deckRoot(deckHeading(2, 'S')), DECK_FM).children);
+    const withNode = countSections(
+      splitDeck(deckRoot(deckHeading(2, 'S'), node), DECK_FM).children,
+    );
+    return withNode > base;
+  }
+
+  /** Ground truth from the REAL `markuaNormalise` plugin: does a slide-boundary
+   * placeholder line matching `markerMd`'s node terminate an `{aside}` wrapper
+   * early (the `terminatedAtBoundary` warning fires) on a deck? */
+  function normaliseTreatsAsBoundary(markerMd: string): boolean {
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(
+      `{aside}\n\nnote\n\n${markerMd}\n\nafter\n\n{/aside}\n`,
+    ) as unknown as { type: string; children: MdNode[] };
+    const { file, messages } = makeFile('Presentation');
+    markuaNormalise()(tree as never, file as never);
+    return messages.length > 0;
+  }
+
+  const samples: Array<{ label: string; markerMd: string; node: DeckMdNode }> = [
+    ...[1, 2, 3, 4, 5, 6].map((depth) => ({
+      label: `heading depth ${depth}`,
+      markerMd: `${'#'.repeat(depth)} Slide`,
+      node: deckHeading(depth, 'Slide'),
+    })),
+    { label: 'thematicBreak (`---`)', markerMd: '---', node: deckThematicBreak() },
+  ];
+
+  it.each(samples)(
+    '$label: markua-normalise and deckSplit agree on boundary-ness',
+    ({ markerMd, node }) => {
+      expect(normaliseTreatsAsBoundary(markerMd)).toBe(deckSplitTreatsAsBoundary(node));
+    },
+  );
 });

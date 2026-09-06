@@ -11,9 +11,13 @@
 
 /**
  * The remark/rehype VFile subset the predicate reads (Astro injects
- * `data.astro`). Structurally matches `markua-figure`'s `MarkuaFigureFile` and
+ * `data.astro`). Structurally matches `markua-normalise`'s
+ * `MarkuaNormaliseVFile`, `markua-callouts`'s `MarkuaCalloutsVFile`, and
  * `glossary-autolink`'s `GlossaryVFile` (whose `frontmatter` is a wider
- * `Record<string, unknown>`, still assignable here).
+ * `Record<string, unknown>`, still assignable here). `markua-figure`
+ * (`rehype/markua-figure.ts`) no longer calls this predicate at all (#47/D4):
+ * it distinguishes the deck hero image by its `data-deck-hero` tag instead of
+ * a blanket deck guard.
  */
 interface PresentationFile {
   data?: { astro?: { frontmatter?: { kind?: unknown } } };

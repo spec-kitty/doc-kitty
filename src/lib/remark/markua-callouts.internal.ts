@@ -160,8 +160,17 @@ function readAttr(attrs: DirectiveLike['attributes'], key: string): string | und
  * the attribute survives on the `<aside>`. Attribute PRESENCE routes — an unmapped
  * `{icon:}` still diverts to the fallback hast (its icon then drops with a
  * warning inside `resolveIcon`). This is the single icon call site.
+ *
+ * `forceTheme` (T002, D5, C-COMPOSE-04) is the deck seam: `markua-callouts.ts`
+ * sets it from `isPresentationFile(file)` and never on a non-deck page. When
+ * set, a bare mapped class (which would otherwise ride the native-aside path)
+ * is routed through the theme hast too — `DeckLayout.astro` never links
+ * Starlight's `starlight-aside` CSS, so a native aside on a slide would render
+ * unstyled, while `dk-callout` is self-contained and already loaded there.
+ * Defaults to `false` so every existing call site (and the off-deck path) is
+ * byte-identical.
  */
-export function decideEmission(directive: DirectiveLike): Emission {
+export function decideEmission(directive: DirectiveLike, forceTheme = false): Emission {
   const attrs = directive.attributes ?? {};
   const id = readAttr(attrs, 'id');
   const rawIcon = readAttr(attrs, 'icon');
@@ -177,12 +186,13 @@ export function decideEmission(directive: DirectiveLike): Emission {
     classAttr !== undefined && KNOWN_CLASS_OR_NAME.has(classAttr) ? classAttr : directive.name;
   const target = resolveCalloutTarget(effectiveClass);
 
-  if (target.target === 'starlight-aside' && !hasRoutingAttribute) {
+  if (target.target === 'starlight-aside' && !hasRoutingAttribute && !forceTheme) {
     return { mode: 'native', starlightName: target.starlightName };
   }
 
-  // Theme path: every theme class always, plus the attribute-bearing mapped
-  // class (which falls back to `dk-callout--{mapped-name}`, e.g. `dk-callout--tip`).
+  // Theme path: every theme class always, the attribute-bearing mapped class
+  // (which falls back to `dk-callout--{mapped-name}`, e.g. `dk-callout--tip`),
+  // and — on a deck — a bare mapped class too (`forceTheme`, same fallback variant).
   return { mode: 'theme', variant: target.variant, id, icon };
 }
 

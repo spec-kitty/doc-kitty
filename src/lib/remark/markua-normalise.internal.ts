@@ -193,7 +193,28 @@ export type NormBlock =
       /** What produced this container — a run vs an `{aside}` / `{blurb}` wrapper. */
       source: 'line-prefix' | 'wrapper-aside' | 'wrapper-blurb';
       children: NormBlock[];
+      /**
+       * True only when a deck-aware wrapper (T001, C-COMPOSE-03, research D3)
+       * closed EARLY because a slide-boundary placeholder line was reached before
+       * its matching close — never set for a balanced close, and never set for a
+       * line-prefix run (a placeholder line already ends those, unconditionally).
+       * `markua-normalise.ts` reads this flag to emit the `file.message` warning;
+       * it is absent (not merely `false`) whenever `isBoundaryLine` was not
+       * supplied (i.e. off a deck), so the shape itself stays byte-identical
+       * there too.
+       */
+      terminatedAtBoundary?: boolean;
     };
+
+/**
+ * A predicate the caller supplies to recognise a slide-boundary LINE — a heading
+ * (depth 2 or 3) or `thematicBreak` placeholder, per `deckSplit`'s own boundary rule
+ * (`deck-split.internal.ts`). This module stays Astro/mdast-free: it never
+ * resolves a placeholder to its node itself, it only calls back into whatever the
+ * `.ts` plugin wrapper supplies (T001). `undefined` means "not on a deck" — the
+ * boundary check never fires and `consumeWrapper` behaves exactly as before.
+ */
+export type BoundaryPredicate = (line: string) => boolean;
 
 /**
  * Run the full line-level state machine over a document's lines and return the
@@ -201,8 +222,19 @@ export type NormBlock =
  * the fence does not unwind at EOF), blockquote-safe (a `>` line is ordinary),
  * balance-aware (nested wrappers close at count zero), and degrading (an
  * unmatched marker stays literal).
+ *
+ * `isBoundaryLine` (T001) is threaded through to every `consumeWrapper` call —
+ * top-level and, via its own recursion, every nested wrapper body — so a slide
+ * boundary can never be swallowed regardless of nesting depth. It is NOT passed
+ * to `consumeLinePrefixRun`: a placeholder line never matches the line-prefix
+ * grammar (`^[A-Z]>`), so a boundary already ends a run today, unconditionally
+ * (do not touch that logic — it needs no deck awareness). Omit the predicate
+ * (the default) for byte-identical off-deck behaviour.
  */
-export function normaliseDocument(lines: string[]): NormBlock[] {
+export function normaliseDocument(
+  lines: string[],
+  isBoundaryLine?: BoundaryPredicate,
+): NormBlock[] {
   const blocks: NormBlock[] = [];
   let rawBuf: string[] = [];
   let insideFence = false;
@@ -235,7 +267,7 @@ export function normaliseDocument(lines: string[]): NormBlock[] {
     }
 
     if (kind === 'wrapper-open') {
-      const consumed = consumeWrapper(lines, i);
+      const consumed = consumeWrapper(lines, i, isBoundaryLine);
       if (consumed) {
         flushRaw();
         blocks.push(consumed.block);
@@ -302,10 +334,28 @@ function consumeLinePrefixRun(
  * tracks `insideFence` so a marker inside a fenced block in the body does not
  * close the wrapper. Returns `null` when no matching close exists before EOF
  * (unbalanced degradation — the caller leaves the open marker literal).
+ *
+ * Deck-aware boundary stop (T001, C-COMPOSE-03, research D3): when
+ * `isBoundaryLine` is supplied (only ever true on a `kind: Presentation` page —
+ * see `markua-normalise.ts`) and the NEXT line to consume is a slide-boundary
+ * placeholder, the scan stops THERE instead of at the matching close: the
+ * wrapper closes early with whatever body it has accumulated so far, the
+ * boundary line is left unconsumed (`nextIndex` points AT it, not past it) so
+ * the enclosing `normaliseDocument` loop re-emits it as ordinary content and
+ * `deckSplit` still sees it, and `terminatedAtBoundary: true` records that this
+ * was an early close for the `.ts` wrapper to warn about. The check runs once
+ * per line, ahead of the nested-open/close checks, so it wins regardless of
+ * nesting depth — a boundary buried inside a same-type nested wrapper still
+ * terminates the WHOLE outer scan (there is only one flat scan per top-level
+ * `consumeWrapper` call; nesting is just a depth counter over it). The check is
+ * skipped while `insideFence`, matching the existing close-detection ordering,
+ * and skipped entirely when `isBoundaryLine` is `undefined` (off a deck) — the
+ * behaviour is then identical to before T001.
  */
 function consumeWrapper(
   lines: string[],
   start: number,
+  isBoundaryLine?: BoundaryPredicate,
 ): { block: NormBlock; nextIndex: number } | null {
   const open = matchWrapperOpen(lines[start].trim());
   if (!open) return null;
@@ -326,6 +376,20 @@ function consumeWrapper(
     }
 
     if (!insideFence) {
+      if (isBoundaryLine?.(line)) {
+        return {
+          block: {
+            kind: 'container',
+            directiveName: open.directiveName,
+            markuaClass: open.markuaClass,
+            source: open.type === 'aside' ? 'wrapper-aside' : 'wrapper-blurb',
+            children: normaliseDocument(bodyLines, isBoundaryLine),
+            terminatedAtBoundary: true,
+          },
+          nextIndex: i, // the boundary line is NOT consumed
+        };
+      }
+
       const trimmed = line.trim();
       const nestedOpen = matchWrapperOpen(trimmed);
       if (nestedOpen && nestedOpen.type === open.type) {
@@ -343,7 +407,7 @@ function consumeWrapper(
               directiveName: open.directiveName,
               markuaClass: open.markuaClass,
               source: open.type === 'aside' ? 'wrapper-aside' : 'wrapper-blurb',
-              children: normaliseDocument(bodyLines),
+              children: normaliseDocument(bodyLines, isBoundaryLine),
             },
             nextIndex: i + 1,
           };

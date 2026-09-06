@@ -121,6 +121,15 @@ const REMOTE_URL_RE = /^\s*(?:https?:)?\/\//i;
 
 type AttrDisposition = 'apply' | 'deny' | 'unknown';
 
+/** Read a hast `className`/`class` value (array or whitespace string) as tokens
+ * — mirrors `markua-figure.ts`'s `classTokens` (kept as a private duplicate
+ * here rather than a new shared module; DIRECTIVE_024 locality of change). */
+function classTokens(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  if (typeof value === 'string') return value.split(/\s+/).filter(Boolean);
+  return [];
+}
+
 function attrDisposition(key: string, val: string): AttrDisposition {
   if (EVENT_HANDLER_RE.test(key)) return 'deny';
   if (key === 'data-background-iframe') return 'deny';
@@ -156,6 +165,27 @@ function applyAttrs(
       warnings.push({ message: `Unknown .${kind} directive attribute "${key}" (dropped)`, node });
       continue;
     }
+    // A directive `class="…"` colliding with an existing `className` ARRAY —
+    // set on this node by an earlier pass, e.g. a Markua callout's
+    // `dk-callout`/`dk-callout--{variant}` classes (`markua-callouts.ts`) —
+    // must MERGE into that array rather than write a second, raw `class` key.
+    // `mdast-util-to-hast`/hast-to-html would otherwise emit the element with
+    // TWO `class` attributes (`<aside class="dk-callout …" class="fragment">`),
+    // which is invalid markup; a browser keeps only the first, so a trailing
+    // `.element` fragment/utility class is silently dropped. Deduped merge, not
+    // append, so a repeated token (however unlikely) never doubles up. A node
+    // with NO prior `className` is unaffected — it still gets the plain raw
+    // `class` key below, unchanged (figures self-heal the same collision the
+    // OTHER way: `markua-figure.ts`'s `buildReplacement` folds `props.class`
+    // INTO `className`, since a figure is always freshly built there).
+    if (key === 'class' && props.className !== undefined) {
+      const merged = classTokens(props.className);
+      for (const token of val.split(/\s+/).filter(Boolean)) {
+        if (!merged.includes(token)) merged.push(token);
+      }
+      props.className = merged;
+      continue;
+    }
     props[key] = val;
   }
 }
@@ -181,20 +211,29 @@ function titleChildren(fm: DeckFrontmatter): MdNode[] {
   const heroSrc = fm.hero_image?.src;
   if (typeof heroSrc === 'string' && heroSrc.length > 0) {
     const heroAlt = fm.hero_image?.alt;
+    // `data-deck-hero` is the explicit discriminator `markuaFigure` reads (D4,
+    // C-COMPOSE-05): the hero is structurally identical to a plain body
+    // `![caption](src)` image, so "lacks Markua attributes" cannot tell them
+    // apart. `data.hProperties` on an mdast image node surfaces as hast
+    // `properties` (mdast-util-to-hast's default image handler), so this reaches
+    // `markuaFigure` as `properties['data-deck-hero']` on the compiled `<img>`.
+    const heroImage: MdNode = {
+      type: 'image',
+      url: heroSrc,
+      alt:
+        typeof heroAlt === 'string' && heroAlt.length > 0
+          ? heroAlt
+          : typeof fm.title === 'string'
+            ? fm.title
+            : '',
+    };
+    heroImage.data = {
+      ...heroImage.data,
+      hProperties: { ...heroImage.data?.hProperties, 'data-deck-hero': '' },
+    };
     kids.push({
       type: 'paragraph',
-      children: [
-        {
-          type: 'image',
-          url: heroSrc,
-          alt:
-            typeof heroAlt === 'string' && heroAlt.length > 0
-              ? heroAlt
-              : typeof fm.title === 'string'
-                ? fm.title
-                : '',
-        },
-      ],
+      children: [heroImage],
     });
   }
   return kids;
