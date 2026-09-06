@@ -36,8 +36,8 @@ authored `:term` link stay indistinguishable downstream.
   bottom of the viewport and gave no visual anchor back to the term. After: a
   caret points from the popover at the term, and the popover measures its own
   height once mounted to flip above the term (caret flipping to point down)
-  whenever it would otherwise overflow the viewport bottom — staying
-  hoverable and Esc-dismissible throughout (WCAG 2.2 1.4.13).
+  when it would otherwise overflow the viewport bottom and there is room
+  above — staying hoverable and Esc-dismissible throughout (WCAG 2.2 1.4.13).
 
 ## Why it matters
 
