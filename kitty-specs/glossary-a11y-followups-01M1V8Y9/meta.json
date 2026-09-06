@@ -1,0 +1,16 @@
+{
+  "coordination_branch": "kitty/mission-glossary-a11y-followups-01M1V8Y9",
+  "created_at": "2026-09-06T11:51:27.886950+00:00",
+  "flattened": false,
+  "friendly_name": "Glossary a11y follow-up cluster (#77/#78/#79)",
+  "mission_id": "01M1V8Y9CEPZ10S13GR2YG8JTM",
+  "mission_number": null,
+  "mission_slug": "glossary-a11y-followups-01M1V8Y9",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The glossary surface distinguishes a term link from an ordinary link only visually today, so assistive-technology users cannot perceive the difference. Two byte-identical link builders are kept in sync only by discipline plus a parity test, and the popover's caret/viewport-flip positioning has no automated regression guard. This mission closes those three follow-ups from the #64 glossary-term-ux review as one coherent slice on the glossary bounded context.",
+  "purpose_tldr": "Make glossary term links tell screen-reader users they are terms, guard the popover's positioning, and collapse two duplicate link builders into one.",
+  "slug": "glossary-a11y-followups-01M1V8Y9",
+  "target_branch": "feat/glossary-a11y-followups",
+  "topology": "coord"
+}
