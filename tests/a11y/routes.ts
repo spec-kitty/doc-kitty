@@ -58,6 +58,15 @@ export const ROUTES = {
   // ids, and icons. Scanned in BOTH modes; its guardRoots pin construct-specific
   // selectors a Markua-free page cannot satisfy.
   markuaShowcase: `${BASE}/guides/markua-showcase/`,
+  // Markua-capable deck — the markua-decks mission fixture (#47, WP04). The
+  // OUT-OF-FRAME deck route (same shell as `deck`/`deckNoDiagram` above), NOT
+  // the in-frame `markuaShowcase`/`markuaMalformed` pages: this proves the four
+  // content passes (`markuaNormalise`/`markuaAttributes`/`markuaCallouts`/
+  // `markuaFigure`) now render their constructs ON A SLIDE, composed with
+  // `deckSplit` without swallowing a `##`/`###` boundary. Exercises a `W>`
+  // caution aside, an `{aside}…{/aside}` wrapper, a `{#id}` attribute line
+  // adjacent to a `###`, and a body figure distinct from the title-slide hero.
+  markuaDeck: `${BASE}/presentations/markua-deck/`,
   // Markua graceful-degradation page — the deliberately-malformed fixture
   // (unknown icon / unbalanced wrapper / unsupported attr). Scanned for a11y so
   // the degraded output (icon-less tip, literal `{aside}`, ignored `{fullbleed:}`)
@@ -203,6 +212,21 @@ const STARLIGHT_MARKUA_MALFORMED_GUARD_ROOTS = [
   MARKUA_FIGURE_ROOT,
 ] as const;
 
+// Markua-capable DECK non-vacuity (#47, WP04). On a deck every mapped callout
+// name (including `caution`, the `W>` fold target) is FORCED through the theme
+// hast (`forceTheme`, markua-callouts.internal.ts) rather than the native
+// Starlight aside — DeckLayout links no `starlight-aside` CSS — so the deck's
+// own construct roots are theme classes, not the Starlight-mapped root the
+// in-frame Markua pages pin above.
+export const MARKUA_DECK_CAUTION_ROOT = 'aside.dk-callout--caution';
+export const MARKUA_DECK_ASIDE_ROOT = 'aside.dk-callout--aside';
+const DECK_MARKUA_GUARD_ROOTS = [
+  ...DECK_GUARD_ROOTS,
+  MARKUA_DECK_CAUTION_ROOT,
+  MARKUA_DECK_ASIDE_ROOT,
+  MARKUA_FIGURE_ROOT,
+] as const;
+
 // The axe coverage set: the four in-frame Starlight surfaces + the diagram
 // demonstrator (WP06 T020) + the out-of-frame showcase deck, each run in BOTH
 // colour modes. The diagram routes (demonstrator + deck) carry a `renderWait` gate
@@ -291,6 +315,16 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.markuaMalformed,
     shell: 'starlight',
     guardRoots: STARLIGHT_MARKUA_MALFORMED_GUARD_ROOTS,
+  },
+  // markua-decks (#47, WP04) — the Markua-capable OUT-OF-FRAME deck. No
+  // `renderWait`: the callouts/wrapper/attribute/figure constructs are build-time
+  // SSR (not a client render), so the guardRoots are present the moment the
+  // route serves and are checked by the `.count()` gate directly.
+  {
+    name: 'Markua-capable deck (/presentations/markua-deck/)',
+    path: ROUTES.markuaDeck,
+    shell: 'deck',
+    guardRoots: DECK_MARKUA_GUARD_ROOTS,
   },
 ];
 
