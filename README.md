@@ -61,5 +61,4 @@ pnpm clean      # clear ALL build caches before a from-scratch build (see note b
 
 ## License
 
-Undecided (public vs. private TBD). Currently marked `UNLICENSED`; no license
-file is included yet.
+MIT — see [LICENSE](./LICENSE).

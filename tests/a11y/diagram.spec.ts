@@ -368,11 +368,6 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
       'the slide-two diagram must render its <svg> once navigated to (not at load)',
     ).toBeVisible({ timeout: 10_000 });
 
-    const box = await svg.first().boundingBox();
-    expect(box, 'the slide-two <svg> must have a bounding box').not.toBeNull();
-    expect(box!.width, 'slide-two <svg> width > 0 (NFR-001)').toBeGreaterThan(0);
-    expect(box!.height, 'slide-two <svg> height > 0 (NFR-001)').toBeGreaterThan(0);
-
     // NON-FAKEABILITY of this #15 proof comes from the STRUCTURE above, not a
     // geometry number: the pre-fix build renders EVERY diagram at load (whole-doc
     // render), so slide-two would already carry an <svg> WHILE HIDDEN and fail the
@@ -383,9 +378,18 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
     // foreignObject/text/nodeLabel, which read 0) — a collapsed mis-render (#15)
     // would give it a 0×0 box, so this is the non-fakeable proof #31 wanted, IN
     // ADDITION to the outer box>0 and identity checks above.
-    const inner = await measuredInnerBox(figure);
-    expect(inner.w, 'slide-two measured internal-node width > 0 (#31)').toBeGreaterThan(0);
-    expect(inner.h, 'slide-two measured internal-node height > 0 (#31)').toBeGreaterThan(0);
+    // RETRY the reads (not one-shot): reveal settles the slide transform a beat
+    // after `toBeVisible`, so a single box/getBBox read can flake null/0×0 in
+    // headless CI; `toPass` retries the whole read until settled.
+    await expect(async () => {
+      const box = await svg.first().boundingBox();
+      expect(box, 'the slide-two <svg> must have a bounding box').not.toBeNull();
+      expect(box!.width, 'slide-two <svg> width > 0 (NFR-001)').toBeGreaterThan(0);
+      expect(box!.height, 'slide-two <svg> height > 0 (NFR-001)').toBeGreaterThan(0);
+      const inner = await measuredInnerBox(figure);
+      expect(inner.w, 'slide-two measured internal-node width > 0 (#31)').toBeGreaterThan(0);
+      expect(inner.h, 'slide-two measured internal-node height > 0 (#31)').toBeGreaterThan(0);
+    }).toPass({ timeout: 15_000 });
   });
 
   test('the inner-stack (vertical/nested) diagram renders with box>0 and measured internal geometry', async ({
@@ -408,18 +412,24 @@ test.describe('Deck non-first + inner-stack diagram render (FR-004 / T019)', () 
       'the inner-stack diagram must render its <svg> once its vertical leaf is active',
     ).toBeVisible({ timeout: 10_000 });
 
-    const box = await svg.first().boundingBox();
-    expect(box, 'the inner-stack <svg> must have a bounding box').not.toBeNull();
-    expect(box!.width, 'inner-stack <svg> width > 0 (NFR-001)').toBeGreaterThan(0);
-    expect(box!.height, 'inner-stack <svg> height > 0 (NFR-001)').toBeGreaterThan(0);
     // Deep-link validates the D5 hash-deep-link nested render (currentSlide() is the
     // inner <section>) produces a visible <svg>. The navigate-to-hidden #15
-    // regression is proven non-fakeably by the slide-two T019 and by T021
-    // (toggle-while-unvisited → navigate).
+    // regression is proven non-fakeably by the slide-two T019 and by T021.
+    // RETRY the geometry reads (not one-shot): reveal settles the deep-linked
+    // vertical-stack leaf's transform a beat after `toBeVisible`, and a single
+    // `boundingBox()`/`getBBox()` read can land in that settle window returning
+    // null/0×0 in headless CI (observed flake). `toPass` retries the whole read
+    // until the leaf has settled; the assertions then hold deterministically.
     // MEASURED internal-node geometry (#31, re-enabled) — see measuredInnerBox.
-    const inner = await measuredInnerBox(figure);
-    expect(inner.w, 'inner-stack measured internal-node width > 0 (#31)').toBeGreaterThan(0);
-    expect(inner.h, 'inner-stack measured internal-node height > 0 (#31)').toBeGreaterThan(0);
+    await expect(async () => {
+      const box = await svg.first().boundingBox();
+      expect(box, 'the inner-stack <svg> must have a bounding box').not.toBeNull();
+      expect(box!.width, 'inner-stack <svg> width > 0 (NFR-001)').toBeGreaterThan(0);
+      expect(box!.height, 'inner-stack <svg> height > 0 (NFR-001)').toBeGreaterThan(0);
+      const inner = await measuredInnerBox(figure);
+      expect(inner.w, 'inner-stack measured internal-node width > 0 (#31)').toBeGreaterThan(0);
+      expect(inner.h, 'inner-stack measured internal-node height > 0 (#31)').toBeGreaterThan(0);
+    }).toPass({ timeout: 15_000 });
   });
 });
 

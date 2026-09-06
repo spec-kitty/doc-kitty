@@ -118,7 +118,7 @@ Each is filed on the tracker.
 | Overridable `type`/`kind` vocabulary (neutralize `Feature` for Mission-canon adopters) | Lets a canon-bound adopter avoid a prohibited term; fixes an internal inconsistency | Should | [#40](https://github.com/spec-kitty/doc-kitty/issues/40) |
 | Tolerate `adr/<era>/NNNN-` ADR paths | Adopters with >100 era-partitioned ADRs keep their structure | Should | [#41](https://github.com/spec-kitty/doc-kitty/issues/41) |
 | First-class redirect-coverage gate for migrating adopters | The highest-risk migration item (URL-scheme change) has no equivalent today | Should | [#42](https://github.com/spec-kitty/doc-kitty/issues/42) |
-| Resolve LICENSE (`UNLICENSED` → add LICENSE file) | Hard blocker: no adopter can vendor doc-kitty code until licensed | Must (blocker) | [#43](https://github.com/spec-kitty/doc-kitty/issues/43) |
+| Resolve LICENSE (`UNLICENSED` → add LICENSE file) | Hard blocker: no adopter can vendor doc-kitty code until licensed | Done (MIT, PR #74/#75) | [#43](https://github.com/spec-kitty/doc-kitty/issues/43) |
 | Doc-honesty fixes (ADR-0030 in index; `AGENTS.md` `status`→`doc_status` + full section list; README "early scaffold" drift) | Curated-not-wiki integrity — the repo's own convention | Should | [#44](https://github.com/spec-kitty/doc-kitty/issues/44) |
 
 Sequencing for a large-consumer adoption: the loader/vocab/enum items (#37–#41)

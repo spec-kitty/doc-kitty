@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Reusable Astro + Starlight toolkit for the Common Docs — Kitty Variation convention: schema, README-as-index loader, and rss/llms.txt/agent-API route handlers.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },
