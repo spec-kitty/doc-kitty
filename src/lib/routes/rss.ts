@@ -9,7 +9,8 @@
 import type { APIRoute } from 'astro';
 import { rankForFeed, sectionOf, updatedMillis, sectionLabel, includedInRssFeed } from '../metadata.js';
 import { loadSectionRegistry, sectionLabels, sectionFeeds, feedsSurface } from '../sections.js';
-import { absolute, collectDocEntries, docsRoot, xmlEscape } from './shared.js';
+import { absolute, docsRoot, xmlEscape } from './shared.js';
+import { collectDocEntries } from '../docs-index.js';
 
 export interface RssRouteOptions {
   title: string;

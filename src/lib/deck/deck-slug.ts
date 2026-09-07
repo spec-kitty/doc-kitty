@@ -6,7 +6,7 @@
  * `[...slug]` rest parameter captures the path AFTER `presentations/`. But a
  * deck's collection id (and therefore the route slug the generators emit —
  * `llms.txt`, the agent API, the sitemap; see `src/lib/routes/llms-txt.ts` and
- * `collectDocEntries` in `src/lib/routes/shared.ts`) ALREADY includes the
+ * `collectDocEntries` in `src/lib/docs-index.ts`) ALREADY includes the
  * `presentations/` prefix. Feeding the raw slug into the route params would
  * reconstruct `/presentations/presentations/<x>/` and 404 while every lane stays
  * green (the "prefix-doubling trap", BA-3). So `deckRouteParams` strips the

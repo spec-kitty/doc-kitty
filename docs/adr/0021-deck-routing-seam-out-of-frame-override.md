@@ -134,5 +134,5 @@ C-004 forbids.
   [ADR-0011](./0011-theme-slot-surface-and-per-kind-layouts.md),
   [ADR-0022](./0022-reveal-integration-and-token-theme.md).
 - [Slide decks](../architecture/slide-decks.md).
-- `src/lib/routes/shared.ts` (`collectDocEntries`), `src/lib/routes/llms-txt.ts`,
+- `src/lib/docs-index.ts` (`collectDocEntries`), `src/lib/routes/llms-txt.ts`,
   `src/lib/routes/agent-index.ts` (URL derivation the deck route must match).

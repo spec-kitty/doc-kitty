@@ -42,7 +42,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
-import { getCollection } from 'astro:content';
+import { collectDocEntries } from '../lib/docs-index.js';
 import {
   slugFromEntryId,
   type DocKittyFrontmatter,
@@ -88,11 +88,7 @@ interface HubCard {
 // selection instead of a replica; this is a behaviour-preserving extraction —
 // the rendered output stays byte-identical (C-001).
 const publishedChildren = selectHubChildren(
-  (await getCollection('docs')).map((entry) => ({
-    slug: slugFromEntryId(entry.id),
-    data: entry.data as unknown as DocKittyFrontmatter,
-    body: (entry as { body?: string }).body ?? '',
-  })),
+  await collectDocEntries({ withBody: true }),
   currentSlug,
   order,
 );

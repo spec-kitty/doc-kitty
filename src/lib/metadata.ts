@@ -267,6 +267,10 @@ export interface DocEntry {
   /** Route slug, e.g. "architecture/overview" or "" for the bundle root. */
   slug: string;
   data: DocKittyFrontmatter;
+  /** Raw markdown body — carried only when a consumer opts in via
+   * `collectDocEntries({ withBody: true })` (issue #90; Hub's ADR cards read it).
+   * Absent for the default feed/agent/index callers. */
+  body?: string;
 }
 
 /** The record shape emitted into the agent-API JSON index. */
