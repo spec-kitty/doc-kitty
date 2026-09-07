@@ -130,13 +130,60 @@ jobs:
         run: vale --minAlertLevel=error docs example/docs
 
   # --- Lane: build-example (code || example_content || workflows). -------------
+  # Build-renders BOTH diagram engines (#13 WP03 / FR-009): Chromium (installed by
+  # the composite) for Mermaid, and a self-hosted PlantUML `services:` container for
+  # PlantUML — so the published dist the a11y lane consumes carries BUILD-mode static
+  # SVGs (never plantuml.com, C-001). `services:` is JOB-level (a composite cannot
+  # declare it); the container's 8080 is mapped to localhost:8091 and the build-render
+  # env below points the toolkit at it.
   build-example:
     needs: detect-changes
     if: needs.detect-changes.outputs.run_build_example == 'true'
     runs-on: ubuntu-latest
+    # Self-hosted PlantUML render server (D3/D8). Reached at localhost:8091 by the
+    # build (this job runs directly on the runner, not in a container, so a mapped
+    # service port is a localhost port). NEVER plantuml.com (C-001).
+    services:
+      plantuml:
+        image: plantuml/plantuml-server:jetty
+        ports:
+          - 8091:8080
+    env:
+      # Force BUILD mode deterministically (don't rely on Chromium auto-detect), and
+      # point PlantUML at the job service (SVG endpoint — the trailing /svg/ matters).
+      DK_DIAGRAM_BUILD_RENDER: 'on'
+      DK_PLANTUML_SERVER_URL: http://localhost:8091/svg/
+      # Stable @beoe disk-cache path so the cache step below restores it across runs
+      # (an unchanged diagram then skips Chromium — FR-009).
+      DK_BEOE_CACHE_DIR: ${{ github.workspace }}/.beoe-cache
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      # @beoe Mermaid render cache (#13 WP03 / FR-009). Restored BEFORE the build so
+      # an unchanged diagram is served from disk and never relaunches Chromium. Keyed
+      # on the diagram sources + the toolkit config (the sentinel table / svgo, which
+      # @beoe also folds into its own per-entry salt); `restore-keys` gives a warm
+      # partial cache when only some diagrams changed, and the exact-key miss saves the
+      # updated cache at job end.
+      - name: Restore @beoe diagram render cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: .beoe-cache
+          key: beoe-mermaid-${{ runner.os }}-${{ hashFiles('example/docs/**/*.md', 'example/docs/**/*.mdx', 'src/lib/config.ts', 'pnpm-lock.yaml') }}
+          restore-keys: |
+            beoe-mermaid-${{ runner.os }}-
+      # The PlantUML service container's port is mapped before steps run, but jetty
+      # takes a beat to start listening — wait for it so the build's first PlantUML
+      # render never races an unready server (a failed render now fails the build
+      # loudly, #13 WP03). The long install/Chromium steps below usually cover this,
+      # but the explicit wait makes the dependency correct rather than incidental.
+      - name: Wait for the PlantUML server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:8091/; then echo "PlantUML ready"; exit 0; fi
+            echo "waiting for PlantUML ($i/30)…"; sleep 2
+          done
+          echo "PlantUML did not become ready on :8091" >&2; exit 1
       # Shared build definition (WP03 composite; also reused by WP05 deploy).
       - name: Build example site
         uses: ./.github/actions/build-example
@@ -177,6 +224,9 @@ jobs:
   # container so the visual baselines are reproducible bit-for-bit (T041). The only
   # browser download is the explicit, Chromium-only `playwright install` step below
   # (deny-by-default lifecycle discipline, DIRECTIVE_051 / NFR-005).
+  # #13 WP03: the consumed dist is now BUILD-mode (static SVGs), so the mode-aware
+  # diagram e2e (tests/a11y/diagram.spec.ts) runs its BUILD branch here — it detects
+  # the render mode from the served dist's own figure shape, no config needed.
   a11y:
     needs: [detect-changes, build-example]
     if: needs.detect-changes.outputs.run_build_example == 'true'

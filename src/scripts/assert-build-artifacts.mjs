@@ -96,7 +96,11 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 //     (presentations/feature-tour.md, doc_status:active, +1) → 28 → 29.
 //   - markua-decks (#47) adds one published Markua showcase deck
 //     (presentations/markua-deck.md, doc_status:active, +1) → 29 → 30.
-const EXPECTED_INDEX_ENTRY_COUNT = 30;
+//   - diagram-build-render WP02 (#13) adds one published PlantUML demonstrator
+//     (architecture/plantuml-demonstrator.md, doc_status:active, +1) → 30 → 31.
+//     It is the SOLE count-moving published page of WP02 (the build-only twin of
+//     the Mermaid demonstrator).
+const EXPECTED_INDEX_ENTRY_COUNT = 31;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -104,7 +108,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 30;
 // markua-syntax-support WP10 adds the two published markua guides (+2), 26 → 28.
 // deck-house-theme adds presentations/feature-tour.md (published, +1), 28 → 29.
 // markua-decks (#47) adds presentations/markua-deck.md (published, +1), 29 → 30.
-const EXPECTED_SITEMAP_URL_COUNT = 30;
+// diagram-build-render WP02 (#13) adds architecture/plantuml-demonstrator.md
+// (published, +1), 30 → 31.
+const EXPECTED_SITEMAP_URL_COUNT = 31;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.
@@ -193,6 +199,26 @@ const DEMO_RELPATH = path.join('architecture', 'diagram-demonstrator', 'index.ht
 // in NO test lane — the double-`<pre>` defect (#59) could regress there silently.
 const ARCH_OVERVIEW_RELPATH = path.join('architecture', 'overview', 'index.html');
 
+// --- diagram-build-render WP02 (#13): the published PlantUML demonstrator --------
+// The build-only twin of the Mermaid demonstrator: one ```plantuml fence with a
+// leading `'`-metadata block, rendered at build to a themed, accessible inline
+// SVG against the SELF-HOSTED server (never plantuml.com). In BUILD mode its
+// figure is asserted exactly like a build Mermaid figure (inline <svg> + <title>/
+// <desc> + var() fills + no sentinel/chromatic hex + caption order); in CLIENT
+// mode PlantUML is build-only, so the fence stays a plain `language-plantuml`
+// code block (no figure). The accessible name + caption are the page's own
+// `' title:` / `' description:` values (kept in sync with the fixture).
+const PLANTUML_DEMO_RELPATH = path.join('architecture', 'plantuml-demonstrator', 'index.html');
+const PLANTUML_ACC_NAME = 'Build-time PlantUML render';
+const PLANTUML_CAPTION =
+  'Markdown is parsed, the loader hands the themed source to a self-hosted PlantUML server, which renders the static SVG the reader is served with no client JavaScript.';
+// A plantuml.com *URL* (C-001) — matched only in URL position (a `//host`
+// authority or a `plantuml.com/plantuml` path), so prose that merely names
+// "plantuml.com" (this gate's own docs, the example page's explanation, the
+// config guard's error message) never false-fails. A real request to the public
+// endpoint — the thing C-001 forbids — always appears in one of these forms.
+const PLANTUML_COM_URL_RE = /(?:https?:)?\/\/[a-z0-9.-]*plantuml\.com|plantuml\.com\/plantuml/i;
+
 // The two demonstrator diagrams, in DOCUMENT ORDER, each keyed by the tokens the
 // no-JS degradation guarantee (FR-008/NFR-003) must preserve in the static HTML:
 //   - `keyword` — the diagram-TYPE declaration (proves the raw source survives),
@@ -229,12 +255,38 @@ const DEMO_DIAGRAMS = [
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..');
 const TOOLKIT_MANIFEST = path.join(REPO_ROOT, 'src', 'package.json');
+const TOOLKIT_CONFIG_SRC = path.join(REPO_ROOT, 'src', 'lib', 'config.ts');
 const PNPM_LOCKFILE = path.join(REPO_ROOT, 'pnpm-lock.yaml');
-const PINNED_DIAGRAM_DEPS = { mermaid: '11.17.1' };
+// #13 (C-002): the build-render deps are exact-pinned (golden-file deps):
+// `@beoe/rehype-mermaid` (Mermaid) and `astro-plantuml` (PlantUML, WP02), AND the
+// client-fallback `mermaid` stays pinned at 11.17.1. All are declared regardless
+// of the active render mode, so the manifest/lockfile pin checks below run in
+// BOTH modes.
+const PINNED_DIAGRAM_DEPS = {
+  mermaid: '11.17.1',
+  '@beoe/rehype-mermaid': '0.4.2',
+  'astro-plantuml': '1.0.0',
+};
 // A CDN import of mermaid in a shipped asset would defeat the self-contained,
-// no-external-runtime-request guarantee (NFR-004). Mermaid must be BUNDLED — an
-// `_astro/mermaid*.js` chunk — and no shipped JS may pull it from a CDN host.
+// no-external-runtime-request guarantee (NFR-004). In CLIENT mode Mermaid must be
+// BUNDLED — an `_astro/mermaid*.js` chunk — and no shipped JS may pull it from a
+// CDN host. In BUILD mode NO Mermaid runtime chunk ships at all (NFR-001).
 const CDN_MERMAID_RE = /https?:\/\/[a-z0-9.-]*(?:jsdelivr|unpkg|cdnjs|skypack|esm\.sh|jspm|googleapis)[^"'` )]*mermaid[^"'` )]*/i;
+
+// The six build-render sentinel hexes (mirror of config.ts `DIAGRAM_SENTINELS`).
+// A raw sentinel surviving into the shipped SVG means the sentinel→var theme
+// rewrite missed a themeable colour — every one must become `var(--dk-diagram-*)`.
+const BUILD_SENTINEL_HEXES = [
+  '#e1f0c1',
+  '#c14f8a',
+  '#1a2b3c',
+  '#7a3ff0',
+  '#0f9d58',
+  '#f4b400',
+];
+// A themeable colour in a build SVG references one of the six tokens as a CSS var.
+const DK_DIAGRAM_VAR_RE =
+  /var\(--dk-diagram-(?:node-fill|node-border|node-text|edge|subgraph-title|cluster-fill)\)/i;
 
 // ---------------------------------------------------------------------------
 
@@ -428,19 +480,48 @@ function extractDkDiagramFigures(html) {
 }
 
 /**
- * Assert the diagram demonstrator's STATIC HTML carries, for BOTH diagrams:
- *   - BD-1: `<figure class="dk-diagram">` + `<pre class="mermaid">` with the
- *     injected `accTitle`/`accDescr` a11y statements IN THE SOURCE;
- *   - BD-2 (no-JS, real content): the diagram-TYPE keyword AND a concrete
- *     node/actor label AND the `<figcaption>` description — in document order
- *     (source inside the `<pre>`, caption after it) — so the meaning survives
- *     without the client render;
- *   - browser-free proof (NFR-004): NO rendered `<svg>` inside the figure — a
- *     static SVG would prove a build-time render ran.
- * Diagram 2 additionally proves the accTitle→description NAME FALLBACK on a
- * non-flowchart type (accTitle value == the description).
+ * Detect the diagram render MODE (#13, C-005) from the published demonstrator —
+ * the un-fakeable marker is the figure's own shape: an inline `<svg>` ⇒ BUILD
+ * render ran; a `<pre class="mermaid">` ⇒ the CLIENT fallback. A homogeneous
+ * corpus is required: a figure set that MIXES the two means the mode seam leaked
+ * mid-build, which fails loudly here rather than silently half-satisfying either
+ * mode's gate. Read once and threaded into every diagram gate so all branches
+ * assert the SAME resolved mode.
  */
-async function assertDiagramDemonstrator(distDir) {
+async function detectDiagramMode(distDir) {
+  const demoAbs = path.join(distDir, DEMO_RELPATH);
+  await assertNonEmptyFile(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
+  const html = await readTextOrFail(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
+  const figures = extractDkDiagramFigures(html);
+  if (figures.length === 0) {
+    fail(`diagram demonstrator: no <figure class="dk-diagram"> block — cannot determine the render mode`);
+  }
+  const anySvg = figures.some((f) => /<svg[\s>]/i.test(f));
+  const anyPre = figures.some((f) => /<pre class="mermaid"/i.test(f));
+  if (anySvg && anyPre) {
+    fail(
+      `diagram demonstrator: figures mix inline <svg> and <pre class="mermaid"> — the render mode is not ` +
+        `homogeneous (the build-vs-client seam leaked mid-build) — C-005`,
+    );
+  }
+  return anySvg ? 'build' : 'client';
+}
+
+/**
+ * Assert the diagram demonstrator's STATIC HTML is correct for the ACTIVE MODE
+ * (#13, C-005 — mode-aware, never weakened). For both demonstrator diagrams:
+ *   - **client** — `<figure class="dk-diagram">` + `<pre class="mermaid">` with
+ *     the injected `accTitle`/`accDescr` in the source, the diagram-TYPE keyword
+ *     + a concrete label + the `<figcaption>` in document order, and NO `<svg>`
+ *     (the client render is browser-free at build; the pre-#13 assertion).
+ *   - **build** — `<figure class="dk-diagram">` holding an inline `<svg>` (no
+ *     `<pre class="mermaid">`) with a `<title>` (the accessible name) + `<desc>`,
+ *     every themeable colour a `var(--dk-diagram-*)` and NO raw sentinel hex, and
+ *     the `<figcaption>` after the `<svg>` in document order.
+ * Diagram 2 additionally proves the accessible-name FALLBACK on a non-flowchart
+ * type (the name == the description when `%% title` is absent).
+ */
+async function assertDiagramDemonstrator(distDir, mode) {
   const demoAbs = path.join(distDir, DEMO_RELPATH);
   await assertNonEmptyFile(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
   const html = await readTextOrFail(demoAbs, `diagram demonstrator (${DEMO_RELPATH})`);
@@ -456,6 +537,11 @@ async function assertDiagramDemonstrator(distDir) {
   DEMO_DIAGRAMS.forEach((spec, i) => {
     const fig = figures[i];
     const tag = `diagram demonstrator: diagram ${i + 1} (${spec.what})`;
+
+    if (mode === 'build') {
+      assertBuildDiagramFigure(fig, spec, tag);
+      return;
+    }
 
     // BD-1 — figure carries the mermaid <pre> with injected acc-statements.
     // Attribute-tolerant match (not an exact-string search): post-WP01, this is
@@ -529,19 +615,391 @@ async function assertDiagramDemonstrator(distDir) {
     }
   });
 
+  if (mode === 'build') {
+    ok(
+      `diagram demonstrator [BUILD]: ${figures.length} dk-diagram figure(s) — inline <svg> + <title>/<desc> ` +
+        `accessible name; every themeable colour a var(--dk-diagram-*), NO raw sentinel; caption in document ` +
+        `order; NO <pre class="mermaid"> (#13 FR-001/002/003, C-005)`,
+    );
+    return;
+  }
   ok(
-    `diagram demonstrator: ${figures.length} dk-diagram figure(s) — figure + <pre class="mermaid"> + injected ` +
-      `accTitle/accDescr; keyword+label+caption in document order; NO static <svg> (browser-free) (BD-1/BD-2/NFR-004)`,
+    `diagram demonstrator [CLIENT]: ${figures.length} dk-diagram figure(s) — figure + <pre class="mermaid"> + ` +
+      `injected accTitle/accDescr; keyword+label+caption in document order; NO static <svg> (browser-free) ` +
+      `(BD-1/BD-2/NFR-002/NFR-004)`,
   );
 }
 
 /**
- * BD-4 — the diagram deps are pinned to the exact versions and mermaid is
- * bundled (no CDN). Proven three ways: the toolkit manifest declares exact pins,
- * the lockfile resolves those same versions, and no shipped `_astro/*.js` asset
- * pulls mermaid from a CDN host (a local `mermaid*.js` chunk is present instead).
+ * Build-mode per-figure assertions (#13, FR-001/002/003, NFR-001/004). The
+ * static figure holds an inline `<svg>` (the build render ran) that is:
+ *   - ACCESSIBLE — a `<title>` naming it (the `%% title`, or the description when
+ *     title is absent — the fallback, proven on the sequence diagram) + a `<desc>`;
+ *   - THEMED — at least one `var(--dk-diagram-*)` themeable colour AND no raw
+ *     sentinel hex left un-rewritten (the sentinel→var rewrite covered every
+ *     themeable colour, so `[data-theme]` re-themes it with no JS);
+ *   - the SHARED figure/caption — the `<figcaption>` present, after the `<svg>`;
+ *   - static — NO `<pre class="mermaid">` and NO client render owner needed.
  */
-async function assertPinnedDepsNoCdn(distDir) {
+function assertBuildDiagramFigure(fig, spec, tag) {
+  // Inline SVG present; the client `<pre class="mermaid">` is gone.
+  const svgOpen = /<svg[\s>]/i.exec(fig);
+  if (!svgOpen) {
+    fail(`${tag}: the build figure holds no inline <svg> — the build render did not run (#13 FR-001)`);
+  }
+  if (/<pre class="mermaid"/i.test(fig)) {
+    fail(`${tag}: the build figure still carries a <pre class="mermaid"> — a build-mode figure is a pure <svg> (#13)`);
+  }
+
+  // Accessible NAME: a `<title>` whose text is the expected accessible name.
+  const titleMatch = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(fig);
+  if (!titleMatch) {
+    fail(`${tag}: the build <svg> has no <title> — the accessible name (accTitle) was lost (#13 FR-003/NFR-004)`);
+  }
+  if (titleMatch[1].trim() !== spec.accName) {
+    fail(
+      `${tag}: the <svg> <title> is "${titleMatch[1].trim()}", expected "${spec.accName}" — the accessible name ` +
+        `derived from the ${spec.nameIsFallback ? 'description (title-absent FALLBACK)' : '%% title'} is wrong ` +
+        `(#13 FR-003)`,
+    );
+  }
+  // Accessible DESCRIPTION: a `<desc>` element (from accDescr).
+  if (!/<desc[^>]*>[\s\S]*?<\/desc>/i.test(fig)) {
+    fail(`${tag}: the build <svg> has no <desc> — the accessible description (accDescr) was lost (#13 FR-003)`);
+  }
+
+  // THEMED: at least one themeable colour references a --dk-diagram-* token …
+  if (!DK_DIAGRAM_VAR_RE.test(fig)) {
+    fail(
+      `${tag}: the build <svg> references no var(--dk-diagram-*) themeable colour — the sentinel→var theme ` +
+        `rewrite did not run (#13 FR-002)`,
+    );
+  }
+  // … and NO raw sentinel hex escaped the rewrite (every themeable colour mapped).
+  const figLower = fig.toLowerCase();
+  for (const hex of BUILD_SENTINEL_HEXES) {
+    if (figLower.includes(hex)) {
+      fail(
+        `${tag}: the build <svg> still contains the raw sentinel hex "${hex}" — the theme rewrite missed a ` +
+          `themeable colour (it must be var(--dk-diagram-*)) (#13 FR-002)`,
+      );
+    }
+  }
+
+  // … and NO CHROMATIC raw hex escaped the rewrite (renata WP01 review, FR-002
+  // completeness): the sentinel loop above catches the six sentinels, but a
+  // Mermaid-DERIVED coloured shade (e.g. the research-D7 `#eef2ec` risk) is
+  // neither a sentinel nor a grey and would ship un-themed while passing every
+  // other check. Rule: any raw hex inside a build figure must be ACHROMATIC
+  // (r==g==b — Mermaid's built-in greys/black like #000/#666/#999/#b9b9b9/#eaeaea,
+  // which are identical in client mode and outside the six-token themeable
+  // contract). A CHROMATIC raw hex is a themeable colour that the sentinel→var
+  // rewrite missed — extend the sentinel table (config.ts SENTINEL_THEME_VARIABLES).
+  for (const m of fig.matchAll(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g)) {
+    const hx = m[1].length === 3 ? m[1].replace(/(.)/g, '$1$1') : m[1];
+    const r = parseInt(hx.slice(0, 2), 16);
+    const g = parseInt(hx.slice(2, 4), 16);
+    const b = parseInt(hx.slice(4, 6), 16);
+    if (!(r === g && g === b)) {
+      fail(
+        `${tag}: the build <svg> ships a CHROMATIC raw hex "#${m[1]}" — a themeable colour escaped the ` +
+          `sentinel→var rewrite (it must be var(--dk-diagram-*)); extend the sentinel table (#13 FR-002)`,
+      );
+    }
+  }
+
+  // SHARED caption, in document order (caption after the <svg>).
+  const captionSpan = `<span class="dk-diagram__desc">${spec.caption}</span>`;
+  const captionIdx = fig.indexOf(captionSpan);
+  if (captionIdx === -1) {
+    fail(`${tag}: the <figcaption> description span "${spec.caption}" is absent — the shared caption did not survive (#13 FR-003)`);
+  }
+  const svgClose = fig.lastIndexOf('</svg>');
+  if (!(svgClose !== -1 && svgClose < captionIdx)) {
+    fail(`${tag}: the caption appears before the <svg> — figure/caption not in document order (#13)`);
+  }
+}
+
+// --- diagram-build-render WP03 (#13): the out-of-frame DECK diagram figures -----
+// The showcase deck carries THREE ```mermaid diagrams (title-slide pipeline +
+// slide-two + inner-stack). In BUILD mode the deck's fences bake to static inline
+// SVG exactly like a doc page (the shared markdown pipeline runs on the deck route
+// too) and the client render owner is skipped (DeckLayout build-mode path); in
+// CLIENT mode they stay `<pre class="mermaid">` sources rendered by reveal at
+// runtime. This gate asserts the DECK figure like the docs build figure per the
+// active mode (inline svg + accessible name + var() theme + no chromatic hex +
+// caption in build; the client `<pre>`/no-static-svg shape in client).
+const DECK_DIAGRAM_COUNT = 3;
+
+/**
+ * Assert one build-mode DECK figure carries the SAME contract as a docs build
+ * figure, WITHOUT pinning the deck's own caption/title text (deck content is not
+ * this gate's oracle): an inline `<svg>` (no `<pre class="mermaid">`), a non-empty
+ * `<title>` accessible name, at least one `var(--dk-diagram-*)` themeable colour,
+ * NO raw sentinel hex and NO chromatic raw hex left un-rewritten, and a
+ * `<figcaption>` after the `<svg>` in document order.
+ */
+function assertDeckBuildFigure(fig, tag) {
+  if (!/<svg[\s>]/i.test(fig)) {
+    fail(`${tag} [BUILD]: the deck figure holds no inline <svg> — the build render did not run on the deck (#13 WP03 FR-001)`);
+  }
+  if (/<pre class="mermaid"/i.test(fig)) {
+    fail(`${tag} [BUILD]: the deck figure still carries a <pre class="mermaid"> — a build-mode deck slide is a pure static <svg> (#13 WP03)`);
+  }
+  const titleMatch = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(fig);
+  if (!titleMatch || titleMatch[1].trim() === '') {
+    fail(`${tag} [BUILD]: the deck <svg> has no non-empty <title> — the accessible name was lost (#13 WP03 FR-003/NFR-004)`);
+  }
+  if (!DK_DIAGRAM_VAR_RE.test(fig)) {
+    fail(`${tag} [BUILD]: the deck <svg> references no var(--dk-diagram-*) — the sentinel→var theme rewrite did not run on the deck (#13 WP03 FR-002)`);
+  }
+  const figLower = fig.toLowerCase();
+  for (const hex of BUILD_SENTINEL_HEXES) {
+    if (figLower.includes(hex)) {
+      fail(`${tag} [BUILD]: the deck <svg> still contains the raw sentinel hex "${hex}" — the theme rewrite missed a themeable colour (#13 WP03 FR-002)`);
+    }
+  }
+  for (const m of fig.matchAll(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g)) {
+    const hx = m[1].length === 3 ? m[1].replace(/(.)/g, '$1$1') : m[1];
+    const r = parseInt(hx.slice(0, 2), 16);
+    const g = parseInt(hx.slice(2, 4), 16);
+    const b = parseInt(hx.slice(4, 6), 16);
+    if (!(r === g && g === b)) {
+      fail(`${tag} [BUILD]: the deck <svg> ships a CHROMATIC raw hex "#${m[1]}" — a themeable colour escaped the sentinel→var rewrite (#13 WP03 FR-002)`);
+    }
+  }
+  const capIdx = fig.search(/<figcaption\b/i);
+  if (capIdx === -1) {
+    fail(`${tag} [BUILD]: the deck figure has no <figcaption> — the shared caption did not survive (#13 WP03 FR-003)`);
+  }
+  const svgClose = fig.lastIndexOf('</svg>');
+  if (!(svgClose !== -1 && svgClose < capIdx)) {
+    fail(`${tag} [BUILD]: the caption appears before the <svg> — deck figure/caption not in document order (#13 WP03)`);
+  }
+}
+
+/**
+ * Assert the out-of-frame DECK's diagram figures are correct for the ACTIVE MODE
+ * (#13 WP03, C-005 — mode-aware). Build: each of the THREE figures is a build
+ * figure (see {@link assertDeckBuildFigure}). Client: each is the pre-#13 client
+ * shape — a `<pre class="mermaid">` source with NO static `<svg>` (reveal renders
+ * it in the browser). Fails loudly on a mixed corpus.
+ */
+function assertDeckDiagramFigures(deckHtml, mode) {
+  const figures = extractDkDiagramFigures(deckHtml);
+  if (figures.length !== DECK_DIAGRAM_COUNT) {
+    fail(
+      `deck diagrams: found ${figures.length} <figure class="dk-diagram"> in the showcase deck, expected ` +
+        `${DECK_DIAGRAM_COUNT} (title-slide pipeline + slide-two + inner-stack) — #13 WP03`,
+    );
+  }
+  figures.forEach((fig, i) => {
+    const tag = `deck diagram ${i + 1}`;
+    if (mode === 'build') {
+      assertDeckBuildFigure(fig, tag);
+      return;
+    }
+    if (!/<pre class="mermaid"/i.test(fig)) {
+      fail(`${tag} [CLIENT]: no <pre class="mermaid"> source in the deck figure — the client deck source did not survive (#13 WP03)`);
+    }
+    if (/<svg[\s>]/i.test(fig)) {
+      fail(`${tag} [CLIENT]: the STATIC deck figure carries a rendered <svg> — a client-mode deck renders in the browser, so the static HTML must hold the raw <pre> source (#13 WP03)`);
+    }
+  });
+  if (mode === 'build') {
+    ok(`deck diagrams [BUILD]: ${figures.length} static deck figures — inline <svg> + <title> name; every themeable colour a var(--dk-diagram-*), NO raw sentinel/chromatic hex; caption in order (#13 WP03 FR-001/002/003)`);
+    return;
+  }
+  ok(`deck diagrams [CLIENT]: ${figures.length} deck figures carry the client <pre class="mermaid"> source, NO static <svg> (reveal renders client-side) (#13 WP03)`);
+}
+
+/**
+ * Assert the PlantUML demonstrator's STATIC HTML is correct for the ACTIVE MODE
+ * (#13 WP02, C-005 — mode-aware, never weakened):
+ *   - **build** — exactly one `<figure class="dk-diagram">` holding an inline
+ *     `<svg>` (no `<pre>`), reusing the SAME build-figure assertions as Mermaid:
+ *     a `<title>` == the `' title:` accessible name, a `<desc>`, at least one
+ *     `var(--dk-diagram-*)` fill, NO raw sentinel hex and NO chromatic raw hex
+ *     (the shared sentinel→var rewrite covered every colour — PlantUML derives
+ *     none), and the `<figcaption>` after the `<svg>` in document order. The
+ *     figure carries no `plantuml.com` reference and no leftover PlantUML source
+ *     PI (`<?plantuml-src …?>`, stripped by the figure builder).
+ *   - **client** — PlantUML is BUILD-ONLY (no client renderer), so the fence
+ *     stays a plain `language-plantuml` code block: NO `dk-diagram` figure and NO
+ *     rendered `<svg>` on the page.
+ */
+async function assertPlantumlDemonstrator(distDir, mode) {
+  const abs = path.join(distDir, PLANTUML_DEMO_RELPATH);
+  await assertNonEmptyFile(abs, `plantuml demonstrator (${PLANTUML_DEMO_RELPATH})`);
+  const html = await readTextOrFail(abs, `plantuml demonstrator (${PLANTUML_DEMO_RELPATH})`);
+  const figures = extractDkDiagramFigures(html);
+
+  if (mode === 'client') {
+    if (figures.length !== 0) {
+      fail(
+        `plantuml demonstrator [CLIENT]: found ${figures.length} <figure class="dk-diagram"> block(s) — ` +
+          `PlantUML is BUILD-ONLY, so in client mode a plantuml fence must stay a plain code block, not a ` +
+          `rendered figure (#13 WP02, C-004)`,
+      );
+    }
+    // The fence renders as an ordinary code block: Starlight's Expressive Code
+    // tags it `data-language="plantuml"` (a `language-plantuml` class on the raw
+    // markdown renderer is the alternative marker) — either proves the plantuml
+    // fence stayed a plain code block, untouched, in client mode.
+    if (!/data-language="plantuml"/.test(html) && !/class="[^"]*language-plantuml/.test(html)) {
+      fail(
+        `plantuml demonstrator [CLIENT]: no plantuml code block (no \`data-language="plantuml"\` / ` +
+          `\`language-plantuml\`) — the plain fence did not survive (client mode leaves PlantUML untouched) (#13 WP02)`,
+      );
+    }
+    ok(
+      `plantuml demonstrator [CLIENT]: the plantuml fence is a plain code block (no dk-diagram figure) — ` +
+        `PlantUML build-only (#13 WP02/C-004)`,
+    );
+    return;
+  }
+
+  // build mode
+  if (figures.length !== 1) {
+    fail(
+      `plantuml demonstrator [BUILD]: found ${figures.length} <figure class="dk-diagram"> block(s), expected 1 ` +
+        `(one plantuml diagram) — #13 WP02 FR-006`,
+    );
+  }
+  const fig = figures[0];
+  const tag = 'plantuml demonstrator [BUILD]: figure 1 (self-hosted component diagram)';
+  // Reuse the SHARED build-figure assertions (same figure/caption/theme contract
+  // as a build Mermaid figure). PlantUML always names via `' title:` (never the
+  // description fallback), so `nameIsFallback: false`.
+  assertBuildDiagramFigure(fig, {
+    what: 'plantuml component diagram',
+    accName: PLANTUML_ACC_NAME,
+    caption: PLANTUML_CAPTION,
+    nameIsFallback: false,
+  }, tag);
+
+  // C-001: the rendered figure references no plantuml.com URL, and the PlantUML
+  // source PI was stripped (we control the emitted SVG, not the server's raw dump).
+  if (PLANTUML_COM_URL_RE.test(fig)) {
+    fail(`${tag}: the rendered figure references a plantuml.com URL — the self-hosted server must be the only endpoint (#13 C-001)`);
+  }
+  if (fig.includes('<?plantuml-src') || fig.includes('plantuml-src')) {
+    fail(`${tag}: the figure still carries the PlantUML source PI (\`<?plantuml-src …?>\`) — it must be stripped from the emitted SVG (#13 WP02)`);
+  }
+  ok(
+    `plantuml demonstrator [BUILD]: 1 dk-diagram figure — inline <svg> + <title>/<desc> accessible name; every ` +
+      `themeable colour a var(--dk-diagram-*), NO raw sentinel/chromatic hex; caption in order; no plantuml.com, ` +
+      `no source PI (#13 WP02 FR-006/007/008, C-001)`,
+  );
+}
+
+/**
+ * C-001 (#13) — the public plantuml.com endpoint is NEVER contacted. Two proofs:
+ *   (a) the SHIPPED toolkit config (`src/lib/config.ts`) contains no plantuml.com
+ *       URL and its resolved default server is SELF-HOSTED (a localhost/private
+ *       host), so a default build cannot reach the public endpoint; and
+ *   (b) no built artifact (the plantuml page + every shipped `_astro` asset)
+ *       references a plantuml.com URL at runtime.
+ * Both use the URL-position matcher, so prose that merely names "plantuml.com"
+ * (this file, the example page, the config's own guard message) never false-fails.
+ */
+async function assertNoPlantumlDotCom(distDir) {
+  // (a) The shipped config: no plantuml.com URL; self-hosted default.
+  const configSrc = await readTextOrFail(TOOLKIT_CONFIG_SRC, `toolkit config (${TOOLKIT_CONFIG_SRC})`);
+  if (PLANTUML_COM_URL_RE.test(configSrc)) {
+    fail(
+      `no-plantuml.com: src/lib/config.ts contains a plantuml.com URL — the PlantUML build stage must resolve ` +
+        `only a self-hosted server (#13 C-001)`,
+    );
+  }
+  const defMatch = /DEFAULT_PLANTUML_SERVER_URL\s*=\s*['"]([^'"]+)['"]/.exec(configSrc);
+  if (!defMatch) {
+    fail(`no-plantuml.com: could not find DEFAULT_PLANTUML_SERVER_URL in src/lib/config.ts — the self-hosted default is unverifiable (#13 C-001)`);
+  }
+  const defaultServer = defMatch[1];
+  if (PLANTUML_COM_URL_RE.test(defaultServer) || /plantuml\.com/i.test(defaultServer)) {
+    fail(`no-plantuml.com: DEFAULT_PLANTUML_SERVER_URL is "${defaultServer}" — it must be a self-hosted server, never plantuml.com (#13 C-001)`);
+  }
+  if (!/^https?:\/\/(?:localhost|127\.0\.0\.1|\[?::1\]?|0\.0\.0\.0|[a-z0-9-]+)(?::\d+)?\//i.test(defaultServer)) {
+    fail(`no-plantuml.com: DEFAULT_PLANTUML_SERVER_URL "${defaultServer}" is not a recognisably self-hosted http(s) endpoint (#13 C-001)`);
+  }
+
+  // (b) No built artifact references a plantuml.com URL.
+  const demoAbs = path.join(distDir, PLANTUML_DEMO_RELPATH);
+  const demoHtml = await readTextOrFail(demoAbs, `plantuml demonstrator (${PLANTUML_DEMO_RELPATH})`);
+  if (PLANTUML_COM_URL_RE.test(demoHtml)) {
+    fail(`no-plantuml.com: the built plantuml demonstrator references a plantuml.com URL — C-001 (#13)`);
+  }
+  const astroDir = path.join(distDir, '_astro');
+  let astroEntries = [];
+  try {
+    astroEntries = await readdir(astroDir);
+  } catch {
+    astroEntries = [];
+  }
+  for (const n of astroEntries) {
+    if (!/\.(js|css)$/.test(n)) continue;
+    const asset = await readFile(path.join(astroDir, n), 'utf8');
+    if (PLANTUML_COM_URL_RE.test(asset)) {
+      fail(`no-plantuml.com: shipped asset _astro/${n} references a plantuml.com URL — C-001 (#13)`);
+    }
+  }
+  ok(
+    `no-plantuml.com: config default server is self-hosted (${defaultServer}); no plantuml.com URL in the ` +
+      `config or any built artifact (#13 C-001)`,
+  );
+}
+
+/**
+ * PAGE-SCOPED NFR-001 proof (#13, build mode): the given page ships NO diagram
+ * runtime. Read the page's directly-referenced `_astro/*.js` chunks and assert
+ * none carry the client render owner entry point (`initDiagrams`) or a bundled
+ * `mermaid*.js` reference — so the page pulls no Mermaid at runtime. Un-fakeable
+ * and scoped to this page: the deck's own runtime chunk (out of scope this slice)
+ * is never referenced from a doc page, so it does not false-fail here.
+ */
+async function assertPageShipsNoDiagramRuntime(distDir, relpath) {
+  const abs = path.join(distDir, relpath);
+  const html = await readTextOrFail(abs, `build-render page (${relpath})`);
+  const refs = [...html.matchAll(/(?:src|href)="([^"]*\/_astro\/[^"]+\.js)"/g)].map((m) => m[1]);
+  for (const ref of refs) {
+    // Map the (possibly base-prefixed) href back to the on-disk chunk.
+    const name = ref.slice(ref.indexOf('/_astro/') + '/_astro/'.length);
+    const chunkAbs = path.join(distDir, '_astro', name);
+    let js;
+    try {
+      js = await readFile(chunkAbs, 'utf8');
+    } catch {
+      continue; // a preload for a chunk not on disk (unexpected) — skip, not fail.
+    }
+    if (/initDiagrams/.test(js)) {
+      fail(
+        `no-runtime [BUILD]: ${relpath} references chunk _astro/${name} which carries the client render owner ` +
+          `(\`initDiagrams\`) — a build-render doc page must inject NO diagram runtime (#13 NFR-001)`,
+      );
+    }
+    if (/\bmermaid[.\-][\w.-]*\.js\b/i.test(js)) {
+      fail(
+        `no-runtime [BUILD]: ${relpath} references chunk _astro/${name} which imports a mermaid runtime chunk — ` +
+          `a build-render doc page must ship zero Mermaid runtime (#13 NFR-001)`,
+      );
+    }
+  }
+}
+
+/**
+ * BD-4 / #13 C-002 — the diagram deps are pinned to exact versions, and the
+ * shipped Mermaid runtime posture matches the ACTIVE MODE (mode-aware, C-005):
+ *   - manifest declares the EXACT pins (both `mermaid` and `@beoe/rehype-mermaid`),
+ *     the lockfile resolves them — in BOTH modes (the client fallback keeps its
+ *     `mermaid` pin regardless);
+ *   - **client** mode: `mermaid` MUST be bundled as an `_astro/mermaid*.js` chunk
+ *     (self-contained, no CDN) — the pre-#13 assertion;
+ *   - **build** mode: NO `_astro/mermaid*.js` runtime chunk ships at all (the
+ *     figure is a static SVG; NFR-001) — the inverted, un-weakened assertion.
+ * The no-CDN scan runs in both modes (a stray CDN mermaid URL fails either way).
+ */
+async function assertPinnedDepsNoCdn(distDir, mode) {
   // (a) Manifest declares the EXACT pins (no `^`/`~` range).
   const manifestText = await readTextOrFail(TOOLKIT_MANIFEST, `toolkit manifest (${TOOLKIT_MANIFEST})`);
   let manifest;
@@ -560,13 +1018,16 @@ async function assertPinnedDepsNoCdn(distDir) {
     }
   }
 
-  // (b) Lockfile RESOLVES those same versions (`name@version:` package key).
+  // (b) Lockfile RESOLVES those same versions. The package key is `name@version:`
+  // for a bare name and QUOTED (`'@scope/name@version':`) for a scoped one, so
+  // accept both the unquoted and the quoted-key forms.
   const lockText = await readTextOrFail(PNPM_LOCKFILE, `pnpm lockfile (${PNPM_LOCKFILE})`);
   for (const [name, version] of Object.entries(PINNED_DIAGRAM_DEPS)) {
-    if (!lockText.includes(`${name}@${version}:`)) {
+    const key = `${name}@${version}`;
+    if (!lockText.includes(`${key}:`) && !lockText.includes(`${key}':`)) {
       fail(
-        `pinned deps: pnpm-lock.yaml has no resolved \`${name}@${version}:\` entry — the lockfile does not ` +
-          `resolve the pinned version (BD-4)`,
+        `pinned deps: pnpm-lock.yaml has no resolved \`${key}:\` entry — the lockfile does not ` +
+          `resolve the pinned version (BD-4/#13 C-002)`,
       );
     }
   }
@@ -581,10 +1042,21 @@ async function assertPinnedDepsNoCdn(distDir) {
   }
   const jsAssets = astroEntries.filter((f) => f.endsWith('.js'));
   const hasBundledMermaid = astroEntries.some((f) => /^mermaid.*\.js$/i.test(f));
-  if (!hasBundledMermaid) {
+  if (mode === 'build') {
+    // BUILD mode (NFR-001) — PAGE-SCOPED: the build-render DOC page (demonstrator)
+    // must ship ZERO diagram runtime. A page pulls Mermaid only via the injected
+    // client render owner (`initDiagrams`, which dynamic-imports the mermaid
+    // chunk); build mode injects NO owner, so the demonstrator's own page chunks
+    // carry no `initDiagrams` and load no mermaid. This is scoped to the doc page
+    // rather than the whole `_astro/` dir ON PURPOSE: the out-of-frame DECK still
+    // client-renders in this slice (WP03 converts it), so a global `mermaid*.js`
+    // chunk legitimately exists for the deck — but it must NOT reach a doc page.
+    await assertPageShipsNoDiagramRuntime(distDir, DEMO_RELPATH);
+  } else if (!hasBundledMermaid) {
+    // CLIENT mode: mermaid must be BUNDLED (self-contained), not fetched from a CDN.
     fail(
-      `no-CDN: no bundled \`_astro/mermaid*.js\` chunk — mermaid must be BUNDLED (self-contained), not fetched ` +
-        `from a CDN at runtime (BD-4/NFR-004)`,
+      `no-CDN [CLIENT]: no bundled \`_astro/mermaid*.js\` chunk — mermaid must be BUNDLED (self-contained), not ` +
+        `fetched from a CDN at runtime (BD-4/NFR-004)`,
     );
   }
   for (const n of jsAssets) {
@@ -594,9 +1066,19 @@ async function assertPinnedDepsNoCdn(distDir) {
       fail(`no-CDN: shipped asset _astro/${n} references a CDN mermaid URL (${hit[0]}) — mermaid must be bundled, no external runtime request (BD-4/NFR-004)`);
     }
   }
+  if (mode === 'build') {
+    ok(
+      `pinned deps + no runtime [BUILD]: mermaid@${PINNED_DIAGRAM_DEPS.mermaid} + @beoe/rehype-mermaid@` +
+        `${PINNED_DIAGRAM_DEPS['@beoe/rehype-mermaid']} pinned (manifest + lockfile); the build-render doc page ` +
+        `ships NO diagram runtime (no initDiagrams/mermaid on ${DEMO_RELPATH}); no CDN reference in ` +
+        `${jsAssets.length} shipped JS asset(s) (#13 C-002/NFR-001)`,
+    );
+    return;
+  }
   ok(
-    `pinned deps + no CDN: mermaid@${PINNED_DIAGRAM_DEPS.mermaid} pinned (manifest + lockfile), ` +
-      `mermaid bundled locally, no CDN reference in ${jsAssets.length} shipped JS asset(s) (BD-4)`,
+    `pinned deps + no CDN [CLIENT]: mermaid@${PINNED_DIAGRAM_DEPS.mermaid} + @beoe/rehype-mermaid@` +
+      `${PINNED_DIAGRAM_DEPS['@beoe/rehype-mermaid']} pinned (manifest + lockfile), mermaid bundled locally, ` +
+      `no CDN reference in ${jsAssets.length} shipped JS asset(s) (BD-4/NFR-002)`,
   );
 }
 
@@ -1312,13 +1794,22 @@ async function main() {
   }
   ok(`known page: ${KNOWN_PAGE_RELPATH} rendered to HTML`);
 
-  // 6a) diagrams WP04: the published diagram demonstrator — figure + injected
-  // acc-statements + no-JS source & caption in document order + browser-free
-  // (no static <svg>) (BD-1/BD-2/NFR-004).
-  await assertDiagramDemonstrator(distDir);
+  // 6a) diagrams — the published diagram demonstrator, asserted for the ACTIVE
+  // render MODE (#13, C-005). The mode is detected once from the demonstrator's
+  // own figure shape (inline <svg> ⇒ build; <pre class="mermaid"> ⇒ client) and
+  // threaded into every diagram gate so all branches assert the SAME mode.
+  const diagramMode = await detectDiagramMode(distDir);
+  ok(`diagram render mode: ${diagramMode.toUpperCase()} (detected from the published demonstrator figure shape)`);
+  await assertDiagramDemonstrator(distDir, diagramMode);
 
-  // 6b) diagrams WP04: pinned diagram deps + no CDN (BD-4/NFR-004).
-  await assertPinnedDepsNoCdn(distDir);
+  // 6b) diagrams: pinned diagram deps + mode-aware runtime posture (BD-4/#13 C-002).
+  await assertPinnedDepsNoCdn(distDir, diagramMode);
+
+  // 6a2) diagram-build-render WP02 (#13): the PlantUML demonstrator, mode-aware
+  // (build → themed accessible inline SVG; client → plain code fence), plus the
+  // C-001 never-plantuml.com proof over the config + built artifacts.
+  await assertPlantumlDemonstrator(distDir, diagramMode);
+  await assertNoPlantumlDotCom(distDir);
 
   // 6b2) diagram-component-css WP01 (#59/T006, red-first): no <pre> wraps
   // <figure class="dk-diagram"> across all 3 diagram pages.
@@ -1387,6 +1878,11 @@ async function main() {
     `deck route: single reveal deck at ${DECK_ROUTE} with ${topSections} top-level slides (flattened) + a ` +
       `nested stack, not the Starlight shell (BA-2)`,
   );
+
+  // BA-2b (#13 WP03) — the deck's diagram figures, mode-aware: build → static named
+  // themed inline SVGs (the DeckLayout build-mode path bakes them like a doc page);
+  // client → the pre-#13 `<pre class="mermaid">` reveal-rendered shape.
+  assertDeckDiagramFigures(deckHtml, diagramMode);
 
   // BA-3 — URL parity via the deckSlug oracle (see the DECK_SLUG note). The
   // canonical route is `/${DECK_SLUG}/`; the deck's agent-index entry, its llms.txt

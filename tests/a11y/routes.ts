@@ -26,6 +26,12 @@ export const ROUTES = {
   // `%%` metadata, so both render to a themed `<figure class="dk-diagram">` whose
   // `<svg>` gains `aria-labelledby` (see the render-gate note on `AxePage`).
   diagram: `${BASE}/architecture/diagram-demonstrator/`,
+  // PlantUML demonstrator — the #13 WP02 build-only page (a ```plantuml fence with
+  // `'`-comment metadata). In BUILD mode it renders a themed, named static SVG
+  // figure against the self-hosted server (never plantuml.com); in CLIENT mode
+  // PlantUML has no renderer, so the fence stays a plain code block (no figure).
+  // The diagram e2e's build branch asserts the named figure here (DX-2/DX-5).
+  plantuml: `${BASE}/architecture/plantuml-demonstrator/`,
   // Glossary demonstrator — the CONTEXT-FREE page (WP09 T033). It declares NO
   // `glossary_context`, so it carries BOTH a plain auto-link (`cargo`, single
   // context) AND a `:term`-only forced link (`policy` → the hr context) that a

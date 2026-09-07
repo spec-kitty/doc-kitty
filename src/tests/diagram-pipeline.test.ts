@@ -21,7 +21,11 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import { toHast } from 'mdast-util-to-hast';
 import diagramMeta from '../lib/remark/diagram-meta.js';
-import { mermaidFenceTransform } from '../lib/config.js';
+import {
+  mermaidFenceTransform,
+  sentinelThemeRewrite,
+  DIAGRAM_SENTINELS,
+} from '../lib/config.js';
 import diagramFigure from '../lib/rehype/diagram-figure.js';
 import deckSplit from '../lib/remark/deck-split.js';
 
@@ -257,5 +261,128 @@ describe('diagram pipeline — deck path (real remark→deckSplit→hast→rehyp
     // deck path, not an accidental no-op.
     const section = findFirst(tree, (n) => n.type === 'element' && n.tagName === 'section');
     expect(section, 'expected deckSplit to have wrapped content in a <section>').toBeDefined();
+  });
+});
+
+/**
+ * T003 (build mode) — the sentinel → `var(--dk-diagram-*)` theme rewrite.
+ *
+ * Browser-free: `sentinelThemeRewrite` is a pure hast pass, so a hand-built SVG
+ * fixture (mirroring the shape `@beoe/rehype-mermaid` bakes — colour in a
+ * `<style>` text node, in `fill=`/`stroke=`/`stop-color=` attributes, and in an
+ * inline `style=`) exercises it with zero Chromium. The load-bearing #13
+ * assertion: EVERY sentinel is rewritten to its var (no raw sentinel escapes),
+ * so the static SVG re-themes on `[data-theme]` with no JS.
+ */
+describe('sentinelThemeRewrite (T003 — build-render var() theme rewrite)', () => {
+  const S = DIAGRAM_SENTINELS;
+
+  function svgFixture(): HastNode {
+    return {
+      type: 'root',
+      children: [
+        {
+          type: 'element',
+          tagName: 'svg',
+          properties: {},
+          children: [
+            {
+              type: 'element',
+              tagName: 'style',
+              properties: {},
+              // CSS text node — Mermaid emits node/marker colours here.
+              children: [
+                {
+                  type: 'text',
+                  value: `.node rect{fill:${S['node-fill']};stroke:${S['node-border']}}.marker{fill:${S.edge}}span{color:${S['node-text']}}.cluster rect{fill:${S['cluster-fill']}}.cluster text{fill:${S['subgraph-title']}}`,
+                },
+              ],
+            },
+            {
+              type: 'element',
+              tagName: 'rect',
+              properties: { fill: S['node-fill'], stroke: S['node-border'] },
+              children: [],
+            },
+            {
+              type: 'element',
+              tagName: 'stop',
+              properties: { 'stop-color': S['node-border'] },
+              children: [],
+            },
+            {
+              type: 'element',
+              tagName: 'path',
+              properties: { style: `stroke:${S.edge};fill:none` },
+              children: [],
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  /** Every string value reachable in the tree (property strings + text nodes). */
+  function allStrings(node: HastNode): string[] {
+    const out: string[] = [];
+    const walk = (n: HastNode): void => {
+      if (typeof n.value === 'string') out.push(n.value);
+      for (const [, v] of Object.entries(n.properties ?? {})) {
+        if (typeof v === 'string') out.push(v);
+      }
+      for (const c of n.children ?? []) walk(c);
+    };
+    walk(node);
+    return out;
+  }
+
+  it('rewrites every sentinel — in <style> text AND attributes — to its var(), leaving NO raw sentinel', () => {
+    const tree = svgFixture();
+    sentinelThemeRewrite()(tree as never);
+    const blob = allStrings(tree).join('\n');
+
+    // No raw sentinel hex survives anywhere.
+    for (const hex of Object.values(S)) {
+      expect(blob.toLowerCase()).not.toContain(hex.toLowerCase());
+    }
+    // Each of the six tokens is now referenced as a CSS var, in both the
+    // `<style>` CSS and the presentation attributes.
+    for (const token of Object.keys(S)) {
+      expect(blob).toContain(`var(--dk-diagram-${token})`);
+    }
+    // Spot-check attribute rewrite specifically (fill=/stroke=/stop-color=/style=).
+    const findByTag = (n: HastNode, tag: string): HastNode | undefined => {
+      if (n.tagName === tag) return n;
+      for (const c of n.children ?? []) {
+        const f = findByTag(c, tag);
+        if (f) return f;
+      }
+      return undefined;
+    };
+    expect(findByTag(tree, 'rect')?.properties?.fill).toBe('var(--dk-diagram-node-fill)');
+    expect(findByTag(tree, 'stop')?.properties?.['stop-color']).toBe(
+      'var(--dk-diagram-node-border)',
+    );
+    expect(findByTag(tree, 'path')?.properties?.style).toBe(
+      'stroke:var(--dk-diagram-edge);fill:none',
+    );
+  });
+
+  it('leaves a non-sentinel colour (Mermaid built-in grey) untouched', () => {
+    const tree: HastNode = {
+      type: 'root',
+      children: [
+        {
+          type: 'element',
+          tagName: 'rect',
+          properties: { fill: '#eaeaea', stroke: '#666' },
+          children: [],
+        },
+      ],
+    };
+    sentinelThemeRewrite()(tree as never);
+    const rect = (tree.children?.[0] as HastNode).properties;
+    expect(rect?.fill).toBe('#eaeaea');
+    expect(rect?.stroke).toBe('#666');
   });
 });

@@ -101,8 +101,20 @@ beforeEach(() => {
 });
 
 function buildStack() {
-  const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true });
-  return enumerateDocKittyRemarkStack(arr);
+  // #13 mode-awareness: the diagrams integration wires a MODE-DEPENDENT remark
+  // stage — `mermaidFenceTransform` in CLIENT mode, dropped in BUILD mode. This
+  // re-derive parity gate enumerates the CLIENT stack (where the fence transform
+  // is a real build remark stage to mirror), so force client mode deterministically
+  // rather than let the enumeration depend on whether the runner has Chromium.
+  const prior = process.env.DK_DIAGRAM_BUILD_RENDER;
+  process.env.DK_DIAGRAM_BUILD_RENDER = 'off';
+  try {
+    const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true });
+    return enumerateDocKittyRemarkStack(arr);
+  } finally {
+    if (prior === undefined) delete process.env.DK_DIAGRAM_BUILD_RENDER;
+    else process.env.DK_DIAGRAM_BUILD_RENDER = prior;
+  }
 }
 
 // ---------------------------------------------------------------------------
