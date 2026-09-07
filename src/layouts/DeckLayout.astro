@@ -46,6 +46,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
 import { isPublished } from '../lib/metadata.js';
+import { resolveDiagramMode } from '../lib/config.js';
 import { GLOBAL_COMPONENT_SHEETS, DK_COMPONENTS_CSS_SHEET } from '../lib/theme.js';
 // `?url`: emit each sheet as its own hashed asset linked ONLY from the deck
 // document — the route-import isolation that keeps reveal's core CSS off doc
@@ -114,6 +115,16 @@ const published = isPublished(entry.data);
 const { Content } = await render(entry);
 const title = entry.data.title;
 const description = entry.data.description ?? '';
+
+// Diagram render mode (#13 WP03, FR-005/NFR-001). In BUILD mode the deck's
+// ```mermaid fences are already baked to static inline `<svg>` by the shared
+// markdown pipeline (same as a doc page) — so there is nothing to settle, and the
+// client render owner (`initDiagrams`) is NEITHER imported NOR run on the deck:
+// the reveal INV-SETTLE/SCOPE slide-by-slide machinery is reserved for the CLIENT
+// fallback, where `pre.mermaid` sources still need a browser render. The resolved
+// mode is stamped on `<body data-diagram-mode>` so the client `<script>` (a
+// bundled module that cannot receive frontmatter vars directly) branches on it.
+const diagramMode = resolveDiagramMode();
 ---
 
 <!doctype html>
@@ -175,7 +186,7 @@ const description = entry.data.description ?? '';
       <link rel="stylesheet" href={href} />
     ))}
   </head>
-  <body {...(!published ? { 'data-pagefind-ignore': '' } : {})}>
+  <body data-diagram-mode={diagramMode} {...(!published ? { 'data-pagefind-ignore': '' } : {})}>
     <main class="reveal" aria-label={`${title} — slide deck`}>
       {/* `data-pagefind-body` ONLY for a published deck: the slide content is
           the indexed region. A draft is fully excluded via the root ignore. */}
@@ -279,10 +290,17 @@ const description = entry.data.description ?? '';
       // AFTER reveal readies (INV-A11Y-ORDERING keeps the accTitle/accDescr
       // insertion off the race), and the SSR `<figure>`/`<pre>` stays the no-JS
       // fallback either way (INV-FALLBACK / NFR-003).
-      // `initDiagrams` first (its own chunk) so the degraded whole-doc render
-      // still runs even if reveal enhancement fails. Both are dynamic imports:
-      // string-literal specifiers Vite emits as distinct, route-only chunks.
-      const { initDiagrams } = await import('../lib/diagram/diagram-render.client');
+      // MODE-AWARE (#13 WP03). BUILD mode: the slides already carry static baked
+      // `<svg>`s, so the client render owner is neither imported nor run — the
+      // deck ships/pulls zero diagram runtime (NFR-001) and needs no settle. Only
+      // reveal enhancement (slide navigation) loads. CLIENT fallback: preload the
+      // render owner FIRST (its own chunk) so the degraded whole-doc render still
+      // runs even if reveal enhancement fails, exactly as before. The mode is read
+      // off `<body data-diagram-mode>` (server-stamped from `resolveDiagramMode`).
+      const buildMode = document.body.dataset.diagramMode === 'build';
+      const initDiagrams = buildMode
+        ? null
+        : (await import('../lib/diagram/diagram-render.client')).initDiagrams;
       let controller: DeckController | undefined;
       try {
         const { initDeck } = await import('../lib/deck/reveal-init.client');
@@ -291,7 +309,9 @@ const description = entry.data.description ?? '';
         console.warn('[doc-kitty] deck enhancement failed:', err);
       }
       await whenRevealReady();
-      await initDiagrams(controller);
+      // Client fallback only: a static build SVG needs no settle (INV-SETTLE stays
+      // client-only). `initDiagrams` is `null` in build mode → no client render.
+      if (initDiagrams) await initDiagrams(controller);
 
       // A11y (axe scrollable-region-focusable / WCAG 2.1.1): the deck theme gives
       // a slide's code `<pre>` `overflow:auto`, and reveal's fixed stage can make a

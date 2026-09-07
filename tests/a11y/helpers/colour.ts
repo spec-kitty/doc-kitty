@@ -48,13 +48,21 @@ export function toRgbTriple(value: string): string {
  * Read via `getComputedStyle` so it resolves whether Mermaid set it as a `fill`
  * attribute, inline `style`, or an in-`<svg>` `<style>` rule.
  *
- * NEVER throws: while the async re-render is flushing, the node shape can be
+ * MODE-AGNOSTIC svg locator (#13 WP03): `figure.locator('svg')` matches BOTH the
+ * client `figure > pre.mermaid > svg` (svg is a descendant) and the build
+ * `figure > svg` (a direct child), so the same `--dk-diagram-node-fill` read works
+ * whether the SVG was rendered in the browser (client) or baked at build (build,
+ * where the var re-resolves on `[data-theme]` with no re-render).
+ *
+ * NEVER throws: while the async client re-render is flushing, the node shape can be
  * transiently absent; this resolves `''` (the not-ready sentinel — see
  * `toRgbTriple`) instead of throwing, so a caller polling this via `toPass`
  * retries instead of aborting. */
 export async function nodeFill(figure: Locator): Promise<string> {
-  return figure.locator('pre.mermaid svg').first().evaluate((svg) => {
-    const shape = svg.querySelector('.node rect, .node polygon, .node path, .node circle, .node ellipse');
+  const svg = figure.locator('svg').first();
+  if ((await svg.count()) === 0) return ''; // not-ready sentinel (client mid-flush)
+  return svg.evaluate((el) => {
+    const shape = el.querySelector('.node rect, .node polygon, .node path, .node circle, .node ellipse');
     if (!shape) return '';
     return getComputedStyle(shape as Element).fill;
   });

@@ -2,15 +2,16 @@
 title: Diagrams
 description: "How the diagrams surface fits together: the metadata transform, the single client render owner and its token map, the opt-in seam, and the two shells."
 doc_status: active
-updated: 2026-08-25
+updated: 2026-09-07
 type: Architecture
 kind: Explanation
 authors:
   - stijn@sddevelopment.be
-tags: [diagrams, mermaid, accessibility, theming]
+tags: [diagrams, mermaid, plantuml, build-time, accessibility, theming]
 related:
   - adr/0023-diagram-render-and-metadata-seam
   - adr/0024-diagram-token-promotion-and-brand-wiring
+  - adr/0040-build-time-diagram-render-dual-mode
   - architecture/theming
   - architecture/slide-decks
   - plans/features/diagrams
@@ -127,9 +128,29 @@ no CSP of its own, so nothing conflicts today; this is the note a site author
 needs when adding one. [ADR-0023](../adr/0023-diagram-render-and-metadata-seam.md)
 records the decision — this page is where a consumer finds the consequence.
 
-## Deferred
+## Build-time render (dual-mode)
 
-The build-time render (a static SVG drawn at build, for zero-runtime-JS output)
-and PlantUML are tracked in issue #13 "Enhanced diagram support" and are not part
-of this surface. See the [feature page](../plans/features/diagrams.md) for the
-v1-versus-deferred split.
+Issue #13 added a **build-time** render for **both Mermaid and PlantUML**
+alongside the client render described above ([ADR-0040](../adr/0040-build-time-diagram-render-dual-mode.md)).
+
+- **Mode.** A resolved flag (`DK_DIAGRAM_BUILD_RENDER`, else auto-detect a
+  resolvable Playwright Chromium) selects **build** or **client** per build. Build
+  mode pre-renders each diagram to a static inline `<svg>` and ships no diagram
+  runtime; when no browser is available the build falls back to the client render,
+  byte-identical to before. The mode is gate-observable so every diagram gate
+  branches on it.
+- **Engines.** Mermaid renders via `@beoe/rehype-mermaid` (Playwright/Chromium);
+  PlantUML via `astro-plantuml` against a **self-hosted** server — never
+  `plantuml.com` (the resolver throws on any such URL). Both exact-pinned.
+- **Theme without JavaScript.** Each engine is handed the six `--dk-diagram-*`
+  colours as distinct sentinels (Mermaid `themeVariables`, PlantUML `skinparam`);
+  a rehype pass rewrites every sentinel in the SVG to `var(--dk-diagram-*)`, so a
+  `[data-theme]` toggle re-themes the static SVG by pure CSS. The token contract
+  and its contrast guarantees are unchanged.
+- **Accessibility + figure.** The `%%` (Mermaid) / `'` (PlantUML) metadata injects
+  the accessible name into the SVG (`<title>`/`<desc>`); the same `diagram-figure`
+  wraps it in `<figure role="group" aria-labelledby>` + `<figcaption>`.
+- **CI + deploy** build-render both engines (Chromium in the build composite; a
+  self-hosted PlantUML `services:` container) with a disk cache so an unchanged
+  diagram never relaunches the engines. PlantUML has no client renderer, so in
+  client mode a ```plantuml block is a plain code fence.

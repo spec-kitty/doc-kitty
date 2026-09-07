@@ -63,10 +63,43 @@ jobs:
       needs.detect-changes.outputs.example_content == 'true' ||
       needs.detect-changes.outputs.workflows == 'true'
     runs-on: ubuntu-latest
+    # Build-render infra (#13 WP03 / FR-009), IDENTICAL to the CI build-example job
+    # so what is published matches what the PR gate built (FR-015): a self-hosted
+    # PlantUML `services:` container (never plantuml.com, C-001) + Chromium for
+    # Mermaid (installed by the composite). Diagrams render to BUILD-mode static SVG.
+    services:
+      plantuml:
+        image: plantuml/plantuml-server:jetty
+        ports:
+          - 8091:8080
+    env:
+      DK_DIAGRAM_BUILD_RENDER: 'on'
+      DK_PLANTUML_SERVER_URL: http://localhost:8091/svg/
+      DK_BEOE_CACHE_DIR: ${{ github.workspace }}/.beoe-cache
     steps:
       # Composite actions do not self-checkout; the caller must checkout first.
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # @beoe render cache (#13 WP03 / FR-009) — same key as the CI lane so a mainline
+      # deploy reuses the warm cache and unchanged diagrams skip Chromium.
+      - name: Restore @beoe diagram render cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: .beoe-cache
+          key: beoe-mermaid-${{ runner.os }}-${{ hashFiles('example/docs/**/*.md', 'example/docs/**/*.mdx', 'src/lib/config.ts', 'pnpm-lock.yaml') }}
+          restore-keys: |
+            beoe-mermaid-${{ runner.os }}-
+
+      # Wait for the PlantUML service to accept connections before the build renders
+      # a PlantUML diagram (a failed render fails the build loudly, #13 WP03).
+      - name: Wait for the PlantUML server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:8091/; then echo "PlantUML ready"; exit 0; fi
+            echo "waiting for PlantUML ($i/30)…"; sleep 2
+          done
+          echo "PlantUML did not become ready on :8091" >&2; exit 1
 
       # The ONE build definition, shared with the WP04 build-example CI lane, so
       # what the PR gate builds is exactly what gets published (FR-015).

@@ -19,6 +19,29 @@ export function modeOf(projectName: string): Mode {
   return projectName;
 }
 
+// ---------------------------------------------------------------------------
+// Diagram RENDER mode (#13 WP03) — build vs client — is a property of the SERVED
+// dist, orthogonal to the light/dark colour `Mode` above. The e2e runs against
+// whatever mode the consumed dist was built in (CI's build-example is now BUILD
+// mode), so the diagram specs DETECT it at runtime and branch, never assuming
+// client render. The un-fakeable marker is the figure's own shape: a build-render
+// page holds an inline `<svg>` directly in `figure.dk-diagram` and ships ZERO
+// `pre.mermaid`; the client fallback ships a `<pre class="mermaid">` source that
+// reveal/`initDiagrams` renders into an `<svg>` in the browser. So the presence of
+// ANY `pre.mermaid` on a diagram page is the client marker; its absence is build.
+// ---------------------------------------------------------------------------
+export type RenderMode = 'build' | 'client';
+
+/**
+ * Detect the diagram render mode of the served dist from a page ALREADY navigated
+ * to a diagram route (a `pre.mermaid` ⇒ client fallback; none ⇒ build render).
+ * Homogeneous per dist (#13, the artifact gate enforces homogeneity at build).
+ */
+export async function renderModeOf(page: Page): Promise<RenderMode> {
+  const preCount = await page.locator('pre.mermaid').count();
+  return preCount > 0 ? 'client' : 'build';
+}
+
 // Parse an `rgb(...)`/`rgba(...)` string to a 0-255 perceived luminance.
 function luminance(rgb: string): number {
   const m = rgb.match(/rgba?\(([^)]+)\)/);

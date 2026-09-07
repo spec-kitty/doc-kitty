@@ -83,3 +83,8 @@ example/dist-nomarkua/
 # a dedicated DK_OUTDIR so src/tests/example-adopter.test.ts's own `astro build`
 # never races glossary-build-warning.test.ts's concurrent build of example/dist.
 example/dist-wp04-adopter-example-test/
+
+# @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
+# never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.
+.beoe-cache/
+example/.beoe-cache/

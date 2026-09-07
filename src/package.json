@@ -41,6 +41,8 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",
+    "@beoe/rehype-mermaid": "0.4.2",
+    "astro-plantuml": "1.0.0",
     "gray-matter": "^4.0.3",
     "mermaid": "11.17.1",
     "reveal.js": "6.0.1",

@@ -49,6 +49,21 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: pnpm install --frozen-lockfile
 
+    # Build-render infra (#13 WP03 / FR-009). The diagram build-render stage renders
+    # Mermaid through Playwright/Chromium (`@beoe/rehype-mermaid` → mermaid-isomorphic).
+    # Install ONLY Chromium (allowlisted, explicit — never a silent postinstall), the
+    # SAME browser+version the a11y lane's pinned container ships; the exact version is
+    # governed by the workspace `@playwright/test@1.62.1` pin, so `npx playwright`
+    # resolves that. `--with-deps` needs sudo, which the bare-ubuntu build runner has.
+    # The PlantUML server + the DK_DIAGRAM_BUILD_RENDER / DK_PLANTUML_SERVER_URL env are
+    # JOB-level (a composite cannot declare `services:`), supplied by each caller job.
+    # A build whose caller sets no build-render env still works: `resolveDiagramMode`
+    # then auto-detects this Chromium and build-renders anyway (or falls back to client).
+    - name: Install Chromium for build-render diagrams (allowlisted)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npx playwright install --with-deps chromium
+
     - name: Build the site
       shell: bash
       working-directory: ${{ inputs.working-directory }}

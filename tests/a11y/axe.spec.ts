@@ -45,10 +45,22 @@ for (const pageDef of AXE_PAGES) {
       //     below so the rendered-svg guard root reads a non-zero count. ----------
       if (pageDef.renderWait !== undefined) {
         const expectedCount = pageDef.renderCount ?? 0;
-        const rendered = page.locator(pageDef.renderWait);
+        // MODE-AWARE scope (#13 WP03). `renderCount` is the CURRENT-VIEW diagram
+        // count. On a DECK that must stay true in BOTH render modes: in CLIENT mode
+        // only the present slide's diagram is rendered (slides 2+ defer, INV-SCOPE),
+        // but in BUILD mode EVERY slide carries its static `<svg>` at load — so a
+        // page-wide count would read all deck diagrams (3), not the one on this
+        // slide. Scoping the deck gate to `.reveal section.present` yields the
+        // present slide's diagram count (1) in EITHER mode; a doc page has no
+        // `.reveal`, so it stays page-wide (the demonstrator's 2 visible diagrams).
+        const gateSelector =
+          pageDef.shell === 'deck'
+            ? `.reveal section.present ${pageDef.renderWait}`
+            : pageDef.renderWait;
+        const rendered = page.locator(gateSelector);
         await expect(
           rendered,
-          `render-gate '${pageDef.renderWait}' must resolve to ${expectedCount} diagram(s) on ${pageDef.path}`,
+          `render-gate '${gateSelector}' must resolve to ${expectedCount} diagram(s) on ${pageDef.path}`,
         ).toHaveCount(expectedCount);
         for (const svg of await rendered.all()) {
           await expect(svg, `each gated diagram must be visible on ${pageDef.path}`).toBeVisible();
