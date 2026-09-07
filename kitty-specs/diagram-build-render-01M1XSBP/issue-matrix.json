@@ -1,0 +1,17 @@
+{
+  "rows": {
+    "#13": {
+      "evidence_ref": "WP01-04 (b84067a/2be2ef1/f2c448e/50af9e7): dual-mode build-render Mermaid+PlantUML, themed accessible static SVG, CI infra, ADR-0040; renata APPROVE x4",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}

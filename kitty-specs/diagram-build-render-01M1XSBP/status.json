@@ -1,0 +1,140 @@
+{
+  "event_count": 28,
+  "last_event_id": "01M1Y3W9A5D5F7B08YP1SMGFTD",
+  "materialized_at": "2026-09-07T14:20:42.693678+00:00",
+  "mission_number": "",
+  "mission_slug": "diagram-build-render-01M1XSBP",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 4,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "assignee": "claude-orchestrator",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M1Y3V1GV9J638M46MXK82A2B",
+      "last_transition_at": "2026-09-07T14:20:01.947196+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "fresh opus implementer-ivan",
+        "renata APPROVE; client byte-parity + build-mode gate verified; chromatic-hex guard folded",
+        "Done override: direct-to-feat single_branch: committed on target branch"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://diagram-build-render-01M1XSBP/WP01-mermaid-build-render/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done"
+      }
+    },
+    "WP02": {
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "assignee": "claude-orchestrator",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M1Y3VD38HEEWF40XGM4Q9XMJ",
+      "last_transition_at": "2026-09-07T14:20:13.800929+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "fresh opus implementer-ivan",
+        "renata APPROVE; both-mode oracle verified; never-plantuml.com prose-only; docstring fold",
+        "Done override: direct-to-feat single_branch: committed on target branch"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://diagram-build-render-01M1XSBP/WP02-plantuml-build-render/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "subtasks": {
+        "T101": "done",
+        "T102": "done",
+        "T103": "done",
+        "T104": "done"
+      }
+    },
+    "WP03": {
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "assignee": "claude-orchestrator",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M1Y3VXBRGRZSKZE5PEYWP3C5",
+      "last_transition_at": "2026-09-07T14:20:30.456437+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "fresh opus implementer-ivan",
+        "renata APPROVE; build-mode gate + cache warm-skip + deck verified; folds applied",
+        "Done override: direct-to-feat single_branch: committed on target branch"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://diagram-build-render-01M1XSBP/WP03-ci-baselines-e2e/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "subtasks": {
+        "T201": "done",
+        "T202": "done",
+        "T203": "done"
+      }
+    },
+    "WP04": {
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "assignee": "claude-orchestrator",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M1Y3W9A5D5F7B08YP1SMGFTD",
+      "last_transition_at": "2026-09-07T14:20:42.693678+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "orchestrator-authored docs",
+        "docs gates green; ADR-0040 + architecture + changelog",
+        "Done override: direct-to-feat single_branch: committed on target branch"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://diagram-build-render-01M1XSBP/WP04-docs-adr/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "subtasks": {
+        "T301": "done",
+        "T302": "done"
+      }
+    }
+  }
+}
