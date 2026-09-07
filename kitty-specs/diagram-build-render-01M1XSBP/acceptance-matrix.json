@@ -1,0 +1,160 @@
+{
+  "mission_slug": "diagram-build-render-01M1XSBP",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Mermaid build-render to inline SVG",
+      "proof_type": "automated_test",
+      "evidence": "@beoe/rehype-mermaid build stage; build-mode demonstrator = inline <svg>, no pre.mermaid (b84067a)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Themeable SVG via var(--dk-diagram-*)",
+      "proof_type": "automated_test",
+      "evidence": "38-var sentinel table \u2192 var() rewrite; chromatic-hex gate; toggle = pure CSS (b84067a)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Accessible name + shared figure",
+      "proof_type": "automated_test",
+      "evidence": "accTitle/accDescr \u2192 <title>/<desc>; SVGO override keeps them; figure[role=group]/figcaption (b84067a)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Dual-mode fallback",
+      "proof_type": "automated_test",
+      "evidence": "resolveDiagramMode; client mode byte-identical to pre-#13 baseline (verified)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Deterministic gate-observable mode",
+      "proof_type": "code_review",
+      "evidence": "DK_DIAGRAM_BUILD_RENDER + auto-detect; gates detect mode from figure shape",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "PlantUML build-render inline SVG",
+      "proof_type": "automated_test",
+      "evidence": "astro-plantuml self-hosted; build-mode plantuml page = themed inline SVG (2be2ef1)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "PlantUML '-metadata twin",
+      "proof_type": "automated_test",
+      "evidence": "plantuml-meta.internal.ts twin of diagram-meta; 23 tests (2be2ef1)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Shared figure/caption + theme for PlantUML",
+      "proof_type": "automated_test",
+      "evidence": "sentinelThemeRewrite+diagram-figure extended to raw node; skinparam sentinels (2be2ef1)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "CI+deploy render infra + cache",
+      "proof_type": "automated_test",
+      "evidence": "Chromium composite + PlantUML services container + @beoe zero-dep cache wrapper; warm build skips Chromium (f2c448e)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Mode-aware gates",
+      "proof_type": "automated_test",
+      "evidence": "assert-build-artifacts + diagram.spec.ts branch on mode; both green (b84067a/f2c448e)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Example PlantUML page + baselines",
+      "proof_type": "automated_test",
+      "evidence": "plantuml-demonstrator.md; baselines no-regen (diagram-free home only) (2be2ef1/f2c448e)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata x4)",
+      "verified_at": "2026-09-07T14:21:27.778781+00:00",
+      "notes": ""
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "C-001",
+      "description": "Never plantuml.com",
+      "verification_method": "custom_command",
+      "verification_command": "assertNoPlantumlDotCom (config + artifacts); resolvePlantumlServerUrl throws",
+      "result": "confirmed_absent",
+      "evidence": "self-hosted only; the one built-page mention is prose; gate PASS",
+      "verified_ref": "f2c448e",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "NFR-001",
+      "description": "No diagram runtime JS in build mode",
+      "verification_method": "custom_command",
+      "verification_command": "grep _astro/mermaid on build-mode doc page",
+      "result": "confirmed_absent",
+      "evidence": "no mermaid chunk/request on build-mode diagram pages; deck ships zero diagram runtime",
+      "verified_ref": "f2c448e",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "NFR-002",
+      "description": "Client-fallback byte-parity",
+      "verification_method": "custom_command",
+      "verification_command": "client-mode build sha vs pre-#13 baseline",
+      "result": "confirmed_absent",
+      "evidence": "client-mode mermaid diagram byte-identical to baseline; only corpus delta is the new example page's nav",
+      "verified_ref": "b84067a",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-002",
+      "description": "Pinned render deps",
+      "verification_method": "custom_command",
+      "verification_command": "PINNED_DIAGRAM_DEPS gate",
+      "result": "confirmed_absent",
+      "evidence": "@beoe/rehype-mermaid@0.4.2 + astro-plantuml@1.0.0 exact-pinned; mermaid@11.17.1 kept for fallback",
+      "verified_ref": "2be2ef1",
+      "verified_surface_kind": "branch"
+    }
+  ]
+}
