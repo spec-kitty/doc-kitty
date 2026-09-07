@@ -1,0 +1,53 @@
+{
+  "rows": {
+    "#85": {
+      "evidence_ref": "merged to main (PR #89/#91); this mission is the #90 follow-up",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "verified-already-fixed",
+      "wp": null
+    },
+    "#87": {
+      "evidence_ref": "merged to main (PR #89/#91); this mission is the #90 follow-up",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "verified-already-fixed",
+      "wp": null
+    },
+    "#88": {
+      "evidence_ref": "merged to main (PR #89/#91); this mission is the #90 follow-up",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "verified-already-fixed",
+      "wp": null
+    },
+    "#90": {
+      "evidence_ref": "7fb4014: docs-index.ts neutral owner + Hub opt-in body; renata APPROVE; byte-identical",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}

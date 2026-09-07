@@ -1,0 +1,80 @@
+{
+  "mission_slug": "docs-index-owner-01M1X6TE",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Neutral docs-index module",
+      "proof_type": "code_review",
+      "evidence": "src/lib/docs-index.ts owns collectDocEntries+buildDocsIndex; shared.ts exports neither; docs-root + feed helpers stay (7fb4014)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review)",
+      "verified_at": "2026-09-07T06:07:07.929257+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "All importers rewired",
+      "proof_type": "code_review",
+      "evidence": "rss/agent-index/llms-txt/agent-page + 3 slot components + test import from docs-index.js; grep confirms no shared-sourced import of the moved fns",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review)",
+      "verified_at": "2026-09-07T06:07:07.929257+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Opt-in body on collectDocEntries",
+      "proof_type": "automated_test",
+      "evidence": "collectDocEntries({withBody}) \u2014 default omits body (byte-identical shape), true carries body:''-on-absent; collect-doc-entries-order.test.ts withBody case, 961 unit tests",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review)",
+      "verified_at": "2026-09-07T06:07:07.929257+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Hub uses the shared helper",
+      "proof_type": "automated_test",
+      "evidence": "Hub.astro calls collectDocEntries({withBody:true}); no inline getCollection('docs').map; hub pages byte-identical (selectHubChildren total)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata review)",
+      "verified_at": "2026-09-07T06:07:07.929257+00:00",
+      "notes": ""
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "C-001",
+      "description": "Byte-identical corpus",
+      "verification_method": "custom_command",
+      "verification_command": "pnpm clean && pnpm build + sha256sum example/dist vs pre-change baseline",
+      "result": "confirmed_absent",
+      "evidence": "post-change build 0 differing files vs pre-change baseline (234 files)",
+      "verified_ref": "7fb4014",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-002",
+      "description": "No dependency change",
+      "verification_method": "custom_command",
+      "verification_command": "git diff main..HEAD --name-only | grep package.json/lock",
+      "result": "confirmed_absent",
+      "evidence": "no package.json/lockfile in diff",
+      "verified_ref": "7fb4014",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-003",
+      "description": "Scope: move + importers + Hub + one test; docs-root/feed helpers stay",
+      "verification_method": "custom_command",
+      "verification_command": "git show --stat 7fb4014",
+      "result": "confirmed_absent",
+      "evidence": "docs-index.ts new; shared.ts trimmed; 7 importers + Hub + metadata.DocEntry.body + 1 test + deck-slug/ADR-0021 comment; tsc baseline 30 (renata confirmed no new error class)",
+      "verified_ref": "7fb4014",
+      "verified_surface_kind": "branch"
+    }
+  ]
+}
