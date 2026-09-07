@@ -1,8 +1,8 @@
 ---
 title: Diagrams (Mermaid + PlantUML)
-description: "Author Mermaid diagrams in Markdown; v1 renders them client-side, themed, accessible, and self-contained. PlantUML and the build-time render are deferred to issue #13."
+description: "Author Mermaid and PlantUML diagrams in Markdown, themed, accessible, and self-contained. M5 shipped client-side Mermaid; issue #13 added the build-time static-SVG render for both engines (dual-mode)."
 doc_status: draft
-updated: 2026-08-25
+updated: 2026-09-07
 type: Feature
 kind: Feature
 moscow:
@@ -43,17 +43,21 @@ Scope: Extended.
 - **Decks included.** The same render owner draws diagrams inside the out-of-frame
   reveal.js decks, closing the diagrams-in-slides gap M6 left open.
 
-## Deferred to issue #13
+## Build-time render + PlantUML (delivered by #13)
 
-Two capabilities are tracked in issue **#13 "Enhanced diagram support"** and are
-**not** built in this mission:
+M5 shipped **client-side Mermaid**. Issue **#13 "Enhanced diagram support"** then
+added, on top of it:
 
-- **Build-time render (both engines).** Drawing a static SVG at build for
-  zero-runtime-JS, full no-JS output — via a Playwright/Chromium render.
-- **PlantUML.** PlantUML has no JavaScript renderer, so it needs a self-hosted
-  CI pre-render workflow.
+- **Build-time render (both engines).** A static SVG drawn at build for
+  zero-runtime-JS output, via a Playwright/Chromium render for Mermaid.
+- **PlantUML.** Rendered at build against a **self-hosted** PlantUML server
+  (never `plantuml.com`), with a `'`-comment metadata block matching Mermaid's `%%`.
+- **Dual-mode.** Build-render when a headless browser is available; fall back to
+  the client Mermaid render otherwise. Themed without JavaScript via a
+  `var(--dk-diagram-*)` rewrite; accessibility and the `<figure>` treatment preserved.
 
-See issue #13 for the follow-up design; it is not restated here.
+See [ADR-0040](../../adr/0040-build-time-diagram-render-dual-mode.md) and the
+[diagrams architecture](../../architecture/diagrams.md) for the shipped design.
 
 ## Design
 
