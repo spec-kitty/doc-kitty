@@ -1,0 +1,41 @@
+{
+  "rows": {
+    "#85": {
+      "evidence_ref": "merged PR #89 (2eff97b); this mission is its #87/#88 follow-ups",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "verified-already-fixed",
+      "wp": null
+    },
+    "#87": {
+      "evidence_ref": "7a2c66f: doc-kitty:sitemap-order build:done hook; two-build oracle reproducible; renata APPROVE",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    },
+    "#88": {
+      "evidence_ref": "a856a4b: one compareCodeUnit, intrinsic-total rankers, twins+slot dedup; renata APPROVE + paula ship; byte-neutral",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP02"
+    }
+  },
+  "schema_version": 1
+}

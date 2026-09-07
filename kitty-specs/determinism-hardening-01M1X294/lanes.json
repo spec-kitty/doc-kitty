@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "mission_slug": "determinism-hardening-01M1X294",
+  "mission_id": "01M1X294Q0TYGVWAJ2RH8GY8ZC",
+  "mission_branch": "kitty/mission-determinism-hardening-01M1X294",
+  "target_branch": "feat/determinism-hardening",
+  "lanes": [
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/components/slots/Audience.astro",
+        "src/components/slots/OnThisPage.astro",
+        "src/components/slots/Related.astro",
+        "src/layouts/Hub.astro",
+        "src/lib/catalog.ts",
+        "src/lib/glossary/definitions-payload.ts",
+        "src/lib/glossary/generate.ts",
+        "src/lib/hub-children.mjs",
+        "src/lib/metadata.ts",
+        "src/lib/routes/llms-txt.ts",
+        "src/lib/sections.ts",
+        "src/lib/vocabulary-core.mjs",
+        "src/lib/vocabulary-loader.mjs",
+        "src/scripts/generate-adr-index.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/sitemap-order.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-09-07T04:45:43.559721+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "8bc8981c48b7d2d4fc231c5d75c44293ae1bd06c"
+}

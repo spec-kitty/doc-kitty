@@ -1,0 +1,120 @@
+{
+  "mission_slug": "determinism-hardening-01M1X294",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Sitemap post-build sort",
+      "proof_type": "automated_test",
+      "evidence": "doc-kitty:sitemap-order integration (7a2c66f) sorts each dist/sitemap-N.xml <url> by <loc>; sitemap-order.test.ts 5 cases; built sitemap-0.xml is code-unit sorted (root,/adr/,/adr/0001... )",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata reviews x2; paula lens)",
+      "verified_at": "2026-09-07T05:19:21.833718+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Intrinsic-total rankers",
+      "proof_type": "automated_test",
+      "evidence": "rankForAgents/llms-txt section sort/selectHubChildren append compareCodeUnit tiebreak; shuffle tests fail without it; a856a4b",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata reviews x2; paula lens)",
+      "verified_at": "2026-09-07T05:19:21.833718+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Locale-independent id/path sorts",
+      "proof_type": "code_review",
+      "evidence": "sections/catalog/resolveIndexEntries(+mjs twin)/generate-adr-index route through compareCodeUnit; only two localeCompare remain, pinned 'en' on human-facing titles; a856a4b",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata reviews x2; paula lens)",
+      "verified_at": "2026-09-07T05:19:21.833718+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "One shared code-unit comparator",
+      "proof_type": "code_review",
+      "evidence": "compareCodeUnit single body in vocabulary-core.mjs; compareSlug its alias; glossary inline twins import it; paula verified single-source; a856a4b",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata reviews x2; paula lens)",
+      "verified_at": "2026-09-07T05:19:21.833718+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Component read-paths use shared helpers",
+      "proof_type": "automated_test",
+      "evidence": "Audience/Related/OnThisPage build DocsIndex via shared collectDocEntries+buildDocsIndex; build byte-identical; Hub deferred to #90 (needs body-carrying variant); a856a4b",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata reviews x2; paula lens)",
+      "verified_at": "2026-09-07T05:19:21.833718+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Regression tests",
+      "proof_type": "automated_test",
+      "evidence": "shuffle tests per ranker + sitemap-order test; 960/960 unit (70 files)",
+      "pass_fail": "pass",
+      "verified_by": "claude-orchestrator (renata reviews x2; paula lens)",
+      "verified_at": "2026-09-07T05:19:21.833718+00:00",
+      "notes": ""
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "C-001",
+      "description": "Byte-neutral except sitemap-*.xml",
+      "verification_method": "custom_command",
+      "verification_command": "pnpm clean && pnpm build (x2) + sha256sum example/dist vs pre-mission baseline",
+      "result": "confirmed_absent",
+      "evidence": "two post-change builds byte-identical (0 differing files, incl sitemap-0.xml); vs pre-mission baseline 0 differing files (baseline sitemap was sorted by luck; now guaranteed). api/index.json + llms.txt byte-identical.",
+      "verified_ref": "7a2c66f",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-002",
+      "description": "Locale-independent comparisons",
+      "verification_method": "grep_absence",
+      "verification_command": "grep -rn localeCompare src/lib src/scripts",
+      "result": "confirmed_absent",
+      "evidence": "only two localeCompare remain, both pinned to 'en' on human-facing title order with a compareCodeUnit tiebreak; every id/path/number sort uses compareCodeUnit",
+      "verified_ref": "a856a4b",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-003",
+      "description": "No dependency change",
+      "verification_method": "custom_command",
+      "verification_command": "git diff main..HEAD --name-only | grep package.json/pnpm-lock",
+      "result": "confirmed_absent",
+      "evidence": "no package.json / lockfile in the diff",
+      "verified_ref": "7a2c66f",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "C-004",
+      "description": "One comparator source",
+      "verification_method": "grep_absence",
+      "verification_command": "grep for inline a<b?..:.. twins outside compareCodeUnit",
+      "result": "confirmed_absent",
+      "evidence": "compareCodeUnit single body (vocabulary-core.mjs); no inline twin remains in src/lib/glossary; paula confirmed single-source",
+      "verified_ref": "a856a4b",
+      "verified_surface_kind": "branch"
+    },
+    {
+      "invariant_id": "NFR-003",
+      "description": "Parity twins stay green",
+      "verification_method": "custom_command",
+      "verification_command": "pnpm test (parity guards)",
+      "result": "confirmed_absent",
+      "evidence": ".ts<->.mjs twins (metadata.ts<->vocabulary-core.mjs; sections.ts<->vocabulary-loader.mjs) moved together; 960/960 unit incl parity guards",
+      "verified_ref": "a856a4b",
+      "verified_surface_kind": "branch"
+    }
+  ]
+}
