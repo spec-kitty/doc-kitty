@@ -35,6 +35,7 @@ import {
 import { resolveTheme, DEFAULT_TOKEN_SHEET, type DocKittyTheme } from './theme.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
+import sitemapOrderIntegration from './sitemap-order.js';
 import deckSplit from './remark/deck-split.js';
 import diagramMeta from './remark/diagram-meta.js';
 import diagramFigure from './rehype/diagram-figure.js';
@@ -854,6 +855,12 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     baseAbsoluteLinksIntegration(base),
     // INV-1: draft pages are unpublished, so their URLs are excluded here.
     sitemap({ filter: sitemapDraftFilter(docsDir, base, indexBasename) }),
+    // Make the built sitemap reproducible (#87, FR-001/NFR-001): an
+    // `astro:build:done` step that rewrites each `dist/sitemap-N.xml` with its
+    // `<url>` blocks `<loc>`-sorted (code-unit asc), preserving every byte
+    // outside the contiguous `<url>` run. Registered AFTER `sitemap(...)` so the page files already exist when
+    // the hook runs; the `sitemap-index.xml` is left untouched.
+    sitemapOrderIntegration(),
     // Transport the merged `kind → layout` + `dk:slot → component` maps to the
     // carriers as `virtual:doc-kitty/manifest` (synchronous `resolveLayout`, no
     // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports

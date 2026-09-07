@@ -153,6 +153,7 @@ describe('defineDocKittyIntegrations glossary presence-gate (byte-identity, R-4)
       'doc-kitty:deck-split',
       'doc-kitty:base-absolute-links',
       '@astrojs/sitemap',
+      'doc-kitty:sitemap-order',
       'doc-kitty:manifest',
       'doc-kitty:favicon',
     ];

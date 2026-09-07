@@ -152,6 +152,13 @@ export function enumerateDocKittyRemarkStack(integrations: unknown[]): Enumerate
   const stages: RemarkStage[] = [];
   const perIntegration: IntegrationTally[] = [];
   for (const entry of docKittyIntegrations(integrations)) {
+    // A build-only `doc-kitty:` integration (only an `astro:build:done` hook,
+    // e.g. `doc-kitty:sitemap-order`, #87) registers NO remark stages by
+    // construction, so it is outside this remark-stack enumerator's scope. Skip
+    // it rather than tripping `runSetup`'s config-setup guard: the false-green
+    // hole that guard protects (a hook that reads an omitted setup param and
+    // registers nothing) can only exist where a config:setup hook is PRESENT.
+    if (!entry.hooks?.['astro:config:setup']) continue;
     let remarkCount = 0;
     let rehypeCount = 0;
     for (const cfg of runSetup(entry)) {

@@ -444,6 +444,7 @@ describe('config wiring — markua OFF byte-identity (FR-011, the diagrams:false
     'doc-kitty:deck-split',
     'doc-kitty:base-absolute-links',
     '@astrojs/sitemap',
+    'doc-kitty:sitemap-order',
     'doc-kitty:manifest',
     'doc-kitty:favicon',
   ];
