@@ -25,7 +25,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
-import { identityVocabulary, parseVocabulary } from './vocabulary-core.mjs';
+import { compareCodeUnit, identityVocabulary, parseVocabulary } from './vocabulary-core.mjs';
 
 /**
  * @typedef {import('./vocabulary-core.mjs').VocabularyResolver} VocabularyResolver
@@ -118,7 +118,7 @@ export function loadSectionRegistry(docsRoot) {
     entries.push(entry);
   }
 
-  entries.sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+  entries.sort((a, b) => a.order - b.order || compareCodeUnit(a.id, b.id));
   return entries;
 }
 

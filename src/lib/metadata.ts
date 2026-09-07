@@ -28,6 +28,7 @@ import {
   DOC_TYPES,
   SECTION_TYPE,
   expectedDocType,
+  compareCodeUnit,
 } from './vocabulary-core.mjs';
 
 export { SECTION_TYPE, expectedDocType };
@@ -454,7 +455,7 @@ export function resolveIndexEntries(
   const collisions: IndexCollision[] = [];
   for (const [dir, files] of byDir) {
     if (files.length <= 1) continue;
-    const sorted = [...files].sort((a, b) => rankOf(a) - rankOf(b) || a.localeCompare(b));
+    const sorted = [...files].sort((a, b) => rankOf(a) - rankOf(b) || compareCodeUnit(a, b));
     const [winner, ...rest] = sorted;
     for (const loser of rest) demoted.add(loser);
     collisions.push({ dir, winner: winner!, demoted: rest });
@@ -483,9 +484,25 @@ export function slugFromEntryId(id: string): string {
 }
 
 /**
- * Discoverable entries, grouped nothing — sorted by section then priority.
+ * Discoverable entries, grouped nothing — sorted by section then priority then
+ * title, with a code-unit slug tiebreak APPENDED for totality (#88/FR-002).
  * `order` (the resolved section-id order, from `sectionOrder(registry)`) makes the
  * registry the authority; omitted, it falls back to `SECTION_ORDER` (issue #18).
+ *
+ * INTRINSIC TOTALITY (#88): before this comparator relied on the caller passing a
+ * pre-sorted collection plus a stable `Array#sort` to break ties on section +
+ * priority + title. That is only POSITIONALLY deterministic — a consumer calling
+ * the exported `rankForAgents` on its own (or a shuffled) array could get a
+ * different order for entries tied on all three keys. The final
+ * `compareCodeUnit(a.slug, b.slug)` makes the order a function of the inputs
+ * alone (slugs are unique per entry, so it is total).
+ *
+ * BYTE-NEUTRAL (#88, C-001): the title compare is pinned to the `'en'` locale for
+ * reproducibility, and the slug tiebreak is APPENDED after it — NOT substituted
+ * for it. On the demonstrator no two docs pages share a title, so the slug
+ * tiebreak never fires and the priority-0.5 `context` trio stays in title order
+ * (Domain/Marzipan/Product); the built `api/index.json` / `llms.txt` are
+ * unchanged. Replacing title with slug WOULD reorder that trio — do NOT.
  */
 export function rankForAgents(
   entries: DocEntry[],
@@ -499,20 +516,28 @@ export function rankForAgents(
       if (bySection !== 0) return bySection;
       const byPriority = agentPriority(b.data) - agentPriority(a.data);
       if (byPriority !== 0) return byPriority;
-      return a.data.title.localeCompare(b.data.title);
+      const byTitle = a.data.title.localeCompare(b.data.title, 'en');
+      if (byTitle !== 0) return byTitle;
+      return compareCodeUnit(a.slug, b.slug);
     });
 }
 
 /**
- * Order two route slugs deterministically, ascending.
+ * Order two route slugs deterministically, ascending — the slug-typed alias of
+ * the shared {@link compareCodeUnit} (#85/#88, C-004).
  *
- * WHY a bare `<`/`>` compare and not `localeCompare` (#85/C-001): a UTF-16
- * code-unit comparison (what JS relational operators do) is locale-INDEPENDENT
- * by construction, so CI, a contributor's machine and a container with a
- * different `LANG` all agree on the order.
- * `localeCompare` without an explicit locale reads the runtime default and can
- * therefore rank the same two slugs differently on two machines — which is the
- * very class of nondeterminism this helper exists to remove.
+ * WHY code-unit and not `localeCompare` (#85/C-001): a UTF-16 code-unit
+ * comparison (what JS relational operators do) is locale-INDEPENDENT by
+ * construction, so CI, a contributor's machine and a container with a different
+ * `LANG` all agree on the order. `localeCompare` without an explicit locale
+ * reads the runtime default and can therefore rank the same two slugs
+ * differently on two machines — the very class of nondeterminism this helper
+ * exists to remove.
+ *
+ * WHY an alias and not a second body (#88/FR-004, C-004): `compareCodeUnit` in
+ * the pure-ESM core (`vocabulary-core.mjs`, which this module already imports) is
+ * now the ONE code-unit comparator. `compareSlug` re-exports it under the
+ * slug-typed name #85 introduced, so the two can never drift.
  *
  * Slugs are unique per entry, so any comparator that falls through to this one
  * is TOTAL: for two distinct entries it never returns 0 (contract:
@@ -520,9 +545,7 @@ export function rankForAgents(
  * Shared by {@link rankForFeed} and {@link sortBySlug} so the feed order and
  * the collected-entry order can never drift apart.
  */
-export function compareSlug(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
+export const compareSlug: (a: string, b: string) => number = compareCodeUnit;
 
 /**
  * Copy of `entries` ordered by ascending slug: the stable baseline

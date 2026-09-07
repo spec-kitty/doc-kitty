@@ -165,6 +165,61 @@ describe('rankForFeed total order (#85)', () => {
   });
 });
 
+/**
+ * #88 / FR-002 — `rankForAgents` must be INTRINSICALLY total: order a function of
+ * the inputs alone, not of the caller's pre-sort + a stable `Array#sort`. The
+ * comparator is section → priority desc → title (pinned 'en') → `compareCodeUnit`
+ * on the unique slug, APPENDED for totality. Permutations are hand-built (never
+ * `Math.random`), so a failure is reproducible.
+ */
+describe('rankForAgents total order (#88) — appended slug tiebreak', () => {
+  // Three discoverable entries that tie on section (guides), priority (0.5) AND
+  // title ('Shared') — so ONLY the appended compareCodeUnit(slug) orders them.
+  // Removing that tiebreak reverts to input order (stable sort), reddening this.
+  const tied: DocEntry[] = [
+    { slug: 'guides/omega', data: { title: 'Shared', doc_status: 'active', agent: { priority: 0.5 } } },
+    { slug: 'guides/delta', data: { title: 'Shared', doc_status: 'active', agent: { priority: 0.5 } } },
+    { slug: 'guides/kappa', data: { title: 'Shared', doc_status: 'active', agent: { priority: 0.5 } } },
+  ];
+  const expected = ['guides/delta', 'guides/kappa', 'guides/omega'];
+  const reversed = [...tied].reverse();
+  const rotated = [...tied.slice(1), ...tied.slice(0, 1)];
+
+  it('breaks a section+priority+title tie by ascending slug, identically across permutations', () => {
+    const slugs = (list: DocEntry[]) => rankForAgents(list).map((e) => e.slug);
+    expect(slugs(tied)).toEqual(expected);
+    expect(slugs(reversed)).toEqual(expected);
+    expect(slugs(rotated)).toEqual(expected);
+  });
+
+  it('APPENDS the slug tiebreak AFTER title — title stays primary (guards the demonstrator)', () => {
+    // Two guides tie on section+priority; their title order is the OPPOSITE of
+    // their slug order. Replacing title with slug (the forbidden change that
+    // would reorder the priority-0.5 context trio) would flip this result.
+    const titleVsSlug: DocEntry[] = [
+      { slug: 'guides/aaa', data: { title: 'Zulu', doc_status: 'active', agent: { priority: 0.5 } } },
+      { slug: 'guides/zzz', data: { title: 'Alpha', doc_status: 'active', agent: { priority: 0.5 } } },
+    ];
+    // Title-primary → Alpha (zzz) before Zulu (aaa). Slug-primary would give aaa,zzz.
+    expect(rankForAgents(titleVsSlug).map((e) => e.slug)).toEqual(['guides/zzz', 'guides/aaa']);
+  });
+
+  it('keeps section then priority ahead of the title/slug keys', () => {
+    const mixed: DocEntry[] = [
+      { slug: 'guides/aaa-low', data: { title: 'Low', doc_status: 'active', agent: { priority: 0.1 } } },
+      { slug: 'context/zzz', data: { title: 'Ctx', doc_status: 'active', agent: { priority: 0.0 } } },
+      { slug: 'guides/zzz-high', data: { title: 'High', doc_status: 'active', agent: { priority: 0.9 } } },
+    ];
+    // context section ranks before guides; within guides, priority 0.9 wins over
+    // 0.1 despite 'aaa-low' < 'zzz-high' by slug.
+    expect(rankForAgents(mixed).map((e) => e.slug)).toEqual([
+      'context/zzz',
+      'guides/zzz-high',
+      'guides/aaa-low',
+    ]);
+  });
+});
+
 describe('durable end-to-end (#39/FR-004): a durable doc validates on both arms', () => {
   // `durable` now lives in ONE place — the core `STATUSES` tuple — from which the
   // build schema's `z.enum(STATUSES)` (via `docKittyFields`) and the standalone

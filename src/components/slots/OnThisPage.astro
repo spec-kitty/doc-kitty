@@ -43,6 +43,7 @@
 import process from 'node:process';
 import { getCollection } from 'astro:content';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { buildDocsIndex, collectDocEntries } from '../../lib/routes/shared.js';
 
 import ReferenceItem from '../../themes/spec-kitty/components/molecules/ReferenceItem.astro';
 import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
@@ -50,7 +51,6 @@ import { buildCatalog } from '../../lib/catalog.js';
 import {
   resolveCitation,
   resolveRelated,
-  slugFromEntryId,
   type DocKittyFrontmatter,
   type BibliographyRecord,
   type ToolRecord,
@@ -172,19 +172,9 @@ if (refs.length > 0) {
 
 // --- Related pages (composed M3 body, byte-for-byte behaviour) -----------------
 const related = data.related ?? [];
-const docsIndex: DocsIndex = {};
+let docsIndex: DocsIndex = {};
 if (related.length > 0) {
-  for (const entry of await getCollection('docs')) {
-    const slug = slugFromEntryId(entry.id);
-    const d = entry.data as unknown as DocKittyFrontmatter;
-    docsIndex[slug] = {
-      slug,
-      title: d.title,
-      kind: d.kind ?? '',
-      doc_status: d.doc_status ?? 'draft',
-      ...(d.description !== undefined ? { description: d.description } : {}),
-    };
-  }
+  docsIndex = buildDocsIndex(await collectDocEntries());
 }
 // resolveRelated throws on a dangling ref (FR-004) — do NOT swallow.
 const relatedCards = related.map((ref) => resolveRelated(ref, docsIndex));

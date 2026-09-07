@@ -17,12 +17,11 @@
  * the block's link text stays inside the citing page's Pagefind fragment (NFR-003);
  * `role="navigation"` is the exact a11y mapping of `<nav>`.
  */
-import { getCollection } from 'astro:content';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { buildDocsIndex, collectDocEntries } from '../../lib/routes/shared.js';
 import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
 import {
   resolveRelated,
-  slugFromEntryId,
   type DocKittyFrontmatter,
   type DocsIndex,
 } from '../../lib/metadata.js';
@@ -33,19 +32,9 @@ const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
 const data = route.entry.data as unknown as DocKittyFrontmatter;
 const related = data.related ?? [];
 
-const index: DocsIndex = {};
+let index: DocsIndex = {};
 if (related.length > 0) {
-  for (const entry of await getCollection('docs')) {
-    const slug = slugFromEntryId(entry.id);
-    const d = entry.data as unknown as DocKittyFrontmatter;
-    index[slug] = {
-      slug,
-      title: d.title,
-      kind: d.kind ?? '',
-      doc_status: d.doc_status ?? 'draft',
-      ...(d.description !== undefined ? { description: d.description } : {}),
-    };
-  }
+  index = buildDocsIndex(await collectDocEntries());
 }
 
 // resolveRelated throws on a dangling ref (FR-004) — do NOT swallow.

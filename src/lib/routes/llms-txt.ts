@@ -17,6 +17,7 @@ import {
   sectionLabel,
   type IndexBasenameOption,
 } from '../metadata.js';
+import { compareCodeUnit } from '../vocabulary-core.mjs';
 import {
   loadSectionRegistry,
   sectionLabels,
@@ -96,8 +97,13 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
       sections.set(section, bucket);
     }
 
+    // Section order: registry rank first, then a code-unit tiebreak on the
+    // section key so two sections that tie on rank (e.g. both unregistered) order
+    // deterministically from the keys alone rather than by Map-insertion order
+    // (#88/FR-002). Byte-neutral on the demonstrator (at most one unregistered
+    // section, so the tiebreak never fires).
     const orderedSections = [...sections.keys()].sort(
-      (a, b) => sectionRank(a, order) - sectionRank(b, order),
+      (a, b) => sectionRank(a, order) - sectionRank(b, order) || compareCodeUnit(a, b),
     );
 
     for (const section of orderedSections) {

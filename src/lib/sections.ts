@@ -26,6 +26,7 @@ import { GLOSSARY_OUTPUT_DIRNAME } from './glossary/generate.js';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
+import { compareCodeUnit } from './vocabulary-core.mjs';
 import type { SectionSubtypeRule } from './metadata.js';
 
 /** One authored section: its slug, display label, and integer sort key. */
@@ -84,7 +85,7 @@ export interface ParseSectionsOptions {
 
 /** Stable sort: `order` ascending, ties broken by `id` alphabetically. */
 function byOrderThenId(a: SectionRegistryEntry, b: SectionRegistryEntry): number {
-  return a.order - b.order || a.id.localeCompare(b.id);
+  return a.order - b.order || compareCodeUnit(a.id, b.id);
 }
 
 /**

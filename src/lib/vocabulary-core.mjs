@@ -49,6 +49,33 @@
 import matter from 'gray-matter';
 
 // ---------------------------------------------------------------------------
+// The one code-unit string comparator (#85/#88, C-004)
+// ---------------------------------------------------------------------------
+
+/**
+ * THE single code-unit string comparator: orders two strings by their UTF-16
+ * code units (what JS relational operators do), returning `-1`/`0`/`1`.
+ *
+ * WHY it lives here (#88/FR-004, C-004): the `a < b ? -1 : a > b ? 1 : 0` idiom
+ * and bare `localeCompare` calls were duplicated across the `.ts` modules, their
+ * pure-ESM `.mjs` twins, and the glossary generators. A code-unit comparison is
+ * locale-INDEPENDENT by construction — CI, a contributor's machine, and a
+ * container with a different `LANG` all agree — which is exactly the class of
+ * nondeterminism the determinism-hardening mission removes. This is the ONE home
+ * for that comparator; `metadata.ts`'s `compareSlug` (#85) is its slug-typed
+ * alias, and every id/path/number sort and the two inline glossary twins route
+ * through it (research D2). No new inline `a<b?…` twin or bare `localeCompare`
+ * may be introduced.
+ *
+ * @param {string} a
+ * @param {string} b
+ * @returns {number} `-1` if `a < b`, `1` if `a > b`, else `0`.
+ */
+export function compareCodeUnit(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+// ---------------------------------------------------------------------------
 // Canonical vocabulary sets (single-sourced — #49 / data-model)
 //
 // Each is a JSDoc-const literal tuple so WP02 can write `z.enum(STATUSES)` and
@@ -498,7 +525,7 @@ export function detectIndexCollisions(relPaths, indexBasename = DEFAULT_INDEX_BA
   const collisions = [];
   for (const [dir, files] of byDir) {
     if (files.length <= 1) continue;
-    const sorted = [...files].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+    const sorted = [...files].sort((a, b) => rank(a) - rank(b) || compareCodeUnit(a, b));
     collisions.push({ dir, winner: sorted[0], demoted: sorted.slice(1) });
   }
   return collisions;

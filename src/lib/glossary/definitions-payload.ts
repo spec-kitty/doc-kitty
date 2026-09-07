@@ -30,6 +30,7 @@
  * run-to-run — the dev-watcher idempotency the config hook relies on.
  */
 import { createPageProcessor } from './page-processor.js';
+import { compareCodeUnit } from '../vocabulary-core.mjs';
 import type { SharedTermIndex } from './types.js';
 
 /** The island's payload shape: context name → term name → plain-text definition. */
@@ -119,9 +120,7 @@ export function buildDefinitionsPayload(index: SharedTermIndex): DefinitionsPayl
     const context = index.contexts.get(contextName);
     if (context === undefined) continue;
     const terms: Record<string, string> = {};
-    const sorted = [...context.terms].sort((a, b) =>
-      a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
-    );
+    const sorted = [...context.terms].sort((a, b) => compareCodeUnit(a.name, b.name));
     for (const term of sorted) terms[term.name] = stripMarkdown(term.definition);
     payload[contextName] = terms;
   }
