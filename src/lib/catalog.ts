@@ -18,6 +18,7 @@ import {
   type ToolRecord,
   type CitationCatalog,
 } from './metadata.js';
+import { compareCodeUnit } from './vocabulary-core.mjs';
 
 // Re-export the WP01 resolver + shapes so a consumer imports the whole catalog
 // surface from one module (the route wants both `buildCatalog` and the resolver).
@@ -81,6 +82,6 @@ export function projectBibliography(
   records: readonly BibliographyRecord[],
   version: string = BIBLIOGRAPHY_API_VERSION,
 ): BibliographyProjection {
-  const sorted = [...records].sort((a, b) => a.id.localeCompare(b.id));
+  const sorted = [...records].sort((a, b) => compareCodeUnit(a.id, b.id));
   return { version, count: sorted.length, records: sorted };
 }

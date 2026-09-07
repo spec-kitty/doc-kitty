@@ -36,6 +36,7 @@ import { readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
+import { compareCodeUnit } from '../lib/vocabulary-core.mjs';
 
 /** The `NNNN-` ADR number prefix on a filename/slug leaf — the SOLE number source (F6). */
 const ADR_NUMBER = /^(\d{4})-/;
@@ -147,7 +148,7 @@ export function discoverAdrs(adrDir) {
       relpath,
     });
   }
-  entries.sort((a, b) => a.number.localeCompare(b.number));
+  entries.sort((a, b) => compareCodeUnit(a.number, b.number));
   return entries;
 }
 
@@ -187,7 +188,7 @@ export function buildAdrHubCards(adrChildren) {
       date: meta.date,
     });
   }
-  cards.sort((a, b) => a.number.localeCompare(b.number));
+  cards.sort((a, b) => compareCodeUnit(a.number, b.number));
   return cards;
 }
 

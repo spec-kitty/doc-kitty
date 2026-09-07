@@ -82,3 +82,28 @@ describe('selectHubChildren — draft exclusion + published retention (#53)', ()
     expect(kept).toEqual(['context', 'architecture', 'adr']);
   });
 });
+
+/**
+ * #88 / FR-002 — `selectHubChildren` is intrinsically total: section rank →
+ * title (pinned 'en') → `compareCodeUnit(slug)` APPENDED for totality. When two
+ * children of one hub tie on section AND title, ONLY the appended slug tiebreak
+ * separates them; a shuffled input must rank identically. Permutations are
+ * hand-built (no `Math.random`). Removing the appended `compareCodeUnit(a.slug,
+ * b.slug)` reverts tied children to input order (stable sort) and reddens this.
+ */
+describe('selectHubChildren total order (#88) — appended slug tiebreak', () => {
+  // Two children of the `guides` hub tie on section (guides) and title ('Same'),
+  // so their order is decided ONLY by the appended slug tiebreak.
+  const tied: HubChild[] = [
+    child('guides/omega', 'Same', 'Reference', 'active'),
+    child('guides/alpha', 'Same', 'Reference', 'active'),
+  ];
+  const expected = ['guides/alpha', 'guides/omega'];
+
+  it('breaks a section+title tie by ascending slug, identically across permutations', () => {
+    const run = (list: HubChild[]) =>
+      selectHubChildren(list, 'guides', undefined).map((e) => e.slug);
+    expect(run(tied)).toEqual(expected);
+    expect(run([...tied].reverse())).toEqual(expected);
+  });
+});

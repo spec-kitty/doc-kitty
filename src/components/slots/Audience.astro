@@ -14,8 +14,8 @@
  * This is a `<section>` (a labelled region), NOT a `<nav>`: the audience block is
  * page guidance, not a set of navigational links.
  */
-import { getCollection } from 'astro:content';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { buildDocsIndex, collectDocEntries } from '../../lib/routes/shared.js';
 import {
   resolveProfile,
   humanizeProfile,
@@ -30,19 +30,9 @@ const data = route.entry.data as unknown as DocKittyFrontmatter;
 const audience = data.audience ?? [];
 
 // Build the docs index only when this page actually declares an audience.
-const index: DocsIndex = {};
+let index: DocsIndex = {};
 if (audience.length > 0) {
-  for (const entry of await getCollection('docs')) {
-    const slug = slugFromEntryId(entry.id);
-    const d = entry.data as unknown as DocKittyFrontmatter;
-    index[slug] = {
-      slug,
-      title: d.title,
-      kind: d.kind ?? '',
-      doc_status: d.doc_status ?? 'draft',
-      ...(d.description !== undefined ? { description: d.description } : {}),
-    };
-  }
+  index = buildDocsIndex(await collectDocEntries());
 }
 
 const pageSlug = slugFromEntryId(route.entry.id);

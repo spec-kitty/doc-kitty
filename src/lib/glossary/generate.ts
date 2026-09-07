@@ -30,6 +30,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { compareCodeUnit } from '../vocabulary-core.mjs';
 import type { SharedTermIndex, Term } from './types.js';
 
 /**
@@ -197,7 +198,7 @@ export function generateGlossaryPages(index: SharedTermIndex, outDocsDir: string
       terms: data.terms,
       anchors: data.anchors,
     }))
-    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    .sort((a, b) => compareCodeUnit(a.name, b.name));
 
   const glossaryDir = join(outDocsDir, GLOSSARY_OUTPUT_DIRNAME);
   const written: string[] = [];

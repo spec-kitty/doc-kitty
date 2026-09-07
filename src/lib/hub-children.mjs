@@ -21,6 +21,7 @@
 // `.mjs` importer. `metadata` is itself fs/Astro-free, so importing the canonical
 // `isPublished`/`sectionOf`/`sectionRank` keeps this module pure and single-sourced.
 import { isPublished, sectionOf, sectionRank } from './metadata';
+import { compareCodeUnit } from './vocabulary-core.mjs';
 import { buildAdrHubCards } from '../scripts/generate-adr-index.mjs';
 
 /** The parent slug of a route slug ('' for a top-level page or the root). */
@@ -60,7 +61,13 @@ export function selectHubChildren(entries, currentSlug, order) {
         sectionRank(sectionOf(a.slug), order) -
         sectionRank(sectionOf(b.slug), order);
       if (bySection !== 0) return bySection;
-      return a.data.title.localeCompare(b.data.title);
+      // Title order (pinned to 'en' for reproducibility), with a code-unit slug
+      // tiebreak APPENDED for intrinsic totality (#88/FR-002). Byte-neutral: no
+      // hub has duplicate-titled children on the demonstrator, so the tiebreak
+      // never fires; slugs are unique so it makes the comparator total.
+      const byTitle = a.data.title.localeCompare(b.data.title, 'en');
+      if (byTitle !== 0) return byTitle;
+      return compareCodeUnit(a.slug, b.slug);
     });
 }
 
