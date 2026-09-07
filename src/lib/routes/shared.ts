@@ -1,57 +1,15 @@
 /**
- * Shared plumbing for the Doc Kitty route handlers: read the `docs` collection
- * and adapt Astro entries to the framework-agnostic `DocEntry` shape used by
- * the metadata helpers.
+ * Route plumbing for the Doc Kitty handlers: the docs-root resolver (#22) and
+ * the feed URL/XML helpers (`absolute`/`xmlEscape`). The docs-collection
+ * adapter + index builder moved to `../docs-index.ts` (issue #90), which routes
+ * AND components share.
  */
 import path from 'node:path';
 import process from 'node:process';
 import { getCollection } from 'astro:content';
-import type { DocEntry, DocKittyFrontmatter, DocsIndex, IndexBasenameOption } from '../metadata.js';
-import { readmeToIndexId, slugFromEntryId, sortBySlug } from '../metadata.js';
+import type { IndexBasenameOption } from '../metadata.js';
+import { readmeToIndexId, slugFromEntryId } from '../metadata.js';
 import { withBase } from '../with-base.js';
-
-/**
- * Load every docs entry as a `DocEntry`. With the README-as-index loader, an
- * entry's `id` is already the route slug ("" for the root, "how-to/pages", …).
- *
- * ORDER: slug ascending, regardless of the collection's own order (#85; contract:
- * `kitty-specs/feed-order-determinism-01M1VV64/contracts/feed-order.md`). The
- * content store is filled in the completion order of Astro's concurrent glob
- * loader, so its insertion order is build-timing noise; sorting here makes every
- * downstream surface order-stable BY CONSTRUCTION rather than one comparator at
- * a time. Consumers may treat this as a stable baseline but MUST still sort by
- * their own total key when they need a different order.
- */
-export async function collectDocEntries(): Promise<DocEntry[]> {
-  const entries = await getCollection('docs');
-  return sortBySlug(
-    entries.map((entry) => ({
-      slug: slugFromEntryId(entry.id),
-      data: entry.data as unknown as DocKittyFrontmatter,
-    })),
-  );
-}
-
-/**
- * Flatten `DocEntry`s into the `DocsIndex` shape the resolvers consume: a map
- * keyed by route slug whose values are `{ slug, title, kind, doc_status,
- * description }`. Built from the FULL collection (not the discoverable subset)
- * so a `related` ref to a non-discoverable page still resolves — a dangling ref
- * is build-fatal by design (FR-004), never silently dropped.
- */
-export function buildDocsIndex(entries: DocEntry[]): DocsIndex {
-  const index: DocsIndex = {};
-  for (const { slug, data } of entries) {
-    index[slug] = {
-      slug,
-      title: data.title,
-      kind: data.kind ?? '',
-      doc_status: data.doc_status ?? 'draft',
-      ...(data.description !== undefined ? { description: data.description } : {}),
-    };
-  }
-  return index;
-}
 
 /**
  * The minimal content-layer entry shape the docs-root resolver reads: the store

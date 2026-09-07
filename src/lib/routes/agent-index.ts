@@ -12,7 +12,8 @@ import type { APIRoute } from 'astro';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
 import { loadSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
-import { absolute, buildDocsIndex, collectDocEntries, docsRoot } from './shared.js';
+import { absolute, docsRoot } from './shared.js';
+import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 
 export interface AgentIndexRouteOptions {
   title: string;

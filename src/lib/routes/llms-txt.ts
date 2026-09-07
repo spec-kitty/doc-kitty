@@ -27,7 +27,8 @@ import {
   feedsSurface,
 } from '../sections.js';
 import { DESCRIPTION_MAX } from '../schema.js';
-import { absolute, collectDocEntries, docsRoot } from './shared.js';
+import { absolute, docsRoot } from './shared.js';
+import { collectDocEntries } from '../docs-index.js';
 
 export interface LlmsTxtRouteOptions {
   title: string;

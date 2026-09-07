@@ -14,7 +14,8 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import type { AudienceEntry, DocKittyFrontmatter, ResolvedRelated } from '../metadata.js';
 import { pageSourceId, resolveRelated, slugFromEntryId, toAgentRecord } from '../metadata.js';
-import { absolute, buildDocsIndex, collectDocEntries } from './shared.js';
+import { absolute } from './shared.js';
+import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 
 export function agentPageRoute() {
   const getStaticPaths: GetStaticPaths = async () => {
