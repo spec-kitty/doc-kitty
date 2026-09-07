@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "mission_slug": "docs-index-owner-01M1X6TE",
+  "mission_id": "01M1X6TEZBBDGMQX4D09XNQTAK",
+  "mission_branch": "kitty/mission-docs-index-owner-01M1X6TE",
+  "target_branch": "feat/docs-index-owner",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/components/slots/Audience.astro",
+        "src/components/slots/OnThisPage.astro",
+        "src/components/slots/Related.astro",
+        "src/layouts/Hub.astro",
+        "src/lib/deck/deck-slug.ts",
+        "src/lib/docs-index.ts",
+        "src/lib/metadata.ts",
+        "src/lib/routes/agent-index.ts",
+        "src/lib/routes/agent-page.ts",
+        "src/lib/routes/llms-txt.ts",
+        "src/lib/routes/rss.ts",
+        "src/lib/routes/shared.ts",
+        "src/tests/collect-doc-entries-order.test.ts"
+      ],
+      "predicted_surfaces": [],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-07T05:54:35.174775+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "5ee48908974d5eb615985f6f22020ad9ceafe2a9"
+}

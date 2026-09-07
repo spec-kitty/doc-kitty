@@ -1,0 +1,29 @@
+{
+  "accept_commit": "17483458fdf4056673fb115153d6d662cf1c6db0",
+  "acceptance_history": [
+    {
+      "accept_commit": "17483458fdf4056673fb115153d6d662cf1c6db0",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-09-07T06:08:42.138782+00:00",
+      "accepted_by": "claude-orchestrator",
+      "accepted_from_commit": "1acc58d0db77a93c6ee26b9b5238258eddc71dc0"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-09-07T06:08:42.138782+00:00",
+  "accepted_by": "claude-orchestrator",
+  "accepted_from_commit": "1acc58d0db77a93c6ee26b9b5238258eddc71dc0",
+  "created_at": "2026-09-07T05:52:54.251839+00:00",
+  "flattened": false,
+  "friendly_name": "Docs-index neutral owner + Hub dedup (#90)",
+  "mission_id": "01M1X6TEZBBDGMQX4D09XNQTAK",
+  "mission_number": null,
+  "mission_slug": "docs-index-owner-01M1X6TE",
+  "mission_type": "software-dev",
+  "purpose_context": "paula-patterns follow-up #90 from the determinism-hardening mission: the docs-index derivation is route-scoped but now shared by components too, and Hub still inlines a body-carrying copy. Behaviour-preserving.",
+  "purpose_tldr": "Move collectDocEntries/buildDocsIndex to a neutral src/lib/docs-index.ts shared by routes and components; opt-in body so Hub.astro drops its inline copy. Byte-neutral. Final #85->#88 follow-up; spawns no more.",
+  "slug": "docs-index-owner-01M1X6TE",
+  "status_phase": "1",
+  "target_branch": "feat/docs-index-owner",
+  "topology": "single_branch"
+}
