@@ -56,6 +56,16 @@ sections:
     order: 40
     type: Guide
 
+  # ars-rethorica-example-01M204RR WP02 (FR-002/FR-003): custom showcase
+  # section — a real Markua-authored conversion of Aristotle's Rhetoric Book I,
+  # demonstrating the ADR-0004 *tolerated* custom-section path. Only the
+  # top-level `rhetoric` folder is registered; `book-one/`, `book-two/`, and
+  # `book-three/` nest automatically as Starlight sidebar sub-groups.
+  - id: rhetoric
+    label: Rhetoric
+    order: 45
+    type: Reference
+
   - id: presentations
     label: Presentations
     order: 50
