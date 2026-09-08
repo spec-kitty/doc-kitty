@@ -1,0 +1,198 @@
+{
+ "mission_slug": "ars-rethorica-example-01M204RR",
+ "mission_number": "",
+ "mission_type": "software-dev",
+ "overall_verdict": "pass",
+ "criteria": [
+  {
+   "criterion_id": "FR-001",
+   "description": "Verify FR-001 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Book I converted: Intro + Preamble + 15 chapters render (WP03-06 approved); build 70 pages, faithfulness verified (footnote counts match source per chapter).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-002",
+   "description": "Verify FR-002 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Nested showcase under example/docs/rhetoric/; flagship convention content untouched (WP02 review confirmed only owned files changed).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-003",
+   "description": "Verify FR-003 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Custom three-book section registered (order 45) + Book I/II/III landings; ADR-0004 tolerated path, build green (WP02).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-004",
+   "description": "Verify FR-004 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Footnotes first-class Markua feature: markua-footnotes strips leading caret; assert:markua both-mode PASS; ADR-0041 (WP01 opus-approved).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-005",
+   "description": "Verify FR-005 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Editor's-note {blurb,icon:pencil} callouts render as dk-callout with pencil glyph across chapters (WP03-06 + squad a11y lens).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-006",
+   "description": "Verify FR-006 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Book directives {pagebreak}/{mainmatter}/{copyright} stripped at conversion; SC-002 grep: 0 literal markers in dist/rhetoric.",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-007",
+   "description": "Verify FR-007 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "[#t] auto-title xrefs degraded to root-absolute readable links; squad link lens confirmed all land on real anchors.",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-008",
+   "description": "Verify FR-008 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Native glossary: rhetoric Contextive context (10 terms) generates /glossary/rhetoric/; autolinks on rhetoric pages (WP07).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-009",
+   "description": "Verify FR-009 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Two constructed kind:Persona pages wired to audience surface; hub shows 3 active; audience refs resolve (WP08).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-010",
+   "description": "Verify FR-010 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "CC-BY-SA-4.0 attribution: about-and-license page credits Freese/Perseus + Dejongh revamp; bibliography freese-rhetoric-1926 cited on all rhetoric pages (WP03).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-011",
+   "description": "Verify FR-011 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Callout aliases normalised: class:info->information, bare icon:pencil->fa-pencil; callouts render (WP03-06).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-012",
+   "description": "Verify FR-012 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Feature page doc_status active; roadmap row updated; changelog entry added (WP09).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "FR-013",
+   "description": "Verify FR-013 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "ADR-0041 records footnote decision + spike outcome + deck scoping + degradation rules (WP01).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "NFR-001",
+   "description": "Verify NFR-001 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Byte-neutral when Markua off: pass gated by markuaActive, guardDeck; assert:markua preset-off inert; 0-byte article-body diff (WP01+WP09).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "NFR-002",
+   "description": "Verify NFR-002 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "a11y: rhetoric hub + chapter-01 opted into AXE_PAGES, pass axe 4/4 light+dark; callouts + footnotes accessible (WP09 + squad).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "NFR-003",
+   "description": "Verify NFR-003 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "No broken links: assert:no-broken-links (fail-closed) green on full assembled build (WP09 + squad link lens).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "NFR-004",
+   "description": "Verify NFR-004 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Authoring lint: markdownlint-cli2 0 issues, Vale 0 errors on all new pages (every content WP + WP09).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "NFR-005",
+   "description": "Verify NFR-005 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Gate suite: toolkit 1023/1023, test:a11y 172/172, validate:*, assert:artifacts (ratchet 56), assert:markua green; PlantUML BUILD gate CI-provided (WP09).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  },
+  {
+   "criterion_id": "NFR-006",
+   "description": "Verify NFR-006 is satisfied",
+   "proof_type": "automated_test",
+   "evidence": "Determinism: two clean rebuilds -> sitemap-0.xml + rss.xml byte-identical; pre-existing page order intact (squad architecture lens).",
+   "pass_fail": "pass",
+   "verified_by": "claude",
+   "verified_at": "2026-09-08T15:11:49.474093+00:00",
+   "notes": ""
+  }
+ ]
+}
