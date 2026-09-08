@@ -92,7 +92,7 @@ tree; the second competes with Leanpub, which we are not doing.
 | Diagrams (Mermaid + PlantUML) | M5 | Should | Extended | High value for technical docs; build-time, self-contained. |
 | Doctrine variation | M7 | Should | Extended | Recast the convention into charter/doctrine; governance and quality. |
 | Glossary + Contextive | M4 | Should | Extended | Ubiquitous-language support is high value; the auto-linking effort and a Contextive dependency keep it out of MVP. |
-| Example content from ars-rethorica | — | Could | Extended | A realistic Markua showcase; depends on Markua support. |
+| Example content from ars-rethorica | ars-rethorica-example | Could | Extended | Delivered — the ars-rethorica showcase corpus (Introduction, Preamble, Book I 15 chapters, Book II/III landings, generated rhetoric glossary, two active reader personas) ships in the example site. |
 | Mission status portal | — | Could | Extended | Repository portal; depends on spec-kitty integration. |
 | QA portal | — | Could | Extended | Repository portal; depends on CI test artifacts. |
 | Ticketing report | — | Could | Extended | Repository portal; adaptor work, GitHub first. |
