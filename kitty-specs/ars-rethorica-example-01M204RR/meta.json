@@ -1,0 +1,18 @@
+{
+  "coordination_branch": "kitty/mission-ars-rethorica-example-01M204RR",
+  "created_at": "2026-09-08T09:14:44.225301+00:00",
+  "flattened": false,
+  "friendly_name": "Example content from ars-rethorica",
+  "mission_id": "01M204RR40YR1QQAQV8Q8N3NN3",
+  "mission_number": null,
+  "mission_slug": "ars-rethorica-example-01M204RR",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The example docsite currently uses synthetic content. This mission nests a genuine content showcase inside it, converting Book I of the CC-BY-SA-4.0 ars-rethorica (Aristotle's Rhetoric) into Markua-rich docsite pages, so prospective adopters see the toolkit exercised on real writing with real attribution, custom sections, footnotes, a native glossary, and reader personas.",
+  "purpose_tldr": "Give the example site a real Markua-authored showcase converted from an open-license book, instead of placeholder prose.",
+  "slug": "ars-rethorica-example-01M204RR",
+  "source_description": "Converts Book I of the CC-BY-SA-4.0 Markua book github.com/stijn-dejongh/ars-rethorica (revamp of the public-domain J.H. Freese 1926 translation of Aristotle's Rhetoric via the Perseus Project) into a nested content showcase inside example/.",
+  "target_branch": "feat/ars-rethorica-example",
+  "topology": "coord",
+  "vcs": "git"
+}

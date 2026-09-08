@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP04",
+  "captured_at": "2026-09-08T13:42:52Z",
+  "base_branch": "feat/ars-rethorica-example",
+  "base_commit": "645e7ff59e947d807aff01589493f371fa663e29",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

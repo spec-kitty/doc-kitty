@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-09-08T09:15:23.804995Z",
+      "decision_id": "01M204SYRWNJMSNADEMP1BY7PZ",
+      "final_answer": "First-class general Markua feature: a 6th opt-in feature normalising [^^N] to [^N] for remark-gfm footnotes, working on any page, with an ADR and pipeline tests.",
+      "input_key": "footnote_feature_generality",
+      "mission_id": "01M204RR40YR1QQAQV8Q8N3NN3",
+      "mission_slug": "ars-rethorica-example-01M204RR",
+      "opened_by": "cli",
+      "options": [
+        "First-class general Markua feature",
+        "Showcase-scoped transform only",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Should footnote support ([^^0_1]) ship as a first-class, general Markua-subset feature (6th opt-in feature: works on any page, ADR + tests), or be scoped narrowly to just this showcase content?",
+      "rationale": null,
+      "resolved_at": "2026-09-08T09:24:54.374843Z",
+      "resolved_by": null,
+      "slot_key": "specify.footnotes.generality",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M204RR40YR1QQAQV8Q8N3NN3",
+  "version": 1
+}

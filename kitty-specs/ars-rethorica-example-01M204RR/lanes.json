@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "mission_slug": "ars-rethorica-example-01M204RR",
+  "mission_id": "01M204RR40YR1QQAQV8Q8N3NN3",
+  "mission_branch": "kitty/mission-ars-rethorica-example-01M204RR",
+  "target_branch": "feat/ars-rethorica-example",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/adr/0041-markua-footnotes.md",
+        "example/docs/guides/markua-footnotes-malformed.md",
+        "example/docs/guides/markua-footnotes-showcase.md",
+        "src/lib/config.ts",
+        "src/lib/remark/markua-footnotes.internal.ts",
+        "src/lib/remark/markua-footnotes.ts",
+        "src/scripts/assert-markua-builds.mjs",
+        "src/tests/markua-footnotes.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "example/docs/_meta/sections.yaml",
+        "example/docs/rhetoric/book-one/index.md",
+        "example/docs/rhetoric/book-three/index.md",
+        "example/docs/rhetoric/book-two/index.md",
+        "example/docs/rhetoric/index.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "dashboard"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "example/docs/_meta/bibliography.yaml",
+        "example/docs/rhetoric/about-and-license.md",
+        "example/docs/rhetoric/introduction.md",
+        "example/docs/rhetoric/preamble.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "example/.contextive/definitions.yaml"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "example/docs/context/audience/rhetoric-practitioner.md",
+        "example/docs/context/audience/rhetoric-student.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "example/docs/rhetoric/book-one/chapter-01.md",
+        "example/docs/rhetoric/book-one/chapter-02.md",
+        "example/docs/rhetoric/book-one/chapter-03.md",
+        "example/docs/rhetoric/book-one/chapter-04.md",
+        "example/docs/rhetoric/book-one/chapter-05.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "example/docs/rhetoric/book-one/chapter-06.md",
+        "example/docs/rhetoric/book-one/chapter-07.md",
+        "example/docs/rhetoric/book-one/chapter-08.md",
+        "example/docs/rhetoric/book-one/chapter-09.md",
+        "example/docs/rhetoric/book-one/chapter-10.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "example/docs/rhetoric/book-one/chapter-11.md",
+        "example/docs/rhetoric/book-one/chapter-12.md",
+        "example/docs/rhetoric/book-one/chapter-13.md",
+        "example/docs/rhetoric/book-one/chapter-14.md",
+        "example/docs/rhetoric/book-one/chapter-15.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "docs/changelog/2026-09-08-ars-rethorica-example.md",
+        "docs/plans/features/example-content-ars-rethorica.md",
+        "docs/plans/roadmap.md",
+        "src/scripts/assert-build-artifacts.mjs",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-09-08T09:47:24.499189+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "5c1b608414f44a5a5fb3e5f3513d7b1ee4c80c85"
+}
