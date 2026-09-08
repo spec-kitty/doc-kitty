@@ -43,6 +43,7 @@ import remarkGfm from 'remark-gfm';
 import { guardDeck } from '../lib/markua/deck-guard.js';
 import { isPresentationFile, isPresentationEntry } from '../lib/deck/is-presentation.js';
 import markuaNormalise from '../lib/remark/markua-normalise.js';
+import markuaFootnotes from '../lib/remark/markua-footnotes.js';
 import markuaAttributes from '../lib/remark/markua-attributes.js';
 import markuaCallouts from '../lib/remark/markua-callouts.js';
 import markuaFigure from '../lib/rehype/markua-figure.js';
@@ -272,18 +273,27 @@ function markuaArrays(): { remark: unknown[]; rehype: unknown[] } {
 }
 
 describe('config.ts — registration-array membership narrows to `markuaTocDemote` (T009, D6/D7)', () => {
-  it('the remark array is the three content passes, BARE, in order', () => {
+  it('the remark array is normalise → guardDeck(footnotes) → attributes → callouts, in order', () => {
     const { remark } = markuaArrays();
-    expect(remark).toEqual([markuaNormalise, markuaAttributes, markuaCallouts]);
+    // The three content passes are BARE (deck-capable by delegation, #47);
+    // `markuaFootnotes` is the one deck-AGNOSTIC remark pass, so it is
+    // `guardDeck`-wrapped at the registration site (ADR-0041) — its real identity
+    // is reachable through `.__inner`, exactly like the rehype `markuaTocDemote`.
+    expect(remark.length).toBe(4);
+    expect(remark[0]).toBe(markuaNormalise);
+    expect((remark[1] as { __inner?: unknown }).__inner).toBe(markuaFootnotes);
+    expect(remark[2]).toBe(markuaAttributes);
+    expect(remark[3]).toBe(markuaCallouts);
   });
 
-  it('no remark member exposes __inner (none are guardDeck-wrapped)', () => {
+  it('only the footnotes pass exposes __inner (the sole guardDeck-wrapped remark member)', () => {
     const { remark } = markuaArrays();
-    for (const member of remark) {
-      expect(
-        (member as { __inner?: unknown }).__inner,
-        `remark member ${(member as { name?: string }).name}`,
-      ).toBeUndefined();
+    const wrapped = remark.filter((m) => (m as { __inner?: unknown }).__inner !== undefined);
+    expect(wrapped.length).toBe(1);
+    expect((wrapped[0] as { __inner?: unknown }).__inner).toBe(markuaFootnotes);
+    // The three content passes stay BARE (deck-capable by delegation).
+    for (const bare of [markuaNormalise, markuaAttributes, markuaCallouts]) {
+      expect((bare as { __inner?: unknown }).__inner).toBeUndefined();
     }
   });
 

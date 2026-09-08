@@ -55,6 +55,7 @@ import {
 // the same modules `config.ts` registers, so `===` holds through `guardDeck.__inner`.
 import diagramMeta from '../lib/remark/diagram-meta.js';
 import markuaNormalise from '../lib/remark/markua-normalise.js';
+import markuaFootnotes from '../lib/remark/markua-footnotes.js';
 import markuaAttributes from '../lib/remark/markua-attributes.js';
 import markuaCallouts from '../lib/remark/markua-callouts.js';
 import glossaryTerm from '../lib/remark/glossary-term.js';
@@ -159,6 +160,11 @@ const CONSCIOUS_EXCLUSIONS: Exclusion[] = [
     plugin: markuaNormalise,
     kind: 'inert',
     why: 'opt-in Markua: compiles `A>`/`W>`/`{aside}` line-prefix runs into containerDirectives; inert on the non-Markua bodies the re-derive corpus uses today (Markua fixtures set tableOfContents:false, so OnThisPage is not exercised).',
+  },
+  {
+    plugin: markuaFootnotes,
+    kind: 'inert',
+    why: 'opt-in Markua: strips the leading `^` off the identifier remark-gfm parsed for a `[^^N_M]` footnote node; inert on the non-Markua bodies the re-derive corpus uses (no `[^^…]` footnote, and a plain GFM `[^x]` has no leading caret to strip).',
   },
   {
     plugin: markuaAttributes,

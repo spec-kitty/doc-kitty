@@ -32,6 +32,7 @@ import remarkDirective from 'remark-directive';
 import markuaAttributes from '../lib/remark/markua-attributes.js';
 import { parseAttrList } from '../lib/remark/markua-attributes.internal.js';
 import markuaNormalise from '../lib/remark/markua-normalise.js';
+import markuaFootnotes from '../lib/remark/markua-footnotes.js';
 import markuaCallouts from '../lib/remark/markua-callouts.js';
 import markuaFigure from '../lib/rehype/markua-figure.js';
 import markuaTocDemote from '../lib/rehype/markua-toc-demote.js';
@@ -520,8 +521,8 @@ describe('config wiring — markua ACTIVE (prepend before Starlight + pinned ord
     const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true });
     const remark = combinedRemark(arr, ['doc-kitty:remark-directive', 'doc-kitty:markua']);
     expect(remark.filter((e) => e === remarkDirective).length).toBe(1);
-    // remarkDirective (unwrapped) → markuaNormalise → markuaAttributes → markuaCallouts.
-    expect(remark.map(deckInner)).toEqual([remarkDirective, markuaNormalise, markuaAttributes, markuaCallouts]);
+    // remarkDirective (unwrapped) → markuaNormalise → markuaFootnotes → markuaAttributes → markuaCallouts.
+    expect(remark.map(deckInner)).toEqual([remarkDirective, markuaNormalise, markuaFootnotes, markuaAttributes, markuaCallouts]);
   });
 
   it('registers the markua rehype stage as [figure, tocDemote]', () => {

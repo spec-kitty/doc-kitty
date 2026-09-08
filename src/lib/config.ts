@@ -45,6 +45,7 @@ import { withMermaidDiskCache, beoeDiskCache, BEOE_CACHE_DIR } from './diagram/b
 import baseAbsoluteLinks from './rehype/base-absolute-links.js';
 import remarkDirective from 'remark-directive';
 import markuaNormalise from './remark/markua-normalise.js';
+import markuaFootnotes from './remark/markua-footnotes.js';
 import markuaAttributes from './remark/markua-attributes.js';
 import markuaCallouts from './remark/markua-callouts.js';
 import markuaFigure from './rehype/markua-figure.js';
@@ -1139,7 +1140,21 @@ function markuaIntegration(): AstroIntegration {
             // deck-safety is proven by their own unit tests, not by a
             // registration-site guard. `deckSplit`/`remarkDirective` are NEVER
             // wrapped — both are out of scope for this guard by design.
-            remarkPlugins: [markuaNormalise, markuaAttributes, markuaCallouts],
+            // `markuaFootnotes` sits AFTER `markuaNormalise`, BEFORE
+            // `markuaAttributes` (ADR-0041, contract `footnote-feature.md`): it
+            // normalises the double-caret footnote nodes `remark-gfm` already
+            // parsed (`[^^N_M]` → clean id `N_M`, stripping the `^` that would
+            // URL-encode into anchors as `%5E`). It is `guardDeck`-wrapped —
+            // footnotes are deck-agnostic in v1, so it no-ops on a deck (mirrors
+            // `markuaTocDemote`, the only other deck-agnostic Markua pass). Gated
+            // by `markuaActive` like the rest: preset-off it is never registered,
+            // so output stays byte-identical (NFR-001).
+            remarkPlugins: [
+              markuaNormalise,
+              guardDeck(markuaFootnotes),
+              markuaAttributes,
+              markuaCallouts,
+            ],
             // Rehype (user stage, before `rehypeImages`/`rehypeHeadingIds`).
             // `markuaFigure` is also registered BARE (D4/C-COMPOSE-05): it wraps
             // every slide body image as a `dk-figure` and skips only the
