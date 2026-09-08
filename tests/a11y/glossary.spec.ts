@@ -476,11 +476,14 @@ test.describe('Glossary no-JS fallback (NFR-005 / R-5)', () => {
 // T034 count-pins — the observable numbers a regression would move.
 // ---------------------------------------------------------------------------
 test.describe('Glossary observable count-pins (T034)', () => {
-  // The three generated glossary routes: the hub + one page per context.
+  // The generated glossary routes: the hub + one page per context. The
+  // ars-rethorica showcase adds a THIRD context (`rhetoric`) alongside the
+  // pre-existing `shipping` and `hr`, so the hub now lists three context pages.
   const GENERATED_ROUTES = [
     `${'/doc-kitty'}/glossary/`,
     `${'/doc-kitty'}/glossary/shipping/`,
     `${'/doc-kitty'}/glossary/hr/`,
+    `${'/doc-kitty'}/glossary/rhetoric/`,
   ];
 
   test('the demonstrator, control, and generated routes carry the pinned counts', async ({
@@ -507,14 +510,16 @@ test.describe('Glossary observable count-pins (T034)', () => {
       await expect(page.locator('main'), `generated route ${route} renders`).toBeVisible();
     }
 
-    // The hub body links exactly the two generated context pages (pins the context
-    // count). The hub uses relative hrefs (`./hr/`, `./shipping/`) that resolve
+    // The hub body links exactly the three generated context pages (pins the
+    // context count: shipping + hr + the showcase's rhetoric). The hub uses
+    // relative hrefs (`./hr/`, `./shipping/`, `./rhetoric/`) that resolve
     // in-browser to the real routes, so match on the relative tail.
     await page.goto(GENERATED_ROUTES[0], { waitUntil: 'domcontentloaded' });
     const hubLinks = page.locator('main .sl-markdown-content a');
-    await expect(hubLinks, 'the hub lists exactly the two context pages').toHaveCount(2);
+    await expect(hubLinks, 'the hub lists exactly the three context pages').toHaveCount(3);
     await expect(page.locator('main .sl-markdown-content a[href$="shipping/"]')).toHaveCount(1);
     await expect(page.locator('main .sl-markdown-content a[href$="hr/"]')).toHaveCount(1);
+    await expect(page.locator('main .sl-markdown-content a[href$="rhetoric/"]')).toHaveCount(1);
 
     // The pinned control route stays term-free (guards the footprint twin).
     await page.goto(ROUTES.prose, { waitUntil: 'domcontentloaded' });

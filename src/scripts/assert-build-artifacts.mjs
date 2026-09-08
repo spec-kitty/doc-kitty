@@ -100,7 +100,22 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 //     (architecture/plantuml-demonstrator.md, doc_status:active, +1) → 30 → 31.
 //     It is the SOLE count-moving published page of WP02 (the build-only twin of
 //     the Mermaid demonstrator).
-const EXPECTED_INDEX_ENTRY_COUNT = 31;
+//   - ars-rethorica-example (#01M204RR) WP09 adds the showcase corpus: +25
+//     published, agent-discoverable pages, 31 → 56. Breakdown (every rhetoric
+//     route is doc_status:active; the WP01 footnote fixtures
+//     guides/markua-footnotes-{showcase,malformed}.md are doc_status:draft and
+//     do NOT count):
+//       · rhetoric hub example/docs/rhetoric/index.md (+1)
+//       · Book I/II/III landings book-{one,two,three}/index.md (+3)
+//       · about-and-license, introduction, preamble (+3)
+//       · book-one/chapter-01..15 (+15)
+//       · the two active personas context/audience/rhetoric-{practitioner,student}.md
+//         (+2; context/audience/draft-persona.md stays draft, +0)
+//       · the codegen'd rhetoric glossary page glossary/rhetoric/index.md (+1)
+//     Sum: 1+3+3+15+2+1 = 25. Verified empirically — a clean
+//     `pnpm --filter example build` yields api/index.json count == 56 and 25
+//     routes matching /rhetoric/ (22 docs + 2 rhetoric personas + 1 glossary).
+const EXPECTED_INDEX_ENTRY_COUNT = 56;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -110,7 +125,10 @@ const EXPECTED_INDEX_ENTRY_COUNT = 31;
 // markua-decks (#47) adds presentations/markua-deck.md (published, +1), 29 → 30.
 // diagram-build-render WP02 (#13) adds architecture/plantuml-demonstrator.md
 // (published, +1), 30 → 31.
-const EXPECTED_SITEMAP_URL_COUNT = 31;
+// ars-rethorica-example (#01M204RR) WP09 adds the same +25 showcase pages
+// (the @astrojs/sitemap filter drops drafts, so the sitemap page-URL count equals
+// the published index set), 31 → 56. See the index-count derivation above.
+const EXPECTED_SITEMAP_URL_COUNT = 56;
 
 // The single draft page (example/docs/adr/template.md, doc_status: draft). Its
 // route MUST NOT appear in the sitemap once the draft filter is in place.

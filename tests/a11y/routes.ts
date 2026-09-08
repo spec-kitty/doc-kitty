@@ -78,6 +78,15 @@ export const ROUTES = {
   // the degraded output (icon-less tip, literal `{aside}`, ignored `{fullbleed:}`)
   // clears WCAG too.
   markuaMalformed: `${BASE}/guides/markua-malformed/`,
+  // Ars Rhetorica showcase — the rhetoric hub (WP02/T003), the Hub-layout landing
+  // for the ported corpus. Scanned in BOTH modes as a real long-form content hub.
+  rhetoricHub: `${BASE}/rhetoric/`,
+  // Ars Rhetorica showcase — Book I, chapter 1 (WP04/T012). The representative
+  // long-form prose page carrying the full footnote apparatus (`[^^…]` →
+  // `class="footnotes"` back-references) AND a `{blurb}` callout (→ `dk-callout`),
+  // so the axe scan covers the corpus's densest reader-facing surface in both
+  // colour modes (SC-005 / the a11y half of the showcase acceptance).
+  rhetoricChapter: `${BASE}/rhetoric/book-one/chapter-01/`,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -331,6 +340,25 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.markuaDeck,
     shell: 'deck',
     guardRoots: DECK_MARKUA_GUARD_ROOTS,
+  },
+  // ars-rethorica-example (WP09 T035) — the rhetoric hub, an in-frame Starlight
+  // Hub-layout landing. Same chrome pattern as the sibling prose/hub routes; no
+  // `renderWait` (no client render). Scanned in BOTH colour modes.
+  {
+    name: 'Rhetoric hub (/rhetoric/)',
+    path: ROUTES.rhetoricHub,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
+  },
+  // ars-rethorica-example (WP09 T035) — Book I chapter 1, the corpus's densest
+  // prose page: footnote apparatus (`class="footnotes"`) + a `{blurb}` callout
+  // (`dk-callout`). Same in-frame Starlight chrome pattern as the sibling prose
+  // routes; no client render, so no `renderWait`. Scanned in BOTH colour modes.
+  {
+    name: 'Rhetoric chapter (/rhetoric/book-one/chapter-01/)',
+    path: ROUTES.rhetoricChapter,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
   },
 ];
 
