@@ -17,3 +17,23 @@
   url: https://llmstxt.org
   issued: "2024"
   note: the agent-facing discovery index this docsite emits
+# `freese-rhetoric-1926` and `perseus-project` are cited by the `rhetoric/`
+# showcase (WP03+) — the public-domain source translation the converted pages
+# derive from (C-002, FR-010). See rhetoric/about-and-license.md for the full
+# attribution notice.
+- id: freese-rhetoric-1926
+  type: book
+  title: "Aristotle, Rhetoric"
+  authors: [Aristotle, "trans. J.H. Freese"]
+  container: Perseus Project
+  url: http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0060
+  issued: "1926"
+  note: public-domain translation; the source this showcase's Rhetoric conversion is derived from
+- id: perseus-project
+  type: webpage
+  title: The Perseus Project
+  authors: [Tufts University]
+  container: Perseus Digital Library
+  url: http://www.perseus.tufts.edu/hopper
+  issued: "1987"
+  note: hosts the Freese translation this showcase converts; curated by Tufts University's department of classical studies

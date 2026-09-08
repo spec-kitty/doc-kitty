@@ -15,6 +15,16 @@ tags: [markua, showcase, fixture, reference]
 # heading is demoted to a <p role="heading">, so Starlight's tagName-keyed
 # collector never sees it), which does not depend on a rendered ToC.
 tableOfContents: false
+# This is a MARKUA construct fixture, not a glossary demonstrator. The rhetoric
+# glossary context (ars-rethorica showcase) defines terms/aliases — e.g. "debate"
+# (an alias of Dialectic) — that collide with the incidental prose of the callout
+# examples (a "discussion" callout example reads "…opens a point for debate"). The
+# auto-linker links only the FIRST occurrence per section, so it would inject a
+# glossary <a> into the first of three otherwise byte-identical equivalence forms,
+# breaking the FR-004 three-form-equivalence invariant. Glossary auto-linking is
+# irrelevant to this page's purpose, so it is opted out here (the glossary-demo/*
+# pages remain the auto-link demonstrators).
+glossary_autolink: false
 ---
 <!-- markdownlint-disable -->
 <!-- This is a Markua fixture: it deliberately contains Markua syntax (headings
