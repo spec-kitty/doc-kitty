@@ -51,5 +51,6 @@ kind: Hub
 | [0038](./0038-decks-markua-capable.md) | ADR-0038: Decks are Markua-capable | Accepted | 2026-09-06 |
 | [0039](./0039-glossary-link-node-aria-label.md) | ADR-0039: One shared glossary link-node builder + aria-label term affordance | Accepted | 2026-09-06 |
 | [0040](./0040-build-time-diagram-render-dual-mode.md) | ADR-0040: Build-time diagram render (Mermaid + PlantUML), dual-mode | Accepted | 2026-09-07 |
+| [0041](./0041-markua-footnotes.md) | ADR-0041: Markua footnotes via remark-gfm identifier normalisation | Accepted | 2026-09-08 |
 
 New ADRs copy [`template.md`](./template.md).

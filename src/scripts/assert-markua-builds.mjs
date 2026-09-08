@@ -38,6 +38,7 @@ import process from 'node:process';
 const REPO_ROOT = path.resolve(path.dirname(process.argv[1]), '..', '..');
 const EXAMPLE_DIR = path.join(REPO_ROOT, 'example');
 const SHOWCASE_RELPATH = path.join('guides', 'markua-showcase', 'index.html');
+const FOOTNOTE_SHOWCASE_RELPATH = path.join('guides', 'markua-footnotes-showcase', 'index.html');
 
 const UNKNOWN_ICON_WARNING = '[markua] unknown icon "fa-obscure-name" — dropped';
 
@@ -66,6 +67,60 @@ async function clearAstroCache(outDir) {
   }
 }
 
+/**
+ * FR-004 footnote gate (both modes; T001 spike outcome, ADR-0041). The
+ * `markua-footnotes-showcase.md` fixture is a doc_status: draft page (so it moves
+ * NO ratchet) but its HTML is still emitted, so both builds can read it.
+ *
+ * `remark-gfm` (Astro/Starlight built-in) ALREADY renders the source's double
+ * caret `[^^N_M]` / `[^^N_M]:` as a footnote in BOTH modes — the spike proved it.
+ * The `markua-footnotes` pass, gated by the preset, only NORMALISES the retained
+ * caret out of the anchor id:
+ *   - Markua ON  → footnote references + a notes list, with CLEAN ids
+ *     (`user-content-fn-0_1`) and NO URL-encoded caret (`%5E`) — the pass ran.
+ *   - Markua OFF → footnotes STILL render (GFM), but with the un-normalised
+ *     raw-caret id (`user-content-fn-%5E0_1`) — the pass is INERT off (NFR-001).
+ * So this is a stronger portability gate than "literal off": it proves the pass
+ * is active on and byte-inert off from the SAME rendered page in each build.
+ */
+async function assertFootnoteShowcase(outDir, mode) {
+  const abs = path.join(EXAMPLE_DIR, outDir, FOOTNOTE_SHOWCASE_RELPATH);
+  let html;
+  try {
+    html = await readFile(abs, 'utf8');
+  } catch (err) {
+    fail(`FR-004 footnotes (${mode}): could not read the footnotes showcase (${abs}): ${err.message}`);
+  }
+  // Both modes: GFM renders a real footnote reference + a back-linked notes list.
+  if (!html.includes('data-footnote-ref')) {
+    fail(`FR-004 footnotes (${mode}): the showcase rendered NO footnote reference (\`data-footnote-ref\`) — GFM footnote rendering is missing.`);
+  }
+  if (!html.includes('data-footnotes')) {
+    fail(`FR-004 footnotes (${mode}): the showcase rendered NO notes list section (\`data-footnotes\`) — the back-linked footnotes are missing.`);
+  }
+  if (mode === 'on') {
+    // The pass ran: the double-caret id is normalised to a clean `0_1` anchor,
+    // and the raw URL-encoded caret must NOT survive anywhere.
+    if (!html.includes('user-content-fn-0_1')) {
+      fail('FR-004 footnotes (on): expected a CLEAN normalised footnote id `user-content-fn-0_1` — the markua-footnotes pass did not strip the source caret.');
+    }
+    if (html.includes('user-content-fn-%5E')) {
+      fail('FR-004 footnotes (on): a raw URL-encoded caret id `user-content-fn-%5E…` leaked with the preset ON — the normalisation did not run.');
+    }
+    ok('FR-004: markua-ON showcase renders footnote refs + notes list with CLEAN `0_1` ids (no `%5E` leak) — the pass ran');
+  } else {
+    // The pass is inert off: GFM's retained raw-caret id must survive verbatim,
+    // and the clean normalised id must be ABSENT (byte-inert off, NFR-001).
+    if (!html.includes('user-content-fn-%5E0_1')) {
+      fail('FR-004 footnotes (off): expected GFM\'s un-normalised raw-caret id `user-content-fn-%5E0_1` preset-OFF — the markua-footnotes pass must be INERT off (NFR-001), leaving the caret in the anchor.');
+    }
+    if (html.includes('user-content-fn-0_1"')) {
+      fail('FR-004 footnotes (off): a CLEANED footnote id `user-content-fn-0_1` appeared with the preset OFF — the markua-footnotes pass ran when it must be inert (NFR-001).');
+    }
+    ok('FR-004: markua-OFF showcase still renders GFM footnotes but keeps the raw-caret `%5E0_1` id — the markua-footnotes pass is INERT off (NFR-001)');
+  }
+}
+
 async function assertMalformedBuildExitsZero() {
   await clearAstroCache('dist');
   const res = runBuild({ DK_MARKUA: 'true' });
@@ -83,6 +138,9 @@ async function assertMalformedBuildExitsZero() {
     );
   }
   ok(`NFR-002: cold markua-ON build EXITS 0 with malformed.md present and emits \`${UNKNOWN_ICON_WARNING}\``);
+  // FR-004: the same cold ON build emits the footnotes showcase — assert it here
+  // (no extra build) that the markua-footnotes pass ran and cleaned the anchors.
+  await assertFootnoteShowcase('dist', 'on');
 }
 
 async function assertPresetOffPortability() {
@@ -138,6 +196,9 @@ async function assertPresetOffPortability() {
     fail('SC-003 portability: a raw `:::` directive leaked into the preset-off HTML (belt-and-braces; the literal-text check is the real gate).');
   }
   ok('SC-003: preset-off build renders A>/{blurb}/{alt:}/{aside} as literal text, emits no Markua construct, no `:::` leak (`:::`-grep noted vacuous preset-off)');
+  // FR-004/NFR-001: the same preset-OFF build proves the markua-footnotes pass is
+  // inert off — GFM still renders footnotes, but with the un-normalised raw-caret id.
+  await assertFootnoteShowcase(outDir, 'off');
 }
 
 async function main() {
