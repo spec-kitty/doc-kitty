@@ -150,6 +150,7 @@ describe('defineDocKittyIntegrations glossary presence-gate (byte-identity, R-4)
     // is present in every named-array shape, glossary-free or not.
     const PINNED_GLOSSARY_FREE_BASELINE = [
       '@astrojs/starlight',
+      'doc-kitty:toc-rail',
       'doc-kitty:deck-split',
       'doc-kitty:base-absolute-links',
       '@astrojs/sitemap',

@@ -442,6 +442,7 @@ describe('config wiring — markua OFF byte-identity (FR-011, the diagrams:false
   // markua/directive, it is never gated) — present in every named-array shape.
   const PINNED_BOTH_OFF_BASELINE = [
     '@astrojs/starlight',
+    'doc-kitty:toc-rail',
     'doc-kitty:deck-split',
     'doc-kitty:base-absolute-links',
     '@astrojs/sitemap',

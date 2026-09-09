@@ -84,6 +84,12 @@ example/dist-nomarkua/
 # never races glossary-build-warning.test.ts's concurrent build of example/dist.
 example/dist-wp04-adopter-example-test/
 
+# collapsible-TOC-rail no-flash structural test build (collapsible-toc-rail-01M23HNA
+# WP04, transient) — src/tests/toc-rail-build-html.test.ts builds into its own
+# dedicated DK_OUTDIR so it never races the shared example/dist or the other build
+# suites' outputs (same isolation pattern as the adopter test dir above).
+example/dist-wp04-tocrail-noflash-test/
+
 # @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.
 .beoe-cache/

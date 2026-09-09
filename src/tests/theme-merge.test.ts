@@ -6,6 +6,7 @@ import {
   emitTokenSheet,
   DEFAULT_TOKEN_SHEET,
   DK_COMPONENTS_CSS_SHEET,
+  TOC_RAIL_CSS_SHEET,
   type DocKittyTheme,
 } from '../lib/theme.js';
 
@@ -66,6 +67,7 @@ describe('resolveTheme — customCss concatenation order', () => {
     expect(resolveTheme(consumer).customCss).toEqual([
       DEFAULT_TOKEN_SHEET,
       DK_COMPONENTS_CSS_SHEET,
+      TOC_RAIL_CSS_SHEET,
       'acme/brand.css',
       'site/site.css',
     ]);
@@ -73,7 +75,7 @@ describe('resolveTheme — customCss concatenation order', () => {
 
   it('two-layer chain (default → brand) proves flattening order', () => {
     const r = resolveTheme(brand);
-    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET, 'acme/brand.css']);
+    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET, TOC_RAIL_CSS_SHEET, 'acme/brand.css']);
     expect(r.tokens['--dk-color-accent']).toBe('#ff5722');
   });
 });
@@ -104,8 +106,8 @@ describe('resolveTheme — no-theme default path (NFR-002 superseded by NFR-004)
   // the token/bridge contract below is unaffected.
   it('undefined yields the token sheet + component sheet, no generated sheet', () => {
     const r = resolveTheme(undefined);
-    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET]); // deep-equal, two entries (NFR-004)
-    expect(r.customCss).toHaveLength(2);
+    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET, TOC_RAIL_CSS_SHEET]); // deep-equal, three entries: token sheet + component sheet + toc-rail sheet (NFR-004)
+    expect(r.customCss).toHaveLength(3);
     expect(r.generated).toBe(false); // WP02 skips emission
   });
 
@@ -119,7 +121,7 @@ describe('resolveTheme — no-theme default path (NFR-002 superseded by NFR-004)
   it('empty object {} is NOT the no-theme path: merges, generated:true, nothing extra', () => {
     const r = resolveTheme({});
     expect(r.generated).toBe(true); // routed through the Default merge
-    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET]); // adds nothing extra
+    expect(r.customCss).toEqual([DEFAULT_TOKEN_SHEET, DK_COMPONENTS_CSS_SHEET, TOC_RAIL_CSS_SHEET]); // adds nothing extra
     expect(r.tokens['--dk-color-bg']).toBe('#ffffff'); // Default catalog present
   });
 });

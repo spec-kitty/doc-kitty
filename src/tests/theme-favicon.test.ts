@@ -169,14 +169,14 @@ describe('defineDocKittyIntegrations favicon + discovery head', () => {
     const config = starlightConfigOf(
       defineDocKittyIntegrations({ title: 'Docs', base: '/doc-kitty' }),
     );
-    const hrefs = (config.head ?? []).map((h) => h.attrs.href);
+    const hrefs = (config.head ?? []).map((h) => h.attrs?.href);
     expect(hrefs).toContain('/doc-kitty/rss.xml');
     expect(hrefs).toContain('/doc-kitty/llms.txt');
   });
 
   it('emits root-relative discovery links when there is no base', () => {
     const config = starlightConfigOf(defineDocKittyIntegrations({ title: 'Docs' }));
-    const hrefs = (config.head ?? []).map((h) => h.attrs.href);
+    const hrefs = (config.head ?? []).map((h) => h.attrs?.href);
     expect(hrefs).toContain('/rss.xml');
     expect(hrefs).toContain('/llms.txt');
   });

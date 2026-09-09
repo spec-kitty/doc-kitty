@@ -23,6 +23,12 @@ import { defineWorkspace } from 'vitest/config';
 const BUILD_SUITES = [
   'tests/example-adopter.test.ts',
   'tests/glossary-build-warning.test.ts',
+  // Collapsible-TOC-rail no-flash build assertion (WP04): also spawns a full
+  // `astro build` (into its own DK_OUTDIR), so it MUST run in this serialized
+  // project — otherwise it races the other two build suites on the shared
+  // `example/.astro` content-layer cache (a concurrent build corrupts the
+  // mid-render cache and surfaces spurious render errors).
+  'tests/toc-rail-build-html.test.ts',
 ];
 
 export default defineWorkspace([

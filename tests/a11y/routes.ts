@@ -364,3 +364,40 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
 
 // axe tag set — includes wcag22aa (SC-002 / NFR-001).
 export const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] as const;
+
+// ---------------------------------------------------------------------------
+// Collapsible TOC rail (collapsible-toc-rail-01M23HNA, WP04 — contract C-4/C-5,
+// FR-004/NFR-003). `toc-rail.interaction.spec.ts` pins the collapse behaviour to a
+// NAMED known-has-TOC route and asserts these guardRoots exist BEFORE it drives the
+// toggle — so a page that ever loses its right-hand TOC fails the spec LOUDLY
+// (non-vacuous) instead of silently exercising nothing.
+//
+// The chosen route is `home` (`/`): its Hub layout deliberately renders in the
+// NORMAL Starlight frame (sidebar + TOC intact — Hub.astro header), it carries real
+// `##` headings (`## Sections`, `## Quick reference`) so Starlight emits the on-page
+// TOC, and it is the visual-regression baseline target (see the baseline note
+// below). `guides/getting-started/` was the contract's alternative, but it has no
+// `##`/`###` headings, so Starlight omits its TOC — home is the reliable pick.
+export const TOC_RAIL_TOGGLE = '#dk-toc-toggle';
+// The right-hand outline rail + Starlight's has-TOC flag (on <html>, the same
+// element the collapse driver `data-toc-collapsed` and the recenter override key
+// on). Their PRESENCE is what makes the collapse test meaningful.
+export const TOC_RAIL_RIGHT_SIDEBAR = '.right-sidebar';
+export const TOC_RAIL_HAS_TOC = 'html[data-has-toc]';
+export const TOC_RAIL_ROUTE = {
+  name: 'home',
+  path: ROUTES.home,
+  // Non-vacuity guard (the anti-laziness / anti-vacuous-green discipline): if home
+  // ever drops its on-page TOC, the interaction spec fails at this gate rather than
+  // reporting a clean pass against a toggle that was never there.
+  guardRoots: [TOC_RAIL_RIGHT_SIDEBAR, TOC_RAIL_HAS_TOC] as const,
+} as const;
+
+// VISUAL BASELINE NOTE (WP04 T016): the collapsible-TOC toggle is GLOBAL desktop
+// chrome (config.ts `tocRailIntegration`, injected unconditionally), so it renders
+// on the home page too and SHIFTS its rendered pixels. The committed
+// `home-{light,dark}.png` snapshots (visual.spec.ts) must therefore be regenerated
+// via the CI `update-a11y-baselines.yml` workflow (a fresh render in the pinned
+// `mcr.microsoft.com/playwright` container). Do NOT regenerate them locally — an
+// off-container baseline is non-deterministic against the CI image (the
+// determinism-hardening lesson) and would poison the gate for everyone else.
