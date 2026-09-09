@@ -1,0 +1,67 @@
+# Consumption test — clean-room proof that a real adopter can install the packed
+# toolkit tarball and build a docsite using ONLY published entrypoints (mission
+# consumption-test-01M22ZF2, contract C-5 / INV-13/INV-14; FR-003..FR-006, NFR-002).
+#
+# Deliberately MINIMAL. This is NOT the diagram/a11y pipeline: it copies ONLY the
+# Node/pnpm setup pattern from ci.yml (corepack → SHA-pinned actions/setup-node,
+# node 22, `cache: pnpm` → root `pnpm install --frozen-lockfile`). It carries NO
+# `services: plantuml` block, NO `@beoe` render cache, and NO `playwright install`
+# / Chromium — the consumption orchestrator hides `src/` and builds the fixture
+# from the tarball, and neither the orchestrator nor the self-test render diagrams
+# or drive a browser. Budget: ≤ 8 min excluding a cache-cold pnpm install (NFR-002).
+name: Consumption test
+
+# PR trigger scoped to the surfaces that can break packaging/consumption: the
+# toolkit source, the consumption harness itself, and this workflow. `paths:` is
+# used directly (per C-5) rather than the shared `.github/filters.yml`. Plus manual
+# dispatch for on-demand runs.
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/consumption/**'
+      - 'docs/guides/**'
+      - '.github/workflows/consumption-test.yml'
+  workflow_dispatch:
+
+# Least privilege: read the repo, nothing more. Fork PRs pass with no secrets.
+permissions:
+  contents: read
+
+# At most one in-progress run per ref; supersede older runs (NFR-006).
+concurrency:
+  group: consumption-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consumption-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      # Node/pnpm setup COPIED from ci.yml (SHA-pinned, node 22, pnpm cache).
+      - name: Enable corepack
+        run: corepack enable
+      - name: Set up Node 22 + pnpm cache
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+      # Clean-room consumption orchestrator (WP01 / contract C-1): packs the
+      # toolkit, installs it into the isolated fixture from the tarball, hides
+      # `src/`, builds, and runs the tarball-portable + consumer-artifact gates.
+      - name: Run consumption test (orchestrator)
+        run: node tests/consumption/scripts/run-consumption-test.mjs
+      # Packaging-gap FAIL-CLOSED self-test (WP05 / contract C-4, INV-15). Runs the
+      # Vitest suite under tests/consumption via its own vitest.config.ts (root
+      # scoped OFF the toolkit standing gate); the `cd src` resolves the vitest
+      # binary from the installed workspace deps.
+      - name: Run packaging-gap self-test (WP05)
+        run: ( cd src && ./node_modules/.bin/vitest run --root ../tests/consumption )
+      # SC-005 enforcement: the adopter guide must reference ONLY published toolkit
+      # entrypoints — no repo-internal (../src, package-internal src/lib) paths.
+      # (WP07 lint; makes the guide's "machine-checked" claim true in the pipeline.)
+      - name: Assert adopter guide uses only published entrypoints (SC-005)
+        run: node tests/consumption/scripts/assert-guide-no-internal-paths.mjs
