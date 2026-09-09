@@ -47,7 +47,7 @@ import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
 import { isPublished } from '../lib/metadata.js';
 import { resolveDiagramMode } from '../lib/config.js';
-import { GLOBAL_COMPONENT_SHEETS, DK_COMPONENTS_CSS_SHEET } from '../lib/theme.js';
+import { GLOBAL_COMPONENT_SHEETS, DK_COMPONENTS_CSS_SHEET, TOC_RAIL_CSS_SHEET } from '../lib/theme.js';
 // `?url`: emit each sheet as its own hashed asset linked ONLY from the deck
 // document — the route-import isolation that keeps reveal's core CSS off doc
 // pages (ADR-0022 D5). Never import these as bare (global) stylesheets.
@@ -62,6 +62,10 @@ import baseTokenHref from '../styles/theme.css?url';
 // C-002). The out-of-frame deck route never receives that global injection, so
 // DeckLayout links it explicitly here (diagram-component-css mission #59/#60/#68).
 import dkComponentsHref from '../styles/dk-components.css?url';
+// GLOBAL_COMPONENT_SHEETS coupling (theme.ts): the collapsible-TOC-rail sheet is
+// a global component sheet, so DeckLayout links it explicitly here too. The
+// iteration below THROWS at build if this import/registration is missing.
+import tocRailHref from '../styles/toc-rail.css?url';
 import deckThemeHref from '../styles/dk-reveal-theme.css?url';
 
 // Single-owner list (`theme.ts` `GLOBAL_COMPONENT_SHEETS`, finding #2 review):
@@ -75,6 +79,7 @@ import deckThemeHref from '../styles/dk-reveal-theme.css?url';
 // silently shipping an unstyled deck.
 const GLOBAL_COMPONENT_HREFS: Record<string, string> = {
   [DK_COMPONENTS_CSS_SHEET]: dkComponentsHref,
+  [TOC_RAIL_CSS_SHEET]: tocRailHref,
 };
 const globalComponentHrefs = GLOBAL_COMPONENT_SHEETS.map((specifier) => {
   const href = GLOBAL_COMPONENT_HREFS[specifier];
