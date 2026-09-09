@@ -1,8 +1,8 @@
 ---
 title: Roadmap
 description: "Phased plan for doc-kitty, split into MVP and extended scope with MoSCoW priorities."
-doc_status: draft
-updated: 2026-08-22
+doc_status: active
+updated: 2026-09-09
 type: Plan
 kind: Planning
 authors:
@@ -14,14 +14,20 @@ related:
 
 # Roadmap
 
-Design-iteration phase; order and scope are provisional. This plan splits the work
-into an MVP and an extended scope, and prioritizes each feature with MoSCoW. The
-per-feature detail lives in [features](./features/); the reasoning behind the
-shape lives in the [decision records](../adr/).
+This plan splits the work into an MVP and an extended scope, and prioritizes each
+feature with MoSCoW. The per-feature detail lives in [features](./features/); the
+reasoning behind the shape lives in the [decision records](../adr/).
+
+**Status (2026-09-09): the MVP feature set is delivered.** Every Must/MVP feature
+has shipped, and most of the Extended Should tier with it (Markua, glossary,
+build-time diagrams). All eight adoption enablers from the spec-kitty proving
+ground (#37–#44) are landed. The remaining frontier is not more features — it is
+**productization and a first real consumer adoption**: cutting a versioned release
+and proving the toolkit builds from a clean install into a net-new consumer site.
+See [Where we are now](#where-we-are-now-2026-09-09) below.
 
 (This is a `Planning` page and its features are `Feature` pages per
-[ADR-0010](../adr/0010-planning-kinds-and-moscow.md); the `kind` values are
-authored once the M1 schema migration lands.)
+[ADR-0010](../adr/0010-planning-kinds-and-moscow.md).)
 
 ## Cross-cutting priority — CI/CD
 
@@ -78,29 +84,31 @@ tree; the second competes with Leanpub, which we are not doing.
 
 ## Prioritized features (MoSCoW)
 
-| Feature | Mission | MoSCoW | Scope | Rationale |
-|---|---|---|---|---|
-| Common Docs rendering (README-as-index) | — | Must | MVP | The base; a docsite that does not render the tree is nothing. |
-| CI/CD pipeline | M0 | Must | MVP | The harness every feature lands on; the stated primary concern. |
-| Metadata model + chrome | M1 | Must | MVP | The contract every other feature reads and renders from. |
-| Generators: RSS + llms.txt | — | Must | MVP | The agent- and human-facing discovery basics; already scaffolded. |
-| Generated sitemap + HATEOAS read API | — | Should | Extended | SEO sitemap and a richer machine-readable (`_links`) read API refine discovery beyond the MVP basics. |
-| Component system + swappable theme | M2 | Must | MVP | Theme swappability is a hard requirement (ADR-0008); per-kind layouts underpin later features. |
-| Markua syntax support (subset) | — | Should | MVP | The stated near-term focus and Leanpub compatibility; the base renders without it, so not Must. |
-| Audience + related + external references | M3 | Must | MVP | Core to the human-first, agent-supported promise: audience targeting and rendered relationships ship at launch. |
-| Slide decks (reveal.js) | M6 | Must | MVP | Presentations are a first-class output pillar alongside docsites, required at launch. |
-| Diagrams (Mermaid + PlantUML) | M5 | Should | Extended | High value for technical docs; build-time, self-contained. |
-| Doctrine variation | M7 | Should | Extended | Recast the convention into charter/doctrine; governance and quality. |
-| Glossary + Contextive | M4 | Should | Extended | Ubiquitous-language support is high value; the auto-linking effort and a Contextive dependency keep it out of MVP. |
-| Example content from ars-rethorica | ars-rethorica-example | Could | Extended | Delivered — the ars-rethorica showcase corpus (Introduction, Preamble, Book I 15 chapters, Book II/III landings, generated rhetoric glossary, two active reader personas) ships in the example site. |
-| Mission status portal | — | Could | Extended | Repository portal; depends on spec-kitty integration. |
-| QA portal | — | Could | Extended | Repository portal; depends on CI test artifacts. |
-| Ticketing report | — | Could | Extended | Repository portal; adaptor work, GitHub first. |
-| Selective/redacted publishing (projection) | M8 | Won't | Out | Only needed to publish a filtered subset of a private tree; revisit on demand. |
-| Book / manuscript content type | — | Won't | Out | Competes with Leanpub; we stay docsite + presentations. |
+| Feature | Mission | MoSCoW | Scope | Status | Rationale |
+|---|---|---|---|---|---|
+| Common Docs rendering (README-as-index) | — | Must | MVP | ✅ Done | The base; a docsite that does not render the tree is nothing. |
+| CI/CD pipeline | M0 | Must | MVP | ✅ Done | The harness every feature lands on; the stated primary concern. |
+| Metadata model + chrome | M1 | Must | MVP | ✅ Done | The contract every other feature reads and renders from. |
+| Generators: RSS + llms.txt | — | Must | MVP | ✅ Done | The agent- and human-facing discovery basics. |
+| Generated sitemap + HATEOAS read API | — | Should | Extended | ✅ Done | SEO sitemap and the enriched machine-readable (`_links`) agent-API both ship. |
+| Component system + swappable theme | M2 | Must | MVP | ✅ Done | Theme swappability is a hard requirement (ADR-0008); per-kind layouts underpin later features. |
+| Markua syntax support (subset) | — | Should | MVP | ✅ Done | Near-term focus and Leanpub compatibility; ADR-0030, plus opt-in footnotes (ADR-0041). |
+| Audience + related + external references | M3 | Must | MVP | ✅ Done | Core to the human-first, agent-supported promise: audience targeting and rendered relationships. |
+| Slide decks (reveal.js) | M6 | Must | MVP | ✅ Done | Presentations are a first-class output pillar; static reveal.js out-of-frame route. |
+| Diagrams (Mermaid + PlantUML) | M5 / #13 | Should | Extended | ✅ Done | Client-side (M5) then build-time static SVG (#13, ADR-0040), self-contained, dual-mode. |
+| Glossary + Contextive | M4 | Should | Extended | ✅ Done | Ubiquitous-language support; multi-context autolinking, hover preview, `:term` directive. |
+| Example content from ars-rethorica | ars-rethorica-example | Could | Extended | ✅ Done | The ars-rethorica showcase corpus (Introduction, Preamble, Book I 15 chapters, Book II/III landings, generated rhetoric glossary, two reader personas). |
+| Doctrine variation | M7 | Should | Extended | ⛔ Not started | Recast the convention into charter/doctrine; governance and quality. |
+| Mission status portal | — | Could | Extended | 📐 Design-only | Repository portal; depends on spec-kitty integration. |
+| QA portal | — | Could | Extended | 📐 Design-only | Repository portal; depends on CI test artifacts. |
+| Ticketing report | — | Could | Extended | 📐 Design-only | Repository portal; adaptor work, GitHub first. |
+| Selective/redacted publishing (projection) | M8 | Won't | Out | ⏸ Deferred | Only needed to publish a filtered subset of a private tree; revisit on demand. |
+| Book / manuscript content type | — | Won't | Out | ⏸ Deferred | Competes with Leanpub; we stay docsite + presentations. |
 
-Each row has (or will have) a [feature page](./features/) carrying its `moscow`
-label and rationale in frontmatter.
+Status legend: ✅ Done · ⛔ Not started · 📐 Design-only (spec'd, no delivered
+code) · ⏸ Deferred (Won't, this cycle). Each row has (or will have) a
+[feature page](./features/) carrying its `moscow` label and rationale in
+frontmatter.
 
 ## Adoption enablers (from the spec-kitty proving ground)
 
@@ -108,21 +116,43 @@ The spec-kitty adoption study
 ([research](../architecture/research/spec-kitty-adoption-proof.md)) surfaced a set
 of **doc-kitty-side changes that reduce adoption friction for a real, large
 consumer** — most of which also fix doc-kitty's own bugs (a dogfooding dividend).
-Each is filed on the tracker.
+**All eight are now landed** (the tracker carries no open adoption issues).
 
-| Enabler | Friction it removes | Priority | Issue |
-|---|---|---|---|
-| Loader accepts `index.md` as the section index (alongside `README.md`) | Spares an adopter renaming ~60 section indexes + rewriting ~1,589 links/redirects | Should | [#37](https://github.com/spec-kitty/doc-kitty/issues/37) |
-| `type`/`kind` optional + `type` derived from the section registry | Avoids forcing two required frontmatter fields onto a large corpus (~790 docs) | Should | [#38](https://github.com/spec-kitty/doc-kitty/issues/38) |
-| Add `durable` to the `doc_status` enum | Never-retire throughline docs otherwise hard-fail the schema | Must (additive) | [#39](https://github.com/spec-kitty/doc-kitty/issues/39) |
-| Overridable `type`/`kind` vocabulary (neutralize `Feature` for Mission-canon adopters) | Lets a canon-bound adopter avoid a prohibited term; fixes an internal inconsistency | Should | [#40](https://github.com/spec-kitty/doc-kitty/issues/40) |
-| Tolerate `adr/<era>/NNNN-` ADR paths | Adopters with >100 era-partitioned ADRs keep their structure | Should | [#41](https://github.com/spec-kitty/doc-kitty/issues/41) |
-| First-class redirect-coverage gate for migrating adopters | The highest-risk migration item (URL-scheme change) has no equivalent today | Should | [#42](https://github.com/spec-kitty/doc-kitty/issues/42) |
-| Resolve LICENSE (`UNLICENSED` → add LICENSE file) | Hard blocker: no adopter can vendor doc-kitty code until licensed | Done (MIT, PR #74/#75) | [#43](https://github.com/spec-kitty/doc-kitty/issues/43) |
-| Doc-honesty fixes (ADR-0030 in index; `AGENTS.md` `status`→`doc_status` + full section list; README "early scaffold" drift) | Curated-not-wiki integrity — the repo's own convention | Should | [#44](https://github.com/spec-kitty/doc-kitty/issues/44) |
+| Enabler | Friction it removes | Status |
+|---|---|---|
+| Loader accepts `index.md` as the section index (alongside `README.md`) | Spares an adopter renaming ~60 section indexes + rewriting ~1,589 links/redirects | ✅ [#37](https://github.com/spec-kitty/doc-kitty/issues/37) |
+| `type`/`kind` optional + `type` derived from the section registry | Avoids forcing two required frontmatter fields onto a large corpus (~790 docs) | ✅ [#38](https://github.com/spec-kitty/doc-kitty/issues/38) |
+| Add `durable` to the `doc_status` enum | Never-retire throughline docs otherwise hard-fail the schema | ✅ [#39](https://github.com/spec-kitty/doc-kitty/issues/39) |
+| Overridable `type`/`kind` vocabulary (neutralize `Feature` for Mission-canon adopters) | Lets a canon-bound adopter avoid a prohibited term; fixes an internal inconsistency | ✅ [#40](https://github.com/spec-kitty/doc-kitty/issues/40) |
+| Tolerate `adr/<era>/NNNN-` ADR paths | Adopters with >100 era-partitioned ADRs keep their structure | ✅ [#41](https://github.com/spec-kitty/doc-kitty/issues/41) |
+| First-class redirect-coverage gate for migrating adopters | The highest-risk migration item (URL-scheme change) had no equivalent | ✅ [#42](https://github.com/spec-kitty/doc-kitty/issues/42) — `check-redirect-coverage.mjs` |
+| Resolve LICENSE (`UNLICENSED` → add LICENSE file) | Hard blocker: no adopter can vendor doc-kitty code until licensed | ✅ [#43](https://github.com/spec-kitty/doc-kitty/issues/43) — MIT, PR #74/#75 |
+| Doc-honesty fixes (ADR-0030 in index; `AGENTS.md` `status`→`doc_status` + full section list; README "early scaffold" drift) | Curated-not-wiki integrity — the repo's own convention | ✅ [#44](https://github.com/spec-kitty/doc-kitty/issues/44) |
 
-Sequencing for a large-consumer adoption: the loader/vocab/enum items (#37–#41)
-shrink adopter churn; **LICENSE (#43) and the redirect gate (#42) are the two hard
-gates**; the doc-honesty items (#44) are quick self-consistency fixes. See the
-research doc's phased recommendation for how these line up with a reference
-adoption.
+Both hard gates from the study — **LICENSE (#43)** and the **redirect-coverage
+gate (#42)** — are cleared. The loader/vocab/enum items (#37–#41) that shrink
+adopter churn and the doc-honesty items (#44) are all merged. What the study
+still flags as *unproven* is the reuse ceiling: the toolkit is exercised at
+**N=1** (only the spec-kitty brand theme is instantiated; the `consumer` layer is
+a contract, not a fleet), and there is **no versioned, install-provable release**.
+Those two are exactly what the productization step below closes.
+
+## Where we are now (2026-09-09)
+
+The MVP is **feature-complete**. The gap between "finished toolkit" and "a client
+can run it" is now productization, not features:
+
+1. **A shippable release.** The toolkit is cut at **`0.1.0`** (was `0.0.0`), with a
+   [CHANGELOG](../../CHANGELOG.md) and a clean-checkout build proof. A consumer can
+   pin a real version instead of vendoring `0.0.0`.
+2. **A proven consumer path (raise N=1 → N=2).** A **consumption test** — a
+   dedicated CI workflow that installs the *packaged* toolkit into a net-new
+   consumer site (a second consumer theme — the `consumer` layer of the
+   default→brand→consumer merge — over the ars-rethorica book corpus) and builds
+   it exactly as an external adopter would — turns the reuse
+   contract into demonstrated fact. This is scoped as its own mission. The
+   reproducible adopter path it proves is written up in the
+   [consumer setup guide](../guides/consumer-setup.md).
+
+Deferred, unchanged: selective/redacted publishing (projection, M8) and an
+in-tool book type both stay **Won't** this cycle.

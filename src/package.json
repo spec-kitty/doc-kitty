@@ -1,6 +1,6 @@
 {
   "name": "@commondocs-kitty/toolkit",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Reusable Astro + Starlight toolkit for the Common Docs — Kitty Variation convention: schema, README-as-index loader, and rss/llms.txt/agent-API route handlers.",
   "type": "module",
   "license": "MIT",
@@ -56,5 +56,8 @@
     "typescript": "^5.7.0",
     "unified": "11.0.5",
     "vitest": "^2.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
