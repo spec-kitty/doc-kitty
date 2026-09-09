@@ -1,0 +1,22 @@
+# Fixture workspace ISOLATION (contract C-0 / NFR-001 / research D7).
+#
+# The fixture lives at tests/consumption/consumer-fixture/, NESTED under the
+# repo's own pnpm-workspace.yaml. pnpm finds its workspace root by walking UP
+# from the cwd, so a bare `pnpm install` here would join the REPO workspace,
+# render this fixture's committed lockfile inert, and can symlink
+# `@commondocs-kitty/toolkit -> ../../../src` — building against the SOURCE tree
+# while every "resolves under node_modules" check still passes. That would make
+# the whole consumption test a false green.
+#
+# Shipping this file with an EMPTY `packages` list makes the fixture its OWN
+# workspace root, so pnpm STOPS walking here and never joins the repo workspace.
+# The orchestrator ALSO installs with `--ignore-workspace` (belt and suspenders;
+# either alone is fragile — see run-consumption-test.mjs step 2 / C-0 step 1).
+#
+# NOTE (pnpm 11): `--ignore-workspace` makes pnpm ignore THIS file's settings
+# entirely, so a scoped `onlyBuiltDependencies` here would NOT be honored during
+# the isolated install. The orchestrator therefore approves the (repo-trusted,
+# lockfile-frozen) esbuild + sharp build scripts via a CLI flag instead — see the
+# install step in run-consumption-test.mjs. This file's sole job is the empty
+# `packages` root that stops pnpm from joining the repo workspace.
+packages: []

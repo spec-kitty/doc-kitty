@@ -1,0 +1,40 @@
+---
+/*
+ * Out-of-frame deck route (ADR-0021), wired from the toolkit's published
+ * `/layouts` and `/deck/*` exports — mirrors `example/src/pages/presentations/
+ * [...slug].astro`. A `kind: Presentation` page filed under `presentations/`
+ * renders here as a chrome-free reveal deck instead of through Starlight's
+ * article frame; path specificity shadows Starlight's catch-all for
+ * `/presentations/*` only.
+ *
+ * The WP01 seed corpus carries no decks, so `getStaticPaths` yields none and
+ * this route emits nothing — but wiring it now proves the toolkit's deck
+ * `exports` (DeckLayout.astro + deck-slug) resolve from the installed tarball
+ * (fail-closed on a missing layout — C-2). No brand token sheet is passed: WP01
+ * ships no theme, and DeckLayout links the toolkit's own default token catalog.
+ */
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import DeckLayout from '@commondocs-kitty/toolkit/layouts/DeckLayout.astro';
+import { deckRouteParams } from '@commondocs-kitty/toolkit/deck/deck-slug';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const decks = (await getCollection('docs')).filter(
+    (entry) => entry.data.kind === 'Presentation' && entry.id.startsWith('presentations/'),
+  );
+  return decks.map((entry) => ({
+    params: deckRouteParams(entry),
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'docs'>;
+}
+
+const { entry } = Astro.props as Props;
+---
+
+<DeckLayout entry={entry} />

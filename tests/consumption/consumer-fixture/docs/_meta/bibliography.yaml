@@ -1,0 +1,23 @@
+# Bibliography catalog for the consumer-fixture docsite (CSL-JSON-lite, ADR-0018).
+# Mirrors the toolkit's own docs/_meta/bibliography.yaml shape. These two records
+# are cited by the `rhetoric/` showcase slice's `external_references` — the
+# public-domain source translation the converted pages derive from (C-002,
+# FR-010). Their presence is what lets the catalog/link gates resolve the
+# citations instead of warning. See rhetoric/about-and-license.md for the full
+# attribution notice.
+- id: freese-rhetoric-1926
+  type: book
+  title: "Aristotle, Rhetoric"
+  authors: [Aristotle, "trans. J.H. Freese"]
+  container: Perseus Project
+  url: http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0060
+  issued: "1926"
+  note: public-domain translation; the source this showcase's Rhetoric conversion is derived from
+- id: perseus-project
+  type: webpage
+  title: The Perseus Project
+  authors: [Tufts University]
+  container: Perseus Digital Library
+  url: http://www.perseus.tufts.edu/hopper
+  issued: "1987"
+  note: hosts the Freese translation this showcase converts; curated by Tufts University's department of classical studies

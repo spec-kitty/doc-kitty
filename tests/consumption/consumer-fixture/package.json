@@ -1,0 +1,21 @@
+{
+  "name": "consumer-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Clean-room consumer docsite that installs the PACKED @commondocs-kitty/toolkit tarball (never the workspace symlink) to prove the published package builds a net-new site. Test resource — excluded from the toolkit tarball and the repo pnpm workspace.",
+  "scripts": {
+    "build": "astro build",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.2.0",
+    "@commondocs-kitty/toolkit": "file:./toolkit.tgz",
+    "astro": "^5.2.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/starlight": "^0.32.6",
+    "typescript": "^5.9.3"
+  }
+}
