@@ -1,0 +1,18 @@
+{
+  "coordination_branch": "kitty/mission-collapsible-toc-rail-01M23HNA",
+  "created_at": "2026-09-09T16:57:46.536784+00:00",
+  "flattened": false,
+  "friendly_name": "Collapsible on-this-page TOC side rail",
+  "mission_id": "01M23HNA98TDYF7KDT8MWQBNZA",
+  "mission_number": null,
+  "mission_slug": "collapsible-toc-rail-01M23HNA",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "A Kitty Variation chrome enhancement: wrap Starlight's PageSidebar so the desktop on-this-page TOC can be hidden behind an edge toggle, the main column re-centers to full width, and the choice persists across reloads and client navigations without a flash — while mobile keeps Starlight's existing TOC and the left docs sidebar is untouched.",
+  "purpose_tldr": "Let desktop readers collapse the on-this-page outline to reclaim article width, with the preference remembered and mobile unchanged.",
+  "slug": "collapsible-toc-rail-01M23HNA",
+  "target_branch": "feat/collapsible-toc-rail",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-09T17:31:05.537249+00:00"
+}
