@@ -1,6 +1,6 @@
 ---
 title: Diagrams (Mermaid + PlantUML)
-description: "Author Mermaid and PlantUML diagrams in Markdown, themed, accessible, and self-contained. M5 shipped client-side Mermaid; issue #13 added the build-time static-SVG render for both engines (dual-mode)."
+description: "Author Mermaid and PlantUML diagrams in Markdown — themed, accessible, self-contained. M5 shipped client-side Mermaid; #13 added build-time static-SVG render for both (dual-mode)."
 doc_status: draft
 updated: 2026-09-07
 type: Feature
