@@ -37,6 +37,7 @@ import { resolveTheme, DEFAULT_TOKEN_SHEET, type DocKittyTheme } from './theme.j
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
 import sitemapOrderIntegration from './sitemap-order.js';
+import { PRE_PAINT_SCRIPT } from './toc-rail/pre-paint.js';
 import deckSplit from './remark/deck-split.js';
 import diagramMeta from './remark/diagram-meta.js';
 import plantumlMeta from './remark/plantuml-meta.js';
@@ -985,6 +986,36 @@ const diagramsIntegration: AstroIntegration = {
 };
 
 /**
+ * The collapsible-TOC-rail client seam (FR-006, IC-04, D2 always-on). It injects
+ * WP02's collapse-toggle island page-wide via the documented `injectScript('page',
+ * …)` pattern, mirroring ONLY the injection mechanics of `diagramsIntegration` /
+ * `glossaryIntegration` — the module is referenced by its absolute on-disk path so
+ * it resolves without a package-exports entry.
+ *
+ * Unlike the diagrams/glossary seams there is NO presence/opt-in gate: this is
+ * appended UNCONDITIONALLY to the integrations array (D2 — the TOC rail is a
+ * baseline chrome behavior on every site, so it must not sit behind a
+ * `DocKittyOptions` toggle). The island itself early-returns on any page whose DOM
+ * carries no `.right-sidebar` TOC, so a TOC-free page stays cost-free at runtime,
+ * and it augments Starlight's rendered sidebar with one native `<button>` rather
+ * than overriding a `components` carrier (the four-carrier lock, DIRECTIVE_001).
+ */
+const tocRailIntegration: AstroIntegration = {
+  name: 'doc-kitty:toc-rail',
+  hooks: {
+    'astro:config:setup': ({ injectScript }) => {
+      const clientPath = fileURLToPath(
+        new URL('./toc-rail/toc-rail.client.ts', import.meta.url),
+      );
+      injectScript(
+        'page',
+        `import { initTocRail } from ${JSON.stringify(clientPath)};\ninitTocRail();`,
+      );
+    },
+  },
+};
+
+/**
  * The presence-gated glossary seam (M4, the single integration owner — ADR-0025/
  * 0026/0027/0028, contract `autolink-and-term.md`). It is added to the integrations
  * array ONLY when a `.contextive/definitions.yaml` exists under the site root
@@ -1257,7 +1288,18 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // `faviconHref` maps the theme's package asset to the one path
     // `docKittyFavicon` emits below (Starlight applies `base` itself).
     ...(faviconPath ? { favicon: faviconPath } : {}),
-    head: [...discoveryHead(normalizeBasePrefix(base)), ...fontHead],
+    head: [
+      ...discoveryHead(normalizeBasePrefix(base)),
+      ...fontHead,
+      // No-flash pre-paint (FR-005/NFR-001, contract C-1/C-5): a Starlight
+      // `head[]` entry with `content` renders as a SYNCHRONOUS CLASSIC inline
+      // `<script>` (no `type=module`/`defer`/`async`), so it executes during
+      // `<head>` parse — BEFORE `<body>` — and sets `data-toc-collapsed` on
+      // `<html>` for a returning reader with a collapsed preference, so the
+      // outline never flashes expanded then collapses. The SOURCE lives in
+      // WP01's `toc-rail/pre-paint` (blocked-storage-safe `try/catch`).
+      { tag: 'script', content: PRE_PAINT_SCRIPT },
+    ],
     customCss,
     ...overrides,
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
@@ -1312,6 +1354,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // the example definitions file; until then this is inert on the example.
     ...(glossaryActive ? [glossaryIntegration(docsDir, base)] : []),
     starlight(starlightConfig),
+    // Always-on collapsible-TOC-rail client seam (FR-006, IC-04, D2): appended
+    // UNCONDITIONALLY — the TOC rail is baseline chrome, so it is NOT gated on a
+    // `DocKittyOptions` toggle. Its `injectScript('page', …)` island early-returns
+    // on any TOC-free page, so a non-TOC route stays cost-free.
+    tocRailIntegration,
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.
     deckSplitIntegration,

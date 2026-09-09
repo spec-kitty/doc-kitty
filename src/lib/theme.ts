@@ -122,19 +122,30 @@ export const DEFAULT_TOKEN_SHEET = '@commondocs-kitty/toolkit/styles/theme.css';
 export const DK_COMPONENTS_CSS_SHEET = '@commondocs-kitty/toolkit/styles/dk-components.css';
 
 /**
+ * The collapsible-TOC-rail sheet (D5, WP02 `src/styles/toc-rail.css`). Registered
+ * as a GLOBAL component sheet below so it reaches BOTH delivery surfaces AND
+ * survives the branded token-sheet replacement (a brand build swaps `theme.css`'s
+ * slot for a generated tokens-only sheet, so TOC-rail rules could NOT live there).
+ */
+export const TOC_RAIL_CSS_SHEET = '@commondocs-kitty/toolkit/styles/toc-rail.css';
+
+/**
  * The single-owner list of GLOBAL component-rule sheets — every static sheet
  * (besides the token sheet) that must reach BOTH delivery surfaces: the
  * in-frame docs `customCss` injection (`config.ts`, via `DEFAULT_LAYER`
  * below) and the out-of-frame deck route (`DeckLayout.astro`, which gets no
  * global `customCss` injection at all and so links each entry explicitly).
- * Today this holds exactly one sheet (`DK_COMPONENTS_CSS_SHEET`); a future
- * second global component sheet is added HERE, not independently in each
+ * Today this holds `DK_COMPONENTS_CSS_SHEET` and `TOC_RAIL_CSS_SHEET`; a future
+ * global component sheet is added HERE, not independently in each
  * consumer — `DeckLayout` maps over this list against its own statically
  * `?url`-imported hrefs and throws at build time if an entry has no matching
  * import, so an out-of-sync addition fails loud instead of silently missing
  * the deck (finding #2, diagram-component-css review).
  */
-export const GLOBAL_COMPONENT_SHEETS: readonly string[] = [DK_COMPONENTS_CSS_SHEET];
+export const GLOBAL_COMPONENT_SHEETS: readonly string[] = [
+  DK_COMPONENTS_CSS_SHEET,
+  TOC_RAIL_CSS_SHEET,
+];
 
 /**
  * The Default `--dk-*` catalog — LIGHT / base values, in declaration order.

@@ -1,0 +1,135 @@
+/*
+ * toc-rail.css — the token-driven collapsed-rail layer (IC-02/IC-03, contract C-2,
+ * FR-002/FR-006, NFR-002/NFR-003). WP03 registers this via GLOBAL_COMPONENT_SHEETS
+ * so it loads as a render-blocking <link> in <head> (no-flash, NFR-001).
+ *
+ * ## How the cascade is won (C-2)
+ * Starlight scopes its component CSS with `:where()` (zero specificity), so the
+ * human selector's specificity alone decides each rule; load order only breaks
+ * exact-specificity ties. Every override below is deliberately built to OUTRANK the
+ * Starlight rule it corrects — most importantly the recenter rule, which must be
+ * >= (0,3,0) or it silently loses and leaves dead right space (worse than a no-op).
+ *
+ * ## Tokens only (NFR-002)
+ * Zero hard-coded hex/rgb. Every colour/shadow flows through `--sl-*` (bridged to
+ * `--dk-*` in `theme.css`), so both colour modes inherit correctly.
+ */
+
+/*
+ * The toggle control (C-3). Base rule applies at any width but stays hidden until
+ * the two-column breakpoint (the media query below reveals it) — desktop-only per
+ * C-4/NFR-003, so a fresh narrow load never shows it.
+ */
+.dk-toc-toggle {
+  display: none; /* desktop-only affordance; revealed >= 72rem below (C-4) */
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 50%;
+  background: var(--sl-color-bg-sidebar);
+  color: var(--sl-color-gray-3);
+  box-shadow: var(--dk-shadow-sm);
+  cursor: pointer;
+  pointer-events: auto; /* clickable even when the collapsed rail is inert */
+}
+
+.dk-toc-toggle:hover,
+.dk-toc-toggle:focus-visible {
+  color: var(--sl-color-white); /* soft icon brightening on hover/focus */
+  border-color: var(--sl-color-accent);
+}
+
+.dk-toc-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus); /* accent focus-visible ring (WCAG 2.1) */
+}
+
+.dk-toc-toggle svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+/* Chevron flips with state: expanded it points at the rail (the collapse cue),
+ * collapsed it points back toward the article (the expand cue). */
+html[data-toc-collapsed] .dk-toc-toggle svg {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 72rem) {
+  /*
+   * Reveal + anchor the toggle. Horizontal anchor is a pure-CSS calc of the rail
+   * column (no JS measurement, C-3): expanded it sits at the rail's left-edge
+   * hairline (`--sl-sidebar-width`, the rail column's nominal width); collapsed the
+   * rail is a 1px hairline at the viewport edge, so the button rides out to
+   * `right: 0`.
+   */
+  .dk-toc-toggle {
+    display: inline-flex;
+    right: var(--sl-sidebar-width);
+  }
+
+  html[data-toc-collapsed] .dk-toc-toggle {
+    right: 0;
+  }
+
+  /*
+   * Collapse the reserved rail column to a 1px hairline (NOT 0). Specificity
+   * (0,2,1) beats Starlight's `.right-sidebar-container` (0,1,0). A 0-width column
+   * would leave the visible edge to the off-screen fixed panel border at ~100vw
+   * (clipped/invisible); a deterministic 1px column supplies the hairline
+   * FR-002/SC-001 require and makes the recenter math exact.
+   */
+  html[data-toc-collapsed] .right-sidebar-container {
+    width: 1px;
+    background: var(--sl-color-hairline);
+  }
+
+  /*
+   * Hide the outline panel with `display: none` (so axe skips the off-screen TOC
+   * links — not opacity/visibility). (0,2,1) beats both Starlight's
+   * `.right-sidebar-panel` and the `.lg:sl-block` utility (each (0,1,0)).
+   */
+  html[data-toc-collapsed] .right-sidebar-panel {
+    display: none;
+  }
+
+  /*
+   * Recenter the article (THE critical cascade bar). Starlight right-biases the
+   * article with `[data-has-sidebar][data-has-toc] .main-pane` at (0,3,0); this
+   * override is (0,4,1) — html(0,0,1) + three attrs(0,3,0) + .main-pane(0,1,0) —
+   * so it WINS. `data-has-sidebar`/`data-has-toc` live on <html> (the same element
+   * as `data-toc-collapsed`), so compounding them is valid. A weaker
+   * `html[data-toc-collapsed] .main-pane` (0,2,1) would LOSE to (0,3,0) and leave
+   * dead right space.
+   */
+  html[data-toc-collapsed][data-has-sidebar][data-has-toc] .main-pane {
+    width: 100%;
+    --sl-content-margin-inline: auto;
+  }
+
+  /*
+   * The collapsed rail need not intercept pointer events; the toggle re-enables its
+   * own (pointer-events: auto in the base rule). Valid only because the button is
+   * NOT inside this subtree (it is body-mounted).
+   */
+  html[data-toc-collapsed] .right-sidebar {
+    pointer-events: none;
+  }
+
+  /*
+   * WebKit scrollbar hide only — Starlight already sets `scrollbar-width: none` on
+   * `.right-sidebar`. NO `overflow: visible` on the expanded rail (that would break
+   * long-TOC scrolling); the fixed toggle is not clipped by ancestor overflow.
+   */
+  .right-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+}
