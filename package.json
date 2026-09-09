@@ -1,6 +1,6 @@
 {
   "name": "doc-kitty",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Common Docs — Kitty Variation: a reusable Astro + Starlight scaffold for human-first, agent-supported documentation.",
   "type": "module",
