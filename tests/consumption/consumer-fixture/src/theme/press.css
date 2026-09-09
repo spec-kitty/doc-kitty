@@ -1,0 +1,58 @@
+/*
+ * Editorial / "press" consumer theme — MODE-VARYING colour overrides
+ * (WP02 / research D4, placement rule 2).
+ *
+ * `emitTokenSheet` stores ONE value per `--dk-*` key, so a colour that must
+ * differ between light and dark cannot live in the theme's object `tokens` map
+ * (it would re-emit the light value in dark). Those colours live HERE instead,
+ * with an explicit light block (`:root`) and dark block
+ * (`:root[data-theme='dark']`).
+ *
+ * WHY BOTH BLOCKS ARE MANDATORY: the toolkit layers this sheet AFTER its
+ * generated token sheet, so a bare `:root` override wins in LIGHT by source
+ * order at plain specificity (0,1,0). But the emitter re-declares every
+ * mode-varying key under its own `:root[data-theme='dark']` block whose
+ * specificity is 0,2,0 — that OUT-RANKS a bare `:root` in dark mode regardless
+ * of load order. So a colour set only under `:root` here would silently revert
+ * to the brand/default value in dark. Matching the emitter's `:root[data-theme='dark']`
+ * selector (same 0,2,0 specificity, declared later in source order) is what
+ * makes the press value win in BOTH modes.
+ *
+ * These are `--dk-*` only — never `--sl-*` (ADR-0011). The toolkit-owned bridge
+ * maps `--sl-*` onto these `--dk-*` values downstream.
+ */
+
+/*
+ * The accent GROUP is included here (not in the theme's object `tokens`) ON
+ * PURPOSE: the brand's `tokens.css` re-declares `--dk-color-accent` /
+ * `--dk-color-accent-text` under both `:root` and `:root[data-theme='dark']`,
+ * and loads before this sheet. An object-token override would be re-overwritten
+ * by that brand sheet. Declaring the press values HERE — after `tokens.css`, and
+ * in BOTH blocks — is what lets the consumer win in both modes. The accent value
+ * is the same in light and dark by choice; it is still declared in both blocks so
+ * the brand's `0,2,0` dark restatement cannot leak back in dark.
+ */
+
+/* LIGHT — warm-paper surface, warm near-black heading ink, press red accent. */
+:root {
+  /* Surface-1: default light #f7f8fa (cool grey) → warm paper. */
+  --dk-color-surface-1: #faf7f0;
+  /* Strong/heading text: default light #101828 (cool ink) → warm near-black. */
+  --dk-color-text-strong: #1a1410;
+  /* Press signal colour — deep editorial red. Default #3159c4, brand #F5C518. */
+  --dk-color-accent: #a6231f;
+  /* Ink ON the accent fill — white reads AA on the red. Default #1d3d94, brand #1A1408. */
+  --dk-color-accent-text: #ffffff;
+}
+
+/* DARK — the same roles, tuned for a dark editorial ground (0,2,0, wins in dark). */
+:root[data-theme='dark'] {
+  /* Surface-1: default dark #1b212e (cool) → warm charcoal. */
+  --dk-color-surface-1: #232019;
+  /* Strong/heading text: default dark #f2f4f8 (cool white) → warm paper-white. */
+  --dk-color-text-strong: #f4efe6;
+  /* Press red accent — same signal in both modes; re-declared to beat tokens.css dark. */
+  --dk-color-accent: #a6231f;
+  /* White ink on the red accent — re-declared to beat tokens.css dark. */
+  --dk-color-accent-text: #ffffff;
+}

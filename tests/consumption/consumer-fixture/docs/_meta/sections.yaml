@@ -1,0 +1,36 @@
+# Authored section registry for the consumer-fixture docsite.
+# Decouples display (label, order) from the on-disk folder layout: editing this
+# file alone relabels or reorders a nav group — no content move, no theme edit
+# (FR-013). Consumed by the Starlight sidebar and the discovery surfaces
+# (llms.txt / RSS / agent API). Reserved, non-content: excluded from the docs
+# collection.
+#
+# Mirrors the relevant entries from the example's docs/_meta/sections.yaml for
+# the sections this fixture actually ships: the WP01 seed `guides/`, the WP03
+# `rhetoric/` showcase slice (type: Reference — a validator WARNING, tolerated),
+# the `context/` audience personas, and the build-generated `glossary/`.
+version: 1
+sections:
+  - id: context
+    label: Context
+    order: 10
+    type: Context
+
+  - id: guides
+    label: Guides
+    order: 40
+    type: Guide
+
+  # ars-rethorica showcase slice: a real Markua-authored conversion of
+  # Aristotle's Rhetoric Book I (chapters 1–3). Only the top-level `rhetoric`
+  # folder is registered; `book-one/` nests automatically as a sidebar sub-group.
+  # `type: Reference` produces a validator WARNING (not a failure) — expected.
+  - id: rhetoric
+    label: Rhetoric
+    order: 45
+    type: Reference
+
+  - id: glossary
+    label: Reference          # glossary content lives in glossary/, shown as "Reference"
+    order: 60
+    type: Glossary

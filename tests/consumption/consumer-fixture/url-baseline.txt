@@ -1,0 +1,26 @@
+# Committed URL baseline for the fixture's redirect-coverage gate
+# (contract C-1 step 5). Consumed by:
+#   node <fixture>/node_modules/@commondocs-kitty/toolkit/scripts/check-redirect-coverage.mjs \
+#        tests/consumption/consumer-fixture/url-baseline.txt tests/consumption/consumer-fixture/dist
+#
+# Entries are in BASE-AGNOSTIC route space (the gate maps `/guides/` to
+# `<dist>/guides/index.html`; Astro's directory build never nests a `base/`
+# directory, so the site `base` prefix does not appear here). Hand-authored and
+# version-controlled — the gate NEVER regenerates it from the current build.
+#
+# Covers the MVP guide pages plus WP03's ars-rethorica book slice, so the
+# redirect-coverage gate asserts trailing-slash coverage for the slice routes too.
+/
+/guides/
+/guides/getting-started/
+/rhetoric/
+/rhetoric/introduction/
+/rhetoric/preamble/
+/rhetoric/about-and-license/
+/rhetoric/book-one/
+/rhetoric/book-one/chapter-01/
+/rhetoric/book-one/chapter-02/
+/rhetoric/book-one/chapter-03/
+/context/audience/rhetoric-student/
+/context/audience/rhetoric-practitioner/
+/glossary/rhetoric/
