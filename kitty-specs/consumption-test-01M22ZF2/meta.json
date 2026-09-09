@@ -1,0 +1,18 @@
+{
+  "coordination_branch": "kitty/mission-consumption-test-01M22ZF2",
+  "created_at": "2026-09-09T11:39:47.702964+00:00",
+  "flattened": false,
+  "friendly_name": "Consumption Test + Consumer-Layer Proof",
+  "mission_id": "01M22ZF2KP2Y0DM6M4YBFJ31CC",
+  "mission_number": null,
+  "mission_slug": "consumption-test-01M22ZF2",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The doc-kitty MVP is feature-complete and cut at 0.1.0, but its reuse is proven only at N=1 (the spec-kitty brand theme) and it has never been build-proven from a clean install as an external adopter would consume it. This mission builds a consumption-test CI workflow that packs the toolkit and installs the tarball into a fixture consumer site carrying a representative slice of the ars-rethorica book under a new editorial consumer theme, closing the two gaps the adoption study still flags: no install-provable release and single-consumer reuse.",
+  "purpose_tldr": "Prove the packaged toolkit installs cleanly into a net-new consumer site, enforced by CI, and demonstrate the consumer theme layer at N=2.",
+  "slug": "consumption-test-01M22ZF2",
+  "target_branch": "feat/release-0.1.0-consumption-readiness",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-09T13:16:20.152499+00:00"
+}
