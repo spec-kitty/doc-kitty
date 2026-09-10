@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.22.0",
   "description": "Clean-room consumer docsite that installs the PACKED @commondocs-kitty/toolkit tarball (never the workspace symlink) to prove the published package builds a net-new site. Test resource — excluded from the toolkit tarball and the repo pnpm workspace.",
   "scripts": {
     "build": "astro build",
