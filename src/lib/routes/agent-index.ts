@@ -11,7 +11,7 @@
 import type { APIRoute } from 'astro';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
-import { loadSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
+import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
 import { absolute, docsRoot } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 
@@ -30,7 +30,7 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
     // Registry-driven section order when present; else the SECTION_ORDER default
     // inside rankForAgents (issue #18). Resolve the registry from the SAME docs
     // root the content came from so a custom docs directory is honored (#22).
-    const registry = loadSectionRegistry(await docsRoot());
+    const registry = resolveSectionRegistry(await docsRoot());
     const order = registry ? sectionOrder(registry) : undefined;
     // Section-level `feeds` filter, composed ON TOP of the per-page
     // `agent.discoverable` gating rankForAgents already applies: a page appears

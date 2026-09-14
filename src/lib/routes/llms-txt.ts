@@ -19,7 +19,7 @@ import {
 } from '../metadata.js';
 import { compareCodeUnit } from '../vocabulary-core.mjs';
 import {
-  loadSectionRegistry,
+  resolveSectionRegistry,
   sectionLabels,
   sectionOrder,
   sectionPurposes,
@@ -51,7 +51,7 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     // SECTION_LABEL defaults inside the metadata helpers (issue #18). The root is
     // resolved from the content layer so a custom docs directory is honored (#22),
     // not hardcoded to `docs/`.
-    const registry = loadSectionRegistry(await docsRoot(options.indexBasename));
+    const registry = resolveSectionRegistry(await docsRoot(options.indexBasename));
     const order = registry ? sectionOrder(registry) : undefined;
     const labels = registry ? sectionLabels(registry) : undefined;
     // Section blurb source (FALLBACK): the registry `purpose` per section — the

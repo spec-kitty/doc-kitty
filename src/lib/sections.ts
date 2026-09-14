@@ -244,9 +244,14 @@ export function resolveSectionRegistry(
   const warn = options.warn ?? ((m: string) => console.warn(`[dk-sections] ${m}`));
   const sections = resolveGovernance(docsRoot, { emitDeprecation: false }).sections;
   if (sections == null) return null;
-  // Legacy `sections.yaml` (or a charter whose `sections` the loader already
-  // normalized) arrives as an array — the normalized registry, use as-is.
-  if (Array.isArray(sections)) return sections as SectionRegistry;
+  // Legacy provenance: `resolveGovernance` parses `<docsRoot>/_meta/sections.yaml`
+  // with the bare-Node `loadSectionRegistry`, which carries only the axes the gate
+  // needs (`id`/`label`/`order`/`type`/`subtypes`) and DROPS the Astro-only fields
+  // (`feeds`/`purpose`). Re-read the SAME file with this module's full-fidelity
+  // parser so the feed filter and the llms.txt purpose blurb still see those
+  // fields — `charterResolved.sections` is only ever a mapping (never an array,
+  // vocabulary-core.mjs `parseCharter`), so an array here is unambiguously legacy.
+  if (Array.isArray(sections)) return loadSectionRegistry(docsRoot, options);
   // A charter mapping: build the registry from its `entries` list (if any),
   // reusing the shared entry validator so the contract stays single-sourced.
   const rawEntries = (sections as Record<string, unknown>).entries;
