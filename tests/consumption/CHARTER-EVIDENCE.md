@@ -80,28 +80,31 @@ DIFFERENTIAL against the canonical (no-charter) baseline so it genuinely bites:
 proven byte-identical to the packed tarball's `scripts/validate-frontmatter.mjs` (and
 its two `lib/` deps) by `assertShippedGateParity()`.
 
-## Documented wiring follow-ups (out of WP05's owned scope)
+## Charter-aware wiring — completed in this branch
 
-1. **Sections axis → build routes (the mission's known boundary).** The charter's
-   `sections` axis currently flows only into **type-derivation / validation**
-   (`sections.ts` → `expectedDocType`, and the standalone gate). It does **not** feed
-   the build-output routes: `llms-txt.ts`, `agent-index.ts`, `rss.ts`, `Hub.astro`,
-   and `config.ts` still read legacy `_meta/sections.yaml`. **Consequence:** a
-   consumer who wants section/IA metadata in `llms.txt` / the agent index / the Hub
-   must, for now, author `_meta/sections.yaml`; the dogfood `docs/_meta/charter.yaml`
-   deliberately omits the `sections` axis and keeps `sections.yaml` so doc-kitty's own
-   build is byte-identical. Wiring these routes onto `resolveGovernance().sections` is
-   a fast-follow owned by no WP in this mission.
+Two seams that WP05's clean-room proof first flagged as follow-ups were wired later
+in the same branch and are now shipped end-to-end:
 
-2. **Standalone-gate forbidden-term resolver.** The bare-Node gate
-   (`validate-frontmatter.mjs`) reads the **statuses** and **required-fields** axes
-   from the charter via `resolveGovernance`, but its **type/kind forbidden-FAILURE**
-   still reads the legacy vocabulary axis via `loadVocabulary` (`_meta/vocabulary.yaml`).
-   The charter's vocabulary axis IS honored by `resolveGovernance().resolveType`
-   (provenance `charter`, asserted in `charter-governance.test.ts`) — the resolver the
-   Astro build's type-derivation consumes — but a charter-ONLY forbidden term does not
-   yet fail the standalone gate. **Consequence:** the adopter fixture mirrors its
-   forbidden term into `_meta/vocabulary.yaml` so the standalone gate bites today.
-   Wiring the gate's type/kind resolver onto `resolveGovernance().resolveType/Kind`
-   (parallel to the already-wired statuses/required axes) is a fast-follow so the
-   charter alone suffices. (Discovered during WP05; recorded here for the reviewer.)
+1. **Sections axis → build routes (#98, `4bd826c`).** Every build-output route —
+   `llms-txt.ts`, `agent-index.ts`, `rss.ts`, `Hub.astro`, and `config.ts` — plus
+   `schema.ts` now resolves the section registry through the charter-aware
+   `resolveSectionRegistry` (`charter → legacy sections.yaml → default`). A consumer
+   that declares its sections only in `_meta/charter.yaml` gets them into the feeds,
+   the agent index, the Hub grid, and the sidebar/sitemap — not just type-derivation.
+
+2. **Standalone-gate forbidden-term resolver (#99, `68e72d5`).** The bare-Node gate
+   (`validate-frontmatter.mjs`) now reads the **type/kind** forbidden-check from
+   `resolveGovernance().resolveType`/`resolveKind` — the same resolver the Astro build
+   consumes — alongside the already-wired statuses and required-fields axes. A `type`
+   forbidden ONLY in `_meta/charter.yaml` now fails the gate; no legacy
+   `_meta/vocabulary.yaml` mirror is required. (A charter-only regression guard for
+   this path lives in the charter test suite.)
+
+**Remaining boundary (future mission).** The gate's *section-default* `type`/`subtype`
+derivation still reads the legacy `_meta/sections.yaml` (`loadSectionTypes`/
+`loadSectionSubtypes`), not `resolveGovernance().sections`. This is advisory
+(warn-not-fail), and doc-kitty's own charter omits the `sections` axis, so it does not
+affect the shipped build; a charter-only *malformed* `sections.entries` still fails
+closed at the Astro build (`normalizeSectionEntries`), just not at the gate. Wiring the
+gate's section derivation onto the charter without duplicating the entry normalizer
+(which would regress the single-source parity twin) is left to a future mission.

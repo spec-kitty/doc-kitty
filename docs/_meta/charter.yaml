@@ -14,21 +14,17 @@
 #   • required_fields — nothing relaxed; the canonical required set applies
 #     (title, description, doc_status, updated), with `title` as the immovable floor.
 #
-# WHY THE SECTIONS AXIS IS DELIBERATELY OMITTED HERE
-# --------------------------------------------------
-# The `sections` axis is intentionally NOT declared in this charter. `_meta/sections.yaml`
-# stays the authoritative section registry for this tree. Reason (recorded as a
-# mission follow-up in tests/consumption/CHARTER-EVIDENCE.md): the charter's
-# `sections` axis currently flows only into type-derivation / validation, NOT into
-# the build-output routes (`llms-txt.ts`, `agent-index.ts`, `rss.ts`, `Hub.astro`,
-# `config.ts`), which still read `_meta/sections.yaml`. Declaring `sections` here
-# would move the resolved registry's provenance to the charter for the
-# type-derivation path while the build routes kept reading the legacy file — a
-# split source. Keeping `sections.yaml` in place (contract C2: an omitted axis
-# falls back to the legacy file) makes doc-kitty's own build byte-identical. A
-# consumer wanting section/IA metadata in llms.txt / Hub must, for now, author
-# `_meta/sections.yaml`; wiring the build routes onto `resolveGovernance().sections`
-# is a documented fast-follow owned by no WP in this mission.
+# WHY THE SECTIONS AXIS IS OMITTED HERE
+# -------------------------------------
+# The `sections` axis is intentionally NOT declared in this charter; `_meta/sections.yaml`
+# stays the authoritative section registry for this tree. The build routes AND the
+# type-derivation path are charter-aware for sections (they resolve through
+# `resolveSectionRegistry` / `resolveGovernance().sections`, #98), so declaring
+# `sections` here would only duplicate a registry the legacy file already encodes
+# verbatim. Under per-axis precedence (contract C2: an omitted axis falls back to the
+# legacy file) keeping `sections.yaml` as the single source leaves doc-kitty's own
+# build byte-identical while still exercising the fallback path. A consumer starting
+# fresh can author the registry directly under `sections.entries` in the charter.
 #
 # The legacy `_meta/vocabulary.yaml` and `_meta/sections.yaml` remain (honored but
 # deprecated, contract C2), so exactly one build-time deprecation notice is emitted
