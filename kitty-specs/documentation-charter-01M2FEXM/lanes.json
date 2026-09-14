@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "mission_slug": "documentation-charter-01M2FEXM",
+  "mission_id": "01M2FEXMH2ZTZ1WR67J62QSN2H",
+  "mission_branch": "kitty/mission-documentation-charter-01M2FEXM",
+  "target_branch": "feat/documentation-charter",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/vocabulary-core.mjs",
+        "src/tests/vocabulary-core.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/effective-charter.mjs",
+        "src/lib/vocabulary-loader.mjs",
+        "src/tests/charter-loader.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/metadata.ts",
+        "src/lib/schema.ts",
+        "src/lib/sections.ts",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/llms-section-order.test.ts",
+        "src/tests/metadata-sections.test.ts",
+        "src/tests/metadata.test.ts",
+        "src/tests/schema-validator-parity.test.ts",
+        "src/tests/section-rename.test.ts",
+        "src/tests/section-type-parity.test.ts",
+        "src/tests/sections.test.ts",
+        "src/tests/vocabulary-resolver.test.ts",
+        "src/tests/vocabulary-single-source.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tests"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "docs/adr/0042-native-documentation-charter.md",
+        "docs/adr/README.md",
+        "docs/context/convention.md",
+        "docs/guides/consumer-setup.md",
+        "docs/guides/migrating-to-charter.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        ".github/workflows/consumption-test.yml",
+        "docs/_meta/charter.yaml",
+        "tests/consumption/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-09-14T08:48:46.565893+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "08cecaf2fc4676a3e90bead62c729afccb61c5a7"
+}

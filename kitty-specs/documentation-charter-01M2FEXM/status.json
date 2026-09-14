@@ -1,0 +1,183 @@
+{
+  "event_count": 35,
+  "last_event_id": "01M2FRTNC3C5KVR535DGDAVTV6",
+  "materialized_at": "2026-09-14T10:53:54.948016+00:00",
+  "mission_number": "4",
+  "mission_slug": "documentation-charter-01M2FEXM",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 5,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M2FRGJKHSJCHHRA3CSFN8CQK",
+      "last_transition_at": "2026-09-14T10:48:24.433505+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "parseCharter + extend-only statuses axis + required-field policy (title floor) + reserved/floor fail-closed guards; back-compat parseVocabulary/identityVocabulary intact; purity (fs-free/Astro-free/JSDoc-const) intact. Vitest ran GREEN locally: 41/41 in src/tests/vocabulary-core.test.ts via pinned vitest@2.1.9 (after pnpm install materialized node_modules); tsc clean for both owned files (other tsc errors are pre-existing astro:content-not-synced env noise).",
+        "Review passed: extend-only statuses guard rejects forbidding/aliasing-away any canonical STATUS (CANONICAL_STATUS_SET check, verified at runtime); title floor un-relaxable (parseRequiredFields throws); legalStatuses deterministic (canonical-first + code-unit-sorted dedup); PURITY intact (only gray-matter import, no fs/astro, no .d.ts); CANONICAL_REQUIRED == validate-frontmatter strict set (title/description/doc_status/updated); zero deletions => back-compat by construction; only 2 owned files changed; tests exercise real paths. node --check OK; contract re-verified via runtime harness (gray-matter/vitest unavailable in half-materialized node_modules -> vitest CI-deferred). Lockfile untouched."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP01-charter-core/review-cycle-1.md",
+        "reference": "review-cycle://documentation-charter-01M2FEXM/WP01-charter-core/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 544332,
+      "shell_pid_created_at": "1789376440.04",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M2FRGTRET2MEDX902G4C8X5G",
+      "last_transition_at": "2026-09-14T10:48:32.782654+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "loadCharter/resolveGovernance/computeEffectiveCharter implemented; per-axis precedence + one-shot deprecation notice + fail-closed. vitest GREEN locally (16/16 charter-loader; 90/90 related suites); eslint clean; tsc clean on WP02 files. NFR-002 legacy-only non-regression fixture passes.",
+        "Review passed: per-axis precedence (charter fully owns declared axis, no partial-merge — forbid-Feature/legacy-alias fixture proves no alias leak); NFR-002 legacy-only fixture deep-equals loadVocabulary/loadSectionRegistry with canonical STATUSES+CANONICAL_REQUIRED; one-shot module-level deprecation guard (1 notice/3 calls, computeEffectiveCharter side-effect-free); fail-closed rethrow names file+key; effective projection JSON-round-trips; thin-loader keeps fs local, delegates resolution to pure core; scope = only 3 owned files; vitest 16/16 + 77 related green, lockfile md5 unchanged."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP02-charter-loader/review-cycle-1.md",
+        "reference": "review-cycle://documentation-charter-01M2FEXM/WP02-charter-loader/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 605291,
+      "shell_pid_created_at": "1789377689.22",
+      "subtasks": {
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M2FRH2RZB46EGW8A99YHTPXZ",
+      "last_transition_at": "2026-09-14T10:48:40.991234+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Charter-aware enforcement + Astro parity twin + SECTION_ORDER fallback-only. Both twins consume resolveGovernance statuses (extend-only, warn-not-fail) + required-field policy (title floor); malformed charter = hard gate failure. Parity guards (schema-validator-parity, section-type-parity, vocabulary-single-source) extended to statuses/required across both twins, all green. Local gates green: vitest 1090/1092 (2 pre-existing [BUILD] PlantUML-network failures unrelated), validate:docs/validate:example exit 0, eslint clean, malformed-charter hard-fail verified via CLI. CI-deferred: astro check (pre-existing implicitly-any/test-file errors, none in owned files) + the 2 PlantUML [BUILD] tests (need CI PlantUML service).",
+        "Review passed: both twins consume charter-resolved legalStatuses (extend-only, warn-not-fail) + requiredFields (title floor) via resolveGovernance; malformed charter is a hard gate failure; SECTION_ORDER is fallback-only (order override wins); parity guards are real dual-twin equivalence assertions (schema.ts buildRejects vs gate validate); 204 WP03 tests green; the 2 vitest failures are pre-existing PlantUML/astro [BUILD] baselines in non-owned files. Gate reads legacy sections for type-derivation only (advisory/OKF-preserving, knownSectionIds off) — acceptable v1 boundary; noted charter-sections consumption gap for WP05 cleanroom."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP03-enforcement-parity/review-cycle-1.md",
+        "reference": "review-cycle://documentation-charter-01M2FEXM/WP03-enforcement-parity/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 709964,
+      "shell_pid_created_at": "1789379740.13",
+      "subtasks": {
+        "T011": "done",
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M2FRHAKJDJS8J6D1ARS1YGV6",
+      "last_transition_at": "2026-09-14T10:48:49.010166+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "ADR-0042 native charter + convention recast + consumer governance chapter + migration guide. Gates ran GREEN locally after offline install: validate:docs (132 files valid), validate:adr-index (regeneration-clean), validate:links (941 refs resolve). Lockfile unchanged.",
+        "Review passed: ADR-0042 (Accepted) records native zero-SK-dependency charter and relates-not-edits ADR-0004 (0004 untouched); recast hedge gone (grep 0 hits), convention.md labels every dimension fixed/overridable; consumer-setup governance chapter + behavior-preserving migration guide accurate to contract C1-C7 and STATUSES code; frontmatter matches ADR-0041; validate:docs/adr-index/links all green; scope = 5 owned files only."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP04-doctrine-docs/review-cycle-1.md",
+        "reference": "review-cycle://documentation-charter-01M2FEXM/WP04-doctrine-docs/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 636035,
+      "shell_pid_created_at": "1789378499.88",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done",
+        "T022": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M2FRTNC3C5KVR535DGDAVTV6",
+      "last_transition_at": "2026-09-14T10:53:54.948016+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Charter clean-room proof complete. Dogfood docs/_meta/charter.yaml (identity mirror; sections.yaml kept) -> validate:docs byte-identical (130 files, 4 warns, 0 fails). charter-governance.test.ts: adopter charter through the shipped gate (forbidden Feature fails, added reviewed status passes, relaxed description passes, title floor fails; differentials; shipped-gate byte-parity to tarball). charter-cleanroom.test.ts: precise zero-Spec-Kitty guard over packed tarball (ignores spec-kitty BRAND theme); guard bites verified by plant-and-revert (real DoctrineService import into src/index.ts -> RED -> reverted); legacy-only non-regression to canonical defaults. Both new suites PASS locally (14 tests). Pack-and-INSTALL paths (existing consumption-gap.test.ts + orchestrator) are CI-verified; they fail locally only on stale offline-store tarball integrity, unchanged by this WP. Evidence: tests/consumption/CHARTER-EVIDENCE.md. Follow-ups recorded: sections axis not wired to build routes; standalone gate forbidden-term still reads legacy vocabulary.yaml (resolver IS charter-wired).",
+        "Review passed: dogfood charter byte-identical (130 valid/4 warn/0 fail, diff-identical); governance tests genuine differentials; zero-SK guard re-verified bites (plant→RED naming index.ts, revert→green, tree clean); legacy-only non-regression fromCharter:false; scope clean (owned files only); both wiring follow-ups (sections→build routes read legacy sections.yaml; gate forbidden-type via loadVocabulary) confirmed TRUE + honestly documented; 14/14 suites green locally"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP05-cleanroom-proof/review-cycle-1.md",
+        "reference": "review-cycle://documentation-charter-01M2FEXM/WP05-cleanroom-proof/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 833005,
+      "shell_pid_created_at": "1789381814.14",
+      "subtasks": {
+        "T023": "done",
+        "T024": "done",
+        "T025": "done",
+        "T026": "done",
+        "T027": "done"
+      }
+    }
+  }
+}

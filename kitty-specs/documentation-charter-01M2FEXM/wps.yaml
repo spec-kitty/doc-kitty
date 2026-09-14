@@ -1,0 +1,151 @@
+work_packages:
+  - id: WP01
+    title: "Charter core — statuses axis, required-field policy, parseCharter (fs-free)"
+    dependencies: []
+    owned_files:
+      - "src/lib/vocabulary-core.mjs"
+      - "src/tests/vocabulary-core.test.ts"
+    requirement_refs:
+      - FR-001
+      - FR-002
+      - FR-003
+      - FR-005
+      - FR-006
+      - C-004
+      - C-005
+      - NFR-004
+      - NFR-007
+    plan_concern_refs:
+      - IC-01
+    subtasks:
+      - T001
+      - T002
+      - T003
+      - T004
+      - T005
+    prompt_file: "tasks/WP01-charter-core.md"
+    agent_profile: "node-norris"
+    role: "implementer"
+    agent: "claude"
+  - id: WP02
+    title: "Charter loader — _meta/charter.yaml, per-axis precedence, back-compat, effective projection"
+    dependencies:
+      - WP01
+    owned_files:
+      - "src/lib/vocabulary-loader.mjs"
+      - "src/lib/effective-charter.mjs"
+      - "src/tests/charter-loader.test.ts"
+    requirement_refs:
+      - FR-001
+      - FR-004
+      - FR-008
+      - FR-009
+      - FR-010
+      - FR-015
+      - C-006
+      - NFR-002
+    plan_concern_refs:
+      - IC-02
+      - IC-04
+    subtasks:
+      - T006
+      - T007
+      - T008
+      - T009
+      - T010
+    prompt_file: "tasks/WP02-charter-loader.md"
+    agent_profile: "node-norris"
+    role: "implementer"
+    agent: "claude"
+  - id: WP03
+    title: "Enforcement wiring + Astro parity twin + SECTION_ORDER reconciliation"
+    dependencies:
+      - WP01
+      - WP02
+    owned_files:
+      - "src/scripts/validate-frontmatter.mjs"
+      - "src/lib/sections.ts"
+      - "src/lib/schema.ts"
+      - "src/lib/metadata.ts"
+      - "src/tests/vocabulary-resolver.test.ts"
+      - "src/tests/vocabulary-single-source.test.ts"
+      - "src/tests/section-type-parity.test.ts"
+      - "src/tests/schema-validator-parity.test.ts"
+      - "src/tests/metadata.test.ts"
+      - "src/tests/metadata-sections.test.ts"
+      - "src/tests/sections.test.ts"
+      - "src/tests/section-rename.test.ts"
+      - "src/tests/llms-section-order.test.ts"
+    requirement_refs:
+      - FR-005
+      - FR-006
+      - FR-007
+      - NFR-003
+      - NFR-004
+      - NFR-005
+      - NFR-006
+    plan_concern_refs:
+      - IC-03
+    subtasks:
+      - T011
+      - T012
+      - T013
+      - T014
+      - T015
+      - T016
+      - T017
+    prompt_file: "tasks/WP03-enforcement-parity.md"
+    agent_profile: "implementer-ivan"
+    role: "implementer"
+    agent: "claude"
+  - id: WP04
+    title: "Doctrine ADR, convention recast, consumer charter reference + migration guide"
+    dependencies:
+      - WP02
+    owned_files:
+      - "docs/adr/0042-native-documentation-charter.md"
+      - "docs/adr/README.md"
+      - "docs/context/convention.md"
+      - "docs/guides/consumer-setup.md"
+      - "docs/guides/migrating-to-charter.md"
+    requirement_refs:
+      - FR-011
+      - FR-012
+      - FR-013
+      - FR-014
+      - C-003
+    plan_concern_refs:
+      - IC-05
+    subtasks:
+      - T018
+      - T019
+      - T020
+      - T021
+      - T022
+    prompt_file: "tasks/WP04-doctrine-docs.md"
+    agent_profile: "curator-carla"
+    role: "curator"
+    agent: "claude"
+  - id: WP05
+    title: "Clean-room proof + dogfood charter.yaml + consumption non-regression"
+    dependencies:
+      - WP03
+    owned_files:
+      - "docs/_meta/charter.yaml"
+      - "tests/consumption/**"
+      - ".github/workflows/consumption-test.yml"
+    requirement_refs:
+      - NFR-001
+      - NFR-002
+    plan_concern_refs:
+      - IC-06
+    subtasks:
+      - T023
+      - T024
+      - T025
+      - T026
+      - T027
+    prompt_file: "tasks/WP05-cleanroom-proof.md"
+    agent_profile: "implementer-ivan"
+    role: "implementer"
+    agent: "claude"
