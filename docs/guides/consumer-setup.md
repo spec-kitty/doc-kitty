@@ -298,8 +298,11 @@ statuses:
 required_fields:
   optional: [ updated ]
 sections:
-  index_basename: README
-  order: [ context, architecture, adr, guides ]
+  entries:
+    - { id: context,      label: Context,          order: 10, type: Context }
+    - { id: architecture, label: Architecture,     order: 20, type: Architecture }
+    - { id: adr,          label: Decision Records, order: 30, type: ADR }
+    - { id: guides,       label: Guides,           order: 40, type: Guide }
 ```
 
 The governable dimensions:
@@ -314,16 +317,18 @@ The governable dimensions:
     kinds: { aliases: {}, forbidden: [] }
   ```
 
-- **Sections / information architecture — `sections`** (*overridable*). Order,
-  labels, entries, the section-index basename, and sub-path `subtypes` — the same
-  shape as the legacy `_meta/sections.yaml`.
+- **Sections / information architecture — `sections`** (*overridable*). The section
+  registry lives under `sections.entries` — a list of records with the same shape as
+  the legacy `_meta/sections.yaml` entries (`id`, `label`, an integer `order`, `type`,
+  optional `feeds`, `purpose`, and sub-path `subtypes`). Order is the per-entry
+  integer `order` (ascending), not a list of ids. The section-index basename is
+  configured in `astro.config.mjs` (`indexBasename`), not in the charter.
 
   ```yaml
   sections:
-    index_basename: README            # or "index"
-    order: [ context, architecture, adr, guides ]
     entries:
-      - { id: context, label: Context, type: Context, purpose: "Why we exist", feeds: [rss] }
+      - { id: context, label: Context, order: 10, type: Context, purpose: "Why we exist", feeds: [rss] }
+      - { id: guides,  label: Guides,  order: 20, type: Guide }
   ```
 
 - **Statuses — `statuses.add`** (*overridable, extend-only*). You may **add**
