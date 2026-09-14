@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   parseSectionRegistry,
   loadSectionRegistry,
+  resolveSectionRegistry,
   sectionOrder,
   sectionLabels,
   sectionTypes,
@@ -15,6 +16,7 @@ import {
   BUILD_GENERATED_SECTION_IDS,
   type SectionRegistry,
 } from '../lib/sections.js';
+import { resetDeprecationNotice } from '../lib/vocabulary-loader.mjs';
 
 // A representative authored registry body (a subset of docs/_meta/sections.yaml
 // plus a glossary → "Reference" entry and an id absent from the frozen tuple).
@@ -128,6 +130,86 @@ describe('loadSectionRegistry', () => {
       const reg = loadSectionRegistry(dir);
       expect(reg).not.toBeNull();
       expect(sectionLabels(reg!)['glossary']).toBe('Reference');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('resolveSectionRegistry — charter-aware path (charter → legacy → default, WP03)', () => {
+  const CHARTER_WITH_ENTRIES = `version: 1
+sections:
+  entries:
+    - id: guides
+      label: Guides
+      order: 10
+      type: Guide
+    - id: adr
+      label: Decisions
+      order: 20
+      type: ADR
+`;
+
+  function docsRoot(): string {
+    return mkdtempSync(path.join(tmpdir(), 'dk-resolve-sections-'));
+  }
+  function writeMeta(dir: string, name: string, body: string): void {
+    mkdirSync(path.join(dir, '_meta'), { recursive: true });
+    writeFileSync(path.join(dir, '_meta', name), body, 'utf8');
+  }
+
+  it('returns null when neither a charter nor a legacy registry is present (frozen-defaults fallback)', () => {
+    const dir = docsRoot();
+    try {
+      expect(resolveSectionRegistry(dir)).toBeNull();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('falls back to the legacy sections.yaml when no charter declares sections (identical to loadSectionRegistry)', () => {
+    const dir = docsRoot();
+    try {
+      resetDeprecationNotice();
+      writeMeta(dir, 'sections.yaml', REGISTRY_YAML);
+      expect(resolveSectionRegistry(dir)).toEqual(loadSectionRegistry(dir));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('resolves a charter-declared section registry from its `entries` (normalized like the legacy loader)', () => {
+    const dir = docsRoot();
+    try {
+      resetDeprecationNotice();
+      writeMeta(dir, 'charter.yaml', CHARTER_WITH_ENTRIES);
+      const reg = resolveSectionRegistry(dir);
+      expect(reg).not.toBeNull();
+      expect(sectionOrder(reg!)).toEqual(['guides', 'adr']);
+      expect(sectionTypes(reg!)).toEqual({ guides: 'Guide', adr: 'ADR' });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('the charter WINS over a legacy sections.yaml (per-axis precedence)', () => {
+    const dir = docsRoot();
+    try {
+      resetDeprecationNotice();
+      writeMeta(dir, 'sections.yaml', REGISTRY_YAML); // legacy: context/architecture/…
+      writeMeta(dir, 'charter.yaml', CHARTER_WITH_ENTRIES); // charter: guides/adr
+      expect(sectionOrder(resolveSectionRegistry(dir)!)).toEqual(['guides', 'adr']);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('a charter that declares section metadata but NO entries yields null (defaults apply)', () => {
+    const dir = docsRoot();
+    try {
+      resetDeprecationNotice();
+      writeMeta(dir, 'charter.yaml', 'version: 1\nsections:\n  index_basename: README\n  order: [ guides, adr ]\n');
+      expect(resolveSectionRegistry(dir)).toBeNull();
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

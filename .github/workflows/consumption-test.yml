@@ -58,6 +58,12 @@ jobs:
       # Vitest suite under tests/consumption via its own vitest.config.ts (root
       # scoped OFF the toolkit standing gate); the `cd src` resolves the vitest
       # binary from the installed workspace deps.
+      #
+      # This same step runs the documentation-charter clean-room proof
+      # (documentation-charter mission WP05): `charter-cleanroom.test.ts`
+      # (NFR-001 zero-Spec-Kitty guard + NFR-002 legacy-only non-regression) and
+      # `charter-governance.test.ts` (an adopter charter enforced through the shipped
+      # gate). No new adopter tooling is required. See tests/consumption/CHARTER-EVIDENCE.md.
       - name: Run packaging-gap self-test (WP05)
         run: ( cd src && ./node_modules/.bin/vitest run --root ../tests/consumption )
       # SC-005 enforcement: the adopter guide must reference ONLY published toolkit

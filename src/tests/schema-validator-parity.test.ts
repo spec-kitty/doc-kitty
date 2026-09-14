@@ -54,7 +54,14 @@ function buildRejects(data: Record<string, unknown>): boolean {
 // means schema.ts and the .mjs validator disagree on the shared field contract.
 const SHAPE_PARITY: { file: string; relPath: string; reject: boolean }[] = [
   { file: 'err/description-too-long.md', relPath: 'description-too-long.md', reject: true },
-  { file: 'err/bad-doc-status.md', relPath: 'bad-doc-status.md', reject: true },
+  // NOTE: `err/bad-doc-status.md` (doc_status: archived) USED to live here as a
+  // both-arms-REJECT row. documentation-charter WP03 made the status axis
+  // extend-only + warn-not-fail (C-004/FR-005): an unknown-and-not-added status
+  // now WARNS on the gate and BUILDS on the site (parity with the open `kind`
+  // axis), so both arms ACCEPT it. It was RETARGETED — not deleted — to the
+  // dedicated status describe below, which pins the new contract (both accept,
+  // the gate warns). This row's removal reds if either side ever hard-fails an
+  // unknown status again.
   { file: 'err/moscow-no-rationale.md', relPath: 'moscow-no-rationale.md', reject: true },
   { file: 'err/moscow-bad-level.md', relPath: 'moscow-bad-level.md', reject: true },
   { file: 'err/audience-no-guidance.md', relPath: 'audience-no-guidance.md', reject: true },
@@ -112,6 +119,109 @@ describe('schema/validator parity — the new `durable` status is accepted on bo
     expect(validatorRejects('context/durable-ref.md', data)).toBe(false);
     // … and the two arms agree (no divergence on the shared enum).
     expect(buildRejects(data)).toBe(validatorRejects('context/durable-ref.md', data));
+  });
+});
+
+// documentation-charter WP03 — the STATUS axis is extend-only + warn-not-fail
+// (C-004/FR-005), consumed on BOTH twins:
+//   • build schema (schema.ts): `doc_status` is an OPEN string — it never
+//     hard-rejects a status (an adopter's charter-added value must still build),
+//     mirroring the open `kind` axis;
+//   • bare-Node gate (validate-frontmatter.mjs): the legal set is
+//     `resolveGovernance(docsRoot).legalStatuses` (canonical ∪ charter-added,
+//     defaulting to canonical `STATUSES` for the 2-arg parity form); an unknown
+//     status WARNS (never fails), and a charter-added status is legal (no warn).
+// So the two arms stay in PARITY (both accept every status); the gate carries the
+// advisory. Authored inline (not new fixtures) to stay within owned files.
+describe('schema/validator parity — status axis is extend-only + warn-not-fail (C-004/FR-005)', () => {
+  it('an unknown status: build ACCEPTS (open) and the gate ACCEPTS but WARNS — the two arms agree', () => {
+    const data = parse('err/bad-doc-status.md'); // doc_status: archived (not canonical, not added)
+    // Arm B (build schema): open string — never rejects on the status value.
+    expect(buildRejects(data)).toBe(false);
+    // Arm A (gate): no hard problem, but the advisory warning fires.
+    const { problems, warnings } = validate('bad-doc-status.md', data);
+    expect(problems).toEqual([]);
+    expect(warnings.join('\n')).toContain('`doc_status: archived` is not in the legal set');
+    // … and the two arms do not diverge (both accept).
+    expect(buildRejects(data)).toBe(validatorRejects('bad-doc-status.md', data));
+  });
+
+  it('a CHARTER-ADDED status is legal on the gate (no warn) and builds on the site', () => {
+    const data: Record<string, unknown> = {
+      title: 'An archived reference',
+      description: 'x'.repeat(60),
+      updated: '2026-09-01',
+      doc_status: 'archived',
+      type: 'Context',
+      kind: 'Reference',
+    };
+    // With the charter resolving `archived` into the legal set, the gate accepts
+    // it WITHOUT the advisory warning (the extend-only knob, C-004).
+    const resolved = validate('context/archived.md', data, undefined, undefined, {
+      legalStatuses: ['draft', 'active', 'deprecated', 'superseded', 'durable', 'archived'],
+    });
+    expect(resolved.problems).toEqual([]);
+    expect(resolved.warnings.some((w) => /doc_status/.test(w))).toBe(false);
+    // Build side is open, so it accepts the added status too (parity holds).
+    expect(buildRejects(data)).toBe(false);
+  });
+
+  it('the same status is UNKNOWN (warns) when the charter does NOT add it (default legal set)', () => {
+    const data: Record<string, unknown> = {
+      title: 'An archived reference',
+      description: 'x'.repeat(60),
+      updated: '2026-09-01',
+      doc_status: 'archived',
+      type: 'Context',
+      kind: 'Reference',
+    };
+    // Default legal set (canonical only): `archived` is unknown → warns, no fail.
+    const { problems, warnings } = validate('context/archived.md', data);
+    expect(problems).toEqual([]);
+    expect(warnings.join('\n')).toContain('is not in the legal set');
+  });
+});
+
+// documentation-charter WP03 — the REQUIRED-FIELD policy (C-005/FR-006), consumed
+// on BOTH twins. The build schema is deliberately lenient on presence (stubs must
+// build), so requiredness is the GATE's job, now driven by the resolved policy:
+//   • default policy = canonical required set (title/description/doc_status/updated);
+//   • the charter may RELAX any non-floor field (here `updated`), and a page
+//     omitting it then passes the gate;
+//   • `title` is a FLOOR — always required, even under a relaxed policy.
+describe('schema/validator parity — required-field policy is charter-tunable (C-005/FR-006)', () => {
+  const missingUpdated: Record<string, unknown> = {
+    title: 'No updated field',
+    description: 'x'.repeat(60),
+    doc_status: 'active',
+    type: 'Context',
+    kind: 'Reference',
+  };
+
+  it('default policy: the gate REQUIRES `updated` (rejects when absent); the build schema stays lenient', () => {
+    expect(buildRejects(missingUpdated)).toBe(false); // build lenient (updated optional)
+    const { problems } = validate('context/no-updated.md', missingUpdated);
+    expect(problems).toContain('`updated`: required');
+  });
+
+  it('a RELAXED policy (updated made optional): the gate ACCEPTS the same page', () => {
+    const { problems } = validate('context/no-updated.md', missingUpdated, undefined, undefined, {
+      requiredFields: ['title', 'description', 'doc_status'], // `updated` relaxed
+    });
+    expect(problems).toEqual([]);
+  });
+
+  it('the `title` FLOOR is always required — even when the policy list omits it', () => {
+    const noTitle: Record<string, unknown> = {
+      description: 'x'.repeat(60),
+      doc_status: 'active',
+      kind: 'Reference',
+    };
+    // Even a policy that (illegally) omits title still fails on the floor.
+    const { problems } = validate('context/no-title.md', noTitle, undefined, undefined, {
+      requiredFields: ['description'],
+    });
+    expect(problems).toContain('`title`: required');
   });
 });
 

@@ -40,11 +40,13 @@ import {
   resolveIndexEntries,
 } from '../lib/metadata.ts';
 import { DOC_TYPES } from '../lib/schema.ts';
+import { STATUSES, CANONICAL_REQUIRED } from '../lib/vocabulary-core.mjs';
 import {
   expectedType,
   isRootIndex,
   isIndexPath,
   detectIndexCollisions,
+  validate,
 } from '../scripts/validate-frontmatter.mjs';
 
 describe('section-type derivation — single-sourced core (metadata.ts ⇔ gate alias)', () => {
@@ -127,6 +129,54 @@ describe('section-type / DOC_TYPES coupling (review N3)', () => {
         DOC_TYPES.includes(type as (typeof DOC_TYPES)[number]),
         `frozen SECTION_TYPE['${section}'] = '${type}' must be in DOC_TYPES`,
       ).toBe(true);
+    }
+  });
+});
+
+// documentation-charter WP03 — the STATUS and REQUIRED-FIELD axes are resolved
+// from the ONE core on BOTH twins. Here the bare-Node twin (`validate` from the
+// gate) is pinned to consume the core's canonical `STATUSES` / `CANONICAL_REQUIRED`
+// as its DEFAULTS (the 2-arg / option-less form), so the gate and the Astro side
+// can never drift on which statuses are legal-by-default or which fields are
+// required-by-default. The charter-overridable behavior (extend the legal set,
+// relax a non-floor field) is covered in `schema-validator-parity.test.ts`.
+describe('statuses + required-field axes — gate twin resolves from the single core (C-004/C-005)', () => {
+  const base = {
+    title: 'A page',
+    description: 'x'.repeat(60),
+    updated: '2026-09-01',
+    kind: 'Reference',
+  };
+
+  it.each(STATUSES as unknown as string[])(
+    'canonical status %s is legal-by-default on the gate (no advisory warning)',
+    (status) => {
+      const { problems, warnings } = validate('context/p.md', { ...base, doc_status: status });
+      expect(problems).toEqual([]);
+      expect(warnings.some((w) => /doc_status/.test(w))).toBe(false);
+    },
+  );
+
+  it('a status outside the canonical default set warns (single-sourced legal set)', () => {
+    const { problems, warnings } = validate('context/p.md', { ...base, doc_status: 'archived' });
+    expect(problems).toEqual([]);
+    expect(warnings.join('\n')).toContain('is not in the legal set');
+  });
+
+  it('every canonical required field is required-by-default on the gate', () => {
+    // Drop each canonical-required field in turn; the gate must flag it. Uses the
+    // core's `CANONICAL_REQUIRED` so this reds if the gate default ever drifts
+    // from the single source.
+    for (const field of CANONICAL_REQUIRED as unknown as string[]) {
+      const data: Record<string, unknown> = {
+        title: 'A page',
+        description: 'x'.repeat(60),
+        doc_status: 'active',
+        updated: '2026-09-01',
+      };
+      delete data[field];
+      const { problems } = validate('context/p.md', data);
+      expect(problems, `missing ${field} must be flagged`).toContain(`\`${field}\`: required`);
     }
   });
 });

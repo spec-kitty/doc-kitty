@@ -386,6 +386,266 @@ export function identityVocabulary() {
 }
 
 // ---------------------------------------------------------------------------
+// Documentation Charter axes (documentation-charter WP01, D-03/D-04) — the
+// extend-only `statuses` axis, the required-field policy (with a `title` floor),
+// and the unified `parseCharter(raw)` resolver. These EXTEND the pure core with
+// two more governable axes and fold all four (types/kinds/statuses/required) into
+// one `ResolvedCharter` shape (data-model, contracts/charter-resolution-contract).
+// The fail-closed guards below keep canonical governance non-removable (C-004,
+// C-005); the fs half (reading `_meta/charter.yaml`, the legacy fallback, the
+// deprecation notice) is WP02's `./vocabulary-loader.mjs`, so this stays fs-free.
+// ---------------------------------------------------------------------------
+
+/**
+ * The canonical required frontmatter fields the standalone gate enforces —
+ * traced from the strict-presence `frontmatterSchema` in
+ * `src/scripts/validate-frontmatter.mjs` (`title`/`description`/`doc_status`/
+ * `updated` are `z`-required; everything else is optional there). A charter may
+ * relax a NON-floor field via `required_fields.optional` (D-04); `title` is a
+ * hard floor and can never be relaxed (C-005).
+ */
+export const CANONICAL_REQUIRED = /** @type {const} */ ([
+  'title',
+  'description',
+  'doc_status',
+  'updated',
+]);
+
+/** The required-field floor — always required regardless of charter (C-005). */
+export const REQUIRED_FIELD_FLOOR = /** @type {const} */ (['title']);
+
+/** Sentinel `resolveStatus` returns for a status outside the legal set (warn). */
+export const UNKNOWN_STATUS = 'UNKNOWN';
+
+/** The reserved canonical statuses, as a set — extend-only, never removable. */
+const CANONICAL_STATUS_SET = new Set(STATUSES);
+
+/**
+ * The resolved statuses axis: the deterministic legal set and its resolver.
+ *
+ * @typedef {object} StatusesResolution
+ * @property {string[]} legalStatuses Canonical ∪ added — canonical first, then
+ *   the added values (deduped, code-unit sorted). Deterministic across builds.
+ * @property {(term: string | undefined) => string} resolveStatus Returns the
+ *   term when it is legal, else {@link UNKNOWN_STATUS} (a downstream warn signal,
+ *   mirroring the open `kinds` axis).
+ */
+
+/**
+ * Parse the extend-only `statuses` axis of a charter (D-03/C-004).
+ *
+ * ADDITIVE by construction: `statuses.add` (a list of strings) extends the
+ * canonical {@link STATUSES}; the canonical values stay reserved and can never be
+ * removed, forbidden, or aliased away. This reuses {@link parseVocabularyAxis} to
+ * parse and validate any authored `aliases`/`forbidden` (so a malformed shape
+ * fails closed with the shared message), then rejects — fail-closed — any
+ * `forbidden` entry or `aliases` source that names a canonical status. The
+ * resulting `legalStatuses` is deterministic: canonical order first, then the
+ * added values deduplicated (against canonical and each other) and code-unit
+ * sorted, so the order is stable across runs regardless of authored order.
+ *
+ * @param {unknown} raw The `statuses` sub-mapping (or `undefined`).
+ * @param {string} source Charter source name for error messages.
+ * @returns {StatusesResolution}
+ */
+export function parseStatusesAxis(raw, source) {
+  // Reuse the axis parser: validates the mapping shape and any aliases/forbidden.
+  const axis = parseVocabularyAxis(raw, 'statuses', source);
+  for (const term of axis.forbidden) {
+    if (CANONICAL_STATUS_SET.has(term)) {
+      throw new Error(`${source}: status "${term}" is reserved and cannot be removed`);
+    }
+  }
+  for (const from of Object.keys(axis.aliases)) {
+    if (CANONICAL_STATUS_SET.has(from)) {
+      throw new Error(`${source}: status "${from}" is reserved and cannot be removed`);
+    }
+  }
+  const added = parseStatusAddList(raw, source);
+  const seen = new Set(STATUSES);
+  /** @type {string[]} */
+  const extra = [];
+  for (const status of added) {
+    if (!seen.has(status)) {
+      seen.add(status);
+      extra.push(status);
+    }
+  }
+  extra.sort(compareCodeUnit);
+  const legalStatuses = [...STATUSES, ...extra];
+  const legalSet = new Set(legalStatuses);
+  return {
+    legalStatuses,
+    resolveStatus: (term) =>
+      term !== undefined && legalSet.has(term) ? term : UNKNOWN_STATUS,
+  };
+}
+
+/**
+ * Parse and validate the `statuses.add` list (strings only). `parseVocabularyAxis`
+ * ignores the `add` key, so this reads it directly off the already-shape-checked
+ * mapping.
+ *
+ * @param {unknown} raw The `statuses` sub-mapping (or `undefined`).
+ * @param {string} source
+ * @returns {string[]}
+ */
+function parseStatusAddList(raw, source) {
+  if (raw == null) return [];
+  const { add } = /** @type {Record<string, unknown>} */ (raw);
+  if (add == null) return [];
+  if (!Array.isArray(add)) {
+    throw new Error(`${source}: statuses "add" must be a list of status names`);
+  }
+  /** @type {string[]} */
+  const out = [];
+  for (const status of add) {
+    if (typeof status !== 'string') {
+      throw new Error(`${source}: statuses "add" entries must be strings`);
+    }
+    out.push(status);
+  }
+  return out;
+}
+
+/**
+ * The resolved required-field policy (D-04/C-005).
+ *
+ * @typedef {object} RequiredFieldsPolicy
+ * @property {string[]} required The effective required set: {@link CANONICAL_REQUIRED}
+ *   minus any relaxed (`required_fields.optional`) field. `title` is never absent.
+ * @property {string[]} floor The never-removable floor ({@link REQUIRED_FIELD_FLOOR}).
+ */
+
+/**
+ * Parse the `required_fields` policy of a charter (D-04/C-005).
+ *
+ * `required_fields.optional` lists NON-floor fields a consumer may leave absent;
+ * they are subtracted from {@link CANONICAL_REQUIRED}. Listing `title` fails
+ * closed — it is a floor field and can never be relaxed.
+ *
+ * @param {unknown} raw The `required_fields` sub-mapping (or `undefined`).
+ * @param {string} source
+ * @returns {RequiredFieldsPolicy}
+ */
+export function parseRequiredFields(raw, source) {
+  const optional = parseOptionalFieldList(raw, source);
+  if (optional.includes('title')) {
+    throw new Error(
+      `${source}: required field "title" is a floor and cannot be made optional`,
+    );
+  }
+  const optionalSet = new Set(optional);
+  const required = CANONICAL_REQUIRED.filter((field) => !optionalSet.has(field));
+  return { required, floor: [...REQUIRED_FIELD_FLOOR] };
+}
+
+/**
+ * Parse and validate `required_fields.optional` (a list of field-name strings).
+ *
+ * @param {unknown} raw The `required_fields` sub-mapping (or `undefined`).
+ * @param {string} source
+ * @returns {string[]}
+ */
+function parseOptionalFieldList(raw, source) {
+  if (raw == null) return [];
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(
+      `${source}: "required_fields" must be a mapping with an optional "optional" list`,
+    );
+  }
+  const { optional } = /** @type {Record<string, unknown>} */ (raw);
+  if (optional == null) return [];
+  if (!Array.isArray(optional)) {
+    throw new Error(`${source}: "required_fields.optional" must be a list of field names`);
+  }
+  /** @type {string[]} */
+  const out = [];
+  for (const field of optional) {
+    if (typeof field !== 'string') {
+      throw new Error(`${source}: "required_fields.optional" entries must be strings`);
+    }
+    out.push(field);
+  }
+  return out;
+}
+
+/**
+ * The full resolved charter — every governable axis folded into one shape,
+ * identical whether it came from `charter.yaml` or (in WP02) the legacy files.
+ *
+ * @typedef {object} ResolvedCharter
+ * @property {(term: string | undefined) => VocabularyResolution} resolveType
+ * @property {(term: string | undefined) => VocabularyResolution} resolveKind
+ * @property {(term: string | undefined) => string} resolveStatus
+ * @property {string[]} legalStatuses
+ * @property {Record<string, unknown> | null} sections Parsed section-registry
+ *   shape if the charter declares one, else `null` (WP02's loader supplies the
+ *   legacy `sections.yaml` fallback and normalizes the entries).
+ * @property {RequiredFieldsPolicy} requiredFields
+ * @property {{ fromCharter: boolean, legacyPresent: boolean }} sourceMeta The
+ *   pure core knows only whether a non-empty charter body was parsed
+ *   (`fromCharter`); `legacyPresent` is filled by the fs loader (WP02) and is
+ *   `false` here.
+ */
+
+/**
+ * Resolve a charter body (the raw `_meta/charter.yaml` text) into a
+ * {@link ResolvedCharter}. The single fs-free resolver WP02 (loader) and WP03
+ * (enforcement / Astro twin) build on.
+ *
+ * Shape (data-model): `types`/`kinds` live under `vocabulary`, the extend-only
+ * `statuses` axis under `statuses`, the required-field policy under
+ * `required_fields`, and the section registry under `sections`. Every key is
+ * optional; an empty body ≡ identity/defaults (`parseCharter('')` returns the
+ * shipped canonical behavior). Uses the same wrap-in-fences gray-matter trick as
+ * {@link parseVocabulary} (a pure string transform — no filesystem access) and
+ * delegates the `types`/`kinds` axes to the existing {@link parseVocabularyAxis} /
+ * {@link makeAxisResolver} machinery (no duplication). Unknown TOP-LEVEL keys are
+ * ignored (forward-compat, C-006); a malformed known axis fails closed.
+ *
+ * @param {string} raw
+ * @param {string} [source='charter.yaml']
+ * @returns {ResolvedCharter}
+ */
+export function parseCharter(raw, source = 'charter.yaml') {
+  const data = /** @type {Record<string, unknown> | null} */ (
+    matter(['---', raw, '---', ''].join('\n')).data
+  );
+  if (data != null && (typeof data !== 'object' || Array.isArray(data))) {
+    throw new Error(`${source}: charter must be a YAML mapping`);
+  }
+  const rawVocabulary = data?.vocabulary;
+  if (
+    rawVocabulary != null &&
+    (typeof rawVocabulary !== 'object' || Array.isArray(rawVocabulary))
+  ) {
+    throw new Error(`${source}: "vocabulary" must be a mapping with optional "types"/"kinds"`);
+  }
+  const vocabulary = /** @type {{ types?: unknown; kinds?: unknown } | undefined} */ (
+    rawVocabulary ?? undefined
+  );
+  const typeAxis = parseVocabularyAxis(vocabulary?.types, 'types', source);
+  const kindAxis = parseVocabularyAxis(vocabulary?.kinds, 'kinds', source);
+  const { legalStatuses, resolveStatus } = parseStatusesAxis(data?.statuses, source);
+  const requiredFields = parseRequiredFields(data?.required_fields, source);
+  const rawSections = data?.sections;
+  const sections =
+    rawSections != null && typeof rawSections === 'object' && !Array.isArray(rawSections)
+      ? /** @type {Record<string, unknown>} */ (rawSections)
+      : null;
+  return {
+    resolveType: makeAxisResolver(typeAxis),
+    resolveKind: makeAxisResolver(kindAxis),
+    resolveStatus,
+    legalStatuses,
+    sections,
+    requiredFields,
+    sourceMeta: { fromCharter: raw.trim() !== '', legacyPresent: false },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Index-basename detection (from `metadata.ts:407-525` +
 // `validate-frontmatter.mjs:60-135`) — pure, fs-free. The caller supplies the
 // path list (a directory walk lives in the fs layer), keeping this Astro/fs-free.

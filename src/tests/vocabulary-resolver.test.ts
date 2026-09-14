@@ -7,6 +7,7 @@ import {
   validate,
   SECTION_TYPE,
 } from '../scripts/validate-frontmatter.mjs';
+import { resolveGovernance, resetDeprecationNotice } from '../lib/vocabulary-loader.mjs';
 
 /**
  * #40 — `_meta/vocabulary.yaml` override + resolver (contracts/vocabulary-override.md).
@@ -263,6 +264,78 @@ describe('NFR-004 (retargeted) — the single resolver pins RESOLVED output over
       const vocab = loadVocabulary(dir);
       expect(vocab.resolveType('Feature').effective).toBe('Feature');
       expect(vocab.resolveType('Feature').forbidden).toBe(false);
+    } finally {
+      cleanup(dir);
+    }
+  });
+});
+
+// documentation-charter WP03 (IC-03) — the gate consumes the CHARTER-resolved
+// statuses + required-field policy the same way `run()` does: it resolves the
+// governance for a docs root via `resolveGovernance` and threads
+// `legalStatuses`/`requiredFields` into `validate()`. This proves the wiring
+// end-to-end (a real charter file → resolved policy → gate verdict), composed
+// with the vocabulary override that this suite already covers.
+describe('gate wiring — charter-resolved statuses + required policy (C-004/C-005, WP03)', () => {
+  /** Write a `<docsRoot>/_meta/charter.yaml` into a fresh temp dir and return it. */
+  function withCharter(body: string): string {
+    const dir = mkdtempSync(path.join(tmpdir(), 'dk-charter-gate-'));
+    mkdirSync(path.join(dir, '_meta'), { recursive: true });
+    writeFileSync(path.join(dir, '_meta', 'charter.yaml'), body, 'utf8');
+    resetDeprecationNotice();
+    return dir;
+  }
+
+  const CHARTER = `version: 1
+statuses:
+  add: [ archived ]
+required_fields:
+  optional: [ updated ]
+`;
+
+  it('a charter-added status validates as legal (no warning), and the relaxed field may be absent', () => {
+    const dir = withCharter(CHARTER);
+    try {
+      const g = resolveGovernance(dir, { emitDeprecation: false });
+      // A page using the charter-added status AND omitting the relaxed `updated`.
+      const { problems, warnings } = validate(
+        'context/archived-page.md',
+        { title: 'Archived', description: 'x'.repeat(60), doc_status: 'archived', kind: 'Reference' },
+        SECTION_TYPE,
+        loadVocabulary(dir),
+        { legalStatuses: g.legalStatuses, requiredFields: g.requiredFields.required },
+      );
+      expect(problems).toEqual([]); // updated relaxed → not required; archived is legal
+      expect(warnings.some((w) => /doc_status/.test(w))).toBe(false);
+    } finally {
+      cleanup(dir);
+    }
+  });
+
+  it('the `title` floor is still enforced under a charter, and an unknown status still warns', () => {
+    const dir = withCharter(CHARTER);
+    try {
+      const g = resolveGovernance(dir, { emitDeprecation: false });
+      const { problems, warnings } = validate(
+        'context/bad.md',
+        { description: 'x'.repeat(60), doc_status: 'mystery', kind: 'Reference' }, // no title, unknown status
+        SECTION_TYPE,
+        loadVocabulary(dir),
+        { legalStatuses: g.legalStatuses, requiredFields: g.requiredFields.required },
+      );
+      expect(problems).toContain('`title`: required'); // floor holds
+      expect(warnings.join('\n')).toContain('`doc_status: mystery` is not in the legal set');
+    } finally {
+      cleanup(dir);
+    }
+  });
+
+  it('a MALFORMED charter fails closed at resolution (the gate surfaces it as a hard failure)', () => {
+    // required_fields.optional listing the `title` floor → parseRequiredFields
+    // throws (C-005). `run()` catches this and reports a hard gate failure.
+    const dir = withCharter('version: 1\nrequired_fields:\n  optional: [ title ]\n');
+    try {
+      expect(() => resolveGovernance(dir, { emitDeprecation: false })).toThrow(/title/);
     } finally {
       cleanup(dir);
     }
