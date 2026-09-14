@@ -2,7 +2,7 @@
 title: Roadmap
 description: "Phased plan for doc-kitty, split into MVP and extended scope with MoSCoW priorities."
 doc_status: active
-updated: 2026-09-09
+updated: 2026-09-14
 type: Plan
 kind: Planning
 authors:
@@ -18,13 +18,16 @@ This plan splits the work into an MVP and an extended scope, and prioritizes eac
 feature with MoSCoW. The per-feature detail lives in [features](./features/); the
 reasoning behind the shape lives in the [decision records](../adr/).
 
-**Status (2026-09-09): the MVP feature set is delivered.** Every Must/MVP feature
-has shipped, and most of the Extended Should tier with it (Markua, glossary,
-build-time diagrams). All eight adoption enablers from the spec-kitty proving
-ground (#37–#44) are landed. The remaining frontier is not more features — it is
-**productization and a first real consumer adoption**: cutting a versioned release
-and proving the toolkit builds from a clean install into a net-new consumer site.
-See [Where we are now](#where-we-are-now-2026-09-09) below.
+**Status (2026-09-14): the MVP is delivered and productized.** Every Must/MVP
+feature has shipped, and most of the Extended Should tier with it (Markua,
+glossary, build-time diagrams). All eight adoption enablers from the spec-kitty
+proving ground (#37–#44) are landed. Productization is now done too: the toolkit
+is cut at **`0.1.0`** with a CHANGELOG, and the **consumption test** (N=2, a
+packed-tarball clean-room build into a net-new consumer site) has landed — so the
+reuse contract is demonstrated fact, not a claim. The remaining feature frontier
+is a single Should-tier item, the **Doctrine variation (M7)**, plus three
+Could-tier design-only portals. See [Where we are now](#where-we-are-now-2026-09-14)
+below.
 
 (This is a `Planning` page and its features are `Feature` pages per
 [ADR-0010](../adr/0010-planning-kinds-and-moscow.md).)
@@ -137,22 +140,26 @@ still flags as *unproven* is the reuse ceiling: the toolkit is exercised at
 a contract, not a fleet), and there is **no versioned, install-provable release**.
 Those two are exactly what the productization step below closes.
 
-## Where we are now (2026-09-09)
+## Where we are now (2026-09-14)
 
-The MVP is **feature-complete**. The gap between "finished toolkit" and "a client
-can run it" is now productization, not features:
+The MVP is **feature-complete and productized**. Both productization steps that
+were the frontier on 2026-09-09 have since landed:
 
 1. **A shippable release.** The toolkit is cut at **`0.1.0`** (was `0.0.0`), with a
    [CHANGELOG](../../CHANGELOG.md) and a clean-checkout build proof. A consumer can
    pin a real version instead of vendoring `0.0.0`.
-2. **A proven consumer path (raise N=1 → N=2).** A **consumption test** — a
-   dedicated CI workflow that installs the *packaged* toolkit into a net-new
-   consumer site (a second consumer theme — the `consumer` layer of the
-   default→brand→consumer merge — over the ars-rethorica book corpus) and builds
-   it exactly as an external adopter would — turns the reuse
-   contract into demonstrated fact. This is scoped as its own mission. The
-   reproducible adopter path it proves is written up in the
-   [consumer setup guide](../guides/consumer-setup.md).
+2. **A proven consumer path (N=1 → N=2) — landed.** The **consumption test**
+   mission shipped: a dedicated CI workflow packs the toolkit to a tarball and
+   installs it into a net-new consumer site (a second consumer theme — the
+   `consumer` layer of the default→brand→consumer merge — over the ars-rethorica
+   book corpus), building it exactly as an external adopter would. The reuse
+   contract is now demonstrated fact. The reproducible adopter path is written up
+   in the [consumer setup guide](../guides/consumer-setup.md).
 
 Deferred, unchanged: selective/redacted publishing (projection, M8) and an
 in-tool book type both stay **Won't** this cycle.
+
+The remaining feature frontier is the **Doctrine variation (M7)** — recasting the
+convention into charter/doctrine — which is still ⛔ not started, plus the three
+Could-tier design-only portals (mission status, QA, ticketing). M7 is the next
+candidate for scoping.
