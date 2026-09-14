@@ -73,17 +73,18 @@ each step to confirm nothing changed.
    Rebuild. The same terms are forbidden and the same aliases apply, because the
    `vocabulary` axis now resolves from the charter instead of the legacy file.
 
-3. **Move the sections axis.** Copy the contents of `_meta/sections.yaml` under a
-   `sections:` key — `index_basename`, `order`, `entries`, and `subtypes` keep
-   their legacy shape:
+3. **Move the sections axis.** Take the entry list from your `_meta/sections.yaml`
+   (its top-level `sections:` list) and place it under `sections.entries` in the
+   charter. Each entry keeps its legacy shape — `id`, `label`, an integer `order`,
+   `type`, and optional `feeds`, `purpose`, and per-entry `subtypes`. The order is
+   the per-entry integer `order` field (not a list of ids), and the section-index
+   basename stays in `astro.config.mjs` (`indexBasename`), not the charter:
 
    ```yaml
    sections:
-     index_basename: README
-     order: [ context, architecture, adr, guides ]
      entries:
-       - { id: context, label: Context, type: Context, purpose: "Why we exist", feeds: [rss] }
-     subtypes: { }
+       - { id: context, label: Context, order: 10, type: Context, purpose: "Why we exist", feeds: [rss] }
+       - { id: guides,  label: Guides,  order: 20, type: Guide }
    ```
 
    Rebuild. Section resolution — order, labels, feeds, sub-path types — is
