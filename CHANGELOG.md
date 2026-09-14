@@ -6,7 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- **One `_meta/charter.yaml` now governs a docsite's whole convention** (M7;
+  `#100`, closes `#98`, `#99`) — the `type`/`kind` vocabulary, the `doc_status`
+  set, the sections/IA registry, and the required-field set used to be spread
+  across separate `_meta/*.yaml` files, with a couple of knobs hardcoded in the
+  toolkit. A consumer can now author a single optional charter, resolved natively
+  by doc-kitty with **no Spec Kitty runtime dependency**, under a documented
+  per-axis `default → consumer` precedence. Existing `_meta/*.yaml` files are
+  still honored (with a one-shot deprecation notice), so current consumers keep
+  working unchanged; a charter-only consumer is now governed end-to-end — the
+  frontmatter gate and every build output (`llms.txt`, the agent-API, `rss.xml`,
+  the Hub grid, and the sidebar/sitemap) resolve through the charter. `doc_status`
+  is extend-only (the canonical statuses stay reserved) and the required-field set
+  keeps a non-removable `title` floor; a malformed charter fails closed. See
+  [ADR-0042](docs/adr/0042-native-documentation-charter.md) and the consumer
+  charter reference + migration guide.
 
 ## [0.1.0] — 2026-09-09
 
