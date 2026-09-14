@@ -130,7 +130,7 @@ packages:
     resolution: {integrity: sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==}
 
   '@commondocs-kitty/toolkit@file:toolkit.tgz':
-    resolution: {integrity: sha512-6vCLdqJ1vbt5Mm9jI5yKXeoA4sRdYNv5lhVT5qRB/HWHJV/96IV9MxKT6CZya09pxkvD/LmCjfGUIsvHsA0pMQ==, tarball: file:toolkit.tgz}
+    resolution: {integrity: sha512-FYqZAWG3OclSIway978PZ1cAXLoOEA1o1N8SrXr5xpY1f7cM+/7GZzc4vqS49uAu7ajdFBj8vqpAW5UgFg8fGw==, tarball: file:toolkit.tgz}
     version: 0.1.0
     engines: {node: '>=22'}
     peerDependencies:

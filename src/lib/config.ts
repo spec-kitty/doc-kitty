@@ -28,7 +28,7 @@ import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import type { AstroIntegration } from 'astro';
 import { readmeToIndexId, sectionOf, type IndexBasenameOption } from './metadata.js';
 import {
-  loadSectionRegistry,
+  resolveSectionRegistry,
   registryToSidebar,
   sectionFeeds,
   feedsSurface,
@@ -281,7 +281,7 @@ function registrySidebar(
   docsDir: string,
 ): StarlightUserConfig['sidebar'] | undefined {
   const docsRoot = path.resolve(process.cwd(), docsDir);
-  const registry = loadSectionRegistry(docsRoot);
+  const registry = resolveSectionRegistry(docsRoot);
   if (!registry) return undefined;
   // `topLevelContentDirs` is a SNAPSHOT of the on-disk dirs taken here, BEFORE the
   // glossary integration codegens `<docsDir>/glossary/**` in its config:setup hook.
@@ -336,7 +336,7 @@ export function sitemapDraftFilter(
   const basePrefix = normalizeBasePrefix(base);
   // Load the registry from the SAME docs root the sidebar synthesis uses. Absent
   // registry → `feeds` undefined → `feedsSurface` is always true (no filtering).
-  const registry = loadSectionRegistry(path.resolve(process.cwd(), docsDir));
+  const registry = resolveSectionRegistry(path.resolve(process.cwd(), docsDir));
   const feeds = registry ? sectionFeeds(registry) : undefined;
   return (page: string): boolean => {
     let pathname: string;

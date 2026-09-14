@@ -48,7 +48,7 @@ import {
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
 import { selectHubChildren, selectAdrHubCards } from '../lib/hub-children.mjs';
-import { loadSectionRegistry, sectionOrder } from '../lib/sections.js';
+import { resolveSectionRegistry, sectionOrder } from '../lib/sections.js';
 import '../styles/hub.css';
 
 const route = Astro.props as StarlightRoute;
@@ -63,7 +63,7 @@ const hrefFor = (slug: string): string =>
 // surfaces read, so the root Hub grid never diverges from them (DIRECTIVE_044:
 // one source of truth). Falls back to the frozen SECTION_ORDER when no
 // registry is present, exactly like the routes.
-const registry = loadSectionRegistry(path.join(process.cwd(), 'docs'));
+const registry = resolveSectionRegistry(path.join(process.cwd(), 'docs'));
 const order = registry ? sectionOrder(registry) : undefined;
 
 // A rendered card. ADR cards additionally carry the lifecycle `status` badge and

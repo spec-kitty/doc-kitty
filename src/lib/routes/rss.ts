@@ -8,7 +8,7 @@
  */
 import type { APIRoute } from 'astro';
 import { rankForFeed, sectionOf, updatedMillis, sectionLabel, includedInRssFeed } from '../metadata.js';
-import { loadSectionRegistry, sectionLabels, sectionFeeds, feedsSurface } from '../sections.js';
+import { resolveSectionRegistry, sectionLabels, sectionFeeds, feedsSurface } from '../sections.js';
 import { absolute, docsRoot, xmlEscape } from './shared.js';
 import { collectDocEntries } from '../docs-index.js';
 
@@ -27,7 +27,7 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
     // Registry-driven section labels for the item <category> fallback; a
     // registry-free root falls back to SECTION_LABEL inside sectionLabel (#18).
     // Resolved from the content layer so a custom docs directory is honored (#22).
-    const registry = loadSectionRegistry(await docsRoot());
+    const registry = resolveSectionRegistry(await docsRoot());
     const labels = registry ? sectionLabels(registry) : undefined;
     // Section-level `feeds` filter, composed ON TOP of the existing publication +
     // kind gating: a page appears iff its section feeds `rss` AND it survives
