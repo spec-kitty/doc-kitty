@@ -1,0 +1,78 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-09-14T08:02:22.508816Z",
+      "decision_id": "01M2FF0J5CAF7WYYXZ5QJX8FR3",
+      "final_answer": "New consolidated charter file that absorbs vocabulary.yaml + sections.yaml into one authoritative _meta charter; existing _meta/vocabulary.yaml and _meta/sections.yaml remain honored (deprecated, back-compat) so the proven N=2 consumer path does not regress, with a documented migration.",
+      "input_key": "charter_surface_shape",
+      "mission_id": "01M2FEXMH2ZTZ1WR67J62QSN2H",
+      "mission_slug": "documentation-charter-01M2FEXM",
+      "opened_by": "cli",
+      "options": [
+        "Umbrella over existing files (no migration)",
+        "New consolidated charter file (absorbs vocabulary.yaml + sections.yaml)",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Should the documentation charter be one new consolidated file that absorbs the existing _meta/*.yaml seams, or a thin umbrella that documents and points at the existing files (no format migration)?",
+      "rationale": null,
+      "resolved_at": "2026-09-14T08:21:41.424915Z",
+      "resolved_by": null,
+      "slot_key": "specify.charter.surface-shape",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-09-14T08:02:29.502586Z",
+      "decision_id": "01M2FF0RZYJ68F53BV6ACYGFRJ",
+      "final_answer": "Deferred. Keep the shipped warn-not-fail posture; no consumer-tunable strictness engine in this mission. A configurable-enforcement/strictness surface is split to the separate Layer-B item.",
+      "input_key": "strictness_in_scope",
+      "mission_id": "01M2FEXMH2ZTZ1WR67J62QSN2H",
+      "mission_slug": "documentation-charter-01M2FEXM",
+      "opened_by": "cli",
+      "options": [
+        "Deferred \u2014 keep warn-not-fail defaults, no strictness engine",
+        "In scope \u2014 add a strictness knob",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Is consumer-tunable strictness (letting an adopter turn warnings into hard failures or vice versa) IN scope for this mission, or deferred to the separate Layer-B/enforcement item?",
+      "rationale": null,
+      "resolved_at": "2026-09-14T08:21:48.661953Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.strictness-tunability",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-09-14T08:02:36.524730Z",
+      "decision_id": "01M2FF0ZVC0AX7NPJ6GXE9P4D6",
+      "final_answer": "Extend-only. doc_status becomes consumer-overridable via the same alias/forbid axis as type/kind, but the canonical statuses (draft, published, durable, etc.) stay reserved and non-removable so Hub draft-exclusion, feeds, and the durable throughline keep working.",
+      "input_key": "doc_status_override_semantics",
+      "mission_id": "01M2FEXMH2ZTZ1WR67J62QSN2H",
+      "mission_slug": "documentation-charter-01M2FEXM",
+      "opened_by": "cli",
+      "options": [
+        "Extend-only; canonical statuses reserved",
+        "Full-replace; consumer owns the enum",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "How should doc_status become consumer-overridable: extend-only (add statuses; canonical five stay reserved so Hub/feed behavior holds) or full-replace (consumer owns the whole enum)?",
+      "rationale": null,
+      "resolved_at": "2026-09-14T08:21:55.949701Z",
+      "resolved_by": null,
+      "slot_key": "specify.status.override-semantics",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M2FEXMH2ZTZ1WR67J62QSN2H",
+  "version": 1
+}

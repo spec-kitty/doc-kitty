@@ -1,0 +1,229 @@
+{
+  "mission_slug": "documentation-charter-01M2FEXM",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "<<<<<<< ours\n\"Consolidated _meta/charter.yaml authoritative surface\"\n=======\n\"Verify FR-001 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"WP01 parseCharter + WP02 loadCharter read one _meta/charter.yaml; dogfood charter present, validate:docs diff-identical (WP05).\"\n=======\n\"One _meta/charter.yaml resolved by parseCharter/loadCharter; dogfood present, validate:docs diff-identical (WP01/WP02/WP05)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:41:14.285343+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "<<<<<<< ours\n\"Single default\\u2192consumer resolution story\"\n=======\n\"Verify FR-002 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"resolveGovernance() single entry; per-axis precedence documented in contract; charter-loader tests 16/16 (WP02).\"\n=======\n\"resolveGovernance single entry + per-axis precedence; charter-loader 16/16 (WP02)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:41:32.313963+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "<<<<<<< ours\n\"type/kind alias/forbid expressible in charter\"\n=======\n\"Verify FR-003 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"EXPRESSIBLE+RESOLVED: charter vocabulary axis parsed/resolved; Astro type-derivation honors it; adopter fixture forbids Feature\\u2192gate fails (WP05). FOLLOW-UP: bare-Node gate forbidden-check still reads legacy vocabulary.yaml (validate-frontmatter.mjs:573) \\u2014 charter-only consumer enforcement is a documented fast-follow.\"\n=======\n\"Charter vocabulary axis expressible+resolved; Astro type-derivation honors forbid; adopter fixture Feature->fail. FOLLOW-UP: bare-Node gate forbidden-check reads legacy vocabulary.yaml (validate-frontmatter.mjs:573) (WP03/WP05)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:41:50.038650+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "<<<<<<< ours\n\"sections/IA expressible in charter\"\n=======\n\"Verify FR-004 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"EXPRESSIBLE+RESOLVED: parseCharter parses sections; resolveGovernance.sections + sections.ts type-derivation consume it (WP03). FOLLOW-UP: build routes (llms-txt/agent-index/rss/Hub/config) still read legacy sections.yaml \\u2014 charter-only sections\\u2192build-output is a documented fast-follow.\"\n=======\n\"parseCharter parses sections; resolveGovernance.sections + sections.ts type-derivation consume it. FOLLOW-UP: build routes llms/agent-index/rss/Hub/config read legacy sections.yaml (WP03/WP05)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:42:07.096509+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "<<<<<<< ours\n\"doc_status extend-only, canonical reserved\"\n=======\n\"Verify FR-005 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"parseStatusesAxis extend-only; legalStatuses=canonical\\u222aadded; reserved-status removal fails closed; gate warns unknown-but-legal (WP01/WP03); fixture adds 'reviewed'\\u2192passes (WP05).\"\n=======\n\"Extend-only statuses; legalStatuses=canonical U added; reserved removal fails closed; fixture adds reviewed->pass (WP01/WP03/WP05)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:42:21.202934+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "<<<<<<< ours\n\"required-field set configurable, title floor\"\n=======\n\"Verify FR-006 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"parseRequiredFields relaxes non-floor; title floor un-removable (fails closed); gate consults requiredFields (WP01/WP03); fixture relaxes description\\u2192passes, title-less\\u2192fails (WP05).\"\n=======\n\"required-field policy relaxes non-floor; title floor un-removable; fixture relax description->pass, title-less->fail (WP01/WP03/WP05)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:42:38.731679+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "<<<<<<< ours\n\"frozen SECTION_ORDER reconciled to fallback-only\"\n=======\n\"Verify FR-007 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"metadata.ts SECTION_ORDER last-resort only; resolved order wins; metadata-sections FR-007 assertion (WP03).\"\n=======\n\"SECTION_ORDER fallback-only; resolved order wins; metadata-sections assertion (WP03)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:42:52.856019+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "<<<<<<< ours\n\"legacy _meta/*.yaml honored (back-compat)\"\n=======\n\"Verify FR-008 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"resolveGovernance falls back per-axis to legacy when charter silent; legacy-only fixture identical to today (WP02/WP05).\"\n=======\n\"Per-axis legacy fallback when charter silent; legacy-only fixture identical to today (WP02/WP05)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:43:06.975669+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "<<<<<<< ours\n\"deterministic precedence when both present\"\n=======\n\"Verify FR-009 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"Per-axis ownership: charter-declared axis wins entirely, no partial-merge; test: charter-forbid + legacy-alias \\u2192 forbidden, no alias leak (WP02).\"\n=======\n\"Per-axis ownership no partial-merge; charter-forbid+legacy-alias->forbidden no leak (WP02)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:43:21.024884+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "<<<<<<< ours\n\"fail-closed on malformed charter\"\n=======\n\"Verify FR-010 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"loadCharter catch+rethrow names file+key; gate treats as hard failure; verified via CLI (WP02/WP03).\"\n=======\n\"loadCharter catch+rethrow names file+key; gate hard-fails malformed (WP02/WP03)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:43:34.784765+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "<<<<<<< ours\n\"migration guide\"\n=======\n\"Verify FR-011 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"docs/guides/migrating-to-charter.md behavior-preserving steps; validate:docs green (WP04).\"\n=======\n\"docs/guides/migrating-to-charter.md behavior-preserving; validate:docs green (WP04)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:43:49.021088+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "<<<<<<< ours\n\"native-doctrine ADR\"\n=======\n\"Verify FR-012 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"docs/adr/0042-native-documentation-charter.md Accepted; relates-not-edits ADR-0004; validate:adr-index regen-clean (WP04).\"\n=======\n\"ADR-0042 Accepted relates-not-edits ADR-0004; validate:adr-index regen-clean (WP04)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:44:06.487069+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "<<<<<<< ours\n\"retire convention.md recast hedge\"\n=======\n\"Verify FR-013 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"grep confirms zero 'will later be recast' in docs/; dimensions labeled fixed vs overridable (WP04).\"\n=======\n\"grep zero 'will later be recast' in docs/; dimensions labeled (WP04)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:44:23.811345+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "<<<<<<< ours\n\"consumer-facing charter reference\"\n=======\n\"Verify FR-014 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"consumer-setup.md governance chapter enumerates 4 dimensions with examples + link (WP04).\"\n=======\n\"consumer-setup governance chapter, 4 dimensions + examples + link (WP04)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:44:41.680095+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "<<<<<<< ours\n\"effective-charter visibility\"\n=======\n\"Verify FR-015 is satisfied\"\n>>>>>>> theirs",
+      "proof_type": "automated_test",
+      "evidence": "<<<<<<< ours\n\"effective-charter.mjs computeEffectiveCharter JSON-round-trips resolved governance; side-effect-free (WP02).\"\n=======\n\"effective-charter.mjs projection JSON-round-trips, side-effect-free (WP02)\"\n>>>>>>> theirs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "<<<<<<< ours\n\"2026-09-14T10:39:17.541130+00:00\"\n=======\n\"2026-09-14T10:44:59.592781+00:00\"\n>>>>>>> theirs",
+      "notes": "<<<<<<< ours\n\"\"\n=======\n\"TODO: replace with a real acceptance criterion\"\n>>>>>>> theirs"
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "zero Spec Kitty runtime dependency",
+      "proof_type": "automated_test",
+      "evidence": "charter-cleanroom guard scans packed tarball for spec-kitty import/DoctrineService; plant-and-revert confirmed RED\u2192green (WP05); precise vs legitimate brand theme.",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-14T10:39:17.541130+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "consumption-path non-regression",
+      "proof_type": "automated_test",
+      "evidence": "legacy-only roots resolve to canonical defaults; doc-kitty own build diff-identical with dogfood charter; consumer-fixture/lockfile untouched (WP05).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-14T10:39:17.541130+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "build-free enforcement",
+      "proof_type": "automated_test",
+      "evidence": "validate-frontmatter.mjs consumes resolveGovernance without Astro build; runs as bare-Node gate (WP03).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-14T10:39:17.541130+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "pure-core/thin-loader split preserved",
+      "proof_type": "automated_test",
+      "evidence": "vocabulary-core.mjs fs-free/Astro-free (only gray-matter); fs in loader; vocabulary-single-source parity guard green (WP01/WP02/WP03).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-14T10:39:17.541130+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "existing gates stay green",
+      "proof_type": "automated_test",
+      "evidence": "vitest 1090/1092 (2 pre-existing PlantUML BUILD baselines); validate:docs/example/adr-index/links green; eslint clean (WP03/WP04).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-14T10:39:17.541130+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "OKF conformance preserved",
+      "proof_type": "automated_test",
+      "evidence": "type resolution unchanged; orphan\u2192null not ''; non-orphan resolves non-empty (WP03).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-14T10:39:17.541130+00:00",
+      "notes": ""
+    },
+    {
+      "criterion_id": "NFR-007",
+      "description": "deterministic resolution",
+      "proof_type": "automated_test",
+      "evidence": "legalStatuses canonical-first + compareCodeUnit-sorted; order-independent (WP01).",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-14T10:39:17.541130+00:00",
+      "notes": ""
+    }
+  ],
+  "negative_invariants": []
+}
