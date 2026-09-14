@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   loadVocabulary,
   validate,
+  run,
   SECTION_TYPE,
 } from '../scripts/validate-frontmatter.mjs';
 import { resolveGovernance, resetDeprecationNotice } from '../lib/vocabulary-loader.mjs';
@@ -326,6 +327,69 @@ required_fields:
       expect(problems).toContain('`title`: required'); // floor holds
       expect(warnings.join('\n')).toContain('`doc_status: mystery` is not in the legal set');
     } finally {
+      cleanup(dir);
+    }
+  });
+
+  // #99 — the standalone gate's `run()` must read the `type`/`kind` forbidden
+  // check from the CHARTER-aware `resolveGovernance` (per-axis charter→legacy→
+  // default), not a legacy-only `loadVocabulary(root)`. Before the fix `run()`
+  // fed `validate()` the legacy resolver, so a term forbidden ONLY in
+  // `_meta/charter.yaml` (no `_meta/vocabulary.yaml`) slipped through the gate.
+  // This test drives `run()` end-to-end and would PASS the forbidden page under
+  // the old (legacy-only) source — it fails without the resolver-source swap.
+  it('#99: a type forbidden ONLY in charter.yaml (no legacy vocabulary.yaml) fails the run() gate', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'dk-charter-forbid-'));
+    mkdirSync(path.join(dir, '_meta'), { recursive: true });
+    // Charter forbids `type: Epic`; deliberately NO legacy `_meta/vocabulary.yaml`.
+    writeFileSync(
+      path.join(dir, '_meta', 'charter.yaml'),
+      'version: 1\nvocabulary:\n  types:\n    forbidden: [ Epic ]\n',
+      'utf8',
+    );
+    mkdirSync(path.join(dir, 'context'), { recursive: true });
+    writeFileSync(
+      path.join(dir, 'context', 'page.md'),
+      [
+        '---',
+        'title: A Page',
+        `description: ${'x'.repeat(60)}`,
+        'doc_status: active',
+        'updated: 2026-01-01',
+        'type: Epic',
+        'kind: Reference',
+        '---',
+        '',
+        '# A Page',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    resetDeprecationNotice();
+
+    // The gap #99 closes: the legacy-only loader (the gate's OLD source) does NOT
+    // forbid the charter-only term; the charter-aware resolver (the NEW source) does.
+    expect(loadVocabulary(dir).resolveType('Epic').forbidden).toBe(false);
+    expect(resolveGovernance(dir, { emitDeprecation: false }).resolveType('Epic').forbidden).toBe(
+      true,
+    );
+
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+      throw new Error(`process.exit:${code}`);
+    }) as never);
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      // With the fix, `run()` fails the forbidden `type: Epic` (exit 1) and names it.
+      expect(() => run(['node', 'validate-frontmatter.mjs', dir])).toThrow('process.exit:1');
+      const errors = errSpy.mock.calls.map((c) => c.join(' ')).join('\n');
+      expect(errors).toMatch(/`type: Epic` is forbidden/);
+    } finally {
+      exitSpy.mockRestore();
+      errSpy.mockRestore();
+      warnSpy.mockRestore();
+      logSpy.mockRestore();
       cleanup(dir);
     }
   });

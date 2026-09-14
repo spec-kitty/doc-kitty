@@ -568,9 +568,15 @@ export function run(argv) {
     // though it would not fail the gate). The capability is real and tested
     // (`section-rename.test.ts`, `validate()`'s `knownSectionIds` option) for a
     // caller that DOES have that positive signal (e.g. a scoped rename check).
-    // Vocabulary override for THIS root (#40): `<root>/_meta/vocabulary.yaml` when
-    // present, else the shipped-default identity resolver (`Feature` valid).
-    const vocab = loadVocabulary(root);
+    // Vocabulary override for THIS root (#40 / #99): the CHARTER-aware `type`/
+    // `kind` resolvers come from the SAME `resolveGovernance(root)` object
+    // computed above (per-axis charter→legacy→default precedence), NOT a second
+    // legacy-only `loadVocabulary(root)` call. This closes the gate's gap: a
+    // term forbidden ONLY in `_meta/charter.yaml` (no legacy `_meta/vocabulary.yaml`)
+    // is now enforced by this standalone gate, matching how `doc_status` and the
+    // required-field policy already resolve. The verdict routing in `validate()`
+    // is unchanged — only the SOURCE of the resolver moves (legacy → charter-aware).
+    const vocab = { resolveType: governance.resolveType, resolveKind: governance.resolveKind };
 
     const rels = files.map((f) => relative(root, f).split('\\').join('/'));
 
