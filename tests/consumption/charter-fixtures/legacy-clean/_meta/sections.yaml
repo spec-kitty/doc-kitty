@@ -1,0 +1,11 @@
+# Legacy-only section registry (NO charter.yaml) — the NFR-002 non-regression
+# baseline root: governance must resolve to the canonical shipped defaults, exactly
+# as before the Documentation Charter existed. Also the "no Spec Kitty on PATH"
+# clean-run root (the gate resolves governance with nothing extra installed).
+version: 1
+sections:
+  - id: guides
+    label: Guides
+    order: 10
+    type: Guide
+    purpose: Task-oriented how-tos for a legacy-only adopter.

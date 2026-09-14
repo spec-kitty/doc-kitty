@@ -44,10 +44,19 @@ const CANONICAL_DEFINITIONS: Record<string, RegExp> = {
   STATUSES: /\b(?:export\s+)?const\s+STATUSES\b/,
   DOC_TYPES: /\b(?:export\s+)?const\s+DOC_TYPES\b/,
   KINDS: /\b(?:export\s+)?const\s+KINDS\b/,
+  // documentation-charter WP03: the charter statuses + required-field axes are
+  // single-sourced in the core too — the enforcement twins (gate + Astro schema)
+  // IMPORT these, never redefine them, so both sides resolve the same legal set
+  // and required floor (parity by construction, C-004/C-005/NFR-004).
+  CANONICAL_REQUIRED: /\b(?:export\s+)?const\s+CANONICAL_REQUIRED\b/,
+  REQUIRED_FIELD_FLOOR: /\b(?:export\s+)?const\s+REQUIRED_FIELD_FLOOR\b/,
   expectedDocType: /\bfunction\s+expectedDocType\b/,
   expectedType: /\bfunction\s+expectedType\b/,
   makeAxisResolver: /\bfunction\s+makeAxisResolver\b/,
   parseVocabulary: /\bfunction\s+parseVocabulary\b/,
+  parseStatusesAxis: /\bfunction\s+parseStatusesAxis\b/,
+  parseRequiredFields: /\bfunction\s+parseRequiredFields\b/,
+  parseCharter: /\bfunction\s+parseCharter\b/,
 };
 
 /**

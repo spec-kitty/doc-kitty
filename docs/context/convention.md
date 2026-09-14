@@ -22,9 +22,36 @@ The convention Doc Kitty renders. It is the **Common Docs** convention
 v1.2 — a valid [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
 bundle) with a small set of deliberate twists and enhancements.
 
-> This document is the source of truth for the toolkit's schema and generators.
-> It will later be recast as a Spec Kitty **charter/doctrine**; for now it
-> captures the base convention faithfully and layers our variation on top.
+> This document is the narrative companion to the toolkit's **documentation
+> charter** — the default doctrine pack, resolved natively by doc-kitty's own
+> pure-core/fs-loader/gate triad with no Spec Kitty runtime dependency
+> ([ADR-0042](../adr/0042-native-documentation-charter.md)). It captures the base
+> convention and our variation in prose; the machine-readable, consumer-authorable
+> surface is `docs/_meta/charter.yaml`. Each governable dimension below is marked
+> **fixed-doctrine** (a floor the toolkit enforces and a consumer cannot relax) or
+> **consumer-overridable** (an axis a consumer may author in `_meta/charter.yaml`);
+> everything else is the shipped canonical default.
+
+## Governable dimensions
+
+What a consumer may change, and what the toolkit holds fixed. The overridable
+axes are authored in `docs/_meta/charter.yaml` (a single optional file; every key
+optional). An absent or empty charter resolves to the canonical defaults below.
+
+| Dimension | Charter axis | Stance | Rule |
+|---|---|---|---|
+| `type` / `kind` vocabulary | `vocabulary.types`, `vocabulary.kinds` | **consumer-overridable** | Alias, forbid, or pass through terms over the canonical sets ([ADR-0031](../adr/0031-vocabulary-override.md)). A forbidden authored `type` hard-fails; an unknown-but-not-forbidden value warns. |
+| Sections / IA | `sections` | **consumer-overridable** | Order, labels, entries, `index_basename`, and sub-path `subtypes` — the authored section registry (twist 6 below; [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md)). |
+| `doc_status` set | `statuses.add` | **consumer-overridable, extend-only** | You may *add* statuses; the canonical set (`draft`, `active`, `deprecated`, `superseded`, `durable`) is reserved. Removing/forbidding/aliasing-away a canonical status fails closed. |
+| Required-field set | `required_fields.optional` | **partly overridable, with a floor** | You may relax listed required fields for your consumer — **except `title`**, which is **fixed-doctrine** and always required. Listing `title` fails closed. |
+| `title` on every page | — | **fixed-doctrine** | Always required; cannot be relaxed. |
+| OKF `type` on every non-reserved page | — | **fixed-doctrine** | OKF v0.2's one hard requirement; every non-orphan page resolves to a non-empty `type`. |
+| Twelve-section canonical tree | `sections` (adapt), ADR (extend) | **fixed-doctrine default, adaptable** | The canonical set is the supported default; canonical *additions* are recorded in ADRs, and a project may subset/add sections with graceful degradation (twist 5). |
+
+A malformed charter fails the build with a message naming the file and offending
+key; an unknown *top-level* charter key only warns (forward-compat). Legacy
+`_meta/vocabulary.yaml` / `_meta/sections.yaml` still resolve per-axis and emit
+one deprecation notice — see [migrating to the charter](../guides/migrating-to-charter.md).
 
 ## 1. Base convention (unchanged)
 

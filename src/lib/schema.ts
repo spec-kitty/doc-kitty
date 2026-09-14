@@ -22,7 +22,7 @@ import {
   type IndexBasenameOption,
 } from './metadata.js';
 import {
-  loadSectionRegistry,
+  resolveSectionRegistry,
   sectionTypes,
   sectionSubtypes,
   sectionIds,
@@ -30,9 +30,12 @@ import {
 } from './sections.js';
 // Canonical vocabulary sets live in ONE place (#49 IC-01/IC-02): the fs-free,
 // Astro-free `vocabulary-core.mjs`. `schema.ts` consumes them rather than
-// hand-mirroring — `z.enum(STATUSES)` and `Kind` derive straight from the
-// core's JSDoc-const literal tuples (WP01 T005 pre-verified the tuple typing).
-import { STATUSES, DOC_TYPES, KINDS } from './vocabulary-core.mjs';
+// hand-mirroring — `DOC_TYPES` and `Kind` derive straight from the core's
+// JSDoc-const literal tuples. `doc_status` is charter-aware (extend-only), so it
+// is an OPEN string here (see `docKittyFields.doc_status`) rather than a static
+// `z.enum(STATUSES)`; the canonical `STATUSES` set stays the core's reference for
+// the bare-Node gate's warn-not-fail legality check (documentation-charter WP03).
+import { DOC_TYPES, KINDS } from './vocabulary-core.mjs';
 
 export { readmeToIndexId };
 
@@ -93,18 +96,21 @@ export function expectedTypeForPath(
 }
 
 /**
- * Convenience wrapper that loads `<docsRoot>/_meta/sections.yaml` and derives the
- * expected `type` for `relPath` from it (issue #24, FR-005). A missing registry
- * falls back to the frozen section-type map. Reads the filesystem, so it is for
- * the build/generator side; the pure {@link expectedTypeForPath} is the
- * unit-testable core.
+ * Convenience wrapper that resolves the section registry for `<docsRoot>` through
+ * the CHARTER-AWARE path (charter → legacy `sections.yaml` → default, WP03) and
+ * derives the expected `type` for `relPath` from it (issue #24, FR-005). A missing
+ * registry falls back to the frozen section-type map. Reads the filesystem, so it
+ * is for the build/generator side; the pure {@link expectedTypeForPath} is the
+ * unit-testable core. Uses {@link resolveSectionRegistry} so the Astro-side type
+ * derivation honors a charter-declared section registry, matching the bare-Node
+ * gate's `resolveGovernance` precedence (parity).
  */
 export function expectedTypeForPathInRoot(
   relPath: string,
   docsRoot = 'docs',
   options: ExpectedTypeForPathOptions = {},
 ): string | null {
-  return expectedTypeForPath(relPath, loadSectionRegistry(docsRoot), options);
+  return expectedTypeForPath(relPath, resolveSectionRegistry(docsRoot), options);
 }
 
 /**
@@ -138,11 +144,20 @@ export const docKittyFields = {
   // re-declared required to match the convention, with the same >180 upper bound
   // the standalone validator enforces (parity test guards the two agree).
   description: z.string().max(DESCRIPTION_MAX),
-  // Single-sourced lifecycle enum (#49 IC-02 / #39): `z.enum(STATUSES)` derives
-  // straight from the core's literal-tuple `STATUSES`, so `durable` (#39/FR-004)
-  // is added in ONE place. WP01 T005 pre-verified the tuple typing under
-  // `astro check`.
-  doc_status: z.enum(STATUSES).default('draft'),
+  // Charter-aware lifecycle status (documentation-charter WP03, C-004/FR-005).
+  // The canonical `STATUSES` are the shipped defaults, but the charter's
+  // `statuses.add` axis is EXTEND-ONLY — an adopter may add lifecycle values, so
+  // a page using a charter-added status must still build. A static `z.enum` can
+  // only encode the canonical tuple (an added value is unknown at schema-build
+  // time), so — matching the already-open `kind` axis and the `type` axis above
+  // — the build schema accepts any non-empty string here and defaults to
+  // `draft`. The LEGAL set (canonical ∪ added) lives in the core and is enforced
+  // as a WARN-not-fail advisory by the bare-Node gate (`validate-frontmatter.mjs`
+  // consults `resolveGovernance(docsRoot).legalStatuses`); keeping the build side
+  // lenient is what holds the schema/gate parity (a truly-unknown status warns on
+  // the gate and builds on the site — never a hard divergence). `STATUSES` stays
+  // the canonical reference set exported from the core for that gate check.
+  doc_status: z.string().min(1).default('draft'),
   updated: z.coerce.date().optional(),
   // Open vocabulary (FR-003): a non-canonical `type` is ADVISORY, not a build
   // failure — the site schema accepts any string; the standalone validator warns

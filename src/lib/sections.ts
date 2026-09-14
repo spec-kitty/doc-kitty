@@ -27,6 +27,7 @@ import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
 import { compareCodeUnit } from './vocabulary-core.mjs';
+import { resolveGovernance } from './vocabulary-loader.mjs';
 import type { SectionSubtypeRule } from './metadata.js';
 
 /** One authored section: its slug, display label, and integer sort key. */
@@ -116,7 +117,21 @@ export function parseSectionRegistry(
   if (!Array.isArray(rawSections)) {
     throw new Error(`${src}: "sections" must be a YAML list of section entries`);
   }
+  return normalizeSectionEntries(rawSections, { warn, src });
+}
 
+/**
+ * Normalize a raw list of section-entry mappings into an ordered, validated
+ * {@link SectionRegistry}. The shared core of {@link parseSectionRegistry} (legacy
+ * `sections.yaml`) and the charter-aware {@link resolveSectionRegistry} (the
+ * charter's `sections.entries`), so BOTH paths validate identically — a single
+ * source for the entry contract (id/label/order required, subtypes shape, unique
+ * id, duplicate-order warning). Sorted by `order` ascending, ties broken by `id`.
+ */
+function normalizeSectionEntries(
+  rawSections: unknown[],
+  { warn, src }: { warn: (m: string) => void; src: string },
+): SectionRegistry {
   const entries: SectionRegistry = [];
   const seenIds = new Set<string>();
   const seenOrders = new Map<number, string>();
@@ -200,6 +215,44 @@ export function loadSectionRegistry(
     warn: options.warn,
     source: options.source ?? path.relative(process.cwd(), file),
   });
+}
+
+/**
+ * Resolve the section registry through the CHARTER-AWARE path (documentation-
+ * charter WP03, IC-03): `charter.yaml` → legacy `sections.yaml` → default. This
+ * mirrors the bare-Node gate's `resolveGovernance` precedence so the Astro-side
+ * and the gate agree on which registry governs a docs root:
+ *   - a charter that DECLARES `sections` wins (its `entries` are normalized
+ *     through the SAME {@link normalizeSectionEntries} the legacy loader uses, so
+ *     the entry contract is single-sourced and a malformed entry fails closed);
+ *   - else the legacy `<docsRoot>/_meta/sections.yaml` (an already-normalized
+ *     {@link SectionRegistry} array from the loader);
+ *   - else `null` — no registry, so callers fall back to the frozen
+ *     `SECTION_ORDER`/`SECTION_LABEL`/`SECTION_TYPE` defaults (a bare consumer
+ *     still gets the canonical behavior, FR-007/NFR-002).
+ *
+ * A charter that carries only section METADATA (e.g. `index_basename`/`order`)
+ * but no `entries` yields `null` here (there are no per-section records to build
+ * a registry from) — the section defaults then apply, exactly as for a
+ * registry-less tree. Fail-closed on a malformed charter propagates from
+ * `resolveGovernance` (never silently swallowed).
+ */
+export function resolveSectionRegistry(
+  docsRoot: string,
+  options: ParseSectionsOptions = {},
+): SectionRegistry | null {
+  const warn = options.warn ?? ((m: string) => console.warn(`[dk-sections] ${m}`));
+  const sections = resolveGovernance(docsRoot, { emitDeprecation: false }).sections;
+  if (sections == null) return null;
+  // Legacy `sections.yaml` (or a charter whose `sections` the loader already
+  // normalized) arrives as an array — the normalized registry, use as-is.
+  if (Array.isArray(sections)) return sections as SectionRegistry;
+  // A charter mapping: build the registry from its `entries` list (if any),
+  // reusing the shared entry validator so the contract stays single-sourced.
+  const rawEntries = (sections as Record<string, unknown>).entries;
+  if (!Array.isArray(rawEntries)) return null;
+  const src = options.source ?? path.join(docsRoot, '_meta', 'charter.yaml');
+  return normalizeSectionEntries(rawEntries, { warn, src });
 }
 
 /** The section ids in registry order — the `order?` argument `sectionRank` takes. */

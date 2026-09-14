@@ -1,0 +1,8 @@
+# Mirrors the charter's `vocabulary.types.forbidden` so the STANDALONE gate
+# enforces the ban today (see charter.yaml comment / CHARTER-EVIDENCE.md).
+types:
+  aliases: {}
+  forbidden: [Feature]
+kinds:
+  aliases: {}
+  forbidden: []

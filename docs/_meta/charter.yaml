@@ -1,0 +1,50 @@
+# Documentation Charter — doc-kitty's OWN dogfood (documentation-charter WP05, T023).
+#
+# This is the single, go-forward governance surface (`_meta/charter.yaml`, contract
+# C1) authored on doc-kitty's own docs tree to PROVE the charter surface on the
+# toolkit that ships it — while keeping behavior byte-identical to the pre-charter
+# build (NFR-002). Every axis below mirrors the CURRENT shipped defaults, so the
+# corpus validates and builds EXACTLY as before:
+#
+#   • vocabulary — identity (no aliases, no forbidden), matching `_meta/vocabulary.yaml`
+#     (which declares nothing to alias or forbid). `Feature` and every canonical
+#     `type`/`kind` value stays valid.
+#   • statuses   — no additions; the legal set stays the canonical STATUSES
+#     (draft, active, deprecated, superseded, durable).
+#   • required_fields — nothing relaxed; the canonical required set applies
+#     (title, description, doc_status, updated), with `title` as the immovable floor.
+#
+# WHY THE SECTIONS AXIS IS DELIBERATELY OMITTED HERE
+# --------------------------------------------------
+# The `sections` axis is intentionally NOT declared in this charter. `_meta/sections.yaml`
+# stays the authoritative section registry for this tree. Reason (recorded as a
+# mission follow-up in tests/consumption/CHARTER-EVIDENCE.md): the charter's
+# `sections` axis currently flows only into type-derivation / validation, NOT into
+# the build-output routes (`llms-txt.ts`, `agent-index.ts`, `rss.ts`, `Hub.astro`,
+# `config.ts`), which still read `_meta/sections.yaml`. Declaring `sections` here
+# would move the resolved registry's provenance to the charter for the
+# type-derivation path while the build routes kept reading the legacy file — a
+# split source. Keeping `sections.yaml` in place (contract C2: an omitted axis
+# falls back to the legacy file) makes doc-kitty's own build byte-identical. A
+# consumer wanting section/IA metadata in llms.txt / Hub must, for now, author
+# `_meta/sections.yaml`; wiring the build routes onto `resolveGovernance().sections`
+# is a documented fast-follow owned by no WP in this mission.
+#
+# The legacy `_meta/vocabulary.yaml` and `_meta/sections.yaml` remain (honored but
+# deprecated, contract C2), so exactly one build-time deprecation notice is emitted
+# — expected and allowed during the migration window.
+version: 1
+
+vocabulary:
+  types:
+    aliases: {}
+    forbidden: []
+  kinds:
+    aliases: {}
+    forbidden: []
+
+statuses:
+  add: []
+
+required_fields:
+  optional: []

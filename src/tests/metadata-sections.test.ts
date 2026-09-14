@@ -116,6 +116,26 @@ sections:
   });
 });
 
+// documentation-charter WP03 / FR-007 — SECTION_ORDER is a LAST-RESORT FALLBACK:
+// a resolved order (from the charter/registry, via `sectionOrder(...)`) is the one
+// source of truth and WINS even when it contradicts the frozen tuple; a bare
+// consumer with no resolved order still gets the canonical frozen order.
+describe('SECTION_ORDER is fallback-only — resolved order wins, bare consumer gets canonical (FR-007)', () => {
+  it('a resolved order that REVERSES the frozen tuple wins when passed', () => {
+    // context is FIRST in the frozen tuple; a resolved order that puts it AFTER
+    // architecture must win — the frozen list is not consulted when `order` is given.
+    const resolved = ['architecture', 'context'];
+    expect(sectionRank('architecture', resolved)).toBeLessThan(sectionRank('context', resolved));
+    // Sanity: the frozen tuple orders them the other way, so this is a real override.
+    expect(SECTION_ORDER.indexOf('context')).toBeLessThan(SECTION_ORDER.indexOf('architecture'));
+  });
+
+  it('the bare (order-less) call returns the canonical frozen order', () => {
+    expect(sectionRank('context')).toBe(SECTION_ORDER.indexOf('context'));
+    expect(sectionRank('presentations')).toBe(SECTION_ORDER.indexOf('presentations'));
+  });
+});
+
 describe('no-registry fallback (protects example/docs and registry-free roots)', () => {
   it('sectionRank falls back to the frozen SECTION_ORDER when no order is passed', () => {
     expect(sectionRank('context')).toBe(SECTION_ORDER.indexOf('context'));

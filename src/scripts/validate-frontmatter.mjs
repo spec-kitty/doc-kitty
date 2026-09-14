@@ -50,6 +50,8 @@ import {
   DOC_TYPES,
   KINDS,
   SECTION_TYPE,
+  CANONICAL_REQUIRED,
+  REQUIRED_FIELD_FLOOR,
   expectedDocType,
   isIndexPath,
   isRootIndex,
@@ -62,6 +64,7 @@ import {
   loadSectionRegistry,
   sectionTypes,
   sectionSubtypes,
+  resolveGovernance,
 } from '../lib/vocabulary-loader.mjs';
 
 // Re-exported so existing importers keep their `validate-frontmatter.mjs` path
@@ -118,20 +121,31 @@ const externalReference = z.union([
 ]);
 
 // Field contract, re-derived from `docKittyFields` in src/lib/schema.ts using
-// the same zod primitives. Unlike the lenient site schema (which defaults
-// `doc_status` and leaves `updated`/`type`/`kind` optional so partial stubs
-// still build), this standalone gate enforces strict presence — as schema.ts's
-// own comment delegates to it. `.passthrough()` tolerates forward-compatible
-// extra keys.
+// the same zod primitives. This gate owns strict PRESENCE (schema.ts's own
+// comment delegates to it), but presence is no longer baked into the zod SHAPE:
+// the charter's required-field policy (C-005/FR-006) can relax any canonical
+// field EXCEPT the `title` floor, so requiredness is enforced imperatively in
+// `validate()` against the resolved `requiredFields` set instead. This schema
+// therefore validates SHAPE ONLY (a present field's type/bounds); the four
+// canonical-required fields are `.optional()` here and their presence is checked
+// against the policy below. `.passthrough()` tolerates forward-compatible keys.
+//
+// `doc_status` is likewise an OPEN string here (charter-aware, extend-only,
+// C-004/FR-005): the LEGAL set is `resolveGovernance(docsRoot).legalStatuses`
+// (canonical ∪ charter-added), consulted in `validate()` where a value outside
+// it WARNS (parity with `kind`), never fails. The former `z.enum(STATUSES)`
+// hard-rejected any added or unknown status — replaced to keep the warn-not-fail
+// posture and let a charter extend the lifecycle (mirrors schema.ts's twin).
 export const frontmatterSchema = z
   .object({
-    title: z.string().min(1, 'must be a non-empty string'),
+    title: z.string().min(1, 'must be a non-empty string').optional(),
     description: z
       .string()
       .min(1, 'must be a non-empty string')
-      .max(DESCRIPTION_MAX, `must be at most ${DESCRIPTION_MAX} characters`),
-    doc_status: z.enum(STATUSES),
-    updated: z.coerce.date(),
+      .max(DESCRIPTION_MAX, `must be at most ${DESCRIPTION_MAX} characters`)
+      .optional(),
+    doc_status: z.string().min(1, 'must be a non-empty string').optional(),
+    updated: z.coerce.date().optional(),
     // Open vocabulary: an unknown `type` is an advisory warning (below), not a
     // schema error — matching the site schema's graceful-degradation posture
     // (ADR-0004, metadata-model.md).
@@ -262,6 +276,14 @@ export function loadSectionSubtypes(docsRoot) {
  * (US2-AS5) — when supplied (a real registry was loaded) and the page's
  * section is not in it, a warning is surfaced naming the unregistered id.
  *
+ * `options.legalStatuses` is the resolved legal `doc_status` set (canonical ∪
+ * charter-added, C-004/FR-005); a value outside it WARNS, never fails.
+ * `options.requiredFields` is the resolved required-field set (C-005/FR-006); a
+ * missing member is a hard problem, and the `title` floor is always required.
+ * Both default to the shipped canonical behavior, so `validate(relPath, data)`
+ * (the parity tests' 2-arg form) enforces exactly the pre-charter contract
+ * except that an unknown status now warns instead of failing.
+ *
  * @returns {{problems: string[], warnings: string[], effective: string | null | undefined}}
  *   `effective` is the resolved effective `type`: a string, `null` for a
  *   deterministically-untyped page (orphan/root with no derivation), or
@@ -274,7 +296,20 @@ export function validate(
   vocab = IDENTITY_VOCAB,
   options = {},
 ) {
-  const { indexBasename = DEFAULT_INDEX_BASENAME, subtypesBySection, knownSectionIds } = options;
+  const {
+    indexBasename = DEFAULT_INDEX_BASENAME,
+    subtypesBySection,
+    knownSectionIds,
+    // Charter-resolved enforcement policy (WP03/IC-03). Both default to the
+    // shipped canonical behavior so every existing caller (and the parity tests
+    // that call `validate(relPath, data)`) validates exactly as before:
+    //   • `legalStatuses` — the legal `doc_status` set (canonical ∪ charter-added,
+    //     C-004/FR-005); a value outside it WARNS, never fails (parity with `kind`).
+    //   • `requiredFields` — the required-field set (C-005/FR-006). The charter may
+    //     relax any canonical field EXCEPT the `title` floor (always enforced).
+    legalStatuses = STATUSES,
+    requiredFields = CANONICAL_REQUIRED,
+  } = options;
   const problems = [];
   const warnings = [];
   const isRootReadme = isRootIndex(relPath, indexBasename);
@@ -302,6 +337,38 @@ export function validate(
       const where = issue.path.length ? `\`${issue.path.join('.')}\`: ` : '';
       problems.push(`${where}${issue.message}`);
     }
+  }
+
+  // Required-field PRESENCE (C-005/FR-006). The zod shape above validates a
+  // present field; requiredness is charter-tunable and therefore enforced here
+  // against the resolved `requiredFields` set, unioned with the immovable
+  // `title` floor (a charter can never relax it — WP01's `parseRequiredFields`
+  // rejects that at parse time, but the union is a defence in depth here too).
+  // Exemptions match the pre-charter gate exactly: the generated glossary pages
+  // carry no authored `updated` (a fabricated date would break byte-identical
+  // re-generation), so `updated` is not required of them; the bundle-root README
+  // is `type`-exempt (handled below) but keeps its other required fields.
+  const requiredSet = new Set([...requiredFields, ...REQUIRED_FIELD_FLOOR]);
+  for (const field of requiredSet) {
+    if (isGeneratedGlossary && field === 'updated') continue;
+    const value = data[field];
+    if (value === undefined || value === null || value === '') {
+      problems.push(`\`${field}\`: required`);
+    }
+  }
+
+  // `doc_status` legality (C-004/FR-005): a value outside the resolved legal set
+  // (canonical ∪ charter-added) is an advisory WARNING — parity with the open
+  // `kind` axis below — never a hard failure. The former `z.enum(STATUSES)`
+  // hard-rejected it; the warn-not-fail posture (spec C-001) is retained.
+  if (
+    typeof data.doc_status === 'string' &&
+    data.doc_status.length > 0 &&
+    !legalStatuses.includes(data.doc_status)
+  ) {
+    warnings.push(
+      `\`doc_status: ${data.doc_status}\` is not in the legal set (${legalStatuses.join(', ')})`,
+    );
   }
 
   // Path-aware `type` rules (schema.ts documents but leaves them to this gate),
@@ -464,6 +531,26 @@ export function run(argv) {
     }
     total += files.length;
 
+    // Charter-resolved enforcement policy for THIS root (WP03/IC-03): the legal
+    // `doc_status` set (canonical ∪ charter-added) and the required-field policy
+    // come from `resolveGovernance`, consuming `<root>/_meta/charter.yaml` (per-
+    // axis precedence over the legacy files, WP02). A MALFORMED charter is a HARD
+    // gate failure (C-006/FR-010) — never silently ignored, never partially
+    // applied — so the throw is caught and reported, and this root is skipped
+    // (the run still exits non-zero at the end). `emitDeprecation: false` keeps
+    // the gate quiet about legacy-file migration (the build path owns that nudge);
+    // the gate's job here is enforcement, not the once-per-build notice.
+    let governance;
+    try {
+      governance = resolveGovernance(root, { emitDeprecation: false });
+    } catch (err) {
+      console.error(`✖ ${root}: ${err.message}`);
+      failures++;
+      continue;
+    }
+    const legalStatuses = governance.legalStatuses;
+    const requiredFields = governance.requiredFields.required;
+
     // Section-default `type` authority for THIS root: the registry when present,
     // else the frozen fallback so a registry-less tree still validates (issue #24).
     const registryTypes = loadSectionTypes(root);
@@ -516,6 +603,8 @@ export function run(argv) {
       const { problems, warnings } = validate(rel, parsed.data ?? {}, typesBySection, vocab, {
         indexBasename,
         subtypesBySection,
+        legalStatuses,
+        requiredFields,
       });
       if (problems.length) {
         failures++;

@@ -144,7 +144,17 @@ export const DEFAULT_AGENT_PRIORITY = 0.5;
 
 /**
  * The canonical top-level sections, in progressive-disclosure order
- * (context → operations). Drives grouping in the agent index and llms.txt.
+ * (context → operations). LAST-RESORT FALLBACK ONLY (FR-007, documentation-
+ * charter WP03): this frozen list is consulted solely when NO resolved order is
+ * supplied. The single source of truth for ordering is the resolved section
+ * registry — a caller passes `sectionOrder(resolveSectionRegistry(docsRoot))`
+ * (charter → legacy `sections.yaml` → default) as the `order` argument to
+ * {@link sectionRank}/{@link rankForAgents}/{@link rankForFeed}, and that order
+ * WINS. A bare consumer (no charter, no registry) omits the argument and still
+ * gets this canonical order, so ordering has one source of truth while a
+ * registry-less tree stays byte-compatible (NFR-002). `metadata.ts` stays
+ * fs-free (it never imports the loader/`sections.ts`), so the charter read lives
+ * in the caller — this constant is only the floor beneath it.
  */
 export const SECTION_ORDER = [
   'context',

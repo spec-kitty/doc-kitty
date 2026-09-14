@@ -26,6 +26,11 @@ import {
   isRootIndex,
   isIndexPath,
   DEFAULT_INDEX_BASENAME,
+  parseCharter,
+  parseStatusesAxis,
+  parseRequiredFields,
+  CANONICAL_REQUIRED,
+  UNKNOWN_STATUS,
 } from '../lib/vocabulary-core.mjs';
 
 describe('vocabulary sets (single-sourced enums)', () => {
@@ -245,5 +250,147 @@ describe('vocabulary resolver (sections.ts:294-415 — pure halves)', () => {
   it('throws a clear error on a malformed axis (authored file — never silent)', () => {
     expect(() => parseVocabulary('types:\n  - not-a-mapping\n')).toThrow(/must be a mapping/);
     expect(() => parseVocabulary('types:\n  forbidden: not-a-list\n')).toThrow(/must be a list/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Documentation Charter axes (WP01, D-03/D-04) — extend-only statuses,
+// required-field policy, and the unified parseCharter resolver.
+// ---------------------------------------------------------------------------
+
+describe('parseStatusesAxis — extend-only statuses (D-03/C-004)', () => {
+  it('adding a status makes it legal; canonical set is always present', () => {
+    const axis = parseStatusesAxis({ add: ['reviewed'] }, 'charter.yaml');
+    expect(axis.resolveStatus('reviewed')).toBe('reviewed');
+    for (const s of ['draft', 'active', 'deprecated', 'superseded', 'durable']) {
+      expect(axis.resolveStatus(s)).toBe(s);
+    }
+  });
+
+  it('an unknown-and-not-added status resolves to UNKNOWN (warn, parity with kinds)', () => {
+    const axis = parseStatusesAxis(undefined, 'charter.yaml');
+    expect(axis.resolveStatus('made-up')).toBe(UNKNOWN_STATUS);
+    expect(axis.resolveStatus(undefined)).toBe(UNKNOWN_STATUS);
+    // With no `statuses` axis the legal set is exactly the canonical tuple.
+    expect(axis.legalStatuses).toEqual(['draft', 'active', 'deprecated', 'superseded', 'durable']);
+  });
+
+  it('legalStatuses is deterministic: canonical first, then added deduped + code-unit sorted', () => {
+    const axis = parseStatusesAxis({ add: ['zeta', 'reviewed', 'reviewed', 'durable'] }, 'charter.yaml');
+    // `durable` is canonical (deduped away from the added tail); the rest sort by code unit.
+    expect(axis.legalStatuses).toEqual([
+      'draft',
+      'active',
+      'deprecated',
+      'superseded',
+      'durable',
+      'reviewed',
+      'zeta',
+    ]);
+  });
+
+  it('rejects forbidding a canonical status (reserved, fail-closed)', () => {
+    expect(() => parseStatusesAxis({ forbidden: ['draft'] }, 'charter.yaml')).toThrow(
+      /status "draft" is reserved and cannot be removed/,
+    );
+  });
+
+  it('rejects aliasing-away a canonical status (reserved, fail-closed)', () => {
+    expect(() => parseStatusesAxis({ aliases: { active: 'live' } }, 'charter.yaml')).toThrow(
+      /status "active" is reserved and cannot be removed/,
+    );
+  });
+
+  it('throws a clear error on a malformed statuses.add (never silent)', () => {
+    expect(() => parseStatusesAxis({ add: 'not-a-list' }, 'charter.yaml')).toThrow(
+      /statuses "add" must be a list/,
+    );
+  });
+});
+
+describe('parseRequiredFields — required-field policy with title floor (D-04/C-005)', () => {
+  it('relaxing a non-floor field drops it from the required set', () => {
+    const policy = parseRequiredFields({ optional: ['updated'] }, 'charter.yaml');
+    expect(policy.required).toEqual(['title', 'description', 'doc_status']);
+    expect(policy.floor).toEqual(['title']);
+  });
+
+  it('with no policy the canonical required set applies unchanged', () => {
+    const policy = parseRequiredFields(undefined, 'charter.yaml');
+    expect(policy.required).toEqual([...CANONICAL_REQUIRED]);
+    expect(policy.required).toEqual(['title', 'description', 'doc_status', 'updated']);
+  });
+
+  it('rejects relaxing the title floor (fail-closed)', () => {
+    expect(() => parseRequiredFields({ optional: ['title'] }, 'charter.yaml')).toThrow(
+      /required field "title" is a floor/,
+    );
+  });
+
+  it('throws a clear error on a malformed optional list (never silent)', () => {
+    expect(() => parseRequiredFields({ optional: 'nope' }, 'charter.yaml')).toThrow(
+      /"required_fields.optional" must be a list/,
+    );
+  });
+});
+
+describe('parseCharter — unified ResolvedCharter resolver (WP01/T003)', () => {
+  it('parseCharter("") ≡ identity/defaults (empty file ok)', () => {
+    const charter = parseCharter('');
+    expect(charter.resolveType('Feature')).toEqual({ effective: 'Feature', forbidden: false });
+    expect(charter.resolveKind('How-To')).toEqual({ effective: 'How-To', forbidden: false });
+    expect(charter.resolveStatus('active')).toBe('active');
+    expect(charter.legalStatuses).toEqual(['draft', 'active', 'deprecated', 'superseded', 'durable']);
+    expect(charter.requiredFields).toEqual({
+      required: ['title', 'description', 'doc_status', 'updated'],
+      floor: ['title'],
+    });
+    expect(charter.sections).toBeNull();
+    expect(charter.sourceMeta).toEqual({ fromCharter: false, legacyPresent: false });
+  });
+
+  it('resolves types/kinds under the nested `vocabulary` key (delegates to axis machinery)', () => {
+    const charter = parseCharter(
+      'vocabulary:\n  types:\n    aliases:\n      Feature: Capability\n  kinds:\n    forbidden:\n      - Legacy\n',
+    );
+    expect(charter.resolveType('Feature')).toEqual({
+      effective: 'Capability',
+      forbidden: false,
+      aliasedFrom: 'Feature',
+    });
+    expect(charter.resolveKind('Legacy')).toEqual({ effective: undefined, forbidden: true });
+  });
+
+  it('folds the statuses + required-field policies into the resolved shape', () => {
+    const charter = parseCharter(
+      'statuses:\n  add:\n    - reviewed\nrequired_fields:\n  optional:\n    - updated\n',
+    );
+    expect(charter.resolveStatus('reviewed')).toBe('reviewed');
+    expect(charter.legalStatuses).toContain('reviewed');
+    expect(charter.requiredFields.required).toEqual(['title', 'description', 'doc_status']);
+    expect(charter.sourceMeta.fromCharter).toBe(true);
+  });
+
+  it('carries a present `sections` mapping through (loader normalizes in WP02), else null', () => {
+    const charter = parseCharter('sections:\n  index_basename: index\n  order:\n    - context\n');
+    expect(charter.sections).toEqual({ index_basename: 'index', order: ['context'] });
+  });
+
+  it('ignores unknown top-level keys (forward-compat, C-006 — does not throw)', () => {
+    expect(() => parseCharter('version: 1\nfuture_axis:\n  whatever: true\n')).not.toThrow();
+    const charter = parseCharter('version: 1\nfuture_axis:\n  whatever: true\n');
+    expect(charter.resolveType('Feature')).toEqual({ effective: 'Feature', forbidden: false });
+  });
+
+  it('fails closed on a reserved-status removal expressed via the charter', () => {
+    expect(() => parseCharter('statuses:\n  forbidden:\n    - active\n')).toThrow(
+      /status "active" is reserved and cannot be removed/,
+    );
+  });
+
+  it('fails closed on relaxing the title floor via the charter', () => {
+    expect(() => parseCharter('required_fields:\n  optional:\n    - title\n')).toThrow(
+      /required field "title" is a floor/,
+    );
   });
 });

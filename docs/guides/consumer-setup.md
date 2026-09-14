@@ -276,6 +276,80 @@ astro build
 `llms.txt`, and the `api/*.json` agent-API. Deploy `dist/` to any static host;
 a based deployment (a sub-path) is covered by the `base` you set in step 2.
 
+## 7. Govern your docs — the documentation charter
+
+Everything above renders and validates a *default* docsite. To change what
+governs your tree — the vocabulary, the sections, the status set, the required
+fields — author a single optional file, `docs/_meta/charter.yaml`. It is the one
+authoritative surface; an absent or empty charter resolves to the shipped
+defaults with no error, and it needs no Spec Kitty runtime to resolve
+([ADR-0042](/adr/0042-native-documentation-charter/)). Each axis is independent —
+declare only the ones you want to change.
+
+```yaml
+# docs/_meta/charter.yaml
+version: 1
+vocabulary:
+  types:
+    aliases:   { Feature: Capability }
+    forbidden: [ Feature ]
+statuses:
+  add: [ deprecated ]
+required_fields:
+  optional: [ updated ]
+sections:
+  index_basename: README
+  order: [ context, architecture, adr, guides ]
+```
+
+The governable dimensions:
+
+- **Vocabulary — `type` / `kind`** (*overridable*). Alias, forbid, or pass
+  through terms over the canonical sets. A forbidden authored `type` hard-fails
+  the gate; an unknown-but-not-forbidden value warns.
+
+  ```yaml
+  vocabulary:
+    types: { forbidden: [ Feature ], aliases: { Feature: Capability } }
+    kinds: { aliases: {}, forbidden: [] }
+  ```
+
+- **Sections / information architecture — `sections`** (*overridable*). Order,
+  labels, entries, the section-index basename, and sub-path `subtypes` — the same
+  shape as the legacy `_meta/sections.yaml`.
+
+  ```yaml
+  sections:
+    index_basename: README            # or "index"
+    order: [ context, architecture, adr, guides ]
+    entries:
+      - { id: context, label: Context, type: Context, purpose: "Why we exist", feeds: [rss] }
+  ```
+
+- **Statuses — `statuses.add`** (*overridable, extend-only*). You may **add**
+  values to `doc_status`; the canonical set (`draft`, `active`, `deprecated`,
+  `superseded`, `durable`) is reserved. Removing or aliasing-away a canonical
+  status fails closed. An unknown-and-not-added status on a page warns.
+
+  ```yaml
+  statuses:
+    add: [ archived ]
+  ```
+
+- **Required-field floor — `required_fields.optional`** (*overridable, with a
+  floor*). Relax listed required fields for your consumer — **except `title`**,
+  which is always required. Listing `title` fails closed with a floor message.
+
+  ```yaml
+  required_fields:
+    optional: [ updated ]
+  ```
+
+A malformed charter fails the build naming the file and offending key; an unknown
+*top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`
+or `_meta/sections.yaml`, both keep working (you will see one deprecation notice)
+— consolidate them with [Migrating to the charter](/guides/migrating-to-charter/).
+
 ## Caveat — `check-links` strict mode does not cover your tree
 
 The toolkit's `check-links` script applies its fail-closed *strict* tightening

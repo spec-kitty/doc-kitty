@@ -1,0 +1,23 @@
+# Adopter charter fixture (documentation-charter WP05, T024). A real consumer's
+# single governance surface, exercised END-TO-END through the SHIPPED gate
+# (scripts/validate-frontmatter.mjs) by charter-governance.test.ts. It:
+#   • forbids the `Feature` type (vocabulary axis),
+#   • adds the NEW `reviewed` lifecycle status (statuses axis, extend-only),
+#   • relaxes the non-floor `description` field (required_fields axis).
+# `title` stays the immovable floor (can never be relaxed).
+version: 1
+
+vocabulary:
+  types:
+    aliases: {}
+    forbidden: [Feature]     # an effective `type: Feature` is forbidden
+  kinds:
+    aliases: {}
+    forbidden: []
+
+statuses:
+  add: [reviewed]            # NEW status — canonical STATUSES already include `deprecated`,
+                             # so `reviewed` is a genuine extend-only addition (not a no-op dedup)
+
+required_fields:
+  optional: [description]    # a non-floor field the adopter may leave absent
