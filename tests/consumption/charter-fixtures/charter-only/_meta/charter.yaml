@@ -1,0 +1,4 @@
+version: 1
+vocabulary:
+  types:
+    forbidden: [ Feature ]

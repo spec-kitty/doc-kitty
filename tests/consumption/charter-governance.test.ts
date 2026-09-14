@@ -60,6 +60,14 @@ const REPO_ROOT = path.resolve(HERE, '..', '..');
 const SRC_DIR = path.join(REPO_ROOT, 'src');
 const GATE = path.join(SRC_DIR, 'scripts', 'validate-frontmatter.mjs');
 const ADOPTER = path.join(HERE, 'charter-fixtures', 'adopter');
+// Isolates the charter-ONLY enforcement path (see the describe block below):
+// this root carries `_meta/charter.yaml` forbidding `type: Feature` and
+// deliberately NO legacy `_meta/vocabulary.yaml`, unlike `adopter/` above
+// (whose fixture mirrors the ban into `_meta/vocabulary.yaml` — see the
+// module doc's "KNOWN WIRING" note). A gate that regressed to reading the
+// forbidden-type ban from `loadVocabulary` instead of `resolveGovernance`
+// would pass this fixture undetected.
+const CHARTER_ONLY = path.join(HERE, 'charter-fixtures', 'charter-only');
 
 /** Run the shipped gate over a docs root; capture combined stdout+stderr + status. */
 function runGate(root: string): { status: number; output: string } {
@@ -186,5 +194,21 @@ describe('adopter Documentation Charter — governance through the shipped gate 
   it('cleanup', () => {
     baseline.cleanup();
     expect(true).toBe(true);
+  });
+});
+
+describe('a charter-only forbidden `type` — NO legacy `_meta/vocabulary.yaml` in the root (#99 gap)', () => {
+  // Regression guard for the mission's headline claim: a `type` forbidden ONLY
+  // in `_meta/charter.yaml` (no legacy vocabulary file anywhere in the root)
+  // must FAIL the shipped gate. `adopter/` cannot prove this alone — its
+  // fixture mirrors the ban into `_meta/vocabulary.yaml`, so that suite would
+  // still pass even if the gate's vocab wiring were reverted to the legacy-only
+  // `loadVocabulary(root)`. This fixture has no such mirror.
+  it('FAILS the gate with the forbidden-type error, not merely a "path suggests" warning', () => {
+    expect(existsSync(path.join(CHARTER_ONLY, '_meta', 'vocabulary.yaml'))).toBe(false);
+    const run = runGate(CHARTER_ONLY);
+    expect(run.status).not.toBe(0);
+    expect(run.output).toMatch(/forbidden-type\.md\n\s+-[^\n]*forbidden by the vocabulary/);
+    expect(run.output).not.toMatch(/forbidden-type\.md:[^\n]*path suggests/);
   });
 });
