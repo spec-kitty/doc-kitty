@@ -2,7 +2,7 @@
 title: Roadmap
 description: "Phased plan for doc-kitty, split into MVP and extended scope with MoSCoW priorities."
 doc_status: active
-updated: 2026-09-14
+updated: 2026-09-19
 type: Plan
 kind: Planning
 authors:
@@ -18,15 +18,17 @@ This plan splits the work into an MVP and an extended scope, and prioritizes eac
 feature with MoSCoW. The per-feature detail lives in [features](./features/); the
 reasoning behind the shape lives in the [decision records](../adr/).
 
-**Status (2026-09-14): the MVP is delivered and productized.** Every Must/MVP
-feature has shipped, and most of the Extended Should tier with it (Markua,
-glossary, build-time diagrams). All eight adoption enablers from the spec-kitty
-proving ground (#37–#44) are landed. Productization is now done too: the toolkit
-is cut at **`0.1.0`** with a CHANGELOG, and the **consumption test** (N=2, a
-packed-tarball clean-room build into a net-new consumer site) has landed — so the
-reuse contract is demonstrated fact, not a claim. The remaining feature frontier
-is a single Should-tier item, the **Doctrine variation (M7)**, plus three
-Could-tier design-only portals. See [Where we are now](#where-we-are-now-2026-09-14)
+**Status (2026-09-19): the MVP is delivered and productized, and the last
+Should-tier feature has landed.** Every Must/MVP feature has shipped, and the
+whole Extended Should tier with it (Markua, glossary, build-time diagrams, and
+now the **Doctrine variation (M7)** — a native `_meta/charter.yaml` that governs
+the whole convention, `#100`, ADR-0042). All eight adoption enablers from the
+spec-kitty proving ground (#37–#44) are landed. Productization is done too: the
+toolkit is cut at **`0.1.0`** with a CHANGELOG, and the **consumption test** (N=2,
+a packed-tarball clean-room build into a net-new consumer site) has landed — so
+the reuse contract is demonstrated fact, not a claim. The remaining feature
+frontier is only the three **Could-tier, design-only** repository portals
+(mission status, QA, ticketing). See [Where we are now](#where-we-are-now-2026-09-19)
 below.
 
 (This is a `Planning` page and its features are `Feature` pages per
@@ -101,7 +103,7 @@ tree; the second competes with Leanpub, which we are not doing.
 | Diagrams (Mermaid + PlantUML) | M5 / #13 | Should | Extended | ✅ Done | Client-side (M5) then build-time static SVG (#13, ADR-0040), self-contained, dual-mode. |
 | Glossary + Contextive | M4 | Should | Extended | ✅ Done | Ubiquitous-language support; multi-context autolinking, hover preview, `:term` directive. |
 | Example content from ars-rethorica | ars-rethorica-example | Could | Extended | ✅ Done | The ars-rethorica showcase corpus (Introduction, Preamble, Book I 15 chapters, Book II/III landings, generated rhetoric glossary, two reader personas). |
-| Doctrine variation | M7 | Should | Extended | ⛔ Not started | Recast the convention into charter/doctrine; governance and quality. |
+| Doctrine variation | M7 | Should | Extended | ✅ Done | Native `_meta/charter.yaml` governs the whole convention (type/kind vocab, `doc_status` set, sections/IA registry, required-field set), resolved with no Spec Kitty runtime dependency; `#100`, ADR-0042, closes #98/#99. |
 | Mission status portal | — | Could | Extended | 📐 Design-only | Repository portal; depends on spec-kitty integration. |
 | QA portal | — | Could | Extended | 📐 Design-only | Repository portal; depends on CI test artifacts. |
 | Ticketing report | — | Could | Extended | 📐 Design-only | Repository portal; adaptor work, GitHub first. |
@@ -140,10 +142,11 @@ still flags as *unproven* is the reuse ceiling: the toolkit is exercised at
 a contract, not a fleet), and there is **no versioned, install-provable release**.
 Those two are exactly what the productization step below closes.
 
-## Where we are now (2026-09-14)
+## Where we are now (2026-09-19)
 
-The MVP is **feature-complete and productized**. Both productization steps that
-were the frontier on 2026-09-09 have since landed:
+The MVP is **feature-complete and productized**, and the last Should-tier feature
+has landed. Both productization steps that were the frontier on 2026-09-09 have
+since landed:
 
 1. **A shippable release.** The toolkit is cut at **`0.1.0`** (was `0.0.0`), with a
    [CHANGELOG](../../CHANGELOG.md) and a clean-checkout build proof. A consumer can
@@ -156,10 +159,19 @@ were the frontier on 2026-09-09 have since landed:
    contract is now demonstrated fact. The reproducible adopter path is written up
    in the [consumer setup guide](../guides/consumer-setup.md).
 
+Since then the last Should-tier feature has also landed: the **Doctrine variation
+(M7)** shipped as a native `_meta/charter.yaml` (`#100`, [ADR-0042](../adr/0042-native-documentation-charter.md))
+that governs a docsite's whole convention — the `type`/`kind` vocabulary, the
+`doc_status` set, the sections/IA registry, and the required-field set — resolved
+by doc-kitty itself with **no Spec Kitty runtime dependency**, under a documented
+per-axis `default → consumer` precedence. Existing `_meta/*.yaml` files still work
+(with a one-shot deprecation notice), so current consumers are unaffected.
+
 Deferred, unchanged: selective/redacted publishing (projection, M8) and an
 in-tool book type both stay **Won't** this cycle.
 
-The remaining feature frontier is the **Doctrine variation (M7)** — recasting the
-convention into charter/doctrine — which is still ⛔ not started, plus the three
-Could-tier design-only portals (mission status, QA, ticketing). M7 is the next
-candidate for scoping.
+The remaining feature frontier is only the three **Could-tier, design-only**
+repository portals — mission status, QA, and ticketing — each spec'd but with no
+delivered code, and each dependent on an external surface (spec-kitty integration,
+CI test artifacts, and a ticket tracker respectively). They are the next
+candidates for scoping if and when that integration work is prioritized.
