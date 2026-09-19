@@ -8,16 +8,16 @@ generated_at: '2026-08-31T13:32:41.160317+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/qol-adoption-enablers-01M1BTPE/spec.md
+    path: /workspace/doc-kitty/kitty-specs/qol-adoption-enablers-01M1BTPE/spec.md
     sha256: 543da93092558f7196051a6b1d22cd879387e500b59efd19fdd91a3914458c41
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/qol-adoption-enablers-01M1BTPE/plan.md
+    path: /workspace/doc-kitty/kitty-specs/qol-adoption-enablers-01M1BTPE/plan.md
     sha256: c06229569df8ad1c4ee34c19a9138e829aaa81a41ede54a592fd10b0c8756590
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/qol-adoption-enablers-01M1BTPE/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/qol-adoption-enablers-01M1BTPE/tasks.md
     sha256: ba5b247089c545654a70e6c2f7b4be48d65c61072e6f35779dafce4ae59b8cfb
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

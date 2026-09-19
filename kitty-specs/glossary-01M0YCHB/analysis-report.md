@@ -8,16 +8,16 @@ generated_at: '2026-08-26T12:31:49.110045+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/glossary-01M0YCHB/spec.md
+    path: /workspace/doc-kitty/kitty-specs/glossary-01M0YCHB/spec.md
     sha256: ef8e862ee38adb23c686691ce4e9f116d10da9988ee33a86c27a143d09919985
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/glossary-01M0YCHB/plan.md
+    path: /workspace/doc-kitty/kitty-specs/glossary-01M0YCHB/plan.md
     sha256: a566ccb587ddf8044630e86c58fa5dcf9e2402865134707632c2fc7daec8afba
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/glossary-01M0YCHB/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/glossary-01M0YCHB/tasks.md
     sha256: 3f1af4def00b7037b510d9621cce46a36aa5cf158b671110508f0234bca67630
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

@@ -33,7 +33,7 @@
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP01-charter-core/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP01-charter-core/review-cycle-1.md",
         "reference": "review-cycle://documentation-charter-01M2FEXM/WP01-charter-core/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
@@ -65,7 +65,7 @@
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP02-charter-loader/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP02-charter-loader/review-cycle-1.md",
         "reference": "review-cycle://documentation-charter-01M2FEXM/WP02-charter-loader/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
@@ -97,7 +97,7 @@
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP03-enforcement-parity/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP03-enforcement-parity/review-cycle-1.md",
         "reference": "review-cycle://documentation-charter-01M2FEXM/WP03-enforcement-parity/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
@@ -131,7 +131,7 @@
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP04-doctrine-docs/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP04-doctrine-docs/review-cycle-1.md",
         "reference": "review-cycle://documentation-charter-01M2FEXM/WP04-doctrine-docs/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
@@ -163,7 +163,7 @@
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP05-cleanroom-proof/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/documentation-charter-01M2FEXM/tasks/WP05-cleanroom-proof/review-cycle-1.md",
         "reference": "review-cycle://documentation-charter-01M2FEXM/WP05-cleanroom-proof/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"

@@ -8,16 +8,16 @@ generated_at: '2026-08-30T05:53:12.339085+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/post-markua-hardening-01M18HD2/spec.md
+    path: /workspace/doc-kitty/kitty-specs/post-markua-hardening-01M18HD2/spec.md
     sha256: 2a0f3232b03e796ac98759773a82194d7a5d178613c3100d473b4261c399623b
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/post-markua-hardening-01M18HD2/plan.md
+    path: /workspace/doc-kitty/kitty-specs/post-markua-hardening-01M18HD2/plan.md
     sha256: 691d90ad545bf1f440ffdaacad2b9a05fb8d9e2260a28bf740b941375943eff8
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/post-markua-hardening-01M18HD2/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/post-markua-hardening-01M18HD2/tasks.md
     sha256: 78966c59df009d46c06746b6c674e65fdb35ffeb40ea110a1ed20cff9bb74789
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

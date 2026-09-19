@@ -8,16 +8,16 @@ generated_at: '2026-09-03T13:19:37.883719+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/adopter-loader-migration-01M1KKYA/spec.md
+    path: /workspace/doc-kitty/kitty-specs/adopter-loader-migration-01M1KKYA/spec.md
     sha256: fb7bceb96cbee4a0e56154863ac3da94b72f2d00476a28b0bd3888515ea33dee
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/adopter-loader-migration-01M1KKYA/plan.md
+    path: /workspace/doc-kitty/kitty-specs/adopter-loader-migration-01M1KKYA/plan.md
     sha256: 89f1e7aedb25a281fa9b3f3c58bd13497398c7ba3f3e7094a7a35ffc81ad106e
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/adopter-loader-migration-01M1KKYA/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/adopter-loader-migration-01M1KKYA/tasks.md
     sha256: 4e3aa17f7609414646e67036e4a0691824de3e464d1e2ea1aa7215358964a2f8
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

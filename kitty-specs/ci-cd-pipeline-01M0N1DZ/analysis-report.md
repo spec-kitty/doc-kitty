@@ -8,16 +8,16 @@ generated_at: '2026-08-22T16:19:45.933132+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/ci-cd-pipeline-01M0N1DZ/spec.md
+    path: /workspace/doc-kitty/kitty-specs/ci-cd-pipeline-01M0N1DZ/spec.md
     sha256: 18ee4196bb599d83e6df3240b5cbe9599e67396f34ff6a8a55d51967dcc181ac
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/ci-cd-pipeline-01M0N1DZ/plan.md
+    path: /workspace/doc-kitty/kitty-specs/ci-cd-pipeline-01M0N1DZ/plan.md
     sha256: b125d909eb62cf13705650e96d5f18b03400263e020182386074908eda774df6
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/ci-cd-pipeline-01M0N1DZ/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/ci-cd-pipeline-01M0N1DZ/tasks.md
     sha256: c2c3baca98f8c0fd66128888737f3f4cfa3da6a6e590dc69e7d5e3c0fa53da87
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

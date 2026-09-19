@@ -8,16 +8,16 @@ generated_at: '2026-08-23T06:00:43.716665+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/metadata-model-and-chrome-01M0PFQT/spec.md
+    path: /workspace/doc-kitty/kitty-specs/metadata-model-and-chrome-01M0PFQT/spec.md
     sha256: 3b3d8ac22e249473df6353860f119e0342275f63b567a2eba68438afcf2fb819
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/metadata-model-and-chrome-01M0PFQT/plan.md
+    path: /workspace/doc-kitty/kitty-specs/metadata-model-and-chrome-01M0PFQT/plan.md
     sha256: 2eecbfb8fd4165b3f8f2c44eb68473adb786b65f4c587b9b9bde59a759393467
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/metadata-model-and-chrome-01M0PFQT/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/metadata-model-and-chrome-01M0PFQT/tasks.md
     sha256: cf5680cb49bf2b33994bf4a044523d497081ff451e40b433f0e6fea6bfb11766
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

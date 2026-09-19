@@ -1575,7 +1575,7 @@ catalog:
     kind: template_set
     title: software-dev-default
     summary: Build high-quality software with structured workflows and test-driven development
-    source_path: /home/stijn/.pyenv/versions/3.13.12/lib/python3.13/site-packages/packs/built-in/missions/software-dev/mission.yaml
+    source_path: ~/.pyenv/versions/3.13.12/lib/python3.13/site-packages/packs/built-in/missions/software-dev/mission.yaml
     local_path: _LIBRARY/template-set-software-dev-default.md
 overrides: {}
 metadata:

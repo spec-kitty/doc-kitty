@@ -8,16 +8,16 @@ generated_at: '2026-08-29T10:38:34.155108+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/markua-syntax-support-01M167JG/spec.md
+    path: /workspace/doc-kitty/kitty-specs/markua-syntax-support-01M167JG/spec.md
     sha256: f70b3e774d3f35f1f3e84640fb2f5063386e86b70339b5ca3c13bb3971b67b67
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/markua-syntax-support-01M167JG/plan.md
+    path: /workspace/doc-kitty/kitty-specs/markua-syntax-support-01M167JG/plan.md
     sha256: 89d0a4d4f18dbd0c5d88f65b4110bd41ec0eccea9ee08c7b2b3136a06524f186
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/markua-syntax-support-01M167JG/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/markua-syntax-support-01M167JG/tasks.md
     sha256: b18313fc0c5d36f07e6121a781d2ddf7a36783d18427ead8f087f927b8b3fd28
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

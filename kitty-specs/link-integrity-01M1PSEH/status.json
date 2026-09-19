@@ -25,7 +25,7 @@
       "last_event_id": "01M1Q0HQ8JHC9B6N9NBCD8AC10",
       "last_transition_at": "2026-09-04T20:07:49.778419+00:00",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/link-integrity-01M1PSEH/tasks/WP01-internal-links-resolve/review-cycle-2.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/link-integrity-01M1PSEH/tasks/WP01-internal-links-resolve/review-cycle-2.md",
         "reference": "review-cycle://link-integrity-01M1PSEH/WP01-internal-links-resolve/review-cycle-2.md",
         "reviewer": "user",
         "verdict": "approved"
@@ -41,7 +41,7 @@
       "last_event_id": "01M1Q0HYYFZKPS72N598DM4HS6",
       "last_transition_at": "2026-09-04T20:07:57.647862+00:00",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/link-integrity-01M1PSEH/tasks/WP02-fail-closed-link-gate/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/link-integrity-01M1PSEH/tasks/WP02-fail-closed-link-gate/review-cycle-1.md",
         "reference": "review-cycle://link-integrity-01M1PSEH/WP02-fail-closed-link-gate/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
