@@ -8,16 +8,16 @@ generated_at: '2026-08-25T06:31:03.976826+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/diagrams-01M0VPPG/spec.md
+    path: /workspace/doc-kitty/kitty-specs/diagrams-01M0VPPG/spec.md
     sha256: 8910c808ea396b230b6b6222148b4b67f6b926793db350c39b30efe28c3e4700
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/diagrams-01M0VPPG/plan.md
+    path: /workspace/doc-kitty/kitty-specs/diagrams-01M0VPPG/plan.md
     sha256: 3ee10b21c73b7ecee38f20190c974a78d8170d4e26036a87fda45ba049666784
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/diagrams-01M0VPPG/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/diagrams-01M0VPPG/tasks.md
     sha256: 209827877876a768358ea8a99f0b9bc8f41eda6063cd0d1b434196de69144470
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

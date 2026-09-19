@@ -8,16 +8,16 @@ generated_at: '2026-08-24T16:36:13.639902+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/slide-decks-01M0T72Y/spec.md
+    path: /workspace/doc-kitty/kitty-specs/slide-decks-01M0T72Y/spec.md
     sha256: 5c0e08c5d3c80cb93a707bfaddefbcb07b2ad2b29bc764e7b8b7fd500bb662c0
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/slide-decks-01M0T72Y/plan.md
+    path: /workspace/doc-kitty/kitty-specs/slide-decks-01M0T72Y/plan.md
     sha256: 6995c29f3faed82354b9a6a6983a7a5b56359e120fab63e86aebc7cd0f4ea053
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/slide-decks-01M0T72Y/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/slide-decks-01M0T72Y/tasks.md
     sha256: 86221699ea1b25c751e30950298429cf6f385ce65e6efc847eaaa032a122c7a5
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

@@ -8,16 +8,16 @@ generated_at: '2026-08-24T09:40:36.420247+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/audience-related-external-references-01M0S3F4/spec.md
+    path: /workspace/doc-kitty/kitty-specs/audience-related-external-references-01M0S3F4/spec.md
     sha256: f35439fc69f8d961581b8ab55834901de165a103f072f08d4f45a0be65f63916
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/audience-related-external-references-01M0S3F4/plan.md
+    path: /workspace/doc-kitty/kitty-specs/audience-related-external-references-01M0S3F4/plan.md
     sha256: 3e37c5f1026fb602f7382ff702b25f3827c0fdfd4c1eb2bb04f1536181125ef3
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/audience-related-external-references-01M0S3F4/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/audience-related-external-references-01M0S3F4/tasks.md
     sha256: 9a6eb9e0a053021a3a4c2e3de5d66bc5f9ac0fbadb67a1663cd7bfa6d851dd62
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

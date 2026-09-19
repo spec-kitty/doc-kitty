@@ -25,7 +25,7 @@
       "last_event_id": "01M1PERVVPNFPHMDF6D1A07Y29",
       "last_transition_at": "2026-09-04T14:57:09.494923+00:00",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/diagram-component-css-01M1PA3J/tasks/WP01-diagram-markup-and-component-css/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/diagram-component-css-01M1PA3J/tasks/WP01-diagram-markup-and-component-css/review-cycle-1.md",
         "reference": "review-cycle://diagram-component-css-01M1PA3J/WP01-diagram-markup-and-component-css/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
@@ -41,7 +41,7 @@
       "last_event_id": "01M1PES3SCREYVAX1259VZYY87",
       "last_transition_at": "2026-09-04T14:57:17.612267+00:00",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/diagram-component-css-01M1PA3J/tasks/WP02-adr-and-changelog/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/diagram-component-css-01M1PA3J/tasks/WP02-adr-and-changelog/review-cycle-1.md",
         "reference": "review-cycle://diagram-component-css-01M1PA3J/WP02-adr-and-changelog/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"

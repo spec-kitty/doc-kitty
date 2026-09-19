@@ -8,16 +8,16 @@ generated_at: '2026-09-03T23:10:30.643838+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/spec.md
+    path: /workspace/doc-kitty/kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/spec.md
     sha256: 5562bc435b39c71b937468dbb79798b7fa013b69e9c4866268a08659572f04e8
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/plan.md
+    path: /workspace/doc-kitty/kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/plan.md
     sha256: 26c07e356850d8989f14dfdff81a52f5e83d491b7e451006f6ba361eadb17bb9
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/metadata-vocab-hub-consolidation-01M1MFVT/tasks.md
     sha256: de7be6524b69e60b867421e04ad7ec1d0a3ca75e219eb10fffb7d8e52aa38565
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

@@ -8,16 +8,16 @@ generated_at: '2026-08-28T18:28:16.701354+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/reveal-deck-remediation-01M14N38/spec.md
+    path: /workspace/doc-kitty/kitty-specs/reveal-deck-remediation-01M14N38/spec.md
     sha256: 756a3465ef0866a248d2614ef9d452b7d19594e1527b57961e71a9eedfec9876
   plan.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/reveal-deck-remediation-01M14N38/plan.md
+    path: /workspace/doc-kitty/kitty-specs/reveal-deck-remediation-01M14N38/plan.md
     sha256: d243d0f06382a854c91c978c917e77fb47b02a9d2595999a31935a9d82301766
   tasks.md:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/reveal-deck-remediation-01M14N38/tasks.md
+    path: /workspace/doc-kitty/kitty-specs/reveal-deck-remediation-01M14N38/tasks.md
     sha256: aff06e7438db50e9dcc22aa1333e0c1d8dfda549ca2f8f34591593d86bdeb96e
   charter:
-    path: /home/stijn/Documents/_code/SDD/fork/doc-kitty/.kittify/charter/charter.yaml
+    path: /workspace/doc-kitty/.kittify/charter/charter.yaml
     sha256: 4dfc1be02167adb7fc10cce16eac90d0e6fd0aa6f22b90e7a0cb0f38055697de
 verdict: ready
 issue_counts:

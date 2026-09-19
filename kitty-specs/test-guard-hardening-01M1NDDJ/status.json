@@ -25,7 +25,7 @@
       "last_event_id": "01M1NFJY2GK41GC8JXJJSKTC4Q",
       "last_transition_at": "2026-09-04T05:52:09.296535+00:00",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/test-guard-hardening-01M1NDDJ/tasks/WP01-guard-hub-draft-exclusion/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/test-guard-hardening-01M1NDDJ/tasks/WP01-guard-hub-draft-exclusion/review-cycle-1.md",
         "reference": "review-cycle://test-guard-hardening-01M1NDDJ/WP01-guard-hub-draft-exclusion/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
@@ -41,7 +41,7 @@
       "last_event_id": "01M1NFK5FB6QZ29VT157BA11DF",
       "last_transition_at": "2026-09-04T05:52:16.875452+00:00",
       "review_result": {
-        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/kitty-specs/test-guard-hardening-01M1NDDJ/tasks/WP02-vitest-flake-isolation/review-cycle-1.md",
+        "feedback_path": "/workspace/doc-kitty/kitty-specs/test-guard-hardening-01M1NDDJ/tasks/WP02-vitest-flake-isolation/review-cycle-1.md",
         "reference": "review-cycle://test-guard-hardening-01M1NDDJ/WP02-vitest-flake-isolation/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
