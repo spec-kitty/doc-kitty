@@ -1,6 +1,6 @@
 ---
 title: Consumer setup — build a docsite from the published toolkit
-description: The install → configure → theme → build path for a net-new adopter, using only the published @commondocs-kitty/toolkit surface.
+description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
 updated: 2026-09-09
 type: Guide
@@ -16,15 +16,15 @@ related:
 # Consumer setup — build a docsite from the published toolkit
 
 **Audience.** An engineer standing up a net-new documentation site who has
-`@commondocs-kitty/toolkit` from the registry and wants to wire it exactly as an
+`@spec-kitty/doc-toolkit` from the registry and wants to wire it exactly as an
 external adopter would — through the package's published entry points only, with
 no reach into the toolkit's own source tree. If you are migrating an *existing*
 Common Docs `docs/` tree instead, start at [Adopting the toolkit](/guides/adopting/)
 and return here for the configuration and theming detail.
 
 Every step below references either a **published toolkit entry point**
-(`@commondocs-kitty/toolkit/*`) or a **file you own** in your own project
-(`src/…`, `astro.config.mjs`). No step points at `@commondocs-kitty/toolkit`
+(`@spec-kitty/doc-toolkit/*`) or a **file you own** in your own project
+(`src/…`, `astro.config.mjs`). No step points at `@spec-kitty/doc-toolkit`
 package internals or a repository-internal toolkit path — that constraint is the
 reuse contract (SC-005) and is machine-checked by
 `tests/consumption/scripts/assert-guide-no-internal-paths.mjs`.
@@ -39,7 +39,7 @@ reuse contract (SC-005) and is machine-checked by
 
 - Node ≥ 20 and pnpm (`corepack enable`).
 - A project directory with a `docs/` tree that follows the
-  [Common Docs — Kitty Variation](/context/convention/) (section folders, a
+  [DocKitty](/context/convention/) (section folders, a
   `README.md` section index per folder, required frontmatter). An empty tree is
   fine — the site builds with whatever pages are present.
 
@@ -49,10 +49,10 @@ The toolkit declares Astro, Starlight, and the sitemap integration as peers, so
 install them alongside it — pin the version you want to track:
 
 ```sh
-pnpm add @commondocs-kitty/toolkit astro @astrojs/starlight @astrojs/sitemap
+pnpm add @spec-kitty/doc-toolkit astro @astrojs/starlight @astrojs/sitemap
 ```
 
-Pin a real release (for example `@commondocs-kitty/toolkit@0.1.0`) rather than a
+Pin a real release (for example `@spec-kitty/doc-toolkit@0.1.0`) rather than a
 floating range so your build is reproducible against a known published surface.
 
 ## 2. `astro.config.mjs` — wire the integrations
@@ -64,7 +64,7 @@ the feed/agent-API generators need:
 ```js
 // astro.config.mjs
 import { defineConfig } from 'astro/config';
-import { defineDocKittyIntegrations } from '@commondocs-kitty/toolkit/config';
+import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
 import { myTheme } from './src/theme/index.ts'; // your consumer theme — see step 4
 
 const SITE = 'https://you.example.com';
@@ -111,7 +111,7 @@ import {
   docKittyBibliographyLoader,
   docKittyToolsSchema,
   docKittyToolsLoader,
-} from '@commondocs-kitty/toolkit/schema';
+} from '@spec-kitty/doc-toolkit/schema';
 
 export const collections = {
   docs: defineCollection({
@@ -141,25 +141,25 @@ published `/routes` factory. Add these files under `src/pages/`:
 
 ```ts
 // src/pages/rss.xml.ts
-import { rssRoute } from '@commondocs-kitty/toolkit/routes';
+import { rssRoute } from '@spec-kitty/doc-toolkit/routes';
 export const GET = rssRoute({ title: 'My Docs', description: 'Documentation updates.' });
 ```
 
 ```ts
 // src/pages/llms.txt.ts
-import { llmsTxtRoute } from '@commondocs-kitty/toolkit/routes';
+import { llmsTxtRoute } from '@spec-kitty/doc-toolkit/routes';
 export const GET = llmsTxtRoute({ title: 'My Docs', description: 'What this documentation set is.' });
 ```
 
 ```ts
 // src/pages/api/index.json.ts
-import { agentIndexRoute } from '@commondocs-kitty/toolkit/routes';
+import { agentIndexRoute } from '@spec-kitty/doc-toolkit/routes';
 export const GET = agentIndexRoute({ title: 'My Docs' });
 ```
 
 ```ts
 // src/pages/api/bibliography.json.ts
-import { bibliographyRoute } from '@commondocs-kitty/toolkit/routes';
+import { bibliographyRoute } from '@spec-kitty/doc-toolkit/routes';
 export const GET = bibliographyRoute();
 ```
 
@@ -172,8 +172,8 @@ slug helper from their published entry points:
 // src/pages/presentations/[...slug].astro
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
-import DeckLayout from '@commondocs-kitty/toolkit/layouts/DeckLayout.astro';
-import { deckRouteParams } from '@commondocs-kitty/toolkit/deck/deck-slug';
+import DeckLayout from '@spec-kitty/doc-toolkit/layouts/DeckLayout.astro';
+import { deckRouteParams } from '@spec-kitty/doc-toolkit/deck/deck-slug';
 
 export const prerender = true;
 
@@ -210,8 +210,8 @@ inverting consumer precedence.
 
 ```ts
 // src/theme/index.ts
-import { specKittyTheme } from '@commondocs-kitty/toolkit/themes/spec-kitty/index.ts';
-import type { DocKittyOptions } from '@commondocs-kitty/toolkit/config';
+import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty/index.ts';
+import type { DocKittyOptions } from '@spec-kitty/doc-toolkit/config';
 
 // `DocKittyTheme` is named via the one published surface that carries it — the
 // `theme` option of `defineDocKittyIntegrations` — so the theme stays on the
@@ -374,11 +374,11 @@ Every entry point above is part of the toolkit's published surface:
 
 | What | Published entry point |
 |---|---|
-| Integration array | `@commondocs-kitty/toolkit/config` |
-| Collection schemas + loaders | `@commondocs-kitty/toolkit/schema` |
-| Feed / agent-API route factories | `@commondocs-kitty/toolkit/routes` |
-| Deck layout + slug helper | `@commondocs-kitty/toolkit/layouts/…`, `@commondocs-kitty/toolkit/deck/…` |
-| Brand theme to extend | `@commondocs-kitty/toolkit/themes/…` |
+| Integration array | `@spec-kitty/doc-toolkit/config` |
+| Collection schemas + loaders | `@spec-kitty/doc-toolkit/schema` |
+| Feed / agent-API route factories | `@spec-kitty/doc-toolkit/routes` |
+| Deck layout + slug helper | `@spec-kitty/doc-toolkit/layouts/…`, `@spec-kitty/doc-toolkit/deck/…` |
+| Brand theme to extend | `@spec-kitty/doc-toolkit/themes/…` |
 
 Everything else (`astro.config.mjs`, `src/content.config.ts`, `src/pages/**`,
 `src/theme/**`, your `docs/` tree) is a file you own. Nothing reaches into the

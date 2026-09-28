@@ -15,9 +15,9 @@
  *      `<fixture>/toolkit.tgz`.
  *   2. Install into the fixture in genuine isolation:
  *      `pnpm install --frozen-lockfile --ignore-workspace`, resolving
- *      `@commondocs-kitty/toolkit` from `file:./toolkit.tgz`.
+ *      `@spec-kitty/doc-toolkit` from `file:./toolkit.tgz`.
  *   3. Isolation assertions (contract C-0 / NFR-001, NON-FAKEABLE):
- *        - realpath(node_modules/@commondocs-kitty/toolkit) is INSIDE the fixture,
+ *        - realpath(node_modules/@spec-kitty/doc-toolkit) is INSIDE the fixture,
  *        - is NOT under the repo `src/`,
  *        - is NOT a symlink (the fully-resolved target is a concrete dir),
  *        - its package.json version === the packed 0.1.0,
@@ -28,7 +28,7 @@
  *      green build with the toolkit source hidden is the SC-001 proof — the
  *      `../src` grep alone is not.
  *   5. Run the four tarball-portable gate scripts from the INSTALLED package
- *      (node_modules/@commondocs-kitty/toolkit/scripts/*.mjs) against the
+ *      (node_modules/@spec-kitty/doc-toolkit/scripts/*.mjs) against the
  *      fixture's docs/ and dist/.
  *   6. Auto-discover and run every tests/consumption/scripts/assert-consumer-*.mjs
  *      against dist/ (so later WPs' checkers plug in without editing this file).
@@ -59,12 +59,12 @@ const TARBALL = path.join(FIXTURE_DIR, 'toolkit.tgz');
 const DIST_DIR = path.join(FIXTURE_DIR, 'dist');
 const DOCS_DIR = path.join(FIXTURE_DIR, 'docs');
 const BASELINE = path.join(FIXTURE_DIR, 'url-baseline.txt');
-const PKG_SCRIPTS = path.join(FIXTURE_DIR, 'node_modules', '@commondocs-kitty', 'toolkit', 'scripts');
+const PKG_SCRIPTS = path.join(FIXTURE_DIR, 'node_modules', '@spec-kitty', 'doc-toolkit', 'scripts');
 
 // MUST match `base` in the fixture's astro.config.mjs (INV-2).
 const BASE = '/consumer-fixture';
 const EXPECTED_VERSION = '0.1.0';
-const TOOLKIT_MODULE = path.join(FIXTURE_DIR, 'node_modules', '@commondocs-kitty', 'toolkit');
+const TOOLKIT_MODULE = path.join(FIXTURE_DIR, 'node_modules', '@spec-kitty', 'doc-toolkit');
 
 const BOOTSTRAP = process.env.DK_CONSUMPTION_BOOTSTRAP === '1';
 
@@ -189,7 +189,7 @@ function pack() {
     die(`could not parse npm pack --json output:\n${res.stdout}`);
   }
   // npm reports the package id as the filename for scoped packages; the file on
-  // disk is the sanitized `commondocs-kitty-toolkit-<v>.tgz`. Resolve the real
+  // disk is the sanitized `spec-kitty-doc-toolkit-<v>.tgz`. Resolve the real
   // artifact from the destination dir rather than trusting the reported name.
   const packed = readdirSync(FIXTURE_DIR).find(
     (f) => f.endsWith('.tgz') && f !== 'toolkit.tgz',
@@ -230,7 +230,7 @@ function install() {
 function assertIsolation() {
   log('Step 3/6: isolation assertions (contract C-0 / NFR-001)');
   if (!existsSync(TOOLKIT_MODULE)) {
-    die(`@commondocs-kitty/toolkit is not installed at ${TOOLKIT_MODULE}`);
+    die(`@spec-kitty/doc-toolkit is not installed at ${TOOLKIT_MODULE}`);
   }
   const resolved = realpathSync(TOOLKIT_MODULE);
   const fixtureReal = realpathSync(FIXTURE_DIR);
@@ -276,7 +276,7 @@ function assertIsolation() {
       '--include=*.mjs',
       '--include=*.js',
       '--include=*.md',
-      '(\\.\\./)+src(/|\'|")|@commondocs-kitty/toolkit/src',
+      '(\\.\\./)+src(/|\'|")|@spec-kitty/doc-toolkit/src',
       ...grepTargets,
     ],
     { cwd: REPO_ROOT, encoding: 'utf8' },

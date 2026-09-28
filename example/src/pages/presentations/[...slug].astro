@@ -19,20 +19,20 @@
  */
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
-import DeckLayout from '@commondocs-kitty/toolkit/layouts/DeckLayout.astro';
-import { deckRouteParams } from '@commondocs-kitty/toolkit/deck/deck-slug';
+import DeckLayout from '@spec-kitty/doc-toolkit/layouts/DeckLayout.astro';
+import { deckRouteParams } from '@spec-kitty/doc-toolkit/deck/deck-slug';
 // The deck renders OUT of the Starlight frame, so it does not inherit the global
 // token injection. Pass this site's active-brand `--dk-*` sheets to DeckLayout so
 // the deck matches the brand (SC-004) — same brand tokens the frame layers after
 // the toolkit default catalog (which DeckLayout links itself).
-import brandTokensHref from '@commondocs-kitty/toolkit/themes/spec-kitty/tokens.css?url';
+import brandTokensHref from '@spec-kitty/doc-toolkit/themes/spec-kitty/tokens.css?url';
 // House-style deck LOOK sheet (exploratory, feat/deck-house-theme): layered
 // AFTER the neutral --dk→--r map via DeckLayout's route-isolated
 // `deckThemeCss` seam, so this route's deck gets the spec-kitty brand look
 // (dark surfaces, display headings, mono eyebrows, yellow accents) while
 // `dk-reveal-theme.css` itself stays the unedited, independently selectable
 // neutral default.
-import houseDeckThemeHref from '@commondocs-kitty/toolkit/themes/spec-kitty/deck.css?url';
+import houseDeckThemeHref from '@spec-kitty/doc-toolkit/themes/spec-kitty/deck.css?url';
 
 // Prerender to static HTML (ADR-0021 D2 / ADR-0022 D3): the deck is baked at
 // build so reveal only ever ENHANCES existing DOM in the browser.

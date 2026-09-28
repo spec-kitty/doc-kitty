@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build-free citation-catalog validator for the Common Docs — Kitty Variation.
+ * Build-free citation-catalog validator for DocKitty.
  * Runs in the `doc-sanity` CI lane (no `astro build`, NFR-002).
  *
  * Usage:

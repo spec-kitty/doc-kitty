@@ -12,7 +12,7 @@ agent:
 # Architecture
 
 This section describes the **current** design of the toolkit: how it reads a
-Common Docs — Kitty `docs/` tree and produces a Starlight site plus a sitemap,
+DocKitty `docs/` tree and produces a Starlight site plus a sitemap,
 an RSS feed, `llms.txt`, and a JSON agent-API. It describes what exists today,
 in the present tense — planned work lives in [Plans](../plans/), and the reasons
 behind the design live in the [decision records](../adr/).

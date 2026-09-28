@@ -1,6 +1,6 @@
 /**
  * Canonical, fs-free vocabulary + type-derivation core for the
- * **Common Docs — Kitty Variation** (#49 IC-01).
+ * **DocKitty** (#49 IC-01).
  *
  * THE SINGLE SOURCE OF TRUTH for section vocabulary sets, the section→type
  * derivation, the `_meta/vocabulary.yaml` resolver, and the index-basename

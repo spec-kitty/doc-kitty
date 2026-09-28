@@ -5,7 +5,7 @@
  *
  * Mount as `src/pages/api/pages/[...slug].json.ts`:
  *
- *   import { agentPageRoute } from '@commondocs-kitty/toolkit/routes';
+ *   import { agentPageRoute } from '@spec-kitty/doc-toolkit/routes';
  *   const route = agentPageRoute();
  *   export const getStaticPaths = route.getStaticPaths;
  *   export const GET = route.GET;

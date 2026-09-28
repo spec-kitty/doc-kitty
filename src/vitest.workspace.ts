@@ -16,7 +16,7 @@ import { defineWorkspace } from 'vitest/config';
 //     never overlap each other (mirrors the previous blanket setting, now
 //     scoped to just the files that need it).
 //
-// `vitest run` (invoked by `pnpm test` → `pnpm --filter @commondocs-kitty/toolkit
+// `vitest run` (invoked by `pnpm test` → `pnpm --filter @spec-kitty/doc-toolkit
 // test`) picks up this workspace file automatically when present alongside
 // vitest.config.ts, and runs BOTH projects — so the full 884-test count is
 // unchanged, just redistributed across the two projects.

@@ -1,9 +1,9 @@
 ---
 name: doc-kitty-scaffold
-description: Scaffold the standard Common Docs — Kitty Variation docs/ structure in a project. Creates the twelve section directories and stub files with correct frontmatter, using README.md (not index.md) as the frontmatter-carrying section index. Use when asked to "set up docs", "scaffold documentation", "create the docs structure", or "add docs to this project".
+description: Scaffold the standard DocKitty docs/ structure in a project. Creates the twelve section directories and stub files with correct frontmatter, using README.md (not index.md) as the frontmatter-carrying section index. Use when asked to "set up docs", "scaffold documentation", "create the docs structure", or "add docs to this project".
 ---
 
-# Doc Kitty Scaffolder
+# DocKitty Scaffolder
 
 Scaffold the standard repo-root `docs/` structure defined by the **Common Docs —
 Kitty Variation**. Read [`../../docs/context/convention.md`](../../docs/context/convention.md)

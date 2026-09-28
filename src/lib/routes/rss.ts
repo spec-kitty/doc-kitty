@@ -3,7 +3,7 @@
  *
  * Mount in a site as `src/pages/rss.xml.ts`:
  *
- *   import { rssRoute } from '@commondocs-kitty/toolkit/routes';
+ *   import { rssRoute } from '@spec-kitty/doc-toolkit/routes';
  *   export const GET = rssRoute({ title: 'My Docs', description: '…' });
  */
 import type { APIRoute } from 'astro';

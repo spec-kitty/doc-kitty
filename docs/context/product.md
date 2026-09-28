@@ -1,6 +1,6 @@
 ---
 title: Product
-description: What the Doc Kitty toolkit is and who it serves.
+description: What the DocKitty toolkit is and who it serves.
 doc_status: active
 updated: 2026-08-21
 type: Context
@@ -23,8 +23,8 @@ need.
 
 ## What it is
 
-A library (`@commondocs-kitty/toolkit`) plus builder scripts. Point it at a
-Common Docs — Kitty `docs/` tree; get a Starlight site with `sitemap.xml`,
+A library (`@spec-kitty/doc-toolkit`) plus builder scripts. Point it at a
+DocKitty `docs/` tree; get a Starlight site with `sitemap.xml`,
 `rss.xml`, `llms.txt`, and a JSON agent-API.
 
 ## Out of scope

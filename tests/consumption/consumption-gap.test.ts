@@ -64,10 +64,10 @@ import { fileURLToPath } from 'node:url';
 // ── repository layout (derived from this file's location) ────────────────────
 const HERE = path.dirname(fileURLToPath(import.meta.url)); // tests/consumption
 const REPO_ROOT = path.resolve(HERE, '..', '..');
-const SRC_DIR = path.join(REPO_ROOT, 'src'); // the @commondocs-kitty/toolkit package
+const SRC_DIR = path.join(REPO_ROOT, 'src'); // the @spec-kitty/doc-toolkit package
 const FIXTURE_DIR = path.join(HERE, 'consumer-fixture');
 const TOOLKIT_PKG = JSON.parse(readFileSync(path.join(SRC_DIR, 'package.json'), 'utf8'));
-const TOOLKIT_NAME: string = TOOLKIT_PKG.name; // '@commondocs-kitty/toolkit'
+const TOOLKIT_NAME: string = TOOLKIT_PKG.name; // '@spec-kitty/doc-toolkit'
 
 // Static-import module kinds that MUST fail closed when absent (contract C-2).
 const STATIC_KINDS = ['.ts', '.astro', '.css'];
@@ -172,7 +172,7 @@ function fixtureStaticImports(): Map<string, number> {
 
 interface GapCandidate {
   subpath: string; // e.g. 'routes'
-  specifier: string; // e.g. '@commondocs-kitty/toolkit/routes'
+  specifier: string; // e.g. '@spec-kitty/doc-toolkit/routes'
   file: string; // package-relative, e.g. 'lib/routes/index.ts'
   importerCount: number;
 }

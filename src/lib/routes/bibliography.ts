@@ -9,7 +9,7 @@
  *
  * Mount as `src/pages/api/bibliography.json.ts`:
  *
- *   import { bibliographyRoute } from '@commondocs-kitty/toolkit/routes';
+ *   import { bibliographyRoute } from '@spec-kitty/doc-toolkit/routes';
  *   export const GET = bibliographyRoute();
  */
 import type { APIRoute } from 'astro';

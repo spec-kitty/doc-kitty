@@ -1,7 +1,7 @@
 ---
 okf_version: "0.2"
-title: Doc Kitty Example
-description: Master entry point for the example docsite built with the Common Docs — Kitty Variation.
+title: DocKitty Example
+description: Master entry point for the example docsite built with DocKitty.
 doc_status: active
 kind: Hub
 updated: 2026-08-21
@@ -9,10 +9,10 @@ authors:
   - stijn@sddevelopment.be
 ---
 
-# Doc Kitty Example
+# DocKitty Example
 
-A minimal, deployable docsite that renders a **Common Docs — Kitty Variation**
-`docs/` tree with [`@commondocs-kitty/toolkit`](https://github.com/spec-kitty/doc-kitty).
+A minimal, deployable docsite that renders a **DocKitty**
+`docs/` tree with [`@spec-kitty/doc-toolkit`](https://github.com/spec-kitty/doc-kitty).
 It exists to show the convention in practice and to prove the generated
 artifacts:
 

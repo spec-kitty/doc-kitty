@@ -152,7 +152,7 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
       encoding: 'utf8',
     });
     expect(res.status, `validate:example stderr:\n${res.stderr}`).toBe(0);
-    expect(res.stdout).toMatch(/valid against Common Docs/);
+    expect(res.stdout).toMatch(/valid against DocKitty/);
   });
 
   it('T019 (m1 anti-laziness): the root-index exemption FIRES for a literal index.md root path', () => {

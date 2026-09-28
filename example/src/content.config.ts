@@ -6,7 +6,7 @@ import {
   docKittyBibliographyLoader,
   docKittyToolsSchema,
   docKittyToolsLoader,
-} from '@commondocs-kitty/toolkit/schema';
+} from '@spec-kitty/doc-toolkit/schema';
 
 // The `docs` collection Starlight expects plus the two citation-catalog data
 // collections (ADR-0018). The toolkit exports each collection's loader + schema

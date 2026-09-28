@@ -8,16 +8,16 @@
  *
  * WHAT IT PROVES (non-fakeable). The consumer-setup guide instructs an external
  * adopter to wire the toolkit through its PUBLISHED surface only. Every step must
- * reference either a published `@commondocs-kitty/toolkit/*` entry point or a file
+ * reference either a published `@spec-kitty/doc-toolkit/*` entry point or a file
  * the adopter owns (`src/…`, `astro.config.mjs`). This lint fails the moment the
  * guide names a REPO-INTERNAL TOOLKIT PATH — the same class of path INV-1 keeps
  * off the fixture's module-resolution graph — so a well-meaning edit that pastes
- * an internal import (`../src/…`, `@commondocs-kitty/toolkit/src/…`) into the
+ * an internal import (`../src/…`, `@spec-kitty/doc-toolkit/src/…`) into the
  * guide turns this check RED instead of shipping a broken adopter instruction.
  *
  * WHY THESE PATTERNS AND NOT A BARE "src". A consumer LEGITIMATELY owns `src/…`
  * files (`src/content.config.ts`, `src/pages/**`, `src/theme/**`) and imports
- * from PUBLIC subpath exports (`@commondocs-kitty/toolkit/config|schema|routes|
+ * from PUBLIC subpath exports (`@spec-kitty/doc-toolkit/config|schema|routes|
  * themes/…|layouts/…|deck/…`), none of which reach into toolkit internals. The
  * violation signature is specifically a path that climbs OUT of the adopter's
  * project into a `src` tree, or that reaches INTO the package's own `src`/`lib`,
@@ -38,7 +38,7 @@ const DEFAULT_GUIDE = 'docs/guides/consumer-setup.md';
  * - `../src` (and deeper `../../src`): a relative path that climbs OUT of the
  *   adopter's project into a `src` tree — the canonical INV-1 violation.
  * - `../lib`, `../scripts`: the same climb into a toolkit sibling dir.
- * - `@commondocs-kitty/toolkit/src` | `/lib`: importing package INTERNALS instead
+ * - `@spec-kitty/doc-toolkit/src` | `/lib`: importing package INTERNALS instead
  *   of the public subpath exports.
  * - `example/src`: the doc-kitty repository's own example internals (the word
  *   `example/` alone is allowed — the strict-mode caveat names it in prose).
@@ -48,8 +48,8 @@ const RULES = [
   { name: 'parent-relative reach into src', test: /\.\.(?:\/\.\.)*\/src\b/ },
   { name: 'parent-relative reach into lib', test: /\.\.(?:\/\.\.)*\/lib\b/ },
   { name: 'parent-relative reach into scripts', test: /\.\.(?:\/\.\.)*\/scripts\b/ },
-  { name: 'toolkit package-internal src import', test: /@commondocs-kitty\/toolkit\/src\b/ },
-  { name: 'toolkit package-internal lib import', test: /@commondocs-kitty\/toolkit\/lib\b/ },
+  { name: 'toolkit package-internal src import', test: /@spec-kitty\/doc-toolkit\/src\b/ },
+  { name: 'toolkit package-internal lib import', test: /@spec-kitty\/doc-toolkit\/lib\b/ },
   { name: 'doc-kitty example-internal path', test: /\bexample\/src\b/ },
   { name: 'doc-kitty repository-internal script path', test: /\bsrc\/scripts\// },
 ];

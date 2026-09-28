@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@commondocs-kitty/toolkit` are recorded here. The format
+All notable changes to `@spec-kitty/doc-toolkit` are recorded here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -26,7 +26,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] — 2026-09-09
 
-First tagged release. Collects the delivered MVP of the **Common Docs — Kitty
+First tagged release. Collects the delivered MVP of the **DocKitty
 Variation** toolkit: point it at a documentation tree that follows the convention
 and get a Starlight docsite plus `sitemap.xml`, `rss.xml`, `llms.txt`, and a JSON
 agent-API out of the box. See [`docs/plans/roadmap.md`](docs/plans/roadmap.md) for
@@ -60,7 +60,7 @@ the feature-by-feature status and the decision records under
 - **Example corpus** — the ars-rethorica showcase (Introduction, Preamble, Book I
   15 chapters, Book II/III landings, a generated rhetoric glossary, two reader
   personas).
-- **Packaging** — published as `@commondocs-kitty/toolkit` with an `exports` map,
+- **Packaging** — published as `@spec-kitty/doc-toolkit` with an `exports` map,
   a `files` allowlist, and `astro`/`@astrojs/starlight` peer dependencies;
   workspace-split from `example/`.
 

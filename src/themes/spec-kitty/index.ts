@@ -88,13 +88,13 @@ export const specKittyTheme: DocKittyTheme = {
   // MUST precede brand.css: tokens first (C-007 tokens-before-overrides), chrome
   // after. Both layer AFTER the generated Default sheet (seam 2), so the brand wins.
   customCss: [
-    '@commondocs-kitty/toolkit/themes/spec-kitty/tokens.css',
-    '@commondocs-kitty/toolkit/themes/spec-kitty/brand.css',
+    '@spec-kitty/doc-toolkit/themes/spec-kitty/tokens.css',
+    '@spec-kitty/doc-toolkit/themes/spec-kitty/brand.css',
     // Atom/molecule/organism class language + the T025 AA construction rules
     // (WP05). After brand.css so component styling wins; carries the WP08 T046
     // target-size/focus contract classes (.dk-related-card, .dk-reference-item,
     // .dk-passport__field a) into the branded dist.
-    '@commondocs-kitty/toolkit/themes/spec-kitty/components/brand-components.css',
+    '@spec-kitty/doc-toolkit/themes/spec-kitty/components/brand-components.css',
   ],
 
   // Assets ride Starlight-native `logo`/`favicon` (ADR-0015 decision 5): the header
@@ -110,9 +110,9 @@ export const specKittyTheme: DocKittyTheme = {
   // `<link rel="stylesheet">`); a downstream theme that DOES ship font URLs gets
   // them forwarded. No proprietary Falling Sky / Swansea files are shipped.
   assets: {
-    logo: '@commondocs-kitty/toolkit/themes/spec-kitty/assets/logo.svg',
-    favicon: '@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg',
-    socialImage: '@commondocs-kitty/toolkit/themes/spec-kitty/assets/social-card.svg',
+    logo: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/logo.svg',
+    favicon: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg',
+    socialImage: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/social-card.svg',
     fonts: [],
   },
 
@@ -122,13 +122,13 @@ export const specKittyTheme: DocKittyTheme = {
   // Keep this key; the string resolves at WP07's themed build.
   slots: {
     'dk:site-footer':
-      '@commondocs-kitty/toolkit/themes/spec-kitty/components/organisms/SiteFooter.astro',
+      '@spec-kitty/doc-toolkit/themes/spec-kitty/components/organisms/SiteFooter.astro',
   },
 
   // Persona passport layout — WP06 lands src/layouts/Persona.astro; resolves via
   // the existing `./layouts/*` export (no package.json change needed for this one).
   layouts: {
-    Persona: '@commondocs-kitty/toolkit/layouts/Persona.astro',
+    Persona: '@spec-kitty/doc-toolkit/layouts/Persona.astro',
   },
 };
 

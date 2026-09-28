@@ -147,12 +147,12 @@ describe('T025 — the packed tarball carries ZERO Spec Kitty coupling (NFR-001)
     }
     // Legitimate brand-theme + prose — MUST stay clean (the guard is precise).
     for (const benign of [
-      `import { specKittyTheme } from '@commondocs-kitty/toolkit/themes/spec-kitty';`,
+      `import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty';`,
       "// Self-contained (no `@spec-kitty/*`).",
       `const { wordmark = 'Spec Kitty' } = Astro.props;`,
       `background: url('/themes/spec-kitty/assets/logo.svg');`,
       "* references `@spec-kitty/*`, a CDN, or the spec-kitty-design repo",
-      `import { resolveGovernance } from '@commondocs-kitty/toolkit/schema';`,
+      `import { resolveGovernance } from '@spec-kitty/doc-toolkit/schema';`,
     ]) {
       expect(scanText(benign), `should NOT flag: ${benign}`).toEqual([]);
     }
@@ -175,7 +175,7 @@ describe('T025 — the packed tarball carries ZERO Spec Kitty coupling (NFR-001)
     });
     expect(res.error).toBeFalsy();
     expect(res.status, `gate output:\n${res.stdout}\n${res.stderr}`).toBe(0);
-    expect(`${res.stdout}${res.stderr}`).toMatch(/valid against Common Docs/);
+    expect(`${res.stdout}${res.stderr}`).toMatch(/valid against DocKitty/);
   });
 });
 

@@ -5,7 +5,7 @@
  * Layer 3 in the `default → brand → consumer` stack (theming.md §Layering). It
  * proves reuse at N=2: a net-new adopter site takes the shipped Spec Kitty brand
  * and refines it further, WITHOUT touching the toolkit source — everything here
- * consumes only the packed `@commondocs-kitty/toolkit` published surface.
+ * consumes only the packed `@spec-kitty/doc-toolkit` published surface.
  *
  * This module is purely DECLARATIVE (DIRECTIVE_001 — a theme is a data record,
  * no logic): it extends `specKittyTheme` and shallow-overrides a subset of
@@ -34,8 +34,8 @@
  * NEVER set a `--sl-*` key: `mergeLayers` throws on it (ADR-0011 / FR-004). A
  * theme addresses `--dk-*` only; the `--dk-*→--sl-*` bridge is toolkit-owned.
  */
-import { specKittyTheme } from '@commondocs-kitty/toolkit/themes/spec-kitty/index.ts';
-import type { DocKittyOptions } from '@commondocs-kitty/toolkit/config';
+import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty/index.ts';
+import type { DocKittyOptions } from '@spec-kitty/doc-toolkit/config';
 
 /**
  * The public theme-record type. `DocKittyTheme` is not re-exported from the

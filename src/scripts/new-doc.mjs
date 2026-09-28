@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Scaffold a single Common Docs — Kitty Variation page with correct frontmatter.
+ * Scaffold a single DocKitty page with correct frontmatter.
  *
  * Usage:
  *   node scripts/new-doc.mjs <slug> [--title "Title"] [--type Guide]

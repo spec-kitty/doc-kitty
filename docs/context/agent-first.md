@@ -10,9 +10,9 @@ tags: [agents, rationale]
 
 # Agent-first documentation
 
-Doc Kitty is built by Spec Kitty Inc, where AI agents do real work against project
+DocKitty is built by Spec Kitty Inc, where AI agents do real work against project
 documentation. An agent that reads the docs to plan a change, answer a question,
-or check a decision is a reader with real needs. This page explains why Doc Kitty
+or check a decision is a reader with real needs. This page explains why DocKitty
 treats that reader as first-class.
 
 ## Human-first, agent-supported
@@ -23,7 +23,7 @@ they can rely on: a predictable tree, consistent metadata, and stable links.
 
 ## Discovery, not retrieval
 
-Doc Kitty gives agents a map, not a search index. From the same frontmatter that
+DocKitty gives agents a map, not a search index. From the same frontmatter that
 drives navigation, it generates:
 
 - `sitemap.xml` for crawlers,
@@ -44,4 +44,4 @@ whose tools are agents, generating an agent-friendly site is the obvious move, n
 an add-on.
 
 See the [convention](./convention.md) for the metadata that drives these surfaces,
-and [what Doc Kitty solves for](./what-we-solve-for.md) for the four outcomes.
+and [what DocKitty solves for](./what-we-solve-for.md) for the four outcomes.

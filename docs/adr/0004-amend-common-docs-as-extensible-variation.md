@@ -45,7 +45,7 @@ a principle to appeal to rather than being litigated one by one.
 ## Decision
 
 Treat Common Docs as an amendable base, not a spec to satisfy verbatim. doc-kitty
-defines the Common Docs — Kitty Variation: keep the spirit and the OKF-conformant
+defines DocKitty: keep the spirit and the OKF-conformant
 core (the frontmatter contract, a required `type`, the curated tree, ADR
 discipline, progressive-disclosure ordering), and deviate where it serves the four
 outcomes. The variation, consolidated:

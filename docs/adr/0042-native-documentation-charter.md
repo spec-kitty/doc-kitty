@@ -43,7 +43,7 @@ documentation governance. The tempting move is to reuse Spec Kitty's charter
 engine directly.
 
 That move is wrong for this toolkit. doc-kitty is a **public consumer template**:
-adopters install `@commondocs-kitty/toolkit` and build a static site; they do
+adopters install `@spec-kitty/doc-toolkit` and build a static site; they do
 **not** run Spec Kitty. Depending on Spec Kitty's `DoctrineService` at
 build/validate time would make the headline governance feature unusable for its
 own audience, pull a heavy out-of-ecosystem runtime into every consumer build,

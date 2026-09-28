@@ -1,7 +1,7 @@
-# Doc Kitty toolkit assets
+# DocKitty toolkit assets
 
 Ships shared static assets consumed by the chrome carriers and layouts (exported
-via `@commondocs-kitty/toolkit/assets/*`). Kept as a tracked directory so the
+via `@spec-kitty/doc-toolkit/assets/*`). Kept as a tracked directory so the
 `./assets/*` package export always resolves.
 
 - `social-default.png` — the neutral site-default share card (1200×630). The

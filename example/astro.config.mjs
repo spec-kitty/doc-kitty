@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import { defineDocKittyIntegrations } from '@commondocs-kitty/toolkit/config';
-import { specKittyTheme } from '@commondocs-kitty/toolkit/themes/spec-kitty/index.ts';
+import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
+import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty/index.ts';
 
 // GitHub Pages: set these to your repo. For a project page the site is
 // https://<owner>.github.io and the base is /<repo>. For a user/org page or a
@@ -64,8 +64,8 @@ export default defineConfig({
   ...(OUT_DIR ? { outDir: OUT_DIR } : {}),
   redirects: REDIRECTS,
   integrations: defineDocKittyIntegrations({
-    title: 'Doc Kitty Example',
-    description: 'A minimal docsite built with the Common Docs — Kitty Variation.',
+    title: 'DocKitty Example',
+    description: 'A minimal docsite built with DocKitty.',
     // Same value as `base` above, so the sitemap draft filter strips the base
     // prefix and compares each page's route to the draft routes with ANCHORED
     // equality (not a suffix match).

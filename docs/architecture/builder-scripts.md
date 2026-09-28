@@ -13,7 +13,7 @@ related:
 
 # Builder scripts
 
-The toolkit ships three Node scripts that operate on a Common Docs — Kitty tree
+The toolkit ships three Node scripts that operate on a DocKitty tree
 from the command line: one scaffolds the tree, one adds a single page, and one
 validates frontmatter as a build-free CI gate. This page expands the scripts the
 [overview](./overview.md) lists.

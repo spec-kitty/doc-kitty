@@ -1,6 +1,6 @@
 ---
 title: Domain
-description: The ubiquitous language for the Common Docs — Kitty Variation.
+description: The ubiquitous language for DocKitty.
 doc_status: active
 updated: 2026-08-21
 type: Context

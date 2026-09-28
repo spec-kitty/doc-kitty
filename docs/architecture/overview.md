@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: Components and data flow of the Doc Kitty toolkit.
+description: Components and data flow of the DocKitty toolkit.
 doc_status: active
 updated: 2026-08-21
 type: Architecture

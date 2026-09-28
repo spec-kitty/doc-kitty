@@ -1,9 +1,9 @@
 ---
 name: doc-kitty-find
-description: Locate the right Common Docs — Kitty Variation file for a question, or identify the gap where one should exist. Use when asked "where are the docs for X", "which file documents Y", "is there a doc about Z", or before writing so you edit the correct file. Prefers metadata and the generated agent-API over full-text scanning.
+description: Locate the right DocKitty file for a question, or identify the gap where one should exist. Use when asked "where are the docs for X", "which file documents Y", "is there a doc about Z", or before writing so you edit the correct file. Prefers metadata and the generated agent-API over full-text scanning.
 ---
 
-# Doc Kitty Finder
+# DocKitty Finder
 
 Find the `docs/` file that answers a question — or determine that it doesn't
 exist yet and say where it should live.

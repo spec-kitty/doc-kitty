@@ -42,7 +42,7 @@ toggle with **no JavaScript** — exactly like the Mermaid figure.
 ```plantuml
 ' title: Build-time PlantUML render
 ' description: Markdown is parsed, the loader hands the themed source to a self-hosted PlantUML server, which renders the static SVG the reader is served with no client JavaScript.
-' attribution: Doc Kitty build-render seam (ADR-0023)
+' attribution: DocKitty build-render seam (ADR-0023)
 ' source: https://example.com/adr-0023-diagram-render-seam
 package "Build pipeline" {
   rectangle "Markdown\n(docs tree)" as MD

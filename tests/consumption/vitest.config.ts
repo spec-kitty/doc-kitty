@@ -5,7 +5,7 @@
 // default-exported config object, so this stays runnable without an install here.
 //
 // It is SEPARATE from the toolkit's standing gate
-// (`pnpm --filter @commondocs-kitty/toolkit test` → vitest in `src/`, whose
+// (`pnpm --filter @spec-kitty/doc-toolkit test` → vitest in `src/`, whose
 // include is `tests/**` relative to `src/`, i.e. `src/tests/**` ONLY). This
 // config's root is `tests/consumption/`, so that gate never picks it up and
 // `consumption-gap.test.ts` stays OFF the always-green CI suite — the test itself

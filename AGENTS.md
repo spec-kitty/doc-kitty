@@ -39,14 +39,14 @@ When making an architectural decision, check `docs/adr/README.md`.
 
 ## Agent skills
 
-Reusable skills for operating on a Common Docs — Kitty tree live in
+Reusable skills for operating on a DocKitty tree live in
 [`agents/`](./agents) (scaffold / write / find / convert). These are minimal for
 now and will be recast as Spec Kitty charter/doctrine later.
 
 ## Repository conventions
 
 - Package manager: **pnpm** (via `corepack enable`).
-- The toolkit source is `src/` (`@commondocs-kitty/toolkit`); the runnable site
+- The toolkit source is `src/` (`@spec-kitty/doc-toolkit`); the runnable site
   is `example/`.
 - Follow the convention when editing any `docs/` tree: `README.md` is the
   section index and carries frontmatter. The required frontmatter fields are

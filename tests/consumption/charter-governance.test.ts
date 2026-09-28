@@ -28,7 +28,7 @@
  * resolve `gray-matter`/`zod` from the workspace, but `assertShippedGateParity()`
  * packs the toolkit, extracts the tarball, and asserts the gate script AND its two
  * `lib/` dependencies ship BYTE-IDENTICAL — so the gate exercised here is exactly the
- * one a clean-room adopter runs from `node_modules/@commondocs-kitty/toolkit/scripts`.
+ * one a clean-room adopter runs from `node_modules/@spec-kitty/doc-toolkit/scripts`.
  *
  * KNOWN WIRING (recorded in CHARTER-EVIDENCE.md, honest, out of WP05's owned scope):
  * the standalone gate's forbidden-TERM *failure* currently reads the vocabulary axis

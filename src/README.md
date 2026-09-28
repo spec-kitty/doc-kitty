@@ -1,6 +1,6 @@
-# `@commondocs-kitty/toolkit`
+# `@spec-kitty/doc-toolkit`
 
-The reusable core of Doc Kitty. A **library** (not a runnable site) that a docs
+The reusable core of DocKitty. A **library** (not a runnable site) that a docs
 repository installs or copies in. See the runnable
 [`../example`](../example) for how it's wired together, and
 [`../docs/architecture`](../docs/architecture) for how it works.
@@ -27,7 +27,7 @@ src/
 │       ├── agent-index.ts   # agentIndexRoute -> /api/index.json
 │       └── agent-page.ts    # agentPageRoute  -> /api/<slug>.json
 ├── scripts/
-│   ├── scaffold.mjs             # emit the 12-section Common Docs — Kitty tree
+│   ├── scaffold.mjs             # emit the 12-section DocKitty tree
 │   ├── validate-frontmatter.mjs # CI gate: validate a docs/ tree
 │   └── new-doc.mjs              # scaffold one page with correct frontmatter
 └── tests/
@@ -47,5 +47,5 @@ src/
 ## Tests
 
 ```sh
-pnpm --filter @commondocs-kitty/toolkit test
+pnpm --filter @spec-kitty/doc-toolkit test
 ```

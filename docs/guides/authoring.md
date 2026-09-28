@@ -1,6 +1,6 @@
 ---
 title: Authoring a document
-description: Create a page that satisfies the Common Docs — Kitty Variation.
+description: Create a page that satisfies DocKitty.
 doc_status: active
 updated: 2026-08-21
 type: Guide

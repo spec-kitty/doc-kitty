@@ -188,7 +188,7 @@ const HUB_FRAGMENT_URL = '/context/';
 // stops indexing its described-link list (e.g. a `<nav>` regression that
 // Pagefind drops), they vanish from the Hub fragment and this check flips red.
 const HUB_CHILD_CARD_MARKERS = [
-  'Domain Explanation The ubiquitous language for the Common Docs',
+  'Domain Explanation The ubiquitous language for DocKitty',
   'Product Explanation The problem this example solves and who it is for.',
 ];
 

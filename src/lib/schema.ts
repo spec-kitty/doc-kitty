@@ -1,5 +1,5 @@
 /**
- * Frontmatter schema + content loader for the Common Docs — Kitty Variation.
+ * Frontmatter schema + content loader for DocKitty.
  *
  * `docKittyDocsSchema` extends Starlight's docs schema with the convention's
  * metadata (velvet-tiger/common-docs v1.2 fields + a Kitty `agent` extension).
@@ -130,7 +130,7 @@ const agentHints = z
   .default({});
 
 /**
- * The Common Docs — Kitty Variation frontmatter fields, layered on Starlight's.
+ * The DocKitty frontmatter fields, layered on Starlight's.
  *
  * Required by the convention: `title`, `description`, `doc_status`, `updated`,
  * `type`, `kind`. To keep partially-scaffolded stubs from breaking the build,

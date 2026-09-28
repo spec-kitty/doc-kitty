@@ -1,6 +1,6 @@
 /**
  * Framework-agnostic metadata model + helpers for the
- * **Common Docs — Kitty Variation**.
+ * **DocKitty**.
  *
  * The base convention is velvet-tiger/common-docs (spec v1.2), which targets a
  * repo-root `docs/` tree conforming to Open Knowledge Format (OKF) v0.2. The
@@ -106,7 +106,7 @@ export interface SourceRef {
 }
 
 /**
- * The Common Docs — Kitty Variation frontmatter, on top of Starlight's fields.
+ * The DocKitty frontmatter, on top of Starlight's fields.
  * `title`, `description`, `doc_status`, `updated`, `type`, `kind` are the
  * convention's required fields (root `README.md` is exempt from `type` and
  * instead carries `okf_version`, but still carries `doc_status` and `kind`).

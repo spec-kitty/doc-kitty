@@ -1,5 +1,5 @@
 /**
- * Route plumbing for the Doc Kitty handlers: the docs-root resolver (#22) and
+ * Route plumbing for the DocKitty handlers: the docs-root resolver (#22) and
  * the feed URL/XML helpers (`absolute`/`xmlEscape`). The docs-collection
  * adapter + index builder moved to `../docs-index.ts` (issue #90), which routes
  * AND components share.

@@ -1,5 +1,5 @@
 /**
- * Doc Kitty — the theme-resolution core (Mission M2, ADR-0008/0011/0013).
+ * DocKitty — the theme-resolution core (Mission M2, ADR-0008/0011/0013).
  *
  * This module is pure, framework-agnostic TypeScript: it owns the public
  * `DocKittyTheme` contract, the `default → brand → consumer` merge, and the
@@ -108,7 +108,7 @@ export interface ResolvedTheme {
  * generated token sheet when a theme is active, so its position within
  * `customCss` is not load-bearing for that replacement.
  */
-export const DEFAULT_TOKEN_SHEET = '@commondocs-kitty/toolkit/styles/theme.css';
+export const DEFAULT_TOKEN_SHEET = '@spec-kitty/doc-toolkit/styles/theme.css';
 
 /**
  * The standalone global component-rule sheet (`.dk-callout*` + `.dk-diagram*`,
@@ -119,7 +119,7 @@ export const DEFAULT_TOKEN_SHEET = '@commondocs-kitty/toolkit/styles/theme.css';
  * no-theme and themed paths (C-002). `DeckLayout` links it explicitly for the
  * out-of-frame deck route, which gets no global `customCss` injection.
  */
-export const DK_COMPONENTS_CSS_SHEET = '@commondocs-kitty/toolkit/styles/dk-components.css';
+export const DK_COMPONENTS_CSS_SHEET = '@spec-kitty/doc-toolkit/styles/dk-components.css';
 
 /**
  * The collapsible-TOC-rail sheet (D5, WP02 `src/styles/toc-rail.css`). Registered
@@ -127,7 +127,7 @@ export const DK_COMPONENTS_CSS_SHEET = '@commondocs-kitty/toolkit/styles/dk-comp
  * survives the branded token-sheet replacement (a brand build swaps `theme.css`'s
  * slot for a generated tokens-only sheet, so TOC-rail rules could NOT live there).
  */
-export const TOC_RAIL_CSS_SHEET = '@commondocs-kitty/toolkit/styles/toc-rail.css';
+export const TOC_RAIL_CSS_SHEET = '@spec-kitty/doc-toolkit/styles/toc-rail.css';
 
 /**
  * The single-owner list of GLOBAL component-rule sheets — every static sheet

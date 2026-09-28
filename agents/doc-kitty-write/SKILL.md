@@ -1,9 +1,9 @@
 ---
 name: doc-kitty-write
-description: Write the actual content of a specific Common Docs — Kitty Variation file. Use when asked to write, fill in, or populate a doc — e.g. "write the architecture overview", "fill in the threat model", "document our API endpoints", "write an ADR for X". Distinct from scaffolding (empty stubs) — this produces real, substantive content, with correct frontmatter and the optional metadata that can be genuinely inferred.
+description: Write the actual content of a specific DocKitty file. Use when asked to write, fill in, or populate a doc — e.g. "write the architecture overview", "fill in the threat model", "document our API endpoints", "write an ADR for X". Distinct from scaffolding (empty stubs) — this produces real, substantive content, with correct frontmatter and the optional metadata that can be genuinely inferred.
 ---
 
-# Doc Kitty Writer
+# DocKitty Writer
 
 Write a fully populated `docs/` file meeting the convention's content
 requirements. Read [`../../docs/context/convention.md`](../../docs/context/convention.md)

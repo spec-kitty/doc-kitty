@@ -1,7 +1,7 @@
 ---
 okf_version: "0.2"
 title: Consumer Fixture
-description: Master entry point for the clean-room consumer docsite built from the packed @commondocs-kitty/toolkit tarball.
+description: Master entry point for the clean-room consumer docsite built from the packed @spec-kitty/doc-toolkit tarball.
 doc_status: active
 kind: Hub
 updated: 2026-09-09
@@ -11,8 +11,8 @@ authors:
 
 # Consumer Fixture
 
-A net-new docsite that renders a **Common Docs — Kitty Variation** `docs/` tree
-using the **packed** `@commondocs-kitty/toolkit` — installed from a local
+A net-new docsite that renders a **DocKitty** `docs/` tree
+using the **packed** `@spec-kitty/doc-toolkit` — installed from a local
 `file:./toolkit.tgz`, never the workspace symlink. It exists to prove that what
 `npm pack` ships is enough to build a consuming site, and that the generated
 discovery artifacts resolve:

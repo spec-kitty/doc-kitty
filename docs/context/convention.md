@@ -1,13 +1,14 @@
 ---
-title: Common Docs — Kitty Variation
-description: The documentation convention Doc Kitty implements — base convention, Kitty twists, and enhancements.
+title: DocKitty
+description: The documentation convention DocKitty implements — base convention, Kitty twists, and enhancements.
 doc_status: active
 updated: 2026-08-21
 type: Context
 kind: Reference
 tags: [convention, spec, metadata, okf]
 authors:
-  - stijn@sddevelopment.be
+  - Common Docs specification by Christopher Skene
+  - Kitty variation by Stijn Dejongh <stijn@sddevelopment.be>
 sources:
   - resource: https://github.com/velvet-tiger/common-docs
     title: Common Docs specification v1.2
@@ -15,12 +16,18 @@ sources:
     title: Open Knowledge Format (OKF) v0.2
 ---
 
-# Common Docs — Kitty Variation
+# DocKitty
 
-The convention Doc Kitty renders. It is the **Common Docs** convention
+The convention DocKitty renders. It is the **Common Docs** convention
 ([velvet-tiger/common-docs](https://github.com/velvet-tiger/common-docs), spec
 v1.2 — a valid [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
 bundle) with a small set of deliberate twists and enhancements.
+
+> **Accreditation.** The base convention is the original work of **Christopher
+> Skene**, open-sourced as [Common Docs](https://github.com/velvet-tiger/common-docs)
+> (specification v1.2, MIT). DocKitty adapts and extends it; the upstream MIT
+> notice is retained in the repository's [`NOTICE`](../../NOTICE) file. DocKitty
+> is not affiliated with or endorsed by the Common Docs project.
 
 > This document is the narrative companion to the toolkit's **documentation
 > charter** — the default doctrine pack, resolved natively by doc-kitty's own

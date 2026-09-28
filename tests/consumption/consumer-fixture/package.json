@@ -4,14 +4,14 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.22.0",
-  "description": "Clean-room consumer docsite that installs the PACKED @commondocs-kitty/toolkit tarball (never the workspace symlink) to prove the published package builds a net-new site. Test resource — excluded from the toolkit tarball and the repo pnpm workspace.",
+  "description": "Clean-room consumer docsite that installs the PACKED @spec-kitty/doc-toolkit tarball (never the workspace symlink) to prove the published package builds a net-new site. Test resource — excluded from the toolkit tarball and the repo pnpm workspace.",
   "scripts": {
     "build": "astro build",
     "typecheck": "astro check"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",
-    "@commondocs-kitty/toolkit": "file:./toolkit.tgz",
+    "@spec-kitty/doc-toolkit": "file:./toolkit.tgz",
     "astro": "^5.2.0"
   },
   "devDependencies": {
