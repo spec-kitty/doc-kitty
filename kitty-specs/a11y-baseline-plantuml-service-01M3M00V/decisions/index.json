@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-09-28T12:32:58.121587Z",
+      "decision_id": "01M3M023898J8E1ZTEDAN71JSK",
+      "final_answer": "full-parity-with-cache: mirror build-example fully into the regenerate job \u2014 plantuml service, DK_DIAGRAM_BUILD_RENDER=on, DK_PLANTUML_SERVER_URL=http://plantuml:8080/svg/ (by service name, containerized job), wait-for-server step before pnpm build, AND the @beoe Mermaid render-cache restore step + DK_BEOE_CACHE_DIR, all adapted for container-to-service networking (no localhost port mapping).",
+      "input_key": "parity_depth",
+      "mission_id": "01M3M00VBVXS8132VENRKH7BYV",
+      "mission_slug": "a11y-baseline-plantuml-service-01M3M00V",
+      "opened_by": "cli",
+      "options": [
+        "minimal-correct",
+        "full-parity-with-cache",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Should the regenerate job mirror build-example's render setup MINIMALLY (plantuml service + DK_DIAGRAM_BUILD_RENDER + DK_PLANTUML_SERVER_URL + wait-step, service reached by name) or add FULL parity (also the @beoe Mermaid render cache restore + DK_BEOE_CACHE_DIR)?",
+      "rationale": null,
+      "resolved_at": "2026-09-28T12:38:33.699563Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.parity-depth",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M3M00VBVXS8132VENRKH7BYV",
+  "version": 1
+}

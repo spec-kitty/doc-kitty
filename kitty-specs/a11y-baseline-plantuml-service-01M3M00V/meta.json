@@ -1,0 +1,35 @@
+{
+  "accept_commit": "a59ffa257777ab843205b8902ae5dafbbba6b704",
+  "acceptance_history": [
+    {
+      "accept_commit": "a59ffa257777ab843205b8902ae5dafbbba6b704",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-09-28T13:16:29.730930+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "65e4ed505c91ef8970702b1d6c5f474ae6266295"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-09-28T13:16:29.730930+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "65e4ed505c91ef8970702b1d6c5f474ae6266295",
+  "baseline_merge_commit": "c6b62a018e4a255af62e96ff9d510b5f285d6992",
+  "created_at": "2026-09-28T12:32:22.226282+00:00",
+  "flattened": true,
+  "friendly_name": "Regen workflow PlantUML service",
+  "merged_at": "2026-09-28T13:17:23.411220+00:00",
+  "merged_commit": "e1f3272ac382a69207ac38075cae7ce3ff93ccef",
+  "mid8": "01M3M00V",
+  "mission_id": "01M3M00VBVXS8132VENRKH7BYV",
+  "mission_number": null,
+  "mission_slug": "a11y-baseline-plantuml-service-01M3M00V",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The on-demand Update a11y baselines workflow aborts before producing baselines whenever the target branch's example site includes the PlantUML demonstrator, because its containerized build has no PlantUML render server. This mission gives that job the same render setup the main CI build already has, so operators can refresh baselines for any branch.",
+  "purpose_tldr": "Let the on-demand a11y-baseline workflow regenerate baselines for PlantUML pages.",
+  "slug": "a11y-baseline-plantuml-service-01M3M00V",
+  "source_description": "GitHub issue #106 (spec-kitty/doc-kitty): update-a11y-baselines workflow can't regenerate baselines for PlantUML pages (no plantuml service).",
+  "status_phase": "1",
+  "target_branch": "fix/a11y-baseline-plantuml-service",
+  "vcs": "git"
+}

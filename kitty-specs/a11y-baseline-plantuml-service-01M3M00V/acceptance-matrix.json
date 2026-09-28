@@ -1,0 +1,59 @@
+{
+  "mission_slug": "a11y-baseline-plantuml-service-01M3M00V",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "build",
+      "evidence": "df93f29 regenerate-job render setup; reviewer-renata APPROVE",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-28T13:14:34.722970+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "build",
+      "evidence": "df93f29 regenerate-job render setup; reviewer-renata APPROVE",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-28T13:14:44.483169+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "build",
+      "evidence": "df93f29 regenerate-job render setup; reviewer-renata APPROVE",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-28T13:14:53.573651+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "build",
+      "evidence": "df93f29 regenerate-job render setup; reviewer-renata APPROVE",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-28T13:15:02.740043+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "test",
+      "evidence": "src/tests/regen-workflow-render-setup.test.ts RED pre-fix, GREEN post-fix; localhost-mutation reds",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-09-28T13:15:13.802623+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
