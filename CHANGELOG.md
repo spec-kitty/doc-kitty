@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 🛠️ Fixed
+
+- **The on-demand "Update a11y baselines" workflow can now regenerate baselines
+  for branches whose example includes the PlantUML demonstrator** (`#106`) —
+  its `regenerate` job runs inside the pinned Playwright container and builds
+  the example with an auto-detected BUILD diagram-render mode, but declared no
+  PlantUML render server, so the build-mode PlantUML assertion failed and the
+  job aborted at the "Regenerate visual baselines" step before ever reaching
+  the detect/commit/PR steps. The job now carries the same render setup as
+  `ci.yml`'s `build-example` (a `plantuml/plantuml-server:jetty` service,
+  deterministic BUILD render env, a wait-for-ready step, and `@beoe` Mermaid
+  render-cache parity), addressed by the service's Docker-network name
+  (`http://plantuml:8080/svg/`) rather than a `localhost` port, since this job
+  runs inside a container rather than directly on the runner.
+
 ### 💥 Breaking
 
 - **The project is now DocKitty and the package is `@spec-kitty/doc-toolkit`**

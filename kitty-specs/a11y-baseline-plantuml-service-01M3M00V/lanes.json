@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "mission_slug": "a11y-baseline-plantuml-service-01M3M00V",
+  "mission_id": "01M3M00VBVXS8132VENRKH7BYV",
+  "mission_branch": "kitty/mission-a11y-baseline-plantuml-service-01M3M00V",
+  "target_branch": "fix/a11y-baseline-plantuml-service",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        ".github/workflows/update-a11y-baselines.yml",
+        "CHANGELOG.md",
+        "src/tests/regen-workflow-render-setup.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-28T12:52:03.558098+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "da4ef4a79af991d6cdc3b5d469ec3772672d2fa9"
+}

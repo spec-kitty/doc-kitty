@@ -44,6 +44,26 @@ jobs:
     # The SAME pinned image the a11y lane uses, so baselines are byte-reproducible.
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
+    # Self-hosted PlantUML render server (#106). Unlike ci.yml's `build-example`
+    # (which runs directly on the runner and reaches a mapped service port on the
+    # runner's own loopback address), this job runs INSIDE the pinned container
+    # above — GitHub attaches service containers to the same Docker network,
+    # reachable by their service NAME on the service's own port. No `ports:`
+    # mapping: that would only ever map onto the RUNNER's loopback address, which
+    # is unreachable from inside this job's container. NEVER plantuml.com (C-001).
+    services:
+      plantuml:
+        image: plantuml/plantuml-server:jetty
+    env:
+      # Force BUILD mode deterministically (don't rely on Chromium auto-detect),
+      # and point PlantUML at the service BY NAME — `plantuml:8080`, not the
+      # runner's loopback address (the container-networking invariant; #106).
+      DK_DIAGRAM_BUILD_RENDER: 'on'
+      DK_PLANTUML_SERVER_URL: http://plantuml:8080/svg/
+      # Stable @beoe disk-cache path so the cache step below restores it across
+      # runs (an unchanged Mermaid diagram then skips a Chromium relaunch),
+      # mirroring ci.yml `build-example`.
+      DK_BEOE_CACHE_DIR: ${{ github.workspace }}/.beoe-cache
     steps:
       - name: Checkout target branch
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -61,6 +81,33 @@ jobs:
 
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
+
+      # @beoe Mermaid render cache parity with ci.yml `build-example` (#106).
+      # Restored BEFORE the build so an unchanged diagram is served from disk and
+      # never relaunches Chromium; keyed on the diagram sources + toolkit config,
+      # with `restore-keys` giving a warm partial cache when only some diagrams
+      # changed.
+      - name: Restore @beoe diagram render cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: .beoe-cache
+          key: beoe-mermaid-${{ runner.os }}-${{ hashFiles('example/docs/**/*.md', 'example/docs/**/*.mdx', 'src/lib/config.ts', 'pnpm-lock.yaml') }}
+          restore-keys: |
+            beoe-mermaid-${{ runner.os }}-
+
+      # jetty takes a beat to start listening after the service container is
+      # created — wait for it so the build's first PlantUML render never races an
+      # unready server (#106; mirrors ci.yml `build-example`). `shell: bash`: the
+      # container defaults `run:` to `sh`/dash, which lacks the loop-friendly
+      # bashisms relied on elsewhere in this file.
+      - name: Wait for the PlantUML server
+        shell: bash
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://plantuml:8080/; then echo "PlantUML ready"; exit 0; fi
+            echo "waiting for PlantUML ($i/30)…"; sleep 2
+          done
+          echo "PlantUML did not become ready on plantuml:8080" >&2; exit 1
 
       # Produce example/dist — the a11y webServer (tests/a11y/serve-dist.mjs) serves
       # this exact artifact; the snapshots are taken against it.

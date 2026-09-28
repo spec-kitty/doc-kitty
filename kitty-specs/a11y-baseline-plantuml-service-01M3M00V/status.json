@@ -1,0 +1,36 @@
+{
+  "event_count": 7,
+  "last_event_id": "01M3M2K0VHDXGWFE1WJSDCSVTV",
+  "materialized_at": "2026-09-28T13:17:09.873799+00:00",
+  "mission_number": "",
+  "mission_slug": "a11y-baseline-plantuml-service-01M3M00V",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 1,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "implement-command",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M3M2K0VHDXGWFE1WJSDCSVTV",
+      "last_transition_at": "2026-09-28T13:17:09.873799+00:00",
+      "review_result": {
+        "reference": "WP01 df93f29; by-name networking + guard non-vacuity mutation-tested; ci.yml + lockfile unchanged",
+        "reviewer": "reviewer-renata (opus)",
+        "verdict": "approved"
+      },
+      "shell_pid": 3332839,
+      "shell_pid_created_at": "1790600219.28"
+    }
+  }
+}
