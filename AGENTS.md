@@ -4,8 +4,8 @@ Guidance for AI agents working in this repository.
 
 ## Documentation
 
-All documentation about this toolkit is in `docs/`, written in the **Common Docs
-— Kitty Variation**. Always start at [`docs/README.md`](./docs/README.md).
+All documentation about this toolkit is in `docs/`, written in **DocKitty**.
+Always start at [`docs/README.md`](./docs/README.md).
 
 The canonical section set is declared as data in
 [`docs/_meta/sections.yaml`](./docs/_meta/sections.yaml) (the authored section

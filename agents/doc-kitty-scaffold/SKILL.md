@@ -5,8 +5,8 @@ description: Scaffold the standard DocKitty docs/ structure in a project. Create
 
 # DocKitty Scaffolder
 
-Scaffold the standard repo-root `docs/` structure defined by the **Common Docs —
-Kitty Variation**. Read [`../../docs/context/convention.md`](../../docs/context/convention.md)
+Scaffold the standard repo-root `docs/` structure defined by **DocKitty**. Read
+[`../../docs/context/convention.md`](../../docs/context/convention.md)
 before writing anything — it defines the sections, frontmatter, and twists.
 
 ## Workflow

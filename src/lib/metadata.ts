@@ -3,8 +3,8 @@
  * **DocKitty**.
  *
  * The base convention is velvet-tiger/common-docs (spec v1.2), which targets a
- * repo-root `docs/` tree conforming to Open Knowledge Format (OKF) v0.2. The
- * Kitty Variation applies two twists:
+ * repo-root `docs/` tree conforming to Open Knowledge Format (OKF) v0.2.
+ * DocKitty applies two twists:
  *   1. `README.md` is the reserved section index (instead of `index.md`), and
  *      — unlike vanilla Common Docs — it carries frontmatter.
  *   2. Metadata is leaned on harder: an optional `agent` block tunes the
