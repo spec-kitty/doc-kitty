@@ -84,7 +84,7 @@ function scanText(text: string): string[] {
   return hits;
 }
 
-const SCANNABLE = /\.(ts|tsx|mjs|cjs|js|jsx|astro|css|json|md)$/;
+const SCANNABLE = /\.(ts|tsx|mts|cts|mjs|cjs|js|jsx|astro|css|json|md)$/;
 
 /** Recursively list scannable files under a dir. */
 function walk(dir: string): string[] {

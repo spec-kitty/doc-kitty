@@ -982,7 +982,7 @@ packages:
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
   '@spec-kitty/doc-toolkit@file:toolkit.tgz':
-    resolution: {integrity: sha512-bvBUrkRjxIk1ycjtTGw8CKAz7d8LS9djwe7ymjgHAIj1ArJ+4r+qX3aRFXk/fXGbzNOsPfCGUfkYQYX1EsZqbQ==, tarball: file:toolkit.tgz}
+    resolution: {integrity: sha512-7B/diYH1kwChMXlTvwA8TekdoXSV5zuk8nvaUTnUp+OlYfECmpUXtdcuXE+svnWvTDl+E/znGoPljDzo71rWiA==, tarball: file:toolkit.tgz}
     version: 0.1.0
     engines: {node: '>=22'}
     peerDependencies:
