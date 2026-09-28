@@ -28,7 +28,7 @@ bundle) with a small set of deliberate twists and enhancements.
 > (specification v1.2, MIT). DocKitty adapts and extends it; the upstream MIT
 > notice is retained in the repository's [`NOTICE`](../../NOTICE) file. DocKitty
 > is not affiliated with or endorsed by the Common Docs project.
-
+>
 > This document is the narrative companion to the toolkit's **documentation
 > charter** — the default doctrine pack, resolved natively by doc-kitty's own
 > pure-core/fs-loader/gate triad with no Spec Kitty runtime dependency
@@ -62,7 +62,7 @@ one deprecation notice — see [migrating to the charter](../guides/migrating-to
 
 ## 1. Base convention (unchanged)
 
-The parts of Common Docs the Kitty Variation keeps exactly:
+The parts of Common Docs that DocKitty keeps exactly:
 
 - **A fixed, ordered `docs/` tree** of twelve sections, arranged for
   progressive disclosure (context → operations):
@@ -101,9 +101,9 @@ The parts of Common Docs the Kitty Variation keeps exactly:
 
 ## 2. Kitty twists
 
-Where the Kitty Variation deliberately diverges from Common Docs:
+Where DocKitty deliberately diverges from Common Docs:
 
-| # | Common Docs | Kitty Variation | Why |
+| # | Common Docs | DocKitty | Why |
 |---|-------------|-----------------|-----|
 | 1 | Section index is `index.md` | Section index is **`README.md`** by default, and **configurably `index.md`** via the `indexBasename` option ([ADR-0033](../adr/0033-flexible-section-identity.md), partially superseding [ADR-0002](../adr/0002-readme-as-index.md)) | Renders on GitHub/Bitbucket *and* as the section landing page — one file, two audiences. The configurable basename spares a migrating adopter renaming an existing `index.md` tree. |
 | 2 | `index.md` carries **no** frontmatter | `README.md` **carries frontmatter** (same required fields) | Metadata-first: the section index feeds nav, feeds, and the agent-API like any other page; Starlight needs a title. |
@@ -252,7 +252,7 @@ Beyond rendering, the toolkit generates from this metadata:
 ### ADR status reconciliation
 
 Common Docs' ADR template uses an ADR-specific `status` (`proposed | accepted |
-…`). The Kitty Variation keeps every file on the one convention-wide
+…`). DocKitty keeps every file on the one convention-wide
 `doc_status` enum: frontmatter `doc_status` records the *document* lifecycle
 (`active`), while the *decision* status lives in the ADR body's `## Status`
 section.

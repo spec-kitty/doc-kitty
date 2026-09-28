@@ -5,7 +5,7 @@ description: Convert an existing documentation set into DocKitty. Handles migrat
 
 # DocKitty Converter
 
-Bring existing documentation into the Kitty Variation without losing content.
+Bring existing documentation into DocKitty without losing content.
 Read [`../../docs/context/convention.md`](../../docs/context/convention.md) first.
 
 ## Case A — from vanilla Common Docs

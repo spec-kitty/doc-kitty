@@ -15,7 +15,7 @@ authors:
 
 Accepted
 
-> Note (Kitty Variation): frontmatter `status` records the *document* lifecycle
+> Note (DocKitty): frontmatter `status` records the *document* lifecycle
 > (`active`); the *decision* status lives here and in the index table. This
 > keeps every file on the one convention-wide status enum.
 

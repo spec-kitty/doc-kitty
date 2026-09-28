@@ -6,8 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 💥 Breaking
+
+- **The project is now DocKitty and the package is `@spec-kitty/doc-toolkit`**
+  (`#105`) — the toolkit was renamed from `@commondocs-kitty/toolkit` to
+  `@spec-kitty/doc-toolkit`, and the product name from "Common Docs — Kitty
+  Variation" to **DocKitty**. Adopters must update their dependency and every
+  `@commondocs-kitty/toolkit/*` import to `@spec-kitty/doc-toolkit/*` (the
+  subpath exports are otherwise unchanged). The package has not been published to
+  npm, so there are no released consumers to migrate. Publishing under the
+  `@spec-kitty` scope refines the zero-Spec-Kitty-coupling invariant (NFR-001):
+  the toolkit still carries no Spec Kitty *runtime* coupling, but its own
+  self-reference is no longer treated as coupling — see
+  [ADR-0043](docs/adr/0043-toolkit-package-scope-and-self-reference.md).
+
 ### Added
 
+- **Attribution for the upstream Common Docs specification** (`#105`) — DocKitty
+  is based on the **Common Docs** convention created by **Christopher Skene**. A
+  new root `NOTICE` reproduces the upstream MIT notice (spec v1.2, © Christopher
+  Skene) and ships inside the package; the README gains an **Accreditation**
+  section, and the convention doc credits the Common Docs specification to
+  Christopher Skene alongside the DocKitty variation.
 - **One `_meta/charter.yaml` now governs a docsite's whole convention** (M7;
   `#100`, closes `#98`, `#99`) — the `type`/`kind` vocabulary, the `doc_status`
   set, the sections/IA registry, and the required-field set used to be spread
@@ -26,8 +46,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] — 2026-09-09
 
-First tagged release. Collects the delivered MVP of the **DocKitty
-Variation** toolkit: point it at a documentation tree that follows the convention
+First tagged release. Collects the delivered MVP of the **DocKitty** toolkit:
+point it at a documentation tree that follows the convention
 and get a Starlight docsite plus `sitemap.xml`, `rss.xml`, `llms.txt`, and a JSON
 agent-API out of the box. See [`docs/plans/roadmap.md`](docs/plans/roadmap.md) for
 the feature-by-feature status and the decision records under

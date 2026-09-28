@@ -1,7 +1,7 @@
 # Agent Skills
 
-Minimal, portable agent skills for operating on a **DocKitty
-Variation** `docs/` tree. They mirror the upstream
+Minimal, portable agent skills for operating on a **DocKitty** `docs/` tree.
+They mirror the upstream
 [common-docs skills](https://github.com/velvet-tiger/common-docs/tree/main/skills)
 and extend them with the Kitty twists (README-as-index with frontmatter, root
 `docs/`, the `agent` frontmatter extension) and the toolkit's builder scripts.
@@ -18,7 +18,7 @@ and extend them with the Kitty twists (README-as-index with frontmatter, root
 | [`doc-kitty-scaffold`](./doc-kitty-scaffold/SKILL.md) | Create the standard `docs/` structure (section dirs + stub files with correct frontmatter). |
 | [`doc-kitty-write`](./doc-kitty-write/SKILL.md) | Write substantive content for one `docs/` file, meeting the convention's requirements. |
 | [`doc-kitty-find`](./doc-kitty-find/SKILL.md) | Locate the right `docs/` file (or the gap) for a question, using metadata and the agent-API. |
-| [`doc-kitty-convert`](./doc-kitty-convert/SKILL.md) | Convert a vanilla Common Docs tree (or ad-hoc docs) into the Kitty Variation. |
+| [`doc-kitty-convert`](./doc-kitty-convert/SKILL.md) | Convert a vanilla Common Docs tree (or ad-hoc docs) into DocKitty. |
 
 ## Actor convention
 
