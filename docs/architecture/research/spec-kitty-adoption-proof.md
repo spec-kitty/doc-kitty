@@ -125,7 +125,7 @@ Carried faithfully from the adjudicated spine; compressed to a callout.
 
 > **Strengths.** Verified render-layer bundle as real, reusable code (per-kind layouts,
 > hubs, decoupling, reference slots, decks, glossary, token themes, Markua). Packaged
-> toolkit (`@commondocs-kitty/toolkit`, exports map / peer-deps / example split) with a
+> toolkit (`@spec-kitty/doc-toolkit`, exports map / peer-deps / example split) with a
 > spec-kitty brand theme already shipping. Agent-first surface aligned with spec-kitty's
 > profile-load direction. The convention arrests dumping-ground drift and hits the located
 > pain (`docs/plans` 265 md). Correctly-scoped Markua→Leanpub dividend. And spec-kitty is
@@ -154,7 +154,7 @@ Carried faithfully from the adjudicated spine; compressed to a callout.
 ## Reusability across spec-kitty repositories
 
 doc-kitty is architected as a **distributable toolkit**, and the reuse contract is on
-disk: `src/package.json` is `@commondocs-kitty/toolkit` with a proper `exports` map, a
+disk: `src/package.json` is `@spec-kitty/doc-toolkit` with a proper `exports` map, a
 `files` allowlist, and `peerDependencies` on `astro`/`@astrojs/starlight`;
 `pnpm-workspace.yaml` splits toolkit from `example/`; `src/lib/theme.ts` implements a pure
 `default → brand → consumer` merge (ADR-0008/0011/0013); and the toolkit's `routes/` make

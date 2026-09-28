@@ -1,6 +1,6 @@
 # Agent Skills
 
-Minimal, portable agent skills for operating on a **Common Docs — Kitty
+Minimal, portable agent skills for operating on a **DocKitty
 Variation** `docs/` tree. They mirror the upstream
 [common-docs skills](https://github.com/velvet-tiger/common-docs/tree/main/skills)
 and extend them with the Kitty twists (README-as-index with frontmatter, root

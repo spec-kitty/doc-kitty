@@ -122,6 +122,6 @@ each step to confirm nothing changed.
   or wholly in its legacy file during the transition; per-axis precedence means
   the charter, once it declares an axis, owns it completely.
 
-See [Common Docs — Kitty Variation](/context/convention/) for the full list of
+See [DocKitty](/context/convention/) for the full list of
 governable dimensions and [Consumer setup](/guides/consumer-setup/) for where the
 charter sits in a net-new build.

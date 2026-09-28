@@ -34,7 +34,7 @@ not exist. New contributors give up, and so do agents.
 ## What follows from this
 
 Both failures are about shape, not writing quality. Good prose does not rescue
-docs that readers cannot navigate or authors cannot place. Doc Kitty targets the
+docs that readers cannot navigate or authors cannot place. DocKitty targets the
 shape: a clear default structure that stays browsable, and metadata that keeps it
-navigable and maintainable. The next page, [what Doc Kitty solves
+navigable and maintainable. The next page, [what DocKitty solves
 for](./what-we-solve-for.md), states the outcomes.

@@ -1,5 +1,5 @@
 /**
- * Starlight configuration preset for Doc Kitty.
+ * Starlight configuration preset for DocKitty.
  *
  * `defineDocKittyIntegrations()` returns the Astro integrations array a docs
  * site needs: Starlight (themed, with the convention's head links and the four
@@ -180,13 +180,13 @@ function discoveryHead(basePrefix: string): NonNullable<StarlightUserConfig['hea
  * map is already complete at M1 and does not change in M2 — a theme targets the
  * carriers' `dk:` slot names, never Starlight's `components` map. Paths are
  * package-export specifiers so a consuming site resolves the `.astro` carriers
- * from the `@commondocs-kitty/toolkit` workspace dependency.
+ * from the `@spec-kitty/doc-toolkit` workspace dependency.
  */
 const carriers: NonNullable<StarlightUserConfig['components']> = {
-  Head: '@commondocs-kitty/toolkit/components/Head.astro',
-  PageTitle: '@commondocs-kitty/toolkit/components/PageTitle.astro',
-  MarkdownContent: '@commondocs-kitty/toolkit/components/MarkdownContent.astro',
-  Footer: '@commondocs-kitty/toolkit/components/Footer.astro',
+  Head: '@spec-kitty/doc-toolkit/components/Head.astro',
+  PageTitle: '@spec-kitty/doc-toolkit/components/PageTitle.astro',
+  MarkdownContent: '@spec-kitty/doc-toolkit/components/MarkdownContent.astro',
+  Footer: '@spec-kitty/doc-toolkit/components/Footer.astro',
 };
 
 /**

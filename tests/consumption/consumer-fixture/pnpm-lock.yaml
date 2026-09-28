@@ -11,7 +11,7 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.2.0
         version: 3.7.4
-      '@commondocs-kitty/toolkit':
+      '@spec-kitty/doc-toolkit':
         specifier: file:./toolkit.tgz
         version: file:toolkit.tgz(@astrojs/starlight@0.32.6(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0)))(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0))(debug@4.4.3)
       astro:
@@ -128,14 +128,6 @@ packages:
 
   '@chevrotain/types@11.1.2':
     resolution: {integrity: sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==}
-
-  '@commondocs-kitty/toolkit@file:toolkit.tgz':
-    resolution: {integrity: sha512-FYqZAWG3OclSIway978PZ1cAXLoOEA1o1N8SrXr5xpY1f7cM+/7GZzc4vqS49uAu7ajdFBj8vqpAW5UgFg8fGw==, tarball: file:toolkit.tgz}
-    version: 0.1.0
-    engines: {node: '>=22'}
-    peerDependencies:
-      '@astrojs/starlight': '>=0.32.0 <0.33.0'
-      astro: '>=5.0.0'
 
   '@ctrl/tinycolor@4.2.0':
     resolution: {integrity: sha512-kzyuwOAQnXJNLS9PSyrk0CWk35nWJW/zl/6KvnTBMFK65gm7U1/Z5BqjxeapjZCIhQcM/DsrEmcbRwDyXyXK4A==}
@@ -988,6 +980,14 @@ packages:
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
+
+  '@spec-kitty/doc-toolkit@file:toolkit.tgz':
+    resolution: {integrity: sha512-XKCNWqXO70A4B6iF2Y+zz/pBdjrHG8a+iYvH4xjuEG1aHH2kWGEQGTpkE1IhgVXqsxf6LYbtoXi8VkW2g67Lig==, tarball: file:toolkit.tgz}
+    version: 0.1.0
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.32.0 <0.33.0'
+      astro: '>=5.0.0'
 
   '@types/axios@0.14.4':
     resolution: {integrity: sha512-9JgOaunvQdsQ/qW2OPmE5+hCeUB52lQSolecrFrthct55QekhmXEwT203s20RL+UHtCQc15y3VXpby9E7Kkh/g==}
@@ -3348,22 +3348,6 @@ snapshots:
 
   '@chevrotain/types@11.1.2': {}
 
-  '@commondocs-kitty/toolkit@file:toolkit.tgz(@astrojs/starlight@0.32.6(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0)))(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0))(debug@4.4.3)':
-    dependencies:
-      '@astrojs/sitemap': 3.7.4
-      '@astrojs/starlight': 0.32.6(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0))
-      '@beoe/rehype-mermaid': 0.4.2
-      astro: 5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0)
-      astro-plantuml: 1.0.0(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0))(debug@4.4.3)
-      gray-matter: 4.0.3
-      mermaid: 11.17.1
-      reveal.js: 6.0.1
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - debug
-      - playwright
-      - supports-color
-
   '@ctrl/tinycolor@4.2.0': {}
 
   '@emmetio/abbreviation@2.3.3':
@@ -3961,6 +3945,22 @@ snapshots:
       '@types/hast': 3.0.5
 
   '@shikijs/vscode-textmate@10.0.2': {}
+
+  '@spec-kitty/doc-toolkit@file:toolkit.tgz(@astrojs/starlight@0.32.6(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0)))(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0))(debug@4.4.3)':
+    dependencies:
+      '@astrojs/sitemap': 3.7.4
+      '@astrojs/starlight': 0.32.6(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0))
+      '@beoe/rehype-mermaid': 0.4.2
+      astro: 5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0)
+      astro-plantuml: 1.0.0(astro@5.18.2(@types/node@24.13.3)(rollup@4.63.1)(typescript@5.9.3)(yaml@2.9.0))(debug@4.4.3)
+      gray-matter: 4.0.3
+      mermaid: 11.17.1
+      reveal.js: 6.0.1
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - debug
+      - playwright
+      - supports-color
 
   '@types/axios@0.14.4(debug@4.4.3)':
     dependencies:

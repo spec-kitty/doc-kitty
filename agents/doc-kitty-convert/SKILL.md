@@ -1,9 +1,9 @@
 ---
 name: doc-kitty-convert
-description: Convert an existing documentation set into the Common Docs — Kitty Variation. Handles migrating a vanilla Common Docs tree (index.md → README.md + frontmatter) and folding ad-hoc docs into the twelve-section structure, keeping the tree OKF v0.2 conformant. Use when asked to "migrate our docs", "convert to Common Docs", "adopt the kitty convention", or "make our docs OKF-compatible".
+description: Convert an existing documentation set into DocKitty. Handles migrating a vanilla Common Docs tree (index.md → README.md + frontmatter) and folding ad-hoc docs into the twelve-section structure, keeping the tree OKF v0.2 conformant. Use when asked to "migrate our docs", "convert to Common Docs", "adopt the kitty convention", or "make our docs OKF-compatible".
 ---
 
-# Doc Kitty Converter
+# DocKitty Converter
 
 Bring existing documentation into the Kitty Variation without losing content.
 Read [`../../docs/context/convention.md`](../../docs/context/convention.md) first.

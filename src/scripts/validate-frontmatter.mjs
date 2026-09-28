@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate a Common Docs — Kitty Variation tree without a full Astro build.
+ * Validate a DocKitty tree without a full Astro build.
  * Fast enough for a CI gate.
  *
  * Usage:
@@ -629,7 +629,7 @@ export function run(argv) {
     process.exit(1);
   }
   console.log(
-    `✓ ${total} file(s) valid against Common Docs — Kitty Variation across ${roots.length} root(s): ${roots.join(', ')}${warned ? ` (${warned} warning(s))` : ''}.`,
+    `✓ ${total} file(s) valid against DocKitty across ${roots.length} root(s): ${roots.join(', ')}${warned ? ` (${warned} warning(s))` : ''}.`,
   );
 }
 

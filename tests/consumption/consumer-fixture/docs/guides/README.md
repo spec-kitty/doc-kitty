@@ -12,4 +12,4 @@ agent:
 # Guides
 
 - [Getting started](/guides/getting-started/) — stand up a consumer site from the
-  packed `@commondocs-kitty/toolkit` tarball.
+  packed `@spec-kitty/doc-toolkit` tarball.

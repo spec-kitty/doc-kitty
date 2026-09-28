@@ -22,7 +22,7 @@ but no polished, agent-aware way to publish it.
 
 ## Value proposition
 
-Point the toolkit at a Common Docs — Kitty `docs/` tree and get a Starlight
+Point the toolkit at a DocKitty `docs/` tree and get a Starlight
 site plus `sitemap.xml`, `rss.xml`, and an agent-API, with no bespoke wiring.
 
 ## Out of scope

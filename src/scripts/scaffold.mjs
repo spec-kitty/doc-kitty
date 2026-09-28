@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Scaffold the full Common Docs — Kitty Variation tree under a docs root.
+ * Scaffold the full DocKitty tree under a docs root.
  *
  * Mirrors velvet-tiger/common-docs `common-docs-scaffold`, with the Kitty
  * twists applied: section indexes are `README.md` (not `index.md`) and DO carry

@@ -1,4 +1,4 @@
-import { agentPageRoute } from '@commondocs-kitty/toolkit/routes';
+import { agentPageRoute } from '@spec-kitty/doc-toolkit/routes';
 
 const route = agentPageRoute();
 export const getStaticPaths = route.getStaticPaths;

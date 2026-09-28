@@ -6,7 +6,7 @@
  *
  * Mount as `src/pages/llms.txt.ts`:
  *
- *   import { llmsTxtRoute } from '@commondocs-kitty/toolkit/routes';
+ *   import { llmsTxtRoute } from '@spec-kitty/doc-toolkit/routes';
  *   export const GET = llmsTxtRoute({ title: 'My Docs', description: '…' });
  */
 import type { APIRoute } from 'astro';

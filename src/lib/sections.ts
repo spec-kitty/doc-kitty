@@ -1,5 +1,5 @@
 /**
- * Section-registry loader for the Common Docs — Kitty Variation.
+ * Section-registry loader for DocKitty.
  *
  * `docs/_meta/sections.yaml` decouples a section's **display and order** from its
  * on-disk folder layout (ADR-0004; `docs/architecture/section-registry.md`). This

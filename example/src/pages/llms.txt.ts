@@ -1,6 +1,6 @@
-import { llmsTxtRoute } from '@commondocs-kitty/toolkit/routes';
+import { llmsTxtRoute } from '@spec-kitty/doc-toolkit/routes';
 
 export const GET = llmsTxtRoute({
-  title: 'Doc Kitty Example',
-  description: 'A minimal docsite built with the Common Docs — Kitty Variation.',
+  title: 'DocKitty Example',
+  description: 'A minimal docsite built with DocKitty.',
 });

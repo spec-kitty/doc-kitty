@@ -37,7 +37,7 @@ orchestrator (`run-consumption-test.mjs`).
 1. `charter-cleanroom.test.ts` → *"the guard BITES"* plants every forbidden form
    (`import … 'spec-kitty'`, `import 'spec-kitty/…'`, `require('@spec-kitty/…')`,
    dynamic `import('spec_kitty')`, `DoctrineService`) and asserts each is flagged,
-   while the brand-theme import, the `@commondocs-kitty/toolkit/schema` import, the
+   while the brand-theme import, the `@spec-kitty/doc-toolkit/schema` import, the
    wordmark, the asset URL and the "no `` @spec-kitty/* ``" comment stay clean.
 2. **Whole-tarball plant-and-revert (manual, WP05):** a real
    `import { DoctrineService } from 'spec-kitty';` was prepended to the shipped

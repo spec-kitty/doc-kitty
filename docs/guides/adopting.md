@@ -1,6 +1,6 @@
 ---
 title: Adopting the toolkit
-description: Bring Doc Kitty into another repository.
+description: Bring DocKitty into another repository.
 doc_status: active
 updated: 2026-08-21
 type: Guide
@@ -19,7 +19,7 @@ Assumes Node ≥ 20 and pnpm (`corepack enable`).
 1. Rename each section's `index.md` → `README.md` and add the required
    frontmatter (title/description/status/updated/type). `docs/index.md` →
    `docs/README.md`, keeping `okf_version: "0.2"`.
-2. Add the toolkit: `pnpm add -D @commondocs-kitty/toolkit`.
+2. Add the toolkit: `pnpm add -D @spec-kitty/doc-toolkit`.
 3. Copy the example's `astro.config.mjs`, `src/content.config.ts`, and
    `src/pages/**` wrappers; set `site`/`base`.
 4. `pnpm dev` to preview, `pnpm build` to produce the site + feeds + agent-API.

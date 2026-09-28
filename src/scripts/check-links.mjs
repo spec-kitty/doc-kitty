@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Internal link & reference integrity check for a Common Docs — Kitty Variation
+ * Internal link & reference integrity check for a DocKitty
  * tree, without a full Astro build. Fast enough for a CI gate.
  *
  * Usage:

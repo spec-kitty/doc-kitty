@@ -5,7 +5,7 @@
  *
  * Mount as `src/pages/api/index.json.ts`:
  *
- *   import { agentIndexRoute } from '@commondocs-kitty/toolkit/routes';
+ *   import { agentIndexRoute } from '@spec-kitty/doc-toolkit/routes';
  *   export const GET = agentIndexRoute({ title: 'My Docs' });
  */
 import type { APIRoute } from 'astro';
@@ -74,7 +74,7 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       // resolved objects) and records now carry `audience`, a
       // published-contract change that consumers branch on (DIRECTIVE_018).
       version: options.version ?? '2',
-      generatedFrom: 'common-docs-kitty',
+      generatedFrom: 'doc-kitty',
       count: pages.length,
       pages,
     };

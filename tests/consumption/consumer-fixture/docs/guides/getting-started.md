@@ -10,7 +10,7 @@ tags: [setup, getting-started]
 
 # Getting started
 
-This fixture consumes the **packed** `@commondocs-kitty/toolkit` from a local
+This fixture consumes the **packed** `@spec-kitty/doc-toolkit` from a local
 tarball, exactly as an external adopter would consume a published release.
 
 1. Pack the toolkit and install the tarball (the orchestrator does this for you):

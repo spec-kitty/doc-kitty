@@ -4,7 +4,7 @@
 # repo's own pnpm-workspace.yaml. pnpm finds its workspace root by walking UP
 # from the cwd, so a bare `pnpm install` here would join the REPO workspace,
 # render this fixture's committed lockfile inert, and can symlink
-# `@commondocs-kitty/toolkit -> ../../../src` — building against the SOURCE tree
+# `@spec-kitty/doc-toolkit -> ../../../src` — building against the SOURCE tree
 # while every "resolves under node_modules" check still passes. That would make
 # the whole consumption test a false green.
 #

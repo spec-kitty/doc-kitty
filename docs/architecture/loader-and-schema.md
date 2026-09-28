@@ -14,7 +14,7 @@ related:
 
 # Loader and schema
 
-The loader is how a Common Docs — Kitty tree becomes an Astro content
+The loader is how a DocKitty tree becomes an Astro content
 collection. It reads the repo-root `docs/` directory, applies the Kitty twist
 that `README.md` is the section index, and validates every page against the
 frontmatter schema. This page expands the loader and schema the

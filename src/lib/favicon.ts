@@ -4,11 +4,11 @@
 // verbatim into `<link rel="icon" href>` (base-prefixed by Starlight) and must
 // therefore already be a path the site serves. A theme, however, wants to carry
 // its OWN mark as a package asset — `assets.favicon` in the Spec Kitty brand is
-// `@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg` — so that a
+// `@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg` — so that a
 // rebrand needs no consumer wiring (FR-010).
 //
 // Handing that specifier straight to Starlight is what produced the live 404
-// `/doc-kitty/@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg`,
+// `/doc-kitty/@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg`,
 // which Lighthouse counts as a console error and which failed the nightly
 // smoke's `errors-in-console <= 0` assertion on every run.
 //

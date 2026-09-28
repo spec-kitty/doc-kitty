@@ -1,4 +1,4 @@
-// Common Docs — Kitty Variation: a boring, shared Markdown ruleset.
+// DocKitty: a boring, shared Markdown ruleset.
 // Consumed by markdownlint-cli2 (devDependency; CI wires the file globs in WP04).
 // Intent: catch structural mistakes (heading jumps, inconsistent lists, bare
 // URLs) while staying out of the way of prose style. Sentence-case, tone, and

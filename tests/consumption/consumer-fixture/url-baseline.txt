@@ -1,6 +1,6 @@
 # Committed URL baseline for the fixture's redirect-coverage gate
 # (contract C-1 step 5). Consumed by:
-#   node <fixture>/node_modules/@commondocs-kitty/toolkit/scripts/check-redirect-coverage.mjs \
+#   node <fixture>/node_modules/@spec-kitty/doc-toolkit/scripts/check-redirect-coverage.mjs \
 #        tests/consumption/consumer-fixture/url-baseline.txt tests/consumption/consumer-fixture/dist
 #
 # Entries are in BASE-AGNOSTIC route space (the gate maps `/guides/` to

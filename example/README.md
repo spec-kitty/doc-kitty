@@ -1,7 +1,7 @@
-# Doc Kitty — Example Site
+# DocKitty — Example Site
 
 A minimal, deployable docsite built with
-[`@commondocs-kitty/toolkit`](../src). Use it as the starting point for your own
+[`@spec-kitty/doc-toolkit`](../src). Use it as the starting point for your own
 documentation, or just to see the [convention](../docs/conventions) in action.
 
 ## Installation
@@ -20,7 +20,7 @@ pnpm --filter example dev
 2. Depend on the toolkit — either publish/install it:
 
    ```sh
-   pnpm add -D @commondocs-kitty/toolkit
+   pnpm add -D @spec-kitty/doc-toolkit
    ```
 
    or vendor `src/` from this repo as a local workspace package.
@@ -28,7 +28,7 @@ pnpm --filter example dev
    drive `site`, `base` and the GitHub links) plus `title`. They ship pointing at
    this repo, not at a placeholder — a literal `OWNER` would publish a canonical
    URL and sitemap that 404.
-4. Replace `docs/**` with your own Common Docs — Kitty tree (or run the
+4. Replace `docs/**` with your own DocKitty tree (or run the
    `scaffold.mjs` script to generate the empty structure), following the
    [convention](../docs).
 
@@ -46,7 +46,7 @@ pnpm --filter example dev
 ```
 example/
 ├── astro.config.mjs          # wires in the toolkit preset (site/base here)
-├── docs/**                   # your Common Docs — Kitty tree (README = section index)
+├── docs/**                   # your DocKitty tree (README = section index)
 ├── src/
 │   ├── content.config.ts      # docs collection: toolkit loader (base: docs) + schema
 │   └── pages/

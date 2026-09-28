@@ -13,4 +13,4 @@ agent:
 
 - [Authoring a document](./authoring.md) — write a page that satisfies the
   convention.
-- [Adopting the toolkit](./adopting.md) — bring Doc Kitty into another repo.
+- [Adopting the toolkit](./adopting.md) — bring DocKitty into another repo.

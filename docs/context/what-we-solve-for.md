@@ -1,6 +1,6 @@
 ---
-title: What Doc Kitty solves for
-description: "The four outcomes Doc Kitty is built for: structure, maintainability, agent interoperability, and flexibility."
+title: What DocKitty solves for
+description: "The four outcomes DocKitty is built for: structure, maintainability, agent interoperability, and flexibility."
 doc_status: active
 updated: 2026-08-21
 type: Context
@@ -8,9 +8,9 @@ kind: Explanation
 tags: [motivation, goals]
 ---
 
-# What Doc Kitty solves for
+# What DocKitty solves for
 
-Doc Kitty exists to make docs-next-to-code work. It is built for four outcomes.
+DocKitty exists to make docs-next-to-code work. It is built for four outcomes.
 Each one answers a way that docs-next-to-code otherwise fails (see [why docs
 rot](./problem.md)).
 

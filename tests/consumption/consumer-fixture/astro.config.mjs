@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import { defineDocKittyIntegrations } from '@commondocs-kitty/toolkit/config';
+import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
 // WP02: the editorial/press CONSUMER theme (Layer 3), extending the shipped brand.
 import { pressTheme } from './src/theme/index.ts';
 
@@ -20,7 +20,7 @@ export default defineConfig({
   base: BASE,
   integrations: defineDocKittyIntegrations({
     title: 'Consumer Fixture',
-    description: 'A clean-room consumer docsite built from the packed @commondocs-kitty/toolkit tarball.',
+    description: 'A clean-room consumer docsite built from the packed @spec-kitty/doc-toolkit tarball.',
     // MUST equal the site `base` above (config invariant, config.ts line ~99):
     // the sitemap draft filter strips this prefix to compare routes anchored.
     base: BASE,

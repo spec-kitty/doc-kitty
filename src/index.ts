@@ -1,4 +1,4 @@
-/** Public API for `@commondocs-kitty/toolkit`. */
+/** Public API for `@spec-kitty/doc-toolkit`. */
 
 // Config preset
 export { defineDocKittyIntegrations } from './lib/config.js';

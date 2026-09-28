@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Minimal Doc Kitty docsite — a worked example that consumes @commondocs-kitty/toolkit and deploys to GitHub Pages.",
+  "description": "Minimal DocKitty docsite — a worked example that consumes @spec-kitty/doc-toolkit and deploys to GitHub Pages.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",
-    "@commondocs-kitty/toolkit": "workspace:*",
+    "@spec-kitty/doc-toolkit": "workspace:*",
     "astro": "^5.2.0"
   },
   "devDependencies": {

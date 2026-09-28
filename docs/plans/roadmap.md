@@ -61,7 +61,7 @@ The decisions behind this plan are ADRs, not prose here:
 
 ### MVP — a minimal viable docsite
 
-The docsite that renders a Common Docs — Kitty tree well and serves agents: render
+The docsite that renders a DocKitty tree well and serves agents: render
 the `docs/` tree (README-as-index), the metadata model and chrome, the generators,
 a swappable theme, audience targeting with rendered relationships and external
 references, slide decks, and the CI/CD that keeps it green. Markua support is the

@@ -1,3 +1,3 @@
-import { agentIndexRoute } from '@commondocs-kitty/toolkit/routes';
+import { agentIndexRoute } from '@spec-kitty/doc-toolkit/routes';
 
-export const GET = agentIndexRoute({ title: 'Doc Kitty Example' });
+export const GET = agentIndexRoute({ title: 'DocKitty Example' });

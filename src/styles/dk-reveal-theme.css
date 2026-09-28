@@ -1,5 +1,5 @@
 /*
- * Doc Kitty reveal theme — the thin `--dk-* → --r-*` mapping sheet (ADR-0022
+ * DocKitty reveal theme — the thin `--dk-* → --r-*` mapping sheet (ADR-0022
  * decision 4). reveal 6 exposes its theme as `--r-*` custom properties; instead
  * of forking a reveal SCSS theme (ADR-0022 Option B, rejected), this sheet
  * expresses each `--r-*` reveal reads as `var(--dk-*)` from the active brand

@@ -10,11 +10,11 @@ import { faviconHref, docKittyFavicon, DK_FAVICON_BASENAME } from '../lib/favico
  * Regression cover for the nightly-smoke Lighthouse failure.
  *
  * The Spec Kitty brand declares `assets.favicon` as a PACKAGE SPECIFIER
- * (`@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg`), but
+ * (`@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg`), but
  * Starlight's `favicon` option is a path served from the site root — it is
  * emitted verbatim into `<link rel="icon" href>` (base-prefixed by Starlight).
  * Handing it a bare specifier produced a live 404
- * (`/doc-kitty/@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg`),
+ * (`/doc-kitty/@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg`),
  * which Lighthouse counts as a console error and which failed the
  * `errors-in-console <= 0` assertion every night.
  *
@@ -28,14 +28,14 @@ describe('faviconHref', () => {
   });
 
   it('maps a bare package specifier to the emitted site-root path', () => {
-    expect(faviconHref('@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg')).toBe(
+    expect(faviconHref('@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg')).toBe(
       `/${DK_FAVICON_BASENAME}.svg`,
     );
   });
 
   it('never hands Starlight a bare specifier (the 404 that broke the nightly)', () => {
-    const href = faviconHref('@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg');
-    expect(href).not.toContain('@commondocs-kitty');
+    const href = faviconHref('@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg');
+    expect(href).not.toContain('@spec-kitty/doc-toolkit');
     expect(href!.startsWith('/')).toBe(true);
   });
 
@@ -146,7 +146,7 @@ function starlightConfigOf(integrations: unknown[]): Captured {
 
 const specifierFaviconTheme: DocKittyTheme = {
   name: 'fixture-brand',
-  assets: { favicon: '@commondocs-kitty/toolkit/themes/spec-kitty/assets/favicon.svg' },
+  assets: { favicon: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg' },
 };
 
 describe('defineDocKittyIntegrations favicon + discovery head', () => {

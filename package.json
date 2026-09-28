@@ -2,7 +2,7 @@
   "name": "doc-kitty",
   "version": "0.1.0",
   "private": true,
-  "description": "Common Docs — Kitty Variation: a reusable Astro + Starlight scaffold for human-first, agent-supported documentation.",
+  "description": "DocKitty: a reusable Astro + Starlight scaffold for human-first, agent-supported documentation.",
   "type": "module",
   "packageManager": "pnpm@11.22.0",
   "engines": {
@@ -13,7 +13,7 @@
     "build": "pnpm --filter example build",
     "clean": "rm -rf example/.astro example/dist example/node_modules/.astro example/node_modules/.vite",
     "preview": "pnpm --filter example preview",
-    "test": "pnpm --filter @commondocs-kitty/toolkit test",
+    "test": "pnpm --filter @spec-kitty/doc-toolkit test",
     "typecheck": "pnpm --filter example typecheck",
     "lint": "eslint src",
     "validate": "pnpm --filter example run validate",
@@ -32,7 +32,7 @@
     "starlight",
     "documentation",
     "docs-as-code",
-    "common-docs",
+    "dockitty",
     "llms-txt",
     "agent-docs"
   ],

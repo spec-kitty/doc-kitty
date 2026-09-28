@@ -1,8 +1,10 @@
-# Doc Kitty 🐱📚
+# DocKitty 🐱📚
 
-**Common Docs — Kitty Variation**: a reusable [Astro](https://astro.build) +
+**DocKitty**: a reusable [Astro](https://astro.build) +
 [Starlight](https://starlight.astro.build) scaffold for **human-first,
-agent-supported** documentation sites.
+agent-supported** documentation sites, built on the
+[Common Docs](https://github.com/velvet-tiger/common-docs) documentation
+convention.
 
 Point it at a documentation tree that follows the convention and you get a
 docsite plus, out of the box:
@@ -23,7 +25,7 @@ This repository is both the **toolkit** and its own **worked example**.
 
 | Path            | What it is                                                                                     |
 | --------------- | ---------------------------------------------------------------------------------------------- |
-| [`src/`](./src)         | The **toolkit** (`@commondocs-kitty/toolkit`) — a library you install or copy into a docs repo. Exports the Starlight config preset, the metadata schema + README-as-index loader, the `rss` / `llms.txt` / agent-index route handlers, and builder scripts + tests. |
+| [`src/`](./src)         | The **toolkit** (`@spec-kitty/doc-toolkit`) — a library you install or copy into a docs repo. Exports the Starlight config preset, the metadata schema + README-as-index loader, the `rss` / `llms.txt` / agent-index route handlers, and builder scripts + tests. |
 | [`example/`](./example) | A **minimal docsite** that consumes the toolkit and deploys to GitHub Pages. Start here to see the convention in practice; its README has installation instructions. |
 | [`docs/`](./docs)       | Documentation **about the toolkit itself**, written in the convention it describes — see [the spec](./docs/context/convention.md). (Not the deliverable docsite.) |
 | [`agents/`](./agents)   | Minimal **agent skills** (scaffold / write / find / convert), mirroring and extending the Common Docs skills. To be recast as Spec Kitty charter/doctrine later. |
@@ -59,6 +61,26 @@ pnpm clean      # clear ALL build caches before a from-scratch build (see note b
 > before rebuilding. A fresh `pnpm install` (CI, a new clone) never hits this —
 > only a long-lived local checkout can.
 
+## Accreditation
+
+DocKitty stands on the shoulders of [**Common Docs**](https://github.com/velvet-tiger/common-docs),
+the documentation specification created and open-sourced by **Christopher Skene**.
+The core convention — the fixed, ordered `docs/` tree, its section taxonomy, and
+the metadata-first philosophy — is Christopher's original work. DocKitty adapts
+and extends it (the "Kitty variation": README-as-index, first-class metadata that
+drives navigation/RSS/the agent-API, and an Astro + Starlight toolkit around it).
+
+We're grateful to Christopher for publishing Common Docs as open prior art; it
+gave this project its foundation. DocKitty is an independent project and is not
+affiliated with or endorsed by the Common Docs project or Christopher Skene.
+
+- **Common Docs specification** — © Christopher Skene, licensed MIT (spec v1.2).
+  See [`NOTICE`](./NOTICE).
+- **DocKitty toolkit** (this repository) — © Spec Kitty, Inc., licensed MIT.
+
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+DocKitty is MIT-licensed — see [LICENSE](./LICENSE).
+
+It builds on the Common Docs specification (© Christopher Skene, MIT). That
+upstream notice is retained in [`NOTICE`](./NOTICE) as the license requires.

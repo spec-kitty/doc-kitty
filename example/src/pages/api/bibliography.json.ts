@@ -1,3 +1,3 @@
-import { bibliographyRoute } from '@commondocs-kitty/toolkit/routes';
+import { bibliographyRoute } from '@spec-kitty/doc-toolkit/routes';
 
 export const GET = bibliographyRoute();

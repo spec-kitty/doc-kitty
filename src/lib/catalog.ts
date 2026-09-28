@@ -1,6 +1,6 @@
 /**
  * Framework-agnostic citation-catalog model for the
- * **Common Docs — Kitty Variation**.
+ * **DocKitty**.
  *
  * WP01 (`./metadata.ts`) owns the pure resolution primitive `resolveCitation`
  * and the record types. This module adds the thin, Astro-free layer a route (or
