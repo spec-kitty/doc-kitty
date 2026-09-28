@@ -5,6 +5,10 @@ repository installs or copies in. See the runnable
 [`../example`](../example) for how it's wired together, and
 [`../docs/architecture`](../docs/architecture) for how it works.
 
+DocKitty is based on the [Common Docs](https://github.com/velvet-tiger/common-docs)
+specification by **Christopher Skene** (MIT); see the bundled `NOTICE`. DocKitty is
+an independent project, not affiliated with or endorsed by the Common Docs project.
+
 The toolkit ships a working build: the Starlight config preset, the metadata
 schema and README-as-index loader, the `rss` / `llms.txt` / agent-API route
 handlers, and the scaffold/validate/new-doc scripts are all built and covered by

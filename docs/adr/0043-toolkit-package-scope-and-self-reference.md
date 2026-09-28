@@ -78,6 +78,9 @@ self-reference as a benign one, so the exemption cannot silently widen.
   `@spec-kitty/doc-toolkit/` prefix and slip past the carve-out. Mitigated: the toolkit
   publishes a single package; anything under that prefix *is* the toolkit, and the
   look-alike bites-test guards the boundary.
+- The guard matches **literal** import/require specifiers only; a computed specifier
+  (`import('spec' + '-kitty')`) is out of scope. Accepted: shipped, compiled output uses
+  literal specifiers, so accidental runtime coupling always takes a literal form.
 
 ## Alternatives considered
 

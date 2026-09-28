@@ -18,7 +18,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `@spec-kitty` scope refines the zero-Spec-Kitty-coupling invariant (NFR-001):
   the toolkit still carries no Spec Kitty *runtime* coupling, but its own
   self-reference is no longer treated as coupling — see
-  [ADR-0043](docs/adr/0043-toolkit-package-scope-and-self-reference.md).
+  [ADR-0043](docs/adr/0043-toolkit-package-scope-and-self-reference.md). The
+  agent-API's `generatedFrom` field in `/api/index.json` also changed from
+  `common-docs-kitty` to `doc-kitty`; an agent that branched on the old value
+  should update (the payload `version` stays `2`, as the shape is unchanged).
 
 ### Added
 
@@ -46,7 +49,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] — 2026-09-09
 
-First tagged release. Collects the delivered MVP of the **DocKitty** toolkit:
+First tagged release (tagged as `@commondocs-kitty/toolkit` / "Common Docs —
+Kitty Variation"; the project was renamed to **DocKitty** afterward — see
+[Unreleased]). Collects the delivered MVP of the DocKitty toolkit:
 point it at a documentation tree that follows the convention
 and get a Starlight docsite plus `sitemap.xml`, `rss.xml`, `llms.txt`, and a JSON
 agent-API out of the box. See [`docs/plans/roadmap.md`](docs/plans/roadmap.md) for
