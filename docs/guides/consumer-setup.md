@@ -36,6 +36,37 @@ reuse contract (SC-005) and is machine-checked by
 > resolution path. Where this guide shows a file, the fixture ships the worked
 > equivalent.
 
+## Quick install
+
+If you just want the commands, this is the whole of
+[step 1](#1-authenticate-to-github-packages) and
+[step 2](#2-install-the-toolkit-and-its-peers) in one place. The toolkit lives on
+the **GitHub Packages** registry, so you need a GitHub token with `read:packages`
+(while the package is private, your account must also have read access to
+`spec-kitty/doc-kitty`). It takes **two** `.npmrc` files, because pnpm expands
+`${ENV_VAR}` only in the user-level one:
+
+```ini
+# <project>/.npmrc   — maps the scope to the registry; no secret, commit it
+@spec-kitty:registry=https://npm.pkg.github.com
+```
+
+```ini
+# ~/.npmrc           — the credential; never commit this
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+```
+
+```sh
+export GITHUB_TOKEN=<your read:packages token>
+pnpm add @spec-kitty/doc-toolkit@0.1.1 astro @astrojs/starlight @astrojs/sitemap
+```
+
+Getting `401 Unauthorized` from `pnpm add`? The usual causes: the `_authToken`
+line is in the project `.npmrc` instead of `~/.npmrc` (pnpm ignores it there),
+the token has no `read:packages` scope, or your account has not been granted
+access to the package. The sections below walk through each step and then
+configure, theme, and build the site.
+
 ## Prerequisites
 
 - Node ≥ 22 (the package's `engines` floor) and pnpm (`corepack enable`).
