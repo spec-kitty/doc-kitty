@@ -40,7 +40,6 @@ coverage/
 .opencode/
 .windsurf/
 .gemini/
-.cursor/
 .qwen/
 .kilocode/
 .augment/
@@ -94,3 +93,7 @@ example/dist-wp04-tocrail-noflash-test/
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.
 .beoe-cache/
 example/.beoe-cache/
+.kittify/lint-report.json
+.cursor/rules/spec-kitty.mdc
+.cursor/commands/
+.cursor/skills/

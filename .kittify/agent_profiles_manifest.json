@@ -6,7 +6,7 @@
       "output_path": ".claude/agents/analyst-annie.md",
       "profile_urn": "agent_profile:analyst-annie",
       "projection_version": 1,
-      "source_hash": "8ed372b0e8c6e02cac1cb6c2c675a918d82d29d3861aa737cada054036658b51",
+      "source_hash": "ec2b0fc1c4770c89e584adebeae416b943493df2753a73f7a60169471e5ee91d",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/analyst-annie.agent.yaml",
       "tool_key": "claude"
@@ -17,7 +17,7 @@
       "output_path": ".claude/agents/architect-alphonso.md",
       "profile_urn": "agent_profile:architect-alphonso",
       "projection_version": 1,
-      "source_hash": "ffd07debfee2e57b108f59d2d69b32dc10bc482e1ffb78856602d85f4883f588",
+      "source_hash": "4bb8d2478259d776b3b9c94ffca4eaae64f46f8ebe971a42e25196b88ed6279a",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/architect-alphonso.agent.yaml",
       "tool_key": "claude"
@@ -28,18 +28,18 @@
       "output_path": ".claude/agents/comms-cleo.md",
       "profile_urn": "agent_profile:comms-cleo",
       "projection_version": 1,
-      "source_hash": "027b1640fcede2c102b163f05958b913532260405af15623b6cd17d5cc483d87",
+      "source_hash": "280238243c6ff359aae39d06a99db9f5775c5c1fff91bffbfa014329de1c9620",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/comms-cleo.agent.yaml",
       "tool_key": "claude"
     },
     {
-      "file_hash": "d530b0822fde2e35e4d1b1cb76a09dcd5ae403d7e5715245ac09de01536d7001",
+      "file_hash": "00adcaf20a1c0887d99344d1c310684db1be095d99e647a8524e3a7eb3e8d48e",
       "format": "claude-agent",
       "output_path": ".claude/agents/curator-carla.md",
       "profile_urn": "agent_profile:curator-carla",
       "projection_version": 1,
-      "source_hash": "1c7526c795a8ceca50875efb4ee9fb886f2572c8a61bcedb013549fe00a02f4f",
+      "source_hash": "e12b8469266434d833978274b10b1b0bea34f96282553a5d3fd9c6145e363088",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/curator-carla.agent.yaml",
       "tool_key": "claude"
@@ -50,7 +50,7 @@
       "output_path": ".claude/agents/debugger-debbie.md",
       "profile_urn": "agent_profile:debugger-debbie",
       "projection_version": 1,
-      "source_hash": "8007f115eadb129c55acc97ee23a46dd54f773c53515ffe36bd07d3f56756510",
+      "source_hash": "84485d9915b7b090cfc644e13dc82ef8fc253c3da7ee1847e566ada767a03ad0",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/debugger-debbie.agent.yaml",
       "tool_key": "claude"
@@ -61,7 +61,7 @@
       "output_path": ".claude/agents/designer-dagmar.md",
       "profile_urn": "agent_profile:designer-dagmar",
       "projection_version": 1,
-      "source_hash": "07117e1378d878e0b94ceb6b20c0b3a4f15f120315ccb6e430c14642127076f4",
+      "source_hash": "868b02e713161c5f77faa76df57b641f177724d169a663fd60e54eab4c66702f",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/designer-dagmar.agent.yaml",
       "tool_key": "claude"
@@ -72,7 +72,7 @@
       "output_path": ".claude/agents/diagram-daisy.md",
       "profile_urn": "agent_profile:diagram-daisy",
       "projection_version": 1,
-      "source_hash": "c5d3a2f12e1563ab00a8ddd4e09580d32b27b37f5f58e3e6dc8f20dc9cee853a",
+      "source_hash": "e97e20c245ab5dfbca810629a0be46666c9d85867e32440fa5a644fe525d1a8e",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/diagram-daisy.agent.yaml",
       "tool_key": "claude"
@@ -83,18 +83,18 @@
       "output_path": ".claude/agents/doctrine-daphne.md",
       "profile_urn": "agent_profile:doctrine-daphne",
       "projection_version": 1,
-      "source_hash": "0c62322ff4fcda250fc74b2a54830e90033d378b4107d28fee91a90bf2b984a5",
+      "source_hash": "9121635d67c58fa61e91d590ecb9bd8153d1511999529d9459f617ad64abe5db",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/doctrine-daphne.agent.yaml",
       "tool_key": "claude"
     },
     {
-      "file_hash": "c1b9cffbf3bdffafae644af7c3367be2e8402332dd842b21257b59b2c9181c88",
+      "file_hash": "3fc3010f5fe2498a164c0d4130200f93898865e1e0fad04ceb8e4ee4880c144f",
       "format": "claude-agent",
       "output_path": ".claude/agents/frontend-freddy.md",
       "profile_urn": "agent_profile:frontend-freddy",
       "projection_version": 1,
-      "source_hash": "32801a8792cb909474c431932a2c8091e3780a2af3668276c4dbcc811b199a82",
+      "source_hash": "5a709fbefe06f192a12f829f76ebe6e65460b5105b830caca6ec4b8ad8472d3a",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/frontend-freddy.agent.yaml",
       "tool_key": "claude"
@@ -105,7 +105,7 @@
       "output_path": ".claude/agents/generic-agent.md",
       "profile_urn": "agent_profile:generic-agent",
       "projection_version": 1,
-      "source_hash": "0e01f1d14aa139e2611966b14d8087d0bb87cbcd1cdc969287e453e2c871a449",
+      "source_hash": "c7f194a6af7dee105d4e7eeeb99c09f890dd310e6de51ec535233f0a459108e2",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/generic-agent.agent.yaml",
       "tool_key": "claude"
@@ -116,20 +116,9 @@
       "output_path": ".claude/agents/implementer-ivan.md",
       "profile_urn": "agent_profile:implementer-ivan",
       "projection_version": 1,
-      "source_hash": "684d162773aa543fe0df813a8715d3e1b6d375bacdd2b7df56d4f2fcad30b066",
+      "source_hash": "d31147245e98b300125d966ea32f9ba411de0bab683774b4d4c0b190c70f99b2",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/implementer-ivan.agent.yaml",
-      "tool_key": "claude"
-    },
-    {
-      "file_hash": "11347576888da9dad7f6a6e5177691b99062f265c92ab3895ef55da461448470",
-      "format": "claude-agent",
-      "output_path": ".claude/agents/java-jenny.md",
-      "profile_urn": "agent_profile:java-jenny",
-      "projection_version": 1,
-      "source_hash": "efdaf0baaf7a19e9b6c78ba6fefbfc586b10f37635502d40faec9bf99aaf700e",
-      "source_layer": "builtin",
-      "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/java-jenny.agent.yaml",
       "tool_key": "claude"
     },
     {
@@ -138,20 +127,20 @@
       "output_path": ".claude/agents/lexical-larry.md",
       "profile_urn": "agent_profile:lexical-larry",
       "projection_version": 1,
-      "source_hash": "d8b4d31d54e0c113150bf38ef3bbde76243d159f2da7b9b8b981e04b014e3c02",
+      "source_hash": "66e45c1812df79ae1195a0427baa9d0b3cc7d964e40e2bed8c887cbc3d613b5f",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/lexical-larry.agent.yaml",
       "tool_key": "claude"
     },
     {
-      "file_hash": "925323a4d7d49c43b42843c79be98b16f0068ca6ad024d3ab191cc6795f4ea2c",
+      "file_hash": "196981239ccdad4bf39ba8d54f83b7216a90e2f895ee2a37233151111cbccd12",
       "format": "claude-agent",
-      "output_path": ".claude/agents/minutes-maker-mahad.md",
-      "profile_urn": "agent_profile:minutes-maker-mahad",
+      "output_path": ".claude/agents/minutes-mahad.md",
+      "profile_urn": "agent_profile:minutes-mahad",
       "projection_version": 1,
-      "source_hash": "21fde99793ee8903ac7489c4185b41189cd48e8280a353d55f248041179b6b98",
+      "source_hash": "7247e61f9768e6d0f9ea8936aeaeff152600e6e5d0902545894de156598298ca",
       "source_layer": "builtin",
-      "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/minutes-maker-mahad.agent.yaml",
+      "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/minutes-mahad.agent.yaml",
       "tool_key": "claude"
     },
     {
@@ -160,7 +149,7 @@
       "output_path": ".claude/agents/node-norris.md",
       "profile_urn": "agent_profile:node-norris",
       "projection_version": 1,
-      "source_hash": "736c9886b6ad1881587bba5c0038a51069620fff140426eedc56e30139907584",
+      "source_hash": "0a7b5f6f138902466487b243de4d6c19e9f3f72193163d2c176ee354a5b26654",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/node-norris.agent.yaml",
       "tool_key": "claude"
@@ -171,7 +160,7 @@
       "output_path": ".claude/agents/paula-patterns.md",
       "profile_urn": "agent_profile:paula-patterns",
       "projection_version": 1,
-      "source_hash": "232eb0eed4bc6b93c4725983ebbd5c820846662be7f7ec116f80bff425561700",
+      "source_hash": "0926d47d576bdbe8dd8e9ad794209ad29e360832a570333382271d3f6c8450cc",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/paula-patterns.agent.yaml",
       "tool_key": "claude"
@@ -182,20 +171,9 @@
       "output_path": ".claude/agents/planner-priti.md",
       "profile_urn": "agent_profile:planner-priti",
       "projection_version": 1,
-      "source_hash": "5c8bdc271726913d938f9d062e147dcc1f893143b3b811c4380aafcfc5df47e6",
+      "source_hash": "1fa915e4c9874cd8135d9a324d95ae55686f68895f7b827858cc98bf49db86d4",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/planner-priti.agent.yaml",
-      "tool_key": "claude"
-    },
-    {
-      "file_hash": "0020b8f701e2e8ed548264c9c178dd49f69f05803d93d4f306cb16abc49e990b",
-      "format": "claude-agent",
-      "output_path": ".claude/agents/python-pedro.md",
-      "profile_urn": "agent_profile:python-pedro",
-      "projection_version": 1,
-      "source_hash": "d3c871d1d07b61faf04fc9bea4216f2692c05fcc7916541cea26438bebfc7ced",
-      "source_layer": "builtin",
-      "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/python-pedro.agent.yaml",
       "tool_key": "claude"
     },
     {
@@ -204,7 +182,7 @@
       "output_path": ".claude/agents/randy-reducer.md",
       "profile_urn": "agent_profile:randy-reducer",
       "projection_version": 1,
-      "source_hash": "c8f08d3482ff330928cb6ee0a66e50927741aaa0c33893aa2948567cd1506726",
+      "source_hash": "27f3b27a66470422a932b0f7e2c3759501409b263b58842b8b34528af9b37bcf",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/randy-reducer.agent.yaml",
       "tool_key": "claude"
@@ -215,7 +193,7 @@
       "output_path": ".claude/agents/researcher-robbie.md",
       "profile_urn": "agent_profile:researcher-robbie",
       "projection_version": 1,
-      "source_hash": "4ae60ec2ef1a64db370539c4206b3aff39c91d39ec07f377930759e2d79d0df9",
+      "source_hash": "f51b516086eeeaad75ca8634febb8819ce87bc82380971e0623769507ea32e40",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/researcher-robbie.agent.yaml",
       "tool_key": "claude"
@@ -226,7 +204,7 @@
       "output_path": ".claude/agents/retrospective-facilitator.md",
       "profile_urn": "agent_profile:retrospective-facilitator",
       "projection_version": 1,
-      "source_hash": "c761c248f72557749c146463efd8749b796c106d9aa58f5e589013a5c6a804ed",
+      "source_hash": "d6f039737ce343e1376b84cd00deaefdaaf10145c7169d491f2f426d608fcf42",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/retrospective-facilitator.agent.yaml",
       "tool_key": "claude"
@@ -237,7 +215,7 @@
       "output_path": ".claude/agents/reviewer-renata.md",
       "profile_urn": "agent_profile:reviewer-renata",
       "projection_version": 1,
-      "source_hash": "1a2b9b76eb866033169fd42d2265e91297a7ec3154a121c7b55932b7af04c1e1",
+      "source_hash": "9ae3b1c8fe9f97506a67b69ecc4e681fa6d6c8fb7e3e82b13031c5058328ad17",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/reviewer-renata.agent.yaml",
       "tool_key": "claude"
@@ -248,7 +226,7 @@
       "output_path": ".claude/agents/scribe-sally.md",
       "profile_urn": "agent_profile:scribe-sally",
       "projection_version": 1,
-      "source_hash": "a7de3f3d8b49e5bd2d749469132221c0b5f14fb4d148f803e21bc107779eeed8",
+      "source_hash": "6600c3d6ff7c1cfa57abc5bd03a94bd93154408dbd59d8a52f124361728bba5c",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/scribe-sally.agent.yaml",
       "tool_key": "claude"
@@ -259,7 +237,7 @@
       "output_path": ".claude/agents/synthesizer-sam.md",
       "profile_urn": "agent_profile:synthesizer-sam",
       "projection_version": 1,
-      "source_hash": "0bac561a014f11420b669d252b3996579a925421f625f345dbbbbd885e547264",
+      "source_hash": "de4acb3c1542511c86da9ffd7b49c36c5d3e9e305fab2492f09e9a6a79b14388",
       "source_layer": "builtin",
       "source_path": "${SPEC_KITTY_PACKS_ROOT}/built-in/agent_profiles/synthesizer-sam.agent.yaml",
       "tool_key": "claude"
