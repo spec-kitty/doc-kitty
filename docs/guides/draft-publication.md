@@ -62,6 +62,10 @@ A page is a draft when its frontmatter says `doc_status: draft`, or has no
 | Empty or blank value | treated as not set; the build log then says `(set but empty)` instead of `(default)` |
 | Any other value | the build stops, see [A mistyped value](#a-mistyped-value) |
 
+Before you set `off`, give every live page a status other than `draft`, such as
+`doc_status: active`. A page with no `doc_status` counts as a draft, so `off`
+would leave it out of the build.
+
 ## What each value does
 
 | Surface | `off` (set this for the live site) | `on` (default) |
@@ -254,5 +258,12 @@ checks the script's own.
   host-level redirects, or under server-side rendering, there is no stub to
   remove, and a redirect that ends at a draft is not withheld: the old URL
   redirects to a page that returns 404.
+- **Redirect withholding matches exact route strings.** A redirect target
+  written as `/Draft/` or `/draft/index.html`, or a dynamic redirect key, is
+  not withheld with the setting off. The redirect-coverage gate's dead-stub
+  check catches the stub that results.
+- **A hand-written `sidebar` item whose `slug:` points at a draft** builds with
+  drafts on and fails the build with `DK_PUBLISH_DRAFTS=off`. Remove the item,
+  or publish the page, before you turn drafts off.
 - **`noindex` is decided per rendered page**, by its status alone. See
   [If your site does not use the toolkit's docs loader](#if-your-site-does-not-use-the-toolkits-docs-loader).

@@ -19,15 +19,25 @@ not set `off` publishes its drafts as `noindex` pages:
 DK_PUBLISH_DRAFTS=off astro build
 ```
 
+Before you set `off`, give every live page a status other than `draft`, such as
+`doc_status: active`. A page with no `doc_status` counts as a draft, so `off`
+would leave it out of the build.
+
 The version is `0.2.0` because the layout, sidebar and redirect-gate changes
 below are breaking, and under `0.x` the minor number marks a breaking release.
-(The heading date is the release-prep date; the
-[releasing runbook](docs/ops/releasing.md) has you update it to the tag date.)
 
 ### 💥 Breaking
 
 Each item is described in full under Changed.
 
+- **Pages with `doc_status: draft` or no `doc_status` are now `noindex` and left
+  out of site search.** Give every live page a non-draft status such as
+  `doc_status: active` to keep it indexed. With `DK_PUBLISH_DRAFTS=off` those
+  pages are not built at all.
+- **A theme that sets `dk:site-header` now replaces the stock header.** The slot
+  name was already valid in 0.1.1 but did nothing. Now the theme's component
+  replaces the header, including search and the theme select, so it has to
+  supply them.
 - **The redirect-coverage gate has new flags and a new failure.** With drafts
   off it needs `--docs` and `--declared-redirects` to accept an old URL that
   leads to a draft, and it fails on any redirect stub that leads to a missing
@@ -56,10 +66,11 @@ Each item is described in full under Changed.
   a draft is `noindex` whenever it is rendered, also on a site that does not
   load its docs through `docKittyDocsLoader`.
 - **This project's example site publishes its Plans section and the footnotes
-  showcase.** `/plans/`, `/plans/missions/`, `/plans/missions/mission-alpha/`,
-  `/plans/missions/mission-beta/` and `/guides/markua-footnotes-showcase/` were
-  drafts and are now `doc_status: active`, so they are in the sitemap, the feed,
-  `llms.txt`, the agent index and site search (61 published pages, was 56). The
+  showcase.** `/plans/`, the two mission pages and
+  `/guides/markua-footnotes-showcase/` were drafts and are now
+  `doc_status: active`; `/plans/missions/` is a new
+  index page. All five are in the sitemap, the feed, `llms.txt`, the agent index
+  and site search (61 published pages, was 56). The
   published site is built with `DK_PUBLISH_DRAFTS=off`. That build leaves out
   the four remaining drafts (`/adr/template/`,
   `/context/audience/draft-persona/`, `/guides/markua-footnotes-malformed/`,
@@ -150,7 +161,12 @@ Each item is described in full under Changed.
   fifth toolkit-owned carrier.
 - **`@spec-kitty/doc-toolkit/route-middleware`** — the package export the
   integration registers as Starlight route middleware. You do not import it
-  yourself.
+  yourself. The `./config` export also gains `routeShapingIntegration`,
+  `draftPublicationIntegration`, `routeShapingSource`, `ROUTE_MIDDLEWARE`,
+  `ROUTE_SHAPING_MODULE_ID` and `RouteShapingOptions`, `./schema` gains
+  `applyDraftPolicy`, and the package root gains `isDraftEntry`. These are
+  internal seams the toolkit's own tests use. They are not supported API and
+  may change without notice.
 
 ### Fixed
 
@@ -201,6 +217,13 @@ Each item is described in full under Changed.
 - **Re-centring the collapsed layout on a page with a rail and no sidebar is
   verified by simulation only.** No page shape in Starlight 0.32 produces that
   combination.
+- **Redirect withholding matches exact route strings.** With
+  `DK_PUBLISH_DRAFTS=off`, a redirect whose target is written as `/Draft/` or
+  `/draft/index.html`, or whose key is dynamic, is not withheld. The
+  redirect-coverage gate's dead-stub check catches the stub that results.
+- **A hand-written `sidebar` item whose `slug:` points at a draft** builds with
+  drafts on and fails the build with `DK_PUBLISH_DRAFTS=off`. Remove the item,
+  or publish the page, before you turn drafts off.
 - **A deployment that does not set `DK_PUBLISH_DRAFTS=off` publishes its
   drafts.** They are `noindex`, which asks search engines not to list them; it
   is not access control.
