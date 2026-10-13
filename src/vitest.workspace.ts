@@ -29,6 +29,19 @@ const BUILD_SUITES = [
   // `example/.astro` content-layer cache (a concurrent build corrupts the
   // mid-render cache and surfaces spurious render errors).
   'tests/toc-rail-build-html.test.ts',
+  // Sidebar and TOC shaping build assertion (sidebar-frame-header-carrier
+  // WP04): another full `astro build` into its own DK_OUTDIR, serialized here
+  // for the same shared-`example/.astro` reason. Since WP07 it also builds the
+  // same pages with a consumer-supplied sidebar, into a second DK_OUTDIR.
+  'tests/sidebar-build-html.test.ts',
+  // Draft-publication build assertion (sidebar-frame-header-carrier WP05):
+  // builds the example with DK_PUBLISH_DRAFTS off and on, each into its own
+  // DK_OUTDIR; serialized here for the same shared-`example/.astro` reason.
+  'tests/draft-publication-build.test.ts',
+  // Header carrier build assertion (sidebar-frame-header-carrier WP06): builds
+  // the example with and without a theme header, each into its own DK_OUTDIR;
+  // serialized here for the same shared-`example/.astro` reason.
+  'tests/header-carrier.test.ts',
 ];
 
 export default defineWorkspace([
@@ -50,6 +63,16 @@ export default defineWorkspace([
       // `fileParallelism: false` existed on vitest.config.ts in the first
       // place. Scoped here to only the two files that need it (#56).
       fileParallelism: false,
+      // Vitest 2 reads `fileParallelism` from the ROOT config only; inside a
+      // workspace project it is ignored, and these suites were in fact running
+      // side by side (measured: 23.5s of build tests in 12s of wall time). With
+      // a fourth build suite the overlap became a reliable failure:
+      // glossary-build-warning clears the content cache, a concurrent build
+      // refills it, and its own build then reuses the warm render and never
+      // emits the warning it asserts. One fork for the whole project is the
+      // per-project setting that does serialize the files.
+      pool: 'forks',
+      poolOptions: { forks: { singleFork: true } },
     },
   },
 ]);

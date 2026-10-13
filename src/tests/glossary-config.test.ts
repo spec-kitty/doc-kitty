@@ -150,6 +150,10 @@ describe('defineDocKittyIntegrations glossary presence-gate (byte-identity, R-4)
     // is present in every named-array shape, glossary-free or not.
     const PINNED_GLOSSARY_FREE_BASELINE = [
       '@astrojs/starlight',
+      // sidebar-frame-header-carrier WP04: the always-on route-shaping seam
+      // (sidebar labels/order + near-empty TOC), never gated.
+      'doc-kitty:draft-publication',
+      'doc-kitty:route-shaping',
       'doc-kitty:toc-rail',
       'doc-kitty:deck-split',
       'doc-kitty:base-absolute-links',

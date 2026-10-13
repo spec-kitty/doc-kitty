@@ -442,6 +442,10 @@ describe('config wiring — markua OFF byte-identity (FR-011, the diagrams:false
   // markua/directive, it is never gated) — present in every named-array shape.
   const PINNED_BOTH_OFF_BASELINE = [
     '@astrojs/starlight',
+    // sidebar-frame-header-carrier WP04: the always-on route-shaping seam
+    // (sidebar labels/order + near-empty TOC), never gated.
+    'doc-kitty:draft-publication',
+    'doc-kitty:route-shaping',
     'doc-kitty:toc-rail',
     'doc-kitty:deck-split',
     'doc-kitty:base-absolute-links',

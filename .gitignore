@@ -15,6 +15,8 @@ dist/
 .env
 .env.*
 !.env.example
+# Committed on purpose: holds no secret, only DK_PUBLISH_DRAFTS=on for the dev server.
+!example/.env.development
 
 # Editor / OS
 .DS_Store
@@ -88,6 +90,32 @@ example/dist-wp04-adopter-example-test/
 # dedicated DK_OUTDIR so it never races the shared example/dist or the other build
 # suites' outputs (same isolation pattern as the adopter test dir above).
 example/dist-wp04-tocrail-noflash-test/
+
+# sidebar/TOC shaping built-HTML test build (sidebar-frame-header-carrier-01M4T3CB
+# WP04, transient) — src/tests/sidebar-build-html.test.ts builds into its own
+# dedicated DK_OUTDIR, same isolation pattern as the two dirs above.
+example/dist-wp04-sidebar-shaping-test/
+
+# draft-publication built-output test builds (sidebar-frame-header-carrier-01M4T3CB
+# WP05, transient) — src/tests/draft-publication-build.test.ts builds the example
+# with DK_PUBLISH_DRAFTS off and on, each into its own DK_OUTDIR.
+example/dist-wp05-drafts-off-test/
+example/dist-wp05-drafts-off-repeat-test/
+example/dist-wp05-drafts-on-test/
+example/dist-wp05-drafts-invalid-test/
+
+# header-carrier built-output test builds (sidebar-frame-header-carrier-01M4T3CB
+# WP06, transient) — src/tests/header-carrier.test.ts builds the example with the
+# stock header and with a fixture theme header, each into its own DK_OUTDIR.
+example/dist-wp06-header-stock-test/
+example/dist-wp06-header-theme-test/
+
+# consumer-supplied-sidebar test build (sidebar-frame-header-carrier-01M4T3CB WP07,
+# transient) — the second build of src/tests/sidebar-build-html.test.ts.
+example/dist-wp07-consumer-sidebar-test/
+
+# Draft-free example build asserted by CI next to the main build (WP05).
+example/dist-nodrafts/
 
 # @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.

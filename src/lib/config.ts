@@ -2,7 +2,7 @@
  * Starlight configuration preset for DocKitty.
  *
  * `defineDocKittyIntegrations()` returns the Astro integrations array a docs
- * site needs: Starlight (themed, with the convention's head links and the four
+ * site needs: Starlight (themed, with the convention's head links and the five
  * chrome carriers) plus `@astrojs/sitemap` (with the draft-exclusion filter). A
  * site's `astro.config.mjs` spreads it and can override anything.
  *
@@ -13,10 +13,10 @@
  * integration), and layers brand/consumer `customCss` AFTER it (seam 2). With NO
  * theme the call is byte-compatible with M1 — the single static `theme.css`
  * `customCss` entry and no generated sheet (NFR-002). The `components` map stays
- * the four carriers in both cases (seam 3); theme `assets` ride Starlight-native
+ * the five carriers in both cases (seam 3); theme `assets` ride Starlight-native
  * `logo`/`favicon`/`title`, never a components override (ADR-0015 decision 4/5).
  */
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmdirSync, rmSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
@@ -38,6 +38,20 @@ import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
 import sitemapOrderIntegration from './sitemap-order.js';
 import { PRE_PAINT_SCRIPT } from './toc-rail/pre-paint.js';
+import {
+  buildDirectoryMeta,
+  shapingWarningSink,
+  REVEAL_CURRENT_SCRIPT,
+  type DirectoryMetaInput,
+} from './route-shaping.js';
+import { compareCodeUnit } from './vocabulary-core.mjs';
+import {
+  DK_PUBLISH_DRAFTS_ENV,
+  DK_PUBLISH_DRAFTS_RESOLVED_ENV,
+  draftRoutesOf,
+  resolveDraftPublication,
+  redirectsToDrafts,
+} from './draft-publication.mjs';
 import deckSplit from './remark/deck-split.js';
 import diagramMeta from './remark/diagram-meta.js';
 import plantumlMeta from './remark/plantuml-meta.js';
@@ -110,8 +124,8 @@ export interface DocKittyOptions {
    * `resolveTheme`. Omit for the byte-compatible M1 path (single static
    * `theme.css`, no generated sheet). Providing a theme emits the merged token
    * sheet + bridge and layers brand/consumer `customCss` after it (seam 2). Note
-   * the `components` map is FIXED at the four carriers regardless of theme (seam
-   * 3); the `starlight` escape hatch cannot add a fifth carrier override.
+   * the `components` map is FIXED at the five carriers regardless of theme (seam
+   * 3); the `starlight` escape hatch cannot add a sixth carrier override.
    */
   theme?: DocKittyTheme;
   /**
@@ -176,9 +190,11 @@ function discoveryHead(basePrefix: string): NonNullable<StarlightUserConfig['hea
 }
 
 /**
- * The four chrome carriers doc-kitty registers with Starlight (ADR-0013). This
- * map is already complete at M1 and does not change in M2 — a theme targets the
- * carriers' `dk:` slot names, never Starlight's `components` map. Paths are
+ * The five chrome carriers doc-kitty registers with Starlight (ADR-0013, as
+ * amended by ADR-0044, which adds `Header`). A theme targets the carriers' `dk:`
+ * slot names, never Starlight's `components` map. `Header` hosts the single
+ * `dk:site-header` slot and renders Starlight's stock header when no theme fills
+ * it, with no wrapper, so a site without a theme header is unchanged. Paths are
  * package-export specifiers so a consuming site resolves the `.astro` carriers
  * from the `@spec-kitty/doc-toolkit` workspace dependency.
  */
@@ -187,53 +203,18 @@ const carriers: NonNullable<StarlightUserConfig['components']> = {
   PageTitle: '@spec-kitty/doc-toolkit/components/PageTitle.astro',
   MarkdownContent: '@spec-kitty/doc-toolkit/components/MarkdownContent.astro',
   Footer: '@spec-kitty/doc-toolkit/components/Footer.astro',
+  Header: '@spec-kitty/doc-toolkit/components/Header.astro',
 };
 
 /**
- * Compute the set of draft page ROUTES (leading + trailing slash, no base) from
- * the docs tree — a build-free frontmatter read, the same `gray-matter` +
- * README-as-index rule the loader and the standalone validator use. INV-1: a
- * page is published iff `doc_status !== 'draft'`, so a draft's URL must not
- * appear in the sitemap.
+ * The draft page routes of the site's docs tree (leading and trailing slash, no
+ * base). `docsDir` is resolved against the working directory, like every other
+ * docs-root read in this file; the walk and the draft rule are
+ * {@link draftRoutesOf}'s, shared with the gate scripts. INV-1: a draft's URL
+ * must not appear in the sitemap.
  */
-function draftRoutes(docsDir: string, indexBasename?: IndexBasenameOption): Set<string> {
-  const root = path.resolve(process.cwd(), docsDir);
-  const routes = new Set<string>();
-
-  const walk = (dir: string): void => {
-    let entries: string[];
-    try {
-      entries = readdirSync(dir);
-    } catch {
-      return; // docsDir absent → no drafts to exclude
-    }
-    for (const name of entries) {
-      const abs = path.join(dir, name);
-      const info = statSync(abs);
-      if (info.isDirectory()) {
-        walk(abs);
-        continue;
-      }
-      if (!/\.mdx?$/i.test(name) || /(^|\/)log\.md$/i.test(name)) continue;
-      const data = matter(readFileSync(abs, 'utf8')).data as {
-        doc_status?: string;
-      };
-      // Mirror the schema default: absent status is treated as draft.
-      if ((data.doc_status ?? 'draft') !== 'draft') continue;
-      const rel = path.relative(root, abs).split(path.sep).join('/');
-      // Same basename config as the content loader (FR-003) — an `index.md`
-      // draft under an opted-in basename must exclude the SAME route the
-      // loader would give it a slug for.
-      const slug = readmeToIndexId(rel, { indexBasename });
-      // The bundle root is never a draft; skip the root ('') to avoid a
-      // catch-all '/' suffix that would match every URL.
-      if (slug === '') continue;
-      routes.add(`/${slug}/`);
-    }
-  };
-
-  walk(root);
-  return routes;
+function siteDraftRoutes(docsDir: string, indexBasename?: IndexBasenameOption): Set<string> {
+  return draftRoutesOf(path.resolve(process.cwd(), docsDir), indexBasename);
 }
 
 /**
@@ -332,7 +313,7 @@ export function sitemapDraftFilter(
   base: string,
   indexBasename?: IndexBasenameOption,
 ): (page: string) => boolean {
-  const routes = draftRoutes(docsDir, indexBasename);
+  const routes = siteDraftRoutes(docsDir, indexBasename);
   const basePrefix = normalizeBasePrefix(base);
   // Load the registry from the SAME docs root the sidebar synthesis uses. Absent
   // registry → `feeds` undefined → `feedsSurface` is always true (no filtering).
@@ -998,7 +979,7 @@ const diagramsIntegration: AstroIntegration = {
  * `DocKittyOptions` toggle). The island itself early-returns on any page whose DOM
  * carries no `.right-sidebar` TOC, so a TOC-free page stays cost-free at runtime,
  * and it augments Starlight's rendered sidebar with one native `<button>` rather
- * than overriding a `components` carrier (the four-carrier lock, DIRECTIVE_001).
+ * than overriding a `components` carrier (the five-carrier lock, DIRECTIVE_001).
  */
 const tocRailIntegration: AstroIntegration = {
   name: 'doc-kitty:toc-rail',
@@ -1202,6 +1183,278 @@ function markuaIntegration(): AstroIntegration {
   };
 }
 
+// ===========================================================================
+// Sidebar and table-of-contents shaping seam (FR-011, FR-019..FR-023, C-004).
+//
+// Starlight 0.32 labels autogenerated subgroups with the directory name and
+// sorts them by slug. The toolkit's route-data middleware (`route-middleware.ts`)
+// relabels and reorders them from each directory's index page, and drops a
+// near-empty table of contents. The middleware runs inside Astro's bundled
+// render module, so it cannot read the docs tree itself: this integration reads
+// it and serves the result as a virtual module, the transport `manifest.ts`
+// already uses for slot components.
+// ===========================================================================
+
+/** The virtual module the route middleware imports its build data from. */
+export const ROUTE_SHAPING_MODULE_ID = 'virtual:doc-kitty/route-shaping';
+
+/**
+ * The toolkit's route middleware, as a package-export specifier so a consuming
+ * site resolves it from its `@spec-kitty/doc-toolkit` dependency (the same
+ * reason the carriers are specifiers).
+ */
+export const ROUTE_MIDDLEWARE = '@spec-kitty/doc-toolkit/route-middleware';
+
+/** Options for {@link routeShapingIntegration}. */
+export interface RouteShapingOptions {
+  /** The docs tree, relative to the site root (same value as `DocKittyOptions.docsDir`). */
+  docsDir: string;
+  /** The site `base`; stripped from sidebar hrefs before they are matched to directories. */
+  base: string;
+  /** Section-index basename(s); decides which files are directory index pages. */
+  indexBasename?: IndexBasenameOption;
+  /** False when the consumer supplied their own `sidebar`: it is then left exactly as written (C-004). */
+  shapeSidebar: boolean;
+  /** False when the site switched Starlight's prev/next links off. */
+  pagination: boolean;
+  /**
+   * Directories (route slugs, no slashes) whose index page exists on disk but is
+   * not published in this build. Their index is left out of the metadata, so the
+   * group takes the fallback label, and no "missing title" warning is raised.
+   */
+  unpublishedDirs?: readonly string[];
+}
+
+/**
+ * Read the slice of every docs page that sidebar shaping needs: slug, title,
+ * the Starlight `sidebar` front-matter block, and whether the file is a
+ * directory index. A build-free frontmatter read with its own walk: like
+ * {@link draftRoutesOf} it leaves `log.md` out, and unlike it this one also
+ * skips `_meta/` and dot-folders, which never hold a sidebar group.
+ */
+function directoryMetaInputs(
+  docsDir: string,
+  indexBasename?: IndexBasenameOption,
+): DirectoryMetaInput[] {
+  const root = path.resolve(process.cwd(), docsDir);
+  const inputs: DirectoryMetaInput[] = [];
+
+  const walk = (dir: string): void => {
+    let names: string[];
+    try {
+      names = readdirSync(dir);
+    } catch {
+      return; // docsDir absent → nothing to label
+    }
+    for (const name of names) {
+      if (name.startsWith('.') || name === '_meta') continue;
+      const abs = path.join(dir, name);
+      if (statSync(abs).isDirectory()) {
+        walk(abs);
+        continue;
+      }
+      if (!/\.mdx?$/i.test(name) || /^log\.md$/i.test(name)) continue;
+      const data = matter(readFileSync(abs, 'utf8')).data as {
+        title?: unknown;
+        sidebar?: { label?: unknown; order?: unknown };
+      };
+      const rel = path.relative(root, abs).split(path.sep).join('/');
+      const slug = readmeToIndexId(rel, { indexBasename });
+      const label = data.sidebar?.label;
+      const order = data.sidebar?.order;
+      inputs.push({
+        slug,
+        title: typeof data.title === 'string' ? data.title : '',
+        // An index file's slug is its directory; any other file keeps its name.
+        isIndex: slug !== rel.replace(/\.mdx?$/i, ''),
+        sidebar: {
+          ...(typeof label === 'string' ? { label } : {}),
+          ...(typeof order === 'number' ? { order } : {}),
+        },
+      });
+    }
+  };
+
+  walk(root);
+  return inputs;
+}
+
+/**
+ * Generate the source of `virtual:doc-kitty/route-shaping`. Plain JSON data, so
+ * the middleware needs no filesystem access; the map is serialised as sorted
+ * entries, so two builds of one tree emit the same module (NFR-006). Exported so
+ * the consumer-precedence switch is testable without a build.
+ */
+export function routeShapingSource(options: RouteShapingOptions): string {
+  const unpublished = [...new Set(options.unpublishedDirs ?? [])].sort(compareCodeUnit);
+  const hidden = new Set(unpublished);
+  const meta = options.shapeSidebar
+    ? buildDirectoryMeta(
+        directoryMetaInputs(options.docsDir, options.indexBasename).filter(
+          (input) => !hidden.has(input.slug),
+        ),
+      )
+    : new Map();
+  const data = {
+    base: normalizeBasePrefix(options.base),
+    shapeSidebar: options.shapeSidebar,
+    pagination: options.pagination,
+    directoryMeta: [...meta.entries()],
+    unpublishedDirs: unpublished,
+  };
+  return (
+    '// AUTO-GENERATED by @spec-kitty/doc-toolkit route-shaping integration. Do not edit.\n' +
+    `export const routeShaping = ${JSON.stringify(data, null, 2)};\n`
+  );
+}
+
+/**
+ * Serve the route-shaping data and report shaping warnings once per build.
+ *
+ * The module source is generated when Vite LOADS it, not when this factory
+ * runs: the glossary integration writes its pages in `astro:config:setup`, and
+ * their index pages must be on disk before the tree is read.
+ *
+ * Warnings are raised by the middleware on every page that renders the sidebar,
+ * so they are collected in a process-wide set and printed here, sorted, when the
+ * build is done — one line per untitled group, not one per page (FR-023).
+ */
+export function routeShapingIntegration(options: RouteShapingOptions): AstroIntegration {
+  const RESOLVED = `\0${ROUTE_SHAPING_MODULE_ID}`;
+  const plugin = {
+    name: 'doc-kitty:route-shaping',
+    resolveId(id: string): string | null {
+      return id === ROUTE_SHAPING_MODULE_ID ? RESOLVED : null;
+    },
+    load(id: string): string | null {
+      return id === RESOLVED ? routeShapingSource(options) : null;
+    },
+  };
+  return {
+    name: 'doc-kitty:route-shaping',
+    hooks: {
+      'astro:config:setup': ({ updateConfig }) => {
+        shapingWarningSink().clear();
+        updateConfig({ vite: { plugins: [plugin] } });
+      },
+      'astro:build:done': () => {
+        const sink = shapingWarningSink();
+        for (const warning of [...sink].sort(compareCodeUnit)) {
+          console.warn(`[dk-sidebar] ${warning}`);
+        }
+        sink.clear();
+      },
+    },
+  };
+}
+
+// Astro's static redirect stub (`core/routing/3xx.js`): the same two-part shape
+// `check-redirect-coverage.mjs` recognises, so only a real stub is ever removed.
+const REDIRECT_STUB_RE = /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta http-equiv="refresh"/i;
+
+/**
+ * Resolve the draft-publication setting once per build and publish the result
+ * (FR-013..FR-018, research R8).
+ *
+ * The value comes from the process environment, else from the site's env files
+ * for the build mode (`development` for `astro dev`, `production` for anything
+ * else, so `.env.development` reaches the dev server only), else `off`. An
+ * invalid value throws here, which stops the build before anything is emitted.
+ *
+ * The result goes to two consumers:
+ *  - the content loader and carriers, through `process.env` — the same
+ *    same-process seam `DK_DOCS_ROOT` uses above — under its own name, so the
+ *    user's `DK_PUBLISH_DRAFTS` is never overwritten;
+ *  - sidebar shaping, as `unpublishedDirs`: with drafts off, a directory whose
+ *    index page is a draft keeps its fallback label without a "missing title"
+ *    warning. Every draft slug is passed; the shaping step only looks up the
+ *    ones that are directories.
+ *
+ * Redirects into drafts: with drafts off, a configured redirect whose target is
+ * a draft page would be built as a stub that leads to a 404. The integration
+ * owns that case, so a site's config needs no mode logic of its own (it is
+ * evaluated before Astro reports its command, and could only guess the mode).
+ * It warns once, naming each such redirect, and leaves the stub out of the
+ * build, so the old URL is an honest 404 until its target is published. Astro
+ * has no hook that removes a configured route, so the stub is deleted from the
+ * output in `astro:build:done`; the dev server still serves the redirect.
+ * `check-redirect-coverage.mjs` reports the same old URLs as unpublished.
+ *
+ * The draft slugs are read in the hook, not in the factory, because the
+ * glossary integration (earlier in the array) writes its pages in its own
+ * `astro:config:setup`.
+ */
+export function draftPublicationIntegration(routeShaping: RouteShapingOptions): AstroIntegration {
+  const { docsDir, base, indexBasename } = routeShaping;
+  let publish = false;
+  let withheld: Array<{ from: string; route: string }> = [];
+  return {
+    name: 'doc-kitty:draft-publication',
+    hooks: {
+      'astro:config:setup': ({ command, config }) => {
+        const root = config?.root ? fileURLToPath(config.root) : process.cwd();
+        const mode = command === 'dev' ? 'development' : 'production';
+        const resolved = resolveDraftPublication(root, mode);
+        publish = resolved.publish;
+        process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV] = publish ? 'on' : 'off';
+        const drafts = publish ? new Set<string>() : siteDraftRoutes(docsDir, indexBasename);
+        routeShaping.unpublishedDirs = [...drafts].map((route) => route.slice(1, -1));
+        withheld = redirectsToDrafts(config?.redirects, drafts, base);
+        console.log(
+          `[dk-drafts] ${DK_PUBLISH_DRAFTS_ENV}=${publish ? 'on' : 'off'} (${resolved.source}): ` +
+            (publish
+              ? 'draft pages are built, listed and marked noindex.'
+              : 'draft pages are not built.'),
+        );
+        if (withheld.length > 0) {
+          console.warn(
+            `[dk-drafts] ${withheld.length} redirect(s) lead to a draft page, which is not built ` +
+              `while ${DK_PUBLISH_DRAFTS_ENV} is off. They are left out of the build, so these ` +
+              `URLs return 404 until the target is published: ` +
+              withheld.map(({ from, route }) => `${from} -> ${route}`).join(', '),
+          );
+        }
+      },
+      // A site that does not load its docs through `docKittyDocsLoader` is not
+      // filtered. Say so once, rather than let "off" look like it worked.
+      'astro:build:done': ({ dir, pages }) => {
+        if (publish) return;
+        // Remove the stub of each redirect withheld above. Both of Astro's
+        // output shapes are tried (`a/b/index.html` and `a/b.html`), and only a
+        // file that really is a redirect stub is deleted.
+        const outDir = path.resolve(fileURLToPath(dir));
+        for (const { from } of withheld) {
+          const rel = from.replace(/^\/+|\/+$/g, '');
+          for (const file of [path.join(outDir, rel, 'index.html'), path.join(outDir, `${rel}.html`)]) {
+            if (!existsSync(file) || !REDIRECT_STUB_RE.test(readFileSync(file, 'utf8'))) continue;
+            rmSync(file);
+            // Drop the directories the stub leaves empty, up to the output root.
+            for (let d = path.dirname(file); d !== outDir && d.startsWith(outDir); d = path.dirname(d)) {
+              if (readdirSync(d).length > 0) break;
+              rmdirSync(d);
+            }
+          }
+        }
+        const drafts = siteDraftRoutes(docsDir, indexBasename);
+        const basePrefix = normalizeBasePrefix(base);
+        const emitted = pages
+          .map((page) => `/${page.pathname}`.replace(/\/*$/, '/').replace(/^\/+/, '/'))
+          .map((route) =>
+            basePrefix && route.startsWith(`${basePrefix}/`) ? route.slice(basePrefix.length) : route,
+          )
+          .filter((route) => drafts.has(route))
+          .sort(compareCodeUnit);
+        if (emitted.length === 0) return;
+        console.warn(
+          `[dk-drafts] ${DK_PUBLISH_DRAFTS_ENV} is off, but ${emitted.length} draft page(s) were ` +
+            `built: ${emitted.join(', ')}. Drafts are left out where the docs collection is ` +
+            `loaded; use docKittyDocsLoader() in content.config.ts for the setting to take effect.`,
+        );
+      },
+    },
+  };
+}
+
 export function defineDocKittyIntegrations(options: DocKittyOptions) {
   const {
     title,
@@ -1219,7 +1472,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
 
   // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
   // sitemap draft filter resolves internally (`path.resolve(process.cwd(),
-  // docsDir)` in both `draftRoutes` and its registry read), so writing it here
+  // docsDir)` in both `siteDraftRoutes` and its registry read), so writing it here
   // guarantees the standalone routes' `docsRoot()` reads the section registry from
   // the identical absolute path — not a separately-derived one. Set unconditionally
   // so the signal always reflects the docsDir THIS integration was configured with
@@ -1275,6 +1528,22 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // the value is decided BEFORE the build hooks run.
   const resolvedSidebar = sidebar ?? registrySidebar(docsDir);
 
+  // C-004: a sidebar the consumer wrote — through `sidebar` or the `starlight`
+  // escape hatch — is authoritative and is never reshaped. Only a sidebar the
+  // toolkit (registry groups) or Starlight (bare autogeneration) generated is.
+  const sidebarIsGenerated = sidebar === undefined && overrides?.sidebar === undefined;
+
+  // Options for the route-shaping seam, resolved once here. `unpublishedDirs` is
+  // filled in by `draftPublicationIntegration` when its setup hook has resolved
+  // DK_PUBLISH_DRAFTS; the module source is generated later, on load.
+  const routeShaping: RouteShapingOptions = {
+    docsDir,
+    base,
+    indexBasename,
+    shapeSidebar: sidebarIsGenerated,
+    pagination: overrides?.pagination !== false,
+  };
+
   const starlightConfig: StarlightUserConfig = {
     title,
     ...(description ? { description } : {}),
@@ -1299,16 +1568,27 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
       // outline never flashes expanded then collapses. The SOURCE lives in
       // WP01's `toc-rail/pre-paint` (blocked-storage-safe `try/catch`).
       { tag: 'script', content: PRE_PAINT_SCRIPT },
+      // Reveal the current sidebar entry (FR-022): a classic inline script that
+      // waits for `DOMContentLoaded`, so it runs after Starlight has restored
+      // the sidebar's scroll position and only moves the sidebar pane.
+      { tag: 'script', content: REVEAL_CURRENT_SCRIPT },
     ],
     customCss,
     ...overrides,
+    // Route middleware is MERGED, not replaced (C-004): the toolkit's runs first
+    // and whatever the consumer lists under `starlight.routeMiddleware` runs
+    // after it, on the already shaped route data, so the consumer has the last
+    // word. Applied after `...overrides` for the same reason as `components`.
+    routeMiddleware: [ROUTE_MIDDLEWARE, ...[overrides?.routeMiddleware ?? []].flat()],
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
-    // four carriers, in EVERY case (with or without a theme). The exactly-four
-    // invariant is established HERE by config ordering — `components: carriers` is
-    // applied AFTER `...overrides`, so a consumer's escape hatch cannot silently add
-    // a fifth carrier override (a theme addresses the carriers' `dk:` slots, never
-    // this map). WP08's assertion proves the four are live in the built output; the
-    // ordering below is what makes them the only four.
+    // five carriers, in EVERY case (with or without a theme; ADR-0044 added
+    // `Header` to the original four). The exactly-five invariant is established
+    // HERE by config ordering — `components: carriers` is applied AFTER
+    // `...overrides`, so a consumer's escape hatch cannot silently add a sixth
+    // carrier override (a theme addresses the carriers' `dk:` slots, never this
+    // map). `assert-chrome-artifacts.mjs` proves the four marker-emitting carriers
+    // are live in the built output (`Header` emits no marker, by design); the
+    // ordering below is what makes these the only five.
     components: carriers,
   };
 
@@ -1354,6 +1634,14 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // the example definitions file; until then this is inert on the example.
     ...(glossaryActive ? [glossaryIntegration(docsDir, base)] : []),
     starlight(starlightConfig),
+    // Always-on route-shaping seam (FR-011, FR-019..FR-023): serves the data the
+    // toolkit's route middleware (registered in `starlightConfig` above) reads,
+    // and prints the shaping warnings once when the build is done.
+    // Always-on draft-publication seam (FR-013..FR-018): resolves
+    // DK_PUBLISH_DRAFTS for this build and hands the draft slugs to the
+    // route-shaping options below, so it sits BEFORE that integration.
+    draftPublicationIntegration(routeShaping),
+    routeShapingIntegration(routeShaping),
     // Always-on collapsible-TOC-rail client seam (FR-006, IC-04, D2): appended
     // UNCONDITIONALLY — the TOC rail is baseline chrome, so it is NOT gated on a
     // `DocKittyOptions` toggle. Its `injectScript('page', …)` island early-returns
