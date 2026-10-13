@@ -1,0 +1,161 @@
+schema_version: 1
+mission_id: 01M4VB0NPEBCH4163JZ3RE252K
+mission_slug: generated-page-and-link-integrity-01M4VB0N
+mission_number: 5
+friendly_name: Generated pages and relative links hold up for consumers
+mission_type: software-dev
+target_branch: fix/generated-page-and-link-integrity
+created_at: '2026-10-13T21:09:00.235440+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-13T21:09:00.235440+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-012
+not_helpful:
+- id: n-006
+  category: doc
+  summary: analysis-report.md records 5 finding(s)
+  evidence_refs:
+  - e-018
+  details: The analysis-report.md artifact for this mission records 5 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-001
+  category: review_loop
+  summary: WP03 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-013
+  details: WP WP03 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP04 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-014
+  details: WP WP04 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP05 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-015
+  details: WP WP05 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP06 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-016
+  details: WP WP06 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-005
+  category: review_loop
+  summary: WP07 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-017
+  details: WP WP07 was sent back to an earlier lane with documented review feedback 2 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP01-shared-route-rule.md
+- id: e-006
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP02-gherkin-empty-source-guard.md
+- id: e-007
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP03-glossary-index-name-and-prune.md
+- id: e-008
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP04-relative-md-link-rewrite.md
+- id: e-009
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP05-check-links-agrees-with-build.md
+- id: e-010
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP06-consumer-proof.md
+- id: e-011
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP07-records-and-docs.md
+- id: e-012
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/status.events.jsonl
+- id: e-013
+  kind: event_range
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/status.events.jsonl
+  range: 01M4VEET6W8NBVN9KRESH4W6XM
+- id: e-014
+  kind: event_range
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/status.events.jsonl
+  range: 01M4VFNF1YRFMD08FR11XT2PN4
+- id: e-015
+  kind: event_range
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/status.events.jsonl
+  range: 01M4VE7VWFXYH7N14WBJCFS163
+- id: e-016
+  kind: event_range
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/status.events.jsonl
+  range: 01M4VGPFV7EX276QVVNWCZAT8W..01M4VH35RJZTN1QW0SRRFMQXH6
+- id: e-017
+  kind: event_range
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/status.events.jsonl
+  range: 01M4VGTSDXBFF3T57PKZ05181V..01M4VH5N4AJJ8M213MPVCAAVWB
+- id: e-018
+  kind: file
+  path: kitty-specs/generated-page-and-link-integrity-01M4VB0N/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

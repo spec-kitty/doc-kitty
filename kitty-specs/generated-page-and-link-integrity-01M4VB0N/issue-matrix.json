@@ -1,0 +1,125 @@
+{
+  "rows": {
+    "#112": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#out-of-scope",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#113": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#out-of-scope",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#114": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#out-of-scope",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#122": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#issue-matrix",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "in-mission",
+      "wp": null
+    },
+    "#124": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#out-of-scope",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#126": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#out-of-scope",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#128": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#out-of-scope",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#129": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#issue-matrix",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "in-mission",
+      "wp": null
+    },
+    "#131": {
+      "evidence_ref": "kitty-specs/generated-page-and-link-integrity-01M4VB0N/spec.md#issue-matrix",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "in-mission",
+      "wp": null
+    },
+    "#132": {
+      "evidence_ref": "<auto-classified: no action required>",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<auto-classified: pr_or_commit_ref>",
+      "verdict": "not-applicable",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}

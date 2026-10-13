@@ -1,0 +1,21 @@
+{
+  "baseline_merge_commit": "8522afd7f3737f9efce9652d0e2af01ea8441ff3",
+  "created_at": "2026-10-13T19:14:51.630092+00:00",
+  "flattened": true,
+  "friendly_name": "Generated pages and relative links hold up for consumers",
+  "merged_at": "2026-10-13T21:08:47.908532+00:00",
+  "merged_commit": "c41fcab15b68001cb0fdc2912ffee77d1dfec878",
+  "mid8": "01M4VB0N",
+  "mission_id": "01M4VB0NPEBCH4163JZ3RE252K",
+  "mission_number": 5,
+  "mission_slug": "generated-page-and-link-integrity-01M4VB0N",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Three defects found during adoption break a consumer's site without failing its build: an empty Gherkin source directory silently deletes every generated behaviour page, glossary pages are written under a filename the default settings do not treat as a section index so term links 404, and ordinary relative Markdown links between pages 404 on the published site while the source link check passes them. This mission makes each of these either work or stop the build with a clear message.",
+  "purpose_tldr": "A site built with the toolkit keeps its generated pages and its cross-page links working for adopters on default settings.",
+  "slug": "generated-page-and-link-integrity-01M4VB0N",
+  "status_phase": "1",
+  "target_branch": "fix/generated-page-and-link-integrity",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-13T19:49:16.649581+00:00"
+}

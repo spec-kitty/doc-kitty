@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "mission_slug": "generated-page-and-link-integrity-01M4VB0N",
+  "mission_id": "01M4VB0NPEBCH4163JZ3RE252K",
+  "mission_branch": "kitty/mission-generated-page-and-link-integrity-01M4VB0N",
+  "target_branch": "fix/generated-page-and-link-integrity",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/docs-walk.mjs",
+        "src/lib/draft-publication.mjs",
+        "src/lib/metadata.ts",
+        "src/lib/schema.ts",
+        "src/lib/vocabulary-core.mjs",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/metadata.test.ts",
+        "src/tests/route-table.test.ts",
+        "src/tests/section-type-parity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/gherkin/**",
+        "src/scripts/generate-feature-pages.mjs",
+        "src/tests/gherkin-check-cli.test.ts",
+        "src/tests/gherkin-example.test.ts",
+        "src/tests/gherkin-generate.test.ts",
+        "src/tests/gherkin-integration.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/scripts/check-links.mjs",
+        "src/tests/adr-referential-integrity.test.ts",
+        "src/tests/check-links-tightened.test.ts",
+        "src/tests/draft-publication.test.ts",
+        "src/tests/example-adopter.test.ts",
+        "src/tests/index-basename.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/glossary/generate.ts",
+        "src/tests/glossary-codegen-guard.test.ts",
+        "src/tests/glossary-config.test.ts",
+        "src/tests/glossary-generate.test.ts",
+        "src/tests/link-integrity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/remark/relative-md-links.ts",
+        "src/tests/base-absolute-links.test.ts",
+        "src/tests/config-invariants.test.ts",
+        "src/tests/glossary-substrate-parity.test.ts",
+        "src/tests/helpers/remark-stack.ts",
+        "src/tests/relative-md-links.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "tests/consumption/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0047-relative-markdown-links.md",
+        "docs/adr/0048-generated-page-names-and-empty-sources.md",
+        "docs/adr/README.md",
+        "docs/architecture/gherkin-pages.md",
+        "docs/architecture/glossary.md",
+        "docs/guides/consumer-setup.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-10-13T19:48:17.010534+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "82ba63336ad449c18a658da9ec38db69bd117524"
+}
