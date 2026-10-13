@@ -107,3 +107,11 @@ migrations:
     applied_at: '2026-10-11T16:10:59.438065+00:00'
     result: skipped
     notes: Not applicable
+  - id: 4.0.0rc7_exclude_spec_kitty
+    applied_at: '2026-10-13T07:05:51.156955+00:00'
+    result: success
+    notes: Added .spec-kitty/ to .git/info/exclude
+  - id: 4.0.0rc7_pack_level_backfill
+    applied_at: '2026-10-13T07:05:51.164443+00:00'
+    result: success
+    notes: 'Wrote .kittify/charter-packs/pack.yaml with pack_level: project'
