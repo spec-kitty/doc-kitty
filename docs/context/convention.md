@@ -173,7 +173,10 @@ adopters can mark it without hard-failing the strict enum; see
 [ADR-0035](../adr/0035-vocabulary-core-consolidation.md)).
 
 > **Publication:** `draft` pages are excluded from `sitemap.xml`, `rss.xml`, and
-> the agent-API. `active` / `deprecated` / `superseded` / `durable` are published.
+> the agent-API. A rendered draft is also `noindex` and out of site search;
+> `DK_PUBLISH_DRAFTS=off` leaves it out of the build
+> ([Draft publication](../guides/draft-publication.md)). `active` /
+> `deprecated` / `superseded` / `durable` are published.
 
 ### `type` values
 

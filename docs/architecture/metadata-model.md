@@ -278,7 +278,7 @@ failing, so a project's own sections degrade gracefully.
 
 Publication gating from `doc_status`:
 
-- `draft` is excluded from `sitemap.xml`, `rss.xml`, and the agent-API.
+- `draft` is excluded from `sitemap.xml`, `rss.xml`, and the agent-API. A rendered draft is also `noindex` and out of site search; `DK_PUBLISH_DRAFTS=off` leaves it out of the build ([Draft publication](../guides/draft-publication.md)).
 - `active`, `deprecated`, and `superseded` are published.
 
 Validation runs in two places: the build-free `validate-frontmatter.mjs` CI gate

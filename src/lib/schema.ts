@@ -420,6 +420,8 @@ type LoaderContext = Parameters<ReturnType<typeof glob>['load']>[0];
  *
  * `doc_status` is read after schema parsing, so an absent status has already
  * taken the schema default `draft`.
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
  */
 export function applyDraftPolicy<T extends { id: string; data: Record<string, unknown> }>(
   entry: T,

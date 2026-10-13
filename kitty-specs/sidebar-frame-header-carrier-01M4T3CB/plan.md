@@ -122,7 +122,7 @@ docs/adr/                            # two new records
 
 ### IC-04 — Draft publication setting
 
-- **Purpose**: One environment setting decides whether drafts are emitted, listed and indexable; default off; all surfaces agree.
+- **Purpose**: One environment setting decides whether drafts are emitted, listed and indexable; default off; all surfaces agree. (Superseded: owner decision 2026-10-13 made the default `on`; see `spec.md`.)
 - **Relevant requirements**: FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, NFR-006
 - **Affected surfaces**: `src/lib/draft-publication.mjs` (new), `src/lib/config.ts`, content loader wiring, `src/components/Head.astro`, `src/scripts/*.mjs` gates, `example/.env.development`, `.github/workflows/deploy.yml`, CI build lanes
 - **Sequencing/depends-on**: none; coordinates with IC-03 on sidebar content

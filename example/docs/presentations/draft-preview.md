@@ -17,7 +17,7 @@ sidebar:
 This deck is intentionally **draft**. It forces the out-of-frame route to render
 so the routing seam (ADR-0021) and reveal's SSR-safe init (ADR-0022) are proven
 at build time — but as a draft it is excluded from every generator (sitemap,
-RSS, llms.txt, the agent API) and does not move the published counts.
+RSS, llms.txt, the agent API) and does not move the published counts. A build with `DK_PUBLISH_DRAFTS=off` leaves the deck out entirely.
 
 ### What it proves
 

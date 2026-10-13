@@ -1196,17 +1196,27 @@ function markuaIntegration(): AstroIntegration {
 // already uses for slot components.
 // ===========================================================================
 
-/** The virtual module the route middleware imports its build data from. */
+/**
+ * The virtual module the route middleware imports its build data from.
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
+ */
 export const ROUTE_SHAPING_MODULE_ID = 'virtual:doc-kitty/route-shaping';
 
 /**
  * The toolkit's route middleware, as a package-export specifier so a consuming
  * site resolves it from its `@spec-kitty/doc-toolkit` dependency (the same
  * reason the carriers are specifiers).
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
  */
 export const ROUTE_MIDDLEWARE = '@spec-kitty/doc-toolkit/route-middleware';
 
-/** Options for {@link routeShapingIntegration}. */
+/**
+ * Options for {@link routeShapingIntegration}.
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
+ */
 export interface RouteShapingOptions {
   /** The docs tree, relative to the site root (same value as `DocKittyOptions.docsDir`). */
   docsDir: string;
@@ -1285,6 +1295,8 @@ function directoryMetaInputs(
  * the middleware needs no filesystem access; the map is serialised as sorted
  * entries, so two builds of one tree emit the same module (NFR-006). Exported so
  * the consumer-precedence switch is testable without a build.
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
  */
 export function routeShapingSource(options: RouteShapingOptions): string {
   const unpublished = [...new Set(options.unpublishedDirs ?? [])].sort(compareCodeUnit);
@@ -1319,6 +1331,8 @@ export function routeShapingSource(options: RouteShapingOptions): string {
  * Warnings are raised by the middleware on every page that renders the sidebar,
  * so they are collected in a process-wide set and printed here, sorted, when the
  * build is done — one line per untitled group, not one per page (FR-023).
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
  */
 export function routeShapingIntegration(options: RouteShapingOptions): AstroIntegration {
   const RESOLVED = `\0${ROUTE_SHAPING_MODULE_ID}`;
@@ -1386,6 +1400,8 @@ const REDIRECT_STUB_RE = /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta htt
  * The draft slugs are read in the hook, not in the factory, because the
  * glossary integration (earlier in the array) writes its pages in its own
  * `astro:config:setup`.
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
  */
 export function draftPublicationIntegration(routeShaping: RouteShapingOptions): AstroIntegration {
   const { docsDir, base, indexBasename } = routeShaping;

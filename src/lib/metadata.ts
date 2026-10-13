@@ -259,6 +259,8 @@ export function isPublished(data: DocKittyFrontmatter): boolean {
  * its `doc_status`: a site always has a home page, and it is always indexable.
  * The docs loader (which entries it drops) and the Head carrier (which pages it
  * marks `noindex`) both ask this, so they cannot disagree about the root.
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
  */
 export function isDraftEntry(entry: { id: string; data: { doc_status?: unknown } }): boolean {
   return entry.id !== ROOT_ENTRY_ID && isDraftStatus(entry.data.doc_status);

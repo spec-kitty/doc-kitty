@@ -20,4 +20,5 @@ The pending placeholder draft sentinel — this page exists only to prove that a
 feed, and the agent index while it remains unpublished (FR-022 / US5).
 
 Once promoted to `active`, it would list on the Audiences hub like any other
-persona; until then it renders to HTML but appears on no discovery surface.
+persona; until then it is listed in the sidebar of a build with drafts on, and is
+not built with `DK_PUBLISH_DRAFTS=off`.

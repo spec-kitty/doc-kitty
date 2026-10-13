@@ -123,6 +123,12 @@ normalised, because they encode the checkout path.
 - **Slot names are checked by TypeScript only.** A theme written in plain
   JavaScript with a misspelt slot name (`dk:site-heaer`) is accepted and the slot
   is ignored without a message. This has always been true of every slot.
+- **A theme header is still coupled to Starlight's component paths.** The recipe
+  in [Theme header](../guides/theme-header.md) imports `SiteTitle`, `Search` and
+  `ThemeSelect` straight from `@astrojs/starlight/components/`, so a Starlight
+  release that moves those files breaks the theme. Re-exporting the parts from
+  the toolkit would remove the coupling; no issue tracks it yet. Issue #119 (the
+  move to Astro 7 and Starlight 0.41) is where a path change would first show.
 - **The carrier emits no marker**, so the built-output gate that proves the other
   four carriers are live cannot see this one. Its tests compare header markup
   instead.

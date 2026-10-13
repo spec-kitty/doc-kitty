@@ -345,7 +345,7 @@ export function run(argv) {
       const checkDrafts =
         strict && !publishDrafts && !resolvesToDraft(root, file);
       const DRAFT_REASON =
-        'points at a draft page, which is not built unless DK_PUBLISH_DRAFTS=on — ' +
+        'points at a draft page, which is which is not built with DK_PUBLISH_DRAFTS=off — ' +
         'publish the target, mark this page draft, or drop the link';
 
       // 1) Inline Markdown links in the body (code stripped so examples aren't links).
