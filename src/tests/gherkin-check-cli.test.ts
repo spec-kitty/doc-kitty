@@ -134,6 +134,45 @@ describe('generate-feature-pages CLI — write mode', () => {
   });
 });
 
+describe('generate-feature-pages CLI — empty source set', () => {
+  /** A generated site whose only features were then removed (e.g. a submodule not checked out). */
+  function orphanedSite(): string {
+    const site = makeSite();
+    run(site);
+    rmSync(path.join(site, 'features', 'shipping'), { recursive: true });
+    return site;
+  }
+
+  it('write mode stops (exit 1) and removes nothing; --allow-empty alone removes (exit 0)', () => {
+    const site = orphanedSite();
+    const before = snapshot(path.join(site, 'docs'));
+    const stopped = run(site);
+    expect(stopped.status).toBe(1);
+    expect(stopped.stderr).toMatch(/\[dk-gherkin\] no \.feature files found in features, but 4 generated page\(s\)/);
+    expect(stopped.stderr).toContain('--allow-empty');
+    expect(snapshot(path.join(site, 'docs'))).toEqual(before);
+
+    const allowed = run(site, '--allow-empty');
+    expect(allowed.status).toBe(0);
+    expect(allowed.stdout).toMatch(/0 feature file\(s\) → 0 written, 0 unchanged, 4 removed/);
+    expect(snapshot(path.join(site, 'docs'))).toEqual({});
+  });
+
+  it('--check is unchanged by the flag: exit 1 listing every page as stale, with or without it', () => {
+    const site = orphanedSite();
+    const before = snapshot(path.join(site, 'docs'));
+    const [plain, flagged] = [[], ['--allow-empty']].map((extra) => {
+      const res = run(site, '--check', ...extra);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toContain('  stale: shipping/book-consignment.md\n');
+      return res;
+    });
+    expect(flagged.stdout).toBe(plain.stdout);
+    expect(flagged.stderr).toBe(plain.stderr);
+    expect(snapshot(path.join(site, 'docs'))).toEqual(before);
+  });
+});
+
 describe('generate-feature-pages CLI — --check drift gate', () => {
   it('a clean, freshly generated tree → exit 0 with an "in sync" line', () => {
     const site = makeSite();
@@ -240,6 +279,16 @@ describe('generate-feature-pages CLI — --check drift gate', () => {
     const res = spawnSync(process.execPath, [SCRIPT, '--check'], { encoding: 'utf8' });
     expect(res.status).toBe(1);
     expect(res.stderr).toMatch(/--sources is required/);
+  });
+});
+
+describe('generate-feature-pages CLI — --help', () => {
+  it.each(['--help', '-h'])('%s prints the usage block and exits 0, whatever else is given', (flag) => {
+    const res = spawnSync(process.execPath, [SCRIPT, flag, '--check'], { encoding: 'utf8' });
+    expect(res.status, res.stderr).toBe(0);
+    expect(res.stdout).toMatch(/^Usage:\n\s+node src\/scripts\/generate-feature-pages\.mjs/);
+    expect(res.stdout).toMatch(/--allow-empty\s+Remove the generated pages/);
+    expect(res.stdout).not.toMatch(/^ \* /m); // no header-comment markers leaked into the usage
   });
 });
 

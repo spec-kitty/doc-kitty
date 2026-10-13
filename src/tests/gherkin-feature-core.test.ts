@@ -566,7 +566,7 @@ describe('the pure gherkin modules import only their allow-list (import-scan)', 
   it.each([
     ['feature-core.mjs', ['../vocabulary-core.mjs', './text.mjs']],
     ['render.mjs', ['../vocabulary-core.mjs', './text.mjs']],
-    ['options.mjs', ['./text.mjs']],
+    ['options.mjs', ['../vocabulary-core.mjs', './text.mjs']],
     ['text.mjs', []],
   ])('%s', (file, allowed) => {
     const src = stripComments(readFileSync(path.join(SRC_ROOT, 'lib/gherkin', file), 'utf8'));

@@ -61,6 +61,7 @@ import {
   humaniseDirectoryName,
   isIndexPath,
   normalizeIndexBasenames,
+  generatedIndexBasename,
   slug,
 } from '../vocabulary-core.mjs';
 import { resolveSectionRegistryEntries } from '../vocabulary-loader.mjs';
@@ -121,7 +122,9 @@ function hubDescription(title) {
  * @typedef {object} GenerateOptions
  * @property {string} outDir Absolute output directory (`<docsRoot>/<section>`).
  * @property {readonly string[]} [sources] The configured source directories,
- *   as written — named in the "no .feature files found" warning.
+ *   as written — named in the "no .feature files found" warning and error.
+ * @property {boolean} [allowEmpty] Deliberately remove the generated pages when
+ *   the whole source set yields no feature (default: stop instead; FR-001/FR-003).
  */
 
 /**
@@ -142,13 +145,13 @@ function indexBasenames(indexBasename) {
 /**
  * The first configured index basename — the hub file stem. Taking the first
  * makes README-as-index collapse the hub to its directory route under either
- * loader setting (contract §1).
+ * loader setting (contract §1). The shared rule (`generatedIndexBasename`).
  *
  * @param {string | readonly string[] | undefined} indexBasename
  * @returns {string}
  */
 export function hubBasename(indexBasename) {
-  return indexBasenames(indexBasename)[0];
+  return generatedIndexBasename(indexBasename);
 }
 
 /**
@@ -509,7 +512,7 @@ function assertNotDirectory(outDir, rel) {
  * @returns {{ written: string[], unchanged: string[], removed: string[] }}
  */
 export function generateFeaturePages(model, opts) {
-  const { outDir, sources, warn = () => {} } = opts;
+  const { outDir, sources, allowEmpty, warn = () => {} } = opts;
   const plan = planFeaturePages(model, opts);
   const { owned, authored } = scanOutputDir(outDir);
   if (existsSync(outDir) && lstatSync(outDir).isSymbolicLink()) {
@@ -528,6 +531,19 @@ export function generateFeaturePages(model, opts) {
   }
   if (model.files.length === 0) {
     const where = sources && sources.length > 0 ? ` in ${sources.join(', ')}` : '';
+    // Whole-set emptiness only (C-004). An uninitialised git submodule looks exactly
+    // like "every feature was deleted", and pruning on it silently destroys the
+    // section, so with pages present this stops before any write (FR-001/FR-002).
+    if (owned.length > 0 && allowEmpty !== true) {
+      throw new Error(
+        `${PREFIX} no .feature files found${where}, but ${owned.length} generated page(s) exist in ` +
+          `${outDir} and would be removed. The usual cause is a source directory that is not ` +
+          'checked out, such as an uninitialised git submodule (run `git submodule update --init`). ' +
+          'Nothing was removed. If the features were removed on purpose, set `gherkin.allowEmpty: true` ' +
+          '(or pass `--allow-empty` to the CLI) to remove the pages; to keep the pages as they are, ' +
+          'remove the `gherkin` option so they stay frozen.',
+      );
+    }
     warn(
       `${PREFIX} no .feature files found${where}; ${owned.length} previously generated page(s) will be removed`,
     );

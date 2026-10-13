@@ -13,6 +13,7 @@
  * @module gherkin/options
  */
 
+import { isPlainIndexName } from '../vocabulary-core.mjs';
 import { GHERKIN_LOG_PREFIX } from './text.mjs';
 
 /** Default section id (folder under the docs root) the pages are generated into. */
@@ -28,6 +29,19 @@ export const DEFAULT_GHERKIN_SECTION = 'behaviour';
 export const RESERVED_GHERKIN_SECTIONS = Object.freeze(['_meta', 'glossary']);
 
 /**
+ * The `gherkin` option keys the validator carries through. ONE list, read by the
+ * parity test against the CLI's `FLAG` map: a setting without a flag (or the
+ * reverse) must fail, not drift (FR-004a).
+ */
+export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
+  'sources',
+  'section',
+  'sourceUrlPrefix',
+  'sourceRoot',
+  'allowEmpty',
+]));
+
+/**
  * The raw option shape (structurally `DocKittyOptions['gherkin']`).
  *
  * @typedef {object} GherkinOptionsInput
@@ -35,6 +49,7 @@ export const RESERVED_GHERKIN_SECTIONS = Object.freeze(['_meta', 'glossary']);
  * @property {unknown} [section]
  * @property {unknown} [sourceUrlPrefix]
  * @property {unknown} [sourceRoot]
+ * @property {unknown} [allowEmpty]
  */
 
 /**
@@ -45,13 +60,15 @@ export const RESERVED_GHERKIN_SECTIONS = Object.freeze(['_meta', 'glossary']);
  * @property {string} section ONE safe folder name under the docs dir.
  * @property {string} [sourceUrlPrefix]
  * @property {string} sourceRoot Site-root-relative (default `'.'`).
+ * @property {true} [allowEmpty] Present only when `true`: remove the generated
+ *   pages when the whole source set is empty, instead of stopping.
  */
 
 /**
  * @typedef {object} ValidateGherkinOptionsConfig
  * @property {readonly string[]} [reservedSections] Section ids to refuse.
  *   Default {@link RESERVED_GHERKIN_SECTIONS}.
- * @property {(key: 'sources' | 'section' | 'sourceUrlPrefix' | 'sourceRoot') => string} [optionName]
+ * @property {(key: typeof GHERKIN_OPTION_KEYS[number]) => string} [optionName]
  *   How errors name an option: `gherkin.<key>` (default, the astro.config
  *   spelling) or e.g. the CLI flag (`--section`).
  */
@@ -66,7 +83,8 @@ export const RESERVED_GHERKIN_SECTIONS = Object.freeze(['_meta', 'glossary']);
  *    section): a generated section has a single owner. A collision with an
  *    AUTHORED folder is caught later by the generator itself (it refuses to
  *    write into a directory holding non-generated files);
- *  - a non-string `sourceUrlPrefix`, or a `sourceRoot` that is not a non-empty string.
+ *  - a non-string `sourceUrlPrefix`, or a `sourceRoot` that is not a non-empty string;
+ *  - an `allowEmpty` that is not a boolean.
  *
  * @param {GherkinOptionsInput} raw
  * @param {ValidateGherkinOptionsConfig} [config]
@@ -81,6 +99,7 @@ export function validateGherkinOptions(
     section = DEFAULT_GHERKIN_SECTION,
     sourceUrlPrefix,
     sourceRoot = '.',
+    allowEmpty,
   } = raw ?? {};
   if (
     !Array.isArray(sources) ||
@@ -115,11 +134,17 @@ export function validateGherkinOptions(
   if (typeof sourceRoot !== 'string' || sourceRoot === '') {
     throw new Error(`${GHERKIN_LOG_PREFIX} ${optionName('sourceRoot')} must be a non-empty path string`);
   }
+  if (allowEmpty !== undefined && typeof allowEmpty !== 'boolean') {
+    throw new Error(
+      `${GHERKIN_LOG_PREFIX} ${optionName('allowEmpty')} must be true or false; got ${JSON.stringify(allowEmpty)}`,
+    );
+  }
   return {
     sources: /** @type {string[]} */ ([...sources]),
     section,
     ...(sourceUrlPrefix !== undefined ? { sourceUrlPrefix } : {}),
     sourceRoot,
+    ...(allowEmpty === true ? { allowEmpty } : {}),
   };
 }
 
@@ -138,9 +163,9 @@ export function validateIndexBasenames(indexBasename, optionName = 'indexBasenam
   const list = indexBasename === undefined ? [] : [indexBasename].flat();
   for (const entry of list) {
     if (typeof entry !== 'string' || entry.trim() === '') continue;
-    if (entry.startsWith('.') || /[/\\]/.test(entry)) {
+    if (!isPlainIndexName(entry)) {
       throw new Error(
-        `${GHERKIN_LOG_PREFIX} ${optionName} must be a plain file name (no '/', '\\' or leading '.'): ` +
+        `${GHERKIN_LOG_PREFIX} ${optionName} must be a plain file name (no '/', '\\', leading '.' or surrounding whitespace): ` +
           `a generated page is written as <name>.md inside the section; got ${JSON.stringify(entry)}`,
       );
     }

@@ -270,6 +270,28 @@ describe('doc-kitty:gherkin errors are build-fatal', () => {
     expect(() => runGherkinSetup(integrations)).toThrow(/\[dk-gherkin\] source directory not found: nope/);
   });
 
+  it('stops on an empty source set while pages exist; gherkin.allowEmpty: true removes them', () => {
+    writeTree({ 'features/shipping/x.feature': FEATURE_X });
+    const site = enterSite();
+    const page = path.join(site, 'docs', 'behaviour', 'shipping', 'x.md');
+    runGherkinSetup(defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }));
+    expect(existsSync(page)).toBe(true);
+
+    rmSync(path.join(site, 'features', 'shipping', 'x.feature'));
+    expect(() =>
+      runGherkinSetup(defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } })),
+    ).toThrow(/^\[dk-gherkin\] no \.feature files found in features, but 3 generated page\(s\)/);
+    expect(existsSync(page)).toBe(true);
+
+    // The pass-through in config.ts is the only thing that makes this arm work.
+    expect(() =>
+      runGherkinSetup(
+        defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'], allowEmpty: true } }),
+      ),
+    ).not.toThrow();
+    expect(existsSync(page)).toBe(false);
+  });
+
   it('refuses to write into a section holding authored content', () => {
     writeTree({
       'features/shipping/x.feature': FEATURE_X,
@@ -305,6 +327,16 @@ describe('defineDocKittyIntegrations validates the gherkin option eagerly', () =
   ])('rejects a section that is %s', (_label, section) => {
     expect(define({ sources: ['features'], section })).toThrow(
       /^\[dk-gherkin\] gherkin\.section must be a single folder name/,
+    );
+  });
+
+  it.each([
+    ['a string', 'true'],
+    ['a number', 1],
+    ['null', null],
+  ])('rejects an allowEmpty that is %s', (_label, allowEmpty) => {
+    expect(define({ sources: ['features'], allowEmpty })).toThrow(
+      /^\[dk-gherkin\] gherkin\.allowEmpty must be true or false/,
     );
   });
 
@@ -440,5 +472,11 @@ describe('gherkin option validation is single-sourced (review #6)', () => {
       validateGherkinOptions({ sources: ['f'], section: '../x' }, { optionName: (k: string) => `--${k}` }),
     ).toThrow(/^\[dk-gherkin\] --section must be a single folder name/);
     expect(validateGherkinOptions({ sources: ['f'] })).toEqual({ sources: ['f'], section: 'behaviour', sourceRoot: '.' });
+  });
+
+  it('validateIndexBasenames rejects a name with surrounding whitespace, as the glossary does', async () => {
+    const { validateIndexBasenames } = await import('../lib/gherkin/options.mjs');
+    expect(() => validateIndexBasenames(['README', ' index'])).toThrow(/must be a plain file name/);
+    expect(() => validateIndexBasenames(['README', 'index'])).not.toThrow();
   });
 });

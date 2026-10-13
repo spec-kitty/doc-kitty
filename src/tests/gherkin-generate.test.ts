@@ -286,19 +286,46 @@ describe('rename / delete: owned-output pruning (02 "Owned output and pruning")'
     expect(hubLinks(tree['shipping/README.md'] as string)).toEqual(['./book-slot/']);
   });
 
-  it('empty sources: owned leftovers are removed, exactly one warning, no stale files kept', () => {
+  /** A site whose generated section (6 pages) is then left with an empty source dir. */
+  function siteWithOrphanedPages(): Site {
     const site = makeSite({
       'features/shipping/book.feature': feature('Book a slot'),
       'features/a/b/deep.feature': feature('Deep one'),
     });
     gen(site);
-    const before = Object.keys(readTree(site.outDir));
-    expect(before).toHaveLength(6);
-
     rmSync(path.join(site.root, 'features'), { recursive: true });
     mkdirSync(path.join(site.root, 'features')); // the source dir exists, but is empty
+    return site;
+  }
 
-    const { result, warnings } = gen(site);
+  it('empty sources with generated pages: stops with an actionable error and removes nothing', () => {
+    const site = siteWithOrphanedPages();
+    const before = snapshot(site.outDir);
+    expect(Object.keys(readTree(site.outDir))).toHaveLength(6);
+
+    let message = '';
+    try {
+      gen(site);
+    } catch (err) {
+      message = (err as Error).message;
+    }
+    // Every part of the FR-002 contract, in one message an adopter reads in a CI log.
+    expect(message).toMatch(/^\[dk-gherkin\] /);
+    expect(message).toContain('features'); // the configured source directory
+    expect(message).toContain('6 generated page(s)');
+    expect(message).toContain('uninitialised git submodule');
+    expect(message).toContain('gherkin.allowEmpty: true');
+    expect(message).toContain('--allow-empty');
+    expect(message).toContain('remove the `gherkin` option');
+    // Byte-for-byte untouched, directories included.
+    expect(snapshot(site.outDir)).toEqual(before);
+  });
+
+  it('empty sources with allowEmpty: owned leftovers are removed, exactly one warning, no stale files kept', () => {
+    const site = siteWithOrphanedPages();
+    const before = Object.keys(readTree(site.outDir));
+
+    const { result, warnings } = gen(site, { allowEmpty: true });
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain('no .feature files found in features;');
     expect(warnings[0]).toMatch(/^\[dk-gherkin\] no \.feature files/);
@@ -307,6 +334,18 @@ describe('rename / delete: owned-output pruning (02 "Owned output and pruning")'
     expect(result.removed).toEqual(before);
     // No stale file survives (the emptied section dir itself is pruned).
     expect(readTree(site.outDir)).toEqual({});
+  });
+
+  it('one empty source among several is not an empty source set (C-004)', () => {
+    const site = makeSite({
+      'a/book.feature': feature('Book a slot'),
+      'b/.keep': '',
+    });
+    gen(site, { sources: ['a', 'b'] });
+    const { result, warnings } = gen(site, { sources: ['a', 'b'] });
+    expect(warnings).toEqual([]);
+    expect(result.removed).toEqual([]);
+    expect(Object.keys(readTree(site.outDir)).length).toBeGreaterThan(0);
   });
 
   it('empty sources with no prior output: one warning, nothing created', () => {

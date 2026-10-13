@@ -7,7 +7,7 @@
  *   node src/scripts/generate-feature-pages.mjs \
  *     --root example --sources features --docs docs --section behaviour \
  *     --index-basename README,index [--source-root <dir>] \
- *     [--source-url-prefix <url>] [--check]
+ *     [--source-url-prefix <url>] [--check] [--allow-empty]
  *
  *   --root               Site directory every other path is relative to (default: cwd).
  *   --sources            Comma-separated `.feature` source directories (required).
@@ -19,6 +19,11 @@
  *                        (default: `--root`, matching the integration's site root).
  *   --source-url-prefix  Optional browse-URL prefix for `sources[0].resource`.
  *   --check              Compare in memory, write nothing; exit 1 on any drift.
+ *   --allow-empty        Remove the generated pages when no source yields a feature.
+ *                        Without it, write mode stops (exit 1) and removes nothing:
+ *                        an uninitialised git submodule looks exactly like that.
+ *                        Has no effect with `--check`.
+ *   --help, -h           Print this usage block and exit 0.
  *
  * WHY a bare-Node twin of the build step: `astro.config.mjs` cannot be evaluated
  * outside Astro, so CI's build-free doc-sanity lane needs its own entry point.
@@ -39,9 +44,9 @@
  * a single owner). Exit codes: 0 in sync, 1 drift or any `[dk-gherkin]` error
  * (missing source dir, parse error, output collision, authored intrusion).
  */
-import { realpathSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadFeatures } from '../lib/gherkin/load.mjs';
 import {
   diffFeaturePages,
@@ -57,13 +62,32 @@ import {
 /** The diff kinds, in the order they are reported. */
 const DRIFT_KINDS = /** @type {const} */ (['added', 'changed', 'stale', 'authored']);
 
-/** How a shared-validator error names each option: the CLI flag. */
-const FLAG = /** @type {const} */ ({
+/**
+ * How a shared-validator error names each option: the CLI flag.
+ *
+ * @internal Exported only so a parity test can compare it with the option keys;
+ * not part of the package's API.
+ */
+export const FLAG = /** @type {const} */ ({
   sources: '--sources',
   section: '--section',
   sourceUrlPrefix: '--source-url-prefix',
   sourceRoot: '--source-root',
+  allowEmpty: '--allow-empty',
 });
+
+/**
+ * The usage block of this file's header comment (from `Usage:` up to the
+ * paragraph that starts with `WHY`), with the comment markers removed. Read from
+ * the file itself so `--help` and the header cannot differ.
+ *
+ * @returns {string}
+ */
+function usage() {
+  const header = readFileSync(fileURLToPath(import.meta.url), 'utf8').split('*/')[0] ?? '';
+  const block = header.slice(header.indexOf('Usage:'), header.indexOf('WHY')).replace(/^ \* ?/gm, '');
+  return block.trimEnd();
+}
 
 /**
  * Split a comma list, trimming and dropping empties.
@@ -86,7 +110,7 @@ function list(value) {
  * @param {string[]} argv `process.argv`-shaped (the first two entries are skipped).
  * @returns {{ root: string, sources: string[], docsRoot: string, section: string,
  *   outDir: string, indexBasename: string[], sourceRoot: string,
- *   sourceUrlPrefix: string | undefined, check: boolean }}
+ *   sourceUrlPrefix: string | undefined, check: boolean, allowEmpty: boolean }}
  */
 export function parseArgs(argv) {
   const raw = {
@@ -98,6 +122,7 @@ export function parseArgs(argv) {
     sourceRoot: undefined,
     sourceUrlPrefix: undefined,
     check: false,
+    allowEmpty: false,
   };
   /** @type {Record<string, keyof typeof raw>} */
   const valued = {
@@ -116,6 +141,10 @@ export function parseArgs(argv) {
       raw.check = true;
       continue;
     }
+    if (flag === '--allow-empty') {
+      raw.allowEmpty = true;
+      continue;
+    }
     const key = valued[flag];
     if (!key) throw new Error(`unknown argument: ${flag}`);
     const value = args[i + 1];
@@ -125,12 +154,13 @@ export function parseArgs(argv) {
   }
   const sourceList = list(raw.sources);
   if (sourceList.length === 0) throw new Error('--sources is required (comma-separated directories)');
-  const { sources, section } = validateGherkinOptions(
+  const { sources, section, allowEmpty } = validateGherkinOptions(
     {
       sources: sourceList,
       section: raw.section,
       sourceUrlPrefix: raw.sourceUrlPrefix,
       ...(raw.sourceRoot === undefined ? {} : { sourceRoot: raw.sourceRoot }),
+      allowEmpty: raw.allowEmpty,
     },
     { optionName: (key) => FLAG[key] },
   );
@@ -149,6 +179,7 @@ export function parseArgs(argv) {
     sourceRoot: raw.sourceRoot === undefined ? root : path.resolve(root, raw.sourceRoot),
     sourceUrlPrefix: raw.sourceUrlPrefix,
     check: raw.check,
+    allowEmpty: allowEmpty === true,
   };
 }
 
@@ -160,6 +191,10 @@ export function parseArgs(argv) {
  * @returns {number}
  */
 export function main(argv) {
+  if (argv.slice(2).some((arg) => arg === '--help' || arg === '-h')) {
+    console.log(usage());
+    return 0;
+  }
   let opts;
   try {
     opts = parseArgs(argv);
@@ -176,6 +211,7 @@ export function main(argv) {
     indexBasename: opts.indexBasename,
     sourceRoot: opts.sourceRoot,
     sourceUrlPrefix: opts.sourceUrlPrefix,
+    allowEmpty: opts.allowEmpty,
     warn,
   };
   // cwd-relative when the section is under cwd (the `pnpm validate:features`
