@@ -15,6 +15,11 @@
  * idempotent (already-prefixed) and no-base-configured no-op cases.
  */
 import { describe, it, expect } from 'vitest';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import path from 'node:path';
+import { tmpdir } from 'node:os';
+import relativeMdLinks from '../lib/remark/relative-md-links.js';
 import baseAbsoluteLinks, {
   prefixIfRootAbsolute,
 } from '../lib/rehype/base-absolute-links.js';
@@ -117,5 +122,33 @@ describe('baseAbsoluteLinks (rehype plugin) — end-to-end over a hast tree', ()
     const tree = treeOf(anchor('/architecture/overview/'));
     baseAbsoluteLinks()(tree);
     expect(hrefOf(tree)).toBe('/architecture/overview/');
+  });
+});
+
+describe('relativeMdLinks then baseAbsoluteLinks — both passes through the real processor', () => {
+  it('keeps the base the remark pass emitted when the route itself starts with the base', async () => {
+    // Base `/guides` with a section called `guides`: the route `/guides/x/` is published at
+    // `/guides/guides/x/`. The rehype pass skips an href that already starts with the base,
+    // so only the remark pass's own prefix produces the right URL.
+    const req = createRequire(import.meta.url);
+    const mdPkg = createRequire(req.resolve('astro/package.json')).resolve('@astrojs/markdown-remark');
+    const { createMarkdownProcessor, markdownConfigDefaults } = (await import(mdPkg)) as {
+      createMarkdownProcessor: (o: Record<string, unknown>) => Promise<{
+        render: (md: string, o: { fileURL: URL }) => Promise<{ code: string }>;
+      }>;
+      markdownConfigDefaults: Record<string, unknown>;
+    };
+    const docs = path.join(tmpdir(), 'dk-bal-docs');
+    const processor = await createMarkdownProcessor({
+      ...markdownConfigDefaults,
+      remarkPlugins: [[relativeMdLinks, { routes: { 'guides/x.md': '/guides/x/' }, base: '/guides', docsRoot: docs }]],
+      rehypePlugins: [[baseAbsoluteLinks, { base: '/guides' }]],
+    });
+    const out = await processor.render('[x](guides/x.md) and [root](/guides/x/)\n', {
+      fileURL: pathToFileURL(path.join(docs, 'index.md')),
+    });
+    expect(out.code).toContain('href="/guides/guides/x/"');
+    // The author-written root link already starts with the base: left as written.
+    expect(out.code).toContain('href="/guides/x/"');
   });
 });

@@ -26,7 +26,7 @@ import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import type { AstroIntegration } from 'astro';
-import { readmeToIndexId, sectionOf, type IndexBasenameOption } from './metadata.js';
+import { resolveIndexEntries, sectionOf, type IndexBasenameOption } from './metadata.js';
 import {
   resolveSectionRegistry,
   registryToSidebar,
@@ -45,16 +45,20 @@ import {
   REVEAL_CURRENT_SCRIPT,
   type DirectoryMetaInput,
 } from './route-shaping.js';
-import { compareCodeUnit } from './vocabulary-core.mjs';
+import { buildRouteTable, compareCodeUnit } from './vocabulary-core.mjs';
+import { walkMarkdownPaths } from './docs-walk.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
   DK_PUBLISH_DRAFTS_RESOLVED_ENV,
   PUBLISH_DRAFTS_DEFAULT,
   draftRoutesOf,
+  publishDraftsInForce,
+  unpublishedDraftPaths,
   resolveDraftPublication,
   redirectsToDrafts,
 } from './draft-publication.mjs';
 import deckSplit from './remark/deck-split.js';
+import relativeMdLinks from './remark/relative-md-links.js';
 import diagramMeta from './remark/diagram-meta.js';
 import plantumlMeta from './remark/plantuml-meta.js';
 import diagramFigure from './rehype/diagram-figure.js';
@@ -197,6 +201,13 @@ export interface DocKittyOptions {
      * `sourceUrlPrefix` points at the repo root.
      */
     sourceRoot?: string;
+    /**
+     * Remove the generated pages when NONE of the `sources` yields a feature.
+     * Default `false`: the build stops instead, because an uninitialised git
+     * submodule looks exactly like "all features deleted". Set `true` to delete
+     * the pages on purpose. Must be a boolean (build-fatal otherwise).
+     */
+    allowEmpty?: boolean;
   };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
@@ -447,14 +458,31 @@ const deckSplitIntegration: AstroIntegration = {
  * corpus stays byte-identical (NFR-001-shaped, even though this integration
  * itself is unconditional).
  */
-function baseAbsoluteLinksIntegration(base: string): AstroIntegration {
+function baseAbsoluteLinksIntegration(
+  base: string,
+  docsDir: string,
+  indexBasename?: IndexBasenameOption,
+): AstroIntegration {
   return {
     name: 'doc-kitty:base-absolute-links',
     hooks: {
       'astro:config:setup': ({ updateConfig }) => {
+        const prefix = normalizeBasePrefix(base);
+        // The route table for relative `.md`/`.mdx` links (FR-011, FR-021). Built here
+        // because the glossary and gherkin integrations have written their pages by now
+        // and the draft-publication integration has recorded the resolved setting. It is
+        // plain JSON with code-unit-sorted keys, so Astro's config digest changes when a
+        // target is renamed or its draft state flips, and the pages that link to it re-render.
+        // An absent docs root walks to an empty table, which makes the plugin a no-op.
+        const docsRoot = path.resolve(process.cwd(), docsDir);
+        const { routes } = buildRouteTable(walkMarkdownPaths(docsRoot), {
+          indexBasename,
+          unpublishedPaths: unpublishedDraftPaths(docsRoot, publishDraftsInForce(), indexBasename),
+        });
         updateConfig({
           markdown: {
-            rehypePlugins: [[baseAbsoluteLinks, { base: normalizeBasePrefix(base) }]],
+            remarkPlugins: [[relativeMdLinks, { routes, base: prefix, docsRoot }]],
+            rehypePlugins: [[baseAbsoluteLinks, { base: prefix }]],
           },
         });
       },
@@ -1103,11 +1131,15 @@ const tocRailIntegration: AstroIntegration = {
  *       deck (it keys on `a[data-glossary-term]`), so no `main.reveal` guard is
  *       needed (unlike the diagram render). `.catch` mirrors the diagram owner.
  */
-function glossaryIntegration(docsDir: string, base: string): AstroIntegration {
+function glossaryIntegration(
+  docsDir: string,
+  base: string,
+  indexBasename: IndexBasenameOption | undefined,
+): AstroIntegration {
   return {
     name: 'doc-kitty:glossary',
     hooks: {
-      'astro:config:setup': ({ updateConfig, injectScript }) => {
+      'astro:config:setup': ({ updateConfig, injectScript, logger }) => {
         const root = process.cwd();
         const loaded = loadGlossary(root);
         // Defensive: the array-build gate already checked presence, but a file
@@ -1117,7 +1149,12 @@ function glossaryIntegration(docsDir: string, base: string): AstroIntegration {
 
         // (a) Generate-before-glob: write docs/glossary/** now, in config:setup,
         // resolved against the same cwd the sitemap draft-filter uses.
-        generateGlossaryPages(index, path.resolve(root, docsDir));
+        // The site's index-name setting decides the written file name (#129): the pages
+        // must be a section index here, or the toolkit's own links to the hub point at
+        // /glossary/index/ and the Hub layout and sidebar do not see it as the index.
+        generateGlossaryPages(index, path.resolve(root, docsDir), indexBasename, (m) =>
+          logger.warn(m),
+        );
 
         // (b) Pinned remark order (append after remark-gfm) + payload rehype.
         // The shared index + DEFAULT_IGNORE_LIST + basePrefix thread into BOTH
@@ -1168,6 +1205,8 @@ interface ResolvedGherkinOptions {
   sourceUrlPrefix?: string;
   /** Site-root-relative, as configured (default `'.'`); resolved against cwd in the hook. */
   sourceRoot: string;
+  /** Set only when `true`: remove the pages on an empty source set instead of stopping. */
+  allowEmpty?: true;
 }
 
 /**
@@ -1226,6 +1265,7 @@ function gherkinIntegration(
           indexBasename,
           sourceRoot: path.resolve(root, opts.sourceRoot),
           sourceUrlPrefix: opts.sourceUrlPrefix,
+          allowEmpty: opts.allowEmpty,
           warn,
         });
         for (const file of model.files) addWatchFile(file.absPath);
@@ -1386,6 +1426,13 @@ export interface RouteShapingOptions {
    * group takes the fallback label, and no "missing title" warning is raised.
    */
   unpublishedDirs?: readonly string[];
+  /**
+   * Docs-relative paths of the draft FILES withheld from this build. A withheld
+   * file contributes no metadata, so a draft `README.md` beside a published
+   * `index.md` does not label the group, although the folder's route is still
+   * served. Derived from the draft files, not from {@link unpublishedDirs}.
+   */
+  unpublishedPaths?: readonly string[];
 }
 
 /**
@@ -1393,14 +1440,18 @@ export interface RouteShapingOptions {
  * the Starlight `sidebar` front-matter block, and whether the file is a
  * directory index. A build-free frontmatter read with its own walk: like
  * {@link draftRoutesOf} it leaves `log.md` out, and unlike it this one also
- * skips `_meta/` and dot-folders, which never hold a sidebar group.
+ * skips `_meta/` and dot-folders, which never hold a sidebar group. Slug and
+ * `isIndex` come from the shared route rule (`resolveIndexEntries`), so a page
+ * demoted by an index collision is an ordinary page at its own slug.
  */
 function directoryMetaInputs(
   docsDir: string,
   indexBasename?: IndexBasenameOption,
+  unpublishedPaths: ReadonlySet<string> = new Set(),
 ): DirectoryMetaInput[] {
   const root = path.resolve(process.cwd(), docsDir);
-  const inputs: DirectoryMetaInput[] = [];
+  const pages: { rel: string; data: { title?: unknown; sidebar?: { label?: unknown; order?: unknown } } }[] =
+    [];
 
   const walk = (dir: string): void => {
     let names: string[];
@@ -1417,15 +1468,27 @@ function directoryMetaInputs(
         continue;
       }
       if (!/\.mdx?$/i.test(name) || /^log\.md$/i.test(name)) continue;
-      const data = matter(readFileSync(abs, 'utf8')).data as {
-        title?: unknown;
-        sidebar?: { label?: unknown; order?: unknown };
-      };
-      const rel = path.relative(root, abs).split(path.sep).join('/');
-      const slug = readmeToIndexId(rel, { indexBasename });
+      pages.push({
+        rel: path.relative(root, abs).split(path.sep).join('/'),
+        data: matter(readFileSync(abs, 'utf8')).data as (typeof pages)[number]['data'],
+      });
+    }
+  };
+
+  walk(root);
+  const { ids } = resolveIndexEntries(
+    pages.map((page) => page.rel),
+    { indexBasename },
+  );
+  // Slugs are resolved over every file, so a withheld file still takes part in
+  // the index collision rule; it is only left out of the metadata afterwards.
+  const inputs: DirectoryMetaInput[] = pages
+    .filter(({ rel }) => !unpublishedPaths.has(rel))
+    .map(({ rel, data }) => {
+      const slug = ids.get(rel) as string;
       const label = data.sidebar?.label;
       const order = data.sidebar?.order;
-      inputs.push({
+      return {
         slug,
         title: typeof data.title === 'string' ? data.title : '',
         // An index file's slug is its directory; any other file keeps its name.
@@ -1434,11 +1497,8 @@ function directoryMetaInputs(
           ...(typeof label === 'string' ? { label } : {}),
           ...(typeof order === 'number' ? { order } : {}),
         },
-      });
-    }
-  };
-
-  walk(root);
+      };
+    });
   return inputs;
 }
 
@@ -1455,7 +1515,11 @@ export function routeShapingSource(options: RouteShapingOptions): string {
   const hidden = new Set(unpublished);
   const meta = options.shapeSidebar
     ? buildDirectoryMeta(
-        directoryMetaInputs(options.docsDir, options.indexBasename).filter(
+        directoryMetaInputs(
+          options.docsDir,
+          options.indexBasename,
+          new Set(options.unpublishedPaths),
+        ).filter(
           (input) => !hidden.has(input.slug),
         ),
       )
@@ -1570,6 +1634,11 @@ export function draftPublicationIntegration(routeShaping: RouteShapingOptions): 
         process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV] = publish ? 'on' : 'off';
         const drafts = publish ? new Set<string>() : siteDraftRoutes(docsDir, indexBasename);
         routeShaping.unpublishedDirs = [...drafts].map((route) => route.slice(1, -1));
+        routeShaping.unpublishedPaths = unpublishedDraftPaths(
+          path.resolve(process.cwd(), docsDir),
+          publish,
+          indexBasename,
+        );
         withheld = redirectsToDrafts(config?.redirects, drafts, base);
         console.log(
           `[dk-drafts] ${DK_PUBLISH_DRAFTS_ENV}=${publish ? 'on' : 'off'} (${resolved.source}): ` +
@@ -1816,7 +1885,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // shape. Omitted entirely when absent — the spread contributes NOTHING, so a
     // glossary-free array + corpus is byte-identical to pre-M4 (NFR-002). WP09 lands
     // the example definitions file; until then this is inert on the example.
-    ...(glossaryActive ? [glossaryIntegration(docsDir, base)] : []),
+    ...(glossaryActive ? [glossaryIntegration(docsDir, base, indexBasename)] : []),
     // Opt-in gherkin seam (ADR-0046): PREPENDED before Starlight, immediately AFTER
     // the glossary, ONLY when `gherkin` is set. Every `config:setup` hook runs
     // before the content-layer sync, so its array position relative to the
@@ -1845,7 +1914,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // Always-on authored-content base-prefix seam (review-cycle-1, FR-004/
     // SC-002): base-prefixes every root-absolute internal `<a href>` a rendered
     // markdown page emits. No-ops when no `base` is configured.
-    baseAbsoluteLinksIntegration(base),
+    baseAbsoluteLinksIntegration(base, docsDir, indexBasename),
     // INV-1: draft pages are unpublished, so their URLs are excluded here.
     sitemap({ filter: sitemapDraftFilter(docsDir, base, indexBasename) }),
     // Make the built sitemap reproducible (#87, FR-001/NFR-001): an

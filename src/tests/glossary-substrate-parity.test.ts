@@ -61,6 +61,7 @@ import markuaCallouts from '../lib/remark/markua-callouts.js';
 import glossaryTerm from '../lib/remark/glossary-term.js';
 import glossaryAutolink from '../lib/remark/glossary-autolink.js';
 import deckSplit from '../lib/remark/deck-split.js';
+import relativeMdLinks from '../lib/remark/relative-md-links.js';
 import type { SharedTermIndex } from '../lib/glossary/types.js';
 
 // ---------------------------------------------------------------------------
@@ -197,6 +198,14 @@ const CONSCIOUS_EXCLUSIONS: Exclusion[] = [
     kind: 'boundary',
     why: 'deck-route only: splits `kind: Presentation` pages into slides; never part of a docs-page re-derive.',
   },
+  {
+    plugin: relativeMdLinks,
+    kind: 'inert',
+    why:
+      'rewrites a relative `.md`/`.mdx` link URL to its published route; the re-derive only reads link TEXT/terms ' +
+      '(links-used, on-this-page, definitions), never the href, so it need not replay it. A no-op in the golden tree: ' +
+      'it is applied with no options and no `file.path` (the plugin\'s no-op rule).',
+  },
 ];
 
 function findExclusion(stage: RemarkStage): Exclusion | undefined {
@@ -215,6 +224,7 @@ const REMARK_BEARING_INTEGRATIONS = [
   'doc-kitty:markua',
   'doc-kitty:glossary',
   'doc-kitty:deck-split',
+  'doc-kitty:base-absolute-links',
 ];
 
 // Floor: the nine stages the full seam registers today (diagramMeta,
