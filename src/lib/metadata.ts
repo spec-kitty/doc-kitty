@@ -30,6 +30,9 @@ import {
   expectedDocType,
   compareCodeUnit,
   isDraftStatus,
+  DEFAULT_INDEX_BASENAME,
+  readmeToIndexId,
+  resolveIndexEntries,
 } from './vocabulary-core.mjs';
 
 export { SECTION_TYPE, expectedDocType };
@@ -357,12 +360,10 @@ export function toAgentRecord(entry: DocEntry): AgentRecord {
   };
 }
 
-/**
- * The default section-index basename (FR-002, C-001): `README.md` stays the
- * default so doc-kitty's own tree and an existing adopter are byte-identical
- * with no `indexBasename` configured (NFR-003).
- */
-export const DEFAULT_INDEX_BASENAME = 'README';
+// The index/route rule has ONE implementation, in `vocabulary-core.mjs`. These
+// names are re-exported unchanged: `index.ts` does `export * from './lib/metadata.js'`,
+// so they are public package surface.
+export { DEFAULT_INDEX_BASENAME, readmeToIndexId, resolveIndexEntries };
 
 /**
  * One or more section-index basenames (no extension), matched
@@ -376,52 +377,6 @@ export type IndexBasenameOption = string | string[];
 /** Options every index-detecting helper below shares. */
 export interface IndexBasenameOptions {
   indexBasename?: IndexBasenameOption;
-}
-
-/** Normalize the option to a non-empty ordered list (config order = priority). */
-function normalizeIndexBasenames(indexBasename?: IndexBasenameOption): string[] {
-  const list =
-    indexBasename === undefined
-      ? [DEFAULT_INDEX_BASENAME]
-      : Array.isArray(indexBasename)
-        ? indexBasename
-        : [indexBasename];
-  return list.length > 0 ? list : [DEFAULT_INDEX_BASENAME];
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/** A case-insensitive `(^|/)(basename1|basename2|…)$` matcher over the configured set. */
-function indexBasenamePattern(basenames: string[]): RegExp {
-  return new RegExp(`(^|/)(${basenames.map(escapeRegExp).join('|')})$`, 'i');
-}
-
-/**
- * Map a file path under the content root to its route slug, applying the
- * configurable index-basename rule (FR-001/FR-002, D-01). Case-insensitive.
- *
- * With the default (`indexBasename` omitted → `"README"` only):
- *   "README.md"              -> ""              (bundle root)
- *   "architecture/README.md" -> "architecture"
- *   "architecture/overview.md" -> "architecture/overview"
- *
- * With `indexBasename: ['README', 'index']`, `architecture/index.md` ALSO
- * collapses to `"architecture"`. A file whose basename is not in the
- * configured set is never collapsed — a stray `index.md` under the default
- * stays an ordinary page (NFR-003).
- *
- * This helper is sibling-unaware: when a directory holds MORE THAN ONE
- * configured-basename file (the collision case, E-05), use
- * {@link resolveIndexEntries} instead, which resolves the collision
- * deterministically across the whole file list.
- */
-export function readmeToIndexId(entry: string, options: IndexBasenameOptions = {}): string {
-  const withoutExt = entry.replace(/\.mdx?$/i, '');
-  const pattern = indexBasenamePattern(normalizeIndexBasenames(options.indexBasename));
-  const asIndex = withoutExt.replace(pattern, '$1');
-  return asIndex.replace(/\/$/, '');
 }
 
 /** One resolved both-index collision (E-05): a directory with 2+ candidates. */
@@ -440,62 +395,6 @@ export interface ResolveIndexEntriesResult {
   ids: Map<string, string>;
   /** Every directory where more than one configured basename was present. */
   collisions: IndexCollision[];
-}
-
-/**
- * Collision-aware, whole-tree twin of {@link readmeToIndexId} (E-05, FR-004).
- * Given every Markdown path under a content root, resolves each to its route
- * slug id, but when a directory contains MULTIPLE configured-basename
- * candidates (e.g. both `README.md` and `index.md`), the file matching the
- * EARLIEST-configured basename wins the section-index id; the rest are
- * demoted to ordinary pages (their id keeps the basename segment) and
- * reported in `collisions`, so the ambiguity is never silently resolved.
- *
- * Deterministic: a tie between same-rank basenames (e.g. case variants) is
- * broken by path sort order. Fs-free — the caller supplies the path list (a
- * directory walk), keeping this module Astro/fs-free.
- */
-export function resolveIndexEntries(
-  paths: readonly string[],
-  options: IndexBasenameOptions = {},
-): ResolveIndexEntriesResult {
-  const basenames = normalizeIndexBasenames(options.indexBasename);
-  const pattern = indexBasenamePattern(basenames);
-
-  const byDir = new Map<string, string[]>();
-  for (const p of paths) {
-    const withoutExt = p.replace(/\.mdx?$/i, '');
-    if (!pattern.test(withoutExt)) continue;
-    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
-    const list = byDir.get(dir) ?? [];
-    list.push(p);
-    byDir.set(dir, list);
-  }
-
-  const rankOf = (file: string): number => {
-    const base = file.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
-    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
-    return idx === -1 ? basenames.length : idx;
-  };
-
-  const demoted = new Set<string>();
-  const collisions: IndexCollision[] = [];
-  for (const [dir, files] of byDir) {
-    if (files.length <= 1) continue;
-    const sorted = [...files].sort((a, b) => rankOf(a) - rankOf(b) || compareCodeUnit(a, b));
-    const [winner, ...rest] = sorted;
-    for (const loser of rest) demoted.add(loser);
-    collisions.push({ dir, winner: winner!, demoted: rest });
-  }
-
-  const ids = new Map<string, string>();
-  for (const p of paths) {
-    ids.set(
-      p,
-      demoted.has(p) ? p.replace(/\.mdx?$/i, '') : readmeToIndexId(p, options),
-    );
-  }
-  return { ids, collisions };
 }
 
 /**

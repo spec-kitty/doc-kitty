@@ -26,11 +26,10 @@
  *     (`expect(expectedType).toBe(expectedDocType)`) instead of per row, and the
  *     behavioral content is preserved as literal oracles.
  *
- * STILL A GENUINE TWO-ARM GUARD (kept + literal-asserted): the index-basename
- * detection block compares `metadata.ts`'s INDEPENDENT TS implementations
- * (`readmeToIndexId`/`resolveIndexEntries`) against `vocabulary-core.mjs`'s
- * `isRootIndex`/`isIndexPath`/`detectIndexCollisions` — two distinct
- * implementations, so their agreement is NOT structural and is retained.
+ * INDEX-BASENAME BLOCK (route-table WP01): `readmeToIndexId`/`resolveIndexEntries`
+ * moved into `vocabulary-core.mjs` and `detectIndexCollisions` now returns
+ * `resolveIndexEntries(...).collisions`, so the old TS-vs-mjs comparison is
+ * structural too. The block keeps its LITERAL verdicts, which still pin the one rule.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -181,13 +180,9 @@ describe('statuses + required-field axes — gate twin resolves from the single 
   });
 });
 
-// index-basename detection is a GENUINE TWO-ARM guard (F2 retained): `metadata.ts`
-// carries its OWN TS implementation (`readmeToIndexId`/`resolveIndexEntries`,
-// built on local `normalizeIndexBasenames`/`indexBasenamePattern`), while the gate
-// imports `isRootIndex`/`isIndexPath`/`detectIndexCollisions` from
-// `vocabulary-core.mjs`. These are DISTINCT implementations, so their agreement is
-// not structural — kept, and every row now pins an explicit LITERAL verdict too.
-describe('index-basename detection: metadata.ts TS impl ⇔ core mjs impl (two-arm + literals)', () => {
+// index-basename detection: ONE implementation in `vocabulary-core.mjs`
+// (`metadata.ts` re-exports it), so these rows pin literal verdicts only.
+describe('index-basename detection: literal verdicts', () => {
   // [path, expected-root-index-under-DEFAULT-basename]
   const DEFAULT_CASES: [string, boolean][] = [
     ['README.md', true],
@@ -205,43 +200,38 @@ describe('index-basename detection: metadata.ts TS impl ⇔ core mjs impl (two-a
   ];
 
   it.each(DEFAULT_CASES)(
-    '%s: root-index verdict = %s under the DEFAULT basename (both arms)',
+    '%s: root-index verdict = %s under the DEFAULT basename',
     (relPath, wantRoot) => {
       const tsIsRoot = readmeToIndexId(relPath) === '' && !relPath.includes('/');
-      expect(tsIsRoot).toBe(wantRoot); // metadata.ts TS arm
-      expect(isRootIndex(relPath)).toBe(wantRoot); // core mjs arm
+      expect(tsIsRoot).toBe(wantRoot);
+      expect(isRootIndex(relPath)).toBe(wantRoot);
     },
   );
 
   it.each(OPTED_CASES)(
-    '%s: root-index=%s, index-path=%s under an OPTED-IN ["README","index"] basename (both arms)',
+    '%s: root-index=%s, index-path=%s under an OPTED-IN ["README","index"] basename',
     (relPath, wantRoot, wantIndexPath) => {
       const opts = { indexBasename: ['README', 'index'] };
       const tsIsRoot = readmeToIndexId(relPath, opts) === '' && !relPath.includes('/');
       // `resolveIndexEntries`'s per-path candidacy test mirrors `isIndexPath`.
       const { ids } = resolveIndexEntries([relPath], opts);
       const tsIsIndexPath = ids.get(relPath) !== relPath.replace(/\.mdx?$/i, '');
-      // metadata.ts TS arm …
       expect(tsIsRoot).toBe(wantRoot);
       expect(tsIsIndexPath).toBe(wantIndexPath);
-      // … core mjs arm.
       expect(isRootIndex(relPath, ['README', 'index'])).toBe(wantRoot);
       expect(isIndexPath(relPath, ['README', 'index'])).toBe(wantIndexPath);
     },
   );
 
-  it('both-index collision resolution (E-05): literal winner/demoted, and both arms agree', () => {
+  it('both-index collision resolution (E-05): literal winner/demoted', () => {
     const paths = ['guides/README.md', 'guides/index.md', 'guides/deploy.md', 'index.md', 'README.md'];
     const EXPECTED = [
       { dir: 'guides', winner: 'guides/README.md', demoted: ['guides/index.md'] },
       { dir: '', winner: 'README.md', demoted: ['index.md'] },
     ];
-    const tsResult = resolveIndexEntries(paths, { indexBasename: ['README', 'index'] });
-    const mjsResult = detectIndexCollisions(paths, ['README', 'index']);
     // Literal oracle: README wins over index at each directory (earliest-configured
     // basename), the other is demoted; root and `guides/` both collide.
-    expect(tsResult.collisions).toEqual(EXPECTED); // metadata.ts TS arm
-    expect(mjsResult).toEqual(EXPECTED); // core mjs arm
+    expect(detectIndexCollisions(paths, ['README', 'index'])).toEqual(EXPECTED);
   });
 });
 

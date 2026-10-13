@@ -6,7 +6,6 @@
  * `docKittyDocsLoader` reads the repo-root `docs/` tree and implements the
  * README-as-index twist by rewriting entry ids at load time.
  */
-import { readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { z } from 'zod';
@@ -38,6 +37,7 @@ import {
 // the bare-Node gate's warn-not-fail legality check (documentation-charter WP03).
 import { DOC_TYPES, KINDS } from './vocabulary-core.mjs';
 import { publishDraftsInForce } from './draft-publication.mjs';
+import { walkMarkdownPaths } from './docs-walk.mjs';
 
 export { readmeToIndexId };
 
@@ -271,36 +271,6 @@ export interface DocKittyLoaderOptions {
    * (case-insensitive) as a section index.
    */
   indexBasename?: IndexBasenameOption;
-}
-
-/** Recursively list every `.md`/`.mdx` path under `absBase`, relative to it (`/`-joined). */
-function walkMarkdownPaths(absBase: string): string[] {
-  const out: string[] = [];
-  const walk = (dir: string, rel: string): void => {
-    let names: string[];
-    try {
-      names = readdirSync(dir);
-    } catch {
-      return; // base absent → an empty content tree (glob() itself no-ops too)
-    }
-    for (const name of names) {
-      const abs = path.join(dir, name);
-      const relPath = rel ? `${rel}/${name}` : name;
-      let isDir: boolean;
-      try {
-        isDir = statSync(abs).isDirectory();
-      } catch {
-        continue;
-      }
-      if (isDir) {
-        walk(abs, relPath);
-        continue;
-      }
-      if (/\.mdx?$/i.test(name) && !/(^|\/)log\.md$/i.test(relPath)) out.push(relPath);
-    }
-  };
-  walk(absBase, '');
-  return out;
 }
 
 /**

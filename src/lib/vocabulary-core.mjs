@@ -39,9 +39,10 @@
  *   - index-basename DETECTION helpers: the bare-Node half
  *     `validate-frontmatter.mjs:60-135` (`isIndexPath` / `isRootIndex` /
  *     `detectIndexCollisions`). The id-MAPPING half (`readmeToIndexId` /
- *     `resolveIndexEntries` / `slugFromEntryId` / `ROOT_ENTRY_ID`) is the
- *     Astro-side entry-id surface and stays owned by `metadata.ts` — not
- *     duplicated here.
+ *     `resolveIndexEntries`) and the route rule built on it (`routeOfSlug`,
+ *     `buildRouteTable`, `resolveRelativeDocLink`) live here too: the one
+ *     implementation `metadata.ts` re-exports. `slugFromEntryId` /
+ *     `ROOT_ENTRY_ID` stay in `metadata.ts`.
  *
  * @module vocabulary-core
  */
@@ -767,6 +768,19 @@ export function normalizeIndexBasenames(indexBasename) {
 }
 
 /**
+ * Whether an index name is a plain file name: one path segment, so a page
+ * written as `<name>.md` stays inside its folder. No `/` or `\\`, no leading
+ * `.`, no surrounding whitespace, no NUL. The one rule behind the glossary's and
+ * Gherkin's checks of the `indexBasename` setting.
+ *
+ * @param {string} name
+ * @returns {boolean}
+ */
+export function isPlainIndexName(name) {
+  return !(/[/\\]/.test(name) || name.startsWith('.') || name !== name.trim() || name.includes('\0'));
+}
+
+/**
  * @param {string} value
  * @returns {string}
  */
@@ -786,16 +800,239 @@ function indexBasenamePattern(basenames) {
 
 /**
  * One resolved both-index collision (E-05): a directory with 2+ candidates.
- * The id-mapping index helpers (`readmeToIndexId` / `resolveIndexEntries` /
- * `slugFromEntryId` / `ROOT_ENTRY_ID`) live in `metadata.ts`, which owns the
- * Astro-side entry-id surface; this core carries only the bare-Node detection
- * half below, so this typedef is retained for `detectIndexCollisions`.
  *
  * @typedef {object} IndexCollision
  * @property {string} dir The directory the collision occurred in ('' for root).
  * @property {string} winner The path that won and became the section index.
  * @property {string[]} demoted The rest — demoted to ordinary pages.
  */
+
+/**
+ * Map a file path under the content root to its route slug, applying the
+ * configurable index-basename rule (FR-001/FR-002, D-01). Case-insensitive.
+ *
+ * With the default (`indexBasename` omitted -> `"README"` only):
+ *   "README.md"              -> ""              (bundle root)
+ *   "architecture/README.md" -> "architecture"
+ *   "architecture/overview.md" -> "architecture/overview"
+ *
+ * With `indexBasename: ['README', 'index']`, `architecture/index.md` ALSO
+ * collapses to `"architecture"`. A file whose basename is not in the
+ * configured set is never collapsed — a stray `index.md` under the default
+ * stays an ordinary page (NFR-003).
+ *
+ * Sibling-unaware: when a directory holds MORE THAN ONE configured-basename
+ * file (the collision case, E-05), use {@link resolveIndexEntries}, which
+ * resolves the collision deterministically across the whole file list.
+ *
+ * @param {string} entry
+ * @param {IndexBasenameOptions} [options]
+ * @returns {string}
+ */
+export function readmeToIndexId(entry, options = {}) {
+  const withoutExt = entry.replace(/\.mdx?$/i, '');
+  const pattern = indexBasenamePattern(normalizeIndexBasenames(options.indexBasename));
+  const asIndex = withoutExt.replace(pattern, '$1');
+  return asIndex.replace(/\/$/, '');
+}
+
+/**
+ * Group the index-named candidates of a path list by directory and resolve
+ * each directory holding more than one: the EARLIEST-configured basename wins,
+ * a tie between same-rank basenames (case variants) is broken by code-unit path
+ * order. The one grouping loop behind {@link resolveIndexEntries} (the loader's
+ * ids) and {@link detectIndexCollisions} (the bare-Node gate).
+ *
+ * @param {readonly string[]} paths
+ * @param {IndexBasenameOption | undefined} indexBasename
+ * @returns {IndexCollision[]}
+ */
+function groupIndexCollisions(paths, indexBasename) {
+  const basenames = normalizeIndexBasenames(indexBasename);
+  const pattern = indexBasenamePattern(basenames);
+  /** @type {Map<string, string[]>} */
+  const byDir = new Map();
+  for (const p of paths) {
+    const withoutExt = p.replace(/\.mdx?$/i, '');
+    if (!pattern.test(withoutExt)) continue;
+    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
+    const list = byDir.get(dir) ?? [];
+    list.push(p);
+    byDir.set(dir, list);
+  }
+  /** @param {string} file */
+  const rankOf = (file) => {
+    const base = file.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
+    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
+    return idx === -1 ? basenames.length : idx;
+  };
+  /** @type {IndexCollision[]} */
+  const collisions = [];
+  for (const [dir, files] of byDir) {
+    if (files.length <= 1) continue;
+    const sorted = [...files].sort((a, b) => rankOf(a) - rankOf(b) || compareCodeUnit(a, b));
+    collisions.push({ dir, winner: sorted[0], demoted: sorted.slice(1) });
+  }
+  return collisions;
+}
+
+/**
+ * Collision-aware, whole-tree twin of {@link readmeToIndexId} (E-05, FR-004) and
+ * the canonical file-to-slug rule: the content loader (`schema.ts`) uses it for
+ * entry ids, and every route table is built from it. Given every Markdown path
+ * under a content root, resolves each to its route slug id; when a directory
+ * holds MULTIPLE configured-basename candidates, the earliest-configured one
+ * wins the section-index id and the rest are demoted to ordinary pages (their id
+ * keeps the basename segment) and reported in `collisions`. Fs-free: the caller
+ * supplies the path list (the shared walk, `docs-walk.mjs`).
+ *
+ * @param {readonly string[]} paths
+ * @param {IndexBasenameOptions} [options]
+ * @returns {{ ids: Map<string, string>, collisions: IndexCollision[] }}
+ */
+export function resolveIndexEntries(paths, options = {}) {
+  const collisions = groupIndexCollisions(paths, options.indexBasename);
+  const demoted = new Set(collisions.flatMap((c) => c.demoted));
+  /** @type {Map<string, string>} */
+  const ids = new Map();
+  for (const p of paths) {
+    ids.set(p, demoted.has(p) ? p.replace(/\.mdx?$/i, '') : readmeToIndexId(p, options));
+  }
+  return { ids, collisions };
+}
+
+/**
+ * The loader's reserved id for the bundle root. Astro rejects an empty id, so
+ * the root's slug `''` is stored under it (`ROOT_ENTRY_ID` in `metadata.ts`,
+ * which cannot be imported here), and Starlight serves that id at `/`. A page
+ * whose own slug is `index` (a root `index.md` on a site that does not list
+ * `index` as an index name) lands on the same id, so it is published at `/` too.
+ */
+const ROOT_ENTRY_SLUG = 'index';
+
+/**
+ * The route a slug is published at: `''` (the bundle root) and the loader's
+ * reserved root id `index` are `/`, a slug ending in `/index` is served at its
+ * folder (`x/index` at `/x/`), any other slug is `/<slug>/`. This mirrors
+ * Starlight's `slugToParam`, which strips a trailing `/index`: a nested
+ * `index.md` on a site whose index names are only `README`, or an `index.md`
+ * demoted by a sibling `README.md`, has the id `x/index` and is served at `/x/`.
+ * Two files in one folder can therefore share a route, as they do on the site.
+ * No site base; callers add that (`withBase`).
+ *
+ * @param {string} slug
+ * @returns {string}
+ */
+export function routeOfSlug(slug) {
+  if (slug === '' || slug === ROOT_ENTRY_SLUG) return '/';
+  return slug.endsWith('/index') ? `/${slug.slice(0, -'/index'.length)}/` : `/${slug}/`;
+}
+
+/**
+ * The file stem a generator writes for the page that must act as a section
+ * index. With no `prefer`, the first configured index name (config order =
+ * priority), so the page collapses to its directory route under any setting.
+ * With `prefer: 'index'`, `index` when the list holds it (case-insensitive),
+ * else the first: the glossary's pages are committed as `index.md`, so it keeps
+ * that name wherever the loader accepts it. Blank entries are ignored, as the
+ * detection helpers do.
+ *
+ * @param {IndexBasenameOption | readonly string[] | undefined} indexBasename
+ * @param {{ prefer?: string }} [options]
+ * @returns {string}
+ */
+export function generatedIndexBasename(indexBasename, { prefer } = {}) {
+  const names = normalizeIndexBasenames(/** @type {IndexBasenameOption | undefined} */ (indexBasename)).filter(
+    (b) => typeof b === 'string' && b !== '',
+  );
+  const list = names.length > 0 ? names : [DEFAULT_INDEX_BASENAME];
+  if (prefer !== undefined && list.some((b) => b.toLowerCase() === prefer.toLowerCase())) return prefer;
+  return list[0];
+}
+
+/**
+ * The published route of every docs page: docs-relative POSIX file path ->
+ * root-absolute route. Ids are resolved over ALL paths first (the loader's rule,
+ * including which of two index files wins a folder), THEN every path in
+ * `unpublishedPaths` (draft FILE paths, not routes) is dropped, so a draft that
+ * is one of two index files in a folder cannot hand its route to the other.
+ *
+ * Plain JSON only (no `Map`/`Set`/function): the table is a plugin option and
+ * takes part in Astro's config digest, which serialises a `Map` as `{}`. Keys
+ * are inserted in code-unit order so two builds of one tree give identical bytes.
+ *
+ * @param {readonly string[]} paths docs-relative POSIX Markdown paths (shared walk)
+ * @param {{ indexBasename?: IndexBasenameOption, unpublishedPaths?: readonly string[] }} [options]
+ * @returns {{ routes: Record<string, string>, collisions: IndexCollision[] }}
+ */
+export function buildRouteTable(paths, { indexBasename, unpublishedPaths = [] } = {}) {
+  const { ids, collisions } = resolveIndexEntries(paths, { indexBasename });
+  const hidden = new Set(unpublishedPaths);
+  /** @type {Record<string, string>} */
+  const routes = {};
+  for (const p of [...paths].sort(compareCodeUnit)) {
+    if (hidden.has(p)) continue;
+    routes[p] = routeOfSlug(/** @type {string} */ (ids.get(p)));
+  }
+  return { routes, collisions };
+}
+
+/**
+ * Per-segment `encodeURI` of a route, also escaping `?` and `#`: loader ids are
+ * verbatim paths, so a segment can hold spaces, capitals or either character.
+ *
+ * @param {string} route
+ * @returns {string}
+ */
+function encodeRoute(route) {
+  return route
+    .split('/')
+    .map((seg) => encodeURI(seg).replace(/\?/g, '%3F').replace(/#/g, '%23'))
+    .join('/');
+}
+
+/**
+ * Resolve a relative `.md`/`.mdx` link written in `sourcePath` to the route of
+ * the page it names, or `null` when it is not a link to a published page:
+ * absolute, scheme, `#`-only or root-absolute href; no `.md`/`.mdx` before any
+ * `?query`/`#fragment`; target outside the docs root; or a file absent from
+ * `routes` (not a page, or an unpublished draft). Resolved against the
+ * DIRECTORY of the source file, never a route. The path is URL-decoded before
+ * the (case-sensitive) lookup; the query and fragment are appended unchanged.
+ *
+ * @param {Readonly<Record<string, string>>} routes from {@link buildRouteTable}
+ * @param {string} sourcePath docs-relative POSIX path of the page holding the link
+ * @param {string} href the href as written
+ * @returns {string | null}
+ */
+export function resolveRelativeDocLink(routes, sourcePath, href) {
+  if (typeof href !== 'string' || href === '') return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('/') || href.startsWith('#')) return null;
+  const split = /^([^?#]*)([?#][\s\S]*)?$/.exec(href);
+  if (!split) return null;
+  const rawPath = split[1];
+  const suffix = split[2] ?? '';
+  if (!/\.mdx?$/i.test(rawPath)) return null;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(rawPath);
+  } catch {
+    return null; // malformed escape: not a path we can look up
+  }
+  const parts = sourcePath.split('/').slice(0, -1);
+  for (const seg of decoded.split('/')) {
+    if (seg === '' || seg === '.') continue;
+    if (seg === '..') {
+      if (parts.length === 0) return null; // leaves the docs root
+      parts.pop();
+      continue;
+    }
+    parts.push(seg);
+  }
+  const target = parts.join('/');
+  if (!Object.hasOwn(routes, target)) return null;
+  return `${encodeRoute(routes[target])}${suffix}`;
+}
 
 /**
  * A page is a draft when its `doc_status` is `draft` or absent. This is the one
@@ -841,8 +1078,8 @@ export function isRootIndex(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
 
 /**
  * Both-index collision detection (E-05, FR-004) — the flat-list bare-Node
- * collision detector (`validate-frontmatter.mjs:111-135`), mirroring the
- * collision half of metadata.ts's `resolveIndexEntries`. Groups index-candidates by directory and
+ * collision detector (`validate-frontmatter.mjs`), the collision half of
+ * {@link resolveIndexEntries} (the same grouping loop). Groups index-candidates by directory and
  * reports every directory holding MORE THAN ONE configured basename; the
  * EARLIEST-configured basename wins (ties broken by path sort), matching the
  * loader's resolution exactly.
@@ -852,30 +1089,5 @@ export function isRootIndex(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
  * @returns {IndexCollision[]}
  */
 export function detectIndexCollisions(relPaths, indexBasename = DEFAULT_INDEX_BASENAME) {
-  const basenames = normalizeIndexBasenames(indexBasename);
-  const pattern = indexBasenamePattern(basenames);
-  /** @type {Map<string, string[]>} */
-  const byDir = new Map();
-  for (const p of relPaths) {
-    const withoutExt = p.replace(/\.mdx?$/i, '');
-    if (!pattern.test(withoutExt)) continue;
-    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
-    const list = byDir.get(dir) ?? [];
-    list.push(p);
-    byDir.set(dir, list);
-  }
-  /** @param {string} f */
-  const rank = (f) => {
-    const base = f.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
-    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
-    return idx === -1 ? basenames.length : idx;
-  };
-  /** @type {IndexCollision[]} */
-  const collisions = [];
-  for (const [dir, files] of byDir) {
-    if (files.length <= 1) continue;
-    const sorted = [...files].sort((a, b) => rank(a) - rank(b) || compareCodeUnit(a, b));
-    collisions.push({ dir, winner: sorted[0], demoted: sorted.slice(1) });
-  }
-  return collisions;
+  return groupIndexCollisions(relPaths, indexBasename);
 }

@@ -12,11 +12,12 @@
  * bare-Node gate scripts (`src/scripts/*.mjs`) all import this one module, so
  * they cannot disagree about the default or the accepted values.
  */
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
-import { isDraftStatus, isIndexPath } from './vocabulary-core.mjs';
+import { buildRouteTable, isDraftStatus } from './vocabulary-core.mjs';
+import { walkMarkdownPaths } from './docs-walk.mjs';
 
 /** The setting's name in the process environment and in env files. */
 export const DK_PUBLISH_DRAFTS_ENV = 'DK_PUBLISH_DRAFTS';
@@ -271,47 +272,74 @@ export function resolveDraftPublicationForGate({ checkedDir, siteRoot, mode = 'p
 }
 
 /**
+ * The docs-relative POSIX file paths of the draft pages in `paths`, read from
+ * each file's `doc_status`. The one draft predicate for the two functions below.
+ *
+ * @param {string} docsRoot
+ * @param {readonly string[]} paths
+ * @returns {string[]}
+ */
+function draftFilesOf(docsRoot, paths) {
+  return paths.filter((rel) =>
+    isDraftStatus(matter(readFileSync(path.join(docsRoot, rel), 'utf8')).data?.doc_status),
+  );
+}
+
+/**
  * The draft page routes of a docs tree (leading and trailing slash, no base),
  * read from each file's `doc_status`. A build-free frontmatter read, and the
  * one walker: the integration (`config.ts`: sitemap filter, sidebar shaping,
- * withheld redirects) and the bare-Node gates all call it. Every `.md`/`.mdx`
- * except `log.md` counts, in every folder (the walk does not skip `_meta/` or
- * dot-folders); index basenames collapse to their directory; the bundle root is
- * never a draft.
+ * withheld redirects) and the bare-Node gates all call it. It uses the shared
+ * walk (`docs-walk.mjs`: every `.md`/`.mdx` the site loads, so `_meta/` counts;
+ * `log.md` and anything under a dot-prefixed name do not) and the shared route rule (`buildRouteTable`),
+ * so it is collision-aware: a demoted or stray `index.md` can share its folder's
+ * route with the folder's other page. A route is a draft route only when NO
+ * non-draft file resolves to it, so a draft that shares a route with a published
+ * page does not mark that page as a draft. The table is built with no
+ * `unpublishedPaths`, because a draft's own route is what is wanted. The bundle
+ * root is never a draft.
  *
  * @param {string} docsRoot the docs directory
  * @param {string | string[]} [indexBasename] section-index basename(s); default `README`
  * @returns {Set<string>}
  */
 export function draftRoutesOf(docsRoot, indexBasename) {
+  const paths = walkMarkdownPaths(docsRoot);
+  const { routes } = buildRouteTable(paths, { indexBasename });
   /** @type {Set<string>} */
-  const routes = new Set();
-  /** @param {string} dir */
-  const walk = (dir) => {
-    /** @type {string[]} */
-    let names;
-    try {
-      names = readdirSync(dir);
-    } catch {
-      return; // no docs tree: no drafts
-    }
-    for (const name of names) {
-      const abs = path.join(dir, name);
-      if (statSync(abs).isDirectory()) {
-        walk(abs);
-        continue;
-      }
-      if (!/\.mdx?$/i.test(name) || /^log\.md$/i.test(name)) continue;
-      if (!isDraftStatus(matter(readFileSync(abs, 'utf8')).data?.doc_status)) continue;
-      const rel = path.relative(docsRoot, abs).split(path.sep).join('/');
-      const slug = isIndexPath(rel, indexBasename)
-        ? rel.slice(0, Math.max(0, rel.lastIndexOf('/')))
-        : rel.replace(/\.mdx?$/i, '');
-      if (slug !== '') routes.add(`/${slug}/`);
-    }
-  };
-  walk(docsRoot);
-  return routes;
+  const drafts = new Set();
+  const draftFiles = new Set(draftFilesOf(docsRoot, paths));
+  for (const rel of draftFiles) {
+    if (routes[rel] !== '/') drafts.add(routes[rel]);
+  }
+  // A published file on the same route keeps the route published.
+  for (const rel of paths) {
+    if (!draftFiles.has(rel)) drafts.delete(routes[rel]);
+  }
+  return drafts;
+}
+
+/**
+ * The docs-relative POSIX file paths of the draft pages that are NOT published
+ * in this build: the draft pages when `publishDrafts` is off, none when drafts
+ * are published. This is the `unpublishedPaths` input of `buildRouteTable`, so a
+ * link to a draft does not resolve while drafts are withheld.
+ *
+ * The bundle root page is never withheld, whatever its status (the loader's
+ * `isDraftEntry` exempts it, and {@link draftRoutesOf} skips route `/`). It is
+ * the file whose route in the shared table is `/`, so which file that is
+ * follows the site's index names and not a second comparison here.
+ *
+ * @param {string} docsRoot the docs directory
+ * @param {boolean} publishDrafts the resolved publish setting (`resolveDraftPublication(...).publish`)
+ * @param {string | string[]} [indexBasename] section-index basename(s); default `README`
+ * @returns {string[]}
+ */
+export function unpublishedDraftPaths(docsRoot, publishDrafts, indexBasename) {
+  if (publishDrafts) return [];
+  const paths = walkMarkdownPaths(docsRoot);
+  const { routes } = buildRouteTable(paths, { indexBasename });
+  return draftFilesOf(docsRoot, paths).filter((rel) => routes[rel] !== '/');
 }
 
 /**

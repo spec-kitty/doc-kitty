@@ -34,7 +34,7 @@ import {
 } from '../lib/draft-publication.mjs';
 import { applyDraftPolicy, docKittyDocsLoader } from '../lib/schema.js';
 import { checkCoverage, urlToDistFile } from '../scripts/check-redirect-coverage.mjs';
-import { draftPublicationIntegration, type RouteShapingOptions } from '../lib/config.js';
+import { draftPublicationIntegration, routeShapingSource, type RouteShapingOptions } from '../lib/config.js';
 import { shapeSidebar } from '../lib/route-shaping.js';
 import { ROOT_ENTRY_ID, isDraftEntry } from '../lib/metadata.js';
 
@@ -438,6 +438,50 @@ describe('draftPublicationIntegration', () => {
     expect(fromGates).not.toContain('');
   });
 
+  describe('a draft index file beside a published sibling on the same route', () => {
+    const dirs: string[] = [];
+    afterEach(() => {
+      while (dirs.length) rmSync(dirs.pop()!, { recursive: true, force: true });
+    });
+    // `x/README.md` is a draft, `x/index.md` is published: both are `/x/`.
+    const meta = (value: 'on' | 'off') => {
+      const docs = mkdtempSync(path.join(tmpdir(), 'dk-draft-index-'));
+      dirs.push(docs);
+      mkdirSync(path.join(docs, 'x'));
+      writeFileSync(path.join(docs, 'README.md'), '---\ntitle: Home\ndoc_status: active\n---\n');
+      writeFileSync(path.join(docs, 'x/README.md'), '---\ntitle: SECRET DRAFT TITLE\ndoc_status: draft\n---\n');
+      writeFileSync(path.join(docs, 'x/index.md'), '---\ntitle: Public\ndoc_status: active\n---\n');
+      process.env[DK_PUBLISH_DRAFTS_ENV] = value;
+      const options: RouteShapingOptions = {
+        docsDir: docs,
+        base: '/',
+        indexBasename: ['README', 'index'],
+        shapeSidebar: true,
+        pagination: true,
+      };
+      const hook = draftPublicationIntegration(options).hooks['astro:config:setup'] as unknown as (
+        arg: unknown,
+      ) => void;
+      hook({ command: 'build', config: { root: new URL('file:///nonexistent-dk-site/') } });
+      const source = routeShapingSource(options);
+      const data = JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
+      return { options, source, data };
+    };
+
+    it('off: the draft title does not label the group, and the served route is not unpublished', () => {
+      const { options, source, data } = meta('off');
+      expect(source).not.toContain('SECRET DRAFT TITLE');
+      expect(data.directoryMeta.map(([dir]: [string]) => dir)).not.toContain('x');
+      expect(options.unpublishedDirs).not.toContain('x');
+    });
+
+    it('on: the metadata is unchanged', () => {
+      const { options, source } = meta('on');
+      expect(source).toContain('SECRET DRAFT TITLE');
+      expect(options.unpublishedDirs).toEqual([]);
+    });
+  });
+
   describe('redirects into draft pages', () => {
     const STUB = (to: string): string =>
       `<!doctype html><title>Redirecting to: ${to}</title><meta http-equiv="refresh" content="0;url=${to}">`;
@@ -824,7 +868,7 @@ describe('check-links: links to unpublished drafts (T030)', () => {
     expect(res.stderr).toMatch(/guides\/README\.md: link points at a draft page.*→ \/guides\/wip\//);
     expect(res.stderr).toMatch(/guides\/done\.md: related ref points at a draft page.*→ guides\/wip/);
     // Only those two: draft pages are not held to it, and /guides/done/ is fine.
-    expect(res.stderr).toContain('2 dangling reference(s)');
+    expect(res.stderr.match(/points at a draft page/g)).toHaveLength(2);
   });
 
   it('accepts the same tree when drafts are published: stated, or by default', () => {
