@@ -14,9 +14,9 @@ dist/
 # Environment
 .env
 .env.*
+# Committed on purpose: example/.env.example documents DK_PUBLISH_DRAFTS and holds
+# no secret. No build reads it.
 !.env.example
-# Committed on purpose: holds no secret, only DK_PUBLISH_DRAFTS=on for the dev server.
-!example/.env.development
 
 # Editor / OS
 .DS_Store
@@ -101,6 +101,7 @@ example/dist-wp04-sidebar-shaping-test/
 # with DK_PUBLISH_DRAFTS off and on, each into its own DK_OUTDIR.
 example/dist-wp05-drafts-off-test/
 example/dist-wp05-drafts-off-repeat-test/
+example/dist-wp05-drafts-off-redirect-test/
 example/dist-wp05-drafts-on-test/
 example/dist-wp05-drafts-invalid-test/
 

@@ -71,9 +71,10 @@ jobs:
       DK_BEOE_CACHE_DIR: ${{ github.workspace }}/.beoe-cache
       # Draft publication (sidebar-frame-header-carrier). The a11y lane compares
       # against the dist ci.yml's `build-example` job builds, and that job sets
-      # DK_PUBLISH_DRAFTS to `on`. The default is `off`, which leaves the draft
-      # pages out of every sidebar, so a baseline taken without this line would
-      # show a different sidebar from the one the lane screenshots.
+      # DK_PUBLISH_DRAFTS to `on`. `on` is also the default; it is written out
+      # so the two workflows visibly agree (`regen-workflow-render-setup.test.ts`
+      # compares them). A baseline taken with `off` would show a sidebar without
+      # the draft pages, which the lane never screenshots.
       DK_PUBLISH_DRAFTS: 'on'
     steps:
       - name: Checkout target branch

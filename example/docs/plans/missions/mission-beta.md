@@ -1,8 +1,8 @@
 ---
 title: Mission Beta
 description: A second short mission write-up, cross-linking Mission Alpha to prove zero dangling links survive the rename.
-doc_status: draft
-updated: 2026-09-03
+doc_status: active
+updated: 2026-10-13
 type: Mission
 kind: Planning
 related:

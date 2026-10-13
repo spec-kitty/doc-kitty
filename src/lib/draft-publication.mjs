@@ -3,8 +3,9 @@
  * Draft publication setting (FR-013..FR-018, research R8).
  *
  * One environment setting, `DK_PUBLISH_DRAFTS`, decides whether draft pages are
- * emitted. It is `off` unless someone turns it on, so a deployment that forgets
- * the setting publishes no drafts (fail-closed).
+ * emitted. It is `on` unless someone turns it off: drafts are built, listed and
+ * marked `noindex`. A live deployment sets `off`; one that forgets the setting
+ * publishes its drafts as `noindex` pages.
  *
  * Pure ESM with JSDoc types and no `.d.ts`, like `vocabulary-core.mjs`: the
  * TypeScript integration (`config.ts`), the content loader (`schema.ts`) and the
@@ -33,6 +34,13 @@ export const DK_PUBLISH_DRAFTS_RESOLVED_ENV = 'DK_PUBLISH_DRAFTS_RESOLVED';
 export const PUBLISH_DRAFTS_VALUES = /** @type {const} */ (['on', 'off']);
 
 /**
+ * What the setting resolves to when no source sets it: drafts are published.
+ * The one place the default is written; the resolver, the integration and the
+ * gates all take it from here.
+ */
+export const PUBLISH_DRAFTS_DEFAULT = true;
+
+/**
  * @typedef {'process environment' | 'env file' | 'default'} PublishDraftsSource
  * @typedef {{ publish: boolean, source: PublishDraftsSource }} PublishDraftsResolution
  * @typedef {Record<string, string | undefined>} EnvLike
@@ -49,7 +57,8 @@ function present(raw) {
 /**
  * Resolve the setting and say where the value came from.
  *
- * Precedence: the process environment, then the site's env files, then `off`.
+ * Precedence: the process environment, then the site's env files, then the
+ * default, `on` ({@link PUBLISH_DRAFTS_DEFAULT}).
  * An empty or blank value counts as "not set" and falls through to the next
  * source. Any other value than `on` / `off` (case-insensitive) throws (FR-017).
  *
@@ -71,10 +80,10 @@ export function describePublishDrafts(env = process.env, fileEnv = {}) {
     throw new Error(
       `${DK_PUBLISH_DRAFTS_ENV} must be "on" or "off", but the ${source} sets it to ` +
         `"${raw}". Use "on" to build draft pages (marked noindex) or "off" to leave ` +
-        `them out; "off" is the default.`,
+        `them out; "on" is the default.`,
     );
   }
-  return { publish: false, source: 'default' };
+  return { publish: PUBLISH_DRAFTS_DEFAULT, source: 'default' };
 }
 
 /**
@@ -195,7 +204,7 @@ export function findSiteRoot(fromDir, fallback = process.cwd()) {
  * gates that check it.
  *
  * Precedence is {@link describePublishDrafts}'s: the process environment, then
- * the site's env files for `mode` ({@link readEnvFiles}), then `off`.
+ * the site's env files for `mode` ({@link readEnvFiles}), then the default `on`.
  *
  * @param {string} siteRoot the directory that holds the Astro config
  * @param {string} [mode] `development` for `astro dev`, `production` otherwise

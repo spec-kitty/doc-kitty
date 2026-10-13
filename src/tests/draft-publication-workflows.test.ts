@@ -3,9 +3,10 @@
  * WP07 review gap 3.6).
  *
  * The live site must publish no draft page. `deploy.yml` says so by setting
- * `DK_PUBLISH_DRAFTS: 'off'` on its build job. `off` is also the toolkit
- * default, so nothing else fails when that line is flipped to `on`: the deploy
- * would publish every draft and stay green. This file pins the line.
+ * `DK_PUBLISH_DRAFTS: 'off'` on its build job. The toolkit default is `on`, so
+ * that line is the only thing that keeps drafts off the live site, and nothing
+ * else fails when it is removed or flipped to `on`: the deploy would publish
+ * every draft and stay green. This file pins the line.
  *
  * It also pins the other half: the PR gate (`ci.yml`, job `build-example`)
  * builds with `on` for its own gates, then builds the draft-free variant into a

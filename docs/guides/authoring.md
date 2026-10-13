@@ -74,7 +74,8 @@ not maintain a navigation file.
 - **A page with no `##` or `###` heading gets no "On this page" rail.** Its
   outline would hold a single "Overview" link, so the rail is left out and the
   text uses the width.
-- **A draft page is not listed** unless the site is built with drafts on. See
+- **A draft page is listed** unless the site is built with
+  `DK_PUBLISH_DRAFTS=off`, as a live deployment is. See
   [Draft publication](./draft-publication.md).
 
 A site that passes its own `sidebar` to `defineDocKittyIntegrations` (or through
@@ -123,19 +124,19 @@ section per above), prove the old URLs still work before you ship:
 3. **Run the coverage gate** against the built output:
 
    ```sh
-   # A build with drafts published (DK_PUBLISH_DRAFTS=on)
-   DK_PUBLISH_DRAFTS=on pnpm exec dockitty-check-redirect-coverage <baseline-file> <dist-dir>
+   # A build with drafts published (the default)
+   pnpm exec dockitty-check-redirect-coverage <baseline-file> <dist-dir>
 
-   # A build without drafts (the default)
-   pnpm exec dockitty-check-redirect-coverage <baseline-file> <dist-dir> \
+   # A build without drafts (DK_PUBLISH_DRAFTS=off, as on the live site)
+   DK_PUBLISH_DRAFTS=off pnpm exec dockitty-check-redirect-coverage <baseline-file> <dist-dir> \
      --docs <docs-dir> --index-basename README,index \
      --declared-redirects <redirects.json>
    ```
 
    The gate resolves `DK_PUBLISH_DRAFTS` the way the build does: the process
-   environment, then the env files of the site, then `off`. Its first line
+   environment, then the env files of the site, then `on`. Its first line
    states the value, where it came from, the site directory and the mode, for
-   example `DK_PUBLISH_DRAFTS=off (from: default; site root: .; mode:
+   example `DK_PUBLISH_DRAFTS=on (from: default; site root: .; mode:
    production)`. Compare it with the `[dk-drafts]` line of the build. Two
    optional flags steer it:
 

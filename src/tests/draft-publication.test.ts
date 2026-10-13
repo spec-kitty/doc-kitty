@@ -17,6 +17,7 @@ import matter from 'gray-matter';
 import {
   DK_PUBLISH_DRAFTS_ENV,
   DK_PUBLISH_DRAFTS_RESOLVED_ENV,
+  PUBLISH_DRAFTS_DEFAULT,
   describePublishDrafts,
   draftRoutesOf,
   findSiteRoot,
@@ -38,9 +39,10 @@ import { shapeSidebar } from '../lib/route-shaping.js';
 import { ROOT_ENTRY_ID, isDraftEntry, isPublished } from '../lib/metadata.js';
 
 describe('resolvePublishDrafts', () => {
-  it('is off when nothing sets it (fail-closed default, FR-014)', () => {
-    expect(resolvePublishDrafts({}, {})).toBe(false);
-    expect(describePublishDrafts({}, {})).toEqual({ publish: false, source: 'default' });
+  it('is on when nothing sets it (owner decision 2026-10-13: drafts are built by default)', () => {
+    expect(PUBLISH_DRAFTS_DEFAULT).toBe(true);
+    expect(resolvePublishDrafts({}, {})).toBe(true);
+    expect(describePublishDrafts({}, {})).toEqual({ publish: true, source: 'default' });
   });
 
   it('accepts on and off, ignoring case and surrounding whitespace', () => {
@@ -60,6 +62,12 @@ describe('resolvePublishDrafts', () => {
   });
 
   it('uses the env file when the process environment does not set it', () => {
+    // `off` is the value that differs from the default, so this is the case
+    // that shows the file was read.
+    expect(describePublishDrafts({}, { [DK_PUBLISH_DRAFTS_ENV]: 'off' })).toEqual({
+      publish: false,
+      source: 'env file',
+    });
     expect(describePublishDrafts({}, { [DK_PUBLISH_DRAFTS_ENV]: 'on' })).toEqual({
       publish: true,
       source: 'env file',
@@ -67,10 +75,14 @@ describe('resolvePublishDrafts', () => {
   });
 
   it('treats an empty or blank value as not set and falls through', () => {
-    const file = { [DK_PUBLISH_DRAFTS_ENV]: 'on' };
-    expect(resolvePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '' }, file)).toBe(true);
-    expect(resolvePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '   ' }, file)).toBe(true);
-    expect(resolvePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '' }, { [DK_PUBLISH_DRAFTS_ENV]: '' })).toBe(false);
+    const file = { [DK_PUBLISH_DRAFTS_ENV]: 'off' };
+    expect(resolvePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '' }, file)).toBe(false);
+    expect(resolvePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '   ' }, file)).toBe(false);
+    // Blank everywhere: the default.
+    expect(describePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '' }, { [DK_PUBLISH_DRAFTS_ENV]: '' })).toEqual({
+      publish: true,
+      source: 'default',
+    });
   });
 
   it('rejects any other value, naming the setting, both accepted values and the offender (FR-017)', () => {
@@ -85,6 +97,7 @@ describe('resolvePublishDrafts', () => {
       expect(message, value).toContain('"on"');
       expect(message, value).toContain('"off"');
       expect(message, value).toContain(`"${value}"`);
+      expect(message, value).toContain('"on" is the default');
     }
   });
 
@@ -110,8 +123,9 @@ describe('publishDraftsInForce', () => {
     ).toBe(false);
   });
 
-  it('falls back to the setting when no integration ran', () => {
-    expect(publishDraftsInForce({})).toBe(false);
+  it('falls back to the setting, and then to the default, when no integration ran', () => {
+    expect(publishDraftsInForce({})).toBe(true);
+    expect(publishDraftsInForce({ [DK_PUBLISH_DRAFTS_ENV]: 'off' })).toBe(false);
     expect(publishDraftsInForce({ [DK_PUBLISH_DRAFTS_ENV]: 'on' })).toBe(true);
     expect(() => publishDraftsInForce({ [DK_PUBLISH_DRAFTS_ENV]: 'maybe' })).toThrow(/DK_PUBLISH_DRAFTS/);
   });
@@ -155,16 +169,38 @@ describe('env files', () => {
     ).toEqual({ DK_PUBLISH_DRAFTS: 'on', DK_A: 'two words', DK_B: 'x', DK_C: 'plain' });
   });
 
-  it('.env.development reaches the dev server only', () => {
-    const root = site({ '.env.development': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(resolvePublishDrafts({}, readEnvFiles(root, 'development'))).toBe(true);
-    expect(resolvePublishDrafts({}, readEnvFiles(root, 'production'))).toBe(false);
+  it('.env.production reaches a build only, .env.development the dev server only', () => {
+    const live = site({ '.env.production': 'DK_PUBLISH_DRAFTS=off\n' });
+    expect(resolvePublishDrafts({}, readEnvFiles(live, 'production'))).toBe(false);
+    expect(resolvePublishDrafts({}, readEnvFiles(live, 'development'))).toBe(true);
+    const dev = site({ '.env.development': 'DK_PUBLISH_DRAFTS=off\n' });
+    expect(resolvePublishDrafts({}, readEnvFiles(dev, 'development'))).toBe(false);
+    expect(resolvePublishDrafts({}, readEnvFiles(dev, 'production'))).toBe(true);
   });
 
   it('a plain .env applies to both modes, and a mode file overrides it', () => {
-    const root = site({ '.env': 'DK_PUBLISH_DRAFTS=on\n', '.env.production': 'DK_PUBLISH_DRAFTS=off\n' });
-    expect(resolvePublishDrafts({}, readEnvFiles(root, 'development'))).toBe(true);
+    const root = site({ '.env': 'DK_PUBLISH_DRAFTS=off\n', '.env.development': 'DK_PUBLISH_DRAFTS=on\n' });
     expect(resolvePublishDrafts({}, readEnvFiles(root, 'production'))).toBe(false);
+    expect(resolvePublishDrafts({}, readEnvFiles(root, 'development'))).toBe(true);
+  });
+
+  it("the example's .env.example shows the live setting, and no build reads that file", () => {
+    const exampleRoot = path.resolve(import.meta.dirname, '../../example');
+    const text = readFileSync(path.join(exampleRoot, '.env.example'), 'utf8');
+    // Shipped commented out, so copying the file changes nothing by accident.
+    expect(parseEnvFile(text)).toEqual({});
+    expect(text).toMatch(/^# DK_PUBLISH_DRAFTS=off$/m);
+    // Uncommented, as a live deployment would have it, the line turns drafts off.
+    const live = site({ '.env.production': text.replace(/^# (DK_PUBLISH_DRAFTS=off)$/m, '$1') });
+    expect(describePublishDrafts({}, readEnvFiles(live, 'production'))).toEqual({
+      publish: false,
+      source: 'env file',
+    });
+    // `.env.example` is not one of the files a build reads, whatever it holds.
+    const unread = site({ '.env.example': 'DK_PUBLISH_DRAFTS=off\n' });
+    for (const mode of ['production', 'development']) {
+      expect(readEnvFiles(unread, mode), mode).toEqual({});
+    }
   });
 
   it('local files win over their shared counterparts; no files means no settings', () => {
@@ -174,8 +210,10 @@ describe('env files', () => {
   });
 
   it('the process environment still beats every env file', () => {
-    const root = site({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(resolvePublishDrafts({ DK_PUBLISH_DRAFTS: 'off' }, readEnvFiles(root, 'production'))).toBe(false);
+    const on = site({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
+    expect(resolvePublishDrafts({ DK_PUBLISH_DRAFTS: 'off' }, readEnvFiles(on, 'production'))).toBe(false);
+    const off = site({ '.env': 'DK_PUBLISH_DRAFTS=off\n' });
+    expect(resolvePublishDrafts({ DK_PUBLISH_DRAFTS: 'on' }, readEnvFiles(off, 'production'))).toBe(true);
   });
 });
 
@@ -356,14 +394,36 @@ describe('draftPublicationIntegration', () => {
     return options;
   };
 
-  it('off by default: records off and hands the draft slugs to sidebar shaping', () => {
-    const options = setup(undefined);
+  it('on by default: records on, lists no unpublished directory, and says how to turn drafts off', () => {
+    const lines: string[] = [];
+    const log = console.log;
+    console.log = (line: string) => void lines.push(line);
+    let options: RouteShapingOptions;
+    try {
+      options = setup(undefined);
+    } finally {
+      console.log = log;
+    }
+    expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('on');
+    expect(process.env[DK_PUBLISH_DRAFTS_ENV]).toBeUndefined();
+    expect(options.unpublishedDirs).toEqual([]);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('[dk-drafts] DK_PUBLISH_DRAFTS=on (default): draft pages are built, listed and marked noindex.');
+    expect(lines[0]).toContain('Set DK_PUBLISH_DRAFTS=off in a live deployment');
+  });
+
+  it('off: records off and hands the draft slugs to sidebar shaping', () => {
+    const options = setup('off');
     expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('off');
-    expect(options.unpublishedDirs).toEqual(
-      expect.arrayContaining(['plans', 'plans/missions', 'adr/template', 'presentations/draft-preview']),
-    );
-    // Published pages are not listed.
+    expect([...(options.unpublishedDirs ?? [])].sort()).toEqual([
+      'adr/template',
+      'context/audience/draft-persona',
+      'guides/markua-footnotes-malformed',
+      'presentations/draft-preview',
+    ]);
+    // Published pages are not listed, the promoted Plans section among them.
     expect(options.unpublishedDirs).not.toContain('guides/getting-started');
+    expect(options.unpublishedDirs).not.toContain('plans');
   });
 
   it('on: records on, lists no unpublished directory, and leaves the user setting alone', () => {
@@ -383,7 +443,7 @@ describe('draftPublicationIntegration', () => {
     const fromIntegration = [...(setup('off').unpublishedDirs ?? [])].sort();
     const fromGates = [...draftRoutesOf(DOCS, ['README', 'index'])].map((r) => r.slice(1, -1)).sort();
     expect(fromGates).toEqual(fromIntegration);
-    expect(fromGates).toContain('plans/missions/mission-alpha');
+    expect(fromGates).toContain('context/audience/draft-persona');
     expect(fromGates).not.toContain('');
   });
 
@@ -400,6 +460,24 @@ describe('draftPublicationIntegration', () => {
       while (outDirs.length) rmSync(outDirs.pop()!, { recursive: true, force: true });
     });
 
+    /**
+     * A docs tree of its own, in which the two redirect targets are drafts. The
+     * example's `plans/missions/` pages were promoted to active, so the example
+     * no longer holds a redirect that ends at a draft.
+     */
+    function draftDocs(): string {
+      const docs = mkdtempSync(path.join(tmpdir(), 'dk-withheld-docs-'));
+      outDirs.push(docs);
+      const page = (rel: string, status: string): void => {
+        mkdirSync(path.dirname(path.join(docs, rel)), { recursive: true });
+        writeFileSync(path.join(docs, rel), `---\ntitle: T\ndoc_status: ${status}\n---\n`, 'utf8');
+      };
+      page('guides/getting-started.md', 'active');
+      page('plans/missions/mission-alpha.md', 'draft');
+      page('plans/missions/mission-beta.md', 'draft');
+      return docs;
+    }
+
     /** Run both hooks over a fake output holding one stub per redirect, plus a real page. */
     function build(value: string): { warnings: string[]; out: string } {
       process.env[DK_PUBLISH_DRAFTS_ENV] = value;
@@ -410,7 +488,7 @@ describe('draftPublicationIntegration', () => {
         writeFileSync(path.join(out, from, 'index.html'), STUB('/somewhere/'), 'utf8');
       }
       const hooks = draftPublicationIntegration({
-        docsDir: DOCS,
+        docsDir: draftDocs(),
         base: '/doc-kitty',
         indexBasename: ['README', 'index'],
         shapeSidebar: true,
@@ -458,7 +536,7 @@ describe('draftPublicationIntegration', () => {
       mkdirSync(path.dirname(file), { recursive: true });
       writeFileSync(file, '<!doctype html><title>A page</title>', 'utf8');
       const hooks = draftPublicationIntegration({
-        docsDir: DOCS,
+        docsDir: draftDocs(),
         base: '/doc-kitty',
         indexBasename: ['README', 'index'],
         shapeSidebar: true,
@@ -750,7 +828,7 @@ describe('check-links: links to unpublished drafts (T030)', () => {
   };
 
   it('reports a published page linking or relating to a draft when drafts are off', () => {
-    const res = run(tree(PAGES));
+    const res = run(tree(PAGES), 'off');
     expect(res.status).toBe(1);
     expect(res.stderr).toMatch(/guides\/README\.md: link points at a draft page.*→ \/guides\/wip\//);
     expect(res.stderr).toMatch(/guides\/done\.md: related ref points at a draft page.*→ guides\/wip/);
@@ -758,13 +836,16 @@ describe('check-links: links to unpublished drafts (T030)', () => {
     expect(res.stderr).toContain('2 dangling reference(s)');
   });
 
-  it('accepts the same tree when drafts are published', () => {
+  it('accepts the same tree when drafts are published: stated, or by default', () => {
     const res = run(tree(PAGES), 'on');
     expect(res.status, res.stderr).toBe(0);
+    const byDefault = run(tree(PAGES));
+    expect(byDefault.status, byDefault.stderr).toBe(0);
+    expect(byDefault.stdout).toContain('check-links: DK_PUBLISH_DRAFTS=on (from: default;');
   });
 
   it('accepts a link to the root page, which has no status but is never a draft', () => {
-    const res = run(tree({ 'README.md': md(null, 'Home.'), 'a.md': md('active', '[home](/)') }));
+    const res = run(tree({ 'README.md': md(null, 'Home.'), 'a.md': md('active', '[home](/)') }), 'off');
     expect(res.status, res.stderr).toBe(0);
   });
 
@@ -837,18 +918,22 @@ describe('one resolver for the build and its gates', () => {
     return process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV];
   };
 
-  const ON_FROM_FILE = 'DK_PUBLISH_DRAFTS=on (from: env file;';
+  // `off` is the value that differs from the default, so an env file that sets
+  // it is what shows the file was read.
+  const OFF_FROM_FILE = 'DK_PUBLISH_DRAFTS=off (from: env file;';
+  const ON_BY_DEFAULT = 'DK_PUBLISH_DRAFTS=on (from: default;';
+  const OFF_FILE = { '.env': 'DK_PUBLISH_DRAFTS=off\n' };
 
   it('resolveDraftPublication reads the env files of the site root and mode it is given', () => {
-    const { root } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=on\n', '.env.staging': 'DK_PUBLISH_DRAFTS=off\n' });
-    expect(resolveDraftPublication(root, 'production', {})).toEqual({ publish: true, source: 'env file' });
-    expect(resolveDraftPublication(root, 'staging', {})).toEqual({ publish: false, source: 'env file' });
-    expect(resolveDraftPublication(root, 'production', { DK_PUBLISH_DRAFTS: 'off' })).toEqual({
-      publish: false,
+    const { root } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=off\n', '.env.staging': 'DK_PUBLISH_DRAFTS=on\n' });
+    expect(resolveDraftPublication(root, 'production', {})).toEqual({ publish: false, source: 'env file' });
+    expect(resolveDraftPublication(root, 'staging', {})).toEqual({ publish: true, source: 'env file' });
+    expect(resolveDraftPublication(root, 'production', { DK_PUBLISH_DRAFTS: 'on' })).toEqual({
+      publish: true,
       source: 'process environment',
     });
     expect(resolveDraftPublication(path.join(root, 'docs'), 'production', {})).toEqual({
-      publish: false,
+      publish: true,
       source: 'default',
     });
   });
@@ -873,93 +958,109 @@ describe('one resolver for the build and its gates', () => {
   });
 
   it('the gate summary names the value, its source, the site root and the mode', () => {
-    const { root, dist } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
+    const { root, dist } = envFileSite(OFF_FILE);
     const resolved = resolveDraftPublicationForGate({ checkedDir: dist, env: {} });
-    expect(resolved).toMatchObject({ publish: true, source: 'env file', siteRoot: root, mode: 'production' });
-    expect(resolved.summary).toContain(ON_FROM_FILE);
+    expect(resolved).toMatchObject({ publish: false, source: 'env file', siteRoot: root, mode: 'production' });
+    expect(resolved.summary).toContain(OFF_FROM_FILE);
     expect(resolved.summary).toContain('mode: production)');
   });
 
   it('an env-file-only value: the integration builds with it', () => {
-    const { root } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(integration(root)).toBe('on');
-    // Without the file the same site builds draft-free.
-    expect(integration(envFileSite({}).root)).toBe('off');
+    const { root } = envFileSite(OFF_FILE);
+    expect(integration(root)).toBe('off');
+    // Without the file the same site builds its drafts: the default.
+    expect(integration(envFileSite({}).root)).toBe('on');
   });
 
   it('an env-file-only value: the redirect-coverage gate sees what the integration saw', () => {
-    const { root, docs, dist, baseline, declared } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(integration(root)).toBe('on');
-    const res = gate('check-redirect-coverage.mjs', [baseline, dist, '--docs', docs, '--declared-redirects', declared]);
-    expect(res.stdout).toContain(`redirect-coverage: ${ON_FROM_FILE}`);
-    // With drafts on, the unbuilt draft page is a failure, not an excused URL.
-    expect(res.status).toBe(1);
-    expect(res.stderr).toContain('/guides/wip/: no page and no redirect');
+    const { root, docs, dist, baseline, declared } = envFileSite(OFF_FILE);
+    expect(integration(root)).toBe('off');
+    const args = (site: { baseline: string; dist: string; docs: string; declared: string }): string[] => [
+      site.baseline,
+      site.dist,
+      '--docs',
+      site.docs,
+      '--declared-redirects',
+      site.declared,
+    ];
+    const res = gate('check-redirect-coverage.mjs', args({ baseline, dist, docs, declared }));
+    expect(res.stdout).toContain(`redirect-coverage: ${OFF_FROM_FILE}`);
+    // With drafts off, the unbuilt draft page is reported as unpublished.
+    expect(res.status, res.stderr).toBe(0);
+    expect(res.stdout).toContain('/guides/wip/');
+    // The same site with no env file publishes drafts, so the unbuilt draft fails.
+    const byDefault = gate('check-redirect-coverage.mjs', args(envFileSite({})));
+    expect(byDefault.stdout).toContain(`redirect-coverage: ${ON_BY_DEFAULT}`);
+    expect(byDefault.status).toBe(1);
+    expect(byDefault.stderr).toContain('/guides/wip/: no page and no redirect');
   });
 
   it('an env-file-only value: check-links sees what the integration saw', () => {
-    const { root, docs } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(integration(root)).toBe('on');
+    const { root, docs } = envFileSite(OFF_FILE);
+    expect(integration(root)).toBe('off');
     const res = gate('check-links.mjs', [docs]);
-    expect(res.stdout).toContain(`check-links: ${ON_FROM_FILE}`);
-    // With drafts on, a published page may link to a draft.
-    expect(res.status, res.stderr).toBe(0);
-    // The same tree with no env file is draft-free, and the link is reported.
-    const off = gate('check-links.mjs', [envFileSite({}).docs]);
-    expect(off.stdout).toContain('check-links: DK_PUBLISH_DRAFTS=off (from: default;');
-    expect(off.status).toBe(1);
+    expect(res.stdout).toContain(`check-links: ${OFF_FROM_FILE}`);
+    // With drafts off, a published page that links to a draft is reported.
+    expect(res.status).toBe(1);
+    // The same tree with no env file publishes drafts, and the link is accepted.
+    const byDefault = gate('check-links.mjs', [envFileSite({}).docs]);
+    expect(byDefault.stdout).toContain(`check-links: ${ON_BY_DEFAULT}`);
+    expect(byDefault.status, byDefault.stderr).toBe(0);
   });
 
   it('an env-file-only value: assert-build-artifacts sees what the integration saw', () => {
-    const { root, dist } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(integration(root)).toBe('on');
+    const { root, dist } = envFileSite(OFF_FILE);
+    expect(integration(root)).toBe('off');
     // The fixture is not a full build, so the gate fails later; its first line is the resolution.
     const res = gate('assert-build-artifacts.mjs', [dist]);
-    expect(res.stdout.split('\n')[0]).toContain(`assert-build-artifacts: ${ON_FROM_FILE}`);
+    expect(res.stdout.split('\n')[0]).toContain(`assert-build-artifacts: ${OFF_FROM_FILE}`);
+    const byDefault = gate('assert-build-artifacts.mjs', [envFileSite({}).dist]);
+    expect(byDefault.stdout.split('\n')[0]).toContain(`assert-build-artifacts: ${ON_BY_DEFAULT}`);
   });
 
   it('the process environment still wins over the env file, in the build and in every gate', () => {
-    const { root, docs, dist, baseline, declared } = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
-    const OFF = 'DK_PUBLISH_DRAFTS=off (from: process environment;';
-    process.env[DK_PUBLISH_DRAFTS_ENV] = 'off';
+    const { root, docs, dist, baseline, declared } = envFileSite(OFF_FILE);
+    const ON = 'DK_PUBLISH_DRAFTS=on (from: process environment;';
+    process.env[DK_PUBLISH_DRAFTS_ENV] = 'on';
     const hook = draftPublicationIntegration({ docsDir: docs, base: '/', shapeSidebar: true, pagination: true })
       .hooks['astro:config:setup'] as unknown as (arg: unknown) => void;
     hook({ command: 'build', config: { root: pathToFileURL(`${root}/`) } });
-    expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('off');
+    expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('on');
 
     const coverage = gate(
       'check-redirect-coverage.mjs',
       [baseline, dist, '--docs', docs, '--declared-redirects', declared],
-      'off',
+      'on',
     );
-    expect(coverage.stdout).toContain(`redirect-coverage: ${OFF}`);
-    expect(coverage.status, coverage.stderr).toBe(0);
-    const links = gate('check-links.mjs', [docs], 'off');
-    expect(links.stdout).toContain(`check-links: ${OFF}`);
-    expect(links.status).toBe(1);
-    expect(gate('assert-build-artifacts.mjs', [dist], 'off').stdout).toContain(`assert-build-artifacts: ${OFF}`);
+    expect(coverage.stdout).toContain(`redirect-coverage: ${ON}`);
+    expect(coverage.status).toBe(1);
+    expect(coverage.stderr).toContain('/guides/wip/: no page and no redirect');
+    const links = gate('check-links.mjs', [docs], 'on');
+    expect(links.stdout).toContain(`check-links: ${ON}`);
+    expect(links.status, links.stderr).toBe(0);
+    expect(gate('assert-build-artifacts.mjs', [dist], 'on').stdout).toContain(`assert-build-artifacts: ${ON}`);
   });
 
   it('--site-root and --mode pick the env files when the checked directory is outside the site', () => {
-    const { root, baseline, declared, docs } = envFileSite({ '.env.staging': 'DK_PUBLISH_DRAFTS=on\n' });
+    const { root, baseline, declared, docs } = envFileSite({ '.env.staging': 'DK_PUBLISH_DRAFTS=off\n' });
     const elsewhere = mkdtempSync(path.join(tmpdir(), 'dk-out-'));
     dirs.push(elsewhere);
     mkdirSync(path.join(elsewhere, 'guides/done'), { recursive: true });
     writeFileSync(path.join(elsewhere, 'guides/done/index.html'), '<html></html>');
     const args = [baseline, elsewhere, '--docs', docs, '--declared-redirects', declared];
-    expect(gate('check-redirect-coverage.mjs', args).stdout).toContain('DK_PUBLISH_DRAFTS=off (from: default;');
+    expect(gate('check-redirect-coverage.mjs', args).stdout).toContain(ON_BY_DEFAULT);
     const staged = gate('check-redirect-coverage.mjs', [...args, '--site-root', root, '--mode', 'staging']);
-    expect(staged.stdout).toContain(ON_FROM_FILE);
+    expect(staged.stdout).toContain(OFF_FROM_FILE);
     expect(staged.stdout).toContain('mode: staging)');
     expect(gate('check-redirect-coverage.mjs', [...args, '--site-root']).status).toBe(2);
   });
 
   it('the development env file reaches the dev server only, so a gate in the default mode ignores it', () => {
-    const { root, docs } = envFileSite({ '.env.development': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(integration(root, 'dev')).toBe('on');
-    expect(integration(root, 'build')).toBe('off');
-    expect(gate('check-links.mjs', [docs]).stdout).toContain('DK_PUBLISH_DRAFTS=off (from: default;');
-    expect(gate('check-links.mjs', [docs, '--mode', 'development']).stdout).toContain(ON_FROM_FILE);
+    const { root, docs } = envFileSite({ '.env.development': 'DK_PUBLISH_DRAFTS=off\n' });
+    expect(integration(root, 'dev')).toBe('off');
+    expect(integration(root, 'build')).toBe('on');
+    expect(gate('check-links.mjs', [docs]).stdout).toContain(ON_BY_DEFAULT);
+    expect(gate('check-links.mjs', [docs, '--mode', 'development']).stdout).toContain(OFF_FROM_FILE);
   });
 });
 

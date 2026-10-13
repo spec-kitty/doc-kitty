@@ -54,16 +54,16 @@ const OUT_DIR = process.env.DK_OUTDIR ? `./${process.env.DK_OUTDIR}` : undefined
 // base-less surface. `BASE` is prepended so the target agrees with every other
 // in-site link on this site.
 //
-// Draft publication (sidebar-frame-header-carrier WP05, FR-015): the two
-// `plans/missions/` pages are `doc_status: draft`. With DK_PUBLISH_DRAFTS off
-// (the default) they are not built. This config still declares their redirects
-// unconditionally and has no mode logic of its own: the toolkit's
-// draft-publication integration warns about a redirect into a draft and leaves
-// its stub out of a drafts-off build.
+// Draft publication (sidebar-frame-header-carrier WP05, FR-015): every target
+// below is a published page, so all three redirects are built whatever
+// DK_PUBLISH_DRAFTS says. This config has no mode logic of its own. If a target
+// is ever a draft, the toolkit's draft-publication integration warns about that
+// redirect and leaves its stub out of a drafts-off build.
 //
 // The map lives in `redirects.json` (old URL -> new route, without the base) so
-// the redirect-coverage gate can read the same declaration and report those old
-// URLs as unpublished instead of silently accepting or missing them.
+// the redirect-coverage gate can read the same declaration and report an old
+// URL that leads to a draft as unpublished instead of silently accepting or
+// missing it.
 const REDIRECTS = Object.fromEntries(
   Object.entries(
     JSON.parse(readFileSync(new URL('./redirects.json', import.meta.url), 'utf8')),

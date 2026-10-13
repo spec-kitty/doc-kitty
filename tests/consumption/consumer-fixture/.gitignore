@@ -5,9 +5,9 @@ toolkit.tgz
 
 # Build + install outputs.
 dist/
-# Second build of the consumption test, with DK_PUBLISH_DRAFTS=on, and the env
+# Second build of the consumption test, with DK_PUBLISH_DRAFTS=off, and the env
 # file the test writes for it and removes again.
-dist-drafts/
+dist-nodrafts/
 .env.production.local
 .astro/
 node_modules/

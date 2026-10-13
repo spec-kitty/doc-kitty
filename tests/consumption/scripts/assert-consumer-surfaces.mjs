@@ -6,9 +6,10 @@
  * Usage:  node assert-consumer-surfaces.mjs <dist-dir>
  *
  * Auto-discovered and run by `run-consumption-test.mjs` (step 6, glob
- * `assert-consumer-*.mjs`) with the fixture's default build, `dist/`. That
- * script also builds the fixture a second time with `DK_PUBLISH_DRAFTS=on`
- * into the sibling `dist-drafts/`, which this checker reads as well.
+ * `assert-consumer-*.mjs`) with the fixture's default build, `dist/`, which
+ * holds the draft pages (the default is `on`). That script also builds the
+ * fixture a second time with `DK_PUBLISH_DRAFTS=off`, read from an env file,
+ * into the sibling `dist-nodrafts/`, which this checker reads as well.
  *
  * What the fixture supplies, and what is asserted here:
  *
@@ -17,11 +18,12 @@
  *      (`@property`, initial value 100%), the frame rule that reads it, the
  *      frame gutter, and the consumer's value.
  *   2. DRAFT PUBLICATION. `docs/guides/draft-note.md` is `doc_status: draft`.
- *      Default build: the page is absent and nothing names its route. Drafts-on
- *      build: the page exists, carries `noindex`, and the sidebar lists it; the
- *      sitemap, feed, `llms.txt` and agent index still do not; its per-page
- *      agent record exists. Non-vacuity: a published page of the same section
- *      is present in every one of those surfaces.
+ *      Default build (drafts on): the page exists, carries `noindex`, and the
+ *      sidebar lists it; the sitemap, feed, `llms.txt` and agent index do not;
+ *      its per-page agent record exists. Drafts-off build, the setting read
+ *      from an env file: the page is absent and nothing names its route.
+ *      Non-vacuity: a published page of the same section is present in every
+ *      one of those surfaces.
  *   3. THEME HEADER. `src/theme/index.ts` fills `dk:site-header` with
  *      `SiteHeader.astro`. Every framed page renders it exactly once, inside
  *      Starlight's `<header class="header">`, the stock header's root is gone,
@@ -97,11 +99,13 @@ function main() {
     console.error('Usage: assert-consumer-surfaces.mjs <dist-dir>  (the default build)');
     process.exit(2);
   }
-  const drafts = path.join(path.dirname(path.resolve(dist)), 'dist-drafts');
-  if (!existsSync(drafts)) {
+  // `drafts` is the default build (drafts on); `noDrafts` the env-file `off` build.
+  const drafts = dist;
+  const noDrafts = path.join(path.dirname(path.resolve(dist)), 'dist-nodrafts');
+  if (!existsSync(noDrafts)) {
     console.error(
-      `assert-consumer-surfaces: ${drafts} not found. run-consumption-test.mjs builds it with ` +
-        'DK_PUBLISH_DRAFTS=on; this checker needs both builds.',
+      `assert-consumer-surfaces: ${noDrafts} not found. run-consumption-test.mjs builds it with ` +
+        'DK_PUBLISH_DRAFTS=off in an env file; this checker needs both builds.',
     );
     process.exit(2);
   }
@@ -139,22 +143,22 @@ function main() {
   const draftPage = `${DRAFT_SLUG}/index.html`;
   const listings = ['sitemap-0.xml', 'rss.xml', 'llms.txt', 'api/index.json'];
 
-  // Default build: gone everywhere.
-  check(!has(dist, draftPage), 'drafts off (default): the draft page is not built');
-  check(!has(dist, `api/pages/${DRAFT_SLUG}.json`), 'drafts off: no per-page agent record for the draft');
-  const namers = htmlFiles(dist).filter((rel) => read(dist, rel).includes(DRAFT_ROUTE));
+  // Drafts-off build (the setting came from an env file): gone everywhere.
+  check(!has(noDrafts, draftPage), 'drafts off (env file): the draft page is not built');
+  check(!has(noDrafts, `api/pages/${DRAFT_SLUG}.json`), 'drafts off: no per-page agent record for the draft');
+  const namers = htmlFiles(noDrafts).filter((rel) => read(noDrafts, rel).includes(DRAFT_ROUTE));
   check(namers.length === 0, 'drafts off: no built page names the draft route', namers.join(', '));
-  check(has(dist, `${PUBLISHED_SLUG}/index.html`), 'drafts off: a published page of the section is built');
+  check(has(noDrafts, `${PUBLISHED_SLUG}/index.html`), 'drafts off: a published page of the section is built');
   for (const rel of listings) {
-    check(has(dist, rel), `drafts off: ${rel} exists`);
-    if (!has(dist, rel)) continue;
-    const text = read(dist, rel);
+    check(has(noDrafts, rel), `drafts off: ${rel} exists`);
+    if (!has(noDrafts, rel)) continue;
+    const text = read(noDrafts, rel);
     check(!text.includes(DRAFT_SLUG), `drafts off: ${rel} does not list the draft`);
     check(text.includes(PUBLISHED_SLUG), `drafts off: ${rel} lists the published page (non-vacuity)`);
   }
 
-  // Drafts-on build: built, listed, noindex; machine surfaces unchanged.
-  check(has(drafts, draftPage), 'drafts on: the draft page is built');
+  // Default build (drafts on): built, listed, noindex; machine surfaces unchanged.
+  check(has(drafts, draftPage), 'drafts on (default): the draft page is built');
   if (has(drafts, draftPage)) {
     const page = read(drafts, draftPage);
     check(
@@ -169,11 +173,11 @@ function main() {
     'drafts on: a published page carries no noindex (non-vacuity)',
   );
   check(
-    sidebarOf(read(drafts, 'index.html')).includes(`href="${DRAFT_ROUTE}"`),
-    'drafts on: the sidebar lists the draft page',
+    sidebarOf(home).includes(`href="${DRAFT_ROUTE}"`),
+    'drafts on (default): the sidebar lists the draft page',
   );
   check(
-    !sidebarOf(home).includes(`href="${DRAFT_ROUTE}"`),
+    !sidebarOf(read(noDrafts, 'index.html')).includes(`href="${DRAFT_ROUTE}"`),
     'drafts off: the sidebar does not list the draft page',
   );
   check(has(drafts, `api/pages/${DRAFT_SLUG}.json`), 'drafts on: the per-page agent record exists');
@@ -181,7 +185,7 @@ function main() {
     check(has(drafts, rel), `drafts on: ${rel} exists`);
     if (!has(drafts, rel)) continue;
     const text = read(drafts, rel);
-    check(!text.includes(DRAFT_SLUG), `drafts on: ${rel} still does not list the draft`);
+    check(!text.includes(DRAFT_SLUG), `drafts on: ${rel} does not list the draft`);
     check(text.includes(PUBLISHED_SLUG), `drafts on: ${rel} lists the published page (non-vacuity)`);
   }
 

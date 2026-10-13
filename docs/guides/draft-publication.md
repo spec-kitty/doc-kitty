@@ -1,6 +1,6 @@
 ---
 title: Draft publication — keep drafts off the live site
-description: How DK_PUBLISH_DRAFTS decides whether draft pages are built, where to set it for local work and for a deployment, and how to check that a deployment publishes none.
+description: Set DK_PUBLISH_DRAFTS=off in your live deployment. What the setting does, where to set it, and how to check that a deployment publishes no draft.
 doc_status: active
 updated: 2026-10-13
 type: Guide
@@ -19,15 +19,32 @@ related:
 **Audience.** A site owner or the engineer who maintains the site's build and
 deployment.
 
-A build leaves draft pages out unless you turn them on. To see your drafts while
-you write, set `DK_PUBLISH_DRAFTS=on` for your local dev server. To keep them off
-the live site, do nothing: a deployment that never mentions the setting publishes
-no drafts.
+**Set `DK_PUBLISH_DRAFTS=off` in the build that deploys your live site.** That
+is the one thing to do. In a deploy job:
 
-> **Changed in the release that added this setting.** Earlier versions built
-> every draft page and listed it in the sidebar. If you relied on that, set
-> `DK_PUBLISH_DRAFTS=on` in the environment of the build that should keep doing
-> it.
+```yaml
+env:
+  DK_PUBLISH_DRAFTS: 'off'
+```
+
+or in an env file next to `astro.config.mjs` that only builds read:
+
+```sh
+# .env.production
+DK_PUBLISH_DRAFTS=off
+```
+
+The default is `on`: a build that never mentions the setting builds every draft
+page, lists it in the sidebar and marks it `noindex`. That suits local work and
+preview builds, where authors want to see their drafts. A deployment that
+forgets the setting publishes its drafts as `noindex` pages, reachable by anyone
+who has the URL.
+
+> **Upgrading from 0.1.1.** Draft pages were built and listed before, and still
+> are by default. Two things are new for a draft page, and for a page with no
+> `doc_status`: it carries `<meta name="robots" content="noindex">`, and it is
+> left out of site search. Give a page a status other than `draft` to make it
+> indexable and searchable again. The site's root page is never a draft.
 
 ## What counts as a draft
 
@@ -41,13 +58,13 @@ A page is a draft when its frontmatter says `doc_status: draft`, or has no
 |---|---|
 | Name | `DK_PUBLISH_DRAFTS` |
 | Values | `on` or `off`, in any letter case |
-| Default | `off` |
+| Default | `on` |
 | Empty or blank value | treated as not set |
 | Any other value | the build stops, see [A mistyped value](#a-mistyped-value) |
 
 ## What each value does
 
-| Surface | `off` (default) | `on` |
+| Surface | `off` (set this for the live site) | `on` (default) |
 |---|---|---|
 | The draft page itself | not built; its URL returns 404 | built |
 | Sidebar entry | absent | listed |
@@ -87,11 +104,12 @@ The build reads the value from two places, in this order:
 1. **The process environment.** Use this in CI and for a one-off build:
 
    ```sh
-   DK_PUBLISH_DRAFTS=on astro build
+   DK_PUBLISH_DRAFTS=off astro build
    ```
 
 2. **An env file in the site directory** (next to `astro.config.mjs`). Use this
-   for local work. Four files are read, in this order, and a later file wins:
+   to keep the value with the site. Four files are read, in this order, and a
+   later file wins:
    `.env`, `.env.local`, `.env.<mode>`, `.env.<mode>.local`.
 
    **Mode is `development` for `astro dev` and `production` for everything
@@ -103,23 +121,28 @@ The build reads the value from two places, in this order:
    of its own; see [Known limits](#known-limits) for where it differs from the
    build tool's.
 
-To preview drafts with the dev server and never build them, commit one file:
+To build drafts everywhere except in production builds, commit one file:
 
 ```sh
-# .env.development
-DK_PUBLISH_DRAFTS=on
+# .env.production
+DK_PUBLISH_DRAFTS=off
 ```
 
-`astro dev` reads it. `astro build` and `astro preview` do not, so your
-deployment stays draft-free without any setting of its own, and so does a local
-build or preview unless you run it with `DK_PUBLISH_DRAFTS=on`. The file holds no secret, so it is
-safe to commit; check that your `.gitignore` does not exclude it.
+`astro build` and `astro preview` read it. `astro dev` does not, so the dev
+server still shows your drafts. Every production-mode build then leaves drafts
+out, including a local `astro build` and a pull-request preview build; run one
+with `DK_PUBLISH_DRAFTS=on` in the environment when you want the drafts in it.
+The file holds no secret, so it is safe to commit; check that your `.gitignore`
+does not exclude it.
+
+If the same repository builds a preview site that should show drafts, set the
+value in the deploy job's environment instead, and leave the env file out.
 
 The build prints the value it used and where it came from:
 
 ```text
-[dk-drafts] DK_PUBLISH_DRAFTS=off (default): draft pages are not built.
-[dk-drafts] DK_PUBLISH_DRAFTS=on (env file): draft pages are built, listed and marked noindex.
+[dk-drafts] DK_PUBLISH_DRAFTS=on (default): draft pages are built, listed and marked noindex. Set DK_PUBLISH_DRAFTS=off in a live deployment to leave them out.
+[dk-drafts] DK_PUBLISH_DRAFTS=off (env file): draft pages are not built.
 ```
 
 ## A mistyped value
@@ -129,7 +152,7 @@ Any value other than `on` or `off` stops the build before a page is written:
 ```text
 DK_PUBLISH_DRAFTS must be "on" or "off", but the process environment sets it to
 "true". Use "on" to build draft pages (marked noindex) or "off" to leave them
-out; "off" is the default.
+out; "on" is the default.
 ```
 
 The message names the source: `process environment` or `env file`.
@@ -157,12 +180,17 @@ Switch to the toolkit's loader to leave drafts out, or give each page a status.
 
 `dockitty-check-links` and `dockitty-check-redirect-coverage` resolve the
 setting exactly as the build does:
-the process environment, then the env files of the site, then `off`. Each
+the process environment, then the env files of the site, then `on`. Each
 prints one line with the result:
 
 ```text
-redirect-coverage: DK_PUBLISH_DRAFTS=off (from: default; site root: .; mode: production)
+redirect-coverage: DK_PUBLISH_DRAFTS=off (from: process environment; site root: .; mode: production)
 ```
+
+With the setting off, `dockitty-check-links` also fails on a published page that
+links or relates to a draft page, because that link is a 404 on the live site.
+With the setting on it skips that check. Run the gates for your live site with
+the value your deployment uses.
 
 Compare it with the `[dk-drafts]` line of the build. If the two differ, the
 gate checked a build made with another value.
@@ -175,7 +203,9 @@ gate checked a build made with another value.
 ## Check your deployment
 
 1. Read the build log of the deployment. It must contain
-   `DK_PUBLISH_DRAFTS=off` and must not contain `draft page(s) were built`.
+   `DK_PUBLISH_DRAFTS=off` and must not contain `draft page(s) were built`. If
+   it says `DK_PUBLISH_DRAFTS=on (default)`, the deployment does not set the
+   value and is publishing your drafts.
 2. Request a page you know is a draft on the live site. It must return 404.
 3. If you keep a URL baseline, run the redirect-coverage gate against the built
    output. Its first line must name the value the build used. With drafts off,

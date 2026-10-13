@@ -5,9 +5,10 @@
 // publishes; in CI that dist is the downloaded `build-example` artifact (T042).
 //
 // That artifact is built with DK_PUBLISH_DRAFTS=on, so every sidebar lists the
-// example's draft pages. A plain `pnpm build` leaves them out (the default is
-// off). Locally, build with `pnpm build:a11y` before `pnpm test:a11y`;
-// `serve-dist.mjs` warns when the dist it serves has no draft pages.
+// example's draft pages. `on` is the default, so a plain `pnpm build` gives the
+// same pages unless your shell or an env file sets `off`. `pnpm build:a11y`
+// states `on` and is the safe choice before `pnpm test:a11y`; `serve-dist.mjs`
+// warns when the dist it serves has no draft pages.
 //
 // Both colour modes are real, asserted contracts: two projects, `light` and `dark`,
 // each emulating `prefers-color-scheme` AND (via tests/a11y/mode.ts) seeding

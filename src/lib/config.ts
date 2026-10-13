@@ -48,6 +48,7 @@ import { compareCodeUnit } from './vocabulary-core.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
   DK_PUBLISH_DRAFTS_RESOLVED_ENV,
+  PUBLISH_DRAFTS_DEFAULT,
   draftRoutesOf,
   resolveDraftPublication,
   redirectsToDrafts,
@@ -1358,8 +1359,10 @@ const REDIRECT_STUB_RE = /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta htt
  *
  * The value comes from the process environment, else from the site's env files
  * for the build mode (`development` for `astro dev`, `production` for anything
- * else, so `.env.development` reaches the dev server only), else `off`. An
+ * else, so `.env.development` reaches the dev server only), else `on`. An
  * invalid value throws here, which stops the build before anything is emitted.
+ * A live deployment sets `off`; a build that leaves the setting unset says in
+ * its log line how to turn drafts off.
  *
  * The result goes to two consumers:
  *  - the content loader and carriers, through `process.env` — the same
@@ -1386,7 +1389,7 @@ const REDIRECT_STUB_RE = /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta htt
  */
 export function draftPublicationIntegration(routeShaping: RouteShapingOptions): AstroIntegration {
   const { docsDir, base, indexBasename } = routeShaping;
-  let publish = false;
+  let publish: boolean = PUBLISH_DRAFTS_DEFAULT;
   let withheld: Array<{ from: string; route: string }> = [];
   return {
     name: 'doc-kitty:draft-publication',
@@ -1403,7 +1406,10 @@ export function draftPublicationIntegration(routeShaping: RouteShapingOptions): 
         console.log(
           `[dk-drafts] ${DK_PUBLISH_DRAFTS_ENV}=${publish ? 'on' : 'off'} (${resolved.source}): ` +
             (publish
-              ? 'draft pages are built, listed and marked noindex.'
+              ? 'draft pages are built, listed and marked noindex.' +
+                (resolved.source === 'default'
+                  ? ` Set ${DK_PUBLISH_DRAFTS_ENV}=off in a live deployment to leave them out.`
+                  : '')
               : 'draft pages are not built.'),
         );
         if (withheld.length > 0) {

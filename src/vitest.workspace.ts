@@ -35,8 +35,9 @@ const BUILD_SUITES = [
   // same pages with a consumer-supplied sidebar, into a second DK_OUTDIR.
   'tests/sidebar-build-html.test.ts',
   // Draft-publication build assertion (sidebar-frame-header-carrier WP05):
-  // builds the example with DK_PUBLISH_DRAFTS off and on, each into its own
-  // DK_OUTDIR; serialized here for the same shared-`example/.astro` reason.
+  // builds the example with DK_PUBLISH_DRAFTS unset (on), off, and off with a
+  // redirect that ends at a draft, each into its own DK_OUTDIR; serialized
+  // here for the same shared-`example/.astro` reason.
   'tests/draft-publication-build.test.ts',
   // Header carrier build assertion (sidebar-frame-header-carrier WP06): builds
   // the example with and without a theme header, each into its own DK_OUTDIR;

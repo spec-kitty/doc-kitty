@@ -28,9 +28,9 @@
  *      green build with the toolkit source hidden is the SC-001 proof — the
  *      `../src` grep alone is not. The fixture is built TWICE: once with no
  *      `DK_PUBLISH_DRAFTS` at all (into `dist/`, the build every gate below
- *      checks) and once with `DK_PUBLISH_DRAFTS=on` read from an env file
- *      (into `dist-drafts/`), so `assert-consumer-surfaces.mjs` can compare the
- *      two.
+ *      checks; the default builds drafts) and once with `DK_PUBLISH_DRAFTS=off`
+ *      read from an env file (into `dist-nodrafts/`, what a live deployment
+ *      builds), so `assert-consumer-surfaces.mjs` can compare the two.
  *   5. Run the four tarball-portable gate scripts from the INSTALLED package
  *      (node_modules/@spec-kitty/doc-toolkit/scripts/*.mjs) against the
  *      fixture's docs/ and dist/.
@@ -63,13 +63,13 @@ const SRC_HIDDEN = path.join(REPO_ROOT, 'src.hidden');
 const FIXTURE_DIR = path.join(CONSUMPTION_DIR, 'consumer-fixture');
 const TARBALL = path.join(FIXTURE_DIR, 'toolkit.tgz');
 const DIST_DIR = path.join(FIXTURE_DIR, 'dist');
-// Second build, with drafts published (sidebar-frame-header-carrier, C-006).
-const DRAFTS_DIST_NAME = 'dist-drafts';
-const DRAFTS_DIST_DIR = path.join(FIXTURE_DIR, DRAFTS_DIST_NAME);
-// The env file the drafts-on build reads its setting from. Written and removed
+// Second build, without drafts (sidebar-frame-header-carrier, C-006).
+const NODRAFTS_DIST_NAME = 'dist-nodrafts';
+const NODRAFTS_DIST_DIR = path.join(FIXTURE_DIR, NODRAFTS_DIST_NAME);
+// The env file the drafts-off build reads its setting from. Written and removed
 // by this script; `.env.production.local` is the last file the toolkit reads
 // for a build, so nothing else in the fixture can override it.
-const DRAFTS_ENV_FILE = path.join(FIXTURE_DIR, '.env.production.local');
+const NODRAFTS_ENV_FILE = path.join(FIXTURE_DIR, '.env.production.local');
 const DOCS_DIR = path.join(FIXTURE_DIR, 'docs');
 const BASELINE = path.join(FIXTURE_DIR, 'url-baseline.txt');
 const PKG_SCRIPTS = path.join(FIXTURE_DIR, 'node_modules', '@spec-kitty', 'doc-toolkit', 'scripts');
@@ -339,32 +339,33 @@ function build() {
       hidden = true;
       console.log('✓ repo src/ hidden → src.hidden');
     }
-    // Build 1: no DK_PUBLISH_DRAFTS anywhere. The default must leave drafts out
-    // (FR-014), so the variable is removed from the child environment rather
-    // than set to `off`.
+    // Build 1: no DK_PUBLISH_DRAFTS anywhere. The default must build drafts
+    // (owner decision 2026-10-13), so the variable is removed from the child
+    // environment rather than set to `on`.
     const env = { ...process.env };
     delete env.DK_PUBLISH_DRAFTS;
     const status = run('pnpm', ['run', 'build'], { cwd: FIXTURE_DIR, env });
     if (status !== 0) {
       die(`fixture build failed (exit ${status}) — a packaging gap or unresolved export (fail-closed)`);
     }
-    // Build 2: drafts on, set through an env file in the site directory and not
-    // through the process environment. That is the path a consumer uses for
-    // local work, and it exercises the toolkit's own env-file reader from the
-    // installed package (FR-013). Its output goes to a second directory.
-    if (existsSync(DRAFTS_DIST_DIR)) rmSync(DRAFTS_DIST_DIR, { recursive: true, force: true });
-    if (existsSync(DRAFTS_ENV_FILE)) {
-      die(`${DRAFTS_ENV_FILE} already exists — remove it; this script writes and deletes that file`);
+    // Build 2: drafts off, set through an env file in the site directory and
+    // not through the process environment. That is how a consumer can keep the
+    // live setting next to the site, and it exercises the toolkit's own
+    // env-file reader from the installed package (FR-013). Its output goes to a
+    // second directory.
+    if (existsSync(NODRAFTS_DIST_DIR)) rmSync(NODRAFTS_DIST_DIR, { recursive: true, force: true });
+    if (existsSync(NODRAFTS_ENV_FILE)) {
+      die(`${NODRAFTS_ENV_FILE} already exists — remove it; this script writes and deletes that file`);
     }
-    writeFileSync(DRAFTS_ENV_FILE, 'DK_PUBLISH_DRAFTS=on\n');
+    writeFileSync(NODRAFTS_ENV_FILE, 'DK_PUBLISH_DRAFTS=off\n');
     try {
-      const draftsStatus = run('pnpm', ['run', 'build', '--outDir', DRAFTS_DIST_NAME], {
+      const noDraftsStatus = run('pnpm', ['run', 'build', '--outDir', NODRAFTS_DIST_NAME], {
         cwd: FIXTURE_DIR,
         env,
       });
-      if (draftsStatus !== 0) die(`fixture build with drafts on failed (exit ${draftsStatus})`);
+      if (noDraftsStatus !== 0) die(`fixture build with drafts off failed (exit ${noDraftsStatus})`);
     } finally {
-      rmSync(DRAFTS_ENV_FILE, { force: true });
+      rmSync(NODRAFTS_ENV_FILE, { force: true });
     }
   } finally {
     if (hidden && existsSync(SRC_HIDDEN)) {
@@ -373,12 +374,12 @@ function build() {
     }
   }
   if (!existsSync(DIST_DIR)) die('build produced no dist/');
-  if (!existsSync(DRAFTS_DIST_DIR)) die(`build with drafts on produced no ${DRAFTS_DIST_NAME}/`);
-  console.log('✓ clean-room builds succeeded with src/ hidden (drafts off by default, drafts on from an env file)');
+  if (!existsSync(NODRAFTS_DIST_DIR)) die(`build with drafts off produced no ${NODRAFTS_DIST_NAME}/`);
+  console.log('✓ clean-room builds succeeded with src/ hidden (drafts on by default, drafts off from an env file)');
 }
 
 // ── Steps 5 + 6: gates + auto-discovered consumer checkers (aggregated) ─────
-function gate(label, scriptPath, args) {
+function gate(label, scriptPath, args, env) {
   if (!existsSync(scriptPath)) {
     console.error(`✖ ${label}: gate script missing at ${scriptPath}`);
     return false;
@@ -392,7 +393,7 @@ function gate(label, scriptPath, args) {
   // actually runs. (For the non-symlinked consumer checkers this is a no-op.)
   const realScript = realpathSync(scriptPath);
   log(`Gate: ${label}`);
-  const status = run('node', [realScript, ...args]);
+  const status = run('node', [realScript, ...args], env ? { env: { ...process.env, ...env } } : {});
   if (status !== 0) {
     console.error(`✖ ${label} failed (exit ${status})`);
     return false;
@@ -411,6 +412,13 @@ function gates() {
     ]),
   );
   results.push(gate('check-links', path.join(PKG_SCRIPTS, 'check-links.mjs'), [DOCS_DIR]));
+  // The same gate as a live deployment runs it: with drafts off it also fails
+  // on a published page that links to a draft.
+  results.push(
+    gate('check-links (drafts off)', path.join(PKG_SCRIPTS, 'check-links.mjs'), [DOCS_DIR], {
+      DK_PUBLISH_DRAFTS: 'off',
+    }),
+  );
   results.push(
     gate('check-redirect-coverage', path.join(PKG_SCRIPTS, 'check-redirect-coverage.mjs'), [
       BASELINE,
@@ -426,10 +434,10 @@ function gates() {
   );
 
   // Step 6: auto-discover consumer-owned checkers (WP02/WP04 plug in here).
-  // The drafts-on build must not ship a dead link either.
+  // The drafts-off build must not ship a dead link either.
   results.push(
-    gate('assert-no-broken-links (drafts on)', path.join(PKG_SCRIPTS, 'assert-no-broken-links.mjs'), [
-      DRAFTS_DIST_DIR,
+    gate('assert-no-broken-links (drafts off)', path.join(PKG_SCRIPTS, 'assert-no-broken-links.mjs'), [
+      NODRAFTS_DIST_DIR,
       '--base',
       BASE,
     ]),

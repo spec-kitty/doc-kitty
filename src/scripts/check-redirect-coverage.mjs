@@ -35,14 +35,15 @@
  *
  * ## Draft publication (sidebar-frame-header-carrier WP05, FR-015)
  *
- * With `DK_PUBLISH_DRAFTS` off (the default) draft pages are not built, and the
+ * With `DK_PUBLISH_DRAFTS` off (what a live deployment sets; the default is on)
+ * draft pages are not built, and the
  * toolkit leaves out the stub of any redirect that leads to one. A baselined
  * old URL whose successor is still a draft therefore returns 404 on a
  * drafts-off build. That is the honest state, and this gate names it instead
  * of hiding it or failing on it:
  *
  *   - The gate resolves `DK_PUBLISH_DRAFTS` the way the build does: the process
- *     environment, then the site's env files, then `off`. `--site-root <dir>`
+ *     environment, then the site's env files, then `on`. `--site-root <dir>`
  *     names the site (default: the nearest directory with an Astro config above
  *     `<dist-dir>`, else the working directory) and `--mode <mode>` the env-file
  *     mode (default `production`). The first line it prints states the value

@@ -22,11 +22,11 @@
  *   - T022 — both coverage failure modes (an uncovered URL; a redirect to a
  *     dead target) as FOCUSED unit tests against crafted fixtures — never a
  *     standing red CI gate.
- *   - T023 — the build succeeds and the existing (pre-WP04) corpus stays
- *     green: `assert-build-artifacts.mjs`'s pinned agent-index/sitemap counts
- *     are UNCHANGED (the new `plans/**` pages are `doc_status: draft`, so
- *     they add zero to those published-set counts — the new content changes
- *     nothing on that WP01-owned gate; see the WP04 handoff note).
+ *   - T023 — the build succeeds and the existing corpus stays green:
+ *     `assert-build-artifacts.mjs` passes against this build. The `plans/**`
+ *     pages are published (`doc_status: active`, owner decision 2026-10-13), so
+ *     they are part of that gate's pinned agent-index/sitemap counts and are
+ *     built whatever `DK_PUBLISH_DRAFTS` says.
  *
  * Companion (`example/docs/**`) content lives in `example/docs/plans/`;
  * `example/docs/_meta/sections.yaml` registers the section + its `subtypes`
@@ -107,11 +107,9 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
     buildResult = spawnSync('pnpm', ['--filter', 'example', 'build'], {
       cwd: REPO_ROOT,
       encoding: 'utf8',
-      // This suite's subject is the `plans/` section, whose pages are all
-      // `doc_status: draft` (T023 depends on that). Drafts are built only with
-      // DK_PUBLISH_DRAFTS=on (default off, sidebar-frame-header-carrier WP05),
-      // so the setting is stated for this build.
-      env: { ...childEnv, DK_OUTDIR: WP04_OUT_DIR_NAME, DK_PUBLISH_DRAFTS: 'on' },
+      // This suite's subject is the `plans/` section, whose pages are
+      // published, so the build needs no DK_PUBLISH_DRAFTS value of its own.
+      env: { ...childEnv, DK_OUTDIR: WP04_OUT_DIR_NAME },
     });
   }, 180_000);
 
@@ -123,14 +121,15 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
   });
 
   it(
-    'T023: assert-build-artifacts.mjs (WP01-owned pinned ratchet) is UNCHANGED — the new plans/** ' +
-      'pages are doc_status:draft, so they add zero to the published agent-index/sitemap counts',
+    'T023: assert-build-artifacts.mjs (WP01-owned pinned ratchet) passes — the published plans/** ' +
+      'pages are counted in its pinned agent-index/sitemap counts',
     () => {
-      // The gate checks the draft page against the setting it runs under, so it
-      // gets the same value as the build above.
+      // The gate checks the draft pages against the setting it runs under. It
+      // inherits this process's environment, as the build above did, so the two
+      // resolve the same value.
       const res = spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], {
         encoding: 'utf8',
-        env: { ...process.env, DK_PUBLISH_DRAFTS: 'on' },
+        env: process.env,
       });
       expect(res.status, `assert:artifacts stderr:\n${res.stderr}`).toBe(0);
     },

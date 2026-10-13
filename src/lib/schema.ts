@@ -323,7 +323,8 @@ function walkMarkdownPaths(absBase: string): string[] {
  * outside `src/content/docs`. This returns Astro's `glob` loader with the id
  * mapping; confirm the wiring when versions are pinned during build set-up.
  *
- * Draft publication: this loader is where `DK_PUBLISH_DRAFTS` takes effect. A
+ * Draft publication: this loader is where `DK_PUBLISH_DRAFTS` takes effect. The
+ * default is `on` (drafts are kept, with `pagefind: false`); `off` drops them. A
  * site that loads its docs collection some other way still gets the `noindex`
  * marker and the machine-surface exclusions, but its draft pages are emitted
  * whatever the setting says; the integration warns when that happens.

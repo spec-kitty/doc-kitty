@@ -1,7 +1,7 @@
 ---
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
-doc_status: draft
+doc_status: active
 updated: 2026-10-13
 type: Architecture
 kind: Reference

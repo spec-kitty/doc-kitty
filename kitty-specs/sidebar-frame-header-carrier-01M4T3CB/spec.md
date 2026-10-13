@@ -228,3 +228,4 @@ The requirement text above is as written at planning time. Where it differs from
 - **Reading column.** It is 528px at a 1152px viewport and 656px at 1280px.
 - **SC-006.** Met for five of the eight labels. The three generated glossary-context groups keep a raw id as label.
 - **FR-010.** Verified by simulation only. No page in the example has a rail and no sidebar.
+- Owner decision 2026-10-13: the draft-publication default is `on`; the live deployment sets `off` explicitly. This supersedes FR-014, scenario 3.3 and the fail-closed assumption.

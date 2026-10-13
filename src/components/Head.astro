@@ -44,7 +44,8 @@ const filePath = (entry as unknown as { filePath?: string }).filePath;
 
 // A draft that is being rendered must not be indexed (FR-015). With
 // DK_PUBLISH_DRAFTS off the docs loader drops drafts, so this carrier only sees
-// one when drafts are published. The test is the page's status alone, not the
+// one when drafts are published, which is the default. The test is the page's
+// status alone, not the
 // setting: a site whose docs do not go through `docKittyDocsLoader` still emits
 // its drafts, and those must carry the marker too. The site root is exempt by
 // the loader's own rule (`isDraftEntry`): a home page with no `doc_status` is

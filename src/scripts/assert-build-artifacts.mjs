@@ -122,7 +122,14 @@ import {
 //     Sum: 1+3+3+15+2+1 = 25. Verified empirically — a clean
 //     `pnpm --filter example build` yields api/index.json count == 56 and 25
 //     routes matching /rhetoric/ (22 docs + 2 rhetoric personas + 1 glossary).
-const EXPECTED_INDEX_ENTRY_COUNT = 56;
+//   - sidebar-frame-header-carrier (owner decision 2026-10-13) promotes FIVE
+//     example pages from draft to active, because the live site is built with
+//     drafts off and should keep them: plans/index.md, plans/missions/index.md,
+//     plans/missions/mission-alpha.md, plans/missions/mission-beta.md and
+//     guides/markua-footnotes-showcase.md (+5) → 56 → 61. No page was added.
+//     Four drafts remain: adr/template, context/audience/draft-persona,
+//     guides/markua-footnotes-malformed and presentations/draft-preview.
+const EXPECTED_INDEX_ENTRY_COUNT = 61;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -135,10 +142,12 @@ const EXPECTED_INDEX_ENTRY_COUNT = 56;
 // ars-rethorica-example (#01M204RR) WP09 adds the same +25 showcase pages
 // (the @astrojs/sitemap filter drops drafts, so the sitemap page-URL count equals
 // the published index set), 31 → 56. See the index-count derivation above.
-const EXPECTED_SITEMAP_URL_COUNT = 56;
+// sidebar-frame-header-carrier promotes five example pages from draft to active
+// (the Plans section and the footnotes showcase, +5), 56 → 61.
+const EXPECTED_SITEMAP_URL_COUNT = 61;
 
-// The single draft page (example/docs/adr/template.md, doc_status: draft). Its
-// route MUST NOT appear in the sitemap once the draft filter is in place.
+// A draft page (example/docs/adr/template.md, doc_status: draft). Its route
+// MUST NOT appear in the sitemap once the draft filter is in place.
 const DRAFT_ROUTE_MARKER = 'adr/template';
 
 // Required top-level keys of the agent index and their JS types.
@@ -1593,7 +1602,7 @@ async function main() {
   const distDir = path.resolve(distArg);
 
   // Draft publication (FR-013..FR-016): resolved first, with the resolver the
-  // build uses (process environment, then the site's env files, then off), so
+  // build uses (process environment, then the site's env files, then on), so
   // the log opens with the value this gate checks the build against. The site
   // root is the one given, else the nearest Astro config above the output.
   let publishDrafts;

@@ -1,8 +1,8 @@
 ---
 title: Markua footnotes showcase
 description: Markua double-caret footnotes rendered as real, back-linked GFM footnotes (FR-004).
-doc_status: draft
-updated: 2026-09-08
+doc_status: active
+updated: 2026-10-13
 type: Guide
 kind: Reference
 tags: [markua, footnotes, fixture, showcase]
@@ -12,8 +12,9 @@ glossary_autolink: false
 <!-- This is a Markua fixture: it deliberately contains Markua footnote syntax
      (`[^^N_M]` references and `[^^N_M]:` definitions) that conventional markdownlint
      rules flag. Not conventional Markdown; frontmatter + links are still validated
-     by validate:docs/validate:links. The page is doc_status: draft so it does not
-     move the published-page ratchet (EXPECTED_INDEX_ENTRY_COUNT / SITEMAP). -->
+     by validate:docs/validate:links. The page is published (doc_status: active),
+     so it counts in the published-page ratchet (EXPECTED_INDEX_ENTRY_COUNT /
+     SITEMAP); its negative twin, markua-footnotes-malformed.md, stays a draft. -->
 
 # Markua footnotes showcase
 

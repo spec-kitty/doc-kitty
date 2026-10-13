@@ -110,10 +110,9 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
     build = spawnSync('pnpm', ['--filter', 'example', 'build'], {
       cwd: REPO_ROOT,
       encoding: 'utf8',
-      // The example's Plans section is draft content. Drafts are built today;
-      // once publication is gated on DK_PUBLISH_DRAFTS (default off) this suite
-      // still needs them, so the setting is stated here.
-      env: { ...childEnv, DK_OUTDIR: OUT_DIR_NAME, DK_PUBLISH_DRAFTS: 'on' },
+      // Every group this suite names holds published pages (the Plans section
+      // was promoted from draft), so the build needs no DK_PUBLISH_DRAFTS value.
+      env: { ...childEnv, DK_OUTDIR: OUT_DIR_NAME },
     });
     if (build.status === 0 && existsSync(path.join(OUT_DIR, 'index.html'))) {
       home = readOut('index.html');
@@ -253,7 +252,6 @@ describe('WP07 — a consumer-supplied sidebar is not reshaped (C-004)', () => {
     const env: Record<string, string | undefined> = {
       ...process.env,
       DK_OUTDIR: CONSUMER_OUT_DIR_NAME,
-      DK_PUBLISH_DRAFTS: 'on',
     };
     // Vitest's own `import.meta.env` values; see `header-carrier.test.ts`.
     for (const name of ['NODE_ENV', 'MODE', 'DEV', 'PROD', 'SSR', 'BASE_URL']) delete env[name];

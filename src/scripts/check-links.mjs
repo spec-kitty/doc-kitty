@@ -59,7 +59,8 @@
  *
  * ## Links to unpublished drafts (FR-015, sidebar-frame-header-carrier WP05)
  *
- * With `DK_PUBLISH_DRAFTS` off (the default) a draft page is not built, so a
+ * With `DK_PUBLISH_DRAFTS` off (what a live deployment sets; the default is on)
+ * a draft page is not built, so a
  * link to it from a published page is a 404 on the site even though the target
  * file exists. For a {@link SITE_ROOTS} file this gate therefore also reports
  * an inline link or `related` ref from a PUBLISHED page to a DRAFT page. Here a

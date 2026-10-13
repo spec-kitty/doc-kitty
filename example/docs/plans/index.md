@@ -1,8 +1,8 @@
 ---
 title: Plans
 description: Forward-looking mission write-ups for the example docsite — not the current state (see architecture/).
-doc_status: draft
-updated: 2026-09-03
+doc_status: active
+updated: 2026-10-13
 type: Plan
 kind: Hub
 ---

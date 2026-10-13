@@ -1,7 +1,7 @@
 ---
 title: Missions
 description: Short mission write-ups for the example docsite, one page per mission.
-doc_status: draft
+doc_status: active
 updated: 2026-10-13
 type: Mission
 kind: Hub

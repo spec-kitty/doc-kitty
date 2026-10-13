@@ -8,7 +8,8 @@
 # DK_PUBLISH_DRAFTS. Like the diagram build-render settings it is JOB-level, so
 # each caller states it: ci.yml's build-example job sets `on` (its gates cover
 # draft pages) and deploy.yml sets `off` (the live site publishes no drafts). A
-# caller that sets nothing gets the toolkit default, which is `off`.
+# caller that sets nothing gets the toolkit default, which is `on`: its build
+# contains the draft pages.
 #
 # Scope boundary (contracts/build-example-action.contract.md):
 #   - PURE BUILD. It does NOT run artifact assertions. `pnpm assert:artifacts`

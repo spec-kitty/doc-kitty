@@ -30,9 +30,7 @@
 //      centred on the rail edge, sidebar entries), then merge that pull request.
 //      Dispatch FROM the branch as well (`--ref <branch>`) when the branch changes
 //      the workflow file: a dispatch runs the workflow copy on its ref, `main` by
-//      default. This mission adds `DK_PUBLISH_DRAFTS: 'on'` to that workflow; the
-//      copy on `main` builds without drafts until this branch is merged, and a
-//      baseline from that build shows a sidebar the a11y lane never renders.
+//      default.
 // Do not run `--update-snapshots` on a workstation: fonts and rasterisation differ
 // from the pinned image and the result fails in CI.
 //

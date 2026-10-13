@@ -96,11 +96,12 @@ const server = createServer(async (req, res) => {
 
 // The lane is written against a dist built with DK_PUBLISH_DRAFTS=on, like the
 // one ci.yml's build-example job hands over: the sidebar on every page lists the
-// example's draft pages. A default `pnpm build` leaves drafts out, and the
-// sidebar-dependent checks then fail for a reason that has nothing to do with
-// the change under test. `plans/` is a draft section of the example; if it is
-// ever published, pick another draft route here.
-const DRAFT_SENTINEL = 'plans/index.html';
+// example's draft pages. That is what `pnpm build` produces by default. A build
+// made with DK_PUBLISH_DRAFTS=off leaves drafts out, and the sidebar-dependent
+// checks then fail for a reason that has nothing to do with the change under
+// test. `adr/template/` is a draft page of the example; if it is ever
+// published, pick another draft route here.
+const DRAFT_SENTINEL = 'adr/template/index.html';
 try {
   await stat(join(DIST, 'index.html'));
   try {
