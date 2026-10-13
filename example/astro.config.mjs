@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { readFileSync } from 'node:fs';
 import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
 import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty/index.ts';
 
@@ -52,11 +53,22 @@ const OUT_DIR = process.env.DK_OUTDIR ? `./${process.env.DK_OUTDIR}` : undefined
 // bug #61 fixed for glossary/component hrefs, here in the one remaining
 // base-less surface. `BASE` is prepended so the target agrees with every other
 // in-site link on this site.
-const REDIRECTS = {
-  '/guides/old-getting-started/': `${BASE}/guides/getting-started/`,
-  '/plans/features/mission-alpha/': `${BASE}/plans/missions/mission-alpha/`,
-  '/plans/features/mission-beta/': `${BASE}/plans/missions/mission-beta/`,
-};
+//
+// Draft publication (sidebar-frame-header-carrier WP05, FR-015): the two
+// `plans/missions/` pages are `doc_status: draft`. With DK_PUBLISH_DRAFTS off
+// (the default) they are not built. This config still declares their redirects
+// unconditionally and has no mode logic of its own: the toolkit's
+// draft-publication integration warns about a redirect into a draft and leaves
+// its stub out of a drafts-off build.
+//
+// The map lives in `redirects.json` (old URL -> new route, without the base) so
+// the redirect-coverage gate can read the same declaration and report those old
+// URLs as unpublished instead of silently accepting or missing them.
+const REDIRECTS = Object.fromEntries(
+  Object.entries(
+    JSON.parse(readFileSync(new URL('./redirects.json', import.meta.url), 'utf8')),
+  ).map(([from, to]) => [from, `${BASE}${to}`]),
+);
 
 export default defineConfig({
   site: SITE,

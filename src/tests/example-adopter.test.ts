@@ -107,7 +107,11 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
     buildResult = spawnSync('pnpm', ['--filter', 'example', 'build'], {
       cwd: REPO_ROOT,
       encoding: 'utf8',
-      env: { ...childEnv, DK_OUTDIR: WP04_OUT_DIR_NAME },
+      // This suite's subject is the `plans/` section, whose pages are all
+      // `doc_status: draft` (T023 depends on that). Drafts are built only with
+      // DK_PUBLISH_DRAFTS=on (default off, sidebar-frame-header-carrier WP05),
+      // so the setting is stated for this build.
+      env: { ...childEnv, DK_OUTDIR: WP04_OUT_DIR_NAME, DK_PUBLISH_DRAFTS: 'on' },
     });
   }, 180_000);
 
@@ -122,7 +126,12 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
     'T023: assert-build-artifacts.mjs (WP01-owned pinned ratchet) is UNCHANGED — the new plans/** ' +
       'pages are doc_status:draft, so they add zero to the published agent-index/sitemap counts',
     () => {
-      const res = spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], { encoding: 'utf8' });
+      // The gate checks the draft page against the setting it runs under, so it
+      // gets the same value as the build above.
+      const res = spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], {
+        encoding: 'utf8',
+        env: { ...process.env, DK_PUBLISH_DRAFTS: 'on' },
+      });
       expect(res.status, `assert:artifacts stderr:\n${res.stderr}`).toBe(0);
     },
   );

@@ -56,11 +56,28 @@
  * verify a root-absolute target resolves against the real route tree, so it
  * is intentionally left to `assert-no-broken-links.mjs` (the base-aware,
  * built-output gate) to be the authority on whether it actually 200s.
+ *
+ * ## Links to unpublished drafts (FR-015, sidebar-frame-header-carrier WP05)
+ *
+ * With `DK_PUBLISH_DRAFTS` off (the default) a draft page is not built, so a
+ * link to it from a published page is a 404 on the site even though the target
+ * file exists. For a {@link SITE_ROOTS} file this gate therefore also reports
+ * an inline link or `related` ref from a PUBLISHED page to a DRAFT page. Here a
+ * root-absolute link IS looked up (against the docs root), because the question
+ * is only "is that file a draft", which the filesystem can answer. A draft page
+ * may link to anything: it is not built either. With the setting `on` the
+ * check is skipped. The setting is read from the process environment only;
+ * this gate has no site root to read env files from.
  */
 import { readdirSync, statSync, existsSync, readFileSync, realpathSync } from 'node:fs';
 import { join, relative, dirname, resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
+import {
+  isDraftStatus,
+  resolveDraftPublicationForGate,
+  takeSiteFlags,
+} from '../lib/draft-publication.mjs';
 
 // FR-003: a directory-link target resolves via EITHER configured index
 // basename. `README` is the default; `index` is accepted unconditionally too
@@ -138,6 +155,46 @@ export function resolvesToDoc(candidate) {
     existsSync(`${candidate}.mdx`) ||
     INDEX_BASENAMES.some((basename) => existsSync(join(candidate, `${basename}.md`)))
   );
+}
+
+/**
+ * The Markdown file `candidate` resolves to, or null. Same forms as
+ * {@link resolvesToDoc}, but returns the file so its front matter can be read.
+ */
+export function resolveDocFile(rawCandidate) {
+  // A route may end in `/` (`…/adr/template/`); the file forms hang off the bare path.
+  const candidate = rawCandidate.replace(/\/+$/, '');
+  const forms = [
+    candidate,
+    `${candidate}.md`,
+    `${candidate}.mdx`,
+    ...INDEX_BASENAMES.flatMap((basename) => [
+      join(candidate, `${basename}.md`),
+      join(candidate, `${basename}.mdx`),
+    ]),
+  ];
+  for (const form of forms) {
+    if (MD_EXT.test(form) && existsSync(form) && statSync(form).isFile()) return form;
+  }
+  return null;
+}
+
+/**
+ * Is the page at `candidate` an unpublished draft of the tree rooted at `root`?
+ * A draft is `doc_status: draft` or no status (the schema default). The bundle
+ * root page is never a draft: the loader never filters it.
+ */
+export function resolvesToDraft(root, candidate) {
+  const file = resolveDocFile(candidate);
+  if (file === null) return false;
+  if (INDEX_BASENAMES.some((basename) => new RegExp(`^${basename}\\.mdx?$`, 'i').test(relative(root, file)))) {
+    return false;
+  }
+  try {
+    return isDraftStatus(matter(readFileSync(file, 'utf8')).data?.doc_status);
+  } catch {
+    return false; // unreadable front matter is the frontmatter gate's finding
+  }
 }
 
 /** Strip a trailing `#anchor` / `?query` from a link target. */
@@ -220,8 +277,33 @@ export function classifyInlineLink(rawTarget, opts = {}) {
 
 /** CLI entry point: scan every `.md`/`.mdx` under each root for dangling refs. */
 export function run(argv) {
-  const roots = argv.slice(2);
+  let site;
+  try {
+    site = takeSiteFlags(argv.slice(2));
+  } catch (err) {
+    console.error(`✖ ${err.message}`);
+    process.exit(2);
+  }
+  const roots = site.rest;
   if (roots.length === 0) roots.push('docs', 'example/docs');
+
+  // The same resolver the build uses, so a value kept in the site's env files
+  // counts here too. The site root is the one given, else the nearest Astro
+  // config above the first site-built tree (or above the first tree, when none
+  // of them is site-built and the value therefore changes nothing).
+  let publishDrafts;
+  try {
+    const resolved = resolveDraftPublicationForGate({
+      checkedDir: roots.find(isSiteRoot) ?? roots[0],
+      siteRoot: site.siteRoot,
+      mode: site.mode,
+    });
+    publishDrafts = resolved.publish;
+    console.log(`check-links: ${resolved.summary}`);
+  } catch (err) {
+    console.error(`✖ ${err.message}`);
+    process.exit(2);
+  }
 
   let dangling = 0;
   let checked = 0;
@@ -257,13 +339,31 @@ export function run(argv) {
         parsed.data?.type === 'Template' || /(^|\/)template\.md$/i.test(rel);
       if (isTemplate) continue;
 
+      // Draft-link check: only for a built tree, only with drafts unpublished,
+      // and only from a page that is itself published.
+      const checkDrafts =
+        strict && !publishDrafts && !resolvesToDraft(root, file);
+      const DRAFT_REASON =
+        'points at a draft page, which is not built unless DK_PUBLISH_DRAFTS=on — ' +
+        'publish the target, mark this page draft, or drop the link';
+
       // 1) Inline Markdown links in the body (code stripped so examples aren't links).
       const body = stripCode(parsed.content);
       let m;
       INLINE_LINK.lastIndex = 0;
       while ((m = INLINE_LINK.exec(body)) !== null) {
         const classified = classifyInlineLink(m[1], { strict });
-        if (classified.kind === 'skip') continue;
+        if (classified.kind === 'skip') {
+          // A root-absolute route is not resolved here (see the module comment),
+          // but whether it names a draft file is a filesystem fact.
+          const absolute = stripFragment(m[1].trim());
+          if (checkDrafts && /^\/(?!\/)/.test(absolute) && resolvesToDraft(root, join(root, absolute))) {
+            checked++;
+            dangling++;
+            console.error(`✖ ${rel}: link ${DRAFT_REASON} → ${m[1]}`);
+          }
+          continue;
+        }
         checked++;
         if (classified.kind === 'invalid') {
           dangling++;
@@ -274,6 +374,9 @@ export function run(argv) {
         if (!resolvesToDoc(candidate)) {
           dangling++;
           console.error(`✖ ${rel}: dangling link → ${m[1]}`);
+        } else if (checkDrafts && resolvesToDraft(root, candidate)) {
+          dangling++;
+          console.error(`✖ ${rel}: link ${DRAFT_REASON} → ${m[1]}`);
         }
       }
 
@@ -291,6 +394,9 @@ export function run(argv) {
           if (!resolvesToDoc(resolve(root, id))) {
             dangling++;
             console.error(`✖ ${rel}: dangling related ref → ${ref}`);
+          } else if (checkDrafts && resolvesToDraft(root, resolve(root, id))) {
+            dangling++;
+            console.error(`✖ ${rel}: related ref ${DRAFT_REASON} → ${ref}`);
           }
         }
       }

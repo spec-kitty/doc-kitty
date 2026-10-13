@@ -29,6 +29,7 @@ import {
   SECTION_TYPE,
   expectedDocType,
   compareCodeUnit,
+  isDraftStatus,
 } from './vocabulary-core.mjs';
 
 export { SECTION_TYPE, expectedDocType };
@@ -250,7 +251,17 @@ export function sectionLabel(
 
 /** A page is published (crawlable / in sitemap) unless it is still a draft. */
 export function isPublished(data: DocKittyFrontmatter): boolean {
-  return (data.doc_status ?? 'draft') !== 'draft';
+  return !isDraftStatus(data.doc_status);
+}
+
+/**
+ * Is this collection entry a draft page? The site root is never one, whatever
+ * its `doc_status`: a site always has a home page, and it is always indexable.
+ * The docs loader (which entries it drops) and the Head carrier (which pages it
+ * marks `noindex`) both ask this, so they cannot disagree about the root.
+ */
+export function isDraftEntry(entry: { id: string; data: { doc_status?: unknown } }): boolean {
+  return entry.id !== ROOT_ENTRY_ID && isDraftStatus(entry.data.doc_status);
 }
 
 /** A published page is exposed to agents unless it opts out. */

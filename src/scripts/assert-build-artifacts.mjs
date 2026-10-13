@@ -20,6 +20,7 @@
  * stack-based scanner (below) — not by a filename grep, and not by adding a
  * parser dependency.
  */
+import { existsSync } from 'node:fs';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -28,6 +29,12 @@ import { fileURLToPath } from 'node:url';
 // own WP05-owned module to keep lane ownership clean; the main gate awaits them so
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
+import {
+  DK_PUBLISH_DRAFTS_ENV,
+  draftRoutesOf,
+  resolveDraftPublicationForGate,
+  takeSiteFlags,
+} from '../lib/draft-publication.mjs';
 
 // ---------------------------------------------------------------------------
 // Pinned expectations for today's example content (T015).
@@ -173,7 +180,7 @@ const SECTION_INDEX_SOURCE = 'example/docs/adr/README.md';
 // #44 / FR-013 / SC-003b: the example ADR README dropped its hand table, so the
 // `kind: Hub` layout must AUTO-LIST the ADRs on build. The example's ADR-0001
 // renders at /adr/0001-use-astro-starlight/. That link is NOT in the source
-// Markdown (the prose links /adr/template/, not 0001), so a built link to it can
+// Markdown (the prose names the template file, not 0001), so a built link to it can
 // ONLY come from the Hub auto-list — non-fakeable by grepping source Markdown.
 const SECTION_INDEX_HUB_LINK = 'adr/0001-use-astro-starlight/';
 
@@ -273,6 +280,20 @@ const DEMO_DIAGRAMS = [
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..');
 const TOOLKIT_MANIFEST = path.join(REPO_ROOT, 'src', 'package.json');
+// The example's docs tree and section-index basenames (as in its astro.config.mjs).
+const EXAMPLE_DOCS_DIR = path.join(REPO_ROOT, 'example', 'docs');
+const EXAMPLE_INDEX_BASENAMES = ['README', 'index'];
+
+/** Every `.html` file under `dir`, as absolute paths. */
+async function htmlFilesUnder(dir) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...(await htmlFilesUnder(abs)));
+    else if (entry.name.endsWith('.html')) out.push(abs);
+  }
+  return out;
+}
 const TOOLKIT_CONFIG_SRC = path.join(REPO_ROOT, 'src', 'lib', 'config.ts');
 const PNPM_LOCKFILE = path.join(REPO_ROOT, 'pnpm-lock.yaml');
 // #13 (C-002): the build-render deps are exact-pinned (golden-file deps):
@@ -1557,11 +1578,36 @@ async function assertComponentCssDelivered(distDir) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const distArg = process.argv[2];
+  let site;
+  try {
+    site = takeSiteFlags(process.argv.slice(2));
+  } catch (err) {
+    fail(err.message);
+  }
+  const distArg = site.rest[0];
   if (!distArg) {
-    fail('usage: node src/scripts/assert-build-artifacts.mjs <distDir>');
+    fail(
+      'usage: node src/scripts/assert-build-artifacts.mjs <distDir> [--site-root <dir>] [--mode <mode>]',
+    );
   }
   const distDir = path.resolve(distArg);
+
+  // Draft publication (FR-013..FR-016): resolved first, with the resolver the
+  // build uses (process environment, then the site's env files, then off), so
+  // the log opens with the value this gate checks the build against. The site
+  // root is the one given, else the nearest Astro config above the output.
+  let publishDrafts;
+  try {
+    const resolved = resolveDraftPublicationForGate({
+      checkedDir: distDir,
+      siteRoot: site.siteRoot,
+      mode: site.mode,
+    });
+    publishDrafts = resolved.publish;
+    console.log(`assert-build-artifacts: ${resolved.summary}`);
+  } catch (err) {
+    fail(err.message);
+  }
 
   try {
     const info = await stat(distDir);
@@ -1610,6 +1656,66 @@ async function main() {
     );
   }
   ok(`sitemap: draft "${DRAFT_ROUTE_MARKER}" absent, ${sitemapUrlCount} page URL(s) (published set)`);
+
+  // Draft publication (FR-013..FR-016): the draft page itself must match the
+  // setting resolved at the top of this run. A mismatch is exactly the leak
+  // this catches (the setting says off, yet the build emitted a draft).
+  // Every draft route of the example, derived from `doc_status` in its docs
+  // tree (never a list kept here), so a new draft page is covered the day it
+  // is added. The known marker must be among them, or the derivation is broken.
+  const draftSlugs = [...draftRoutesOf(EXAMPLE_DOCS_DIR, EXAMPLE_INDEX_BASENAMES)]
+    .map((route) => route.slice(1, -1))
+    .sort();
+  if (!draftSlugs.includes(DRAFT_ROUTE_MARKER)) {
+    fail(
+      `draft publication: "${DRAFT_ROUTE_MARKER}" is not among the draft routes read from ` +
+        `${EXAMPLE_DOCS_DIR} (${draftSlugs.length} found) — the draft-route derivation is broken`,
+    );
+  }
+  const draftPage = (slug) => path.join(distDir, slug, 'index.html');
+  if (!publishDrafts) {
+    const built = draftSlugs.filter((slug) => existsSync(draftPage(slug)));
+    if (built.length > 0) {
+      fail(
+        `draft publication: ${DK_PUBLISH_DRAFTS_ENV} is off, but ${built.length} draft page(s) were ` +
+          `built in ${distDir}: ${built.join(', ')} — with the setting off no draft page may be emitted`,
+      );
+    }
+    // No built page may link to a draft either (FR-015). The href is matched
+    // by its route ending, so the check holds with or without a site base.
+    const linked = [];
+    for (const file of await htmlFilesUnder(distDir)) {
+      const html = await readFile(file, 'utf8');
+      for (const slug of draftSlugs) {
+        const href = new RegExp(`href="(?:/[^"/]+)?/${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?(?:[#?][^"]*)?"`);
+        if (href.test(html)) linked.push(`${path.relative(distDir, file)} -> /${slug}/`);
+      }
+    }
+    if (linked.length > 0) {
+      fail(
+        `draft publication: ${DK_PUBLISH_DRAFTS_ENV} is off, but ${linked.length} built page(s) link ` +
+          `to a draft page that is not built: ${linked.join('; ')}`,
+      );
+    }
+    ok(`draft publication [off]: none of the ${draftSlugs.length} draft pages is built or linked`);
+  } else {
+    for (const slug of draftSlugs) {
+      if (!existsSync(draftPage(slug))) {
+        fail(
+          `draft publication: ${DK_PUBLISH_DRAFTS_ENV} is on, but the draft page "${slug}" ` +
+            `is missing (${draftPage(slug)}) — was this dist built with the setting off?`,
+        );
+      }
+      const draftHtml = await readTextOrFail(draftPage(slug), `draft page ${slug}`);
+      if (!/<meta name="robots" content="noindex"\s*\/?>/.test(draftHtml)) {
+        fail(`draft publication: the published draft "${slug}" carries no <meta name="robots" content="noindex"> (FR-016)`);
+      }
+      if (draftHtml.includes('data-pagefind-body')) {
+        fail(`draft publication: the published draft "${slug}" has a data-pagefind-body region, so it would be indexed for search`);
+      }
+    }
+    ok(`draft publication [on]: all ${draftSlugs.length} draft pages are built, marked noindex, and outside the search index`);
+  }
 
   // 2) rss.xml — present, well-formed.
   const rssAbs = path.join(distDir, 'rss.xml');

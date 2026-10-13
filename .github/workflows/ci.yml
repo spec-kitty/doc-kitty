@@ -156,6 +156,13 @@ jobs:
       # Stable @beoe disk-cache path so the cache step below restores it across runs
       # (an unchanged diagram then skips Chromium — FR-009).
       DK_BEOE_CACHE_DIR: ${{ github.workspace }}/.beoe-cache
+      # Draft publication (sidebar-frame-header-carrier WP05, FR-013..FR-018). The
+      # default is OFF; this lane states ON so the dist it asserts and hands to the
+      # a11y lane still contains the draft pages its gates were written against
+      # (artifact ratchets, the URL baseline's redirects to draft pages, the
+      # visual baselines' sidebar). The draft-free build is asserted separately by
+      # the "drafts off" steps at the end of this job, which override this value.
+      DK_PUBLISH_DRAFTS: 'on'
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -217,6 +224,40 @@ jobs:
           path: example/dist
           retention-days: 1
           include-hidden-files: true
+      # --- Drafts off (WP05, FR-014/FR-015/FR-018) --------------------------------
+      # What the live deployment builds: the same site with DK_PUBLISH_DRAFTS off.
+      # A second build into its own output directory (DK_OUTDIR, so example/dist
+      # above is untouched), reusing this job's install, Chromium, PlantUML
+      # service and warm diagram cache. The same three gates as the main build
+      # then run against it. Each step states `off`, because the job-level value
+      # is `on` and the gates read the setting to know what to expect.
+      #
+      # The gates are called as `node <script> <dir>`, not through their pnpm
+      # scripts: `pnpm assert:artifacts <dir>` APPENDS the argument after the
+      # script's own `example/dist`, so the gate would check the drafts-on build.
+      - name: Build example site with drafts off
+        env:
+          DK_PUBLISH_DRAFTS: 'off'
+          DK_OUTDIR: dist-nodrafts
+        run: pnpm build
+      # Includes the draft checks: no draft page is built and no built page links
+      # to one. The draft routes are read from `doc_status` in example/docs.
+      - name: Assert build artifacts (drafts off)
+        env:
+          DK_PUBLISH_DRAFTS: 'off'
+        run: node src/scripts/assert-build-artifacts.mjs example/dist-nodrafts
+      - name: Assert no broken internal links (drafts off)
+        env:
+          DK_PUBLISH_DRAFTS: 'off'
+        run: node src/scripts/assert-no-broken-links.mjs example/dist-nodrafts --base /doc-kitty --site https://spec-kitty.github.io
+      # Two baselined old URLs redirect to draft pages. On this build they are
+      # reported as unpublished (derived from doc_status and the declared
+      # redirects); any other unresolved URL, and any stub that leads to a
+      # missing page, fails the step.
+      - name: Assert redirect coverage (drafts off)
+        env:
+          DK_PUBLISH_DRAFTS: 'off'
+        run: node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist-nodrafts --docs example/docs --index-basename README,index --declared-redirects example/redirects.json
 
   # --- Lane: a11y (WP09) — axe-core + visual, both modes, on the built dist. ----
   # Runs whenever build-example runs (same change surface: it consumes that lane's

@@ -18,6 +18,7 @@ import {
   readmeToIndexId,
   resolveIndexEntries,
   ROOT_ENTRY_ID,
+  isDraftEntry,
   expectedDocType,
   type IndexBasenameOption,
 } from './metadata.js';
@@ -36,6 +37,7 @@ import {
 // `z.enum(STATUSES)`; the canonical `STATUSES` set stays the core's reference for
 // the bare-Node gate's warn-not-fail legality check (documentation-charter WP03).
 import { DOC_TYPES, KINDS } from './vocabulary-core.mjs';
+import { publishDraftsInForce } from './draft-publication.mjs';
 
 export { readmeToIndexId };
 
@@ -320,6 +322,11 @@ function walkMarkdownPaths(absBase: string): string[] {
  * own `docsLoader()` wrapper or a specific way to point the `docs` collection
  * outside `src/content/docs`. This returns Astro's `glob` loader with the id
  * mapping; confirm the wiring when versions are pinned during build set-up.
+ *
+ * Draft publication: this loader is where `DK_PUBLISH_DRAFTS` takes effect. A
+ * site that loads its docs collection some other way still gets the `noindex`
+ * marker and the machine-surface exclusions, but its draft pages are emitted
+ * whatever the setting says; the integration warns when that happens.
  */
 export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   const {
@@ -347,7 +354,7 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     return ids;
   };
 
-  return glob({
+  const inner = glob({
     base,
     pattern,
     // Astro rejects empty ids; the bundle root ("") is stored as ROOT_ENTRY_ID.
@@ -356,6 +363,71 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
       return id || ROOT_ENTRY_ID;
     },
   });
+
+  // Draft publication (FR-013..FR-016, research R8): the ONE cut every HTML
+  // surface inherits. Starlight builds its routes, sidebar and search records
+  // from this collection, so an entry that never reaches the store has no page,
+  // no sidebar link and no search record.
+  //
+  // `glob()` keeps its own `name` and `schema` behaviour: only `load` is wrapped.
+  // Two places apply the policy, because the store persists between builds:
+  //  - `set` on the store handed to `glob()`, which covers every entry it parses,
+  //    including the files its dev-server watcher re-reads;
+  //  - a sweep after the load, which covers entries `glob()` left alone because
+  //    their digest was unchanged since a build that ran with the other value.
+  return {
+    ...inner,
+    load: async (context: LoaderContext): Promise<void> => {
+      const publishDrafts = publishDraftsInForce();
+      const { store } = context;
+      await inner.load({
+        ...context,
+        store: {
+          ...store,
+          set: (entry) => {
+            const next = applyDraftPolicy(entry, publishDrafts);
+            if (next === null) {
+              store.delete(entry.id);
+              return false;
+            }
+            return store.set(next);
+          },
+        },
+      });
+      for (const [id, entry] of [...store.entries()]) {
+        const next = applyDraftPolicy(entry, publishDrafts);
+        if (next === entry) continue;
+        // `set` ignores an entry whose digest it already holds, so replace it.
+        store.delete(id);
+        if (next !== null) store.set(next);
+      }
+    },
+  };
+}
+
+type LoaderContext = Parameters<ReturnType<typeof glob>['load']>[0];
+
+/**
+ * Decide what the docs collection keeps of one entry (FR-013, FR-014).
+ *
+ *  - Not a draft, or the site root: the entry itself, untouched. The root page
+ *    is never filtered, so a site always has a home page.
+ *  - A draft with drafts NOT published: `null`. The entry is dropped.
+ *  - A draft with drafts published: a copy with Starlight's `pagefind: false`,
+ *    which keeps the page out of the search index (the page gets no
+ *    `data-pagefind-body`). The same entry is returned when that is already set.
+ *
+ * `doc_status` is read after schema parsing, so an absent status has already
+ * taken the schema default `draft`.
+ */
+export function applyDraftPolicy<T extends { id: string; data: Record<string, unknown> }>(
+  entry: T,
+  publishDrafts: boolean,
+): T | null {
+  if (!isDraftEntry(entry)) return entry;
+  if (!publishDrafts) return null;
+  if (entry.data.pagefind === false) return entry;
+  return { ...entry, data: { ...entry.data, pagefind: false } };
 }
 
 // ---------------------------------------------------------------------------

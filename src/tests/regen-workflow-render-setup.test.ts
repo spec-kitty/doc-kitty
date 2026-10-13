@@ -59,6 +59,18 @@ describe('regenerate job render setup (#106, FR-001..FR-003, NFR-001/NFR-002)', 
     expect(workflow).not.toContain('localhost');
   });
 
+  it('builds with the same draft setting as the dist the a11y lane screenshots', () => {
+    // ci.yml's build-example job hands its dist to the a11y lane. A baseline
+    // built with another DK_PUBLISH_DRAFTS value shows a different sidebar.
+    const ci = readFileSync(new URL('../../.github/workflows/ci.yml', import.meta.url), 'utf8');
+    const buildExample = ci.slice(ci.indexOf('\n  build-example:'), ci.indexOf('\n    steps:', ci.indexOf('\n  build-example:')));
+    const jobLevel = /^ {6}DK_PUBLISH_DRAFTS:\s*'(on|off)'/m;
+    expect(buildExample.match(jobLevel)?.[1], 'ci.yml build-example job-level setting').toBe('on');
+    expect(workflow.match(jobLevel)?.[1], 'update-a11y-baselines.yml job-level setting').toBe(
+      buildExample.match(jobLevel)?.[1],
+    );
+  });
+
   it('waits for the PlantUML server before building the example site, in that order (FR-003)', () => {
     const waitIndex = workflow.indexOf('Wait for the PlantUML server');
     const buildIndex = workflow.indexOf('Build example site');

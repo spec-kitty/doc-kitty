@@ -723,6 +723,20 @@ function indexBasenamePattern(basenames) {
  */
 
 /**
+ * A page is a draft when its `doc_status` is `draft` or absent. This is the one
+ * predicate: `isPublished` and `isDraftEntry` in `metadata.ts`, the loader, the
+ * integration and the gates all call it (the gates through
+ * `draft-publication.mjs`, which re-exports it), and the schema default in
+ * `schema.ts` (`draft`) is the same rule applied at parse time.
+ *
+ * @param {unknown} docStatus
+ * @returns {boolean}
+ */
+export function isDraftStatus(docStatus) {
+  return (docStatus ?? 'draft') === 'draft';
+}
+
+/**
  * Does `relPath` (ext included) name a configured section-index candidate? The
  * bare-Node detection half of the section-index basename rule
  * (`validate-frontmatter.mjs:89-92`).

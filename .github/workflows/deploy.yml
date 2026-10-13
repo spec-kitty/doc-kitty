@@ -63,10 +63,18 @@ jobs:
       needs.detect-changes.outputs.example_content == 'true' ||
       needs.detect-changes.outputs.workflows == 'true'
     runs-on: ubuntu-latest
-    # Build-render infra (#13 WP03 / FR-009), IDENTICAL to the CI build-example job
+    # Build-render infra (#13 WP03 / FR-009), the same as the CI build-example job
     # so what is published matches what the PR gate built (FR-015): a self-hosted
     # PlantUML `services:` container (never plantuml.com, C-001) + Chromium for
     # Mermaid (installed by the composite). Diagrams render to BUILD-mode static SVG.
+    #
+    # ONE intended difference from the PR-gate build (sidebar-frame-header-carrier
+    # WP05, FR-018): DK_PUBLISH_DRAFTS. The PR gate's main build sets it `on`,
+    # because its artifact, redirect and a11y gates cover draft pages. The live
+    # site must not publish drafts, so this job sets it `off`. `off` is also the
+    # default; it is written out so the intent is visible here and a changed
+    # default cannot leak drafts. The PR gate builds and asserts this draft-free
+    # variant too (its "drafts off" steps), so it is not published unchecked.
     services:
       plantuml:
         image: plantuml/plantuml-server:jetty
@@ -76,6 +84,8 @@ jobs:
       DK_DIAGRAM_BUILD_RENDER: 'on'
       DK_PLANTUML_SERVER_URL: http://localhost:8091/svg/
       DK_BEOE_CACHE_DIR: ${{ github.workspace }}/.beoe-cache
+      # The live deployment never publishes draft pages (FR-018).
+      DK_PUBLISH_DRAFTS: 'off'
     steps:
       # Composite actions do not self-checkout; the caller must checkout first.
       - name: Checkout
@@ -102,7 +112,8 @@ jobs:
           echo "PlantUML did not become ready on :8091" >&2; exit 1
 
       # The ONE build definition, shared with the WP04 build-example CI lane, so
-      # what the PR gate builds is exactly what gets published (FR-015).
+      # what the PR gate builds is what gets published (FR-015), apart from the
+      # draft-publication setting in this job's `env` above.
       - name: Build example site
         uses: ./.github/actions/build-example
 

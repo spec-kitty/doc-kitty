@@ -3,8 +3,9 @@
  * check-redirect-coverage.mjs — target-aware redirect-coverage gate.
  *
  * Usage:
- *   node src/scripts/check-redirect-coverage.mjs <baseline-file> <dist-dir> [--redirects <map-file>]
- *   pnpm assert:redirects example/url-baseline.txt example/dist
+ *   node src/scripts/check-redirect-coverage.mjs <baseline-file> <dist-dir>
+ *     [--redirects <map-file>]
+ *     [--docs <docs-dir> [--index-basename <a,b>] [--declared-redirects <map-file>]]
  *
  * Adopter-loader-migration (#42), WP02 — FR-008/009/010/011, NFR-002/005.
  * Contract: kitty-specs/adopter-loader-migration-01M1KKYA/contracts/redirect-coverage-gate.md
@@ -32,14 +33,49 @@
  *      baselined URL against `<dist-dir>` finds either real content, one of
  *      these stubs (follow its target), or nothing (uncovered).
  *
- * Bare Node, dependency-free (Node stdlib only), no Astro build spawned
- * (NFR-002) — this reads an already-built `<dist-dir>`. Deterministic: pure
- * filesystem reads, no network, same verdict on every run.
+ * ## Draft publication (sidebar-frame-header-carrier WP05, FR-015)
+ *
+ * With `DK_PUBLISH_DRAFTS` off (the default) draft pages are not built, and the
+ * toolkit leaves out the stub of any redirect that leads to one. A baselined
+ * old URL whose successor is still a draft therefore returns 404 on a
+ * drafts-off build. That is the honest state, and this gate names it instead
+ * of hiding it or failing on it:
+ *
+ *   - The gate resolves `DK_PUBLISH_DRAFTS` the way the build does: the process
+ *     environment, then the site's env files, then `off`. `--site-root <dir>`
+ *     names the site (default: the nearest directory with an Astro config above
+ *     `<dist-dir>`, else the working directory) and `--mode <mode>` the env-file
+ *     mode (default `production`). The first line it prints states the value
+ *     and where it came from; compare it with the build's `[dk-drafts]` line.
+ *   - `--docs <docs-dir>` gives the tree the draft routes are derived from
+ *     (`doc_status: draft` or absent; never a list kept by hand), and
+ *     `--declared-redirects <map-file>` gives the site's declared redirects
+ *     (same formats as `--redirects`; targets are routes without the site base).
+ *   - A baselined URL with no page and no stub is reported as UNPUBLISHED, and
+ *     accepted, only when drafts are off and the URL itself, or the end of its
+ *     declared redirect chain, is a draft page of that tree. Anything else that
+ *     does not resolve is uncovered, exactly as before. Without `--docs`, or
+ *     with drafts on, nothing is excused.
+ *   - The declared map never makes a URL count as covered. Only the built
+ *     output does.
+ *
+ * In every mode the gate also walks the built output: a redirect stub that
+ * leads to a missing page fails the gate, baselined or not. So a stub into an
+ * unbuilt draft is a failure, never an accepted case.
+ *
+ * Bare Node (Node stdlib plus the toolkit's own draft-status reader), no Astro
+ * build spawned (NFR-002) — this reads an already-built `<dist-dir>`.
+ * Deterministic: pure filesystem reads, no network, same verdict on every run.
  */
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import {
+  draftRoutesOf,
+  resolveDraftPublicationForGate,
+  takeSiteFlags,
+} from '../lib/draft-publication.mjs';
 
 // A real redirect chain is 1-2 hops (an old URL → a renamed URL, occasionally
 // through a second rename). This ceiling guards a misconfigured redirect loop
@@ -205,33 +241,128 @@ export function parseBaseline(text) {
     .filter((line) => line.length > 0 && !line.startsWith('#'));
 }
 
-/** Run the gate over a parsed baseline against a built dist dir. Pure — no I/O beyond what callers pass in. */
-export function checkCoverage(distDir, baselineUrls, redirectMap) {
+/**
+ * The draft page an unresolved baselined URL stands for, or `null`.
+ *
+ * Only a URL with NO page and NO stub in the built output qualifies (an empty
+ * chain): a stub that leads nowhere is a defect, whatever it points at. The
+ * URL is followed through the DECLARED redirects; it qualifies when it, or the
+ * end of that chain, is a draft route. A declared hop that IS built ends the
+ * walk with `null`: the output then lacks a stub it should have.
+ *
+ * @param {string} distDir
+ * @param {{ url: string, chain: unknown[] }} verdict an uncovered verdict
+ * @param {ReadonlySet<string>} draftRoutes
+ * @param {Record<string, string>} declared old URL -> target route (base-less)
+ * @returns {string | null}
+ */
+export function unpublishedDraftFor(distDir, verdict, draftRoutes, declared) {
+  if (verdict.chain.length > 0) return null;
+  let current = normalizeUrlPath(verdict.url);
+  const seen = new Set();
+  for (let hop = 0; hop <= MAX_CHAIN_DEPTH; hop += 1) {
+    const route = current.endsWith('/') ? current : `${current}/`;
+    if (draftRoutes.has(route)) return route;
+    if (seen.has(current) || !Object.prototype.hasOwnProperty.call(declared, current)) return null;
+    seen.add(current);
+    current = normalizeUrlPath(declared[current]);
+    if (existsSync(urlToDistFile(distDir, current))) return null;
+  }
+  return null;
+}
+
+/** Every redirect stub in the built output, as site-absolute URL paths (sorted). */
+export function redirectStubUrls(distDir) {
+  const urls = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(abs);
+      else if (entry.name === 'index.html' && REDIRECT_STUB_RE.test(readFileSync(abs, 'utf8'))) {
+        const rel = path.relative(distDir, dir).split(path.sep).join('/');
+        urls.push(rel === '' ? '/' : `/${rel}/`);
+      }
+    }
+  };
+  walk(distDir);
+  return urls.sort();
+}
+
+/**
+ * Run the gate over a parsed baseline against a built dist dir.
+ *
+ * `drafts` carries the draft-publication inputs (see the file header). Left
+ * out, the gate behaves as if drafts were published: nothing is excused.
+ *
+ * @param {string} distDir
+ * @param {string[]} baselineUrls
+ * @param {Record<string, string>} [redirectMap]
+ * @param {{ publishDrafts?: boolean, draftRoutes?: ReadonlySet<string>, declaredRedirects?: Record<string, string> }} [drafts]
+ */
+export function checkCoverage(distDir, baselineUrls, redirectMap, drafts = {}) {
+  const { publishDrafts = true, draftRoutes = new Set(), declaredRedirects = {} } = drafts;
   const results = baselineUrls.map((url) => resolveVerdict(distDir, url, redirectMap));
-  const uncovered = results.filter((r) => !r.covered);
-  return { results, uncovered, ok: uncovered.length === 0 };
+  const uncovered = [];
+  const unpublished = [];
+  for (const r of results) {
+    if (r.covered) continue;
+    const draftRoute = publishDrafts
+      ? null
+      : unpublishedDraftFor(distDir, r, draftRoutes, declaredRedirects);
+    if (draftRoute === null) uncovered.push(r);
+    else unpublished.push({ ...r, draftRoute });
+  }
+  // Every stub the build emitted must lead somewhere, baselined or not.
+  const deadStubs = redirectStubUrls(distDir)
+    .map((url) => resolveVerdict(distDir, url, redirectMap))
+    .filter((r) => !r.covered);
+  return {
+    results,
+    uncovered,
+    unpublished,
+    deadStubs,
+    ok: uncovered.length === 0 && deadStubs.length === 0,
+  };
 }
 
 function parseArgs(argv) {
   const positional = [];
-  let redirectsFile;
+  const flags = {};
+  const names = {
+    '--redirects': 'redirectsFile',
+    '--docs': 'docsDir',
+    '--index-basename': 'indexBasename',
+    '--declared-redirects': 'declaredFile',
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === '--redirects') {
-      redirectsFile = argv[i + 1];
+    if (Object.prototype.hasOwnProperty.call(names, arg)) {
+      flags[names[arg]] = argv[i + 1];
       i += 1;
     } else {
       positional.push(arg);
     }
   }
-  return { baselineFile: positional[0], distDir: positional[1], redirectsFile };
+  return { baselineFile: positional[0], distDir: positional[1], ...flags };
 }
 
 export function run(argv) {
-  const { baselineFile, distDir, redirectsFile } = parseArgs(argv.slice(2));
+  let site;
+  try {
+    site = takeSiteFlags(argv.slice(2));
+  } catch (err) {
+    console.error(`redirect-coverage: ${err.message}`);
+    process.exit(2);
+    return;
+  }
+  const { baselineFile, distDir, redirectsFile, docsDir, indexBasename, declaredFile } = parseArgs(
+    site.rest,
+  );
   if (!baselineFile || !distDir) {
     console.error(
-      'Usage: check-redirect-coverage.mjs <baseline-file> <dist-dir> [--redirects <map-file>]',
+      'Usage: check-redirect-coverage.mjs <baseline-file> <dist-dir> [--redirects <map-file>] ' +
+        '[--docs <docs-dir> [--index-basename <a,b>] [--declared-redirects <map-file>]] ' +
+        '[--site-root <dir>] [--mode <mode>]',
     );
     process.exit(2);
     return;
@@ -249,23 +380,100 @@ export function run(argv) {
     return;
   }
 
+  for (const [flag, value] of [['--docs', docsDir], ['--declared-redirects', declaredFile]]) {
+    if (value && !existsSync(value)) {
+      console.error(`redirect-coverage: ${flag} path not found: ${value}`);
+      process.exit(2);
+      return;
+    }
+  }
+  // The same resolver the build uses, so a value kept in the site's env files
+  // counts here too. The site root is the one given, else the nearest Astro
+  // config above the build output.
+  let publishDrafts;
+  try {
+    const resolved = resolveDraftPublicationForGate({
+      checkedDir: distDir,
+      siteRoot: site.siteRoot,
+      mode: site.mode,
+    });
+    publishDrafts = resolved.publish;
+    console.log(`redirect-coverage: ${resolved.summary}`);
+  } catch (err) {
+    console.error(`redirect-coverage: ${err.message}`);
+    process.exit(2);
+    return;
+  }
+
   const baselineUrls = parseBaseline(readFileSync(baselineFile, 'utf8'));
   const redirectMap = redirectsFile ? loadRedirectMap(redirectsFile) : undefined;
-  const { uncovered, ok } = checkCoverage(distDir, baselineUrls, redirectMap);
+  const declaredRedirects = {};
+  if (declaredFile) {
+    for (const [from, to] of Object.entries(loadRedirectMap(declaredFile))) {
+      if (typeof to === 'string') declaredRedirects[normalizeUrlPath(from)] = to;
+    }
+  }
+  const draftRoutes = docsDir
+    ? draftRoutesOf(
+        path.resolve(docsDir),
+        indexBasename ? indexBasename.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+      )
+    : new Set();
+  const { uncovered, unpublished, deadStubs, ok } = checkCoverage(distDir, baselineUrls, redirectMap, {
+    publishDrafts,
+    draftRoutes,
+    declaredRedirects,
+  });
+
+  const note = (r) =>
+    r.failingTarget && r.failingTarget !== r.url ? ` (failing target: ${r.failingTarget})` : '';
+  // Named on success too: these URLs return 404 on this build, by the setting.
+  const reportUnpublished = (log) => {
+    if (unpublished.length === 0) return;
+    log(
+      `redirect-coverage: ${unpublished.length} baselined URL(s) unpublished, expected with ` +
+        `DK_PUBLISH_DRAFTS off — each leads to a draft page and returns 404 on this build:`,
+    );
+    for (const r of unpublished) log(`  - ${r.url}: draft ${r.draftRoute}`);
+  };
 
   if (ok) {
-    console.log(`redirect-coverage: OK — ${baselineUrls.length} baselined URL(s) covered.`);
+    reportUnpublished(console.log);
+    console.log(
+      `redirect-coverage: OK — ${baselineUrls.length - unpublished.length}/${baselineUrls.length} ` +
+        `baselined URL(s) covered${unpublished.length ? `, ${unpublished.length} unpublished (drafts off)` : ''}.`,
+    );
     process.exit(0);
     return;
   }
 
-  console.error(
-    `redirect-coverage: FAILED — ${uncovered.length}/${baselineUrls.length} baselined URL(s) uncovered:`,
-  );
-  for (const r of uncovered) {
-    const targetNote =
-      r.failingTarget && r.failingTarget !== r.url ? ` (failing target: ${r.failingTarget})` : '';
-    console.error(`  ✖ ${r.url}: ${r.reason}${targetNote}`);
+  reportUnpublished(console.error);
+  if (uncovered.length > 0) {
+    console.error(
+      `redirect-coverage: FAILED — ${uncovered.length}/${baselineUrls.length} baselined URL(s) uncovered:`,
+    );
+    for (const r of uncovered) console.error(`  ✖ ${r.url}: ${r.reason}${note(r)}`);
+    // With drafts off, an old URL that leads to a draft is only recognised as
+    // unpublished when the gate is given both inputs. Name the missing flag, so
+    // a 404 the setting explains is not mistaken for a lost redirect.
+    const missing = [
+      ...(docsDir ? [] : ['--docs <docs-dir>']),
+      ...(declaredFile ? [] : ['--declared-redirects <map-file>']),
+    ];
+    if (!publishDrafts && missing.length > 0) {
+      console.error(
+        `redirect-coverage: DK_PUBLISH_DRAFTS is off and ${missing.join(' and ')} ` +
+          `${missing.length > 1 ? 'were' : 'was'} not given, so no URL could be recognised as ` +
+          `leading to an unpublished draft. If a URL above redirects to a draft page, pass ` +
+          `${missing.join(' and ')}, or check a build made with DK_PUBLISH_DRAFTS=on.`,
+      );
+    }
+  }
+  if (deadStubs.length > 0) {
+    console.error(
+      `redirect-coverage: FAILED — ${deadStubs.length} redirect stub(s) in ${distDir} lead to a missing page:`,
+    );
+    for (const r of deadStubs) console.error(`  ✖ ${r.url}: ${r.reason}${note(r)}`);
   }
   process.exit(1);
 }

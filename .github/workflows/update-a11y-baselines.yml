@@ -9,7 +9,12 @@
 # hands the result back as a reviewable PR rather than pushing pixels silently.
 #
 # GitHub only exposes `workflow_dispatch` for workflows on the DEFAULT branch, so
-# this file must live on `main` to be runnable. Dispatch it with the branch whose
+# this file must live on `main` to be runnable. A dispatch runs the copy of this
+# file on the ref it is dispatched FROM (`gh workflow run ... --ref <branch>`;
+# `main` when no ref is given), not the copy on `target_branch`. When a branch
+# changes this file (for example the build settings below), dispatch from that
+# branch so the baselines are built the way its a11y lane builds.
+# Dispatch it with the branch whose
 # baselines you want to refresh; it checks that branch out, rebuilds the example,
 # regenerates the snapshots, and opens a PR back INTO that branch. Merging that PR
 # updates the baselines on the branch (e.g. a feature PR) so its a11y lane passes.
@@ -64,6 +69,12 @@ jobs:
       # runs (an unchanged Mermaid diagram then skips a Chromium relaunch),
       # mirroring ci.yml `build-example`.
       DK_BEOE_CACHE_DIR: ${{ github.workspace }}/.beoe-cache
+      # Draft publication (sidebar-frame-header-carrier). The a11y lane compares
+      # against the dist ci.yml's `build-example` job builds, and that job sets
+      # DK_PUBLISH_DRAFTS to `on`. The default is `off`, which leaves the draft
+      # pages out of every sidebar, so a baseline taken without this line would
+      # show a different sidebar from the one the lane screenshots.
+      DK_PUBLISH_DRAFTS: 'on'
     steps:
       - name: Checkout target branch
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0

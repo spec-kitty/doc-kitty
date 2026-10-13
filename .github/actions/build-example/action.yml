@@ -2,7 +2,13 @@
 #
 # This is the SINGLE build definition (spec.md "Build definition" entity) reused
 # by both the WP04 build-example CI job and the WP05 deploy job, so that what the
-# PR gate builds is exactly what gets published (FR-015).
+# PR gate builds is what gets published (FR-015).
+#
+# Draft publication (sidebar-frame-header-carrier WP05): this action does NOT set
+# DK_PUBLISH_DRAFTS. Like the diagram build-render settings it is JOB-level, so
+# each caller states it: ci.yml's build-example job sets `on` (its gates cover
+# draft pages) and deploy.yml sets `off` (the live site publishes no drafts). A
+# caller that sets nothing gets the toolkit default, which is `off`.
 #
 # Scope boundary (contracts/build-example-action.contract.md):
 #   - PURE BUILD. It does NOT run artifact assertions. `pnpm assert:artifacts`

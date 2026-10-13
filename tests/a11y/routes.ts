@@ -6,6 +6,13 @@
 // they resolve exactly as GitHub Pages serves them.
 export const BASE = '/doc-kitty';
 
+// Draft pages (sidebar-frame-header-carrier WP05): none of the routes below is a
+// draft, so every one exists whatever DK_PUBLISH_DRAFTS says. The lane still
+// runs against a dist built with DK_PUBLISH_DRAFTS=on (ci.yml's build-example
+// job), because the sidebar on every page lists the example's draft pages and
+// the visual baselines were taken with them present. A draft route added here
+// would need that same build; a default (drafts off) build does not emit it.
+
 export const ROUTES = {
   // Brand home — the visual-regression baseline target (T041).
   home: `${BASE}/`,

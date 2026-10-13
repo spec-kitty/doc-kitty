@@ -18,6 +18,7 @@ import Default from '@astrojs/starlight/components/Head.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { slotComponents, themeSocialImage } from 'virtual:doc-kitty/manifest';
 import HeadShare from './slots/HeadShare.astro';
+import { isDraftEntry } from '../lib/metadata.js';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -40,11 +41,21 @@ const data = entry.data as unknown as {
   social_thumb?: { src: string; alt: string } | string;
 };
 const filePath = (entry as unknown as { filePath?: string }).filePath;
+
+// A draft that is being rendered must not be indexed (FR-015). With
+// DK_PUBLISH_DRAFTS off the docs loader drops drafts, so this carrier only sees
+// one when drafts are published. The test is the page's status alone, not the
+// setting: a site whose docs do not go through `docKittyDocsLoader` still emits
+// its drafts, and those must carry the marker too. The site root is exempt by
+// the loader's own rule (`isDraftEntry`): a home page with no `doc_status` is
+// never filtered, so it must never be `noindex` either.
+const isDraft = isDraftEntry(entry as unknown as { id: string; data: { doc_status?: unknown } });
 ---
 
 <Default {...route} />
 {/* Proof-of-carrier marker (greppable in dist HTML), always emitted. */}
 <meta name="dk-chrome" content="doc-kitty-carriers" />
+{isDraft && <meta name="robots" content="noindex" />}
 {/*
   dk:head slot: a theme override wins; otherwise the doc-kitty default — the
   og:image / twitter:image share metadata + fallback chain (unchanged from M1,

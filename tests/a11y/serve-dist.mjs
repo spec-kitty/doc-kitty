@@ -94,6 +94,27 @@ const server = createServer(async (req, res) => {
   }
 });
 
+// The lane is written against a dist built with DK_PUBLISH_DRAFTS=on, like the
+// one ci.yml's build-example job hands over: the sidebar on every page lists the
+// example's draft pages. A default `pnpm build` leaves drafts out, and the
+// sidebar-dependent checks then fail for a reason that has nothing to do with
+// the change under test. `plans/` is a draft section of the example; if it is
+// ever published, pick another draft route here.
+const DRAFT_SENTINEL = 'plans/index.html';
+try {
+  await stat(join(DIST, 'index.html'));
+  try {
+    await stat(join(DIST, DRAFT_SENTINEL));
+  } catch {
+    process.stderr.write(
+      `a11y static server: WARNING: ${DIST} has no draft pages (${DRAFT_SENTINEL} is missing). ` +
+        'The lane expects a build with DK_PUBLISH_DRAFTS=on. Run `pnpm build:a11y`, then retry.\n',
+    );
+  }
+} catch {
+  // No dist at all: the requests below 404 and Playwright reports it.
+}
+
 server.listen(PORT, () => {
   process.stdout.write(`a11y static server: ${DIST} → http://localhost:${PORT}${BASE}/\n`);
 });

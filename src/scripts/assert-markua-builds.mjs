@@ -54,7 +54,9 @@ function ok(message) {
 function runBuild(extraEnv) {
   return spawnSync('pnpm', ['--filter', 'example', 'build'], {
     cwd: REPO_ROOT,
-    env: { ...process.env, ...extraEnv },
+    // The footnotes showcase this gate reads is a draft page, and drafts are
+    // only built with DK_PUBLISH_DRAFTS=on (default off), so it is stated here.
+    env: { ...process.env, DK_PUBLISH_DRAFTS: 'on', ...extraEnv },
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
@@ -70,7 +72,8 @@ async function clearAstroCache(outDir) {
 /**
  * FR-004 footnote gate (both modes; T001 spike outcome, ADR-0041). The
  * `markua-footnotes-showcase.md` fixture is a doc_status: draft page (so it moves
- * NO ratchet) but its HTML is still emitted, so both builds can read it.
+ * NO ratchet); its HTML is emitted because `runBuild` publishes drafts, so both
+ * builds can read it.
  *
  * `remark-gfm` (Astro/Starlight built-in) ALREADY renders the source's double
  * caret `[^^N_M]` / `[^^N_M]:` as a footnote in BOTH modes — the spike proved it.
