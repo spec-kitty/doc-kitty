@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "mission_slug": "sidebar-frame-header-carrier-01M4T3CB",
+  "mission_id": "01M4T3CBJCDTQ7Q5NGVRN5SBHD",
+  "mission_branch": "kitty/mission-sidebar-frame-header-carrier-01M4T3CB",
+  "target_branch": "fix/sidebar-frame-header-carrier",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/theme.ts",
+        "src/scripts/assert-chrome-artifacts.mjs",
+        "src/styles/dk-components.css",
+        "src/styles/theme.css",
+        "src/tests/layout-css-contract.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "example/docs/**/index.md",
+        "src/lib/config.ts",
+        "src/lib/route-middleware.ts",
+        "src/lib/route-shaping.ts",
+        "src/lib/sections.ts",
+        "src/package.json",
+        "src/tests/route-shaping.test.ts",
+        "src/tests/sidebar-build-html.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "example/docs/architecture/diagram-demonstrator.md",
+        "src/lib/toc-rail/**",
+        "src/styles/toc-rail.css",
+        "src/tests/toc-rail-build-html.test.ts",
+        "src/tests/toc-rail-preference.test.ts",
+        "src/tests/toc-rail-prepaint.test.ts",
+        "tests/a11y/toc-rail.interaction.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        ".github/actions/build-example/action.yml",
+        ".github/workflows/ci.yml",
+        ".github/workflows/deploy.yml",
+        "example/.env.development",
+        "example/astro.config.mjs",
+        "src/components/Head.astro",
+        "src/lib/draft-publication.mjs",
+        "src/lib/schema.ts",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/scripts/assert-no-broken-links.mjs",
+        "src/scripts/check-links.mjs",
+        "src/tests/draft-publication-build.test.ts",
+        "src/tests/draft-publication.test.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "playwright.config.ts",
+        "tests/a11y/__screenshots__/**",
+        "tests/a11y/helpers/geometry.ts",
+        "tests/a11y/layout-geometry.spec.ts",
+        "tests/a11y/visual.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/components/Header.astro",
+        "src/lib/manifest.ts",
+        "src/tests/config-invariants.test.ts",
+        "src/tests/fixtures/header-theme/**",
+        "src/tests/header-carrier.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-e"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0013-m1-chrome-substrate-single-layer.md",
+        "docs/adr/0015-m2-slot-resolution-and-components-map-seam.md",
+        "docs/adr/0044-header-carrier.md",
+        "docs/adr/0045-frame-width-token.md",
+        "docs/adr/README.md",
+        "docs/architecture/theming.md",
+        "docs/guides/consumer-setup.md",
+        "docs/guides/draft-publication.md",
+        "docs/guides/theme-header.md",
+        "tests/consumption/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-10-13T07:54:29.313666+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "41204920332e6b64c9de658ed7f162d51d76ba86"
+}

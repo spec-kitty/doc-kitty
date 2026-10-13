@@ -1,0 +1,29 @@
+{
+  "rows": {
+    "#103": {
+      "evidence_ref": "spec.md Out of Scope: cited as context only; this mission owes the issue no work",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#104": {
+      "evidence_ref": "spec.md Out of Scope: cited as context only; this mission owes the issue no work",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,21 @@
+{
+  "baseline_merge_commit": "22457731dadd2dd138f287acf27d454eeed5001c",
+  "created_at": "2026-10-13T07:42:11.478171+00:00",
+  "flattened": true,
+  "friendly_name": "Sidebar, TOC rail and page-frame remediation with Header carrier",
+  "merged_at": "2026-10-13T11:00:31.966723+00:00",
+  "merged_commit": "a19deca7f05d7811264eb0680b54f9e67209f49e",
+  "mid8": "01M4T3CB",
+  "mission_id": "01M4T3CBJCDTQ7Q5NGVRN5SBHD",
+  "mission_number": 4,
+  "mission_slug": "sidebar-frame-header-carrier-01M4T3CB",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "A review of the published docsite found the page frame, left sidebar and collapsible table-of-contents rail misaligned at most desktop widths, draft pages visible in navigation, and navigation labels shown as raw directory names. This mission makes the layout full-width by default with correctly anchored rails, makes draft publication an environment setting, derives navigation labels and order from page metadata, and adds a toolkit-owned header carrier so a theme can supply its own header.",
+  "purpose_tldr": "Fix the broken sidebar and table-of-contents rail on wide screens, keep draft pages off the live site, and let themes replace the site header.",
+  "slug": "sidebar-frame-header-carrier-01M4T3CB",
+  "status_phase": "1",
+  "target_branch": "fix/sidebar-frame-header-carrier",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-13T07:56:11.691650+00:00"
+}

@@ -1,0 +1,140 @@
+{
+  "event_count": 64,
+  "last_event_id": "01M4TEQE478WWE42JZDY2819T9",
+  "materialized_at": "2026-10-13T11:00:25.863040+00:00",
+  "mission_number": "",
+  "mission_slug": "sidebar-frame-header-carrier-01M4T3CB",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 7,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4TEP652DS7CY1FWSX33CKNC",
+      "last_transition_at": "2026-10-13T10:59:44.930253+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/sidebar-frame-header-carrier-01M4T3CB-coord/kitty-specs/sidebar-frame-header-carrier-01M4T3CB/tasks/WP01-frame-and-rail-geometry/review-cycle-1.md",
+        "reference": "review-cycle://sidebar-frame-header-carrier-01M4T3CB/WP01-frame-and-rail-geometry/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 493918,
+      "shell_pid_created_at": "1791878195.53"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4TEPKWN7PCBCKGZND8HF5KQ",
+      "last_transition_at": "2026-10-13T10:59:58.997038+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/sidebar-frame-header-carrier-01M4T3CB-coord/kitty-specs/sidebar-frame-header-carrier-01M4T3CB/tasks/WP02-toggle-placement/review-cycle-1.md",
+        "reference": "review-cycle://sidebar-frame-header-carrier-01M4T3CB/WP02-toggle-placement/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 594682,
+      "shell_pid_created_at": "1791879243.65"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4TEQ0W98J757EFN9DTCN7JM",
+      "last_transition_at": "2026-10-13T11:00:12.297568+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/sidebar-frame-header-carrier-01M4T3CB-coord/kitty-specs/sidebar-frame-header-carrier-01M4T3CB/tasks/WP03-geometry-guard/review-cycle-1.md",
+        "reference": "review-cycle://sidebar-frame-header-carrier-01M4T3CB/WP03-geometry-guard/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 654791,
+      "shell_pid_created_at": "1791880160.22"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4TEPD92F4KSFVK6WMQ49TKB",
+      "last_transition_at": "2026-10-13T10:59:52.226914+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/sidebar-frame-header-carrier-01M4T3CB-coord/kitty-specs/sidebar-frame-header-carrier-01M4T3CB/tasks/WP04-route-shaping/review-cycle-1.md",
+        "reference": "review-cycle://sidebar-frame-header-carrier-01M4T3CB/WP04-route-shaping/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 493212,
+      "shell_pid_created_at": "1791878167.26"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4TEPTADRDW8DREK6WKCJ9JG",
+      "last_transition_at": "2026-10-13T11:00:05.581468+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/sidebar-frame-header-carrier-01M4T3CB-coord/kitty-specs/sidebar-frame-header-carrier-01M4T3CB/tasks/WP05-draft-publication/review-cycle-2.md",
+        "reference": "review-cycle://sidebar-frame-header-carrier-01M4T3CB/WP05-draft-publication/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 742633,
+      "shell_pid_created_at": "1791881857.67"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4TEQ7GN9QGX8RM6Z345SDTH",
+      "last_transition_at": "2026-10-13T11:00:19.093929+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/sidebar-frame-header-carrier-01M4T3CB-coord/kitty-specs/sidebar-frame-header-carrier-01M4T3CB/tasks/WP06-header-carrier/review-cycle-2.md",
+        "reference": "review-cycle://sidebar-frame-header-carrier-01M4T3CB/WP06-header-carrier/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 803149,
+      "shell_pid_created_at": "1791884446.08"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4TEQE478WWE42JZDY2819T9",
+      "last_transition_at": "2026-10-13T11:00:25.863040+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/sidebar-frame-header-carrier-01M4T3CB-coord/kitty-specs/sidebar-frame-header-carrier-01M4T3CB/tasks/WP07-docs-and-consumer-coverage/review-cycle-2.md",
+        "reference": "review-cycle://sidebar-frame-header-carrier-01M4T3CB/WP07-docs-and-consumer-coverage/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 912171,
+      "shell_pid_created_at": "1791888070.33"
+    }
+  }
+}
