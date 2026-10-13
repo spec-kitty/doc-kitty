@@ -67,8 +67,8 @@ describe('generateGlossaryPages codegen guard (T029)', () => {
     const a = mkdtempSync(join(tmpdir(), 'dk-gloss-a-'));
     const b = mkdtempSync(join(tmpdir(), 'dk-gloss-b-'));
     try {
-      generateGlossaryPages(index, a);
-      generateGlossaryPages(index, b);
+      generateGlossaryPages(index, a, ['README', 'index']);
+      generateGlossaryPages(index, b, ['README', 'index']);
       expect(readTree(a)).toEqual(readTree(b));
     } finally {
       rmSync(a, { recursive: true, force: true });
@@ -79,7 +79,7 @@ describe('generateGlossaryPages codegen guard (T029)', () => {
   it('emits NO timestamp / `generated:` field (nothing nondeterministic)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'dk-gloss-ts-'));
     try {
-      generateGlossaryPages(index, dir);
+      generateGlossaryPages(index, dir, ['README', 'index']);
       const files = readTree(dir);
       expect(Object.keys(files).length).toBeGreaterThan(0);
       for (const [rel, body] of Object.entries(files)) {
@@ -96,9 +96,9 @@ describe('generateGlossaryPages codegen guard (T029)', () => {
   it('re-running over the SAME dir rewrites identical bytes (no drift)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'dk-gloss-same-'));
     try {
-      generateGlossaryPages(index, dir);
+      generateGlossaryPages(index, dir, ['README', 'index']);
       const first = readTree(dir);
-      generateGlossaryPages(index, dir);
+      generateGlossaryPages(index, dir, ['README', 'index']);
       expect(readTree(dir)).toEqual(first);
     } finally {
       rmSync(dir, { recursive: true, force: true });

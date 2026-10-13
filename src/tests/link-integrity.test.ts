@@ -191,7 +191,7 @@ describe('generated glossary anchors resolve (#63)', () => {
     const index = buildIndex(parseAndValidate(parseDefinitionsYaml(YAML)));
     const out = mkdtempSync(join(tmpdir(), 'dk-link-integrity-'));
     try {
-      generateGlossaryPages(index, out);
+      generateGlossaryPages(index, out, ['README', 'index']);
       return readFileSync(join(out, 'glossary', 'shipping', 'index.md'), 'utf8');
     } finally {
       rmSync(out, { recursive: true, force: true });

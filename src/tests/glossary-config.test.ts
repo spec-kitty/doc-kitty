@@ -190,10 +190,17 @@ describe('defineDocKittyIntegrations glossary active wiring', () => {
     runGlossarySetup(defineDocKittyIntegrations({ title: 'Docs' }));
     expect(generateGlossaryPages).toHaveBeenCalledTimes(1);
     // Called with the shared index and an absolute docs dir (resolved from cwd).
-    const [passedIndex, outDir] = vi.mocked(generateGlossaryPages).mock.calls[0];
+    const [passedIndex, outDir, passedIndexBasename] = vi.mocked(generateGlossaryPages).mock.calls[0];
     expect(passedIndex).toBe(fakeIndex);
     expect(typeof outDir).toBe('string');
     expect((outDir as string).endsWith('/docs') || (outDir as string).endsWith('\\docs')).toBe(true);
+    // Default site: the unset setting is passed through as-is (the generator resolves it).
+    expect(passedIndexBasename).toBeUndefined();
+  });
+
+  it('passes the site-configured indexBasename to the generator (#129)', () => {
+    runGlossarySetup(defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['index', 'README'] }));
+    expect(vi.mocked(generateGlossaryPages).mock.calls[0][2]).toEqual(['index', 'README']);
   });
 
   it('registers the remark plugins in the pinned order with the shared index + ignore-list', () => {
