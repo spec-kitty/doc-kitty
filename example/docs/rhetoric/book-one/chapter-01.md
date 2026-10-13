@@ -7,13 +7,6 @@ type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]
 glossary_context: rhetoric
-# The chapter's many short footnote/section headings make Starlight's on-this-page
-# nav a tightly packed list whose links fall below the WCAG 2.2 target-size (2.5.8)
-# minimum — an unrelated theme-chrome issue this prose page should not carry (the
-# glossary and diagram demonstrators suppress their TOC for the same reason). The
-# footnote apparatus and the {blurb} callout in the body are unaffected; the table
-# of contents is suppressed here so the axe lane covers the reader-facing content.
-tableOfContents: false
 external_references:
   - type: biblio
     id: freese-rhetoric-1926

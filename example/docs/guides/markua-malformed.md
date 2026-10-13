@@ -6,9 +6,6 @@ updated: 2026-08-29
 type: Guide
 kind: Reference
 tags: [markua, fixture, degradation]
-# Suppress the on-this-page nav (WCAG 2.5.8 target-size theme-chrome issue on a
-# short many-heading fixture — the diagram-demonstrator convention).
-tableOfContents: false
 ---
 <!-- markdownlint-disable -->
 <!-- This is a Markua fixture: it deliberately contains Markua syntax (headings

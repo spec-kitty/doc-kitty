@@ -6,15 +6,6 @@ updated: 2026-08-29
 type: Guide
 kind: Reference
 tags: [markua, showcase, fixture, reference]
-# This fixture carries many short same-level headings (the ten equivalence
-# sections + the construct sections); Starlight's on-this-page nav would render
-# them as a tightly-packed list whose links fall below the WCAG 2.2 target-size
-# (2.5.8) minimum — an unrelated theme-chrome issue this Markua fixture should
-# not carry (the same reason the diagram demonstrator suppresses its ToC). The
-# WP06 in-aside heading-exclusion is proven STRUCTURALLY in markua.spec.ts (the
-# heading is demoted to a <p role="heading">, so Starlight's tagName-keyed
-# collector never sees it), which does not depend on a rendered ToC.
-tableOfContents: false
 # This is a MARKUA construct fixture, not a glossary demonstrator. The rhetoric
 # glossary context (ars-rethorica showcase) defines terms/aliases — e.g. "debate"
 # (an alias of Dialectic) — that collide with the incidental prose of the callout

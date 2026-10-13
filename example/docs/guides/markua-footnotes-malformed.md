@@ -6,7 +6,6 @@ updated: 2026-09-08
 type: Guide
 kind: Reference
 tags: [markua, footnotes, fixture, degradation]
-tableOfContents: false
 glossary_autolink: false
 ---
 <!-- markdownlint-disable -->

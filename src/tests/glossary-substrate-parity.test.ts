@@ -159,7 +159,13 @@ const CONSCIOUS_EXCLUSIONS: Exclusion[] = [
   {
     plugin: markuaNormalise,
     kind: 'inert',
-    why: 'opt-in Markua: compiles `A>`/`W>`/`{aside}` line-prefix runs into containerDirectives; inert on the non-Markua bodies the re-derive corpus uses today (Markua fixtures set tableOfContents:false, so OnThisPage is not exercised).',
+    why:
+      'opt-in Markua: compiles `A>`/`W>`/`{aside}` line-prefix runs into containerDirectives; inert on the non-Markua fixture of this test. ' +
+      'KNOWN GAP (pre-existing): the "links used" re-derive (OnThisPage.astro linksForBody, mounted by MarkdownContent.astro and not gated by ' +
+      '`tableOfContents`) replays none of the four Markua passes, so on a Markua body its mdast differs from the build substrate. The golden-tree ' +
+      'below cannot hold for a Markua fixture until the passes are mirrored in REDERIVE_REMARK_PLUGINS, and no test compares "links used" with ' +
+      '"links inserted" on a Markua body. No visible difference on the example site today: the four `example/docs/guides/markua-*.md` pages have ' +
+      'no glossary links in their bodies and render no block.',
   },
   {
     plugin: markuaFootnotes,

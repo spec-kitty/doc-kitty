@@ -6,9 +6,6 @@ updated: 2026-09-08
 type: Guide
 kind: Reference
 tags: [markua, footnotes, fixture, showcase]
-# Suppress the on-this-page nav (WCAG 2.5.8 target-size theme-chrome issue on a
-# short many-heading fixture — the diagram-demonstrator / markua-showcase convention).
-tableOfContents: false
 glossary_autolink: false
 ---
 <!-- markdownlint-disable -->

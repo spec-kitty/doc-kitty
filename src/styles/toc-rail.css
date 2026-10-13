@@ -24,7 +24,6 @@
   display: none; /* desktop-only affordance; revealed >= 72rem below (C-4) */
   position: fixed;
   top: 50%;
-  transform: translateY(-50%);
   z-index: 40;
   align-items: center;
   justify-content: center;
@@ -37,7 +36,6 @@
   color: var(--sl-color-gray-3);
   box-shadow: var(--dk-shadow-sm);
   cursor: pointer;
-  pointer-events: auto; /* clickable even when the collapsed rail is inert */
 }
 
 .dk-toc-toggle:hover,
@@ -57,27 +55,63 @@
   transition: transform 0.2s ease;
 }
 
-/* Chevron flips with state: expanded it points at the rail (the collapse cue),
- * collapsed it points back toward the article (the expand cue). */
+/*
+ * Chevron direction. The path points toward the inline end in left-to-right.
+ * Expanded it points at the rail (the collapse cue); collapsed it points back at
+ * the article (the expand cue). On a right-to-left page the rail is on the left,
+ * so both cues are mirrored (FR-012). Specificities: (0,2,1) < (0,2,2) < (0,3,2).
+ */
+[dir='rtl'] .dk-toc-toggle svg {
+  transform: rotate(180deg);
+}
+
 html[data-toc-collapsed] .dk-toc-toggle svg {
   transform: rotate(180deg);
 }
 
+html[dir='rtl'][data-toc-collapsed] .dk-toc-toggle svg {
+  transform: none;
+}
+
 @media (min-width: 72rem) {
   /*
-   * Reveal + anchor the toggle. Horizontal anchor is a pure-CSS calc of the rail
-   * column (no JS measurement, C-3): expanded it sits at the rail's left-edge
-   * hairline (`--sl-sidebar-width`, the rail column's nominal width); collapsed the
-   * rail is a 1px hairline at the viewport edge, so the button rides out to
-   * `right: 0`.
+   * Reveal + anchor the toggle on the rail edge (FR-007). The anchor is pure CSS,
+   * built from the two lengths that place the rail itself in `dk-components.css`:
+   * `--dk-frame-gutter` (0 for the full-width default, half the spare width when a
+   * consumer caps the frame) and `--sl-sidebar-width` (the pinned rail width).
+   * The button is `position: fixed`, so the percentage inside the gutter resolves
+   * against the viewport width, which is what the gutter is defined for.
+   *
+   * Expanded, the button's end edge is put on the rail's inner edge and the button
+   * is then shifted by half its width, so it is centred on that edge: 1rem over
+   * the article's end padding (1.5rem) and 1rem over the rail panel's start
+   * padding (1rem). Sitting wholly on the article side would cover the last 8px of
+   * the text column below 84rem, where the column fills its pane.
+   *
+   * Offsets are logical, so a right-to-left page mirrors them; only the half-width
+   * shift has a direction and needs its own rule (FR-012).
    */
   .dk-toc-toggle {
     display: inline-flex;
-    right: var(--sl-sidebar-width);
+    inset-inline-end: calc(var(--dk-frame-gutter, 0px) + var(--sl-sidebar-width));
+    transform: translate(50%, -50%);
   }
 
+  /* (0,2,0): above the rule above, below the collapsed rule (0,2,1). */
+  [dir='rtl'] .dk-toc-toggle {
+    transform: translate(-50%, -50%);
+  }
+
+  /*
+   * Collapsed, the rail is a 1px hairline at the frame's end edge. The button
+   * moves wholly inside the frame with its end edge on that hairline: centring it
+   * would push half of it off-screen when the frame is full width. The collapsed
+   * reading column is capped and centred at every width from 72rem, so the button
+   * is clear of the text.
+   */
   html[data-toc-collapsed] .dk-toc-toggle {
-    right: 0;
+    inset-inline-end: var(--dk-frame-gutter, 0px);
+    transform: translateY(-50%);
   }
 
   /*
@@ -102,26 +136,45 @@ html[data-toc-collapsed] .dk-toc-toggle svg {
   }
 
   /*
-   * Recenter the article (THE critical cascade bar). Starlight right-biases the
-   * article with `[data-has-sidebar][data-has-toc] .main-pane` at (0,3,0); this
-   * override is (0,4,1) — html(0,0,1) + three attrs(0,3,0) + .main-pane(0,1,0) —
-   * so it WINS. `data-has-sidebar`/`data-has-toc` live on <html> (the same element
-   * as `data-toc-collapsed`), so compounding them is valid. A weaker
-   * `html[data-toc-collapsed] .main-pane` (0,2,1) would LOSE to (0,3,0) and leave
-   * dead right space.
+   * Recenter the article (THE critical cascade bar). Both selectors are (0,4,1):
+   * html(0,0,1) + three attribute/negation terms(0,3,0) + .main-pane(0,1,0).
+   * `data-has-sidebar`/`data-has-toc` live on <html> (the same element as
+   * `data-toc-collapsed`), so compounding them is valid.
+   *
+   * With a left sidebar, Starlight right-biases the article with
+   * `[data-has-sidebar][data-has-toc] .main-pane` at (0,3,0) and
+   * `dk-components.css` re-sizes it at (0,3,1); (0,4,1) outranks both. A weaker
+   * `html[data-toc-collapsed] .main-pane` (0,2,1) would LOSE and leave dead right
+   * space.
+   *
+   * Without a left sidebar (FR-010) the only competing rule is Starlight's
+   * `.main-pane { width: 100% }` (0,1,0), which already agrees; the second
+   * selector states the collapsed geometry for that page explicitly, so it holds
+   * whatever a lower-specificity rule does to the expanded pane.
    */
-  html[data-toc-collapsed][data-has-sidebar][data-has-toc] .main-pane {
+  html[data-toc-collapsed][data-has-sidebar][data-has-toc] .main-pane,
+  html[data-toc-collapsed][data-has-toc]:not([data-has-sidebar]) .main-pane {
     width: 100%;
     --sl-content-margin-inline: auto;
   }
 
   /*
-   * The collapsed rail need not intercept pointer events; the toggle re-enables its
-   * own (pointer-events: auto in the base rule). Valid only because the button is
-   * NOT inside this subtree (it is body-mounted).
+   * The collapsed rail need not intercept pointer events. Valid only because the
+   * button is NOT inside this subtree: it is a child of `.right-sidebar-container`,
+   * a sibling of `.right-sidebar`.
    */
   html[data-toc-collapsed] .right-sidebar {
     pointer-events: none;
+  }
+
+  /*
+   * Target size (NFR-004, WCAG 2.2 SC 2.5.8). Outline links are stacked blocks
+   * with nothing between them, so each one needs a 24px block size of its own.
+   * Scoped to the desktop rail; the mobile outline has larger padding already.
+   * (0,1,1) outranks Starlight's scoped `a` rule (0,0,1 plus a `:where()` scope).
+   */
+  .right-sidebar-panel a {
+    min-block-size: 1.5rem;
   }
 
   /*

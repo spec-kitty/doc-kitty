@@ -6,12 +6,6 @@ updated: 2026-08-26
 type: Guide
 kind: Explanation
 tags: [glossary, demonstrator, autolink, collision]
-# Several short same-level H2s would make Starlight's on-this-page nav a tightly
-# packed list whose links fall below the WCAG 2.2 target-size (2.5.8) minimum — an
-# unrelated theme-chrome issue this glossary fixture should not carry (the diagram
-# demonstrator suppresses its TOC for the same reason). The sections are short and
-# self-evident, so the table of contents is suppressed here.
-tableOfContents: false
 ---
 
 # Cargo, consignments, and a cross-context collision

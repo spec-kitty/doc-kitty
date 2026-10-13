@@ -8,12 +8,6 @@ kind: Explanation
 tags: [architecture, diagrams, demonstrator, fixture]
 related:
   - architecture/overview
-# This fixture has several short same-level headings; Starlight's on-this-page
-# nav would render them as a tightly-packed list whose links fall below the
-# WCAG 2.2 target-size (2.5.8) minimum — an unrelated theme-chrome issue this
-# diagram fixture should not carry. The page is short and its sections are
-# self-evident, so the table of contents is suppressed here.
-tableOfContents: false
 ---
 
 # Diagram demonstrator

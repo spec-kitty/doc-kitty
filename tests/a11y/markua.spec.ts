@@ -265,9 +265,9 @@ test.describe('ordering lock + theme-path discriminator', () => {
 // role="heading" element (still announced as a heading, so the outline stays
 // intact) but is NO LONGER an <h_n> — which is precisely what keeps it out of
 // Starlight's tagName-keyed on-this-page collector (`if (tagName[0] !== "h")
-// return;`). This STRUCTURAL proof does not depend on a rendered ToC (the fixture
-// suppresses the nav for an unrelated WCAG 2.5.8 target-size theme issue), and is
-// the more fundamental proof: the collector never sees a heading here.
+// return;`). This STRUCTURAL proof does not depend on a rendered ToC, and is the
+// more fundamental proof: the collector never sees a heading here. (The fixture
+// does render its on-this-page rail; it no longer suppresses it.)
 // ---------------------------------------------------------------------------
 test.describe('heading-in-aside ToC exclusion (WP06, row 2)', () => {
   test('the in-aside heading is demoted to a role=heading <p>, not an <h_n>', async ({ page }, testInfo) => {

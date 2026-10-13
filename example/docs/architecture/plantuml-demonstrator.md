@@ -8,11 +8,6 @@ kind: Explanation
 tags: [architecture, diagrams, plantuml, demonstrator, fixture]
 related:
   - architecture/diagram-demonstrator
-# Short same-level headings would render an over-tight on-this-page list below the
-# WCAG 2.2 target-size minimum — the same theme-chrome quirk the Mermaid
-# demonstrator suppresses. This page is short and self-evident, so its table of
-# contents is suppressed too.
-tableOfContents: false
 ---
 
 # PlantUML demonstrator

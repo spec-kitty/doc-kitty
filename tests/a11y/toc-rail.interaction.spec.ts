@@ -15,8 +15,10 @@
 //   .right-sidebar-container > .right-sidebar > .right-sidebar-panel  (the outline)
 //   .main-pane  (the article column; right-biased when a TOC is reserved)
 //   <html> carries data-has-sidebar / data-has-toc / (when collapsed) data-toc-collapsed
-// The toggle (#dk-toc-toggle, body-mounted, position:fixed) is injected by the
-// client island (toc-rail.client) on load and shown only >= 72rem.
+// The toggle (#dk-toc-toggle, position:fixed) is injected by the client island
+// (toc-rail.client) on load as the FIRST CHILD of .right-sidebar-container, and is
+// shown only >= 72rem. Its aria-controls names the outline panel (#dk-toc-panel).
+// Multi-width geometry (toggle against rail edge) is a separate spec.
 import { test, expect, type Page } from '@playwright/test';
 import { ROUTES, TOC_RAIL_ROUTE, TOC_RAIL_TOGGLE } from './routes';
 
@@ -157,6 +159,121 @@ test.describe('Collapsible TOC rail — desktop interaction (T014, ≥72rem)', (
     // stays hidden and the button reflects the collapsed state.
     await expect(page.locator(TOC_RAIL_TOGGLE)).toHaveAttribute('aria-expanded', 'false');
     await expect(outlinePanel(page)).toBeHidden();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Placement and semantics (sidebar-frame-header-carrier-01M4T3CB, WP02 T011 —
+// FR-008, FR-009, C-003): where the toggle is mounted, what it names, where it
+// falls in keyboard order, and that a preference stored before this change is
+// still honoured.
+// ---------------------------------------------------------------------------
+test.describe('Collapsible TOC rail — toggle placement and semantics (≥72rem)', () => {
+  test('the toggle is the first child of the rail container, outside the rail it disables', async ({
+    page,
+  }) => {
+    await gotoTocRoute(page);
+    const mount = await page.evaluate((sel) => {
+      const toggle = document.querySelector(sel);
+      return {
+        parentClass: toggle?.parentElement?.className ?? '',
+        isFirstChild: toggle?.parentElement?.firstElementChild === toggle,
+        insideRail: !!toggle?.closest('.right-sidebar'),
+        count: document.querySelectorAll(sel).length,
+      };
+    }, TOC_RAIL_TOGGLE);
+    expect(mount.count, 'exactly one toggle is injected').toBe(1);
+    expect(mount.parentClass.split(/\s+/)).toContain('right-sidebar-container');
+    expect(mount.isFirstChild, 'the toggle precedes .right-sidebar in the container').toBe(true);
+    expect(
+      mount.insideRail,
+      'the toggle must not sit inside .right-sidebar (pointer-events: none when collapsed)',
+    ).toBe(false);
+  });
+
+  test('aria-controls resolves to the element that holds the outline links', async ({ page }) => {
+    await gotoTocRoute(page);
+    const controls = await page.locator(TOC_RAIL_TOGGLE).getAttribute('aria-controls');
+    expect(controls, 'the toggle names the region it controls').toBeTruthy();
+    const controlled = page.locator(`[id="${controls}"]`);
+    await expect(controlled).toHaveCount(1);
+    expect(
+      await controlled.locator('starlight-toc a[href^="#"]').count(),
+      'the controlled element contains the outline links (non-vacuous)',
+    ).toBeGreaterThan(0);
+  });
+
+  test('keyboard order: the toggle comes immediately before the first outline link, not at the end of the page', async ({
+    page,
+  }) => {
+    await gotoTocRoute(page);
+    const toggle = page.locator(TOC_RAIL_TOGGLE);
+
+    // Real focus movement, not a DOM-order inference: Tab from the toggle must land
+    // on the first link of the outline.
+    await toggle.focus();
+    await page.keyboard.press('Tab');
+    const landed = await page.evaluate(() => {
+      const active = document.activeElement;
+      const first = document.querySelector('.right-sidebar-panel starlight-toc a');
+      return { isFirstOutlineLink: !!first && active === first, tag: active?.tagName ?? '' };
+    });
+    expect(
+      landed.isFirstOutlineLink,
+      `Tab from the toggle must focus the first outline link (landed on <${landed.tag}>)`,
+    ).toBe(true);
+
+    // …and the toggle is not among the last two focusable elements of the page,
+    // which is where the body-mounted button used to be (after the footer).
+    const order = await page.evaluate((sel) => {
+      const focusable = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          'a[href], button, input, select, textarea, summary, [tabindex]',
+        ),
+      ).filter(
+        (el) =>
+          el.tabIndex >= 0 &&
+          !el.hasAttribute('disabled') &&
+          el.getClientRects().length > 0 &&
+          getComputedStyle(el).visibility !== 'hidden',
+      );
+      const toggleEl = document.querySelector<HTMLElement>(sel);
+      return { index: toggleEl ? focusable.indexOf(toggleEl) : -1, total: focusable.length };
+    }, TOC_RAIL_TOGGLE);
+    expect(order.index, 'the toggle is a visible focusable element').toBeGreaterThanOrEqual(0);
+    expect(
+      order.index,
+      `the toggle is focusable ${order.index + 1} of ${order.total}; it must not be one of the last two`,
+    ).toBeLessThan(order.total - 2);
+  });
+
+  test('a preference stored before this change still collapses the rail on load, and a click flips it', async ({
+    page,
+  }) => {
+    await gotoTocRoute(page);
+    // Write the value exactly as earlier releases stored it (key and value are the
+    // C-003 contract), without going through the toggle.
+    await page.evaluate(() => localStorage.setItem('dk-toc-collapsed', '1'));
+    await page.reload({ waitUntil: 'domcontentloaded' });
+
+    const html = page.locator('html');
+    const toggle = page.locator(TOC_RAIL_TOGGLE);
+    await expect(html).toHaveAttribute('data-toc-collapsed', '');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(outlinePanel(page)).toBeHidden();
+
+    // Collapsed, the toggle is still operable by pointer. A real click (Playwright
+    // checks the element receives the event) guards against the button ending up
+    // inside the `pointer-events: none` rail or the `display: none` panel.
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    await expect(html).not.toHaveAttribute('data-toc-collapsed', /.*/);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(outlinePanel(page)).toBeVisible();
+    expect(
+      await page.evaluate(() => localStorage.getItem('dk-toc-collapsed')),
+      'expanding writes the same key back',
+    ).toBe('0');
   });
 });
 
