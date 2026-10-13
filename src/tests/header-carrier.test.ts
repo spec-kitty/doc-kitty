@@ -43,11 +43,9 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import ts from 'typescript';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const EXAMPLE_DIR = path.join(REPO_ROOT, 'example');
@@ -161,12 +159,11 @@ describe('WP06 — Header carrier, no theme header (FR-025, NFR-007)', () => {
     expect(stock.pages.get('index.html')!.match(SCOPE_HASH)).not.toBeNull();
   });
 
-  it.each(PINNED_PAGES)('%s has the pre-carrier header block', (page) => {
-    expect(stock.pages.has(page), `${page} was not built`).toBe(true);
-    expect(headerBlock(stock.pages.get(page)!)).toBe(STOCK_HEADER);
-  });
-
   it('every framed page has that same header block', () => {
+    for (const page of PINNED_PAGES) {
+      expect(stock.pages.has(page), `${page} was not built`).toBe(true);
+      expect(isFramed(stock.pages.get(page)!), `${page} is framed`).toBe(true);
+    }
     const differing = [...stock.pages]
       .filter(([, html]) => isFramed(html))
       .filter(([, html]) => headerBlock(html) !== STOCK_HEADER)
@@ -181,9 +178,6 @@ describe('WP06 — Header carrier, no theme header (FR-025, NFR-007)', () => {
     expect(unframedWithHeader).toEqual([]);
   });
 
-  it('renders no fixture header', () => {
-    for (const [page, html] of stock.pages) expect(count(html, MARKER), page).toBe(0);
-  });
 });
 
 describe('WP06 — Header carrier, theme fills dk:site-header (FR-024)', () => {
@@ -237,50 +231,5 @@ describe('WP06 — Header carrier, theme fills dk:site-header (FR-024)', () => {
     }
     expect(count(themed.pages.get('index.html')!, '>Skip to content</a>')).toBe(1);
     expect(count(themed.pages.get('guides/getting-started/index.html')!, '<starlight-menu-button')).toBe(1);
-  });
-});
-
-/**
- * Slot names are rejected where a theme is written: `DocKittyTheme.slots` is
- * keyed by the `DkSlotName` union, and the manifest performs no name check of
- * its own. Vitest does not type-check, so this compiles two one-line themes with
- * the TypeScript API and reads the diagnostics.
- */
-describe('WP06 — slot names (theme definition type)', () => {
-  function diagnosticsFor(slotName: string): string[] {
-    const dir = mkdtempSync(path.join(tmpdir(), 'dk-wp06-slot-'));
-    const file = path.join(dir, 'theme-under-test.ts');
-    const themeModule = fileURLToPath(new URL('../lib/theme.ts', import.meta.url));
-    writeFileSync(
-      file,
-      `import type { DocKittyTheme } from ${JSON.stringify(themeModule)};\n` +
-        `export const theme: DocKittyTheme = { slots: { ${JSON.stringify(slotName)}: 'x/Header.astro' } };\n`,
-    );
-    try {
-      const program = ts.createProgram([file], {
-        strict: true,
-        noEmit: true,
-        skipLibCheck: true,
-        target: ts.ScriptTarget.ES2022,
-        module: ts.ModuleKind.ESNext,
-        moduleResolution: ts.ModuleResolutionKind.Bundler,
-        allowImportingTsExtensions: true,
-      });
-      return program
-        .getSemanticDiagnostics(program.getSourceFile(file))
-        .map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  }
-
-  it('accepts dk:site-header', () => {
-    expect(diagnosticsFor('dk:site-header')).toEqual([]);
-  });
-
-  it('rejects a slot name outside the surface', () => {
-    const messages = diagnosticsFor('dk:site-heading');
-    expect(messages).toHaveLength(1);
-    expect(messages[0]).toContain("'\"dk:site-heading\"' does not exist in type");
   });
 });

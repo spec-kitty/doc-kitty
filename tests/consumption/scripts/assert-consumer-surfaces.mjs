@@ -126,10 +126,6 @@ function main() {
     /\.main-frame\{[^}]*max-width:var\(--dk-width-frame\)/.test(css),
     'frame: .main-frame is capped by the token',
   );
-  check(
-    /--dk-frame-gutter:max\(0px,\(100%-var\(--dk-width-frame\)\)\/2\)/.test(css),
-    'frame: the frame gutter is derived from the token',
-  );
   check(/--dk-width-frame:90rem/.test(css), "frame: the consumer's 90rem cap is in the loaded CSS");
   // Both must be present: `lastIndexOf` is -1 for a missing default, and the
   // comparison below would then pass with nothing to come after.

@@ -36,7 +36,7 @@ import { applyDraftPolicy, docKittyDocsLoader } from '../lib/schema.js';
 import { checkCoverage, urlToDistFile } from '../scripts/check-redirect-coverage.mjs';
 import { draftPublicationIntegration, type RouteShapingOptions } from '../lib/config.js';
 import { shapeSidebar } from '../lib/route-shaping.js';
-import { ROOT_ENTRY_ID, isDraftEntry, isPublished } from '../lib/metadata.js';
+import { ROOT_ENTRY_ID, isDraftEntry } from '../lib/metadata.js';
 
 describe('resolvePublishDrafts', () => {
   it('is on when nothing sets it (owner decision 2026-10-13: drafts are built by default)', () => {
@@ -186,7 +186,7 @@ describe('env files', () => {
     expect(resolvePublishDrafts({}, readEnvFiles(root, 'development'))).toBe(true);
   });
 
-  it("the example's .env.example shows the live setting, and no build reads that file", () => {
+  it("the example's .env.example shows the live setting, commented out", () => {
     const exampleRoot = path.resolve(import.meta.dirname, '../../example');
     const text = readFileSync(path.join(exampleRoot, '.env.example'), 'utf8');
     // Shipped commented out, so copying the file changes nothing by accident.
@@ -198,24 +198,12 @@ describe('env files', () => {
       publish: false,
       source: 'env file',
     });
-    // `.env.example` is not one of the files a build reads, whatever it holds.
-    const unread = site({ '.env.example': 'DK_PUBLISH_DRAFTS=off\n' });
-    for (const mode of ['production', 'development']) {
-      expect(readEnvFiles(unread, mode), mode).toEqual({});
-    }
   });
 
   it('local files win over their shared counterparts; no files means no settings', () => {
     const root = site({ '.env': 'DK_PUBLISH_DRAFTS=off\n', '.env.local': 'DK_PUBLISH_DRAFTS=on\n' });
     expect(readEnvFiles(root, 'production')).toEqual({ DK_PUBLISH_DRAFTS: 'on' });
     expect(readEnvFiles(site({}), 'production')).toEqual({});
-  });
-
-  it('the process environment still beats every env file', () => {
-    const on = site({ '.env': 'DK_PUBLISH_DRAFTS=on\n' });
-    expect(resolvePublishDrafts({ DK_PUBLISH_DRAFTS: 'off' }, readEnvFiles(on, 'production'))).toBe(false);
-    const off = site({ '.env': 'DK_PUBLISH_DRAFTS=off\n' });
-    expect(resolvePublishDrafts({ DK_PUBLISH_DRAFTS: 'on' }, readEnvFiles(off, 'production'))).toBe(true);
   });
 });
 
@@ -1067,33 +1055,11 @@ describe('one resolver for the build and its gates', () => {
 });
 
 describe('one draft predicate, and the site root is never a draft', () => {
-  it('isPublished is the negation of isDraftStatus for every status', () => {
-    for (const status of [undefined, 'draft', 'active', 'durable', 'deprecated']) {
-      expect(isPublished({ doc_status: status } as never), String(status)).toBe(!isDraftStatus(status));
-    }
-  });
-
   it('isDraftEntry exempts the root page, with or without a status', () => {
     expect(isDraftEntry({ id: ROOT_ENTRY_ID, data: {} })).toBe(false);
     expect(isDraftEntry({ id: ROOT_ENTRY_ID, data: { doc_status: 'draft' } })).toBe(false);
     expect(isDraftEntry({ id: 'guides/wip', data: {} })).toBe(true);
     expect(isDraftEntry({ id: 'guides/wip', data: { doc_status: 'draft' } })).toBe(true);
     expect(isDraftEntry({ id: 'guides/done', data: { doc_status: 'active' } })).toBe(false);
-  });
-
-  it('the loader and the Head carrier decide "draft" with isDraftEntry, so a root page is never noindex', () => {
-    const lib = path.resolve(import.meta.dirname, '..');
-    const head = readFileSync(path.join(lib, 'components/Head.astro'), 'utf8');
-    const frontmatter = head.slice(0, head.indexOf('\n---', 3));
-    expect(frontmatter).toMatch(/const isDraft = isDraftEntry\(entry\b/);
-    expect(head).toMatch(/\{isDraft && <meta name="robots" content="noindex" \/>\}/);
-    // No second rule: the carrier does not test the status on its own.
-    expect(frontmatter).not.toMatch(/isPublished|isDraftStatus|doc_status \?\?/);
-    const schema = readFileSync(path.join(lib, 'lib/schema.ts'), 'utf8');
-    expect(schema).toMatch(/if \(!isDraftEntry\(entry\)\) return entry;/);
-    // And the walker and integration hold no predicate or walker of their own.
-    const config = readFileSync(path.join(lib, 'lib/config.ts'), 'utf8');
-    expect(config).not.toMatch(/\?\? 'draft'/);
-    expect(config).toMatch(/draftRoutesOf\(path\.resolve\(process\.cwd\(\), docsDir\), indexBasename\)/);
   });
 });

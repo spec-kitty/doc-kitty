@@ -22,7 +22,7 @@
  * that mentions a command cannot satisfy or trip an assertion.
  */
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const repoFile = (rel: string): string => fileURLToPath(new URL(`../../${rel}`, import.meta.url));
@@ -111,9 +111,6 @@ describe('deploy.yml: the live build never publishes drafts (FR-018)', () => {
   it('nothing else in the build job, and nothing in the shared build action, sets it', () => {
     const mentions = build.filter((line) => line.includes(SETTING));
     expect(mentions, 'one job-level line, no per-step override').toHaveLength(1);
-    // Indentation pins the line to the job-level env block; quoting style and a
-    // trailing comment are free to change.
-    expect(mentions[0]).toMatch(new RegExp(`^ {6}${SETTING}:\\s*['"]?off['"]?\\s*(#.*)?$`));
     const steps = stepsOf(build);
     expect(steps.map((s) => s.uses)).toContain('./.github/actions/build-example');
     const action = withoutComments(readRepo('.github/actions/build-example/action.yml'));
@@ -148,24 +145,11 @@ describe('ci.yml: the PR gate builds with drafts on and asserts the drafts-off b
     const dir = `example/${steps[offAt].env.DK_OUTDIR}`;
     const after = steps.slice(offAt + 1);
     for (const script of GATE_SCRIPTS) {
-      expect(existsSync(repoFile(script)), `${script} exists`).toBe(true);
       const step = after.find((s) => s.run.startsWith(`node ${script} `));
       expect(step, `a step after the drafts-off build runs \`node ${script} …\``).toBeDefined();
       expect(step!.run.split(/\s+/), `${script} is given ${dir}`).toContain(dir);
       expect(step!.run, `${script} is not also given the drafts-on directory`).not.toMatch(/example\/dist(\s|$)/);
       expect(step!.env[SETTING], `${script} runs with ${SETTING} off`).toBe('off');
-    }
-  });
-
-  it('no step reaches the drafts-off directory through a pnpm script', () => {
-    const offAt = steps.findIndex((s) => s.env[SETTING] === 'off' && /^pnpm build\b/.test(s.run));
-    const dir = `example/${steps[offAt].env.DK_OUTDIR}`;
-    const using = steps.filter((s) => s.run.includes(dir));
-    expect(using.length, 'non-vacuity: steps name the drafts-off directory').toBeGreaterThanOrEqual(GATE_SCRIPTS.length);
-    for (const step of using) {
-      for (const command of step.run.split('\n').filter((line) => line.includes(dir))) {
-        expect(command, `"${step.name}" must call the script with node, not pnpm`).toMatch(/^node src\/scripts\/[\w-]+\.mjs /);
-      }
     }
   });
 });

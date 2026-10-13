@@ -63,7 +63,9 @@ const brandLikeTheme: DocKittyTheme = {
   tokens: { '--dk-color-accent': '#abcdef', '--dk-radius-md': '0.75rem' },
   customCss: ['fixture/tokens.css', 'fixture/brand.css'],
   assets: { logo: 'fixture/logo.svg', favicon: 'fixture/favicon.svg' },
-  slots: { 'dk:site-footer': 'fixture/SiteFooter.astro' },
+  // `dk:site-header` is resolved inside the Header carrier (ADR-0044), so filling
+  // it must not change the carrier map either.
+  slots: { 'dk:site-footer': 'fixture/SiteFooter.astro', 'dk:site-header': 'fixture/SiteHeader.astro' },
   layouts: { Persona: 'fixture/Persona.astro' },
 };
 
@@ -85,17 +87,6 @@ describe('defineDocKittyIntegrations components map (seam 3)', () => {
       // A pass-through override attempting to register a sixth component must NOT
       // expand the map — `components: carriers` is applied AFTER `...overrides`.
       starlight: { components: { Sidebar: 'consumer/Sidebar.astro' } as never },
-    });
-    expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
-  });
-
-  // ADR-0044: a theme reaches the header through the `dk:site-header` slot. The
-  // slot is resolved inside the Header carrier, so declaring it must not change
-  // the map either.
-  it('registers exactly the five carriers when a theme fills dk:site-header', () => {
-    const integrations = defineDocKittyIntegrations({
-      title: 'Docs',
-      theme: { ...brandLikeTheme, slots: { 'dk:site-header': 'fixture/SiteHeader.astro' } },
     });
     expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
   });
