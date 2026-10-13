@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The baseline workflow no longer fails after pushing the regenerated
+  baselines.** This repository does not let GitHub Actions create pull requests,
+  so `update-a11y-baselines.yml` now warns and puts a link in the run summary
+  that opens the pull request in one click. Its `target_branch` input defaults
+  to `main` instead of a branch that was merged long ago. (#117)
+- **A failed Chromium download no longer fails the example build on its own.**
+  The shared build action caches the browser, keyed on the Playwright version,
+  and retries the download with a pause when the cache is cold. (#117)
+- **A deploy run now says whether it published.** `deploy.yml` writes a run
+  summary: the commit it deployed, or that the push changed no deployable path
+  and which commit the latest Pages deployment holds. (#117)
+
 ## [0.2.0] — 2026-10-13
 
 **Read this before upgrading: set `DK_PUBLISH_DRAFTS=off` in the build that

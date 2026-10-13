@@ -19,10 +19,12 @@
 # regenerates the snapshots, and opens a PR back INTO that branch. Merging that PR
 # updates the baselines on the branch (e.g. a feature PR) so its a11y lane passes.
 #
-# Note: a PR opened by the default `GITHUB_TOKEN` does not itself re-trigger CI
-# (GitHub's recursion guard). That is fine here — the images ARE the output of the
-# a11y run that produced them; a reviewer can re-run the lane on the target branch
-# after merge if they want the green tick.
+# Opening the PR is best-effort (#117). This repository does not let GitHub
+# Actions create pull requests, so the step normally cannot open one: it then
+# warns and puts a link in the run summary that opens the PR in one click. A PR
+# opened by hand also triggers CI, which one opened by `GITHUB_TOKEN` does not
+# (GitHub's recursion guard). If the setting is ever enabled the step opens the
+# PR itself; re-run the a11y lane on the target branch after merge for the tick.
 name: Update a11y baselines
 
 on:
@@ -31,7 +33,7 @@ on:
       target_branch:
         description: Branch whose visual baselines to regenerate (a PR is opened against it).
         required: true
-        default: fix/glossary-followups
+        default: main
 
 # Push a branch (contents) and open a PR (pull-requests).
 permissions:
@@ -170,7 +172,10 @@ jobs:
           git push origin "$BRANCH"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
-      # Open the PR via the REST client (no `gh` in the container). Pinned SHA =
+      # Try to open the PR via the REST client (no `gh` in the container), and
+      # always write the result to the run summary. A 403 means Actions may not
+      # create pull requests here: the pushed branch is still good, so warn and
+      # link the compare page instead of failing. Pinned SHA =
       # actions/github-script@v7.0.1.
       - name: Open PR with the updated baselines
         if: steps.diff.outputs.changed == 'true'
@@ -179,7 +184,8 @@ jobs:
           script: |
             const target = context.payload.inputs.target_branch;
             const head = ${{ toJSON(steps.push.outputs.branch) }};
-            const body = [
+            const title = 'test(a11y): regenerate visual baselines for ' + target;
+            const intro = [
               'Automated regeneration of the Playwright visual baselines ' +
                 '(`tests/a11y/__screenshots__/**`) in the pinned ' +
                 '`mcr.microsoft.com/playwright:v1.62.1-noble` container, so the a11y ' +
@@ -188,19 +194,36 @@ jobs:
               'Produced by the **Update a11y baselines** workflow (run ' +
                 context.runId + '). Review the image diff, then merge into `' +
                 target + '`.',
-              '',
-              'Note: opened by `GITHUB_TOKEN`, so CI does not auto-run on it; re-run ' +
-                'the a11y lane on `' + target + '` after merge for the green tick.',
-            ].join('\n');
-            const pr = await github.rest.pulls.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              base: target,
-              head,
-              title: 'test(a11y): regenerate visual baselines for ' + target,
-              body,
-            });
-            core.notice('Opened baseline PR #' + pr.data.number + ': ' + pr.data.html_url);
+            ];
+            const compare =
+              `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/compare/` +
+              `${target}...${head}?` +
+              new URLSearchParams({ expand: '1', title, body: intro.join('\n') });
+            try {
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: target,
+                head,
+                title,
+                body: [
+                  ...intro,
+                  '',
+                  'Note: opened by `GITHUB_TOKEN`, so CI does not auto-run on it; re-run ' +
+                    'the a11y lane on `' + target + '` after merge for the green tick.',
+                ].join('\n'),
+              });
+              core.notice('Opened baseline PR #' + pr.data.number + ': ' + pr.data.html_url);
+              core.summary.addRaw('Opened ').addLink('baseline PR #' + pr.data.number, pr.data.html_url);
+            } catch (error) {
+              if (error.status !== 403) throw error;
+              core.warning('GitHub Actions may not create pull requests in this repository. ' +
+                'The baselines are on `' + head + '`; open the PR from the run summary.');
+              core.summary
+                .addRaw('The regenerated baselines are on `' + head + '`. ')
+                .addLink('Open the pull request into ' + target, compare);
+            }
+            await core.summary.write();
 
       - name: Report no-op
         if: steps.diff.outputs.changed == 'false'

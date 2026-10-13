@@ -138,3 +138,30 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+
+  # --- Report: say what this run did to the live site (#117). -----------------
+  # A push that changes no deployable path skips build and deploy, and the run is
+  # green either way. Without this summary a skipped run looks like a publish,
+  # also when it sits on top of an earlier build that failed.
+  report:
+    needs: [build, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: read
+    steps:
+      - name: Summarize the outcome
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD: ${{ needs.build.result }}
+          DEPLOY: ${{ needs.deploy.result }}
+        run: |
+          live=$(gh api "repos/${{ github.repository }}/deployments?environment=github-pages&per_page=1" --jq '.[0].sha' 2>/dev/null || true)
+          live=${live:-unknown}
+          if [ "$DEPLOY" = "success" ]; then
+            echo "Deployed \`${{ github.sha }}\` to GitHub Pages." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$BUILD" = "skipped" ]; then
+            echo "Skipped: this push changed no deployable path. Nothing was built or published; the latest Pages deployment is \`$live\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Not deployed (build: $BUILD, deploy: $DEPLOY). The latest Pages deployment is \`$live\`. Later pushes that change no deployable path will not retry this build; re-run it or dispatch the workflow." >> "$GITHUB_STEP_SUMMARY"
+          fi
