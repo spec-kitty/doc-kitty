@@ -181,6 +181,13 @@ Two invariants to hold from the start:
 - **`indexBasename` is routing-authoritative** — the value you pass here must be
   the identical list you pass to the docs loader in step 4.
 
+The generated glossary pages follow this setting. They are named `index.md` when
+your list contains `index`, and otherwise take your first index name (`README.md`
+for the default). You do not need to add `index` to the list for the glossary to
+work. A `README`-only site gets its glossary hub as `glossary/README.md`, served at
+`/glossary/`. The hub sits in the sidebar and lists its contexts like any other
+section index.
+
 **The sidebar is generated for you.** With no `sidebar` option, the toolkit
 builds one from your section registry and your pages: nested folders are
 labelled by their index page's title and ordered by its `sidebar.order`, and
@@ -470,7 +477,7 @@ your package manager rather than by a path into `node_modules`:
 
 ```sh
 pnpm exec dockitty-validate-frontmatter docs --index-basename README,index
-pnpm exec dockitty-check-links docs
+pnpm exec dockitty-check-links docs --strict --index-basename README,index
 astro build && pnpm exec dockitty-assert-no-broken-links dist --base /docs --site https://you.example.com
 ```
 
@@ -479,6 +486,55 @@ The other binaries are `dockitty-check-redirect-coverage`,
 `dockitty-generate-feature-pages` (see
 [Gherkin feature pages](#optional-gherkin-feature-pages) below). The same files are
 also importable as `@spec-kitty/doc-toolkit/scripts/<name>.mjs`.
+
+**Links between pages.** You can write either form. A root-absolute route such as
+`/guides/setup/` works as it did. A relative link to another page's Markdown file,
+such as `[setup](../guides/setup.md)` or `[setup](./setup.md#install)`, is now
+rewritten to that page's route at build, with your `base` applied, and it also
+works when a reader opens the file on GitHub. The link is resolved from the folder
+of the file that holds it. Only `.md` and `.mdx` targets are rewritten. A link the
+build cannot resolve is left as you wrote it, and `dockitty-assert-no-broken-links`
+reports it after the build. That covers a target that is not a page (such as a log
+file), a draft that is not published, and a path that leaves the docs tree. Raw
+HTML anchors are not rewritten. After you rename a page, restart the dev server.
+
+**What `dockitty-check-links` checks.** It reads a root one of two ways.
+
+- **Without `--strict`, a root is read as files**, the way GitHub shows a
+  repository's own `docs/` folder. A relative link, a reference-style definition
+  (`[label]: target`) or a `related:` ref passes when the file or folder it names
+  exists. A missing target is dangling. Nothing else is reported, and draft status
+  is not consulted.
+- **With `--strict`, a root is read as a built site.** A relative `.md` or `.mdx`
+  link passes only when the build would turn it into a route. It uses the same
+  function as the build, so it needs your site's index names. It also reports:
+  - a link to a file that is not a published page, such as a log file;
+  - a path that goes up out of the docs folder and comes back in;
+  - a link to an existing file outside the docs tree;
+  - a link with a malformed `%` escape;
+  - a link to a folder that has no index page;
+  - a bare relative link with no extension;
+  - a link to a draft page, when drafts are not published (set
+    `DK_PUBLISH_DRAFTS=off` for that check).
+
+  A folder link is answered from the route table. A `related:` ref is matched
+  against page ids, as the build does. A root-absolute link is checked only for a
+  draft target; whether its route exists is left to the built-link gate. Lookup is
+  case-sensitive, as in the build.
+
+Pass `--strict` for a site you build with the toolkit, as in the command above.
+`example/docs` in the toolkit's own repository is always strict. If an Astro config
+file sits next to a root that is not strict, the command prints one note that the
+folder looks like a built site and that `--strict` makes the check agree with the
+built-link gate. The note does not change the exit code.
+
+Pass `--index-basename` with the same list as your site. Index names now live in
+three places: `indexBasename` in `astro.config.mjs`, the loader in
+`src/content.config.ts`, and this flag. They must agree. Without the flag the
+command assumes `README,index`, which differs from the site default of `README`.
+The flag is written `--index-basename README,index`. A name that is not a plain
+file name, the `--name=value` form and an unknown option make the command exit with
+status 2. `--help` lists the options.
 
 ## 8. Govern your docs — the documentation charter
 
@@ -584,6 +640,7 @@ gherkin: {
 | `section` | `behaviour` | The folder under your docs directory the pages are generated into. It must be a single folder name and can't be `glossary` or `_meta`. |
 | `sourceRoot` | the site root | The directory each page's `sources:` path is relative to. Set `'..'` when the site lives in a sub-package and the features are elsewhere in the repo. |
 | `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. |
+| `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`. |
 
 What happens on each build and dev-server start:
 
@@ -596,6 +653,13 @@ What happens on each build and dev-server start:
 - The section belongs to the generator. Any file in it without the generator's
   `generated.by` stamp fails the build, so don't point `section` at an authored
   folder.
+- If no source yields a feature and generated pages already exist, the build
+  stops and removes nothing. The usual cause is a source directory that is not
+  checked out, such as a git submodule that was never initialised: run
+  `git submodule update --init`. If you did remove the features, set
+  `allowEmpty: true` for one build to delete the pages, then remove the setting.
+  A first run with no pages, and a set where only some directories are empty, are
+  not affected.
 
 Register the section so it gets a label, a sidebar group and its
 `type: Specification`. Add an entry wherever your section registry lives, under
@@ -628,25 +692,50 @@ pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
 ```
 
 Run it from the site directory, or pass `--root <site dir>`; every other path is
-relative to that root. `--check` lists each `added`, `changed`, `stale` or
-`authored` path it finds.
+relative to that root. `--help` (or `-h`) prints the flags. `--check` lists each `added`, `changed`, `stale` or
+`authored` path it finds. Add `--allow-empty` to remove the pages when no source
+yields a feature, the command-line twin of `allowEmpty`. `--check` is not affected:
+with empty sources and pages present it already exits 1 and lists them as `stale`.
 
 To turn the feature off, remove the option **and** delete `docs/<section>/`.
 Removing only the option leaves the last generated pages in place, still building
 as ordinary content.
 
-## Caveat — `check-links` strict mode does not cover your tree
+## Upgrading from 0.2.0
 
-The toolkit's `check-links` script applies its fail-closed *strict* tightening
-(rejecting `.md`-relative and bare-relative links that 404 in a based
-deployment) **only** to the toolkit's own base-prefixed built tree — its
-`SITE_ROOTS` is `example/docs`. It does **not** run in strict mode against a
-consumer project's own `docs/` tree.
+The release after 0.2.0 is 0.3.0. These are the changes you may notice:
 
-Do not assume you inherit strict-check parity by installing the toolkit. If you
-want the same guarantee for your own tree, use root-absolute routes
-(`/section/page/`) rather than `.md`-relative links in your Markdown, and run
-your own link check in strict mode as part of your pipeline.
+- **Links you already wrote as site routes keep working.** You need no change.
+- **The source link check also reads reference-style definitions.** A
+  `[label]: target` line whose target does not exist is now reported, on every
+  root. Nothing else changes for a root you do not pass `--strict`. If your docs
+  are built as a site, add `--strict`: the check then agrees with the built-link
+  gate, and it reports links the build cannot rewrite, such as a link to a file
+  that is not a page, a path that leaves the docs folder, a folder with no index
+  page, and a link to a draft. Expect new reports the first time you run it.
+- **Glossary pages may be renamed.** If your `indexBasename` does not contain
+  `index`, the generated glossary pages are now named with your first index name
+  (`README.md` for the default). The build removes an old `index.md` page only when
+  it is the generator's own output: the right `kind`, exactly the generator's
+  frontmatter keys, and content identical to the page the generator just wrote. When
+  the glossary source has not changed since your last build, the old pages go
+  without a message. When it has changed, the old pages whose content changed
+  stay, and the build warns for each. Delete them. A page with the generator's `kind` but
+  other keys is also kept with a warning, and so is a page with the generator's keys
+  and different content. A page of a different `kind` stays with no warning. Two
+  kinds of old page also stay, with no message: a page in the folder of a context
+  that no longer exists, and a page under a name that is no longer one of your index
+  names. If your site commits its generated glossary pages, commit the renamed
+  files.
+- **The glossary build stops in three more cases.** A page you wrote, or a symbolic
+  link, at a path the generator needs: move or rename it. A symbolic link at
+  `glossary/` or at a context folder: replace it with a real folder. An index name
+  that is not a plain file name (one path segment, no `/` or `\`, no leading `.`,
+  no surrounding whitespace). The build names the path or the value, and writes
+  nothing first.
+- **Empty Gherkin sources now stop the build.** A site that relied on empty
+  sources pruning its pages must set `gherkin.allowEmpty: true`, or pass
+  `--allow-empty`, for the build that should delete them.
 
 ## What you referenced
 

@@ -6,8 +6,95 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+The next release is `0.3.0`, because the two Breaking entries below change what an
+existing site's build does, and under `0.x` the minor number marks a breaking
+release, as it did for `0.2.0`.
+
+### 💥 Breaking
+
+- **The build stops when no source yields a Gherkin feature and generated pages
+  exist (#122).** Before, a source directory that was not checked out, such as an
+  uninitialised git submodule, made the build warn and delete every generated
+  page. Now `generateFeaturePages` throws before any write and removes nothing.
+  A site that relied on empty sources pruning its pages must set
+  `gherkin.allowEmpty: true`, or pass `--allow-empty` to
+  `dockitty-generate-feature-pages`, for the build that should delete them.
+  `--check` is unchanged.
+- **Generated glossary pages take your site's index name, and the build stops in
+  three cases it did not before (#129).** Before, the generator always wrote
+  `glossary/index.md`, and it wrote through an authored file or a symbolic link.
+  Now the pages are named `index` when your `indexBasename` lists it, and
+  otherwise with your first index name. On a site that does not list `index`,
+  `glossary/index.md` becomes `glossary/README.md`, and likewise for each context
+  folder. A site that commits its generated pages commits the rename. The build now
+  stops, names the path and writes nothing when a file you wrote or a symbolic link
+  sits where a generated page goes, when `glossary/` or a context folder is a
+  symbolic link, and when an index name is not a plain file name (one path
+  segment: no `/` or `\`, no leading `.`, no surrounding whitespace).
+
+### Changed
+
+- **`dockitty-check-links` now checks reference-style link definitions, and
+  names a bad option (#131).** Before, a dangling
+  `[label]: target` line passed. Now it is reported like an inline link. An
+  unknown option, the `--name=value` form and an `--index-basename` value that is
+  not a plain file name still exit with status 2, but the command now stops before
+  scanning and names the option; before, it read the option as a docs folder and
+  reported that it could not read it. The failure summary reads
+  "N link problem(s) in M file(s); F file(s) scanned, C reference(s) checked."
+
+### Added
+
+- **Relative Markdown links between pages are rewritten to routes at build
+  (#131).** Before, `[setup](./setup.md)` rendered as a link to a `.md` path that
+  404s on the live site, so authors wrote root-absolute routes that break on
+  GitHub. Now a relative `.md` or `.mdx` link to a published page becomes that
+  page's route, with your `base` applied, and the same link works on GitHub. A
+  link that does not resolve is left as written and reported by
+  `dockitty-assert-no-broken-links`. Raw HTML anchors are not rewritten. After a
+  rename, restart the dev server. See [ADR-0047](docs/adr/0047-relative-markdown-links.md).
+- **`gherkin.allowEmpty` and `--allow-empty`.** They let the build, and
+  `dockitty-generate-feature-pages`, remove the generated pages when no source
+  yields a feature. Off by default. See the Breaking entry above and
+  [ADR-0048](docs/adr/0048-generated-page-names-and-empty-sources.md).
+- **`--strict` and `--index-basename` on `dockitty-check-links` (#131).**
+  Without `--strict`, a root is read as files, as on GitHub, and the check is the
+  one 0.2.0 ran. With `--strict`, a root is read as a built site: a relative
+  `.md` link passes only when the build would rewrite it to a published page. It
+  also reports a link to a file that is not a page (for example `log.md`), a path
+  that leaves the docs root and comes back, a link to a file outside the docs
+  tree, a malformed `%` escape, a folder link with no index page, a bare relative
+  link with no extension, and, with `DK_PUBLISH_DRAFTS=off`, a link to a draft.
+  A `related:` ref is matched against page ids, as the build does, so a page
+  `x/index.md` that is not a section index is `x/index`, not `x`.
+  A site built with the toolkit should pass `--strict`; `example/docs` is always
+  strict. When an Astro config sits next to a root that is not strict, the command
+  prints one note suggesting `--strict`, and the exit code is unchanged.
+  `--index-basename <name[,name…]>` takes your site's section-index names; without
+  it the command assumes `README,index`, which differs from the site default of
+  `README`. Write it as `--index-basename README,index`. `--help` lists the options.
+- **`--help` on `dockitty-generate-feature-pages`.** It prints the flags and exits
+  with status 0.
+
 ### Fixed
 
+- **Generated glossary pages are section indexes on the default index name
+  (#129).** Before, the generator always wrote `glossary/index.md`. On a site whose
+  only index name is `README`, Starlight still served that hub at `/glossary/`,
+  but the toolkit saw its id as `glossary/index`: links it built pointed at
+  `/glossary/index/`, the Hub layout found no children and the sidebar did not
+  treat the page as the folder's index. Now the pages are named `index` when your
+  `indexBasename` lists it, and otherwise with your first index name. Sites that
+  list `index` keep their output.
+- **Stale generated glossary pages are removed on upgrade, when they are the
+  generator's own output (#129).** When the index name changes, an old hub or
+  context page is deleted only if its bytes are identical to the page the generator
+  just wrote there. A default-settings site whose 0.2.0 build left
+  `glossary/index.md` pages gets them removed without a message when the glossary
+  source is unchanged. If the source changed between the two builds, the old pages
+  whose content changed are kept, and the build warns for each: delete them. A page with the generator's
+  keys and different content is kept with a warning, and so is a page with the
+  generator's `kind` and different keys.
 - **The baseline workflow no longer fails after pushing the regenerated
   baselines.** This repository does not let GitHub Actions create pull requests,
   so `update-a11y-baselines.yml` now warns and puts a link in the run summary

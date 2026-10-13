@@ -191,9 +191,10 @@ prints one line with the result:
 redirect-coverage: DK_PUBLISH_DRAFTS=off (from: process environment; site root: .; mode: production)
 ```
 
-With the setting off, `dockitty-check-links` also fails on a published page that
-links or relates to a draft page, because that link is a 404 on the live site.
-With the setting on it skips that check. Run the gates for your live site with
+With the setting off, `dockitty-check-links --strict` also fails on a published
+page that links or relates to a draft page, because that link is a 404 on the live
+site. Without `--strict` the root is read as plain files and draft status is not
+consulted. With the setting on, neither mode makes that check. Run the gates for your live site with
 the value your deployment uses.
 
 Compare it with the `[dk-drafts]` line of the build. If the two differ, the

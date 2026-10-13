@@ -2,7 +2,7 @@
 title: Glossary
 description: "How the glossary surface fits together: the load-once index, the shared resolver behind thin plugins, codegen into the docs collection, and the render-time links-used re-derive."
 doc_status: active
-updated: 2026-08-30
+updated: 2026-10-13
 type: Architecture
 kind: Explanation
 authors:
@@ -12,6 +12,7 @@ related:
   - adr/0025-glossary-on-this-page-block-and-remark-render-channel
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
+  - adr/0048-generated-page-names-and-empty-sources
   - adr/0028-glossary-frontmatter-fields
   - architecture/section-registry
   - plans/features/glossary-and-contextive
@@ -84,13 +85,51 @@ auto-linker walks and is respected as the section's first eligible occurrence.
 Generated glossary pages are **non-authored**, so an injected route would be
 invisible to `getCollection('docs')`, the sidebar, the sitemap, the agent API, and
 `llms.txt`. Instead `generateGlossaryPages` writes real Markdown files —
-`docs/glossary/index.md` (the hub) and `docs/glossary/<context>/index.md` (one per
-context) — into the globbed `docs` collection at `astro:config:setup`, before any
+`docs/glossary/<index>.md` (the hub) and `docs/glossary/<context>/<index>.md` (one
+per context) — into the globbed `docs` collection at `astro:config:setup`, before any
 generator reads the collection. The generator is a pure function of the index:
 contexts and meta keys are emitted in a stable sorted order with no timestamp, so
 a rebuild produces byte-identical files and a dev-watcher never loops. Because the
 pages are ordinary collection files, every downstream generator picks them up with
 **zero new wiring**.
+
+**File names.** `<index>` is `index` when the site's `indexBasename` lists it (in any
+letter case), and otherwise the site's first index name. A site that lists `index`
+keeps its existing output. On a site whose only index name is `README`, the pages are
+`README.md`, so the toolkit sees each one as its folder's index page: links to the
+hub resolve, the Hub layout lists its children and the sidebar places it. An index
+name that is not a plain file name (it contains `/` or `\`, starts with `.`, or has
+surrounding whitespace) is rejected before anything is written. The Gherkin hub uses
+the first index name instead, so one site can hold a `README.md` Gherkin hub and an
+`index.md` glossary hub. See [ADR-0048](../adr/0048-generated-page-names-and-empty-sources.md).
+
+**Authored files and symbolic links stop the build.** If a file or a symbolic link
+sits at a path the generator writes and is not a generated glossary page, the build
+fails and names the path. Move or rename the file and rebuild. A symbolic link at
+`glossary/` or at a context folder stops the build too, because every write and
+removal would land outside the docs tree. Replace the link with a real folder. Both
+checks run before anything is written.
+
+**Stale pages are pruned by rule.** Glossary pages carry no ownership stamp. When the
+index name changes, the generator removes an old page only when all of these hold:
+
+- it sits at the hub position or in a current context folder;
+- it is named with one of the site's index names or `index`;
+- it has the `kind` the generator writes for that position;
+- it has exactly the generator's frontmatter keys;
+- its bytes are identical to the page the generator just wrote for that position.
+
+A page with the generator's keys whose content differs is kept, and the build warns:
+the folder now has two index-named files, so delete the old one if it is a leftover
+or rename it if you wrote it. A page with the generator's `kind` but different keys is
+kept with a second warning that says the same about its fields. Each warning is
+per file. Because of the byte comparison, a default-settings site whose 0.2.0 build
+left `glossary/index.md` pages loses them silently when the glossary source has not
+changed since. If the source did change, the old pages whose content changed are kept, and the
+build warns for each; the adopter deletes them.
+
+These limits remain: a page under a name that is no longer an index name is not
+removed, and a context removed from the source leaves its folder.
 
 ## Render-time re-derive of links-used
 

@@ -10,6 +10,7 @@ authors:
 tags: [gherkin, bdd, living-documentation, codegen, glossary]
 related:
   - adr/0046-gherkin-feature-pages
+  - adr/0048-generated-page-names-and-empty-sources
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - architecture/glossary
@@ -64,7 +65,7 @@ The four modules are plain JSDoc-typed `.mjs` with no Astro imports:
 | `feature-core.mjs` | Pure tag and description mapping to ordered frontmatter. Returns warnings; never throws on author input. | `vocabulary-core.mjs`, `text.mjs` |
 | `render.mjs` | Pure AST to Markdown body, including escaping. | `vocabulary-core.mjs`, `text.mjs` |
 | `generate.mjs` | `planFeaturePages()` builds the path-to-contents map. `generateFeaturePages()` writes it. `diffFeaturePages()` compares it with the tree for `--check`. | `node:*`, `gray-matter`, `vocabulary-loader.mjs`, the modules above |
-| `options.mjs` | `validateGherkinOptions()` and `validateIndexBasenames()`: the one validator for the `gherkin` option and the index basenames, shared by the integration and the CLI. | `text.mjs` |
+| `options.mjs` | `validateGherkinOptions()` and `validateIndexBasenames()`: the one validator for the `gherkin` option and the index basenames, shared by the integration and the CLI. | `vocabulary-core.mjs`, `text.mjs` |
 
 `text.mjs` imports nothing. It holds the `[dk-gherkin]` log prefix, the one
 dedent and narrative-split rule, and the one unnamed-feature title fallback, all
@@ -95,6 +96,8 @@ by `validateGherkinOptions()` in `options.mjs`. The generator script runs the sa
 function on its flags, so `--section ../../x` fails there too:
 
 - `sources` must be a non-empty array of non-empty strings.
+- `allowEmpty`, when present, must be `true` or `false`. A value of another type is
+  rejected by name.
 - `section` must be a single path segment: not empty, no `/` or `\`, no leading
   `.`. It can't be `_meta` or another generator's section (`glossary`).
 
@@ -170,8 +173,15 @@ removes pages. It never deletes authored content:
    feature maps to it.
 3. It writes the planned files whose bytes changed, deletes owned files that are no
    longer planned, then removes directories left empty.
-4. With the preset on and no `.feature` files left, it warns once, naming the
-   source directories, and removes the previously generated pages.
+4. When no source yields a `.feature` file and generated pages exist, it stops
+   before any write and removes nothing. The error names the source directories and
+   the usual cause, a directory that is not checked out, such as an uninitialised git
+   submodule. To remove the pages on purpose, set `gherkin.allowEmpty: true` or pass
+   `--allow-empty`: it then warns once and removes them, as it did before. The stop
+   applies only to a source set that yields nothing at all. A first run with no
+   pages, and a set where only some directories are empty, behave as before.
+   `--check` is unchanged: with empty sources and pages present it already exits 1
+   and lists them as `stale`, with or without the flag.
 
 Step 2 would lock a section if the generator ever wrote a page it couldn't read
 back as owned: every later run would refuse to write. Two defences stop that. The
@@ -312,7 +322,8 @@ The pages are committed, like the glossary's. Two gates keep them honest:
   `planFeaturePages` the integration calls, so the bytes it compares are the bytes
   the build writes. With `--check` it writes nothing and exits 1 listing every
   `added`, `changed`, `stale` and `authored` path. Its flags mirror the `gherkin`
-  option because the script can't evaluate `astro.config.mjs`. In this repo,
+  option (including `--allow-empty`) because the script can't evaluate
+  `astro.config.mjs`; `--help` lists them. In this repo,
   `pnpm validate:features` runs it against the example in the CI doc-sanity lane,
   and `pnpm generate:features` regenerates.
 
@@ -377,6 +388,11 @@ feature carries `@dk:updated=<date>`, so by default:
   ordinary description text.
 - **No outline expansion.** A Scenario Outline renders once with its examples
   table. Per-row expansion belongs to the results phase.
+- **Empty sources stop the build.** With generated pages present and no feature
+  found in any source, the generator throws instead of deleting the pages. Set
+  `gherkin.allowEmpty: true` (or `--allow-empty`) to remove them on purpose, and
+  remove the setting once they are gone. [ADR-0048](../adr/0048-generated-page-names-and-empty-sources.md)
+  records the decision and amends ADR-0046 on this point.
 - **Turning the preset off freezes the pages.** With no integration, nothing
   prunes the section, so the last generated pages keep building as ordinary
   content. Removing the feature means deleting the section folder. If CI still runs
@@ -398,10 +414,12 @@ feature carries `@dk:updated=<date>`, so by default:
   mount `scenarioIndexRoute` when you turn `gherkin` on
   (every other doc-kitty route is mounted the same way).
 
-## Related follow-ups
+## Related notes and follow-ups
 
-- The glossary generator writes `index.md` regardless of `indexBasename`, so under
-  the default `README`-only setting its hub lands at `/glossary/index/`. The
-  Gherkin hubs use the first configured basename and don't have this problem.
+- The glossary generator also follows `indexBasename`, but prefers `index` when the
+  site lists it, while the Gherkin hubs use the site's first index name. One site
+  can therefore hold a `README.md` Gherkin hub and an `index.md` glossary hub; the
+  setting `indexBasename: ['README', 'index']` produces exactly that. See
+  [ADR-0048](../adr/0048-generated-page-names-and-empty-sources.md).
 - Phase 2 attaches pass/fail results per scenario from a Cucumber results file,
   as described in the [QA portal research](./research/qa-portal.md).
