@@ -4,6 +4,11 @@
 // `astro dev`/`astro preview`. The lane asserts against the exact artifact CI
 // publishes; in CI that dist is the downloaded `build-example` artifact (T042).
 //
+// That artifact is built with DK_PUBLISH_DRAFTS=on, so every sidebar lists the
+// example's draft pages. A plain `pnpm build` leaves them out (the default is
+// off). Locally, build with `pnpm build:a11y` before `pnpm test:a11y`;
+// `serve-dist.mjs` warns when the dist it serves has no draft pages.
+//
 // Both colour modes are real, asserted contracts: two projects, `light` and `dark`,
 // each emulating `prefers-color-scheme` AND (via tests/a11y/mode.ts) seeding
 // Starlight's `localStorage['starlight-theme']`, then asserting the resolved mode
