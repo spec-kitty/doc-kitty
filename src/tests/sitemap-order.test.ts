@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sortSitemapXml } from '../lib/sitemap-order.js';
+import { normalizeRootLoc, sortSitemapXml } from '../lib/sitemap-order.js';
 
 // The demonstrator's emitted shape: single line, no inter-tag whitespace, each
 // `<url>` carrying only `<loc>`, inside a `<urlset …>` with five xmlns attrs.
@@ -95,5 +95,23 @@ describe('sortSitemapXml', () => {
       '</sitemapindex>';
 
     expect(sortSitemapXml(index)).toBe(index);
+  });
+});
+
+describe('normalizeRootLoc', () => {
+  const wrap = (locs: string[]): string =>
+    `<urlset>${locs.map((l) => `<url><loc>${l}</loc></url>`).join('')}</urlset>`;
+
+  it('gives the root of a based site the slash-less form whichever form the build emitted', () => {
+    const withSlash = wrap(['https://example.org/kb/', 'https://example.org/kb/adr/']);
+    const without = wrap(['https://example.org/kb', 'https://example.org/kb/adr/']);
+    expect(normalizeRootLoc(withSlash, 'https://example.org/kb/')).toBe(without);
+    expect(normalizeRootLoc(without, 'https://example.org/kb')).toBe(without);
+  });
+
+  it('leaves a site with no base path, and a build with no site URL, untouched', () => {
+    const xml = wrap(['https://example.org/', 'https://example.org/adr/']);
+    expect(normalizeRootLoc(xml, 'https://example.org/')).toBe(xml);
+    expect(normalizeRootLoc(xml, undefined)).toBe(xml);
   });
 });

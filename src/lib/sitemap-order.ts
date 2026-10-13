@@ -64,15 +64,48 @@ export function sortSitemapXml(xml: string): string {
 }
 
 /**
+ * Give the site root's `<loc>` one form. `@astrojs/sitemap` appends a trailing
+ * slash to the site path the first time it meets a non-root page, so on a site
+ * with a base path the root entry is `…/base` when the root page is handed over
+ * first and `…/base/` otherwise: the same order dependence the sort above
+ * removes for the other entries. The slash-less form is the one a build emits
+ * when the root page comes first, so that is the form kept.
+ *
+ * `rootUrl` is the site URL joined with the base path, without a trailing
+ * slash. A site with no base path has the origin as its root, which always
+ * carries the slash, so there is nothing to normalise and the XML is returned
+ * as-is.
+ */
+export function normalizeRootLoc(xml: string, rootUrl: string | undefined): string {
+  if (!rootUrl) return xml;
+  let root: URL;
+  try {
+    root = new URL(rootUrl);
+  } catch {
+    return xml;
+  }
+  const pathname = root.pathname.replace(/\/+$/, '');
+  if (pathname === '') return xml;
+  const bare = `${root.origin}${pathname}`;
+  return xml.split(`<loc>${bare}/</loc>`).join(`<loc>${bare}</loc>`);
+}
+
+/**
  * The toolkit `AstroIntegration` that makes the built sitemap reproducible.
  * Its `astro:build:done` hook sorts every `sitemap-N.xml` page file present
  * under `dist/` (never the `sitemap-index.xml`, which references those files by
- * unchanged name) with {@link sortSitemapXml}.
+ * unchanged name) with {@link sortSitemapXml}, after giving the root entry one
+ * form with {@link normalizeRootLoc}.
  */
 export default function sitemapOrderIntegration(): AstroIntegration {
+  let rootUrl: string | undefined;
   return {
     name: 'doc-kitty:sitemap-order',
     hooks: {
+      'astro:config:done': ({ config }) => {
+        // No `site` → `@astrojs/sitemap` emits nothing, so there is no root to normalise.
+        rootUrl = config.site ? new URL(config.base ?? '/', config.site).href : undefined;
+      },
       'astro:build:done': ({ dir, logger }) => {
         const distDir = fileURLToPath(dir);
         // Key off the files actually present: handles pagination
@@ -81,10 +114,10 @@ export default function sitemapOrderIntegration(): AstroIntegration {
         for (const name of pages) {
           const file = path.join(distDir, name);
           const original = readFileSync(file, 'utf8');
-          const ordered = sortSitemapXml(original);
+          const ordered = sortSitemapXml(normalizeRootLoc(original, rootUrl));
           if (ordered !== original) {
             writeFileSync(file, ordered);
-            logger.info(`sorted <url> entries in ${name} by <loc> (deterministic sitemap)`);
+            logger.info(`normalised <url> entries in ${name} (root form, sorted by <loc>: deterministic sitemap)`);
           }
         }
       },

@@ -95,6 +95,11 @@ release, as it did for `0.2.0`.
   whose content changed are kept, and the build warns for each: delete them. A page with the generator's
   keys and different content is kept with a warning, and so is a page with the
   generator's `kind` and different keys.
+- **The sitemap's entry for the site root has one form on a site with a base
+  path.** `@astrojs/sitemap` wrote it with or without a trailing slash depending
+  on the order pages were built in, so two builds of the same tree could differ.
+  It is now always written without the trailing slash, the form a build emits
+  when the root page comes first.
 - **The baseline workflow no longer fails after pushing the regenerated
   baselines.** This repository does not let GitHub Actions create pull requests,
   so `update-a11y-baselines.yml` now warns and puts a link in the run summary
