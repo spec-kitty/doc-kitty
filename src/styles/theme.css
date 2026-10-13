@@ -86,6 +86,9 @@
   --dk-width-band: 50rem;
   --dk-width-deck: 60rem;
   --dk-width-passport: 32rem;
+  /* Caps the page frame (sidebar + reading column + rail). The default is
+     full-width; set a length or percentage to cap and centre the frame. */
+  --dk-width-frame: 100%;
 
   /* ===== Mode-varying COLOUR tokens — LIGHT (default) ==================== */
 

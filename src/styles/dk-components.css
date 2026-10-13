@@ -48,8 +48,8 @@
  * ===== Markua theme callouts (`.dk-callout*`) ===========================
  * Styles WP04's emitted hast (contract `callout-mapping.md` "Emitted
  * theme-callout hast"); mirrors `rehype/diagram-figure.ts`'s `<figure
- * class="dk-diagram">` pattern — there is NO `Callout.astro` (the four-carrier
- * Starlight `components` lock, ADR-0013/0015, forecloses a component render;
+ * class="dk-diagram">` pattern — there is NO `Callout.astro` (the carrier
+ * lock on Starlight's `components` map, ADR-0013/0015/0044, forecloses a component render;
  * see the contract's "Why hast, not an `.astro` component"). This is a
  * theme-surface change (ADR-0008/0009), token-driven throughout so a
  * consumer theme overrides only `--dk-callout-*`.
@@ -357,40 +357,165 @@
 }
 
 /*
- * ===== Wide-screen frame cap (#67, deck-layout-polish research D-07) ======
- * Targets Starlight's OWN `.main-frame` element — verified in the built DOM
- * (`example/dist/**\/index.html`: `class="main-frame astro-…"`); it is
- * full-bleed at every width and wraps `[sidebar-pane | main-pane]`, so
- * capping + centering this one band centers sidebar and content together
- * (C-005). There is no `.main-frame` rule anywhere in `src/` before this.
+ * ===== Page frame, sidebar, header and rail geometry =====================
+ * sidebar-frame-header-carrier mission (FR-001..FR-006, FR-012, NFR-002).
+ * Replaces the earlier wide-screen cap (#67), which capped `.main-frame` at
+ * 90rem from 100rem up. That rule had two defects, both measured on the
+ * published site: the frame shrink-wrapped to 1056px instead of filling its
+ * cap, and the fixed sidebar and header stayed at the viewport edge while the
+ * frame centred, leaving a dead gutter of 432px at 1920px.
  *
- * This lives here, in the base GLOBAL component sheet, and NOT in
- * `brand-components.css` or `theme.css`: page-width capping is a base
- * layout concern, not brand identity, and (per this sheet's own header
- * above, and the diagram-component-css mission outcome) a brand swap
- * replaces `theme.css`'s `customCss` slot outright — a rule placed there
- * would silently vanish on a branded build. Keeping it in this
- * survives-branding sheet means an unbranded consumer keeps the cap too.
+ * The earlier constraint that layout below 100rem stays unchanged from `main`
+ * is withdrawn (FR-030; recorded in ADR-0045). The frame is now full-width by
+ * default and a consumer opts into a cap with one token:
  *
- * Scoped inside the media query so viewports below 100rem stay byte-
- * unchanged from `main` (C-WIDE-1) — do not hoist `max-width`/`margin-inline`
- * out of this block. No sidebar-resize affordance is added here (C-007,
- * explicitly out of scope for this fix).
+ *   :root { --dk-width-frame: 90rem; }
  *
- * Header investigated, NOT capped: `header.header` (the fixed top bar) was
- * measured (Playwright, 1600/1920/2560) both before and after this rule.
- * Its own internal nav grid (`.header.astro-…`'s `--__main-column-fr` calc)
- * never re-centers relative to `.main-frame` — but capping+centering the
- * outer `<header>` (`position:fixed; inset-inline-start:0; width:100%`) to
- * match made it visibly WORSE: it detaches the header's left edge from the
- * sidebar's true (unmoved, fixed) left edge, so the header appears to float
- * disconnected from the sidebar below it, while its internal search-bar
- * alignment does not improve. Left untouched: the full-bleed header reads
- * as ordinary persistent chrome and stays byte-identical to `main`.
+ * These rules live in this base GLOBAL component sheet, not in `theme.css`:
+ * a brand swap replaces the token sheet outright, and layout geometry must
+ * survive it. Starlight 0.32 has no cascade layers and scopes its component
+ * rules with zero-specificity `:where()`, so each override below states which
+ * Starlight rule it outranks.
+ *
+ * Every offset uses logical properties, so a right-to-left page is the mirror
+ * image without a second set of rules (FR-012).
  */
-@media (min-width: 100rem) {
+
+/*
+ * Registering the token is what makes an invalid value harmless (FR-003). An
+ * unregistered custom property holding `banana` would make every declaration
+ * that reads it invalid at computed-value time; a registered one computes to
+ * its initial value, so the layout is the full-width default. A browser
+ * without `@property` support still gets full width for a valid value and
+ * for a missing one, because `max-width` falls back to `none`.
+ */
+@property --dk-width-frame {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 100%;
+}
+
+/*
+ * The frame gutter is the space on each side of a capped, centred frame.
+ * Below the desktop breakpoint the frame is never capped, so it is 0.
+ */
+:root {
+  --dk-frame-gutter: 0px;
+}
+
+@media (min-width: 50rem) {
+  /*
+   * Gutter = half of (frame container width - frame width), never negative.
+   *
+   * The minuend is `100%`, not `100vw`. The custom property is substituted
+   * as written into the declaration that uses it, so `100%` resolves there.
+   * Every use below is an inline inset or inline padding on an element whose
+   * containing block is the viewport (`position: fixed`), and that width
+   * excludes a classic scrollbar, exactly like the `.page` box the frame's
+   * own `max-width` resolves against. `100vw` includes the scrollbar, which
+   * would put the sidebar half a scrollbar width away from the frame edge
+   * and give a non-zero gutter for the default `100%`.
+   *
+   * With this base the three kinds of value a consumer can supply agree with
+   * the frame: `100%` gives (100% - 100%) / 2 = 0; `80%` gives 10% of the
+   * container; `90rem` and `1440px` give half the remaining width. Use the
+   * gutter only where a percentage resolves against the viewport width.
+   */
+  :root {
+    --dk-frame-gutter: max(0px, (100% - var(--dk-width-frame)) / 2);
+  }
+
+  /*
+   * Starlight's `.page` is a column flex container. `margin-inline: auto` on
+   * a flex item switches off the default stretch, so without an explicit
+   * `width` the frame shrink-wraps its content instead of filling its cap.
+   * That was the 1056px frame. 50rem is the breakpoint at which Starlight
+   * pins the left sidebar (`PageFrame.astro`); below it the frame is
+   * untouched. Outranks nothing: Starlight sets no width on `.main-frame`.
+   */
   .main-frame {
-    max-width: 90rem;
+    width: 100%;
+    max-width: var(--dk-width-frame);
     margin-inline: auto;
+  }
+
+  /*
+   * The left sidebar is `position: fixed; inset-inline-start: 0`, so it
+   * ignores the frame's centring. Move it in by the gutter (FR-004). (0,2,1)
+   * outranks Starlight's `.sidebar-pane` (0,1,0).
+   */
+  html[data-has-sidebar] .sidebar-pane {
+    inset-inline-start: var(--dk-frame-gutter);
+  }
+
+  /*
+   * The header bar stays full-bleed, so its background and bottom border
+   * still span the viewport; only its content is inset to the frame's edges
+   * (FR-004). Capping the bar itself would detach it from the sidebar below.
+   * (0,2,2) outranks Starlight's `[data-has-sidebar] .header` (0,2,0), which
+   * sets the end padding; the second selector covers pages with no sidebar.
+   * This is the bar that wraps whatever header component is rendered, so a
+   * theme-supplied header is inset the same way.
+   */
+  html[data-has-sidebar] header.header,
+  html:not([data-has-sidebar]) header.header {
+    padding-inline: calc(var(--sl-nav-pad-x) + var(--dk-frame-gutter));
+  }
+
+  /*
+   * Between 50rem and 72rem the table of contents is a fixed bar under the
+   * header, starting after the sidebar. It follows a capped frame too.
+   * (0,0,3) outranks Starlight's `nav` (0,0,1).
+   */
+  html mobile-starlight-toc nav {
+    inset-inline: calc(var(--sl-content-inline-start, 0rem) + var(--dk-frame-gutter))
+      var(--dk-frame-gutter);
+  }
+}
+
+@media (min-width: 72rem) {
+  /*
+   * Pin the rail to a definite width (FR-005). Starlight sizes the rail
+   * column as `sidebar + (100% - content - sidebar) / 2`, which equals the
+   * sidebar width at exactly one viewport width and grows with every pixel
+   * beyond it; the fixed rail inside it is `width: 100%` of the viewport.
+   * (0,2,1) outranks Starlight's `.right-sidebar-container` and
+   * `.right-sidebar` (each (0,1,0)).
+   *
+   * The `:not([data-toc-collapsed])` guard keeps these out of the collapsed
+   * state, which `toc-rail.css` owns: its 1px column rule has the same
+   * specificity, and an unguarded pin would also leave an 18rem-wide rail
+   * border over the article while collapsed.
+   */
+  html:not([data-toc-collapsed]) .right-sidebar-container,
+  html:not([data-toc-collapsed]) .right-sidebar {
+    width: var(--sl-sidebar-width);
+  }
+
+  /*
+   * The fixed rail needs no inline inset of its own. Starlight sets none, so
+   * the rail starts at its static position: the start edge of the column
+   * reserved for it, which ends at the frame's end edge. With the width pinned
+   * above, that puts the rail's end edge on the frame's end edge for a
+   * full-width and a capped frame, left-to-right and right-to-left. Measured
+   * at 1920px under a 90rem cap: 1392..1680 (LTR) and 240..528 (RTL), with and
+   * without an `inset-inline-end` of the frame gutter. `layout-geometry.spec.ts`
+   * A3 and A4 guard it.
+   */
+
+  /*
+   * The reading pane takes the rest of the frame and centres its column, so
+   * the column widens with the viewport up to Starlight's content width and
+   * then stays there (FR-006, NFR-002). Both selectors are (0,3,1): the
+   * first outranks Starlight's `[data-has-sidebar][data-has-toc] .main-pane`
+   * (0,3,0) and stays below the collapsed recentre rule in `toc-rail.css`
+   * (0,4,1), which must keep winning. The second covers a page with a rail
+   * and no left sidebar, where Starlight's `.main-pane` is `width: 100%` and
+   * the two flex items would otherwise squeeze each other.
+   */
+  html[data-has-sidebar][data-has-toc] .main-pane,
+  html[data-has-toc]:not([data-toc-collapsed]) .main-pane {
+    width: calc(100% - var(--sl-sidebar-width));
+    --sl-content-margin-inline: auto;
   }
 }

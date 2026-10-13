@@ -85,6 +85,7 @@ const REQUIRED_DK_TOKENS = [
   '--dk-width-band',
   '--dk-width-deck',
   '--dk-width-passport',
+  '--dk-width-frame',
   // Surfaces
   '--dk-color-bg',
   '--dk-color-bg-nav',
@@ -701,8 +702,12 @@ export async function assertChromeArtifacts(distDir) {
   }
   ok(`share image: three distinct resolved og:image values (hero / social_thumb / theme site-default)`);
 
-  // === 4) Four carriers active + token catalog completeness + bridge =========
-  // Head carrier attests all four carriers were the ones Starlight rendered.
+  // === 4) Carriers active + token catalog completeness + bridge ==============
+  // The four carriers that leave a marker in the page are checked here. The
+  // fifth, Header (ADR-0044), is deliberately marker-free so a site without a
+  // theme header keeps byte-identical header markup; header-carrier.test.ts
+  // proves it is the one rendering.
+  // Head carrier attests the marker-emitting carriers were the ones Starlight rendered.
   if (!/<meta\s+name="dk-chrome"\s+content="doc-kitty-carriers"/i.test(heroHtml)) {
     fail(`carriers: Head carrier marker <meta name="dk-chrome"> absent on ${HERO_PAGE} (FR-011)`);
   }
@@ -719,7 +724,7 @@ export async function assertChromeArtifacts(distDir) {
   if (!hubHtml.includes('dk-hub__list')) {
     fail(`carriers: MarkdownContent kind→layout did not render the Hub list on ${HUB_PAGE} (FR-016)`);
   }
-  ok(`carriers: four carriers active (dk-chrome + dk:page-hero + dk:metadata-band + Hub layout)`);
+  ok(`carriers: four marker-emitting carriers active (dk-chrome + dk:page-hero + dk:metadata-band + Hub layout)`);
 
   const css = await readAllCss(dir);
   const missingTokens = REQUIRED_DK_TOKENS.filter((t) => !css.includes(`${t}:`));

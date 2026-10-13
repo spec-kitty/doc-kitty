@@ -203,6 +203,8 @@ const DEFAULT_BASE: Record<string, string> = {
   '--dk-width-band': '50rem',
   '--dk-width-deck': '60rem',
   '--dk-width-passport': '32rem',
+  // Caps the page frame; the default is full-width.
+  '--dk-width-frame': '100%',
   // Mode-varying COLOUR tokens — LIGHT (default)
   '--dk-color-bg': '#ffffff',
   '--dk-color-bg-nav': '#f7f8fa',
