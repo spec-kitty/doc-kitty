@@ -1062,4 +1062,11 @@ describe('one draft predicate, and the site root is never a draft', () => {
     expect(isDraftEntry({ id: 'guides/wip', data: { doc_status: 'draft' } })).toBe(true);
     expect(isDraftEntry({ id: 'guides/done', data: { doc_status: 'active' } })).toBe(false);
   });
+
+  it('the Head carrier decides "draft" with isDraftEntry, so a root page is never noindex', () => {
+    const head = readFileSync(path.resolve(import.meta.dirname, '../components/Head.astro'), 'utf8');
+    const frontmatter = head.slice(0, head.indexOf('\n---', 3));
+    expect(frontmatter).toMatch(/const isDraft = isDraftEntry\(entry\b/);
+    expect(head).toMatch(/\{isDraft && <meta name="robots" content="noindex" \/>\}/);
+  });
 });

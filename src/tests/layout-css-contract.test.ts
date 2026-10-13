@@ -140,3 +140,18 @@ describe('placement and direction', () => {
     }
   });
 });
+
+describe('gutter insets no geometry case measures (FR-004)', () => {
+  const rule = (needle: string) =>
+    components.rules.find((r) => r.selector.split(',').some((s) => s.trim().endsWith(needle)));
+
+  it('insets the narrow-desktop table-of-contents bar by the gutter', () => {
+    expect(rule('mobile-starlight-toc nav')?.decls['inset-inline']).toBe(
+      'calc(var(--sl-content-inline-start, 0rem) + var(--dk-frame-gutter)) var(--dk-frame-gutter)',
+    );
+  });
+
+  it('insets the header on pages without a sidebar too', () => {
+    expect(rule('header.header')?.selector).toContain('html:not([data-has-sidebar]) header.header');
+  });
+});
