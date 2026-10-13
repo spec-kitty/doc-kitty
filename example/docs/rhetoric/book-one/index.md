@@ -5,6 +5,8 @@ doc_status: active
 updated: 2026-09-08
 type: Reference
 kind: Hub
+sidebar:
+  order: 1
 ---
 
 # I: Purposes and Definitions of Rhetoric
