@@ -1,0 +1,42 @@
+---
+/*
+ * DocKitty carrier: Header (the fifth carrier, ADR-0044; FR-024, FR-025).
+ *
+ * REPLACE, never compose: a theme that fills the `dk:site-header` slot gets its
+ * component rendered INSTEAD of Starlight's header; with no such slot the stock
+ * header renders. This is the one either/or carrier — `Footer` composes around
+ * its default because the article footer must survive a brand band, whereas a
+ * site has exactly one header.
+ *
+ * The branch below is deliberately wrapper-free: no host element, no
+ * `data-dk-slot` marker, no attribute, and no text or comment node around the
+ * expression. Starlight's `PageFrame` already wraps whatever renders here in
+ * `<header class="header">`, so anything added would change the header markup of
+ * every site that supplies no header (NFR-007: byte-identical to the build before
+ * this carrier existed; `header-carrier.test.ts` holds the committed block).
+ *
+ * Starlight 0.32 renders this override as `<Header slot="header" />`: no props,
+ * no children. The `slot` attribute is consumed by `PageFrame`, and the stock
+ * header reads its data from Starlight's virtual modules, so there is nothing to
+ * forward. `Astro.props` is still spread onto whichever component renders, so a
+ * later Starlight that does pass props reaches the header unchanged.
+ *
+ * What a `dk:site-header` component gets and gives up (Starlight 0.32.6):
+ *
+ *  - It renders once, inside Starlight's own `<header class="header">`, which
+ *    `PageFrame.astro` owns, with no toolkit wrapper. It must not emit a
+ *    `<header>` of its own, and it inherits the positioning, height and padding
+ *    of `header.header`.
+ *  - The framework keeps the skip link (`Page.astro` renders it before the page
+ *    frame) and, on pages with a sidebar, the mobile menu toggle (`PageFrame`
+ *    renders it in the sidebar `<nav>`). The component supplies neither.
+ *  - The theme loses everything the stock header drew, and must supply what it
+ *    still wants: the site title and logo, search, the social icons, the theme
+ *    select and the language select.
+ */
+import Default from '@astrojs/starlight/components/Header.astro';
+import { slotComponents } from 'virtual:doc-kitty/manifest';
+
+const SiteHeader = slotComponents['dk:site-header'];
+---
+{SiteHeader ? <SiteHeader {...Astro.props} /> : <Default {...Astro.props} />}

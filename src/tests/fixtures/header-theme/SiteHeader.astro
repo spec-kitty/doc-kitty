@@ -1,0 +1,13 @@
+---
+/*
+ * Fixture header for `header-carrier.test.ts` (FR-024): the smallest component a
+ * theme could put in the `dk:site-header` slot. `data-dk-test-header` is the
+ * marker the test counts; nothing in the toolkit or in Starlight emits it.
+ *
+ * It carries no skip link and no menu button on purpose. In Starlight 0.32 both
+ * are rendered outside the header (`Page.astro` renders `SkipLink` before the
+ * page frame, `PageFrame.astro` renders `MobileMenuToggle` in the sidebar nav),
+ * so they survive a header replacement; the test asserts that they do.
+ */
+---
+<div data-dk-test-header="wp06"><a href={import.meta.env.BASE_URL}>Fixture header</a></div>

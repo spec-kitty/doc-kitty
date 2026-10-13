@@ -48,7 +48,17 @@ export type LayoutComponent =
  */
 export type ResolveLayout = (kind: string | undefined) => LayoutComponent;
 
-/** The per-carrier slot lookup the generated manifest exports (WP03 reads it). */
+/**
+ * The per-carrier slot lookup the generated manifest exports. Each carrier reads
+ * the slots it hosts: `Footer` reads `dk:site-footer`, `PageTitle` reads
+ * `dk:page-hero` and `dk:metadata-band`, and `Header` reads `dk:site-header`
+ * (ADR-0044), rendering the theme's component in place of Starlight's header.
+ *
+ * Slot NAMES are checked where a theme is written, not here: `DocKittyTheme.slots`
+ * is typed `Partial<Record<DkSlotName, string>>` (`theme.ts`), so a name outside
+ * that union is a type error in the theme definition. The manifest transports
+ * whatever the resolved theme carries and performs no name check of its own.
+ */
 export type SlotComponents = Partial<Record<string, LayoutComponent>>;
 
 /**

@@ -21,7 +21,7 @@
  *     body under `dk-callout__body`.
  *
  * There is NO `Callout.astro` component: the Starlight `components` map is frozen
- * at four carriers (ADR-0013/0015) and doc-kitty has no directive→component seam,
+ * at five carriers (ADR-0013/0015/0044) and doc-kitty has no directive→component seam,
  * so a component would be dead code / a split-brain second DOM copy. A remark
  * plugin injects specific HTML the ONE supported way — `data.hName`/`hProperties`
  * on the node plus `data.hChildren` for leaf children — which `mdast-util-to-hast`

@@ -4,10 +4,10 @@ import type { DocKittyTheme } from '../lib/theme.js';
 /**
  * T036 — Components-map invariant (ADR-0013 seam 3 / ADR-0015 decision 3/4).
  *
- * `defineDocKittyIntegrations` must register EXACTLY the four chrome carriers
- * (`Head`, `PageTitle`, `MarkdownContent`, `Footer`) on the Starlight
+ * `defineDocKittyIntegrations` must register EXACTLY the five chrome carriers
+ * (`Head`, `PageTitle`, `MarkdownContent`, `Footer`, `Header`) on the Starlight
  * integration's `components` map — in EVERY case (no theme, a brand-like theme,
- * and even when a consumer's `starlight` escape hatch tries to add a fifth
+ * and even when a consumer's `starlight` escape hatch tries to add a sixth
  * override). A theme addresses the carriers' `dk:` slot names, never Starlight's
  * `components` map, so no pass-through may expand it. This is the config-level
  * decision point where seam 3 is actually made — proven here, not just observed
@@ -30,7 +30,14 @@ vi.mock('@astrojs/starlight', () => ({
 // Imported AFTER the mock is declared (vi.mock is hoisted, so this is safe).
 const { defineDocKittyIntegrations } = await import('../lib/config.js');
 
-const EXPECTED_CARRIER_KEYS = ['Footer', 'Head', 'MarkdownContent', 'PageTitle'];
+const EXPECTED_CARRIER_KEYS = ['Footer', 'Head', 'Header', 'MarkdownContent', 'PageTitle'];
+
+/** The captured `components` map itself, for assertions on its values. */
+function componentsOf(entry: {
+  __starlightConfig: { components?: Record<string, unknown> };
+}): Record<string, unknown> {
+  return entry.__starlightConfig.components ?? {};
+}
 
 /** Extract the Starlight integration's captured `components` map from the
  * integrations array, locating the entry by the config it carries (not index). */
@@ -45,13 +52,12 @@ function carrierKeysOf(integrations: unknown[]): string[] {
   if (!starlightEntry) {
     throw new Error('no Starlight integration found in defineDocKittyIntegrations() output');
   }
-  const components = starlightEntry.__starlightConfig.components ?? {};
-  return Object.keys(components).sort();
+  return Object.keys(componentsOf(starlightEntry)).sort();
 }
 
 // A brand-LIKE fixture (not the real Spec Kitty brand — do not couple this test
 // to WP04). It carries tokens/customCss/slots/layouts a theme legitimately sets;
-// none of these may add a fifth `components` carrier.
+// none of these may add a sixth `components` carrier.
 const brandLikeTheme: DocKittyTheme = {
   name: 'fixture-brand',
   tokens: { '--dk-color-accent': '#abcdef', '--dk-radius-md': '0.75rem' },
@@ -62,24 +68,49 @@ const brandLikeTheme: DocKittyTheme = {
 };
 
 describe('defineDocKittyIntegrations components map (seam 3)', () => {
-  it('registers exactly the four carriers with NO theme', () => {
+  it('registers exactly the five carriers with NO theme', () => {
     const integrations = defineDocKittyIntegrations({ title: 'Docs' });
     expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
   });
 
-  it('registers exactly the four carriers WITH a brand-like theme', () => {
+  it('registers exactly the five carriers WITH a brand-like theme', () => {
     const integrations = defineDocKittyIntegrations({ title: 'Docs', theme: brandLikeTheme });
     expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
   });
 
-  it('does not let a consumer starlight escape hatch add a fifth carrier', () => {
+  it('does not let a consumer starlight escape hatch add a sixth carrier', () => {
     const integrations = defineDocKittyIntegrations({
       title: 'Docs',
       theme: brandLikeTheme,
-      // A pass-through override attempting to register a fifth component must NOT
+      // A pass-through override attempting to register a sixth component must NOT
       // expand the map — `components: carriers` is applied AFTER `...overrides`.
       starlight: { components: { Sidebar: 'consumer/Sidebar.astro' } as never },
     });
     expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
+  });
+
+  // ADR-0044: a theme reaches the header through the `dk:site-header` slot. The
+  // slot is resolved inside the Header carrier, so declaring it must not change
+  // the map either.
+  it('registers exactly the five carriers when a theme fills dk:site-header', () => {
+    const integrations = defineDocKittyIntegrations({
+      title: 'Docs',
+      theme: { ...brandLikeTheme, slots: { 'dk:site-header': 'fixture/SiteHeader.astro' } },
+    });
+    expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
+  });
+
+  it('keeps the toolkit Header carrier when the escape hatch names its own Header', () => {
+    const integrations = defineDocKittyIntegrations({
+      title: 'Docs',
+      starlight: { components: { Header: 'consumer/Header.astro' } },
+    });
+    expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
+    const starlightEntry = integrations.find(
+      (i) => typeof i === 'object' && i !== null && '__starlightConfig' in i,
+    ) as unknown as { __starlightConfig: { components?: Record<string, unknown> } };
+    expect(componentsOf(starlightEntry).Header).toBe(
+      '@spec-kitty/doc-toolkit/components/Header.astro',
+    );
   });
 });

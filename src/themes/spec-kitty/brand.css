@@ -29,8 +29,9 @@
 /*
  * Native header (T019 / ADR-0015 decision 5). The logo-in-nav ships as an `<img>`
  * through Starlight-NATIVE `logo` config (forwarded from `assets.logo` by
- * defineDocKittyIntegrations) — there is NO `Header`/`SiteTitle` component
- * override, so the Starlight `components` map stays exactly the four carriers.
+ * defineDocKittyIntegrations) — the brand fills no `dk:site-header` slot and
+ * registers no `SiteTitle` override, so the toolkit's `Header` carrier renders
+ * Starlight's stock header and the `components` map stays exactly the five carriers.
  * These rules only restyle Starlight's own header markup:
  *   - the wordmark (the site `title`) in the display face at weight 800;
  *   - the active nav item in the signal yellow — the one always-on yellow.
