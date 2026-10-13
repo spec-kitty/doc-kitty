@@ -84,8 +84,9 @@ Starlight equivalent, so they render through a hand-emitted doc-kitty theme
 callout: `<aside class="dk-callout dk-callout--{variant}">`, styled by a
 `--dk-callout-*` token family in `theme.css`. This mirrors how
 `rehype/diagram-figure.ts` already builds a `<figure>` as raw hast rather than an
-Astro component — the Starlight `components` map is frozen at exactly four
-carriers (ADR-0013/ADR-0015), so no directive → component seam exists for a
+Astro component — the Starlight `components` map is a fixed set of toolkit
+carriers (five since [ADR-0044](../adr/0044-header-carrier.md); four when this
+was decided, ADR-0013/ADR-0015), so no directive → component seam exists for a
 markua callout to ride.
 
 ### The attribute tradeoff (pinned)

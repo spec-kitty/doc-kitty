@@ -77,6 +77,12 @@ draft) conflates *layout* resolution (genuinely one site) with *slot* resolution
    all theme choice flows through the manifest the carriers read. The map holds
    only doc-kitty's own components.
 
+   > **Superseded in part by [ADR-0044](./0044-header-carrier.md) (five
+   > carriers).** The count is now five: `Header` was added for `dk:site-header`.
+   > The rest of this decision holds: a theme never writes the map, and the map
+   > holds only doc-kitty's own components. Read "four carriers" elsewhere in
+   > this record as the state when it was accepted.
+
 4. **Pass-through slots that target non-carrier Starlight overrides are sequenced,
    not delivered as map entries in M2.** Registering a theme component onto
    Starlight's `Header`/`SiteTitle`/`Banner`/`SocialIcons`/`TableOfContents`/
@@ -88,6 +94,9 @@ draft) conflates *layout* resolution (genuinely one site) with *slot* resolution
    and the theme still never writes the map. That later step is where seam 3's
    count grows from four to "four carriers plus doc-kitty pass-through wrappers,"
    and it takes its own record then.
+
+   > **That record is [ADR-0044](./0044-header-carrier.md)**, for
+   > `dk:site-header` only. The other pass-through names are still unrendered.
 
 5. **The Spec Kitty brand header ships in M2 via Starlight-native config.** The
    brand's logo-in-nav header rides Starlight's native `logo` and `title` (fed from

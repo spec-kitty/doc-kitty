@@ -6,8 +6,161 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Read this before upgrading: draft pages are no longer published by default.**
+A page is a draft when its frontmatter says `doc_status: draft` **or has no
+`doc_status` at all**. A site that never set `doc_status` builds no content
+pages after this upgrade until it sets `DK_PUBLISH_DRAFTS=on` or gives its pages
+a status. To keep the previous behaviour, set that one variable in the
+environment of your build:
+
+```sh
+DK_PUBLISH_DRAFTS=on astro build
+```
+
+### 💥 Breaking
+
+Each item is described in full under Changed.
+
+- **Drafts are not built by default.** Set `DK_PUBLISH_DRAFTS=on` to build them.
+- **The redirect-coverage gate has new flags and a new failure.** With drafts
+  off it needs `--docs` and `--declared-redirects` to accept an old URL that
+  leads to a draft, and it fails on any redirect stub that leads to a missing
+  page.
+- **Sidebar group labels and order change.** Groups take their index page's
+  title and `sidebar.order`.
+- **A page with no `h2` or `h3` loses its "On this page" rail.**
+- **The page frame is full width by default.** Set `--dk-width-frame` for a
+  capped frame.
+- **The reading column is narrower between 1152px and 1344px viewports**: 528px
+  at 1152px (was 600px) and 656px at 1280px (was 664px).
+
+### Changed
+
+- **Draft pages are not built unless `DK_PUBLISH_DRAFTS=on`** (behaviour change).
+  With the setting off, which is the default, a draft page is not written, is not
+  in any sidebar and returns 404. If a redirect in your `redirects` config ends
+  at a draft page, its stub is removed at the end of the build, the old URL
+  returns 404 until the page is published, and the build warns once, naming each
+  one. With the setting on, drafts are built and listed as before, and now also
+  carry `noindex` and are left out of site search. The sitemap, feeds, `llms.txt`
+  and the agent index never listed drafts and still do not. Filtering happens in
+  `docKittyDocsLoader`; a site that loads its `docs` collection another way still
+  builds its drafts and gets a warning at the end of the build. See
+  [Draft publication](docs/guides/draft-publication.md).
+
+  Two things follow from where each part is decided:
+
+  - **A draft is marked `noindex` whenever it is rendered**, by its status
+    alone. On a site that does not use the toolkit's docs loader, every page
+    without a `doc_status` is therefore `noindex`, whatever the setting says.
+    The site's root page is the exception: it is never a draft and never
+    `noindex`.
+  - **A local `astro build` or `astro preview` is draft-free** unless
+    `DK_PUBLISH_DRAFTS=on` is set. Only `astro dev` reads `.env.development`.
+
+  On this project's own example site, a default build now has nine fewer pages
+  (`/adr/template/`, `/context/audience/draft-persona/`, `/plans/`,
+  `/plans/missions/`, `/plans/missions/mission-alpha/`,
+  `/plans/missions/mission-beta/`, `/guides/markua-footnotes-showcase/`,
+  `/guides/markua-footnotes-malformed/`, `/presentations/draft-preview/`), and the
+  old URLs `/plans/features/mission-alpha/` and `/plans/features/mission-beta/`,
+  which redirect to two of those drafts, return 404. The published site is built
+  with the setting off.
+- **The page frame is full width by default.** The frame (sidebar, reading
+  pane and "On this page" rail) spans the viewport. Before, it was meant to be
+  capped at 90rem on wide screens. To get a capped, centred frame, set
+  `--dk-width-frame` (see Added). Decision and measurements:
+  [ADR-0045](docs/adr/0045-frame-width-token.md).
+- **The "On this page" rail has a fixed width**, equal to the sidebar width
+  (18rem by default), at every viewport from 72rem. The reading pane takes the
+  rest of the frame; its column is at most 720px. Between 72rem and 84rem
+  (1152-1344px) the reading column is narrower than before: 528px at 1152px (was
+  600px) and 656px at 1280px (was 664px). From 1600px it is 720px (was 552px).
+- **Rail links meet the 24px target size**, so a long outline is taller than
+  before. A page that set `tableOfContents: false` to pass a target-size check
+  can show its outline again.
+- **The rail's collapse toggle moved.** Expanded, it is centred on the rail's
+  inner edge; collapsed, it sits at the frame's end edge. In keyboard order it
+  now comes directly before the outline links (before, it was reached after the
+  page footer), and it names the region it controls
+  (`aria-controls="dk-toc-panel"`). A reader's stored collapse preference is
+  kept.
+- **Sidebar groups are labelled and ordered from their index pages.** A nested
+  folder's group shows its index page's title (or `sidebar.label`) instead of
+  the folder name, sibling groups follow the index pages' `sidebar.order` and
+  then their labels, and each section's index page is the first entry of its
+  group. In every group, links come before sub-groups, so `sidebar.order` cannot
+  place a page between two groups. Previous/next links follow the new order.
+  A folder with no titled index page gets a readable label from its name and a
+  `[dk-sidebar]` build notice. A `sidebar` you supply yourself is not touched,
+  and your own `starlight.routeMiddleware` runs after the toolkit's. See
+  [Authoring](docs/guides/authoring.md#how-your-pages-appear-in-the-sidebar).
+- **The current page's sidebar entry is scrolled into view** when a page loads.
+- **A page with no `h2` or `h3` heading has no "On this page" rail.** Its
+  outline would hold one link, so the rail and its toggle are left out and the
+  text uses the width (19 pages on the example site's default build, 24 with
+  `DK_PUBLISH_DRAFTS=on`).
+- **The redirect-coverage gate reads the draft setting.** With drafts off, pass
+  `dockitty-check-redirect-coverage` the flags `--docs <docs-dir>` and
+  `--declared-redirects <map-file>` so it can report an old URL that leads to a
+  draft as unpublished instead of failing it; without them the failure message
+  names the missing flag. It now also fails on any redirect stub in the output
+  that leads to a missing page.
+- **The gates resolve the draft setting the way the build does.**
+  `dockitty-check-redirect-coverage` and `dockitty-check-links` read
+  `DK_PUBLISH_DRAFTS` from the process environment, then from the site's env
+  files, then fall back to `off`, and print one line with the value, its source,
+  the site directory and the mode. `--site-root <dir>` names the site (default:
+  the nearest directory with an Astro config above the checked directory, else
+  the working directory) and `--mode <mode>` the env-file mode (default
+  `production`).
+
+### Added
+
+- **`--dk-width-frame`** — a token that caps the page frame, for example
+  `:root { --dk-width-frame: 90rem; }`. Default `100%`; a length or a
+  percentage. A capped frame is centred, and the sidebar, the header content and
+  the rail sit at its edges. It is a registered property, so an invalid value
+  behaves as `100%`. Set it on `:root`. On a very wide screen the default leaves
+  the sidebar and the rail far apart, so such a site may want a cap. See
+  [Cap the page width](docs/guides/consumer-setup.md#cap-the-page-width).
+- **`DK_PUBLISH_DRAFTS`** — `on` or `off` (default `off`), read from the process
+  environment and then from the site's env files (`.env`, `.env.local`,
+  `.env.<mode>`, `.env.<mode>.local`; later wins; mode is `development` for
+  `astro dev` and `production` otherwise). Any other value stops the build with
+  a message naming the setting and the accepted values.
+- **A theme can replace the site header** through the `dk:site-header` slot. The
+  component renders once inside Starlight's `<header class="header">`, in place
+  of the stock header. Starlight keeps the skip link and the mobile menu toggle;
+  the theme supplies the site title, search, social icons, theme select and
+  language select it still wants. A theme that sets no such slot gets the stock
+  header, with unchanged markup. See [Theme header](docs/guides/theme-header.md)
+  and [ADR-0044](docs/adr/0044-header-carrier.md), which makes `Header` the
+  fifth toolkit-owned carrier.
+- **`@spec-kitty/doc-toolkit/route-middleware`** — the package export the
+  integration registers as Starlight route middleware. You do not import it
+  yourself.
+
 ### Fixed
 
+- **Dead gutter on wide screens.** At 1600, 1920 and 2560px the frame shrank to
+  1056px while the sidebar and header stayed at the viewport edge, leaving a gap
+  of 272, 432 and 752px between the sidebar and the content. The gap is 0px at
+  all three widths.
+- **Reading column that shrank as the window grew.** It was 664px at 1280px and
+  552px from 1600px. From 72rem (1152px) up, the reading column does not get
+  narrower as the viewport grows (528, 656, 720, 720, 720px at the five measured
+  widths).
+- **Mis-anchored collapse toggle.** It sat 24px to 616px away from the rail edge
+  depending on the viewport, over article text at 1152px and 1280px and inside
+  the rail from 1600px. It is on the rail edge at every desktop width, in both
+  states, under a capped frame and right-to-left.
+- **Raw folder names in the sidebar.** Five authored groups on the example site
+  were labelled `audience`, `missions`, `book-one`, `book-two`, `book-three`, the
+  books in alphabetical order. They now carry their titles in the declared
+  order.
+- **`pnpm typecheck` aborted after a test run** (exit 134) because `astro check`
+  walked the test builds under `example/dist-*`. Those directories are excluded.
 - **The install docs now authenticate correctly under pnpm** — the README and the
   consumer-setup guide told consumers to put
   `//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}` in a project-root `.npmrc`,
@@ -16,6 +169,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with `401 Unauthorized`. The guidance now keeps only the scope→registry mapping
   in the project `.npmrc` and puts the token in the user-level `~/.npmrc` (or
   `pnpm config set`), where pnpm expands it.
+
+### Known limitations
+
+- **Three generated sidebar groups keep a raw id as label.** The groups for
+  generated glossary contexts (`hr`, `rhetoric`, `shipping` on the example site)
+  are still labelled with the context id, because their index pages are
+  generated with the id as title. Five of the eight raw labels are fixed; these
+  three need a follow-up.
+- **Each section's index page repeats the group's label as its first entry.**
+  The group and its first link carry the same text.
+- **The sidebar can jump on a slowly loading page.** The script that scrolls the
+  current entry into view runs on `DOMContentLoaded`. On a page that streams in
+  slowly the sidebar can paint at the top first and then move.
+- **Slot names are checked by TypeScript only.** A misspelt slot name in a
+  plain-JavaScript theme is ignored without a message. This was already true of
+  every slot.
+- **A `Header` passed through Starlight's `components` option is discarded**, as
+  overrides of the other carriers always were. Use the `dk:site-header` slot.
+- **Re-centring the collapsed layout on a page with a rail and no sidebar is
+  verified by simulation only.** No page shape in Starlight 0.32 produces that
+  combination.
+- **A local `pnpm build` of this repository is now draft-free**, so the
+  Playwright lane needs `pnpm build:a11y` (a build with `DK_PUBLISH_DRAFTS=on`)
+  before `pnpm test:a11y`.
 
 ## [0.1.1] — 2026-10-10
 

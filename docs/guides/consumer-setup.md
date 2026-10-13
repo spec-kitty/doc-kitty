@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-11
+updated: 2026-10-13
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -10,6 +10,8 @@ authors:
   - stijn@sddevelopment.be
 related:
   - guides/adopting
+  - guides/draft-publication
+  - guides/theme-header
   - context/convention
 ---
 
@@ -180,6 +182,15 @@ Two invariants to hold from the start:
 - **`indexBasename` is routing-authoritative** — the value you pass here must be
   the identical list you pass to the docs loader in step 4.
 
+**The sidebar is generated for you.** With no `sidebar` option, the toolkit
+builds one from your section registry and your pages: nested folders are
+labelled by their index page's title and ordered by its `sidebar.order`, and
+each section's index comes first
+([how pages appear in the sidebar](./authoring.md#how-your-pages-appear-in-the-sidebar)).
+If you pass your own `sidebar` here, or through the `starlight` option, it is
+rendered exactly as you wrote it. A `starlight.routeMiddleware` of your own runs
+after the toolkit's, on the route data the toolkit has already shaped.
+
 ## 4. `src/content.config.ts` — register the collections
 
 Register the `docs` collection Starlight expects, plus the two citation-catalog
@@ -218,6 +229,10 @@ export const collections = {
 The loader `base: 'docs'` is the *content root* (where your `docs/` tree lives),
 which is independent of the *URL* `base` (`/docs`) from step 3 — the former tells
 the loader where to read files, the latter tells Astro where the site is served.
+
+**Use `docKittyDocsLoader` for the `docs` collection.** It is where draft pages
+are left out of a build (step 7). A site that loads `docs` another way still
+builds its drafts and gets a warning at the end of the build.
 
 ## 5. `src/pages/*` — add the route endpoints
 
@@ -351,6 +366,70 @@ your value win in both modes.
 `--sl-*` key. A distinct set of at least five `--dk-*` overrides is what proves
 the consumer layer actually won the cascade in the built output.
 
+### Cap the page width
+
+The page frame holds the sidebar, the reading pane and the "On this page" rail.
+The reading pane is the area between sidebar and rail; the reading column is the
+text block centred in it, at most 720px. The frame spans the viewport by
+default. To cap it, set one token on `:root` in the same sheet:
+
+```css
+/* src/theme/press.css */
+:root {
+  --dk-width-frame: 90rem;
+}
+```
+
+| | |
+|---|---|
+| Token | `--dk-width-frame` |
+| What it does | sets the width of the page frame |
+| Default | `100%` (full width) |
+| Accepts | a length (`90rem`, `1440px`) or a percentage (`80%`) |
+| Applies from | a 50rem (800px) viewport; below it the frame is never capped |
+| Invalid value | behaves as `100%` |
+
+What follows a cap that is narrower than the viewport:
+
+- the frame is exactly that wide and centred;
+- the sidebar starts at the frame's start edge, not the viewport's;
+- the header bar still spans the viewport, and its content is padded so it lines
+  up with the frame's edges;
+- the rail ends at the frame's end edge, and its collapse toggle stays on the
+  rail's edge;
+- on a right-to-left page all of this is mirrored.
+
+With `--dk-width-frame: 90rem` on a 1920px viewport the frame is 1440px wide,
+from 240px to 1680px.
+
+Four things to know:
+
+- **Set it on `:root`.** The gutter beside a capped frame is computed on
+  `:root`, and the sidebar, the header content and the toggle are moved in by
+  it. A token set on an inner element caps the frame and leaves those three at
+  the viewport edge.
+- **An invalid value is harmless.** The token is a registered property, so
+  `--dk-width-frame: banana` behaves as `100%` and the layout is the default.
+- **The rail keeps one width.** From a 72rem (1152px) viewport the rail is as
+  wide as the sidebar (18rem, 288px). The reading pane takes the rest of the
+  frame; its column is at most 720px. With the default frame the column is
+  528px at a 1152px viewport, 656px at 1280px and 720px from 1600px.
+- **Very wide screens may want a cap.** With the default, the sidebar and the
+  rail sit at the two edges of the viewport. On a 2560px screen that leaves the
+  720px column centred in a 1984px reading pane. A cap such as `90rem` keeps
+  the three together.
+
+The decision and the measurements behind it are in
+[ADR-0045](../adr/0045-frame-width-token.md).
+
+### Replace the site header
+
+A theme can supply its own header component through the `dk:site-header` slot.
+The toolkit renders it in place of the stock header; a theme that sets no such
+slot keeps the stock header unchanged. A replacement must put back the parts it
+still wants (site title, search, theme select). See
+[Theme header](./theme-header.md).
+
 ## 7. Build
 
 ```sh
@@ -360,6 +439,16 @@ astro build
 `dist/` then contains the rendered site plus `sitemap*.xml`, `rss.xml`,
 `llms.txt`, and the `api/*.json` agent-API. Deploy `dist/` to any static host;
 a based deployment (a sub-path) is covered by the `base` you set in step 3.
+
+**Draft pages are not built by default.** A page with `doc_status: draft` (or
+no `doc_status`) is left out of the build and the sidebar. A build that runs
+with `DK_PUBLISH_DRAFTS=on` builds the page, lists it in the sidebar and marks
+it `noindex`. The sitemap, `rss.xml`, `llms.txt` and `api/index.json` never
+list a draft, with either value. To preview drafts
+with `astro dev` and keep them off the deployed site, commit a
+`.env.development` file containing `DK_PUBLISH_DRAFTS=on`. The values, the
+env-file order and a deployment check are in
+[Draft publication](./draft-publication.md).
 
 ### Run the gates on your tree
 

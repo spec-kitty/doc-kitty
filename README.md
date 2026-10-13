@@ -80,8 +80,16 @@ pnpm dev        # runs the example docsite
 pnpm build      # builds example/ -> static site + sitemap + rss + agent-API
 pnpm test       # toolkit unit tests
 pnpm validate   # check docs frontmatter against the convention
+pnpm build:a11y # the build the Playwright lane needs: the example WITH its draft pages
+pnpm test:a11y  # Playwright + axe against the built example/dist
 pnpm clean      # clear ALL build caches before a from-scratch build (see note below)
 ```
+
+`pnpm build` leaves draft pages out (`DK_PUBLISH_DRAFTS` is `off` unless you
+set it; `pnpm dev` turns it on through `example/.env.development`). The
+Playwright lane expects the drafts in every sidebar, as in CI, so build with
+`pnpm build:a11y` before `pnpm test:a11y`. See
+[Draft publication](./docs/guides/draft-publication.md).
 
 > [!NOTE]
 > Astro's content layer persists a render cache at

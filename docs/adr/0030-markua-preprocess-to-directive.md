@@ -84,6 +84,11 @@ Support the subset by **preprocessing Markua into `remark-directive` syntax**
    therefore emitted as raw hast, exactly the way `rehype/diagram-figure.ts` builds its
    `<figure>` styled by `--dk-diagram-*`. One plugin owns the callout DOM.
 
+   > **Superseded in part by [ADR-0044](./0044-header-carrier.md) (five
+   > carriers), 2026-10-13.** The map is now frozen at five carriers: `Header`
+   > joined it, and a consumer still cannot add one. The reasoning above holds
+   > unchanged, because no carrier mounts a component for a directive.
+
 Support is **opt-in and additive**, gated behind an opt-in preset flag the same shape
 as `diagrams`: with the preset **off**, Markua lines degrade to literal readable text
 (portable on a plain-Markdown host); with it **on**, they render, and a page using

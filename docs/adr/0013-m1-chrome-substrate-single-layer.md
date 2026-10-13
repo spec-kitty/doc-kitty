@@ -57,6 +57,11 @@ preserve when it grows the mechanism to its ADR-0011 form.
    map (the four carriers) to what it already returns; that map is **already
    complete** at M1 and does not change in M2 (a theme targets `dk:` slot names, not
    the Starlight `components` map — ADR-0011 decision 1).
+
+   > **Superseded in part by [ADR-0044](./0044-header-carrier.md) (five
+   > carriers).** The map is still fixed, toolkit-owned and the same with or
+   > without a theme; `Header` joined it as the fifth carrier. Read "four
+   > carriers" in this record as the state when it was accepted.
 4. **Carriers ship from the toolkit as a new component export.** doc-kitty becomes
    a component-shipping package for the first time: the four `.astro` carriers live
    in the toolkit and are exposed through a `./components/*` export so the example's
@@ -71,7 +76,8 @@ M2 grows this substrate to the ADR-0011 form without rewriting M1's render sites
   for the merged manifest read at that one site);
 - the token stylesheet's **cascade position** (M2 appends brand/consumer layers
   after it, not before);
-- the `components` map (unchanged — always doc-kitty's four carriers).
+- the `components` map (unchanged — always doc-kitty's four carriers; five since
+  [ADR-0044](./0044-header-carrier.md)).
 
 ## Consequences
 

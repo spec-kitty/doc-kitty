@@ -2,7 +2,7 @@
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
 doc_status: draft
-updated: 2026-08-23
+updated: 2026-10-13
 type: Architecture
 kind: Reference
 authors:
@@ -12,6 +12,9 @@ related:
   - adr/0008-swappable-theme-layer
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0015-m2-slot-resolution-and-components-map-seam
+  - adr/0044-header-carrier
+  - adr/0045-frame-width-token
+  - guides/theme-header
   - architecture/metadata-model
 ---
 
@@ -72,7 +75,7 @@ Notation: **→ `--sl-x`** means the base layer copies this token into `--sl-x`;
 | Spacing | `--dk-space-3xs…2xl` (4px ramp) | (dk) — Starlight has no spacing surface |
 | Radius | `--dk-radius-sm/md/lg/pill` | (dk) |
 | Elevation | `--dk-shadow-sm/md/lg`, `--dk-shadow-focus` | (dk) |
-| Layout widths | `--dk-width-content/-sidebar/-band/-deck/-passport` | content/sidebar → `--sl-content-width`/`-sidebar-width`; rest (dk) |
+| Layout widths | `--dk-width-content/-sidebar/-band/-deck/-passport`, `--dk-width-frame` | content/sidebar → `--sl-content-width`/`-sidebar-width`; rest (dk). `--dk-width-frame` is described under [Frame width](#frame-width). |
 
 This is the full curated set, deliberately minimal-but-complete: enough to rebrand
 colour, type, spacing, and shape, and to drive every chrome and per-kind layout,
@@ -84,10 +87,64 @@ tokens are re-declared per mode; type, spacing, radius, widths, and shadow geome
 are declared once. Each layer re-declares the same mode-varying subset under its own
 dark selector, so a brand or consumer override applies in both modes.
 
+### Frame width
+
+The page frame holds the sidebar, the reading pane and the "On this page" rail.
+The reading pane is the area between sidebar and rail; the reading column is the
+text block centred in it, at most 720px. The frame spans the viewport by
+default. To cap it, set one token on `:root` in a stylesheet your theme loads
+through `customCss`:
+
+```css
+:root { --dk-width-frame: 90rem; }
+```
+
+| | |
+|---|---|
+| Token | `--dk-width-frame` |
+| Default | `100%` (full width) |
+| Accepts | a length (`90rem`, `1440px`) or a percentage (`80%`) |
+| Applies from | the 50rem breakpoint; below it the frame is never capped |
+| Invalid value | behaves as `100%` |
+
+What follows a cap that is narrower than the viewport:
+
+- the frame is exactly that wide and centred;
+- the sidebar starts at the frame's start edge, not the viewport's;
+- the header bar still spans the viewport, and its content is padded so it lines
+  up with the frame's edges;
+- the rail ends at the frame's end edge, and the collapse toggle stays on the
+  rail's edge;
+- on a right-to-left page all of this is mirrored.
+
+With `--dk-width-frame: 90rem` on a 1920px viewport the frame is 1440px wide,
+from 240px to 1680px.
+
+Three things to know:
+
+- **Set it on `:root`.** The offset that moves the sidebar, the header content
+  and the toggle (`--dk-frame-gutter`, half the spare width) is computed on
+  `:root`. A token set on a descendant element caps the frame and leaves those
+  three at the viewport edge.
+- **An invalid value is harmless.** The token is a registered property
+  (`@property`, `<length-percentage>`, initial value `100%`), so
+  `--dk-width-frame: banana` computes to `100%` and the layout is the default.
+- **The rail keeps one width.** From 72rem the rail is as wide as the sidebar
+  (`--dk-width-sidebar`, 18rem). The reading pane takes the rest of the frame;
+  its column is at most `--dk-width-content` (45rem, 720px). With the default
+  frame it is 528px at a 1152px viewport, 656px at 1280px and 720px from 1600px.
+
+`--dk-frame-gutter` is derived. Do not set it. The decision and the measurements
+behind it are in [ADR-0045](../adr/0045-frame-width-token.md). This page is the
+architectural description; the reference a site owner works from is
+[Cap the page width](../guides/consumer-setup.md#cap-the-page-width) in the
+consumer setup guide.
+
 ## The slot surface
 
-doc-kitty registers only **four carrier overrides** with Starlight — `Head`,
-`PageTitle`, `MarkdownContent`, `Footer` — plus straight pass-throughs for the rest.
+doc-kitty registers **five carrier overrides** with Starlight — `Head`,
+`PageTitle`, `MarkdownContent`, `Footer`, `Header` — and nothing else
+([ADR-0044](../adr/0044-header-carrier.md) added `Header` to the original four).
 The carriers host doc-kitty's own named `dk:` slots. Themes target `dk:` slot names
 through a merged virtual manifest; they never write a Starlight override directly, so
 a Starlight rename is a one-file fix in the carriers rather than a break in every
@@ -96,31 +153,40 @@ theme.
 **Layouts and slots resolve at different sites** ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md)).
 Layouts resolve at a single site: the `MarkdownContent` carrier reads `entry.data.kind`
 and looks up `kind → layout` in the merged manifest, and nowhere else. Slots resolve
-per-carrier: each of the four carriers reads the merged manifest for the `dk:` slots it
+per-carrier: each carrier reads the merged manifest for the `dk:` slots it
 hosts and renders the theme's component (or doc-kitty's default) at those slot points.
 There is no second single site for slots. Through all of this the Starlight `components`
-map stays exactly the four carriers — a theme never registers a Starlight override, so
+map stays exactly the five carriers — a theme never registers a Starlight override, so
 all theme choice flows through the manifest the carriers read.
 
-**Pass-through slots** (a `dk:` name mapped 1:1 onto a Starlight override):
-`dk:head` (Head), `dk:site-header` (Header), `dk:site-title` (SiteTitle),
-`dk:social-links` (SocialIcons), `dk:site-footer` (Footer), `dk:announcement`
-(Banner), `dk:toc` / `dk:toc-mobile` (TableOfContents / MobileTableOfContents),
-`dk:pagination` (Pagination), `dk:last-updated` (LastUpdated), `dk:edit-link`
-(EditLink).
+**Pass-through slots** are `dk:` names that map 1:1 onto a Starlight override.
+Three are rendered today, each by the carrier registered for that override:
 
-**Sequencing** ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md),
-decision 4). The pass-through slots that map onto **non-carrier** Starlight overrides
-— `dk:site-header` (Header), `dk:site-title` (SiteTitle), `dk:announcement` (Banner),
-`dk:social-links` (SocialIcons), `dk:toc` (TableOfContents), `dk:pagination`
-(Pagination), `dk:last-updated` (LastUpdated), `dk:edit-link` (EditLink) — are
-sequenced past M2. Delivering them as `components` map entries would grow the map beyond
-the four carriers and break the ADR-0013 seam-3 invariant. A later mission registers
-doc-kitty-owned pass-through wrapper components onto those Starlight slots, so the map
-still holds only doc-kitty components. The pass-throughs that target carriers — `dk:head`
-(Head) and `dk:site-footer` (Footer) — and the own-chrome slots below ship in M2. The
-Spec Kitty brand header does not wait for the pass-through surface: it rides
-Starlight-native `logo`/`title` config (see §"Wiring").
+| Slot | Starlight override | Carrier | Behaviour |
+|---|---|---|---|
+| `dk:head` | Head | `Head` | composed into the document head |
+| `dk:site-footer` | Footer | `Footer` | composed around the article footer |
+| `dk:site-header` | Header | `Header` | **replaces** the stock header; with no theme component the stock header renders unchanged |
+
+`dk:site-header` is the one slot that replaces instead of composing: a site has
+one header. The component renders once inside Starlight's own
+`<header class="header">`, with no toolkit wrapper. Starlight keeps the skip link
+and the mobile menu toggle, which it renders outside the header; the theme
+supplies whatever else it wants (site title and logo, search, social icons,
+theme select, language select). See the [theme header guide](../guides/theme-header.md).
+
+**Declared but not rendered.** The theme types also accept `dk:site-title`
+(SiteTitle), `dk:social-links` (SocialIcons), `dk:announcement` (Banner),
+`dk:toc` / `dk:toc-mobile` (TableOfContents / MobileTableOfContents),
+`dk:pagination` (Pagination), `dk:last-updated` (LastUpdated) and `dk:edit-link`
+(EditLink). No carrier reads them, so setting one has no effect. Rendering any
+of them means a further carrier, and
+[ADR-0044](../adr/0044-header-carrier.md) requires a new decision record for
+that. Slot names are checked by the TypeScript theme type only: a misspelt name
+in a plain-JavaScript theme is ignored without a message.
+
+The Spec Kitty brand header does not use the header slot. It rides
+Starlight-native `logo`/`title` config and brand CSS (see §"Wiring").
 
 **Own-chrome slots** (composed inside the carriers, no native Starlight slot):
 
@@ -246,23 +312,32 @@ Resolution: merge default → brand → consumer (per-key last-wins; `customCss`
 concatenates; `tokens` shallow-merge). Emit the merged `--dk-*` map as a generated
 stylesheet carrying the `--dk-* → --sl-*` bridge. Forward `assets` to Starlight
 `logo`/`favicon` (and `socialImage` to `dk:head`), and `customCss` in precedence
-order. Point Starlight's `components` at doc-kitty's four carriers, and expose
+order. Point Starlight's `components` at doc-kitty's five carriers, and expose
 `slots`/`layouts` through a virtual manifest the carriers read. Starlight's
-`components` map is always doc-kitty's four carriers; all theme choice flows through
-the manifest ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md)).
+`components` map is always doc-kitty's five carriers, applied after a consumer's
+`starlight.components`, so an override passed that way is discarded; all theme
+choice flows through the manifest
+([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md),
+[ADR-0044](../adr/0044-header-carrier.md)).
 
 The Spec Kitty brand header rides this `assets` forwarding: its logo-in-nav wordmark
-comes from Starlight-native `logo`/`title` config plus brand CSS, so a branded header
-renders in M2 without a `Header` override that would grow the `components` map past the
-four carriers.
+comes from Starlight-native `logo`/`title` config plus brand CSS, so it needs no
+header component. A theme that wants a different header supplies one through
+`dk:site-header`.
 
 ## Version and risk notes
 
 Verify against the pinned Starlight/Astro at build:
 
-- The four carrier overrides (`Head`, `PageTitle`, `MarkdownContent`, `Footer`) are
-  the coupling points to re-verify on any Starlight bump; carriers must use
+- The five carrier overrides (`Head`, `PageTitle`, `MarkdownContent`, `Footer`,
+  `Header`) are the coupling points to re-verify on any Starlight bump; carriers must use
   `Astro.locals.starlightRoute` (Starlight ≥0.32, ADR-0014), not the older `Astro.props`.
+  `Header` also depends on where Starlight renders the skip link and the mobile
+  menu toggle (outside the header in 0.32.6).
+- The frame geometry styles Starlight's own `.main-frame`, `.sidebar-pane`,
+  `header.header`, `.main-pane` and `.right-sidebar*` elements and its 50rem and
+  72rem breakpoints. `tests/a11y/layout-geometry.spec.ts` measures the result at
+  five widths and is the check to run after a Starlight bump.
 - Custom frontmatter (`kind`, `hero_image`, `audience`, `related`,
   `external_references`) reaches `entry.data` only via `docsSchema({ extend })`; the
   toolkit must export the extend schema and the site must wire it.
@@ -280,4 +355,8 @@ Verify against the pinned Starlight/Astro at build:
   surface and per-kind layout resolution.
 - [ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md), the M2 slot
   resolution split, pass-through sequencing, and the components-map seam.
+- [ADR-0044](../adr/0044-header-carrier.md), the Header carrier and the
+  `dk:site-header` replacement contract.
+- [ADR-0045](../adr/0045-frame-width-token.md), the full-width frame and the
+  `--dk-width-frame` token.
 - [Metadata model](./metadata-model.md).

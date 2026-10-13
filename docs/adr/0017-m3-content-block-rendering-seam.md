@@ -66,6 +66,11 @@ silently change the theme-facing transport ADR-0015 pins. It also flagged a
    carriers (ADR-0013 seam 3). Async catalog reads live in the route/build, not in
    `resolveLayout`.
 
+   > **Superseded in part by [ADR-0044](./0044-header-carrier.md) (five
+   > carriers), 2026-10-13.** The map is still fixed and unchanged by this
+   > record; `Header` later joined it as the fifth carrier. Read "four carriers"
+   > here as the state when this record was accepted.
+
 ## Consequences
 
 ### Positive
@@ -87,6 +92,10 @@ silently change the theme-facing transport ADR-0015 pins. It also flagged a
 - An implementer could reinstate a props-carrying slot override to "let the theme
   own the block." Mitigation: this ADR forbids it; the build assertion holds the
   `components` map to the four carriers.
+
+  > **Superseded in part by [ADR-0044](./0044-header-carrier.md) (five
+  > carriers), 2026-10-13.** The assertion now holds the map to five carriers.
+  > The mitigation is otherwise unchanged.
 
 ## Alternatives considered
 
