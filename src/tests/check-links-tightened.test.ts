@@ -10,9 +10,22 @@
  * `check-links.mjs` consumers (`adr-referential-integrity.test.ts`,
  * `index-basename.test.ts`, `example-adopter.test.ts`) and is intentionally
  * NOT re-asserted here.
+ *
+ * Since generated-page-and-link-integrity-01M4VB0N a root is checked one of two
+ * ways. A non-strict root is read as files (what 0.2.0 did): a target passes
+ * when it exists. With `--strict` a relative `.md`/`.mdx` link passes exactly
+ * when the build would rewrite it to a published page, and the other build-only
+ * checks apply. The CLI cases at the end drive both through the real entry
+ * point.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { classifyInlineLink, isSiteRoot, SITE_ROOTS } from '../scripts/check-links.mjs';
+
+const GATE = path.resolve(import.meta.dirname, '../scripts/check-links.mjs');
 
 describe('isSiteRoot', () => {
   it('is true for the site-built example/docs root', () => {
@@ -65,22 +78,18 @@ describe('classifyInlineLink — non-strict (docs/ convention, unchanged)', () =
   });
 });
 
-describe('classifyInlineLink — strict (example/docs #62 tightening)', () => {
-  it('rejects a .md-relative link (confirmed dead in this Starlight build)', () => {
-    const result = classifyInlineLink('./blocks-demonstrator.md', { strict: true });
-    expect(result.kind).toBe('invalid');
-    expect(result.reason).toMatch(/\.md-relative/);
-  });
-
-  it('rejects an .mdx-relative link the same way', () => {
-    const result = classifyInlineLink('./blocks-demonstrator.mdx', { strict: true });
-    expect(result.kind).toBe('invalid');
+describe('classifyInlineLink — strict (example/docs #62 tightening, bare links)', () => {
+  it('hands a .md/.mdx-relative link to the shared page-route rule instead of rejecting it', () => {
+    expect(classifyInlineLink('./blocks-demonstrator.md', { strict: true })).toEqual({
+      kind: 'check',
+      target: './blocks-demonstrator.md',
+    });
+    expect(classifyInlineLink('./blocks-demonstrator.mdx', { strict: true }).kind).toBe('check');
   });
 
   it('rejects a bare extensionless relative link (the class-A trailing-slash trap)', () => {
     const result = classifyInlineLink('blocks-demonstrator', { strict: true });
-    expect(result.kind).toBe('invalid');
-    expect(result.reason).toMatch(/CHILD/);
+    expect(result).toMatchObject({ kind: 'invalid', reason: expect.stringMatching(/no extension/) });
   });
 
   it('rejects a "./bare" relative link with no trailing slash the same way', () => {
@@ -108,5 +117,254 @@ describe('classifyInlineLink — strict (example/docs #62 tightening)', () => {
 
   it('still skips a non-Markdown asset link', () => {
     expect(classifyInlineLink('palm-trees.svg', { strict: true })).toEqual({ kind: 'skip' });
+  });
+});
+
+describe('check-links CLI — agrees with the build on relative Markdown links', () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  });
+
+  /** A docs tree at `<tmp>/<name>`; `name` decides whether it counts as a site root. */
+  const tree = (pages: Record<string, string>, name = 'kb'): { root: string; parent: string } => {
+    const parent = mkdtempSync(path.join(tmpdir(), 'dk-links-cli-'));
+    dirs.push(parent);
+    const root = path.join(parent, name);
+    for (const [rel, text] of Object.entries(pages)) {
+      mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+      writeFileSync(path.join(root, rel), text);
+    }
+    return { root, parent };
+  };
+  const page = (body: string, status = 'active'): string => `---\ntitle: T\ndoc_status: ${status}\n---\n\n${body}\n`;
+  const run = (root: string, args: string[] = [], drafts?: string) => {
+    const env = { ...process.env };
+    delete env.DK_PUBLISH_DRAFTS;
+    if (drafts) env.DK_PUBLISH_DRAFTS = drafts;
+    return spawnSync('node', [GATE, root, ...args], { encoding: 'utf8', env });
+  };
+
+  it('accepts a .md link to a published page on a tree that is not example/docs, with no flag', () => {
+    const { root } = tree({ 'a.md': page('[b](./sub/b.md#x)'), 'sub/b.md': page('B') });
+    const res = run(root);
+    expect(res.status, res.stderr).toBe(0);
+  });
+
+  // Each shape works on GitHub (the file or folder exists) but is not a page of
+  // the built site: accepted on a non-strict root, reported with --strict.
+  it.each([
+    ['a link to log.md, which exists but is never built', { 'a.md': page('[l](./log.md)'), 'log.md': '# log\n' }, /a\.md: link target is not a published page.*→ \.\/log\.md/],
+    ['a link that leaves the docs root and comes back', { 'n/a.md': page('[me](../../kb/n/a.md)') }, /goes up out of the docs root and back in.*\/n\/a\/.*→ \.\.\/\.\.\/kb\/n\/a\.md/],
+    ['a link to a folder that has no section index', { 'a.md': page('[g](./guides/)'), 'guides/x.md': page('G') }, /a\.md: link names the folder "guides", which has no index page.* → \.\/guides\//],
+    ['a malformed % escape that names an existing file', { 'a.md': page('[m](./b%ZZ.md)'), 'b%ZZ.md': page('B') }, /a\.md: link has a malformed % escape.*→ \.\/b%ZZ\.md/],
+  ])('accepts %s on a non-strict root and reports it with --strict', (_what, pages, message) => {
+    const { root } = tree(pages as Record<string, string>);
+    const lax = run(root);
+    expect(lax.status, lax.stderr).toBe(0);
+    const strict = run(root, ['--strict']);
+    expect(strict.status).toBe(1);
+    expect(strict.stderr).toMatch(message);
+  });
+
+  it('still reports a target that does not exist on a non-strict root', () => {
+    const { root } = tree({ 'a.md': page('[x](./gone.md) [y](./nowhere/) [z](gone)'), 'b.md': page('B') });
+    const res = run(root);
+    expect(res.status).toBe(1);
+    for (const target of ['./gone.md', './nowhere/', 'gone']) {
+      expect(res.stderr, target).toMatch(new RegExp(`a\\.md: dangling link → ${target.replace(/[./]/g, '\\$&')}`));
+    }
+  });
+
+  it('still checks links written in log.md', () => {
+    const { root } = tree({ 'log.md': '[gone](./gone.md)\n' });
+    expect(run(root).stderr).toMatch(/log\.md: dangling link → \.\/gone\.md/);
+  });
+
+  it('reports a .md link to an unpublished draft with drafts off on a strict root only', () => {
+    const { root } = tree({ 'a.md': page('[w](./wip.md)'), 'wip.md': page('W', 'draft') });
+    // Non-strict: the tree is read as files (GitHub), so the link is accepted.
+    expect(run(root, [], 'off').status).toBe(0);
+    const strict = run(root, ['--strict'], 'off');
+    expect(strict.status).toBe(1);
+    expect(strict.stderr).toMatch(/a\.md: link points at a draft page.*→ \.\/wip\.md/);
+    expect(run(root, ['--strict'], 'on').status).toBe(0);
+  });
+
+  it('reports a .md link to an unpublished draft on the example/docs site root without a flag', () => {
+    const { root } = tree({ 'a.md': page('[w](./wip.md)'), 'wip.md': page('W', 'draft') }, 'example/docs');
+    expect(run(root, [], 'off').stderr).toMatch(/a\.md: link points at a draft page/);
+  });
+
+  it('never treats the root page as a draft: a status-less root README is a valid link target', () => {
+    const { root } = tree({
+      'README.md': '---\ntitle: Home\n---\n\nHome.\n',
+      'sub/a.md': page('[home](../README.md)'),
+    });
+    const res = run(root, ['--strict'], 'off');
+    expect(res.status, res.stderr).toBe(0);
+  });
+
+  // One target, one answer, whatever the link form. With `--index-basename
+  // README`, `x/index.md` is an ordinary page at /x/ and `y/readme.md` is the
+  // index of /y/ (case-insensitive): both drafts, so with drafts off no form may
+  // reach them, and with drafts on every form may.
+  it.each([
+    ['a folder link to a draft', '[l](./x/)', '', './x/'],
+    ['a root-absolute link to a draft', '[l](/x/)', '', '/x/'],
+    ['a folder link to a draft index in mixed case', '[l](./y/)', '', './y/'],
+    ['a .md link to a draft index in mixed case', '[l](./y/readme.md)', '', './y/readme.md'],
+    ['a related ref to a draft (the page id, not the route)', 'Text.', 'related: [x/index]', 'x/index'],
+    ['a related ref to a draft index in mixed case', 'Text.', 'related: [y]', 'y'],
+  ])('answers %s the same way: reported with drafts off, accepted with drafts on', (_what, body, related, shown) => {
+    const { root } = tree({
+      'README.md': '---\ntitle: Home\n---\n\nHome.\n',
+      'x/index.md': page('X', 'draft'),
+      'y/readme.md': page('Y', 'draft'),
+      'a.md': `---\ntitle: T\ndoc_status: active\n${related}\n---\n\n${body}\n`,
+    });
+    const args = ['--strict', '--index-basename', 'README'];
+    const off = run(root, args, 'off');
+    expect(off.status, off.stderr).toBe(1);
+    expect(off.stderr).toMatch(new RegExp(`a\\.md: .*draft page.* → ${shown.replace(/[./]/g, '\\$&')}\\n`));
+    const on = run(root, args, 'on');
+    expect(on.status, on.stderr).toBe(0);
+  });
+
+  // The build looks a `related:` ref up by page id (`resolveRelated`), not by
+  // route. With `--index-basename README`, `idxonly/index.md` is an ordinary page
+  // with the id `idxonly/index`, served at /idxonly/.
+  it.each([
+    ['the page id of an index.md that is not an index', 'idxonly/index', true],
+    ['the route of that page, which is not an id', 'idxonly', false],
+    ['an ordinary page id', 'guides/page', true],
+    ['an id that names no page', 'guides/missing', false],
+    ['a trailing slash, which the build does not strip', 'guides/page/', false],
+  ])('answers a strict related ref by page id: %s', (_what, ref, accepted) => {
+    const { root } = tree({
+      'README.md': '---\ntitle: Home\n---\n\nHome.\n',
+      'idxonly/index.md': page('I'),
+      'guides/page.md': page('P'),
+      'a.md': `---\ntitle: T\ndoc_status: active\nrelated: [${ref}]\n---\n\nText.\n`,
+    });
+    const res = run(root, ['--strict', '--index-basename', 'README'], 'on');
+    if (accepted) expect(res.status, res.stderr).toBe(0);
+    else {
+      expect(res.status, res.stderr).toBe(1);
+      expect(res.stderr).toMatch(/a\.md: dangling related ref/);
+    }
+  });
+
+  it('lets a draft page link to another draft: neither is built', () => {
+    const { root } = tree({ 'a.md': page('[w](./wip.md)', 'draft'), 'wip.md': page('W', 'draft') });
+    expect(run(root, ['--strict'], 'off').status).toBe(0);
+  });
+
+  it('accepts an existing file outside the docs tree on a non-strict root, reports it with --strict', () => {
+    const { root, parent } = tree({ 'a.md': page('[repo](../README.md)') });
+    writeFileSync(path.join(parent, 'README.md'), '# repo\n');
+    expect(run(root).status).toBe(0);
+    const strict = run(root, ['--strict']);
+    expect(strict.status).toBe(1);
+    expect(strict.stderr).toMatch(/a\.md: link leaves the docs tree.*→ \.\.\/README\.md/);
+  });
+
+  it('reports a link outside the docs tree on a site root without any flag', () => {
+    const { root, parent } = tree({ 'a.md': page('[repo](../README.md)') }, 'example/docs');
+    writeFileSync(path.join(parent, 'example', 'README.md'), '# repo\n');
+    expect(run(root).stderr).toMatch(/link leaves the docs tree/);
+  });
+
+  it('checks a reference definition by the same rules as an inline link', () => {
+    const { root } = tree({
+      'a.md': page('See [the log][l] and [gone][g].\n\n[l]: <./log.md> "Log"\n[g]: ./gone.md'),
+      'log.md': '# log\n',
+    });
+    // Non-strict: only the missing target is reported; log.md exists.
+    const lax = run(root);
+    expect(lax.stderr).toMatch(/a\.md: dangling link → \.\/gone\.md/);
+    expect(lax.stderr).not.toMatch(/log\.md/);
+    expect(run(root, ['--strict']).stderr).toMatch(/a\.md: link target is not a published page.*→ \.\/log\.md/);
+  });
+
+  it('ignores a footnote definition and a definition inside a code fence', () => {
+    const { root } = tree({
+      'a.md': page('Claim.[^1]\n\n[^1]: Aristotle\n\n```\n[x]: ./gone.md\n```'),
+    });
+    const res = run(root);
+    expect(res.status, res.stderr).toBe(0);
+  });
+
+  it('reports a bare extensionless link on a non-example tree only with --strict', () => {
+    const { root } = tree({ 'a.md': page('[b](b)'), 'b.md': page('B') });
+    expect(run(root).status).toBe(0);
+    const strict = run(root, ['--strict']);
+    expect(strict.status).toBe(1);
+    expect(strict.stderr).toMatch(/a\.md: link has no extension.*→ b/);
+  });
+
+  it('accepts a directory link to a folder whose index is home.md only with --index-basename home', () => {
+    const { root } = tree({ 'a.md': page('[g](./guides/)'), 'guides/home.md': page('G') });
+    const without = run(root, ['--strict']);
+    expect(without.status).toBe(1);
+    expect(without.stderr).toMatch(/no index page/);
+    const withFlag = run(root, ['--strict', '--index-basename', 'home']);
+    expect(withFlag.status, withFlag.stderr).toBe(0);
+  });
+
+  it('finds the section index of a folder by the shared, case-insensitive rule', () => {
+    const { root } = tree({ 'a.md': page('[g](./g/)'), 'g/Readme.md': page('G') });
+    const res = run(root, ['--strict']);
+    expect(res.status, res.stderr).toBe(0);
+  });
+
+  it('rejects an --index-basename that is not a plain file name (exit 2)', () => {
+    const { root } = tree({ 'a.md': page('A') });
+    for (const bad of ['../x', 'a/b', '.hidden']) {
+      const res = run(root, ['--index-basename', bad]);
+      expect(res.status, bad).toBe(2);
+      expect(res.stderr).toMatch(/--index-basename must be plain file names.*got/);
+    }
+  });
+
+  it('says how many link problems were found in how many files, and how many were scanned', () => {
+    const { root } = tree({
+      'a.md': page('[x](./gone.md) [y](./gone2.md)'),
+      'b.md': page('[z](./gone3.md)'),
+      'c.md': page('C'),
+    });
+    // The numbers, in order: problems, files with problems, files scanned,
+    // references checked. The prose around them may change.
+    expect(run(root).stderr).toMatch(/^\D*3\D+2\D+3\D+3\D*$/m);
+  });
+
+  it('hints once that a root with an Astro config beside it looks like a built site, without changing the exit code', () => {
+    const { root, parent } = tree({ 'a.md': page('A') });
+    writeFileSync(path.join(parent, 'astro.config.mjs'), 'export default {};\n');
+    const lax = run(root);
+    expect(lax.status, lax.stderr).toBe(0);
+    expect(lax.stderr.match(/looks like a built site/g)).toHaveLength(1);
+    expect(lax.stderr).toMatch(/pass --strict/);
+    const strict = run(root, ['--strict']);
+    expect(strict.status, strict.stderr).toBe(0);
+    expect(strict.stderr).not.toMatch(/looks like a built site/);
+    // No config beside the root, no hint.
+    expect(run(tree({ 'a.md': page('A') }).root).stderr).not.toMatch(/looks like a built site/);
+  });
+
+  it('rejects an unknown option instead of reading it as a root', () => {
+    const { root } = tree({ 'a.md': page('A') });
+    for (const bad of ['--bogus', '--index-basename=home']) {
+      const res = run(root, [bad]);
+      expect(res.status, bad).toBe(2);
+      expect(res.stderr).toMatch(/unknown option/);
+    }
+  });
+
+  it('documents the flags in --help', () => {
+    const res = run('--help');
+    expect(res.status).toBe(0);
+    expect(res.stdout).toMatch(/--strict/);
+    expect(res.stdout).toMatch(/--index-basename/);
   });
 });
