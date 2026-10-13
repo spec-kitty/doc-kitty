@@ -13,3 +13,6 @@ agent:
 
 - [Getting started](/guides/getting-started/) — stand up a consumer site from the
   packed `@spec-kitty/doc-toolkit` tarball.
+- The same toolkit builds larger works too: see [who translated the Rhetoric][translators].
+
+[translators]: ../rhetoric/introduction.md#translators

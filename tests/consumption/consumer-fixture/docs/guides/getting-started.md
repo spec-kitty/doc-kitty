@@ -26,4 +26,5 @@ tarball, exactly as an external adopter would consume a published release.
 3. `astro build` then renders this `docs/` tree plus the generated `rss.xml`,
    `llms.txt`, `sitemap*.xml`, and the JSON agent-API.
 
-See the [Guides hub](/guides/) for the full list.
+See the [Guides hub](/guides/) for the full list, or follow the relative link to
+the section's [index file](./README.md).

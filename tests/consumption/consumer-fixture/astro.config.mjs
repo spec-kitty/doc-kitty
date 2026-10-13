@@ -30,8 +30,5 @@ export default defineConfig({
     // Markua ON, diagrams OFF (no PlantUML/Chromium in CI — research D5).
     markua: true,
     diagrams: false,
-    // Both basenames collapse to their section slug — the docs loader in
-    // src/content.config.ts MUST use the SAME list (routing-authoritative).
-    indexBasename: ['README', 'index'],
   }),
 });

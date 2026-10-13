@@ -15,9 +15,9 @@ import {
 // in the `files` allowlist would fail resolution here (fail-closed, C-2).
 export const collections = {
   docs: defineCollection({
-    // Routing-authoritative `indexBasename` (config.ts invariant): MUST match the
-    // `indexBasename` passed to `defineDocKittyIntegrations` in astro.config.mjs.
-    loader: docKittyDocsLoader({ base: 'docs', indexBasename: ['README', 'index'] }),
+    // No `indexBasename`: the default (`README`) is what an adopter gets, and the
+    // section index pages in this fixture are authored as `README.md`.
+    loader: docKittyDocsLoader({ base: 'docs' }),
     schema: docKittyDocsSchema(),
   }),
   bibliography: defineCollection({

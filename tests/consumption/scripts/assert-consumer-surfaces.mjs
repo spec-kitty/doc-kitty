@@ -35,10 +35,19 @@
  *      `rhetoric/book-one` group carries its index page's title, not the
  *      directory name, and that index is the group's first entry.
  *
+ *   5. GENERATED GLOSSARY ROUTES AND REWRITTEN LINKS. The site serves
+ *      `<base>/glossary/` and one `<base>/glossary/<context>/` page for each
+ *      context in `.contextive/definitions.yaml`; the hub links to every one of
+ *      them, a term link somewhere in the built pages targets a context page
+ *      that exists, and the two relative `.md` links authored in the docs (an
+ *      inline link to a section `README.md`, a reference-style link to a leaf
+ *      page with a `#fragment`) are built as base-prefixed route hrefs.
+ *
  * Every check reads built output only. No dependency beyond Node's stdlib.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 
 const BASE = '/consumer-fixture';
@@ -49,6 +58,32 @@ const DRAFT_TITLE = 'A draft note';
 const PUBLISHED_SLUG = 'guides/getting-started';
 const HEADER_MARKER = 'data-consumer-header="press"';
 const BOOK_ONE_TITLE = 'I: Purposes and Definitions of Rhetoric';
+
+/** Authored in the docs as relative `.md` links; the build must rewrite each to its route. */
+const REWRITTEN_LINKS = [
+  {
+    from: 'guides/getting-started',
+    authored: './README.md',
+    text: 'index file',
+    expected: `${BASE}/guides/`,
+    what: 'inline relative link to a section README.md',
+  },
+  {
+    from: 'guides',
+    authored: '../rhetoric/introduction.md#translators',
+    text: 'who translated the Rhetoric',
+    expected: `${BASE}/rhetoric/introduction/#translators`,
+    what: 'reference-style relative link to a leaf page, fragment kept',
+  },
+];
+/** The fixture's glossary corpus: its contexts are the glossary routes the site must serve. */
+const DEFINITIONS = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'consumer-fixture',
+  '.contextive',
+  'definitions.yaml',
+);
 
 const failures = [];
 const passes = [];
@@ -245,12 +280,108 @@ function main() {
     String(firstHref),
   );
 
+  // ── 5. Generated glossary routes and rewritten links ──────────────────────
+  // A context's folder under `glossary/` is its slug, not its raw name. Names are
+  // read as whole lines (so a multi-word name is kept), and the set derived from
+  // them is cross-checked against the context folders the build actually wrote.
+  const contexts = [...readFileSync(DEFINITIONS, 'utf8').matchAll(/^ {2}- name:\s*(.+?)\s*$/gm)].map((m) => m[1]);
+  check(contexts.length > 0, 'glossary: the fixture defines at least one context', DEFINITIONS);
+  const builtContexts = has(dist, 'glossary')
+    ? readdirSync(path.join(dist, 'glossary'))
+        .filter((n) => statSync(path.join(dist, 'glossary', n)).isDirectory())
+        .sort()
+    : [];
+  check(
+    JSON.stringify([...contexts].sort()) === JSON.stringify(builtContexts),
+    'glossary: the contexts in definitions.yaml are exactly the context folders built under glossary/',
+    `definitions.yaml: ${contexts.join(', ') || 'none'}; dist/glossary/: ${builtContexts.join(', ') || 'none'}`,
+  );
+  const hubPage = 'glossary/index.html';
+  check(has(dist, hubPage), `glossary: ${BASE}/glossary/ is a built page`, `${hubPage} missing from ${dist}`);
+  const hubHtml = has(dist, hubPage) ? read(dist, hubPage) : '';
+  // Hub hrefs come from the page content only: the sidebar precedes <main> and
+  // lists every context, and Starlight's page footer (inside <main>) carries the
+  // previous/next links, one of which is the context route. The slice therefore
+  // stops at the first <footer after <main>. Each resolved against the hub's own URL: the generator
+  // writes the body link as the relative `./<slug>/`, the Hub layout's card link
+  // is absolute, and either form counts.
+  const mainAt = hubHtml.indexOf('<main');
+  check(mainAt !== -1, 'glossary: the hub page has a <main> content area', `no "<main" in ${hubPage}`);
+  const footerAt = mainAt === -1 ? -1 : hubHtml.indexOf('<footer', mainAt);
+  check(footerAt !== -1, 'glossary: the hub page has a <footer> after its content', `no "<footer" after "<main" in ${hubPage}`);
+  const hubContent = mainAt === -1 || footerAt === -1 ? '' : hubHtml.slice(mainAt, footerAt);
+  const hubHrefs = [...hubContent.matchAll(/<a\s[^>]*href="([^"]*)"/g)].map(
+    (m) => new URL(m[1], `https://x${BASE}/glossary/`).pathname,
+  );
+  for (const ctx of contexts) {
+    const route = `${BASE}/glossary/${ctx}/`;
+    check(has(dist, `glossary/${ctx}/index.html`), `glossary: ${route} is a built page`);
+    check(
+      hubHrefs.includes(route),
+      `glossary: the ${BASE}/glossary/ page content links to the "${ctx}" context`,
+      `expected a link resolving to ${route} in the page content (between <main and the page footer); resolved page-content links under ${BASE}/glossary/: ${hubHrefs.filter((h) => h.startsWith(`${BASE}/glossary/`)).join(', ') || 'none'}`,
+    );
+  }
+  // A term link in a page outside the glossary: it must target a context page that was built.
+  // Term links always carry a fragment (the sidebar's link to a context does not), so the
+  // fragment is part of the match.
+  const termLinks = [];
+  for (const rel of htmlFiles(dist)) {
+    if (rel.startsWith('glossary')) continue;
+    for (const m of read(dist, rel).matchAll(/href="(\/consumer-fixture\/glossary\/([^/"#?]+)\/)(#[^"]+)"/g)) {
+      termLinks.push({ page: rel, href: m[0].slice(6, -1), route: m[1], ctx: m[2] });
+    }
+  }
+  check(
+    termLinks.length > 0,
+    `glossary: a built page links a term to ${BASE}/glossary/<context>/#<term>`,
+    'no href with a #fragment into a glossary context in any page outside glossary/ (the sidebar link has none); expected e.g. rhetoric/book-one/chapter-01',
+  );
+  const dangling = termLinks.filter((l) => !has(dist, `glossary/${l.ctx}/index.html`));
+  check(
+    dangling.length === 0,
+    'glossary: every term link targets a built context page',
+    dangling.slice(0, 5).map((l) => `${l.page} has href="${l.href}"`).join('; '),
+  );
+  // Each rewritten link is bound to its authored anchor by the anchor's text, not
+  // to "any href on the page": the sidebar and previous/next links carry routes too.
+  const escapeRe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  for (const { from, authored, text, expected, what } of REWRITTEN_LINKS) {
+    const rel = `${from}/index.html`;
+    check(has(dist, rel), `links: ${from} is a built page`, `${rel} missing`);
+    if (!has(dist, rel)) continue;
+    const html = read(dist, rel);
+    const anchors = [...html.matchAll(/<a\s([^>]*)>([\s\S]*?)<\/a\s*>/g)].map((m) => ({
+      href: /(?:^|\s)href\s*=\s*"([^"]*)"/.exec(m[1])?.[1],
+      text: m[2].trim(),
+    }));
+    const found = anchors.filter((a) => a.text === text);
+    const label = `links: ${rel} — the "${text}" link (${what}, authored "${authored}") is built as href="${expected}"`;
+    if (found.length === 0) {
+      const unlinked = new RegExp(escapeRe(text)).test(html.replace(/<a\s[^>]*>[\s\S]*?<\/a\s*>/g, ''));
+      const mdHrefs = anchors.filter((a) => a.href?.includes('.md')).map((a) => a.href);
+      check(
+        false,
+        label,
+        `no <a> with the text "${text}" in ${rel}` +
+          (unlinked ? `; the text appears but is NOT inside an anchor (the link degraded to plain text)` : '') +
+          `; .md hrefs left on the page: ${mdHrefs.join(', ') || 'none'}`,
+      );
+      continue;
+    }
+    check(
+      found.some((a) => a.href === expected),
+      label,
+      `found ${found.length} anchor(s) with that text, href: ${found.map((a) => JSON.stringify(a.href)).join(', ')}`,
+    );
+  }
+
   if (failures.length > 0) {
     console.error(`assert-consumer-surfaces: FAILED — ${failures.length} of ${failures.length + passes.length} check(s):`);
     for (const f of failures) console.error(`  ✖ ${f}`);
     process.exit(1);
   }
-  console.log(`assert-consumer-surfaces: OK — ${passes.length} checks (frame token, draft publication, theme header, sidebar shaping).`);
+  console.log(`assert-consumer-surfaces: OK — ${passes.length} checks (frame token, draft publication, theme header, sidebar shaping, glossary routes, rewritten links).`);
 }
 
 main();

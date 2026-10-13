@@ -408,14 +408,17 @@ function gates() {
     gate('validate-frontmatter', path.join(PKG_SCRIPTS, 'validate-frontmatter.mjs'), [
       DOCS_DIR,
       '--index-basename',
-      'README,index',
+      'README',
     ]),
   );
-  results.push(gate('check-links', path.join(PKG_SCRIPTS, 'check-links.mjs'), [DOCS_DIR]));
+  // `--strict` makes the fixture root strict (the page and draft-target checks
+  // run); `--index-basename README` is the default an adopter has.
+  const linkArgs = [DOCS_DIR, '--strict', '--index-basename', 'README'];
+  results.push(gate('check-links', path.join(PKG_SCRIPTS, 'check-links.mjs'), linkArgs));
   // The same gate as a live deployment runs it: with drafts off it also fails
   // on a published page that links to a draft.
   results.push(
-    gate('check-links (drafts off)', path.join(PKG_SCRIPTS, 'check-links.mjs'), [DOCS_DIR], {
+    gate('check-links (drafts off)', path.join(PKG_SCRIPTS, 'check-links.mjs'), linkArgs, {
       DK_PUBLISH_DRAFTS: 'off',
     }),
   );
