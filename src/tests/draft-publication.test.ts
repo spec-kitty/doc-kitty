@@ -74,15 +74,17 @@ describe('resolvePublishDrafts', () => {
     });
   });
 
-  it('treats an empty or blank value as not set and falls through', () => {
+  it('treats an empty or blank value as not set, falls through, and reports a blank-only setting as set but empty', () => {
     const file = { [DK_PUBLISH_DRAFTS_ENV]: 'off' };
     expect(resolvePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '' }, file)).toBe(false);
     expect(resolvePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '   ' }, file)).toBe(false);
-    // Blank everywhere: the default.
+    // Blank everywhere: the default value, reported as set but empty, not as never set.
     expect(describePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '' }, { [DK_PUBLISH_DRAFTS_ENV]: '' })).toEqual({
       publish: true,
-      source: 'default',
+      source: 'set but empty',
     });
+    expect(describePublishDrafts({ [DK_PUBLISH_DRAFTS_ENV]: '   ' }, {}).source).toBe('set but empty');
+    expect(describePublishDrafts({}, {}).source).toBe('default');
   });
 
   it('rejects any other value, naming the setting, both accepted values and the offender (FR-017)', () => {

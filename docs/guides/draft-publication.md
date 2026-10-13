@@ -59,7 +59,7 @@ A page is a draft when its frontmatter says `doc_status: draft`, or has no
 | Name | `DK_PUBLISH_DRAFTS` |
 | Values | `on` or `off`, in any letter case |
 | Default | `on` |
-| Empty or blank value | treated as not set |
+| Empty or blank value | treated as not set; the build log then says `(set but empty)` instead of `(default)` |
 | Any other value | the build stops, see [A mistyped value](#a-mistyped-value) |
 
 ## What each value does
@@ -205,7 +205,9 @@ gate checked a build made with another value.
 1. Read the build log of the deployment. It must contain
    `DK_PUBLISH_DRAFTS=off` and must not contain `draft page(s) were built`. If
    it says `DK_PUBLISH_DRAFTS=on (default)`, the deployment does not set the
-   value and is publishing your drafts.
+   value and is publishing your drafts. `(set but empty)` means the
+   variable exists but has no value, for example a CI variable that was never
+   defined, and drafts are published just the same.
 2. Request a page you know is a draft on the live site. It must return 404.
 3. If you keep a URL baseline, run the redirect-coverage gate against the built
    output. Its first line must name the value the build used. With drafts off,

@@ -1407,7 +1407,7 @@ export function draftPublicationIntegration(routeShaping: RouteShapingOptions): 
           `[dk-drafts] ${DK_PUBLISH_DRAFTS_ENV}=${publish ? 'on' : 'off'} (${resolved.source}): ` +
             (publish
               ? 'draft pages are built, listed and marked noindex.' +
-                (resolved.source === 'default'
+                (resolved.source === 'default' || resolved.source === 'set but empty'
                   ? ` Set ${DK_PUBLISH_DRAFTS_ENV}=off in a live deployment to leave them out.`
                   : '')
               : 'draft pages are not built.'),

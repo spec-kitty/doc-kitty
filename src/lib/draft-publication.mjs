@@ -41,7 +41,7 @@ export const PUBLISH_DRAFTS_VALUES = /** @type {const} */ (['on', 'off']);
 export const PUBLISH_DRAFTS_DEFAULT = true;
 
 /**
- * @typedef {'process environment' | 'env file' | 'default'} PublishDraftsSource
+ * @typedef {'process environment' | 'env file' | 'set but empty' | 'default'} PublishDraftsSource
  * @typedef {{ publish: boolean, source: PublishDraftsSource }} PublishDraftsResolution
  * @typedef {Record<string, string | undefined>} EnvLike
  */
@@ -60,7 +60,9 @@ function present(raw) {
  * Precedence: the process environment, then the site's env files, then the
  * default, `on` ({@link PUBLISH_DRAFTS_DEFAULT}).
  * An empty or blank value counts as "not set" and falls through to the next
- * source. Any other value than `on` / `off` (case-insensitive) throws (FR-017).
+ * source. When every source that mentions the setting is blank, the value is
+ * still the default, but the source reads `set but empty` so the build log
+ * tells it apart from a setting nobody wrote. Any other value than `on` / `off` (case-insensitive) throws (FR-017).
  *
  * @param {EnvLike} [env]
  * @param {EnvLike} [fileEnv]
@@ -83,7 +85,8 @@ export function describePublishDrafts(env = process.env, fileEnv = {}) {
         `them out; "on" is the default.`,
     );
   }
-  return { publish: PUBLISH_DRAFTS_DEFAULT, source: 'default' };
+  const mentioned = [env, fileEnv].some((bag) => typeof bag?.[DK_PUBLISH_DRAFTS_ENV] === 'string');
+  return { publish: PUBLISH_DRAFTS_DEFAULT, source: mentioned ? 'set but empty' : 'default' };
 }
 
 /**
