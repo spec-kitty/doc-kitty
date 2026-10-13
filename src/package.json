@@ -1,6 +1,6 @@
 {
   "name": "@spec-kitty/doc-toolkit",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Reusable Astro + Starlight toolkit for DocKitty — a documentation convention based on Common Docs: schema, README-as-index loader, and rss/llms.txt/agent-API route handlers.",
   "type": "module",
   "license": "MIT",

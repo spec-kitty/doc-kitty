@@ -60,7 +60,7 @@ the **GitHub Packages** registry, so you need a GitHub token with `read:packages
 
 ```sh
 export GITHUB_TOKEN=<your read:packages token>
-pnpm add @spec-kitty/doc-toolkit@0.1.1 astro @astrojs/starlight @astrojs/sitemap
+pnpm add @spec-kitty/doc-toolkit@0.2.0 astro @astrojs/starlight @astrojs/sitemap
 ```
 
 Getting `401 Unauthorized` from `pnpm add`? The usual causes: the `_authToken`
@@ -138,9 +138,8 @@ fixture does. Pin the version you want to track:
 pnpm add @spec-kitty/doc-toolkit astro @astrojs/starlight @astrojs/sitemap
 ```
 
-Pin a real release (for example `@spec-kitty/doc-toolkit@0.1.1`, the first
-published version) rather than a floating range so your build is reproducible
-against a known published surface.
+Pin a real release (for example `@spec-kitty/doc-toolkit@0.2.0`) rather than a
+floating range so your build is reproducible against a known published surface.
 
 ## 3. `astro.config.mjs` — wire the integrations
 
@@ -231,8 +230,9 @@ which is independent of the *URL* `base` (`/docs`) from step 3 — the former te
 the loader where to read files, the latter tells Astro where the site is served.
 
 **Use `docKittyDocsLoader` for the `docs` collection.** It is where draft pages
-are left out of a build (step 7). A site that loads `docs` another way still
-builds its drafts and gets a warning at the end of the build.
+are left out of a build that sets `DK_PUBLISH_DRAFTS=off` (step 7). A site that
+loads `docs` another way builds its drafts with that setting too, and gets a
+warning at the end of the build.
 
 ## 5. `src/pages/*` — add the route endpoints
 
@@ -440,15 +440,15 @@ astro build
 `llms.txt`, and the `api/*.json` agent-API. Deploy `dist/` to any static host;
 a based deployment (a sub-path) is covered by the `base` you set in step 3.
 
-**Draft pages are not built by default.** A page with `doc_status: draft` (or
-no `doc_status`) is left out of the build and the sidebar. A build that runs
-with `DK_PUBLISH_DRAFTS=on` builds the page, lists it in the sidebar and marks
-it `noindex`. The sitemap, `rss.xml`, `llms.txt` and `api/index.json` never
-list a draft, with either value. To preview drafts
-with `astro dev` and keep them off the deployed site, commit a
-`.env.development` file containing `DK_PUBLISH_DRAFTS=on`. The values, the
-env-file order and a deployment check are in
-[Draft publication](./draft-publication.md).
+**Set `DK_PUBLISH_DRAFTS=off` in the build that deploys your live site.** A
+page with `doc_status: draft` (or no `doc_status`) is a draft. By default a
+build writes the page, lists it in the sidebar, marks it `noindex` and leaves it
+out of site search. With `DK_PUBLISH_DRAFTS=off` the page is not built and not
+listed. The sitemap, `rss.xml`, `llms.txt` and `api/index.json` never list a
+draft, with either value. Set the value in the deploy job's environment, or
+commit a `.env.production` file containing `DK_PUBLISH_DRAFTS=off`, which
+`astro build` reads and `astro dev` does not. The values, the env-file order
+and a deployment check are in [Draft publication](./draft-publication.md).
 
 ### Run the gates on your tree
 

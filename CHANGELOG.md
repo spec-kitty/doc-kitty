@@ -6,22 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-**Read this before upgrading: draft pages are no longer published by default.**
-A page is a draft when its frontmatter says `doc_status: draft` **or has no
-`doc_status` at all**. A site that never set `doc_status` builds no content
-pages after this upgrade until it sets `DK_PUBLISH_DRAFTS=on` or gives its pages
-a status. To keep the previous behaviour, set that one variable in the
-environment of your build:
+## [0.2.0] — 2026-10-13
+
+**Read this before upgrading: set `DK_PUBLISH_DRAFTS=off` in the build that
+deploys your live site.** This release adds that setting. Its default is `on`:
+draft pages are built and listed, as in 0.1.1, and are now also marked `noindex`
+and left out of site search. A page is a draft when its frontmatter says
+`doc_status: draft` **or has no `doc_status` at all**. A deployment that does
+not set `off` publishes its drafts as `noindex` pages:
 
 ```sh
-DK_PUBLISH_DRAFTS=on astro build
+DK_PUBLISH_DRAFTS=off astro build
 ```
+
+The version is `0.2.0` because the layout, sidebar and redirect-gate changes
+below are breaking, and under `0.x` the minor number marks a breaking release.
+(The heading date is the release-prep date; the
+[releasing runbook](docs/ops/releasing.md) has you update it to the tag date.)
 
 ### 💥 Breaking
 
 Each item is described in full under Changed.
 
-- **Drafts are not built by default.** Set `DK_PUBLISH_DRAFTS=on` to build them.
 - **The redirect-coverage gate has new flags and a new failure.** With drafts
   off it needs `--docs` and `--declared-redirects` to accept an old URL that
   leads to a draft, and it fails on any redirect stub that leads to a missing
@@ -36,36 +42,29 @@ Each item is described in full under Changed.
 
 ### Changed
 
-- **Draft pages are not built unless `DK_PUBLISH_DRAFTS=on`** (behaviour change).
-  With the setting off, which is the default, a draft page is not written, is not
-  in any sidebar and returns 404. If a redirect in your `redirects` config ends
-  at a draft page, its stub is removed at the end of the build, the old URL
-  returns 404 until the page is published, and the build warns once, naming each
-  one. With the setting on, drafts are built and listed as before, and now also
-  carry `noindex` and are left out of site search. The sitemap, feeds, `llms.txt`
-  and the agent index never listed drafts and still do not. Filtering happens in
-  `docKittyDocsLoader`; a site that loads its `docs` collection another way still
-  builds its drafts and gets a warning at the end of the build. See
-  [Draft publication](docs/guides/draft-publication.md).
+- **Draft pages and pages with no `doc_status` are marked `noindex` and left
+  out of site search.** They are still built and listed in the sidebar, as in
+  0.1.1. What is new: each carries `<meta name="robots" content="noindex">` and
+  has no record in the search index. A site that never set `doc_status` builds
+  the same pages as before, and every one of them except the root page is now
+  `noindex` and unsearchable. Give a page a status other than `draft` (for
+  example `doc_status: active`) to make it indexable and searchable again. The
+  sitemap, feeds, `llms.txt` and the agent index never listed drafts and still
+  do not. The site's root page is never a draft and never `noindex`.
 
-  Two things follow from where each part is decided:
-
-  - **A draft is marked `noindex` whenever it is rendered**, by its status
-    alone. On a site that does not use the toolkit's docs loader, every page
-    without a `doc_status` is therefore `noindex`, whatever the setting says.
-    The site's root page is the exception: it is never a draft and never
-    `noindex`.
-  - **A local `astro build` or `astro preview` is draft-free** unless
-    `DK_PUBLISH_DRAFTS=on` is set. Only `astro dev` reads `.env.development`.
-
-  On this project's own example site, a default build now has nine fewer pages
-  (`/adr/template/`, `/context/audience/draft-persona/`, `/plans/`,
-  `/plans/missions/`, `/plans/missions/mission-alpha/`,
-  `/plans/missions/mission-beta/`, `/guides/markua-footnotes-showcase/`,
-  `/guides/markua-footnotes-malformed/`, `/presentations/draft-preview/`), and the
-  old URLs `/plans/features/mission-alpha/` and `/plans/features/mission-beta/`,
-  which redirect to two of those drafts, return 404. The published site is built
-  with the setting off.
+  The marker follows the page's status, not the setting described under Added:
+  a draft is `noindex` whenever it is rendered, also on a site that does not
+  load its docs through `docKittyDocsLoader`.
+- **This project's example site publishes its Plans section and the footnotes
+  showcase.** `/plans/`, `/plans/missions/`, `/plans/missions/mission-alpha/`,
+  `/plans/missions/mission-beta/` and `/guides/markua-footnotes-showcase/` were
+  drafts and are now `doc_status: active`, so they are in the sitemap, the feed,
+  `llms.txt`, the agent index and site search (61 published pages, was 56). The
+  published site is built with `DK_PUBLISH_DRAFTS=off`. That build leaves out
+  the four remaining drafts (`/adr/template/`,
+  `/context/audience/draft-persona/`, `/guides/markua-footnotes-malformed/`,
+  `/presentations/draft-preview/`), and every baselined old URL resolves on it,
+  `/plans/features/mission-alpha/` and `/plans/features/mission-beta/` included.
 - **The page frame is full width by default.** The frame (sidebar, reading
   pane and "On this page" rail) spans the viewport. Before, it was meant to be
   capped at 90rem on wide screens. To get a capped, centred frame, set
@@ -98,8 +97,8 @@ Each item is described in full under Changed.
 - **The current page's sidebar entry is scrolled into view** when a page loads.
 - **A page with no `h2` or `h3` heading has no "On this page" rail.** Its
   outline would hold one link, so the rail and its toggle are left out and the
-  text uses the width (19 pages on the example site's default build, 24 with
-  `DK_PUBLISH_DRAFTS=on`).
+  text uses the width (24 pages on the example site's default build, 23 with
+  `DK_PUBLISH_DRAFTS=off`).
 - **The redirect-coverage gate reads the draft setting.** With drafts off, pass
   `dockitty-check-redirect-coverage` the flags `--docs <docs-dir>` and
   `--declared-redirects <map-file>` so it can report an old URL that leads to a
@@ -109,7 +108,7 @@ Each item is described in full under Changed.
 - **The gates resolve the draft setting the way the build does.**
   `dockitty-check-redirect-coverage` and `dockitty-check-links` read
   `DK_PUBLISH_DRAFTS` from the process environment, then from the site's env
-  files, then fall back to `off`, and print one line with the value, its source,
+  files, then fall back to `on`, and print one line with the value, its source,
   the site directory and the mode. `--site-root <dir>` names the site (default:
   the nearest directory with an Astro config above the checked directory, else
   the working directory) and `--mode <mode>` the env-file mode (default
@@ -124,11 +123,23 @@ Each item is described in full under Changed.
   behaves as `100%`. Set it on `:root`. On a very wide screen the default leaves
   the sidebar and the rail far apart, so such a site may want a cap. See
   [Cap the page width](docs/guides/consumer-setup.md#cap-the-page-width).
-- **`DK_PUBLISH_DRAFTS`** — `on` or `off` (default `off`), read from the process
+- **`DK_PUBLISH_DRAFTS`** — `on` or `off` (default `on`), read from the process
   environment and then from the site's env files (`.env`, `.env.local`,
   `.env.<mode>`, `.env.<mode>.local`; later wins; mode is `development` for
   `astro dev` and `production` otherwise). Any other value stops the build with
-  a message naming the setting and the accepted values.
+  a message naming the setting and the accepted values. **Set `off` in the build
+  that deploys your live site**, in the deploy job's environment or in a
+  committed `.env.production`.
+
+  With `off`, a draft page is not written, is not in any sidebar or the search
+  index, and returns 404. If a redirect in your `redirects` config ends at a
+  draft page, its stub is removed at the end of the build, the old URL returns
+  404 until the page is published, and the build warns once, naming each one.
+  With `on`, drafts are built, listed and marked `noindex`; the build log says
+  so, and when nothing set the value it adds how to turn drafts off. Filtering
+  happens in `docKittyDocsLoader`; a site that loads its `docs` collection
+  another way builds its drafts with `off` too and gets a warning at the end of
+  the build. See [Draft publication](docs/guides/draft-publication.md).
 - **A theme can replace the site header** through the `dk:site-header` slot. The
   component renders once inside Starlight's `<header class="header">`, in place
   of the stock header. Starlight keeps the skip link and the mobile menu toggle;
@@ -190,9 +201,12 @@ Each item is described in full under Changed.
 - **Re-centring the collapsed layout on a page with a rail and no sidebar is
   verified by simulation only.** No page shape in Starlight 0.32 produces that
   combination.
-- **A local `pnpm build` of this repository is now draft-free**, so the
-  Playwright lane needs `pnpm build:a11y` (a build with `DK_PUBLISH_DRAFTS=on`)
-  before `pnpm test:a11y`.
+- **A deployment that does not set `DK_PUBLISH_DRAFTS=off` publishes its
+  drafts.** They are `noindex`, which asks search engines not to list them; it
+  is not access control.
+- **The Playwright lane of this repository needs a build with drafts.** That is
+  the default; `pnpm build:a11y` states `DK_PUBLISH_DRAFTS=on`, so it gives the
+  right build even when your shell sets `off`.
 
 ## [0.1.1] — 2026-10-10
 
@@ -379,6 +393,7 @@ the feature-by-feature status and the decision records under
 - Build-time PlantUML rendering requires a PlantUML service (provided in CI); a
   local build without it skips PlantUML figures.
 
-[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/spec-kitty/doc-kitty/releases/tag/v0.1.0
