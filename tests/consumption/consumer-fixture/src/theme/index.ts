@@ -34,6 +34,7 @@
  * NEVER set a `--sl-*` key: `mergeLayers` throws on it (ADR-0011 / FR-004). A
  * theme addresses `--dk-*` only; the `--dk-*→--sl-*` bridge is toolkit-owned.
  */
+import { fileURLToPath } from 'node:url';
 import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty/index.ts';
 import type { DocKittyOptions } from '@spec-kitty/doc-toolkit/config';
 
@@ -80,6 +81,14 @@ export const pressTheme: DocKittyTheme = {
   // win by source order at plain `:root` and by matching the emitter's `0,2,0`
   // dark specificity. See `press.css`.
   customCss: ['./src/theme/press.css'],
+
+  // The site header. A slot takes a package-export specifier (a theme shipped
+  // as a package) or an absolute path (a component in this site, as here). The
+  // toolkit renders it in place of Starlight's header; see `SiteHeader.astro`
+  // for what a replacement has to put back.
+  slots: {
+    'dk:site-header': fileURLToPath(new URL('./SiteHeader.astro', import.meta.url)),
+  },
 };
 
 export default pressTheme;

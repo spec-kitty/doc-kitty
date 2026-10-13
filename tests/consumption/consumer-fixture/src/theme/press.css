@@ -35,6 +35,15 @@
 
 /* LIGHT — warm-paper surface, warm near-black heading ink, press red accent. */
 :root {
+  /*
+   * Page-frame cap. The toolkit's frame is full width by default; this site
+   * opts into a 90rem frame. Set on `:root`, which is the only place the frame
+   * gutter (the offset of the sidebar, header content and rail) follows it.
+   * The theme's `tokens` map would work too; a stylesheet is where the
+   * frame-width documentation shows it.
+   */
+  --dk-width-frame: 90rem;
+
   /* Surface-1: default light #f7f8fa (cool grey) → warm paper. */
   --dk-color-surface-1: #faf7f0;
   /* Strong/heading text: default light #101828 (cool ink) → warm near-black. */

@@ -1,0 +1,35 @@
+---
+/*
+ * The consumer's site header, supplied through the theme's `dk:site-header`
+ * slot. The toolkit renders it once, in place of Starlight's stock header,
+ * inside Starlight's own `<header class="header">`. So this component emits no
+ * `<header>` of its own.
+ *
+ * A replacement header gets nothing the stock header drew. This one puts back
+ * the three things this site wants: the site title, search and the theme
+ * select, each imported from Starlight's published component exports. It
+ * leaves out the social icons and the language select. The skip link and the
+ * mobile menu toggle are rendered by Starlight outside the header and need
+ * nothing here.
+ *
+ * `data-consumer-header` is the marker `assert-consumer-surfaces.mjs` counts.
+ */
+import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
+import Search from '@astrojs/starlight/components/Search.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+---
+<div class="press-header" data-consumer-header="press">
+  <SiteTitle />
+  <Search />
+  <ThemeSelect />
+</div>
+
+<style>
+  .press-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sl-nav-gap);
+    height: 100%;
+  }
+</style>
