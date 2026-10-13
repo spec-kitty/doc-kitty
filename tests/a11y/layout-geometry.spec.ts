@@ -53,6 +53,8 @@
 // 1440px and 1536px were set), the invalid-token test (through A1) and all four
 // right-to-left tests (the toggle did not mirror: inline-start offset 288px where
 // 960px was expected at 1280, 0px where 1248px collapsed).
+// Those right-to-left figures were taken when the cases ran at 1280px; they now
+// run at 1920px, uncapped and under a 90rem cap, so a gutter inset is non-zero.
 //
 // RATCHETS — green on the pre-mission layout too. They are kept because they pin a
 // property the frame change could have broken, not because they prove this
@@ -368,11 +370,18 @@ test.describe('layout geometry — capped frame', () => {
 test.describe('layout geometry — right-to-left', () => {
   const BOXES = ['frame', 'sidebar', 'pane', 'column', 'railContainer', 'toggle', 'headerFirst', 'headerLast'] as const;
 
-  for (const width of [1280, 1920]) {
+  // Uncapped, the frame gutter is 0 and gutter-based insets mirror trivially.
+  // Under the 90rem cap the gutter is 240px at 1920px, so a physical-property
+  // slip in a gutter inset shows up as a mirror failure.
+  const CASES = [
+    { label: '1920px', width: 1920, css: undefined, cap: undefined },
+    { label: '1920px under a 90rem cap', width: 1920, css: ':root { --dk-width-frame: 90rem }', cap: 90 * 16 },
+  ];
+  for (const { label, width, css, cap } of CASES) {
     for (const collapsed of [false, true]) {
       const state = collapsed ? 'collapsed' : 'expanded';
-      test(`${width}px ${state}: mirror of the left-to-right layout`, async ({ page, browser }) => {
-        const rtl = await load(page, { width, collapsed, dir: 'rtl' });
+      test(`${label} ${state}: mirror of the left-to-right layout`, async ({ page, browser }) => {
+        const rtl = await load(page, { width, collapsed, css, dir: 'rtl' });
         expect(rtl.dir).toBe('rtl');
 
         // Physically mirrored: sidebar on the right, rail on the left of the column.
@@ -380,14 +389,14 @@ test.describe('layout geometry — right-to-left', () => {
         expect(need(rtl.sidebar, 'sidebar').x, 'sidebar is to the right of the column').toBeGreaterThanOrEqual(column.right);
         expect(need(rtl.railContainer, 'railContainer').right, 'rail is to the left of the column').toBeLessThanOrEqual(column.x);
 
-        assertFrame(rtl);
+        assertFrame(rtl, cap);
         if (collapsed) assertCollapsed(rtl);
         else assertExpanded(rtl);
 
         // Inline-axis offsets equal the left-to-right ones, box by box.
         const other = await browser.newPage();
         try {
-          const ltr = await load(other, { width, collapsed });
+          const ltr = await load(other, { width, collapsed, css });
           for (const name of BOXES) {
             const a = inline(need(rtl[name], name), rtl);
             const b = inline(need(ltr[name], name), ltr);
