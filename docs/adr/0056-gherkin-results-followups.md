@@ -63,7 +63,7 @@ was English only.
    When `gherkin.results` is set and the site's own `scenarioIndexRoute()` call
    passes no `results`, the build logs one `[dk-gherkin]` warning naming the route
    file and the value to pass. A process is one `astro build`, or one
-   `astro dev` server. The integration passes the route file it detected in the
+   `astro dev` server run (a config reload does not warn again). The integration passes the route file it detected in the
    `DK_GHERKIN_ROUTE` environment variable; without it the message names
    `src/pages/api/scenarios.json`. The injected route never warns.
 7. **The Overview label is a UI string, with an option on top (#161).** The
