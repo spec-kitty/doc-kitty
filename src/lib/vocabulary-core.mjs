@@ -770,14 +770,23 @@ export function normalizeIndexBasenames(indexBasename) {
 /**
  * Whether an index name is a plain file name: one path segment, so a page
  * written as `<name>.md` stays inside its folder. No `/` or `\\`, no leading
- * `.`, no surrounding whitespace, no NUL. The one rule behind the glossary's and
+ * `.`, no surrounding whitespace, no NUL, not empty, and not `log` (any case):
+ * the walk excludes `log.md`, so a section index of that name would never
+ * publish. The one rule behind the glossary's and
  * Gherkin's checks of the `indexBasename` setting.
  *
  * @param {string} name
  * @returns {boolean}
  */
 export function isPlainIndexName(name) {
-  return !(/[/\\]/.test(name) || name.startsWith('.') || name !== name.trim() || name.includes('\0'));
+  return !(
+    name === '' ||
+    name.toLowerCase() === 'log' ||
+    /[/\\]/.test(name) ||
+    name.startsWith('.') ||
+    name !== name.trim() ||
+    name.includes('\0')
+  );
 }
 
 /**

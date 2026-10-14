@@ -478,5 +478,9 @@ describe('gherkin option validation is single-sourced (review #6)', () => {
     const { validateIndexBasenames } = await import('../lib/gherkin/options.mjs');
     expect(() => validateIndexBasenames(['README', ' index'])).toThrow(/must be a plain file name/);
     expect(() => validateIndexBasenames(['README', 'index'])).not.toThrow();
+    // `log.md` is never walked, so such an index page would never publish.
+    expect(() => validateIndexBasenames(['README', 'Log'])).toThrow(/must be a plain file name/);
+    const { isPlainIndexName } = await import('../lib/vocabulary-core.mjs');
+    expect(isPlainIndexName('')).toBe(false);
   });
 });
