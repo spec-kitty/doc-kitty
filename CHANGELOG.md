@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-The next release is `0.3.0`, because the two Breaking entries below change what an
+The next release is `0.3.0`, because the Breaking entries below change what an
 existing site's build does, and under `0.x` the minor number marks a breaking
 release, as it did for `0.2.0`.
 
@@ -30,7 +30,14 @@ release, as it did for `0.2.0`.
   stops, names the path and writes nothing when a file you wrote or a symbolic link
   sits where a generated page goes, when `glossary/` or a context folder is a
   symbolic link, and when an index name is not a plain file name (one path
-  segment: no `/` or `\`, no leading `.`, no surrounding whitespace).
+  segment: no `/` or `\`, no leading `.`, no surrounding whitespace), or is empty
+  or `log`.
+- **`docKittyDocsLoader` rejects a custom `pattern` (#133).** Before, a narrowed
+  `pattern` changed which pages were built but not the route table the link
+  rewrite uses, so a relative `.md` link could be rewritten to a page that was
+  never built. Now the loader throws when `pattern` is anything but the default.
+  Leave `pattern` unset; to keep a file out of the site, move it out of the docs
+  folder or name it `log.md`.
 
 ### Changed
 
