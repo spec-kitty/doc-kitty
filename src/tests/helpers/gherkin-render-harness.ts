@@ -45,20 +45,45 @@ const { markdownConfigDefaults } = (await import(
   createRequire(path.join(astroDir, 'package.json')).resolve('@astrojs/markdown-remark')
 )) as { markdownConfigDefaults: Record<string, unknown> };
 
-function docKittyRemark(options: Partial<DocKittyOptions>): { remark: unknown[]; rehype: unknown[] } {
-  const stack = { remark: [] as unknown[], rehype: [] as unknown[] };
+export interface DocKittyMarkdown {
+  remark: unknown[];
+  rehype: unknown[];
+  /** The `doc-kitty:` integration names, in array order. */
+  names: string[];
+}
+const stacks = new Map<string, DocKittyMarkdown>();
+
+/**
+ * The markdown plugins the doc-kitty integrations register for `options`, in
+ * order (memoised per option set: building the array logs the drafts notice).
+ */
+export function docKittyMarkdown(options: Partial<DocKittyOptions>): DocKittyMarkdown {
+  const key = JSON.stringify(options);
+  const cached = stacks.get(key);
+  if (cached) return cached;
+  const stack: DocKittyMarkdown = { remark: [], rehype: [], names: [] };
   for (const entry of docKittyIntegrations(defineDocKittyIntegrations({ title: 'Docs', ...options }))) {
+    stack.names.push(entry.name);
     if (!entry.hooks?.['astro:config:setup']) continue;
     for (const cfg of runSetup(entry)) {
       stack.remark.push(...(cfg.markdown?.remarkPlugins ?? []));
       stack.rehype.push(...(cfg.markdown?.rehypePlugins ?? []));
     }
   }
+  stacks.set(key, stack);
   return stack;
 }
 
-export async function render(contents: string, options: Partial<DocKittyOptions>, filePath = 'docs/page.md') {
-  const { remark, rehype } = docKittyRemark(options);
+/** Expressive Code's rehype plugin, resolved through Starlight (the build's own copy). */
+export async function expressiveCodePlugin(): Promise<unknown> {
+  const fromStarlight = createRequire(req.resolve('@astrojs/starlight'));
+  const fromAec = createRequire(fromStarlight.resolve('astro-expressive-code'));
+  return ((await import(fromAec.resolve('rehype-expressive-code'))) as { default: unknown }).default;
+}
+
+/** `leadingRehype` runs before the integrations' rehype plugins (Starlight puts Expressive Code there). */
+export async function render(contents: string, options: Partial<DocKittyOptions>, filePath = 'docs/page.md', leadingRehype: unknown[] = []) {
+  const { remark, rehype } = docKittyMarkdown(options);
   let hast: HastNode = { type: 'root' };
   const capture = () => (tree: HastNode) => {
     hast = structuredClone(tree);
@@ -66,7 +91,7 @@ export async function render(contents: string, options: Partial<DocKittyOptions>
   const absPath = path.resolve(filePath);
   const { body, data } = await markdownContentEntryType.getEntryInfo({ contents, fileUrl: pathToFileURL(absPath) });
   const renderFn = await markdownContentEntryType.getRenderFunction({
-    markdown: { ...markdownConfigDefaults, syntaxHighlight: false, remarkPlugins: [...remark, remarkDirective], rehypePlugins: [...rehype, capture] },
+    markdown: { ...markdownConfigDefaults, syntaxHighlight: false, remarkPlugins: [...remark, remarkDirective], rehypePlugins: [...leadingRehype, ...rehype, capture] },
   });
   const out = await renderFn({ id: 'page', data, body, filePath: absPath });
   return { html: out.html, headings: out.metadata.headings, hast };
