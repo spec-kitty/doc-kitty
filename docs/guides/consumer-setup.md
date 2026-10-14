@@ -718,6 +718,8 @@ To pin a mode, set `DK_DIAGRAM_BUILD_RENDER` in the build's environment:
 - `DK_DIAGRAM_BUILD_RENDER=build` always uses build mode. `1`, `on`, `yes` and
   `true` do the same. A pinned build mode does not fall back: without Chromium,
   the build fails.
+- Any other value is ignored: the build picks the mode as if the variable were
+  not set.
 
 Set `client` in a CI job that has no Chromium. The site then renders the same
 way on every runner, whatever happens to be installed on it.
