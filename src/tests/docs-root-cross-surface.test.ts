@@ -162,6 +162,7 @@ describe('integration -> loader: index names are set once (FR-007)', () => {
     const error = await loadedIds({ indexBasename: ['index'] }).catch((e: Error) => e);
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toMatch(/\["index"\].*\["README","index"\]/);
+    expect((error as Error).message).toMatch(/Move the value to defineDocKittyIntegrations/);
     // Positive control: the same value in both places loads the same tree.
     expect(await loadedIds({ indexBasename: ['README', 'index'] })).toEqual(['x', 'y']);
   });

@@ -272,7 +272,7 @@ export interface DocKittyLoaderOptions {
   pattern?: string | string[];
   /**
    * @deprecated Set `indexBasename` once, in `defineDocKittyIntegrations`; the
-   * loader reads it from there (FR-007). Omit this option. A value that differs
+   * loader reads it from there (FR-007). Move the value there and delete it here. A value that differs
    * from the integration's is a build error. It is only used when the loader runs
    * without the integration (unit tests, a custom pipeline).
    */
@@ -307,8 +307,9 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
   if (JSON.stringify(lower(given)) !== JSON.stringify(lower(published))) {
     throw new Error(
       `[dk-loader] indexBasename ${JSON.stringify(given)} passed to docKittyDocsLoader does not match ` +
-        `indexBasename ${JSON.stringify(published)} set in defineDocKittyIntegrations. Remove the option ` +
-        `from docKittyDocsLoader in content.config.ts; the loader reads it from the integration.`,
+        `indexBasename ${JSON.stringify(published)} set in defineDocKittyIntegrations. Move the value to ` +
+        `defineDocKittyIntegrations({ indexBasename: [...] }) in astro.config.*, then delete it from ` +
+        `docKittyDocsLoader in content.config.ts; the loader reads it from the integration.`,
     );
   }
   return published;
