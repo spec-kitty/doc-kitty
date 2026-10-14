@@ -31,8 +31,10 @@ export default defineConfig({
     markua: true,
     diagrams: false,
     // In-page Gherkin (ADR-0051) from the tarball: `guides/scenarios.md` holds a
-    // ```gherkin fence and a ::gherkin include of `scenarios/…`. No `sources`, so
-    // no generated feature pages and an empty /api/scenarios.json.
-    gherkin: { includeRoots: ['scenarios'] },
+    // ```gherkin fence and a ::gherkin include of `scenarios/…`. `sources` also
+    // generates the feature page (docs/behaviour/, gitignored) and makes the
+    // toolkit inject /api/scenarios.json from node_modules (ADR-0054); the
+    // fixture mounts no scenarios route of its own.
+    gherkin: { includeRoots: ['scenarios'], sources: ['scenarios'] },
   }),
 });

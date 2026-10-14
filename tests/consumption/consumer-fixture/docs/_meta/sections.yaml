@@ -8,7 +8,7 @@
 # Mirrors the relevant entries from the example's docs/_meta/sections.yaml for
 # the sections this fixture actually ships: the WP01 seed `guides/`, the WP03
 # `rhetoric/` showcase slice (type: Reference — a validator WARNING, tolerated),
-# the `context/` audience personas, and the build-generated `glossary/`.
+# the `context/` audience personas, the build-generated `glossary/`, and the build-generated `behaviour/`.
 version: 1
 sections:
   - id: context
@@ -34,3 +34,8 @@ sections:
     label: Reference          # glossary content lives in glossary/, shown as "Reference"
     order: 60
     type: Glossary
+
+  - id: behaviour
+    label: Behaviour
+    order: 70
+    type: Reference
