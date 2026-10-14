@@ -275,7 +275,9 @@ export const GET = bibliographyRoute();
 If you turn on generated Gherkin feature pages (the `gherkin` option with
 `sources`), also mount the scenario index. This is required: the integration does not add the route, and
 `llms.txt` advertises `/api/scenarios.json` whenever a generated feature page
-exists, so without the route it links to a page that does not exist. Pass it the same `sourceRoot` and `sourceUrlPrefix` you gave
+exists, so without the route the build fails with
+`[dk-gherkin] llms.txt advertises /api/scenarios.json, but the build has no api/scenarios.json`.
+Pass it the same `sourceRoot` and `sourceUrlPrefix` you gave
 `gherkin` (omit both when you use the defaults), so it can find each page's
 `.feature` source:
 
@@ -775,6 +777,7 @@ gherkin: {
   includeRoots: ['../features', '../tests/scenarios'], // default: sources
   sourceRoot: '..',            // report source paths relative to the repo root
   sourceUrlPrefix: 'https://github.com/you/repo/blob/main/',
+  titles: { hr: 'HR' },        // hub title for ../features/hr/ (default: "Hr")
 },
 ```
 
@@ -787,10 +790,11 @@ gherkin: {
 | `sourceRoot` | the site root | The directory each page's `sources:` path is relative to. Set `'..'` when the site lives in a sub-package and the features are elsewhere in the repo. |
 | `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. An include's source line links the same way. |
 | `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`, and only valid with `sources`. |
+| `titles` | none | Hub titles by source directory, for names a directory can't spell: `{ hr: 'HR', 'shipping/edi': 'EDI messages' }`. A key is the directory relative to its source, as written on disk; the title replaces the directory name in the hub and its sidebar group. A key that matches no directory with a feature warns. Keys must be plain relative paths and titles non-blank strings. Only valid with `sources`. |
 
-An unknown key, a non-boolean `fences`, `section` or `allowEmpty` without
-`sources`, and any value other than `true` or an object (including `false`) fail
-the build.
+An unknown key, a non-boolean `fences`, `section`, `allowEmpty` or `titles`
+without `sources`, and any value other than `true` or an object (including
+`false`) fail the build.
 
 **Existing `{ sources }` sites:** from this release, ```` ```gherkin ```` fences on
 your authored pages render as scenarios too. Add `raw` to a fence's info string
@@ -804,9 +808,10 @@ What happens on each build and dev-server start with `sources`:
 
 - Every `.feature` is parsed once. A syntax error fails the build with
   `[dk-gherkin] <path>:<line>:<col>`, listing every error in every file.
-- One page per feature (drafts included) and one hub per directory with at
-  least one non-draft feature below it are written into `docs/<section>/`, and
-  pages whose source is gone are removed. The hub file is the
+- One page per feature (drafts included) and one hub per directory that holds a
+  feature are written into `docs/<section>/`, and pages whose source is gone are
+  removed. A directory whose features are all drafts gets a draft hub: it is built
+  only when drafts are, and no published hub links it. The hub file is the
   first entry of `indexBasename` (`README.md` by default). A feature file named
   `index.feature` is rejected on any setting.
 - The section belongs to the generator. Any file in it without the generator's
@@ -840,18 +845,20 @@ script reads your index names from `astro.config.mjs`, so you do not pass
 # Regenerate locally without a build:
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/
+  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR
 
 # CI drift gate (same flags, plus --check):
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/ --check
+  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR --check
 ```
 
 Run it from the site directory, or pass `--root <site dir>`; every other path is
 relative to that root. `--help` (or `-h`) prints the flags. `--check` lists each `added`, `changed`, `stale` or
 `authored` path it finds. Add `--allow-empty` to remove the pages when no source
-yields a feature, the command-line twin of `allowEmpty`. `--check` is not affected:
+yields a feature, the command-line twin of `allowEmpty`. Pass one
+`--titles <dir>=<title>` per entry of `titles`, and quote a title with spaces:
+`--titles "shipping/edi=EDI messages"`. `--check` is not affected:
 with empty sources and pages present it already exits 1 and lists them as `stale`.
 
 To turn the feature off, remove the option **and** delete `docs/<section>/`.

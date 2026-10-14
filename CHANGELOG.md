@@ -12,6 +12,15 @@ release, as it did for `0.2.0`.
 
 ### 💥 Breaking
 
+- **A build that advertises a missing scenario index fails (#126).** `llms.txt`
+  advertises `/api/scenarios.json` whenever a generated feature page exists, but
+  the site mounts that route itself. Before, a site that turned on
+  `gherkin.sources` without mounting it built fine and sent agents to a 404. Now
+  `astro build` stops with `[dk-gherkin] llms.txt advertises /api/scenarios.json,
+  but the build has no api/scenarios.json` and names the route file to add
+  (`src/pages/api/scenarios.json.ts`, step 5 of the consumer setup guide). The
+  route stays site-mounted; nothing is injected.
+
 - **The build stops when no source yields a Gherkin feature and generated pages
   exist (#122).** Before, a source directory that was not checked out, such as an
   uninitialised git submodule, made the build warn and delete every generated
@@ -114,6 +123,20 @@ release, as it did for `0.2.0`.
   characters, against 92 to 101. To keep the old width, set
   `:root { --dk-width-content: 45rem; }`. See
   [Theming and chrome](docs/architecture/theming.md#reading-width).
+
+- **A Gherkin directory whose features are all drafts gets a draft hub (#124).**
+  Before, it got no hub, so with drafts built (the default) the sidebar asked for
+  an index page the author could not add. Now the generator writes a hub with
+  `doc_status: draft` and no list, which is built only when drafts are and is
+  linked from no published hub. Generation still ignores `DK_PUBLISH_DRAFTS`, so
+  the committed pages and the `--check` gate are the same in both modes. A site
+  with such a directory gets one new generated file: run the generator once, or
+  `--check` reports it as `added`.
+- **A mis-cased `@wip` or `@deprecated` tag warns (#123).** The status shorthands
+  still match exactly, as Cucumber tag filters do. A tag such as `@WIP` stays an
+  ordinary page tag and now raises "did you mean `@wip`?" instead of publishing
+  silently.
+
 - **`dockitty-check-links` now checks reference-style link definitions, and
   names a bad option (#131).** Before, a dangling
   `[label]: target` line passed. Now it is reported like an inline link. An
@@ -143,6 +166,12 @@ release, as it did for `0.2.0`.
 
 ### Added
 
+- **`gherkin.titles` sets Gherkin hub titles (#125).** A map from a directory
+  relative to its source to the title of its hub, for names a directory can't
+  spell: `titles: { hr: 'HR' }` turns the "Hr" hub and sidebar group into "HR". A
+  key that matches no directory warns; malformed keys or titles, or `titles`
+  without `sources`, fail the build. `dockitty-generate-feature-pages` takes the
+  same setting as a repeatable `--titles <dir>=<title>`.
 - **The consumer guide explains the `diagrams` option (#153).** Before, the guide
   did not mention it, and `diagrams: false` could be read as "draw diagrams in the
   browser". It means the blocks are shown as code. A new section covers turning

@@ -201,9 +201,11 @@ file; the toolkit writes the page. The design is in
 listed in `gherkin.sources`. The example site keeps them in `example/features/`.
 The directory layout carries over: `features/shipping/book-consignment.feature`
 becomes `docs/behaviour/shipping/book-consignment.md` (`behaviour` is the default
-section). Every directory with at least one published (non-draft) feature below
-it gets a generated hub page. A directory holding only `@wip` or
-`@dk:status=draft` features gets no hub, and its parent hub doesn't link it.
+section). Every directory that holds a feature gets a generated hub page. A
+directory holding only `@wip` or `@dk:status=draft` features gets a draft hub,
+built only when drafts are, and its parent hub doesn't link it. A hub is titled
+from its directory name (`hr` becomes "Hr"); the site can set another title with
+`gherkin.titles` (see [Consumer setup](./consumer-setup.md#optional-gherkin-feature-pages)).
 
 A feature's description is Markdown passthrough, so raw HTML in a description
 lands on the page, on its hub entry and in the page's `description`. Names, steps
@@ -221,7 +223,7 @@ too:
   name the docs loader skips;
 - a feature file next to a directory of the same name (`shipping.feature` beside
   `shipping/`), because the page and that directory's hub would share one URL
-  (this fails even while the directory holds only drafts and has no hub yet);
+  (this fails even while the directory holds only drafts);
 - two sources that map to the same output path.
 
 ### Metadata tags
@@ -245,8 +247,8 @@ Feature: Book a consignment
 |-----|---------|-------|
 | `@dk:context=<ctx>` | `glossary_context` | The glossary context used to resolve terms in the step text. At most one. |
 | `@dk:status=<s>` | `doc_status` | Wins over `@wip` and `@deprecated`. The value must be a lower-case slug such as `active` or `in-review`; anything else warns and makes the page a draft, as do two `@dk:status` tags that disagree. A non-canonical slug passes through, and the frontmatter gate warns about it. |
-| `@wip` | `doc_status: draft` | Draft pages are left out of the sitemap, feeds and agent API. |
-| `@deprecated` | `doc_status: deprecated` | |
+| `@wip` | `doc_status: draft` | Draft pages are left out of the sitemap, feeds and agent API. Exact case only, as in Cucumber: `@WIP` stays an ordinary tag, and the build warns "did you mean `@wip`?". |
+| `@deprecated` | `doc_status: deprecated` | Exact case only; `@Deprecated` warns the same way. |
 | *(none)* | `doc_status: active` | A committed feature is live behaviour. |
 | `@dk:persona=<slug>` | an `audience` entry | Repeatable. The guidance text is the feature's `As a … I want … So that …` narrative, or a fixed sentence when there is none. The persona page must exist. |
 | `@dk:mission=<slug>` | `related: plans/missions/<slug>` | Repeatable. The prefix comes from the registry's `Mission` subtype; with none it is `plans/` and the generator warns. |
