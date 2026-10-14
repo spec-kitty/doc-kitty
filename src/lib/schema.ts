@@ -35,7 +35,7 @@ import {
 // is an OPEN string here (see `docKittyFields.doc_status`) rather than a static
 // `z.enum(STATUSES)`; the canonical `STATUSES` set stays the core's reference for
 // the bare-Node gate's warn-not-fail legality check (documentation-charter WP03).
-import { DOC_TYPES, KINDS } from './vocabulary-core.mjs';
+import { DOC_TYPES, KINDS, normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { publishDraftsInForce } from './draft-publication.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 
@@ -270,12 +270,47 @@ export interface DocKittyLoaderOptions {
    */
   pattern?: string | string[];
   /**
-   * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
-   * `"README"` only — byte-identical to today's behaviour (NFR-003). Set
-   * `'index'` or `['README', 'index']` to also accept `index.md`
-   * (case-insensitive) as a section index.
+   * @deprecated Set `indexBasename` once, in `defineDocKittyIntegrations`; the
+   * loader reads it from there (FR-007). Omit this option. A value that differs
+   * from the integration's is a build error. It is only used when the loader runs
+   * without the integration (unit tests, a custom pipeline).
    */
   indexBasename?: IndexBasenameOption;
+}
+
+/**
+ * Internal handoff written by `defineDocKittyIntegrations` (`config.ts`). Named
+ * here, not imported, because `schema.ts` must never import `config.ts` (C-004).
+ */
+const DK_INDEX_BASENAME_ENV = 'DK_INDEX_BASENAME';
+
+/** The names the integration published, or undefined when it has not run. */
+function publishedIndexBasenames(): string[] | undefined {
+  const raw = process.env[DK_INDEX_BASENAME_ENV];
+  if (raw === undefined || raw === '') return undefined;
+  return JSON.parse(raw) as string[];
+}
+
+/**
+ * The index names the loader uses (FR-007). Read at load time, not when the
+ * loader is built: Astro evaluates the site config, and so the integration,
+ * before it loads `content.config.ts`, but a module that builds the loader at
+ * import time must not depend on that order.
+ */
+function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): string[] {
+  const published = publishedIndexBasenames();
+  if (option === undefined) return published ?? normalizeIndexBasenames(undefined);
+  const given = normalizeIndexBasenames(option);
+  if (published === undefined) return given;
+  const lower = (names: string[]) => names.map((n) => n.toLowerCase());
+  if (JSON.stringify(lower(given)) !== JSON.stringify(lower(published))) {
+    throw new Error(
+      `[dk-loader] indexBasename ${JSON.stringify(given)} passed to docKittyDocsLoader does not match ` +
+        `indexBasename ${JSON.stringify(published)} set in defineDocKittyIntegrations. Remove the option ` +
+        `from docKittyDocsLoader in content.config.ts; the loader reads it from the integration.`,
+    );
+  }
+  return published;
 }
 
 /**
@@ -310,7 +345,6 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   const {
     base = 'docs',
     pattern = DEFAULT_DOCS_PATTERN,
-    indexBasename,
   } = options;
   if (JSON.stringify([pattern].flat()) !== JSON.stringify(DEFAULT_DOCS_PATTERN)) {
     throw new Error(
@@ -321,8 +355,10 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   }
 
   let resolvedIds: Map<string, string> | null = null;
+  let indexBasename: string[] = [];
   const resolveIds = (): Map<string, string> => {
     if (resolvedIds) return resolvedIds;
+    indexBasename = resolveLoaderIndexBasenames(options.indexBasename);
     const absBase = path.resolve(process.cwd(), base);
     const paths = walkMarkdownPaths(absBase);
     const { ids, collisions } = resolveIndexEntries(paths, { indexBasename });

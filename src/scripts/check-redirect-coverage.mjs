@@ -72,6 +72,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import {
   draftRoutesOf,
   resolveDraftPublicationForGate,
@@ -414,12 +415,22 @@ export function run(argv) {
       if (typeof to === 'string') declaredRedirects[normalizeUrlPath(from)] = to;
     }
   }
-  const draftRoutes = docsDir
-    ? draftRoutesOf(
-        path.resolve(docsDir),
-        indexBasename ? indexBasename.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
-      )
-    : new Set();
+  // Index names come from the site config next to the docs folder (FR-007); the
+  // flag, when given, must agree with it (FR-008).
+  let draftRoutes = new Set();
+  if (docsDir) {
+    try {
+      const { names } = resolveSiteIndexBasenames(docsDir, {
+        flag: indexBasename ? indexBasename.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        tool: 'redirect-coverage',
+      });
+      draftRoutes = draftRoutesOf(path.resolve(docsDir), names);
+    } catch (err) {
+      console.error(err.message);
+      process.exit(2);
+      return;
+    }
+  }
   const { uncovered, unpublished, deadStubs, ok } = checkCoverage(distDir, baselineUrls, redirectMap, {
     publishDrafts,
     draftRoutes,

@@ -368,3 +368,117 @@ describe('check-links CLI — agrees with the build on relative Markdown links',
     expect(res.stdout).toMatch(/--index-basename/);
   });
 });
+
+/**
+ * FR-007 / FR-008: the check reads the site's index names from its
+ * `astro.config.*` instead of being told again, announces where it got them, and
+ * stops when `--index-basename` disagrees. Each site is a real config evaluated by
+ * the CLI. The sites live under `fixtures/` so `astro` resolves from the folder.
+ */
+describe('check-links CLI — index names come from the site config', () => {
+  const FIXTURES = path.resolve(import.meta.dirname, 'fixtures');
+  const CONFIG_TS = path.resolve(import.meta.dirname, '../lib/config.ts');
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  });
+
+  const page = (body: string): string => `---\ntitle: T\ndoc_status: active\n---\n\n${body}\n`;
+  /**
+   * `y/` holds only README.md, `x/` only index.md; each is linked as a folder.
+   * Under `['index']` the page at `/y/` does not exist (README.md is then an
+   * ordinary page at `/y/README/`); under `['README']` both folders resolve.
+   */
+  const PAGES: Record<string, string> = {
+    'a.md': page('[x](./x/) [y](./y/)'),
+    'x/index.md': page('X'),
+    'y/README.md': page('Y'),
+  };
+
+  /** A site folder with `docs/` and, unless `config` is null, an astro.config.mjs. */
+  const site = (config: string | null): string => {
+    const dir = mkdtempSync(path.join(FIXTURES, 'tmp-site-'));
+    dirs.push(dir);
+    for (const [rel, text] of Object.entries(PAGES)) {
+      mkdirSync(path.dirname(path.join(dir, 'docs', rel)), { recursive: true });
+      writeFileSync(path.join(dir, 'docs', rel), text);
+    }
+    if (config !== null) writeFileSync(path.join(dir, 'astro.config.mjs'), config);
+    return dir;
+  };
+  const integration = (names: string): string =>
+    `import { defineDocKittyIntegrations } from ${JSON.stringify(CONFIG_TS)};\n` +
+    `defineDocKittyIntegrations({ title: 'T', indexBasename: ${names} });\nexport default {};\n`;
+  const check = (roots: string[], args: string[] = []) => {
+    const env = { ...process.env };
+    delete env.DK_PUBLISH_DRAFTS;
+    delete env.DK_INDEX_BASENAME;
+    return spawnSync('node', [GATE, ...roots, '--strict', ...args], { encoding: 'utf8', env });
+  };
+
+  it('holds folder links to the names the site config sets, and says where it read them', () => {
+    // Config `index`: x/ has an index page, y/ (README only) has none.
+    const indexSite = site(integration(`['index']`));
+    const res = check([path.join(indexSite, 'docs')]);
+    expect(res.status, res.stdout).toBe(1);
+    expect(res.stderr).toMatch(/a\.md: link names the folder "y"/);
+    expect(res.stderr).not.toMatch(/folder "x"/);
+    expect(res.stdout).toMatch(/index names: index \(from .*astro\.config\.mjs\)/);
+    // Positive control, same tree: with README configured, y/ has its index page.
+    const readmeSite = site(integration(`['README']`));
+    const flipped = check([path.join(readmeSite, 'docs')]);
+    expect(flipped.status, flipped.stderr).toBe(0);
+  });
+
+  it('reads the default as README, not README and index, when nothing sets it', () => {
+    const bare = site(null);
+    const res = check([path.join(bare, 'docs')]);
+    expect(res.stdout).toMatch(/index names: README \(default; no astro\.config\.\* next to /);
+    expect(res.status, res.stderr).toBe(0);
+    const noCall = site(`export default {};\n`);
+    expect(check([path.join(noCall, 'docs')]).stdout).toMatch(/index names: README \(default; .*does not call defineDocKittyIntegrations\)/);
+  });
+
+  it('resolves each root from its own config and prints one line per strict root', () => {
+    const withConfig = site(integration(`['index']`));
+    const without = site(null);
+    const res = check([path.join(withConfig, 'docs'), path.join(without, 'docs')]);
+    const lines = res.stdout.split('\n').filter((l) => l.startsWith('index names:'));
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatch(/^index names: index \(from /);
+    expect(lines[1]).toMatch(/^index names: README \(default/);
+  });
+
+  it('stops with exit 2, naming both values, when --index-basename disagrees with the config', () => {
+    const dir = site(integration(`['README']`));
+    const root = path.join(dir, 'docs');
+    const res = check([root], ['--index-basename', 'index']);
+    expect(res.status, res.stdout).toBe(2);
+    expect(res.stderr).toMatch(/--index-basename index does not match the site's index names README \(from .*astro\.config\.mjs\)/);
+    // Positive control: the matching flag runs the check on the same site.
+    const same = check([root], ['--index-basename', 'README']);
+    expect(same.status, same.stderr).toBe(0);
+    expect(same.stdout).toMatch(/internal reference\(s\) resolve/);
+  });
+
+  it('accepts the same names in another order or case, and uses the config order', () => {
+    const dir = site(integration(`['README', 'index']`));
+    const res = check([path.join(dir, 'docs')], ['--index-basename', 'INDEX,readme']);
+    expect(res.status, res.stderr).toBe(0);
+    expect(res.stdout).toMatch(/index names: README,index \(from /);
+  });
+
+  it('uses the flag when the site has no config', () => {
+    const dir = site(null);
+    const res = check([path.join(dir, 'docs')], ['--index-basename', 'index']);
+    expect(res.stdout).toMatch(/index names: index \(from --index-basename\)/);
+    expect(res.stderr).toMatch(/folder "y"/);
+  });
+
+  it('stops with exit 2 when the site config cannot be loaded, instead of falling back', () => {
+    const dir = site(`throw new Error('boom from the site config');\n`);
+    const res = check([path.join(dir, 'docs')]);
+    expect(res.status, res.stdout).toBe(2);
+    expect(res.stderr).toMatch(/could not load .*astro\.config\.mjs: .*boom from the site config/);
+  });
+});

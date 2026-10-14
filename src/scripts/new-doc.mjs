@@ -11,8 +11,9 @@
  *   --section    create the directory's section-index file (default
  *                README.md; FR-001/FR-003) instead of "<slug>.md"
  *   --type       override the type inferred from the path
- *   --index-basename  the section-index basename to target with --section
- *                (default README — NFR-003)
+ *   --index-basename  which of the site's index names to create with --section.
+ *                The names come from the site's astro.config.* (the first is
+ *                the default); a site with no config uses this flag, else README.
  *
  * Examples:
  *   node scripts/new-doc.mjs guides/deployment --title "Deployment"
@@ -27,6 +28,7 @@ import { dirname, join, sep } from 'node:path';
 // `Presentation`, which this tool's old local switch omitted — an additive
 // alignment with the canonical map (NFR-002: no existing value's meaning changes).
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 function parseArgs(argv) {
   const args = { _: [], flags: {} };
@@ -71,9 +73,28 @@ const title =
   flags.title ??
   slug.split('/').pop().replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
-// FR-001/FR-002/FR-003: the basename a --section target is created under.
-// Default `README` reproduces today's output exactly (NFR-003).
-const indexBasename = typeof flags['index-basename'] === 'string' ? flags['index-basename'] : 'README';
+// FR-001/FR-007: the basename a --section target is created under. The site
+// config's names are the authority; the flag only picks one of them (or names the
+// index for a site with no config). No config and no flag: `README` (NFR-003).
+const indexFlag = typeof flags['index-basename'] === 'string' ? flags['index-basename'] : undefined;
+const indexBasename = (() => {
+  try {
+    const { names, fromConfig } = resolveSiteIndexBasenames(base, { tool: 'new-doc' });
+    if (indexFlag === undefined) return names[0];
+    if (!fromConfig) return indexFlag;
+    const match = names.find((n) => n.toLowerCase() === indexFlag.toLowerCase());
+    if (match === undefined) {
+      throw new Error(
+        `[new-doc] --index-basename ${indexFlag} is not one of the site's index names ${names.join(',')}. ` +
+          'Remove the flag, or change indexBasename in the site config.',
+      );
+    }
+    return match;
+  } catch (err) {
+    console.error(`✖ ${err.message}`);
+    process.exit(2);
+  }
+})();
 const relPath = flags.section ? join(slug, `${indexBasename}.md`) : `${slug}.md`;
 const target = join(base, relPath);
 const type = flags.type ?? expectedDocType(relPath.split(sep).join('/'));

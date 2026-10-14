@@ -6,15 +6,17 @@
  * Usage:
  *   node src/scripts/generate-feature-pages.mjs \
  *     --root example --sources features --docs docs --section behaviour \
- *     --index-basename README,index [--source-root <dir>] \
+ *     [--index-basename README,index] [--source-root <dir>] \
  *     [--source-url-prefix <url>] [--check] [--allow-empty]
  *
  *   --root               Site directory every other path is relative to (default: cwd).
  *   --sources            Comma-separated `.feature` source directories (required).
  *   --docs               The site's docs directory (default: `docs`).
  *   --section            Section folder the pages land under (default: `behaviour`).
- *   --index-basename     Comma-separated index basename(s); the hub is `<first>.md`
- *                        (default: `README`).
+ *   --index-basename     Comma-separated index basename(s); the hub is `<first>.md`.
+ *                        Read from `<root>/astro.config.*`; the flag is only for a
+ *                        site without one (default: `README`) and must agree with a
+ *                        config when there is one.
  *   --source-root        Directory `sources[0].resource` paths are relative to
  *                        (default: `--root`, matching the integration's site root).
  *   --source-url-prefix  Optional browse-URL prefix for `sources[0].resource`.
@@ -48,6 +50,7 @@ import { readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadFeatures } from '../lib/gherkin/load.mjs';
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import {
   diffFeaturePages,
   generateFeaturePages,
@@ -118,7 +121,7 @@ export function parseArgs(argv) {
     sources: '',
     docs: 'docs',
     section: DEFAULT_GHERKIN_SECTION,
-    indexBasename: 'README',
+    indexBasename: undefined,
     sourceRoot: undefined,
     sourceUrlPrefix: undefined,
     check: false,
@@ -165,17 +168,26 @@ export function parseArgs(argv) {
     { optionName: (key) => FLAG[key] },
   );
 
-  validateIndexBasenames(list(raw.indexBasename), '--index-basename');
+  const flagIndexBasename = raw.indexBasename === undefined ? undefined : list(raw.indexBasename);
+  validateIndexBasenames(flagIndexBasename, '--index-basename');
 
   const root = path.resolve(raw.root);
   const docsRoot = path.resolve(root, raw.docs);
+  // The site config (`<root>/astro.config.*`) is the source of the index names
+  // (FR-007); the flag must agree with it (FR-008), and is the value for a site
+  // with no config. The hub is `<first>.md`, so the config's order matters.
+  const { names: indexBasename } = resolveSiteIndexBasenames(docsRoot, {
+    flag: flagIndexBasename,
+    siteDir: root,
+    tool: 'generate-feature-pages',
+  });
   return {
     root,
     sources,
     docsRoot,
     section,
     outDir: path.join(docsRoot, section),
-    indexBasename: list(raw.indexBasename),
+    indexBasename,
     sourceRoot: raw.sourceRoot === undefined ? root : path.resolve(root, raw.sourceRoot),
     sourceUrlPrefix: raw.sourceUrlPrefix,
     check: raw.check,

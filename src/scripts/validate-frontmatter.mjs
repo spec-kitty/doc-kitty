@@ -37,6 +37,7 @@ import { readdirSync, statSync, readFileSync, realpathSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { z } from 'zod';
 // The Gherkin pipeline's `generated.by` stamp, single-sourced in its pure core.
 import { GENERATED_BY as GHERKIN_GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
@@ -539,7 +540,8 @@ export function validate(
 /**
  * Parse `--index-basename README,index` off argv into the option shape
  * `validate()`/`isRootIndex` accept, plus the remaining positional roots.
- * Absent → `undefined` (validate()'s own default, `README` only — NFR-003).
+ * Absent → `undefined`: the names then come from the site's `astro.config.*`, or
+ * `README` only when it has none (FR-007, NFR-003).
  */
 function parseCliArgs(argv) {
   const args = argv.slice(2);
@@ -556,7 +558,7 @@ function parseCliArgs(argv) {
 
 /** CLI entry point: validate every `.md`/`.mdx` under each given root. */
 export function run(argv) {
-  const { roots: parsedRoots, indexBasename } = parseCliArgs(argv);
+  const { roots: parsedRoots, indexBasename: flagIndexBasename } = parseCliArgs(argv);
   const roots = parsedRoots.length === 0 ? ['docs'] : parsedRoots;
 
   let failures = 0;
@@ -572,6 +574,19 @@ export function run(argv) {
       process.exit(2);
     }
     total += files.length;
+
+    // Index names for THIS root: the site config's (FR-007); the flag must agree
+    // with it (FR-008). A site with no config gets the flag, else `README`.
+    let indexBasename;
+    try {
+      indexBasename = resolveSiteIndexBasenames(root, {
+        flag: flagIndexBasename,
+        tool: 'dk-validate-frontmatter',
+      }).names;
+    } catch (err) {
+      console.error(`✖ ${err.message}`);
+      process.exit(2);
+    }
 
     // Charter-resolved enforcement policy for THIS root (WP03/IC-03): the legal
     // `doc_status` set (canonical ∪ charter-added) and the required-field policy

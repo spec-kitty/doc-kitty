@@ -64,8 +64,10 @@
  * whether it 200s is the authority of `assert-no-broken-links.mjs`, the
  * base-aware built-output gate.
  *
- * `--index-basename` is the site's section-index setting; without it the
- * effective list is `README,index`. Footnote definitions (`[^label]: text`) are
+ * The section-index names come from the site's `astro.config.*`
+ * (`defineDocKittyIntegrations({ indexBasename })`), read for each strict root; a
+ * root with no site config uses `README`. `--index-basename` is only for a site
+ * without a config, and must agree with the config when there is one. Footnote definitions (`[^label]: text`) are
  * not links.
  */
 import { readdirSync, statSync, existsSync, readFileSync, realpathSync } from 'node:fs';
@@ -80,12 +82,7 @@ import {
 } from '../lib/draft-publication.mjs';
 import { buildRouteTable, isPlainIndexName, resolveIndexEntries, resolveRelativeDocLink } from '../lib/vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
-
-// What this gate accepted as a section index before `--index-basename` existed
-// (FR-003): either convention. It is only the value used when the flag is
-// absent, so an existing invocation behaves as before; a site should pass its
-// own setting. The index rule itself lives in `vocabulary-core.mjs`.
-const DEFAULT_CHECK_INDEX_BASENAMES = ['README', 'index'];
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 // Roots subject to the fail-closed tightening below: built by Astro/Starlight
 // under a base-prefixed, trailing-slash directory-route tree (`example/`'s
@@ -265,10 +262,11 @@ Options:
                                 tree, a malformed % escape, a folder link whose folder has no
                                 index page, a bare relative link with no extension, and (with
                                 DK_PUBLISH_DRAFTS=off) a link to a draft page.
-  --index-basename <name[,…]>   Section-index file name(s) without extension (default
-                                README,index). Must match the site's indexBasename
-                                config (the loader default is README alone), or
-                                --strict resolves folder links differently from the build.
+  --index-basename <name[,…]>   Section-index file name(s) without extension. Read from the
+                                site's astro.config.* (indexBasename) when there is one; use
+                                this flag only for a site without one (default README). With a
+                                config, the flag must name the same set of names or the check
+                                stops with exit 2.
   --site-root <dir>             Astro project whose env files set DK_PUBLISH_DRAFTS.
   --mode <mode>                 Astro mode for those env files (default production).
   --help                        Show this text.
@@ -278,10 +276,10 @@ Options:
  * Take this gate's own flags out of `args`; the rest are roots.
  *
  * @param {string[]} args
- * @returns {{ strict: boolean, indexBasenames: string[], help: boolean, rest: string[] }}
+ * @returns {{ strict: boolean, indexBasenames: string[] | undefined, help: boolean, rest: string[] }}
  */
 export function takeCheckFlags(args) {
-  const out = { strict: false, indexBasenames: DEFAULT_CHECK_INDEX_BASENAMES, help: false, rest: /** @type {string[]} */ ([]) };
+  const out = { strict: false, indexBasenames: undefined, help: false, rest: /** @type {string[]} */ ([]) };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--strict') out.strict = true;
@@ -367,8 +365,26 @@ export function run(argv) {
     return;
   }
   const roots = flags.rest;
-  const indexBasenames = flags.indexBasenames;
   if (roots.length === 0) roots.push('docs', 'example/docs');
+
+  // Index names per strict root, from that root's own site config (FR-007), each
+  // announced on one line. Resolved before any check runs, so a flag that
+  // disagrees with the config (FR-008) or a config that will not load stops the
+  // run with exit 2. A non-strict root is read as files and needs no names.
+  /** @type {Map<string, string[]>} */
+  const namesByRoot = new Map();
+  const sourceLines = [];
+  try {
+    for (const root of roots) {
+      if (!(flags.strict || isSiteRoot(root))) continue;
+      const { names, source } = resolveSiteIndexBasenames(root, { flag: flags.indexBasenames });
+      namesByRoot.set(root, names);
+      sourceLines.push(source);
+    }
+  } catch (err) {
+    console.error(err.message);
+    process.exit(2);
+  }
 
   // The same resolver the build uses, so a value kept in the site's env files
   // counts here too. The site root is the one given, else the nearest Astro
@@ -383,6 +399,7 @@ export function run(argv) {
     });
     publishDrafts = resolved.publish;
     console.log(`check-links: ${resolved.summary}`);
+    for (const line of sourceLines) console.log(line);
   } catch (err) {
     console.error(`✖ ${err.message}`);
     process.exit(2);
@@ -422,6 +439,7 @@ export function run(argv) {
     // another draft. A strict root is held to `visibleRoutes`, the pages the
     // build publishes (the bundle root is always one: the helper never
     // withholds it). A non-strict root is read as files and needs neither.
+    const indexBasenames = namesByRoot.get(root) ?? ['README'];
     const paths = strict ? walkMarkdownPaths(absRoot) : [];
     const allRoutes = buildRouteTable(paths, { indexBasename: indexBasenames }).routes;
     const unpublished = new Set(strict ? unpublishedDraftPaths(absRoot, publishDrafts, indexBasenames) : []);

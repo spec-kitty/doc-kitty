@@ -45,7 +45,7 @@ import {
   REVEAL_CURRENT_SCRIPT,
   type DirectoryMetaInput,
 } from './route-shaping.js';
-import { buildRouteTable, compareCodeUnit } from './vocabulary-core.mjs';
+import { buildRouteTable, compareCodeUnit, normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -96,6 +96,15 @@ import { validateGherkinOptions, validateIndexBasenames } from './gherkin/option
  * a runtime handoff between two config surfaces, never something a consumer sets.
  */
 export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
+
+/**
+ * Internal handoff of the site's index names (FR-007), written by
+ * `defineDocKittyIntegrations` as a JSON `string[]` and read by the docs loader
+ * (`schema.ts`, which must not import this module) and by the CLIs that evaluate
+ * the site config (`scripts/site-index-names.mjs`). Adopters never set it: the
+ * `indexBasename` option of the integration is the one place to say it.
+ */
+export const DK_INDEX_BASENAME_ENV = 'DK_INDEX_BASENAME';
 
 export interface DocKittyOptions {
   /** Site title shown in the header. */
@@ -211,12 +220,10 @@ export interface DocKittyOptions {
   };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
-   * `"README"` only — byte-identical to today's behaviour (NFR-003). MUST
-   * match the `indexBasename` passed to `docKittyDocsLoader` in
-   * `content.config.ts` (the same invariant `docsDir` already carries): the
-   * sitemap draft filter here and the content loader there derive routes
-   * independently, and a mismatch would make a drafted `index.md` page's URL
-   * disagree between the two.
+   * `"README"` only — byte-identical to today's behaviour (NFR-003). This is
+   * the ONE place to set it: the docs loader and the `dockitty-*` CLIs read the
+   * value from here (FR-007), so `docKittyDocsLoader` needs no `indexBasename`
+   * of its own, and one that disagrees is a build error.
    */
   indexBasename?: IndexBasenameOption;
 }
@@ -1719,7 +1726,13 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // `undefined` when the option is absent — every gherkin branch below then
   // contributes nothing (byte-identical array, sidebar call and corpus).
   const gherkinOpts = gherkin === undefined ? undefined : resolveGherkinOptions(gherkin);
-  if (gherkinOpts) validateIndexBasenames(indexBasename, 'indexBasename');
+  // Always validated (FR-007): the list is now published to the loader and the
+  // CLIs, so a bad entry must fail here whether or not `gherkin` is on.
+  validateIndexBasenames(indexBasename, 'indexBasename');
+  // Publish the one list every consumer reads (config order = priority, so the
+  // first name decides `generatedIndexBasename`). A later call overwrites an
+  // earlier one, as for DK_DOCS_ROOT.
+  process.env[DK_INDEX_BASENAME_ENV] = JSON.stringify(normalizeIndexBasenames(indexBasename));
 
   // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
   // sitemap draft filter resolves internally (`path.resolve(process.cwd(),

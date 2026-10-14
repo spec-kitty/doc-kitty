@@ -405,15 +405,12 @@ function gates() {
   const results = [];
   // Step 5: the four tarball-portable gates, invoked from the installed package.
   results.push(
-    gate('validate-frontmatter', path.join(PKG_SCRIPTS, 'validate-frontmatter.mjs'), [
-      DOCS_DIR,
-      '--index-basename',
-      'README',
-    ]),
+    gate('validate-frontmatter', path.join(PKG_SCRIPTS, 'validate-frontmatter.mjs'), [DOCS_DIR]),
   );
   // `--strict` makes the fixture root strict (the page and draft-target checks
-  // run); `--index-basename README` is the default an adopter has.
-  const linkArgs = [DOCS_DIR, '--strict', '--index-basename', 'README'];
+  // run). No index-name flag: the clean-room site sets none, so the gates read
+  // the default `README` (FR-007).
+  const linkArgs = [DOCS_DIR, '--strict'];
   results.push(gate('check-links', path.join(PKG_SCRIPTS, 'check-links.mjs'), linkArgs));
   // The same gate as a live deployment runs it: with drafts off it also fails
   // on a published page that links to a draft.

@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
+import { pathToFileURL } from 'node:url';
+import matter from 'gray-matter';
 
 /**
  * F3/F5 cross-surface agreement. The finding: the section registry could be
@@ -34,16 +38,22 @@ vi.mock('astro:content', () => ({
   getCollection: async () => collectionEntries,
 }));
 
-const { defineDocKittyIntegrations, DK_DOCS_ROOT_ENV } = await import('../lib/config.js');
+const { defineDocKittyIntegrations, DK_DOCS_ROOT_ENV, DK_INDEX_BASENAME_ENV } = await import('../lib/config.js');
 const { docsRoot } = await import('../lib/routes/shared.js');
+const { docKittyDocsLoader } = await import('../lib/schema.js');
 
 const abs = (rel: string) => path.resolve(process.cwd(), rel);
 
 const originalDocsRootEnv = process.env[DK_DOCS_ROOT_ENV];
+const originalIndexEnv = process.env[DK_INDEX_BASENAME_ENV];
+const tmpRoots: string[] = [];
 afterEach(() => {
   collectionEntries.length = 0;
   if (originalDocsRootEnv === undefined) delete process.env[DK_DOCS_ROOT_ENV];
   else process.env[DK_DOCS_ROOT_ENV] = originalDocsRootEnv;
+  if (originalIndexEnv === undefined) delete process.env[DK_INDEX_BASENAME_ENV];
+  else process.env[DK_INDEX_BASENAME_ENV] = originalIndexEnv;
+  while (tmpRoots.length) rmSync(tmpRoots.pop()!, { recursive: true, force: true });
 });
 
 describe('integration ↔ route resolve the SAME docs root (F3/F5)', () => {
@@ -64,5 +74,92 @@ describe('integration ↔ route resolve the SAME docs root (F3/F5)', () => {
     defineDocKittyIntegrations({ title: 'Docs' });
     expect(process.env[DK_DOCS_ROOT_ENV]).toBe(abs('docs'));
     expect(await docsRoot()).toBe(abs('docs'));
+  });
+});
+
+/**
+ * FR-007: a site sets its index names once, in `defineDocKittyIntegrations`, and
+ * the docs loader reads them without being told again. The loader is driven
+ * through its real `load()` against an in-memory store, and the ids it stores
+ * are what decide each page's route.
+ */
+describe('integration -> loader: index names are set once (FR-007)', () => {
+  /** A docs tree with `x/index.md` and `y/README.md`; returns the ids `load()` stores. */
+  async function loadedIds(loaderOptions: { indexBasename?: string | string[] } = {}): Promise<string[]> {
+    const root = mkdtempSync(path.join(tmpdir(), 'dk-loader-ids-'));
+    tmpRoots.push(root);
+    for (const rel of ['x/index.md', 'y/README.md']) {
+      mkdirSync(path.dirname(path.join(root, 'docs', rel)), { recursive: true });
+      writeFileSync(path.join(root, 'docs', rel), '---\ntitle: T\ndoc_status: active\n---\nBody.\n');
+    }
+    const entries = new Map<string, { id: string; digest?: string }>();
+    const store = {
+      get: (id: string) => entries.get(id),
+      has: (id: string) => entries.has(id),
+      keys: () => [...entries.keys()],
+      values: () => [...entries.values()],
+      entries: () => [...entries.entries()],
+      delete: (id: string) => void entries.delete(id),
+      clear: () => entries.clear(),
+      set: (entry: { id: string; digest?: string }) => void entries.set(entry.id, entry),
+      addModuleImport: () => {},
+      addAssetImports: () => {},
+    };
+    const context = {
+      collection: 'docs',
+      store,
+      config: {
+        root: pathToFileURL(`${root}/`),
+        srcDir: pathToFileURL(`${root}/src/`),
+        legacy: { collections: false },
+      },
+      logger: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+      parseData: async ({ data }: { data: Record<string, unknown> }) => data,
+      generateDigest: (text: string) => String(text.length),
+      entryTypes: new Map([
+        [
+          '.md',
+          {
+            getEntryInfo: async ({ contents }: { contents: string }) => {
+              const parsed = matter(contents);
+              return { data: parsed.data, body: parsed.content };
+            },
+          },
+        ],
+      ]),
+    };
+    const loader = docKittyDocsLoader({ base: path.join(root, 'docs'), ...loaderOptions });
+    await loader.load(context as unknown as Parameters<typeof loader.load>[0]);
+    return [...entries.keys()].sort();
+  }
+
+  it('publishes the normalised list, ordered as written, and README when nothing is set', () => {
+    defineDocKittyIntegrations({ title: 'Docs' });
+    expect(JSON.parse(process.env[DK_INDEX_BASENAME_ENV]!)).toEqual(['README']);
+    defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['index', 'README'] });
+    expect(JSON.parse(process.env[DK_INDEX_BASENAME_ENV]!)).toEqual(['index', 'README']);
+  });
+
+  it('rejects a bad index name without the gherkin option, and accepts a good one', () => {
+    expect(() => defineDocKittyIntegrations({ title: 'Docs', indexBasename: 'a/b' })).toThrow(/indexBasename/);
+    expect(() => defineDocKittyIntegrations({ title: 'Docs', indexBasename: 'index' })).not.toThrow();
+  });
+
+  it('serves the pages the integration names as indexes, with no option on the loader', async () => {
+    defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['index'] });
+    expect(await loadedIds()).toEqual(['x', 'y/README']);
+    // Same tree, integration says README: the answer flips, so the first
+    // assertion is the setting at work and not a property of the fixture.
+    defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['README'] });
+    expect(await loadedIds()).toEqual(['x/index', 'y']);
+  });
+
+  it('refuses a loader option that differs from the integration, naming both values', async () => {
+    defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['README', 'index'] });
+    const error = await loadedIds({ indexBasename: ['index'] }).catch((e: Error) => e);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toMatch(/\["index"\].*\["README","index"\]/);
+    // Positive control: the same value in both places loads the same tree.
+    expect(await loadedIds({ indexBasename: ['README', 'index'] })).toEqual(['x', 'y']);
   });
 });

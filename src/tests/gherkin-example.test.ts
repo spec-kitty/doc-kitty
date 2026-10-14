@@ -16,7 +16,7 @@
  *      `example/features/**` (the same `loadFeatures` → `planFeaturePages` →
  *      `diffFeaturePages` the CLI's `--check` runs), and non-vacuously so.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -100,8 +100,13 @@ describe('validate:features mirrors the example gherkin option', () => {
     // repo root, while the build's integration resolves against the SITE root
     // (example/, `process.cwd()` of `pnpm --filter example build`). Compare the
     // paths relative to cwd, i.e. relative to the repo root the script runs in.
+    // The script passes no index names (FR-007): the CLI reads them from the site config
+    // beside `--root`, found relative to cwd. Run it where `pnpm validate:features` runs,
+    // the repo root; vitest's own cwd is `src/`, where `example/` does not resolve.
+    const cwd = vi.spyOn(process, 'cwd').mockReturnValue(REPO_ROOT);
     const opts = parseArgs(scriptArgv('validate:features'));
-    const rel = (p: string) => path.relative(process.cwd(), p);
+    cwd.mockRestore();
+    const rel = (p: string) => path.relative(REPO_ROOT, p);
     expect(opts.check).toBe(true);
     expect(rel(opts.root)).toBe('example');
     expect(opts.sources).toEqual(gherkin.sources);

@@ -273,7 +273,7 @@ jobs:
       - name: Assert redirect coverage (drafts off)
         env:
           DK_PUBLISH_DRAFTS: 'off'
-        run: node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist-nodrafts --docs example/docs --index-basename README,index --declared-redirects example/redirects.json
+        run: node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist-nodrafts --docs example/docs --declared-redirects example/redirects.json
 
   # --- Lane: a11y (WP09) — axe-core + visual, both modes, on the built dist. ----
   # Runs whenever build-example runs (same change surface: it consumes that lane's

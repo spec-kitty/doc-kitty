@@ -19,6 +19,7 @@ import { dirname, join, sep } from 'node:path';
 // `presentations` → `Presentation`, which this tool's old switch omitted — an
 // additive alignment with the canonical map (NFR-002).
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 const argv = process.argv.slice(2);
 const base = argv.find((a) => !a.startsWith('--')) ?? 'docs';
@@ -26,12 +27,29 @@ const sectionsFlag = (() => {
   const i = argv.indexOf('--sections');
   return i !== -1 && argv[i + 1] ? argv[i + 1].split(',').map((s) => s.trim()) : null;
 })();
-// FR-001/FR-002/FR-003: the basename this tool scaffolds section indexes as.
-// Default `README` reproduces today's output exactly (NFR-003); pass
-// `--index-basename index` to scaffold an `index.md`-indexed tree instead.
+// FR-001/FR-007: the basename this tool scaffolds section indexes as. An
+// existing site's config decides (its first name); a new tree has no config, so
+// `--index-basename index` picks `index.md`, and `README` is the default
+// (NFR-003). A flag that is not one of a configured site's names is an error.
 const indexBasename = (() => {
   const i = argv.indexOf('--index-basename');
-  return i !== -1 && argv[i + 1] ? argv[i + 1] : 'README';
+  const flag = i !== -1 && argv[i + 1] ? argv[i + 1] : undefined;
+  try {
+    const { names, fromConfig } = resolveSiteIndexBasenames(base, { tool: 'scaffold' });
+    if (flag === undefined) return names[0];
+    if (!fromConfig) return flag;
+    const match = names.find((n) => n.toLowerCase() === flag.toLowerCase());
+    if (match === undefined) {
+      throw new Error(
+        `[scaffold] --index-basename ${flag} is not one of the site's index names ${names.join(',')}. ` +
+          'Remove the flag, or change indexBasename in the site config.',
+      );
+    }
+    return match;
+  } catch (err) {
+    console.error(`✖ ${err.message}`);
+    process.exit(2);
+  }
 })();
 const indexFilename = `${indexBasename}.md`;
 
