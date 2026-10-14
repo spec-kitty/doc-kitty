@@ -32,6 +32,12 @@ release, as it did for `0.2.0`.
   symbolic link, and when an index name is not a plain file name (one path
   segment: no `/` or `\`, no leading `.`, no surrounding whitespace), or is empty
   or `log`.
+- **A theme slot name outside the `dk:` surface stops the build (#114).** Before,
+  a misspelt slot such as `dk:site-heading` in a plain-JavaScript config was
+  accepted, and the stock component rendered without a message. Now the
+  configuration fails to load with an error that names the slot and lists the
+  valid names. Correct the name. A theme typed as `DocKittyTheme` in TypeScript
+  already caught this. See ADR-0052.
 - **`docKittyDocsLoader` rejects a custom `pattern` (#133).** Before, a narrowed
   `pattern` changed which pages were built but not the route table the link
   rewrite uses, so a relative `.md` link could be rewritten to a page that was
@@ -183,6 +189,16 @@ release, as it did for `0.2.0`.
 
 ### Fixed
 
+- **Sidebar groups no longer repeat their own label (#112).** Before, a folder
+  whose only page was its index showed as a group holding that same name (the
+  generated glossary contexts read `hr > hr`), and every section's index entry
+  repeated its heading ("Guides > Guides"). Now a one-page nested folder is
+  shown as its index link, in the folder's place, and an index entry that would
+  repeat its group's label reads "Overview". Previous and next links keep the
+  page title. If a page in the group is already labelled "Overview", the index
+  keeps its own label.
+- **The example's rhetoric section lists its pages in reading order (#112).**
+  Introduction, Preamble, then About and license, through `sidebar.order`.
 - **Feeds, `llms.txt`, the agent API, related links, the Hub, the scenario index and
   the on-this-page block now link a folder's `index.md` at the address the site
   serves (#134).** Before, `guide/index.md` was listed as `/guide/index/`, an

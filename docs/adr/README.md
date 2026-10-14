@@ -62,5 +62,6 @@ kind: Hub
 | [0049](./0049-openapi-reference-via-existing-integration.md) | ADR-0049: OpenAPI reference pages through an existing integration | Proposed | 2026-10-14 |
 | [0050](./0050-route-collisions-and-single-index-setting.md) | ADR-0050: Route collisions are fatal, and index names are set once | Accepted | 2026-10-14 |
 | [0051](./0051-gherkin-in-any-page.md) | ADR-0051: Render Gherkin in any page, from a fence or an include | Accepted | 2026-10-13 |
+| [0052](./0052-runtime-slot-name-validation.md) | ADR-0052: Theme slot names are checked when the config loads | Accepted | 2026-10-14 |
 
 New ADRs copy [`template.md`](./template.md).

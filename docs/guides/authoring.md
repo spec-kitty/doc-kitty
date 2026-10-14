@@ -2,7 +2,7 @@
 title: Authoring a document
 description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, and show scenarios in any page.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Guide
 kind: How-To
 tags: [authoring, workflow, gherkin, bdd]
@@ -65,6 +65,17 @@ not maintain a navigation file.
     order: 2
   ```
 
+- **A folder whose only page is its index is shown as that link, not as a
+  group.** A group would open onto the same name again. The link keeps the
+  folder's place among the sub-folders, so `sidebar.order` on its index still
+  orders it. This applies to nested folders; a top-level section is always a
+  group.
+- **The index page reads "Overview" when its label repeats the group's.** The
+  heading above already names the section ("Guides"), so its index entry reads
+  "Overview" in place of "Guides" again. Previous and next links still use the
+  page title. If another page in the group is already labelled "Overview", the
+  index keeps its own label; give that page a `sidebar.label` to avoid the
+  clash.
 - **Within a group the order is always: the index page, then the other pages,
   then the sub-folders.** Pages keep the order Starlight gives them (their own
   `sidebar.order`, then alphabetical). Because pages always come before
@@ -85,9 +96,9 @@ A site that passes its own `sidebar` to `defineDocKittyIntegrations` (or through
 the `starlight` option) gets exactly the sidebar it wrote: none of the labelling
 or ordering above is applied to it.
 
-Known limitation: the groups of generated glossary contexts are labelled with the
-context id (for example `shipping`), because their index pages are generated
-with the id as title.
+A generated glossary context is a folder with one page, so it is listed as a
+link under the glossary. Its label is the context `name` from
+`.contextive/definitions.yaml`; write the name as you want readers to see it.
 
 ## Using an `index.md`-indexed tree
 

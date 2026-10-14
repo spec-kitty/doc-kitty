@@ -2,7 +2,7 @@
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Architecture
 kind: Reference
 authors:
@@ -10,6 +10,7 @@ authors:
 tags: [theme, chrome, branding, components, layouts]
 related:
   - adr/0008-swappable-theme-layer
+  - adr/0052-runtime-slot-name-validation
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0015-m2-slot-resolution-and-components-map-seam
   - adr/0044-header-carrier
@@ -182,8 +183,13 @@ theme select, language select). See the [theme header guide](../guides/theme-hea
 (EditLink). No carrier reads them, so setting one has no effect. Rendering any
 of them means a further carrier, and
 [ADR-0044](../adr/0044-header-carrier.md) requires a new decision record for
-that. Slot names are checked by the TypeScript theme type only: a misspelt name
-in a plain-JavaScript theme is ignored without a message.
+that.
+
+**Slot names are checked when the config loads.** A slot name outside this
+surface, in any layer of a theme, fails the build with an error that names the
+unknown slot and lists the valid ones. This holds for a theme written in plain
+JavaScript too, which no type check reaches
+([ADR-0052](../adr/0052-runtime-slot-name-validation.md)).
 
 The Spec Kitty brand header does not use the header slot. It rides
 Starlight-native `logo`/`title` config and brand CSS (see §"Wiring").

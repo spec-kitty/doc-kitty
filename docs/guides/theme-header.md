@@ -2,7 +2,7 @@
 title: Theme header — replace the site header from a theme
 description: How a theme supplies its own site header through the dk:site-header slot, what Starlight keeps for it, and which parts of the stock header the replacement has to put back.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Guide
 kind: How-To
 tags: [theming, header, slots, consumer]
@@ -98,6 +98,10 @@ Pass the theme to `defineDocKittyIntegrations({ theme: myTheme, … })` as in
 [Consumer setup](./consumer-setup.md), step 3. Nothing else changes in your
 configuration.
 
+A misspelt slot name, such as `dk:site-heading`, stops the build when the
+configuration loads. The error names the slot and lists the valid names. This
+holds for a theme written in plain JavaScript too.
+
 ## 3. Put back what you still want
 
 A replacement header gets **none** of what the stock header drew. Starlight
@@ -138,10 +142,6 @@ this for free. Do not add your own centring or `max-width` to compensate. See
 
 ## Known limitations
 
-- **Slot names are checked by TypeScript only.** In a theme written in plain
-  JavaScript, a misspelt name such as `dk:site-heaer` is accepted and ignored
-  without a message, and you get the stock header. Type the theme as shown above
-  to have the name checked. This applies to every slot, not only this one.
 - **A `Header` passed through Starlight's `components` option is discarded.**
   The toolkit owns that map. This was already the case before the slot existed.
   Use the slot.
