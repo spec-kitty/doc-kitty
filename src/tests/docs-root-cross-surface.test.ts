@@ -179,7 +179,7 @@ describe('integration -> loader: index names are set once (FR-007)', () => {
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toMatch(/x\/README\.md/);
     expect((error as Error).message).toMatch(/x\/index\.md/);
-    expect((error as Error).message).toContain('Rename or remove');
+    expect((error as Error).message).toMatch(/^\s*\/x\/$/m); // the contested route
     // Positive control: the same tree minus one file loads.
     expect(await loadedIds({}, ['x/README.md'])).toEqual(['x']);
   });

@@ -187,10 +187,10 @@ describe('integration freshness (FR-021)', () => {
   it('stops the build on a route collision, drafts included; the tree minus one file passes (FR-004)', () => {
     const run = (docs: string) => optionsFor(docs, 'off');
     const clash = tree({ 'x/README.md': page('published'), 'x/index.md': page('published') });
-    expect(() => run(clash)).toThrow(/x\/README\.md[\s\S]*x\/index\.md|Rename or remove/);
+    expect(() => run(clash)).toThrow(/x\/README\.md[\s\S]*x\/index\.md/);
     // A draft counts even though drafts are withheld in this build (US2 scenario 5).
     const draftClash = tree({ 'x/README.md': page('draft'), 'x/index.md': page('published') });
-    expect(() => run(draftClash)).toThrow(/Rename or remove/);
+    expect(() => run(draftClash)).toThrow(/x\/README\.md[\s\S]*x\/index\.md/);
     // Positive control: one file less builds.
     expect(() => run(tree({ 'x/README.md': page('published') }))).not.toThrow();
   });

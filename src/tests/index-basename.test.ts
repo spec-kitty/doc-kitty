@@ -205,7 +205,7 @@ describe('FR-004 route collision in the standalone validator', () => {
     expect(res.status, res.stdout).toBe(1);
     expect(res.stderr).toContain('x/README.md');
     expect(res.stderr).toContain('x/index.md');
-    expect(res.stderr).toContain('Rename or remove');
+    expect(res.stderr).toMatch(/^\s*\/x\/$/m); // the contested route
     const ok = validate(['x/README.md', 'x/other.md']);
     expect(ok.status, ok.stderr).toBe(0);
   });

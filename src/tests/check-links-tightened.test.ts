@@ -266,7 +266,7 @@ describe('check-links CLI — agrees with the build on relative Markdown links',
     expect(res.status, res.stdout).toBe(1);
     expect(res.stderr).toContain('x/README.md');
     expect(res.stderr).toContain('x/index.md');
-    expect(res.stderr).toContain('Rename or remove');
+    expect(res.stderr).toMatch(/^\s*\/x\/$/m); // the contested route
     // Not strict: files are read as on GitHub, nothing new is checked.
     expect(run(root, [], drafts).status).toBe(0);
     // Positive control: one file less passes the same strict run.
