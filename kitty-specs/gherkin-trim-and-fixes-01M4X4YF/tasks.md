@@ -40,7 +40,7 @@ red test committed alone through the existing entry point, then the fix.
 | T019 | Planted-break proof for every RETIRE (covering guard goes red) | WP05 | |
 | T020 | Retire / merge the proven duplicates | WP05 | |
 | T021 | Re-run the suites; before/after counts | WP05 | |
-| T022 | ADR-0052 and the regenerated ADR index | WP06 | |
+| T022 | ADR-0054 and the regenerated ADR index | WP06 | |
 | T023 | Consumer guide (Gherkin section + scenario-route sentence), authoring guide, architecture page | WP06 | |
 | T024 | Changelog entries | WP06 | |
 
@@ -116,7 +116,7 @@ Dependencies: WP04. Risks: coverage disguised as a duplicate.
 **Goal**: ADR, guides, changelog.
 **Priority**: P2. **Independent test**: `pnpm validate:docs`, `pnpm validate:adr-index`, `pnpm validate:links`.
 
-T022 ADR-0052 (WP06)
+T022 ADR-0054 (WP06)
 T023 Guides and architecture page (WP06)
 T024 Changelog (WP06)
 

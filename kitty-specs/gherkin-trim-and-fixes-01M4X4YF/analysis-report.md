@@ -81,7 +81,7 @@ findings:
 | NFR-003 determinism | Yes | T008 | |
 | NFR-004 measurable trim | Yes | T021 | reported |
 
-**Charter Alignment Issues:** none. ADR immutability is honoured (new ADR-0052); docs updated in the same change; no CI change.
+**Charter Alignment Issues:** none. ADR immutability is honoured (new ADR-0054); docs updated in the same change; no CI change.
 
 **Unmapped Tasks:** none.
 

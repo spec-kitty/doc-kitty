@@ -30,7 +30,7 @@ Supply chain: no dependency change, so DIRECTIVE_051 controls do not apply.
 
 | Charter rule | Status |
 |--------------|--------|
-| Decisions recorded as ADRs; accepted ADRs immutable | Pass: ADR-0052 records the #123 decision and amends ADR-0046 decision 3, its draft-hub "known limit", and decision 9's missing-route note. ADR-0046 is not edited. |
+| Decisions recorded as ADRs; accepted ADRs immutable | Pass: ADR-0054 records the #123 decision and amends ADR-0046 decision 3, its draft-hub "known limit", and decision 9's missing-route note. ADR-0046 is not edited. |
 | Three separated axes (content / IA / presentation) | Pass: `titles` is information architecture for generated content; no theme change. |
 | Living documentation: behaviour change updates docs in the same change | Pass: consumer guide (Gherkin section), architecture page, authoring guide and changelog land in the mission. |
 | Frontmatter on every docs page | Pass: every touched page keeps `title`, `description`, `doc_status`, `updated` (bumped), `type`, `kind`. |
@@ -69,7 +69,7 @@ package.json                         # validate:features / generate:features gai
 example/astro.config.mjs             # titles: { hr: 'HR' }
 example/docs/behaviour/**            # regenerated
 src/tests/gherkin-*.test.ts          # red-first tests, then the trim
-docs/adr/0052-*.md, docs/adr/README.md (generated index)
+docs/adr/0054-*.md, docs/adr/README.md (generated index)
 docs/guides/consumer-setup.md (Gherkin section), docs/guides/authoring.md,
 docs/architecture/gherkin-pages.md, docs/changelog/, CHANGELOG.md
 ```
@@ -117,7 +117,7 @@ check is unit-testable without an Astro build.
 - **Relevant requirements**: FR-008, C-001
 - **Affected surfaces**: new `src/lib/gherkin/scenario-index-check.mjs`; `config.ts` `gherkinIntegration` gains `astro:build:done`; `gherkin-integration.test.ts`
 - **Sequencing/depends-on**: none
-- **Risks**: only sites with `gherkin.sources` run the check. A site that removed the option but kept frozen pages is not covered; recorded in ADR-0052 as a residual.
+- **Risks**: only sites with `gherkin.sources` run the check. A site that removed the option but kept frozen pages is not covered; recorded in ADR-0054 as a residual.
 
 ### IC-06 — Trim the Gherkin suites (#156)
 
@@ -129,9 +129,9 @@ check is unit-testable without an Astro build.
 
 ### IC-07 — Records and adopter docs
 
-- **Purpose**: ADR-0052, consumer guide (Gherkin section only), authoring guide, architecture page, changelog.
+- **Purpose**: ADR-0054, consumer guide (Gherkin section only), authoring guide, architecture page, changelog.
 - **Relevant requirements**: FR-007, FR-013, C-002, C-006, C-007
-- **Affected surfaces**: `docs/adr/0052-*.md`, `docs/adr/README.md` (via `generate-adr-index.mjs`), `docs/guides/consumer-setup.md`, `docs/guides/authoring.md`, `docs/architecture/gherkin-pages.md`, `docs/changelog/`, `CHANGELOG.md`
+- **Affected surfaces**: `docs/adr/0054-*.md`, `docs/adr/README.md` (via `generate-adr-index.mjs`), `docs/guides/consumer-setup.md`, `docs/guides/authoring.md`, `docs/architecture/gherkin-pages.md`, `docs/changelog/`, `CHANGELOG.md`
 - **Sequencing/depends-on**: IC-02..IC-05
 - **Risks**: consumer-setup.md is shared with sibling #153: keep to the Gherkin section and the one scenario-route sentence in step 5.
 

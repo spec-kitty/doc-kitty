@@ -122,7 +122,7 @@
       ],
       "write_scope": [
         "CHANGELOG.md",
-        "docs/adr/0052-gherkin-draft-hubs-titles-and-scenario-index-check.md",
+        "docs/adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md",
         "docs/adr/README.md",
         "docs/architecture/gherkin-pages.md",
         "docs/changelog/**",

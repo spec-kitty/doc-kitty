@@ -1,5 +1,5 @@
 /**
- * The scenario index a site advertises must exist (#126, ADR-0053).
+ * The scenario index a site advertises must exist (#126, ADR-0054).
  *
  * `llms.txt` (`routes/llms-txt.ts`) advertises `/api/scenarios.json` whenever a
  * published generated feature page exists. The route itself is mounted by the

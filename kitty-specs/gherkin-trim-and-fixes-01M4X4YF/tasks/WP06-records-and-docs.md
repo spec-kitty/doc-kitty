@@ -23,10 +23,10 @@ history: []
 agent_profile: comms-cleo
 authoritative_surface: docs/
 create_intent:
-- docs/adr/0052-gherkin-draft-hubs-titles-and-scenario-index-check.md
+- docs/adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md
 execution_mode: code_change
 owned_files:
-- docs/adr/0052-gherkin-draft-hubs-titles-and-scenario-index-check.md
+- docs/adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md
 - docs/adr/README.md
 - docs/guides/consumer-setup.md
 - docs/guides/authoring.md
@@ -63,9 +63,9 @@ Planning artifacts were generated on `issue-156-gherkin-trim-and-fixes`; complet
 
 ## Subtasks
 
-### T022 — ADR-0052
+### T022 — ADR-0054
 
-`docs/adr/0052-…`: status Accepted; amends ADR-0046 decision 3 (hub per directory; draft hub for a draft-only directory) and its "Known limit" risk, and decision 9's missing-route note (now a build error); records #123 (exact match + near-miss warning, and why not fail closed), #124 (generation independent of the draft setting, R3), #125 (`titles`, key form, `--titles`), #126 (build-end check, residual), with alternatives. Frontmatter per convention (`related` to 0046, 0051, 0026, architecture/gherkin-pages, guides/consumer-setup). Regenerate the index: `node src/scripts/generate-adr-index.mjs`.
+`docs/adr/0054-…`: status Accepted; amends ADR-0046 decision 3 (hub per directory; draft hub for a draft-only directory) and its "Known limit" risk, and decision 9's missing-route note (now a build error); records #123 (exact match + near-miss warning, and why not fail closed), #124 (generation independent of the draft setting, R3), #125 (`titles`, key form, `--titles`), #126 (build-end check, residual), with alternatives. Frontmatter per convention (`related` to 0046, 0051, 0026, architecture/gherkin-pages, guides/consumer-setup). Regenerate the index: `node src/scripts/generate-adr-index.mjs`.
 
 ### T023 — Guides and architecture
 

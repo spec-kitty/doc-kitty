@@ -9,7 +9,7 @@ authors:
   - stijn@sddevelopment.be
 tags: [gherkin, bdd, testing]
 related:
-  - adr/0053-gherkin-draft-hubs-titles-and-scenario-index-check
+  - adr/0054-gherkin-draft-hubs-titles-and-scenario-route
   - adr/0046-gherkin-feature-pages
   - architecture/gherkin-pages
   - guides/authoring
@@ -21,7 +21,7 @@ related:
 Five small gaps left over from the Gherkin feature pages are closed, and the
 Gherkin test suites lose the tests that only repeated another test's check. The
 decisions are recorded in
-[ADR-0053](../adr/0053-gherkin-draft-hubs-titles-and-scenario-index-check.md).
+[ADR-0054](../adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md).
 
 ## What changed
 

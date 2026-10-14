@@ -1,5 +1,5 @@
 ---
-title: "ADR-0053: Draft hubs, hub titles, a near-miss status warning and a scenario-index check for Gherkin pages"
+title: "ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario-index check for Gherkin pages"
 description: Draft-only Gherkin directories get a draft hub, gherkin.titles sets hub titles, a mis-cased @wip warns, and a missing scenario index fails the build.
 doc_status: active
 updated: 2026-10-14
@@ -17,7 +17,7 @@ related:
   - guides/authoring
 ---
 
-# ADR-0053: Draft hubs, hub titles, a near-miss status warning and a scenario-index check for Gherkin pages
+# ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario-index check for Gherkin pages
 
 ## Status
 

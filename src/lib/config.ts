@@ -1309,7 +1309,7 @@ function resolveGherkinOptions(
  *
  * `astro:build:done` fails the build when the built `llms.txt` advertises
  * `/api/scenarios.json` and the output has none (#126): the route is mounted by
- * the site, not injected (ADR-0046 decision 9, ADR-0053), and a site that skips
+ * the site, not injected (ADR-0046 decision 9, ADR-0054), and a site that skips
  * it would otherwise send agents to a 404 (`checkScenarioIndexAdvertised`).
  */
 function gherkinIntegration(

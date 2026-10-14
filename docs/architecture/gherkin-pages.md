@@ -12,7 +12,7 @@ related:
   - adr/0046-gherkin-feature-pages
   - adr/0048-generated-page-names-and-empty-sources
   - adr/0051-gherkin-in-any-page
-  - adr/0053-gherkin-draft-hubs-titles-and-scenario-index-check
+  - adr/0054-gherkin-draft-hubs-titles-and-scenario-route
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - architecture/glossary
@@ -131,7 +131,7 @@ the toolkit's single `slug()` rule in `vocabulary-core.mjs`. Every source direct
 is generated under the same section root.
 
 Hubs are written for the section root and for every directory that holds a
-feature anywhere below it ([ADR-0053](../adr/0053-gherkin-draft-hubs-titles-and-scenario-index-check.md)).
+feature anywhere below it ([ADR-0054](../adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md)).
 The hub file is `<first indexBasename>.md`, so
 `README.md` by default. Using the first configured basename makes the hub collapse
 to its directory route under either loader setting. The basename list and the
