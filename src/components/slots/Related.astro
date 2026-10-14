@@ -25,7 +25,7 @@ import {
   type DocKittyFrontmatter,
   type DocsIndex,
 } from '../../lib/metadata.js';
-import { withBase } from '../../lib/with-base.js';
+import { hrefOfSlug } from '../../lib/with-base.js';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -52,7 +52,7 @@ const STALE = new Set(['deprecated', 'superseded']);
         {cards.map((card) => (
           <li class="dk-related__item">
             <RelatedCard
-              href={withBase(`/${card.ref}/`)}
+              href={hrefOfSlug(card.ref)}
               title={card.title}
               description={card.note}
               kind={card.kind}

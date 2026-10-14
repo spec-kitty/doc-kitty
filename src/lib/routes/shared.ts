@@ -120,9 +120,9 @@ export async function docsRoot(indexBasename?: IndexBasenameOption): Promise<str
  *
  * WHY (pre-PR review, #61/#62 completeness gap): RSS, llms.txt, and the
  * agent-API JSON all compose their emitted absolute URLs through this one
- * function, but `path` here is deliberately the BASE-LESS `routeFor`/
- * `toAgentRecord` contract (see `metadata.ts`'s `routeFor` doc comment, which
- * names combining it with the base as "that consumer's own concern"). Without
+ * function, but `path` here is deliberately the BASE-LESS `routeOfSlug`/
+ * `toAgentRecord` contract (the agent-API `route`, which leaves combining it
+ * with the base to its consumer). Without
  * this step, every emitted feed/index absolute URL 404'd on a based
  * deployment even though the on-page `<a href>`s (`withBase`, #61/C-002) and
  * the `<head>` feed-discovery links (`discoveryHead`, config.ts) were already

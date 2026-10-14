@@ -15,7 +15,7 @@
  * real frontmatter lives in `./schema.ts` and mirrors these types.
  */
 import { isPresentationEntry } from './deck/is-presentation.js';
-import { withBase } from './with-base.js';
+import { hrefOfSlug } from './with-base.js';
 // The section vocabulary + type-derivation lives in ONE fs-free, Astro-free place
 // (#49 IC-01/IC-02): `vocabulary-core.mjs`. `metadata.ts` stays fs-free by
 // importing ONLY the pure core (never `sections.ts`/the loader). The `DocType`/
@@ -33,6 +33,7 @@ import {
   DEFAULT_INDEX_BASENAME,
   readmeToIndexId,
   resolveIndexEntries,
+  routeOfSlug,
 } from './vocabulary-core.mjs';
 
 export { SECTION_TYPE, expectedDocType };
@@ -317,21 +318,6 @@ export interface AgentRecord {
   source: string;
 }
 
-/**
- * The BASE-LESS, canonical site route for a docs-collection slug. Deliberately
- * NOT base-prefixed here: the agent-API `route` field (`toAgentRecord`, below)
- * is a committed contract read by `assert-build-artifacts.mjs` (BA-3 deck-route-
- * parity) and `agent-api.test.ts` as the base-less canonical path — combining it
- * with the base is that consumer's own concern (`absolute(site, route)`, out of
- * this WP's owned surface). `resolveProfile` (Audience's href, #61/C-002) is the
- * on-page-navigation consumer, so IT routes through `withBase` at its own return
- * site instead — keeping this shared helper's base-less contract intact for the
- * agent-API while still fixing the actual reader-facing 404.
- */
-function routeFor(slug: string): string {
-  return slug === '' ? '/' : `/${slug}/`;
-}
-
 /** The per-page source id used in `/api/pages/<id>.json` (root → "home"). */
 export function pageSourceId(slug: string): string {
   return slug === '' ? 'home' : slug;
@@ -345,7 +331,10 @@ export function toAgentRecord(entry: DocEntry): AgentRecord {
     : null;
   return {
     slug,
-    route: routeFor(slug),
+    // Base-less on purpose: the agent-API `route` is a committed contract read by
+    // `assert-build-artifacts.mjs` (BA-3) and combined with the base by its consumer.
+    // The route rule is `routeOfSlug`'s alone (FR-001, issue 134).
+    route: routeOfSlug(slug),
     section: sectionOf(slug),
     title: data.title,
     description: data.description ?? '',
@@ -606,15 +595,15 @@ export function humanizeProfile(slug: string): string {
  * `context/audience/<profile>`. A miss is SOFT: returns `null` so the caller can
  * render the humanized slug and warn (the warn channel lands in WP04).
  *
- * `href` is base-prefixed via `withBase` (#61, C-002) — this is an actual
+ * `href` is base-prefixed via `hrefOfSlug` (#61, C-002) — this is an actual
  * reader-facing on-page link (Audience.astro renders it verbatim), unlike
- * `routeFor`'s base-less agent-API contract.
+ * `toAgentRecord`'s base-less agent-API `route`.
  */
 export function resolveProfile(profile: string, index: DocsIndex): ResolvedProfile | null {
   const slug = `context/audience/${profile}`;
   const target = index[slug];
   if (!target) return null;
-  return { href: withBase(routeFor(slug)), title: target.title };
+  return { href: hrefOfSlug(slug), title: target.title };
 }
 
 /** A bibliography catalog record (CSL-JSON-lite, ADR-0018). */

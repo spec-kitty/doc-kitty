@@ -47,7 +47,7 @@ import { getCollection, render } from 'astro:content';
 import type { GherkinDocument, Scenario, Tag } from '@cucumber/messages';
 import type { DocKittyFrontmatter } from '../metadata.js';
 import { sectionOf, slugFromEntryId } from '../metadata.js';
-import { compareCodeUnit } from '../vocabulary-core.mjs';
+import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import { feedsSurface, resolveSectionRegistry, sectionFeeds } from '../sections.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures, type FeatureFile } from '../gherkin/load.mjs';
 import { GENERATED_BY } from '../gherkin/feature-core.mjs';
@@ -367,7 +367,7 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
       features.push({
         id: p.slug,
         title: p.data.title,
-        url: absolute(site, `/${p.slug}/`),
+        url: absolute(site, routeOfSlug(p.slug)),
         source: p.source,
         doc_status: p.data.doc_status ?? 'draft',
         glossary_context: p.data.glossary_context ?? null,

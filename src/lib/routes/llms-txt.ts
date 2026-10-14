@@ -17,7 +17,7 @@ import {
   sectionLabel,
   type IndexBasenameOption,
 } from '../metadata.js';
-import { compareCodeUnit } from '../vocabulary-core.mjs';
+import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import {
   resolveSectionRegistry,
   sectionLabels,
@@ -142,7 +142,7 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
         .slice(0, DESCRIPTION_MAX);
       if (blurb) lines.push(blurb, '');
       for (const entry of sections.get(section)!) {
-        const url = absolute(site, entry.slug === '' ? '/' : `/${entry.slug}/`);
+        const url = absolute(site, routeOfSlug(entry.slug));
         const note = entry.data.description ? `: ${entry.data.description}` : '';
         lines.push(`- [${entry.data.title}](${url})${note}`);
       }

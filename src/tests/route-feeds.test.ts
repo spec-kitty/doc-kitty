@@ -113,6 +113,14 @@ beforeAll(() => {
     title: 'Getting Started',
     doc_status: 'active',
   });
+  // FR-001 (issue 134): a folder index page (`guides/handbook/index`, served at
+  // `/guides/handbook/`) and the reserved root id (`index`, served at `/`) beside the
+  // ordinary `guides/start` control above.
+  addEntry('guides/handbook/index', 'guides/handbook/index.md', {
+    title: 'Handbook',
+    doc_status: 'active',
+  });
+  addEntry('index', 'index.md', { title: 'Home', doc_status: 'active' });
   // secret — feeds sitemap ONLY (excluded from rss/llms/agent).
   addEntry('secret/hidden', 'secret/hidden.md', {
     title: 'Hidden',
@@ -197,5 +205,34 @@ describe('llmsTxtRoute — section `feeds` filter (llms) + purpose/README blurb'
     // and no empty blurb line, between the H2 and the first bullet.
     const guidesBlock = txt.slice(txt.indexOf('## Guides'));
     expect(guidesBlock).toMatch(/^## Guides\n\n- \[/);
+  });
+});
+
+describe('listed addresses follow the route rule (FR-001, issue 134)', () => {
+  const listed = async (route: ReturnType<typeof rssRoute>) => renderText(route);
+
+  it('rss lists an /index page at its folder and the root at /, beside an ordinary page', async () => {
+    const xml = await listed(rssRoute({ title: 'Docs' }));
+    expect(xml).toContain('<link>https://docs.example/guides/start/</link>'); // control
+    expect(xml).toContain('<link>https://docs.example/guides/handbook/</link>');
+    expect(xml).toContain('<link>https://docs.example/</link>');
+    expect(xml).not.toContain('/index/');
+  });
+
+  it('llms.txt lists an /index page at its folder and the root at /, beside an ordinary page', async () => {
+    const txt = await listed(llmsTxtRoute({ title: 'Docs' }));
+    expect(txt).toContain('(https://docs.example/guides/start/)'); // control
+    expect(txt).toContain('(https://docs.example/guides/handbook/)');
+    expect(txt).toContain('(https://docs.example/)');
+    expect(txt).not.toContain('/index/');
+  });
+
+  it('the agent index route is the folder, the root is /, the control is unchanged', async () => {
+    const json = JSON.parse(await listed(agentIndexRoute({ title: 'Docs' })));
+    const routeOf = (slug: string) =>
+      json.pages.find((p: { slug: string }) => p.slug === slug)?.route;
+    expect(routeOf('guides/start')).toBe('/guides/start/'); // control
+    expect(routeOf('guides/handbook/index')).toBe('/guides/handbook/');
+    expect(routeOf('')).toBe('/');
   });
 });

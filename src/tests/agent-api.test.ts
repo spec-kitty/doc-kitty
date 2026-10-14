@@ -41,6 +41,13 @@ describe('toAgentRecord', () => {
     expect(record.source).toBe('/api/pages/home.json');
   });
 
+  it('routes an /index page at its folder, the reserved root id at "/" (FR-001, issue 134)', () => {
+    const routeOf = (slug: string) => toAgentRecord({ slug, data: { title: 'T' } }).route;
+    expect(routeOf('guide/setup')).toBe('/guide/setup/'); // positive control
+    expect(routeOf('guide/index')).toBe('/guide/');
+    expect(routeOf('index')).toBe('/');
+  });
+
   it('supplies defaults for missing optional fields', () => {
     const record = toAgentRecord({ slug: 'x', data: { title: 'X' } });
     expect(record.description).toBe('');

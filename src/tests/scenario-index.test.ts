@@ -267,6 +267,21 @@ describe('scenarioIndexRoute — shape', () => {
   });
 });
 
+describe('scenarioIndexRoute — feature URL follows the route rule (FR-001, issue 134)', () => {
+  it('serves an /index feature page at its folder and the root id at /, beside an ordinary page', async () => {
+    const at = writeFeature('features/hr/request-leave.feature', LEAVE);
+    for (const id of ['behaviour/hr/request-leave', 'behaviour/hr/index', 'index']) {
+      entries.push(featurePage(id, 'features/hr/request-leave.feature', at, LEAVE_HEADINGS));
+    }
+    const urlOf = new Map(
+      (await getJson()).features.map((f: { id: string; url: string }) => [f.id, f.url]),
+    );
+    expect(urlOf.get('behaviour/hr/request-leave')).toBe('https://docs.example/behaviour/hr/request-leave/'); // control
+    expect(urlOf.get('behaviour/hr/index')).toBe('https://docs.example/behaviour/hr/');
+    expect(urlOf.get('')).toBe('https://docs.example/');
+  });
+});
+
 describe('scenarioIndexRoute — selection and order', () => {
   it('lists only published, discoverable GENERATED feature pages, ordered by id (code-unit)', async () => {
     const book = writeFeature('features/shipping/book-consignment.feature', BOOK);

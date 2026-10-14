@@ -128,6 +128,15 @@ describe('buildDirectoryMeta (T019)', () => {
   });
 });
 
+describe('buildDirectoryMeta index href follows the route rule (FR-001, issue 134)', () => {
+  it('addresses an /index slug at its folder and the root id at /, beside an ordinary slug', () => {
+    const hrefOf = (slug: string) => buildDirectoryMeta([index(slug, 'T')]).get(slug)?.indexHref;
+    expect(hrefOf('guide/setup')).toBe('/guide/setup/'); // control
+    expect(hrefOf('guide/index')).toBe('/guide/');
+    expect(hrefOf('index')).toBe('/');
+  });
+});
+
 describe('shapeSidebar (T020)', () => {
   const meta = buildDirectoryMeta(RHETORIC_ENTRIES);
   const shape = (entries: SidebarEntry[] = rhetoricSidebar()) => shapeSidebar(entries, meta, { base: BASE });

@@ -368,7 +368,7 @@ function registrySidebar(
  * `'/doc-kitty/'` all → `'/doc-kitty'`.
  */
 function normalizeBasePrefix(base: string): string {
-  return `/${base}/`.replace(/\/{2,}/g, '/').replace(/\/$/, '');
+  return ('/' + base + '/').replace(/\/{2,}/g, '/').replace(/\/$/, '');
 }
 
 /**

@@ -7,6 +7,7 @@
  *   export const GET = rssRoute({ title: 'My Docs', description: '…' });
  */
 import type { APIRoute } from 'astro';
+import { routeOfSlug } from '../vocabulary-core.mjs';
 import { rankForFeed, sectionOf, updatedMillis, sectionLabel, includedInRssFeed } from '../metadata.js';
 import { resolveSectionRegistry, sectionLabels, sectionFeeds, feedsSurface } from '../sections.js';
 import { absolute, docsRoot, xmlEscape } from './shared.js';
@@ -43,7 +44,7 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
 
     const items = entries
       .map((entry) => {
-        const link = absolute(site, entry.slug === '' ? '/' : `/${entry.slug}/`);
+        const link = absolute(site, routeOfSlug(entry.slug));
         const millis = updatedMillis(entry.data);
         const pubDate = millis ? new Date(millis).toUTCString() : undefined;
         const section = sectionOf(entry.slug);

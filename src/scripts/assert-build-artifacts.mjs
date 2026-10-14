@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url';
 // own WP05-owned module to keep lane ownership clean; the main gate awaits them so
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
   draftRoutesOf,
@@ -314,9 +315,15 @@ const DEMO_DIAGRAMS = [
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..');
 const TOOLKIT_MANIFEST = path.join(REPO_ROOT, 'src', 'package.json');
-// The example's docs tree and section-index basenames (as in its astro.config.mjs).
+// The example's docs tree. Its section-index names are read from its
+// astro.config.mjs (FR-007: the config is the one source; a list kept here would
+// drift from it). Resolved on first use, since reading the config starts a process.
 const EXAMPLE_DOCS_DIR = path.join(REPO_ROOT, 'example', 'docs');
-const EXAMPLE_INDEX_BASENAMES = ['README', 'index'];
+let exampleIndexBasenames;
+function exampleIndexNames() {
+  exampleIndexBasenames ??= resolveSiteIndexBasenames(EXAMPLE_DOCS_DIR, { tool: 'assert-build-artifacts' }).names;
+  return exampleIndexBasenames;
+}
 
 /** Every `.html` file under `dir`, as absolute paths. */
 async function htmlFilesUnder(dir) {
@@ -1697,7 +1704,7 @@ async function main() {
   // Every draft route of the example, derived from `doc_status` in its docs
   // tree (never a list kept here), so a new draft page is covered the day it
   // is added. The known marker must be among them, or the derivation is broken.
-  const draftSlugs = [...draftRoutesOf(EXAMPLE_DOCS_DIR, EXAMPLE_INDEX_BASENAMES)]
+  const draftSlugs = [...draftRoutesOf(EXAMPLE_DOCS_DIR, exampleIndexNames())]
     .map((route) => route.slice(1, -1))
     .sort();
   if (!draftSlugs.includes(DRAFT_ROUTE_MARKER)) {

@@ -33,7 +33,7 @@
  * byte-identical (NFR-006).
  */
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
-import { compareCodeUnit, humaniseDirectoryName } from './vocabulary-core.mjs';
+import { compareCodeUnit, humaniseDirectoryName, routeOfSlug } from './vocabulary-core.mjs';
 
 /** One resolved Starlight sidebar entry (a link or a group). */
 export type SidebarEntry = StarlightRouteData['sidebar'][number];
@@ -90,7 +90,7 @@ export function buildDirectoryMeta(entries: readonly DirectoryMetaInput[]): Map<
     meta.set(slug, {
       ...(label ? { label } : {}),
       ...(typeof sidebar?.order === 'number' ? { order: sidebar.order } : {}),
-      indexHref: `/${slug}/`,
+      indexHref: routeOfSlug(slug),
     });
   }
   return meta;
@@ -154,7 +154,7 @@ export { humaniseDirectoryName };
 
 /** Normalise an Astro `base` to `''` or `/prefix` (no trailing slash). */
 function normaliseBase(base: string | undefined): string {
-  return `/${base ?? ''}/`.replace(/\/{2,}/g, '/').replace(/\/$/, '');
+  return ('/' + (base ?? '') + '/').replace(/\/{2,}/g, '/').replace(/\/$/, '');
 }
 
 /**

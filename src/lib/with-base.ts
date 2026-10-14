@@ -2,10 +2,10 @@
  * `withBase` — the SINGLE component base-prefix helper (#61, C-002, NFR-002).
  *
  * Astro does NOT rewrite a raw root-absolute markdown/component href
- * (`/glossary/…`, `/${slug}/`) to carry the site's configured `base` — only a
+ * (`/glossary/…`, a page route) to carry the site's configured `base` — only a
  * link naming a real collection source file (`./target.md`) gets that
  * treatment. Every component that builds an in-site href by hand (`metadata.ts`
- * `routeFor`, `Related.astro`, `OnThisPage.astro`'s section/glossary links) must
+ * `resolveProfile`, `Related.astro`, `OnThisPage.astro`'s section/glossary links) must
  * therefore route through this ONE helper instead of cloning base-prefix logic
  * at each call site (the exact clone-drift D1/DIRECTIVE_024 identifies as the
  * root cause of #61).
@@ -27,6 +27,8 @@
  *     anchor/directory-index-relative links stay unaffected).
  */
 
+import { routeOfSlug } from './vocabulary-core.mjs';
+
 /** Any `scheme:` prefix (`http:`, `https:`, `mailto:`, `tel:`, …). */
 const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
 
@@ -38,7 +40,7 @@ const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
  */
 function normalizeBase(raw: string): string {
   if (!raw || raw === '/') return '';
-  return `/${raw}/`.replace(/\/{2,}/g, '/').replace(/\/$/, '');
+  return ('/' + raw + '/').replace(/\/{2,}/g, '/').replace(/\/$/, '');
 }
 
 /**
@@ -57,4 +59,15 @@ export function withBase(path: string): string {
   if (path === base || path.startsWith(`${base}/`)) return path; // already based
 
   return `${base}${path}`;
+}
+
+/**
+ * The base-prefixed href of a page, from its page id. The one place an HTML
+ * surface (Hub, On this page, Related, the audience link) turns an id into an
+ * address: the route rule is `routeOfSlug`'s alone, so a folder index
+ * (`guide/index`) and the root (`index`, `''`) are listed where the site serves
+ * them (FR-001, issue 134).
+ */
+export function hrefOfSlug(slug: string): string {
+  return withBase(routeOfSlug(slug));
 }

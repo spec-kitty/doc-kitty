@@ -47,6 +47,7 @@ import {
   slugFromEntryId,
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
+import { hrefOfSlug } from '../lib/with-base.js';
 import { selectHubChildren, selectAdrHubCards } from '../lib/hub-children.mjs';
 import { resolveSectionRegistry, sectionOrder } from '../lib/sections.js';
 import '../styles/hub.css';
@@ -54,10 +55,8 @@ import '../styles/hub.css';
 const route = Astro.props as StarlightRoute;
 const currentSlug = slugFromEntryId(route.id);
 
-// Honour the site `base` when building child hrefs.
-const baseUrl = import.meta.env.BASE_URL.replace(/\/+$/, '');
-const hrefFor = (slug: string): string =>
-  slug === '' ? `${baseUrl}/` : `${baseUrl}/${slug}/`;
+// Child hrefs go through the shared route rule and honour the site `base`.
+const hrefFor = hrefOfSlug;
 
 // Section ordering follows the same registry the sidebar and discovery
 // surfaces read, so the root Hub grid never diverges from them (DIRECTIVE_044:

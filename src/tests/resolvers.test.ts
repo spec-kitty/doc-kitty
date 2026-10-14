@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import {
   resolveRelated,
   resolveProfile,
@@ -7,6 +7,7 @@ import {
   type DocsIndex,
   type CitationCatalog,
 } from '../lib/metadata.js';
+import { hrefOfSlug } from '../lib/with-base.js';
 
 const index: DocsIndex = {
   'architecture/overview': {
@@ -20,6 +21,12 @@ const index: DocsIndex = {
     slug: 'guides/no-desc',
     title: 'A Guide',
     kind: 'How-To',
+    doc_status: 'active',
+  },
+  'context/audience/index': {
+    slug: 'context/audience/index',
+    title: 'Audiences',
+    kind: 'Hub',
     doc_status: 'active',
   },
   'context/audience/backend-dev': {
@@ -78,6 +85,26 @@ describe('resolveProfile', () => {
 
   it('returns null (soft miss) when the persona page is absent', () => {
     expect(resolveProfile('nonexistent', index)).toBeNull();
+  });
+});
+
+describe('page hrefs follow the route rule (FR-001, issue 134)', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('resolveProfile links an /index persona page at its folder', () => {
+    expect(resolveProfile('backend-dev', index)?.href).toBe('/context/audience/backend-dev/'); // control
+    expect(resolveProfile('index', index)?.href).toBe('/context/audience/');
+  });
+
+  it('hrefOfSlug (Hub, On this page, Related) serves /index at its folder and the root id at the base', () => {
+    vi.stubEnv('BASE_URL', '/doc-kitty/');
+    expect(hrefOfSlug('guide/setup')).toBe('/doc-kitty/guide/setup/'); // control
+    expect(hrefOfSlug('guide/index')).toBe('/doc-kitty/guide/');
+    expect(hrefOfSlug('index')).toBe('/doc-kitty/');
+    expect(hrefOfSlug('')).toBe('/doc-kitty/');
+    vi.stubEnv('BASE_URL', '/');
+    expect(hrefOfSlug('guide/index')).toBe('/guide/');
+    expect(hrefOfSlug('index')).toBe('/');
   });
 });
 

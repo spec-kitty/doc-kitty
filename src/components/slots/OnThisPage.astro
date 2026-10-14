@@ -68,7 +68,7 @@ import {
   collectLinksUsed,
   type MdRoot,
 } from '../../lib/remark/glossary-autolink.internal.js';
-import { withBase } from '../../lib/with-base.js';
+import { hrefOfSlug, withBase } from '../../lib/with-base.js';
 
 interface ReferenceRow {
   href: string;
@@ -243,7 +243,7 @@ const LIST_RESET =
             {relatedCards.map((card) => (
               <li class="dk-related__item">
                 <RelatedCard
-                  href={withBase(`/${card.ref}/`)}
+                  href={hrefOfSlug(card.ref)}
                   title={card.title}
                   description={card.note}
                   kind={card.kind}
