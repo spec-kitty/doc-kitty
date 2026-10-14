@@ -35,10 +35,13 @@ code:
 # `validate:features` drift gate (doc-sanity) and the build. The generator code
 # (`src/lib/gherkin/**`, `src/scripts/generate-feature-pages.mjs`) is already
 # `code` (`src/**`), which runs doc-sanity + build-example too.
+# `example/scenarios/**` holds `.feature` files that pages include with
+# `::gherkin{src}` (ADR-0051): an edit changes the built pages, so it builds.
 example_content:
   - 'example/docs/**'
   - 'example/public/**'
   - 'example/features/**'
+  - 'example/scenarios/**'
 
 # repo_docs — non-deployed project docs → doc-sanity only.
 repo_docs:

@@ -29,6 +29,8 @@ const CLASSIFY_CASES = [
   ['example/public/logo.svg', 'example_content'],
   // Gherkin sources the build generates example/docs/behaviour from (ADR-0046).
   ['example/features/shipping/book-consignment.feature', 'example_content'],
+  // `.feature` files the example's pages include with `::gherkin{src}` (ADR-0051).
+  ['example/scenarios/init/init.feature', 'example_content'],
   // non-deployed repo docs (root markdown + docs/agents trees).
   ['docs/architecture/ci-cd-pipeline.md', 'repo_docs'],
   ['README.md', 'repo_docs'],

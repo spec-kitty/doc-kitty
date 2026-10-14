@@ -74,7 +74,7 @@ insured consignment names the marine policy that covers it.
   ```
 
 - **Then** the declaration is accepted
-- **And** the declaration records the policy reference "MC-2026-0412"
+- **And** the declaration records the policy reference `"MC-2026-0412"`
 
 ### Scenario: Hold a declaration lodged after the cut-off
 

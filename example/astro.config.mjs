@@ -106,6 +106,13 @@ export default defineConfig({
     // hubs) under `docs/behaviour/`. The generated pages are committed, and
     // `pnpm validate:features` drift-checks them in CI with these SAME values as
     // CLI flags — src/tests/gherkin-example.test.ts keeps the two equal.
-    gherkin: { sources: ['features'], section: 'behaviour' },
+    //
+    // In-page Gherkin (ADR-0051) is on too: `fences` defaults to true, so a
+    // ```gherkin fence on any page renders as a structured scenario. `includeRoots`
+    // are the only directories a `::gherkin{src=…}` include may read: `features`
+    // (also a generated-pages source) and `scenarios`, which holds the copy of
+    // spec-kitty's `init.feature` that guides/scenarios-in-pages embeds. It is
+    // not in `sources`, so it gets no generated page.
+    gherkin: { sources: ['features'], section: 'behaviour', includeRoots: ['features', 'scenarios'] },
   }),
 });

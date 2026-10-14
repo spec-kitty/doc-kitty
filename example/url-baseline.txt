@@ -53,3 +53,7 @@
 /behaviour/shipping/
 /behaviour/shipping/book-consignment/
 /behaviour/shipping/declare-customs/
+
+# gherkin-in-any-page (ADR-0051): the in-page Gherkin demonstrator guide. Its
+# fences render in place, so the guide is the only new URL.
+/guides/scenarios-in-pages/

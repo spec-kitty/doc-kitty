@@ -62,7 +62,7 @@ exceed the sailing's remaining capacity are refused, and the shipper sees why.
 
 - **Given** a consignment of `<size>` TEU
 - **When** the shipper books the consignment onto the sailing
-- **Then** the booking is refused with reason "`<reason>`"
+- **Then** the booking is refused with reason `"<reason>"`
 
 **Examples: Over capacity** `@edge`
 
@@ -81,5 +81,5 @@ exceed the sailing's remaining capacity are refused, and the shipper sees why.
   | C-101 | 8 |
 
 - **When** the shipper books a consignment of 5 TEU onto the sailing
-- **Then** the booking is refused with reason "insufficient space"
+- **Then** the booking is refused with reason `"insufficient space"`
 - **And** the refusal states that 2 TEU remain

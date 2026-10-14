@@ -37,7 +37,7 @@ export const GROUP_GLOBS = {
     'tsconfig*.json',
     'vitest.config.*',
   ],
-  example_content: ['example/docs/**', 'example/public/**', 'example/features/**'],
+  example_content: ['example/docs/**', 'example/public/**', 'example/features/**', 'example/scenarios/**'],
   repo_docs: ['docs/**', 'agents/**', '*.md'],
   ignored: ['research/**', '**/*.excalidraw'],
 };
