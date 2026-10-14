@@ -59,5 +59,6 @@ kind: Hub
 | [0046](./0046-gherkin-feature-pages.md) | ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection | Accepted | 2026-10-13 |
 | [0047](./0047-relative-markdown-links.md) | ADR-0047: Relative Markdown links are rewritten at build | Accepted | 2026-10-13 |
 | [0048](./0048-generated-page-names-and-empty-sources.md) | ADR-0048: Generated index page names and empty Gherkin sources | Accepted | 2026-10-13 |
+| [0049](./0049-openapi-reference-via-existing-integration.md) | ADR-0049: OpenAPI reference pages through an existing integration | Proposed | 2026-10-14 |
 
 New ADRs copy [`template.md`](./template.md).
