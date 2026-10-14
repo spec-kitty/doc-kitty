@@ -496,6 +496,7 @@ describe('doc-kitty:gherkin injects the scenario index (#126)', () => {
     expect(ctx.injectRoute).toHaveBeenCalledWith({
       pattern: '/api/scenarios.json',
       entrypoint: '@spec-kitty/doc-toolkit/routes/scenario-index-injected',
+      prerender: true,
     });
     const plugin = ctx.updateConfig.mock.calls[0][0].vite.plugins[0];
     const id = plugin.resolveId('virtual:doc-kitty/gherkin-scenario-index');
@@ -504,9 +505,14 @@ describe('doc-kitty:gherkin injects the scenario index (#126)', () => {
     );
   });
 
-  it('does not inject when the site mounts its own api/scenarios.json page', () => {
+  it.each([
+    'src/pages/api/scenarios.json.ts',
+    'src/pages/api/scenarios.json.tsx',
+    'src/pages/api/scenarios.json/index.mjs',
+    'src/pages/api/scenarios.json/index.jsx',
+  ])('does not inject when the site mounts its own %s', (file) => {
     const dir = site();
-    writeTree({ 'src/pages/api/scenarios.json.ts': 'export const GET = () => new Response();\n' });
+    writeTree({ [file]: 'export const GET = () => new Response();\n' });
     const ctx = runGherkinSetup(
       defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }),
       stubContext(true, pathToFileURL(`${dir}${path.sep}src${path.sep}`)),

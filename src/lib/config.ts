@@ -1309,7 +1309,7 @@ function resolveGherkinOptions(
  * (d) `injectRoute` mounts `/api/scenarios.json` (#126, ADR-0054), so the
  *     `llms.txt` line that advertises it never points at a 404 and a site adds no
  *     route file. A site that already mounts its own `src/pages/api/scenarios.json.*`
- *     keeps it: the injection is skipped, because Astro rejects two routes for one
+ *     (or `scenarios.json/index.*`) keeps it: the injection is skipped, so the two routes never meet at one
  *     address (`hasOwnScenarioIndexPage`). The route reads `sourceRoot` and
  *     `sourceUrlPrefix` from `virtual:doc-kitty/gherkin-scenario-index`, so it
  *     resolves sources the way the generator did.
@@ -1366,7 +1366,13 @@ function gherkinIntegration(
               ],
             },
           });
-          injectRoute({ pattern: '/api/scenarios.json', entrypoint: SCENARIO_INDEX_ENTRYPOINT });
+          // `prerender`: the route reads feature files at build, so it stays static
+          // even when the site sets `output: 'server'`.
+          injectRoute({
+            pattern: '/api/scenarios.json',
+            entrypoint: SCENARIO_INDEX_ENTRYPOINT,
+            prerender: true,
+          });
         }
         if (typeof logger.info === 'function') {
           logger.info(
@@ -1386,7 +1392,7 @@ export const SCENARIO_INDEX_MODULE_ID = 'virtual:doc-kitty/gherkin-scenario-inde
 const SCENARIO_INDEX_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/scenario-index-injected';
 
 /** Page extensions Astro treats as an endpoint file. */
-const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs'];
+const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs', 'tsx', 'jsx'];
 
 /**
  * True when the site mounts its own `api/scenarios.json` endpoint under
@@ -1396,8 +1402,11 @@ const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs'];
  */
 export function hasOwnScenarioIndexPage(srcDir: URL | string | undefined, root: string): boolean {
   const src = srcDir ? fileURLToPath(srcDir) : path.join(root, 'src');
-  return ENDPOINT_EXTENSIONS.some((ext) =>
-    existsSync(path.join(src, 'pages', 'api', `scenarios.json.${ext}`)),
+  const api = path.join(src, 'pages', 'api');
+  return ENDPOINT_EXTENSIONS.some(
+    (ext) =>
+      existsSync(path.join(api, `scenarios.json.${ext}`)) ||
+      existsSync(path.join(api, 'scenarios.json', `index.${ext}`)),
   );
 }
 
