@@ -214,10 +214,12 @@ describe('scenarioIndexRoute — shape', () => {
     expect(feature.scenarios[1].anchor).toBe('anchor-packing');
     expect(feature.scenarios[1].steps[0]).toEqual({ keyword: 'Given', text: 'a confirmed booking' });
     // Outline: placeholders kept verbatim, Examples rows NOT expanded.
-    expect(feature.scenarios[2]).toMatchObject({
+    expect(feature.scenarios[2]).toEqual({
       name: 'Refuse cargo that does not fit',
       rule: 'A booking over capacity is refused',
       anchor: 'anchor-refuse',
+      line: 28,
+      tags: [],
       outline: true,
       steps: [
         { keyword: 'Given', text: 'a consignment of <size> TEU' },
