@@ -81,9 +81,15 @@ not maintain a navigation file.
   equals the group's label (the group takes its label from that same page), it
   also reads "Overview". Give the index page a label that differs from its
   group's if you want it kept.
-  The word "Overview" is English only for now; translating it is tracked in
-  [#161](https://github.com/spec-kitty/doc-kitty/issues/161), so a site in another
-  language shows "Overview" in the sidebar for now.
+  The word is a translatable UI string, `dockitty.sidebar.indexLabel`, and its
+  English default is "Overview". In a multilingual site, translate it in your
+  Starlight `i18n` files and each language shows its own word. To set one label
+  for every language, pass
+  `defineDocKittyIntegrations({ sidebar: { indexLabel: 'Intro' } })`; the option
+  wins over the translation. `sidebar` takes either the Starlight sidebar array
+  or this `{ indexLabel }` object. A blank label or an unknown key under it stops
+  the build. The "another page already has this label" check uses the label you
+  chose.
 - **Within a group the order is always: the index page, then the other pages,
   then the sub-folders.** Pages keep the order Starlight gives them (their own
   `sidebar.order`, then alphabetical). Because pages always come before

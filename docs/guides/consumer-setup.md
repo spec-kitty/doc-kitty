@@ -783,7 +783,8 @@ gherkin: {
 | `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. An include's source line links the same way. |
 | `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`, and only valid with `sources`. |
 | `titles` | none | Hub titles by source directory, for names a directory can't spell: `{ hr: 'HR', 'shipping/edi': 'EDI messages' }`. A key is the directory relative to its source, as written on disk; the title replaces the directory name in the hub and its sidebar group. A key that matches no directory with a feature warns. Keys must be plain relative paths and titles non-blank strings. Only valid with `sources`. |
-| `results` | none | A Cucumber report (Messages NDJSON or JSON) whose results are shown next to every scenario rendered from a `.feature` file. A path relative to the site root, or `{ report, root }` with `root` the directory Cucumber ran in. See [Gherkin: test results](#gherkin-test-results). |
+| `results` | none | A Cucumber report (Messages NDJSON or JSON) whose results are shown next to every scenario rendered from a `.feature` file. A path relative to the site root, or `{ report, root, required }` with `root` the directory Cucumber ran in and `required` a boolean (see below). See [Gherkin: test results](#gherkin-test-results). |
+| `results.required` | `true` | Whether a missing report fails the build when the `CI` environment variable is set. Set `false` for preview or docs-only jobs that never run the tests. Must be `true` or `false`. |
 
 An unknown key, a non-boolean `fences`, `section`, `allowEmpty` or `titles`
 without `sources`, and any value other than `true` or an object (including
@@ -907,16 +908,23 @@ gherkin: {
   it. A report with absolute paths from another machine is matched by the end of
   each path, when exactly one file matches.
 - **A missing report** logs `[dk-gherkin] gherkin.results report not found` and the
-  site builds without results. **An unreadable one** (not a file, over 64 MiB, not
+  site builds without results, on your machine. **When the `CI` environment
+  variable is set** (not empty, `false` or `0`, in any letter case), a missing
+  report fails the build instead, and the message names the report and the
+  opt-out. Produce the report in the same job, as above, rather than committing it.
+  For a preview or docs-only job that never runs the tests, set
+  `gherkin: { results: { report: 'reports/cucumber.ndjson', required: false } }`
+  and the job warns as it does locally. **An unreadable one** (not a file, over 64 MiB, not
   a Cucumber report) fails the build, naming the report and line.
 - **A stale report** (made from another version of a file) shows no result for that
-  file and logs a warning naming it. Run the tests and the docs build from the same
+  file and logs a warning naming it. A single-scenario include shows "Results not shown" on its result line. Run the tests and the docs build from the same
   commit.
 - **Generated pages are unaffected on disk.** Results are added when a page
   renders, so committed pages and the `--check` gate do not change.
 - **The scenario index:** the injected `/api/scenarios.json` carries the results
   too. If you mount `scenarioIndexRoute` yourself, pass the same value to
-  `scenarioIndexRoute({ results })`.
+  `scenarioIndexRoute({ results })`. A route of your own that omits `results` while `gherkin.results` is set logs
+  one warning per build or dev server, naming the route file and the value to pass.
 - **Freshness:** with `docKittyDocsLoader`, a changed report re-renders the pages
   that show results, in a build and in the dev server.
 - **Keep the report out of `public/`.** It holds failure messages and paths; only
