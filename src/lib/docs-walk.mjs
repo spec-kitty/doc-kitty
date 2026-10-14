@@ -7,7 +7,7 @@
  * Plain ESM with JSDoc types, like `vocabulary-core.mjs`; kept apart from it
  * because it reads the file system and the core must stay fs-free.
  */
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -23,6 +23,8 @@ import path from 'node:path';
 export function walkMarkdownPaths(absBase) {
   /** @type {string[]} */
   const out = [];
+  /** Real paths of the directories on the current descent: a symlink back into one is a loop. */
+  const active = new Set();
   /**
    * @param {string} dir
    * @param {string} rel
@@ -30,11 +32,15 @@ export function walkMarkdownPaths(absBase) {
   const walk = (dir, rel) => {
     /** @type {string[]} */
     let names;
+    let real;
     try {
+      real = realpathSync(dir);
       names = readdirSync(dir);
     } catch {
       return; // base absent → an empty content tree (glob() itself no-ops too)
     }
+    if (active.has(real)) return; // symlink loop: still followed once, never re-entered
+    active.add(real);
     for (const name of names) {
       if (name.startsWith('.')) continue;
       const abs = path.join(dir, name);
@@ -51,6 +57,7 @@ export function walkMarkdownPaths(absBase) {
       }
       if (/\.mdx?$/i.test(name) && !/(^|\/)log\.md$/i.test(relPath)) out.push(relPath);
     }
+    active.delete(real);
   };
   walk(absBase, '');
   return out;

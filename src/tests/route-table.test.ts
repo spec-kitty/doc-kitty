@@ -10,7 +10,7 @@
  * Mission: generated-page-and-link-integrity-01M4VB0N, WP01.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -126,6 +126,12 @@ describe('one route rule for every consumer', () => {
   it('a draft index.md that is the only page in its folder on a README-only site is a draft route', () => {
     const docs = path.join(site({ 'README.md': 'active', 'y/index.md': 'draft' }), 'docs');
     expect([...draftRoutesOf(docs, 'README')]).toEqual(['/y/']);
+  });
+
+  it('walks a symlink loop once instead of overflowing the stack', () => {
+    const docs = path.join(site({ 'a/page.md': 'active' }), 'docs');
+    symlinkSync(docs, path.join(docs, 'a', 'back'), 'dir');
+    expect(walkMarkdownPaths(docs).sort()).toEqual(['a/page.md']);
   });
 
   it('withholds draft files, and only draft files, when drafts are off', () => {
