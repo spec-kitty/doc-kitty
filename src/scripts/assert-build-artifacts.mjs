@@ -1634,6 +1634,9 @@ const GHERKIN_RESULTS_PAGES = [
     rel: path.join('behaviour', 'shipping', 'track-consignment', 'index.html'),
     summary: 'Results: 2 not run',
     statuses: ['not-run'],
+    // The `@wip` feature is a draft (SCENARIO_DRAFT_FEATURE_ID): built, and so
+    // checked, only when drafts are published. With drafts off it must be absent.
+    draft: true,
   },
   {
     rel: path.join('behaviour', 'hr', 'request-leave', 'index.html'),
@@ -1646,9 +1649,15 @@ const GHERKIN_RESULTS_PAGES = [
 // Text from the report that only a leak could put on a page.
 const GHERKIN_RESULTS_LEAKS = ['AssertionError', 'allowance service timed out', '/home/runner', 'steps/steps.js'];
 
-async function assertGherkinResults(distDir) {
+async function assertGherkinResults(distDir, publishDrafts) {
   for (const page of GHERKIN_RESULTS_PAGES) {
     const label = `gherkin results (${page.rel})`;
+    if (page.draft && !publishDrafts) {
+      if (existsSync(path.join(distDir, page.rel))) {
+        fail(`${label}: a draft page was built with draft publication off`);
+      }
+      continue;
+    }
     const html = await readTextOrFail(path.join(distDir, page.rel), label);
     const summaries = [...html.matchAll(/<p class="dk-gherkin__results">([\s\S]*?)<\/p>/g)].map((m) =>
       m[1].replace(/<[^>]+>/g, ''),
@@ -2295,7 +2304,7 @@ async function main() {
   // 6d) gherkin-in-any-page (ADR-0051): the in-page Gherkin demonstrator renders
   // its structured fences, keeps its raw fence as code, and links the CSS.
   await assertGherkinDemonstrator(distDir);
-  await assertGherkinResults(distDir);
+  await assertGherkinResults(distDir, publishDrafts);
 
   // 7) slide-decks WP04: published-deck build-artifact assertions (BA-2/3/6/7/9).
   // The published showcase deck renders OUT-OF-FRAME via the deck route yet stays a
