@@ -62,6 +62,9 @@ site.
    decides, and both consumers call it: the build's remark plugin and the
    source check (`dockitty-check-links`). They give the same answer when the check
    runs with `--strict`, the site's index names and the site's draft setting.
+   `docsRootFromSignal` (`src/lib/routes/shared.ts`) is a third consumer of the
+   index-name rule: it derives the docs root from a loaded entry's id and file
+   path with the same `readmeToIndexId` step, so it must agree with the table.
    - The link resolves relative to the folder of the file that holds it.
    - Only a path ending in `.md` or `.mdx` is considered. Query and fragment are
      kept as written. The path is URL-decoded before lookup, and the route is
@@ -95,7 +98,9 @@ site.
    and always for the toolkit's own `example/docs` site root. Every other root is
    non-strict.
    - **A non-strict root** is a repository's docs folder read as files, as on
-     GitHub. It behaves as in 0.2.0. A relative link, a reference-style
+     GitHub. It behaves as in 0.2.0. Its walk deliberately differs from
+     `docs-walk.mjs`: it does not skip `log.md` or dot-prefixed paths, because a
+     reader on GitHub can open those files. A relative link, a reference-style
      definition or a `related:` ref passes when the file or folder it names
      exists. A missing target is dangling. Nothing else is reported, and draft
      status is not consulted. The one addition is that reference-style

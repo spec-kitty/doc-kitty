@@ -136,6 +136,8 @@ function stripCode(md) {
   return out.join('\n');
 }
 
+// The non-strict walk deliberately differs from lib/docs-walk.mjs: it reads the
+// folder as GitHub does, so log.md and dot paths count (ADR-0047 section 6).
 function walk(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
