@@ -72,6 +72,7 @@ export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report
  * route (project-root relative, POSIX) while `gherkin.results` is set. The
  * integration publishes it; a route that calls `scenarioIndexRoute()` without
  * `results` names it in its warning (FR-008). Cleared when nothing is mounted.
+ * Internal: the integration owns this variable; adopters must not set it.
  */
 export const DK_GHERKIN_ROUTE_ENV = 'DK_GHERKIN_ROUTE';
 

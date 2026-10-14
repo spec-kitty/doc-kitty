@@ -1656,7 +1656,8 @@ const GHERKIN_RESULTS_PAGES = [
   },
   { rel: GHERKIN_DEMO_RELPATH, summary: 'Results: 1 undefined, 4 passed', statuses: ['undefined'] },
 ];
-// Text from the report that only a leak could put on a page.
+// Text from the report that only a leak could put on a page. The scan covers all
+// of dist, so example pages must not quote these strings or the gate fails.
 const GHERKIN_RESULTS_LEAKS = ['AssertionError', 'allowance service timed out', '/home/runner', 'steps/steps.js'];
 
 async function assertGherkinResults(distDir, publishDrafts) {
