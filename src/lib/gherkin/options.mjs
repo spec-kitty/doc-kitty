@@ -268,7 +268,8 @@ function checkTitles(titles, optionName) {
         `${GHERKIN_LOG_PREFIX} ${name}[${JSON.stringify(key)}] must be a non-blank string; got ${JSON.stringify(title)}`,
       );
     }
-    copy[key] = title;
+    // defineProperty, not assignment: `copy['__proto__'] = …` sets the prototype and drops the key.
+    Object.defineProperty(copy, key, { value: title, enumerable: true, writable: true, configurable: true });
   }
   return copy;
 }

@@ -233,6 +233,13 @@ describe('gherkin.titles: hub titles by source directory (#125)', () => {
     const pages = normalizeGherkinOptions({ sources: ['features'], titles }).pages;
     expect(pages?.titles).toEqual(titles);
     expect(pages?.titles).not.toBe(titles);
+    // A `__proto__` key stays an own key (it is not swallowed into the prototype), so
+    // the unknown-key warning still sees it.
+    const proto = normalizeGherkinOptions({
+      sources: ['features'],
+      titles: JSON.parse('{"__proto__":"X"}'),
+    }).pages;
+    expect(Object.keys(proto?.titles ?? {})).toEqual(['__proto__']);
     expect(normalizeGherkinOptions({ sources: ['features'] }).pages).not.toHaveProperty('titles');
   });
 

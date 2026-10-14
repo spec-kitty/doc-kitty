@@ -242,7 +242,13 @@ function parseTitles(values) {
     if (eq === -1) throw new Error(`--titles expects <dir>=<title>; got ${JSON.stringify(value)}`);
     const dir = value.slice(0, eq);
     if (Object.hasOwn(titles, dir)) throw new Error(`--titles names ${JSON.stringify(dir)} twice`);
-    titles[dir] = value.slice(eq + 1);
+    // defineProperty, not assignment: `titles['__proto__'] = …` sets the prototype and drops the key.
+    Object.defineProperty(titles, dir, {
+      value: value.slice(eq + 1),
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
   }
   return titles;
 }
