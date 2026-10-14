@@ -38,6 +38,7 @@ import { resolveTheme, DEFAULT_TOKEN_SHEET, type DocKittyTheme } from './theme.j
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
 import sitemapOrderIntegration from './sitemap-order.js';
+import { DOC_KITTY_I18N_PLUGIN } from './i18n-plugin.js';
 import { PRE_PAINT_SCRIPT } from './toc-rail/pre-paint.js';
 import {
   buildDirectoryMeta,
@@ -83,7 +84,7 @@ import {
 } from './glossary/definitions-payload.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures } from './gherkin/load.mjs';
 import { generateFeaturePages } from './gherkin/generate.mjs';
-import { normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
+import { DK_GHERKIN_ROUTE_ENV, normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
 import { drainFatal, formatFatal, resetFatal } from './gherkin/errors.mjs';
 import gherkinFence, { type GherkinFenceOptions } from './remark/gherkin-fence.js';
 import { loadReport } from './gherkin/results-load.mjs';
@@ -110,6 +111,35 @@ export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
  */
 export { DK_INDEX_BASENAME_ENV };
 
+/** The object form of {@link DocKittyOptions.sidebar} (#161). */
+export interface DocKittySidebarOptions {
+  /** Label of a group's index entry that repeats the group label; a non-empty string. */
+  indexLabel?: string;
+}
+
+/**
+ * Split the `sidebar` option into the consumer's Starlight sidebar (array) and
+ * the generated-sidebar options (object), validating the latter eagerly.
+ */
+function splitSidebarOption(sidebar: DocKittyOptions['sidebar']): {
+  starlightSidebar: StarlightUserConfig['sidebar'];
+  indexLabel: string | undefined;
+} {
+  if (sidebar === undefined || Array.isArray(sidebar)) {
+    return { starlightSidebar: sidebar as StarlightUserConfig['sidebar'], indexLabel: undefined };
+  }
+  if (typeof sidebar !== 'object' || sidebar === null) {
+    throw new Error('[dk-config] sidebar must be a Starlight sidebar array or an object with indexLabel');
+  }
+  const { indexLabel, ...unknown } = sidebar as DocKittySidebarOptions & Record<string, unknown>;
+  const [extra] = Object.keys(unknown);
+  if (extra !== undefined) throw new Error(`[dk-config] unknown key "${extra}" under sidebar; expected indexLabel`);
+  if (indexLabel !== undefined && (typeof indexLabel !== 'string' || indexLabel.trim() === '')) {
+    throw new Error('[dk-config] sidebar.indexLabel must be a non-empty string');
+  }
+  return { starlightSidebar: undefined, indexLabel };
+}
+
 export interface DocKittyOptions {
   /** Site title shown in the header. */
   title: string;
@@ -117,8 +147,15 @@ export interface DocKittyOptions {
   description?: string;
   /** Social + repo links, forwarded to Starlight. */
   social?: StarlightUserConfig['social'];
-  /** Sidebar config; omit to let Starlight autogenerate from the tree. */
-  sidebar?: StarlightUserConfig['sidebar'];
+  /**
+   * Sidebar config. An ARRAY is a Starlight sidebar written by the consumer and
+   * is used as written (never reshaped). Omit it to let Starlight autogenerate
+   * from the tree. An OBJECT configures the generated sidebar instead; its one
+   * key, `indexLabel`, sets the label of a group's index entry that repeats the
+   * group label (#161) and wins over the `dockitty.sidebar.indexLabel` UI
+   * string (default "Overview").
+   */
+  sidebar?: StarlightUserConfig['sidebar'] | DocKittySidebarOptions;
   /**
    * Directory (relative to the site root) holding the Common Docs tree — the
    * source of truth for which pages are drafts. Defaults to the convention's
@@ -285,11 +322,14 @@ export interface DocKittyOptions {
          * report's relative `uri`s resolve against it, so a site that checks
          * another repository out into `vendor/x` sets `root: 'vendor/x'`.
          *
-         * A missing report is a build warning (a local build has no CI report);
-         * one that cannot be read is build-fatal. Only statuses, counts, the run
+         * A missing report is a build warning locally (a local build has no CI
+         * report) and build-fatal when the `CI` environment variable is set (not
+         * empty, `false` or `0`), so a CI pipeline that forgot to produce the
+         * report cannot publish a site without results. Set `required: false` to
+         * keep it a warning in CI. One that cannot be read is build-fatal. Only statuses, counts, the run
          * date and the commit id reach a page.
          */
-        results?: string | { report: string; root?: string };
+        results?: string | { report: string; root?: string; required?: boolean };
       };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
@@ -1424,20 +1464,35 @@ const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs', 'tsx', 'jsx
  * site's route alone.
  */
 export function hasOwnScenarioIndexPage(srcDir: URL | string | undefined, root: string): boolean {
+  return findOwnScenarioIndexPage(srcDir, root) !== undefined;
+}
+
+/**
+ * The site's own scenario-index endpoint, as a project-root-relative POSIX path
+ * (`src/pages/api/scenarios.json.ts`), or `undefined` when it mounts none.
+ */
+export function findOwnScenarioIndexPage(srcDir: URL | string | undefined, root: string): string | undefined {
   const src = srcDir ? fileURLToPath(srcDir) : path.join(root, 'src');
   const api = path.join(src, 'pages', 'api');
-  return ENDPOINT_EXTENSIONS.some(
-    (ext) =>
-      existsSync(path.join(api, `scenarios.json.${ext}`)) ||
-      existsSync(path.join(api, 'scenarios.json', `index.${ext}`)),
-  );
+  for (const ext of ENDPOINT_EXTENSIONS) {
+    for (const candidate of [path.join(api, `scenarios.json.${ext}`), path.join(api, 'scenarios.json', `index.${ext}`)]) {
+      if (existsSync(candidate)) return path.relative(root, candidate).split(path.sep).join('/');
+    }
+  }
+  return undefined;
+}
+
+/** `CI` is set: trimmed and lower-cased, non-empty and not `false` or `0`. */
+function isCiEnv(): boolean {
+  const value = (process.env.CI ?? '').trim().toLowerCase();
+  return value !== '' && value !== 'false' && value !== '0';
 }
 
 /**
  * Read the configured Cucumber report once at config time (ADR-0055 decision 9),
  * so a broken pipeline fails before any page renders:
  *  - missing: a warning, and the site builds without results (a local build has
- *    no CI report);
+ *    no CI report), unless CI is set and `required` is not `false`: THROWN;
  *  - not a file, too large, or not a Cucumber report: THROWN, so the build fails
  *    with the report's path (and line, for an NDJSON envelope);
  *  - every step skipped: a warning, since that is what `--dry-run` writes.
@@ -1452,6 +1507,12 @@ function checkResultsReport(
   addWatchFile?.(path.resolve(root, results.report));
   const loaded = loadReport(results, { projectRoot: root });
   if (!loaded.ok) {
+    if (results.required !== false && isCiEnv()) {
+      throw new Error(
+        `${GHERKIN_LOG_PREFIX} gherkin.results report not found: ${results.report} ` +
+          '(CI is set; set gherkin.results.required: false to build without results)',
+      );
+    }
     logger.warn(
       `${GHERKIN_LOG_PREFIX} gherkin.results report not found: ${results.report}; scenarios render without results`,
     );
@@ -1525,6 +1586,13 @@ function gherkinFenceIntegration(opts: ResolvedGherkinOptions): AstroIntegration
         resetFatal();
         cacheDir = config?.cacheDir;
         if (opts.results) checkResultsReport(opts.results, { addWatchFile, logger });
+        // FR-008: a site's own scenario route is told apart from the injected
+        // one HERE, not in the codegen hook, because that one exists only with
+        // `gherkin.sources` while `results` can be set without it. The route
+        // names the file in its warning when it is given no `results`.
+        const ownRoute = opts.results ? findOwnScenarioIndexPage(config?.srcDir, process.cwd()) : undefined;
+        if (ownRoute) process.env[DK_GHERKIN_ROUTE_ENV] = ownRoute;
+        else delete process.env[DK_GHERKIN_ROUTE_ENV];
         updateConfig({ markdown: { remarkPlugins: [[gherkinFence, fenceOptions]] } });
       },
       'astro:build:done': () => {
@@ -1691,6 +1759,8 @@ export interface RouteShapingOptions {
    * served. Derived from the draft files, not from {@link unpublishedDirs}.
    */
   unpublishedPaths?: readonly string[];
+  /** The `sidebar.indexLabel` option (#161); absent = the locale's UI string. */
+  indexLabel?: string;
 }
 
 /** The slug of the folder holding a docs-relative path (`''` for the docs root). */
@@ -1776,6 +1846,7 @@ export function routeShapingSource(options: RouteShapingOptions): string {
     pagination: options.pagination,
     directoryMeta: [...meta.entries()],
     unpublishedDirs: unpublished,
+    ...(options.indexLabel ? { indexLabel: options.indexLabel } : {}),
   };
   return (
     '// AUTO-GENERATED by @spec-kitty/doc-toolkit route-shaping integration. Do not edit.\n' +
@@ -1949,7 +2020,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     title,
     description,
     social,
-    sidebar,
+    sidebar: sidebarOption,
     docsDir = 'docs',
     base = '/',
     theme,
@@ -1959,6 +2030,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     gherkin,
     starlight: overrides,
   } = options;
+  const { starlightSidebar: sidebar, indexLabel } = splitSidebarOption(sidebarOption);
 
   // Opt-in gherkin seam (ADR-0046/0051): normalised + validated EAGERLY here, so a
   // bad option throws a `[dk-gherkin]` Error at config time, before any hook runs.
@@ -1981,6 +2053,8 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // when absent, so a later config without results does not inherit it.
   if (gherkinOpts?.results) process.env[DK_GHERKIN_RESULTS_ENV] = gherkinOpts.results.report;
   else delete process.env[DK_GHERKIN_RESULTS_ENV];
+  // Re-published by the fence stage's setup hook when an own route is mounted.
+  delete process.env[DK_GHERKIN_ROUTE_ENV];
 
   // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
   // sitemap draft filter resolves internally (`path.resolve(process.cwd(),
@@ -2057,6 +2131,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     indexBasename,
     shapeSidebar: sidebarIsGenerated,
     pagination: overrides?.pagination !== false,
+    ...(indexLabel ? { indexLabel } : {}),
   };
 
   const starlightConfig: StarlightUserConfig = {
@@ -2095,6 +2170,10 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // after it, on the already shaped route data, so the consumer has the last
     // word. Applied after `...overrides` for the same reason as `components`.
     routeMiddleware: [ROUTE_MIDDLEWARE, ...[overrides?.routeMiddleware ?? []].flat()],
+    // The toolkit's UI strings (#161) ride a Starlight plugin. It is listed FIRST:
+    // Starlight merges injected translations in plugin order, so an adopter's
+    // plugin (kept, after ours) can still override the `en` default.
+    plugins: [DOC_KITTY_I18N_PLUGIN, ...(overrides?.plugins ?? [])],
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
     // five carriers, in EVERY case (with or without a theme; ADR-0044 added
     // `Header` to the original four). The exactly-five invariant is established

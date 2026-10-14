@@ -65,7 +65,15 @@ export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
 ]));
 
 /** The keys of the object form of `gherkin.results` (ADR-0055). */
-export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report', 'root']));
+export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report', 'root', 'required']));
+
+/**
+ * The environment variable that names the site's own `src/pages/api/scenarios.json.*`
+ * route (project-root relative, POSIX) while `gherkin.results` is set. The
+ * integration publishes it; a route that calls `scenarioIndexRoute()` without
+ * `results` names it in its warning (FR-008). Cleared when nothing is mounted.
+ */
+export const DK_GHERKIN_ROUTE_ENV = 'DK_GHERKIN_ROUTE';
 
 /**
  * The raw object form (structurally the object arm of `DocKittyOptions['gherkin']`).
@@ -124,6 +132,8 @@ export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report
  *   project-root relative, POSIX.
  * @property {string} root The directory Cucumber ran in, project-root relative
  *   (default `'.'`): relative URIs in the report resolve against it.
+ * @property {boolean} [required] Present only when given. `false` keeps a
+ *   missing report a warning when `CI` is set (otherwise it fails the build).
  */
 
 /**
@@ -162,11 +172,18 @@ export function normalizeResultsOption(raw, optionName = 'gherkin.results') {
         `expected one of ${GHERKIN_RESULTS_KEYS.join(', ')}`,
     );
   }
-  const { report, root = '.' } = /** @type {{ report?: unknown, root?: unknown }} */ (raw);
+  const { report, root = '.', required } = /** @type {{ report?: unknown, root?: unknown, required?: unknown }} */ (raw);
   if (!isRelativePosixPath(report) || !isRelativePosixPath(root)) {
     throw new Error(`${GHERKIN_LOG_PREFIX} ${shape}; got ${JSON.stringify(raw)}`);
   }
-  return { report: /** @type {string} */ (report), root: /** @type {string} */ (root) };
+  if (required !== undefined && typeof required !== 'boolean') {
+    throw new Error(`${GHERKIN_LOG_PREFIX} ${optionName}.required must be a boolean`);
+  }
+  return {
+    report: /** @type {string} */ (report),
+    root: /** @type {string} */ (root),
+    ...(required !== undefined ? { required } : {}),
+  };
 }
 
 /**

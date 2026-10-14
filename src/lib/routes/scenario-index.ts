@@ -53,7 +53,8 @@ import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import { feedsSurface, resolveSectionRegistry, sectionFeeds } from '../sections.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures, type FeatureFile } from '../gherkin/load.mjs';
 import { headingKey } from '../gherkin/text.mjs';
-import { normalizeResultsOption } from '../gherkin/options.mjs';
+import { DK_GHERKIN_ROUTE_ENV, normalizeResultsOption } from '../gherkin/options.mjs';
+import { DK_GHERKIN_RESULTS_ENV } from '../gherkin/include-scan.mjs';
 import { featureResults, type Outcome } from '../gherkin/results.mjs';
 import { loadReport } from '../gherkin/results-load.mjs';
 import { featureView } from '../gherkin/view.mjs';
@@ -82,7 +83,7 @@ export interface ScenarioIndexRouteOptions {
    * index a top-level `results` block naming the run. Same shape and meaning:
    * a report path, or `{ report, root }`.
    */
-  results?: string | { report: string; root?: string };
+  results?: string | { report: string; root?: string; required?: boolean };
 }
 
 /** A scenario's (or outline's) result (ADR-0055). */
@@ -348,8 +349,35 @@ function attachResults(
   });
 }
 
+/** The hand-mounted-route warning (FR-008) fires once per process (one build). */
+let warnedHandMounted = false;
+
+/** @internal Re-arm the once-per-build warning; tests only. */
+export function resetHandMountedWarning(): void {
+  warnedHandMounted = false;
+}
+
+/**
+ * Warn, once, when `gherkin.results` is set (the integration published the
+ * report in `DK_GHERKIN_RESULTS`) but this route was given no `results`. The
+ * injected route always passes them, so only a site's own route reaches this.
+ * The route has no logger: `console.warn`, like the other standalone routes.
+ */
+function warnHandMountedWithoutResults(options: ScenarioIndexRouteOptions): void {
+  if (warnedHandMounted || options.results) return;
+  const report = process.env[DK_GHERKIN_RESULTS_ENV];
+  if (!report) return;
+  warnedHandMounted = true;
+  const file = process.env[DK_GHERKIN_ROUTE_ENV] || 'src/pages/api/scenarios.json';
+  console.warn(
+    `${GHERKIN_LOG_PREFIX} ${file} calls scenarioIndexRoute() without \`results\` while gherkin.results is set; ` +
+      `api/scenarios.json will carry no results. Pass { results: '${report}' } (the same value as gherkin.results).`,
+  );
+}
+
 export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): APIRoute {
   return async ({ site }) => {
+    warnHandMountedWithoutResults(options);
     // The same section `feeds` filter `/api/index.json` applies (absent registry
     // or a section omitting `feeds` → no filtering), on top of draft gating.
     const registry = resolveSectionRegistry(await docsRoot());

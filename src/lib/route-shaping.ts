@@ -106,6 +106,11 @@ export interface ShapeSidebarOptions {
    * When any are given, a group left with no entries is dropped.
    */
   unpublishedDirs?: Iterable<string>;
+  /**
+   * The label of a group's index entry when it repeats the group label (#161).
+   * Default: {@link INDEX_ENTRY_LABEL}. Resolve it per page with {@link resolveIndexLabel}.
+   */
+  indexLabel?: string;
 }
 
 /** The result of {@link shapeSidebar}. */
@@ -154,6 +159,23 @@ export { humaniseDirectoryName };
 /** The sidebar label of a group's index entry when its own label repeats the group's (#112). */
 export const INDEX_ENTRY_LABEL = 'Overview';
 
+/** The Starlight UI-string key the label is translated through (#161). */
+export const INDEX_LABEL_KEY = 'dockitty.sidebar.indexLabel';
+
+/**
+ * The index-entry label for one page: the `sidebar.indexLabel` option, else the
+ * locale's translation of {@link INDEX_LABEL_KEY}, else {@link INDEX_ENTRY_LABEL}.
+ * `translate` is Starlight's `locals.t`; i18next echoes the key back for a
+ * missing string, which counts as no translation.
+ */
+export function resolveIndexLabel(option?: string, translate?: (key: string) => unknown): string {
+  if (option) return option;
+  const translated = translate?.(INDEX_LABEL_KEY);
+  return typeof translated === 'string' && translated !== '' && translated !== INDEX_LABEL_KEY
+    ? translated
+    : INDEX_ENTRY_LABEL;
+}
+
 /** Normalise an Astro `base` to `''` or `/prefix` (no trailing slash). */
 function normaliseBase(base: string | undefined): string {
   return ('/' + (base ?? '') + '/').replace(/\/{2,}/g, '/').replace(/\/$/, '');
@@ -197,6 +219,7 @@ export function shapeSidebar(
   const base = normaliseBase(options.base);
   const unpublished = new Set(options.unpublishedDirs ?? []);
   const warnings: string[] = [];
+  const indexLabel = options.indexLabel ?? INDEX_ENTRY_LABEL;
 
   interface Shaped {
     entry: SidebarEntry;
@@ -306,16 +329,16 @@ export function shapeSidebar(
     }
 
     // The index entry first in a group would repeat the heading above it
-    // ("Guides > Guides"), so it reads "Overview", unless another entry in the
+    // ("Guides > Guides"), so it reads the resolved index label ("Overview" by default), unless another entry in the
     // group already does (#112). Pagination keeps the page title.
     const first = ordered[0];
     if (
       first &&
       isIndex(first) &&
       first.entry.label === label &&
-      !ordered.some((c) => c.entry.type === 'link' && c.entry.label === INDEX_ENTRY_LABEL)
+      !ordered.some((c) => c.entry.type === 'link' && c.entry.label === indexLabel)
     ) {
-      ordered[0] = { ...first, entry: { ...first.entry, label: INDEX_ENTRY_LABEL } };
+      ordered[0] = { ...first, entry: { ...first.entry, label: indexLabel } };
     }
 
     return { entry: { ...entry, label, entries: ordered.map((c) => c.entry) }, dir };

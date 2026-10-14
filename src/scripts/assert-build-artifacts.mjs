@@ -340,6 +340,16 @@ async function htmlFilesUnder(dir) {
   }
   return out;
 }
+/** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
+async function textFilesUnder(dir) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...(await textFilesUnder(abs)));
+    else if (/\.(html|txt|json|xml)$/.test(entry.name)) out.push(abs);
+  }
+  return out;
+}
 const TOOLKIT_CONFIG_SRC = path.join(REPO_ROOT, 'src', 'lib', 'config.ts');
 const PNPM_LOCKFILE = path.join(REPO_ROOT, 'pnpm-lock.yaml');
 // #13 (C-002): the build-render deps are exact-pinned (golden-file deps):
@@ -1673,6 +1683,17 @@ async function assertGherkinResults(distDir, publishDrafts) {
     if (page.label && !html.includes(page.label)) fail(`${label}: no "${page.label}" badge`);
     for (const leak of GHERKIN_RESULTS_LEAKS) {
       if (html.includes(leak)) fail(`${label}: shows "${leak}" from the report — only statuses may be published (ADR-0055)`);
+    }
+  }
+  // Not only the results pages: no text file in the build (llms*.txt, agent pages,
+  // the scenario index, feeds, sitemap) may carry the report's failure text.
+  const textFiles = await textFilesUnder(distDir);
+  for (const file of textFiles) {
+    const text = await readFile(file, 'utf8');
+    for (const leak of GHERKIN_RESULTS_LEAKS) {
+      if (text.includes(leak)) {
+        fail(`gherkin results (${path.relative(distDir, file)}): contains "${leak}" from the report — only statuses may be published (ADR-0055)`);
+      }
     }
   }
   const index = JSON.parse(await readTextOrFail(path.join(distDir, SCENARIO_INDEX_RELPATH), 'scenario index'));

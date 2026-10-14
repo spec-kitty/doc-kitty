@@ -8,6 +8,6 @@ declare module 'virtual:doc-kitty/gherkin-scenario-index' {
   export const scenarioIndexOptions: {
     sourceRoot: string;
     sourceUrlPrefix?: string;
-    results?: { report: string; root: string };
+    results?: { report: string; root: string; required?: boolean };
   };
 }
