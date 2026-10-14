@@ -19,6 +19,12 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ENV_NAME = 'DK_INDEX_BASENAME';
+/**
+ * How long a site config may take to evaluate. A config that hangs (a network
+ * call, an unresolved promise) must not hang a CI job: it is reported like any
+ * other load failure.
+ */
+const EVALUATE_TIMEOUT_MS = 30_000;
 const CONFIG_NAMES = ['astro.config.mjs', 'astro.config.ts', 'astro.config.js'];
 
 /** Config path -> names published by evaluating it (null: it never published). */
@@ -40,7 +46,7 @@ function sameNames(a, b) {
  * Evaluate `configPath` and return the names it published, or null when it did
  * not call `defineDocKittyIntegrations`. Throws `could not load` on any failure.
  */
-function namesFromConfig(configPath, siteDir, tool) {
+function namesFromConfig(configPath, siteDir, tool, timeoutMs) {
   if (evaluated.has(configPath)) return evaluated.get(configPath);
   const env = { ...process.env };
   delete env[ENV_NAME];
@@ -48,7 +54,11 @@ function namesFromConfig(configPath, siteDir, tool) {
     cwd: siteDir,
     env,
     encoding: 'utf8',
+    timeout: timeoutMs,
   });
+  if (res.error?.code === 'ETIMEDOUT') {
+    throw new Error(`[${tool}] could not load ${shown(configPath)}: timed out after ${timeoutMs / 1000} s`);
+  }
   let answer;
   try {
     answer = JSON.parse(res.stdout.trim().split('\n').pop() ?? '');
@@ -67,6 +77,7 @@ function namesFromConfig(configPath, siteDir, tool) {
  * @param {object} [options]
  * @param {string[]} [options.flag] Names given with `--index-basename`.
  * @param {string} [options.siteDir] Site folder, when it is not the parent of `root`.
+ * @param {number} [options.timeoutMs] Evaluation time limit (default 30 s).
  * @param {string} [options.tool] Name used in messages (default `dk-check-links`).
  * @returns {{ names: string[], source: string, fromConfig: boolean }} `source` is
  *   the one-line account of where the names came from, for the CLI to print;
@@ -74,11 +85,11 @@ function namesFromConfig(configPath, siteDir, tool) {
  * @throws {Error} A config that cannot be loaded, or a flag that disagrees with it.
  */
 export function resolveSiteIndexBasenames(root, options = {}) {
-  const { flag, tool = 'dk-check-links' } = options;
+  const { flag, tool = 'dk-check-links', timeoutMs = EVALUATE_TIMEOUT_MS } = options;
   const siteDir = resolve(options.siteDir ?? dirname(resolve(root)));
   const configPath = CONFIG_NAMES.map((name) => join(siteDir, name)).find((p) => existsSync(p));
 
-  const published = configPath ? namesFromConfig(configPath, siteDir, tool) : null;
+  const published = configPath ? namesFromConfig(configPath, siteDir, tool, timeoutMs) : null;
 
   if (published) {
     if (flag && !sameNames(flag, published)) {
