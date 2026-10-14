@@ -1,0 +1,17 @@
+{
+  "rows": {
+    "#153": {
+      "evidence_ref": "docs/guides/consumer-setup.md#optional-diagrams; src/lib/config.ts diagrams TSDoc",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}
