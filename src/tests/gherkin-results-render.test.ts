@@ -372,16 +372,17 @@ describe('defineDocKittyIntegrations({ gherkin: { results } })', () => {
   it('tells the scenario route which file the site mounted itself, and nothing when it mounts none (FR-008)', () => {
     const dir = mkdtempSync(path.join(process.cwd(), 'tests/fixtures/gherkin/results/.tmp-route-'));
     try {
-      const rel = path.relative(process.cwd(), dir).split(path.sep).join('/');
+      // The project root differs from cwd (`astro build --root site`): the path is root-relative.
+      const root = pathToFileURL(`${dir}${path.sep}`);
       const srcDir = pathToFileURL(`${dir}${path.sep}src${path.sep}`);
       mkdirSync(path.join(dir, 'src', 'pages', 'api'), { recursive: true });
       // Control first: nothing mounted, nothing published (and a stale value is cleared).
       process.env.DK_GHERKIN_ROUTE = 'stale';
-      setup(RESULTS, { srcDir });
+      setup(RESULTS, { srcDir, root });
       expect(process.env.DK_GHERKIN_ROUTE).toBeUndefined();
       writeFileSync(path.join(dir, 'src', 'pages', 'api', 'scenarios.json.ts'), 'export const GET = () => new Response();\n');
-      setup(RESULTS, { srcDir });
-      expect(process.env.DK_GHERKIN_ROUTE).toBe(`${rel}/src/pages/api/scenarios.json.ts`);
+      setup(RESULTS, { srcDir, root });
+      expect(process.env.DK_GHERKIN_ROUTE).toBe('src/pages/api/scenarios.json.ts');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

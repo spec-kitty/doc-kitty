@@ -1589,8 +1589,9 @@ function gherkinFenceIntegration(opts: ResolvedGherkinOptions): AstroIntegration
         // FR-008: a site's own scenario route is told apart from the injected
         // one HERE, not in the codegen hook, because that one exists only with
         // `gherkin.sources` while `results` can be set without it. The route
-        // names the file in its warning when it is given no `results`.
-        const ownRoute = opts.results ? findOwnScenarioIndexPage(config?.srcDir, process.cwd()) : undefined;
+        // names the file in its warning when it is given no `results`. The path is
+        // relative to the Astro project root (`--root`), not to the process cwd.
+        const ownRoute = opts.results ? findOwnScenarioIndexPage(config?.srcDir, config?.root ? fileURLToPath(config.root) : process.cwd()) : undefined;
         if (ownRoute) process.env[DK_GHERKIN_ROUTE_ENV] = ownRoute;
         else delete process.env[DK_GHERKIN_ROUTE_ENV];
         updateConfig({ markdown: { remarkPlugins: [[gherkinFence, fenceOptions]] } });
