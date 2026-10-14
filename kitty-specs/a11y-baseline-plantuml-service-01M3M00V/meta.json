@@ -31,5 +31,6 @@
   "source_description": "GitHub issue #106 (spec-kitty/doc-kitty): update-a11y-baselines workflow can't regenerate baselines for PlantUML pages (no plantuml service).",
   "status_phase": "1",
   "target_branch": "fix/a11y-baseline-plantuml-service",
+  "topology": "lanes",
   "vcs": "git"
 }

@@ -13,6 +13,7 @@
   "slug": "slide-decks-01M0T72Y",
   "status_phase": "1",
   "target_branch": "feat/slide-decks",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-08-24T16:38:36.685121+00:00"
 }

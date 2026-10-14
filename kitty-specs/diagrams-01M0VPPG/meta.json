@@ -13,6 +13,7 @@
   "slug": "diagrams-01M0VPPG",
   "status_phase": "1",
   "target_branch": "feat/diagrams",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-08-25T06:33:22.104320+00:00"
 }

@@ -27,6 +27,7 @@
   "slug": "diagram-component-css-01M1PA3J",
   "status_phase": "1",
   "target_branch": "fix/diagram-component-css",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-09-04T13:49:27.629506+00:00"
 }

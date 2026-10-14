@@ -27,6 +27,7 @@
   "slug": "metadata-vocab-hub-consolidation-01M1MFVT",
   "status_phase": "1",
   "target_branch": "feat/metadata-vocab-hub-consolidation",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-09-03T23:11:54.461263+00:00"
 }

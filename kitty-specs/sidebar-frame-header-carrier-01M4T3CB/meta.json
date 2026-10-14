@@ -16,6 +16,7 @@
   "slug": "sidebar-frame-header-carrier-01M4T3CB",
   "status_phase": "1",
   "target_branch": "fix/sidebar-frame-header-carrier",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-10-13T07:56:11.691650+00:00"
 }

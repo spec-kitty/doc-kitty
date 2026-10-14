@@ -13,6 +13,7 @@
   "slug": "audience-related-external-references-01M0S3F4",
   "status_phase": "1",
   "target_branch": "feat/audience-related-external-references",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-08-24T09:43:04.249658+00:00"
 }

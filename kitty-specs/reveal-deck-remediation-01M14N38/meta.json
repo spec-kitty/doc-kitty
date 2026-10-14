@@ -13,6 +13,7 @@
   "slug": "reveal-deck-remediation-01M14N38",
   "status_phase": "1",
   "target_branch": "fix/reveal-deck-remediation",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-08-28T18:30:08.703570+00:00"
 }

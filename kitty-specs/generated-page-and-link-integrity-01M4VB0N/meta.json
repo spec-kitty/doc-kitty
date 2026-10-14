@@ -16,6 +16,7 @@
   "slug": "generated-page-and-link-integrity-01M4VB0N",
   "status_phase": "1",
   "target_branch": "fix/generated-page-and-link-integrity",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-10-13T19:49:16.649581+00:00"
 }

@@ -27,6 +27,7 @@
   "slug": "post-markua-hardening-01M18HD2",
   "status_phase": "1",
   "target_branch": "feat/post-markua-hardening",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-08-30T05:55:19.807371+00:00"
 }

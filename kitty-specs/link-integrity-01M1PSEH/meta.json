@@ -27,6 +27,7 @@
   "slug": "link-integrity-01M1PSEH",
   "status_phase": "1",
   "target_branch": "fix/link-integrity",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-09-04T18:11:55.464274+00:00"
 }

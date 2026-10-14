@@ -13,6 +13,7 @@
   "slug": "qol-adoption-enablers-01M1BTPE",
   "status_phase": "1",
   "target_branch": "feat/qol-adoption-enablers",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-08-31T13:33:23.588489+00:00"
 }

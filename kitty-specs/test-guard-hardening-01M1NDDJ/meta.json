@@ -27,6 +27,7 @@
   "slug": "test-guard-hardening-01M1NDDJ",
   "status_phase": "1",
   "target_branch": "feat/test-guard-hardening",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-09-04T05:22:12.857147+00:00"
 }

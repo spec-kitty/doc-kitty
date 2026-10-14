@@ -13,6 +13,7 @@
   "slug": "adopter-loader-migration-01M1KKYA",
   "status_phase": "1",
   "target_branch": "feat/adopter-loader-migration",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-09-03T13:20:25.387592+00:00"
 }

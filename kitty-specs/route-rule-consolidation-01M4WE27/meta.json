@@ -30,6 +30,7 @@
   "slug": "route-rule-consolidation-01M4WE27",
   "status_phase": "1",
   "target_branch": "fix/route-rule-consolidation",
+  "topology": "lanes",
   "vcs": "git",
   "vcs_locked_at": "2026-10-14T06:31:18.347807+00:00"
 }
