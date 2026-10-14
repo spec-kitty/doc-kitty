@@ -154,9 +154,14 @@ build-end check that named the route file to add, which is removed.
 - Every draft-only directory adds one committed generated file. The files are
   identical in both draft modes, so the cost is a file in git, not drift.
 - The toolkit's first injected route, and one more package export
-  (`./routes/scenario-index-injected`). A site that mounts the route by hand
-  under a name the detection does not know (an `.astro` page, a dynamic
-  `[...slug]` route) would hit Astro's duplicate-route error.
+  (`./routes/scenario-index-injected`). Injection is skipped only when the
+  site has `src/pages/api/scenarios.json.<ext>` or
+  `src/pages/api/scenarios.json/index.<ext>`, with `<ext>` one of `ts`, `js`,
+  `mts`, `mjs`, `cts`, `cjs`, `tsx` or `jsx`. A hand-mounted dynamic route (for
+  example `api/[x].json.ts`) does not match, so the injected static route
+  shadows it for that address (Astro ranks the static route higher) rather than
+  raising a duplicate-route error. `.astro` and `.md` pages cannot serve JSON,
+  so they are not a concern.
 
 ### Residual
 
