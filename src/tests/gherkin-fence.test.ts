@@ -20,15 +20,18 @@
  * separately in `gherkin-fence-build.test.ts` (build project).
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRequire } from 'node:module';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
-import remarkDirective from 'remark-directive';
 import gherkinFence from '../lib/remark/gherkin-fence.js';
 import { drainFatal, formatFatal, listFatal, recordFatal, resetFatal } from '../lib/gherkin/errors.mjs';
-import { docKittyIntegrations, runSetup } from './helpers/remark-stack.js';
+import {
+  docKittyMarkdown,
+  expressiveCodePlugin,
+  render as renderChain,
+  type DocKittyOptions,
+  type HastNode,
+} from './helpers/gherkin-render-harness.js';
 
 // Keep the glossary seam out (no `.contextive` probe of the runner's cwd), as
 // the other config-level suites do; Starlight's factory only has to return an
@@ -41,118 +44,12 @@ vi.mock('../lib/glossary/load.js', () => ({
   loadGlossary: vi.fn(() => ({ present: false })),
 }));
 
-const { defineDocKittyIntegrations } = await import('../lib/config.js');
+type Rendered = Awaited<ReturnType<typeof renderChain>>;
+const expressiveCode = await expressiveCodePlugin();
 
-type DocKittyOptions = Parameters<typeof defineDocKittyIntegrations>[0];
-
-// ---------------------------------------------------------------------------
-// The real chain
-// ---------------------------------------------------------------------------
-
-interface HastNode {
-  type: string;
-  tagName?: string;
-  properties?: Record<string, unknown>;
-  children?: HastNode[];
-  value?: string;
-}
-
-interface Heading {
-  depth: number;
-  slug: string;
-  text: string;
-}
-
-interface Rendered {
-  html: string;
-  headings: Heading[];
-  /** The hast tree after every rehype plugin the page gets (Expressive Code included). */
-  hast: HastNode;
-}
-
-interface EntryType {
-  getEntryInfo: (o: { contents: string; fileUrl: URL }) => Promise<{ body: string; data: Record<string, unknown> }>;
-  getRenderFunction: (config: Record<string, unknown>) => Promise<
-    (entry: { id: string; data: Record<string, unknown>; body: string; filePath: string }) => Promise<{
-      html: string;
-      metadata: { headings: Heading[] };
-    }>
-  >;
-}
-
-const req = createRequire(import.meta.url);
-const astroDir = path.dirname(req.resolve('astro/package.json'));
-
-async function astroModules() {
-  const { markdownContentEntryType } = (await import(
-    pathToFileURL(path.join(astroDir, 'dist/vite-plugin-markdown/content-entry-type.js')).href
-  )) as { markdownContentEntryType: EntryType };
-  const remarkEntry = createRequire(path.join(astroDir, 'package.json')).resolve('@astrojs/markdown-remark');
-  const { markdownConfigDefaults } = (await import(remarkEntry)) as { markdownConfigDefaults: Record<string, unknown> };
-  // Starlight → astro-expressive-code → rehype-expressive-code (the build's own copy).
-  const fromStarlight = createRequire(req.resolve('@astrojs/starlight'));
-  const fromAec = createRequire(fromStarlight.resolve('astro-expressive-code'));
-  const { default: rehypeExpressiveCode } = (await import(fromAec.resolve('rehype-expressive-code'))) as {
-    default: unknown;
-  };
-  return { markdownContentEntryType, markdownConfigDefaults, rehypeExpressiveCode };
-}
-const astro = await astroModules();
-
-interface DocKittyMarkdown {
-  remark: unknown[];
-  rehype: unknown[];
-  /** The `doc-kitty:` integration names, in array order. */
-  names: string[];
-}
-const stacks = new Map<string, DocKittyMarkdown>();
-
-/**
- * The markdown plugins the doc-kitty integrations register for `options`, in
- * order (memoised per option set: building the array logs the drafts notice).
- */
-function docKittyMarkdown(options: Partial<DocKittyOptions>): DocKittyMarkdown {
-  const key = JSON.stringify(options);
-  const cached = stacks.get(key);
-  if (cached) return cached;
-  const stack: DocKittyMarkdown = { remark: [], rehype: [], names: [] };
-  for (const entry of docKittyIntegrations(defineDocKittyIntegrations({ title: 'Docs', ...options }))) {
-    stack.names.push(entry.name);
-    if (!entry.hooks?.['astro:config:setup']) continue;
-    for (const cfg of runSetup(entry)) {
-      stack.remark.push(...(cfg.markdown?.remarkPlugins ?? []));
-      stack.rehype.push(...(cfg.markdown?.rehypePlugins ?? []));
-    }
-  }
-  stacks.set(key, stack);
-  return stack;
-}
-
-/** Render one `.md` file through the content-layer renderer with `options`' stack. */
-async function render(contents: string, options: Partial<DocKittyOptions>, filePath = 'docs/page.md'): Promise<Rendered> {
-  const { remark, rehype } = docKittyMarkdown(options);
-  let hast: HastNode = { type: 'root' };
-  const capture = () => (tree: HastNode) => {
-    hast = structuredClone(tree);
-  };
-  const absPath = path.resolve(filePath);
-  const { body, data } = await astro.markdownContentEntryType.getEntryInfo({
-    contents,
-    fileUrl: pathToFileURL(absPath),
-  });
-  const renderFn = await astro.markdownContentEntryType.getRenderFunction({
-    markdown: {
-      ...astro.markdownConfigDefaults,
-      // Starlight turns Astro's highlighter off and highlights with Expressive Code.
-      syntaxHighlight: false,
-      // Starlight appends `remark-directive` after every integration's plugins.
-      remarkPlugins: [...remark, remarkDirective],
-      rehypePlugins: [astro.rehypeExpressiveCode, ...rehype, capture],
-    },
-  });
-  const out = await renderFn({ id: 'page', data, body, filePath: absPath });
-  return { html: out.html, headings: out.metadata.headings, hast };
-}
+/** Render through the shared chain with Expressive Code first, as Starlight orders it. */
+const render = (contents: string, options: Partial<DocKittyOptions>, filePath?: string): Promise<Rendered> =>
+  renderChain(contents, options, filePath, [expressiveCode]);
 
 const ON: Partial<DocKittyOptions> = { gherkin: true };
 
