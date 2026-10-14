@@ -1,6 +1,6 @@
 ---
-title: "ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario-index check for Gherkin pages"
-description: Draft-only Gherkin directories get a draft hub, gherkin.titles sets hub titles, a mis-cased @wip warns, and a missing scenario index fails the build.
+title: "ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages"
+description: Draft-only Gherkin directories get a draft hub, gherkin.titles sets hub titles, a mis-cased @wip warns, and the integration injects the scenario index route.
 doc_status: active
 updated: 2026-10-14
 type: ADR
@@ -17,7 +17,7 @@ related:
   - guides/authoring
 ---
 
-# ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario-index check for Gherkin pages
+# ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages
 
 ## Status
 
@@ -32,7 +32,7 @@ It amends three statements in
 - **The "Known limit" risk:** "a directory holding only draft features gets no
   hub". It is removed by the same decision.
 - **Decision 9:** a site that does not mount the scenario index "advertises a
-  page that does not exist". Decision 4 below makes that a build error.
+  page that does not exist". Decision 4 below has the integration mount the route itself.
 
 The rest of ADR-0046 and [ADR-0051](./0051-gherkin-in-any-page.md) stands.
 
@@ -51,8 +51,8 @@ for separate work when PR #121 landed:
 - **#125.** A hub's title came only from its directory name. `hr` read "Hr",
   and the sidebar group followed it.
 - **#126.** `llms.txt` advertises `/api/scenarios.json` whenever a published
-  generated page exists, but the site mounts that route itself. A site that
-  skipped the route sent agents to a 404, and the build passed.
+  generated page exists, but the site had to mount that route itself. A site
+  that skipped the route sent agents to a 404, and the build passed.
 
 The generated pages are committed and drift-checked by
 `generate-feature-pages.mjs --check`. The planner is a pure function of the
@@ -114,15 +114,28 @@ gherkin: { sources: ['features'], titles: { hr: 'HR', 'shipping/edi': 'EDI messa
 - **The CLI.** The command-line twin is a repeatable `--titles <dir>=<title>`,
   split on the first `=`, so a title may hold commas, spaces and `=`.
 
-### 4. A build that advertises a missing scenario index fails (#126)
+### 4. The integration injects the scenario index route (#126)
 
-In `astro:build:done`, the `doc-kitty:gherkin` integration reads the built
-`llms.txt`. If the file advertises the scenario index and the output has no
-`api/scenarios.json`, the build stops. The message names the route file to
-add.
+When generated pages are on (`gherkin.sources` is set), `doc-kitty:gherkin`
+calls `injectRoute` in `astro:config:setup` for `/api/scenarios.json`. The
+entrypoint is a toolkit module (`@spec-kitty/doc-toolkit/routes/scenario-index-injected`)
+that wraps `scenarioIndexRoute()`. It takes `sourceRoot` and `sourceUrlPrefix`
+from the integration's own options through a virtual module, so the route
+resolves sources as the generator did and the site passes nothing twice. Astro
+applies the site `base` to an injected pattern, so no page address is built here
+(ADR-0050 is untouched). `llms.txt` advertises the route only when a published
+generated page exists, and the route now always exists when sources are on.
 
-The route stays site-mounted, as every doc-kitty route is. This follows the
-glossary precedent ([ADR-0026](./0026-glossary-source-and-generation-seam.md)).
+**An existing hand-mounted route is kept.** Astro rejects two routes for one
+address. The integration therefore looks for `api/scenarios.json.{ts,js,mts,mjs,cts,cjs}`
+under the site's `srcDir/pages` and, if it finds one, does not inject. Sites that
+followed the earlier setup guide keep working unchanged, and a hand-mounted route
+can still pass its own options. The example site no longer mounts the route, so
+its build exercises the injected path.
+
+The operator chose injection over failing the build. The maintainer's comment
+on PR #121 leaned the same way. This reverses the PR's first approach, a
+build-end check that named the route file to add, which is removed.
 
 ## Consequences
 
@@ -134,21 +147,23 @@ glossary precedent ([ADR-0026](./0026-glossary-source-and-generation-seam.md)).
   warning the author could not act on is gone.
 - Acronyms and product names can title a hub and its sidebar group.
 - An agent is never sent from `llms.txt` to a scenario index that does not
-  exist.
+  exist, and an adopter adds no route file.
 
 ### Negative
 
 - Every draft-only directory adds one committed generated file. The files are
   identical in both draft modes, so the cost is a file in git, not drift.
-- A site that turned on `gherkin.sources` without mounting the scenario index
-  used to build. Its build now fails, which is a breaking change for that site.
-  The fix is the route snippet from the consumer setup guide.
+- The toolkit's first injected route, and one more package export
+  (`./routes/scenario-index-injected`). A site that mounts the route by hand
+  under a name the detection does not know (an `.astro` page, a dynamic
+  `[...slug]` route) would hit Astro's duplicate-route error.
 
 ### Residual
 
-- A site that removed the `gherkin` option but kept its generated pages has no
-  `doc-kitty:gherkin` integration. Its `llms.txt` can still advertise the index
-  unchecked.
+- A site that removed the `gherkin` option but kept its frozen generated pages
+  has no `doc-kitty:gherkin` integration. It gets no injected route, and its
+  `llms.txt` can still advertise the index. It must mount `scenarioIndexRoute()`
+  itself.
 
 ## Alternatives considered
 
@@ -167,7 +182,8 @@ glossary precedent ([ADR-0026](./0026-glossary-source-and-generation-seam.md)).
   have to understand a file that is not a `.feature`.
 - **#125: a JSON value for `--titles`.** Rejected. It needs shell quoting inside
   `package.json` scripts.
-- **#126: inject the route from the integration.** Rejected. It would be the
-  toolkit's first injected route, and it would need a packed-tarball proof.
+- **#126: fail the build when `llms.txt` advertises a missing route.** Rejected
+  by the operator in favour of injection. It would have turned a setup step the
+  toolkit can do itself into a build error for every adopter.
 - **#126: check only in `assert-build-artifacts.mjs`.** Rejected. That script
   runs only on the example site, so consumer sites would never see the error.

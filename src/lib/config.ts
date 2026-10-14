@@ -83,7 +83,6 @@ import {
 } from './glossary/definitions-payload.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures } from './gherkin/load.mjs';
 import { generateFeaturePages } from './gherkin/generate.mjs';
-import { checkScenarioIndexAdvertised } from './gherkin/scenario-index-check.mjs';
 import { normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
 import { drainFatal, formatFatal, resetFatal } from './gherkin/errors.mjs';
 import gherkinFence, { type GherkinFenceOptions } from './remark/gherkin-fence.js';
@@ -1307,10 +1306,13 @@ function resolveGherkinOptions(
  *       only picked up on the next restart (documented limit).
  * One `[dk-gherkin]` info line reports the counts (when the logger supports it).
  *
- * `astro:build:done` fails the build when the built `llms.txt` advertises
- * `/api/scenarios.json` and the output has none (#126): the route is mounted by
- * the site, not injected (ADR-0046 decision 9, ADR-0054), and a site that skips
- * it would otherwise send agents to a 404 (`checkScenarioIndexAdvertised`).
+ * (d) `injectRoute` mounts `/api/scenarios.json` (#126, ADR-0054), so the
+ *     `llms.txt` line that advertises it never points at a 404 and a site adds no
+ *     route file. A site that already mounts its own `src/pages/api/scenarios.json.*`
+ *     keeps it: the injection is skipped, because Astro rejects two routes for one
+ *     address (`hasOwnScenarioIndexPage`). The route reads `sourceRoot` and
+ *     `sourceUrlPrefix` from `virtual:doc-kitty/gherkin-scenario-index`, so it
+ *     resolves sources the way the generator did.
  */
 function gherkinIntegration(
   opts: ResolvedGherkinPages,
@@ -1320,7 +1322,7 @@ function gherkinIntegration(
   return {
     name: 'doc-kitty:gherkin',
     hooks: {
-      'astro:config:setup': ({ addWatchFile, logger }) => {
+      'astro:config:setup': ({ addWatchFile, logger, injectRoute, updateConfig, config }) => {
         const root = process.cwd();
         const warn = (message: string) => logger.warn(message);
         const model = loadFeatures({ sources: opts.sources, root, warn });
@@ -1338,6 +1340,34 @@ function gherkinIntegration(
           warn,
         });
         for (const file of model.files) addWatchFile(file.absPath);
+        if (hasOwnScenarioIndexPage(config?.srcDir, root)) {
+          if (typeof logger.info === 'function') {
+            logger.info(
+              `${GHERKIN_LOG_PREFIX} src/pages/api/scenarios.json.* is mounted by the site: not injecting the scenario index`,
+            );
+          }
+        } else {
+          const resolved = `\0${SCENARIO_INDEX_MODULE_ID}`;
+          const options = {
+            sourceRoot: opts.sourceRoot,
+            ...(opts.sourceUrlPrefix !== undefined ? { sourceUrlPrefix: opts.sourceUrlPrefix } : {}),
+          };
+          updateConfig({
+            vite: {
+              plugins: [
+                {
+                  name: 'doc-kitty:gherkin-scenario-index',
+                  resolveId: (id: string) => (id === SCENARIO_INDEX_MODULE_ID ? resolved : null),
+                  load: (id: string) =>
+                    id === resolved
+                      ? `export const scenarioIndexOptions = ${JSON.stringify(options)};\n`
+                      : null,
+                },
+              ],
+            },
+          });
+          injectRoute({ pattern: '/api/scenarios.json', entrypoint: SCENARIO_INDEX_ENTRYPOINT });
+        }
         if (typeof logger.info === 'function') {
           logger.info(
             `${GHERKIN_LOG_PREFIX} ${model.files.length} feature file(s) → ${docsDir}/${opts.section}: ` +
@@ -1345,11 +1375,30 @@ function gherkinIntegration(
           );
         }
       },
-      'astro:build:done': ({ dir }) => {
-        checkScenarioIndexAdvertised(fileURLToPath(dir));
-      },
     },
   };
+}
+
+/** The virtual module the injected scenario-index route reads its options from. */
+export const SCENARIO_INDEX_MODULE_ID = 'virtual:doc-kitty/gherkin-scenario-index';
+
+/** The injected route's entrypoint, a package export so a consuming site resolves it. */
+const SCENARIO_INDEX_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/scenario-index-injected';
+
+/** Page extensions Astro treats as an endpoint file. */
+const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs'];
+
+/**
+ * True when the site mounts its own `api/scenarios.json` endpoint under
+ * `<srcDir>/pages` (the hand-mounted route older sites were told to add). Astro
+ * fails on two routes for one address, so the integration then leaves the
+ * site's route alone.
+ */
+export function hasOwnScenarioIndexPage(srcDir: URL | string | undefined, root: string): boolean {
+  const src = srcDir ? fileURLToPath(srcDir) : path.join(root, 'src');
+  return ENDPOINT_EXTENSIONS.some((ext) =>
+    existsSync(path.join(src, 'pages', 'api', `scenarios.json.${ext}`)),
+  );
 }
 
 /**

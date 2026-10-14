@@ -378,26 +378,24 @@ label. `/api/pages/<id>.json` returns the generated Markdown plus
 relative to `gherkin.sourceRoot`, prefixed with `gherkin.sourceUrlPrefix` when set,
 so an agent can fetch the executable `.feature` itself.
 
-Sites that mount `scenarioIndexRoute()` at `src/pages/api/scenarios.json.ts` also
-serve `/api/scenarios.json`: `{ version, generated_from: "doc-kitty/gherkin", count,
+Sites with `gherkin.sources` also serve `/api/scenarios.json` (the integration injects
+`scenarioIndexRoute()`; a hand-mounted `src/pages/api/scenarios.json.ts` is kept): `{ version, generated_from: "doc-kitty/gherkin", count,
 features[] }`. It has one record per published, agent-discoverable generated page,
 ordered by id, carrying `id`, `title`, `url`, `source`, `doc_status`,
 `glossary_context`, `tags` and `related`, plus `scenarios[]` in document order.
 Each scenario has `name`, `rule` (`null` outside a rule), `anchor`, `line`, its own
 `tags` (without `@`, sorted), `outline`, `steps` (`{ keyword, text }`, keyword
 trimmed) and `examples` (`{ name, tags, header, rows }`; rows are not expanded).
-The route re-parses each page's `.feature` with the same loader, so pass it the
-`sourceRoot` and `sourceUrlPrefix` you gave `gherkin`. It reads each anchor from the
+The route re-parses each page's `.feature` with the same loader, using the
+`sourceRoot` and `sourceUrlPrefix` of `gherkin`. It reads each anchor from the
 page's rendered headings and never computes a slug. Scenarios are matched to
 headings in document order, after folding both sides the same way: Astro's
 heading text turns `{` into `${`, and smartypants curls quotes and rewrites dashes
 and ellipses. A missing source, a source
 changed since generation, or a scenario with no rendered heading fails the build.
 `llms.txt` adds a `Scenario index:` line only when at least one such page exists,
-so a site without Gherkin pages is unaffected. When it does, the `doc-kitty:gherkin`
-integration checks in `astro:build:done` that the build also wrote
-`api/scenarios.json`, and fails the build otherwise, naming the route to mount
-(`scenario-index-check.mjs`).
+so a site without Gherkin pages is unaffected. The route exists whenever
+`gherkin.sources` is set, so the line never points at a 404 (ADR-0054).
 
 ## The RSS feed
 
@@ -566,13 +564,11 @@ Fences reach agents as fences. Embedded scenarios are not in
   only letters, digits and `+.#-`, so `"""application/json` becomes the language
   `applicationjson` (unhighlighted). Use `"""json`. This is inherited from
   generated pages.
-- **The scenario index is a separate mount.** `llms.txt` advertises
+- **The scenario index is injected (#126).** `llms.txt` advertises
   `/api/scenarios.json` whenever at least one published, agent-discoverable
-  generated feature page exists, but the integration doesn't inject the route, so
-  mount `scenarioIndexRoute` when you turn `gherkin` on
-  (every other doc-kitty route is mounted the same way). A build that advertises
-  the index without the route fails. A site that removed the `gherkin` option but
-  kept its generated pages has no integration to run that check.
+  generated feature page exists, and the integration serves it whenever
+  `gherkin.sources` is set. A site that removed the `gherkin` option but kept its
+  frozen generated pages gets no route and must mount `scenarioIndexRoute` itself.
 
 ## Related notes and follow-ups
 

@@ -12,15 +12,6 @@ release, as it did for `0.2.0`.
 
 ### 💥 Breaking
 
-- **A build that advertises a missing scenario index fails (#126).** `llms.txt`
-  advertises `/api/scenarios.json` whenever a generated feature page exists, but
-  the site mounts that route itself. Before, a site that turned on
-  `gherkin.sources` without mounting it built fine and sent agents to a 404. Now
-  `astro build` stops with `[dk-gherkin] llms.txt advertises /api/scenarios.json,
-  but the build has no api/scenarios.json` and names the route file to add
-  (`src/pages/api/scenarios.json.ts`, step 5 of the consumer setup guide). The
-  route stays site-mounted; nothing is injected.
-
 - **The build stops when no source yields a Gherkin feature and generated pages
   exist (#122).** Before, a source directory that was not checked out, such as an
   uninitialised git submodule, made the build warn and delete every generated
@@ -235,6 +226,16 @@ release, as it did for `0.2.0`.
   `includes: [{ src, scenario?, tags? }]`.
 
 ### Fixed
+
+- **`/api/scenarios.json` now exists whenever Gherkin pages are generated
+  (#126).** Before, `llms.txt` pointed agents at `/api/scenarios.json` as soon as
+  a generated feature page was published, but the route existed only if the site
+  had added `src/pages/api/scenarios.json.ts`, so a site that had not served a 404.
+  Now the `gherkin` integration adds the route itself whenever `gherkin.sources` is
+  set, with your `sourceRoot` and `sourceUrlPrefix`, under your `base`. You add
+  nothing. A route file you already have is kept, and the integration skips its
+  own. A site that removes the `gherkin` option but keeps its generated pages has
+  no integration, so it must mount `scenarioIndexRoute()` itself.
 
 - **Sidebar groups no longer repeat their own label (#112).** Before, a folder
   whose only page was its index showed as a group holding that same name (the

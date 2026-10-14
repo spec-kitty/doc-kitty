@@ -64,6 +64,6 @@ kind: Hub
 | [0051](./0051-gherkin-in-any-page.md) | ADR-0051: Render Gherkin in any page, from a fence or an include | Accepted | 2026-10-13 |
 | [0052](./0052-runtime-slot-name-validation.md) | ADR-0052: Theme slot names are checked when the config loads | Accepted | 2026-10-14 |
 | [0053](./0053-reading-width.md) | ADR-0053: The reading column defaults to 60rem for all body content | Accepted | 2026-10-14 |
-| [0054](./0054-gherkin-draft-hubs-titles-and-scenario-route.md) | ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario-index check for Gherkin pages | Accepted | 2026-10-14 |
+| [0054](./0054-gherkin-draft-hubs-titles-and-scenario-route.md) | ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages | Accepted | 2026-10-14 |
 
 New ADRs copy [`template.md`](./template.md).

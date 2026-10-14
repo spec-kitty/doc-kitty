@@ -273,19 +273,11 @@ export const GET = bibliographyRoute();
 ```
 
 If you turn on generated Gherkin feature pages (the `gherkin` option with
-`sources`), also mount the scenario index. This is required: the integration does not add the route, and
-`llms.txt` advertises `/api/scenarios.json` whenever a generated feature page
-exists, so without the route the build fails with
-`[dk-gherkin] llms.txt advertises /api/scenarios.json, but the build has no api/scenarios.json`.
-Pass it the same `sourceRoot` and `sourceUrlPrefix` you gave
-`gherkin` (omit both when you use the defaults), so it can find each page's
-`.feature` source:
-
-```ts
-// src/pages/api/scenarios.json.ts
-import { scenarioIndexRoute } from '@spec-kitty/doc-toolkit/routes';
-export const GET = scenarioIndexRoute();
-```
+`sources`), there is no route file to add: the integration serves
+`/api/scenarios.json` itself, using the `sourceRoot` and `sourceUrlPrefix` you gave
+`gherkin`. A site that already has `src/pages/api/scenarios.json.ts` can keep it;
+the integration then leaves it alone. If you later remove the `gherkin` option but
+keep the generated pages, mount `scenarioIndexRoute()` there yourself.
 
 If you publish reveal.js slide decks (`kind: Presentation` pages under
 `presentations/`), add the out-of-frame deck route. It wires the deck layout and

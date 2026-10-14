@@ -69,11 +69,15 @@ interface StubContext {
   addWatchFile: ReturnType<typeof vi.fn>;
   updateConfig: ReturnType<typeof vi.fn>;
   injectScript: ReturnType<typeof vi.fn>;
+  injectRoute: ReturnType<typeof vi.fn>;
+  config: { srcDir: URL } | undefined;
   logger: { warn: ReturnType<typeof vi.fn>; info?: ReturnType<typeof vi.fn> };
 }
 
-function stubContext(withInfo = true): StubContext {
+function stubContext(withInfo = true, srcDir?: URL): StubContext {
   return {
+    injectRoute: vi.fn(),
+    config: srcDir ? { srcDir } : undefined,
     addWatchFile: vi.fn(),
     updateConfig: vi.fn(),
     injectScript: vi.fn(),
@@ -251,7 +255,8 @@ describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
     const ctx = runGherkinSetup(
       defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }),
     );
-    expect(ctx.updateConfig).not.toHaveBeenCalled();
+    // The only config it adds is the vite module behind the injected scenario route.
+    expect(ctx.updateConfig.mock.calls.map(([c]) => Object.keys(c))).toEqual([['vite']]);
     expect(ctx.injectScript).not.toHaveBeenCalled();
   });
 });
@@ -471,37 +476,46 @@ describe('gherkin option validation is single-sourced (review #6)', () => {
   });
 });
 
-describe('doc-kitty:gherkin build:done — an advertised scenario index must exist (#126)', () => {
-  const ADVERTISED = 'Scenario index: https://example.test/api/scenarios.json';
+describe('doc-kitty:gherkin injects the scenario index (#126)', () => {
+  const site = (): string => {
+    const dir = enterSite();
+    writeTree({ 'features/a.feature': FEATURE_X });
+    return dir;
+  };
 
-  /** Run the hook over a fake build output holding `files` (POSIX path → contents). */
-  function buildDone(files: Record<string, string>): () => unknown {
-    const out = path.join(tmp, 'dist');
-    mkdirSync(out, { recursive: true });
-    for (const [rel, contents] of Object.entries(files)) {
-      const abs = path.join(out, ...rel.split('/'));
-      mkdirSync(path.dirname(abs), { recursive: true });
-      writeFileSync(abs, contents);
-    }
-    const entry = named(defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } })).find(
-      (i) => i.name === GHERKIN,
+  it('injects /api/scenarios.json when sources are set, with the gherkin source options', () => {
+    const dir = site();
+    const ctx = runGherkinSetup(
+      defineDocKittyIntegrations({
+        title: 't',
+        gherkin: { sources: ['features'], sourceRoot: 'features', sourceUrlPrefix: 'https://x.test/' },
+      }),
+      stubContext(true, pathToFileURL(`${dir}${path.sep}src${path.sep}`)),
     );
-    const hook = entry?.hooks?.['astro:build:done'] as ((ctx: { dir: URL }) => unknown) | undefined;
-    if (!hook) throw new Error('gherkin integration has no astro:build:done hook');
-    return () => hook({ dir: pathToFileURL(`${out}${path.sep}`) });
-  }
-
-  it('fails when llms.txt advertises /api/scenarios.json and the build has none', () => {
-    const run = buildDone({ 'llms.txt': `# Site\n\n${ADVERTISED}\n` });
-    expect(run).toThrow(/^\[dk-gherkin\] llms\.txt advertises \/api\/scenarios\.json, but the build has no api\/scenarios\.json/);
-    expect(run).toThrow('src/pages/api/scenarios.json.ts');
+    expect(ctx.injectRoute).toHaveBeenCalledTimes(1);
+    expect(ctx.injectRoute).toHaveBeenCalledWith({
+      pattern: '/api/scenarios.json',
+      entrypoint: '@spec-kitty/doc-toolkit/routes/scenario-index-injected',
+    });
+    const plugin = ctx.updateConfig.mock.calls[0][0].vite.plugins[0];
+    const id = plugin.resolveId('virtual:doc-kitty/gherkin-scenario-index');
+    expect(plugin.load(id)).toBe(
+      'export const scenarioIndexOptions = {"sourceRoot":"features","sourceUrlPrefix":"https://x.test/"};\n',
+    );
   });
 
-  it.each([
-    ['both the line and the index', { 'llms.txt': `${ADVERTISED}\n`, 'api/scenarios.json': '{}' }],
-    ['neither', { 'llms.txt': '# Site\n' }],
-    ['no llms.txt at all', {}],
-  ])('passes with %s', (_label, files) => {
-    expect(buildDone(files)).not.toThrow();
+  it('does not inject when the site mounts its own api/scenarios.json page', () => {
+    const dir = site();
+    writeTree({ 'src/pages/api/scenarios.json.ts': 'export const GET = () => new Response();\n' });
+    const ctx = runGherkinSetup(
+      defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }),
+      stubContext(true, pathToFileURL(`${dir}${path.sep}src${path.sep}`)),
+    );
+    expect(ctx.injectRoute).not.toHaveBeenCalled();
+  });
+
+  it('registers no gherkin integration, so no route, when sources are not set', () => {
+    const names = named(defineDocKittyIntegrations({ title: 't', gherkin: true })).map((i) => i.name);
+    expect(names).not.toContain(GHERKIN);
   });
 });

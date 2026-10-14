@@ -1,6 +1,6 @@
 ---
 title: Gherkin fixes and a leaner Gherkin test suite
-description: Draft-only directories get a draft hub, gherkin.titles names hubs, a mis-cased @wip warns, a missing scenario index fails the build, and the Gherkin tests lose their duplicates.
+description: Draft-only directories get a draft hub, gherkin.titles names hubs, a mis-cased @wip warns, the scenario index route is injected, and the Gherkin tests lose their duplicates.
 doc_status: active
 updated: 2026-10-14
 type: Changelog
@@ -33,9 +33,9 @@ decisions are recorded in
   sidebar group when the directory name can't. The example site uses it.
 - **Mis-cased status tags warn (#123).** `@WIP` stays an ordinary tag, as in
   Cucumber, and the build says "did you mean `@wip`?".
-- **A missing scenario index fails the build (#126).** When `llms.txt` advertises
-  `/api/scenarios.json` and the site never mounted the route, `astro build` stops
-  and names the file to add.
+- **The scenario index is served for you (#126).** With `gherkin.sources` set,
+  `/api/scenarios.json` exists without a route file, so the `llms.txt` line never
+  points at a 404. A route file you already have is kept.
 - **One copy of the worked example (#128).** A parity test keeps the two fixture
   copies of `book-consignment.feature` equal to the example's.
 - **Fewer, owned tests (#156).** Each Gherkin behaviour is now asserted once, at
@@ -46,5 +46,5 @@ decisions are recorded in
 ## Upgrading
 
 A site with a draft-only Gherkin directory gets one new generated hub: run the
-generator once and commit it. A site that turned on `gherkin.sources` without
-mounting `scenarioIndexRoute()` must add `src/pages/api/scenarios.json.ts`.
+generator once and commit it. Nothing else changes: a site that mounted
+`scenarioIndexRoute()` keeps working, and one that did not now gets the route.

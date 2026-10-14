@@ -6,7 +6,9 @@
  * steps, so an agent can answer "which scenarios cover mission-alpha?" without
  * scraping Markdown.
  *
- * Mount as `src/pages/api/scenarios.json.ts`:
+ * The `doc-kitty:gherkin` integration injects this route when `gherkin.sources` is
+ * set (#126, ADR-0054). To mount it by hand instead (a site keeps its own file),
+ * use `src/pages/api/scenarios.json.ts`:
  *
  *   import { scenarioIndexRoute } from '@spec-kitty/doc-toolkit/routes';
  *   export const GET = scenarioIndexRoute();

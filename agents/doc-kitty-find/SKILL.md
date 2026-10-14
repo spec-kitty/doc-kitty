@@ -40,7 +40,7 @@ exist yet and say where it should live.
   `sources:` field. Edit that file, never the generated page. Feature tags such as
   `@dk:mission=<slug>` and `@dk:adr=<n>` become `related` refs, so filter on
   a page's `related` metadata to find the specs for a mission or decision.
-- When the site also mounts `scenarioIndexRoute`, `GET /api/scenarios.json` lists
+- On a site with generated feature pages, `GET /api/scenarios.json` lists
   every published feature page (`id`, `url`, `source`, `tags`, `related`) and
   each of its scenarios: `rule`, `anchor` (append `#<anchor>` to the page `url`),
   source `line`, own `tags`, `outline`, `steps` and outline `examples`. Query it
