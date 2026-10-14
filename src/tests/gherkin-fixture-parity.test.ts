@@ -2,16 +2,11 @@
  * One source of truth for the worked example (#128).
  *
  * `example/features/shipping/book-consignment.feature` is the worked example the
- * site renders. Two unit suites keep their own byte-identical copy, so their
- * fixtures stay independent of the example site:
- *
- *   - `fixtures/gherkin/render/` (the body golden `render/book-consignment.md`);
- *   - `fixtures/gherkin/generate/site/` (the page and hub goldens under
- *     `generate/expected/`).
- *
- * Each suite checks only its own copy, so without this test the copies could
- * drift apart while every suite stays green. When the example changes, copy it
- * over both fixtures and regenerate the goldens they feed.
+ * site renders. Two unit suites (the render goldens and the generate goldens)
+ * share ONE fixture copy, `fixtures/gherkin/render/book-consignment.feature`, so
+ * they stay independent of the example site. This test pins that copy to the
+ * example; without it the copy could drift while every suite stays green. When
+ * the example changes, copy it over the fixture and regenerate the goldens.
  */
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -22,10 +17,7 @@ const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.met
 const EXAMPLE = '../../example/features/shipping/book-consignment.feature';
 
 describe('the worked example has one source of truth', () => {
-  it.each([
-    'fixtures/gherkin/render/book-consignment.feature',
-    'fixtures/gherkin/generate/site/features/shipping/book-consignment.feature',
-  ])('%s equals the example feature byte for byte', (copy) => {
-    expect(read(`./${copy}`)).toBe(read(EXAMPLE));
+  it('the shared fixture equals the example feature byte for byte', () => {
+    expect(read('./fixtures/gherkin/render/book-consignment.feature')).toBe(read(EXAMPLE));
   });
 });

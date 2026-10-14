@@ -19,6 +19,8 @@ import path from 'node:path';
 import {
   buildDirectoryMeta,
   humaniseDirectoryName,
+  INDEX_LABEL_KEY,
+  resolveIndexLabel,
   shapePagination,
   shapeSidebar,
   shapeToc,
@@ -406,6 +408,19 @@ describe('shapeSidebar — one-page folders and repeated index labels (#112)', (
     expect(labelsOf(childrenOf(arch))).toEqual(['Architecture', 'Overview']);
   });
 
+  it('labels the repeated index entry with a resolved indexLabel and compares siblings against it (#161)', () => {
+    const tree = () => [group('Guides', [link('guides/start', 'Getting started'), link('guides', 'Guides')])];
+    const custom = (entries: SidebarEntry[]) =>
+      shapeSidebar(entries, meta, { base: BASE, indexLabel: 'Aperçu' }).sidebar;
+    expect(childrenOf(custom(tree())[0])[0]).toEqual(link('guides', 'Aperçu'));
+    // A sibling already reading the RESOLVED label blocks the swap; a sibling
+    // reading the English default no longer does.
+    const taken = [group('Guides', [link('guides/x', 'Aperçu'), link('guides', 'Guides')])];
+    expect(labelsOf(childrenOf(custom(taken)[0]))).toEqual(['Guides', 'Aperçu']);
+    const english = [group('Guides', [link('guides/x', 'Overview'), link('guides', 'Guides')])];
+    expect(labelsOf(childrenOf(custom(english)[0]))).toEqual(['Aperçu', 'Overview']);
+  });
+
   it('is idempotent with both rules applied', () => {
     const tree = (): SidebarEntry[] => [
       group('Reference', [group('hr', [link('glossary/hr', 'hr')]), link('glossary', 'Glossary')]),
@@ -437,6 +452,20 @@ describe('shapeSidebar — one-page folders and repeated index labels (#112)', (
     const prev = childrenOf(original[0])[0] as NonNullable<RoutePagination['prev']>;
     const after = shapePagination(original, shaped, { prev, next: undefined }, { prev: true, next: true });
     expect(after.prev).toMatchObject({ href: `${BASE}/guides/`, label: 'Guides' });
+    // ...also when the index entry carries a translated label (#161).
+    const translated = shapeSidebar(original, meta, { base: BASE, indexLabel: 'Aperçu' }).sidebar;
+    expect(childrenOf(translated[0])[0]?.label).toBe('Aperçu');
+    const again = shapePagination(original, translated, { prev, next: undefined }, { prev: true, next: true });
+    expect(again.prev).toMatchObject({ href: `${BASE}/guides/`, label: 'Guides' });
+  });
+
+  it('resolves the index label: option, then the locale translation, then "Overview" (#161)', () => {
+    const t = (key: string) => (key === INDEX_LABEL_KEY ? 'Aperçu' : key);
+    expect(resolveIndexLabel(undefined, undefined)).toBe('Overview');
+    expect(resolveIndexLabel(undefined, t)).toBe('Aperçu');
+    expect(resolveIndexLabel('Start here', t)).toBe('Start here');
+    // i18next echoes the key for a string no locale defines.
+    expect(resolveIndexLabel(undefined, (key) => key)).toBe('Overview');
   });
 });
 
@@ -595,7 +624,7 @@ describe('integration wiring (T022, C-004)', () => {
   type Hook = (args: { updateConfig: (config: unknown) => void }) => void;
   interface Captured {
     name: string;
-    __starlightConfig?: { routeMiddleware?: string[]; head?: Array<{ content?: string }> };
+    __starlightConfig?: { routeMiddleware?: string[]; plugins?: Array<{ name: string; hooks: unknown }>; head?: Array<{ content?: string }> };
     hooks: Record<string, Hook>;
   }
 
@@ -622,6 +651,7 @@ describe('integration wiring (T022, C-004)', () => {
     pagination: boolean;
     directoryMeta: Array<[string, unknown]>;
     unpublishedDirs: string[];
+    indexLabel?: string;
   } {
     const seam = (integrations as Captured[]).find((i) => i.name === 'doc-kitty:route-shaping');
     if (!seam) throw new Error('route-shaping integration not registered');
@@ -693,6 +723,28 @@ describe('integration wiring (T022, C-004)', () => {
   it('still registers the middleware for a consumer sidebar, for the table of contents', () => {
     const config = starlightOf(defineDocKittyIntegrations({ title: 'Docs', sidebar: [] }));
     expect(config.routeMiddleware).toEqual([ROUTE_MIDDLEWARE]);
+  });
+
+  it('ships the index-label UI string as a plugin and passes the sidebar.indexLabel option through (#161)', () => {
+    const own = { name: 'adopter', hooks: {} };
+    const plugins = starlightOf(defineDocKittyIntegrations({ title: 'Docs', starlight: { plugins: [own] } })).plugins!;
+    expect(plugins.map((p) => p.name)).toEqual(['doc-kitty:i18n', 'adopter']);
+    const injected: unknown[] = [];
+    (plugins[0]!.hooks as Record<string, (arg: { injectTranslations: (t: unknown) => void }) => void>)['i18n:setup']!({ injectTranslations: (t: unknown) => injected.push(t) });
+    expect(injected).toEqual([{ en: { [INDEX_LABEL_KEY]: 'Overview' } }]);
+    inSite(() => {
+      expect(servedData(defineDocKittyIntegrations({ title: 'Docs' })).indexLabel).toBeUndefined();
+      const labelled = defineDocKittyIntegrations({ title: 'Docs', sidebar: { indexLabel: 'Start here' } });
+      expect(servedData(labelled).indexLabel).toBe('Start here');
+      expect(servedData(labelled).shapeSidebar).toBe(true);
+    });
+  });
+
+  it('rejects a blank or non-string sidebar.indexLabel and an unknown sidebar key (#161)', () => {
+    const define = (sidebar: unknown) => () => defineDocKittyIntegrations({ title: 'Docs', sidebar: sidebar as never });
+    expect(define({ indexLabel: '  ' })).toThrow('[dk-config] sidebar.indexLabel must be a non-empty string');
+    expect(define({ indexLabel: 3 })).toThrow('[dk-config] sidebar.indexLabel must be a non-empty string');
+    expect(define({ indexLabl: 'x' })).toThrow('indexLabl');
   });
 
   it('records a site-wide pagination switch-off', () => {

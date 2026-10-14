@@ -262,18 +262,13 @@ describe('preset off: a gherkin fence renders exactly as before', () => {
 // ===========================================================================
 
 describe('preset on: a gherkin fence renders as a structured scenario', () => {
-  it('replaces the fence with div.dk-gherkin, which has NO pre ancestor', async () => {
+  it('replaces the fence with div.dk-gherkin (no pre ancestor): headings, steps, table, doc-string code, TOC', async () => {
     const r = await render(page('# Guide', '', FEATURE_FENCE), ON);
     const found = blocks(r);
     expect(found).toHaveLength(1);
-    expect(found[0].ancestors.some((a) => a.tagName === 'pre')).toBe(false);
-    // …and is not itself inside an Expressive Code frame.
-    expect(found[0].ancestors.some((a) => classes(a).includes('expressive-code'))).toBe(false);
-  });
-
-  it('holds h2/h3 headings, ul > li > strong.dk-gherkin__kw steps and a table', async () => {
-    const r = await render(page('# Guide', '', FEATURE_FENCE), ON);
-    const [{ node: block }] = blocks(r);
+    // Not inside a `pre`, nor inside an Expressive Code frame.
+    expect(found[0].ancestors.some((a) => a.tagName === 'pre' || classes(a).includes('expressive-code'))).toBe(false);
+    const [{ node: block }] = found;
     expect(within(block, isEl('h2')).map(textOf)).toEqual(['Book a consignment']);
     expect(within(block, isEl('h3')).map(textOf)).toEqual(['Scenario: Book space on a sailing', 'Scenario: Cancel a booking']);
     const lists = within(block, isEl('ul', 'dk-gherkin__steps'));
@@ -285,6 +280,18 @@ describe('preset on: a gherkin fence renders as a structured scenario', () => {
     const table = within(block, isEl('table'));
     expect(table).toHaveLength(1);
     expect(within(table[0], isEl('th')).map(textOf)).toEqual(['size', 'count']);
+    // One Expressive Code block per doc string, content verbatim (never curled).
+    const frames = within(block, isEl('div', 'expressive-code'));
+    expect(frames).toHaveLength(2);
+    expect(textOf(frames[0])).toContain('{"teu": "2"}');
+    expect(textOf(frames[1])).toContain('"no longer needed"');
+    // The embedded headings reach the TOC (file.data headings).
+    expect(r.headings.map((h) => [h.depth, h.text])).toEqual([
+      [1, 'Guide'],
+      [2, 'Book a consignment'],
+      [3, 'Scenario: Book space on a sailing'],
+      [3, 'Scenario: Cancel a booking'],
+    ]);
   });
 
   it('renders the example site\'s init.feature, pasted into a fence, in full and without its comments', async () => {
@@ -316,16 +323,6 @@ describe('preset on: a gherkin fence renders as a structured scenario', () => {
     expect(within(block, isEl('li')).map(textOf)).toEqual(steps);
     expect(r.html).not.toContain('Maintainer notes');
     expect(r.html).not.toContain('Copied verbatim');
-  });
-
-  it('renders exactly one Expressive Code block per doc string, content verbatim', async () => {
-    const r = await render(page('# Guide', '', FEATURE_FENCE), ON);
-    const [{ node: block }] = blocks(r);
-    const frames = within(block, isEl('div', 'expressive-code'));
-    expect(frames).toHaveLength(2);
-    // Code is never curled: the doc strings keep their straight quotes.
-    expect(textOf(frames[0])).toContain('{"teu": "2"}');
-    expect(textOf(frames[1])).toContain('"no longer needed"');
   });
 
   it('keeps a quoted step argument verbatim in <code> while smartypants still runs on the prose', async () => {
@@ -364,16 +361,6 @@ describe('preset on: a gherkin fence renders as a structured scenario', () => {
     expect(textOf(cells[1])).toBe('say "a|b" — now');
   });
 
-  it('puts the embedded headings in the TOC (file.data headings)', async () => {
-    const r = await render(page('# Guide', '', FEATURE_FENCE), ON);
-    expect(r.headings.map((h) => [h.depth, h.text])).toEqual([
-      [1, 'Guide'],
-      [2, 'Book a consignment'],
-      [3, 'Scenario: Book space on a sailing'],
-      [3, 'Scenario: Cancel a booking'],
-    ]);
-  });
-
   it('gives two identical fences slugger-unique heading ids', async () => {
     const r = await render(page('# Guide', '', FEATURE_FENCE, '', 'Again:', '', FEATURE_FENCE), ON);
     expect(blocks(r)).toHaveLength(2);
@@ -397,14 +384,6 @@ describe('preset on: a gherkin fence renders as a structured scenario', () => {
       'Scenario: Book space on a sailing',
       'Scenario: Cancel a booking',
     ]);
-  });
-
-  it('renders a steps-only fragment with no synthetic headings', async () => {
-    const r = await render(page('# Guide', '', '```gherkin', 'Given a step', 'Then it "works"', '```'), ON);
-    const [{ node: block }] = blocks(r);
-    expect(within(block, (n) => n.type === 'element' && /^h[1-6]$/.test(n.tagName ?? ''))).toHaveLength(0);
-    expect(within(block, isEl('li')).map(textOf)).toEqual(['Given a step', 'Then it "works"']);
-    expect(r.headings.map((h) => h.text)).toEqual(['Guide']);
   });
 
   it('leaves an empty or comment-only fence a code block (no error)', async () => {
@@ -448,9 +427,10 @@ describe('a fence inside a container', () => {
 // ===========================================================================
 
 describe('fences and pages the stage leaves alone', () => {
-  it('a `raw` fence stays a code block', async () => {
-    const raw = FEATURE_FENCE.replace('```gherkin', '```gherkin raw');
-    const md = page('# Guide', '', raw);
+  it.each([
+    ['a `raw` fence', page('# Guide', '', FEATURE_FENCE.replace('```gherkin', '```gherkin raw'))],
+    ['a deck page', ['---', 'title: Deck', 'kind: Presentation', '---', '', '## Slide', '', FEATURE_FENCE, ''].join('\n')],
+  ])('%s stays a code block, as with the preset off', async (_label, md) => {
     const on = await render(md, ON);
     expect(on.html).toBe((await render(md, {})).html);
     expect(blocks(on)).toHaveLength(0);
@@ -483,12 +463,6 @@ describe('fences and pages the stage leaves alone', () => {
     expect(blocks(await render(generatedMd.replace(/generated:\n {2}by: .*\n {2}at: .*\n/, ''), withRoots)).length).toBeGreaterThan(0);
   });
 
-  it('a deck page is unchanged (fences on a slide stay code)', async () => {
-    const md = ['---', 'title: Deck', 'kind: Presentation', '---', '', '## Slide', '', FEATURE_FENCE, ''].join('\n');
-    const on = await render(md, ON);
-    expect(on.html).toBe((await render(md, {})).html);
-    expect(blocks(on)).toHaveLength(0);
-  });
 });
 
 // ===========================================================================

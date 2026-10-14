@@ -6,13 +6,13 @@ features/checkout.feature with
                     meta.ci populated from GitHub Actions variables. The repo
                     example-org/shop and the commit are synthetic.
   cucumber-js.json  The same run, --format json (cucumber-js dialect).
-  cucumber-jvm.json Made from messages.ndjson by the official
-                    io.cucumber:cucumber-json-formatter 0.4.2 (cucumber-jvm
-                    dialect: a background element before every scenario).
-  filtered.ndjson   --tags @flaky: 4 pickles, 1 test case.
-  dry.ndjson        --dry-run: every step SKIPPED, success true.
-The only edit: the run's scratch directory in stack traces was rewritten to
-/home/runner/work/shop/shop.
+  filtered.ndjson   --tags @flaky: 4 pickles, 1 test case (kept: no CCK sample).
+  dry.ndjson        --dry-run: every step SKIPPED, success true (kept: no CCK
+                    all-skipped run).
+Kept top-level: no CCK sample has a retry inside a Rule plus an outline, meta.ci
+and the secrets the privacy check looks for. Removed: cucumber-jvm.json (cck/*.jvm.json
+covers the dialect), cck/all-statuses.jvm.json and cck/retry.jvm.json (whole files).
+The only edit: the run's scratch directory in stack traces was rewritten to /home/runner/work/shop/shop.
 
 Expected results (scenario line : example-row line):
   8      Paying by card                        PASSED
@@ -20,7 +20,7 @@ Expected results (scenario line : example-row line):
   12:19  Applying a discount code, EXPIRED     FAILED
   24     Paying with a gift card (Rule)        PASSED on attempt 1 (attempt 0 FAILED)
 
-cck/ — samples from the Cucumber Compatibility Kit
+cck/ — samples (whole files only, never edited) from the Cucumber Compatibility Kit
 (https://github.com/cucumber/compatibility-kit, devkit/samples), Messages 34.2.1
 with incrementing ids, and their cucumber-jvm JSON from
 https://github.com/cucumber/cucumber-json-formatter (testdata/compatibility-kit).

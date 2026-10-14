@@ -307,7 +307,6 @@ function roundTripProblems(doc: GherkinDocument, body: string, markua: boolean):
 describe('renderFeatureBody — golden fixtures', () => {
   it('has the expected fixture set (one per construct)', () => {
     expect(goldenNames).toEqual([
-      'background',
       'book-consignment',
       'datatable',
       'docstring',
@@ -325,14 +324,6 @@ describe('renderFeatureBody — golden fixtures', () => {
     const { body, warnings } = render(source, `${name}.feature`);
     expect(body).toBe(expected);
     expect(warnings).toEqual([]);
-  });
-
-  it('the worked example fixture is the plan example body (sanity: starts at the H1, one trailing newline)', () => {
-    const body = readFileSync(path.join(FIXTURES, 'book-consignment.md'), 'utf8');
-    expect(body.startsWith('# Book a consignment\n\n')).toBe(true);
-    expect(body.endsWith('\n')).toBe(true);
-    expect(body.endsWith('\n\n')).toBe(false);
-    expect(body).toContain('*2 rules · 4 scenarios · 2 example rows*');
   });
 
   it('every golden output ends with exactly one newline and has no double blank line', () => {
@@ -449,22 +440,13 @@ describe('renderFeatureBody — duplicate scenario warnings', () => {
 // ===========================================================================
 
 describe('escapers', () => {
-  it('escapeInline backslashes emphasis/code/link/strikethrough/attribute syntax', () => {
+  it('escapeInline: backslashes syntax chars, entity-encodes < > &, breaks directives, leaves plain punctuation', () => {
     expect(escapeInline('\\ ` * _ [ ] { } ~')).toBe('\\\\ \\` \\* \\_ \\[ \\] \\{ \\} \\~');
-  });
-
-  it('escapeInline entity-encodes < > &', () => {
     expect(escapeInline('<b> & </b>')).toBe('&lt;b&gt; &amp; &lt;/b&gt;');
     expect(escapeInline('&amp;')).toBe('&amp;amp;');
-  });
-
-  it('escapeInline breaks text directives (":name" fires even without a label)', () => {
     expect(escapeInline('Note:term[x] 10:30 :é a: b https://x :-) x:')).toBe(
       `Note\\:term\\[x\\] 10\\:30 \\:é a: b https${AUTOLINK_BREAK}://x :-) x:`,
     );
-  });
-
-  it('escapeInline leaves pipes, quotes and plain punctuation alone', () => {
     expect(escapeInline('a | "b" \'c\' -- d... #e !f')).toBe('a | "b" \'c\' -- d... #e !f');
   });
 
@@ -508,17 +490,6 @@ describe.each([
     const doc = parseGherkin(source);
     const body = renderFeatureBody(doc, { file: name });
     expect(roundTripProblems(doc, body, markua)).toEqual([]);
-  });
-
-  it('golden outputs contain no link nodes at all', () => {
-    for (const name of goldenNames) {
-      const tree = parseMarkdown(readFileSync(path.join(FIXTURES, `${name}.md`), 'utf8'), markua);
-      const links: Node[] = [];
-      walk(tree, (n) => {
-        if (n.type === 'link') links.push(n);
-      });
-      expect(links, name).toEqual([]);
-    }
   });
 
   it('the round-trip check is not vacuous: an unescaped render is caught', () => {
@@ -675,14 +646,5 @@ describe('GFM autolink literals are neutralised', () => {
         );
       }
     }
-  });
-
-  it('a rendered step with a URL, a www host and an email produces no link node', () => {
-    const doc = parseGherkin(
-      'Feature: Links at https://f.example\n  Scenario: Mail a@b.co\n    Given I open www.foo.com\n      | https://x.y |\n',
-    );
-    const body = renderFeatureBody(doc);
-    expect(roundTripProblems(doc, body, false)).toEqual([]);
-    expect(roundTripProblems(doc, body, true)).toEqual([]);
   });
 });

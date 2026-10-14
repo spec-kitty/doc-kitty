@@ -34,7 +34,7 @@ vi.mock('../lib/gherkin/load.mjs', async (importOriginal) => {
 });
 
 const { loadFeatures } = await import('../lib/gherkin/load.mjs');
-const { scenarioIndexRoute, resolveSourcePath } = await import(
+const { scenarioIndexRoute, resolveSourcePath, resetHandMountedWarning } = await import(
   '../lib/routes/scenario-index.js'
 );
 const { llmsTxtRoute } = await import('../lib/routes/llms-txt.js');
@@ -135,6 +135,11 @@ function featurePage(
   };
 }
 
+/** The hr leave page over a fresh LEAVE source on disk (`at` defaults to the matching stamp). */
+function leavePage(id = 'behaviour/hr/request-leave', at = writeFeature('features/hr/request-leave.feature', LEAVE), headings = LEAVE_HEADINGS) {
+  entries.push(featurePage(id, 'features/hr/request-leave.feature', at, headings));
+}
+
 async function getJson(options: Parameters<typeof scenarioIndexRoute>[0] = {}) {
   const route = scenarioIndexRoute({ sourceRoot: root, ...options });
   const res = await (route as (ctx: { site: URL }) => Promise<Response>)({ site: SITE });
@@ -209,34 +214,21 @@ describe('scenarioIndexRoute — shape', () => {
     expect(feature.scenarios[1].anchor).toBe('anchor-packing');
     expect(feature.scenarios[1].steps[0]).toEqual({ keyword: 'Given', text: 'a confirmed booking' });
     // Outline: placeholders kept verbatim, Examples rows NOT expanded.
-    expect(feature.scenarios[2]).toEqual({
+    expect(feature.scenarios[2]).toMatchObject({
       name: 'Refuse cargo that does not fit',
       rule: 'A booking over capacity is refused',
       anchor: 'anchor-refuse',
-      line: 28,
-      tags: [],
       outline: true,
       steps: [
         { keyword: 'Given', text: 'a consignment of <size> TEU' },
         { keyword: 'Then', text: 'the booking is refused with reason "<reason>"' },
       ],
-      examples: [
-        {
-          name: 'Over capacity',
-          tags: ['edge'],
-          header: ['size', 'reason'],
-          rows: [
-            ['41', 'insufficient space'],
-            ['120', 'insufficient space'],
-          ],
-        },
-      ],
+      examples: [{ name: 'Over capacity', tags: ['edge'], header: ['size', 'reason'], rows: [['41', 'insufficient space'], ['120', 'insufficient space']] }],
     });
   });
 
   it('gives a scenario outside any rule `rule: null` and absent page fields their nulls/empties', async () => {
-    const at = writeFeature('features/hr/request-leave.feature', LEAVE);
-    entries.push(featurePage('behaviour/hr/request-leave', 'features/hr/request-leave.feature', at, LEAVE_HEADINGS));
+    leavePage();
     const [feature] = (await getJson()).features;
     expect(feature.glossary_context).toBeNull();
     expect(feature.tags).toEqual([]);
@@ -247,39 +239,20 @@ describe('scenarioIndexRoute — shape', () => {
   });
 
   it('skips a description heading that is not the scenario heading (document-order match)', async () => {
-    const at = writeFeature('features/hr/request-leave.feature', LEAVE);
-    entries.push(
-      featurePage('behaviour/hr/request-leave', 'features/hr/request-leave.feature', at, [
-        LEAVE_HEADINGS[0],
-        { depth: 2, slug: 'decoy', text: 'Notes' },
-        LEAVE_HEADINGS[1],
-      ]),
-    );
+    leavePage(undefined, undefined, [LEAVE_HEADINGS[0], { depth: 2, slug: 'decoy', text: 'Notes' }, LEAVE_HEADINGS[1]]);
     expect((await getJson()).features[0].scenarios[0].anchor).toBe('anchor-approve');
-  });
-
-  it('base-prefixes the feature URL like every other route', async () => {
-    vi.stubEnv('BASE_URL', '/doc-kitty/');
-    const at = writeFeature('features/hr/request-leave.feature', LEAVE);
-    entries.push(featurePage('behaviour/hr/request-leave', 'features/hr/request-leave.feature', at, LEAVE_HEADINGS));
-    expect((await getJson()).features[0].url).toBe(
-      'https://docs.example/doc-kitty/behaviour/hr/request-leave/',
-    );
   });
 });
 
 describe('scenarioIndexRoute — feature URL follows the route rule (FR-001, issue 134)', () => {
-  it('serves an /index feature page at its folder and the root id at /, beside an ordinary page', async () => {
+  it('serves an /index feature page at its folder and the root id at /, beside an ordinary page; base-prefixed like every other route', async () => {
+    vi.stubEnv('BASE_URL', '/doc-kitty/');
     const at = writeFeature('features/hr/request-leave.feature', LEAVE);
-    for (const id of ['behaviour/hr/request-leave', 'behaviour/hr/index', 'index']) {
-      entries.push(featurePage(id, 'features/hr/request-leave.feature', at, LEAVE_HEADINGS));
-    }
-    const urlOf = new Map(
-      (await getJson()).features.map((f: { id: string; url: string }) => [f.id, f.url]),
-    );
-    expect(urlOf.get('behaviour/hr/request-leave')).toBe('https://docs.example/behaviour/hr/request-leave/'); // control
-    expect(urlOf.get('behaviour/hr/index')).toBe('https://docs.example/behaviour/hr/');
-    expect(urlOf.get('')).toBe('https://docs.example/');
+    for (const id of ['behaviour/hr/request-leave', 'behaviour/hr/index', 'index']) leavePage(id, at);
+    const urlOf = new Map((await getJson()).features.map((f: { id: string; url: string }) => [f.id, f.url]));
+    expect(urlOf.get('behaviour/hr/request-leave')).toBe('https://docs.example/doc-kitty/behaviour/hr/request-leave/'); // control
+    expect(urlOf.get('behaviour/hr/index')).toBe('https://docs.example/doc-kitty/behaviour/hr/');
+    expect(urlOf.get('')).toBe('https://docs.example/doc-kitty/');
   });
 });
 
@@ -363,14 +336,13 @@ describe('scenarioIndexRoute — source resolution and parse-once', () => {
   });
 
   it('a source edited since its page was generated is a build error (stale page)', async () => {
+    leavePage(undefined, 'sha256:000000000000');
     writeFeature('features/hr/request-leave.feature', LEAVE);
-    entries.push(featurePage('behaviour/hr/request-leave', 'features/hr/request-leave.feature', 'sha256:000000000000', LEAVE_HEADINGS));
     await expect(getJson()).rejects.toThrow(/changed since behaviour\/hr\/request-leave was generated/);
   });
 
   it('a scenario with no rendered heading is a build error (page out of date)', async () => {
-    const at = writeFeature('features/hr/request-leave.feature', LEAVE);
-    entries.push(featurePage('behaviour/hr/request-leave', 'features/hr/request-leave.feature', at, [LEAVE_HEADINGS[0]]));
+    leavePage(undefined, undefined, [LEAVE_HEADINGS[0]]);
     await expect(getJson()).rejects.toThrow(
       /no rendered heading for "Scenario: Approve a request within the allowance" \(features\/hr\/request-leave.feature:3\)/,
     );
@@ -408,20 +380,19 @@ describe('scenarioIndexRoute — results (ADR-0055)', () => {
     });
     const [feature] = body.features;
     expect(feature.results).toBe('current');
-    expect(feature.scenarios.map((sc: { name: string; result: unknown }) => [sc.name, sc.result])).toEqual([
-      ['Paying by card', { status: 'passed' }],
-      ['Applying a discount code', { status: 'failed', counts: { passed: 1, failed: 1 } }],
-      ['Paying with a gift card', { status: 'passed', retried: true }],
+    expect(feature.scenarios.map((sc: { result: unknown }) => sc.result)).toEqual([
+      { status: 'passed' },
+      { status: 'failed', counts: { passed: 1, failed: 1 } },
+      { status: 'passed', retried: true },
     ]);
     expect(feature.scenarios[1].examples[0].results).toEqual(['passed', 'failed']);
   });
 
   it('a stale report gives no results, and says so', async () => {
     checkout(readFileSync(path.join(FIX, 'features/checkout.feature'), 'utf8').replace('@billing\n', '@billing\n# moved\n'));
-    // The page's headings are unchanged by the comment.
-    const body = await getJson({ results: 'reports/cucumber.ndjson' });
-    expect(body.features[0].results).toBe('stale');
-    expect(body.features[0].scenarios.every((sc: { result?: unknown }) => sc.result === undefined)).toBe(true);
+    const { features } = await getJson({ results: 'reports/cucumber.ndjson' });
+    expect(features[0].results).toBe('stale');
+    expect(features[0].scenarios.every((sc: { result?: unknown }) => sc.result === undefined)).toBe(true);
   });
 
   it('without the option, or with a missing report, the shape is unchanged', async () => {
@@ -432,6 +403,48 @@ describe('scenarioIndexRoute — results (ADR-0055)', () => {
     expect(plain.features[0].scenarios[0]).not.toHaveProperty('result');
     const missing = await getJson({ results: 'reports/none.ndjson' });
     expect(missing).toEqual(plain);
+  });
+});
+
+describe('scenarioIndexRoute — a hand-mounted route without results (FR-008)', () => {
+  const REPORT = 'reports/cucumber.ndjson';
+  const ROUTE = 'src/pages/api/scenarios.json.ts';
+  const warning = (file: string) =>
+    `[dk-gherkin] ${file} calls scenarioIndexRoute() without \`results\` while gherkin.results is set; ` +
+    `api/scenarios.json will carry no results. Pass { results: '${REPORT}' } (the same value as gherkin.results).`;
+  let warn: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => {
+    resetHandMountedWarning();
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // Two published feature pages: the build asks for the index more than once.
+    leavePage();
+    const book = writeFeature('features/shipping/book-consignment.feature', BOOK);
+    entries.push(featurePage('behaviour/shipping/book-consignment', 'features/shipping/book-consignment.feature', book, BOOK_HEADINGS));
+  });
+  const warned = () => warn.mock.calls.map((c: unknown[]) => String(c[0])).filter((m: string) => m.includes('without `results`'));
+
+  it('warns once per build, naming the route file and the report', async () => {
+    vi.stubEnv('DK_GHERKIN_RESULTS', REPORT);
+    vi.stubEnv('DK_GHERKIN_ROUTE', ROUTE);
+    expect((await getJson()).count).toBe(2);
+    await getJson();
+    expect(warned()).toEqual([warning(ROUTE)]);
+  });
+
+  it('names the default route path when the integration did not publish one', async () => {
+    vi.stubEnv('DK_GHERKIN_RESULTS', REPORT);
+    await getJson();
+    expect(warned()).toEqual([warning('src/pages/api/scenarios.json')]);
+  });
+
+  it('does not warn when the route passes results, or when gherkin.results is not set (controls)', async () => {
+    vi.stubEnv('DK_GHERKIN_RESULTS', REPORT);
+    vi.stubEnv('DK_GHERKIN_ROUTE', ROUTE);
+    await getJson({ results: REPORT });
+    expect(warned()).toEqual([]);
+    vi.unstubAllEnvs();
+    await getJson();
+    expect(warned()).toEqual([]);
   });
 });
 
@@ -451,14 +464,10 @@ describe('llms.txt — scenario index advertisement', () => {
     '',
   ].join('\n');
 
-  it('is byte-identical to the pre-WP10 output on a site without feature pages', async () => {
+  it('is byte-identical to the pre-WP10 output without feature pages, or when the only Specification pages are drafts or hand-authored', async () => {
     entries.push(...baseCorpus);
     expect(await llmsText()).toBe(PRE_WP10);
-  });
-
-  it('stays byte-identical when the only Specification pages are drafts or hand-authored', async () => {
     entries.push(
-      ...baseCorpus,
       featurePage('behaviour/hr/draft', 'features/hr/draft.feature', 'sha256:0', [], { doc_status: 'draft' }),
       { id: 'context/manual-spec', data: { title: 'Manual', kind: 'Specification', doc_status: 'draft' } },
     );

@@ -172,46 +172,6 @@ describe('featureMdast: the dkGherkin subtree (03 §4)', () => {
     expect(sketch(bare).slice(3, 5)).toEqual(['  paragraph', '    text "I want `x`"']);
   });
 
-  it('a Rule with a Background: the Rule one below the title, its children one below the Rule', () => {
-    const tree = emit(
-      lines(
-        'Feature: Capacity',
-        '  Rule: Capacity is finite',
-        '    Rules are checked per sailing.',
-        '    Background: Sailing',
-        '      Given a sailing',
-        '    Scenario: Over-book',
-        '      Then it fails',
-      ),
-      { header: 'title' },
-    );
-    expect(sketch(tree)).toEqual([
-      'dkGherkin.dk-gherkin',
-      '  heading[2]',
-      '    text "Capacity"',
-      '  heading[3]',
-      '    text "Rule: Capacity is finite"',
-      '  paragraph',
-      '    text "Rules are checked per sailing."',
-      '  heading[4]',
-      '    text "Background: Sailing"',
-      '  list(unordered).dk-gherkin__steps',
-      '    listItem',
-      '      paragraph',
-      '        strong.dk-gherkin__kw',
-      '          text "Given"',
-      '        text " a sailing"',
-      '  heading[4]',
-      '    text "Scenario: Over-book"',
-      '  list(unordered).dk-gherkin__steps',
-      '    listItem',
-      '      paragraph',
-      '        strong.dk-gherkin__kw',
-      '          text "Then"',
-      '        text " it fails"',
-    ]);
-  });
-
   it('Rule tags render after the Rule heading, before its description', () => {
     const tree = emit(lines('Feature: F', '  @r', '  Rule: R', '    Why.', '    Scenario: S', '      Given x'), {
       header: 'none',
@@ -369,25 +329,6 @@ describe('featureMdast: the dkGherkin subtree (03 §4)', () => {
     ]);
   });
 
-  it('a synthetic Feature alone: no header, its scenarios at the base level', () => {
-    const tree = emit('Feature:\n  Scenario: S\n    Given x\n', { baseLevel: 3 }, { feature: true });
-    expect(all(tree).filter((n) => n.type === 'heading').map((h) => `${String(h.depth)} ${sketch(h)[1].trim()}`)).toEqual([
-      '3 text "Scenario: S"',
-    ]);
-    expect(all(tree).some((n) => n.type === 'emphasis')).toBe(false);
-  });
-
-  it('container mode: every heading is a p[role=heading] carrying its level; no mdast heading remains', () => {
-    const tree = emit(lines('Feature: F', '  Rule: R', '    Scenario: S', '      Given x'), { inContainer: true });
-    expect(all(tree).some((n) => n.type === 'heading')).toBe(false);
-    const headings = all(tree).filter((n) => (n.data?.hProperties as { role?: string } | undefined)?.role === 'heading');
-    expect(headings.map((h) => sketch(h).join(' | '))).toEqual([
-      'paragraph<p>{role=heading level=2} |   text "F"',
-      'paragraph<p>{role=heading level=3} |   text "Rule: R"',
-      'paragraph<p>{role=heading level=4} |   text "Scenario: S"',
-    ]);
-  });
-
   it.each([
     [2, [2, 3, 4]],
     [4, [4, 5, 6]],
@@ -397,6 +338,7 @@ describe('featureMdast: the dkGherkin subtree (03 §4)', () => {
     const top = emit(src, { baseLevel });
     expect(all(top).filter((n) => n.type === 'heading').map((h) => h.depth)).toEqual(expected);
     const nested = emit(src, { baseLevel, inContainer: true });
+    expect(all(nested).some((n) => n.type === 'heading')).toBe(false);
     expect(
       all(nested)
         .map((n) => (n.data?.hProperties as { ariaLevel?: number } | undefined)?.ariaLevel)

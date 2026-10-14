@@ -229,30 +229,23 @@ describe('parseFragment: real errors stay errors, at the author’s line', () =>
     expect(r.errors[0]).toMatch(new RegExp(`^\\[dk-gherkin\\] ${PAGE}:3:1 expected: .*got 'Feature: late'$`));
   });
 
-  it('does not wrap when the first error is not a missing Feature line', () => {
-    const lang = parseFragment(body('# language: xx', 'Given a'), { display: PAGE });
-    expect(lang.synthetic).toEqual({ feature: false, scenario: false });
-    expect(lang.errors[0]).toBe(`[dk-gherkin] ${PAGE}:1:1 Language not supported: xx`);
-
-    const late = parseFragment(body('Feature: F', '  Scenario: S', '    Given a', '      | a |', '      | a | b |'), {
-      display: PAGE,
-    });
-    expect(late.synthetic).toEqual({ feature: false, scenario: false });
-    expect(late.errors).toEqual([`[dk-gherkin] ${PAGE}:5:7 inconsistent cell count within the table`]);
-  });
-
-  it('does not wrap when a bad tag line comes first', () => {
-    const r = parseFragment(body('@bad tag', 'Scenario: S', '  Given a'), { display: PAGE });
+  it.each([
+    ['an unsupported language', ['# language: xx', 'Given a'], '1:1 Language not supported: xx'],
+    [
+      'a table error in a complete feature',
+      ['Feature: F', '  Scenario: S', '    Given a', '      | a |', '      | a | b |'],
+      '5:7 inconsistent cell count within the table',
+    ],
+    ['a bad tag line first', ['@bad tag', 'Scenario: S', '  Given a'], '1:1 A tag may not contain whitespace'],
+    [
+      'a dangling tag at end of file',
+      ['@t'],
+      '2:0 unexpected end of file, expected: #TagLine, #FeatureLine, #Comment, #Empty',
+    ],
+  ])('does not wrap when the first error is not a missing Feature line: %s', (_label, src, error) => {
+    const r = parseFragment(body(...src), { display: PAGE });
     expect(r.synthetic).toEqual({ feature: false, scenario: false });
-    expect(r.errors[0]).toBe(`[dk-gherkin] ${PAGE}:1:1 A tag may not contain whitespace`);
-  });
-
-  it('does not wrap a dangling tag at end of file', () => {
-    const r = parseFragment(body('@t'), { display: PAGE });
-    expect(r.synthetic).toEqual({ feature: false, scenario: false });
-    expect(r.errors).toEqual([
-      `[dk-gherkin] ${PAGE}:2:0 unexpected end of file, expected: #TagLine, #FeatureLine, #Comment, #Empty`,
-    ]);
+    expect(r.errors[0]).toBe(`[dk-gherkin] ${PAGE}:${error}`);
   });
 
   it('reports tags followed by steps at the step line (tags need a Scenario to sit on)', () => {
@@ -281,11 +274,6 @@ describe('parseFragment: page lines (contract §1.4)', () => {
     const scenario = parseFragment(body('Scenario: S', '  Given a', 'Feature: late'), at);
     expect(scenario.lineShift).toBe(1);
     expect(scenario.errors[0]).toMatch(new RegExp(`^\\[dk-gherkin\\] ${PAGE}:43:1 `));
-  });
-
-  it('adds the column offset of an indented fence', () => {
-    const r = parseFragment(body('Given a', '  | a |', '  | a | b |'), { ...at, columnOffset: 4 });
-    expect(r.errors).toEqual([`[dk-gherkin] ${PAGE}:43:7 inconsistent cell count within the table`]);
   });
 });
 

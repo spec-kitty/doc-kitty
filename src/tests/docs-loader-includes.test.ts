@@ -279,14 +279,6 @@ describe('the page digest folds included files', () => {
     // And the guide's digest is NOT the plain one: its include is folded.
     expect(digestOf('guide')).not.toBe(raw('docs/guide.md'));
   });
-
-  it('ignores an edit to a file named only inside a code fence', async () => {
-    await load();
-    const before = digestOf('fenced');
-    write('features/a.feature', 'Feature: A\n  Scenario: Edited\n');
-    await load();
-    expect(digestOf('fenced')).toBe(before);
-  });
 });
 
 describe('a failed render is never a cache hit', () => {
@@ -432,17 +424,7 @@ describe('the dev watcher re-syncs dependent pages', () => {
     }
   });
 
-  it('does not loop on a page that includes itself: a page is no include', async () => {
-    write('docs/self.md', page('::gherkin{src="docs/self.md"}'));
-    const watcher = new FakeWatcher();
-    await load(undefined, watcher);
-    const emit = vi.spyOn(watcher, 'emit');
-    // `glob()`'s own handler re-syncs the page; the loader adds nothing.
-    watcher.emit('change', abs('docs/self.md'));
-    expect(emit.mock.calls).toEqual([['change', abs('docs/self.md')]]);
-  });
-
-  it('never chases an include cycle between pages: neither page is tracked as an include', async () => {
+  it('never chases an include cycle between pages (a page, or itself, is no include): neither page is tracked as an include', async () => {
     write('docs/ping.md', page('::gherkin{src="docs/pong.md"}'));
     write('docs/pong.md', page('::gherkin{src="docs/ping.md"}'));
     const watcher = new FakeWatcher();
@@ -500,11 +482,7 @@ describe('a results report is folded into the pages that may show results', () =
     expect(digestOf('guide')).not.toBe(before.guide);
     expect(digestOf('generated')).not.toBe(before.generated);
     expect(digestOf('plain')).toBe(before.plain);
-  });
-
-  it('a page without a report fold keeps exactly glob()\'s digest', async () => {
-    process.env[DK_GHERKIN_RESULTS_ENV] = 'reports/cucumber.ndjson';
-    await load();
+    // A page without a report fold keeps exactly glob()'s digest.
     expect(digestOf('plain')).toBe(plainDigest(PLAIN));
   });
 

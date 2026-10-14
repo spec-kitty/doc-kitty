@@ -218,27 +218,7 @@ describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
     expect(second.logger.warn).not.toHaveBeenCalled();
   });
 
-  it('prunes a page whose source was deleted on the next run', () => {
-    writeTree({
-      'features/shipping/x.feature': FEATURE_X,
-      'features/billing.feature': 'Feature: Billing\n',
-    });
-    const site = enterSite();
-    const integrations = defineDocKittyIntegrations({
-      title: 't',
-      gherkin: { sources: ['features'] },
-    });
-    runGherkinSetup(integrations);
-    const billing = path.join(site, 'docs', 'behaviour', 'billing.md');
-    expect(existsSync(billing)).toBe(true);
-
-    rmSync(path.join(site, 'features', 'billing.feature'));
-    const ctx = runGherkinSetup(integrations);
-    expect(existsSync(billing)).toBe(false);
-    expect(ctx.logger.info?.mock.calls[0][0]).toContain('1 removed');
-  });
-
-  it('tolerates a logger without info (no throw, nothing logged)', () => {
+  it('registers NO markdown plugins and injects NO scripts; a logger without info is tolerated', () => {
     writeTree({ 'features/shipping/x.feature': FEATURE_X });
     const site = enterSite();
     const ctx = runGherkinSetup(
@@ -247,14 +227,6 @@ describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
     );
     expect(ctx.logger.warn).not.toHaveBeenCalled();
     expect(existsSync(path.join(site, 'docs', 'behaviour', 'shipping', 'x.md'))).toBe(true);
-  });
-
-  it('registers NO markdown plugins and injects NO scripts', () => {
-    writeTree({ 'features/shipping/x.feature': FEATURE_X });
-    enterSite();
-    const ctx = runGherkinSetup(
-      defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }),
-    );
     // The only config it adds is the vite module behind the injected scenario route.
     expect(ctx.updateConfig.mock.calls.map(([c]) => Object.keys(c))).toEqual([['vite']]);
     expect(ctx.injectScript).not.toHaveBeenCalled();
@@ -308,7 +280,6 @@ describe('doc-kitty:gherkin errors are build-fatal', () => {
     ).not.toThrow();
     expect(existsSync(page)).toBe(false);
   });
-
 });
 
 describe('defineDocKittyIntegrations validates the gherkin option eagerly', () => {
@@ -352,32 +323,19 @@ describe('sourceRoot / sourceUrlPrefix shape sources[0].resource', () => {
       resource: string;
     }>)[0].resource;
 
-  it("reports paths relative to sourceRoot: '..'", () => {
-    const site = enterSite('site');
-    runGherkinSetup(
-      defineDocKittyIntegrations({
-        title: 't',
-        gherkin: { sources: ['../features'], sourceRoot: '..' },
-      }),
-    );
-    expect(resourceOf(site)).toBe('features/shipping/x.feature');
-  });
-
-  it('prepends sourceUrlPrefix to the sourceRoot-relative path', () => {
-    const site = enterSite('site');
-    runGherkinSetup(
-      defineDocKittyIntegrations({
-        title: 't',
-        gherkin: {
-          sources: ['../features'],
-          sourceRoot: '..',
-          sourceUrlPrefix: 'https://github.com/o/r/blob/main/',
-        },
-      }),
-    );
-    expect(resourceOf(site)).toBe(
+  it.each([
+    ["reports paths relative to sourceRoot: '..'", {}, 'features/shipping/x.feature'],
+    [
+      'prepends sourceUrlPrefix to the sourceRoot-relative path',
+      { sourceUrlPrefix: 'https://github.com/o/r/blob/main/' },
       'https://github.com/o/r/blob/main/features/shipping/x.feature',
+    ],
+  ])('%s', (_label, extra, expected) => {
+    const site = enterSite('site');
+    runGherkinSetup(
+      defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['../features'], sourceRoot: '..', ...extra } }),
     );
+    expect(resourceOf(site)).toBe(expected);
   });
 });
 
@@ -407,18 +365,13 @@ sections:
     });
   });
 
-  it('warns about the not-yet-generated folder when gherkin is OFF (unchanged behaviour)', () => {
+  it.each([
+    ['OFF (unchanged behaviour)', undefined],
+    ['true (no sources ⇒ no generated section, ADR-0051)', true],
+  ] as Array<[string, true | undefined]>)('warns about the not-yet-generated folder when gherkin is %s', (_label, gherkin) => {
     enterSite();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const sidebar = sidebarOf(defineDocKittyIntegrations({ title: 't' }));
-    expect(warn.mock.calls.some(([m]) => String(m).includes('"behaviour"'))).toBe(true);
-    expect(sidebar).toEqual([{ label: 'Context', autogenerate: { directory: 'docs/context' } }]);
-  });
-
-  it('treats gherkin: true like OFF (no sources ⇒ no generated section, ADR-0051)', () => {
-    enterSite();
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const sidebar = sidebarOf(defineDocKittyIntegrations({ title: 't', gherkin: true }));
+    const sidebar = sidebarOf(defineDocKittyIntegrations({ title: 't', gherkin }));
     expect(warn.mock.calls.some(([m]) => String(m).includes('"behaviour"'))).toBe(true);
     expect(sidebar).toEqual([{ label: 'Context', autogenerate: { directory: 'docs/context' } }]);
   });

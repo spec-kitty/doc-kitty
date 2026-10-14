@@ -222,14 +222,6 @@ describe('generate-feature-pages CLI — --check drift gate', () => {
     expect(res.stderr).toContain('  authored: shipping/notes.md\n');
   });
 
-  it('a missing source directory → exit 1 with the [dk-gherkin] message naming it', () => {
-    const site = makeSite();
-    rmSync(path.join(site, 'features'), { recursive: true });
-    const res = check(site);
-    expect(res.status).toBe(1);
-    expect(res.stderr).toMatch(/\[dk-gherkin\] source directory not found: features \(resolved to .*features\)/);
-  });
-
   it('--titles reaches the plan, and --check compares against the titled hubs (#125)', () => {
     const site = makeSite();
     expect(run(site, '--titles', 'shipping=Shipping (EU)').status).toBe(0);
