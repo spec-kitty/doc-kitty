@@ -104,6 +104,16 @@ release, as it did for `0.2.0`.
 
 ### Changed
 
+- **The reading column is wider, and all body content uses it (#154).** The
+  default `--dk-width-content` goes from `45rem` (720px) to `60rem` (960px), so
+  prose, tables, diagrams, code blocks and components share one wider column
+  instead of sitting in a narrow strip on large screens. The column is still
+  limited by the space between the sidebar and the "On this page" rail, so it
+  never runs under the rail and still respects `--dk-width-frame`; phones and
+  tablets look as before. Lines of prose are longer: about 123 to 135
+  characters, against 92 to 101. To keep the old width, set
+  `:root { --dk-width-content: 45rem; }`. See
+  [Theming and chrome](docs/architecture/theming.md#reading-width).
 - **`dockitty-check-links` now checks reference-style link definitions, and
   names a bad option (#131).** Before, a dangling
   `[label]: target` line passed. Now it is reported like an inline link. An
