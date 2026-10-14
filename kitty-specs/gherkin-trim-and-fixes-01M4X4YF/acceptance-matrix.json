@@ -1,0 +1,139 @@
+{
+  "mission_slug": "gherkin-trim-and-fixes-01M4X4YF",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-feature-core.test.ts \u00a72 near-miss rows: red 54d029f, green 2c9e0bf",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:22:14.550748+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-generate.test.ts draft-only rows + codegen-guard: red 32bea7f, green 7fa4a8d; ad-hoc example builds (old planner warns [dk-sidebar], fix does not)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:22:21.423115+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-generate.test.ts 'the plan does not depend on the draft-publication setting'; --check clean after drafts-on and drafts-off builds",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:22:28.127008+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-generate.test.ts titles rows (red then 'feat: title hubs'); integration row 8df7fa2 -> b48a85e",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:22:35.084837+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-options.test.ts titles rows (18 red, then 92b3472)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:22:42.412392+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-example.test.ts FR-004a parity + mirror (titles), gherkin-check-cli.test.ts --titles rows; pnpm validate:features green",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:22:49.490463+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "example/astro.config.mjs titles {hr:'HR'}; regenerated hubs; consumer-setup guide documents titles",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:22:56.024426+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-integration.test.ts build:done rows red 282e57e, green 38e080a; example build exits 1 without src/pages/api/scenarios.json.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:23:02.412673+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "gherkin-fixture-parity.test.ts, red on a planted byte; inline copy removed",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:23:08.976543+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "research/test-verdicts.md: verdict per Gherkin test file",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:23:16.671655+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "research/test-verdicts.md planted-break table; adversarial review cycle 1 reversed two retirements",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:23:24.348763+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "research/test-verdicts.md kept emitter smokes shown red; a11y gherkin.spec.ts and assert-consumer-gherkin.mjs kept",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:23:31.639110+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "ADR-0052, CHANGELOG.md Unreleased entries, docs/changelog/2026-10-14-gherkin-fixes-and-test-trim.md",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T13:23:38.750843+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
