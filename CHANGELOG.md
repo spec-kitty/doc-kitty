@@ -8,7 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.3.0] — 2026-10-14
 
-This release lets you write Gherkin scenarios in any page, rewrites relative
+This release lets you write Gherkin scenarios in any page, shows their test
+results from your Cucumber report, rewrites relative
 Markdown links to working routes, widens the reading column to 60rem and makes
 sidebars stop repeating their own labels. You now set index names in one place,
 on `defineDocKittyIntegrations`, and the DocKitty commands read them from your
@@ -176,18 +177,17 @@ sources. **Upgrading from 0.2.0: read the Breaking section first.**
 - **The agent page payload expands includes (#120).** `/api/pages/<slug>.json`
   has each include as Markdown in place of the directive, and lists them under
   `includes: [{ src, scenario?, tags? }]`.
-- **Scenario results from your Cucumber report (#162, ADR-0055).** Set
+- **Show each scenario's last test result next to it (#162).** Before, feature
+  pages showed what a scenario says but not whether it passed. Now set
   `gherkin.results` to the Cucumber Messages or JSON report your CI writes, and
-  every scenario shown from a `.feature` file, on generated pages and in
-  `::gherkin` includes, gets its last result after its heading: Passed, Failed,
-  Ambiguous, Undefined, Pending, Skipped, Not run or Passed on retry. Outline rows
-  get a `Result` column and each feature a results line with the run date and
-  commit. Results are matched by file and line, and a report made from another
-  version of a file shows nothing for it. Only statuses are published. Generated
-  pages stay as committed: results are added when they render. A missing report is
-  a warning; an unreadable one fails the build. The injected `/api/scenarios.json`
-  carries the results too (a hand-mounted `scenarioIndexRoute` takes
-  `{ results }`).
+  every scenario from a `.feature` file, on generated pages and in `::gherkin`
+  includes, shows its result after its heading: Passed, Failed, Ambiguous,
+  Undefined, Pending, Skipped, Not run or Passed on retry. Outline rows get a
+  `Result` column, and each feature a line with the run date and commit. A report
+  made from another version of a file shows nothing for it. Produce the report in
+  CI rather than committing it; only statuses are published. A missing report
+  warns, an unreadable one fails the build. `/api/scenarios.json` carries the
+  results too. See [ADR-0055](docs/adr/0055-gherkin-scenario-results.md).
 - **Relative Markdown links between pages work on the built site (#131).**
   Before, `[setup](./setup.md)` linked to a `.md` path that 404s on the live
   site, so authors wrote root-absolute links that break on GitHub. Now a relative
