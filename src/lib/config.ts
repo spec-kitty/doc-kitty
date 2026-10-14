@@ -83,7 +83,9 @@ import {
 } from './glossary/definitions-payload.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures } from './gherkin/load.mjs';
 import { generateFeaturePages } from './gherkin/generate.mjs';
-import { validateGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
+import { normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
+import { drainFatal, formatFatal, resetFatal } from './gherkin/errors.mjs';
+import gherkinFence, { type GherkinFenceOptions } from './remark/gherkin-fence.js';
 
 /**
  * Internal cross-boundary signal (integration → standalone routes), NOT a public
@@ -167,14 +169,22 @@ export interface DocKittyOptions {
    */
   markua?: boolean;
   /**
-   * Opt-in Gherkin feature pages (ADR-0046). **Default off**, the byte-identical
-   * twin of `diagrams: false`. With it absent the integrations array carries ZERO
-   * Gherkin cost: no `doc-kitty:gherkin` integration, no markdown plugins (none are
-   * ever added; the generated pages are plain Markdown and ride the existing
-   * stack), and the registry sidebar's `generatedIds` stay the default seed. Set it
-   * to walk `sources` for `*.feature` files in `astro:config:setup` and codegen one
-   * `kind: Specification` page per feature (plus directory hubs) into
-   * `<docsDir>/<section>/`, before the content-layer glob runs.
+   * Opt-in Gherkin (ADR-0046, widened by ADR-0051). **Default off**, the
+   * byte-identical twin of `diagrams: false`. With it absent the integrations
+   * array carries ZERO Gherkin cost: no `doc-kitty:gherkin` (codegen) or
+   * `doc-kitty:gherkin-fence` (in-page stage) integration, no markdown plugins,
+   * and the registry sidebar's `generatedIds` stay the default seed.
+   *
+   * Two forms:
+   *  - `true`: in-page Gherkin only (ADR-0051): a ```` ```gherkin ```` fence on a
+   *    docs page renders as a structured scenario, and `::gherkin{src=…}`
+   *    includes a `.feature` file (which needs `includeRoots`, so with `true`
+   *    every include is refused). No generated pages, no `behaviour` section.
+   *  - an object: the same, tuned by the keys below. Setting `sources` ALSO turns
+   *    on generated feature pages (ADR-0046): `sources` is walked for `*.feature`
+   *    in `astro:config:setup` and one `kind: Specification` page per feature
+   *    (plus directory hubs) is codegen'd into `<docsDir>/<section>/`, before the
+   *    content-layer glob runs.
    *
    * Why an explicit option and NOT presence detection like the glossary: the
    * glossary has ONE canonical file (`.contextive/definitions.yaml`), so its
@@ -182,42 +192,70 @@ export interface DocKittyOptions {
    * (`features/`, `tests/features/`, `src/test/resources/…`), so presence cannot be
    * inferred safely; the consumer names the directories.
    *
-   * Turning it OFF (removing the option) FREEZES the committed pages rather than
-   * deleting them: with no integration registered nothing prunes `<section>/`, so
-   * the last generated output keeps rendering as ordinary content until it is
-   * deleted by hand. Only an active run removes pages whose source is gone.
+   * Turning generated pages OFF (removing `sources` or the option) FREEZES the
+   * committed pages rather than deleting them: with no integration registered
+   * nothing prunes `<section>/`, so the last generated output keeps rendering as
+   * ordinary content until it is deleted by hand. Only an active run removes pages
+   * whose source is gone.
    *
-   * Misconfiguration is build-fatal (`[dk-gherkin]` errors): `sources` must be a
-   * non-empty string array, `section` a single safe path segment that is not
-   * another generator's section (e.g. `glossary`), and a malformed `.feature`
-   * fails `config:setup` with `file:line:col`.
+   * Misconfiguration is build-fatal (`[dk-gherkin]` errors): any value other than
+   * `true` or an object, an unknown key, a non-boolean `fences`, `includeRoots`
+   * that are not relative paths, `section` or `allowEmpty` without `sources`; with
+   * `sources`, `sources` must be a non-empty string array, `section` a single safe
+   * path segment that is not another generator's section (e.g. `glossary`), and a
+   * malformed `.feature` fails `config:setup` with `file:line:col`.
    */
-  gherkin?: {
-    /** Source directories, relative to the site root (`process.cwd()`), walked for `*.feature`. */
-    sources: string[];
-    /** Section id (folder under `docsDir`) the pages are generated into. Default `behaviour`. */
-    section?: string;
-    /**
-     * Optional repo browse-URL prefix (e.g. `https://github.com/o/r/blob/main/`),
-     * prepended verbatim to the `sourceRoot`-relative source path to form each
-     * page's `sources[0].resource` link. Omitted → the bare relative path.
-     */
-    sourceUrlPrefix?: string;
-    /**
-     * Directory the reported source paths (`sources:` frontmatter, the agent API)
-     * are relative to, itself relative to the site root. Default: the site root
-     * (`process.cwd()`). Set `'..'` when the site lives in a sub-package and
-     * `sourceUrlPrefix` points at the repo root.
-     */
-    sourceRoot?: string;
-    /**
-     * Remove the generated pages when NONE of the `sources` yields a feature.
-     * Default `false`: the build stops instead, because an uninitialised git
-     * submodule looks exactly like "all features deleted". Set `true` to delete
-     * the pages on purpose. Must be a boolean (build-fatal otherwise).
-     */
-    allowEmpty?: boolean;
-  };
+  gherkin?:
+    | true
+    | {
+        /**
+         * Render ```` ```gherkin ```` fences and `::gherkin{…}` includes on docs
+         * pages (ADR-0051). Default `true`. `false` leaves fences as code blocks
+         * and includes as literal text, so a generated-pages-only site
+         * (`{ sources, fences: false }`) renders its authored pages unchanged.
+         */
+        fences?: boolean;
+        /**
+         * Directories an `::gherkin{src=…}` include may read from, relative to the
+         * project root (`process.cwd()`). An include whose real path (symlinks
+         * resolved) is outside every root is build-fatal. Default: `sources` when
+         * set, else `[]` (every include is refused).
+         */
+        includeRoots?: string[];
+        /**
+         * Source directories, relative to the site root (`process.cwd()`), walked
+         * for `*.feature`. Present ⇒ generated feature pages (ADR-0046); absent ⇒
+         * none, and no `behaviour` sidebar section.
+         */
+        sources?: string[];
+        /**
+         * Section id (folder under `docsDir`) the pages are generated into.
+         * Default `behaviour`. Only valid together with `sources`.
+         */
+        section?: string;
+        /**
+         * Optional repo browse-URL prefix (e.g. `https://github.com/o/r/blob/main/`),
+         * prepended verbatim to the `sourceRoot`-relative source path to form each
+         * generated page's `sources[0].resource` link and an include's source
+         * link. Omitted → the bare relative path.
+         */
+        sourceUrlPrefix?: string;
+        /**
+         * Directory the reported source paths (`sources:` frontmatter, the agent
+         * API, include source lines) are relative to, itself relative to the site
+         * root. Default: the site root (`process.cwd()`). Set `'..'` when the site
+         * lives in a sub-package and `sourceUrlPrefix` points at the repo root.
+         */
+        sourceRoot?: string;
+        /**
+         * Remove the generated pages when NONE of the `sources` yields a feature.
+         * Default `false`: the build stops instead, because an uninitialised git
+         * submodule looks exactly like "all features deleted". Set `true` to delete
+         * the pages on purpose. Must be a boolean, and only valid together with
+         * `sources` (build-fatal otherwise).
+         */
+        allowEmpty?: boolean;
+      };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
    * `"README"` only — byte-identical to today's behaviour (NFR-003). This is
@@ -1209,37 +1247,34 @@ function glossaryIntegration(
   };
 }
 
-/** The `gherkin` option with its defaults applied (see {@link resolveGherkinOptions}). */
-interface ResolvedGherkinOptions {
-  sources: string[];
-  section: string;
-  sourceUrlPrefix?: string;
-  /** Site-root-relative, as configured (default `'.'`); resolved against cwd in the hook. */
-  sourceRoot: string;
-  /** Set only when `true`: remove the pages on an empty source set instead of stopping. */
-  allowEmpty?: true;
-}
+/** The normalised `gherkin` option (see {@link resolveGherkinOptions}). */
+type ResolvedGherkinOptions = ReturnType<typeof normalizeGherkinOptions>;
+
+/** Its generated-pages part, present only when `sources` is set (ADR-0046). */
+type ResolvedGherkinPages = NonNullable<ResolvedGherkinOptions['pages']>;
 
 /**
- * Validate + default the `gherkin` option EAGERLY, at `defineDocKittyIntegrations`
+ * Normalise + validate the `gherkin` option EAGERLY, at `defineDocKittyIntegrations`
  * time, so a misconfiguration fails before any hook runs (house posture: config
- * errors are build-fatal and name the feature). The rules (non-empty `sources`;
- * `section` ONE safe folder name, not `_meta` and not another generator's
- * section) live ONCE in `./gherkin/options.mjs`, shared with the bare-Node
- * `generate-feature-pages.mjs` CLI; this passes the reserved list derived from
- * `BUILD_GENERATED_SECTION_IDS` (a parity test pins the CLI's default to it).
+ * errors are build-fatal and name the feature). The rules (`true` or a known-key
+ * object; with `sources`: non-empty `sources`, `section` ONE safe folder name, not
+ * `_meta` and not another generator's section) live ONCE in
+ * `./gherkin/options.mjs`, shared with the bare-Node `generate-feature-pages.mjs`
+ * CLI; this passes the reserved list derived from `BUILD_GENERATED_SECTION_IDS`
+ * (a parity test pins the CLI's default to it).
  */
 function resolveGherkinOptions(
   raw: NonNullable<DocKittyOptions['gherkin']>,
 ): ResolvedGherkinOptions {
-  return validateGherkinOptions(raw, {
+  return normalizeGherkinOptions(raw, {
     reservedSections: ['_meta', ...BUILD_GENERATED_SECTION_IDS],
   });
 }
 
 /**
  * The opt-in Gherkin feature-page seam (ADR-0046), registered ONLY when
- * `defineDocKittyIntegrations({ gherkin: {…} })` is set. It adds NO markdown
+ * `defineDocKittyIntegrations({ gherkin: { sources, … } })` is set (`gherkin:
+ * true`, or an object without `sources`, generates no pages). It adds NO markdown
  * plugins: its single `astro:config:setup` hook (the glossary's generate-before-
  * glob seam — the content-layer `sync` runs after every config hook) does
  *   (a) `loadFeatures`: walk + parse every `*.feature` under `sources` (resolved
@@ -1256,7 +1291,7 @@ function resolveGherkinOptions(
  * One `[dk-gherkin]` info line reports the counts (when the logger supports it).
  */
 function gherkinIntegration(
-  opts: ResolvedGherkinOptions,
+  opts: ResolvedGherkinPages,
   docsDir: string,
   indexBasename: IndexBasenameOption | undefined,
 ): AstroIntegration {
@@ -1286,6 +1321,75 @@ function gherkinIntegration(
               `${written.length} written, ${unchanged.length} unchanged, ${removed.length} removed`,
           );
         }
+      },
+    },
+  };
+}
+
+/**
+ * The in-page Gherkin stage (ADR-0051 decisions 2, 3, 5), registered ONLY when the
+ * `gherkin` option is set and `fences !== false`. A SEPARATE integration from the
+ * `doc-kitty:gherkin` codegen hook: that one reads the filesystem in
+ * `astro:config:setup` and is pinned as adding no markdown plugins, while this one
+ * is a pure markdown stage (02 §Pipeline). Two hooks:
+ *
+ *  - `astro:config:setup` empties the process-wide error sink (a long-lived dev
+ *    process must not carry errors across config reloads) and appends the
+ *    `gherkinFence` remark plugin, with the normalised `includeRoots`,
+ *    `sourceRoot` and `sourceUrlPrefix` the include directive needs. Its array
+ *    position (after the glossary and the codegen hook, immediately before
+ *    Starlight) puts it after Astro's smartypants and the glossary, and before
+ *    Starlight's directive restoration, Expressive Code and `deckSplit`;
+ *    `config-invariants.test.ts` pins it.
+ *  - `astro:build:done` fails the build when any page recorded a fatal Gherkin
+ *    error. Astro's content loader only LOGS a render error and stores the page
+ *    with no HTML, so without this check a broken fence builds an empty page and
+ *    exits 0 (02 §Making errors fatal). The thrown aggregate lists every page and
+ *    message; `gherkin-fence-build.test.ts` proves the non-zero exit on a real
+ *    build. In dev nothing exits: the throw in the stage already shows the
+ *    page's error.
+ *
+ *    A failed render must not be cached as a hit, or a second build (or a build
+ *    after `astro sync`) would skip the page and pass. Two mechanisms, because
+ *    the content store is per collection but this integration is not:
+ *     - primary: `docKittyDocsLoader` stores a failed Gherkin render under a
+ *       digest that never matches (`createGherkinTracker` in `schema.ts`), so
+ *       every later sync renders the page again and refills the sink. It also
+ *       covers `astro sync`/`astro check` before a build and a build that died
+ *       before this hook;
+ *     - fallback: before throwing, this hook DELETES the build's content data
+ *       store (`<cacheDir>/data-store.json`). That covers a page in a collection
+ *       on any other loader (a plain `glob()`), which the loader-side digest
+ *       never sees: the next build re-renders everything and fails again. It
+ *       cannot cover an `astro sync` before the build for such a collection
+ *       (the sync never reaches this hook). Dropping the store only costs the
+ *       next build a full re-render, and only after a failure. It leans on
+ *       Astro 5 internals, as decision 11 does (#119).
+ *    `gherkin-fence-build.test.ts` pins both.
+ */
+function gherkinFenceIntegration(opts: ResolvedGherkinOptions): AstroIntegration {
+  // What the include directive needs (03 §2.3, §4.6), resolved against the site
+  // root at transform time, like `gherkin.sources`.
+  const fenceOptions: GherkinFenceOptions = {
+    includeRoots: opts.includeRoots,
+    sourceRoot: opts.sourceRoot,
+    ...(opts.sourceUrlPrefix !== undefined ? { sourceUrlPrefix: opts.sourceUrlPrefix } : {}),
+  };
+  let cacheDir: URL | undefined;
+  return {
+    name: 'doc-kitty:gherkin-fence',
+    hooks: {
+      'astro:config:setup': ({ updateConfig, config }) => {
+        resetFatal();
+        cacheDir = config?.cacheDir;
+        updateConfig({ markdown: { remarkPlugins: [[gherkinFence, fenceOptions]] } });
+      },
+      'astro:build:done': () => {
+        const report = formatFatal(drainFatal());
+        if (!report) return;
+        // The fallback for collections not on `docKittyDocsLoader` (see above).
+        if (cacheDir) rmSync(new URL('data-store.json', cacheDir), { force: true });
+        throw new Error(report);
       },
     },
   };
@@ -1713,8 +1817,8 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     starlight: overrides,
   } = options;
 
-  // Opt-in gherkin seam (ADR-0046): validated + defaulted EAGERLY here, so a bad
-  // option throws a `[dk-gherkin]` Error at config time, before any hook runs.
+  // Opt-in gherkin seam (ADR-0046/0051): normalised + validated EAGERLY here, so a
+  // bad option throws a `[dk-gherkin]` Error at config time, before any hook runs.
   // `undefined` when the option is absent — every gherkin branch below then
   // contributes nothing (byte-identical array, sidebar call and corpus).
   const gherkinOpts = gherkin === undefined ? undefined : resolveGherkinOptions(gherkin);
@@ -1725,6 +1829,10 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // first name decides `generatedIndexBasename`). A later call overwrites an
   // earlier one, as for DK_DOCS_ROOT.
   process.env[DK_INDEX_BASENAME_ENV] = JSON.stringify(normalizeIndexBasenames(indexBasename));
+  // Everything generated-pages (codegen integration, `behaviour` sidebar section)
+  // hangs off `sources`, i.e. `pages`: `gherkin: true` or an object without
+  // `sources` adds none of it (ADR-0051).
+  const gherkinPages = gherkinOpts?.pages;
 
   // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
   // sitemap draft filter resolves internally (`path.resolve(process.cwd(),
@@ -1782,9 +1890,10 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // caller's explicit `sidebar` still wins; a registry-free site keeps Starlight's
   // bare tree-autogeneration (registrySidebar → undefined). Resolved once here so
   // the value is decided BEFORE the build hooks run.
-  // With gherkin on, its section id is threaded in as build-generated (see
-  // `registrySidebar`); off → the call is the unchanged single-argument form.
-  const resolvedSidebar = sidebar ?? registrySidebar(docsDir, gherkinOpts?.section);
+  // With generated gherkin pages on, their section id is threaded in as
+  // build-generated (see `registrySidebar`); off (no `sources`) → the call is the
+  // unchanged single-argument form.
+  const resolvedSidebar = sidebar ?? registrySidebar(docsDir, gherkinPages?.section);
 
   // C-004: a sidebar the consumer wrote — through `sidebar` or the `starlight`
   // escape hatch — is authoritative and is never reshaped. Only a sidebar the
@@ -1892,13 +2001,22 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // the example definitions file; until then this is inert on the example.
     ...(glossaryActive ? [glossaryIntegration(docsDir, base, indexBasename)] : []),
     // Opt-in gherkin seam (ADR-0046): PREPENDED before Starlight, immediately AFTER
-    // the glossary, ONLY when `gherkin` is set. Every `config:setup` hook runs
+    // the glossary, ONLY when `gherkin.sources` is set. Every `config:setup` hook runs
     // before the content-layer sync, so its array position relative to the
     // glossary is not a correctness constraint; it sits after it so build logs
     // read glossary → gherkin. It registers NO remark/rehype plugins (generated
     // pages are plain Markdown on the existing stack), so no plugin-order pin
     // moves. Omitted entirely when absent — byte-identical array.
-    ...(gherkinOpts ? [gherkinIntegration(gherkinOpts, docsDir, indexBasename)] : []),
+    ...(gherkinPages ? [gherkinIntegration(gherkinPages, docsDir, indexBasename)] : []),
+    // Opt-in in-page Gherkin stage (ADR-0051): PREPENDED immediately before
+    // Starlight, AFTER the glossary and the codegen hook, whenever the option is
+    // set and `fences` is not `false`. Here the position IS a correctness
+    // constraint, because this integration registers a remark plugin and
+    // `updateConfig` APPENDS: after the glossary means step text is not
+    // auto-linked (Q1); before Starlight means Expressive Code and the directive
+    // restoration run after it. Omitted when absent or `fences: false`, so such a
+    // site's plugin lists are byte-identical.
+    ...(gherkinOpts?.fences ? [gherkinFenceIntegration(gherkinOpts)] : []),
     starlight(starlightConfig),
     // Always-on route-shaping seam (FR-011, FR-019..FR-023): serves the data the
     // toolkit's route middleware (registered in `starlightConfig` above) reads,

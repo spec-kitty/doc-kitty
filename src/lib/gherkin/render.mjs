@@ -15,8 +15,8 @@
  *  - Keywords are rendered as written in the source (trimmed), so i18n keywords
  *    stay localised.
  *  - Steps are list items `- **<Keyword>** <escaped text>` (prose, so glossary
- *    auto-linking can reach them). In a Scenario Outline, `<placeholder>`s become
- *    inline code.
+ *    auto-linking can reach them). Double-quoted arguments (quotes included)
+ *    and, in a Scenario Outline, `<placeholder>`s become inline code.
  *  - DataTable / DocString step arguments nest under their list item (2-space
  *    indent, blank line before and after: MD031/MD058).
  *  - Examples are a bold label paragraph + inline tags + description + table.
@@ -30,34 +30,53 @@
  * its autolink literals — smartypants aside, `remark-directive`, Markua attribute
  * lists) fire on them.
  *
+ * The document walk itself (titles, narrative, tag order, counts, outline
+ * placeholders, rules, backgrounds) is `view.mjs`'s, shared with the in-page
+ * mdast emitter (`mdast.mjs`, ADR-0051) so the two cannot drift. This module
+ * owns the Markdown syntax: the escapers and the block layout.
+ *
  * PURITY CONTRACT: the only runtime imports are `./text.mjs` (itself
- * import-free) and the fs-free `../vocabulary-core.mjs` (for THE code-unit
- * comparator), so this module loads in the Astro build AND in the bare-Node
- * `generate-feature-pages.mjs --check` gate. The AST is a plain object; the
- * `@cucumber/messages` references below are type-only JSDoc imports.
+ * import-free) and `./view.mjs` (pure; it brings the fs-free
+ * `../vocabulary-core.mjs` comparator), so this module loads in the Astro build
+ * AND in the bare-Node `generate-feature-pages.mjs --check` gate. The AST is a
+ * plain object; the `@cucumber/messages` references below are type-only JSDoc
+ * imports.
  *
  * @module gherkin/render
  */
 
-import { compareCodeUnit } from '../vocabulary-core.mjs';
-import { GHERKIN_LOG_PREFIX, dedent, featureTitle, splitNarrative } from './text.mjs';
+import { GHERKIN_LOG_PREFIX } from './text.mjs';
+import { cellSegments, childLevel, displayTags, featureView, resolveLevels, summaryText } from './view.mjs';
 
 /** @typedef {import('@cucumber/messages').GherkinDocument} GherkinDocument */
-/** @typedef {import('@cucumber/messages').Feature} Feature */
-/** @typedef {import('@cucumber/messages').Rule} Rule */
-/** @typedef {import('@cucumber/messages').Background} Background */
-/** @typedef {import('@cucumber/messages').Scenario} Scenario */
-/** @typedef {import('@cucumber/messages').Step} Step */
-/** @typedef {import('@cucumber/messages').Examples} Examples */
-/** @typedef {import('@cucumber/messages').Tag} Tag */
-/** @typedef {import('@cucumber/messages').TableRow} TableRow */
-/** @typedef {import('@cucumber/messages').DataTable} DataTable */
-/** @typedef {import('@cucumber/messages').DocString} DocString */
+/** @typedef {import('./view.mjs').FeatureView} FeatureView */
+/** @typedef {import('./view.mjs').SectionView} SectionView */
+/** @typedef {import('./view.mjs').StepView} StepView */
+/** @typedef {import('./view.mjs').ExamplesView} ExamplesView */
+/** @typedef {import('./view.mjs').HeaderMode} HeaderMode */
 
 /**
  * @typedef {object} RenderOptions
  * @property {string} [file] Source path used in warnings (e.g. `features/a.feature`).
  * @property {(msg: string) => void} [warn] Warning sink (defaults to a no-op).
+ * @property {number} [lineOffset] Added to the lines warnings cite. Default 0.
+ * @property {number} [baseLevel] The Feature title's heading level. Default 1
+ *   (a generated page's H1).
+ * @property {HeaderMode} [header] Default `'full'`.
+ * @property {{ feature?: boolean, scenario?: boolean }} [synthetic] Levels a
+ *   fragment wrap synthesised (see `view.mjs`); they render no heading.
+ * @property {FeatureView} [view] The document's view, when the caller already
+ *   built it (with the same `synthetic`): saves a second walk.
+ * @property {boolean} [embed] Render as an EMBED, the agent Markdown of an
+ *   include, so it lists the same tags in the same places as the HTML
+ *   (`mdast.mjs`): the `full` header carries the Feature's tags, every tag list
+ *   follows its heading directly (before the description), and `@dk:*`
+ *   metadata tags are dropped (`displayTags`). Default off: a generated page
+ *   puts the Feature's tags in frontmatter and keeps its layout byte for byte.
+ * @property {boolean} [inContainer] The include sits in a list item or
+ *   blockquote: headings become bold lines, as the HTML renders
+ *   `p[role=heading]` there, so the expansion neither reaches an outline nor
+ *   breaks its container's.
  */
 
 /**
@@ -227,89 +246,100 @@ function codeSpan(text) {
   return `${fence}${pad}${text}${pad}${fence}`;
 }
 
-/** Outline placeholder, as the pickle compiler substitutes it. */
-const PLACEHOLDER = /<[^<>\n]+>/g;
-
 /**
- * Step text: escaped prose, with `<placeholder>`s as inline code in an outline.
+ * Step text: escaped prose, with quoted arguments and `<placeholder>`s
+ * (segmented by the view) as inline code.
  *
- * @param {string} text
- * @param {boolean} outline
+ * @param {StepView} step
  */
-function renderStepText(text, outline) {
-  if (!outline) return escapeInline(text);
-  let out = '';
-  let last = 0;
-  for (const m of text.matchAll(PLACEHOLDER)) {
-    const at = m.index ?? 0;
-    out += escapeInline(text.slice(last, at)) + codeSpan(m[0]);
-    last = at + m[0].length;
-  }
-  return out + escapeInline(text.slice(last));
+function renderStepText(step) {
+  return step.segments.map((s) => (s.kind === 'text' ? escapeInline(s.value) : codeSpan(s.value))).join('');
 }
 
 /**
  * A heading/label title: `<Keyword>: <name>`, or just `<Keyword>` when unnamed.
+ * Keyword and name are escaped separately (each may sit line-initially).
  *
- * @param {string} keyword
- * @param {string} name
+ * @param {{ keyword: string, name: string }} node A view node (both trimmed).
  */
-function titled(keyword, name) {
-  const k = escapeHeading(keyword.trim());
-  const n = name.trim();
-  return n ? `${k}: ${escapeHeading(n)}` : k;
+function titled({ keyword, name }) {
+  const k = escapeHeading(keyword);
+  return name ? `${k}: ${escapeHeading(name)}` : k;
 }
 
 /**
- * A described block's description: dedented Markdown passthrough, with runs of
- * blank lines collapsed to one (MD012). `''` when there is none.
+ * An ATX heading at `level` (already capped by the view's level plan).
  *
- * @param {string | undefined} description
+ * @param {number} level
+ * @param {string} text Escaped heading text.
  */
-function passthrough(description) {
-  return dedent(description).replace(/\n{3,}/g, '\n\n');
+function heading(level, text) {
+  return `${'#'.repeat(level)} ${text}`;
 }
 
 /**
- * Tags as sorted, de-duplicated inline code (`` `@a` `@b` ``); `''` when none.
+ * Tags as inline code (`` `@a` `@b` ``); `''` when none. The view has already
+ * sorted and de-duplicated them.
  *
- * @param {readonly Tag[] | undefined} tags
+ * @param {readonly string[]} tags
  */
 function renderTags(tags) {
-  const names = [...new Set((tags ?? []).map((t) => t.name))].sort(compareCodeUnit);
-  return names.map(codeSpan).join(' ');
+  return tags.map(codeSpan).join(' ');
+}
+
+/**
+ * One table cell: escaped prose, with its quoted arguments (segmented by the
+ * view) as inline code, as in step text; lines joined by `<br>` as in
+ * {@link escapeCell}, which this equals for a cell without a quoted argument.
+ *
+ * Every `|` gets a backslash, inside a code span too: a GFM row splits on a bare
+ * `|` even there, and removes that backslash again before the span is parsed.
+ * An argument holding `\|` cannot be written as a code span in a cell at all (a
+ * GFM row reads `\\|` as a cell boundary), so it stays escaped text.
+ *
+ * @param {string} cell
+ * @returns {string}
+ */
+function renderCell(cell) {
+  return cell
+    .split(/\r\n?|\n/)
+    .map((line) =>
+      cellSegments(line)
+        .map((s) =>
+          s.kind === 'text' || s.value.includes('\\|') ? escapeCell(s.value) : codeSpan(s.value).replace(/\|/g, '\\|'),
+        )
+        .join(''),
+    )
+    .join('<br>');
 }
 
 /**
  * GFM table lines (header = first row; a 1-row table is header + delimiter).
  *
- * @param {readonly TableRow[]} rows
+ * @param {readonly string[][]} rows Cell values.
  * @returns {string[]}
  */
 function tableLines(rows) {
   if (rows.length === 0) return [];
-  const row = (/** @type {TableRow} */ r) =>
-    `|${r.cells.map((c) => (c.value === '' ? ' ' : ` ${escapeCell(c.value)} `)).join('|')}|`;
+  const row = (/** @type {readonly string[]} */ r) =>
+    `|${r.map((c) => (c === '' ? ' ' : ` ${renderCell(c)} `)).join('|')}|`;
   const [head, ...body] = rows;
-  const delimiter = `|${head.cells.map(() => ' --- ').join('|')}|`;
+  const delimiter = `|${head.map(() => ' --- ').join('|')}|`;
   return [row(head), delimiter, ...body.map(row)];
 }
 
 /**
  * A step argument's lines (DataTable or DocString), un-indented.
  *
- * @param {Step} step
+ * @param {StepView} step
  * @returns {string[] | null}
  */
 function argumentLines(step) {
-  if (step.dataTable) return tableLines(step.dataTable.rows);
+  if (step.dataTable) return tableLines(step.dataTable);
   if (step.docString) {
-    const { content } = step.docString;
+    const { content, language } = step.docString;
     const fence = fenceFor(content);
-    // Sanitised media type; MD040 requires a language on every fence, so a
-    // DocString without one is labelled `text`.
-    const info = (step.docString.mediaType ?? '').replace(/[^A-Za-z0-9+.#-]/g, '') || 'text';
-    return [`${fence}${info}`, ...(content === '' ? [] : content.split(/\r\n?|\n/)), fence];
+    return [`${fence}${language}`, ...(content === '' ? [] : content.split(/\r\n?|\n/)), fence];
   }
   return null;
 }
@@ -318,13 +348,12 @@ function argumentLines(step) {
  * The steps list. An item carrying an argument nests it (2-space indent) behind
  * a blank line and is followed by a blank line before the next item.
  *
- * @param {readonly Step[]} steps
- * @param {boolean} outline
+ * @param {readonly StepView[]} steps
  */
-function renderSteps(steps, outline) {
+function renderSteps(steps) {
   let out = '';
   steps.forEach((step, i) => {
-    out += `- **${escapeInline(step.keyword.trim())}** ${renderStepText(step.text, outline)}`;
+    out += `- **${escapeInline(step.keyword)}** ${renderStepText(step)}`;
     const arg = argumentLines(step);
     if (arg) {
       out += `\n\n${arg.map((l) => (l === '' ? '' : `  ${l}`)).join('\n')}`;
@@ -337,78 +366,129 @@ function renderSteps(steps, outline) {
 /**
  * One Examples block: bold label (+ inline tags), description, table.
  *
- * @param {Examples} examples
+ * @param {ExamplesView} examples
+ * @param {Layout} layout
  * @returns {string[]}
  */
-function renderExamples(examples) {
-  const tags = renderTags(examples.tags);
-  const label = `**${titled(examples.keyword, examples.name)}**${tags ? ` ${tags}` : ''}`;
+function renderExamples(examples, layout) {
+  const tags = renderTags(layout.tags(examples.tags));
+  const label = `**${titled(examples)}**${tags ? ` ${tags}` : ''}`;
   const blocks = [label];
-  const description = passthrough(examples.description);
-  if (description) blocks.push(description);
-  const rows = examples.tableHeader ? [examples.tableHeader, ...examples.tableBody] : [];
-  if (rows.length > 0) blocks.push(tableLines(rows).join('\n'));
+  if (examples.description) blocks.push(examples.description);
+  if (examples.rows.length > 0) blocks.push(tableLines(examples.rows).join('\n'));
   return blocks;
 }
 
 /**
- * A Background or Scenario (incl. Outline) section.
+ * How one rendering lays out headings and tags: a generated page's (slice C)
+ * or an embed's (see `embed` / `inContainer` in {@link RenderOptions}).
  *
- * @param {Background | Scenario} node
- * @param {number} level Heading depth.
+ * @typedef {object} Layout
+ * @property {(level: number, text: string) => string} heading
+ * @property {(tags: readonly string[]) => string[]} tags The tags shown, sorted.
+ * @property {boolean} tagsFirst Tags directly after the heading (embeds) rather
+ *   than after the description (generated pages).
+ */
+
+/** @type {Layout} */
+const PAGE_LAYOUT = { heading, tags: (tags) => [...tags], tagsFirst: false };
+
+/**
+ * @param {Pick<RenderOptions, 'embed' | 'inContainer'>} opts
+ * @returns {Layout}
+ */
+function layoutFor({ embed = false, inContainer = false }) {
+  return {
+    heading: inContainer ? (_level, text) => `**${text}**` : heading,
+    tags: embed ? displayTags : PAGE_LAYOUT.tags,
+    tagsFirst: embed,
+  };
+}
+
+/**
+ * A heading (or label) block, then its tags and description in the layout's
+ * order.
+ *
+ * @param {string} head The heading block.
+ * @param {{ tags: readonly string[], description: string }} node
+ * @param {Layout} layout
  * @returns {string[]}
  */
-function renderSection(node, level) {
-  const blocks = [`${'#'.repeat(level)} ${titled(node.keyword, node.name)}`];
-  const description = passthrough(node.description);
-  if (description) blocks.push(description);
-  const examples = 'examples' in node ? node.examples : [];
-  if ('tags' in node) {
-    const tags = renderTags(node.tags);
-    if (tags) blocks.push(tags);
-  }
-  if (node.steps.length > 0) blocks.push(renderSteps(node.steps, examples.length > 0));
-  for (const ex of examples) blocks.push(...renderExamples(ex));
+function headed(head, { tags, description }, layout) {
+  const shown = renderTags(layout.tags(tags));
+  const after = layout.tagsFirst ? [shown, description] : [description, shown];
+  return [head, ...after].filter(Boolean);
+}
+
+/**
+ * A Background or Scenario (incl. Outline) section. A synthetic scenario (a
+ * wrapped fragment) has no heading.
+ *
+ * @param {SectionView} section
+ * @param {number} level Heading depth.
+ * @param {Layout} layout
+ * @returns {string[]}
+ */
+function renderSection(section, level, layout) {
+  const blocks = headed(section.synthetic ? '' : layout.heading(level, titled(section)), section, layout);
+  if (section.steps.length > 0) blocks.push(renderSteps(section.steps));
+  for (const ex of section.examples) blocks.push(...renderExamples(ex, layout));
   return blocks;
 }
 
 /**
- * Pluralised count (`1 rule`, `2 rules`).
- *
- * @param {number} n
- * @param {string} noun
+ * @typedef {object} DuplicateOptions
+ * @property {string} [file] Source path used in warnings.
+ * @property {(msg: string) => void} [warn] Warning sink (defaults to a no-op).
+ * @property {number} [lineOffset] Added to every cited line (a fence's lines are
+ *   relative to its content; 03 §5). Default 0.
  */
-function count(n, noun) {
-  return `${n} ${noun}${n === 1 ? '' : 's'}`;
-}
 
 /**
  * Warn on duplicate sibling scenario headings (MD024 `siblings_only` rejects
- * them; the scenario anchor would also be suffixed).
+ * them; the scenario anchor would also be suffixed). Siblings are the top-level
+ * scenarios, then each Rule's scenarios, in document order.
  *
- * @param {readonly Scenario[]} scenarios Siblings under one parent.
- * @param {string} file
- * @param {(msg: string) => void} warn
+ * @param {FeatureView} view
+ * @param {DuplicateOptions} [opts]
  */
-function warnDuplicates(scenarios, file, warn) {
-  /** @type {Map<string, number>} */
-  const seen = new Map();
-  for (const s of scenarios) {
-    const key = titled(s.keyword, s.name);
-    const first = seen.get(key);
-    if (first === undefined) {
-      seen.set(key, s.location.line);
-    } else {
-      warn(
-        `${GHERKIN_LOG_PREFIX} ${file}:${s.location.line} duplicate scenario name "${s.name.trim()}" ` +
-          `(also at line ${first}) — markdownlint MD024 will reject the duplicate heading`,
-      );
+export function warnDuplicates(view, opts = {}) {
+  const { file = '<unknown>', warn = () => {}, lineOffset = 0 } = opts;
+  /** @type {SectionView[][]} */
+  const groups = [[]];
+  for (const c of view.children) {
+    if (c.kind === 'rule') groups.push(c.children.filter((rc) => rc.kind === 'scenario'));
+    else if (c.kind === 'scenario') groups[0].push(c);
+  }
+  for (const group of groups) {
+    /** @type {Map<string, number>} */
+    const seen = new Map();
+    for (const s of group) {
+      const key = titled(s);
+      const line = s.line + lineOffset;
+      const first = seen.get(key);
+      if (first === undefined) {
+        seen.set(key, line);
+      } else {
+        warn(
+          `${GHERKIN_LOG_PREFIX} ${file}:${line} duplicate scenario name "${s.name}" ` +
+            `(also at line ${first}) — markdownlint MD024 will reject the duplicate heading`,
+        );
+      }
     }
   }
 }
 
 /**
- * Render a parsed Gherkin document as the Markdown body of its feature page.
+ * Render a parsed Gherkin document as Markdown: by default, the body of its
+ * generated feature page.
+ *
+ * `baseLevel`, `header`, `embed` and `inContainer` exist for embeds (the agent
+ * Markdown of an include, 02 §Agent surface); the defaults (`1`, `'full'`, off,
+ * off) are slice C's output, byte for byte. Levels follow the view's shared
+ * plan (`resolveLevels`, 03 §4.2) and are capped at 6. Without `embed` the
+ * `full` header carries no tags: on a generated page the Feature's tags become
+ * frontmatter.
  *
  * @param {GherkinDocument} document The parser output.
  * @param {RenderOptions} [opts]
@@ -416,73 +496,58 @@ function warnDuplicates(scenarios, file, warn) {
  *   newline; `''` when the document has no Feature.
  */
 export function renderFeatureBody(document, opts = {}) {
-  const { file = '<unknown>', warn = () => {} } = opts;
-  const feature = document.feature;
-  if (!feature) return '';
+  const { baseLevel = 1, header = 'full', synthetic } = opts;
+  const view = opts.view ?? featureView(document, { synthetic });
+  if (!view) return '';
+  const levels = resolveLevels(view, { baseLevel, header });
+  const layout = opts.embed || opts.inContainer ? layoutFor(opts) : PAGE_LAYOUT;
 
   /** @type {string[]} */
-  // The ONE unnamed-Feature fallback (`featureTitle`), shared with the page title.
-  const blocks = [`# ${escapeHeading(featureTitle(feature.name, feature.keyword))}`];
-
-  const { narrative, rest } = splitNarrative(feature.description);
-  if (narrative.length > 0) blocks.push(narrative.join('\\\n'));
-  const restBody = rest.replace(/\n{3,}/g, '\n\n');
-  if (restBody) blocks.push(restBody);
-
-  // Summary counts.
-  let rules = 0;
-  let scenarios = 0;
-  let exampleRows = 0;
-  /** @param {Scenario} s */
-  const tally = (s) => {
-    scenarios += 1;
-    for (const ex of s.examples) exampleRows += ex.tableBody.length;
-  };
-  for (const child of feature.children) {
-    if (child.scenario) tally(child.scenario);
-    if (child.rule) {
-      rules += 1;
-      for (const rc of child.rule.children) if (rc.scenario) tally(rc.scenario);
-    }
+  const blocks = [];
+  if (levels.header !== 'none') {
+    // The ONE unnamed-Feature fallback (`featureTitle`, via the view), shared
+    // with the page title.
+    blocks.push(layout.heading(levels.feature, escapeHeading(view.title)));
   }
-  if (scenarios > 0) {
-    const parts = [];
-    if (rules > 0) parts.push(count(rules, 'rule'));
-    parts.push(count(scenarios, 'scenario'));
-    if (exampleRows > 0) parts.push(count(exampleRows, 'example row'));
-    blocks.push(`*${parts.join(' · ')}*`);
-  }
-
-  /** @type {Scenario[]} */
-  const topScenarios = [];
-  /** Sibling groups for the duplicate check, in document order. */
-  const siblingGroups = [topScenarios];
-  for (const child of feature.children) {
-    if (child.background) blocks.push(...renderSection(child.background, 2));
-    if (child.scenario) {
-      topScenarios.push(child.scenario);
-      blocks.push(...renderSection(child.scenario, 2));
-    }
-    if (child.rule) {
-      const rule = child.rule;
-      blocks.push(`## ${titled(rule.keyword, rule.name)}`);
-      const description = passthrough(rule.description);
-      if (description) blocks.push(description);
-      const tags = renderTags(rule.tags);
+  if (levels.header === 'full') {
+    // The tags lead the header in an embed only (see `embed`).
+    if (layout.tagsFirst) {
+      const tags = renderTags(layout.tags(view.tags));
       if (tags) blocks.push(tags);
-      /** @type {Scenario[]} */
-      const ruleScenarios = [];
-      for (const rc of rule.children) {
-        if (rc.background) blocks.push(...renderSection(rc.background, 3));
-        if (rc.scenario) {
-          ruleScenarios.push(rc.scenario);
-          blocks.push(...renderSection(rc.scenario, 3));
-        }
-      }
-      siblingGroups.push(ruleScenarios);
     }
+    if (view.narrative.length > 0) blocks.push(view.narrative.join('\\\n'));
+    if (view.description) blocks.push(view.description);
+    const summary = summaryText(view.counts);
+    if (summary) blocks.push(`*${summary}*`);
   }
-  for (const group of siblingGroups) warnDuplicates(group, file, warn);
 
-  return `${blocks.join('\n\n')}\n`;
+  for (const child of view.children) {
+    if (child.kind !== 'rule') {
+      blocks.push(...renderSection(child, levels.section, layout));
+      continue;
+    }
+    blocks.push(...headed(layout.heading(levels.section, titled(child)), child, layout));
+    for (const rc of child.children) blocks.push(...renderSection(rc, childLevel(levels.section), layout));
+  }
+  warnDuplicates(view, opts);
+
+  return blocks.length > 0 ? `${blocks.join('\n\n')}\n` : '';
+}
+
+/**
+ * The include source line (03 §4.6) as Markdown: the agent-surface twin of
+ * `mdast.mjs`'s source paragraph, with the same text. `Source: <path>` for a
+ * whole file, `From <Feature title>, <path>` for a selection; `<path>` is a code
+ * span, linked when `href` is set. The title is literal text and is escaped.
+ *
+ * @param {{ path: string, href?: string, featureTitle: string, selected: boolean }} source
+ * @returns {string} One line, no trailing newline.
+ */
+export function renderSourceLine({ path, href, featureTitle, selected }) {
+  const code = codeSpan(path);
+  // A destination with whitespace, parentheses or angle brackets needs the
+  // `<…>` form (angle brackets themselves percent-encoded inside it).
+  const dest = href && /[\s()<>]/.test(href) ? `<${href.replace(/[<>]/g, encodeURIComponent)}>` : href;
+  const target = dest ? `[${code}](${dest})` : code;
+  return selected ? `From ${escapeInline(featureTitle)}, ${target}` : `Source: ${target}`;
 }

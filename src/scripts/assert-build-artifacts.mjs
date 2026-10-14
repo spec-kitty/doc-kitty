@@ -135,7 +135,10 @@ import {
 //     behaviour/shipping/ (+3) and the feature pages book-consignment,
 //     declare-customs, request-leave (+3). The `@wip` track-consignment page is
 //     doc_status:draft and does NOT count.
-const EXPECTED_INDEX_ENTRY_COUNT = 67;
+//   - gherkin-in-any-page (ADR-0051) adds the in-page Gherkin demonstrator
+//     guides/scenarios-in-pages.md (doc_status:active, +1) -> 68. The fences on
+//     it render in place, so they add no page of their own.
+const EXPECTED_INDEX_ENTRY_COUNT = 68;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -152,7 +155,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 67;
 // (the Plans section and the footnotes showcase, +5), 56 -> 61.
 // gherkin-feature-pages WP08 adds +6 behaviour pages (3 hubs + 3 published
 // features; the @wip draft is filtered), 61 -> 67.
-const EXPECTED_SITEMAP_URL_COUNT = 67;
+// gherkin-in-any-page (ADR-0051) adds guides/scenarios-in-pages.md (published,
+// +1), 67 -> 68.
+const EXPECTED_SITEMAP_URL_COUNT = 68;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -1473,6 +1478,156 @@ async function assertNoStrayPreWrapsDiagramFigures(distDir) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// gherkin-in-any-page (ADR-0051): the in-page Gherkin demonstrator, as a DIST
+// TRIPWIRE. Structure, selection and accessibility are asserted once, in
+// tests/a11y/gherkin.spec.ts (and the unit suites); this only proves the build
+// ran the stage at all. Its four structured fences and three `::gherkin`
+// includes must render as `.dk-gherkin` blocks and its one `gherkin raw` fence
+// must stay a code block. Two LEAK checks matter most: Expressive Code marks
+// every rendered fence with `<pre data-language="…">`, so exactly ONE `gherkin`
+// pre (the raw one) proves no structured fence fell through to a code block;
+// and no `::gherkin` in the page's TEXT outside `pre`/`code` proves no include
+// fell through to Starlight's directive restoration (which prints an unhandled
+// leaf directive back as a literal line). Either happens with an off preset, a
+// dropped integration or a stage that skipped the page. (The page's own `md`
+// block that SHOWS the directive syntax is a `pre`, so it is exempt by
+// construction.) The include of init.feature must not show the file's `#`
+// comments (03 §4.3), and the agent payload must carry the includes expanded.
+const GHERKIN_DEMO_RELPATH = path.join('guides', 'scenarios-in-pages', 'index.html');
+const GHERKIN_DEMO_MIN_BLOCKS = 7;
+const GHERKIN_DEMO_RAW_FENCES = 1;
+// Each include's source line (03 §4.6), in page order, and one step it expands
+// to (as agent Markdown: the step's quoted argument is a code span).
+const GHERKIN_DEMO_INCLUDES = [
+  {
+    lead: 'Source: ',
+    path: 'scenarios/init/init.feature',
+    step: '- **When** I run `"spec-kitty init app --non-interactive --ai claude"`',
+  },
+  {
+    lead: 'From Declare a consignment to customs, ',
+    path: 'features/shipping/declare-customs.feature',
+    step: '- **When** the shipper lodges the declaration',
+  },
+  {
+    lead: 'From Book a consignment, ',
+    path: 'features/shipping/book-consignment.feature',
+    step: '- **And** the sailing has 28 TEU remaining',
+  },
+];
+// Text from init.feature's `#` comments: never rendered.
+const GHERKIN_DEMO_COMMENT = 'Maintainer notes';
+
+async function assertGherkinDemonstrator(distDir) {
+  const label = `gherkin demonstrator (${GHERKIN_DEMO_RELPATH})`;
+  const abs = path.join(distDir, GHERKIN_DEMO_RELPATH);
+  await assertNonEmptyFile(abs, label);
+  const html = await readTextOrFail(abs, label);
+
+  const blocks = countOccurrences(html, '<div class="dk-gherkin">');
+  if (blocks < GHERKIN_DEMO_MIN_BLOCKS) {
+    fail(
+      `${label}: ${blocks} rendered <div class="dk-gherkin"> block(s), expected at least ` +
+        `${GHERKIN_DEMO_MIN_BLOCKS} — a \`\`\`gherkin fence was not transformed (is the \`gherkin\` preset on ` +
+        `and the doc-kitty:gherkin-fence integration registered?)`,
+    );
+  }
+  const gherkinPres = countOccurrences(html, '<pre data-language="gherkin"');
+  if (gherkinPres !== GHERKIN_DEMO_RAW_FENCES) {
+    fail(
+      `${label}: ${gherkinPres} gherkin code block(s), expected exactly ${GHERKIN_DEMO_RAW_FENCES} (the ` +
+        `\`gherkin raw\` fence) — ${gherkinPres > GHERKIN_DEMO_RAW_FENCES ? 'a structured fence leaked as code' : 'the raw fence was transformed'}`,
+    );
+  }
+  const leaked = textOutsideCode(mainContent(html)).match(/::gherkin[^\n]{0,80}/);
+  if (leaked) {
+    fail(
+      `${label}: literal ${JSON.stringify(leaked[0])} in the page text outside pre/code — a ::gherkin include ` +
+        `was restored as text instead of rendered`,
+    );
+  }
+
+  // Includes: each ends in its source line, naming its file.
+  const sourceLines = [...html.matchAll(/<p class="dk-gherkin__source">([\s\S]*?)<\/p>/g)].map((m) => m[1]);
+  if (sourceLines.length !== GHERKIN_DEMO_INCLUDES.length) {
+    fail(
+      `${label}: ${sourceLines.length} include source line(s) (p.dk-gherkin__source), expected ` +
+        `${GHERKIN_DEMO_INCLUDES.length} — a ::gherkin include did not render (03 §4.6)`,
+    );
+  }
+  GHERKIN_DEMO_INCLUDES.forEach((inc, i) => {
+    const line = sourceLines[i] ?? '';
+    if (!line.startsWith(inc.lead) || !line.includes(`<code dir="auto">${inc.path}</code>`)) {
+      fail(
+        `${label}: include #${i + 1} source line is ${JSON.stringify(line)}, ` +
+          `expected "${inc.lead}" + \`${inc.path}\``,
+      );
+    }
+  });
+  if (html.includes(GHERKIN_DEMO_COMMENT)) {
+    fail(`${label}: shows "${GHERKIN_DEMO_COMMENT}", a # comment of init.feature — comments never render (03 §4.3)`);
+  }
+
+  // The agent payload (/api/pages/<slug>.json, ADR-0051 decision 10) lists the
+  // includes and carries them expanded as Markdown.
+  const apiRel = path.join('api', 'pages', 'guides', 'scenarios-in-pages.json');
+  const payload = JSON.parse(await readTextOrFail(path.join(distDir, apiRel), `${label} agent payload`));
+  const expectedRefs = [
+    { src: 'scenarios/init/init.feature' },
+    { src: 'features/shipping/declare-customs.feature', scenario: 'Hold a declaration lodged after the cut-off' },
+    { src: 'features/shipping/book-consignment.feature', tags: '@smoke @edge' },
+  ];
+  if (JSON.stringify(payload.includes) !== JSON.stringify(expectedRefs)) {
+    fail(`${apiRel}: includes is ${JSON.stringify(payload.includes)}, expected ${JSON.stringify(expectedRefs)}`);
+  }
+  for (const inc of GHERKIN_DEMO_INCLUDES) {
+    for (const needle of [`${inc.lead}\`${inc.path}\``, inc.step]) {
+      if (!String(payload.markdown).includes(needle)) {
+        fail(`${apiRel}: the markdown lacks ${JSON.stringify(needle)} — the include of ${inc.path} was not expanded`);
+      }
+    }
+  }
+
+  // The rules must reach the page too: a structured block with no stylesheet
+  // still passes the markup checks above.
+  const astroDir = path.join(distDir, '_astro');
+  const cssFiles = (await readdir(astroDir)).filter((f) => f.endsWith('.css'));
+  const gherkinSheets = [];
+  for (const f of cssFiles) {
+    if ((await readFile(path.join(astroDir, f), 'utf8')).includes('.dk-gherkin__kw')) gherkinSheets.push(f);
+  }
+  const linked = linkedStylesheetHrefs(html).some((href) => gherkinSheets.some((f) => href.includes(f)));
+  if (!linked) {
+    fail(
+      `${label}: links no stylesheet containing \`.dk-gherkin__kw\` rules (bundled in ` +
+        `${JSON.stringify(gherkinSheets)}) — the component sheet is not reaching the page`,
+    );
+  }
+  ok(
+    `gherkin demonstrator: ${blocks} structured .dk-gherkin block(s), exactly ${GHERKIN_DEMO_RAW_FENCES} raw ` +
+      `gherkin code block, no ::gherkin text outside code, ${GHERKIN_DEMO_INCLUDES.length} includes with their ` +
+      `source lines (no # comment shown; expanded in the agent payload), component CSS linked`,
+  );
+}
+
+/** The `<main>` element's inner HTML (the whole page when there is none). */
+function mainContent(html) {
+  const m = /<main\b[^>]*>([\s\S]*)<\/main>/.exec(html);
+  return m ? m[1] : html;
+}
+
+/**
+ * The text of an HTML fragment with every `pre`, `code`, `script` and `style`
+ * element dropped and every tag removed (attributes included, so a copy
+ * button's `data-code` never counts as text).
+ */
+function textOutsideCode(html) {
+  return html
+    .replace(/<(pre|code|script|style)\b[\s\S]*?<\/\1>/g, ' ')
+    .replace(/<[^>]*>/g, ' ');
+}
+
 /** Every `<link rel="stylesheet" href="…">` href on a page, attribute-order-agnostic. */
 function linkedStylesheetHrefs(html) {
   const hrefs = [];
@@ -2069,6 +2224,10 @@ async function main() {
   // lock, identity-anchored figure round-trip, no-new-client-JS, per-variant
   // discriminators, icon-render, and the SC-005 coverage manifest (IC-06).
   await assertMarkuaArtifacts(distDir);
+
+  // 6d) gherkin-in-any-page (ADR-0051): the in-page Gherkin demonstrator renders
+  // its structured fences, keeps its raw fence as code, and links the CSS.
+  await assertGherkinDemonstrator(distDir);
 
   // 7) slide-decks WP04: published-deck build-artifact assertions (BA-2/3/6/7/9).
   // The published showcase deck renders OUT-OF-FRAME via the deck route yet stays a

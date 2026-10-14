@@ -20,6 +20,48 @@
 export const GHERKIN_LOG_PREFIX = '[dk-gherkin]';
 
 /**
+ * THE reserved metadata-tag namespace (`@dk:context=…`, `@dk:status=…`, ADR-0046
+ * contract §2). `feature-core.mjs` reads these tags into frontmatter; the in-page
+ * emitter (`mdast.mjs`, ADR-0051) drops them, because an embed has no
+ * frontmatter for them to feed (03 §1.5).
+ */
+export const DK_TAG_PREFIX = '@dk:';
+
+/**
+ * A `.feature` file name (case-sensitive, as the Cucumber runners match it).
+ * THE one rule: slice C's source walk (`load.mjs`), an include's `src`
+ * (`include.mjs`) and the content loader's include scan (`include-scan.mjs`)
+ * all apply it, so an include never reads (or prints, in a parse error) a file
+ * that is not Gherkin.
+ */
+export const FEATURE_FILE = /\.feature$/;
+
+/**
+ * A path that is NOT relative with POSIX separators: absolute (`/…`), a Windows
+ * drive letter or URL scheme (`C:`, `file:`, `https:`), or holding a backslash
+ * or a NUL anywhere. THE one path-syntax rule of the Gherkin options and
+ * includes (ADR-0051 trust boundary): `gherkin.includeRoots` (`options.mjs`), an
+ * include's `src` (`include.mjs`) and the content loader's include scan
+ * (`include-scan.mjs`) all refuse such a path instead of resolving it somewhere
+ * the author did not mean. It lives here, in the import-free module, because
+ * `options.mjs` must stay pure; it is a regex rather than `node:path` for the
+ * same reason.
+ */
+const NOT_RELATIVE_POSIX = /^(?:\/|[A-Za-z][A-Za-z0-9+.-]*:)|[\\\0]/;
+
+/**
+ * True for a non-blank path that is relative with POSIX separators (see
+ * {@link NOT_RELATIVE_POSIX}). `..` segments pass: containment is the caller's
+ * job, after symlinks are resolved.
+ *
+ * @param {unknown} value
+ * @returns {value is string}
+ */
+export function isRelativePosixPath(value) {
+  return typeof value === 'string' && value.trim() !== '' && !NOT_RELATIVE_POSIX.test(value);
+}
+
+/**
  * The display title of a Feature: its trimmed name, or — for an unnamed
  * `Feature:` — its trimmed keyword as written (`Feature`, `Functionaliteit`, …),
  * or `Feature` when even that is missing. The ONE fallback shared by the page

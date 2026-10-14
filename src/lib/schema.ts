@@ -6,8 +6,10 @@
  * `docKittyDocsLoader` reads the repo-root `docs/` tree and implements the
  * README-as-index twist by rewriting entry ids at load time.
  */
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
@@ -36,9 +38,11 @@ import {
 // is an OPEN string here (see `docKittyFields.doc_status`) rather than a static
 // `z.enum(STATUSES)`; the canonical `STATUSES` set stays the core's reference for
 // the bare-Node gate's warn-not-fail legality check (documentation-charter WP03).
-import { DOC_TYPES, KINDS, normalizeIndexBasenames } from './vocabulary-core.mjs';
+import { compareCodeUnit, DOC_TYPES, KINDS, normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { publishDraftsInForce } from './draft-publication.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
+import { gherkinIncludeSources, includeFile, includeHash, INCLUDE_MARKER } from './gherkin/include-scan.mjs';
+import { isInside } from './gherkin/include-path.mjs';
 
 export { readmeToIndexId };
 
@@ -309,6 +313,285 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
   return published;
 }
 
+// ---------------------------------------------------------------------------
+// Content-layer freshness for Gherkin pages (ADR-0051 decisions 5 and 11)
+//
+// `glob()` re-renders an entry only when `generateDigest(contents)` differs
+// from the digest it stored, and its dev watcher reacts only to the files its
+// own pattern matches. A page that includes a `.feature` file through
+// `::gherkin{src="…"}` would therefore keep its old HTML, in `astro dev` and in
+// a local incremental build, when only the `.feature` file changes. The two
+// halves of the fix:
+//
+//  1. Digest. The page digest also covers the bytes of every file the page
+//     includes, so a changed include re-renders the page, an unchanged one keeps
+//     the cached render, and a page without `::gherkin` keeps exactly the digest
+//     `glob()` would have computed (no existing cache is invalidated).
+//  2. Watch. A reverse map from each included file to the pages that include it.
+//     A `change`, `add` or `unlink` of an included file is re-emitted as a
+//     `change` of each dependent page, which reaches `glob()`'s own handler.
+//
+// A third fix keeps a FAILED Gherkin render out of the cache (decision 5). The
+// stage fails a build through a process-wide sink that `astro:build:done`
+// reads, because `glob()` only logs a render error (glob.js:116-126): it stores
+// the page with no HTML, under the file's digest, in the persisted data store
+// (`<cacheDir>/data-store.json`; `.astro/data-store.json` in dev). A later sync
+// would skip it as unchanged and never refill the sink, so a second
+// `astro build`, an `astro build` after `astro sync`/`astro check` (which render
+// into the same store but never reach `astro:build:done`), or one after a build
+// that died before that hook, would exit 0 with the page empty (reproduced on
+// Astro 5.18; `gherkin-fence-build.test.ts` pins both).
+//
+//  3. Failed renders. The entry type's render function is wrapped to note the
+//     id of each entry whose render throws. When `glob()` then stores that entry
+//     and its body mentions `gherkin` (a cheap superset of every fence and
+//     include the stage transforms), the stored digest is the real one behind
+//     `FAILED_RENDER_DIGEST`, which no sync ever computes. Every later sync
+//     renders the page again, the stage records the error again and the build
+//     fails again; after a dev restart the page logs its error again. A fixed
+//     page is stored under its plain digest. An entry type with no render
+//     function (MDX, rendered by Vite) is never marked.
+//
+// ASTRO 5 INTERNALS — re-check all of this under #119 (Astro 7 loader API). The
+// fix rests on these facts of `astro@5.18.2` `dist/content/loaders/glob.js`:
+//  - `syncData` is private to the loader closure (glob.js:47). The only way to
+//    re-sync one entry from outside is the watcher: `onChange` (glob.js:238-249)
+//    re-reads the file and runs `syncData` for it.
+//  - `syncData` awaits `entryType.getEntryInfo({ contents, fileUrl })`
+//    (glob.js:61-64) and then calls `generateDigest(contents)` with the same
+//    string (glob.js:81). `generateDigest` sees the raw file
+//    contents only, never the path, and is synchronous; the entry is skipped
+//    when the digest is unchanged (glob.js:83-92). `getEntryInfo` is therefore
+//    the seam that knows the page's path, and it is where the reverse map is
+//    built: it runs for every entry on every sync, cache hit or not.
+//  - A render error is caught and logged, and the entry is still `store.set`
+//    with `rendered` undefined (glob.js:116-136); `render` is handed the entry
+//    `id`. The stored digest is compared by equality (glob.js:83).
+//  - The loader context's `entryTypes` is a fresh `Map` per collection sync
+//    (content-layer.js:94) and the watcher is a proxy that drops every listener
+//    added through it on a full re-sync (content-layer.js:185, watcher.js).
+//
+// No include-root containment happens here: the loader is built in the site's
+// own `content.config.ts` and never sees `gherkin.includeRoots`. The remark stage
+// refuses an include outside the roots, so at worst this re-renders a page whose
+// build then fails anyway. The loader still never reads what the stage would
+// refuse to read (a non-relative `src`, a device, a FIFO, a huge file): see
+// `gherkin/include-scan.mjs`, which also keeps the scan out of the public
+// `./schema` entry. `src` resolves against `process.cwd()`, as the stage does
+// (`gherkin-fence.ts`, `options.root ?? process.cwd()`).
+// ---------------------------------------------------------------------------
+
+/**
+ * Prefixed to the digest stored for a page whose Gherkin render failed, so the
+ * stored digest never equals the one `glob()` computes for the same file.
+ */
+const FAILED_RENDER_DIGEST = 'dk-render-failed:';
+
+/** One content entry type, as far as this file uses it (Astro's `ContentEntryType`). */
+interface EntryType {
+  getEntryInfo?(params: { fileUrl: URL; contents: string }): EntryInfo | Promise<EntryInfo>;
+  getRenderFunction?(config: unknown): Promise<RenderFunction | undefined>;
+}
+/** The part of Astro's render function this file reads: the entry `id` it is handed. */
+type RenderFunction = (params: { id: string } & Record<string, unknown>) => Promise<unknown>;
+type EntryInfo = { body?: unknown } & Record<string, unknown>;
+/**
+ * The context `glob()` actually receives. `entryTypes` is passed by the content
+ * layer (content-layer.js:94) and read by `glob()` (glob.js:42) but is not part
+ * of the public `LoaderContext` type, which is one more reason this is #119 work.
+ */
+type GlobLoaderContext = LoaderContext & { entryTypes?: Map<string, EntryType> };
+type Watcher = NonNullable<LoaderContext['watcher']>;
+
+/**
+ * The freshness state of one docs loader: the include reverse map, the watcher
+ * listeners and the entries whose render just failed, kept across the loader's
+ * syncs. `wrap(context)` returns the loader context to hand to `glob()` for one
+ * sync; `settle(entry)` is applied to every entry `glob()` stores, and
+ * `forget(id)` to every entry it hands over that is dropped instead.
+ */
+function createGherkinTracker() {
+  /** Absolute included file → absolute paths of the pages that include it. */
+  const dependents = new Map<string, Set<string>>();
+  /** Absolute page path → the absolute files it includes (to drop stale edges). */
+  const includesOf = new Map<string, Set<string>>();
+  /** Files outside the project root already handed to `watcher.add`. */
+  const watchedOutside = new Set<string>();
+  let listening: { watcher: Watcher; onInclude: (p: string) => void; onUnlink: (p: string) => void } | null =
+    null;
+  /** Ids of the entries whose render threw and that `glob()` has not stored yet. */
+  const failedRenders = new Set<string>();
+
+  /** Replace the edges of `page` with `files`. */
+  const record = (page: string, files: string[]): void => {
+    for (const file of includesOf.get(page) ?? []) {
+      const pages = dependents.get(file);
+      pages?.delete(page);
+      if (pages?.size === 0) dependents.delete(file);
+    }
+    if (files.length === 0) {
+      includesOf.delete(page);
+      return;
+    }
+    includesOf.set(page, new Set(files));
+    for (const file of files) {
+      let pages = dependents.get(file);
+      if (!pages) dependents.set(file, (pages = new Set()));
+      pages.add(page);
+    }
+  };
+
+  const listen = (watcher: Watcher): void => {
+    if (listening) {
+      listening.watcher.off('change', listening.onInclude);
+      listening.watcher.off('add', listening.onInclude);
+      listening.watcher.off('unlink', listening.onUnlink);
+    }
+    // An included file changed, appeared or went away: re-sync each page that
+    // includes it through `glob()`'s own `change` handler (glob.js:238-249). A
+    // page deleted since is skipped, so `glob()` never logs a read error for it.
+    //
+    // The re-emitted `change` reaches this listener again, synchronously. An
+    // include names a `.feature` file (`include-scan.mjs`), never a page, so a
+    // page is never a key of `dependents`: the re-entrancy guard below and the
+    // `page !== abs` check are UNREACHABLE today. They are kept on purpose, as
+    // defence in depth: should an included file ever be a page (the `.feature`
+    // rule relaxed), a page including itself or two including each other would
+    // recurse until the stack overflows. With them, only the outermost call
+    // re-emits: a page that includes the changed file is re-synced once, the
+    // pages that include THAT page are not chased (an include is never
+    // recursive, so their output does not change), and a page is never
+    // re-emitted for its own change.
+    let reemitting = false;
+    const onInclude = (changed: string): void => {
+      if (reemitting) return;
+      const abs = path.resolve(changed);
+      const pages = dependents.get(abs);
+      if (!pages) return;
+      reemitting = true;
+      try {
+        for (const page of [...pages].sort(compareCodeUnit)) {
+          if (page !== abs && existsSync(page)) watcher.emit('change', page);
+        }
+      } finally {
+        reemitting = false;
+      }
+    };
+    const onUnlink = (deleted: string): void => {
+      const abs = path.resolve(deleted);
+      if (includesOf.has(abs)) record(abs, []);
+      onInclude(abs);
+    };
+    watcher.on('change', onInclude);
+    watcher.on('add', onInclude);
+    watcher.on('unlink', onUnlink);
+    listening = { watcher, onInclude, onUnlink };
+  };
+
+  const wrap = (context: GlobLoaderContext): GlobLoaderContext => {
+    const { generateDigest, watcher } = context;
+    const cwd = process.cwd();
+    const projectRoot = fileURLToPath(context.config.root);
+    // The include sources of each page body seen in this sync, keyed by the raw
+    // contents `generateDigest` will be handed next (glob.js:61-81). Only
+    // contents holding the marker are kept, and only the most recent ones: a
+    // long dev session re-reads the same pages, and `glob()` syncs at most 10
+    // files at once (glob.js:187), so an evicted entry was consumed long ago.
+    const sourcesByContents = new Map<string, string[]>();
+    const SOURCES_KEPT = 256;
+
+    const wrapType = (entryType: EntryType): EntryType => {
+      const { getEntryInfo, getRenderFunction } = entryType;
+      if (typeof getEntryInfo !== 'function' && typeof getRenderFunction !== 'function') return entryType;
+      // A prototype-linked copy, so `in` checks and every other member
+      // `glob()` reads (`contentModuleTypes`) still hold.
+      const wrapped: EntryType = Object.create(entryType);
+      if (typeof getRenderFunction === 'function') {
+        wrapped.getRenderFunction = async (config: unknown) => {
+          const render = await getRenderFunction.call(entryType, config);
+          if (typeof render !== 'function') return render;
+          return async (params) => {
+            try {
+              return await render(params);
+            } catch (error) {
+              failedRenders.add(params.id);
+              throw error;
+            }
+          };
+        };
+      }
+      if (typeof getEntryInfo !== 'function') return wrapped;
+      wrapped.getEntryInfo = async (params: { fileUrl: URL; contents: string }) => {
+        const info = await getEntryInfo.call(entryType, params);
+        // The body is what the remark stage renders (frontmatter removed), so
+        // the sources come from it rather than from the raw contents.
+        const body = typeof info.body === 'string' ? info.body : params.contents;
+        const sources = gherkinIncludeSources(body);
+        if (params.contents.includes(INCLUDE_MARKER)) {
+          sourcesByContents.delete(params.contents);
+          sourcesByContents.set(params.contents, sources);
+          if (sourcesByContents.size > SOURCES_KEPT) {
+            sourcesByContents.delete(sourcesByContents.keys().next().value as string);
+          }
+        }
+        const files = sources.flatMap((src) => includeFile(src, cwd) ?? []);
+        record(fileURLToPath(params.fileUrl), files);
+        if (watcher) {
+          for (const file of files) {
+            if (watchedOutside.has(file) || isInside(file, projectRoot)) continue;
+            watchedOutside.add(file);
+            watcher.add(file);
+          }
+        }
+        return info;
+      };
+      return wrapped;
+    };
+
+    const digest: LoaderContext['generateDigest'] = (data) => {
+      const base = generateDigest(data);
+      if (typeof data !== 'string' || !data.includes(INCLUDE_MARKER)) return base;
+      // A miss means `glob()` no longer calls `getEntryInfo` first: fall back to
+      // parsing the raw contents, frontmatter and all.
+      const sources = sourcesByContents.get(data) ?? gherkinIncludeSources(data);
+      if (sources.length === 0) return base;
+      const folded = sources.map((src) => `${src}\0${includeHash(src, cwd)}`);
+      return generateDigest([base, ...folded].join('\n'));
+    };
+
+    if (watcher) listen(watcher);
+    // Without `entryTypes` (another Astro) there is no reverse map, so no dev
+    // re-sync; the digest still folds the includes, from the raw contents.
+    const { entryTypes } = context;
+    return {
+      ...context,
+      generateDigest: digest,
+      ...(entryTypes instanceof Map
+        ? { entryTypes: new Map([...entryTypes].map(([ext, entryType]) => [ext, wrapType(entryType)])) }
+        : {}),
+    };
+  };
+
+  /** The entry to store: a failed Gherkin render keeps a never-matching digest. */
+  const settle = <T extends { id: string; digest?: number | string; body?: string }>(entry: T): T => {
+    if (!failedRenders.delete(entry.id) || entry.digest === undefined) return entry;
+    if (typeof entry.body !== 'string' || !entry.body.includes('gherkin')) return entry;
+    return { ...entry, digest: `${FAILED_RENDER_DIGEST}${entry.digest}` };
+  };
+
+  /**
+   * An entry `glob()` handed to the store that is not stored after all (a draft
+   * dropped by the draft policy): forget its failed render, or a later, working
+   * render of the same id would still be stored under the never-matching digest
+   * and re-render on every sync.
+   */
+  const forget = (id: string): void => {
+    failedRenders.delete(id);
+  };
+
+  return { wrap, settle, forget };
+}
+
 /**
  * Content loader that globs Markdown under `base` and applies the configurable
  * index-basename rule (FR-001/FR-002/FR-003/FR-004).
@@ -372,6 +655,11 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     },
   });
 
+  // Pages that `::gherkin`-include a file re-render when it changes, and a
+  // failed Gherkin render is never a cache hit (see `createGherkinTracker`). The
+  // state lives here, across this loader's syncs.
+  const gherkin = createGherkinTracker();
+
   // Draft publication (FR-013..FR-016, research R8): the ONE cut every HTML
   // surface inherits. Starlight builds its routes, sidebar and search records
   // from this collection, so an entry that never reaches the store has no page,
@@ -389,16 +677,17 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
       const publishDrafts = publishDraftsInForce();
       const { store } = context;
       await inner.load({
-        ...context,
+        ...gherkin.wrap(context),
         store: {
           ...store,
           set: (entry) => {
             const next = applyDraftPolicy(entry, publishDrafts);
             if (next === null) {
+              gherkin.forget(entry.id);
               store.delete(entry.id);
               return false;
             }
-            return store.set(next);
+            return store.set(gherkin.settle(next));
           },
         },
       });

@@ -23,7 +23,7 @@
  */
 
 import { compareCodeUnit } from '../vocabulary-core.mjs';
-import { GHERKIN_LOG_PREFIX as PREFIX, featureTitle, splitNarrative } from './text.mjs';
+import { DK_TAG_PREFIX as DK_PREFIX, GHERKIN_LOG_PREFIX as PREFIX, featureTitle, splitNarrative } from './text.mjs';
 
 /** The `generated.by` stamp of every page this generator owns. */
 export const GENERATED_BY = 'doc-kitty/gherkin';
@@ -61,9 +61,6 @@ function isStatusSlug(value) {
 
 /** `audience.guidance_text` when the Feature has no narrative (contract §2). */
 export const DEFAULT_GUIDANCE_TEXT = "This behaviour is specified from this persona's point of view.";
-
-/** The reserved metadata namespace. */
-const DK_PREFIX = '@dk:';
 
 /** Every known `@dk:` key, in contract §2 table order (also the did-you-mean pool). */
 const METADATA_KEYS = /** @type {const} */ ([

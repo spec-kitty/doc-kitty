@@ -22,8 +22,9 @@
  * or comments only) is a warning and is skipped.
  *
  * PURITY CONTRACT: imports only `node:fs`, `node:path`, `node:crypto`,
- * `@cucumber/gherkin`, `@cucumber/messages`, `../vocabulary-core.mjs` and the
- * import-free `./text.mjs`. NO `astro`/`@astrojs/*`, so it loads under plain `node`.
+ * `../vocabulary-core.mjs`, the pure `./parse.mjs` (which owns the
+ * `@cucumber/gherkin` parser and the error format) and the import-free
+ * `./text.mjs`. NO `astro`/`@astrojs/*`, so it loads under plain `node`.
  *
  * TYPING: JSDoc only — the repo forbids `.d.ts` sidecars (see the header of
  * `../vocabulary-core.mjs`).
@@ -34,10 +35,9 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { AstBuilder, GherkinClassicTokenMatcher, Parser } from '@cucumber/gherkin';
-import { IdGenerator } from '@cucumber/messages';
 import { compareCodeUnit } from '../vocabulary-core.mjs';
-import { GHERKIN_LOG_PREFIX } from './text.mjs';
+import { parseGherkin } from './parse.mjs';
+import { FEATURE_FILE, GHERKIN_LOG_PREFIX } from './text.mjs';
 
 /**
  * Prefix on every log line / error message this feature emits. Defined once in
@@ -81,12 +81,6 @@ export { GHERKIN_LOG_PREFIX };
 /** Directory names never descended into (besides any dot-directory). */
 const SKIP_DIRS = new Set(['node_modules']);
 
-/** A `.feature` file name (case-sensitive, as the Cucumber runners match it). */
-const FEATURE_FILE = /\.feature$/;
-
-/** The `(line:col): ` prefix the parser puts on every error message. */
-const LOCATION_PREFIX = /^\((\d+):(\d+)\):\s*/;
-
 /**
  * Convert a platform path to POSIX separators. THE one `toPosix` of the Gherkin
  * pipeline (`generate.mjs` imports it).
@@ -96,6 +90,26 @@ const LOCATION_PREFIX = /^\((\d+):(\d+)\):\s*/;
  */
 export function toPosix(p) {
   return p.split(path.sep).join('/');
+}
+
+/**
+ * How a feature file is named and linked as a SOURCE: THE one builder of
+ * `gherkin.sourceRoot` / `gherkin.sourceUrlPrefix` links, shared by generated
+ * pages (`generate.mjs`: the frontmatter's `sources[0].resource`) and include
+ * source lines (`../remark/gherkin-fence.ts`, rendering contract 03 §4.6).
+ *
+ * - `label`: `absPath` relative to `sourceRoot`, POSIX.
+ * - `resource`: `sourceUrlPrefix + label` when a prefix is set, else `label`.
+ *   `scenario-index.ts` inverts exactly this.
+ *
+ * @param {string} absPath
+ * @param {{ sourceRoot: string, sourceUrlPrefix?: string }} options `sourceRoot`
+ *   is absolute.
+ * @returns {{ label: string, resource: string }}
+ */
+export function sourceLink(absPath, { sourceRoot, sourceUrlPrefix }) {
+  const label = toPosix(path.relative(sourceRoot, absPath));
+  return { label, resource: sourceUrlPrefix ? `${sourceUrlPrefix}${label}` : label };
 }
 
 /**
@@ -157,29 +171,6 @@ function walkFeaturePaths(absBase) {
 }
 
 /**
- * Format one parser error as `[dk-gherkin] <path>:<line>:<col> <message>`,
- * dropping the parser's own `(line:col): ` message prefix (it duplicates the
- * location). When the error carries no location, the prefix is used instead;
- * when neither exists the location is omitted.
- *
- * @param {string} displayPath
- * @param {unknown} err
- * @returns {string}
- */
-function formatParseError(displayPath, err) {
-  const e = /** @type {{ message?: unknown, location?: { line?: number, column?: number } }} */ (
-    err ?? {}
-  );
-  const raw = typeof e.message === 'string' ? e.message : String(err);
-  const m = LOCATION_PREFIX.exec(raw);
-  const message = m ? raw.slice(m[0].length) : raw;
-  const line = e.location?.line ?? (m ? Number(m[1]) : undefined);
-  const column = e.location?.column ?? (m ? Number(m[2]) : undefined);
-  const where = line === undefined ? displayPath : `${displayPath}:${line}:${column ?? 0}`;
-  return `${GHERKIN_LOG_PREFIX} ${where} ${message}`;
-}
-
-/**
  * Discover and parse every `*.feature` file under `sources`.
  *
  * @param {LoadFeaturesOptions} options
@@ -226,18 +217,11 @@ export function loadFeatures({ sources, root, warn = () => {} }) {
     const sha256 = createHash('sha256').update(raw).digest('hex');
     const display = fromRoot(entry.absPath);
 
-    const parser = new Parser(
-      new AstBuilder(IdGenerator.incrementing()),
-      new GherkinClassicTokenMatcher(),
-    );
-    /** @type {import('@cucumber/messages').GherkinDocument} */
-    let document;
-    try {
-      document = parser.parse(bytes);
-    } catch (err) {
-      const nested = /** @type {{ errors?: unknown }} */ (err ?? {}).errors;
-      const list = Array.isArray(nested) && nested.length > 0 ? nested : [err];
-      for (const e of list) errors.push(formatParseError(display, e));
+    // The one parse path (`parse.mjs`): fresh ids per file, errors formatted
+    // `[dk-gherkin] <path>:<line>:<col> <message>` and collected, not thrown.
+    const { document, errors: fileErrors } = parseGherkin(bytes, { display });
+    if (!document) {
+      errors.push(...fileErrors);
       continue;
     }
     if (!document.feature) {

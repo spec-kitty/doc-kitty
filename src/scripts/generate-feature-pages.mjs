@@ -38,7 +38,7 @@
  * a separate test keeps the two equal.
  *
  * Option validation is SHARED with the integration (`../lib/gherkin/options.mjs`
- * `validateGherkinOptions`): `--section` must be ONE safe folder name, not
+ * `validateGherkinPages`): `--section` must be ONE safe folder name, not
  * `_meta`/`glossary`, so `--section ../../x` is refused here exactly as
  * `gherkin.section: '../../x'` is refused in astro.config.
  *
@@ -61,7 +61,7 @@ import {
 } from '../lib/gherkin/generate.mjs';
 import {
   DEFAULT_GHERKIN_SECTION,
-  validateGherkinOptions,
+  validateGherkinPages,
   validateIndexBasenames,
 } from '../lib/gherkin/options.mjs';
 
@@ -162,7 +162,7 @@ export function parseArgs(argv) {
   }
   const sourceList = list(raw.sources);
   if (sourceList.length === 0) throw new Error('--sources is required (comma-separated directories)');
-  const { sources, section, allowEmpty } = validateGherkinOptions(
+  const { sources, section, allowEmpty } = validateGherkinPages(
     {
       sources: sourceList,
       section: raw.section,

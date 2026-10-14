@@ -43,6 +43,16 @@ const BUILD_SUITES = [
   // the example with and without a theme header, each into its own DK_OUTDIR;
   // serialized here for the same shared-`example/.astro` reason.
   'tests/header-carrier.test.ts',
+  // In-page Gherkin build-failure proof (ADR-0051): builds a minimal fixture site
+  // (written into `example/.dk-test-gherkin-fence/`, with its own dist and content
+  // cache) three times to prove a broken fence makes `astro build` exit non-zero.
+  // A real build of a few seconds each, so it belongs in this serialized project.
+  'tests/gherkin-fence-build.test.ts',
+  // Include freshness (ADR-0051 decision 11): builds a fixture site (in
+  // `example/.dk-test-loader-includes/`) twice over one content cache, then runs
+  // `astro dev` on it, to prove a page re-renders when only its included
+  // `.feature` file changes. Real Astro runs, so serialized here.
+  'tests/docs-loader-includes-build.test.ts',
 ];
 
 export default defineWorkspace([

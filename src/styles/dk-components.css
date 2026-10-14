@@ -329,6 +329,98 @@
 }
 
 /*
+ * ===== In-page Gherkin (`.dk-gherkin*`) ==================================
+ * Styles the structured scenario a ```` ```gherkin ```` fence or a
+ * `::gherkin{…}` include renders as on a docs page (ADR-0051; rendering
+ * contract 03 §4, class names from `gherkin/mdast.mjs` `GHERKIN_CLASSES`):
+ *
+ *   <div class="dk-gherkin">
+ *     <h3>Feature title</h3>  (or <p role="heading" aria-level> in a container)
+ *     <p class="dk-gherkin__tags"><code>@tag</code> …</p>
+ *     …narrative, description, headings…
+ *     <ul class="dk-gherkin__steps">
+ *       <li><strong class="dk-gherkin__kw">Given</strong> step text
+ *           <table>…</table> / <div class="expressive-code">…</div></li>
+ *     </ul>
+ *     <p class="dk-gherkin__source">Source: <a><code>path</code></a></p>
+ *   </div>
+ *
+ * Presentation only, and NO COLOUR-ONLY CUE (WCAG 1.4.1): the keyword is set
+ * apart by its bold weight and by the word itself, never by a hue. The steps
+ * stay an UNORDERED list (03 §4.5): `list-style` is left alone, because
+ * removing the markers makes Safari/VoiceOver drop the list role and the step
+ * count with them.
+ *
+ * Tokens only, no dark block: every `--dk-*` colour below flips by
+ * `[data-theme]` at its declaration site, as for `.dk-diagram*`.
+ *
+ * Contrast. A fence can sit on the page background, on a surface (a callout)
+ * or inside a Starlight aside, whose tinted background (`--sl-color-*-low`) is
+ * NOT a `--dk-*` token. So the keyword uses `--dk-color-text-strong`, the one
+ * text token every theme already keeps readable on all of those, and NOT
+ * `--dk-color-text-accent`: the Spec Kitty brand's deep gold (#806508) clears
+ * AA on its paper background but measures 3.8:1 on a light note aside.
+ * Computed from the token values (WCAG 2.x relative luminance), keyword on
+ * bg / surface-2 / note aside:
+ *   - default light #101828: 17.7 / 15.3 / 12.2; dark #f2f4f8: 16.3 / 12.9 / 14.4
+ *   - Spec Kitty light #0D0E11: 18.5 / 16.7 / 13.3; dark #FFFFFF: 19.3 / 16.5 / 15.8
+ * The source line uses `--dk-color-text-muted` (on bg / surface-2: default
+ * 6.3 / 5.5 light, 7.0 / 5.6 dark; Spec Kitty 6.4 / 5.8 light, 8.3 / 7.1
+ * dark). On a light note aside muted drops to 4.4:1, under AA, so inside an
+ * aside the source line inherits the aside's own text colour.
+ * The axe lane (tests/a11y/gherkin.spec.ts, axe.spec.ts) checks both themes.
+ *
+ * Lives in this base GLOBAL sheet for the same reason as the families above:
+ * it must survive a brand swap. Decks need nothing: a fence on a slide stays a
+ * code block (02 §Decks).
+ */
+.dk-gherkin {
+  margin-block: var(--dk-space-lg);
+  padding-inline-start: var(--dk-space-md);
+  /* A quiet rule groups the embed with its headings. Decorative only: the
+     headings and lists carry the structure, so it needs no contrast floor. */
+  border-inline-start: var(--dk-space-3xs) solid var(--dk-color-border);
+}
+
+/* A `p[role=heading]` stand-in (a fence inside an aside, list item or quote)
+   is announced as a heading; give it a heading's weight so it also LOOKS like
+   one. Colour is inherited, so it keeps the container's AA text colour. */
+.dk-gherkin > p[role='heading'] {
+  font-weight: var(--dk-weight-semibold);
+}
+
+.dk-gherkin__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dk-space-2xs);
+  font-size: var(--dk-text-sm);
+}
+
+.dk-gherkin__steps > li + li {
+  margin-top: var(--dk-space-2xs);
+}
+
+/* A data table or doc string belongs to its step: tighten it up against the
+   step text instead of floating a full paragraph gap away. */
+.dk-gherkin__steps > li > :is(table, .expressive-code, pre) {
+  margin-block: var(--dk-space-xs);
+}
+
+.dk-gherkin__kw {
+  font-weight: var(--dk-weight-bold);
+  color: var(--dk-color-text-strong);
+}
+
+.dk-gherkin__source {
+  font-size: var(--dk-text-sm);
+  color: var(--dk-color-text-muted);
+}
+
+.starlight-aside .dk-gherkin__source {
+  color: inherit;
+}
+
+/*
  * ===== Glossary term links (`.dk-glossary-link`) =========================
  * glossary-term-ux mission (#64, FR-001/FR-002/FR-003, C-002). Styles the
  * shared link node BOTH `glossary-autolink`(`.internal`) and the `:term`

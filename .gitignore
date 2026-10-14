@@ -118,6 +118,15 @@ example/dist-wp07-consumer-sidebar-test/
 # Draft-free example build asserted by CI next to the main build (WP05).
 example/dist-nodrafts/
 
+# In-page Gherkin build-failure fixture site (ADR-0051, transient) —
+# src/tests/gherkin-fence-build.test.ts writes, builds and removes it; ignored in
+# case a run dies before cleaning up.
+example/.dk-test-gherkin-fence/
+
+# Include-freshness fixture site (ADR-0051 decision 11, transient) —
+# src/tests/docs-loader-includes-build.test.ts builds and serves it, then removes it.
+example/.dk-test-loader-includes/
+
 # @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.
 .beoe-cache/

@@ -72,7 +72,7 @@ import {
   serializeFrontmatter,
   serializeHubFrontmatter,
 } from './feature-core.mjs';
-import { toPosix } from './load.mjs';
+import { sourceLink, toPosix } from './load.mjs';
 import { DEFAULT_GHERKIN_SECTION } from './options.mjs';
 import { escapeHeading, escapeInline, renderFeatureBody } from './render.mjs';
 import { GHERKIN_LOG_PREFIX as PREFIX } from './text.mjs';
@@ -230,7 +230,10 @@ export function planFeaturePages(model, opts) {
   for (const file of model.files) {
     const feature = file.document.feature;
     if (!feature) continue;
-    const sourceLabel = toPosix(path.relative(sourceRoot, file.absPath));
+    const { label: sourceLabel, resource: sourceResource } = sourceLink(file.absPath, {
+      sourceRoot,
+      sourceUrlPrefix,
+    });
     const segments = file.relPath.replace(/\.feature$/, '').split('/');
     const slugged = segments.map((s) => slug(s));
     if (slugged.some((s) => s === '')) {
@@ -279,7 +282,7 @@ export function planFeaturePages(model, opts) {
       description: feature.description,
       tags: feature.tags,
       file: sourceLabel,
-      sourceResource: sourceUrlPrefix ? `${sourceUrlPrefix}${sourceLabel}` : sourceLabel,
+      sourceResource,
       hash: file.sha256,
       missionPrefix: mission,
       adrFileNames,
