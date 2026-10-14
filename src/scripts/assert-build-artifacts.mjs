@@ -1482,7 +1482,7 @@ async function assertNoStrayPreWrapsDiagramFigures(distDir) {
 // gherkin-in-any-page (ADR-0051): the in-page Gherkin demonstrator, as a DIST
 // TRIPWIRE. Structure, selection and accessibility are asserted once, in
 // tests/a11y/gherkin.spec.ts (and the unit suites); this only proves the build
-// ran the stage at all. Its four structured fences and three `::gherkin`
+// ran the stage at all. Its four structured fences and four `::gherkin`
 // includes must render as `.dk-gherkin` blocks and its one `gherkin raw` fence
 // must stay a code block. Two LEAK checks matter most: Expressive Code marks
 // every rendered fence with `<pre data-language="…">`, so exactly ONE `gherkin`
@@ -1514,6 +1514,11 @@ const GHERKIN_DEMO_INCLUDES = [
     lead: 'From Book a consignment, ',
     path: 'features/shipping/book-consignment.feature',
     step: '- **And** the sailing has 28 TEU remaining',
+  },
+  {
+    lead: 'Source: ',
+    path: 'features/shipping/declare-customs.feature',
+    step: '- **And** the freight invoice carries a late-lodgement surcharge',
   },
 ];
 // Text from init.feature's `#` comments: never rendered.
@@ -1577,6 +1582,7 @@ async function assertGherkinDemonstrator(distDir) {
     { src: 'scenarios/init/init.feature' },
     { src: 'features/shipping/declare-customs.feature', scenario: 'Hold a declaration lodged after the cut-off' },
     { src: 'features/shipping/book-consignment.feature', tags: '@smoke @edge' },
+    { src: 'features/shipping/declare-customs.feature' },
   ];
   if (JSON.stringify(payload.includes) !== JSON.stringify(expectedRefs)) {
     fail(`${apiRel}: includes is ${JSON.stringify(payload.includes)}, expected ${JSON.stringify(expectedRefs)}`);
@@ -1608,6 +1614,67 @@ async function assertGherkinDemonstrator(distDir) {
     `gherkin demonstrator: ${blocks} structured .dk-gherkin block(s), exactly ${GHERKIN_DEMO_RAW_FENCES} raw ` +
       `gherkin code block, no ::gherkin text outside code, ${GHERKIN_DEMO_INCLUDES.length} includes with their ` +
       `source lines (no # comment shown; expanded in the agent payload), component CSS linked`,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// gherkin scenario results (ADR-0052), as a DIST TRIPWIRE: the example site's
+// `gherkin.results` report (example/reports/cucumber.ndjson) must reach a
+// generated feature page (added at render time; the committed Markdown has no
+// results) and an include, and its run must reach the scenario index. The
+// report holds failure messages and CI paths: none of them may reach a page.
+// Statuses and markup are asserted in gherkin-results-render.test.ts.
+const GHERKIN_RESULTS_PAGES = [
+  {
+    rel: path.join('behaviour', 'shipping', 'book-consignment', 'index.html'),
+    summary: 'Results: 1 failed, 1 pending, 3 passed',
+    statuses: ['passed', 'failed', 'pending'],
+  },
+  {
+    rel: path.join('behaviour', 'shipping', 'track-consignment', 'index.html'),
+    summary: 'Results: 2 not run',
+    statuses: ['not-run'],
+  },
+  {
+    rel: path.join('behaviour', 'hr', 'request-leave', 'index.html'),
+    summary: 'Results: 4 passed',
+    statuses: ['passed'],
+    label: 'Passed on retry',
+  },
+  { rel: GHERKIN_DEMO_RELPATH, summary: 'Results: 1 undefined, 4 passed', statuses: ['undefined'] },
+];
+// Text from the report that only a leak could put on a page.
+const GHERKIN_RESULTS_LEAKS = ['AssertionError', 'allowance service timed out', '/home/runner', 'steps/steps.js'];
+
+async function assertGherkinResults(distDir) {
+  for (const page of GHERKIN_RESULTS_PAGES) {
+    const label = `gherkin results (${page.rel})`;
+    const html = await readTextOrFail(path.join(distDir, page.rel), label);
+    const summaries = [...html.matchAll(/<p class="dk-gherkin__results">([\s\S]*?)<\/p>/g)].map((m) =>
+      m[1].replace(/<[^>]+>/g, ''),
+    );
+    if (!summaries.some((t) => t.startsWith(page.summary))) {
+      fail(`${label}: no results summary "${page.summary}…" (found ${JSON.stringify(summaries)}) — gherkin.results did not reach the page`);
+    }
+    for (const status of page.statuses) {
+      if (!html.includes(`<span class="dk-gherkin__status" data-status="${status}">`)) {
+        fail(`${label}: no ${status} result badge (span.dk-gherkin__status[data-status="${status}"])`);
+      }
+    }
+    if (page.label && !html.includes(page.label)) fail(`${label}: no "${page.label}" badge`);
+    for (const leak of GHERKIN_RESULTS_LEAKS) {
+      if (html.includes(leak)) fail(`${label}: shows "${leak}" from the report — only statuses may be published (ADR-0052)`);
+    }
+  }
+  const index = JSON.parse(await readTextOrFail(path.join(distDir, SCENARIO_INDEX_RELPATH), 'scenario index'));
+  if (index.results?.report !== 'reports/cucumber.ndjson' || index.results?.format !== 'messages') {
+    fail(`${SCENARIO_INDEX_RELPATH}: results is ${JSON.stringify(index.results)}, expected the example report`);
+  }
+  const uncovered = index.features.filter((f) => f.results !== 'current').map((f) => f.id);
+  if (uncovered.length > 0) fail(`${SCENARIO_INDEX_RELPATH}: no current results for ${uncovered.join(', ')}`);
+  ok(
+    `gherkin results: ${GHERKIN_RESULTS_PAGES.length} page(s) show their results summary and badges, no report ` +
+      `detail leaked; the scenario index carries the run`,
   );
 }
 
@@ -2228,6 +2295,7 @@ async function main() {
   // 6d) gherkin-in-any-page (ADR-0051): the in-page Gherkin demonstrator renders
   // its structured fences, keeps its raw fence as code, and links the CSS.
   await assertGherkinDemonstrator(distDir);
+  await assertGherkinResults(distDir);
 
   // 7) slide-decks WP04: published-deck build-artifact assertions (BA-2/3/6/7/9).
   // The published showcase deck renders OUT-OF-FRAME via the deck route yet stays a

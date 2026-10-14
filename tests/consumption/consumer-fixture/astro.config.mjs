@@ -35,6 +35,8 @@ export default defineConfig({
     // generates the feature page (docs/behaviour/, gitignored) and makes the
     // toolkit inject /api/scenarios.json from node_modules (ADR-0054); the
     // fixture mounts no scenarios route of its own.
-    gherkin: { includeRoots: ['scenarios'], sources: ['scenarios'] },
+    // (ADR-0055) `results` is a cucumber-js JSON report of that file: the include
+    // shows its scenario's result.
+    gherkin: { includeRoots: ['scenarios'], sources: ['scenarios'], results: 'reports/cucumber.json' },
   }),
 });

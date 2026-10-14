@@ -116,11 +116,17 @@ export default defineConfig({
     //
     // `titles` names a hub whose directory name cannot spell its title (#125):
     // `features/hr/` would otherwise be titled "Hr" in its hub and the sidebar.
+    //
+    // Scenario results (ADR-0052): `reports/cucumber.ndjson` is a real Cucumber
+    // Messages report of those files (see reports/PROVENANCE.txt). Every
+    // generated feature page and every include shows each scenario's result
+    // from it; the committed pages themselves never change.
     gherkin: {
       sources: ['features'],
       section: 'behaviour',
       includeRoots: ['features', 'scenarios'],
       titles: { hr: 'HR' },
+      results: 'reports/cucumber.ndjson',
     },
   }),
 });

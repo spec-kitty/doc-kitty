@@ -18,7 +18,11 @@
 //   - each `::gherkin` include ends in its source line naming the file, and no
 //     include is left as literal `::gherkin` text;
 //   - a quoted step argument is code, exactly as written, so a reader can copy
-//     the command a step runs.
+//     the command a step runs;
+//   - a scenario's result (ADR-0052) is a WORD after its heading, never inside
+//     it and never a colour alone, its text clears 4.5:1 on its badge, a screen
+//     reader hears "Result:" before it, and an Examples table's results sit in a
+//     column with a real header — on an include and on a generated page.
 //
 // Emitted DOM (gherkin/mdast.mjs, GHERKIN_CLASSES):
 //   <div class="dk-gherkin">
@@ -38,11 +42,11 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
     await gotoInMode(page, ROUTES.scenariosInPages, modeOf(testInfo.project.name));
     // Non-vacuity: every check below runs against rendered blocks, never a page
     // whose fences fell back to code. The demonstrator has four structured fences
-    // (blocks 0-3) followed by three `::gherkin` includes (blocks 4-6).
+    // (blocks 0-3) followed by four `::gherkin` includes (blocks 4-7).
     await expect(
       page.locator(BLOCK),
-      'the four structured fences and three includes render as .dk-gherkin',
-    ).toHaveCount(7);
+      'the four structured fences and four includes render as .dk-gherkin',
+    ).toHaveCount(8);
   });
 
   test('the heading outline never skips a level, role=heading stand-ins included', async ({ page }) => {
@@ -171,15 +175,16 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
 
   test('each include renders under the host outline and ends in its source line', async ({ page }) => {
     const includes = page.locator(BLOCK).filter({ has: page.locator('.dk-gherkin__source') });
-    await expect(includes, 'three include blocks carry a source line').toHaveCount(3);
+    await expect(includes, 'four include blocks carry a source line').toHaveCount(4);
     const sources = page.locator(`${BLOCK} > p.dk-gherkin__source:last-child`);
     await expect(sources, 'the source line is the last thing in its block').toHaveText([
       'Source: scenarios/init/init.feature',
       'From Declare a consignment to customs, features/shipping/declare-customs.feature',
       'From Book a consignment, features/shipping/book-consignment.feature',
+      'Source: features/shipping/declare-customs.feature',
     ]);
     // The path is code, so a reader can copy it.
-    await expect(sources.locator('code')).toHaveCount(3);
+    await expect(sources.locator('code')).toHaveCount(4);
 
     // The whole-file include sits under an H3, so its Feature title is an H4.
     const whole = includes.nth(0);
@@ -218,3 +223,83 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
     await expect(pres.locator('xpath=ancestor::*[contains(@class, "dk-gherkin")]')).toHaveCount(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Scenario results (ADR-0052)
+// ---------------------------------------------------------------------------
+
+const STATUS_WORDS = /^(?:Result: )?(?:Passed|Passed on retry|Failed|Ambiguous|Undefined|Pending|Skipped|Not run)$/;
+
+for (const [name, route, examplesHeader] of [
+  ['an include (/guides/scenarios-in-pages/)', ROUTES.scenariosInPages, ['size', 'reason', 'Result']],
+  ['a generated feature page (/behaviour/shipping/book-consignment/)', ROUTES.behaviourFeature, ['size', 'reason', 'Result']],
+] as const) {
+  test.describe(`Scenario results on ${name}`, () => {
+    test.beforeEach(async ({ page }, testInfo) => {
+      await gotoInMode(page, route, modeOf(testInfo.project.name));
+      await expect(page.locator(`${CONTENT} .dk-gherkin__status`).first(), 'results render').toBeVisible();
+    });
+
+    test('each result is a status word after its heading, announced as "Result:"', async ({ page }) => {
+      const lines = page.locator(`${CONTENT} p.dk-gherkin__result`);
+      expect(await lines.count()).toBeGreaterThan(0);
+      for (const line of await lines.all()) {
+        const placement = await line.evaluate((el) => {
+          const prev = el.previousElementSibling;
+          return {
+            afterHeading: !!prev && (/^H[1-6]$/.test(prev.tagName) || prev.getAttribute('role') === 'heading'),
+            inHeading: el.closest('h1, h2, h3, h4, h5, h6, [role="heading"]') !== null,
+          };
+        });
+        expect(placement, 'the result line directly follows its scenario heading').toEqual({
+          afterHeading: true,
+          inHeading: false,
+        });
+        const badge = line.locator('.dk-gherkin__status');
+        await expect(badge).toHaveText(STATUS_WORDS);
+        await expect(badge, 'a screen reader hears the lead').toContainText('Result:');
+        await expect(badge.locator('.dk-gherkin__sr'), 'the lead is visually hidden').toHaveCSS('position', 'absolute');
+      }
+      // No heading (so no TOC entry) carries a status word.
+      const headings = await page.locator(`${CONTENT} :is(h1, h2, h3, h4, h5, h6)`).allTextContents();
+      expect(headings.filter((h) => /\b(Passed|Failed|Pending|Undefined|Not run)\b/.test(h))).toEqual([]);
+    });
+
+    test('a badge\'s text clears 4.5:1 on its own background', async ({ page }) => {
+      const measured = await page.locator(`${CONTENT} .dk-gherkin__status`).evaluateAll((els) => {
+        const rgba = (c: string) => (c.match(/[\d.]+/g) ?? []).map(Number);
+        const lum = ([r, g, b]: number[]) => {
+          const lin = (v: number) => {
+            const s = v / 255;
+            return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+          };
+          return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+        };
+        return els.map((el) => {
+          const style = getComputedStyle(el);
+          const [a, b] = [lum(rgba(style.color)), lum(rgba(style.backgroundColor))].sort((x, y) => y - x);
+          return { text: el.textContent, status: el.getAttribute('data-status'), ratio: (a + 0.05) / (b + 0.05) };
+        });
+      });
+      expect(measured.length).toBeGreaterThan(0);
+      for (const m of measured) {
+        expect(m.status, `badge "${m.text}" names its status`).toMatch(/^(passed|failed|ambiguous|undefined|pending|skipped|not-run)$/);
+        expect(m.ratio, `badge "${m.text}" contrast`).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+
+    test('an Examples table carries its results in a Result column with a header', async ({ page }) => {
+      const table = page.locator(`${CONTENT} table`).filter({ has: page.getByRole('columnheader', { name: 'Result' }) }).first();
+      await expect(table.getByRole('columnheader')).toHaveText([...examplesHeader]);
+      const cells = table.locator('tbody td:last-child .dk-gherkin__status');
+      expect(await cells.count()).toBeGreaterThan(0);
+      await expect(cells.first()).toHaveText(STATUS_WORDS);
+    });
+
+    test('the feature\'s results line names the run date', async ({ page }) => {
+      const summary = page.locator(`${CONTENT} p.dk-gherkin__results`).first();
+      await expect(summary).toContainText(/^Results: /);
+      await expect(summary.locator('time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}T/);
+    });
+  });
+}

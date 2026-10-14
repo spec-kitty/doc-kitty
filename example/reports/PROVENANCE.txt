@@ -1,0 +1,50 @@
+cucumber.ndjson — the example site's Cucumber report (ADR-0052)
+
+A real Cucumber Messages report (cucumber-js 13.3.0, protocol 34.2.1) of every
+.feature file the example site shows: features/** (generated pages) and
+scenarios/** (included by docs/guides/scenarios-in-pages.md). The site reads it
+through gherkin.results in astro.config.mjs; the URIs are relative to this
+example/ directory, so results.root is the default '.'.
+
+Made from a copy of example/ with:
+
+  cucumber-js features scenarios --require steps/steps.js --retry 1 \
+    --tags "not @wip" --format message:reports/cucumber.ndjson
+
+and the step definitions below, which pass every step except a few, so the
+pages show each kind of result. The only edit: the run's scratch directory in
+stack traces was rewritten to /home/runner/work/doc-kitty/doc-kitty/example.
+Regenerate it the same way after editing a feature, or its pages show
+"Results not shown" (the report holds each file's text and is checked against it).
+
+---- steps/steps.js ----
+// Step definitions for the doc-kitty example site's report (ADR-0052 demo).
+// One catch-all step, so every scenario runs, with a few deliberate outcomes:
+//  - Refuse cargo that does not fit, row 120: fails;
+//  - Refused bookings state the remaining capacity: pending;
+//  - Hold a declaration lodged after the cut-off: one step left undefined;
+//  - Pro-rate the allowance of a new starter: fails once, passes on retry.
+const assert = require('node:assert');
+const { Given } = require('@cucumber/cucumber');
+
+let proRateAttempts = 0;
+
+Given(/^((?!the freight invoice carries a late-lodgement surcharge$).*[^:])$/, function (text) {
+  const size = /^a consignment of (\d+) TEU$/.exec(text);
+  if (size) this.size = Number(size[1]);
+  if (text === 'the booking is refused with reason "insufficient space"' && this.size === 120) {
+    assert.fail('expected a refusal for 120 TEU, got a confirmed booking');
+  }
+  if (text === 'the refusal states that 2 TEU remain') return 'pending';
+  if (text.startsWith('the new starter has 6 days')) {
+    proRateAttempts += 1;
+    if (proRateAttempts === 1) throw new Error('allowance service timed out');
+  }
+  return undefined;
+});
+
+// A step with a doc string or a data table (its text ends in ":") gets that
+// argument too, and Cucumber checks a step function's arity.
+Given(/^(.*:)$/, function (text, argument) {
+  assert.ok(text && argument);
+});

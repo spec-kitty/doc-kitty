@@ -1,0 +1,36 @@
+[
+  {
+    "uri": "scenarios/study/read-a-chapter.feature",
+    "id": "read-a-chapter",
+    "keyword": "Feature",
+    "name": "Read a chapter",
+    "line": 4,
+    "elements": [
+      {
+        "id": "read-a-chapter;open-a-chapter-from-the-book-index",
+        "keyword": "Scenario",
+        "name": "Open a chapter from the book index",
+        "line": 9,
+        "type": "scenario",
+        "steps": [
+          { "keyword": "Given ", "line": 10, "name": "the book index of book one", "result": { "status": "passed", "duration": 1000 } },
+          { "keyword": "When ", "line": 11, "name": "the student opens \"Chapter 1\"", "result": { "status": "failed", "duration": 1000, "error_message": "Error: chapter service unavailable" } },
+          { "keyword": "Then ", "line": 12, "name": "the chapter page is shown", "result": { "status": "skipped" } }
+        ]
+      },
+      {
+        "id": "read-a-chapter;look-up-a-term-while-reading",
+        "keyword": "Scenario",
+        "name": "Look up a term while reading",
+        "line": 15,
+        "type": "scenario",
+        "tags": [{ "name": "@smoke", "line": 14 }],
+        "steps": [
+          { "keyword": "Given ", "line": 16, "name": "the student is reading chapter 1", "result": { "status": "passed", "duration": 1000 } },
+          { "keyword": "When ", "line": 17, "name": "the student hovers over \"Dialectic\"", "result": { "status": "passed", "duration": 1000 } },
+          { "keyword": "Then ", "line": 18, "name": "the definition is shown", "result": { "status": "passed", "duration": 1000 } }
+        ]
+      }
+    ]
+  }
+]

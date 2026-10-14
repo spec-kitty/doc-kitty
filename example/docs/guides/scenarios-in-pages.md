@@ -2,7 +2,7 @@
 title: Scenarios in pages
 description: Gherkin in an ordinary page — a gherkin code fence or an included .feature file renders as headings, step lists and tables instead of a code block.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Guide
 kind: Reference
 tags: [gherkin, scenarios, showcase, fixture]
@@ -19,7 +19,9 @@ the same rendering a generated behaviour page uses, so the
 [behaviour section](/behaviour/) and a guide that quotes a scenario look alike.
 
 A `::gherkin` directive does the same for a `.feature` file that already lives in
-the repository; see [Include a feature file](#include-a-feature-file).
+the repository; see [Include a feature file](#include-a-feature-file). An included
+file also shows each scenario's last test result; see
+[Results from the test run](#results-from-the-test-run).
 
 The site turns it on with the `gherkin` option. This page is also the coverage
 fixture the accessibility lane scans in light and dark mode.
@@ -165,3 +167,33 @@ with its source commit recorded in a comment.
 `@edge` examples.
 
 ::gherkin{src="features/shipping/book-consignment.feature" tags="@smoke @edge"}
+
+## Results from the test run
+
+This site sets `gherkin.results` to the Cucumber report its tests write
+(`reports/cucumber.ndjson`). Every scenario included from a `.feature` file then
+shows its result after its heading, an outline's Examples table gains a `Result`
+column, and a whole file gets a results line with the date of the run. The
+[generated behaviour pages](/behaviour/) show the same results. A fence shows
+none: it has no file the report could name.
+
+The result is the word on the badge; the colour and the symbol only repeat it.
+
+| Badge | Meaning |
+| --- | --- |
+| Passed | The scenario ran and every step passed |
+| Passed on retry | It failed, ran again and passed |
+| Failed | A step or hook failed |
+| Pending | A step is marked as not finished yet |
+| Undefined | A step has no automation yet |
+| Ambiguous | More than one step definition matches a step |
+| Skipped | Its steps were skipped |
+| Not run | The run did not include it |
+
+When the report was made from another version of a file, its scenarios show no
+result, and the file's results line says so, rather than putting a result on the
+wrong scenario.
+
+### A file with a step not automated yet
+
+::gherkin{src="features/shipping/declare-customs.feature"}
