@@ -14,6 +14,7 @@ agent:
 Notable changes to doc-kitty, newest first. The reasoning behind decisions lives in
 the [decision records](../adr/); this log records what changed and when.
 
+- [2026-10-14 — Gherkin results in CI, and a translatable Overview label](./2026-10-14-gherkin-trim-and-followups.md)
 - [2026-08-29 — Reveal-deck remediation: rendering fixes + slide-aware diagrams](./2026-08-29-reveal-deck-remediation.md)
 - [2026-08-28 — Glossary follow-ups: anchor de-collision, build-parity, section registry](./2026-08-28-glossary-followups.md)
 - [2026-08-24 — M3 specified: audience, related & external references](./2026-08-24-m3-spec-audience-related-references.md)

@@ -6,6 +6,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 💥 Breaking
+
+- **Produce the Gherkin report before every CI docs build, or set
+  `gherkin.results.required: false` (#166).** Before, a missing
+  `gherkin.results` report only logged a warning and the site built without
+  results, so a CI job could publish a site with no results unnoticed. Now, when
+  the `CI` environment variable holds anything other than empty, `false` or `0`,
+  a missing report stops the build and the message names the report and the
+  opt-out. GitHub Actions sets `CI=true` in every job, so preview and docs-only
+  jobs without a report are the ones that fail. Run Cucumber in the same job
+  first, or download its report as an artifact. For jobs that never run the
+  tests, set
+  `gherkin: { results: { report: 'reports/cucumber.ndjson', required: false } }`
+  and they warn as before. Local builds still warn only. An unreadable or
+  malformed report fails as it did.
+
+### Added
+
+- **Translate the sidebar "Overview" label, or set it once (#161).** Before, the
+  index entry of a nested group read "Overview" in English on every site. Now the
+  word is the UI string `dockitty.sidebar.indexLabel`: translate it in your
+  Starlight `i18n` files and each language shows its own word. To set one label
+  for all languages, use `defineDocKittyIntegrations({ sidebar: { indexLabel:
+  'Intro' } })`; it wins over the translation. The `sidebar` option accepts
+  either the Starlight sidebar array you may already pass or this
+  `{ indexLabel }` object; an unknown key or a blank label stops the build.
+  Previous and next links keep the page title. With neither set, your sidebar is
+  unchanged.
+- **A stale report now says so on a single scenario (#166).** Before, a
+  `::gherkin{src=… scenario=…}` include showed nothing when the report was made
+  from another version of the file, so the missing result looked like a gap.
+  Now its result line reads "Results not shown: the test report was made from a
+  different version of this file."
+- **A hand-mounted scenarios route without results warns (#166).** Before, a
+  site with its own `src/pages/api/scenarios.json` route that called
+  `scenarioIndexRoute()` without `results` served an index with no results and
+  no sign why. Now, while `gherkin.results` is set, the build logs one warning
+  per `astro build` and one per `astro dev` run, naming the route file and the
+  value to pass.
+
 ## [0.3.0] — 2026-10-14
 
 This release lets you write Gherkin scenarios in any page, shows their test
