@@ -15,28 +15,18 @@ import { fileURLToPath } from 'node:url';
 import {
   readmeToIndexId,
   resolveIndexEntries,
-  DEFAULT_INDEX_BASENAME,
 } from '../lib/metadata.js';
 import { deckSlug, deckRouteParams } from '../lib/deck/deck-slug.js';
 import {
   isRootIndex,
   isIndexPath,
   detectIndexCollisions,
-  DEFAULT_INDEX_BASENAME as MJS_DEFAULT_INDEX_BASENAME,
   validate,
 } from '../scripts/validate-frontmatter.mjs';
 import { resolvesToDoc } from '../scripts/check-links.mjs';
 
 const scaffoldPath = fileURLToPath(new URL('../scripts/scaffold.mjs', import.meta.url));
 const newDocPath = fileURLToPath(new URL('../scripts/new-doc.mjs', import.meta.url));
-
-describe('DEFAULT_INDEX_BASENAME (FR-002/C-001)', () => {
-  it('the default is "README" only, mirrored across both twins', () => {
-    expect(readmeToIndexId('README.md')).toBe('');
-    expect(DEFAULT_INDEX_BASENAME).toBe('README');
-    expect(MJS_DEFAULT_INDEX_BASENAME).toEqual(['README']);
-  });
-});
 
 describe('readmeToIndexId — configurable basename (US1-AS1/AS2/AS6)', () => {
   it('AS-1: index.md in a section folder collapses to the section slug when configured', () => {

@@ -63,6 +63,7 @@ import {
   CANONICAL_REQUIRED,
   REQUIRED_FIELD_FLOOR,
   expectedDocType,
+  DEFAULT_INDEX_BASENAME,
   isIndexPath,
   isRootIndex,
   detectIndexCollisions,
@@ -97,14 +98,6 @@ export {
   loadVocabulary,
 };
 export { expectedDocType as expectedType };
-
-/**
- * FR-002/C-001: the default is `README` ONLY — byte-identical to today (NFR-003).
- * Kept as the gate's own `['README']` array form (the core's default is the
- * equivalent `'README'` string; `normalizeIndexBasenames` treats them
- * identically) because `index-basename.test.ts` pins this export to `['README']`.
- */
-export const DEFAULT_INDEX_BASENAME = ['README'];
 
 /** The shipped-default identity resolver (no aliases/forbidden) — `Feature` valid. */
 export const IDENTITY_VOCAB = identityVocabulary();
