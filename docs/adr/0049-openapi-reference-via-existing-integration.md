@@ -50,13 +50,50 @@ entry and README, checked on 2026-10-14:
 - Latest version 0.27.0. Its README lists support for Swagger 2.0, OpenAPI 3.0
   and OpenAPI 3.1, and for local and remote schemas. It parses with
   `@readme/openapi-parser`.
-- Its peer dependencies are `astro >= 7.0.2` and `@astrojs/starlight >= 0.41.0`.
-  The example site is on `astro ^5.2.0` and `@astrojs/starlight ^0.32.6`. The
-  current release does not install on our stack without an upgrade.
+- Its peer dependencies are `astro >= 7.0.2`, `@astrojs/starlight >= 0.41.0` and
+  `@astrojs/markdown-satteri >= 0.3.2`. The example site is on `astro ^5.2.0` and
+  `@astrojs/starlight ^0.32.6`. The current release does not install on our stack
+  without an upgrade.
+- It renders the Markdown inside the definition (descriptions) by calling
+  `createSatteriMarkdownProcessor()` from `@astrojs/markdown-satteri` directly
+  (`libs/markdown.ts`), not through the site's Markdown pipeline.
+
+### What the Sätteri dependency means
+
+`@astrojs/markdown-satteri` is the Astro team's adapter for Sätteri (Bruits, MIT),
+a Markdown and MDX compiler written in Rust that runs plugins in JavaScript. It
+first shipped in May 2026 and is at 0.4.3. It ships prebuilt binaries per
+platform, with a WebAssembly fallback.
+
+Astro 7 made it the default Markdown processor. The Astro changelog says that
+`.md` files now render with `satteri()` instead of the remark/rehype pipeline, and
+that `@astrojs/markdown-remark` is no longer installed by default. Sätteri has its
+own plugin API, so remark and rehype plugins do not run on it. A site keeps them by
+installing `@astrojs/markdown-remark` and setting
+`markdown.processor: unified()`. In Astro 7 `markdown.remarkPlugins` and
+`markdown.rehypePlugins` still work, but only with that package, and the changelog
+calls them deprecated.
+
+This matters because DocKitty's Markdown features are remark and rehype plugins
+registered in `src/lib/config.ts`: deck splitting, the relative-link rewrite
+(ADR-0047), base-absolute links, diagram metadata, and the Mermaid and PlantUML
+transforms. Taking `starlight-openapi` therefore means:
+
+- **A framework upgrade first.** Astro 5 → 7 and Starlight 0.32 → 0.41 is its own
+  piece of work. Astro 7 also makes the stricter Rust compiler the default, which
+  turns invalid markup such as unclosed tags into errors.
+- **A processor choice.** Keep `unified()` so the existing plugins run (the short-term
+  path, on deprecated options), or port each plugin to Sätteri's API. That choice
+  needs its own ADR.
+- **Descriptions bypass our pipeline in either case.** Because the plugin calls
+  Sätteri directly, Markdown inside the definition does not get the glossary
+  autolinker, the relative-link rewrite or the link checks, even with `unified()`
+  set for the site's own pages.
 - It exports its own `styles` stylesheet and ships static and SSR route
   components (`routes/static`, `routes/ssr`).
 
-To confirm in the spike: whether an older release supports Starlight 0.32; whether
+To confirm in the spike: whether an older release supports Starlight 0.32 (and
+which Markdown processor it needs); whether
 its pages are content-collection entries or injected routes (which decides whether
 the remark stack, glossary autolinker, metadata and machine surfaces see them at
 all); whether its stylesheet can be dropped or mapped onto `--dk-*` tokens; and
@@ -115,7 +152,9 @@ whether its Swagger 2.0 support is complete enough for our fixtures.
 ### Negative
 
 - The first candidate needs a newer Astro and Starlight than DocKitty uses. Taking
-  it may mean a framework upgrade, or pinning an older release of the plugin.
+  it may mean a framework upgrade, or pinning an older release of the plugin. The
+  upgrade brings Astro 7's switch to Sätteri, which forces a decision on our
+  remark and rehype plugins (see "What the Sätteri dependency means").
 - A third-party renderer can change its markup between releases, which affects
   a11y baselines and byte-stable output.
 
@@ -126,6 +165,12 @@ whether its Swagger 2.0 support is complete enough for our fixtures.
   answer this before acceptance.
 - A remote definition makes the build depend on the network until the fetch
   question is settled.
+- Markdown in the definition's descriptions is rendered by the plugin's own
+  Sätteri call, so glossary links and our link checks do not reach it. If that is
+  unacceptable, this weighs toward the own-generator fallback, which would emit
+  ordinary Markdown pages through our full pipeline.
+- Sätteri is young (0.x, first released in 2026) and ships native binaries. Expect
+  breaking minor releases and possible install trouble on uncommon CI images.
 
 ## Alternatives considered
 
