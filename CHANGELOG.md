@@ -79,17 +79,17 @@ release, as it did for `0.2.0`.
   unless your index names included `index`, and its generated page then collided
   with the folder's landing page. Now the build stops on it whatever your index
   names are.
-- **On a site with `gherkin: { sources }`, ```` ```gherkin ```` fences on authored
-  pages now render as structured scenarios** instead of code blocks. Add `raw` to
-  a fence's info string (```` ```gherkin raw ````) to keep it as code, or set
-  `fences: false` to keep every authored page as it was. Sites without the
-  `gherkin` option are unaffected.
-- **On such a site a `::gherkin{…}` line is now an include**, read from
-  `includeRoots`, which defaults to `sources`; it used to print as literal text.
-  A line whose file is outside the roots, missing or not a `.feature` file now
-  fails the build.
-- **An unknown key in the `gherkin` option is now a config error** (`includeRoot`,
-  `fence`, …), instead of being ignored.
+- **If your site sets `gherkin: { sources }`, your ```` ```gherkin ```` fences now
+  render as structured scenarios** instead of code blocks. Add `raw` to a fence
+  (```` ```gherkin raw ````) to keep it as code, or set `fences: false` to keep
+  every authored page as it was. Sites without the `gherkin` option are
+  unaffected.
+- **On such a site a `::gherkin{…}` line is now an include**; it used to print as
+  literal text. It reads files from the folders in `includeRoots` (default:
+  `sources`), and a line whose file is outside them, missing or not a `.feature`
+  file now fails the build.
+- **An unknown key in the `gherkin` option is now a config error** instead of
+  being ignored.
 - **Generated feature pages show quoted step arguments as code**
   (`"insufficient space"` becomes a code span, quotes kept), in step text and in
   data-table and Examples cells, so a regenerated page
@@ -115,11 +115,7 @@ release, as it did for `0.2.0`.
 - **A broken in-page fence or include fails the build.** A Gherkin syntax error,
   or an include whose file, scenario or tag is not found, stops `astro build`
   with one `[dk-gherkin] <page>:<line>` error listing every broken page, instead
-  of building the page empty. A broken page is never served from the content
-  cache, so building again, or building after `astro sync` or `astro check`,
-  fails the same way. In a collection not loaded by `docKittyDocsLoader` a failed
-  build deletes the content data store instead, which covers building again but
-  not a sync before the build.
+  of building the page empty. Building again fails the same way until you fix it.
 
 ### Added
 
@@ -152,26 +148,27 @@ release, as it did for `0.2.0`.
   Breaking entry on `--index-basename` above. `--help` lists the options.
 - **`--help` on `dockitty-generate-feature-pages`.** It prints the flags and exits
   with status 0.
-- **Gherkin in any page** ([ADR-0051](docs/adr/0051-gherkin-in-any-page.md)). With
-  the `gherkin` option on, a ```` ```gherkin ```` fence on any docs page renders as
-  a structured scenario: the feature and scenarios as headings that nest under the
+- **Gherkin in any page** ([ADR-0051](docs/adr/0051-gherkin-in-any-page.md)). Set
+  `gherkin: true` and a ```` ```gherkin ```` fence on any docs page renders as a
+  structured scenario: the feature and scenarios as headings that nest under the
   page's outline, steps as a bulleted list with the keyword in bold, data tables
   and Examples as tables, doc strings as code blocks, and `#` comments hidden. A
   fence may hold a whole feature, scenarios without a `Feature:` line, or bare
   steps. Inside a list, quote or aside the headings become `role="heading"`
   paragraphs, so they stay out of "On this page". Slide decks keep fences as code,
   and generated feature pages are left as generated.
-- **`::gherkin{src="…"}` includes a `.feature` file from the repository**, whole,
-  or one scenario with `scenario="<exact name>"`, or the scenarios and Examples
-  rows that carry any of `tags="@a @b"` (inherited tags count). Each include ends
-  in a source line naming the file, linked with `sourceUrlPrefix`. An include
-  may only read files inside the new `includeRoots` (default: `sources`), with
-  symlinks resolved first, and only regular files of at most 1 MiB. A page that includes a file is re-rendered when that
-  file changes, in a build and in the dev server.
-- **The `gherkin` option accepts `true`** (in-page Gherkin only, no generated
-  pages) and the object form gains `fences` (default `true`) and `includeRoots`.
-  `sources` is now optional: it is what turns on generated pages and the
-  `behaviour` section.
+- **Include a `.feature` file from your repository with `::gherkin{src="…"}`**:
+  the whole file, one scenario with `scenario="<exact name>"`, or the scenarios
+  and Examples rows that carry any of `tags="@a @b"` (inherited tags count). Each
+  include ends in a source line naming the file, linked with `sourceUrlPrefix`.
+  Includes need `gherkin.includeRoots` (or `sources`): they may only read regular
+  files of at most 1 MiB inside those folders, and `gherkin: true` alone turns on
+  fences only. A page that includes a file is re-rendered when the file changes,
+  in a build and in the dev server.
+- **The `gherkin` option accepts `true`** (fences only, no generated pages) and
+  the object form gains `fences` (default `true`) and `includeRoots`. `sources`
+  is now optional: it is what turns on generated pages and the `behaviour`
+  section.
 - **The agent page payload expands includes.** `/api/pages/<slug>.json` has each
   include as Markdown in place of the directive, and lists them under
   `includes: [{ src, scenario?, tags? }]`.
