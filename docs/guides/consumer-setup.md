@@ -914,8 +914,9 @@ gherkin: {
   commit.
 - **Generated pages are unaffected on disk.** Results are added when a page
   renders, so committed pages and the `--check` gate do not change.
-- **The scenario index:** pass the same value to `scenarioIndexRoute({ results })`
-  so `/api/scenarios.json` carries the results too.
+- **The scenario index:** the injected `/api/scenarios.json` carries the results
+  too. If you mount `scenarioIndexRoute` yourself, pass the same value to
+  `scenarioIndexRoute({ results })`.
 - **Freshness:** with `docKittyDocsLoader`, a changed report re-renders the pages
   that show results, in a build and in the dev server.
 - **Keep the report out of `public/`.** It holds failure messages and paths; only

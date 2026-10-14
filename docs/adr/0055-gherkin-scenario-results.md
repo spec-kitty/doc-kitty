@@ -10,6 +10,7 @@ authors:
 related:
   - adr/0046-gherkin-feature-pages
   - adr/0051-gherkin-in-any-page
+  - adr/0054-gherkin-draft-hubs-titles-and-scenario-route
   - adr/0014-upgrade-starlight-for-route-data-api
   - architecture/gherkin-pages
   - architecture/research/gherkin-results
@@ -129,8 +130,11 @@ Facts that shape the design:
 
 ## Amendments
 
-- **ADR-0046 decision 9 (scenario index).** With the `results` route option, the
-  index carries each scenario's result. Without it the shape is unchanged.
+- **ADR-0046 decision 9 (scenario index), as amended by
+  [ADR-0054](./0054-gherkin-draft-hubs-titles-and-scenario-route.md).** The
+  injected route carries each scenario's result whenever `gherkin.results` is set;
+  a hand-mounted route does so with the `results` route option. Without a report
+  the shape is unchanged.
 - **ADR-0051 decision 1 (config shape).** The option gains `results`. The in-page
   stage is registered when `fences` is on **or** `results` is set; with
   `fences: false` it only adds results to generated pages and leaves fences and
@@ -156,7 +160,9 @@ Facts that shape the design:
 
 - Any edit to a `.feature` file hides its results until the tests run again
   (Messages compares the whole text, comments included).
-- The scenario index route repeats `results`, as it repeats `sourceRoot`.
+- A hand-mounted scenario index route repeats `results`, as it repeats
+  `sourceRoot`. The route the integration injects (ADR-0054) takes it from the
+  integration's own options.
 - Generated pages are re-parsed at render time when results are on.
 - Content-layer freshness for the report rests on the same Astro 5 loader
   internals as ADR-0051 decision 11 (#119).

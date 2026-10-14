@@ -180,8 +180,9 @@ release, as it did for `0.2.0`.
   commit. Results are matched by file and line, and a report made from another
   version of a file shows nothing for it. Only statuses are published. Generated
   pages stay as committed: results are added when they render. A missing report is
-  a warning; an unreadable one fails the build. `scenarioIndexRoute({ results })`
-  adds the results to `/api/scenarios.json`.
+  a warning; an unreadable one fails the build. The injected `/api/scenarios.json`
+  carries the results too (a hand-mounted `scenarioIndexRoute` takes
+  `{ results }`).
 - **Relative Markdown links between pages are rewritten to routes at build
   (#131).** Before, `[setup](./setup.md)` rendered as a link to a `.md` path that
   404s on the live site, so authors wrote root-absolute routes that break on

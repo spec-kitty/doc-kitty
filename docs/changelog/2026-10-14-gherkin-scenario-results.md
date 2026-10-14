@@ -70,7 +70,8 @@ defineDocKittyIntegrations({
 Nothing changes for a site that does not set `results`. To turn it on, have CI
 write a report before the docs build (`cucumber-js --format
 message:reports/cucumber.ndjson`), set `gherkin.results`, and pass the same value
-to `scenarioIndexRoute({ results })` if you mount it.
+to `scenarioIndexRoute({ results })` if you mount the route yourself (the
+injected route needs nothing).
 
 ## Limits
 

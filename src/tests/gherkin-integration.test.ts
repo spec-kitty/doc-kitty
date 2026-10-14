@@ -505,6 +505,23 @@ describe('doc-kitty:gherkin injects the scenario index (#126)', () => {
     );
   });
 
+  it('hands the injected route the results report (ADR-0055)', () => {
+    const dir = site();
+    const ctx = runGherkinSetup(
+      defineDocKittyIntegrations({
+        title: 't',
+        gherkin: { sources: ['features'], sourceRoot: 'features', results: 'reports/cucumber.ndjson' },
+      }),
+      stubContext(true, pathToFileURL(`${dir}${path.sep}src${path.sep}`)),
+    );
+    const plugin = ctx.updateConfig.mock.calls[0][0].vite.plugins[0];
+    const loaded = plugin.load(plugin.resolveId('virtual:doc-kitty/gherkin-scenario-index')) as string;
+    expect(JSON.parse(loaded.replace(/^export const scenarioIndexOptions = /, '').replace(/;\n$/, '')).results).toEqual({
+      report: 'reports/cucumber.ndjson',
+      root: '.',
+    });
+  });
+
   it.each([
     'src/pages/api/scenarios.json.ts',
     'src/pages/api/scenarios.json.tsx',

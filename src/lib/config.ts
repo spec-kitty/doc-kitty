@@ -1330,13 +1330,15 @@ function resolveGherkinOptions(
  *     route file. A site that already mounts its own `src/pages/api/scenarios.json.*`
  *     (or `scenarios.json/index.*`) keeps it: the injection is skipped, so the two routes never meet at one
  *     address (`hasOwnScenarioIndexPage`). The route reads `sourceRoot` and
- *     `sourceUrlPrefix` from `virtual:doc-kitty/gherkin-scenario-index`, so it
- *     resolves sources the way the generator did.
+ *     `sourceUrlPrefix` (and `results`, ADR-0055) from
+ *     `virtual:doc-kitty/gherkin-scenario-index`, so it resolves sources the way
+ *     the generator did.
  */
 function gherkinIntegration(
   opts: ResolvedGherkinPages,
   docsDir: string,
   indexBasename: IndexBasenameOption | undefined,
+  results?: ResolvedGherkinOptions['results'],
 ): AstroIntegration {
   return {
     name: 'doc-kitty:gherkin',
@@ -1370,6 +1372,8 @@ function gherkinIntegration(
           const options = {
             sourceRoot: opts.sourceRoot,
             ...(opts.sourceUrlPrefix !== undefined ? { sourceUrlPrefix: opts.sourceUrlPrefix } : {}),
+            // ADR-0055: the injected index carries the same results as the pages.
+            ...(results ? { results } : {}),
           };
           updateConfig({
             vite: {
@@ -2151,7 +2155,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // read glossary → gherkin. It registers NO remark/rehype plugins (generated
     // pages are plain Markdown on the existing stack), so no plugin-order pin
     // moves. Omitted entirely when absent — byte-identical array.
-    ...(gherkinPages ? [gherkinIntegration(gherkinPages, docsDir, indexBasename)] : []),
+    ...(gherkinPages ? [gherkinIntegration(gherkinPages, docsDir, indexBasename, gherkinOpts?.results)] : []),
     // Opt-in in-page Gherkin stage (ADR-0051): PREPENDED immediately before
     // Starlight, AFTER the glossary and the codegen hook, whenever the option is
     // set and `fences` is not `false`, or `results` is set (ADR-0055: it adds

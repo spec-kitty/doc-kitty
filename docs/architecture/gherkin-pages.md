@@ -586,7 +586,8 @@ feature header is shown, and one build warning.
 - **The scenario index.** `scenarioIndexRoute({ results })` adds `result` to each
   scenario, `results` to each Examples table, `results: 'current' | 'stale'` to
   each feature, and a top-level `results` block naming the report, format, run
-  date and commit. The route repeats the option, as it repeats `sourceRoot`.
+  date and commit. The injected route takes the option from the
+  integration; a hand-mounted route repeats it, as it repeats `sourceRoot`.
 
 The markup is a `p.dk-gherkin__result` right after the heading, never inside it,
 so the table of contents and the slugs do not change. Its badge,

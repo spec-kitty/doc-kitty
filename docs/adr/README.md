@@ -61,11 +61,10 @@ kind: Hub
 | [0048](./0048-generated-page-names-and-empty-sources.md) | ADR-0048: Generated index page names and empty Gherkin sources | Accepted | 2026-10-13 |
 | [0049](./0049-openapi-reference-via-existing-integration.md) | ADR-0049: OpenAPI reference pages through an existing integration | Proposed | 2026-10-14 |
 | [0050](./0050-route-collisions-and-single-index-setting.md) | ADR-0050: Route collisions are fatal, and index names are set once | Accepted | 2026-10-14 |
-| [0051](./0051-gherkin-in-any-page.md) | ADR-0051: Render Gherkin in any page, from a fence or an include | Accepted | 2026-10-13 |
+| [0051](./0051-gherkin-in-any-page.md) | ADR-0051: Render Gherkin in any page, from a fence or an include | Accepted | 2026-10-14 |
 | [0052](./0052-runtime-slot-name-validation.md) | ADR-0052: Theme slot names are checked when the config loads | Accepted | 2026-10-14 |
 | [0053](./0053-reading-width.md) | ADR-0053: The reading column defaults to 60rem for all body content | Accepted | 2026-10-14 |
 | [0054](./0054-gherkin-draft-hubs-titles-and-scenario-route.md) | ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages | Accepted | 2026-10-14 |
-| [0051](./0051-gherkin-in-any-page.md) | ADR-0051: Render Gherkin in any page, from a fence or an include | Accepted | 2026-10-14 |
-| [0052](./0052-gherkin-scenario-results.md) | ADR-0052: Show each scenario's result from the site's Cucumber report | Accepted | 2026-10-14 |
+| [0055](./0055-gherkin-scenario-results.md) | ADR-0055: Show each scenario's result from the site's Cucumber report | Accepted | 2026-10-14 |
 
 New ADRs copy [`template.md`](./template.md).
