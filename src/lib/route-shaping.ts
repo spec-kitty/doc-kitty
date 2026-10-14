@@ -223,14 +223,21 @@ export function shapeSidebar(
 
     const children = entry.entries.map((child) => shapeEntry(child, depth + 1)).filter(keep);
     // In a nested group, a link to folder D's index is this group's own index
-    // only when the group carries D's name: Starlight's directory name, or the
-    // label shaping gave it. Otherwise it is a one-page folder collapsed by an
-    // earlier pass, one level down, and must not pull the group's directory
-    // into D (which would collapse the group into its child).
-    const ownIndex = (dir: string): boolean =>
-      depth === 0 || entry.label === dir.slice(dir.lastIndexOf('/') + 1) || entry.label === meta.get(dir)?.label;
+    // only when the group's other entries sit in D (the same folder rule as
+    // `isIndex` below, read from the hrefs, so a label from sections.yaml,
+    // frontmatter or i18n does not matter). Otherwise it is a one-page folder
+    // collapsed by an earlier pass, one level down, and must not pull the
+    // group's directory into D (which would collapse the group into its child).
+    // With no other entry to compare, only the group's label can say: Starlight's
+    // directory name, or the label shaping gave it.
+    const ownIndex = (self: Shaped, dir: string): boolean => {
+      if (depth === 0) return true;
+      const others = children.filter((c) => c !== self && c.dir !== undefined);
+      if (others.length > 0) return others.some((c) => c.dir === dir || c.dir!.startsWith(`${dir}/`));
+      return entry.label === dir.slice(dir.lastIndexOf('/') + 1) || entry.label === meta.get(dir)?.label;
+    };
     for (const c of children) {
-      if (c.entry.type === 'link' && c.dir !== undefined && meta.has(c.dir) && !ownIndex(c.dir)) c.collapsed = true;
+      if (c.entry.type === 'link' && c.dir !== undefined && meta.has(c.dir) && !ownIndex(c, c.dir)) c.collapsed = true;
     }
     const candidates = children.flatMap(({ entry: child, dir, collapsed }) =>
       dir === undefined ? [] : [child.type === 'group' || collapsed ? parentDir(dir) : dir],

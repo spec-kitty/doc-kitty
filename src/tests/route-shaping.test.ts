@@ -369,9 +369,11 @@ describe('shapeSidebar — one-page folders and repeated index labels (#112)', (
     ]);
   });
 
-  it('keeps a nested folder with more than its index as a group', () => {
+  it('keeps a nested folder with more than its index as a group, whatever label its group arrives with', () => {
+    // 'Tiefe' matches neither the folder name nor the index title: a label from
+    // sections.yaml, frontmatter or i18n. The group still owns its index.
     const [guides] = shape([
-      group('Guides', [link('guides', 'Guides'), group('deep', [link('guides/deep/one', 'One'), link('guides/deep', 'Deep dive')])]),
+      group('Guides', [link('guides', 'Guides'), group('Tiefe', [link('guides/deep/one', 'One'), link('guides/deep', 'Deep dive')])]),
     ]);
     const deep = childrenOf(guides)[1];
     expect(deep?.type).toBe('group');
