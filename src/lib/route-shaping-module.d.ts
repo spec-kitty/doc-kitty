@@ -17,5 +17,7 @@ declare module 'virtual:doc-kitty/route-shaping' {
     directoryMeta: Array<[string, import('./route-shaping.js').DirectoryMeta]>;
     /** Directories whose index page exists but is not published. */
     unpublishedDirs: string[];
+    /** The `sidebar.indexLabel` option; absent = use the locale's translation (#161). */
+    indexLabel?: string;
   };
 }

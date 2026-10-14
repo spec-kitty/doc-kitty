@@ -396,6 +396,24 @@ export function resultParagraph(outcome) {
 }
 
 /**
+ * The "not shown" note of a stale report, in the paragraph class it replaces:
+ * the feature summary's, or a selected scenario's result line (FR-007).
+ *
+ * @param {string} className
+ * @returns {MdNode}
+ */
+function staleNote(className) {
+  return {
+    type: 'paragraph',
+    data: classed(className),
+    children: [
+      { type: 'strong', children: [text('Results not shown:')] },
+      text(' the test report was made from a different version of this file.'),
+    ],
+  };
+}
+
+/**
  * The feature's results summary: `Results: 1 failed, 3 passed · as of <date> ·
  * commit <id>`, or the "not shown" note for a stale report.
  *
@@ -403,16 +421,7 @@ export function resultParagraph(outcome) {
  * @returns {MdNode}
  */
 export function resultsSummaryParagraph(results) {
-  if (results.state === 'stale') {
-    return {
-      type: 'paragraph',
-      data: classed(GHERKIN_CLASSES.results),
-      children: [
-        { type: 'strong', children: [text('Results not shown:')] },
-        text(' the test report was made from a different version of this file.'),
-      ],
-    };
-  }
+  if (results.state === 'stale') return staleNote(GHERKIN_CLASSES.results);
   /** @type {MdNode[]} */
   const children = [{ type: 'strong', children: [text('Results:')] }, text(` ${countsText(results.counts) || 'none'}`)];
   const { date, day, revision } = provenance(results.run);
@@ -468,9 +477,15 @@ export function rowOutcomes(examples, results) {
 function sectionNodes(section, level, opts) {
   const { results } = opts;
   const outcome = results?.state === 'current' && section.kind === 'scenario' ? results.scenarios.get(section.line) : undefined;
+  // A selection has no feature summary (header 'none'): a stale report says so
+  // on each selected scenario's result line instead.
+  const staleLine =
+    results?.state === 'stale' && section.kind === 'scenario' && (opts.header ?? 'full') !== 'full'
+      ? [staleNote(GHERKIN_CLASSES.result)]
+      : [];
   return [
     ...(section.synthetic ? [] : [heading(level, titleOf(section), Boolean(opts.inContainer))]),
-    ...(outcome ? [resultParagraph(outcome)] : []),
+    ...(outcome ? [resultParagraph(outcome)] : staleLine),
     ...tagsParagraph(section.tags),
     ...descriptionNodes(section.description, opts.parseMarkdown),
     ...stepsList(section.steps),

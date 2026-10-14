@@ -20,7 +20,7 @@
  */
 import { defineRouteMiddleware } from '@astrojs/starlight/route-data';
 import { routeShaping } from 'virtual:doc-kitty/route-shaping';
-import { shapePagination, shapeSidebar, shapeToc, shapingWarningSink } from './route-shaping.js';
+import { resolveIndexLabel, shapePagination, shapeSidebar, shapeToc, shapingWarningSink } from './route-shaping.js';
 
 const directoryMeta = new Map(routeShaping.directoryMeta);
 
@@ -31,6 +31,7 @@ export const onRequest = defineRouteMiddleware((context) => {
     const { sidebar, warnings } = shapeSidebar(route.sidebar, directoryMeta, {
       base: routeShaping.base,
       unpublishedDirs: routeShaping.unpublishedDirs,
+      indexLabel: resolveIndexLabel(routeShaping.indexLabel, context.locals.t as (key: string) => unknown),
     });
     // Collected, not printed: every page shapes the same tree, and the
     // integration reports the set once when the build finishes.

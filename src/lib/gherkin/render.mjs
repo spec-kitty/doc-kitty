@@ -417,6 +417,9 @@ function resultLine(outcome) {
   return `Result: **${outcomeLabel(outcome)}**${counts ? ` (${counts})` : ''}`;
 }
 
+/** The "not shown" note of a stale report (FR-007): the summary, or a selected scenario's result line. */
+const STALE_NOTE = '**Results not shown:** the test report was made from a different version of this file.';
+
 /**
  * The feature's results line: `**Results:** 1 failed, 3 passed · as of
  * 2026-10-14 · commit \`3f1c2a9\``, or the "not shown" note for a stale report.
@@ -424,9 +427,7 @@ function resultLine(outcome) {
  * @param {FeatureResults | StaleResults} results
  */
 function resultsSummaryLine(results) {
-  if (results.state === 'stale') {
-    return '**Results not shown:** the test report was made from a different version of this file.';
-  }
+  if (results.state === 'stale') return STALE_NOTE;
   const { day, revision } = provenance(results.run);
   let line = `**Results:** ${countsText(results.counts) || 'none'}`;
   if (day) line += ` · as of ${day}`;
@@ -483,13 +484,18 @@ function headed(head, { tags, description }, layout) {
  * @param {number} level Heading depth.
  * @param {Layout} layout
  * @param {FeatureResults | StaleResults} [results]
+ * @param {boolean} [summarised] The feature summary is shown (`full` header);
+ *   otherwise a stale report is noted on the scenario itself.
  * @returns {string[]}
  */
-function renderSection(section, level, layout, results) {
+function renderSection(section, level, layout, results, summarised = true) {
   const blocks = headed(section.synthetic ? '' : layout.heading(level, titled(section)), section, layout);
   const outcome = results?.state === 'current' && section.kind === 'scenario' ? results.scenarios.get(section.line) : undefined;
   // Directly after the heading, as the HTML puts it (ADR-0055).
   if (outcome) blocks.splice(section.synthetic ? 0 : 1, 0, resultLine(outcome));
+  else if (results?.state === 'stale' && !summarised && section.kind === 'scenario') {
+    blocks.splice(section.synthetic ? 0 : 1, 0, STALE_NOTE);
+  }
   if (section.steps.length > 0) blocks.push(renderSteps(section.steps));
   for (const ex of section.examples) blocks.push(...renderExamples(ex, layout, results));
   return blocks;
@@ -584,11 +590,11 @@ export function renderFeatureBody(document, opts = {}) {
   const { results } = opts;
   for (const child of view.children) {
     if (child.kind !== 'rule') {
-      blocks.push(...renderSection(child, levels.section, layout, results));
+      blocks.push(...renderSection(child, levels.section, layout, results, levels.header === 'full'));
       continue;
     }
     blocks.push(...headed(layout.heading(levels.section, titled(child)), child, layout));
-    for (const rc of child.children) blocks.push(...renderSection(rc, childLevel(levels.section), layout, results));
+    for (const rc of child.children) blocks.push(...renderSection(rc, childLevel(levels.section), layout, results, levels.header === 'full'));
   }
   warnDuplicates(view, opts);
 
