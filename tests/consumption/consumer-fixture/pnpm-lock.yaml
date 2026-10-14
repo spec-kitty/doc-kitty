@@ -988,7 +988,7 @@ packages:
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
   '@spec-kitty/doc-toolkit@file:toolkit.tgz':
-    resolution: {integrity: sha512-d5vkM9bTiLQWKVbBA7DXHkU+i6OopnoOQcdg5P5u4uiIdGsGjbGG6xopGx7iMxcRAYjFYfiYS0oczfCrEWIFeQ==, tarball: file:toolkit.tgz}
+    resolution: {integrity: sha512-IdZtHxXelx/tfDLZMzJfh4ZGSh09mhFPPgJPrSzRW8TNs4Oql9zjfvNO2EqSNOj7dFhwztfdxF/F6BBFevwM7A==, tarball: file:toolkit.tgz}
     version: 0.3.0
     engines: {node: '>=22'}
     hasBin: true
