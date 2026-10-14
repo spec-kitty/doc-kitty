@@ -924,7 +924,8 @@ gherkin: {
 - **The scenario index:** the injected `/api/scenarios.json` carries the results
   too. If you mount `scenarioIndexRoute` yourself, pass the same value to
   `scenarioIndexRoute({ results })`. A route of your own that omits `results` while `gherkin.results` is set logs
-  one warning per build or dev server, naming the route file and the value to pass.
+  one warning per build or dev server run, naming the route file and the value to pass.
+  In `astro dev` it appears once per dev-server run, not again when the config reloads.
 - **Freshness:** with `docKittyDocsLoader`, a changed report re-renders the pages
   that show results, in a build and in the dev server.
 - **Keep the report out of `public/`.** It holds failure messages and paths; only
