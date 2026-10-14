@@ -244,6 +244,8 @@ const DEMO_CITATION_KEY = 'divio-2017';
 // (they live in the block markup inside data-pagefind-body, NFR-003).
 const DEMO_OWN_FRAGMENT_TITLES = [
   DEMO_STALE_TARGET_TITLE,
+  // The example's own current-page title (a docs page called "Overview"), NOT the
+  // translatable sidebar index label.
   'Overview', // the current related target's title
   DEMO_CITATION_TITLE,
 ];
