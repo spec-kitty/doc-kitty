@@ -149,13 +149,21 @@ export interface DocKittyOptions {
    */
   theme?: DocKittyTheme;
   /**
-   * Opt-in Mermaid diagrams (M5, ADR-0023/0024; FR-001). **Default off** — with
-   * it absent or `false` the integrations array carries ZERO diagram cost: no
-   * diagram integration, no markdown plugins, no injected render module (a
-   * diagram-free site stays byte-identical). Set `true` to wire the full seam:
-   * the WP02 `diagramMeta` (remark) + `diagramFigure` (rehype) plugins that turn
-   * a `%%`-annotated ```mermaid fence into an accessible `<figure>`, and the
-   * single client render owner (`diagram-render.client`) injected page-wide.
+   * `false` (default): diagram blocks are shown as code, not drawn. A
+   * ```mermaid or ```plantuml fence renders as a plain code block. `false` does
+   * not mean "render in the browser"; the render mode is picked separately, by
+   * `DK_DIAGRAM_BUILD_RENDER` or Chromium auto-detection ({@link resolveDiagramMode}).
+   *
+   * Opt-in Mermaid + PlantUML diagrams (M5, ADR-0023/0024/0040; FR-001).
+   * **Default off** — with it absent or `false` the integrations array carries
+   * ZERO diagram cost: no diagram integration, no markdown plugins, no injected
+   * render module (a diagram-free site stays byte-identical). Set `true` to wire
+   * the full seam: the WP02 `diagramMeta` (remark) + `diagramFigure` (rehype)
+   * plugins that turn a `%%`-annotated ```mermaid fence into an accessible
+   * `<figure>`, plus, per the resolved mode, EITHER the build-time renderers
+   * (build: Mermaid and PlantUML to inline SVG, no client script) OR the single
+   * client render owner (`diagram-render.client`) injected page-wide (client:
+   * Mermaid only; a ```plantuml fence stays code).
    */
   diagrams?: boolean;
   /**

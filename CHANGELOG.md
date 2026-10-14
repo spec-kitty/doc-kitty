@@ -119,6 +119,14 @@ release, as it did for `0.2.0`.
 
 ### Added
 
+- **The consumer guide explains the `diagrams` option (#153).** Before, the guide
+  did not mention it, and `diagrams: false` could be read as "draw diagrams in the
+  browser". It means the blocks are shown as code. A new section covers turning
+  diagrams on, the build and client render modes, pinning one with
+  `DK_DIAGRAM_BUILD_RENDER` (use `client` in CI without Chromium), and the
+  self-hosted server PlantUML needs. The option's doc comment now opens with what
+  `false` does. No behaviour changes. See
+  [Optional: Diagrams](docs/guides/consumer-setup.md#optional-diagrams).
 - **Relative Markdown links between pages are rewritten to routes at build
   (#131).** Before, `[setup](./setup.md)` rendered as a link to a `.md` path that
   404s on the live site, so authors wrote root-absolute routes that break on

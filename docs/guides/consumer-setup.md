@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -656,6 +656,94 @@ A malformed charter fails the build naming the file and offending key; an unknow
 *top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`
 or `_meta/sections.yaml`, both keep working (you will see one deprecation notice)
 — consolidate them with [Migrating to the charter](/guides/migrating-to-charter/).
+
+## Optional: Diagrams
+
+The `diagrams` option decides whether ```` ```mermaid ```` and ```` ```plantuml ````
+blocks are drawn as diagrams.
+
+- **`diagrams: true`** draws them.
+- **Left out, or `diagrams: false`** (the default), shows them as code blocks.
+  Nothing is drawn, in the build or in the browser.
+
+`false` does not mean "render in the browser". Where a diagram is drawn is a
+separate choice, the render mode, described below.
+
+### Turn diagrams on
+
+Add one line to the options from [step 3](#3-astroconfigmjs--wire-the-integrations):
+
+```js
+// astro.config.mjs
+integrations: defineDocKittyIntegrations({
+  title: 'My Docs',
+  base: BASE,
+  diagrams: true,
+}),
+```
+
+Then write a Mermaid block in any page. The two `%%` lines are optional. They
+give the diagram an accessible name and a caption:
+
+````markdown
+```mermaid
+%% title: Request flow
+%% description: The browser asks the server, and the server answers.
+flowchart LR
+  Browser --> Server
+  Server --> Browser
+```
+````
+
+Mermaid needs nothing else. Build, and the block is drawn.
+
+### Render modes
+
+With `diagrams: true`, each build draws diagrams in one of two modes:
+
+| Mode | What ships | Needs |
+|---|---|---|
+| **build** | An inline SVG in the page, drawn at build time. No diagram script is sent to the browser. | Playwright and its Chromium, installed where the build runs |
+| **client** | The diagram source in the page plus one script that draws it in the browser. | Nothing extra |
+
+The build picks the mode itself. When it finds a Playwright Chromium, it uses
+build mode. Otherwise it uses client mode, so a build never fails for lack of a
+browser. The toolkit does not install Playwright, so a fresh site uses client
+mode until you add it.
+
+To pin a mode, set `DK_DIAGRAM_BUILD_RENDER` in the build's environment:
+
+- `DK_DIAGRAM_BUILD_RENDER=client` always uses client mode. `0`, `off`, `no`
+  and `false` do the same.
+- `DK_DIAGRAM_BUILD_RENDER=build` always uses build mode. `1`, `on`, `yes` and
+  `true` do the same. A pinned build mode does not fall back: without Chromium,
+  the build fails.
+
+Set `client` in a CI job that has no Chromium. The site then renders the same
+way on every runner, whatever happens to be installed on it.
+
+### PlantUML
+
+PlantUML blocks are drawn in build mode only. In client mode a
+```` ```plantuml ```` block stays a code block.
+
+Build mode sends each PlantUML block to a PlantUML server that you run, for
+example the `plantuml/plantuml-server` container. Set its SVG endpoint in
+`DK_PLANTUML_SERVER_URL`, including the trailing `/svg/`:
+
+```sh
+DK_DIAGRAM_BUILD_RENDER=build \
+DK_PLANTUML_SERVER_URL=http://localhost:8091/svg/ \
+astro build
+```
+
+When the variable is unset, the build uses `http://localhost:8091/svg/`. A
+`plantuml.com` URL stops the build, because the public server would receive
+your diagram source.
+
+How the two modes are built, and why, is in
+[Diagrams](../architecture/diagrams.md) and
+[ADR-0040](../adr/0040-build-time-diagram-render-dual-mode.md).
 
 ## Optional: Gherkin feature pages
 
