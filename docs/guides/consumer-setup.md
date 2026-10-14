@@ -491,11 +491,19 @@ root:
 index names: README,index (from astro.config.mjs)
 ```
 
-With no site config next to the root, the check uses `README`, the build's default.
-Reading the config takes about one second per run. A config that cannot be loaded
-makes the command exit with status 2. The same holds for `dockitty-validate-frontmatter`,
-`dockitty-check-redirect-coverage`, `dockitty-generate-feature-pages`,
-`dockitty-new-doc` and `dockitty-scaffold`.
+With no site config next to the root, the check warns on stderr
+(`no astro.config.* found for <root>; assuming index names README`) and uses
+`README`, the build's default. If your config lives elsewhere, for example because
+`docs` sits two folders below the site, pass `--astro-config <path>`. With several
+roots the option applies to every strict root. A path that does not exist, or a
+config that cannot be loaded, makes the command exit with status 2. Reading the
+config takes about one second per run. The same holds for
+`dockitty-validate-frontmatter`, `dockitty-check-redirect-coverage`,
+`dockitty-generate-feature-pages`, `dockitty-new-doc` and `dockitty-scaffold`, which
+all print the same `index names:` line and accept `--astro-config`.
+
+`DK_INDEX_BASENAME` is internal: `defineDocKittyIntegrations` sets it, and you must
+not set it by hand.
 
 The other binaries are `dockitty-check-redirect-coverage`,
 `dockitty-validate-catalog`, `dockitty-new-doc`, `dockitty-scaffold`, and

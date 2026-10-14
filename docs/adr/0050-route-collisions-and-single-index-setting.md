@@ -70,8 +70,16 @@ A shared route rule already existed: `routeOfSlug`, `buildRouteTable` and
    - The loader's own `indexBasename` option is deprecated. A value that differs from
      the integration's fails the build and names both.
    - The scripts read the list from the site's `astro.config.*`. `dockitty-check-links`
-     prints one `index names: … (from …)` line per root. With no site config its
-     default is `README`, the same as the build.
+     prints one `index names: … (from …)` line per root, and so does every other
+     script that reads the list. With no site config next to the docs folder the
+     default is `README`, the same as the build, and the script warns on stderr.
+     `--astro-config <path>` points a script at a config elsewhere. It applies to
+     every strict root of one run, and a path that is missing or cannot be loaded
+     exits 2 (operator decision, landing review).
+   - The loader compares its own list with the integration's as a set: order and
+     letter case are ignored, and the integration's order wins, as for the scripts.
+   - Evaluating the site config is limited to 30 seconds. A config that takes longer
+     is reported as `could not load … timed out` and exits 2.
    - `--index-basename` stays as an optional cross-check. It must list the same names
      as the config; the comparison ignores order and letter case, and the config's
      order wins. A disagreement exits 2, and so does a config that cannot be loaded
@@ -80,7 +88,9 @@ A shared route rule already existed: `routeOfSlug`, `buildRouteTable` and
 4. **`_meta` is excluded everywhere.** Markdown in a `_meta/` folder at any depth, and
    files named `_meta.md` or `_meta.mdx`, are not walked, not in the route table, not
    published, not linked and not link-checked. The registry YAML in `_meta/` still
-   loads. `validate-frontmatter` still validates `_meta` Markdown. Authors write
+   loads. `validate-frontmatter` still validates `_meta` Markdown, so it keeps its own
+   walk instead of the shared one; it skips dot entries like the shared walk does.
+   Authors write
    registry content by hand (operator decision 01M4WE30W61BS7CG5D0KH99T0T).
 5. **Every address comes from `routeOfSlug`.** A guard test fails when a source file
    builds an address by hand from a page id.
@@ -99,7 +109,6 @@ A shared route rule already existed: `routeOfSlug`, `buildRouteTable` and
 - Known limits:
   - The address guard in decision 5 inspects template literals. An address built by
     string concatenation is not covered.
-  - A site config that hangs is not yet time-limited. The tools do not yet time out.
 
 ## Alternatives considered
 

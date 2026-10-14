@@ -52,11 +52,12 @@ release, as it did for `0.2.0`.
   `dockitty-check-links`, `dockitty-validate-frontmatter`,
   `dockitty-check-redirect-coverage`, `dockitty-generate-feature-pages`,
   `dockitty-new-doc` and `dockitty-scaffold` read your site config, which adds
-  about one second per run. `dockitty-check-links` prints the index names it used
-  and where they came from. Without a site config, the default is `README`. If you
-  keep the flag, it must list the same names as the config (order and letter case
-  do not matter), or the command exits 2. It also exits 2 when the config cannot
-  be loaded.
+  about one second per run. Each command prints the index names it used and where
+  they came from. When no config sits next to the docs folder, the command warns
+  and uses `README`; pass `--astro-config <path>` if your config lives elsewhere.
+  A path that does not exist or cannot be loaded exits 2. If you keep the
+  `--index-basename` flag, it must list the same names as the config (order and
+  letter case do not matter), or the command exits 2.
 - **Keep one file per page address: two files served at the same address now stop
   the build (#135).** Before, a folder with both `README.md` and `index.md` built
   with a warning and one of them became an ordinary page. `page.md` next to
