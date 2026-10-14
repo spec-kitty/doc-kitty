@@ -82,7 +82,7 @@
       "pass_fail": "pass",
       "verified_by": "claude",
       "verified_at": "2026-10-14T13:23:02.412673+00:00",
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Landing note: the evidence above names the build-end scenario-index check, which the landing removed. Commit 191061d5 replaced it with route injection (operator decision), so the build no longer exits 1 without a hand-mounted route."
     },
     {
       "criterion_id": "FR-009",
