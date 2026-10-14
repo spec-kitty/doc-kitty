@@ -473,6 +473,14 @@ describe('fences and pages the stage leaves alone', () => {
     const on = await render(md, ON);
     expect(on.html).toBe((await render(md, {})).html);
     expect(blocks(on)).toHaveLength(0);
+
+    // An include on a generated page is skipped too; the same include on an authored page is processed.
+    const rel = path.relative(process.cwd(), path.join(import.meta.dirname, 'fixtures/gherkin/include')).split(path.sep).join('/');
+    const include = `::gherkin{src="${rel}/features/shipping.feature"}`;
+    const withRoots: Partial<DocKittyOptions> = { gherkin: { includeRoots: [`${rel}/features`] } };
+    const generatedMd = md.replace(FEATURE_FENCE, include);
+    expect(blocks(await render(generatedMd, withRoots))).toHaveLength(0);
+    expect(blocks(await render(generatedMd.replace(/generated:\n {2}by: .*\n {2}at: .*\n/, ''), withRoots)).length).toBeGreaterThan(0);
   });
 
   it('a deck page is unchanged (fences on a slide stay code)', async () => {
