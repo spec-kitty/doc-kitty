@@ -12,6 +12,7 @@
  * Mission: sidebar-frame-header-carrier-01M4T3CB, WP04.
  */
 import { afterEach, describe, it, expect, vi } from 'vitest';
+import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -95,6 +96,8 @@ const childrenOf = (entry: SidebarEntry | undefined): SidebarEntry[] => {
   if (entry?.type !== 'group') throw new Error('expected a group');
   return entry.entries;
 };
+
+restoreIndexBasenameEnv();
 
 describe('buildDirectoryMeta (T019)', () => {
   const meta = buildDirectoryMeta(RHETORIC_ENTRIES);

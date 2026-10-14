@@ -20,6 +20,7 @@
  *  - the section id is threaded into the registry sidebar's `generatedIds`.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -127,6 +128,8 @@ afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
   vi.restoreAllMocks();
 });
+
+restoreIndexBasenameEnv();
 
 describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
   it('generates the section pages under docs/behaviour/** by default', () => {

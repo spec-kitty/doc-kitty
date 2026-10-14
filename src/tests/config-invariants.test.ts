@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import type { DocKittyTheme } from '../lib/theme.js';
 
 /**
@@ -78,6 +79,8 @@ const brandLikeTheme: DocKittyTheme = {
   slots: { 'dk:site-footer': 'fixture/SiteFooter.astro', 'dk:site-header': 'fixture/SiteHeader.astro' },
   layouts: { Persona: 'fixture/Persona.astro' },
 };
+
+restoreIndexBasenameEnv();
 
 describe('defineDocKittyIntegrations components map (seam 3)', () => {
   it('registers exactly the five carriers with NO theme', () => {

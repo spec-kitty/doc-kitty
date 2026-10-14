@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -21,6 +22,8 @@ import { faviconHref, docKittyFavicon, DK_FAVICON_BASENAME } from '../lib/favico
  * The fix: the toolkit resolves the specifier and EMITS the file at a stable
  * site-root path, and hands Starlight that path instead.
  */
+
+restoreIndexBasenameEnv();
 
 describe('faviconHref', () => {
   it('is undefined when the theme declares no favicon', () => {

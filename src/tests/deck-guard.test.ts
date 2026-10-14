@@ -35,6 +35,7 @@
  *     `markuaNormalise` itself, not at a registration-site guard).
  */
 import { describe, it, expect, vi } from 'vitest';
+import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { unified } from 'unified';
@@ -165,6 +166,8 @@ function collectDirectiveNames(node: AnyNode, out: string[] = []): string[] {
 // ---------------------------------------------------------------------------
 // 1. guardDeck narrows to `markuaTocDemote` only (T010, D6, C-COMPOSE-06)
 // ---------------------------------------------------------------------------
+
+restoreIndexBasenameEnv();
 
 describe('guardDeck — narrowed to `markuaTocDemote` only (D6, C-COMPOSE-06)', () => {
   /** A hast tree an in-container heading demotion WOULD touch: an `<aside

@@ -28,6 +28,7 @@
  * presence and codegen are controlled without touching the filesystem.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import remarkDirective from 'remark-directive';
 import glossaryTerm from '../lib/remark/glossary-term.js';
 import glossaryAutolink from '../lib/remark/glossary-autolink.js';
@@ -130,6 +131,8 @@ beforeEach(() => {
   vi.mocked(loadGlossary).mockReturnValue({ present: false });
   vi.mocked(generateGlossaryPages).mockClear();
 });
+
+restoreIndexBasenameEnv();
 
 describe('defineDocKittyIntegrations glossary presence-gate (byte-identity, R-4)', () => {
   it('omits the glossary integration when no definitions file exists', () => {
