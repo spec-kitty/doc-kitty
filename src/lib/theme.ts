@@ -35,26 +35,34 @@ export type { Kind } from './schema.js';
 import type { Kind } from './schema.js';
 
 /**
- * The `dk:` slot names a theme may target (theming.md "The slot surface").
- * A theme addresses these carrier slots, never Starlight's `components` map.
+ * The `dk:` slot names a theme may target (theming.md "The slot surface"), as a
+ * runtime list. A theme addresses these carrier slots, never Starlight's
+ * `components` map. `DkSlotName` is derived from this list, so the type and any
+ * runtime check of a slot name read the same source.
  */
-export type DkSlotName =
-  | 'dk:head'
-  | 'dk:site-header'
-  | 'dk:site-title'
-  | 'dk:social-links'
-  | 'dk:site-footer'
-  | 'dk:announcement'
-  | 'dk:toc'
-  | 'dk:toc-mobile'
-  | 'dk:pagination'
-  | 'dk:last-updated'
-  | 'dk:edit-link'
-  | 'dk:page-hero'
-  | 'dk:metadata-band'
-  | 'dk:audience'
-  | 'dk:related'
-  | 'dk:external-references';
+export const DK_SLOT_NAMES = [
+  'dk:head',
+  'dk:site-header',
+  'dk:site-title',
+  'dk:social-links',
+  'dk:site-footer',
+  'dk:announcement',
+  'dk:toc',
+  'dk:toc-mobile',
+  'dk:pagination',
+  'dk:last-updated',
+  'dk:edit-link',
+  'dk:page-hero',
+  'dk:metadata-band',
+  'dk:audience',
+  'dk:related',
+  'dk:external-references',
+] as const;
+
+/** One `dk:` slot name a theme may target (see {@link DK_SLOT_NAMES}). */
+export type DkSlotName = (typeof DK_SLOT_NAMES)[number];
+
+const SLOT_NAME_SET: ReadonlySet<string> = new Set(DK_SLOT_NAMES);
 
 /** Assets forwarded to Starlight-native slots + `dk:head` (per-key last-wins). */
 export interface DocKittyAssets {
@@ -374,6 +382,8 @@ function flattenChain(theme: DocKittyTheme): DocKittyTheme[] {
  *
  * Enforces the `--dk-*`-only rule (ADR-0011/FR-004): a `--sl-*` key in an object
  * `tokens` throws, so no `--sl-*` literal can ever reach the emitted sheet. A
+ * `slots` key outside {@link DK_SLOT_NAMES} throws too, naming the valid ones
+ * (ADR-0052). A
  * string `tokens` (css path) is recorded in `tokenSheets` for the emitter to
  * reference rather than inlining. Always yields `generated: true`; the no-theme
  * distinction is owned by `resolveTheme`.
@@ -407,7 +417,25 @@ export function mergeLayers(layers: DocKittyTheme[]): ResolvedTheme {
 
     if (layer.customCss) resolved.customCss.push(...layer.customCss);
     if (layer.assets) resolved.assets = { ...resolved.assets, ...layer.assets };
-    if (layer.slots) resolved.slots = { ...resolved.slots, ...layer.slots };
+    if (layer.slots) {
+      if (typeof layer.slots !== 'object' || Array.isArray(layer.slots)) {
+        const owner = layer.name === undefined ? 'DocKittyTheme' : `DocKittyTheme "${layer.name}"`;
+        throw new Error(`${owner}.slots must be an object mapping dk: slot names to component paths.`);
+      }
+      // A `.mjs` config is not type-checked, so the `DkSlotName` type alone let a
+      // misspelt slot through: it rode the manifest under a name no carrier
+      // reads and the stock component rendered silently (#114, ADR-0052).
+      for (const key of Object.keys(layer.slots)) {
+        if (!SLOT_NAME_SET.has(key)) {
+          const owner = layer.name === undefined ? 'DocKittyTheme' : `DocKittyTheme "${layer.name}"`;
+          throw new Error(
+            `${owner} fills an unknown slot ${JSON.stringify(key)}. ` +
+              `Valid slot names: ${DK_SLOT_NAMES.join(', ')}.`,
+          );
+        }
+      }
+      resolved.slots = { ...resolved.slots, ...layer.slots };
+    }
     if (layer.layouts) resolved.layouts = { ...resolved.layouts, ...layer.layouts };
   }
 

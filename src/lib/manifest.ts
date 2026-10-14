@@ -54,10 +54,10 @@ export type ResolveLayout = (kind: string | undefined) => LayoutComponent;
  * `dk:page-hero` and `dk:metadata-band`, and `Header` reads `dk:site-header`
  * (ADR-0044), rendering the theme's component in place of Starlight's header.
  *
- * Slot NAMES are checked where a theme is written, not here: `DocKittyTheme.slots`
- * is typed `Partial<Record<DkSlotName, string>>` (`theme.ts`), so a name outside
- * that union is a type error in the theme definition. The manifest transports
- * whatever the resolved theme carries and performs no name check of its own.
+ * Slot NAMES are checked before the manifest is generated, not here:
+ * `resolveTheme` (`theme.ts`) rejects any slot outside `DK_SLOT_NAMES` while the
+ * config loads (ADR-0052), and the `DkSlotName` type catches it earlier in a
+ * TypeScript theme. The manifest transports what the resolved theme carries.
  */
 export type SlotComponents = Partial<Record<string, LayoutComponent>>;
 

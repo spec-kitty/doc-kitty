@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, expectTypeOf } from 'vitest';
 import {
   resolveTheme,
   mergeTheme,
@@ -7,6 +7,8 @@ import {
   DEFAULT_TOKEN_SHEET,
   DK_COMPONENTS_CSS_SHEET,
   TOC_RAIL_CSS_SHEET,
+  DK_SLOT_NAMES,
+  type DkSlotName,
   type DocKittyTheme,
 } from '../lib/theme.js';
 
@@ -174,5 +176,56 @@ describe('resolveTheme — extends chain guards', () => {
     const r = mergeLayers([{ tokens: { '--dk-x': '1' } }, { tokens: { '--dk-x': '2' } }]);
     expect(r.tokens['--dk-x']).toBe('2'); // later layer wins
     expect(r.generated).toBe(true);
+  });
+});
+
+describe('DK_SLOT_NAMES — the runtime list behind DkSlotName (#114)', () => {
+  it('is the type: every DkSlotName is in the list and the list holds nothing else', () => {
+    expectTypeOf<(typeof DK_SLOT_NAMES)[number]>().toEqualTypeOf<DkSlotName>();
+  });
+
+  it('holds the sixteen dk: slot names once each', () => {
+    expect(DK_SLOT_NAMES).toHaveLength(16);
+    expect(new Set(DK_SLOT_NAMES).size).toBe(DK_SLOT_NAMES.length);
+    for (const name of DK_SLOT_NAMES) expect(name).toMatch(/^dk:[a-z]+(?:-[a-z]+)*$/);
+  });
+});
+
+describe('resolveTheme — unknown slot names (#114)', () => {
+  const misspelt = { 'dk:site-heading': 'x/Header.astro' } as unknown as DocKittyTheme['slots'];
+
+  it('throws on an unknown slot name in the theme itself', () => {
+    expect(() => resolveTheme({ slots: misspelt })).toThrow(/"dk:site-heading"/);
+  });
+
+  it('throws on an unknown slot name in a layer that extends a valid brand', () => {
+    expect(() => resolveTheme({ name: 'acme-docs', extends: brand, slots: misspelt })).toThrow(
+      /"dk:site-heading"/,
+    );
+  });
+
+  it('names the layer that holds the unknown slot when it has a name', () => {
+    expect(() => resolveTheme({ name: 'acme-docs', extends: brand, slots: misspelt })).toThrow(/acme-docs/);
+  });
+
+  it('lists every valid slot name in the message', () => {
+    let message = '';
+    try {
+      resolveTheme({ slots: misspelt });
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    for (const name of DK_SLOT_NAMES) expect(message).toContain(name);
+  });
+
+  it('rejects a slots value that is not an object', () => {
+    expect(() => resolveTheme({ name: 'site', slots: 'x' as unknown as DocKittyTheme['slots'] })).toThrow(
+      /"site"\.slots must be an object/,
+    );
+  });
+
+  it('accepts every valid slot name (positive control)', () => {
+    const slots = Object.fromEntries(DK_SLOT_NAMES.map((name) => [name, `x/${name}.astro`]));
+    expect(Object.keys(resolveTheme({ slots }).slots)).toEqual([...DK_SLOT_NAMES]);
   });
 });
