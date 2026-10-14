@@ -1,24 +1,23 @@
 /**
  * Gherkin feature pages — tag → frontmatter metadata core (ADR-0046, WP03).
  *
- * Pins the normative mapping contract §2 (metadata tags), §3 (frontmatter) and
- * §6 (hub frontmatter) against `lib/gherkin/feature-core.mjs`:
+ * Pins the normative mapping contract §2 (metadata tags) and §3 (frontmatter)
+ * against `lib/gherkin/feature-core.mjs`:
  *
  *   - one table row per §2 tag row, asserted through the serialised block;
  *   - status precedence (`@dk:status` > `@wip` > `@deprecated` > `active`);
  *   - description derivation rules 1–6, incl. the 180/181/200-char boundaries;
  *   - ADR resolution hit/miss and the registry-derived mission prefix;
- *   - the worked example (`book-consignment.feature`) byte-for-byte;
+ *   - the fixed §3 key order (the worked example's page and hub frontmatter
+ *     are pinned byte-for-byte by the generator goldens in
+ *     `gherkin-generate.test.ts`, which drive this core through the planner);
  *   - an import-scan purity guard (feature-core imports only the allow-list,
  *     text.mjs imports nothing), in the style of `vocabulary-single-source`.
  */
 import { describe, it, expect } from 'vitest';
-import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AstBuilder, GherkinClassicTokenMatcher, Parser } from '@cucumber/gherkin';
-import { IdGenerator } from '@cucumber/messages';
 import matter from 'gray-matter';
 import {
   GENERATED_BY,
@@ -30,7 +29,6 @@ import {
   parseMetadataTags,
   resolveAdrRef,
   serializeFrontmatter,
-  serializeHubFrontmatter,
   truncateDescription,
 } from '../lib/gherkin/feature-core.mjs';
 import { loadSectionRegistry } from '../lib/vocabulary-loader.mjs';
@@ -226,6 +224,29 @@ describe('§2 status precedence', () => {
   it('@wip / @deprecated are consumed, not page tags', () => {
     expect(parseMetadataTags(tagsOf('@wip', '@deprecated', '@smoke'), {}).tags).toEqual(['smoke']);
   });
+
+  // #123: the shorthands match exactly, as Cucumber tag filters do (a runner
+  // filtering `not @wip` still runs a `@WIP` scenario). A tag that differs only
+  // in letter case keeps its ordinary meaning, and the author is told.
+  it.each([
+    [['@WIP'], 'active', ['WIP'], '@wip'],
+    [['@Wip'], 'active', ['Wip'], '@wip'],
+    [['@Deprecated'], 'active', ['Deprecated'], '@deprecated'],
+    [['@wip', '@WIP'], 'draft', ['WIP'], '@wip'],
+  ])('%j → %s, kept as a page tag, with a "did you mean" warning', (tags, status, pageTags, shorthand) => {
+    const { meta, tags: kept, warnings } = parseMetadataTags(tagsOf(...tags), { file: FILE });
+    expect(meta.status).toBe(status);
+    expect(kept).toEqual(pageTags);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain(`${FILE}:1:`);
+    expect(warnings[0]).toContain(`did you mean ${shorthand}?`);
+    expect(warnings[0]).toContain('tags are case-sensitive');
+  });
+
+  it('the exact shorthands raise no warning', () => {
+    expect(parseMetadataTags(tagsOf('@wip'), { file: FILE }).warnings).toEqual([]);
+    expect(parseMetadataTags(tagsOf('@deprecated'), { file: FILE }).warnings).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -379,113 +400,11 @@ describe('missionPrefix', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Worked example — byte-for-byte golden
+// Key order (the worked example's frontmatter and the hub frontmatter are pinned
+// byte-for-byte by the generator goldens, gherkin-generate.test.ts)
 // ---------------------------------------------------------------------------
 
-/** examples/features/shipping/book-consignment.feature (sha256 aa67f517f6ea…). */
-const EXAMPLE_FEATURE = `# language: en
-@dk:context=shipping @dk:persona=example-persona @dk:mission=mission-alpha @dk:adr=0001 @FR-003
-Feature: Book a consignment
-  As a shipper
-  I want to book cargo onto a sailing
-  So that my goods travel on a confirmed slot
-
-  A booking reserves space on one sailing for one consignment. Bookings that
-  exceed the sailing's remaining capacity are refused, and the shipper sees why.
-
-  Background:
-    Given a sailing from Rotterdam to Felixstowe with 40 TEU remaining
-
-  Rule: A booking within capacity is confirmed
-
-    @smoke
-    Scenario: Book cargo that fits
-      Given a consignment of 12 TEU
-      When the shipper books the consignment onto the sailing
-      Then the booking is confirmed
-      And the sailing has 28 TEU remaining
-
-    Scenario: Attach a packing list to a confirmed booking
-      Given a confirmed booking for a consignment of 2 TEU
-      When the shipper attaches the packing list:
-        """json
-        { "lines": [{ "sku": "A-1", "qty": 10 }, { "sku": "B-2", "qty": 4 }] }
-        """
-      Then the booking shows 2 packing-list lines
-
-  Rule: A booking over capacity is refused
-
-    Scenario Outline: Refuse cargo that does not fit
-      Given a consignment of <size> TEU
-      When the shipper books the consignment onto the sailing
-      Then the booking is refused with reason "<reason>"
-
-      @edge
-      Examples: Over capacity
-        | size | reason             |
-        | 41   | insufficient space |
-        | 120  | insufficient space |
-
-    Scenario: Refused bookings state the remaining capacity
-      Given these consignments are already booked:
-        | consignment | size |
-        | C-100       | 30   |
-        | C-101       | 8    |
-      When the shipper books a consignment of 5 TEU onto the sailing
-      Then the booking is refused with reason "insufficient space"
-      And the refusal states that 2 TEU remain
-`;
-
-/** The frontmatter of examples/expected/behaviour/shipping/book-consignment.md. */
-const EXPECTED_FRONTMATTER = `---
-title: "Book a consignment"
-description: "A booking reserves space on one sailing for one consignment."
-kind: Specification
-doc_status: active
-glossary_context: "shipping"
-tags: ["FR-003"]
-audience:
-  - profile: "example-persona"
-    guidance_text: "As a shipper, I want to book cargo onto a sailing, so that my goods travel on a confirmed slot."
-related:
-  - "adr/0001-use-astro-starlight"
-  - "plans/missions/mission-alpha"
-sources:
-  - resource: "features/shipping/book-consignment.feature"
-    title: "Gherkin source"
-generated:
-  by: "doc-kitty/gherkin"
-  at: "sha256:aa67f517f6ea"
----`;
-
-describe('worked example: book-consignment.feature', () => {
-  it('the inline fixture is the example source, byte-for-byte', () => {
-    const hash = createHash('sha256').update(EXAMPLE_FEATURE, 'utf8').digest('hex');
-    expect(hash.slice(0, 12)).toBe('aa67f517f6ea');
-  });
-
-  it('parsed with @cucumber/gherkin, serialises to the expected frontmatter exactly', () => {
-    const parser = new Parser(new AstBuilder(IdGenerator.incrementing()), new GherkinClassicTokenMatcher());
-    const feature = parser.parse(EXAMPLE_FEATURE).feature;
-    expect(feature).toBeDefined();
-    if (!feature) return;
-
-    const { fields, warnings } = buildFrontmatter({
-      featureName: feature.name,
-      description: feature.description,
-      tags: feature.tags,
-      file: 'features/shipping/book-consignment.feature',
-      sourceResource: 'features/shipping/book-consignment.feature',
-      hash: createHash('sha256').update(EXAMPLE_FEATURE, 'utf8').digest('hex'),
-      missionPrefix: missionPrefix(loadSectionRegistry(EXAMPLE_DOCS)),
-      adrFileNames: readdirSync(path.join(EXAMPLE_DOCS, 'adr')),
-      location: feature.location,
-    });
-    expect(warnings).toEqual([]);
-    expect(fields.generated.by).toBe(GENERATED_BY);
-    expect(serializeFrontmatter(fields)).toBe(EXPECTED_FRONTMATTER);
-  });
-
+describe('frontmatter key order', () => {
   it('a fully-populated page keeps the fixed §3 key order', () => {
     const { yaml } = render([
       '@dk:priority=0.6',
@@ -515,30 +434,6 @@ describe('worked example: book-consignment.feature', () => {
       'generated',
       'agent',
     ]);
-  });
-});
-
-describe('serializeHubFrontmatter (§6)', () => {
-  it('matches the example shipping hub frontmatter exactly', () => {
-    expect(
-      serializeHubFrontmatter({
-        title: 'Shipping',
-        description: 'Behaviour specifications for Shipping.',
-        hash: `a42315ed7700${'0'.repeat(52)}`,
-      }),
-    ).toBe(
-      [
-        '---',
-        'title: "Shipping"',
-        'description: "Behaviour specifications for Shipping."',
-        'kind: Hub',
-        'doc_status: active',
-        'generated:',
-        '  by: "doc-kitty/gherkin"',
-        '  at: "sha256:a42315ed7700"',
-        '---',
-      ].join('\n'),
-    );
   });
 });
 

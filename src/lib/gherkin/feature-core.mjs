@@ -233,6 +233,10 @@ function shortHash(hash) {
  *   ignored. A `status` must be a lower-case slug (`/^[a-z][a-z0-9-]*$/`, and
  *   not a YAML keyword such as `null`/`true`); an ignored one falls back to the
  *   `@wip`/`@deprecated` shorthand or `active`.
+ * - The shorthands match exactly. A tag that differs from one only in letter
+ *   case (`@WIP`, `@Deprecated`) stays an ordinary tag, with a "did you mean"
+ *   warning: Cucumber tag filters are case-sensitive, so the docs must not call
+ *   a scenario a draft that the runner still runs.
  *
  * @param {ReadonlyArray<GherkinTag> | undefined} tags The Feature's AST tags.
  * @param {{ file?: string }} [options] `file` names the source in warnings.
@@ -269,7 +273,18 @@ export function parseMetadataTags(tags, { file } = {}) {
     if (!name.startsWith(DK_PREFIX)) {
       if (name === '@wip') wip = true;
       else if (name === '@deprecated') deprecated = true;
-      else passthrough.push(name.slice(1));
+      else {
+        // Exact match only, as Cucumber tag filters are (#123): a runner
+        // filtering `not @wip` still runs `@WIP`. Keep the tag, tell the author.
+        const shorthand = name.toLowerCase();
+        if (shorthand === '@wip' || shorthand === '@deprecated') {
+          warnings.push(
+            `${PREFIX} ${loc} tag ${name} is not the ${shorthand} status shorthand (tags are ` +
+              `case-sensitive); did you mean ${shorthand}? It stays an ordinary tag`,
+          );
+        }
+        passthrough.push(name.slice(1));
+      }
       continue;
     }
 
@@ -702,20 +717,21 @@ export function serializeFrontmatter(fields) {
 
 /**
  * Serialise a generated hub page's frontmatter (contract §6), same style as
- * {@link serializeFrontmatter}: `kind: Hub`, `doc_status: active`, and a
- * `generated` block whose `at` is `sha256:<first 12>` of `hash` (the caller hashes
- * the sorted child list). No trailing newline.
+ * {@link serializeFrontmatter}: `kind: Hub`, `doc_status` (`active` unless the
+ * caller passes another status), and a `generated` block whose `at` is
+ * `sha256:<first 12>` of `hash` (the caller hashes the sorted child list). No
+ * trailing newline.
  *
- * @param {{ title: string, description: string, hash: string }} input
+ * @param {{ title: string, description: string, hash: string, status?: string }} input
  * @returns {string}
  */
-export function serializeHubFrontmatter({ title, description, hash }) {
+export function serializeHubFrontmatter({ title, description, hash, status = 'active' }) {
   return [
     '---',
     `title: ${q(title)}`,
     `description: ${q(description)}`,
     'kind: Hub',
-    'doc_status: active',
+    `doc_status: ${status}`,
     'generated:',
     `  by: ${q(GENERATED_BY)}`,
     `  at: ${q(shortHash(hash))}`,

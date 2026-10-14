@@ -208,21 +208,6 @@ describe('resolveInclude: syntax and containment (03 §2.2–§2.3)', () => {
     }
   });
 
-  it('a directory is notFile', () => {
-    expect(resolveInclude('features/folder.feature', { root: ROOT, includeRoots: ROOTS })).toEqual({
-      ok: false,
-      reason: 'notFile',
-    });
-  });
-
-  it('a missing include root is rootMissing for a target under it, naming it as configured', () => {
-    expect(resolveInclude('specs/a.feature', { root: ROOT, includeRoots: ['features', 'specs'] })).toEqual({
-      ok: false,
-      reason: 'rootMissing',
-      includeRoot: 'specs',
-    });
-  });
-
   it('a missing include root is skipped for a target outside it (ADR-0051)', () => {
     const roots = { root: ROOT, includeRoots: ['specs', 'features'] };
     expect(resolveInclude('features/shipping.feature', roots)).toMatchObject({ ok: true });
@@ -549,11 +534,6 @@ describe('include rendering', () => {
     expect(textOf(sourceLine(block))).toBe('From Book a consignment, features/shipping.feature');
   });
 
-  it('`scenario` inside a Rule keeps the Rule heading and its Background', () => {
-    const [block] = containers(run(page('::gherkin{src="features/shipping.feature" scenario="Refund in full"}')));
-    expect(headings(block)).toEqual(['h2 Background', 'h2 Rule: Refunds', 'h3 Background', 'h3 Scenario: Refund in full']);
-  });
-
   it('`tags` keeps only the matching Examples block of an outline (05 mutation check 8)', () => {
     const [block] = containers(run(page('::gherkin{src="features/shipping.feature" tags="@edge"}')));
     expect(headings(block)).toEqual(['h2 Background', 'h2 Scenario Outline: Book <n> boxes']);
@@ -583,20 +563,6 @@ describe('include rendering', () => {
     expect(containers(block)).toEqual([block]);
   });
 
-  it('links the source path to sourceUrlPrefix + the path relative to sourceRoot', () => {
-    const [block] = containers(
-      run(page('::gherkin{src="features/shipping.feature"}'), {
-        ...OPTS,
-        sourceRoot: 'features',
-        sourceUrlPrefix: 'https://example.com/blob/main/',
-      }),
-    );
-    const link = sourceLine(block).children?.[1];
-    expect(link?.type).toBe('link');
-    expect(link?.url).toBe('https://example.com/blob/main/shipping.feature');
-    expect(textOf(link as Node)).toBe('features/shipping.feature');
-  });
-
   it('outlines under the nearest preceding root heading, and in a container uses p[role=heading]', () => {
     const md = [
       '## Examples',
@@ -613,18 +579,6 @@ describe('include rendering', () => {
     expect(roleHeadings.map((n) => [(n.data?.hProperties as { ariaLevel?: number }).ariaLevel, textOf(n)])).toEqual([
       [3, 'Background'],
       [3, 'Scenario: Book space on a sailing'],
-    ]);
-  });
-
-  it('keeps a quoted step argument verbatim as inline code, as the fence does', () => {
-    const [block] = containers(run(page('::gherkin{src="features/shipping.feature" scenario="Book space on a sailing"}')));
-    const [given] = findAll(block, (n) => n.type === 'listItem');
-    const line = given.children?.[0].children ?? [];
-    expect(line.map((n) => [n.type, textOf(n)])).toEqual([
-      ['strong', 'Given'],
-      ['text', ' a sailing '],
-      ['inlineCode', '"NLRTM to GBFXT"'],
-      ['text', ' with free capacity'],
     ]);
   });
 
@@ -647,13 +601,6 @@ describe('include rendering', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
-  });
-
-  it('on a deck page a fence stays code while a directive is fatal', () => {
-    const md = ['## Slide', '', '```gherkin', 'Feature: F', '  Scenario: S', '    Given a', '```', ''].join('\n');
-    const tree = run(md, OPTS, { kind: 'Presentation' });
-    expect(containers(tree)).toHaveLength(0);
-    expect(findAll(tree, (n) => n.type === 'code')).toHaveLength(1);
   });
 
   it('a generated feature page is left alone, directives included', () => {

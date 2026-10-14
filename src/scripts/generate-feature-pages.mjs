@@ -7,7 +7,7 @@
  *   node src/scripts/generate-feature-pages.mjs \
  *     --root example --sources features --docs docs --section behaviour \
  *     [--index-basename README,index] [--astro-config <path>] [--source-root <dir>] \
- *     [--source-url-prefix <url>] [--check] [--allow-empty]
+ *     [--source-url-prefix <url>] [--titles <dir>=<title> ...] [--check] [--allow-empty]
  *
  *   --root               Site directory every other path is relative to (default: cwd).
  *   --sources            Comma-separated `.feature` source directories (required).
@@ -23,6 +23,9 @@
  *   --source-root        Directory `sources[0].resource` paths are relative to
  *                        (default: `--root`, matching the integration's site root).
  *   --source-url-prefix  Optional browse-URL prefix for `sources[0].resource`.
+ *   --titles             A hub title for one source directory, as `<dir>=<title>`
+ *                        (`hr=HR`, `"shipping/edi=EDI messages"`); repeat the flag
+ *                        for each directory. The twin of `gherkin.titles`.
  *   --check              Compare in memory, write nothing; exit 1 on any drift.
  *   --allow-empty        Remove the generated pages when no source yields a feature.
  *                        Without it, write mode stops (exit 1) and removes nothing:
@@ -80,6 +83,7 @@ export const FLAG = /** @type {const} */ ({
   sourceUrlPrefix: '--source-url-prefix',
   sourceRoot: '--source-root',
   allowEmpty: '--allow-empty',
+  titles: '--titles',
 });
 
 /**
@@ -116,7 +120,8 @@ function list(value) {
  * @param {string[]} argv `process.argv`-shaped (the first two entries are skipped).
  * @returns {{ root: string, sources: string[], docsRoot: string, section: string,
  *   outDir: string, indexBasename: string[], indexNames: ReturnType<typeof resolveSiteIndexBasenames>, sourceRoot: string,
- *   sourceUrlPrefix: string | undefined, check: boolean, allowEmpty: boolean }}
+ *   sourceUrlPrefix: string | undefined, check: boolean, allowEmpty: boolean,
+ *   titles: Record<string, string> | undefined }}
  */
 export function parseArgs(argv) {
   const raw = {
@@ -131,6 +136,9 @@ export function parseArgs(argv) {
     allowEmpty: false,
     astroConfig: undefined,
   };
+  /** `--titles <dir>=<title>`, in the order given (repeatable). */
+  /** @type {string[]} */
+  const titleArgs = [];
   /** @type {Record<string, keyof typeof raw>} */
   const valued = {
     '--root': 'root',
@@ -153,6 +161,13 @@ export function parseArgs(argv) {
       raw.allowEmpty = true;
       continue;
     }
+    if (flag === '--titles') {
+      const value = args[i + 1];
+      if (value === undefined || value.startsWith('--')) throw new Error(`${flag} needs a value`);
+      titleArgs.push(value);
+      i++;
+      continue;
+    }
     const key = valued[flag];
     if (!key) throw new Error(`unknown argument: ${flag}`);
     const value = args[i + 1];
@@ -162,13 +177,14 @@ export function parseArgs(argv) {
   }
   const sourceList = list(raw.sources);
   if (sourceList.length === 0) throw new Error('--sources is required (comma-separated directories)');
-  const { sources, section, allowEmpty } = validateGherkinPages(
+  const { sources, section, allowEmpty, titles } = validateGherkinPages(
     {
       sources: sourceList,
       section: raw.section,
       sourceUrlPrefix: raw.sourceUrlPrefix,
       ...(raw.sourceRoot === undefined ? {} : { sourceRoot: raw.sourceRoot }),
       allowEmpty: raw.allowEmpty,
+      ...(titleArgs.length > 0 ? { titles: parseTitles(titleArgs) } : {}),
     },
     { optionName: (key) => FLAG[key] },
   );
@@ -206,7 +222,29 @@ export function parseArgs(argv) {
     sourceUrlPrefix: raw.sourceUrlPrefix,
     check: raw.check,
     allowEmpty: allowEmpty === true,
+    titles,
   };
+}
+
+/**
+ * Turn the `--titles <dir>=<title>` values into the `gherkin.titles` object.
+ * Each value splits on its FIRST `=`, so a title may hold `=`, commas and
+ * spaces. The shared validator then checks the keys and titles.
+ *
+ * @param {readonly string[]} values
+ * @returns {Record<string, string>}
+ */
+function parseTitles(values) {
+  /** @type {Record<string, string>} */
+  const titles = {};
+  for (const value of values) {
+    const eq = value.indexOf('=');
+    if (eq === -1) throw new Error(`--titles expects <dir>=<title>; got ${JSON.stringify(value)}`);
+    const dir = value.slice(0, eq);
+    if (Object.hasOwn(titles, dir)) throw new Error(`--titles names ${JSON.stringify(dir)} twice`);
+    titles[dir] = value.slice(eq + 1);
+  }
+  return titles;
 }
 
 /**
@@ -239,6 +277,7 @@ export function main(argv) {
     sourceRoot: opts.sourceRoot,
     sourceUrlPrefix: opts.sourceUrlPrefix,
     allowEmpty: opts.allowEmpty,
+    titles: opts.titles,
     warn,
   };
   // cwd-relative when the section is under cwd (the `pnpm validate:features`

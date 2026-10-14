@@ -7,7 +7,8 @@
  * option as CLI flags. If the two drift, CI would drift-check a different
  * section/source set than the build generates, and pass while the committed pages
  * were stale. This suite pins:
- *   1. the `validate:features` flags EQUAL the example's `gherkin` option (and the
+ *   1. the `validate:features` flags EQUAL the example's `gherkin` option, titles
+ *      included (and the
  *      site's `indexBasename` / default `docsDir`), parsed from source TEXT — the
  *      option object literal is read with a brace-balanced scan and evaluated as
  *      a plain data literal, so any non-literal value fails loudly here;
@@ -86,6 +87,7 @@ const gherkin = configLiteral('gherkin') as {
   section?: string;
   sourceUrlPrefix?: string;
   sourceRoot?: string;
+  titles?: Record<string, string>;
 };
 const indexBasename = configLiteral('indexBasename') as string[];
 
@@ -117,6 +119,7 @@ describe('validate:features mirrors the example gherkin option', () => {
     expect(rel(opts.docsRoot)).toBe(path.join('example', 'docs'));
     expect(rel(opts.sourceRoot)).toBe(path.join('example', gherkin.sourceRoot ?? '.'));
     expect(opts.sourceUrlPrefix).toBe(gherkin.sourceUrlPrefix);
+    expect(opts.titles).toEqual(gherkin.titles);
   });
 
   it('every gherkin setting has a CLI flag and every flag a setting (FR-004a)', () => {
@@ -128,7 +131,14 @@ describe('validate:features mirrors the example gherkin option', () => {
     );
     // ...and the validator must carry every key through: a key it does not
     // destructure would be dropped silently with the lists above still in step.
-    const valid = { sources: ['f'], section: 'docs-x', sourceUrlPrefix: 'u', sourceRoot: 'r', allowEmpty: true };
+    const valid = {
+      sources: ['f'],
+      section: 'docs-x',
+      sourceUrlPrefix: 'u',
+      sourceRoot: 'r',
+      allowEmpty: true,
+      titles: { hr: 'HR' },
+    };
     expect(Object.keys(valid).sort()).toEqual([...GHERKIN_PAGES_KEYS].sort());
     const validated = validateGherkinPages(valid);
     for (const key of GHERKIN_PAGES_KEYS) expect(validated).toHaveProperty(key);
@@ -158,6 +168,7 @@ describe('the example features are authored warning-free', () => {
       indexBasename,
       sourceRoot: path.resolve(EXAMPLE_ROOT, gherkin.sourceRoot ?? '.'),
       sourceUrlPrefix: gherkin.sourceUrlPrefix,
+      titles: gherkin.titles,
       warn: (msg: string) => warnings.push(msg),
     });
     // The example's features are authored warning-free (no unknown tags,

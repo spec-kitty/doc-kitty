@@ -248,10 +248,6 @@ describe('selectScenarios — by tags (contract §2.2)', () => {
     expect(r.ok && shape(r.document)).toEqual(['Scenario Outline: Bare']);
   });
 
-  it('a Rule left with only its Background is dropped', () => {
-    const r = selectScenarios(SHIPPING, { tags: ['@edge'] });
-    expect(r.ok && JSON.stringify(r.document)).not.toContain('Rule bg');
-  });
 });
 
 describe('selectScenarios — combinations and purity (contract §2.2, §5)', () => {

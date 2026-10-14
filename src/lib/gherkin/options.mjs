@@ -47,6 +47,7 @@ export const GHERKIN_PAGES_KEYS = Object.freeze(/** @type {const} */ ([
   'sourceUrlPrefix',
   'sourceRoot',
   'allowEmpty',
+  'titles',
 ]));
 
 /**
@@ -73,6 +74,7 @@ export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
  * @property {unknown} [sourceUrlPrefix]
  * @property {unknown} [sourceRoot]
  * @property {unknown} [allowEmpty]
+ * @property {unknown} [titles]
  */
 
 /**
@@ -85,6 +87,8 @@ export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
  * @property {string} sourceRoot Site-root-relative (default `'.'`).
  * @property {true} [allowEmpty] Present only when `true`: remove the generated
  *   pages when the whole source set is empty, instead of stopping.
+ * @property {Record<string, string>} [titles] Present only when given: hub
+ *   titles by source-relative directory (`{ hr: 'HR' }`, #125).
  */
 
 /**
@@ -150,7 +154,10 @@ function checkSourceLink(sourceUrlPrefix, sourceRoot, optionName) {
  *    AUTHORED folder is caught later by the generator itself (it refuses to
  *    write into a directory holding non-generated files);
  *  - a non-string `sourceUrlPrefix`, or a `sourceRoot` that is not a non-empty string;
- *  - an `allowEmpty` that is not a boolean.
+ *  - an `allowEmpty` that is not a boolean;
+ *  - a `titles` that is not a plain object of source-relative directory paths
+ *    (no empty, `.` or `..` segment; see {@link isRelativeDirKey}) to non-blank
+ *    strings.
  *
  * The integration reaches it through {@link normalizeGherkinOptions} (only when
  * `sources` is given); the CLI calls it directly, so `--sources` stays required.
@@ -169,6 +176,7 @@ export function validateGherkinPages(
     sourceUrlPrefix,
     sourceRoot = '.',
     allowEmpty,
+    titles,
   } = raw ?? {};
   if (
     !Array.isArray(sources) ||
@@ -203,13 +211,66 @@ export function validateGherkinPages(
       `${GHERKIN_LOG_PREFIX} ${optionName('allowEmpty')} must be true or false; got ${JSON.stringify(allowEmpty)}`,
     );
   }
+  const checkedTitles = titles === undefined ? undefined : checkTitles(titles, optionName);
   return {
     sources: /** @type {string[]} */ ([...sources]),
     section,
     ...(sourceUrlPrefix !== undefined ? { sourceUrlPrefix: /** @type {string} */ (sourceUrlPrefix) } : {}),
     sourceRoot: /** @type {string} */ (sourceRoot),
     ...(allowEmpty === true ? { allowEmpty: /** @type {true} */ (true) } : {}),
+    ...(checkedTitles ? { titles: checkedTitles } : {}),
   };
+}
+
+/**
+ * True for a `titles` key: a directory path relative to a source root, written
+ * with `/`, every segment a real name (no empty, `.` or `..` segment, so no
+ * leading or trailing `/`), and no drive letter, URL scheme or `\`
+ * ({@link isRelativePosixPath}). It is compared with the directory as found on
+ * disk, so `hr/` or `./hr` would silently match nothing.
+ *
+ * @param {string} key
+ * @returns {boolean}
+ */
+function isRelativeDirKey(key) {
+  return (
+    isRelativePosixPath(key) &&
+    key.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..')
+  );
+}
+
+/**
+ * Validate `titles` (#125) and return a fresh plain copy.
+ *
+ * @param {unknown} titles
+ * @param {(key: GherkinPagesKey) => string} optionName
+ * @returns {Record<string, string>}
+ */
+function checkTitles(titles, optionName) {
+  const name = optionName('titles');
+  if (titles === null || typeof titles !== 'object' || Array.isArray(titles)) {
+    throw new Error(
+      `${GHERKIN_LOG_PREFIX} ${name} must be an object mapping a source-relative directory to a title ` +
+        `(e.g. { hr: 'HR' }); got ${JSON.stringify(titles)}`,
+    );
+  }
+  /** @type {Record<string, string>} */
+  const copy = {};
+  for (const [key, title] of Object.entries(titles)) {
+    if (!isRelativeDirKey(key)) {
+      throw new Error(
+        `${GHERKIN_LOG_PREFIX} ${name} key ${JSON.stringify(key)} must be a directory path relative to a source ` +
+          `(/ separators; no '.', '..' or empty segment, leading '/', drive letter, URL scheme or '\\')`,
+      );
+    }
+    if (typeof title !== 'string' || title.trim() === '') {
+      throw new Error(
+        `${GHERKIN_LOG_PREFIX} ${name}[${JSON.stringify(key)}] must be a non-blank string; got ${JSON.stringify(title)}`,
+      );
+    }
+    copy[key] = title;
+  }
+  return copy;
 }
 
 /**
@@ -222,8 +283,8 @@ export function validateGherkinPages(
  *    Gherkin on; `fences: false` keeps a slice C site's fences as code blocks)
  *    and `includeRoots` to `sources ?? []`.
  *  - `sources` present ⇒ {@link validateGherkinPages} runs and its result is
- *    `pages`. A `section` without `sources` is refused: it names a folder for
- *    pages that would never be generated.
+ *    `pages`. A `section`, `allowEmpty` or `titles` without `sources` is
+ *    refused: each steers pages that would never be generated.
  *
  * Throws a `[dk-gherkin]` Error for any other value (including `false`: omit the
  * option to turn the preset off), an unknown key, a non-boolean `fences`, an
@@ -250,15 +311,15 @@ export function normalizeGherkinOptions(raw, { reservedSections } = {}) {
     );
   }
   const input = /** @type {GherkinOptionsInput} */ (raw);
-  const { fences = true, includeRoots, sources, section, sourceUrlPrefix, sourceRoot = '.', allowEmpty } = input;
+  const { fences = true, includeRoots, sources, section, sourceUrlPrefix, sourceRoot = '.', allowEmpty, titles } = input;
   if (typeof fences !== 'boolean') {
     throw new Error(`${GHERKIN_LOG_PREFIX} gherkin.fences must be a boolean; got ${JSON.stringify(fences)}`);
   }
   let pages;
   if (sources !== undefined) {
     pages = validateGherkinPages(input, reservedSections ? { reservedSections } : {});
-  } else if (section !== undefined || allowEmpty !== undefined) {
-    const key = section !== undefined ? 'section' : 'allowEmpty';
+  } else if (section !== undefined || allowEmpty !== undefined || titles !== undefined) {
+    const key = section !== undefined ? 'section' : allowEmpty !== undefined ? 'allowEmpty' : 'titles';
     throw new Error(
       `${GHERKIN_LOG_PREFIX} gherkin.${key} only applies to generated pages; ` +
         `set gherkin.sources as well, or drop gherkin.${key}`,

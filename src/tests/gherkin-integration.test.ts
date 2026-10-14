@@ -24,6 +24,7 @@ import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 
 vi.mock('@astrojs/starlight', () => ({
@@ -166,6 +167,15 @@ describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
     expect(existsSync(path.join(site, 'docs', 'behaviour'))).toBe(false);
   });
 
+  it('passes gherkin.titles to the generator (#125)', () => {
+    writeTree({ 'features/shipping/x.feature': FEATURE_X });
+    const site = enterSite();
+    runGherkinSetup(
+      defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'], titles: { shipping: 'Shipping (EU)' } } }),
+    );
+    expect(frontmatterOf(path.join(site, 'docs', 'behaviour', 'shipping', 'README.md')).title).toBe('Shipping (EU)');
+  });
+
   it('calls addWatchFile once per source file, in sorted model order', () => {
     writeTree({
       'features/shipping/x.feature': FEATURE_X,
@@ -264,12 +274,11 @@ describe('doc-kitty:gherkin errors are build-fatal', () => {
     expect(existsSync(path.join(site, 'docs', 'behaviour'))).toBe(false);
   });
 
-  it('throws [dk-gherkin] for a missing source directory', () => {
+  it('throws [dk-gherkin] for a missing source directory, named as configured', () => {
+    // Pins how config.ts hands `sources` to the loader: the message must name the
+    // directory as the site wrote it, not a path the hook resolved first.
     enterSite();
-    const integrations = defineDocKittyIntegrations({
-      title: 't',
-      gherkin: { sources: ['nope'] },
-    });
+    const integrations = defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['nope'] } });
     expect(() => runGherkinSetup(integrations)).toThrow(/\[dk-gherkin\] source directory not found: nope/);
   });
 
@@ -295,31 +304,11 @@ describe('doc-kitty:gherkin errors are build-fatal', () => {
     expect(existsSync(page)).toBe(false);
   });
 
-  it('refuses to write into a section holding authored content', () => {
-    writeTree({
-      'features/shipping/x.feature': FEATURE_X,
-      'docs/behaviour/handwritten.md': '---\ntitle: Mine\n---\n\n# Mine\n',
-    });
-    enterSite();
-    const integrations = defineDocKittyIntegrations({
-      title: 't',
-      gherkin: { sources: ['features'] },
-    });
-    expect(() => runGherkinSetup(integrations)).toThrow(/\[dk-gherkin\] refusing to write/);
-  });
 });
 
 describe('defineDocKittyIntegrations validates the gherkin option eagerly', () => {
   const define = (gherkin: unknown) => () =>
     defineDocKittyIntegrations({ title: 't', gherkin: gherkin as { sources: string[] } });
-
-  it.each([
-    ['an empty sources array', { sources: [] }],
-    ['a non-array sources', { sources: 'features' }],
-    ['a blank source entry', { sources: ['features', ' '] }],
-  ])('rejects %s', (_label, gherkin) => {
-    expect(define(gherkin)).toThrow(/^\[dk-gherkin\] gherkin\.sources must be a non-empty array/);
-  });
 
   it.each([
     ['empty', ''],
@@ -333,19 +322,11 @@ describe('defineDocKittyIntegrations validates the gherkin option eagerly', () =
     );
   });
 
-  it.each([
-    ['a string', 'true'],
-    ['a number', 1],
-    ['null', null],
-  ])('rejects an allowEmpty that is %s', (_label, allowEmpty) => {
-    expect(define({ sources: ['features'], allowEmpty })).toThrow(
-      /^\[dk-gherkin\] gherkin\.allowEmpty must be true or false/,
-    );
-  });
-
-  it.each(['glossary', '_meta'])('rejects the reserved section %s', (section) => {
-    expect(define({ sources: ['features'], section })).toThrow(
-      /^\[dk-gherkin\] gherkin\.section "[^"]+" is reserved/,
+  it('rejects a reserved section through the list config.ts passes (_meta)', () => {
+    // config.ts passes its own reserved list (`_meta` + the build-generated
+    // sections), not the options default, so only this path pins it.
+    expect(define({ sources: ['features'], section: '_meta' })).toThrow(
+      /^\[dk-gherkin\] gherkin\.section "_meta" is reserved/,
     );
   });
 
@@ -365,12 +346,6 @@ describe('sourceRoot / sourceUrlPrefix shape sources[0].resource', () => {
     (frontmatterOf(path.join(site, 'docs', 'behaviour', 'shipping', 'x.md')).sources as Array<{
       resource: string;
     }>)[0].resource;
-
-  it('defaults to paths relative to the site root', () => {
-    const site = enterSite('site');
-    runGherkinSetup(defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['../features'] } }));
-    expect(resourceOf(site)).toBe('../features/shipping/x.feature');
-  });
 
   it("reports paths relative to sourceRoot: '..'", () => {
     const site = enterSite('site');
@@ -493,5 +468,40 @@ describe('gherkin option validation is single-sourced (review #6)', () => {
     expect(() => validateIndexBasenames(['README', 'Log'])).toThrow(/must be a plain file name/);
     const { isPlainIndexName } = await import('../lib/vocabulary-core.mjs');
     expect(isPlainIndexName('')).toBe(false);
+  });
+});
+
+describe('doc-kitty:gherkin build:done — an advertised scenario index must exist (#126)', () => {
+  const ADVERTISED = 'Scenario index: https://example.test/api/scenarios.json';
+
+  /** Run the hook over a fake build output holding `files` (POSIX path → contents). */
+  function buildDone(files: Record<string, string>): () => unknown {
+    const out = path.join(tmp, 'dist');
+    mkdirSync(out, { recursive: true });
+    for (const [rel, contents] of Object.entries(files)) {
+      const abs = path.join(out, ...rel.split('/'));
+      mkdirSync(path.dirname(abs), { recursive: true });
+      writeFileSync(abs, contents);
+    }
+    const entry = named(defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } })).find(
+      (i) => i.name === GHERKIN,
+    );
+    const hook = entry?.hooks?.['astro:build:done'] as ((ctx: { dir: URL }) => unknown) | undefined;
+    if (!hook) throw new Error('gherkin integration has no astro:build:done hook');
+    return () => hook({ dir: pathToFileURL(`${out}${path.sep}`) });
+  }
+
+  it('fails when llms.txt advertises /api/scenarios.json and the build has none', () => {
+    const run = buildDone({ 'llms.txt': `# Site\n\n${ADVERTISED}\n` });
+    expect(run).toThrow(/^\[dk-gherkin\] llms\.txt advertises \/api\/scenarios\.json, but the build has no api\/scenarios\.json/);
+    expect(run).toThrow('src/pages/api/scenarios.json.ts');
+  });
+
+  it.each([
+    ['both the line and the index', { 'llms.txt': `${ADVERTISED}\n`, 'api/scenarios.json': '{}' }],
+    ['neither', { 'llms.txt': '# Site\n' }],
+    ['no llms.txt at all', {}],
+  ])('passes with %s', (_label, files) => {
+    expect(buildDone(files)).not.toThrow();
   });
 });

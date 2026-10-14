@@ -968,6 +968,48 @@ describe('hub text is escaped and titles match the sidebar (review #7)', () => {
   });
 });
 
+describe('gherkin.titles sets hub titles by source directory (#125)', () => {
+  const files = {
+    'features/hr/leave.feature': feature('Request leave'),
+    'features/shipping/edi/messages.feature': feature('Send a message'),
+    'features/shipping/book.feature': feature('Book a slot'),
+  };
+
+  it('a title replaces the directory name in the hub title, H1, description and parent list line', () => {
+    const site = makeSite(files);
+    const { plan: out, warnings } = plan(site, { titles: { hr: 'HR', 'shipping/edi': 'EDI messages' } });
+    expect(warnings).toEqual([]);
+    const hr = out.get('hr/README.md') as string;
+    expect(fm(hr).title).toBe('HR');
+    expect(fm(hr).description).toBe('Behaviour specifications for HR, generated from Gherkin feature files.');
+    expect(hr).toMatch(/^# HR$/m);
+    expect(out.get('README.md')).toContain('- [HR](./hr/) — Behaviour specifications for HR, generated');
+    const edi = out.get('shipping/edi/README.md') as string;
+    expect(fm(edi).title).toBe('EDI messages');
+    expect(out.get('shipping/README.md')).toContain('- [EDI messages](./edi/)');
+    // A directory without a title keeps the sidebar rule.
+    expect(fm(out.get('shipping/README.md') as string).title).toBe('Shipping');
+  });
+
+  it('a key that names no directory holding a feature warns once and changes nothing', () => {
+    const site = makeSite(files);
+    const titled = plan(site, { titles: { hr: 'HR', 'shipping/edl': 'EDI', marketing: 'Marketing' } });
+    expect(titled.warnings).toEqual([
+      '[dk-gherkin] gherkin.titles key "marketing" matches no source directory with a feature; ignored',
+      '[dk-gherkin] gherkin.titles key "shipping/edl" matches no source directory with a feature; ignored',
+    ]);
+    const untitled = plan(site);
+    expect(titled.plan.get('shipping/README.md')).toBe(untitled.plan.get('shipping/README.md'));
+  });
+
+  it('keys are source-relative directories as written, not slugs', () => {
+    const site = makeSite({ 'features/Shipping Ops/x.feature': feature('X marks') });
+    const { plan: out, warnings } = plan(site, { titles: { 'Shipping Ops': 'Shipping operations' } });
+    expect(warnings).toEqual([]);
+    expect(fm(out.get('shipping-ops/README.md') as string).title).toBe('Shipping operations');
+  });
+});
+
 describe('symlinks in the output directory are never written through (review #8)', () => {
   it('a symlinked .md (even one carrying the stamp) is classified authored → fatal before any write', () => {
     const site = makeSite({ 'features/shipping/book.feature': feature('Book a slot') });
@@ -1047,8 +1089,12 @@ function expectLintClean(dir: string): void {
   expect(output).toMatch(/Summary: 0 issues?\b/);
 }
 
-describe('draft-only directories and sections (final review #2)', () => {
-  it('a directory whose subtree holds only drafts gets no hub and no link from its parent', () => {
+describe('draft-only directories and sections (final review #2, #124)', () => {
+  // #124: a draft-only directory gets a hub that is itself a draft, so the
+  // sidebar finds an index for its draft pages and draft gating builds the hub
+  // exactly when it builds them. No published hub links it, so its name never
+  // reaches a published page.
+  it('a directory whose subtree holds only drafts gets a draft hub, unlinked from its parent', () => {
     const site = makeSite({
       'features/a/alpha.feature': feature('Alpha'),
       'features/a/secret-plans/one.feature': feature('One', { tags: '@wip' }),
@@ -1059,14 +1105,27 @@ describe('draft-only directories and sections (final review #2)', () => {
     // The draft pages are still generated, under the section …
     expect(fm(tree['a/secret-plans/one.md'] as string).doc_status).toBe('draft');
     expect(fm(tree['a/secret-plans/deeper/two.md'] as string).doc_status).toBe('draft');
-    // … but neither draft-only directory gets a hub, and nothing names them.
+    // … each draft-only directory gets a DRAFT hub with the intro and no list …
     expect(Object.keys(tree)).toEqual([
       'README.md',
       'a/README.md',
       'a/alpha.md',
+      'a/secret-plans/README.md',
+      'a/secret-plans/deeper/README.md',
       'a/secret-plans/deeper/two.md',
       'a/secret-plans/one.md',
     ]);
+    for (const hub of ['a/secret-plans/README.md', 'a/secret-plans/deeper/README.md']) {
+      const text = tree[hub] as string;
+      expect(fm(text).kind, hub).toBe('Hub');
+      expect(fm(text).doc_status, hub).toBe('draft');
+      expect(hubLinks(text), hub).toEqual([]);
+      expect(text.endsWith("\n\nBehaviour specifications generated from the repository's Gherkin feature files.\n"), hub).toBe(true);
+    }
+    expect(fm(tree['a/secret-plans/README.md'] as string).title).toBe('Secret plans');
+    // … and no published hub names them.
+    expect(fm(tree['a/README.md'] as string).doc_status).toBe('active');
+    expect(fm(tree['README.md'] as string).doc_status).toBe('active');
     expect(hubLinks(tree['a/README.md'] as string)).toEqual(['./alpha/']);
     expect(tree['a/README.md']).not.toMatch(/secret/i);
     expect(tree['README.md']).not.toMatch(/secret/i);
@@ -1077,27 +1136,30 @@ describe('draft-only directories and sections (final review #2)', () => {
     expectLintClean(site.outDir);
   });
 
-  it('publishing a draft adds the hub; deleting the drafts prunes the directory', () => {
+  it('publishing a draft publishes its hub; deleting the drafts prunes the directory', () => {
     const site = makeSite({
       'features/a/alpha.feature': feature('Alpha'),
       'features/a/sub/one.feature': feature('One', { tags: '@wip' }),
     });
     gen(site);
-    expect(existsSync(path.join(site.outDir, 'a/sub/README.md'))).toBe(false);
+    expect(fm(readTree(site.outDir)['a/sub/README.md'] as string).doc_status).toBe('draft');
 
     writeTree(site.root, { 'features/a/sub/one.feature': feature('One') });
     const publish = gen(site);
     expect(publish.result.written).toEqual(['a/README.md', 'a/sub/README.md', 'a/sub/one.md']);
     expect(hubLinks(readTree(site.outDir)['a/README.md'] as string)).toEqual(['./alpha/', './sub/']);
+    expect(fm(readTree(site.outDir)['a/sub/README.md'] as string).doc_status).toBe('active');
 
     writeTree(site.root, { 'features/a/sub/one.feature': feature('One', { tags: '@wip' }) });
     const unpublish = gen(site);
-    expect(unpublish.result.removed).toEqual(['a/sub/README.md']);
+    expect(unpublish.result.removed).toEqual([]);
+    expect(unpublish.result.written).toEqual(['a/README.md', 'a/sub/README.md', 'a/sub/one.md']);
+    expect(fm(readTree(site.outDir)['a/sub/README.md'] as string).doc_status).toBe('draft');
     expect(hubLinks(readTree(site.outDir)['a/README.md'] as string)).toEqual(['./alpha/']);
 
     unlinkSync(path.join(site.root, 'features/a/sub/one.feature'));
     const remove = gen(site);
-    expect(remove.result.removed).toEqual(['a/sub/one.md']);
+    expect(remove.result.removed).toEqual(['a/sub/README.md', 'a/sub/one.md']);
     expect(existsSync(path.join(site.outDir, 'a/sub'))).toBe(false);
   });
 
@@ -1109,11 +1171,39 @@ describe('draft-only directories and sections (final review #2)', () => {
     });
     gen(site);
     const tree = readTree(site.outDir);
-    expect(Object.keys(tree)).toEqual(['README.md', 'a/b/two.md', 'a/one.md', 'top.md']);
+    expect(Object.keys(tree)).toEqual(['README.md', 'a/README.md', 'a/b/README.md', 'a/b/two.md', 'a/one.md', 'top.md']);
     const root = tree['README.md'] as string;
+    // The section root is always published, so the section keeps its landing page.
+    expect(fm(root).doc_status).toBe('active');
+    expect(fm(tree['a/README.md'] as string).doc_status).toBe('draft');
+    expect(fm(tree['a/b/README.md'] as string).doc_status).toBe('draft');
     expect(hubLinks(root)).toEqual([]);
     expect(root.endsWith("\n\nBehaviour specifications generated from the repository's Gherkin feature files.\n")).toBe(true);
     expectLintClean(site.outDir);
+  });
+
+  it('the plan does not depend on the draft-publication setting (FR-003, risk R3)', () => {
+    // Generated pages are committed and drift-checked: if the plan read
+    // DK_PUBLISH_DRAFTS, a drafts-off build would rewrite committed files and the
+    // --check gate would disagree with half the builds.
+    const site = makeSite({
+      'features/a/alpha.feature': feature('Alpha'),
+      'features/b/one.feature': feature('One', { tags: '@wip' }),
+    });
+    const model = loadFeatures({ sources: ['features'], root: site.root });
+    const plan = () => [...planFeaturePages(model, { docsRoot: site.docsRoot, sourceRoot: site.root })];
+    const saved = process.env.DK_PUBLISH_DRAFTS;
+    try {
+      process.env.DK_PUBLISH_DRAFTS = 'on';
+      const on = plan();
+      process.env.DK_PUBLISH_DRAFTS = 'off';
+      const off = plan();
+      expect(on.map(([rel]) => rel)).toContain('b/README.md');
+      expect(off).toEqual(on);
+    } finally {
+      if (saved === undefined) delete process.env.DK_PUBLISH_DRAFTS;
+      else process.env.DK_PUBLISH_DRAFTS = saved;
+    }
   });
 
   it('no generated hub ever ends with a blank line', () => {

@@ -121,6 +121,7 @@ describe('normalizeGherkinOptions: the normalisation table (ADR-0051)', () => {
       'sourceUrlPrefix',
       'sourceRoot',
       'allowEmpty',
+      'titles',
     ]);
   });
 
@@ -187,6 +188,7 @@ describe('normalizeGherkinOptions: rejections', () => {
   it.each([
     ['section', { section: 'specs' }],
     ['allowEmpty', { allowEmpty: true }],
+    ['titles', { titles: { hr: 'HR' } }],
   ])('refuses %s without sources (it only steers pages that would never be generated)', (key, raw) => {
     expect(() => normalizeGherkinOptions(raw)).toThrow(
       new RegExp(`^\\[dk-gherkin\\] gherkin\\.${key} only applies to generated pages; set gherkin\\.sources as well`),
@@ -222,6 +224,57 @@ describe('normalizeGherkinOptions: rejections', () => {
     expect(() => normalizeGherkinOptions({ ...base, sourceRoot: '' })).toThrow(
       /^\[dk-gherkin\] gherkin\.sourceRoot must be a non-empty path string/,
     );
+  });
+});
+
+describe('gherkin.titles: hub titles by source directory (#125)', () => {
+  it('carries a valid map into pages as a fresh copy', () => {
+    const titles = { hr: 'HR', 'shipping/edi': 'EDI messages' };
+    const pages = normalizeGherkinOptions({ sources: ['features'], titles }).pages;
+    expect(pages?.titles).toEqual(titles);
+    expect(pages?.titles).not.toBe(titles);
+    expect(normalizeGherkinOptions({ sources: ['features'] }).pages).not.toHaveProperty('titles');
+  });
+
+  it.each([
+    ['an array', ['hr']],
+    ['null', null],
+    ['a string', 'hr=HR'],
+  ])('refuses titles that is %s', (_label, titles) => {
+    expect(() => normalizeGherkinOptions({ sources: ['f'], titles })).toThrow(
+      /^\[dk-gherkin\] gherkin\.titles must be an object mapping a source-relative directory to a title/,
+    );
+  });
+
+  it.each([
+    ['an empty key', ''],
+    ['an absolute path', '/hr'],
+    ['a trailing slash', 'hr/'],
+    ['a ./ segment', './hr'],
+    ['a .. segment', 'a/../b'],
+    ['an empty segment', 'a//b'],
+    ['a backslash', 'a\\b'],
+    ['a drive letter', 'C:/hr'],
+  ])('refuses a key with %s', (_label, key) => {
+    expect(() => normalizeGherkinOptions({ sources: ['f'], titles: { [key]: 'X' } })).toThrow(
+      `[dk-gherkin] gherkin.titles key ${JSON.stringify(key)} must be a directory path relative to a source`,
+    );
+  });
+
+  it.each([
+    ['blank', '  '],
+    ['a number', 1],
+    ['null', null],
+  ])('refuses a title that is %s', (_label, title) => {
+    expect(() => normalizeGherkinOptions({ sources: ['f'], titles: { hr: title } })).toThrow(
+      '[dk-gherkin] gherkin.titles["hr"] must be a non-blank string',
+    );
+  });
+
+  it('names the CLI flag when the CLI validates', () => {
+    expect(() =>
+      validateGherkinPages({ sources: ['f'], titles: { '': 'X' } }, { optionName: () => '--titles' }),
+    ).toThrow('[dk-gherkin] --titles key "" must be a directory path relative to a source');
   });
 });
 

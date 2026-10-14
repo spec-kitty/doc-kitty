@@ -83,6 +83,7 @@ import {
 } from './glossary/definitions-payload.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures } from './gherkin/load.mjs';
 import { generateFeaturePages } from './gherkin/generate.mjs';
+import { checkScenarioIndexAdvertised } from './gherkin/scenario-index-check.mjs';
 import { normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
 import { drainFatal, formatFatal, resetFatal } from './gherkin/errors.mjs';
 import gherkinFence, { type GherkinFenceOptions } from './remark/gherkin-fence.js';
@@ -208,7 +209,7 @@ export interface DocKittyOptions {
    *
    * Misconfiguration is build-fatal (`[dk-gherkin]` errors): any value other than
    * `true` or an object, an unknown key, a non-boolean `fences`, `includeRoots`
-   * that are not relative paths, `section` or `allowEmpty` without `sources`; with
+   * that are not relative paths, `section`, `allowEmpty` or `titles` without `sources`; with
    * `sources`, `sources` must be a non-empty string array, `section` a single safe
    * path segment that is not another generator's section (e.g. `glossary`), and a
    * malformed `.feature` fails `config:setup` with `file:line:col`.
@@ -263,6 +264,14 @@ export interface DocKittyOptions {
          * `sources` (build-fatal otherwise).
          */
         allowEmpty?: boolean;
+        /**
+         * Hub titles by source directory (#125): a key is a directory relative to
+         * a source, as written on disk (`hr`, `shipping/edi`), and its value
+         * replaces the humanised directory name as the hub's title, so the sidebar
+         * group reads it too (`{ hr: 'HR' }` instead of "Hr"). A key that names no
+         * directory holding a feature warns. Only valid together with `sources`.
+         */
+        titles?: Record<string, string>;
       };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
@@ -1297,6 +1306,11 @@ function resolveGherkinOptions(
  *       a `.feature` in dev restarts the server and re-runs (a)–(b). A NEW file is
  *       only picked up on the next restart (documented limit).
  * One `[dk-gherkin]` info line reports the counts (when the logger supports it).
+ *
+ * `astro:build:done` fails the build when the built `llms.txt` advertises
+ * `/api/scenarios.json` and the output has none (#126): the route is mounted by
+ * the site, not injected (ADR-0046 decision 9, ADR-0053), and a site that skips
+ * it would otherwise send agents to a 404 (`checkScenarioIndexAdvertised`).
  */
 function gherkinIntegration(
   opts: ResolvedGherkinPages,
@@ -1320,6 +1334,7 @@ function gherkinIntegration(
           sourceRoot: path.resolve(root, opts.sourceRoot),
           sourceUrlPrefix: opts.sourceUrlPrefix,
           allowEmpty: opts.allowEmpty,
+          titles: opts.titles,
           warn,
         });
         for (const file of model.files) addWatchFile(file.absPath);
@@ -1329,6 +1344,9 @@ function gherkinIntegration(
               `${written.length} written, ${unchanged.length} unchanged, ${removed.length} removed`,
           );
         }
+      },
+      'astro:build:done': ({ dir }) => {
+        checkScenarioIndexAdvertised(fileURLToPath(dir));
       },
     },
   };

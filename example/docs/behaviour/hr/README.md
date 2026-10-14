@@ -1,6 +1,6 @@
 ---
-title: "Hr"
-description: "Behaviour specifications for Hr, generated from Gherkin feature files."
+title: "HR"
+description: "Behaviour specifications for HR, generated from Gherkin feature files."
 kind: Hub
 doc_status: active
 generated:
@@ -8,7 +8,7 @@ generated:
   at: "sha256:921b0185fc92"
 ---
 
-# Hr
+# HR
 
 Behaviour specifications generated from the repository's Gherkin feature files.
 

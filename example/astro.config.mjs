@@ -113,6 +113,14 @@ export default defineConfig({
     // (also a generated-pages source) and `scenarios`, which holds the copy of
     // spec-kitty's `init.feature` that guides/scenarios-in-pages embeds. It is
     // not in `sources`, so it gets no generated page.
-    gherkin: { sources: ['features'], section: 'behaviour', includeRoots: ['features', 'scenarios'] },
+    //
+    // `titles` names a hub whose directory name cannot spell its title (#125):
+    // `features/hr/` would otherwise be titled "Hr" in its hub and the sidebar.
+    gherkin: {
+      sources: ['features'],
+      section: 'behaviour',
+      includeRoots: ['features', 'scenarios'],
+      titles: { hr: 'HR' },
+    },
   }),
 });
