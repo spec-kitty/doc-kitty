@@ -264,8 +264,9 @@ Options:
                                 index page, a bare relative link with no extension, and (with
                                 DK_PUBLISH_DRAFTS=off) a link to a draft page.
   --index-basename <name[,…]>   Section-index file name(s) without extension (default
-                                README,index). A site should pass its own setting, the
-                                same value its build uses.
+                                README,index). Must match the site's indexBasename
+                                config (the loader default is README alone), or
+                                --strict resolves folder links differently from the build.
   --site-root <dir>             Astro project whose env files set DK_PUBLISH_DRAFTS.
   --mode <mode>                 Astro mode for those env files (default production).
   --help                        Show this text.

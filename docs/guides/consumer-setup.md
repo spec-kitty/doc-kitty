@@ -481,6 +481,11 @@ pnpm exec dockitty-check-links docs --strict --index-basename README,index
 astro build && pnpm exec dockitty-assert-no-broken-links dist --base /docs --site https://you.example.com
 ```
 
+`--index-basename` must match the `indexBasename` you give the loader. Its
+default here is `README,index`, while the loader's is `README` alone, so a site
+that sets neither can see `--strict` accept a folder link the build cannot
+resolve.
+
 The other binaries are `dockitty-check-redirect-coverage`,
 `dockitty-validate-catalog`, `dockitty-new-doc`, `dockitty-scaffold`, and
 `dockitty-generate-feature-pages` (see
