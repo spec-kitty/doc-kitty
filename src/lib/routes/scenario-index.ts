@@ -77,7 +77,7 @@ export interface ScenarioIndexRouteOptions {
   /** Bump when the emitted shape changes so consumers can branch on it. */
   version?: string;
   /**
-   * The `gherkin.results` integration option, if set (ADR-0052): each scenario
+   * The `gherkin.results` integration option, if set (ADR-0055): each scenario
    * then carries its `result`, each Examples table its row `results`, and the
    * index a top-level `results` block naming the run. Same shape and meaning:
    * a report path, or `{ report, root }`.
@@ -85,7 +85,7 @@ export interface ScenarioIndexRouteOptions {
   results?: string | { report: string; root?: string };
 }
 
-/** A scenario's (or outline's) result (ADR-0052). */
+/** A scenario's (or outline's) result (ADR-0055). */
 export interface ScenarioResult {
   /** `passed`, `failed`, `ambiguous`, `undefined`, `pending`, `skipped` or `not-run`. */
   status: string;
@@ -107,7 +107,7 @@ export interface ScenarioExamples {
   tags: string[];
   header: string[];
   rows: string[][];
-  /** With a results report: each row's status, in row order (ADR-0052). */
+  /** With a results report: each row's status, in row order (ADR-0055). */
   results?: string[];
 }
 
@@ -125,7 +125,7 @@ export interface ScenarioRecord {
   outline: boolean;
   steps: ScenarioStep[];
   examples: ScenarioExamples[];
-  /** With a results report that covers the file (ADR-0052). */
+  /** With a results report that covers the file (ADR-0055). */
   result?: ScenarioResult;
 }
 
@@ -318,7 +318,7 @@ function resultRecord(outcome: Outcome): ScenarioResult {
 }
 
 /**
- * Add a feature's results to its record (ADR-0052), from the same report and
+ * Add a feature's results to its record (ADR-0055), from the same report and
  * by the same rules as the pages: matched by file and line, never from a
  * report made for another version of the file.
  */
@@ -387,7 +387,7 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
       sourceRoot,
     );
 
-    // ADR-0052: the report, read once per request (memoised by file version).
+    // ADR-0055: the report, read once per request (memoised by file version).
     const resultsOption = options.results ? normalizeResultsOption(options.results, 'scenarioIndexRoute results') : undefined;
     const report = resultsOption ? loadReport(resultsOption, { projectRoot: process.cwd() }) : undefined;
 

@@ -99,7 +99,7 @@ import { DK_TAG_PREFIX, dedent, featureTitle, splitNarrative } from './text.mjs'
  * @property {string} description Dedented Markdown; `''` when none.
  * @property {string[][]} rows Header row first; `[]` when the block has no table.
  * @property {number[]} rowLines The source line of each BODY row (`rows[i + 1]`):
- *   an outline row's result is keyed by it (ADR-0052).
+ *   an outline row's result is keyed by it (ADR-0055).
  * @property {number} line
  */
 

@@ -6,7 +6,7 @@
  * includes changes, by folding {@link includeHash} of every
  * {@link gherkinIncludeSources} entry into the page digest and by watching
  * {@link includeFile}. With `gherkin.results` set it does the same for the
- * report (ADR-0052 decision 10): {@link mayShowResults} picks the pages that fold
+ * report (ADR-0055 decision 10): {@link mayShowResults} picks the pages that fold
  * {@link reportHash}. Kept out of `schema.ts` so it is not part of the public
  * `./schema` entry point: nothing here is supported API.
  *
@@ -124,7 +124,7 @@ export function includeHash(src, cwd) {
  * The environment variable that names the configured Cucumber report
  * (`gherkin.results.report`, project-root relative) to the docs loader, which
  * is built in the site's `content.config.ts` and never sees the `gherkin`
- * option (ADR-0052 decision 10). Set by `defineDocKittyIntegrations`, like
+ * option (ADR-0055 decision 10). Set by `defineDocKittyIntegrations`, like
  * `DK_INDEX_BASENAME`, and deleted when `results` is absent.
  */
 export const DK_GHERKIN_RESULTS_ENV = 'DK_GHERKIN_RESULTS';

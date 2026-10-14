@@ -56,7 +56,7 @@ kind: Hub
 | [0043](./0043-toolkit-package-scope-and-self-reference.md) | ADR-0043: DocKitty ships under the @spec-kitty scope; NFR-001 forbids runtime coupling, not self-reference | Accepted | 2026-09-28 |
 | [0044](./0044-header-carrier.md) | ADR-0044: Header is the fifth carrier; a theme replaces the site header through dk:site-header | Accepted | 2026-10-13 |
 | [0045](./0045-frame-width-token.md) | ADR-0045: The page frame is full width by default; --dk-width-frame caps it | Accepted | 2026-10-13 |
-| [0046](./0046-gherkin-feature-pages.md) | ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection | Accepted | 2026-10-13 |
+| [0046](./0046-gherkin-feature-pages.md) | ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection | Accepted | 2026-10-14 |
 | [0047](./0047-relative-markdown-links.md) | ADR-0047: Relative Markdown links are rewritten at build | Accepted | 2026-10-13 |
 | [0048](./0048-generated-page-names-and-empty-sources.md) | ADR-0048: Generated index page names and empty Gherkin sources | Accepted | 2026-10-13 |
 | [0049](./0049-openapi-reference-via-existing-integration.md) | ADR-0049: OpenAPI reference pages through an existing integration | Proposed | 2026-10-14 |
@@ -65,5 +65,7 @@ kind: Hub
 | [0052](./0052-runtime-slot-name-validation.md) | ADR-0052: Theme slot names are checked when the config loads | Accepted | 2026-10-14 |
 | [0053](./0053-reading-width.md) | ADR-0053: The reading column defaults to 60rem for all body content | Accepted | 2026-10-14 |
 | [0054](./0054-gherkin-draft-hubs-titles-and-scenario-route.md) | ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages | Accepted | 2026-10-14 |
+| [0051](./0051-gherkin-in-any-page.md) | ADR-0051: Render Gherkin in any page, from a fence or an include | Accepted | 2026-10-14 |
+| [0052](./0052-gherkin-scenario-results.md) | ADR-0052: Show each scenario's result from the site's Cucumber report | Accepted | 2026-10-14 |
 
 New ADRs copy [`template.md`](./template.md).

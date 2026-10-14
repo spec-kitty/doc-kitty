@@ -171,6 +171,17 @@ release, as it did for `0.2.0`.
   self-hosted server PlantUML needs. The option's doc comment now opens with what
   `false` does. No behaviour changes. See
   [Optional: Diagrams](docs/guides/consumer-setup.md#optional-diagrams).
+- **Scenario results from your Cucumber report (#162, ADR-0055).** Set
+  `gherkin.results` to the Cucumber Messages or JSON report your CI writes, and
+  every scenario shown from a `.feature` file, on generated pages and in
+  `::gherkin` includes, gets its last result after its heading: Passed, Failed,
+  Ambiguous, Undefined, Pending, Skipped, Not run or Passed on retry. Outline rows
+  get a `Result` column and each feature a results line with the run date and
+  commit. Results are matched by file and line, and a report made from another
+  version of a file shows nothing for it. Only statuses are published. Generated
+  pages stay as committed: results are added when they render. A missing report is
+  a warning; an unreadable one fails the build. `scenarioIndexRoute({ results })`
+  adds the results to `/api/scenarios.json`.
 - **Relative Markdown links between pages are rewritten to routes at build
   (#131).** Before, `[setup](./setup.md)` rendered as a link to a `.md` path that
   404s on the live site, so authors wrote root-absolute routes that break on

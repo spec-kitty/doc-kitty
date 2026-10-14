@@ -19,7 +19,7 @@
 //     include is left as literal `::gherkin` text;
 //   - a quoted step argument is code, exactly as written, so a reader can copy
 //     the command a step runs;
-//   - a scenario's result (ADR-0052) is a WORD after its heading, never inside
+//   - a scenario's result (ADR-0055) is a WORD after its heading, never inside
 //     it and never a colour alone, its text clears 4.5:1 on its badge, a screen
 //     reader hears "Result:" before it, and an Examples table's results sit in a
 //     column with a real header — on an include and on a generated page.
@@ -225,7 +225,7 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Scenario results (ADR-0052)
+// Scenario results (ADR-0055)
 // ---------------------------------------------------------------------------
 
 const STATUS_WORDS = /^(?:Result: )?(?:Passed|Passed on retry|Failed|Ambiguous|Undefined|Pending|Skipped|Not run)$/;

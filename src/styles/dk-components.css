@@ -421,7 +421,7 @@
 }
 
 /*
- * ----- Scenario results (ADR-0052) ----------------------------------------
+ * ----- Scenario results (ADR-0055) ----------------------------------------
  * A result line after a scenario heading, a `Result` column on an Examples
  * table and a results summary, on a docs page (in `.dk-gherkin`) AND on a
  * generated feature page (no container), so none of these rules is scoped to

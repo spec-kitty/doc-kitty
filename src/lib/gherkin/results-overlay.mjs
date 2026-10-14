@@ -1,5 +1,5 @@
 /**
- * Results on a GENERATED feature page (ADR-0052 decision 5).
+ * Results on a GENERATED feature page (ADR-0055 decision 5).
  *
  * A generated page's Markdown is committed and drift-gated
  * (`generate-feature-pages.mjs --check`), so it can never carry the results of

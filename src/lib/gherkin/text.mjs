@@ -151,7 +151,7 @@ export function splitNarrative(description) {
  * which is safe because matching is also positional: each scenario takes the
  * NEXT matching heading at its depth, in document order. Shared by the
  * scenario index (`routes/scenario-index.ts`) and the results overlay of a
- * generated page (`results-overlay.mjs`, ADR-0052), which match the same
+ * generated page (`results-overlay.mjs`, ADR-0055), which match the same
  * headings.
  *
  * @param {string} text

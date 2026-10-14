@@ -127,7 +127,7 @@ example/.dk-test-gherkin-fence/
 # src/tests/docs-loader-includes-build.test.ts builds and serves it, then removes it.
 example/.dk-test-loader-includes/
 
-# Scenario-results fixture site (ADR-0052, transient) —
+# Scenario-results fixture site (ADR-0055, transient) —
 # src/tests/gherkin-results-build.test.ts builds it, then removes it.
 example/.dk-test-gherkin-results/
 

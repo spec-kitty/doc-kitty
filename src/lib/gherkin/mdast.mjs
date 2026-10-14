@@ -41,7 +41,7 @@
  *    the step's list item.
  *  - Examples: a paragraph `strong("<Keyword>:") <name>`, then tags,
  *    description and a `table`.
- *  - Results (ADR-0052, only with `results`): a `p.dk-gherkin__result` right
+ *  - Results (ADR-0055, only with `results`): a `p.dk-gherkin__result` right
  *    after each scenario heading (a `span.dk-gherkin__status[data-status]`
  *    badge holding the status word, and an outline's rows by status), a
  *    `Result` column on each Examples table, and a `p.dk-gherkin__results`
@@ -119,7 +119,7 @@ import { cellSegments, childLevel, displayTags, resolveLevels, summaryText, titl
  *   blockquote, aside or other non-root parent: headings become
  *   `p[role=heading]`.
  * @property {FeatureResults | StaleResults} [results] The feature's results
- *   (ADR-0052): a result line after each scenario heading, a `Result` column on
+ *   (ADR-0055): a result line after each scenario heading, a `Result` column on
  *   each Examples table and, with the `full` header, a results summary. A
  *   `stale` value shows only a "results not shown" note in that summary.
  */
@@ -354,7 +354,7 @@ function examplesNodes(examples, parseMarkdown, results) {
 }
 
 /**
- * A status badge (ADR-0052 decision 7): `span.dk-gherkin__status[data-status]`
+ * A status badge (ADR-0055 decision 7): `span.dk-gherkin__status[data-status]`
  * holding the status WORD, so the status never rests on colour alone. With
  * `lead`, a visually hidden `Result: ` comes first, for a screen reader that
  * meets the badge out of a table.

@@ -783,6 +783,7 @@ gherkin: {
 | `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. An include's source line links the same way. |
 | `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`, and only valid with `sources`. |
 | `titles` | none | Hub titles by source directory, for names a directory can't spell: `{ hr: 'HR', 'shipping/edi': 'EDI messages' }`. A key is the directory relative to its source, as written on disk; the title replaces the directory name in the hub and its sidebar group. A key that matches no directory with a feature warns. Keys must be plain relative paths and titles non-blank strings. Only valid with `sources`. |
+| `results` | none | A Cucumber report (Messages NDJSON or JSON) whose results are shown next to every scenario rendered from a `.feature` file. A path relative to the site root, or `{ report, root }` with `root` the directory Cucumber ran in. See [Gherkin: test results](#gherkin-test-results). |
 
 An unknown key, a non-boolean `fences`, `section`, `allowEmpty` or `titles`
 without `sources`, and any value other than `true` or an object (including
@@ -881,6 +882,44 @@ the build in `astro:build:done`.
 - **Changing an included file re-renders the pages that include it**, in a build
   and in the dev server, even though their own text did not change (this too
   needs `docKittyDocsLoader`).
+
+### Gherkin: test results
+
+`gherkin.results` shows each scenario's last result from the Cucumber report your
+CI writes ([ADR-0055](../adr/0055-gherkin-scenario-results.md); what readers see is
+in [Show test results](./authoring.md#show-test-results)).
+
+```js
+gherkin: {
+  sources: ['../features'],
+  sourceRoot: '..',
+  // Cucumber ran in the repo root, so its URIs are relative to '..':
+  results: { report: '../reports/cucumber.ndjson', root: '..' },
+},
+```
+
+- **Produce the report before the docs build**, in the same CI job or as a
+  downloaded artifact: `cucumber-js --format message:reports/cucumber.ndjson`
+  (cucumber-jvm: `--plugin message:reports/cucumber.ndjson`). Cucumber JSON
+  (`--format json`) also works. Use one report: merge the reports of several runs
+  first.
+- **`root` is where Cucumber ran.** Relative URIs in the report resolve against
+  it. A report with absolute paths from another machine is matched by the end of
+  each path, when exactly one file matches.
+- **A missing report** logs `[dk-gherkin] gherkin.results report not found` and the
+  site builds without results. **An unreadable one** (not a file, over 64 MiB, not
+  a Cucumber report) fails the build, naming the report and line.
+- **A stale report** (made from another version of a file) shows no result for that
+  file and logs a warning naming it. Run the tests and the docs build from the same
+  commit.
+- **Generated pages are unaffected on disk.** Results are added when a page
+  renders, so committed pages and the `--check` gate do not change.
+- **The scenario index:** pass the same value to `scenarioIndexRoute({ results })`
+  so `/api/scenarios.json` carries the results too.
+- **Freshness:** with `docKittyDocsLoader`, a changed report re-renders the pages
+  that show results, in a build and in the dev server.
+- **Keep the report out of `public/`.** It holds failure messages and paths; only
+  status words reach your pages.
 
 ## Upgrading from 0.2.0
 

@@ -11,7 +11,7 @@ related:
   - architecture/gherkin-pages
   - adr/0046-gherkin-feature-pages
   - adr/0051-gherkin-in-any-page
-  - adr/0052-gherkin-scenario-results
+  - adr/0055-gherkin-scenario-results
   - plans/features/gherkin-scenario-results
 ---
 
@@ -23,7 +23,7 @@ pass or fail badge next to each scenario a docsite shows. The result comes from 
 Cucumber report that the site's CI already produces. This page records what that
 report looks like, how a result can be tied to a scenario on a page, and what
 other living-documentation tools do. The decision is
-[ADR-0052](../../adr/0052-gherkin-scenario-results.md); the delivery plan is
+[ADR-0055](../../adr/0055-gherkin-scenario-results.md); the delivery plan is
 [Gherkin scenario results](../../plans/features/gherkin-scenario-results.md).
 
 Findings were checked against the official sources linked inline, and against a

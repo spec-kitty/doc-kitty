@@ -2,7 +2,7 @@
 title: QA portal
 description: "A repository portal view that surfaces CI test artifacts and quality signals in the docsite."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-10-14
 type: Feature
 kind: Feature
 moscow:
@@ -21,3 +21,6 @@ alongside the documentation.
 Scope: Extended.
 
 Design: [QA portal](../../architecture/research/qa-portal.md).
+
+Delivered so far: the BDD half, as [Gherkin feature pages](./gherkin-feature-pages.md)
+and [Gherkin scenario results](./gherkin-scenario-results.md).

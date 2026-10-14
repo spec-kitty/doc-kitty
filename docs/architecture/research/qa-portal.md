@@ -2,7 +2,7 @@
 title: QA portal (tests as documentation)
 description: "Render test and BDD results in the docsite so a repository's site also serves as a QA portal."
 doc_status: draft
-updated: 2026-10-13
+updated: 2026-10-14
 type: Architecture
 kind: Explanation
 tags: [qa, testing, bdd, living-documentation, portal]
@@ -59,6 +59,13 @@ specification the reader can browse.
 > specification only, with no results. Phase 2 adds the status badges on top of
 > those pages: pass/fail per scenario and example row, read from a Cucumber
 > results file. That results half still depends on the CI wiring described below.
+>
+> **Update (2026-10-14): the BDD results have shipped too.** `gherkin.results`
+> reads the site's Cucumber report and shows each scenario's last result on
+> generated pages and in includes ([ADR-0055](../../adr/0055-gherkin-scenario-results.md),
+> research in [Gherkin scenario results](./gherkin-results.md)). The CI wiring below
+> is still the site's: the report must be on disk before the docs build. A JUnit
+> summary page and Great Expectations remain open.
 
 ## How results arrive (open decision)
 

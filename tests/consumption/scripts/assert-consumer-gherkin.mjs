@@ -21,7 +21,7 @@
  *     as a literal directive line);
  *   - `/api/pages/guides/scenarios.json` lists the include and carries its steps;
  *   - the include shows its scenario's result from the fixture's Cucumber JSON
- *     report (`gherkin.results`, ADR-0052), in the HTML and the agent Markdown,
+ *     report (`gherkin.results`, ADR-0055), in the HTML and the agent Markdown,
  *     and nothing else from the report (its failure message) reaches the page.
  *
  * Exits NON-ZERO with a precise message on the FIRST failure.
@@ -92,7 +92,7 @@ async function main() {
   }
   if (/^::gherkin/m.test(markdown)) fail(`${apiLabel}: the markdown still holds the ::gherkin directive line`);
 
-  // ADR-0052: the selected scenario passed in reports/cucumber.json.
+  // ADR-0055: the selected scenario passed in reports/cucumber.json.
   if (!html.includes('<span class="dk-gherkin__status" data-status="passed">')) {
     fail(`${label}: no passed result badge — gherkin.results did not reach the include`);
   }

@@ -2,7 +2,7 @@
 title: Features
 description: "The doc-kitty feature pages, grouped by MoSCoW priority as set in the roadmap."
 doc_status: draft
-updated: 2026-10-13
+updated: 2026-10-14
 type: Feature
 kind: Hub
 agent:
@@ -55,6 +55,8 @@ split and the MoSCoW levels are set in the roadmap; this index reflects them.
   status in the docsite.
 - [QA portal](./qa-portal.md) (Could) — CI test artifacts and quality signals.
 - [Ticketing report](./ticketing-report.md) (Could) — a report over issue trackers.
+- [Gherkin scenario results](./gherkin-scenario-results.md) (Could) — each scenario's
+  last result from the site's Cucumber report.
 
 ## Won't
 

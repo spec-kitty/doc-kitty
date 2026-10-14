@@ -2,7 +2,7 @@
 title: Gherkin feature pages
 description: "Render Gherkin .feature files as glossary-linked Specification pages in the docsite, with related missions, ADRs and personas."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Feature
 kind: Feature
 moscow:
@@ -31,4 +31,5 @@ Design: [ADR-0046](../../adr/0046-gherkin-feature-pages.md) and
 [Gherkin pages](../../architecture/gherkin-pages.md). Authoring:
 [Authoring behaviour specs](../../guides/authoring.md#authoring-behaviour-specs).
 
-Builds toward: [QA portal](./qa-portal.md) (phase 2 adds pass/fail per scenario).
+Builds toward: [QA portal](./qa-portal.md). Phase 2, pass/fail per scenario, is
+[Gherkin scenario results](./gherkin-scenario-results.md).

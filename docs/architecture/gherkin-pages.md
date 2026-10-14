@@ -13,6 +13,8 @@ related:
   - adr/0048-generated-page-names-and-empty-sources
   - adr/0051-gherkin-in-any-page
   - adr/0054-gherkin-draft-hubs-titles-and-scenario-route
+  - adr/0055-gherkin-scenario-results
+  - architecture/research/gherkin-results
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - architecture/glossary
@@ -70,15 +72,18 @@ The modules are plain JSDoc-typed `.mjs` with no Astro imports:
 |--------|------|---------|
 | `load.mjs` | Discover and parse. Walks each source directory in code-unit order, skipping dot-directories and `node_modules` and following symlinks without revisiting a directory (so which path reaches a shared directory first never depends on filesystem order). Parses each file with a fresh `IdGenerator.incrementing()`. Collects **every** syntax error in every file, then throws one `[dk-gherkin] <path>:<line>:<col> <message>` error. A missing source directory is fatal. A file with no `Feature:` is skipped with a warning. | `node:*`, `vocabulary-core.mjs`, `parse.mjs`, `text.mjs` |
 | `feature-core.mjs` | Pure tag and description mapping to ordered frontmatter. Returns warnings; never throws on author input. | `vocabulary-core.mjs`, `text.mjs` |
-| `view.mjs` | Pure view model: the one walk over a parsed document (titles, narrative, sorted tags, summary counts, step text split into prose, quoted arguments and outline placeholders, rules, backgrounds), the tags an embed shows (`displayTags`, no `@dk:*`) and the heading-level plan, shared by both emitters (ADR-0051). | `vocabulary-core.mjs`, `text.mjs` |
-| `render.mjs` | Pure view to Markdown body, including escaping. `baseLevel`, `header`, `embed` (tags laid out as the HTML shows them) and `inContainer` (bold lines for headings) serve the agent Markdown of an include; the defaults are the generated page. A caller may pass the `view` it already built. | `text.mjs`, `view.mjs` |
-| `mdast.mjs` | Pure view to the in-page mdast subtree of an embedded feature (ADR-0051). Description and narrative Markdown is parsed by an injected function. | `view.mjs` |
+| `view.mjs` | Pure view model: the one walk over a parsed document (titles, narrative, sorted tags, summary counts, step text split into prose, quoted arguments and outline placeholders, rules, backgrounds, the line of each Examples row), the tags an embed shows (`displayTags`, no `@dk:*`) and the heading-level plan, shared by both emitters (ADR-0051). | `vocabulary-core.mjs`, `text.mjs` |
+| `render.mjs` | Pure view to Markdown body, including escaping. `baseLevel`, `header`, `embed` (tags laid out as the HTML shows them), `inContainer` (bold lines for headings) and `results` serve the agent Markdown of an include; the defaults are the generated page, which never gets results. A caller may pass the `view` it already built. | `text.mjs`, `view.mjs`, `results.mjs` |
+| `mdast.mjs` | Pure view to the in-page mdast subtree of an embedded feature (ADR-0051), with its results when given (ADR-0055). Description and narrative Markdown is parsed by an injected function. | `view.mjs`, `results.mjs` |
+| `results.mjs` | Pure: parses a Cucumber Messages or Cucumber JSON report into per-file results keyed by line, applies the final-attempt and severity rules, matches a report URI to a rendered file, and returns a feature's scenario, row and summary outcomes, or `stale` (ADR-0055). | `node:path`, `node:url`, `text.mjs` |
+| `results-load.mjs` | Reads the configured report with a size limit and an mtime/size memo, and builds its file index once per `root`. | `node:*`, `results.mjs`, `text.mjs` |
+| `results-overlay.mjs` | Adds results to a generated page's mdast at render time: result lines after the scenario headings, the `Result` column, the summary line. | `mdast.mjs`, `text.mjs`, `view.mjs` |
 | `parse.mjs` | `parseGherkin()`: the one place a Gherkin string is parsed, with errors as `[dk-gherkin] <path>:<line>:<col>` and an optional line offset (a fence's position in its page). `load.mjs` and the in-page stage both call it. `formatProblem()` is the same error text without the prefix, which an include message quotes. | `@cucumber/gherkin`, `@cucumber/messages`, `text.mjs` |
 | `fragment.mjs` | `parseFragment()`: parses a fence, wrapping a Feature-less fragment in a synthetic Feature when the parser's first error asks for a `Feature:` line, and a Scenario-less one in a synthetic Scenario when its first content line is a step line (classified as the parser's token matcher does), then maps lines back to the page. It also reports steps written under a real `Feature:` line, which the parser reads as description. | `@cucumber/gherkin`, `parse.mjs` |
 | `select.mjs` | `selectScenarios()`: prunes a parsed document to a `scenario` name or an any-of `tags` list, using pickle tags for inheritance. Its AST walk is a transform before the view is built, not a second rendering walk. | `@cucumber/gherkin`, `@cucumber/messages` |
 | `include.mjs` | `resolveInclude()`: the `.feature` rule, realpath containment in `includeRoots` (a missing root fails only the includes below it), the size limit, read, and an mtime/size memo. | `node:*`, `load.mjs`, `text.mjs`, `include-path.mjs` |
 | `include-path.mjs` | `isInside()`, the one containment predicate, and `MAX_INCLUDE_BYTES` (1 MiB), shared by the resolver and the loader's include scan without pulling the parser into every site. | `node:path` |
-| `include-scan.mjs` | The docs loader's include scan: `gherkinIncludeSources()` and the guarded per-file hash folded into the page digest. Its `.feature` checks (the extension and the size limit) are a deliberate twin of `include.mjs` and `load.mjs`, kept in step by sharing `text.mjs` and `include-path.mjs` rather than importing the parser. Not reachable from the public `./schema` entry. | `node:*`, `unified`, `remark-parse`, `remark-directive`, `vocabulary-core.mjs`, `text.mjs`, `include-path.mjs` |
+| `include-scan.mjs` | The docs loader's include scan: `gherkinIncludeSources()` and the guarded per-file hash folded into the page digest, plus the report hash and the "may show results" test for `gherkin.results` (ADR-0055). Its `.feature` checks (the extension and the size limit) are a deliberate twin of `include.mjs` and `load.mjs`, kept in step by sharing `text.mjs` and `include-path.mjs` rather than importing the parser. Not reachable from the public `./schema` entry. | `node:*`, `unified`, `remark-parse`, `remark-directive`, `vocabulary-core.mjs`, `text.mjs`, `include-path.mjs`, `results.mjs` |
 | `errors.mjs` | The process-wide error sink that makes in-page errors build-fatal. | `vocabulary-core.mjs`, `text.mjs` |
 | `agent-includes.mjs` | Reads the include records a page's render left behind and splices them into the agent payload. | none |
 | `generate.mjs` | `planFeaturePages()` builds the path-to-contents map. `generateFeaturePages()` writes it. `diffFeaturePages()` compares it with the tree for `--check`. | `node:*`, `gray-matter`, `vocabulary-loader.mjs`, the modules above |
@@ -90,7 +95,8 @@ unnamed-feature title fallback, all shared by the metadata core and the
 renderers, the one relative-path rule (`isRelativePosixPath`) shared by the
 option validator, the include resolver and the loader's include scan, and the one
 `.feature` file-name rule (`FEATURE_FILE`) shared by the source walk, the resolver
-and the scan. Orderings use `compareCodeUnit` and
+and the scan, and the heading-text fold (`headingKey`) the scenario index and the
+results overlay match headings with. Orderings use `compareCodeUnit` and
 path slugs use `slug()`, both from `vocabulary-core.mjs`; no module carries its
 own copy.
 
@@ -514,6 +520,97 @@ which imports nothing, so the route never loads the parser) and lists them under
 Fences reach agents as fences. Embedded scenarios are not in
 `/api/scenarios.json`.
 
+## Scenario results
+
+`gherkin.results` names a Cucumber report the site's CI writes
+([ADR-0055](../adr/0055-gherkin-scenario-results.md); the research is in
+[Gherkin scenario results](./research/gherkin-results.md)). Every scenario the
+site renders **from a `.feature` file** then shows its result: on generated
+feature pages and in `::gherkin` includes. A fence has no file, so it shows none.
+
+### From report to outcome
+
+`results.mjs` reads Cucumber Messages (NDJSON, protocol 15 to 34) and Cucumber JSON
+(cucumber-js, cucumber-jvm, godog and behave dialects), told apart by the first
+character. Both are reduced to entries `{ line, names, status, retried }` per
+reported file, where `line` is the scenario's line or, for an outline row, the
+row's line. A runner gives AST nodes random UUIDs, so ids only join messages
+inside one report; the line is the key both sides compute. A Messages pickle's
+lines come from the report's **own** `gherkinDocument`.
+
+The status of a test case is the most severe step result, hooks included, of its
+final attempt (`willBeRetried` false, else the highest `attempt`), in Cucumber's
+order. `UNKNOWN`, an attempt that never finished, a pickle with no test case and a
+scenario the report leaves out of a file it covers are all **Not run**. A pass
+after a failed attempt is **Passed on retry** (Messages only; JSON hides retries).
+
+Only status words, lines, names, the run's date and a hex commit id are kept.
+Messages, stack traces, attachments, step-definition locations and environment
+details never leave the parser.
+
+### Matching and staleness
+
+A report URI is normalised (`file:` URLs, `classpath:`, backslashes, `.`/`..`),
+then:
+
+- a relative URI resolves against `results.root`, the directory Cucumber ran in
+  (default the project root);
+- an absolute URI inside the project root is made relative to it;
+- any other (another machine's CI path, `classpath:`) matches a file only by its
+  tail, and only when exactly one reported file does. Two candidates is a
+  warning, not a guess.
+
+A report older than the file would put results on the wrong scenarios, so a stale
+report is never matched by line. Messages carries each file's text
+(`source.data`), which must equal the rendered file (BOM and line endings aside).
+JSON carries none, so every entry's line must be a scenario or outline-row line of
+the **whole** file (even for a selection) with a matching name, and the steps it
+ran must be that scenario's (Background steps first or not, as runners differ),
+placeholders filled in from the row, so a reordered or edited Examples row is
+stale too. A stale file shows no badges, a "Results not shown" note where a
+feature header is shown, and one build warning.
+
+### Where the results are added
+
+- **Includes.** The stage passes the file's results to `featureMdast` and to
+  `renderFeatureBody`'s embed layout, so the HTML and the agent Markdown agree.
+- **Generated pages.** Their Markdown is committed and drift-gated, so it never
+  holds results. The stage, which otherwise leaves a generated page as emitted,
+  re-reads the page's source (`sources[0].resource`, the inverse of `sourceLink`),
+  checks it against `generated.at`, and `results-overlay.mjs` inserts the same
+  nodes into the page's mdast: each scenario takes the next heading at its level
+  whose text folds to its title (`headingKey`, as the scenario index matches
+  headings), each Examples block the next root-level table of its shape. A
+  scenario with no heading is warned about, never guessed. With `fences: false`
+  the stage is still registered when `results` is set, and does only this.
+- **The scenario index.** `scenarioIndexRoute({ results })` adds `result` to each
+  scenario, `results` to each Examples table, `results: 'current' | 'stale'` to
+  each feature, and a top-level `results` block naming the report, format, run
+  date and commit. The route repeats the option, as it repeats `sourceRoot`.
+
+The markup is a `p.dk-gherkin__result` right after the heading, never inside it,
+so the table of contents and the slugs do not change. Its badge,
+`span.dk-gherkin__status[data-status]`, holds the status word after a visually
+hidden "Result:". A glyph and a tinted bar only reinforce the word (WCAG 1.4.1).
+The rules are in the global component sheet, unscoped, because a generated page
+has no `.dk-gherkin` container.
+
+### Errors and freshness
+
+The report is read in `astro:config:setup`: missing is a warning (a local build
+has no CI report), unreadable is a thrown error naming the report and, for an
+NDJSON envelope, its line. An all-skipped report warns that it looks like a
+`--dry-run`. The stage reads it again through a memo, so a report that becomes
+unreadable under a dev server fails the pages that show results through the error
+sink.
+
+The integration names the report to the docs loader in `DK_GHERKIN_RESULTS`. A
+page that may show results (it holds `::gherkin` or the generated-page stamp)
+folds the report's hash into its digest, and a change to the report re-emits a
+`change` for each such page in dev. With no report every digest is what it was.
+`gherkin-results-build.test.ts` proves the fold with two real builds over one
+content cache.
+
 ## Limits
 
 - **New files need a restart.** Only the `.feature` files loaded at startup are
@@ -523,7 +620,8 @@ Fences reach agents as fences. Embedded scenarios are not in
   localised features keep their keywords, but a localised narrative is treated as
   ordinary description text.
 - **No outline expansion.** A Scenario Outline renders once with its examples
-  table. Per-row expansion belongs to the results phase.
+  table. With results, each row's result is a cell in a `Result` column; the rows
+  are not expanded into scenarios.
 - **Empty sources stop the build.** With generated pages present and no feature
   found in any source, the generator throws instead of deleting the pages. Set
   `gherkin.allowEmpty: true` (or `--allow-empty`) to remove them on purpose, and
@@ -570,6 +668,17 @@ Fences reach agents as fences. Embedded scenarios are not in
   `gherkin.sources` is set. A site that removed the `gherkin` option but kept its
   frozen generated pages gets no route and must mount `scenarioIndexRoute` itself.
 
+- **Results are a snapshot of one report.** They are as fresh as the last build
+  that read the report, and one report is read: several runs (one per suite or
+  platform) must be merged into one file before the build. History across runs
+  is out of scope.
+- **A stale report shows nothing for that file.** Any change to a `.feature` file
+  (a comment included, for a Messages report) hides its results until the tests
+  run again. A JSON report is checked by lines, names and step texts, so a change
+  to only a data table, a doc string or a tag is not detected.
+- **Fences never show results.** Only a scenario rendered from a file can be tied
+  to a report.
+
 ## Related notes and follow-ups
 
 - The glossary generator also follows `indexBasename`, but prefers `index` when the
@@ -581,5 +690,8 @@ Fences reach agents as fences. Embedded scenarios are not in
   winner-and-demotion. See
   [ADR-0048](../adr/0048-generated-page-names-and-empty-sources.md) and
   [ADR-0050](../adr/0050-route-collisions-and-single-index-setting.md).
-- Phase 2 attaches pass/fail results per scenario from a Cucumber results file,
-  as described in the [QA portal research](./research/qa-portal.md).
+- Phase 2 of the [QA portal research](./research/qa-portal.md), pass/fail results
+  per scenario from a Cucumber report, is delivered by
+  [ADR-0055](../adr/0055-gherkin-scenario-results.md); see
+  [Scenario results](#scenario-results). A results summary page across features
+  and history across runs are not part of it.

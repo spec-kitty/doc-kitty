@@ -83,7 +83,7 @@ import { cellSegments, childLevel, displayTags, featureView, resolveLevels, summ
  *   `p[role=heading]` there, so the expansion neither reaches an outline nor
  *   breaks its container's.
  * @property {FeatureResults | StaleResults} [results] The feature's results
- *   (ADR-0052), as `mdast.mjs` shows them: a `Result: **<status>**` line after
+ *   (ADR-0055), as `mdast.mjs` shows them: a `Result: **<status>**` line after
  *   each scenario heading, a `Result` column on each Examples table and a
  *   `**Results:**` line after the summary. Only an EMBED is given results: a
  *   generated page's committed Markdown never carries them (it would drift
@@ -391,7 +391,7 @@ function renderExamples(examples, layout, results) {
   if (examples.rows.length > 0) {
     const lines = tableLines(examples.rows);
     if (results?.state === 'current') {
-      // The `Result` column (ADR-0052): the header, the delimiter, then one
+      // The `Result` column (ADR-0055): the header, the delimiter, then one
       // status word per body row, as `mdast.mjs`'s `addResultColumn` adds it.
       const extra = [
         RESULT_COLUMN,
@@ -488,7 +488,7 @@ function headed(head, { tags, description }, layout) {
 function renderSection(section, level, layout, results) {
   const blocks = headed(section.synthetic ? '' : layout.heading(level, titled(section)), section, layout);
   const outcome = results?.state === 'current' && section.kind === 'scenario' ? results.scenarios.get(section.line) : undefined;
-  // Directly after the heading, as the HTML puts it (ADR-0052).
+  // Directly after the heading, as the HTML puts it (ADR-0055).
   if (outcome) blocks.splice(section.synthetic ? 0 : 1, 0, resultLine(outcome));
   if (section.steps.length > 0) blocks.push(renderSteps(section.steps));
   for (const ex of section.examples) blocks.push(...renderExamples(ex, layout, results));

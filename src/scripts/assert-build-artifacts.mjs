@@ -1618,7 +1618,7 @@ async function assertGherkinDemonstrator(distDir) {
 }
 
 // ---------------------------------------------------------------------------
-// gherkin scenario results (ADR-0052), as a DIST TRIPWIRE: the example site's
+// gherkin scenario results (ADR-0055), as a DIST TRIPWIRE: the example site's
 // `gherkin.results` report (example/reports/cucumber.ndjson) must reach a
 // generated feature page (added at render time; the committed Markdown has no
 // results) and an include, and its run must reach the scenario index. The
@@ -1663,7 +1663,7 @@ async function assertGherkinResults(distDir) {
     }
     if (page.label && !html.includes(page.label)) fail(`${label}: no "${page.label}" badge`);
     for (const leak of GHERKIN_RESULTS_LEAKS) {
-      if (html.includes(leak)) fail(`${label}: shows "${leak}" from the report — only statuses may be published (ADR-0052)`);
+      if (html.includes(leak)) fail(`${label}: shows "${leak}" from the report — only statuses may be published (ADR-0055)`);
     }
   }
   const index = JSON.parse(await readTextOrFail(path.join(distDir, SCENARIO_INDEX_RELPATH), 'scenario index'));

@@ -2,7 +2,7 @@
 title: Architecture research
 description: Investigations that inform architecture decisions but are not themselves the present-state design.
 doc_status: active
-updated: 2026-08-22
+updated: 2026-10-14
 type: Architecture
 kind: Hub
 agent:
@@ -28,6 +28,9 @@ how it works, so a decision can cite them. They are not the present-state design
   doubles as a status portal.
 - [QA portal (tests as documentation)](./qa-portal.md) — render test and BDD
   results so the docsite also serves as a QA portal.
+- [Gherkin scenario results](./gherkin-results.md) — what Cucumber reports contain,
+  how a result is tied to a rendered scenario, and how other tools show status;
+  the research behind ADR-0055.
 - [Ticketing report page](./ticketing-report.md) — a build-time report of a repo's
   tracker tickets, via an adaptor layer (GitHub first), so the docsite also serves
   as a ticketing portal.

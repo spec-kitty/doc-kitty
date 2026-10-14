@@ -360,7 +360,7 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
 //     page is stored under its plain digest. An entry type with no render
 //     function (MDX, rendered by Vite) is never marked.
 //
-//  4. Results (ADR-0052 decision 10). With `gherkin.results` set, the
+//  4. Results (ADR-0055 decision 10). With `gherkin.results` set, the
 //     integration names the report in `DK_GHERKIN_RESULTS`. A page that may
 //     show results (an include, or a generated feature page: `mayShowResults`)
 //     also folds the report's hash into its digest, so a new report re-renders

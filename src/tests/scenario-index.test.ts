@@ -377,7 +377,7 @@ describe('scenarioIndexRoute — source resolution and parse-once', () => {
   });
 });
 
-describe('scenarioIndexRoute — results (ADR-0052)', () => {
+describe('scenarioIndexRoute — results (ADR-0055)', () => {
   const FIX = fileURLToPath(new URL('./fixtures/gherkin/results/', import.meta.url));
   const CHECKOUT_HEADINGS: Heading[] = [
     { depth: 1, slug: 'checkout', text: 'Checkout' },

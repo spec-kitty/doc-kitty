@@ -275,7 +275,7 @@ export interface DocKittyOptions {
         titles?: Record<string, string>;
         /**
          * The Cucumber report whose results are shown next to every scenario the
-         * site renders from a `.feature` file (ADR-0052): on generated feature
+         * site renders from a `.feature` file (ADR-0055): on generated feature
          * pages and in `::gherkin` includes, never on a ```` ```gherkin ```` fence.
          * Cucumber Messages (`--format message`, NDJSON) or Cucumber JSON
          * (`--format json`), read at build time; nothing is fetched or run.
@@ -1430,7 +1430,7 @@ export function hasOwnScenarioIndexPage(srcDir: URL | string | undefined, root: 
 }
 
 /**
- * Read the configured Cucumber report once at config time (ADR-0052 decision 9),
+ * Read the configured Cucumber report once at config time (ADR-0055 decision 9),
  * so a broken pipeline fails before any page renders:
  *  - missing: a warning, and the site builds without results (a local build has
  *    no CI report);
@@ -1973,7 +1973,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // `sources` adds none of it (ADR-0051).
   const gherkinPages = gherkinOpts?.pages;
   // The report the docs loader folds into the digest of every page that shows
-  // results (ADR-0052 decision 10), published like DK_INDEX_BASENAME; cleared
+  // results (ADR-0055 decision 10), published like DK_INDEX_BASENAME; cleared
   // when absent, so a later config without results does not inherit it.
   if (gherkinOpts?.results) process.env[DK_GHERKIN_RESULTS_ENV] = gherkinOpts.results.report;
   else delete process.env[DK_GHERKIN_RESULTS_ENV];
@@ -2154,7 +2154,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     ...(gherkinPages ? [gherkinIntegration(gherkinPages, docsDir, indexBasename)] : []),
     // Opt-in in-page Gherkin stage (ADR-0051): PREPENDED immediately before
     // Starlight, AFTER the glossary and the codegen hook, whenever the option is
-    // set and `fences` is not `false`, or `results` is set (ADR-0052: it adds
+    // set and `fences` is not `false`, or `results` is set (ADR-0055: it adds
     // results to generated pages, and with `fences: false` does only that).
     // Here the position IS a correctness constraint, because this integration
     // registers a remark plugin and `updateConfig` APPENDS: after the glossary

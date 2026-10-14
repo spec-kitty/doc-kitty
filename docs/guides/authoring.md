@@ -1,6 +1,6 @@
 ---
 title: Authoring a document
-description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, and show scenarios in any page.
+description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, show scenarios in any page, and show their test results.
 doc_status: active
 updated: 2026-10-14
 type: Guide
@@ -12,6 +12,7 @@ related:
   - adr/0034-redirect-coverage-gate
   - adr/0046-gherkin-feature-pages
   - adr/0051-gherkin-in-any-page
+  - adr/0055-gherkin-scenario-results
   - architecture/gherkin-pages
 ---
 
@@ -468,7 +469,8 @@ except quoted arguments in steps and table cells, which are code.
 
 - On a slide deck a ```` ```gherkin ```` fence stays a code block, and a
   `::gherkin` include is a build error.
-- A generated behaviour page is left as the generator wrote it.
+- A generated behaviour page is left as the generator wrote it, apart from the
+  test results of [Show test results](#show-test-results).
 - The agent page payload (`/api/pages/<slug>.json`) carries each include
   expanded as Markdown in place of the directive, and lists them under
   `includes` as `{ src, scenario?, tags? }`, with `tags` as written in the
@@ -476,3 +478,47 @@ except quoted arguments in steps and table cells, which are code.
   not expanded there.
 - Embedded scenarios are searchable with the rest of the page, but they are not
   listed in `/api/scenarios.json`, which covers generated pages only.
+
+## Show test results
+
+If your CI runs the scenarios with Cucumber, the site can show each scenario's
+last result next to it. Have CI write a report before the docs build, and point
+`gherkin.results` at it:
+
+```sh
+npx cucumber-js --format message:reports/cucumber.ndjson
+```
+
+```js
+gherkin: { sources: ['features'], results: 'reports/cucumber.ndjson' },
+```
+
+Cucumber Messages (`--format message`) is the format to use. Cucumber JSON
+(`--format json`, also written by cucumber-jvm, godog and behave) works too, but it
+cannot show a pass on retry or notice an edit to only a data table, doc string or
+tag. If Cucumber ran in
+another directory than the site, for example in a repository checked out into
+`vendor/app`, give that directory as `root`:
+`results: { report: 'reports/cucumber.ndjson', root: 'vendor/app' }`.
+
+What readers see, on generated pages and in `::gherkin` includes:
+
+- a result after each scenario heading: Passed, Passed on retry, Failed, Pending,
+  Undefined, Ambiguous, Skipped or Not run (in the report's file but not run, for
+  example filtered out by `--tags`);
+- a `Result` column on an outline's Examples table, and the outline's worst row
+  with counts after its heading;
+- a results line under a feature's summary with the date of the run and, when the
+  report names it, the commit.
+
+A ```` ```gherkin ```` fence shows no result: it has no file the report could name.
+
+**After you edit a feature file, its results disappear until the tests run
+again.** The report remembers the version of each file it ran, and a result is
+never shown against another version, so a moved or renamed scenario never gets
+someone else's result. The page says "Results not shown", and the build warns.
+
+Only the status words reach the page. Failure messages, stack traces and anything
+else in the report stay out, so a failing test does not publish its details. A
+missing report is a warning and the site builds without results, which is what a
+local build without CI looks like; a report that cannot be read stops the build.

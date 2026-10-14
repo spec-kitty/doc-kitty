@@ -1,5 +1,5 @@
 /**
- * Scenario results in a REAL BUILD (ADR-0052): a fixture site with a generated
+ * Scenario results in a REAL BUILD (ADR-0055): a fixture site with a generated
  * feature page and an include, both of `features/checkout.feature`, and
  * `gherkin.results` pointing at `reports/cucumber.ndjson`.
  *
@@ -99,7 +99,7 @@ afterAll(() => {
   rmSync(SITE, { recursive: true, force: true });
 });
 
-describe('scenario results in a real build (ADR-0052)', () => {
+describe('scenario results in a real build (ADR-0055)', () => {
   it(
     'shows the report on the include and the generated page, and re-renders both when only the report changes',
     () => {

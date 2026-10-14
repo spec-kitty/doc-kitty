@@ -2,7 +2,7 @@
 title: Roadmap
 description: "Phased plan for doc-kitty, split into MVP and extended scope with MoSCoW priorities."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Plan
 kind: Planning
 authors:
@@ -35,6 +35,11 @@ below.
 [Gherkin feature pages](./features/gherkin-feature-pages.md)
 ([ADR-0046](../adr/0046-gherkin-feature-pages.md)). It ships the document half of
 the QA portal's BDD living documentation; the QA portal itself stays design-only.
+
+**Update (2026-10-14):** [Gherkin scenario results](./features/gherkin-scenario-results.md)
+([ADR-0055](../adr/0055-gherkin-scenario-results.md)) adds the results half: each
+scenario's last result from the site's Cucumber report. A results summary across
+features and JUnit results remain QA-portal design.
 
 (This is a `Planning` page and its features are `Feature` pages per
 [ADR-0010](../adr/0010-planning-kinds-and-moscow.md).)
@@ -109,7 +114,8 @@ tree; the second competes with Leanpub, which we are not doing.
 | Glossary + Contextive | M4 | Should | Extended | ✅ Done | Ubiquitous-language support; multi-context autolinking, hover preview, `:term` directive. |
 | Example content from ars-rethorica | ars-rethorica-example | Could | Extended | ✅ Done | The ars-rethorica showcase corpus (Introduction, Preamble, Book I 15 chapters, Book II/III landings, generated rhetoric glossary, two reader personas). |
 | Doctrine variation | M7 | Should | Extended | ✅ Done | Native `_meta/charter.yaml` governs the whole convention (type/kind vocab, `doc_status` set, sections/IA registry, required-field set), resolved with no Spec Kitty runtime dependency; `#100`, ADR-0042, closes #98/#99. |
-| Gherkin feature pages | — | Should | Extended | ✅ Done | Opt-in `gherkin` preset: `.feature` files become glossary-linked `Specification` pages with a `--check` drift gate (ADR-0046). The document half of the QA portal's BDD living documentation; results are phase 2. |
+| Gherkin feature pages | — | Should | Extended | ✅ Done | Opt-in `gherkin` preset: `.feature` files become glossary-linked `Specification` pages with a `--check` drift gate (ADR-0046). The document half of the QA portal's BDD living documentation. |
+| Gherkin scenario results | #162 | Could | Extended | ✅ Done | `gherkin.results`: each scenario's last result from the site's Cucumber report, on generated pages and includes, never from a stale report (ADR-0055). The results half of the QA portal's BDD living documentation. |
 | Mission status portal | — | Could | Extended | 📐 Design-only | Repository portal; depends on spec-kitty integration. |
 | QA portal | — | Could | Extended | 📐 Design-only | Repository portal; depends on CI test artifacts. |
 | Ticketing report | — | Could | Extended | 📐 Design-only | Repository portal; adaptor work, GitHub first. |

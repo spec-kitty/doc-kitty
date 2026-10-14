@@ -1,5 +1,5 @@
 /**
- * Results on the page (ADR-0052): a `::gherkin` include and a generated feature
+ * Results on the page (ADR-0055): a `::gherkin` include and a generated feature
  * page rendered through the REAL Markdown chain a docs page takes (the harness
  * of `gherkin-fence.test.ts`: Astro's content-entry renderer, the plugins
  * `defineDocKittyIntegrations` registers, then Starlight's directive parser and
@@ -157,7 +157,7 @@ afterEach(() => {
 // An include
 // ===========================================================================
 
-describe('an include shows its results (ADR-0052)', () => {
+describe('an include shows its results (ADR-0055)', () => {
   it('a result line right after each scenario heading; the headings themselves are untouched', async () => {
     const out = await render(include(), ON(RESULTS));
     expect(headingResults(out.hast)).toEqual([
@@ -406,7 +406,7 @@ describe('a generated feature page gets its results at render time', () => {
 });
 
 // ===========================================================================
-// The config-time check (ADR-0052 decision 9) and the loader's report name
+// The config-time check (ADR-0055 decision 9) and the loader's report name
 // ===========================================================================
 
 describe('defineDocKittyIntegrations({ gherkin: { results } })', () => {

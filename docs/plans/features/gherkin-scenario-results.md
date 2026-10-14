@@ -10,7 +10,7 @@ moscow:
   rationale: The results half of BDD living documentation. Built on the shipped Gherkin pages and includes, with no new dependency, but useful only to sites whose CI already writes a Cucumber report.
 tags: [bdd, gherkin, cucumber, living-documentation, qa]
 related:
-  - adr/0052-gherkin-scenario-results
+  - adr/0055-gherkin-scenario-results
   - architecture/research/gherkin-results
   - architecture/gherkin-pages
   - plans/features/gherkin-feature-pages
@@ -28,7 +28,7 @@ and commit. The report is read at build time; nothing is fetched and no test run
 Scope: Extended. Slice D of [issue #120](https://github.com/spec-kitty/doc-kitty/issues/120),
 tracked as [#162](https://github.com/spec-kitty/doc-kitty/issues/162).
 
-Design: [ADR-0052](../../adr/0052-gherkin-scenario-results.md). Research:
+Design: [ADR-0055](../../adr/0055-gherkin-scenario-results.md). Research:
 [Gherkin scenario results (research)](../../architecture/research/gherkin-results.md).
 Builds on: [Gherkin feature pages](./gherkin-feature-pages.md) and
 [ADR-0051](../../adr/0051-gherkin-in-any-page.md). Builds toward:
@@ -83,7 +83,7 @@ Builds on: [Gherkin feature pages](./gherkin-feature-pages.md) and
 | WP06 | Freshness: fold the report hash into the digest of Gherkin-bearing pages, and re-sync them when the report changes. | `schema.ts` | WP03 |
 | WP07 | Agents: `/api/scenarios.json` gains `result` per scenario, `results` per Examples table and a top-level `results` block, behind a `results` route option. | `routes/scenario-index.ts` | WP02 |
 | WP08 | Example site: a committed report for the example features, wired through `gherkin.results`; the scenarios guide shows badges; the axe lane covers them. | `example/` | WP05 |
-| WP09 | Docs: ADR-0052 (amending ADR-0046 and ADR-0051), the architecture page, the authoring and consumer guides, a changelog entry, the roadmap. | `docs/` | all |
+| WP09 | Docs: ADR-0055 (amending ADR-0046 and ADR-0051), the architecture page, the authoring and consumer guides, a changelog entry, the roadmap. | `docs/` | all |
 
 ## Error and warning table
 

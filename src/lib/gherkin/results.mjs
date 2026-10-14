@@ -1,5 +1,5 @@
 /**
- * Cucumber RESULTS (ADR-0052): read the report a site's CI wrote, and tie each
+ * Cucumber RESULTS (ADR-0055): read the report a site's CI wrote, and tie each
  * result to a scenario the site renders from a `.feature` file.
  *
  * Two formats, told apart by the first character of the report:
@@ -29,9 +29,9 @@
  * against the file), the run's date and a validated hex commit id. Messages,
  * stack traces, attachments, step-definition locations and environment details
  * are never read into the result, so nothing else can reach a page
- * (ADR-0052 decision 8).
+ * (ADR-0055 decision 8).
  *
- * A STALE REPORT is never matched by line (ADR-0052 decision 4): a Messages
+ * A STALE REPORT is never matched by line (ADR-0055 decision 4): a Messages
  * report carries each file's text (`source.data`), which must equal the file
  * the site renders; a JSON report carries none, so every entry's line must be a
  * scenario (or outline row) line of the file, with the same name.
@@ -65,7 +65,7 @@ import { GHERKIN_LOG_PREFIX } from './text.mjs';
 export const STATUS_ORDER = Object.freeze(['not-run', 'passed', 'skipped', 'pending', 'undefined', 'ambiguous', 'failed']);
 
 /**
- * The word a page shows for each status (ADR-0052 decision 6).
+ * The word a page shows for each status (ADR-0055 decision 6).
  *
  * @type {Readonly<Record<ResultStatus, string>>}
  */
@@ -802,7 +802,7 @@ export function viewScenarios(view) {
 /**
  * The outcome of every scenario and row a view shows, from one reported file;
  * or `stale` when the report was made from a different version of that file
- * (ADR-0052 decision 4):
+ * (ADR-0055 decision 4):
  *
  * - the report carries the file's text (Messages `source.data`): it must equal
  *   `text`, BOM and line endings aside;

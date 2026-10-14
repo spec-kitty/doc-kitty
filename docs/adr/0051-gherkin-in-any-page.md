@@ -2,13 +2,14 @@
 title: "ADR-0051: Render Gherkin in any page, from a fence or an include"
 description: A gherkin fence renders as a structured scenario and a ::gherkin directive includes a .feature file or chosen scenarios, via one remark stage whose errors fail the build.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: ADR
 kind: ADR
 authors:
   - ivan@spec-kitty.ai
 related:
   - adr/0046-gherkin-feature-pages
+  - adr/0055-gherkin-scenario-results
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - adr/0030-markua-preprocess-to-directive
   - adr/0021-deck-routing-seam-out-of-frame-override
@@ -26,6 +27,12 @@ Accepted. Delivers slices A and B of
 [ADR-0046](./0046-gherkin-feature-pages.md) left open as its options E and F.
 **Amends ADR-0046 decisions 1, 2, 6, 8 and 9** (see
 [Amendments to ADR-0046](#amendments-to-adr-0046)).
+
+Decisions 1, 7 and 8 are amended by
+[ADR-0055](./0055-gherkin-scenario-results.md): the option gains `results`, the
+stage is also registered for it, generated pages get a render-time results
+overlay, and the markup gains a result line, a `Result` column and a results
+summary.
 
 It is sequenced ahead of #119 (Astro 7). The stage is a plain unified plugin, which
 the Astro 7 port must keep working anyway; only the content-layer freshness of

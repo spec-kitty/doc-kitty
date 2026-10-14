@@ -53,7 +53,7 @@ const BUILD_SUITES = [
   // `astro dev` on it, to prove a page re-renders when only its included
   // `.feature` file changes. Real Astro runs, so serialized here.
   'tests/docs-loader-includes-build.test.ts',
-  // Scenario results (ADR-0052): builds a fixture site (in
+  // Scenario results (ADR-0055): builds a fixture site (in
   // `example/.dk-test-gherkin-results/`) over one content cache with one report,
   // then another, to prove the pages that show results re-render when only the
   // report changes, and that an unreadable report fails the build.

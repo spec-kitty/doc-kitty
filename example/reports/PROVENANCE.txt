@@ -1,4 +1,4 @@
-cucumber.ndjson — the example site's Cucumber report (ADR-0052)
+cucumber.ndjson — the example site's Cucumber report (ADR-0055)
 
 A real Cucumber Messages report (cucumber-js 13.3.0, protocol 34.2.1) of every
 .feature file the example site shows: features/** (generated pages) and
@@ -18,7 +18,7 @@ Regenerate it the same way after editing a feature, or its pages show
 "Results not shown" (the report holds each file's text and is checked against it).
 
 ---- steps/steps.js ----
-// Step definitions for the doc-kitty example site's report (ADR-0052 demo).
+// Step definitions for the doc-kitty example site's report (ADR-0055 demo).
 // One catch-all step, so every scenario runs, with a few deliberate outcomes:
 //  - Refuse cargo that does not fit, row 120: fails;
 //  - Refused bookings state the remaining capacity: pending;

@@ -2,13 +2,14 @@
 title: "ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection"
 description: An opt-in gherkin preset parses .feature sources once and generates one Specification page per feature into the docs collection, reusing the ADR-0026 seam.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: ADR
 kind: ADR
 authors:
   - ivan@spec-kitty.ai
 related:
   - adr/0051-gherkin-in-any-page
+  - adr/0055-gherkin-scenario-results
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - adr/0028-glossary-frontmatter-fields
@@ -31,6 +32,11 @@ Decisions 1, 2, 6, 8 and 9 are amended by
 preset also renders `gherkin` fences and `::gherkin` includes on docs pages,
 `sources` becomes optional and only drives generated pages, and in-page errors are
 build-fatal through an error sink.
+
+Decision 9 is amended by [ADR-0055](./0055-gherkin-scenario-results.md): with a
+`results` route option, the scenario index carries each scenario's result from the
+site's Cucumber report. That ADR delivers the QA-portal results overlay that the
+consequences below anticipate.
 
 ## Context
 

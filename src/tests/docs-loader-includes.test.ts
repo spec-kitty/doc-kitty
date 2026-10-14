@@ -463,7 +463,7 @@ describe('the dev watcher re-syncs dependent pages', () => {
 });
 
 // ===========================================================================
-// Results (ADR-0052 decision 10)
+// Results (ADR-0055 decision 10)
 // ===========================================================================
 
 describe('a results report is folded into the pages that may show results', () => {

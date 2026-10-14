@@ -1,5 +1,5 @@
 /**
- * Cucumber results (ADR-0052): reading a report and tying its results to the
+ * Cucumber results (ADR-0055): reading a report and tying its results to the
  * scenarios of a `.feature` file (`gherkin/results.mjs`, `results-load.mjs`).
  *
  * Fixtures (`fixtures/gherkin/results/`, see PROVENANCE.txt): ONE real
@@ -403,7 +403,7 @@ describe('report URIs and the files they name', () => {
   });
 });
 
-describe('gherkin.results option (ADR-0052 decision 1)', () => {
+describe('gherkin.results option (ADR-0055 decision 1)', () => {
   it('accepts a path or { report, root }', () => {
     expect(normalizeResultsOption('reports/cucumber.ndjson')).toEqual({ report: 'reports/cucumber.ndjson', root: '.' });
     expect(normalizeResultsOption({ report: 'r.json', root: 'vendor/x' })).toEqual({ report: 'r.json', root: 'vendor/x' });
@@ -472,7 +472,7 @@ describe('loadReport: from disk, once per version of the file', () => {
   });
 });
 
-describe('overlayResults: matching a generated page to its source (ADR-0052 decision 5)', async () => {
+describe('overlayResults: matching a generated page to its source (ADR-0055 decision 5)', async () => {
   const { unified } = await import('unified');
   const { default: remarkParse } = await import('remark-parse');
   const { default: remarkGfm } = await import('remark-gfm');
@@ -507,7 +507,7 @@ describe('overlayResults: matching a generated page to its source (ADR-0052 deci
   });
 });
 
-describe('review regressions (ADR-0052 decisions 3, 4 and 6)', () => {
+describe('review regressions (ADR-0055 decisions 3, 4 and 6)', () => {
   const json = (file: string) => parseReport(read(file), { display: file });
 
   it.each(['cucumber-js.json', 'cucumber-jvm.json'])('JSON (%s): swapped Examples rows are stale, not mislabelled', (file) => {

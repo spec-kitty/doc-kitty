@@ -1,5 +1,5 @@
 /**
- * Read the configured Cucumber report (`gherkin.results`, ADR-0052) from disk,
+ * Read the configured Cucumber report (`gherkin.results`, ADR-0055) from disk,
  * once per version of the file.
  *
  * The integration reads it in `astro:config:setup` (a missing report is a

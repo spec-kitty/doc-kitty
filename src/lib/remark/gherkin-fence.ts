@@ -102,7 +102,7 @@
  * under `dkGherkinIncludes`, which Astro keeps as the entry's
  * `rendered.metadata.frontmatter`, apart from the validated `entry.data`.
  *
- * RESULTS (ADR-0052). With `results` (the normalised `gherkin.results`), the
+ * RESULTS (ADR-0055). With `results` (the normalised `gherkin.results`), the
  * report is loaded at most once per render, through `results-load.mjs`'s memo,
  * and only for a page that shows Gherkin from a file. An include passes its
  * file's results (checked against the WHOLE file, so a selection cannot hide a
@@ -206,7 +206,7 @@ export interface GherkinFenceOptions {
    */
   fences?: boolean;
   /**
-   * `gherkin.results`, normalised (ADR-0052): the Cucumber report whose results
+   * `gherkin.results`, normalised (ADR-0055): the Cucumber report whose results
    * are shown next to included scenarios and on generated feature pages.
    */
   results?: ResultsOption;
@@ -462,7 +462,7 @@ export default function gherkinFence(
   };
 
   /**
-   * The results of one rendered `.feature` file (ADR-0052 decisions 3 and 4):
+   * The results of one rendered `.feature` file (ADR-0055 decisions 3 and 4):
    * `undefined` when no report is configured or found, or the report does not
    * name the file. `text` is the WHOLE file, `view` what the page shows and
    * `whole` the whole file's view (staleness is checked against it).
@@ -618,7 +618,7 @@ export default function gherkinFence(
     const header = selected ? 'none' : 'full';
     const source = { path: x, ...(href ? { href } : {}), featureTitle: view.title, selected };
     const { baseLevel, inContainer } = match;
-    // ADR-0052: the file's results, checked against the WHOLE file.
+    // ADR-0055: the file's results, checked against the WHOLE file.
     const whole = selected ? (featureView(parsed.document) ?? view) : view;
     const results = resultsFor(loaded(), { relPath: x, text: resolved.bytes }, view, whole);
     const container = featureMdast(view, { baseLevel, header, source, parseMarkdown, inContainer, results }) as MdastNode;
@@ -639,7 +639,7 @@ export default function gherkinFence(
   };
 
   /**
-   * Results on a generated feature page (ADR-0052 decision 5): re-read the
+   * Results on a generated feature page (ADR-0055 decision 5): re-read the
    * page's `.feature` source (`sources[0].resource`, the inverse of
    * `sourceLink`), check it is the version the page was generated from
    * (`generated.at`), and overlay its results on the page's mdast. Anything
@@ -709,7 +709,7 @@ export default function gherkinFence(
     const blocks = isGenerated || options.fences === false ? [] : collectBlocks(tree, { fences: !deck });
     const page = displayPath(file, root);
 
-    // The report (ADR-0052), loaded at most once per render and only for a page
+    // The report (ADR-0055), loaded at most once per render and only for a page
     // that shows Gherkin from a file. A report that cannot be read is FATAL on
     // every page that would show its results (decision 9).
     let reportError: string | undefined;

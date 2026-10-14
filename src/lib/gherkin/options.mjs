@@ -64,7 +64,7 @@ export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
   ...GHERKIN_PAGES_KEYS,
 ]));
 
-/** The keys of the object form of `gherkin.results` (ADR-0052). */
+/** The keys of the object form of `gherkin.results` (ADR-0055). */
 export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report', 'root']));
 
 /**
@@ -109,7 +109,7 @@ export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report
  *   generated pages and include source lines.
  * @property {string} [sourceUrlPrefix] Shared like `sourceRoot`.
  * @property {NormalizedGherkinResults} [results] Present exactly when
- *   `gherkin.results` was given (ADR-0052): the Cucumber report whose results
+ *   `gherkin.results` was given (ADR-0055): the Cucumber report whose results
  *   are shown next to the scenarios rendered from `.feature` files.
  * @property {ValidatedGherkinPages} [pages] Present exactly when `sources` was
  *   given: the generated-pages seam (codegen, `behaviour` sidebar section,
@@ -117,7 +117,7 @@ export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report
  */
 
 /**
- * The normalised `gherkin.results` option (ADR-0052).
+ * The normalised `gherkin.results` option (ADR-0055).
  *
  * @typedef {object} NormalizedGherkinResults
  * @property {string} report The Cucumber report (Messages NDJSON or JSON),
@@ -131,7 +131,7 @@ export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report
  */
 
 /**
- * Normalise `gherkin.results` (ADR-0052 decision 1): a report path, or
+ * Normalise `gherkin.results` (ADR-0055 decision 1): a report path, or
  * `{ report, root? }`. Both paths follow the include rule (`isRelativePosixPath`):
  * non-blank, relative to the project root, `/` separators. `root` may be `.`
  * and may climb out (`..`): it names where Cucumber ran, not a file to read.
