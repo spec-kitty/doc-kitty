@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
  * hand-built `/${id}/` skips those rules and advertises an address the site
  * does not serve, which is how issue 134 happened on seven surfaces. The guard
  * fails on any template literal ending in `/${…}/`, whatever the identifier.
+ * Known limit (ADR-0050): the guard matches template literals only. An address
+ * built by concatenation, such as `'/' + slug + '/'`, is not detected.
  * There is no allow-list: code that builds something else (a base prefix, a
  * `page.pathname`) is written so it does not have that shape.
  */
