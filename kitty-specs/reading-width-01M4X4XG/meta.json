@@ -1,0 +1,34 @@
+{
+  "accept_commit": "37e7e113f590c63ec071db5292d451e7a8c29eb5",
+  "acceptance_history": [
+    {
+      "accept_commit": "37e7e113f590c63ec071db5292d451e7a8c29eb5",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-14T13:00:11.506117+00:00",
+      "accepted_by": "system",
+      "accepted_from_commit": "f3b0beafb5ebf3c40c4811cde8942597571f4ac5"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-14T13:00:11.506117+00:00",
+  "accepted_by": "system",
+  "accepted_from_commit": "f3b0beafb5ebf3c40c4811cde8942597571f4ac5",
+  "baseline_merge_commit": "2d064f215cf00798fbedc1aeb2f19e0f7b1c421a",
+  "created_at": "2026-10-14T12:06:43.749939+00:00",
+  "flattened": false,
+  "friendly_name": "Wider reading column and room for wide content",
+  "merged_at": "2026-10-14T13:00:29.505423+00:00",
+  "merged_commit": "2d064f215cf00798fbedc1aeb2f19e0f7b1c421a",
+  "mid8": "01M4X4XG",
+  "mission_id": "01M4X4XGQ92SEMD7FXG9N01JB1",
+  "mission_number": 7,
+  "mission_slug": "reading-width-01M4X4XG",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Issue #154: the 45rem default reading column sits centred in a large empty frame on 1440-2560px screens, and tables are squashed inside it. This mission settles a new --dk-width-content default from line-length measurements, lets wide tables use the reading pane without crowding the TOC rail, keeps small screens unchanged, and documents how to restore 45rem. It gates the next stable release.",
+  "purpose_tldr": "Raise DocKitty's default reading width and let tables grow past it on wide screens, so wide-screen pages stop squashing tables beside empty space.",
+  "slug": "reading-width-01M4X4XG",
+  "status_phase": "1",
+  "target_branch": "issue-154-reading-width",
+  "topology": "single_branch"
+}

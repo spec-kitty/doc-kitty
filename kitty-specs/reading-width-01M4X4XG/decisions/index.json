@@ -1,0 +1,56 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-14T12:11:35.856662Z",
+      "decision_id": "01M4X56F1GE5HAWSXBGWSNMAB9",
+      "final_answer": "52rem. Resolved autonomously from the dispatch brief (issue #154 asks to settle the value by measuring line length). Measured: 45rem = 92-101 chars/line, 52rem = 106-117, 60rem = 123-135. At 1440px a sidebar+rail page is pane-limited to 816px, so 51rem+ fills the pane there; 52rem is the smallest value that does, keeping prose as close to the 45-90 char guideline as the goal allows. Tables get extra room separately. The operator can restate 60rem in review; it is a one-token change.",
+      "input_key": "reading_width_default",
+      "mission_id": "01M4X4XGQ92SEMD7FXG9N01JB1",
+      "mission_slug": "reading-width-01M4X4XG",
+      "opened_by": "cli",
+      "options": [
+        "52rem",
+        "56rem",
+        "60rem",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "What should the new --dk-width-content default be (issue proposes ~60rem; settle by line-length measurement)?",
+      "rationale": null,
+      "resolved_at": "2026-10-14T12:11:48.400898Z",
+      "resolved_by": null,
+      "slot_key": "specify.layout.reading-width-default",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-14T12:11:39.493585Z",
+      "decision_id": "01M4X56JK56BM2QAXP9C3J7JKV",
+      "final_answer": "Tables only: a table that is a direct child of the page body grows past the prose column, centred on it, up to the reading pane (never under the TOC rail) and at most a new --dk-width-wide token, from the 72rem breakpoint up. Diagrams already scale to fit and code blocks scroll by convention; both stay in the column. Resolved autonomously from the brief (issue prefers growth when it does not hurt the TOC rail).",
+      "input_key": "wide_content_behaviour",
+      "mission_id": "01M4X4XGQ92SEMD7FXG9N01JB1",
+      "mission_slug": "reading-width-01M4X4XG",
+      "opened_by": "cli",
+      "options": [
+        "Tables only, to the reading pane, capped by a token",
+        "Tables, diagrams and code",
+        "Keep everything scrolling inside the column",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": true,
+      "question": "Which wide blocks grow past the prose column, and how far?",
+      "rationale": null,
+      "resolved_at": "2026-10-14T12:11:51.613431Z",
+      "resolved_by": null,
+      "slot_key": "specify.layout.wide-content",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M4X4XGQ92SEMD7FXG9N01JB1",
+  "version": 1
+}
