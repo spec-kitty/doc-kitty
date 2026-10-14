@@ -6,171 +6,176 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-The next release is `0.3.0`, because the Breaking entries below change what an
-existing site's build does, and under `0.x` the minor number marks a breaking
-release, as it did for `0.2.0`.
+## [0.3.0] — 2026-10-14
+
+This release lets you write Gherkin scenarios in any page, rewrites relative
+Markdown links to working routes, widens the reading column to 60rem and makes
+sidebars stop repeating their own labels. You now set index names in one place,
+on `defineDocKittyIntegrations`, and the DocKitty commands read them from your
+site config. Several silent problems now stop the build with a message that
+names the file: two files at one address, a misspelt theme slot, empty Gherkin
+sources. **Upgrading from 0.2.0: read the Breaking section first.**
 
 ### 💥 Breaking
 
-- **The build stops when no source yields a Gherkin feature and generated pages
-  exist (#122).** Before, a source directory that was not checked out, such as an
-  uninitialised git submodule, made the build warn and delete every generated
-  page. Now `generateFeaturePages` throws before any write and removes nothing.
-  A site that relied on empty sources pruning its pages must set
-  `gherkin.allowEmpty: true`, or pass `--allow-empty` to
-  `dockitty-generate-feature-pages`, for the build that should delete them.
-  `--check` is unchanged.
-- **Generated glossary pages take your site's index name, and the build stops in
-  three cases it did not before (#129).** Before, the generator always wrote
-  `glossary/index.md`, and it wrote through an authored file or a symbolic link.
-  Now the pages are named `index` when your `indexBasename` lists it, and
-  otherwise with your first index name. On a site that does not list `index`,
-  `glossary/index.md` becomes `glossary/README.md`, and likewise for each context
-  folder. A site that commits its generated pages commits the rename. The build now
-  stops, names the path and writes nothing when a file you wrote or a symbolic link
-  sits where a generated page goes, when `glossary/` or a context folder is a
-  symbolic link, and when an index name is not a plain file name (one path
-  segment: no `/` or `\`, no leading `.`, no surrounding whitespace), or is empty
-  or `log`.
-- **A theme slot name outside the `dk:` surface stops the build (#114).** Before,
-  a misspelt slot such as `dk:site-heading` in a plain-JavaScript config was
-  accepted, and the stock component rendered without a message. Now the
-  configuration fails to load with an error that names the slot and lists the
-  valid names. Correct the name. A theme typed as `DocKittyTheme` in TypeScript
-  already caught this. See ADR-0052.
-- **`docKittyDocsLoader` rejects a custom `pattern` (#133).** Before, a narrowed
-  `pattern` changed which pages were built but not the route table the link
-  rewrite uses, so a relative `.md` link could be rewritten to a page that was
-  never built. Now the loader throws when `pattern` is anything but the default.
-  Leave `pattern` unset; to keep a file out of the site, move it out of the docs
-  folder or name it `log.md`.
-- **Move `indexBasename` from `docKittyDocsLoader` to `defineDocKittyIntegrations`
-  in `astro.config.*` (#136).** Before, you could set index names in three places
-  (the integration, the loader and the `--index-basename` flag), and they could
-  disagree. Now the integration is the only place, and the loader picks the value
-  up from it. If the loader still sets `indexBasename` to a different value, the
-  build stops and shows both values. Once the names are on the integration, you
-  can delete the loader option.
 - **Remove `--index-basename` from your CI scripts: the DocKitty commands now
-  read index names from `astro.config.*`, and `dockitty-check-links` defaults to
-  `README` (#136).** Before, `dockitty-check-links` treated both `README` and
-  `index` as index names while the build used only `README`. Now
-  `dockitty-check-links`, `dockitty-validate-frontmatter`,
-  `dockitty-check-redirect-coverage`, `dockitty-generate-feature-pages`,
-  `dockitty-new-doc` and `dockitty-scaffold` read your site config, which adds
-  about one second per run. Each command prints the index names it used and where
-  they came from. When no config sits next to the docs folder, the command warns
-  and uses `README`; pass `--astro-config <path>` if your config lives elsewhere.
-  A path that does not exist or cannot be loaded exits 2. If you keep the
-  `--index-basename` flag, it must list the same names as the config (order and
-  letter case do not matter), or the command exits 2.
+  read index names from `astro.config.*` (#136).** Before, each command took its
+  own index names, and `dockitty-check-links` accepted both `README` and `index`
+  while the build used only `README`. Now `dockitty-check-links`,
+  `dockitty-validate-frontmatter`, `dockitty-check-redirect-coverage`,
+  `dockitty-generate-feature-pages`, `dockitty-new-doc` and `dockitty-scaffold`
+  read your site config (about one extra second per run) and print the names they
+  used. With no config next to the docs folder, they warn and use `README`; pass
+  `--astro-config <path>` if your config lives elsewhere. A missing or broken
+  config path exits 2. If you keep the flag, it must list the same names as the
+  config (order and letter case aside), or the command exits 2.
+- **Move `indexBasename` from `docKittyDocsLoader` to `defineDocKittyIntegrations`
+  in `astro.config.*` (#136).** Before, you could set index names on the
+  integration, the loader and the command line, and they could disagree. Now the
+  integration is the only place, and the loader takes the value from it. If the
+  loader still sets a different value, the build stops and shows both. Once the
+  names are on the integration, delete the loader option. See
+  [ADR-0050](docs/adr/0050-route-collisions-and-single-index-setting.md).
 - **Keep one file per page address: two files served at the same address now stop
   the build (#135).** Before, a folder with both `README.md` and `index.md` built
-  with a warning and one of them became an ordinary page. `page.md` next to
-  `page.mdx`, or two pages whose names differ only in letter case, went unnoticed.
-  Now the build, `dockitty-check-links --strict` (exit 1) and
-  `dockitty-validate-frontmatter` stop and name the files, the address and a fix.
-  Drafts count too. Names that differ only in case count because they overwrite
-  each other on macOS and Windows. Rename or remove all but one file in each group.
-- **Move pages you want published out of `_meta/` (#138).** Before, Markdown at any
-  depth under a `_meta/` folder, and files named `_meta.md` or `_meta.mdx`, were
-  built and linked like any page. Now they are not published, and
+  with a warning, and `page.md` next to `page.mdx`, or two names that differ only
+  in letter case, went unnoticed. Now the build, `dockitty-check-links --strict`
+  (exit 1) and `dockitty-validate-frontmatter` stop and name the files, the
+  address and a fix. Drafts count too, and so do case-only differences, because
+  those files overwrite each other on macOS and Windows. Rename or remove all but
+  one file in each group.
+- **Generated glossary pages take your site's index name, and the build stops in
+  three new cases (#129).** Before, the generator always wrote
+  `glossary/index.md`. Now it uses `index` when your index names list it, and
+  otherwise your first index name: on a site without `index`,
+  `glossary/index.md` becomes `glossary/README.md`, and likewise for each context
+  folder. If you commit generated pages, commit the rename. The build now stops,
+  names the path and writes nothing when a file you wrote or a symbolic link sits
+  where a generated page goes, when `glossary/` or a context folder is a symbolic
+  link, and when an index name is not a plain file name (one path segment, no
+  leading `.`, no surrounding spaces), is empty, or is `log`.
+- **On a site that sets `gherkin: { sources }`, ```` ```gherkin ```` fences and
+  `::gherkin{…}` lines change meaning (#120).** Before, fences rendered as code
+  blocks and a `::gherkin{…}` line printed as text. Now fences render as
+  structured scenarios, and `::gherkin{…}` includes a `.feature` file from the
+  folders in `includeRoots` (default: `sources`); an include whose file is
+  outside them, missing or not a `.feature` file fails the build. Add `raw` to a
+  fence (```` ```gherkin raw ````) to keep it as code, or set `fences: false` to
+  keep every authored page as it was. An unknown key in the `gherkin` option is
+  now a config error instead of being ignored. Sites without the `gherkin` option
+  are unaffected.
+- **Regenerate your committed feature pages once (#120).** Generated feature
+  pages now show quoted step arguments as code (see Changed), so a regenerated
+  page differs from the committed one. Run `dockitty-generate-feature-pages`
+  once, or the `--check` gate reports the drift.
+- **The build stops when no source yields a Gherkin feature and generated pages
+  exist (#122).** Before, a source folder that was not checked out, such as an
+  uninitialised git submodule, made the build warn and delete every generated
+  page. Now the build stops before writing anything and removes nothing. When you
+  do want the pages removed, set `gherkin.allowEmpty: true`, or pass
+  `--allow-empty` to `dockitty-generate-feature-pages`, for that one build.
+  `--check` is unchanged.
+- **Move pages you want published out of `_meta/` (#138).** Before, Markdown at
+  any depth under a `_meta/` folder, and files named `_meta.md` or `_meta.mdx`,
+  were built and linked like any page. Now they are not published, and
   `dockitty-check-links --strict` skips them. The YAML registry files in `_meta/`
   still load, and `dockitty-validate-frontmatter` still checks the Markdown there.
-- **`dockitty-new-doc --section` and `dockitty-scaffold` now create your first index
-  name (#136).** Before, a site with index names `['index', 'README']` could get a
-  `README.md`. Now it gets `index.md`. An `--index-basename` value that is not one
-  of your index names exits 2.
-- **Rename any Gherkin file called `index.feature` (#137).** Before, it was accepted
-  unless your index names included `index`, and its generated page then collided
-  with the folder's landing page. Now the build stops on it whatever your index
-  names are.
-- **If your site sets `gherkin: { sources }`, your ```` ```gherkin ```` fences now
-  render as structured scenarios** instead of code blocks. Add `raw` to a fence
-  (```` ```gherkin raw ````) to keep it as code, or set `fences: false` to keep
-  every authored page as it was. Sites without the `gherkin` option are
-  unaffected.
-- **On such a site a `::gherkin{…}` line is now an include**; it used to print as
-  literal text. It reads files from the folders in `includeRoots` (default:
-  `sources`), and a line whose file is outside them, missing or not a `.feature`
-  file now fails the build.
-- **An unknown key in the `gherkin` option is now a config error** instead of
-  being ignored.
-- **Generated feature pages show quoted step arguments as code**
-  (`"insufficient space"` becomes a code span, quotes kept), in step text and in
-  data-table and Examples cells, so a regenerated page
-  differs from the committed one: run the generator once, or the `--check` gate
-  reports the drift. See Changed.
+- **`dockitty-new-doc --section` and `dockitty-scaffold` create your first index
+  name (#136).** Before, a site with index names `['index', 'README']` could get
+  a `README.md`. Now it gets `index.md`. An `--index-basename` value that is not
+  one of your index names exits 2.
+- **A theme slot name outside the `dk:` set stops the build (#114).** Before, a
+  misspelt slot such as `dk:site-heading` in a plain-JavaScript config was
+  accepted, and the stock component rendered without a message. Now the config
+  fails to load with an error that names the slot and lists the valid names.
+  Correct the name. A theme typed as `DocKittyTheme` in TypeScript already caught
+  this. See [ADR-0052](docs/adr/0052-runtime-slot-name-validation.md).
+- **`docKittyDocsLoader` rejects a custom `pattern` (#133).** Before, a narrowed
+  `pattern` changed which pages were built but not which pages relative links
+  could point to, so a `.md` link could be rewritten to a page that was never
+  built. Now the loader throws when `pattern` is anything but the default. Leave
+  `pattern` unset; to keep a file out of the site, move it out of the docs folder
+  or name it `log.md`.
+- **Rename any Gherkin file called `index.feature` (#137).** Before, it was
+  accepted unless your index names included `index`, and its generated page then
+  collided with the folder's landing page. Now the build stops on it whatever
+  your index names are.
 
 ### Changed
 
 - **The reading column is wider, and all body content uses it (#154).** The
   default `--dk-width-content` goes from `45rem` (720px) to `60rem` (960px), so
   prose, tables, diagrams, code blocks and components share one wider column
-  instead of sitting in a narrow strip on large screens. The column is still
-  limited by the space between the sidebar and the "On this page" rail, so it
-  never runs under the rail and still respects `--dk-width-frame`; phones and
-  tablets look as before. Lines of prose are longer: about 123 to 135
-  characters, against 92 to 101. To keep the old width, set
-  `:root { --dk-width-content: 45rem; }`. See
-  [Theming and chrome](docs/architecture/theming.md#reading-width).
-
-- **A Gherkin directory whose features are all drafts gets a draft hub (#124).**
+  instead of a narrow strip on large screens. The column still stays clear of the
+  "On this page" rail and respects `--dk-width-frame`; phones and tablets look as
+  before. Prose lines grow from about 92–101 to 123–135 characters. To keep the
+  old width, set `:root { --dk-width-content: 45rem; }`. See
+  [Theming and chrome](docs/architecture/theming.md#reading-width) and
+  [ADR-0053](docs/adr/0053-reading-width.md).
+- **Sidebars no longer repeat their own labels, on every site with
+  autogenerated groups (#112).** Before, a folder whose only page was its index
+  showed as a group holding the same name (glossary contexts read `hr > hr`), and
+  a section's index repeated its heading ("Guides > Guides"). Now a nested
+  one-page folder shows as that one link, in the folder's place, and a section
+  index whose label repeats its heading reads "Overview", unless another page in
+  the group already has that label. Top-level sections stay groups, and previous
+  and next links keep the page title. "Overview" is English only for now (#161
+  tracks translating it).
+- **Quoted step arguments render as code, on generated pages and in fences and
+  includes alike (#120).** A double-quoted argument such as
+  `"spec-kitty init --force"` renders as inline code with its quotes, so the page
+  no longer curls the quotes or turns `--` into a dash, and the value copies
+  exactly. This applies in data-table and Examples cells too. Text outside quotes
+  is still typeset, and a quoted argument is no longer glossary-linked.
+- **A broken in-page Gherkin fence or include fails the build (#120).** Before,
+  the page built empty. Now a Gherkin syntax error, or an include whose file,
+  scenario or tag is not found, stops `astro build` with one
+  `[dk-gherkin] <page>:<line>` error listing every broken page, and keeps failing
+  until you fix it.
+- **A Gherkin folder whose features are all drafts gets a draft hub (#124).**
   Before, it got no hub, so with drafts built (the default) the sidebar asked for
-  an index page the author could not add. Now the generator writes a hub with
-  `doc_status: draft` and no list, which is built only when drafts are and is
-  linked from no published hub. Generation still ignores `DK_PUBLISH_DRAFTS`, so
-  the committed pages and the `--check` gate are the same in both modes. A site
-  with such a directory gets one new generated file: run the generator once, or
-  `--check` reports it as `added`.
-- **A mis-cased `@wip` or `@deprecated` tag warns (#123).** The status shorthands
-  still match exactly, as Cucumber tag filters do. A tag such as `@WIP` stays an
-  ordinary page tag and now raises "did you mean `@wip`?" instead of publishing
-  silently.
-
-- **`dockitty-check-links` now checks reference-style link definitions, and
-  names a bad option (#131).** Before, a dangling
-  `[label]: target` line passed. Now it is reported like an inline link. An
-  unknown option, the `--name=value` form and an `--index-basename` value that is
-  not a plain file name still exit with status 2, but the command now stops before
-  scanning and names the option; before, it read the option as a docs folder and
-  reported that it could not read it. The failure summary reads
-  "N link problem(s) in M file(s); F file(s) scanned, C reference(s) checked."
-- **Quoted step arguments are code, on generated pages and in fences and
-  includes alike.** A double-quoted argument such as `"spec-kitty init --force"`
-  renders as inline code with its quotes, so the page's typography no longer curls
-  the quotes or turns `--` into a dash, and the value copies exactly. A quoted
-  argument in a data-table or Examples cell is code too. Text outside quotes is
-  still typeset, and a quoted argument is no longer glossary-linked.
-- **A broken in-page fence or include fails the build.** A Gherkin syntax error,
-  or an include whose file, scenario or tag is not found, stops `astro build`
-  with one `[dk-gherkin] <page>:<line>` error listing every broken page, instead
-  of building the page empty. Building again fails the same way until you fix it.
-- **Sidebars change for every site with autogenerated groups (#112).**
-  Before, a folder whose only page was its index showed as a group that opened
-  onto the same name again, and a section's index repeated the heading above it
-  ("Guides > Guides"). Now a nested folder whose only page is its index shows as
-  that one link, keeping its place among the sub-folders, and a section index
-  whose label repeats its heading reads "Overview". Top-level sections stay
-  groups, and previous and next links keep the page title. The word "Overview"
-  is English only for now (#161 tracks translating it).
+  an index page you could not add. Now the generator writes a hub marked
+  `doc_status: draft` with no list, built only when drafts are and linked from no
+  published hub. The generated files do not depend on `DK_PUBLISH_DRAFTS`, so
+  `--check` agrees in both modes. Such a folder gets one new generated file: run
+  the generator once, or `--check` reports it as `added`.
+- **A mis-cased `@wip` or `@deprecated` tag warns (#123).** Before, a tag such as
+  `@WIP` was published silently as an ordinary page tag. It still is, since the
+  status shorthands match exactly as Cucumber tag filters do, but the build now
+  asks "did you mean `@wip`?".
+- **`dockitty-check-links` checks reference-style link definitions and names a
+  bad option (#131).** Before, a dangling `[label]: target` line passed, and an
+  unknown option was read as a docs folder that could not be opened. Now the
+  definition is reported like an inline link, and an unknown option or the
+  `--name=value` form stops the command before scanning, names the option and
+  exits 2. The failure summary reads "N link problem(s) in M file(s); F file(s)
+  scanned, C reference(s) checked."
 
 ### Added
 
-- **`gherkin.titles` sets Gherkin hub titles (#125).** A map from a directory
-  relative to its source to the title of its hub, for names a directory can't
-  spell: `titles: { hr: 'HR' }` turns the "Hr" hub and sidebar group into "HR". A
-  key that matches no directory warns; malformed keys or titles, or `titles`
-  without `sources`, fail the build. `dockitty-generate-feature-pages` takes the
-  same setting as a repeatable `--titles <dir>=<title>`.
-- **The consumer guide explains the `diagrams` option (#153).** Before, the guide
-  did not mention it, and `diagrams: false` could be read as "draw diagrams in the
-  browser". It means the blocks are shown as code. A new section covers turning
-  diagrams on, the build and client render modes, pinning one with
-  `DK_DIAGRAM_BUILD_RENDER` (use `client` in CI without Chromium), and the
-  self-hosted server PlantUML needs. The option's doc comment now opens with what
-  `false` does. No behaviour changes. See
-  [Optional: Diagrams](docs/guides/consumer-setup.md#optional-diagrams).
+- **Gherkin in any page (#120).** Set `gherkin: true` and a ```` ```gherkin ````
+  fence on any docs page renders as a structured scenario: the feature and
+  scenarios as headings in the page outline, steps as a list with the keyword in
+  bold, data tables and Examples as tables, doc strings as code blocks, and `#`
+  comments hidden. A fence may hold a whole feature, scenarios without a
+  `Feature:` line, or bare steps. Inside a list, quote or aside the headings stay
+  out of "On this page". Slide decks keep fences as code, and generated feature
+  pages are left as they are. See
+  [ADR-0051](docs/adr/0051-gherkin-in-any-page.md).
+- **Include a `.feature` file from your repository with `::gherkin{src="…"}`
+  (#120).** Include the whole file, one scenario with `scenario="<exact name>"`,
+  or the scenarios and Examples rows that carry any of `tags="@a @b"` (inherited
+  tags count). Each include ends in a source line naming the file, linked with
+  `sourceUrlPrefix`. Includes need `gherkin.includeRoots` (or `sources`) and read
+  only regular files of at most 1 MiB inside those folders. A page that includes
+  a file is re-rendered when the file changes, in a build and in the dev server.
+- **New `gherkin` option forms (#120).** `gherkin: true` turns on fences only,
+  with no generated pages. The object form gains `fences` (default `true`) and
+  `includeRoots`, and `sources` becomes optional: it is what turns on generated
+  pages and the `behaviour` section.
+- **The agent page payload expands includes (#120).** `/api/pages/<slug>.json`
+  has each include as Markdown in place of the directive, and lists them under
+  `includes: [{ src, scenario?, tags? }]`.
 - **Scenario results from your Cucumber report (#162, ADR-0055).** Set
   `gherkin.results` to the Cucumber Messages or JSON report your CI writes, and
   every scenario shown from a `.feature` file, on generated pages and in
@@ -183,130 +188,96 @@ release, as it did for `0.2.0`.
   a warning; an unreadable one fails the build. The injected `/api/scenarios.json`
   carries the results too (a hand-mounted `scenarioIndexRoute` takes
   `{ results }`).
-- **Relative Markdown links between pages are rewritten to routes at build
-  (#131).** Before, `[setup](./setup.md)` rendered as a link to a `.md` path that
-  404s on the live site, so authors wrote root-absolute routes that break on
-  GitHub. Now a relative `.md` or `.mdx` link to a published page becomes that
-  page's route, with your `base` applied, and the same link works on GitHub. A
-  link that does not resolve is left as written and reported by
-  `dockitty-assert-no-broken-links`. Raw HTML anchors are not rewritten. After a
-  rename, restart the dev server. See [ADR-0047](docs/adr/0047-relative-markdown-links.md).
-- **`gherkin.allowEmpty` and `--allow-empty`.** They let the build, and
+- **Relative Markdown links between pages work on the built site (#131).**
+  Before, `[setup](./setup.md)` linked to a `.md` path that 404s on the live
+  site, so authors wrote root-absolute links that break on GitHub. Now a relative
+  `.md` or `.mdx` link to a published page becomes that page's address, with your
+  `base` applied, and the same link still works on GitHub. A link that does not
+  resolve is left as written and reported by `dockitty-assert-no-broken-links`.
+  Raw HTML anchors are not rewritten. After renaming a page, restart the dev
+  server. See [ADR-0047](docs/adr/0047-relative-markdown-links.md).
+- **`dockitty-check-links --strict` checks links the way the build sees them
+  (#131).** Without `--strict`, the check reads files as GitHub does, as in
+  0.2.0. With it, a relative `.md` link passes only when the build would turn it
+  into a link to a published page. It also reports links to files that are not
+  pages (such as `log.md`) or lie outside the docs folder, paths that leave the
+  docs folder and come back, malformed `%` escapes, folder links with no index
+  page, bare relative links with no extension and, with
+  `DK_PUBLISH_DRAFTS=off`, links to drafts. A site built with the toolkit should
+  pass `--strict`; without it, the command prints one note suggesting it.
+  `--help` lists the options.
+- **`gherkin.titles` sets Gherkin hub titles (#125).** It maps a folder, relative
+  to its source, to the title of its hub, for names a folder can't spell:
+  `titles: { hr: 'HR' }` turns the "Hr" hub and sidebar group into "HR". A key
+  that matches no folder warns; malformed keys or titles, or `titles` without
+  `sources`, fail the build. `dockitty-generate-feature-pages` takes the same
+  setting as a repeatable `--titles <dir>=<title>`.
+- **`gherkin.allowEmpty` and `--allow-empty` (#122).** They let the build, and
   `dockitty-generate-feature-pages`, remove the generated pages when no source
   yields a feature. Off by default. See the Breaking entry above and
   [ADR-0048](docs/adr/0048-generated-page-names-and-empty-sources.md).
-- **`--strict` and `--index-basename` on `dockitty-check-links` (#131).**
-  Without `--strict`, a root is read as files, as on GitHub, and the check is the
-  one 0.2.0 ran. With `--strict`, a root is read as a built site: a relative
-  `.md` link passes only when the build would rewrite it to a published page. It
-  also reports a link to a file that is not a page (for example `log.md`), a path
-  that leaves the docs root and comes back, a link to a file outside the docs
-  tree, a malformed `%` escape, a folder link with no index page, a bare relative
-  link with no extension, and, with `DK_PUBLISH_DRAFTS=off`, a link to a draft.
-  A `related:` ref is matched against page ids, as the build does, so a page
-  `x/index.md` that is not a section index is `x/index`, not `x`.
-  A site built with the toolkit should pass `--strict`; `example/docs` is always
-  strict. When an Astro config sits next to a root that is not strict, the command
-  prints one note suggesting `--strict`, and the exit code is unchanged.
-  The command reads your site's index names from `astro.config.*`; see the
-  Breaking entry on `--index-basename` above. `--help` lists the options.
-- **`--help` on `dockitty-generate-feature-pages`.** It prints the flags and exits
-  with status 0.
-- **Gherkin in any page** ([ADR-0051](docs/adr/0051-gherkin-in-any-page.md)). Set
-  `gherkin: true` and a ```` ```gherkin ```` fence on any docs page renders as a
-  structured scenario: the feature and scenarios as headings that nest under the
-  page's outline, steps as a bulleted list with the keyword in bold, data tables
-  and Examples as tables, doc strings as code blocks, and `#` comments hidden. A
-  fence may hold a whole feature, scenarios without a `Feature:` line, or bare
-  steps. Inside a list, quote or aside the headings become `role="heading"`
-  paragraphs, so they stay out of "On this page". Slide decks keep fences as code,
-  and generated feature pages are left as generated.
-- **Include a `.feature` file from your repository with `::gherkin{src="…"}`**:
-  the whole file, one scenario with `scenario="<exact name>"`, or the scenarios
-  and Examples rows that carry any of `tags="@a @b"` (inherited tags count). Each
-  include ends in a source line naming the file, linked with `sourceUrlPrefix`.
-  Includes need `gherkin.includeRoots` (or `sources`): they may only read regular
-  files of at most 1 MiB inside those folders, and `gherkin: true` alone turns on
-  fences only. A page that includes a file is re-rendered when the file changes,
-  in a build and in the dev server.
-- **The `gherkin` option accepts `true`** (fences only, no generated pages) and
-  the object form gains `fences` (default `true`) and `includeRoots`. `sources`
-  is now optional: it is what turns on generated pages and the `behaviour`
-  section.
-- **The agent page payload expands includes.** `/api/pages/<slug>.json` has each
-  include as Markdown in place of the directive, and lists them under
-  `includes: [{ src, scenario?, tags? }]`.
+- **The consumer guide explains the `diagrams` option (#153).** Before, the guide
+  did not mention it, and `diagrams: false` could be read as "draw diagrams in
+  the browser"; it means the blocks are shown as code. A new section covers
+  turning diagrams on, the build and browser render modes, pinning one with
+  `DK_DIAGRAM_BUILD_RENDER` (use `client` in CI without Chromium), and the
+  self-hosted server PlantUML needs. No behaviour changes. See
+  [Optional: Diagrams](docs/guides/consumer-setup.md#optional-diagrams).
+- **`--help` on `dockitty-generate-feature-pages`.** It prints the flags and
+  exits with status 0.
 
 ### Fixed
 
 - **`/api/scenarios.json` now exists whenever Gherkin pages are generated
   (#126).** Before, `llms.txt` pointed agents at `/api/scenarios.json` as soon as
-  a generated feature page was published, but the route existed only if the site
-  had added `src/pages/api/scenarios.json.ts`, so a site that had not served a 404.
-  Now the `gherkin` integration adds the route itself whenever `gherkin.sources` is
-  set, with your `sourceRoot` and `sourceUrlPrefix`, under your `base`. You add
-  nothing. A route file you already have is kept, and the integration skips its
-  own. A site that removes the `gherkin` option but keeps its generated pages has
-  no integration, so it must mount `scenarioIndexRoute()` itself.
-
-- **Sidebar groups no longer repeat their own label (#112).** Before, a folder
-  whose only page was its index showed as a group holding that same name (the
-  generated glossary contexts read `hr > hr`), and every section's index entry
-  repeated its heading ("Guides > Guides"). Now a one-page nested folder is
-  shown as its index link, in the folder's place, and an index entry that would
-  repeat its group's label reads "Overview". Previous and next links keep the
-  page title. If a page in the group is already labelled "Overview", the index
-  keeps its own label.
-- **The example's rhetoric section lists its pages in reading order (#112).**
-  Introduction, Preamble, then About and license, through `sidebar.order`.
-- **Feeds, `llms.txt`, the agent API, related links, the Hub, the scenario index and
-  the on-this-page block now link a folder's `index.md` at the address the site
-  serves (#134).** Before, `guide/index.md` was listed as `/guide/index/`, an
-  address the site does not serve, and the site's root page as `/index/`. Now they
-  use `/guide/` and `/`. If you read the agent API, the `route` field changes for
+  a generated feature page was published, but the address served a 404 unless
+  the site had added `src/pages/api/scenarios.json.ts`. Now the `gherkin`
+  integration adds it whenever `gherkin.sources` is set, with your `sourceRoot`
+  and `sourceUrlPrefix`, under your `base`. You add nothing; a route file you
+  already have is kept. A site that removes the `gherkin` option but keeps its
+  generated pages must mount `scenarioIndexRoute()` itself. See
+  [ADR-0054](docs/adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md).
+- **Folder index pages are linked at the address the site serves (#134).**
+  Before, feeds, `llms.txt`, the agent API, related links, the Hub, the scenario
+  index and the on-this-page block listed `guide/index.md` as `/guide/index/`,
+  and the root page as `/index/`, addresses the site does not serve. Now they use
+  `/guide/` and `/`. If you read the agent API, the `route` field changes for
   those pages.
-- **The sidebar uses a folder's `index.md` to label its group (#138).** Before, on a
-  site whose only index name is `README`, the site served `index.md` at the folder
-  address, but the sidebar did not use it as the group's label. Now it does.
+- **Generated glossary pages work on a site whose only index name is `README`
+  (#129).** Before, the hub was served at `/glossary/`, but the toolkit's own
+  links pointed at `/glossary/index/`, the Hub layout found no children and the
+  sidebar did not treat it as the folder's index. The rename in the Breaking
+  entry fixes all three. Sites that list `index` keep their output.
+- **Old generated glossary pages are removed on upgrade, when they are the
+  generator's own output (#129).** An old hub or context page is deleted only if
+  it is identical to the page the generator just wrote. A default-settings site
+  whose 0.2.0 build left `glossary/index.md` pages gets them removed silently
+  when the glossary source is unchanged. If the source changed, or a page has the
+  generator's markers but different content, the old page is kept and the build
+  warns: delete it.
+- **The sidebar uses a folder's `index.md` to label its group (#138).** Before,
+  on a site whose only index name is `README`, the site served `index.md` at the
+  folder address, but the sidebar did not use it as the group's label. Now it
+  does.
+- **`dockitty-check-links --strict` checks only files the build publishes
+  (#138).** Before, it also read `log.md`, files in dot-folders and files under
+  `_meta`. Now it skips them.
 - **A glossary term inside a reference-style link no longer gets a second link
-  (#139).** Before, the term in `[the term][ref]`, or in a `[ref]: …` definition,
-  could be turned into a link inside the link. Now the glossary leaves both alone.
-- **`dockitty-check-links --strict` checks only files the build publishes.** Before,
-  it also read `log.md`, files in dot-folders and files under `_meta`. Now it skips
-  them.
-- **Generated glossary pages are section indexes on the default index name
-  (#129).** Before, the generator always wrote `glossary/index.md`. On a site whose
-  only index name is `README`, Starlight still served that hub at `/glossary/`,
-  but the toolkit saw its id as `glossary/index`: links it built pointed at
-  `/glossary/index/`, the Hub layout found no children and the sidebar did not
-  treat the page as the folder's index. Now the pages are named `index` when your
-  `indexBasename` lists it, and otherwise with your first index name. Sites that
-  list `index` keep their output.
-- **Stale generated glossary pages are removed on upgrade, when they are the
-  generator's own output (#129).** When the index name changes, an old hub or
-  context page is deleted only if its bytes are identical to the page the generator
-  just wrote there. A default-settings site whose 0.2.0 build left
-  `glossary/index.md` pages gets them removed without a message when the glossary
-  source is unchanged. If the source changed between the two builds, the old pages
-  whose content changed are kept, and the build warns for each: delete them. A page with the generator's
-  keys and different content is kept with a warning, and so is a page with the
-  generator's `kind` and different keys.
-- **The sitemap's entry for the site root has one form on a site with a base
-  path.** `@astrojs/sitemap` wrote it with or without a trailing slash depending
-  on the order pages were built in, so two builds of the same tree could differ.
-  It is now always written without the trailing slash, the form a build emits
-  when the root page comes first.
-- **The baseline workflow no longer fails after pushing the regenerated
-  baselines.** This repository does not let GitHub Actions create pull requests,
-  so `update-a11y-baselines.yml` now warns and puts a link in the run summary
-  that opens the pull request in one click. Its `target_branch` input defaults
-  to `main` instead of a branch that was merged long ago. (#117)
-- **A failed Chromium download no longer fails the example build on its own.**
-  The shared build action caches the browser, keyed on the Playwright version,
-  and retries the download with a pause when the cache is cold. (#117)
-- **A deploy run now says whether it published.** `deploy.yml` writes a run
-  summary: the commit it deployed, or that the push changed no deployable path
-  and which commit the latest Pages deployment holds. (#117)
+  (#139).** Before, the term in `[the term][ref]`, or in a `[ref]: …`
+  definition, could become a link inside the link. Now the glossary leaves both
+  alone.
+- **The sitemap entry for the site root has one form on a site with a base
+  path.** Before, it was written with or without a trailing slash depending on
+  the order pages were built in, so two builds of the same tree could differ. Now
+  it is always written without the trailing slash.
+- **The example's rhetoric section lists its pages in reading order (#112).**
+  Introduction, Preamble, then About and license.
+- **Repository workflows report clearly instead of failing (#117).** The
+  accessibility-baseline workflow no longer fails after pushing regenerated
+  baselines: it links the pull request in the run summary, and its
+  `target_branch` defaults to `main`. A failed Chromium download no longer fails
+  the example build on its own: the browser is cached and the download retried.
+  A deploy run now states which commit it published, or that nothing changed.
 
 ### Known limitations
 
@@ -320,7 +291,6 @@ release, as it did for `0.2.0`.
 - Includes in `.mdx` pages are not expanded in the agent payload.
 - Re-rendering pages when an included file changes relies on Astro 5 loader
   internals and is to be re-checked for Astro 7 (#119).
-
 
 ## [0.2.0] — 2026-10-13
 
@@ -795,7 +765,8 @@ the feature-by-feature status and the decision records under
 - Build-time PlantUML rendering requires a PlantUML service (provided in CI); a
   local build without it skips PlantUML figures.
 
-[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/spec-kitty/doc-kitty/releases/tag/v0.1.0
