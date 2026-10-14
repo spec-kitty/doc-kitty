@@ -35,10 +35,8 @@ const SITE_BASE = '/doc-kitty';
 
 /**
  * The authored directories whose names Starlight showed as group labels before
- * this work package. The three generated glossary contexts (`hr`, `rhetoric`,
- * `shipping`) are NOT listed: their index pages are written by the glossary
- * generator with the context id as title, so their group label still equals the
- * directory name. That is recorded as a follow-up, not asserted away here.
+ * the sidebar-frame-header-carrier mission. Kept as a named regression list;
+ * the check below also covers every generated group (#112).
  */
 const AUTHORED_DIRECTORY_SLUGS = ['audience', 'missions', 'book-one', 'book-two', 'book-three'];
 
@@ -125,13 +123,54 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
     expect(tree.length).toBeGreaterThan(0);
   });
 
-  it('labels no authored group with its directory name (FR-019, SC-006)', () => {
+  it('labels no group with its directory name, authored or generated (FR-019, SC-006, #112)', () => {
     const labels = groupsOf(tree).map((g) => g.label);
     for (const slug of AUTHORED_DIRECTORY_SLUGS) {
       expect(labels, `group label "${slug}" is a raw directory name`).not.toContain(slug);
     }
     expect(labels).toContain('Audiences');
     expect(labels).toContain('Missions');
+    // Every nested group, generated ones included: its first entry is its
+    // directory's index, so that href names the directory.
+    for (const top of tree.filter((n) => n.children)) {
+      for (const nested of groupsOf(top.children!)) {
+        const dir = nested.children![0]!.href!.replace(/\/$/, '');
+        const segment = dir.slice(dir.lastIndexOf('/') + 1);
+        expect(nested.label, `group for ${dir} is labelled with its directory name`).not.toBe(segment);
+      }
+    }
+  });
+
+  it('starts no group with an entry that repeats the group label (#112)', () => {
+    for (const group of groupsOf(tree)) {
+      expect(group.children![0]!.label, `"${group.label}" repeats its own label first`).not.toBe(group.label);
+    }
+    // The repeated index entry reads "Overview"; a group whose index has its
+    // own name keeps it.
+    expect(findGroup(tree, 'Guides').children![0]).toMatchObject({ label: 'Overview', href: route('guides') });
+    expect(findGroup(tree, 'Reference').children![0]).toMatchObject({ label: 'Glossary', href: route('glossary') });
+  });
+
+  it('lists each one-page glossary context as a link under the glossary, not as a group (#112)', () => {
+    const reference = findGroup(tree, 'Reference').children!;
+    expect(reference.filter((n) => n.children), 'Reference holds no subgroup').toEqual([]);
+    expect(reference.map((n) => [n.label, n.href])).toEqual([
+      ['Glossary', route('glossary')],
+      ['hr', route('glossary/hr')],
+      ['rhetoric', route('glossary/rhetoric')],
+      ['shipping', route('glossary/shipping')],
+    ]);
+  });
+
+  it('lists the rhetoric section pages in reading order (#112)', () => {
+    // The section's own pages: links that are not a book folder shown as a link.
+    const pages = findGroup(tree, 'Rhetoric').children!.filter((n) => !n.children && !n.href!.includes('/book-'));
+    expect(pages.map((n) => n.href)).toEqual([
+      route('rhetoric'),
+      route('rhetoric/introduction'),
+      route('rhetoric/preamble'),
+      route('rhetoric/about-and-license'),
+    ]);
   });
 
   it('keeps the top-level groups in registry order with their registry labels', () => {
@@ -152,13 +191,18 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
 
   it('orders the three books numerically, after the section pages (FR-020)', () => {
     const rhetoric = findGroup(tree, 'Rhetoric').children!;
-    expect(rhetoric.filter((n) => n.children).map((n) => n.children![0]!.href)).toEqual([
+    // A book folder is a group, or a link when its index is its only page (#112).
+    const isBook = (n: Node): boolean => (n.children?.[0]?.href ?? n.href ?? '').includes('/book-');
+    const hrefOf = (n: Node): string => (n.children ? n.children[0]!.href! : n.href!);
+    expect(rhetoric.filter(isBook).map(hrefOf)).toEqual([
       route('rhetoric/book-one'),
       route('rhetoric/book-two'),
       route('rhetoric/book-three'),
     ]);
-    const firstGroup = rhetoric.findIndex((n) => n.children);
-    expect(rhetoric.slice(firstGroup).every((n) => n.children), 'links precede subgroups').toBe(true);
+    const firstBook = rhetoric.findIndex(isBook);
+    expect(rhetoric.slice(firstBook).every(isBook), 'section pages precede the book folders').toBe(true);
+    // Non-vacuity: the example holds both shapes of book folder.
+    expect(rhetoric.filter(isBook).map((n) => Boolean(n.children))).toEqual([true, false, false]);
   });
 
   it('puts each section index first in its group (FR-021)', () => {
@@ -214,8 +258,20 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
     const next = (doc: string): string | undefined =>
       /<a\b[^>]*\brel="next"[^>]*>/.exec(doc)?.[0].match(/href="([^"]*)"/)?.[1] ??
       /<a\b[^>]*href="([^"]*)"[^>]*\brel="next"/.exec(doc)?.[1];
-    expect(next(readOut('rhetoric/index.html'))).toBe(route('rhetoric/about-and-license'));
+    expect(next(readOut('rhetoric/index.html'))).toBe(route('rhetoric/introduction'));
     expect(next(readOut('rhetoric/book-one/index.html'))).toBe(route('rhetoric/book-one/chapter-01'));
+  });
+
+  it('names a section index by its title in prev/next, not "Overview" (#112)', () => {
+    // A ratchet: on main nothing reads "Overview", so this also passes there.
+    // Its paired control is the unit case "names pagination links by their
+    // page titles", which proves the shaped tree does read "Overview".
+    const flat = (nodes: Node[]): Node[] => nodes.flatMap((n) => (n.children ? flat(n.children) : [n]));
+    const links = flat(tree).filter((n) => n.href?.startsWith(SITE_BASE));
+    const before = links[links.findIndex((n) => n.href === route('guides')) - 1]!;
+    const page = readOut(`${before.href!.slice(SITE_BASE.length + 1)}index.html`);
+    const nextTitle = /rel="next"[\s\S]*?<span class="link-title[^"]*">([^<]*)<\/span>/.exec(page)?.[1];
+    expect(nextTitle, `next link on ${before.href}`).toBe('Guides');
   });
 
   it('reserves no rail for a near-empty table of contents (FR-011)', () => {
@@ -299,12 +355,12 @@ describe('WP07 — a consumer-supplied sidebar is not reshaped (C-004)', () => {
       'book-two',
       'book-three',
     ]);
-    // Starlight lists subgroups before links; shaping would put the links, and
-    // the section index, first.
+    // Starlight places the section index after the ordered pages and keeps a
+    // one-page folder as a group; shaping would put the index first, labelled
+    // "Overview", and show `book-two` as a link (#112).
     expect(generated[0]!.children, 'the first entry is a subgroup').toBeDefined();
-    const firstLink = generated.findIndex((n) => !n.children);
-    expect(generated.slice(firstLink).every((n) => !n.children), 'subgroups precede links').toBe(true);
-    expect(generated[firstLink]!.href).toBe(route('rhetoric'));
+    expect(generated.at(-1)).toEqual({ label: 'Rhetoric', href: route('rhetoric'), current: false });
+    expect(findGroup(tree, 'book-two').children!.map((n) => n.href)).toEqual([route('rhetoric/book-two')]);
   });
 
   it('reports no shaping warning for a sidebar it did not shape', () => {

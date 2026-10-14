@@ -38,7 +38,6 @@ import { compareCodeUnit, humaniseDirectoryName, routeOfSlug } from './vocabular
 /** One resolved Starlight sidebar entry (a link or a group). */
 export type SidebarEntry = StarlightRouteData['sidebar'][number];
 type SidebarLink = Extract<SidebarEntry, { type: 'link' }>;
-type SidebarGroup = Extract<SidebarEntry, { type: 'group' }>;
 /** Starlight's table-of-contents route data (`undefined` = no rail). */
 export type RouteToc = StarlightRouteData['toc'];
 /** Starlight's prev/next route data. */
@@ -152,6 +151,9 @@ function commonDir(dirs: readonly string[]): string | undefined {
 /** `book-one` → `Book one`: a readable form of a directory name (FR-023). */
 export { humaniseDirectoryName };
 
+/** The sidebar label of a group's index entry when its own label repeats the group's (#112). */
+export const INDEX_ENTRY_LABEL = 'Overview';
+
 /** Normalise an Astro `base` to `''` or `/prefix` (no trailing slash). */
 function normaliseBase(base: string | undefined): string {
   return ('/' + (base ?? '') + '/').replace(/\/{2,}/g, '/').replace(/\/$/, '');
@@ -170,6 +172,12 @@ function normaliseBase(base: string | undefined): string {
  *     declared order ascending, then the rest by label with the shared code-unit
  *     comparator (FR-020). Pages before subsections is the one deliberate
  *     difference from Starlight, which interleaves the two by slug.
+ *   - **one-page folder** (nested groups only): a group whose only entry is its
+ *     directory's index is replaced by that link, which keeps the folder's
+ *     place among its parent's subgroups (#112).
+ *   - **index label**: an index entry first in its group whose label equals the
+ *     group label reads {@link INDEX_ENTRY_LABEL}, unless another entry in the
+ *     group already does (#112).
  *
  * A group's directory is read from its DIRECT children's hrefs, never from its
  * label: a non-index link lives in the group's directory, an index link IS the
@@ -194,6 +202,8 @@ export function shapeSidebar(
     entry: SidebarEntry;
     /** The directory this entry sits in (link) or represents (group). */
     dir: string | undefined;
+    /** A one-page folder group replaced by its index link: it still represents `dir`. */
+    collapsed?: boolean;
   }
 
   // Draft publication (FR-015): with drafts unpublished, a group whose pages
@@ -212,13 +222,31 @@ export function shapeSidebar(
     }
 
     const children = entry.entries.map((child) => shapeEntry(child, depth + 1)).filter(keep);
-    const candidates = children.flatMap(({ entry: child, dir }) =>
-      dir === undefined ? [] : [child.type === 'group' ? parentDir(dir) : dir],
+    // In a nested group, a link to folder D's index is this group's own index
+    // only when the group carries D's name: Starlight's directory name, or the
+    // label shaping gave it. Otherwise it is a one-page folder collapsed by an
+    // earlier pass, one level down, and must not pull the group's directory
+    // into D (which would collapse the group into its child).
+    const ownIndex = (dir: string): boolean =>
+      depth === 0 || entry.label === dir.slice(dir.lastIndexOf('/') + 1) || entry.label === meta.get(dir)?.label;
+    for (const c of children) {
+      if (c.entry.type === 'link' && c.dir !== undefined && meta.has(c.dir) && !ownIndex(c.dir)) c.collapsed = true;
+    }
+    const candidates = children.flatMap(({ entry: child, dir, collapsed }) =>
+      dir === undefined ? [] : [child.type === 'group' || collapsed ? parentDir(dir) : dir],
     );
     const dir = commonDir(candidates);
     if (dir === undefined || dir === '') {
       // Not a directory (or the docs root itself): keep the author's order.
       return { entry: { ...entry, entries: children.map((c) => c.entry) }, dir: undefined };
+    }
+
+    // A link to a sub-folder's own index, sitting in this group, is a one-page
+    // folder already collapsed (by an earlier pass): it keeps its folder place.
+    for (const c of children) {
+      if (c.entry.type === 'link' && c.dir !== undefined && c.dir !== dir && meta.has(c.dir)) {
+        c.collapsed = true;
+      }
     }
 
     const dirMeta = meta.get(dir);
@@ -227,9 +255,11 @@ export function shapeSidebar(
     const isIndex = (c: Shaped): boolean =>
       isLink(c) && indexSlug !== undefined && slugOfHref(c.entry.href, base) === indexSlug;
 
-    const links = children.filter(isLink);
+    // A collapsed one-page folder is a link, but it keeps its folder's place
+    // among the subgroups, so `sidebar.order` on index pages still orders it.
+    const links = children.filter((c) => isLink(c) && !c.collapsed);
     const groups = children
-      .filter((c): c is Shaped & { entry: SidebarGroup } => c.entry.type === 'group')
+      .filter((c) => c.entry.type === 'group' || c.collapsed)
       .sort((a, b) => {
         const [orderA, orderB] = [meta.get(a.dir ?? '')?.order, meta.get(b.dir ?? '')?.order];
         if (orderA !== orderB) {
@@ -258,6 +288,27 @@ export function shapeSidebar(
           );
         }
       }
+    }
+
+    // A nested folder whose only page is its index opens onto the same name
+    // again (`hr > hr`), so it is shown as that link (#112). Top-level groups
+    // are sections from `sections.yaml` and always stay groups.
+    const only = ordered.length === 1 ? ordered[0]! : undefined;
+    if (depth > 0 && only && isIndex(only)) {
+      return { entry: only.entry, dir, collapsed: true };
+    }
+
+    // The index entry first in a group would repeat the heading above it
+    // ("Guides > Guides"), so it reads "Overview", unless another entry in the
+    // group already does (#112). Pagination keeps the page title.
+    const first = ordered[0];
+    if (
+      first &&
+      isIndex(first) &&
+      first.entry.label === label &&
+      !ordered.some((c) => c.entry.type === 'link' && c.entry.label === INDEX_ENTRY_LABEL)
+    ) {
+      ordered[0] = { ...first, entry: { ...first.entry, label: INDEX_ENTRY_LABEL } };
     }
 
     return { entry: { ...entry, label, entries: ordered.map((c) => c.entry) }, dir };
@@ -310,7 +361,13 @@ export function shapePagination(
   followsSidebar: { prev: boolean; next: boolean },
 ): RoutePagination {
   const before = flattenLinks(original);
-  const after = flattenLinks(shaped);
+  // Shaping may relabel a section index "Overview" (#112); prev/next name the
+  // page, so a shaped link takes its label from the original tree.
+  const titleOf = new Map(before.map((link) => [link.href, link.label]));
+  const after = flattenLinks(shaped).map((link) => {
+    const title = titleOf.get(link.href);
+    return title === undefined || title === link.label ? link : { ...link, label: title };
+  });
   const at = before.findIndex((link) => link.isCurrent);
   const to = after.findIndex((link) => link.isCurrent);
   if (at === -1 || to === -1) return pagination;

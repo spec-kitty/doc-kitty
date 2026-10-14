@@ -75,16 +75,21 @@ const RHETORIC_ENTRIES: DirectoryMetaInput[] = [
   index('rhetoric/book-one', 'Book I', { order: 1 }),
   page('rhetoric/book-one/chapter-01', 'Chapter 1'),
   index('rhetoric/book-two', 'Book II', { order: 2 }),
+  page('rhetoric/book-two/chapter-01', 'Chapter 1'),
   index('rhetoric/book-three', 'A long third title', { order: 3, label: 'Book III' }),
+  page('rhetoric/book-three/chapter-01', 'Chapter 1'),
   page('rhetoric/notes/scratch', 'Scratch'),
 ];
 
-/** The tree Starlight 0.32 autogenerates: slug-labelled, slug-ordered, index mid-group. */
+/**
+ * The tree Starlight 0.32 autogenerates: slug-labelled, slug-ordered, index mid-group.
+ * Each book holds a chapter, so no book is a one-page folder (those collapse, #112).
+ */
 const rhetoricSidebar = (): SidebarEntry[] => [
   group('Rhetoric', [
     group('book-one', [link('rhetoric/book-one/chapter-01', 'Chapter 1'), link('rhetoric/book-one', 'Book I')]),
-    group('book-three', [link('rhetoric/book-three', 'A long third title')]),
-    group('book-two', [link('rhetoric/book-two', 'Book II')]),
+    group('book-three', [link('rhetoric/book-three', 'A long third title'), link('rhetoric/book-three/chapter-01', 'Chapter 1')]),
+    group('book-two', [link('rhetoric/book-two', 'Book II'), link('rhetoric/book-two/chapter-01', 'Chapter 1')]),
     group('notes', [link('rhetoric/notes/scratch', 'Scratch')]),
     link('rhetoric', 'Rhetoric'),
     link('rhetoric/preamble', 'Preamble'),
@@ -173,8 +178,9 @@ describe('shapeSidebar (T020)', () => {
 
   it('moves each directory index to the front of its group (FR-021)', () => {
     const top = childrenOf(shape().sidebar[0]);
-    expect(labelsOf(top).slice(0, 2)).toEqual(['Rhetoric', 'Preamble']);
-    expect(labelsOf(childrenOf(top.find((e) => e.label === 'Book I')))).toEqual(['Book I', 'Chapter 1']);
+    // The index entry repeats its group label, so it reads "Overview" (#112).
+    expect(labelsOf(top).slice(0, 2)).toEqual(['Overview', 'Preamble']);
+    expect(labelsOf(childrenOf(top.find((e) => e.label === 'Book I')))).toEqual(['Overview', 'Chapter 1']);
   });
 
   it('keeps links in the order Starlight gave them, ahead of subgroups', () => {
@@ -222,8 +228,8 @@ describe('shapeSidebar (T020)', () => {
     );
     const b = childrenOf(sidebar[0])[0];
     expect(b?.label).toBe('Bee');
-    expect(labelsOf(childrenOf(b))).toEqual(['Bee', 'Sea']);
-    expect(labelsOf(childrenOf(childrenOf(b)[1]))).toEqual(['Sea', 'Leaf']);
+    expect(labelsOf(childrenOf(b))).toEqual(['Overview', 'Sea']);
+    expect(labelsOf(childrenOf(childrenOf(b)[1]))).toEqual(['Overview', 'Leaf']);
   });
 
   it('reads a group directory through a subgroup that holds only its own index', () => {
@@ -280,7 +286,7 @@ describe('shapeSidebar (T020)', () => {
     expect(shapedTop).not.toBe(top);
     expect(shapedTop.collapsed).toBe(true);
     expect(shapedTop.badge).toEqual({ text: 'new', variant: 'tip' });
-    expect(shapedTop.entries[0]).toMatchObject({ label: 'Rhetoric', isCurrent: true, attrs: { 'data-x': '1' } });
+    expect(shapedTop.entries[0]).toMatchObject({ label: 'Overview', isCurrent: true, attrs: { 'data-x': '1' } });
   });
 
   it('is idempotent: shaping a shaped tree returns an equal tree', () => {
@@ -303,12 +309,132 @@ describe('shapeSidebar (T020)', () => {
     const tree = (order: string[]): SidebarEntry[] => [
       group('S', order.map((d) => group(d, [link(`s/${d}`, 'Same')]))),
     ];
+    // Each `s/<d>` folder holds only its index, so it is shown as that link (#112).
     const hrefs = (entries: SidebarEntry[]): string[] =>
-      childrenOf(entries[0]).map((g) => (childrenOf(g)[0] as { href: string }).href);
+      childrenOf(entries[0]).map((g) => (g as { href: string }).href);
     const ab = shapeSidebar(tree(['a', 'b']), same, { base: BASE }).sidebar;
     const ba = shapeSidebar(tree(['b', 'a']), same, { base: BASE }).sidebar;
     expect(hrefs(ab)).toEqual([`${BASE}/s/a/`, `${BASE}/s/b/`]);
     expect(hrefs(ba)).toEqual(hrefs(ab));
+  });
+});
+
+describe('shapeSidebar — one-page folders and repeated index labels (#112)', () => {
+  const meta = buildDirectoryMeta([
+    index('glossary', 'Glossary'),
+    index('glossary/hr', 'hr'),
+    index('glossary/shipping', 'shipping'),
+    index('guides', 'Guides'),
+    page('guides/start', 'Getting started'),
+    index('guides/deep', 'Deep dive'),
+    page('guides/deep/one', 'One'),
+    index('solo', 'Solo'),
+    index('arch', 'Architecture'),
+    page('arch/overview', 'Overview'),
+  ]);
+  const shape = (entries: SidebarEntry[]) => shapeSidebar(entries, meta, { base: BASE }).sidebar;
+
+  it('keeps a collapsed folder in its folder place, ordered with the subgroups', () => {
+    const ordered = buildDirectoryMeta([
+      index('r', 'R'),
+      index('r/b1', 'Book I', { order: 1 }),
+      page('r/b1/c1', 'Chapter 1'),
+      index('r/b2', 'Book II', { order: 2 }),
+    ]);
+    const { sidebar } = shapeSidebar(
+      [group('R', [group('b2', [link('r/b2', 'Book II')]), group('b1', [link('r/b1/c1', 'Chapter 1'), link('r/b1', 'Book I')]), link('r', 'R')])],
+      ordered,
+      { base: BASE },
+    );
+    const top = childrenOf(sidebar[0]);
+    expect(top.map((e) => [e.type, e.label])).toEqual([
+      ['link', 'Overview'],
+      ['group', 'Book I'],
+      ['link', 'Book II'],
+    ]);
+  });
+
+  it('turns a nested folder whose only page is its index into that link', () => {
+    const [reference] = shape([
+      group('Reference', [
+        group('hr', [link('glossary/hr', 'hr', true)]),
+        link('glossary', 'Glossary'),
+        group('shipping', [link('glossary/shipping', 'shipping')]),
+      ]),
+    ]);
+    expect(childrenOf(reference)).toEqual([
+      link('glossary', 'Glossary'),
+      link('glossary/hr', 'hr', true),
+      link('glossary/shipping', 'shipping'),
+    ]);
+  });
+
+  it('keeps a nested folder with more than its index as a group', () => {
+    const [guides] = shape([
+      group('Guides', [link('guides', 'Guides'), group('deep', [link('guides/deep/one', 'One'), link('guides/deep', 'Deep dive')])]),
+    ]);
+    const deep = childrenOf(guides)[1];
+    expect(deep?.type).toBe('group');
+    expect(labelsOf(childrenOf(deep))).toEqual(['Overview', 'One']);
+  });
+
+  it('keeps a one-entry group whose entry is not the folder index', () => {
+    const [top] = shape([group('Top', [link('guides', 'Guides'), group('notes', [link('guides/notes/scratch', 'Scratch')])])]);
+    expect(childrenOf(top)[1]?.type).toBe('group');
+  });
+
+  it('never collapses a top-level section group, even with one entry', () => {
+    const [solo] = shape([group('Solo', [link('solo', 'Solo')])]);
+    expect(solo?.type).toBe('group');
+    expect(labelsOf(childrenOf(solo))).toEqual(['Overview']);
+  });
+
+  it('labels an index entry that repeats its group label "Overview"', () => {
+    const [guides] = shape([group('Guides', [link('guides/start', 'Getting started'), link('guides', 'Guides')])]);
+    expect(childrenOf(guides)[0]).toEqual(link('guides', 'Overview'));
+  });
+
+  it('keeps an index label that differs from its group label', () => {
+    const [reference] = shape([group('Reference', [link('glossary', 'Glossary'), link('glossary/a', 'A')])]);
+    expect(labelsOf(childrenOf(reference))).toEqual(['Glossary', 'A']);
+  });
+
+  it('keeps the index label when another entry already reads "Overview"', () => {
+    const [arch] = shape([group('Architecture', [link('arch/overview', 'Overview'), link('arch', 'Architecture')])]);
+    expect(labelsOf(childrenOf(arch))).toEqual(['Architecture', 'Overview']);
+  });
+
+  it('is idempotent with both rules applied', () => {
+    const tree = (): SidebarEntry[] => [
+      group('Reference', [group('hr', [link('glossary/hr', 'hr')]), link('glossary', 'Glossary')]),
+      group('Guides', [link('guides', 'Guides'), group('deep', [link('guides/deep', 'Deep dive'), link('guides/deep/one', 'One')])]),
+    ];
+    const once = shape(tree());
+    expect(shape(once)).toEqual(once);
+  });
+
+  it('is idempotent when an index-less folder holds only a one-page folder', () => {
+    // `sec/a` has no index; its only content is the one-page folder `b`. A
+    // second pass must not read the collapsed `b` link as `a`'s own index.
+    const nested = buildDirectoryMeta([index('sec', 'Sec'), index('sec/a/b', 'Bee')]);
+    const reshape = (entries: SidebarEntry[]) => shapeSidebar(entries, nested, { base: BASE }).sidebar;
+    const once = reshape([group('Sec', [link('sec', 'Sec'), group('a', [group('b', [link('sec/a/b', 'Bee')])])])]);
+    expect(childrenOf(once[0]).map((e) => [e.type, e.label])).toEqual([
+      ['link', 'Overview'],
+      ['group', 'A'],
+    ]);
+    expect(reshape(once)).toEqual(once);
+  });
+
+  it('names pagination links by their page titles, not "Overview"', () => {
+    const original: SidebarEntry[] = [
+      group('Guides', [link('guides', 'Guides'), link('guides/start', 'Getting started', true)]),
+    ];
+    const shaped = shape(original);
+    expect(childrenOf(shaped[0])[0]?.label).toBe('Overview');
+    const prev = childrenOf(original[0])[0] as NonNullable<RoutePagination['prev']>;
+    const after = shapePagination(original, shaped, { prev, next: undefined }, { prev: true, next: true });
+    expect(after.prev).toMatchObject({ href: `${BASE}/guides/`, label: 'Guides' });
   });
 });
 

@@ -2,9 +2,11 @@
 title: Introduction
 description: What the three books of Aristotle's Rhetoric cover, who translated this text, and how this docsite conversion came together.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-10-14
 type: Reference
 kind: Explanation
+sidebar:
+  order: 1
 tags: [rhetoric, introduction]
 glossary_context: rhetoric
 external_references:
