@@ -32,25 +32,20 @@
  * Zero new dependencies: `gray-matter` is already vendored (used by the
  * frontmatter gate); everything else is string/regex work.
  */
-import { readdirSync, statSync, readFileSync, writeFileSync, realpathSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { compareCodeUnit } from '../lib/vocabulary-core.mjs';
+import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 
 /** The `NNNN-` ADR number prefix on a filename/slug leaf — the SOLE number source (F6). */
 const ADR_NUMBER = /^(\d{4})-/;
 const MD_EXT = /\.mdx?$/i;
 
-/** Recursively collect `.md`/`.mdx` files under `dir`. */
+/** Every ADR page under `dir`, as absolute paths: the shared docs-page walk (no `log.md`, dot or `_meta` entries). */
 function walk(dir) {
-  const out = [];
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) out.push(...walk(full));
-    else if (MD_EXT.test(name)) out.push(full);
-  }
-  return out;
+  return walkMarkdownPaths(resolve(dir)).map((rel) => join(dir, rel));
 }
 
 /**

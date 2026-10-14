@@ -24,22 +24,22 @@
  * the catalog files — no ad-hoc YAML re-implementation.
  */
 import { readdirSync, statSync, readFileSync, existsSync, realpathSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 
 /** The two catalog collections and the field that keys each record. */
 const CATALOG_TYPES = ['biblio', 'tool'];
 
-/** Recursively collect every `.md`/`.mdx` under `dir` (mirrors validate-frontmatter). */
+/**
+ * Every docs page under `dir`, as paths from `dir`: the shared docs-page walk
+ * (no `log.md`, dot or `_meta` entries). An unreadable `dir` still throws, so the
+ * caller reports it instead of treating it as an empty tree.
+ */
 function walk(dir) {
-  const out = [];
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) out.push(...walk(full));
-    else if (/\.mdx?$/i.test(name)) out.push(full);
-  }
-  return out;
+  readdirSync(dir);
+  return walkMarkdownPaths(resolve(dir)).map((rel) => join(dir, rel));
 }
 
 /**

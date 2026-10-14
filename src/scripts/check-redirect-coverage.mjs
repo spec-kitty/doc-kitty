@@ -276,6 +276,7 @@ export function unpublishedDraftFor(distDir, verdict, draftRoutes, declared) {
 /** Every redirect stub in the built output, as site-absolute URL paths (sorted). */
 export function redirectStubUrls(distDir) {
   const urls = [];
+  // Not the docs-page walk: this reads the BUILT output (dist), every folder of it.
   const walk = (dir) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const abs = path.join(dir, entry.name);

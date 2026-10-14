@@ -237,9 +237,13 @@ export const frontmatterSchema = z
   })
   .passthrough();
 
+// Not the docs-page walk (lib/docs-walk.mjs): this gate validates every authored
+// Markdown file, including the `_meta` registry's (ADR-0050), but skips dot
+// entries like `.git`, as the shared walk does.
 function walk(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
+    if (name.startsWith('.')) continue;
     const full = join(dir, name);
     if (statSync(full).isDirectory()) out.push(...walk(full));
     else if (/\.mdx?$/i.test(name)) out.push(full);
