@@ -80,6 +80,9 @@ not maintain a navigation file.
   equals the group's label (the group takes its label from that same page), it
   also reads "Overview". Give the index page a label that differs from its
   group's if you want it kept.
+  The word "Overview" is English only for now; translating it is tracked in
+  [#161](https://github.com/spec-kitty/doc-kitty/issues/161), so a site in another
+  language shows "Overview" in the sidebar for now.
 - **Within a group the order is always: the index page, then the other pages,
   then the sub-folders.** Pages keep the order Starlight gives them (their own
   `sidebar.order`, then alphabetical). Because pages always come before
