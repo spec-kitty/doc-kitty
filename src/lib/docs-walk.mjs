@@ -4,6 +4,12 @@
  * this list, so the integration, the content loader and the gates cannot
  * disagree about which files are pages.
  *
+ * `_meta` is reserved for the registry (decision 01M4WE30W61BS7CG5D0KH99T0T): a folder
+ * named `_meta` at any depth, and a file whose stem is `_meta` (`_meta.md`,
+ * `_meta.mdx`), are not pages, so nothing under them reaches the loader, the route
+ * table, the link check or the sidebar. The registry YAML in `docs/_meta/` is read
+ * by its catalog loaders directly, not through this walk.
+ *
  * Plain ESM with JSDoc types, like `vocabulary-core.mjs`; kept apart from it
  * because it reads the file system and the core must stay fs-free.
  */
@@ -42,7 +48,7 @@ export function walkMarkdownPaths(absBase) {
     if (active.has(real)) return; // symlink loop: still followed once, never re-entered
     active.add(real);
     for (const name of names) {
-      if (name.startsWith('.')) continue;
+      if (name.startsWith('.') || name === '_meta') continue;
       const abs = path.join(dir, name);
       const relPath = rel ? `${rel}/${name}` : name;
       let isDir;
@@ -55,6 +61,7 @@ export function walkMarkdownPaths(absBase) {
         walk(abs, relPath);
         continue;
       }
+      if (/^_meta\.mdx?$/.test(name)) continue;
       if (/\.mdx?$/i.test(name) && !/(^|\/)log\.md$/i.test(relPath)) out.push(relPath);
     }
     active.delete(real);

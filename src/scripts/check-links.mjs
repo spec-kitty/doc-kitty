@@ -134,7 +134,8 @@ function stripCode(md) {
 }
 
 // The non-strict walk deliberately differs from lib/docs-walk.mjs: it reads the
-// folder as GitHub does, so log.md and dot paths count (ADR-0047 section 6).
+// folder as GitHub does, so log.md, dot paths and `_meta` Markdown count
+// (ADR-0047 section 6). `--strict` uses the shared walk instead.
 function walk(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
@@ -419,16 +420,19 @@ export function run(argv) {
   const collisionReports = [];
 
   for (const root of roots) {
+    const strict = flags.strict || isSiteRoot(root);
+    const absRoot = resolve(root);
     let files;
     try {
-      files = walk(root);
+      // A strict root reads the tree the build does (the shared walk: no `_meta`,
+      // FR-010); a non-strict root reads it as GitHub does (see `walk`).
+      readdirSync(root); // an unreadable root is an error either way (the shared walk would return [])
+      files = strict ? walkMarkdownPaths(absRoot).map((rel) => join(root, rel)) : walk(root);
     } catch (err) {
       console.error(`✖ cannot read docs dir "${root}": ${err.message}`);
       process.exit(2);
     }
     fileCount += files.length;
-    const strict = flags.strict || isSiteRoot(root);
-    const absRoot = resolve(root);
     if (!strict && ASTRO_CONFIG_NAMES.some((name) => existsSync(join(dirname(absRoot), name)))) {
       console.error(
         `check-links: note: ${root} looks like a built site (an Astro config sits next to it). ` +

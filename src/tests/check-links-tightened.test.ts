@@ -274,6 +274,22 @@ describe('check-links CLI — agrees with the build on relative Markdown links',
     expect(run(ok, ['--strict'], drafts).status).toBe(0);
   });
 
+  // FR-010: `_meta` holds the registry, not pages. --strict reads the docs tree through the
+  // shared walk, so a broken link in `_meta/` is never reported; the same run still reports
+  // the broken link outside it (positive control: the check ran on this fixture).
+  it('--strict skips _meta folders and _meta.md, and still reports a broken link outside them', () => {
+    const { root } = tree({
+      '_meta/x.md': page('[gone](./nowhere.md)'),
+      'guide/_meta/z.md': page('[gone](./nowhere.md)'),
+      '_meta.md': page('[gone](./nowhere.md)'),
+      'guide/y.md': page('[gone](./nowhere.md)'),
+    });
+    const res = run(root, ['--strict']);
+    expect(res.status, res.stdout).toBe(1);
+    expect(res.stderr).toContain('guide/y.md');
+    expect(res.stderr).not.toContain('_meta');
+  });
+
   it('lets a draft page link to another draft: neither is built', () => {
     const { root } = tree({ 'a.md': page('[w](./wip.md)', 'draft'), 'wip.md': page('W', 'draft') });
     expect(run(root, ['--strict'], 'off').status).toBe(0);

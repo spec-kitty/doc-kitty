@@ -339,7 +339,7 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
  * marker and the machine-surface exclusions, but its draft pages are emitted
  * whatever the setting says; the integration warns when that happens.
  */
-const DEFAULT_DOCS_PATTERN = ['**/*.{md,mdx}', '!**/log.md'];
+const DEFAULT_DOCS_PATTERN = ['**/*.{md,mdx}', '!**/log.md', '!**/_meta/**', '!**/_meta.{md,mdx}'];
 
 export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   const {

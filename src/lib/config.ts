@@ -45,7 +45,7 @@ import {
   REVEAL_CURRENT_SCRIPT,
   type DirectoryMetaInput,
 } from './route-shaping.js';
-import { buildRouteTable, compareCodeUnit, formatRouteCollisions, normalizeIndexBasenames } from './vocabulary-core.mjs';
+import { buildRouteTable, compareCodeUnit, formatRouteCollisions, normalizeIndexBasenames, routeOfSlug } from './vocabulary-core.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -288,7 +288,8 @@ function siteDraftRoutes(docsDir: string, indexBasename?: IndexBasenameOption): 
 /**
  * The top-level CONTENT folders under the docs root (the candidate sidebar
  * sections). Excludes the reserved, non-content `_meta/` (the registry's home)
- * and any dotfolder. Returns `[]` if the docs root is absent, so sidebar
+ * and any dotfolder (the same `_meta` rule as the shared walk, decision
+ * 01M4WE30W61BS7CG5D0KH99T0T). Returns `[]` if the docs root is absent, so sidebar
  * synthesis degrades to nothing rather than throwing.
  */
 function topLevelContentDirs(docsRoot: string): string[] {
@@ -1445,14 +1446,17 @@ export interface RouteShapingOptions {
   unpublishedPaths?: readonly string[];
 }
 
+/** The slug of the folder holding a docs-relative path (`''` for the docs root). */
+const folderSlug = (rel: string): string => (rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '');
+
 /**
  * Read the slice of every docs page that sidebar shaping needs: slug, title,
  * the Starlight `sidebar` front-matter block, and whether the file is a
- * directory index. A build-free frontmatter read with its own walk: like
- * {@link draftRoutesOf} it leaves `log.md` out, and unlike it this one also
- * skips `_meta/` and dot-folders, which never hold a sidebar group. Slug and
- * `isIndex` come from the shared route rule (`resolveIndexEntries`), so a page
- * demoted by an index collision is an ordinary page at its own slug.
+ * directory index. The file list is the shared walk ({@link walkMarkdownPaths}:
+ * no `log.md`, dot-folders or `_meta`), read build-free for frontmatter. Slug and
+ * `isIndex` come from the shared route rule (`resolveIndexEntries`, `routeOfSlug`):
+ * a page is its folder's index when its route is the folder's route, so a
+ * collision never reaches here (it fails the build first).
  */
 function directoryMetaInputs(
   docsDir: string,
@@ -1460,32 +1464,14 @@ function directoryMetaInputs(
   unpublishedPaths: ReadonlySet<string> = new Set(),
 ): DirectoryMetaInput[] {
   const root = path.resolve(process.cwd(), docsDir);
-  const pages: { rel: string; data: { title?: unknown; sidebar?: { label?: unknown; order?: unknown } } }[] =
-    [];
+  const pages = walkMarkdownPaths(root).map((rel) => ({
+    rel,
+    data: matter(readFileSync(path.join(root, rel), 'utf8')).data as {
+      title?: unknown;
+      sidebar?: { label?: unknown; order?: unknown };
+    },
+  }));
 
-  const walk = (dir: string): void => {
-    let names: string[];
-    try {
-      names = readdirSync(dir);
-    } catch {
-      return; // docsDir absent → nothing to label
-    }
-    for (const name of names) {
-      if (name.startsWith('.') || name === '_meta') continue;
-      const abs = path.join(dir, name);
-      if (statSync(abs).isDirectory()) {
-        walk(abs);
-        continue;
-      }
-      if (!/\.mdx?$/i.test(name) || /^log\.md$/i.test(name)) continue;
-      pages.push({
-        rel: path.relative(root, abs).split(path.sep).join('/'),
-        data: matter(readFileSync(abs, 'utf8')).data as (typeof pages)[number]['data'],
-      });
-    }
-  };
-
-  walk(root);
   const { ids } = resolveIndexEntries(
     pages.map((page) => page.rel),
     { indexBasename },
@@ -1495,14 +1481,17 @@ function directoryMetaInputs(
   const inputs: DirectoryMetaInput[] = pages
     .filter(({ rel }) => !unpublishedPaths.has(rel))
     .map(({ rel, data }) => {
-      const slug = ids.get(rel) as string;
+      const pageSlug = ids.get(rel) as string;
+      // An index page serves its containing folder's route (`x/index` is served at
+      // `/x/`), so the group is keyed by the folder; any other page keeps its own id.
+      const isIndex = routeOfSlug(pageSlug) === routeOfSlug(folderSlug(rel));
+      const slug = isIndex ? folderSlug(rel) : pageSlug;
       const label = data.sidebar?.label;
       const order = data.sidebar?.order;
       return {
         slug,
         title: typeof data.title === 'string' ? data.title : '',
-        // An index file's slug is its directory; any other file keeps its name.
-        isIndex: slug !== rel.replace(/\.mdx?$/i, ''),
+        isIndex,
         sidebar: {
           ...(typeof label === 'string' ? { label } : {}),
           ...(typeof order === 'number' ? { order } : {}),

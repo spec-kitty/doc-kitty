@@ -98,8 +98,9 @@ describe('one route rule for every consumer', () => {
     });
     const data = JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
     const expectedGroups = paths
-      .filter((rel) => ids.get(rel) !== '' && ids.get(rel) !== rel.replace(/\.mdx?$/i, ''))
-      .map((rel) => [ids.get(rel)!, rel])
+      // A page is its folder's index when it is served at the folder's route (FR-009).
+      .filter((rel) => rel.includes('/') && routeOfSlug(ids.get(rel)!) === routeOfSlug(rel.slice(0, rel.lastIndexOf('/'))))
+      .map((rel) => [rel.slice(0, rel.lastIndexOf('/')), rel])
       .sort(([a], [b]) => (a < b ? -1 : 1));
     expect(data.directoryMeta.map(([dir, meta]: [string, { label: string }]) => [dir, meta.label])).toEqual(
       expectedGroups,
@@ -312,5 +313,23 @@ describe('the walk lists what the site loads', () => {
     expect(Object.values(routes)).not.toContain('/.drafts/p/');
     expect(resolveRelativeDocLink(routes, 'a.md', './.drafts/p.md')).toBeNull();
     expect(resolveRelativeDocLink(routes, 'a.md', './guides/ok.md')).toBe('/guides/ok/');
+  });
+});
+
+describe('the shared walk leaves _meta out (FR-010)', () => {
+  it('gives no route to _meta folders or _meta.md, and keeps an ordinary page', () => {
+    const root = site({
+      '_meta/x.md': 'active',
+      'guide/_meta/y.md': 'active',
+      '_meta.md': 'active',
+      '_meta.mdx': 'active',
+      'guide/z.md': 'active', // positive control: same walk, ordinary page
+      'guide/_metadata.md': 'active', // the name is matched exactly, not by prefix
+    });
+    const paths = walkMarkdownPaths(path.join(root, 'docs')).sort();
+    expect(paths).toEqual(['guide/_metadata.md', 'guide/z.md']);
+    const routes = Object.values(buildRouteTable(paths).routes);
+    expect(routes).toContain('/guide/z/');
+    expect(routes.some((r) => r.includes('_meta/') || r === '/_meta/')).toBe(false);
   });
 });

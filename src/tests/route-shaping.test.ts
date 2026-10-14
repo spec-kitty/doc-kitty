@@ -11,7 +11,7 @@
  *
  * Mission: sidebar-frame-header-carrier-01M4T3CB, WP04.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -520,9 +520,12 @@ describe('integration wiring (T022, C-004)', () => {
   });
 
   it('honours the configured index basename', () => {
-    // Under the default (README only) `setup/index.md` is an ordinary page.
+    // FR-009: `setup/index.md` on a README-only site has the id `guides/setup/index`, which
+    // Starlight serves at `/guides/setup/`. By the route rule it IS that folder's index page,
+    // so the group is labelled from it and links to the folder route.
     const data = inSite(() => servedData(defineDocKittyIntegrations({ title: 'Docs' })));
-    expect(data.directoryMeta.map(([dir]) => dir)).toEqual(['guides']);
+    expect(data.directoryMeta.map(([dir]) => dir)).toEqual(['guides', 'guides/setup']);
+    expect(data.directoryMeta[1]![1]).toMatchObject({ label: 'Setting up', indexHref: '/guides/setup/' });
   });
 
   it('does not shape a sidebar the consumer supplied (C-004)', () => {
@@ -586,5 +589,86 @@ describe('integration wiring (T022, C-004)', () => {
     const options = { docsDir: 'docs', base: '/x', shapeSidebar: true, pagination: true } as const;
     const [a, b] = inSite(() => [routeShapingSource(options), routeShapingSource(options)]);
     expect(a).toBe(b);
+  });
+});
+
+describe('sidebar index decision follows the route rule (FR-009, issue 138)', () => {
+  const roots: string[] = [];
+  afterEach(() => {
+    vi.restoreAllMocks();
+    for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
+  });
+
+  /** Write `docs/<rel>` pages (`title`, optional `doc_status`) and return the shaped `directoryMeta`. */
+  function directoryMetaOf(
+    files: Record<string, { title: string; draft?: boolean }>,
+    indexBasename: string | string[],
+  ): Record<string, { label?: string; indexHref: string }> {
+    const root = mkdtempSync(path.join(tmpdir(), 'dk-sidebar-rule-'));
+    roots.push(root);
+    const unpublishedPaths: string[] = [];
+    for (const [rel, { title, draft }] of Object.entries(files)) {
+      const abs = path.join(root, 'docs', rel);
+      mkdirSync(path.dirname(abs), { recursive: true });
+      writeFileSync(abs, `---\ntitle: ${title}\n${draft ? 'doc_status: draft\n' : ''}---\n\nBody.\n`);
+      if (draft) unpublishedPaths.push(rel);
+    }
+    vi.spyOn(process, 'cwd').mockReturnValue(root);
+    const source = routeShapingSource({
+      docsDir: 'docs',
+      base: '/',
+      indexBasename,
+      shapeSidebar: true,
+      pagination: true,
+      unpublishedPaths,
+    });
+    const data = JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
+    return Object.fromEntries(data.directoryMeta);
+  }
+
+  it('labels the folder from the published index when a draft README sits beside it', () => {
+    const meta = directoryMetaOf(
+      { 'x/README.md': { title: 'Draft title', draft: true }, 'x/index.md': { title: 'Index title' } },
+      ['index'],
+    );
+    expect(meta['x']).toMatchObject({ label: 'Index title', indexHref: '/x/' });
+  });
+
+  it('does not label the folder from a withheld draft README when no page serves the folder route', () => {
+    const meta = directoryMetaOf(
+      { 'x/README.md': { title: 'Draft title', draft: true }, 'x/other.md': { title: 'Other' } },
+      ['README'],
+    );
+    expect(meta['x']).toBeUndefined();
+  });
+
+  it('keeps a published README as the folder index (positive control)', () => {
+    const meta = directoryMetaOf(
+      { 'x/README.md': { title: 'Readme title' }, 'x/other.md': { title: 'Other' } },
+      ['README'],
+    );
+    expect(meta['x']).toMatchObject({ label: 'Readme title', indexHref: '/x/' });
+  });
+
+  it('does not take a page named like a folder for that folder\'s index', () => {
+    const meta = directoryMetaOf(
+      { 'x.md': { title: 'Page x' }, 'x/y.md': { title: 'Page y' } },
+      ['README'],
+    );
+    expect(meta['x']).toBeUndefined();
+  });
+
+  it('ignores _meta folders and _meta.md at any depth, and still labels an ordinary folder', () => {
+    const meta = directoryMetaOf(
+      {
+        'guide/README.md': { title: 'Guide' },
+        'guide/_meta/README.md': { title: 'Hidden' },
+        '_meta/README.md': { title: 'Hidden root' },
+        'guide/_meta.md': { title: 'Hidden file' },
+      },
+      ['README'],
+    );
+    expect(meta['guide']).toMatchObject({ label: 'Guide' });
+    expect(Object.keys(meta).some((k) => k.includes('_meta'))).toBe(false);
   });
 });
