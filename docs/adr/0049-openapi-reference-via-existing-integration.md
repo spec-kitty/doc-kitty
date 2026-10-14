@@ -19,8 +19,8 @@ related:
 
 ## Status
 
-**Proposed** — 2026-10-14. Records the direction the project owner set in issue
-#140. It becomes Accepted once a spike has evaluated at least one candidate
+**Proposed** — 2026-10-14. Records the direction the project owner set in
+issue #140. It becomes Accepted once a spike has evaluated at least one candidate
 integration against the conditions in Decision 1 and recorded the result.
 
 ## Context
@@ -39,8 +39,7 @@ the sitemap.
 DocKitty already generates pages from two sources, the glossary
 ([ADR-0026](./0026-glossary-source-and-generation-seam.md)) and Gherkin features
 ([ADR-0046](./0046-gherkin-feature-pages.md)). Both follow one safety pattern,
-tightened in [ADR-0048](./0048-generated-page-names-and-empty-sources.md) after
-#122 emptied a section on an unchecked-out submodule.
+tightened in [ADR-0048](./0048-generated-page-names-and-empty-sources.md) after issue #122 emptied a section on an unchecked-out submodule.
 
 ### What we know about the first candidate
 
