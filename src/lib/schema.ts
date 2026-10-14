@@ -13,7 +13,7 @@ import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
 import { docsSchema } from '@astrojs/starlight/schema';
-import { formatRouteCollisions } from './vocabulary-core.mjs';
+import { DK_INDEX_BASENAME_ENV, formatRouteCollisions, parsePublishedIndexBasenames } from './vocabulary-core.mjs';
 import {
   readmeToIndexId,
   resolveIndexEntries,
@@ -279,17 +279,9 @@ export interface DocKittyLoaderOptions {
   indexBasename?: IndexBasenameOption;
 }
 
-/**
- * Internal handoff written by `defineDocKittyIntegrations` (`config.ts`). Named
- * here, not imported, because `schema.ts` must never import `config.ts` (C-004).
- */
-const DK_INDEX_BASENAME_ENV = 'DK_INDEX_BASENAME';
-
 /** The names the integration published, or undefined when it has not run. */
 function publishedIndexBasenames(): string[] | undefined {
-  const raw = process.env[DK_INDEX_BASENAME_ENV];
-  if (raw === undefined || raw === '') return undefined;
-  return JSON.parse(raw) as string[];
+  return parsePublishedIndexBasenames(process.env[DK_INDEX_BASENAME_ENV]);
 }
 
 /**

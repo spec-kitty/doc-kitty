@@ -17,8 +17,8 @@ import { existsSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { DK_INDEX_BASENAME_ENV as ENV_NAME, parsePublishedIndexBasenames } from '../lib/vocabulary-core.mjs';
 
-const ENV_NAME = 'DK_INDEX_BASENAME';
 /**
  * How long a site config may take to evaluate. A config that hangs (a network
  * call, an unresolved promise) must not hang a CI job: it is reported like any
@@ -156,8 +156,8 @@ async function evaluate(configPath, siteDir) {
     const vitePath = createRequire(astroPkg).resolve('vite');
     const { runnerImport } = await import(pathToFileURL(vitePath).href);
     await runnerImport(configPath, { configFile: false });
-    const raw = process.env[ENV_NAME];
-    console.log(JSON.stringify({ ok: true, names: raw ? JSON.parse(raw) : null }));
+    const names = parsePublishedIndexBasenames(process.env[ENV_NAME]) ?? null;
+    console.log(JSON.stringify({ ok: true, names }));
   } catch (err) {
     console.log(JSON.stringify({ ok: false, message: err instanceof Error ? err.message : String(err) }));
   }

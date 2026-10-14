@@ -725,6 +725,37 @@ export function parseCharter(raw, source = 'charter.yaml') {
 // ---------------------------------------------------------------------------
 
 /**
+ * Internal handoff of the site's index names (FR-007): `defineDocKittyIntegrations`
+ * writes them here as a JSON `string[]`; the docs loader (`schema.ts`, which must
+ * not import `config.ts`) and the CLIs that evaluate the site config read them
+ * back. Adopters never set it. One spelling, in this neutral module, for all three.
+ */
+export const DK_INDEX_BASENAME_ENV = 'DK_INDEX_BASENAME';
+
+/**
+ * Read the names the integration published.
+ *
+ * @param {string | undefined} raw The value of {@link DK_INDEX_BASENAME_ENV}.
+ * @returns {string[] | undefined} `undefined` when it is unset or empty.
+ * @throws {Error} When the value is not a JSON array of strings (set by hand).
+ */
+export function parsePublishedIndexBasenames(raw) {
+  if (raw === undefined || raw === '') return undefined;
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    parsed = undefined;
+  }
+  if (!Array.isArray(parsed) || !parsed.every((n) => typeof n === 'string')) {
+    throw new Error(
+      `[dk-config] ${DK_INDEX_BASENAME_ENV} is set by defineDocKittyIntegrations and must not be set by hand; got: ${raw}`,
+    );
+  }
+  return parsed;
+}
+
+/**
  * The default section-index basename (FR-002, C-001): `README` stays the default
  * so doc-kitty's own tree and an existing adopter are byte-identical with no
  * `indexBasename` configured (NFR-003).

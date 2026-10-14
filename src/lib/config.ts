@@ -45,7 +45,7 @@ import {
   REVEAL_CURRENT_SCRIPT,
   type DirectoryMetaInput,
 } from './route-shaping.js';
-import { buildRouteTable, compareCodeUnit, formatRouteCollisions, normalizeIndexBasenames, routeOfSlug } from './vocabulary-core.mjs';
+import { DK_INDEX_BASENAME_ENV, buildRouteTable, compareCodeUnit, formatRouteCollisions, normalizeIndexBasenames, routeOfSlug } from './vocabulary-core.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -104,7 +104,7 @@ export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
  * the site config (`scripts/site-index-names.mjs`). Adopters never set it: the
  * `indexBasename` option of the integration is the one place to say it.
  */
-export const DK_INDEX_BASENAME_ENV = 'DK_INDEX_BASENAME';
+export { DK_INDEX_BASENAME_ENV };
 
 export interface DocKittyOptions {
   /** Site title shown in the header. */

@@ -155,6 +155,11 @@ describe('integration -> loader: index names are set once (FR-007)', () => {
     // assertion is the setting at work and not a property of the fixture.
     defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['README'] });
     expect(await loadedIds()).toEqual(['x/index', 'y']);
+    // The seam is internal: a hand-set value that is not a JSON array is refused.
+    for (const bad of ['README', '{"a":1}']) {
+      process.env[DK_INDEX_BASENAME_ENV] = bad;
+      await expect(loadedIds()).rejects.toThrow(/\[dk-config\] DK_INDEX_BASENAME is set by defineDocKittyIntegrations and must not be set by hand; got: /);
+    }
   });
 
   it('refuses a loader option that differs from the integration, naming both values', async () => {
