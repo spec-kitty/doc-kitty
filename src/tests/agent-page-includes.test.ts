@@ -167,8 +167,10 @@ describe('the agent payload of a page with includes', () => {
     expect(keys.indexOf('includes')).toBe(keys.indexOf('markdown') - 1);
   });
 
-  it('records body offsets: each span is exactly its directive, with frontmatter above it', async () => {
-    const { body, rendered } = await load('guides/booking', PAGE);
+  it('records body offsets (each span is exactly its directive, with frontmatter above it), kept out of the validated data', async () => {
+    const { body, rendered, entry } = await load('guides/booking', PAGE);
+    // The records ride in the rendered frontmatter, never in the validated data.
+    expect(entry.data).not.toHaveProperty(AGENT_INCLUDES_KEY);
     const records = readAgentIncludes((rendered as { metadata: { frontmatter: unknown } }).metadata.frontmatter);
     expect(records.map((r) => body.slice(r.start, r.end))).toEqual([
       '::gherkin{src="features/shipping.feature" scenario="Book space on a sailing"}',
@@ -199,12 +201,6 @@ describe('the agent payload of a page with includes', () => {
     expect(payload.markdown).toContain('## Invoice a consignment\n\n`@billing`\n\nInvoices follow departure.');
     expect(payload.markdown).toContain('### Scenario: Invoice on departure\n\n`@smoke`\n\n- **Given**');
     expect(payload.markdown).toContain('### Rule: Credit notes\n\n`@nightly`\n\n');
-  });
-
-  it('keeps the records out of the validated data', async () => {
-    const { entry, rendered } = await load('guides/booking', PAGE);
-    expect(entry.data).not.toHaveProperty(AGENT_INCLUDES_KEY);
-    expect((rendered as { metadata: { frontmatter: object } }).metadata.frontmatter).toHaveProperty(AGENT_INCLUDES_KEY);
   });
 });
 

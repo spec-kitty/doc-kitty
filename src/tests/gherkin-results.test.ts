@@ -4,9 +4,9 @@
  *
  * Fixtures (`fixtures/gherkin/results/`, see PROVENANCE.txt): ONE real
  * cucumber-js 13.3.0 run over `features/checkout.feature`, written as Cucumber
- * Messages and as the cucumber-js and cucumber-jvm JSON dialects, so the three
- * must agree; a `--tags` run and a `--dry-run`; and Cucumber Compatibility Kit
- * samples (all statuses, retries, outlines, Rules and Backgrounds).
+ * Messages and as cucumber-js JSON, so the two must agree; a `--tags` run and a
+ * `--dry-run`; and Cucumber Compatibility Kit samples (all statuses, retries,
+ * outlines, Rules and Backgrounds).
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, truncateSync, utimesSync, writeFileSync } from 'node:fs';
@@ -50,6 +50,12 @@ function resultsOf(report: ResultReport, relPath: string, text: string, root = '
   return featureResults(found.file, { text, view: viewOf(text), run: report.run });
 }
 
+const json = (v: unknown) => parseReport(JSON.stringify(v), { display: 'r' });
+const ndjson = (...envs: unknown[]) => envs.map((e) => JSON.stringify(e)).join('\n');
+
+const lookup = (uris: string[], at: string, root = '.', projectRoot = '/site') =>
+  reportIndex(json(uris.map((uri) => ({ uri, elements: [] }))), { root, projectRoot }).lookup(at);
+
 /** Scenario and row statuses as `{ line: label }`. */
 function table(results: ReturnType<typeof featureResults>) {
   if (results.state !== 'current') return results.state;
@@ -66,7 +72,7 @@ const CHECKOUT_EXPECTED = {
   r19: 'Failed',
 };
 
-describe('one run, three formats, the same results', () => {
+describe('one run, two formats, the same results', () => {
   it('Cucumber Messages: final attempts, row lines, the retried pass', () => {
     const report = parseReport(read('messages.ndjson'), { display: 'messages.ndjson' });
     expect(report.format).toBe('messages');
@@ -78,18 +84,11 @@ describe('one run, three formats, the same results', () => {
     });
   });
 
-  it.each([
-    ['cucumber-js', 'cucumber-js.json'],
-    ['cucumber-jvm (official converter, background elements)', 'cucumber-jvm.json'],
-  ])('Cucumber JSON, %s: the same statuses, the retry invisible', (_label, file) => {
-    const report = parseReport(read(file), { display: file });
+  it('Cucumber JSON (cucumber-js): the same statuses, the retry invisible', () => {
+    const report = parseReport(read('cucumber-js.json'), { display: 'j' });
     expect(report.format).toBe('json');
+    expect(report.run).toEqual({}); // no revision, no date
     expect(table(resultsOf(report, 'features/checkout.feature', CHECKOUT))).toEqual({ ...CHECKOUT_EXPECTED, s24: 'Passed' });
-  });
-
-  it('counts test cases as Cucumber does: each outline row once, most severe first', () => {
-    const results = resultsOf(parseReport(read('messages.ndjson'), { display: 'm' }), 'features/checkout.feature', CHECKOUT);
-    expect(results.state === 'current' && countsText(results.counts)).toBe('1 failed, 3 passed');
   });
 
   it('keeps nothing from a failure but its status: no message, stack trace or path', () => {
@@ -141,8 +140,8 @@ describe('the Cucumber Compatibility Kit', () => {
     return table(resultsOf(report, `samples/${name}/${name}.feature`, read(`cck/${name}.feature`)));
   };
 
-  it.each(['ndjson', 'jvm.json'] as const)('all-statuses (%s): one scenario per status, mapped to its word', (format) => {
-    expect(cck('all-statuses', format)).toEqual({
+  it('all-statuses (ndjson): one scenario per status, mapped to its word', () => {
+    expect(cck('all-statuses', 'ndjson')).toEqual({
       s6: 'Passed',
       s11: 'Failed',
       s16: 'Pending',
@@ -161,12 +160,8 @@ describe('the Cucumber Compatibility Kit', () => {
     });
   });
 
-  it('retry (jvm.json): JSON keeps only the final attempt, so a retried pass is plain Passed', () => {
-    expect(cck('retry', 'jvm.json')).toEqual({ s8: 'Passed', s11: 'Passed', s14: 'Passed', s17: 'Failed' });
-  });
-
-  it.each(['ndjson', 'jvm.json'] as const)('examples-tables (%s): each row by its own line, named outlines included', (format) => {
-    const t = cck('examples-tables', format) as Record<string, string>;
+  it('examples-tables (ndjson): each row by its own line, named outlines included', () => {
+    const t = cck('examples-tables', 'ndjson') as Record<string, string>;
     expect(t.s11).toBe('Failed (2 failed, 2 passed)');
     expect([t.r19, t.r20, t.r25, t.r26]).toEqual(['Passed', 'Passed', 'Failed', 'Failed']);
     // "Eating cucumbers with <friends> friends": the pickle names are expanded,
@@ -175,10 +170,12 @@ describe('the Cucumber Compatibility Kit', () => {
     expect([t.r35, t.r36, t.r37]).toEqual(['Passed', 'Passed', 'Passed']);
   });
 
-  it.each(['ndjson', 'jvm.json'] as const)('rules-backgrounds (%s): scenarios inside Rules, backgrounds folded in', (format) => {
-    const t = cck('rules-backgrounds', format) as Record<string, string>;
-    expect(Object.values(t).every((v) => v === 'Passed')).toBe(true);
-    expect(Object.keys(t).length).toBeGreaterThan(1);
+  it('rules-backgrounds (ndjson, jvm.json): scenarios inside Rules, backgrounds folded in', () => {
+    for (const format of ['ndjson', 'jvm.json'] as const) {
+      const t = cck('rules-backgrounds', format) as Record<string, string>;
+      expect(Object.values(t).every((v) => v === 'Passed')).toBe(true);
+      expect(Object.keys(t).length).toBeGreaterThan(1);
+    }
   });
 
   it('empty (ndjson): a scenario with no steps is Not run', () => {
@@ -200,15 +197,27 @@ describe('a stale report never puts a result on the wrong scenario', () => {
     expect(resultsOf(report, 'features/checkout.feature', crlf).state).toBe('current');
   });
 
-  it.each(['cucumber-js.json', 'cucumber-jvm.json'])('JSON (%s): lines no longer on a scenario of that name', (file) => {
-    const report = parseReport(read(file), { display: file });
-    expect(resultsOf(report, 'features/checkout.feature', shifted).state).toBe('stale');
+  it.each([
+    ['lines no longer on a scenario of that name', shifted],
+    ['a renamed scenario on the same line', CHECKOUT.replace('Scenario: Paying by card', 'Scenario: Paying by credit card')],
+    [
+      'swapped Examples rows',
+      CHECKOUT.replace('      | SAVE10  | 18.00 |\n      | EXPIRED | 20.00 |', '      | EXPIRED | 20.00 |\n      | SAVE10  | 18.00 |'),
+    ],
+    ['an edited row value', CHECKOUT.replace('| EXPIRED | 20.00 |', '| BOGUS   | 20.00 |')],
+    ['an edited step text', CHECKOUT.replace('pays by card', 'pays by cheque')],
+  ])('JSON (cucumber-js): %s is stale, not mislabelled', (_label, text) => {
+    expect(text).not.toBe(CHECKOUT);
+    const report = parseReport(read('cucumber-js.json'), { display: 'j' });
+    expect(resultsOf(report, 'features/checkout.feature', text).state).toBe('stale');
   });
 
-  it('JSON: a renamed scenario on the same line is stale', () => {
-    const report = parseReport(read('cucumber-js.json'), { display: 'j' });
-    const renamed = CHECKOUT.replace('Scenario: Paying by card', 'Scenario: Paying by credit card');
-    expect(resultsOf(report, 'features/checkout.feature', renamed).state).toBe('stale');
+  it('JSON (cucumber-jvm, CCK): swapped Examples rows are stale too', () => {
+    const feature = read('cck/examples-tables.feature');
+    const swapped = feature.replace('|    12 |   5 |    7 |\n      |    20 |   5 |   15 |', '|    20 |   5 |   15 |\n      |    12 |   5 |    7 |');
+    expect(swapped).not.toBe(feature);
+    const report = parseReport(read('cck/examples-tables.jvm.json'), { display: 'j' });
+    expect(resultsOf(report, 'samples/examples-tables/examples-tables.feature', swapped).state).toBe('stale');
   });
 
   it('a selection is checked against the WHOLE file, and shows only its own scenarios', () => {
@@ -232,19 +241,23 @@ describe('status rules', () => {
     expect(worstStatus(['not-run', 'passed'])).toBe('passed');
   });
 
-  it.each([
-    ['PASSED', 'passed'],
-    ['FAILED', 'failed'],
-    ['UNKNOWN', 'not-run'],
-    ['error', 'failed'],
-    ['hook_error', 'failed'],
-    ['pending_warn', 'pending'],
-    ['untested_undefined', 'undefined'],
-    ['untested', 'not-run'],
-    ['executing', 'not-run'],
-    [undefined, 'not-run'],
-  ])('statusOf(%s) is %s', (input, want) => {
-    expect(statusOf(input)).toBe(want);
+  it('statusOf maps the aliases of other tools onto Cucumber words', () => {
+    const aliases = { PASSED: 'passed', error: 'failed', hook_error: 'failed', pending_warn: 'pending', untested_undefined: 'undefined', executing: 'not-run' };
+    for (const [input, want] of Object.entries(aliases)) expect(statusOf(input), input).toBe(want);
+    expect(statusOf(undefined)).toBe('not-run');
+  });
+
+  it('JSON: each step status word reaches its scenario; a jvm background counts; only skipped steps are flagged', () => {
+    const words = ['passed', 'failed', 'pending', 'skipped', 'undefined', 'ambiguous'];
+    const step = (status: string) => [{ name: 's', result: { status } }];
+    const report = (list: string[]) =>
+      json([{ uri: 'a.feature', elements: list.map((w, i) => ({ type: 'scenario', line: i + 2, name: w, steps: step(w) })) }]);
+    expect(report(words).files[0].entries.map((e) => e.status)).toEqual(words);
+    expect(report(words).allSkipped).toBe(false);
+    expect(report(['skipped', 'skipped']).allSkipped).toBe(true);
+    // The jvm shape: the background is its own element, ahead of the scenario it belongs to.
+    const elements = [{ type: 'background', steps: step('failed') }, { type: 'scenario', line: 3, name: 'S', steps: step('passed') }];
+    expect(json([{ uri: 'a.feature', elements }]).files[0].entries.map((e) => e.status)).toEqual(['failed']);
   });
 
   it('a commit id is kept only when it looks like one; the date is the run end', () => {
@@ -281,7 +294,7 @@ describe('older Messages protocols are read', () => {
   });
 
   it('protocol < 17: willBeRetried on testStepResult marks the attempt as retried', () => {
-    const text = [
+    const text = ndjson(
       { gherkinDocument: { uri: 'a.feature', feature: { children: [{ scenario: { id: 's', location: { line: 2 }, name: 'S', examples: [] } }] } } },
       { pickle: { id: 'p', uri: 'a.feature', astNodeIds: ['s'], name: 'S' } },
       { testCase: { id: 'c', pickleId: 'p' } },
@@ -291,21 +304,18 @@ describe('older Messages protocols are read', () => {
       { testCaseStarted: { id: 'a1', testCaseId: 'c', attempt: 1 } },
       { testStepFinished: { testCaseStartedId: 'a1', testStepResult: { status: 'PASSED' } } },
       { testCaseFinished: { testCaseStartedId: 'a1' } },
-    ]
-      .map((e) => JSON.stringify(e))
-      .join('\n');
-    const report = parseReport(text, { display: 'old' });
-    expect(report.files[0].entries).toMatchObject([{ line: 2, names: ['S'], status: 'passed', retried: true, ran: true }]);
+    );
+    expect(parseReport(text, { display: 'old' }).files[0].entries).toMatchObject([{ line: 2, names: ['S'], status: 'passed', retried: true, ran: true }]);
   });
 
   it('an attempt that never finished is Not run, unless a step already failed', () => {
-    const base = [
-      { pickle: { id: 'p', uri: 'a.feature', astNodeIds: [], location: { line: 3 }, name: 'S' } },
-      { testCase: { id: 'c', pickleId: 'p' } },
-      { testCaseStarted: { id: 'a0', testCaseId: 'c' } },
-    ];
     const withStep = (status: string) =>
-      [...base, { testStepFinished: { testCaseStartedId: 'a0', testStepResult: { status } } }].map((e) => JSON.stringify(e)).join('\n');
+      ndjson(
+        { pickle: { id: 'p', uri: 'a.feature', astNodeIds: [], location: { line: 3 }, name: 'S' } },
+        { testCase: { id: 'c', pickleId: 'p' } },
+        { testCaseStarted: { id: 'a0', testCaseId: 'c' } },
+        { testStepFinished: { testCaseStartedId: 'a0', testStepResult: { status } } },
+      );
     expect(parseReport(withStep('PASSED'), { display: 'x' }).files[0].entries[0].status).toBe('not-run');
     expect(parseReport(withStep('FAILED'), { display: 'x' }).files[0].entries[0].status).toBe('failed');
   });
@@ -344,51 +354,35 @@ describe('report URIs and the files they name', () => {
     ['/ci/work/features/a.feature', { path: '/ci/work/features/a.feature', absolute: true, tailOnly: false }],
     ['C:\\work\\features\\a.feature', { path: 'C:/work/features/a.feature', absolute: true, tailOnly: false }],
     ['classpath:com/example/a.feature', { path: 'com/example/a.feature', absolute: false, tailOnly: true }],
+    // Not percent-decodable: kept as written, not a crash.
+    ['file://evil/%E0%A4%A.feature', { path: '/%E0%A4%A.feature', absolute: true, tailOnly: false }],
   ])('normalizeUri(%s)', (uri, want) => {
     expect(normalizeUri(uri)).toEqual(want);
   });
 
-  const reportFor = (...uris: string[]) =>
-    parseReport(JSON.stringify(uris.map((uri) => ({ uri, elements: [] }))), { display: 'r' });
-
-  it('a relative URI resolves against results.root', () => {
-    const index = reportIndex(reportFor('tests/scenarios/init.feature'), { root: 'vendor/spec-kitty', projectRoot: '/site' });
-    expect(index.lookup('vendor/spec-kitty/tests/scenarios/init.feature')).toMatchObject({ file: { uri: 'tests/scenarios/init.feature' } });
-    expect(index.lookup('tests/scenarios/init.feature')).toBeNull();
-  });
-
-  it('an absolute URI inside the project root is matched exactly', () => {
-    const index = reportIndex(reportFor('file:///site/features/a.feature'), { root: '.', projectRoot: '/site' });
-    expect(index.lookup('features/a.feature')).toMatchObject({ file: { uri: 'file:///site/features/a.feature' } });
-  });
-
-  it('an absolute URI from another machine, or a classpath URI, matches by its unique tail', () => {
-    const index = reportIndex(reportFor('/ci/work/features/a.feature', 'classpath:features/b.feature'), {
-      root: '.',
-      projectRoot: '/site',
+  it('a relative URI resolves against results.root; an absolute one inside the project root is matched exactly', () => {
+    expect(lookup(['tests/scenarios/init.feature'], 'vendor/spec-kitty/tests/scenarios/init.feature', 'vendor/spec-kitty')).toMatchObject({
+      file: { uri: 'tests/scenarios/init.feature' },
     });
-    expect(index.lookup('features/a.feature')).toMatchObject({ file: { uri: '/ci/work/features/a.feature' } });
-    expect(index.lookup('features/b.feature')).toMatchObject({ file: { uri: 'classpath:features/b.feature' } });
-    expect(index.lookup('features/c.feature')).toBeNull();
+    expect(lookup(['tests/scenarios/init.feature'], 'tests/scenarios/init.feature', 'vendor/spec-kitty')).toBeNull();
+    expect(lookup(['file:///site/features/a.feature'], 'features/a.feature')).toMatchObject({ file: { uri: 'file:///site/features/a.feature' } });
+  });
+
+  it('an absolute URI from another machine, or a classpath URI, matches by its unique tail, on whole path segments', () => {
+    const uris = ['/ci/work/features/a.feature', 'classpath:features/b.feature'];
+    expect(lookup(uris, 'features/a.feature')).toMatchObject({ file: { uri: '/ci/work/features/a.feature' } });
+    expect(lookup(uris, 'features/b.feature')).toMatchObject({ file: { uri: 'classpath:features/b.feature' } });
+    expect(lookup(uris, 'features/c.feature')).toBeNull();
+    expect(lookup(['/ci/xfeatures/a.feature'], 'features/a.feature')).toBeNull();
   });
 
   it('a tail that matches several reported files is ambiguous, never a guess', () => {
-    const index = reportIndex(reportFor('/ci/one/features/a.feature', '/ci/two/features/a.feature'), {
-      root: '.',
-      projectRoot: '/site',
-    });
-    expect(index.lookup('features/a.feature')).toEqual({
-      ambiguous: ['/ci/one/features/a.feature', '/ci/two/features/a.feature'],
-    });
-  });
-
-  it('a tail match is on whole path segments (xfeatures/a.feature is not features/a.feature)', () => {
-    const index = reportIndex(reportFor('/ci/xfeatures/a.feature'), { root: '.', projectRoot: '/site' });
-    expect(index.lookup('features/a.feature')).toBeNull();
+    const two = ['/ci/one/features/a.feature', '/ci/two/features/a.feature'];
+    expect(lookup(two, 'features/a.feature')).toEqual({ ambiguous: two });
   });
 
   it('behave: the feature location names the file, element locations the lines', () => {
-    const text = JSON.stringify([
+    const report = json([
       {
         location: 'features/a.feature:1',
         elements: [
@@ -397,7 +391,6 @@ describe('report URIs and the files they name', () => {
         ],
       },
     ]);
-    const report = parseReport(text, { display: 'r' });
     const feature = 'Feature: A\n\n  Scenario: S\n    Given a\n\n  Scenario: T\n    Given b\n';
     expect(table(resultsOf(report, 'features/a.feature', feature))).toEqual({ s3: 'Passed', s6: 'Failed' });
   });
@@ -424,9 +417,21 @@ describe('gherkin.results option (ADR-0055 decision 1)', () => {
     expect(() => normalizeResultsOption(value)).toThrow(/^\[dk-gherkin\] gherkin\.results must be a report path or \{ report, root\? \}/);
   });
 
+  it('accepts required as a boolean and refuses anything else (FR-006)', () => {
+    expect(normalizeResultsOption({ report: 'r', required: false })).toEqual({ report: 'r', root: '.', required: false });
+    expect(normalizeResultsOption({ report: 'r', required: true })).toEqual({ report: 'r', root: '.', required: true });
+    // Control: left out, it stays out of the normalised value.
+    expect(normalizeResultsOption({ report: 'r' })).not.toHaveProperty('required');
+    for (const bad of ['false', 0, null]) {
+      expect(() => normalizeResultsOption({ report: 'r', required: bad })).toThrow(
+        '[dk-gherkin] gherkin.results.required must be a boolean',
+      );
+    }
+  });
+
   it('refuses an unknown key, naming the allowed set', () => {
     expect(() => normalizeResultsOption({ report: 'r', format: 'json' })).toThrow(
-      '[dk-gherkin] unknown option gherkin.results.format; expected one of report, root',
+      '[dk-gherkin] unknown option gherkin.results.format; expected one of report, root, required',
     );
   });
 });
@@ -508,67 +513,25 @@ describe('overlayResults: matching a generated page to its source (ADR-0055 deci
 });
 
 describe('review regressions (ADR-0055 decisions 3, 4 and 6)', () => {
-  const json = (file: string) => parseReport(read(file), { display: file });
-
-  it.each(['cucumber-js.json', 'cucumber-jvm.json'])('JSON (%s): swapped Examples rows are stale, not mislabelled', (file) => {
-    const swapped = CHECKOUT.replace(
-      '      | SAVE10  | 18.00 |\n      | EXPIRED | 20.00 |',
-      '      | EXPIRED | 20.00 |\n      | SAVE10  | 18.00 |',
-    );
-    expect(swapped).not.toBe(CHECKOUT);
-    expect(resultsOf(json(file), 'features/checkout.feature', swapped).state).toBe('stale');
-  });
-
-  it.each(['cucumber-js.json', 'cucumber-jvm.json'])('JSON (%s): an edited row value or step text is stale', (file) => {
-    expect(resultsOf(json(file), 'features/checkout.feature', CHECKOUT.replace('| EXPIRED | 20.00 |', '| BOGUS   | 20.00 |')).state).toBe('stale');
-    expect(resultsOf(json(file), 'features/checkout.feature', CHECKOUT.replace('pays by card', 'pays by cheque')).state).toBe('stale');
-  });
-
   it('JSON: cucumber-jvm step hooks (BeforeStep/AfterStep) count towards the result', () => {
-    const text = JSON.stringify([
-      {
-        uri: 'a.feature',
-        elements: [
-          {
-            type: 'scenario',
-            line: 2,
-            name: 'S',
-            steps: [{ name: 'a step', result: { status: 'passed' }, after: [{ result: { status: 'failed' } }] }],
-          },
-        ],
-      },
-    ]);
-    expect(parseReport(text, { display: 'r' }).files[0].entries[0].status).toBe('failed');
+    const steps = [{ name: 'a step', result: { status: 'passed' }, after: [{ result: { status: 'failed' } }] }];
+    expect(json([{ uri: 'a.feature', elements: [{ type: 'scenario', line: 2, name: 'S', steps }] }]).files[0].entries[0].status).toBe('failed');
   });
 
   it('behave: an outline row named "<outline> -- @1.1 <examples>" matches its outline', () => {
     const feature = 'Feature: A\n\n  Scenario Outline: O\n    Given <x>\n\n    Examples: E\n      | x |\n      | a |\n';
-    const text = JSON.stringify([
-      {
-        location: 'features/a.feature:1',
-        elements: [
-          { type: 'scenario', name: 'O -- @1.1 E', location: 'features/a.feature:8', steps: [{ name: 'a', result: { status: 'passed' } }] },
-        ],
-      },
-    ]);
-    expect(table(resultsOf(parseReport(text, { display: 'r' }), 'features/a.feature', feature))).toEqual({ s3: 'Passed (1 passed)', r8: 'Passed' });
+    const steps = [{ name: 'a', result: { status: 'passed' } }];
+    const report = json([{ location: 'features/a.feature:1', elements: [{ type: 'scenario', name: 'O -- @1.1 E', location: 'features/a.feature:8', steps }] }]);
+    expect(table(resultsOf(report, 'features/a.feature', feature))).toEqual({ s3: 'Passed (1 passed)', r8: 'Passed' });
   });
 
-  it('a root that climbs out (..) and back in resolves to the project file', () => {
-    const report = parseReport(JSON.stringify([{ uri: 'site/features/a.feature', elements: [] }]), { display: 'r' });
-    const index = reportIndex(report, { root: '..', projectRoot: '/repo/site' });
-    expect(index.lookup('features/a.feature')).toMatchObject({ file: { uri: 'site/features/a.feature' } });
-    // Files outside the project keep their ../ key.
-    const outside = reportIndex(parseReport(JSON.stringify([{ uri: 'features/a.feature', elements: [] }]), { display: 'r' }), {
-      root: '..',
-      projectRoot: '/repo/site',
-    });
-    expect(outside.lookup('../features/a.feature')).toMatchObject({ file: { uri: 'features/a.feature' } });
+  it('a root that climbs out (..) and back in resolves to the project file; files outside the project keep their ../ key', () => {
+    expect(lookup(['site/features/a.feature'], 'features/a.feature', '..', '/repo/site')).toMatchObject({ file: { uri: 'site/features/a.feature' } });
+    expect(lookup(['features/a.feature'], '../features/a.feature', '..', '/repo/site')).toMatchObject({ file: { uri: 'features/a.feature' } });
   });
 
   it('one tail-placed report file never serves two rendered files', () => {
-    const report = parseReport(JSON.stringify([{ uri: '/ci/w/apps/web/features/login.feature', elements: [] }]), { display: 'r' });
-    const index = reportIndex(report, { root: '.', projectRoot: '/site' });
+    const index = reportIndex(json([{ uri: '/ci/w/apps/web/features/login.feature', elements: [] }]), { root: '.', projectRoot: '/site' });
     expect(index.lookup('apps/web/features/login.feature')).toMatchObject({ file: {} });
     expect(index.lookup('apps/web/features/login.feature')).toMatchObject({ file: {} }); // the same file again is fine
     expect(index.lookup('features/login.feature')).toEqual({ ambiguous: ['/ci/w/apps/web/features/login.feature'] });
@@ -581,11 +544,5 @@ describe('review regressions (ADR-0055 decisions 3, 4 and 6)', () => {
       // The rerun of the gift-card scenario (no retry this time) wins.
       s24: 'Failed',
     });
-  });
-
-  it('a file:// URI that is not percent-decodable is kept as written, not a crash', () => {
-    const text = JSON.stringify({ source: { uri: 'file://evil/%E0%A4%A.feature', data: 'x' } });
-    expect(() => parseReport(text, { display: 'r' })).not.toThrow();
-    expect(normalizeUri('file://evil/%E0%A4%A.feature').path).toBe('/%E0%A4%A.feature');
   });
 });

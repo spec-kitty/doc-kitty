@@ -30,10 +30,8 @@ import { fileURLToPath } from 'node:url';
 import { loadFeatures } from '../lib/gherkin/load.mjs';
 import { generateFeaturePages } from '../lib/gherkin/generate.mjs';
 
-/** The worked example's feature, read from the golden fixture. */
-const GOLDEN_FEATURE = fileURLToPath(
-  new URL('./fixtures/gherkin/generate/site/features/shipping/book-consignment.feature', import.meta.url),
-);
+/** The worked example's one shared copy (pinned to `example/` by gherkin-fixture-parity). */
+const GOLDEN_FEATURE = fileURLToPath(new URL('./fixtures/gherkin/render/book-consignment.feature', import.meta.url));
 /** The example docs root: READ-ONLY (ADR listing + section registry). */
 const EXAMPLE_DOCS = fileURLToPath(new URL('../../example/docs/', import.meta.url));
 

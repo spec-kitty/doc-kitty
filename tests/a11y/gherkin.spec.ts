@@ -85,7 +85,7 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
     ).toHaveCount(1);
   });
 
-  test('steps are an unordered list of list items, each opening with its keyword', async ({ page }) => {
+  test('steps are an unordered list of list items opening with a keyword set apart without colour at 4.5:1', async ({ page }) => {
     const lists = page.locator(`${BLOCK} .dk-gherkin__steps`);
     expect(await lists.count(), 'step lists render').toBeGreaterThanOrEqual(8);
     for (const list of await lists.all()) {
@@ -105,9 +105,8 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
     const fragment = page.locator(BLOCK).nth(1);
     await expect(fragment.getByRole('listitem')).toHaveCount(4);
     await expect(fragment.getByRole('heading')).toHaveCount(0);
-  });
 
-  test('the keyword is set apart without colour and its colour clears 4.5:1', async ({ page }) => {
+    // The keyword is set apart without colour, and its colour clears 4.5:1.
     const keywords = page.locator(`${BLOCK} .dk-gherkin__kw`);
     expect(await keywords.count()).toBeGreaterThan(0);
     const measured = await keywords.evaluateAll((els) => {
@@ -173,7 +172,7 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
     await expect(block.getByRole('listitem')).toHaveCount(3);
   });
 
-  test('each include renders under the host outline and ends in its source line', async ({ page }) => {
+  test('each include renders under the host outline and ends in its source line; the raw fence stays code', async ({ page }) => {
     const includes = page.locator(BLOCK).filter({ has: page.locator('.dk-gherkin__source') });
     await expect(includes, 'four include blocks carry a source line').toHaveCount(4);
     const sources = page.locator(`${BLOCK} > p.dk-gherkin__source:last-child`);
@@ -214,9 +213,8 @@ test.describe('In-page Gherkin (/guides/scenarios-in-pages/)', () => {
       return hits;
     }, CONTENT);
     expect(leaked, 'no ::gherkin text outside code').toEqual([]);
-  });
 
-  test('the raw fence stays a code block and no structured fence leaks as code', async ({ page }) => {
+    // The raw fence stays a code block and no structured fence leaks as code.
     const pres = page.locator(`${CONTENT} pre[data-language="gherkin"]`);
     await expect(pres, 'exactly one gherkin code block: the raw fence').toHaveCount(1);
     await expect(pres).toContainText('Scenario: Show the source');

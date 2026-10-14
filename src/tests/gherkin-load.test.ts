@@ -121,8 +121,8 @@ describe('loadFeatures: parsing', () => {
     expect(feature.tags.map((t) => t.name)).toEqual(['@dk:context=shipping']);
     const scenario = feature.children.find((c) => c.scenario?.name === 'Book a single consignment')!
       .scenario!;
-    // Background step = 0, Background = 1, then this scenario's steps.
-    expect(scenario.steps.map((s) => s.id)).toEqual(['2', '3', '4']);
+    // Loaded after three other files, yet its first step is still id 0: the generator is per file.
+    expect(scenario.steps.map((s) => s.id)).toEqual(['0']);
   });
 
   it('honours "# language: nl" and returns localised keywords', () => {

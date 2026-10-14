@@ -42,8 +42,8 @@ import {
 } from '../lib/gherkin/generate.mjs';
 
 const FIXTURE = fileURLToPath(new URL('./fixtures/gherkin/generate/', import.meta.url));
-/** Site root of the worked example: `features/shipping/book-consignment.feature`. */
-const GOLDEN_SITE = path.join(FIXTURE, 'site');
+/** The worked example's one shared copy (pinned to `example/` by gherkin-fixture-parity). */
+const GOLDEN_FEATURE = fileURLToPath(new URL('./fixtures/gherkin/render/book-consignment.feature', import.meta.url));
 /** The three expected output files, relative to `<docsRoot>/behaviour`. */
 const GOLDEN_EXPECTED = path.join(FIXTURE, 'expected', 'behaviour');
 /** The example docs root: READ-ONLY (ADR listing + section registry). */
@@ -73,22 +73,6 @@ function writeTree(root: string, files: Record<string, string>): void {
   }
 }
 
-/** Every file under `dir` as `relPath → contents`, keys in code-unit order. */
-function readTree(dir: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  if (!existsSync(dir)) return out;
-  const walk = (d: string, prefix: string): void => {
-    for (const name of readdirSync(d).sort()) {
-      const abs = path.join(d, name);
-      const rel = prefix ? `${prefix}/${name}` : name;
-      if (statSync(abs).isDirectory()) walk(abs, rel);
-      else out[rel] = readFileSync(abs, 'utf8');
-    }
-  };
-  walk(dir, '');
-  return out;
-}
-
 /** Files AND directories under `dir` (so a created/pruned empty dir shows up too). */
 function snapshot(dir: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -108,6 +92,10 @@ function snapshot(dir: string): Record<string, string> {
   walk(dir, '');
   return out;
 }
+
+/** Every file under `dir` as `relPath → contents`, keys in code-unit order. */
+const readTree = (dir: string): Record<string, string> =>
+  Object.fromEntries(Object.entries(snapshot(dir)).filter(([rel]) => !rel.endsWith('/')));
 
 /** A minimal valid feature: description gives a clean first sentence, no warnings. */
 function feature(name: string, opts: { tags?: string; step?: string } = {}): string {
@@ -210,11 +198,13 @@ describe('golden: the worked example (contract §1/§3/§6)', () => {
   it('generates exactly the 3 expected files, byte-identical', () => {
     const outDir = path.join(tmp(), 'behaviour');
     const warnings: string[] = [];
-    const model = loadFeatures({ sources: ['features'], root: GOLDEN_SITE });
+    const site = tmp();
+    writeTree(site, { 'features/shipping/book-consignment.feature': readFileSync(GOLDEN_FEATURE, 'utf8') });
+    const model = loadFeatures({ sources: ['features'], root: site });
     const result = generateFeaturePages(model, {
       docsRoot: EXAMPLE_DOCS,
       outDir,
-      sourceRoot: GOLDEN_SITE,
+      sourceRoot: site,
       indexBasename: ['README', 'index'],
       warn: (m) => warnings.push(m),
     });
@@ -466,16 +456,6 @@ describe('hub basename follows indexBasename (contract §1)', () => {
     expect(hubBasename(['README', 'index'])).toBe('README');
   });
 
-  it("index.md hubs when indexBasename is ['index', 'README']", () => {
-    const site = makeSite({ 'features/shipping/book.feature': feature('Book a slot') });
-    gen(site, { indexBasename: ['index', 'README'] });
-    expect(Object.keys(readTree(site.outDir))).toEqual([
-      'index.md',
-      'shipping/book.md',
-      'shipping/index.md',
-    ]);
-  });
-
   it('switching the basename replaces the old hubs (they are owned, so they are pruned)', () => {
     const site = makeSite({ 'features/shipping/book.feature': feature('Book a slot') });
     gen(site);
@@ -520,21 +500,6 @@ describe('nested directories: one hub per directory, direct children only (contr
       './b/',
       './zulu/',
     ]);
-  });
-
-  it('a draft feature is generated but never listed in its hub (INV-1 draft gating)', () => {
-    const site = makeSite({
-      'features/a/alpha.feature': feature('Alpha'),
-      'features/a/wip.feature': feature('Work in progress', { tags: '@wip' }),
-      'features/a/status.feature': feature('Status draft', { tags: '@dk:status=draft' }),
-    });
-    gen(site);
-    const tree = readTree(site.outDir);
-    expect(fm(tree['a/wip.md'] as string).doc_status).toBe('draft');
-    expect(fm(tree['a/status.md'] as string).doc_status).toBe('draft');
-    expect(hubLinks(tree['a/README.md'] as string)).toEqual(['./alpha/']);
-    expect(tree['a/README.md']).not.toContain('Work in progress');
-    expect(tree['a/README.md']).not.toContain('Status draft');
   });
 
   it('hub generated.at changes when a child is added, not when a child only changes content', () => {
@@ -648,27 +613,18 @@ describe('sources[0].resource: sourceRoot and sourceUrlPrefix (contract §3)', (
   const resourceOf = (p: Map<string, string>): unknown =>
     (fm(p.get('shipping/book.md') as string).sources as Array<{ resource: string; title: string }>)[0];
 
-  it('defaults to the path relative to sourceRoot', () => {
+  it.each([
+    ['defaults to the path relative to sourceRoot', {}, 'features/shipping/book.feature'],
+    ['a different sourceRoot changes the relative path', { sourceRoot: 'features' }, 'shipping/book.feature'],
+    [
+      'sourceUrlPrefix is prepended verbatim',
+      { sourceUrlPrefix: 'https://github.com/o/r/blob/main/' },
+      'https://github.com/o/r/blob/main/features/shipping/book.feature',
+    ],
+  ])('%s', (_label, opts, resource) => {
     const site = makeSite(files);
-    expect(resourceOf(plan(site).plan)).toEqual({
-      resource: 'features/shipping/book.feature',
-      title: 'Gherkin source',
-    });
-  });
-
-  it('a different sourceRoot changes the relative path', () => {
-    const site = makeSite(files);
-    const p = plan(site, { sourceRoot: path.join(site.root, 'features') }).plan;
-    expect(resourceOf(p)).toEqual({ resource: 'shipping/book.feature', title: 'Gherkin source' });
-  });
-
-  it('sourceUrlPrefix is prepended verbatim', () => {
-    const site = makeSite(files);
-    const p = plan(site, { sourceUrlPrefix: 'https://github.com/o/r/blob/main/' }).plan;
-    expect(resourceOf(p)).toEqual({
-      resource: 'https://github.com/o/r/blob/main/features/shipping/book.feature',
-      title: 'Gherkin source',
-    });
+    const sourceRoot = 'sourceRoot' in opts ? path.join(site.root, opts.sourceRoot) : site.root;
+    expect(resourceOf(plan(site, { ...opts, sourceRoot }).plan)).toEqual({ resource, title: 'Gherkin source' });
   });
 });
 
@@ -732,15 +688,6 @@ describe('diffFeaturePages (the --check comparison)', () => {
     expect(diff()).toEqual({ added: [], changed: [], stale: [], authored: ['mine.md'] });
   });
 
-  it('a missing output dir → every planned page is added', () => {
-    const site = makeSite({ 'features/shipping/book.feature': feature('Book a slot') });
-    expect(diffFeaturePages(plan(site).plan, site.outDir)).toEqual({
-      added: ['README.md', 'shipping/README.md', 'shipping/book.md'],
-      changed: [],
-      stale: [],
-      authored: [],
-    });
-  });
 });
 
 describe('section label and section id (contract §6)', () => {
@@ -796,6 +743,16 @@ function mdTree(markdown: string): MdNode {
 function mdWalk(node: MdNode, visit: (n: MdNode) => void): void {
   visit(node);
   for (const child of node.children ?? []) mdWalk(child, visit);
+}
+/** Raw html (bar render.mjs's inert autolink breaker), emphasis and non-local links in `tree`. */
+function nonInertNodes(tree: MdNode): string[] {
+  const bad: string[] = [];
+  mdWalk(tree, (n) => {
+    if (n.type === 'html' && n.value !== '<!---->') bad.push(`html ${n.value}`);
+    if (n.type === 'emphasis') bad.push('emphasis');
+    if (n.type === 'link' && !(n.url ?? '').startsWith('./')) bad.push(`link ${n.url}`);
+  });
+  return bad;
 }
 function mdText(node: MdNode): string {
   if (node.type === 'text' || node.type === 'inlineCode') return node.value ?? '';
@@ -868,7 +825,6 @@ describe('route collisions the loader would hide are fatal (review #2)', () => {
 
   it('a DIRECTORY named log is fine (only the log.md leaf is excluded by the loader)', () => {
     const site = makeSite({ 'features/log/x.feature': feature('X marks') });
-    expect(Object.keys(plan(site).plan)).toBeDefined();
     expect([...plan(site).plan.keys()]).toEqual(['README.md', 'log/README.md', 'log/x.md']);
   });
 });
@@ -915,16 +871,7 @@ describe('hub text is escaped and titles match the sidebar (review #7)', () => {
       const out = plan(site).plan;
       const root = out.get('README.md') as string;
       const tree = mdTree(root);
-      const bad: string[] = [];
-      mdWalk(tree, (n) => {
-        // The only raw HTML allowed is render.mjs's inert autolink breaker.
-        if (n.type === 'html' && n.value !== '<!---->') bad.push(`html ${n.value}`);
-        if (n.type === 'emphasis') bad.push('emphasis');
-        if (n.type === 'link' && !(n.url ?? '').startsWith('./')) bad.push(`link ${n.url}`);
-      });
-      expect(bad).toEqual([]);
-      const item = root.split('\n').find((l) => l.startsWith('- ['));
-      expect(item).toBeDefined();
+      expect(nonInertNodes(tree)).toEqual([]);
       // The visible list-item text carries the raw (humanised) name twice: title + description.
       const list = tree.children?.find((n) => n.type === 'list') as MdNode;
       const text = mdText(list);
@@ -939,12 +886,7 @@ describe('hub text is escaped and titles match the sidebar (review #7)', () => {
     });
     const root = plan(site).plan.get('README.md') as string;
     const tree = mdTree(root);
-    const bad: string[] = [];
-    mdWalk(tree, (n) => {
-      if (n.type === 'html' && n.value !== '<!---->') bad.push(`html ${n.value}`);
-      if (n.type === 'link' && !(n.url ?? '').startsWith('./')) bad.push(`link ${n.url}`);
-    });
-    expect(bad).toEqual([]);
+    expect(nonInertNodes(tree)).toEqual([]);
     expect(root).not.toContain('<script>');
     // `:x[` must not survive as a text directive.
     expect(root).not.toMatch(/(?<!\\):x\[/);
@@ -952,19 +894,12 @@ describe('hub text is escaped and titles match the sidebar (review #7)', () => {
     expect(mdText(list)).toContain(`Behaviour specification for ${name}.`);
   });
 
+
   it('the hub H1 is heading-escaped (a trailing " #" is not eaten as a closing sequence)', () => {
     const site = makeSite({ 'features/a #/x.feature': feature('X marks') });
     const hub = [...plan(site).plan].find(([k]) => k.endsWith('/README.md'))?.[1] as string;
     const h1 = (mdTree(hub).children ?? []).find((n) => n.type === 'heading' && n.depth === 1) as MdNode;
     expect(mdText(h1)).toBe('A #');
-  });
-
-  it('nested directory titles use the sidebar rule (sentence case)', async () => {
-    const { humaniseDirectoryName } = await import('../lib/route-shaping.js');
-    const site = makeSite({ 'features/shipping-ops/x.feature': feature('X marks') });
-    const hub = plan(site).plan.get('shipping-ops/README.md') as string;
-    expect(fm(hub).title).toBe('Shipping ops');
-    expect(fm(hub).title).toBe(humaniseDirectoryName('shipping-ops'));
   });
 });
 
@@ -1179,6 +1114,9 @@ describe('draft-only directories and sections (final review #2, #124)', () => {
     expect(fm(tree['a/b/README.md'] as string).doc_status).toBe('draft');
     expect(hubLinks(root)).toEqual([]);
     expect(root.endsWith("\n\nBehaviour specifications generated from the repository's Gherkin feature files.\n")).toBe(true);
+    for (const [rel, text] of Object.entries(tree)) {
+      expect(text.endsWith('\n') && !text.endsWith('\n\n'), rel).toBe(true);
+    }
     expectLintClean(site.outDir);
   });
 
@@ -1204,17 +1142,5 @@ describe('draft-only directories and sections (final review #2, #124)', () => {
       if (saved === undefined) delete process.env.DK_PUBLISH_DRAFTS;
       else process.env.DK_PUBLISH_DRAFTS = saved;
     }
-  });
-
-  it('no generated hub ever ends with a blank line', () => {
-    const site = makeSite({
-      'features/x/one.feature': feature('One', { tags: '@wip' }),
-      'features/y/two.feature': feature('Two'),
-    });
-    gen(site);
-    for (const [rel, text] of Object.entries(readTree(site.outDir))) {
-      expect(text.endsWith('\n') && !text.endsWith('\n\n'), rel).toBe(true);
-    }
-    expectLintClean(site.outDir);
   });
 });

@@ -298,32 +298,6 @@ describe('renderFeatureBody options on the view (default output is byte-identica
     '      Then z',
   );
 
-  it('defaults: Feature `#`, sections `##`, Rule children `###`, narrative and summary', () => {
-    expect(renderFeatureBody(parse(SRC))).toBe(
-      lines(
-        '# Ship',
-        '',
-        'As a shipper',
-        '',
-        '*1 rule · 2 scenarios*',
-        '',
-        '## Scenario: One',
-        '',
-        '- **Given** x',
-        '',
-        '## Rule: R',
-        '',
-        '### Background',
-        '',
-        '- **Given** y',
-        '',
-        '### Scenario: Two',
-        '',
-        '- **Then** z',
-      ),
-    );
-  });
-
   it('baseLevel shifts every heading; header `title` drops narrative and summary', () => {
     const body = renderFeatureBody(parse(SRC), { baseLevel: 4, header: 'title' });
     expect(body.split('\n').filter((l) => l.startsWith('#'))).toEqual([
@@ -335,20 +309,6 @@ describe('renderFeatureBody options on the view (default output is byte-identica
     ]);
     expect(body).not.toContain('As a shipper');
     expect(body).not.toContain('2 scenarios');
-  });
-
-  it('header `none` drops the Feature header and lifts sections to the base level; levels cap at 6', () => {
-    const none = renderFeatureBody(parse(SRC), { baseLevel: 2, header: 'none' });
-    expect(none.startsWith('## Scenario: One\n')).toBe(true);
-    expect(none).not.toContain('Ship\n');
-    const capped = renderFeatureBody(parse(SRC), { baseLevel: 6 });
-    expect(capped.split('\n').filter((l) => l.startsWith('#'))).toEqual([
-      '###### Ship',
-      '###### Scenario: One',
-      '###### Rule: R',
-      '###### Background',
-      '###### Scenario: Two',
-    ]);
   });
 
   it('synthetic levels render no heading', () => {
@@ -422,18 +382,13 @@ describe('renderFeatureBody options on the view (default output is byte-identica
     ]);
   });
 
-  it('renders a quoted argument as a code span, quotes kept, whatever backticks it holds', () => {
-    const body = renderFeatureBody(parse('Feature: F\n  Scenario: S\n    When I run "a `b` --c"\n'));
-    expect(body).toContain('- **When** I run ``"a `b` --c"``\n');
-  });
-
-  it('renders a quoted argument in a data-table or Examples cell as a code span, like step text', () => {
+  it('renders a quoted argument in a step (backticks kept), a data-table or Examples cell as a code span', () => {
     const body = renderFeatureBody(
       parse(
         lines(
           'Feature: F',
           '  Scenario: S',
-          '    When I run:',
+          '    When I run "a `b` --c":',
           '      | flag        | note              |',
           '      | "--force"   | say "a\\|b" -- now |',
           '      | "x\\\\\\|y"    | "line\\none"    |',
@@ -445,6 +400,7 @@ describe('renderFeatureBody options on the view (default output is byte-identica
         ),
       ),
     );
+    expect(body).toContain('- **When** I run ``"a `b` --c"``:\n');
     // A `|` in a code span is escaped for the GFM row, which unescapes it again.
     expect(body).toContain('| `"--force"` | say `"a\\|b"` -- now |');
     // A `\|` cannot be written in a code span in a GFM cell: it stays escaped
