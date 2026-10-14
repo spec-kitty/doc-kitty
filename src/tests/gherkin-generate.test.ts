@@ -343,7 +343,9 @@ describe('rename / delete: owned-output pruning (02 "Owned output and pruning")'
     });
     gen(site, { sources: ['a', 'b'] });
     const { result, warnings } = gen(site, { sources: ['a', 'b'] });
-    expect(warnings).toEqual([]);
+    // Not fatal, but the empty source is named.
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('no .feature files found in b,');
     expect(result.removed).toEqual([]);
     expect(Object.keys(readTree(site.outDir)).length).toBeGreaterThan(0);
   });

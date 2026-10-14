@@ -549,6 +549,21 @@ export function generateFeaturePages(model, opts) {
     );
   }
 
+  // Emptiness is judged on the whole set (C-004), so one empty source among
+  // several does not stop. Name it anyway: a submodule that is not checked out
+  // looks exactly like this, and its pages are about to be pruned.
+  if (model.files.length > 0 && sources && sources.length > 1) {
+    const seen = new Set(model.files.map((file) => file.sourceDirIndex));
+    sources.forEach((source, index) => {
+      if (!seen.has(index)) {
+        warn(
+          `${PREFIX} no .feature files found in ${source}, although other sources have some; ` +
+            'if it is a git submodule, run `git submodule update --init`',
+        );
+      }
+    });
+  }
+
   // Defence in depth: nothing planned or pruned may resolve outside `outDir`.
   const removed = owned.filter((rel) => !plan.has(rel));
   for (const rel of [...plan.keys(), ...removed]) assertInside(outDir, rel);
