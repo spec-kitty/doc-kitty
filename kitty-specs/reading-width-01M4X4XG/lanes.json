@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "mission_slug": "reading-width-01M4X4XG",
+  "mission_id": "01M4X4XGQ92SEMD7FXG9N01JB1",
+  "mission_branch": "issue-154-reading-width",
+  "target_branch": "issue-154-reading-width",
+  "lanes": [
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01",
+        "WP02",
+        "WP03",
+        "WP04"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0052-reading-width-and-wide-tables.md",
+        "docs/adr/README.md",
+        "docs/architecture/theming.md",
+        "example/docs/architecture/overview.md",
+        "src/lib/theme.ts",
+        "src/scripts/assert-chrome-artifacts.mjs",
+        "src/styles/dk-components.css",
+        "src/styles/theme.css",
+        "src/tests/layout-css-contract.test.ts",
+        "tests/a11y/__screenshots__/visual.spec.ts/**",
+        "tests/a11y/layout-geometry.spec.ts",
+        "tests/a11y/reading-width.spec.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-10-14T12:18:33.126334+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "648f285a4293504eda48d9628f115a8b579d9a7a"
+}

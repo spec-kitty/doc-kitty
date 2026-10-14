@@ -1,0 +1,79 @@
+{
+  "mission_slug": "diagrams-option-docs-01M4X4VQ",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "docs/guides/consumer-setup.md#optional-diagrams: on/off bullets; checked against config.ts defineDocKittyIntegrations (diagrams=false, integration gated)",
+      "pass_fail": "pass",
+      "verified_by": "claude-reviewer",
+      "verified_at": "2026-10-14T12:18:40.998088+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "consumer-setup.md 'Render modes': values match BUILD_FLAG_TRUE/FALSE and resolveDiagramMode in config.ts; reviewer verified",
+      "pass_fail": "pass",
+      "verified_by": "claude-reviewer",
+      "verified_at": "2026-10-14T12:18:47.217883+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "consumer-setup.md 'PlantUML': build-only, DK_PLANTUML_SERVER_URL default and plantuml.com refusal match resolvePlantumlServerUrl",
+      "pass_fail": "pass",
+      "verified_by": "claude-reviewer",
+      "verified_at": "2026-10-14T12:18:53.005341+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "scratch_build",
+      "evidence": "Scratch copy of example: off -> data-language=mermaid code block, no figure; diagrams:true + DK_DIAGRAM_BUILD_RENDER=client -> figure.dk-diagram + pre.mermaid, Chromium shows svg in figure (WP01 review note)",
+      "pass_fail": "pass",
+      "verified_by": "claude-reviewer",
+      "verified_at": "2026-10-14T12:18:58.755998+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "src/lib/config.ts diagrams TSDoc first sentence: '`false` (default): diagram blocks are shown as code, not drawn.'",
+      "pass_fail": "pass",
+      "verified_by": "claude-reviewer",
+      "verified_at": "2026-10-14T12:19:04.678298+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "plan.md D-01: build-time hint not added, rationale recorded",
+      "pass_fail": "pass",
+      "verified_by": "claude-reviewer",
+      "verified_at": "2026-10-14T12:19:10.899742+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "CHANGELOG.md Unreleased > Added: 'The consumer guide explains the diagrams option (#153)'",
+      "pass_fail": "pass",
+      "verified_by": "claude-reviewer",
+      "verified_at": "2026-10-14T12:19:16.772114+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

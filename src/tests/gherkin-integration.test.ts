@@ -24,6 +24,7 @@ import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 
 vi.mock('@astrojs/starlight', () => ({
@@ -68,11 +69,15 @@ interface StubContext {
   addWatchFile: ReturnType<typeof vi.fn>;
   updateConfig: ReturnType<typeof vi.fn>;
   injectScript: ReturnType<typeof vi.fn>;
+  injectRoute: ReturnType<typeof vi.fn>;
+  config: { srcDir: URL } | undefined;
   logger: { warn: ReturnType<typeof vi.fn>; info?: ReturnType<typeof vi.fn> };
 }
 
-function stubContext(withInfo = true): StubContext {
+function stubContext(withInfo = true, srcDir?: URL): StubContext {
   return {
+    injectRoute: vi.fn(),
+    config: srcDir ? { srcDir } : undefined,
     addWatchFile: vi.fn(),
     updateConfig: vi.fn(),
     injectScript: vi.fn(),
@@ -166,6 +171,15 @@ describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
     expect(existsSync(path.join(site, 'docs', 'behaviour'))).toBe(false);
   });
 
+  it('passes gherkin.titles to the generator (#125)', () => {
+    writeTree({ 'features/shipping/x.feature': FEATURE_X });
+    const site = enterSite();
+    runGherkinSetup(
+      defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'], titles: { shipping: 'Shipping (EU)' } } }),
+    );
+    expect(frontmatterOf(path.join(site, 'docs', 'behaviour', 'shipping', 'README.md')).title).toBe('Shipping (EU)');
+  });
+
   it('calls addWatchFile once per source file, in sorted model order', () => {
     writeTree({
       'features/shipping/x.feature': FEATURE_X,
@@ -241,7 +255,8 @@ describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
     const ctx = runGherkinSetup(
       defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }),
     );
-    expect(ctx.updateConfig).not.toHaveBeenCalled();
+    // The only config it adds is the vite module behind the injected scenario route.
+    expect(ctx.updateConfig.mock.calls.map(([c]) => Object.keys(c))).toEqual([['vite']]);
     expect(ctx.injectScript).not.toHaveBeenCalled();
   });
 });
@@ -264,12 +279,11 @@ describe('doc-kitty:gherkin errors are build-fatal', () => {
     expect(existsSync(path.join(site, 'docs', 'behaviour'))).toBe(false);
   });
 
-  it('throws [dk-gherkin] for a missing source directory', () => {
+  it('throws [dk-gherkin] for a missing source directory, named as configured', () => {
+    // Pins how config.ts hands `sources` to the loader: the message must name the
+    // directory as the site wrote it, not a path the hook resolved first.
     enterSite();
-    const integrations = defineDocKittyIntegrations({
-      title: 't',
-      gherkin: { sources: ['nope'] },
-    });
+    const integrations = defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['nope'] } });
     expect(() => runGherkinSetup(integrations)).toThrow(/\[dk-gherkin\] source directory not found: nope/);
   });
 
@@ -295,31 +309,11 @@ describe('doc-kitty:gherkin errors are build-fatal', () => {
     expect(existsSync(page)).toBe(false);
   });
 
-  it('refuses to write into a section holding authored content', () => {
-    writeTree({
-      'features/shipping/x.feature': FEATURE_X,
-      'docs/behaviour/handwritten.md': '---\ntitle: Mine\n---\n\n# Mine\n',
-    });
-    enterSite();
-    const integrations = defineDocKittyIntegrations({
-      title: 't',
-      gherkin: { sources: ['features'] },
-    });
-    expect(() => runGherkinSetup(integrations)).toThrow(/\[dk-gherkin\] refusing to write/);
-  });
 });
 
 describe('defineDocKittyIntegrations validates the gherkin option eagerly', () => {
   const define = (gherkin: unknown) => () =>
     defineDocKittyIntegrations({ title: 't', gherkin: gherkin as { sources: string[] } });
-
-  it.each([
-    ['an empty sources array', { sources: [] }],
-    ['a non-array sources', { sources: 'features' }],
-    ['a blank source entry', { sources: ['features', ' '] }],
-  ])('rejects %s', (_label, gherkin) => {
-    expect(define(gherkin)).toThrow(/^\[dk-gherkin\] gherkin\.sources must be a non-empty array/);
-  });
 
   it.each([
     ['empty', ''],
@@ -333,19 +327,11 @@ describe('defineDocKittyIntegrations validates the gherkin option eagerly', () =
     );
   });
 
-  it.each([
-    ['a string', 'true'],
-    ['a number', 1],
-    ['null', null],
-  ])('rejects an allowEmpty that is %s', (_label, allowEmpty) => {
-    expect(define({ sources: ['features'], allowEmpty })).toThrow(
-      /^\[dk-gherkin\] gherkin\.allowEmpty must be true or false/,
-    );
-  });
-
-  it.each(['glossary', '_meta'])('rejects the reserved section %s', (section) => {
-    expect(define({ sources: ['features'], section })).toThrow(
-      /^\[dk-gherkin\] gherkin\.section "[^"]+" is reserved/,
+  it('rejects a reserved section through the list config.ts passes (_meta)', () => {
+    // config.ts passes its own reserved list (`_meta` + the build-generated
+    // sections), not the options default, so only this path pins it.
+    expect(define({ sources: ['features'], section: '_meta' })).toThrow(
+      /^\[dk-gherkin\] gherkin\.section "_meta" is reserved/,
     );
   });
 
@@ -365,12 +351,6 @@ describe('sourceRoot / sourceUrlPrefix shape sources[0].resource', () => {
     (frontmatterOf(path.join(site, 'docs', 'behaviour', 'shipping', 'x.md')).sources as Array<{
       resource: string;
     }>)[0].resource;
-
-  it('defaults to paths relative to the site root', () => {
-    const site = enterSite('site');
-    runGherkinSetup(defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['../features'] } }));
-    expect(resourceOf(site)).toBe('../features/shipping/x.feature');
-  });
 
   it("reports paths relative to sourceRoot: '..'", () => {
     const site = enterSite('site');
@@ -493,5 +473,55 @@ describe('gherkin option validation is single-sourced (review #6)', () => {
     expect(() => validateIndexBasenames(['README', 'Log'])).toThrow(/must be a plain file name/);
     const { isPlainIndexName } = await import('../lib/vocabulary-core.mjs');
     expect(isPlainIndexName('')).toBe(false);
+  });
+});
+
+describe('doc-kitty:gherkin injects the scenario index (#126)', () => {
+  const site = (): string => {
+    const dir = enterSite();
+    writeTree({ 'features/a.feature': FEATURE_X });
+    return dir;
+  };
+
+  it('injects /api/scenarios.json when sources are set, with the gherkin source options', () => {
+    const dir = site();
+    const ctx = runGherkinSetup(
+      defineDocKittyIntegrations({
+        title: 't',
+        gherkin: { sources: ['features'], sourceRoot: 'features', sourceUrlPrefix: 'https://x.test/' },
+      }),
+      stubContext(true, pathToFileURL(`${dir}${path.sep}src${path.sep}`)),
+    );
+    expect(ctx.injectRoute).toHaveBeenCalledTimes(1);
+    expect(ctx.injectRoute).toHaveBeenCalledWith({
+      pattern: '/api/scenarios.json',
+      entrypoint: '@spec-kitty/doc-toolkit/routes/scenario-index-injected',
+      prerender: true,
+    });
+    const plugin = ctx.updateConfig.mock.calls[0][0].vite.plugins[0];
+    const id = plugin.resolveId('virtual:doc-kitty/gherkin-scenario-index');
+    expect(plugin.load(id)).toBe(
+      'export const scenarioIndexOptions = {"sourceRoot":"features","sourceUrlPrefix":"https://x.test/"};\n',
+    );
+  });
+
+  it.each([
+    'src/pages/api/scenarios.json.ts',
+    'src/pages/api/scenarios.json.tsx',
+    'src/pages/api/scenarios.json/index.mjs',
+    'src/pages/api/scenarios.json/index.jsx',
+  ])('does not inject when the site mounts its own %s', (file) => {
+    const dir = site();
+    writeTree({ [file]: 'export const GET = () => new Response();\n' });
+    const ctx = runGherkinSetup(
+      defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }),
+      stubContext(true, pathToFileURL(`${dir}${path.sep}src${path.sep}`)),
+    );
+    expect(ctx.injectRoute).not.toHaveBeenCalled();
+  });
+
+  it('registers no gherkin integration, so no route, when sources are not set', () => {
+    const names = named(defineDocKittyIntegrations({ title: 't', gherkin: true })).map((i) => i.name);
+    expect(names).not.toContain(GHERKIN);
   });
 });

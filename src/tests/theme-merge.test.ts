@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, expectTypeOf } from 'vitest';
 import {
   resolveTheme,
   mergeTheme,
@@ -7,6 +7,8 @@ import {
   DEFAULT_TOKEN_SHEET,
   DK_COMPONENTS_CSS_SHEET,
   TOC_RAIL_CSS_SHEET,
+  DK_SLOT_NAMES,
+  type DkSlotName,
   type DocKittyTheme,
 } from '../lib/theme.js';
 
@@ -174,5 +176,39 @@ describe('resolveTheme — extends chain guards', () => {
     const r = mergeLayers([{ tokens: { '--dk-x': '1' } }, { tokens: { '--dk-x': '2' } }]);
     expect(r.tokens['--dk-x']).toBe('2'); // later layer wins
     expect(r.generated).toBe(true);
+  });
+});
+
+describe('DK_SLOT_NAMES — the runtime list behind DkSlotName (#114)', () => {
+  it('is the type: every DkSlotName is in the list and the list holds nothing else', () => {
+    expectTypeOf<(typeof DK_SLOT_NAMES)[number]>().toEqualTypeOf<DkSlotName>();
+  });
+
+  it('lists each slot name once', () => {
+    expect(new Set(DK_SLOT_NAMES).size).toBe(DK_SLOT_NAMES.length);
+  });
+});
+
+describe('resolveTheme — unknown slot names (#114)', () => {
+  const misspelt = { 'dk:site-heading': 'x/Header.astro' } as unknown as DocKittyTheme['slots'];
+
+  it('throws on an unknown slot name in the theme itself', () => {
+    expect(() => resolveTheme({ slots: misspelt })).toThrow(/"dk:site-heading"/);
+  });
+
+  it('names the slot and the layer that holds it, in a layer that extends a valid brand', () => {
+    const bad = () => resolveTheme({ name: 'acme-docs', extends: brand, slots: misspelt });
+    expect(bad).toThrow(/"dk:site-heading"/);
+    expect(bad).toThrow(/acme-docs/);
+  });
+
+  it('lists the valid slot names in the message', () => {
+    expect(() => resolveTheme({ slots: misspelt })).toThrow(DK_SLOT_NAMES[0]);
+  });
+
+  it('rejects a slots value that is not an object', () => {
+    expect(() => resolveTheme({ name: 'site', slots: 'x' as unknown as DocKittyTheme['slots'] })).toThrow(
+      /"site"\.slots must be an object/,
+    );
   });
 });

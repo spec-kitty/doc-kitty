@@ -2,7 +2,7 @@
 title: Gherkin feature pages
 description: "How the opt-in gherkin preset turns .feature files into Specification pages, and renders Gherkin fences and includes in any page: pipelines, seams, gates and limits."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Architecture
 kind: Explanation
 authors:
@@ -12,6 +12,7 @@ related:
   - adr/0046-gherkin-feature-pages
   - adr/0048-generated-page-names-and-empty-sources
   - adr/0051-gherkin-in-any-page
+  - adr/0054-gherkin-draft-hubs-titles-and-scenario-route
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - architecture/glossary
@@ -129,13 +130,14 @@ by `normalizeGherkinOptions()` in `options.mjs`, which applies
 the toolkit's single `slug()` rule in `vocabulary-core.mjs`. Every source directory
 is generated under the same section root.
 
-Hubs are written for the section root and for every directory with at least one
-non-draft feature anywhere below it. The hub file is `<first indexBasename>.md`, so
+Hubs are written for the section root and for every directory that holds a
+feature anywhere below it ([ADR-0054](../adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md)).
+The hub file is `<first indexBasename>.md`, so
 `README.md` by default. Using the first configured basename makes the hub collapse
 to its directory route under either loader setting. The basename list and the
 index-name test come from `vocabulary-core.mjs` (`normalizeIndexBasenames`,
 `isIndexPath`), the same rule the loader and the frontmatter gate use. A hub has
-`kind: Hub`, `doc_status: active`, a one-line intro and a list of its children
+`kind: Hub`, `doc_status: active` (or `draft`, below), a one-line intro and a list of its children
 (`- [<title>](./<slug>/) — <description>`), sorted by output path. If every
 feature in the section is a draft, the root hub is still written, with the intro
 and no list.
@@ -144,13 +146,18 @@ A hub lists sub-directory hubs and every feature that isn't a draft. A draft
 feature (`@wip` or `@dk:status=draft`) still gets its page, but its hub leaves it
 out. The hub layout's own child listing already drops drafts, and the hub's raw
 Markdown is served to agents through `/api/pages/<hub>.json`, so a listed draft
-would get past draft gating. For the same reason a directory whose features are
-all drafts gets no hub and no link from its parent hub, so its name isn't
-published either. Its draft pages are still generated, owned and pruned like any
-other.
+would get past draft gating. A directory with no published feature below it
+gets a **draft** hub: `doc_status: draft`, the intro and no list, and no
+published hub links it, so its name isn't published either. Draft gating builds
+that hub exactly when it builds the directory's pages, so with drafts published
+the sidebar has an index for them. The planner never reads `DK_PUBLISH_DRAFTS`:
+the hub is generated in both modes, so the committed tree and the `--check` gate
+are the same for every build. The section root hub is always published.
 
 The root hub's title is the section's label in the section registry, or the
-humanised section id. A directory hub's title is the humanised directory name, and
+humanised section id. A directory hub's title is its entry in `gherkin.titles`
+(keyed by the directory relative to its source, as written on disk), else the
+humanised directory name, and
 its description reads "Behaviour specifications for `<Title>`, generated from
 Gherkin feature files." A nested directory is humanised with the sidebar's rule
 (`humaniseDirectoryName` in `vocabulary-core.mjs`, sentence case: `shipping-ops`
@@ -371,23 +378,24 @@ label. `/api/pages/<id>.json` returns the generated Markdown plus
 relative to `gherkin.sourceRoot`, prefixed with `gherkin.sourceUrlPrefix` when set,
 so an agent can fetch the executable `.feature` itself.
 
-Sites that mount `scenarioIndexRoute()` at `src/pages/api/scenarios.json.ts` also
-serve `/api/scenarios.json`: `{ version, generated_from: "doc-kitty/gherkin", count,
+Sites with `gherkin.sources` also serve `/api/scenarios.json` (the integration injects
+`scenarioIndexRoute()`; a hand-mounted `src/pages/api/scenarios.json.ts` is kept): `{ version, generated_from: "doc-kitty/gherkin", count,
 features[] }`. It has one record per published, agent-discoverable generated page,
 ordered by id, carrying `id`, `title`, `url`, `source`, `doc_status`,
 `glossary_context`, `tags` and `related`, plus `scenarios[]` in document order.
 Each scenario has `name`, `rule` (`null` outside a rule), `anchor`, `line`, its own
 `tags` (without `@`, sorted), `outline`, `steps` (`{ keyword, text }`, keyword
 trimmed) and `examples` (`{ name, tags, header, rows }`; rows are not expanded).
-The route re-parses each page's `.feature` with the same loader, so pass it the
-`sourceRoot` and `sourceUrlPrefix` you gave `gherkin`. It reads each anchor from the
+The route re-parses each page's `.feature` with the same loader, using the
+`sourceRoot` and `sourceUrlPrefix` of `gherkin`. It reads each anchor from the
 page's rendered headings and never computes a slug. Scenarios are matched to
 headings in document order, after folding both sides the same way: Astro's
 heading text turns `{` into `${`, and smartypants curls quotes and rewrites dashes
 and ellipses. A missing source, a source
 changed since generation, or a scenario with no rendered heading fails the build.
 `llms.txt` adds a `Scenario index:` line only when at least one such page exists,
-so a site without Gherkin pages is unaffected.
+so a site without Gherkin pages is unaffected. The route exists whenever
+`gherkin.sources` is set, so the line never points at a 404 (ADR-0054).
 
 ## The RSS feed
 
@@ -531,11 +539,8 @@ Fences reach agents as fences. Embedded scenarios are not in
   only from sources you trust as much as your docs.
 - **Only Feature-level tags gate publication.** A `@wip` on a single Scenario does
   not hide it; the tag is shown on the page.
-- **A directory holding only draft features gets no hub.** With drafts built (the
-  default), the sidebar warns "Add an index page to …" for it. The author cannot
-  act on that, because an authored file in the generated section stops the build.
-  It goes away once one feature in the directory is published, or with
-  `DK_PUBLISH_DRAFTS=off`.
+- **A draft hub lists nothing.** A directory whose features are all drafts gets a
+  draft hub with the intro only: hubs leave drafts out in both draft modes.
 - **In-page freshness rests on Astro 5 internals.** The include digest fold, the
   dev re-emit, and the never-matching digest of a failed render depend on how
   Astro 5's `glob()` loader stores and re-syncs entries. They have to be re-checked
@@ -559,11 +564,11 @@ Fences reach agents as fences. Embedded scenarios are not in
   only letters, digits and `+.#-`, so `"""application/json` becomes the language
   `applicationjson` (unhighlighted). Use `"""json`. This is inherited from
   generated pages.
-- **The scenario index is a separate mount.** `llms.txt` advertises
+- **The scenario index is injected (#126).** `llms.txt` advertises
   `/api/scenarios.json` whenever at least one published, agent-discoverable
-  generated feature page exists, but the integration doesn't inject the route, so
-  mount `scenarioIndexRoute` when you turn `gherkin` on
-  (every other doc-kitty route is mounted the same way).
+  generated feature page exists, and the integration serves it whenever
+  `gherkin.sources` is set. A site that removed the `gherkin` option but kept its
+  frozen generated pages gets no route and must mount `scenarioIndexRoute` itself.
 
 ## Related notes and follow-ups
 

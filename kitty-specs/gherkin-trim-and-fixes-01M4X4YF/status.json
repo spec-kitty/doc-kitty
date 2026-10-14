@@ -1,0 +1,123 @@
+{
+  "event_count": 47,
+  "last_event_id": "01M4X9QF4MKFZ33ZY02KVCDBEB",
+  "materialized_at": "2026-10-14T13:30:47.316935+00:00",
+  "mission_number": "",
+  "mission_slug": "gherkin-trim-and-fixes-01M4X4YF",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 6,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X9PWA357J0A2FQ6D8ZXDXG",
+      "last_transition_at": "2026-10-14T13:30:28.035059+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP01-parity-and-status-shorthand/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP01-parity-and-status-shorthand/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 9783,
+      "shell_pid_created_at": "1791980592.71"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X9PZT7WZ5PWTQT5DJBNMCQ",
+      "last_transition_at": "2026-10-14T13:30:31.623462+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP02-draft-only-directory-hubs/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP02-draft-only-directory-hubs/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 12749,
+      "shell_pid_created_at": "1791980834.65"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X9Q3R4H1CX3B9RAXS5X1NH",
+      "last_transition_at": "2026-10-14T13:30:35.652271+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP03-gherkin-titles/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP03-gherkin-titles/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 16627,
+      "shell_pid_created_at": "1791981167.05"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X9Q7Y37CAQXJ2HJM729EJB",
+      "last_transition_at": "2026-10-14T13:30:39.939119+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP04-scenario-index-check/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP04-scenario-index-check/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 22930,
+      "shell_pid_created_at": "1791981544.92"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X9QBNS21EEP1KEF3734311",
+      "last_transition_at": "2026-10-14T13:30:43.769983+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP05-trim-gherkin-suites/review-cycle-2.md",
+        "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP05-trim-gherkin-suites/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 7216,
+      "shell_pid_created_at": "1791983034.73"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X9QF4MKFZ33ZY02KVCDBEB",
+      "last_transition_at": "2026-10-14T13:30:47.316935+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP06-records-and-docs/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP06-records-and-docs/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 10761,
+      "shell_pid_created_at": "1791983275.33"
+    }
+  }
+}

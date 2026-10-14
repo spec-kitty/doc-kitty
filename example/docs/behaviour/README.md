@@ -12,5 +12,5 @@ generated:
 
 Behaviour specifications generated from the repository's Gherkin feature files.
 
-- [Hr](./hr/) — Behaviour specifications for Hr, generated from Gherkin feature files.
+- [HR](./hr/) — Behaviour specifications for HR, generated from Gherkin feature files.
 - [Shipping](./shipping/) — Behaviour specifications for Shipping, generated from Gherkin feature files.

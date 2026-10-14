@@ -1,0 +1,60 @@
+{
+  "event_count": 11,
+  "last_event_id": "01M4X5NW7CM165TAD6GX056SM7",
+  "materialized_at": "2026-10-14T12:20:00.877036+00:00",
+  "mission_number": "7",
+  "mission_slug": "diagrams-option-docs-01M4X4VQ",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 1,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude-reviewer",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X5NW7CM165TAD6GX056SM7",
+      "last_transition_at": "2026-10-14T12:20:00.877036+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review. Gates: lint 0 errors (1 pre-existing warning), typecheck 0 errors, validate:docs 148 valid, validate:links 1164 refs resolve, validate:catalog 22 refs resolve, markdownlint 0, vale 0. Scratch build of example: diagrams off -> fence is a code block (data-language=mermaid, no figure); diagrams: true + DK_DIAGRAM_BUILD_RENDER=client -> figure.dk-diagram + pre.mermaid, render script in page bundle, Chromium shows svg inside the figure.",
+        "Review finding 1 fixed: the diagrams comment names both modes. lint 0 errors, typecheck 0 errors.",
+        "Review passed. Cycle-1 finding (mode-blind doc comment) fixed; guide statements verified against config.ts; gates green."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/kitty-specs/diagrams-option-docs-01M4X4VQ/tasks/WP01-diagrams-option-docs/review-cycle-2.md",
+        "reference": "review-cycle://diagrams-option-docs-01M4X4VQ/WP01-diagrams-option-docs/review-cycle-2.md",
+        "reviewer": "claude-reviewer",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 4040,
+      "shell_pid_created_at": "1791980210.89",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      },
+      "tracker_refs": [
+        "spec-kitty/doc-kitty#153"
+      ]
+    }
+  }
+}

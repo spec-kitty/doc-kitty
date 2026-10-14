@@ -24,7 +24,6 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
-  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -125,14 +124,6 @@ describe('generate-feature-pages CLI — write mode', () => {
     expect(run(site).stdout).toMatch(/0 written, 4 unchanged, 0 removed/);
   });
 
-  it('refuses to write into a section that holds an authored file (exit 1, [dk-gherkin])', () => {
-    const site = makeSite();
-    mkdirSync(path.join(site, 'docs', 'behaviour'), { recursive: true });
-    writeFileSync(path.join(site, 'docs', 'behaviour', 'notes.md'), '# Notes\n');
-    const res = run(site);
-    expect(res.status).toBe(1);
-    expect(res.stderr).toMatch(/\[dk-gherkin\] refusing to write into .*notes\.md/);
-  });
 });
 
 describe('generate-feature-pages CLI — empty source set', () => {
@@ -219,32 +210,6 @@ describe('generate-feature-pages CLI — --check drift gate', () => {
     expect(check(site).status).toBe(0);
   });
 
-  it('a removed .feature leaves its owned page stale → listed as `stale` (exit 1)', () => {
-    const site = makeSite();
-    run(site);
-    unlinkSync(path.join(site, 'features', 'shipping', 'declare-customs.feature'));
-    const res = check(site);
-    expect(res.status).toBe(1);
-    expect(res.stderr).toContain('  stale: shipping/declare-customs.md\n');
-    // The shipping hub's child list changed too.
-    expect(res.stderr).toContain('  changed: shipping/README.md\n');
-  });
-
-  it('a new .feature not yet generated → listed as `added` (exit 1)', () => {
-    const site = makeSite();
-    run(site);
-    mkdirSync(path.join(site, 'features', 'hr'));
-    writeFileSync(
-      path.join(site, 'features', 'hr', 'request-leave.feature'),
-      CUSTOMS.replace('Declare customs', 'Request leave'),
-    );
-    const res = check(site);
-    expect(res.status).toBe(1);
-    expect(res.stderr).toContain('  added: hr/README.md\n');
-    expect(res.stderr).toContain('  added: hr/request-leave.md\n');
-    expect(res.stderr).toContain('  changed: README.md\n');
-  });
-
   it('an authored file inside the generated section → listed as `authored` (exit 1)', () => {
     const site = makeSite();
     run(site);
@@ -265,15 +230,21 @@ describe('generate-feature-pages CLI — --check drift gate', () => {
     expect(res.stderr).toMatch(/\[dk-gherkin\] source directory not found: features \(resolved to .*features\)/);
   });
 
-  it('a Gherkin syntax error → exit 1 with the [dk-gherkin] path:line:col message', () => {
+  it('--titles reaches the plan, and --check compares against the titled hubs (#125)', () => {
     const site = makeSite();
-    writeFileSync(
-      path.join(site, 'features', 'shipping', 'broken.feature'),
-      'Feature: Broken\n  Scenario: x\n    Given a step\n  Examples:\n    | a |\n',
-    );
-    const res = check(site);
+    expect(run(site, '--titles', 'shipping=Shipping (EU)').status).toBe(0);
+    const hub = readFileSync(path.join(site, 'docs', 'behaviour', 'shipping', 'README.md'), 'utf8');
+    expect(hub).toMatch(/^title: "Shipping \(EU\)"$/m);
+    expect(run(site, '--check', '--titles', 'shipping=Shipping (EU)').status).toBe(0);
+    const drift = run(site, '--check');
+    expect(drift.status).toBe(1);
+    expect(drift.stderr).toContain('  changed: shipping/README.md\n');
+  });
+
+  it('a --titles value without "=" → exit 1 naming the expected shape', () => {
+    const res = run(makeSite(), '--titles', 'shipping');
     expect(res.status).toBe(1);
-    expect(res.stderr).toMatch(/\[dk-gherkin\] features\/shipping\/broken\.feature:\d+:\d+ /);
+    expect(res.stderr).toContain('--titles expects <dir>=<title>; got "shipping"');
   });
 
   it('a bad invocation (missing --sources) → exit 1 with a usage message', () => {
@@ -321,7 +292,7 @@ describe('generate-feature-pages CLI — option validation parity with the integ
     },
   );
 
-  it.each(['glossary', '_meta'])('--section %s is reserved (exit 1)', (section) => {
+  it.each(['glossary'])('--section %s is reserved (exit 1)', (section) => {
     const site = makeSite();
     const res = run(site, '--section', section);
     expect(res.status).toBe(1);

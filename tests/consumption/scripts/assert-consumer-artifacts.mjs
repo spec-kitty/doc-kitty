@@ -399,9 +399,10 @@ async function assertBibliography(distDir) {
   ok(`api/bibliography.json: valid JSON, records[] (${body.records.length}) each with id/title/url`);
 }
 
-// The scenario index (gherkin-feature-pages WP10) on a consumer WITHOUT Gherkin
-// pages: the route still mounts and builds (an empty `features[]`), and llms.txt
-// does NOT advertise it — the no-gherkin llms.txt stays byte-identical.
+// The scenario index, INJECTED by the packed toolkit (ADR-0054). The fixture sets
+// `gherkin.sources` and hand-mounts no `api/scenarios.json` route, so this proves
+// the `./routes/scenario-index-injected` export and the
+// `virtual:doc-kitty/gherkin-scenario-index` module resolve from node_modules.
 async function assertScenarioIndex(distDir) {
   const abs = path.join(distDir, 'api', 'scenarios.json');
   const text = await readNonEmptyText(abs, 'api/scenarios.json');
@@ -414,14 +415,17 @@ async function assertScenarioIndex(distDir) {
   if (body === null || typeof body !== 'object' || !Array.isArray(body.features)) {
     fail('api/scenarios.json: top-level `features` is not an array');
   }
-  if (body.features.length !== 0 || body.count !== 0) {
-    fail(`api/scenarios.json: the fixture has no Gherkin pages, expected 0 features (got ${body.features.length})`);
+  if (body.features.length !== 1 || body.count !== 1) {
+    fail(`api/scenarios.json: expected the 1 fixture feature (got ${body.features.length})`);
+  }
+  if (!text.includes('read-a-chapter.feature')) {
+    fail('api/scenarios.json: does not list scenarios/study/read-a-chapter.feature');
   }
   const llms = await readNonEmptyText(path.join(distDir, 'llms.txt'), 'llms.txt');
-  if (llms.includes('Scenario index:')) {
-    fail('llms.txt: advertises the scenario index on a site with no Gherkin feature pages');
+  if (!llms.includes('Scenario index:') || !llms.includes('/api/scenarios.json')) {
+    fail('llms.txt: does not advertise the injected scenario index');
   }
-  ok('api/scenarios.json: valid JSON, empty features[]; llms.txt does not advertise it');
+  ok('api/scenarios.json: injected from the tarball, valid JSON listing the feature; llms.txt advertises it');
 }
 
 // ---------------------------------------------------------------------------

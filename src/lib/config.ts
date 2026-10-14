@@ -149,13 +149,21 @@ export interface DocKittyOptions {
    */
   theme?: DocKittyTheme;
   /**
-   * Opt-in Mermaid diagrams (M5, ADR-0023/0024; FR-001). **Default off** — with
-   * it absent or `false` the integrations array carries ZERO diagram cost: no
-   * diagram integration, no markdown plugins, no injected render module (a
-   * diagram-free site stays byte-identical). Set `true` to wire the full seam:
-   * the WP02 `diagramMeta` (remark) + `diagramFigure` (rehype) plugins that turn
-   * a `%%`-annotated ```mermaid fence into an accessible `<figure>`, and the
-   * single client render owner (`diagram-render.client`) injected page-wide.
+   * `false` (default): diagram blocks are shown as code, not drawn. A
+   * ```mermaid or ```plantuml fence renders as a plain code block. `false` does
+   * not mean "render in the browser"; the render mode is picked separately, by
+   * `DK_DIAGRAM_BUILD_RENDER` or Chromium auto-detection ({@link resolveDiagramMode}).
+   *
+   * Opt-in Mermaid + PlantUML diagrams (M5, ADR-0023/0024/0040; FR-001).
+   * **Default off** — with it absent or `false` the integrations array carries
+   * ZERO diagram cost: no diagram integration, no markdown plugins, no injected
+   * render module (a diagram-free site stays byte-identical). Set `true` to wire
+   * the full seam: the WP02 `diagramMeta` (remark) + `diagramFigure` (rehype)
+   * plugins that turn a `%%`-annotated ```mermaid fence into an accessible
+   * `<figure>`, plus, per the resolved mode, EITHER the build-time renderers
+   * (build: Mermaid and PlantUML to inline SVG, no client script) OR the single
+   * client render owner (`diagram-render.client`) injected page-wide (client:
+   * Mermaid only; a ```plantuml fence stays code).
    */
   diagrams?: boolean;
   /**
@@ -200,7 +208,7 @@ export interface DocKittyOptions {
    *
    * Misconfiguration is build-fatal (`[dk-gherkin]` errors): any value other than
    * `true` or an object, an unknown key, a non-boolean `fences`, `includeRoots`
-   * that are not relative paths, `section` or `allowEmpty` without `sources`; with
+   * that are not relative paths, `section`, `allowEmpty` or `titles` without `sources`; with
    * `sources`, `sources` must be a non-empty string array, `section` a single safe
    * path segment that is not another generator's section (e.g. `glossary`), and a
    * malformed `.feature` fails `config:setup` with `file:line:col`.
@@ -255,6 +263,14 @@ export interface DocKittyOptions {
          * `sources` (build-fatal otherwise).
          */
         allowEmpty?: boolean;
+        /**
+         * Hub titles by source directory (#125): a key is a directory relative to
+         * a source, as written on disk (`hr`, `shipping/edi`), and its value
+         * replaces the humanised directory name as the hub's title, so the sidebar
+         * group reads it too (`{ hr: 'HR' }` instead of "Hr"). A key that names no
+         * directory holding a feature warns. Only valid together with `sources`.
+         */
+        titles?: Record<string, string>;
       };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
@@ -1289,6 +1305,14 @@ function resolveGherkinOptions(
  *       a `.feature` in dev restarts the server and re-runs (a)–(b). A NEW file is
  *       only picked up on the next restart (documented limit).
  * One `[dk-gherkin]` info line reports the counts (when the logger supports it).
+ *
+ * (d) `injectRoute` mounts `/api/scenarios.json` (#126, ADR-0054), so the
+ *     `llms.txt` line that advertises it never points at a 404 and a site adds no
+ *     route file. A site that already mounts its own `src/pages/api/scenarios.json.*`
+ *     (or `scenarios.json/index.*`) keeps it: the injection is skipped, so the two routes never meet at one
+ *     address (`hasOwnScenarioIndexPage`). The route reads `sourceRoot` and
+ *     `sourceUrlPrefix` from `virtual:doc-kitty/gherkin-scenario-index`, so it
+ *     resolves sources the way the generator did.
  */
 function gherkinIntegration(
   opts: ResolvedGherkinPages,
@@ -1298,7 +1322,7 @@ function gherkinIntegration(
   return {
     name: 'doc-kitty:gherkin',
     hooks: {
-      'astro:config:setup': ({ addWatchFile, logger }) => {
+      'astro:config:setup': ({ addWatchFile, logger, injectRoute, updateConfig, config }) => {
         const root = process.cwd();
         const warn = (message: string) => logger.warn(message);
         const model = loadFeatures({ sources: opts.sources, root, warn });
@@ -1312,9 +1336,44 @@ function gherkinIntegration(
           sourceRoot: path.resolve(root, opts.sourceRoot),
           sourceUrlPrefix: opts.sourceUrlPrefix,
           allowEmpty: opts.allowEmpty,
+          titles: opts.titles,
           warn,
         });
         for (const file of model.files) addWatchFile(file.absPath);
+        if (hasOwnScenarioIndexPage(config?.srcDir, root)) {
+          if (typeof logger.info === 'function') {
+            logger.info(
+              `${GHERKIN_LOG_PREFIX} src/pages/api/scenarios.json.* is mounted by the site: not injecting the scenario index`,
+            );
+          }
+        } else {
+          const resolved = `\0${SCENARIO_INDEX_MODULE_ID}`;
+          const options = {
+            sourceRoot: opts.sourceRoot,
+            ...(opts.sourceUrlPrefix !== undefined ? { sourceUrlPrefix: opts.sourceUrlPrefix } : {}),
+          };
+          updateConfig({
+            vite: {
+              plugins: [
+                {
+                  name: 'doc-kitty:gherkin-scenario-index',
+                  resolveId: (id: string) => (id === SCENARIO_INDEX_MODULE_ID ? resolved : null),
+                  load: (id: string) =>
+                    id === resolved
+                      ? `export const scenarioIndexOptions = ${JSON.stringify(options)};\n`
+                      : null,
+                },
+              ],
+            },
+          });
+          // `prerender`: the route reads feature files at build, so it stays static
+          // even when the site sets `output: 'server'`.
+          injectRoute({
+            pattern: '/api/scenarios.json',
+            entrypoint: SCENARIO_INDEX_ENTRYPOINT,
+            prerender: true,
+          });
+        }
         if (typeof logger.info === 'function') {
           logger.info(
             `${GHERKIN_LOG_PREFIX} ${model.files.length} feature file(s) → ${docsDir}/${opts.section}: ` +
@@ -1324,6 +1383,31 @@ function gherkinIntegration(
       },
     },
   };
+}
+
+/** The virtual module the injected scenario-index route reads its options from. */
+export const SCENARIO_INDEX_MODULE_ID = 'virtual:doc-kitty/gherkin-scenario-index';
+
+/** The injected route's entrypoint, a package export so a consuming site resolves it. */
+const SCENARIO_INDEX_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/scenario-index-injected';
+
+/** Page extensions Astro treats as an endpoint file. */
+const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs', 'tsx', 'jsx'];
+
+/**
+ * True when the site mounts its own `api/scenarios.json` endpoint under
+ * `<srcDir>/pages` (the hand-mounted route older sites were told to add). Astro
+ * fails on two routes for one address, so the integration then leaves the
+ * site's route alone.
+ */
+export function hasOwnScenarioIndexPage(srcDir: URL | string | undefined, root: string): boolean {
+  const src = srcDir ? fileURLToPath(srcDir) : path.join(root, 'src');
+  const api = path.join(src, 'pages', 'api');
+  return ENDPOINT_EXTENSIONS.some(
+    (ext) =>
+      existsSync(path.join(api, `scenarios.json.${ext}`)) ||
+      existsSync(path.join(api, 'scenarios.json', `index.${ext}`)),
+  );
 }
 
 /**

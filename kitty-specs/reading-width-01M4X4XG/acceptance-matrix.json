@@ -1,0 +1,99 @@
+{
+  "mission_slug": "reading-width-01M4X4XG",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/reading-width.spec.ts W1 (1440: column = pane 816), W2 (1920: 832, centred), W3 (45rem restore = 720); layout-css-contract agreement case; 17/17 local",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:23.959078+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "reading-width.spec.ts T1 at 1600 expanded, 1920 expanded/collapsed/capped+collapsed/rtl: table >= column+100, centred within 1px",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:28.890248+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "reading-width.spec.ts T1: table inside pane content box in all cases, end <= rail hairline when collapsed, <= frame end under 90rem cap; contract pins .content-panel container-type",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:33.479435+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "reading-width.spec.ts T2 (2560 collapsed <= --dk-width-wide), T3 (--dk-width-wide: 0 keeps table = column); contract test pins @property registration",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:38.216845+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "reading-width.spec.ts U1 at 390/768/1024 (table = column) and U3 at 1152/1280/1440 (in pane, no sideways scroll); FR-005 wording corrected after WP02 review",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:43.361727+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "reading-width.spec.ts U2: narrow table at 1920 starts at column start, width = column",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:48.025454+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "layout-geometry.spec.ts EXPANDED_MEASURE moved 720->832 with reason (fca84a4), 34 passed; update-a11y-baselines run 38566373478 no-op in pinned container",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:52.833212+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "docs/adr/0052-reading-width-and-wide-tables.md, docs/architecture/theming.md#reading-width-and-wide-tables, CHANGELOG.md [Unreleased] Changed; docs gates, markdownlint, vale green",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:59:57.603315+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "No html[dir] selector in the wide-table rule (direction must come from :dir())",
+      "verification_method": "grep_absence",
+      "verification_command": "html\\[dir='rtl'\\] \\.sl-markdown-content",
+      "result": "confirmed_absent",
+      "evidence": "grep found zero matches",
+      "scope": "src/styles"
+    }
+  ]
+}

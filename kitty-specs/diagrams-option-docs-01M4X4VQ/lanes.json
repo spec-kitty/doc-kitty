@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "mission_slug": "diagrams-option-docs-01M4X4VQ",
+  "mission_id": "01M4X4VQGJR58D3ASPMZST6FXX",
+  "mission_branch": "issue-153-diagrams-option-docs",
+  "target_branch": "issue-153-diagrams-option-docs",
+  "lanes": [
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/guides/consumer-setup.md",
+        "src/lib/config.ts"
+      ],
+      "predicted_surfaces": [],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-10-14T12:08:56.345338+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "4ffe5b34e4ad3c8c34fa6fe78b919edb28b0de4a"
+}

@@ -2,7 +2,7 @@
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Architecture
 kind: Reference
 authors:
@@ -10,10 +10,12 @@ authors:
 tags: [theme, chrome, branding, components, layouts]
 related:
   - adr/0008-swappable-theme-layer
+  - adr/0052-runtime-slot-name-validation
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0015-m2-slot-resolution-and-components-map-seam
   - adr/0044-header-carrier
   - adr/0045-frame-width-token
+  - adr/0053-reading-width
   - guides/theme-header
   - architecture/metadata-model
 ---
@@ -75,7 +77,7 @@ Notation: **→ `--sl-x`** means the base layer copies this token into `--sl-x`;
 | Spacing | `--dk-space-3xs…2xl` (4px ramp) | (dk) — Starlight has no spacing surface |
 | Radius | `--dk-radius-sm/md/lg/pill` | (dk) |
 | Elevation | `--dk-shadow-sm/md/lg`, `--dk-shadow-focus` | (dk) |
-| Layout widths | `--dk-width-content/-sidebar/-band/-deck/-passport`, `--dk-width-frame` | content/sidebar → `--sl-content-width`/`-sidebar-width`; rest (dk). `--dk-width-frame` is described under [Frame width](#frame-width). |
+| Layout widths | `--dk-width-content/-sidebar/-band/-deck/-passport`, `--dk-width-frame` | content/sidebar → `--sl-content-width`/`-sidebar-width`; rest (dk). `--dk-width-content` is described under [Reading width](#reading-width), `--dk-width-frame` under [Frame width](#frame-width). |
 
 This is the full curated set, deliberately minimal-but-complete: enough to rebrand
 colour, type, spacing, and shape, and to drive every chrome and per-kind layout,
@@ -91,7 +93,7 @@ dark selector, so a brand or consumer override applies in both modes.
 
 The page frame holds the sidebar, the reading pane and the "On this page" rail.
 The reading pane is the area between sidebar and rail; the reading column is the
-text block centred in it, at most 720px. The frame spans the viewport by
+text block centred in it, at most 960px (60rem). The frame spans the viewport by
 default. To cap it, set one token on `:root` in a stylesheet your theme loads
 through `customCss`:
 
@@ -131,14 +133,45 @@ Three things to know:
   `--dk-width-frame: banana` computes to `100%` and the layout is the default.
 - **The rail keeps one width.** From 72rem the rail is as wide as the sidebar
   (`--dk-width-sidebar`, 18rem). The reading pane takes the rest of the frame;
-  its column is at most `--dk-width-content` (45rem, 720px). With the default
-  frame it is 528px at a 1152px viewport, 656px at 1280px and 720px from 1600px.
+  its column is at most `--dk-width-content` (60rem, 960px). With the default
+  frame it is 528px at a 1152px viewport, 656px at 1280px and 960px from 1600px.
 
 `--dk-frame-gutter` is derived. Do not set it. The decision and the measurements
 behind it are in [ADR-0045](../adr/0045-frame-width-token.md). This page is the
 architectural description; the reference a site owner works from is
 [Cap the page width](../guides/consumer-setup.md#cap-the-page-width) in the
 consumer setup guide.
+
+### Reading width
+
+One token sets how wide the article is: `--dk-width-content`, default `60rem`
+(960px). Set it on `:root` in a stylesheet your theme loads through `customCss`.
+
+All body content shares the one column: prose, tables, diagrams, code blocks and
+components. The column is the smaller of the token and the reading pane, and the
+pane lies between the sidebar and the "On this page" rail, so the column never
+reaches under the rail, expanded or collapsed, and it stays inside a capped
+frame. From 72rem it is centred in the pane. Below 72rem it fills its pane, as
+before. On a window just under 72rem with a sidebar (about 1057 to 1151px) the
+pane is wider than the old 720px, so the column fills it.
+
+With the default frame and the rail expanded:
+
+| Viewport | 1152px | 1280px | 1440px | 1600px | 1920px | 2560px |
+|---|---|---|---|---|---|---|
+| Reading column | 528 | 656 | 816 | 960 | 960 | 960 |
+
+The wider column means longer lines of prose: about 123 to 135 characters in the
+default font stack, against 92 to 101 at the previous `45rem`. To keep the
+previous, narrower column (the default before ADR-0053):
+
+```css
+:root { --dk-width-content: 45rem; }
+```
+
+The decision, including why a wider column for all content was chosen over a
+prose-measure-optimised one, and the line-length measurements are in
+[ADR-0053](../adr/0053-reading-width.md).
 
 ## The slot surface
 
@@ -182,8 +215,13 @@ theme select, language select). See the [theme header guide](../guides/theme-hea
 (EditLink). No carrier reads them, so setting one has no effect. Rendering any
 of them means a further carrier, and
 [ADR-0044](../adr/0044-header-carrier.md) requires a new decision record for
-that. Slot names are checked by the TypeScript theme type only: a misspelt name
-in a plain-JavaScript theme is ignored without a message.
+that.
+
+**Slot names are checked when the config loads.** A slot name outside this
+surface, in any layer of a theme, fails the build with an error that names the
+unknown slot and lists the valid ones. This holds for a theme written in plain
+JavaScript too, which no type check reaches
+([ADR-0052](../adr/0052-runtime-slot-name-validation.md)).
 
 The Spec Kitty brand header does not use the header slot. It rides
 Starlight-native `logo`/`title` config and brand CSS (see §"Wiring").

@@ -83,6 +83,11 @@
 //   - all eight no-horizontal-scroll tests (NFR-003) and both layout-shift tests
 //     (NFR-005).
 //
+// LATER MOVE. The reading-width mission (issue 154, ADR-0053) raised the default
+// column to 60rem; `EXPANDED_MEASURE` moved from 720 to 960px from 1600px with it.
+// That move is recorded at the table; this evidence block describes the frame
+// mission's fail-first run and is otherwise unchanged.
+//
 // Geometry does not depend on the colour scheme (the two modes differ in colour
 // tokens only), so this spec runs in the `light` project and skips in `dark`.
 import { test, expect, type Browser, type Page } from '@playwright/test';
@@ -260,17 +265,22 @@ function assertColumn(g: Geometry, width: number): void {
  *
  * The rail is pinned to the sidebar width (18rem) at every desktop width, so
  * below 84rem the column is whatever is left: 528px at 1152 and 656px at 1280.
- * That is narrower than the 720px floor, which NFR-002 only requires from 1600px.
- * It is an accepted, recorded trade-off of the fixed-width rail, pinned here so a
+ * That is narrower than the 720px floor the frame mission set (its NFR-002, required
+ * from 1600px; the 960px measure now clears it there). It is an accepted, recorded trade-off of the fixed-width rail, pinned here so a
  * change in either direction is a deliberate one. From 1600px the column is
- * Starlight's content width, 720px.
+ * `--dk-width-content`, 60rem: 960px.
+ *
+ * Moved on purpose by the reading-width mission (issue 154, ADR-0053): the
+ * default went from 45rem to 60rem, so the 1600, 1920 and 2560 rows went from
+ * 720 to 960. Below 1600px the pane still limits the column, so 1152 and 1280
+ * did not move. `reading-width.spec.ts` guards the new behaviour itself.
  */
 const EXPANDED_MEASURE: Record<number, number> = {
   1152: 528,
   1280: 656,
-  1600: 720,
-  1920: 720,
-  2560: 720,
+  1600: 960,
+  1920: 960,
+  2560: 960,
 };
 
 // ---------------------------------------------------------------------------

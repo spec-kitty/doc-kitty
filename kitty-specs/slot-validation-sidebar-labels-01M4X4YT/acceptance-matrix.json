@@ -1,0 +1,109 @@
+{
+  "mission_slug": "slot-validation-sidebar-labels-01M4X4YT",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/slot-names-config.test.ts \"rejects a misspelt slot name\"; theme-merge.test.ts \"unknown slot names (#114)\"",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:50:37.677334+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/theme-merge.test.ts \"DK_SLOT_NAMES \u2014 the runtime list behind DkSlotName\"",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:50:42.485362+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/slot-names-config.test.ts \"accepts a valid slot name\"; theme-merge.test.ts \"accepts every valid slot name\"; full pnpm test green",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:50:47.380576+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-build-html.test.ts \"lists each one-page glossary context as a link\"; route-shaping.test.ts collapse cases",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:50:52.009194+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-build-html.test.ts \"starts no group with an entry that repeats the group label\"; route-shaping.test.ts relabel case",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:50:56.788641+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/route-shaping.test.ts \"names pagination links by their page titles\"; sidebar-build-html.test.ts prev/next title check (half-by-half verified)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:51:01.726925+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/route-shaping.test.ts \"keeps the index label when another entry already reads Overview\"",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:51:06.594270+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-build-html.test.ts \"labels no group with its directory name, authored or generated\"",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:51:11.066343+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-build-html.test.ts \"lists the rhetoric section pages in reading order\"",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:51:15.966379+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-build-html.test.ts Architecture group first entry not repeating label; example/docs/architecture/overview.md sidebar.label",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T12:51:20.524977+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

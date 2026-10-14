@@ -230,10 +230,12 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
     expect(names.indexOf(STARLIGHT)).toBe(names.indexOf(FENCE) + 1);
   });
 
-  it('declares only a config:setup hook and leaves the Starlight config unchanged', () => {
+  it('declares only the codegen hook and leaves the Starlight config unchanged', () => {
     const off = defineDocKittyIntegrations({ title: 'Docs', markua: true });
     const on = defineDocKittyIntegrations({ title: 'Docs', markua: true, gherkin: GHERKIN_OPTS });
     const gherkin = named(on).find((i) => i.name === GHERKIN);
+    // config:setup generates the pages and injects the scenario index (#126); it
+    // does not touch the markdown pipeline.
     expect(Object.keys(gherkin?.hooks ?? {})).toEqual(['astro:config:setup']);
     expect(starlightConfigOf(on)).toEqual(starlightConfigOf(off));
   });

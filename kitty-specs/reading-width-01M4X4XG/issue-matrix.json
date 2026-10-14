@@ -1,0 +1,29 @@
+{
+  "rows": {
+    "#114": {
+      "evidence_ref": "Cited only to name a sibling dispatch that shares src/lib/theme.ts; no work owed here",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#154": {
+      "evidence_ref": "65a4bf4 (rule + default), fca84a4 (ratchet), 46e1c0c (docs); reading-width.spec 17/17; PR #158",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP02"
+    }
+  },
+  "schema_version": 1
+}

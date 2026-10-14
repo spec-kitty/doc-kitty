@@ -2,7 +2,7 @@
 title: Authoring a document
 description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, and show scenarios in any page.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Guide
 kind: How-To
 tags: [authoring, workflow, gherkin, bdd]
@@ -65,6 +65,24 @@ not maintain a navigation file.
     order: 2
   ```
 
+- **A folder whose only page is its index is shown as that link, not as a
+  group.** A group would open onto the same name again. The link keeps the
+  folder's place among the sub-folders, so `sidebar.order` on its index still
+  orders it. This applies to nested folders; a top-level section is always a
+  group.
+- **The index page reads "Overview" when its label repeats the group's.** The
+  heading above already names the section ("Guides"), so its index entry reads
+  "Overview" in place of "Guides" again. Previous and next links still use the
+  page title. If another page in the group is already labelled "Overview", the
+  index keeps its own label; give that page a `sidebar.label` to avoid the
+  clash.
+  A deliberate `sidebar.label` on the index page is treated the same way: when it
+  equals the group's label (the group takes its label from that same page), it
+  also reads "Overview". Give the index page a label that differs from its
+  group's if you want it kept.
+  The word "Overview" is English only for now; translating it is tracked in
+  [#161](https://github.com/spec-kitty/doc-kitty/issues/161), so a site in another
+  language shows "Overview" in the sidebar for now.
 - **Within a group the order is always: the index page, then the other pages,
   then the sub-folders.** Pages keep the order Starlight gives them (their own
   `sidebar.order`, then alphabetical). Because pages always come before
@@ -85,9 +103,9 @@ A site that passes its own `sidebar` to `defineDocKittyIntegrations` (or through
 the `starlight` option) gets exactly the sidebar it wrote: none of the labelling
 or ordering above is applied to it.
 
-Known limitation: the groups of generated glossary contexts are labelled with the
-context id (for example `shipping`), because their index pages are generated
-with the id as title.
+A generated glossary context is a folder with one page, so it is listed as a
+link under the glossary. Its label is the context `name` from
+`.contextive/definitions.yaml`; write the name as you want readers to see it.
 
 ## Using an `index.md`-indexed tree
 
@@ -183,9 +201,11 @@ file; the toolkit writes the page. The design is in
 listed in `gherkin.sources`. The example site keeps them in `example/features/`.
 The directory layout carries over: `features/shipping/book-consignment.feature`
 becomes `docs/behaviour/shipping/book-consignment.md` (`behaviour` is the default
-section). Every directory with at least one published (non-draft) feature below
-it gets a generated hub page. A directory holding only `@wip` or
-`@dk:status=draft` features gets no hub, and its parent hub doesn't link it.
+section). Every directory that holds a feature gets a generated hub page. A
+directory holding only `@wip` or `@dk:status=draft` features gets a draft hub,
+built only when drafts are, and its parent hub doesn't link it. A hub is titled
+from its directory name (`hr` becomes "Hr"); the site can set another title with
+`gherkin.titles` (see [Consumer setup](./consumer-setup.md#optional-gherkin-feature-pages)).
 
 A feature's description is Markdown passthrough, so raw HTML in a description
 lands on the page, on its hub entry and in the page's `description`. Names, steps
@@ -203,7 +223,7 @@ too:
   name the docs loader skips;
 - a feature file next to a directory of the same name (`shipping.feature` beside
   `shipping/`), because the page and that directory's hub would share one URL
-  (this fails even while the directory holds only drafts and has no hub yet);
+  (this fails even while the directory holds only drafts);
 - two sources that map to the same output path.
 
 ### Metadata tags
@@ -227,8 +247,8 @@ Feature: Book a consignment
 |-----|---------|-------|
 | `@dk:context=<ctx>` | `glossary_context` | The glossary context used to resolve terms in the step text. At most one. |
 | `@dk:status=<s>` | `doc_status` | Wins over `@wip` and `@deprecated`. The value must be a lower-case slug such as `active` or `in-review`; anything else warns and makes the page a draft, as do two `@dk:status` tags that disagree. A non-canonical slug passes through, and the frontmatter gate warns about it. |
-| `@wip` | `doc_status: draft` | Draft pages are left out of the sitemap, feeds and agent API. |
-| `@deprecated` | `doc_status: deprecated` | |
+| `@wip` | `doc_status: draft` | Draft pages are left out of the sitemap, feeds and agent API. Exact case only, as in Cucumber: `@WIP` stays an ordinary tag, and the build warns "did you mean `@wip`?". |
+| `@deprecated` | `doc_status: deprecated` | Exact case only; `@Deprecated` warns the same way. |
 | *(none)* | `doc_status: active` | A committed feature is live behaviour. |
 | `@dk:persona=<slug>` | an `audience` entry | Repeatable. The guidance text is the feature's `As a … I want … So that …` narrative, or a fixed sentence when there is none. The persona page must exist. |
 | `@dk:mission=<slug>` | `related: plans/missions/<slug>` | Repeatable. The prefix comes from the registry's `Mission` subtype; with none it is `plans/` and the generator warns. |

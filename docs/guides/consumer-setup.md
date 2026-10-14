@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-14
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -273,17 +273,11 @@ export const GET = bibliographyRoute();
 ```
 
 If you turn on generated Gherkin feature pages (the `gherkin` option with
-`sources`), also mount the scenario index. This is required: the integration does not add the route, and
-`llms.txt` advertises `/api/scenarios.json` whenever a generated feature page
-exists, so without the route it links to a page that does not exist. Pass it the same `sourceRoot` and `sourceUrlPrefix` you gave
-`gherkin` (omit both when you use the defaults), so it can find each page's
-`.feature` source:
-
-```ts
-// src/pages/api/scenarios.json.ts
-import { scenarioIndexRoute } from '@spec-kitty/doc-toolkit/routes';
-export const GET = scenarioIndexRoute();
-```
+`sources`), there is no route file to add: the integration serves
+`/api/scenarios.json` itself, using the `sourceRoot` and `sourceUrlPrefix` you gave
+`gherkin`. A site that already has `src/pages/api/scenarios.json.ts` can keep it;
+the integration then leaves it alone. If you later remove the `gherkin` option but
+keep the generated pages, mount `scenarioIndexRoute()` there yourself.
 
 If you publish reveal.js slide decks (`kind: Presentation` pages under
 `presentations/`), add the out-of-frame deck route. It wires the deck layout and
@@ -657,6 +651,96 @@ A malformed charter fails the build naming the file and offending key; an unknow
 or `_meta/sections.yaml`, both keep working (you will see one deprecation notice)
 — consolidate them with [Migrating to the charter](/guides/migrating-to-charter/).
 
+## Optional: Diagrams
+
+The `diagrams` option decides whether ```` ```mermaid ```` and ```` ```plantuml ````
+blocks are drawn as diagrams.
+
+- **`diagrams: true`** draws them.
+- **Left out, or `diagrams: false`** (the default), shows them as code blocks.
+  Nothing is drawn, in the build or in the browser.
+
+`false` does not mean "render in the browser". Where a diagram is drawn is a
+separate choice, the render mode, described below.
+
+### Turn diagrams on
+
+Add one line to the options from [step 3](#3-astroconfigmjs--wire-the-integrations):
+
+```js
+// astro.config.mjs
+integrations: defineDocKittyIntegrations({
+  title: 'My Docs',
+  base: BASE,
+  diagrams: true,
+}),
+```
+
+Then write a Mermaid block in any page. The two `%%` lines are optional. They
+give the diagram an accessible name and a caption:
+
+````markdown
+```mermaid
+%% title: Request flow
+%% description: The browser asks the server, and the server answers.
+flowchart LR
+  Browser --> Server
+  Server --> Browser
+```
+````
+
+Mermaid needs nothing else. Build, and the block is drawn.
+
+### Render modes
+
+With `diagrams: true`, each build draws diagrams in one of two modes:
+
+| Mode | What ships | Needs |
+|---|---|---|
+| **build** | An inline SVG in the page, drawn at build time. No diagram script is sent to the browser. | Playwright and its Chromium, installed where the build runs |
+| **client** | The diagram source in the page plus one script that draws it in the browser. | Nothing extra |
+
+The build picks the mode itself. When it finds a Playwright Chromium, it uses
+build mode. Otherwise it uses client mode, so a build never fails for lack of a
+browser. The toolkit does not install Playwright, so a fresh site uses client
+mode until you add it.
+
+To pin a mode, set `DK_DIAGRAM_BUILD_RENDER` in the build's environment:
+
+- `DK_DIAGRAM_BUILD_RENDER=client` always uses client mode. `0`, `off`, `no`
+  and `false` do the same.
+- `DK_DIAGRAM_BUILD_RENDER=build` always uses build mode. `1`, `on`, `yes` and
+  `true` do the same. A pinned build mode does not fall back: without Chromium,
+  the build fails.
+- Any other value is ignored: the build picks the mode as if the variable were
+  not set.
+
+Set `client` in a CI job that has no Chromium. The site then renders the same
+way on every runner, whatever happens to be installed on it.
+
+### PlantUML
+
+PlantUML blocks are drawn in build mode only. In client mode a
+```` ```plantuml ```` block stays a code block.
+
+Build mode sends each PlantUML block to a PlantUML server that you run, for
+example the `plantuml/plantuml-server` container. Set its SVG endpoint in
+`DK_PLANTUML_SERVER_URL`, including the trailing `/svg/`:
+
+```sh
+DK_DIAGRAM_BUILD_RENDER=build \
+DK_PLANTUML_SERVER_URL=http://localhost:8091/svg/ \
+astro build
+```
+
+When the variable is unset, the build uses `http://localhost:8091/svg/`. A
+`plantuml.com` URL stops the build, because the public server would receive
+your diagram source.
+
+How the two modes are built, and why, is in
+[Diagrams](../architecture/diagrams.md) and
+[ADR-0040](../adr/0040-build-time-diagram-render-dual-mode.md).
+
 ## Optional: Gherkin feature pages
 
 If your repository keeps behaviour specs in Gherkin `.feature` files, the
@@ -685,6 +769,7 @@ gherkin: {
   includeRoots: ['../features', '../tests/scenarios'], // default: sources
   sourceRoot: '..',            // report source paths relative to the repo root
   sourceUrlPrefix: 'https://github.com/you/repo/blob/main/',
+  titles: { hr: 'HR' },        // hub title for ../features/hr/ (default: "Hr")
 },
 ```
 
@@ -697,10 +782,11 @@ gherkin: {
 | `sourceRoot` | the site root | The directory each page's `sources:` path is relative to. Set `'..'` when the site lives in a sub-package and the features are elsewhere in the repo. |
 | `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. An include's source line links the same way. |
 | `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`, and only valid with `sources`. |
+| `titles` | none | Hub titles by source directory, for names a directory can't spell: `{ hr: 'HR', 'shipping/edi': 'EDI messages' }`. A key is the directory relative to its source, as written on disk; the title replaces the directory name in the hub and its sidebar group. A key that matches no directory with a feature warns. Keys must be plain relative paths and titles non-blank strings. Only valid with `sources`. |
 
-An unknown key, a non-boolean `fences`, `section` or `allowEmpty` without
-`sources`, and any value other than `true` or an object (including `false`) fail
-the build.
+An unknown key, a non-boolean `fences`, `section`, `allowEmpty` or `titles`
+without `sources`, and any value other than `true` or an object (including
+`false`) fail the build.
 
 **Existing `{ sources }` sites:** from this release, ```` ```gherkin ```` fences on
 your authored pages render as scenarios too. Add `raw` to a fence's info string
@@ -714,9 +800,10 @@ What happens on each build and dev-server start with `sources`:
 
 - Every `.feature` is parsed once. A syntax error fails the build with
   `[dk-gherkin] <path>:<line>:<col>`, listing every error in every file.
-- One page per feature (drafts included) and one hub per directory with at
-  least one non-draft feature below it are written into `docs/<section>/`, and
-  pages whose source is gone are removed. The hub file is the
+- One page per feature (drafts included) and one hub per directory that holds a
+  feature are written into `docs/<section>/`, and pages whose source is gone are
+  removed. A directory whose features are all drafts gets a draft hub: it is built
+  only when drafts are, and no published hub links it. The hub file is the
   first entry of `indexBasename` (`README.md` by default). A feature file named
   `index.feature` is rejected on any setting.
 - The section belongs to the generator. Any file in it without the generator's
@@ -750,18 +837,20 @@ script reads your index names from `astro.config.mjs`, so you do not pass
 # Regenerate locally without a build:
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/
+  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR
 
 # CI drift gate (same flags, plus --check):
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/ --check
+  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR --check
 ```
 
 Run it from the site directory, or pass `--root <site dir>`; every other path is
 relative to that root. `--help` (or `-h`) prints the flags. `--check` lists each `added`, `changed`, `stale` or
 `authored` path it finds. Add `--allow-empty` to remove the pages when no source
-yields a feature, the command-line twin of `allowEmpty`. `--check` is not affected:
+yields a feature, the command-line twin of `allowEmpty`. Pass one
+`--titles <dir>=<title>` per entry of `titles`, and quote a title with spaces:
+`--titles "shipping/edi=EDI messages"`. `--check` is not affected:
 with empty sources and pages present it already exits 1 and lists them as `stale`.
 
 To turn the feature off, remove the option **and** delete `docs/<section>/`.

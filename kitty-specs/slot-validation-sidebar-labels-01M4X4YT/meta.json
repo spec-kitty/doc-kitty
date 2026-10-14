@@ -1,0 +1,33 @@
+{
+  "accept_commit": "06852bb6195dd715a6bda53eb84b854db4432b57",
+  "acceptance_history": [
+    {
+      "accept_commit": "06852bb6195dd715a6bda53eb84b854db4432b57",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-14T12:51:36.915262+00:00",
+      "accepted_by": "claude",
+      "accepted_from_commit": "b573315d7ebe8f017ebe39f069dea4a11ba8c1f0"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-14T12:51:36.915262+00:00",
+  "accepted_by": "claude",
+  "accepted_from_commit": "b573315d7ebe8f017ebe39f069dea4a11ba8c1f0",
+  "baseline_merge_commit": "b591edcf3c02e1788763816eb9eed79cda80348f",
+  "created_at": "2026-10-14T12:07:26.422484+00:00",
+  "flattened": false,
+  "friendly_name": "slot validation sidebar labels",
+  "merged_at": "2026-10-14T12:52:01.304954+00:00",
+  "merged_commit": "b591edcf3c02e1788763816eb9eed79cda80348f",
+  "mid8": "01M4X4YT",
+  "mission_id": "01M4X4YT8K11JKQPBSFGCCCB1Z",
+  "mission_number": 7,
+  "mission_slug": "slot-validation-sidebar-labels-01M4X4YT",
+  "mission_type": "software-dev",
+  "purpose_context": "This mission advances slot validation sidebar labels on issue-114-112-slot-validation-sidebar-labels so stakeholders can track the work from mission creation onward.",
+  "purpose_tldr": "slot validation sidebar labels",
+  "slug": "slot-validation-sidebar-labels-01M4X4YT",
+  "status_phase": "1",
+  "target_branch": "issue-114-112-slot-validation-sidebar-labels",
+  "topology": "single_branch"
+}

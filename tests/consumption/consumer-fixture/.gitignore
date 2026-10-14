@@ -16,3 +16,6 @@ node_modules/
 # the source of truth; the toolkit codegens `docs/glossary/**` at build time
 # (config:setup). These are outputs — never hand-edited, never committed (WP03).
 docs/glossary/
+
+# Build-generated feature pages (gherkin `sources`, ADR-0046): outputs, never committed.
+docs/behaviour/
