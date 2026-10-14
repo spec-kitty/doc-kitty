@@ -98,6 +98,8 @@ import { DK_TAG_PREFIX, dedent, featureTitle, splitNarrative } from './text.mjs'
  * @property {string[]} tags Sorted, de-duplicated tag names (`@` kept).
  * @property {string} description Dedented Markdown; `''` when none.
  * @property {string[][]} rows Header row first; `[]` when the block has no table.
+ * @property {number[]} rowLines The source line of each BODY row (`rows[i + 1]`):
+ *   an outline row's result is keyed by it (ADR-0052).
  * @property {number} line
  */
 
@@ -289,6 +291,7 @@ function examplesView(examples) {
     tags: tagNames(examples.tags),
     description: describe(examples.description),
     rows: examples.tableHeader ? rowValues([examples.tableHeader, ...examples.tableBody]) : [],
+    rowLines: examples.tableHeader ? examples.tableBody.map((r) => r.location.line) : [],
     line: examples.location.line,
   };
 }

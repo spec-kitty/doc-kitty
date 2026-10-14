@@ -130,3 +130,44 @@ export function splitNarrative(description) {
   while (i < lines.length && lines[i].trim() === '') i += 1;
   return { narrative, rest: lines.slice(i).join('\n') };
 }
+
+/**
+ * Comparison key for a heading's text. Both sides — the `.feature` scenario
+ * title and Astro's `render(entry).headings[].text` — go through this SAME fold,
+ * which undoes every rewrite the build applies to a heading's text so the two
+ * compare equal:
+ *
+ *  - `rehypeHeadingIds` (`@astrojs/markdown-remark`, `rehype-collect-headings.js`)
+ *    does `text += value.replace(/\{/g, "${")` for every non-MDX heading, so
+ *    `GET /orders/{id}` arrives as `GET /orders/${id}`. A run of `$` before a
+ *    `{` is dropped on BOTH sides (a literal `${x}` in a name arrives as
+ *    `$${x}`; both fold to `{x}`).
+ *  - `remark-smartypants`: ``` ``x'' ``` and `"x"` → `“x”`, `'x'` → `‘x’`,
+ *    `...` and `. . .` → `…`, `--`/`---` → dashes. Quotes fold to straight
+ *    `"`/`'` (backtick quotes included), ellipses to `...`, any dash run to `-`.
+ *  - entity decoding (`&amp;` → `&`) needs no fold: the text is already decoded.
+ *
+ * The fold is lossy (two names that differ only in quote style fold together),
+ * which is safe because matching is also positional: each scenario takes the
+ * NEXT matching heading at its depth, in document order. Shared by the
+ * scenario index (`routes/scenario-index.ts`) and the results overlay of a
+ * generated page (`results-overlay.mjs`, ADR-0052), which match the same
+ * headings.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+export function headingKey(text) {
+  return text
+    .normalize('NFC')
+    .replace(/\$+\{/g, '{')
+    .replace(/[‘’‚‛′`]/g, "'")
+    .replace(/''/g, '"')
+    .replace(/[“”„‟″]/g, '"')
+    .replace(/…/g, '...')
+    .replace(/\. ?\. ?\./g, '...')
+    .replace(/[‐‑‒–—―]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}

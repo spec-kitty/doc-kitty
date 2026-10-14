@@ -1,0 +1,490 @@
+[
+  {
+    "uri": "samples/examples-tables/examples-tables.feature",
+    "id": "examples-tables",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Examples Tables",
+    "description": "  Sometimes it can be desirable to run the same scenario multiple times with\n  different data each time - this can be done by placing an Examples table\n  underneath a Scenario, and use <placeholders> in the Scenario which match the\n  table headers.\n\n  The Scenario Outline name can also be parameterized. The name of the resulting\n  pickle will have the <placeholder> replaced with the value from the examples\n  table.",
+    "elements": [
+      {
+        "start_timestamp": "1970-01-01T00:00:00.001Z",
+        "line": 19,
+        "id": "examples-tables;eating-cucumbers;these-are-passing;2",
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "name": "Eating cucumbers",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 12,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:4",
+              "arguments": [
+                {
+                  "val": "12",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 12 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "When ",
+            "line": 13,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:12",
+              "arguments": [
+                {
+                  "val": "5",
+                  "offset": 6
+                }
+              ]
+            },
+            "name": "I eat 5 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 14,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:16",
+              "arguments": [
+                {
+                  "val": "7",
+                  "offset": 14
+                }
+              ]
+            },
+            "name": "I should have 7 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@passing"
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.009Z",
+        "line": 20,
+        "id": "examples-tables;eating-cucumbers;these-are-passing;3",
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "name": "Eating cucumbers",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 12,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:4",
+              "arguments": [
+                {
+                  "val": "20",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 20 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "When ",
+            "line": 13,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:12",
+              "arguments": [
+                {
+                  "val": "5",
+                  "offset": 6
+                }
+              ]
+            },
+            "name": "I eat 5 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 14,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:16",
+              "arguments": [
+                {
+                  "val": "15",
+                  "offset": 14
+                }
+              ]
+            },
+            "name": "I should have 15 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@passing"
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.017Z",
+        "line": 25,
+        "id": "examples-tables;eating-cucumbers;these-are-failing;2",
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "name": "Eating cucumbers",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 12,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:4",
+              "arguments": [
+                {
+                  "val": "12",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 12 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "When ",
+            "line": 13,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:12",
+              "arguments": [
+                {
+                  "val": "20",
+                  "offset": 6
+                }
+              ]
+            },
+            "name": "I eat 20 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 14,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:16",
+              "arguments": [
+                {
+                  "val": "0",
+                  "offset": 14
+                }
+              ]
+            },
+            "name": "I should have 0 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "failed",
+              "error_message": "AssertionError: Expected values to be strictly equal:\n\n-8 !== 0\n\nsamples/examples-tables/examples-tables.feature:14"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@failing"
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.025Z",
+        "line": 26,
+        "id": "examples-tables;eating-cucumbers;these-are-failing;3",
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "name": "Eating cucumbers",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 12,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:4",
+              "arguments": [
+                {
+                  "val": "0",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 0 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "When ",
+            "line": 13,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:12",
+              "arguments": [
+                {
+                  "val": "1",
+                  "offset": 6
+                }
+              ]
+            },
+            "name": "I eat 1 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 14,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:16",
+              "arguments": [
+                {
+                  "val": "0",
+                  "offset": 14
+                }
+              ]
+            },
+            "name": "I should have 0 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "failed",
+              "error_message": "AssertionError: Expected values to be strictly equal:\n\n-1 !== 0\n\nsamples/examples-tables/examples-tables.feature:14"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@failing"
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.033Z",
+        "line": 35,
+        "id": "examples-tables;eating-cucumbers-with-<friends>-friends;;2",
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "name": "Eating cucumbers with 11 friends",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 29,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:8",
+              "arguments": [
+                {
+                  "val": "11",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 11 friends",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 30,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:4",
+              "arguments": [
+                {
+                  "val": "12",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 12 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 31,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:20",
+              "arguments": [
+                {
+                  "val": "1",
+                  "offset": 20
+                }
+              ]
+            },
+            "name": "each person can eat 1 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.041Z",
+        "line": 36,
+        "id": "examples-tables;eating-cucumbers-with-<friends>-friends;;3",
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "name": "Eating cucumbers with 1 friends",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 29,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:8",
+              "arguments": [
+                {
+                  "val": "1",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 1 friends",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 30,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:4",
+              "arguments": [
+                {
+                  "val": "4",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 4 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 31,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:20",
+              "arguments": [
+                {
+                  "val": "2",
+                  "offset": 20
+                }
+              ]
+            },
+            "name": "each person can eat 2 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.049Z",
+        "line": 37,
+        "id": "examples-tables;eating-cucumbers-with-<friends>-friends;;4",
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "name": "Eating cucumbers with 0 friends",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 29,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:8",
+              "arguments": [
+                {
+                  "val": "0",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 0 friends",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 30,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:4",
+              "arguments": [
+                {
+                  "val": "4",
+                  "offset": 10
+                }
+              ]
+            },
+            "name": "there are 4 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 31,
+            "match": {
+              "location": "samples/examples-tables/examples-tables.ts:20",
+              "arguments": [
+                {
+                  "val": "4",
+                  "offset": 20
+                }
+              ]
+            },
+            "name": "each person can eat 4 cucumbers",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      }
+    ],
+    "tags": [ ]
+  }
+]

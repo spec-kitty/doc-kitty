@@ -1,0 +1,243 @@
+[
+  {
+    "description": "  Customers pay for the items in their basket.",
+    "elements": [
+      {
+        "description": "",
+        "id": "checkout;paying-by-card",
+        "keyword": "Scenario",
+        "line": 8,
+        "name": "Paying by card",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 637036
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 6,
+            "name": "a basket with 2 items",
+            "match": {
+              "location": "steps/steps.js:6"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 62126
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 9,
+            "name": "the customer pays by card",
+            "match": {
+              "location": "steps/steps.js:7"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 88043
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 10,
+            "name": "the order is confirmed",
+            "match": {
+              "location": "steps/steps.js:18"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@billing",
+            "line": 1
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "checkout;applying-a-discount-code",
+        "keyword": "Scenario Outline",
+        "line": 18,
+        "name": "Applying a discount code",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 48901
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 6,
+            "name": "a basket with 2 items",
+            "match": {
+              "location": "steps/steps.js:6"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 124882
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 13,
+            "name": "the customer applies the code \"SAVE10\"",
+            "match": {
+              "location": "steps/steps.js:8"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 91750
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 14,
+            "name": "the total is 18.00",
+            "match": {
+              "location": "steps/steps.js:12"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@billing",
+            "line": 1
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "checkout;applying-a-discount-code",
+        "keyword": "Scenario Outline",
+        "line": 19,
+        "name": "Applying a discount code",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 48038
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 6,
+            "name": "a basket with 2 items",
+            "match": {
+              "location": "steps/steps.js:6"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 46285
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 13,
+            "name": "the customer applies the code \"EXPIRED\"",
+            "match": {
+              "location": "steps/steps.js:8"
+            }
+          },
+          {
+            "result": {
+              "status": "failed",
+              "duration": 563989,
+              "error_message": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n18 !== 20\n\n    + expected - actual\n\n    -18\n    +20\n\n    at World.<anonymous> (/home/runner/work/shop/shop/steps/steps.js:12:59)"
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 14,
+            "name": "the total is 20.00",
+            "match": {
+              "location": "steps/steps.js:12"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@billing",
+            "line": 1
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "checkout;gift-cards-cover-part-of-the-total;paying-with-a-gift-card",
+        "keyword": "Example",
+        "line": 24,
+        "name": "Paying with a gift card",
+        "steps": [
+          {
+            "result": {
+              "status": "passed",
+              "duration": 44202
+            },
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 6,
+            "name": "a basket with 2 items",
+            "match": {
+              "location": "steps/steps.js:6"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 31908
+            },
+            "arguments": [],
+            "keyword": "When ",
+            "line": 25,
+            "name": "the customer pays with a gift card",
+            "match": {
+              "location": "steps/steps.js:13"
+            }
+          },
+          {
+            "result": {
+              "status": "passed",
+              "duration": 28402
+            },
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 26,
+            "name": "the order is confirmed",
+            "match": {
+              "location": "steps/steps.js:18"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@billing",
+            "line": 1
+          },
+          {
+            "name": "@flaky",
+            "line": 23
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "checkout",
+    "line": 2,
+    "keyword": "Feature",
+    "name": "Checkout",
+    "tags": [
+      {
+        "name": "@billing",
+        "line": 1
+      }
+    ],
+    "uri": "features/checkout.feature"
+  }
+]

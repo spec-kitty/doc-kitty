@@ -164,6 +164,7 @@ describe('featureView: the shared document walk', () => {
           ['1', '2'],
           ['0', '1'],
         ],
+        rowLines: [34, 35],
         line: 32,
       },
     ]);

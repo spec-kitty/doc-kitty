@@ -1,0 +1,106 @@
+[
+  {
+    "uri": "samples/retry/retry.feature",
+    "id": "retry",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Retry",
+    "description": "  Some Cucumber implementations support a Retry mechanism, where test cases that fail\n  can be retried up to a limited number of attempts in the same test run.\n\n  Non-passing statuses other than FAILED won't trigger a retry, as they are not\n  going to pass however many times we attempt them.",
+    "elements": [
+      {
+        "start_timestamp": "1970-01-01T00:00:00.001Z",
+        "line": 8,
+        "id": "retry;test-cases-that-pass-aren-t-retried",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Test cases that pass aren't retried",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 9,
+            "match": {
+              "location": "samples/retry/retry.ts:3"
+            },
+            "name": "a step that always passes",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.009Z",
+        "line": 11,
+        "id": "retry;test-cases-that-fail-are-retried-if-within-the---retry-limit",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Test cases that fail are retried if within the --retry limit",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 12,
+            "match": {
+              "location": "samples/retry/retry.ts:8"
+            },
+            "name": "a step that passes the second time",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.021Z",
+        "line": 14,
+        "id": "retry;test-cases-that-fail-will-continue-to-retry-up-to-the---retry-limit",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Test cases that fail will continue to retry up to the --retry limit",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 15,
+            "match": {
+              "location": "samples/retry/retry.ts:16"
+            },
+            "name": "a step that passes the third time",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.033Z",
+        "line": 17,
+        "id": "retry;test-cases-won-t-retry-after-failing-more-than-the---retry-limit",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Test cases won't retry after failing more than the --retry limit",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 18,
+            "match": {
+              "location": "samples/retry/retry.ts:23"
+            },
+            "name": "a step that always fails",
+            "result": {
+              "duration": 1000000,
+              "status": "failed",
+              "error_message": "Error: Exception in step\nsamples/retry/retry.feature:18"
+            }
+          }
+        ]
+      }
+    ],
+    "tags": [ ]
+  }
+]

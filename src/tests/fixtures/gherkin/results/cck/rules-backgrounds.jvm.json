@@ -1,0 +1,281 @@
+[
+  {
+    "uri": "samples/rules-backgrounds/rules-backgrounds.feature",
+    "id": "rules-with-backgrounds",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Rules with Backgrounds",
+    "description": "  Like Features, Rules can also have Backgrounds, whose steps are prepended to those of each child Scenario. Only\n  one Background at the Rule level is supported.\n\n  It's even possible to have a Background at both Feature and Rule level, in which case they are concatenated.",
+    "elements": [
+      {
+        "line": 7,
+        "type": "background",
+        "keyword": "Background",
+        "name": "",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 8,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"eggs\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"eggs\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 9,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"milk\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"milk\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 10,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"bread\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"bread\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Given ",
+            "line": 14,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"batteries\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"batteries\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 15,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"light bulbs\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"light bulbs\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.001Z",
+        "line": 17,
+        "id": "rules-with-backgrounds;;one-scenario",
+        "type": "scenario",
+        "keyword": "Example",
+        "name": "one scenario",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "When ",
+            "line": 18,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:7"
+            },
+            "name": "an action",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 19,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:11"
+            },
+            "name": "an outcome",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "line": 7,
+        "type": "background",
+        "keyword": "Background",
+        "name": "",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 8,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"eggs\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"eggs\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 9,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"milk\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"milk\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 10,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"bread\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"bread\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Given ",
+            "line": 14,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"batteries\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"batteries\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 15,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:3",
+              "arguments": [
+                {
+                  "val": "\"light bulbs\"",
+                  "offset": 13
+                }
+              ]
+            },
+            "name": "an order for \"light bulbs\"",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.017Z",
+        "line": 21,
+        "id": "rules-with-backgrounds;;another-scenario",
+        "type": "scenario",
+        "keyword": "Example",
+        "name": "another scenario",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "When ",
+            "line": 22,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:7"
+            },
+            "name": "an action",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "line": 23,
+            "match": {
+              "location": "samples/rules-backgrounds/rules-backgrounds.ts:11"
+            },
+            "name": "an outcome",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      }
+    ],
+    "tags": [ ]
+  }
+]

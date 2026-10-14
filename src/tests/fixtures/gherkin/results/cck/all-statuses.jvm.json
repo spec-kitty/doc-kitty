@@ -1,0 +1,285 @@
+[
+  {
+    "uri": "samples/all-statuses/all-statuses.feature",
+    "id": "all-statuses",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "All statuses",
+    "description": "  This sample exercises all the possible result statuses, which is useful\n  for testing formatters and other tools.",
+    "elements": [
+      {
+        "start_timestamp": "1970-01-01T00:00:00.001Z",
+        "line": 6,
+        "id": "all-statuses;passing",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Passing",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 7,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 8,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 9,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.009Z",
+        "line": 11,
+        "id": "all-statuses;failing",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Failing",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 12,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 13,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:5"
+            },
+            "name": "a failing step",
+            "result": {
+              "duration": 1000000,
+              "status": "failed",
+              "error_message": "Error: whoops\nsamples/all-statuses/all-statuses.feature:13"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 14,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "status": "skipped"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.017Z",
+        "line": 16,
+        "id": "all-statuses;pending",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Pending",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 17,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 18,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:9"
+            },
+            "name": "a pending step",
+            "result": {
+              "duration": 1000000,
+              "status": "pending"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 19,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "status": "skipped"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.025Z",
+        "line": 21,
+        "id": "all-statuses;skipped",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Skipped",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 22,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 23,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:13"
+            },
+            "name": "a skipped step",
+            "result": {
+              "duration": 1000000,
+              "status": "skipped"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 24,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "status": "skipped"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.033Z",
+        "line": 26,
+        "id": "all-statuses;undefined",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Undefined",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 27,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 28,
+            "match": { },
+            "name": "an undefined step",
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 29,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "status": "skipped"
+            }
+          }
+        ]
+      },
+      {
+        "start_timestamp": "1970-01-01T00:00:00.041Z",
+        "line": 31,
+        "id": "all-statuses;ambiguous",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "name": "Ambiguous",
+        "description": "",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "line": 32,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "duration": 1000000,
+              "status": "passed"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 33,
+            "match": { },
+            "name": "an ambiguous step",
+            "result": {
+              "status": "ambiguous"
+            }
+          },
+          {
+            "keyword": "And ",
+            "line": 34,
+            "match": {
+              "location": "samples/all-statuses/all-statuses.ts:3"
+            },
+            "name": "a step",
+            "result": {
+              "status": "skipped"
+            }
+          }
+        ]
+      }
+    ],
+    "tags": [ ]
+  }
+]

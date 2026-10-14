@@ -1,0 +1,260 @@
+[ {
+  "uri" : "features/checkout.feature",
+  "id" : "checkout",
+  "line" : 2,
+  "keyword" : "Feature",
+  "name" : "Checkout",
+  "description" : "  Customers pay for the items in their basket.",
+  "elements" : [ {
+    "line" : 5,
+    "type" : "background",
+    "keyword" : "Background",
+    "name" : "",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "Given ",
+      "line" : 6,
+      "match" : {
+        "location" : "steps/steps.js:6",
+        "arguments" : [ {
+          "val" : "2",
+          "offset" : 14
+        } ]
+      },
+      "name" : "a basket with 2 items",
+      "result" : {
+        "duration" : 637036,
+        "status" : "passed"
+      }
+    } ]
+  }, {
+    "start_timestamp" : "2026-10-14T13:30:03.449Z",
+    "line" : 8,
+    "id" : "checkout;paying-by-card",
+    "type" : "scenario",
+    "keyword" : "Scenario",
+    "name" : "Paying by card",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "When ",
+      "line" : 9,
+      "match" : {
+        "location" : "steps/steps.js:7"
+      },
+      "name" : "the customer pays by card",
+      "result" : {
+        "duration" : 62126,
+        "status" : "passed"
+      }
+    }, {
+      "keyword" : "Then ",
+      "line" : 10,
+      "match" : {
+        "location" : "steps/steps.js:18"
+      },
+      "name" : "the order is confirmed",
+      "result" : {
+        "duration" : 88043,
+        "status" : "passed"
+      }
+    } ],
+    "tags" : [ {
+      "name" : "@billing"
+    } ]
+  }, {
+    "line" : 5,
+    "type" : "background",
+    "keyword" : "Background",
+    "name" : "",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "Given ",
+      "line" : 6,
+      "match" : {
+        "location" : "steps/steps.js:6",
+        "arguments" : [ {
+          "val" : "2",
+          "offset" : 14
+        } ]
+      },
+      "name" : "a basket with 2 items",
+      "result" : {
+        "duration" : 48901,
+        "status" : "passed"
+      }
+    } ]
+  }, {
+    "start_timestamp" : "2026-10-14T13:30:03.451Z",
+    "line" : 18,
+    "id" : "checkout;applying-a-discount-code;;2",
+    "type" : "scenario",
+    "keyword" : "Scenario Outline",
+    "name" : "Applying a discount code",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "When ",
+      "line" : 13,
+      "match" : {
+        "location" : "steps/steps.js:8",
+        "arguments" : [ {
+          "val" : "\"SAVE10\"",
+          "offset" : 30
+        } ]
+      },
+      "name" : "the customer applies the code \"SAVE10\"",
+      "result" : {
+        "duration" : 124882,
+        "status" : "passed"
+      }
+    }, {
+      "keyword" : "Then ",
+      "line" : 14,
+      "match" : {
+        "location" : "steps/steps.js:12",
+        "arguments" : [ {
+          "val" : "18.00",
+          "offset" : 13
+        } ]
+      },
+      "name" : "the total is 18.00",
+      "result" : {
+        "duration" : 91750,
+        "status" : "passed"
+      }
+    } ],
+    "tags" : [ {
+      "name" : "@billing"
+    } ]
+  }, {
+    "line" : 5,
+    "type" : "background",
+    "keyword" : "Background",
+    "name" : "",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "Given ",
+      "line" : 6,
+      "match" : {
+        "location" : "steps/steps.js:6",
+        "arguments" : [ {
+          "val" : "2",
+          "offset" : 14
+        } ]
+      },
+      "name" : "a basket with 2 items",
+      "result" : {
+        "duration" : 48038,
+        "status" : "passed"
+      }
+    } ]
+  }, {
+    "start_timestamp" : "2026-10-14T13:30:03.451Z",
+    "line" : 19,
+    "id" : "checkout;applying-a-discount-code;;3",
+    "type" : "scenario",
+    "keyword" : "Scenario Outline",
+    "name" : "Applying a discount code",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "When ",
+      "line" : 13,
+      "match" : {
+        "location" : "steps/steps.js:8",
+        "arguments" : [ {
+          "val" : "\"EXPIRED\"",
+          "offset" : 30
+        } ]
+      },
+      "name" : "the customer applies the code \"EXPIRED\"",
+      "result" : {
+        "duration" : 46285,
+        "status" : "passed"
+      }
+    }, {
+      "keyword" : "Then ",
+      "line" : 14,
+      "match" : {
+        "location" : "steps/steps.js:12",
+        "arguments" : [ {
+          "val" : "20.00",
+          "offset" : 13
+        } ]
+      },
+      "name" : "the total is 20.00",
+      "result" : {
+        "duration" : 563989,
+        "status" : "failed",
+        "error_message" : "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n18 !== 20\n\n    + expected - actual\n\n    -18\n    +20\n\n    at World.<anonymous> (/home/runner/work/shop/shop/steps/steps.js:12:59)"
+      }
+    } ],
+    "tags" : [ {
+      "name" : "@billing"
+    } ]
+  }, {
+    "line" : 5,
+    "type" : "background",
+    "keyword" : "Background",
+    "name" : "",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "Given ",
+      "line" : 6,
+      "match" : {
+        "location" : "steps/steps.js:6",
+        "arguments" : [ {
+          "val" : "2",
+          "offset" : 14
+        } ]
+      },
+      "name" : "a basket with 2 items",
+      "result" : {
+        "duration" : 44202,
+        "status" : "passed"
+      }
+    } ]
+  }, {
+    "start_timestamp" : "2026-10-14T13:30:03.454Z",
+    "line" : 24,
+    "id" : "checkout;gift-cards-cover-part-of-the-total;paying-with-a-gift-card",
+    "type" : "scenario",
+    "keyword" : "Example",
+    "name" : "Paying with a gift card",
+    "description" : "",
+    "steps" : [ {
+      "keyword" : "When ",
+      "line" : 25,
+      "match" : {
+        "location" : "steps/steps.js:13"
+      },
+      "name" : "the customer pays with a gift card",
+      "result" : {
+        "duration" : 31908,
+        "status" : "passed"
+      }
+    }, {
+      "keyword" : "Then ",
+      "line" : 26,
+      "match" : {
+        "location" : "steps/steps.js:18"
+      },
+      "name" : "the order is confirmed",
+      "result" : {
+        "duration" : 28402,
+        "status" : "passed"
+      }
+    } ],
+    "tags" : [ {
+      "name" : "@billing"
+    }, {
+      "name" : "@flaky"
+    } ]
+  } ],
+  "tags" : [ {
+    "name" : "@billing",
+    "type" : "Tag",
+    "location" : {
+      "line" : 1,
+      "column" : 1
+    }
+  } ]
+} ]

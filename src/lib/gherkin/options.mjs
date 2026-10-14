@@ -60,8 +60,12 @@ export const GHERKIN_PAGES_KEYS = Object.freeze(/** @type {const} */ ([
 export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
   'fences',
   'includeRoots',
+  'results',
   ...GHERKIN_PAGES_KEYS,
 ]));
+
+/** The keys of the object form of `gherkin.results` (ADR-0052). */
+export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report', 'root']));
 
 /**
  * The raw object form (structurally the object arm of `DocKittyOptions['gherkin']`).
@@ -69,6 +73,7 @@ export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
  * @typedef {object} GherkinOptionsInput
  * @property {unknown} [fences]
  * @property {unknown} [includeRoots]
+ * @property {unknown} [results]
  * @property {unknown} [sources]
  * @property {unknown} [section]
  * @property {unknown} [sourceUrlPrefix]
@@ -103,14 +108,66 @@ export const GHERKIN_OPTION_KEYS = Object.freeze(/** @type {const} */ ([
  * @property {string} sourceRoot Site-root-relative (default `'.'`); shared by
  *   generated pages and include source lines.
  * @property {string} [sourceUrlPrefix] Shared like `sourceRoot`.
+ * @property {NormalizedGherkinResults} [results] Present exactly when
+ *   `gherkin.results` was given (ADR-0052): the Cucumber report whose results
+ *   are shown next to the scenarios rendered from `.feature` files.
  * @property {ValidatedGherkinPages} [pages] Present exactly when `sources` was
  *   given: the generated-pages seam (codegen, `behaviour` sidebar section,
  *   index-basename check) hangs off this, so `gherkin: true` adds none of it.
  */
 
 /**
+ * The normalised `gherkin.results` option (ADR-0052).
+ *
+ * @typedef {object} NormalizedGherkinResults
+ * @property {string} report The Cucumber report (Messages NDJSON or JSON),
+ *   project-root relative, POSIX.
+ * @property {string} root The directory Cucumber ran in, project-root relative
+ *   (default `'.'`): relative URIs in the report resolve against it.
+ */
+
+/**
  * @typedef {typeof GHERKIN_PAGES_KEYS[number]} GherkinPagesKey
  */
+
+/**
+ * Normalise `gherkin.results` (ADR-0052 decision 1): a report path, or
+ * `{ report, root? }`. Both paths follow the include rule (`isRelativePosixPath`):
+ * non-blank, relative to the project root, `/` separators. `root` may be `.`
+ * and may climb out (`..`): it names where Cucumber ran, not a file to read.
+ * Throws a `[dk-gherkin]` Error naming `optionName` otherwise.
+ *
+ * Shared by the integration and `scenarioIndexRoute({ results })`, so both read
+ * the report the same way.
+ *
+ * @param {unknown} raw
+ * @param {string} [optionName] How errors name the option.
+ * @returns {NormalizedGherkinResults}
+ */
+export function normalizeResultsOption(raw, optionName = 'gherkin.results') {
+  const shape =
+    `${optionName} must be a report path or { report, root? }, each relative to the project root ` +
+    `(non-blank, / separators; no leading '/', drive letter, URL scheme or '\\')`;
+  if (typeof raw === 'string') {
+    if (!isRelativePosixPath(raw)) throw new Error(`${GHERKIN_LOG_PREFIX} ${shape}; got ${JSON.stringify(raw)}`);
+    return { report: raw, root: '.' };
+  }
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(`${GHERKIN_LOG_PREFIX} ${shape}; got ${JSON.stringify(raw)}`);
+  }
+  const unknown = Object.keys(raw).filter((key) => !(/** @type {readonly string[]} */ (GHERKIN_RESULTS_KEYS)).includes(key));
+  if (unknown.length > 0) {
+    throw new Error(
+      `${GHERKIN_LOG_PREFIX} unknown option ${unknown.map((k) => `${optionName}.${k}`).join(', ')}; ` +
+        `expected one of ${GHERKIN_RESULTS_KEYS.join(', ')}`,
+    );
+  }
+  const { report, root = '.' } = /** @type {{ report?: unknown, root?: unknown }} */ (raw);
+  if (!isRelativePosixPath(report) || !isRelativePosixPath(root)) {
+    throw new Error(`${GHERKIN_LOG_PREFIX} ${shape}; got ${JSON.stringify(raw)}`);
+  }
+  return { report: /** @type {string} */ (report), root: /** @type {string} */ (root) };
+}
 
 /**
  * @typedef {object} ValidateGherkinOptionsConfig
@@ -312,7 +369,7 @@ export function normalizeGherkinOptions(raw, { reservedSections } = {}) {
     );
   }
   const input = /** @type {GherkinOptionsInput} */ (raw);
-  const { fences = true, includeRoots, sources, section, sourceUrlPrefix, sourceRoot = '.', allowEmpty, titles } = input;
+  const { fences = true, includeRoots, results, sources, section, sourceUrlPrefix, sourceRoot = '.', allowEmpty, titles } = input;
   if (typeof fences !== 'boolean') {
     throw new Error(`${GHERKIN_LOG_PREFIX} gherkin.fences must be a boolean; got ${JSON.stringify(fences)}`);
   }
@@ -348,6 +405,7 @@ export function normalizeGherkinOptions(raw, { reservedSections } = {}) {
     includeRoots: /** @type {string[]} */ ([...(includeRoots ?? pages?.sources ?? [])]),
     sourceRoot: /** @type {string} */ (sourceRoot),
     ...(sourceUrlPrefix !== undefined ? { sourceUrlPrefix: /** @type {string} */ (sourceUrlPrefix) } : {}),
+    ...(results !== undefined ? { results: normalizeResultsOption(results) } : {}),
     ...(pages ? { pages } : {}),
   };
 }

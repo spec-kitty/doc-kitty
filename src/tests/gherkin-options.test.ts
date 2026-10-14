@@ -116,6 +116,7 @@ describe('normalizeGherkinOptions: the normalisation table (ADR-0051)', () => {
     expect([...GHERKIN_OPTION_KEYS]).toEqual([
       'fences',
       'includeRoots',
+      'results',
       'sources',
       'section',
       'sourceUrlPrefix',
@@ -152,7 +153,7 @@ describe('normalizeGherkinOptions: rejections', () => {
   it('refuses unknown keys, naming each and the allowed set', () => {
     expect(() => normalizeGherkinOptions({ includeRoot: ['f'], fence: true })).toThrow(
       '[dk-gherkin] unknown option gherkin.includeRoot, gherkin.fence; ' +
-        'expected one of fences, includeRoots, sources, section, sourceUrlPrefix, sourceRoot',
+        'expected one of fences, includeRoots, results, sources, section, sourceUrlPrefix, sourceRoot',
     );
   });
 
