@@ -78,7 +78,7 @@ each step to confirm nothing changed.
    charter. Each entry keeps its legacy shape — `id`, `label`, an integer `order`,
    `type`, and optional `feeds`, `purpose`, and per-entry `subtypes`. The order is
    the per-entry integer `order` field (not a list of ids), and the section-index
-   basename stays in `astro.config.mjs` (`indexBasename`), not the charter:
+   basename stays in `astro.config.mjs` (`indexBasename`, set once on `defineDocKittyIntegrations`), not the charter:
 
    ```yaml
    sections:

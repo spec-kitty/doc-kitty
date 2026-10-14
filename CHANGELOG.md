@@ -38,6 +38,46 @@ release, as it did for `0.2.0`.
   never built. Now the loader throws when `pattern` is anything but the default.
   Leave `pattern` unset; to keep a file out of the site, move it out of the docs
   folder or name it `log.md`.
+- **Move `indexBasename` from `docKittyDocsLoader` to `defineDocKittyIntegrations`
+  in `astro.config.*` (#136).** Before, you could set index names in three places
+  (the integration, the loader and the `--index-basename` flag), and they could
+  disagree. Now the integration is the only place, and the loader picks the value
+  up from it. If the loader still sets `indexBasename` to a different value, the
+  build stops and shows both values. Once the names are on the integration, you
+  can delete the loader option.
+- **Remove `--index-basename` from your CI scripts: the DocKitty commands now
+  read index names from `astro.config.*`, and `dockitty-check-links` defaults to
+  `README` (#136).** Before, `dockitty-check-links` treated both `README` and
+  `index` as index names while the build used only `README`. Now
+  `dockitty-check-links`, `dockitty-validate-frontmatter`,
+  `dockitty-check-redirect-coverage`, `dockitty-generate-feature-pages`,
+  `dockitty-new-doc` and `dockitty-scaffold` read your site config, which adds
+  about one second per run. `dockitty-check-links` prints the index names it used
+  and where they came from. Without a site config, the default is `README`. If you
+  keep the flag, it must list the same names as the config (order and letter case
+  do not matter), or the command exits 2. It also exits 2 when the config cannot
+  be loaded.
+- **Keep one file per page address: two files served at the same address now stop
+  the build (#135).** Before, a folder with both `README.md` and `index.md` built
+  with a warning and one of them became an ordinary page. `page.md` next to
+  `page.mdx`, or two pages whose names differ only in letter case, went unnoticed.
+  Now the build, `dockitty-check-links --strict` (exit 1) and
+  `dockitty-validate-frontmatter` stop and name the files, the address and a fix.
+  Drafts count too. Names that differ only in case count because they overwrite
+  each other on macOS and Windows. Rename or remove all but one file in each group.
+- **Move pages you want published out of `_meta/` (#138).** Before, Markdown at any
+  depth under a `_meta/` folder, and files named `_meta.md` or `_meta.mdx`, were
+  built and linked like any page. Now they are not published, and
+  `dockitty-check-links --strict` skips them. The YAML registry files in `_meta/`
+  still load, and `dockitty-validate-frontmatter` still checks the Markdown there.
+- **`dockitty-new-doc --section` and `dockitty-scaffold` now create your first index
+  name (#136).** Before, a site with index names `['index', 'README']` could get a
+  `README.md`. Now it gets `index.md`. An `--index-basename` value that is not one
+  of your index names exits 2.
+- **Rename any Gherkin file called `index.feature` (#137).** Before, it was accepted
+  unless your index names included `index`, and its generated page then collided
+  with the folder's landing page. Now the build stops on it whatever your index
+  names are.
 
 ### Changed
 
@@ -77,14 +117,28 @@ release, as it did for `0.2.0`.
   A site built with the toolkit should pass `--strict`; `example/docs` is always
   strict. When an Astro config sits next to a root that is not strict, the command
   prints one note suggesting `--strict`, and the exit code is unchanged.
-  `--index-basename <name[,name…]>` takes your site's section-index names; without
-  it the command assumes `README,index`, which differs from the site default of
-  `README`. Write it as `--index-basename README,index`. `--help` lists the options.
+  The command reads your site's index names from `astro.config.*`; see the
+  Breaking entry on `--index-basename` above. `--help` lists the options.
 - **`--help` on `dockitty-generate-feature-pages`.** It prints the flags and exits
   with status 0.
 
 ### Fixed
 
+- **Feeds, `llms.txt`, the agent API, related links, the Hub, the scenario index and
+  the on-this-page block now link a folder's `index.md` at the address the site
+  serves (#134).** Before, `guide/index.md` was listed as `/guide/index/`, an
+  address the site does not serve, and the site's root page as `/index/`. Now they
+  use `/guide/` and `/`. If you read the agent API, the `route` field changes for
+  those pages.
+- **The sidebar uses a folder's `index.md` to label its group (#138).** Before, on a
+  site whose only index name is `README`, the site served `index.md` at the folder
+  address, but the sidebar did not use it as the group's label. Now it does.
+- **A glossary term inside a reference-style link no longer gets a second link
+  (#139).** Before, the term in `[the term][ref]`, or in a `[ref]: …` definition,
+  could be turned into a link inside the link. Now the glossary leaves both alone.
+- **`dockitty-check-links --strict` checks only files the build publishes.** Before,
+  it also read `log.md`, files in dot-folders and files under `_meta`. Now it skips
+  them.
 - **Generated glossary pages are section indexes on the default index name
   (#129).** Before, the generator always wrote `glossary/index.md`. On a site whose
   only index name is `README`, Starlight still served that hub at `/glossary/`,

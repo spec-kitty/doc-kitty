@@ -91,12 +91,13 @@ with the id as title.
 ## Using an `index.md`-indexed tree
 
 A directory's landing page is its `README.md` by default. If your tree already
-names section indexes `index.md`, set the `indexBasename` loader option to
-`"index"` instead of renaming every file — matching is case-insensitive and
-`README` stays the default so an unconfigured tree is unaffected. Every
-index-detecting surface (the loader, the validator, the scaffolder,
-`new-doc.mjs`) honours the configured basename; the link checker accepts either
-basename unconditionally. See
+names section indexes `index.md`, set `indexBasename: ['index']` once, in
+`defineDocKittyIntegrations` in `astro.config.mjs`, instead of renaming every file —
+matching is case-insensitive and `README` stays the default so an unconfigured tree
+is unaffected. Every index-detecting surface (the loader, the validator, the
+scaffolder, `new-doc`, the link check) reads that one setting. Do not set it on the
+loader. If a folder holds both a `README.md` and an `index.md`, the build stops and
+names both files. See [ADR-0050](../adr/0050-route-collisions-and-single-index-setting.md),
 [ADR-0033](../adr/0033-flexible-section-identity.md) and the
 [convention](../context/convention.md#2-kitty-twists).
 
@@ -131,7 +132,7 @@ section per above), prove the old URLs still work before you ship:
 
    # A build without drafts (DK_PUBLISH_DRAFTS=off, as on the live site)
    DK_PUBLISH_DRAFTS=off pnpm exec dockitty-check-redirect-coverage <baseline-file> <dist-dir> \
-     --docs <docs-dir> --index-basename README,index \
+     --docs <docs-dir> \
      --declared-redirects <redirects.json>
    ```
 
@@ -159,8 +160,8 @@ section per above), prove the old URLs still work before you ship:
    gives the tree it reads `doc_status` from, and `--declared-redirects` gives
    the old-URL-to-route map (a JSON object, or a `_redirects` text file; targets
    without the site base). Leave either flag out and the gate fails those URLs
-   and names the missing flag. `--index-basename` is only needed when your
-   section indexes are not all named `README`. See
+   and names the missing flag. The gate reads your index names from
+   `astro.config.*`. See
    [Draft publication](./draft-publication.md).
 
    If a package script already names a directory, a directory you add is

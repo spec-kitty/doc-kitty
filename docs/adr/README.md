@@ -60,5 +60,6 @@ kind: Hub
 | [0047](./0047-relative-markdown-links.md) | ADR-0047: Relative Markdown links are rewritten at build | Accepted | 2026-10-13 |
 | [0048](./0048-generated-page-names-and-empty-sources.md) | ADR-0048: Generated index page names and empty Gherkin sources | Accepted | 2026-10-13 |
 | [0049](./0049-openapi-reference-via-existing-integration.md) | ADR-0049: OpenAPI reference pages through an existing integration | Proposed | 2026-10-14 |
+| [0050](./0050-route-collisions-and-single-index-setting.md) | ADR-0050: Route collisions are fatal, and index names are set once | Accepted | 2026-10-14 |
 
 New ADRs copy [`template.md`](./template.md).

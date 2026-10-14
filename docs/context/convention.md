@@ -105,7 +105,7 @@ Where DocKitty deliberately diverges from Common Docs:
 
 | # | Common Docs | DocKitty | Why |
 |---|-------------|-----------------|-----|
-| 1 | Section index is `index.md` | Section index is **`README.md`** by default, and **configurably `index.md`** via the `indexBasename` option ([ADR-0033](../adr/0033-flexible-section-identity.md), partially superseding [ADR-0002](../adr/0002-readme-as-index.md)) | Renders on GitHub/Bitbucket *and* as the section landing page — one file, two audiences. The configurable basename spares a migrating adopter renaming an existing `index.md` tree. |
+| 1 | Section index is `index.md` | Section index is **`README.md`** by default, and **configurably `index.md`** via the `indexBasename` option on `defineDocKittyIntegrations` in `astro.config.*` ([ADR-0033](../adr/0033-flexible-section-identity.md), partially superseding [ADR-0002](../adr/0002-readme-as-index.md)) | Renders on GitHub/Bitbucket *and* as the section landing page — one file, two audiences. The configurable basename spares a migrating adopter renaming an existing `index.md` tree. |
 | 2 | `index.md` carries **no** frontmatter | `README.md` **carries frontmatter** (same required fields) | Metadata-first: the section index feeds nav, feeds, and the agent-API like any other page; Starlight needs a title. |
 | 3 | `docs/` is consumed by external OKF tooling | `docs/` is **rendered directly** by the toolkit (Astro reads repo-root `docs/`) | Point the toolkit at an existing Common Docs tree; no file moves. |
 | 4 | Metadata is descriptive | An optional **`agent`** block tunes discovery | Fine control over agent-API visibility/ordering without new top-level fields. |
@@ -133,11 +133,12 @@ Two migration frictions are first-class supported, not merely tolerated
 [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md)'s
 "tolerated, not supported" stance for exactly these two cases):
 
-- **`indexBasename`** — a loader option, default `README`, that additionally
-  accepts `index` (case-insensitive) as the section-index basename. A folder
-  with both `README.md` and `index.md` resolves to the configured basename; the
-  other file is demoted to an ordinary page and the collision is warned, never
-  silently resolved.
+- **`indexBasename`** — set once on `defineDocKittyIntegrations` in
+  `astro.config.*`, default `README`, and also accepts `index` (case-insensitive)
+  as the section-index name. The loader and the `dockitty-*` commands read it
+  from there. A folder with both `README.md` and `index.md` serves two files at
+  one address, so the build stops and names both files; keep one
+  ([ADR-0050](../adr/0050-route-collisions-and-single-index-setting.md)).
 - **Section rename via registry `subtypes`** — renaming a section folder,
   including a sub-path subtype rename (e.g. `plans/features` →
   `plans/missions`), is a data edit to `sections.yaml`'s `subtypes` field, not a

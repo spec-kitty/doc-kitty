@@ -143,8 +143,10 @@ These are fatal, and name the files involved:
 
 - **Output collision.** Two sources map to the same output path.
 - **Index collision.** A feature whose slugged file name is an index basename
-  (`README.feature`, or `index.feature` when `indexBasename` includes `index`)
-  would be routed as its directory's index and clash with the generated hub.
+  (`README.feature`, or `index.feature` on any setting) would be routed as its
+  directory's index and clash with the generated hub. `index.feature` is rejected
+  even when `indexBasename` does not list `index`, because the site serves
+  `index.md` at its folder address.
 - **Route collision.** A feature page and a directory hub on the same route, such
   as `features/shipping.feature` beside `features/shipping/…`. The page
   `shipping.md` and the hub `shipping/README.md` both route to
@@ -419,7 +421,11 @@ feature carries `@dk:updated=<date>`, so by default:
 - The glossary generator also follows `indexBasename`, but prefers `index` when the
   site lists it, while the Gherkin hubs use the site's first index name. One site
   can therefore hold a `README.md` Gherkin hub and an `index.md` glossary hub; the
-  setting `indexBasename: ['README', 'index']` produces exactly that. See
-  [ADR-0048](../adr/0048-generated-page-names-and-empty-sources.md).
+  setting `indexBasename: ['README', 'index']` produces exactly that. The setting
+  exists once, in `defineDocKittyIntegrations`, and every script and the loader read
+  it from there. Two files on one address are a fatal route collision, not a
+  winner-and-demotion. See
+  [ADR-0048](../adr/0048-generated-page-names-and-empty-sources.md) and
+  [ADR-0050](../adr/0050-route-collisions-and-single-index-setting.md).
 - Phase 2 attaches pass/fail results per scenario from a Cucumber results file,
   as described in the [QA portal research](./research/qa-portal.md).

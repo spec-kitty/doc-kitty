@@ -178,8 +178,9 @@ Two invariants to hold from the start:
   once inside `defineDocKittyIntegrations`. A based deployment (GitHub Pages, a
   sub-path) exercises the toolkit's base-prefix seam; a mismatch drifts the
   sitemap filter and feed URLs.
-- **`indexBasename` is routing-authoritative** — the value you pass here must be
-  the identical list you pass to the docs loader in step 4.
+- **`indexBasename` is set here, once.** The docs loader in step 4, the scripts and
+  the link check all read this value. Do not repeat it anywhere else
+  ([ADR-0050](../adr/0050-route-collisions-and-single-index-setting.md)).
 
 The generated glossary pages follow this setting. They are named `index.md` when
 your list contains `index`, and otherwise take your first index name (`README.md`
@@ -217,8 +218,9 @@ import {
 
 export const collections = {
   docs: defineCollection({
-    // `base` and `indexBasename` MUST match astro.config.mjs (config invariant).
-    loader: docKittyDocsLoader({ base: 'docs', indexBasename: ['README', 'index'] }),
+    // `base` MUST match astro.config.mjs. Leave `indexBasename` out: the loader
+    // reads it from defineDocKittyIntegrations, and a different value stops the build.
+    loader: docKittyDocsLoader({ base: 'docs' }),
     schema: docKittyDocsSchema(),
   }),
   bibliography: defineCollection({
@@ -476,15 +478,24 @@ The toolkit ships its bare-Node gates as package binaries, so run them through
 your package manager rather than by a path into `node_modules`:
 
 ```sh
-pnpm exec dockitty-validate-frontmatter docs --index-basename README,index
-pnpm exec dockitty-check-links docs --strict --index-basename README,index
+pnpm exec dockitty-validate-frontmatter docs
+pnpm exec dockitty-check-links docs --strict
 astro build && pnpm exec dockitty-assert-no-broken-links dist --base /docs --site https://you.example.com
 ```
 
-`--index-basename` must match the `indexBasename` you give the loader. Its
-default here is `README,index`, while the loader's is `README` alone, so a site
-that sets neither can see `--strict` accept a folder link the build cannot
-resolve.
+The gates read your index names from the `indexBasename` in `astro.config.mjs`, so
+they agree with the build. `dockitty-check-links` prints where it got them, once per
+root:
+
+```text
+index names: README,index (from astro.config.mjs)
+```
+
+With no site config next to the root, the check uses `README`, the build's default.
+Reading the config takes about one second per run. A config that cannot be loaded
+makes the command exit with status 2. The same holds for `dockitty-validate-frontmatter`,
+`dockitty-check-redirect-coverage`, `dockitty-generate-feature-pages`,
+`dockitty-new-doc` and `dockitty-scaffold`.
 
 The other binaries are `dockitty-check-redirect-coverage`,
 `dockitty-validate-catalog`, `dockitty-new-doc`, `dockitty-scaffold`, and
@@ -533,13 +544,31 @@ file sits next to a root that is not strict, the command prints one note that th
 folder looks like a built site and that `--strict` makes the check agree with the
 built-link gate. The note does not change the exit code.
 
-Pass `--index-basename` with the same list as your site. Index names now live in
-three places: `indexBasename` in `astro.config.mjs`, the loader in
-`src/content.config.ts`, and this flag. They must agree. Without the flag the
-command assumes `README,index`, which differs from the site default of `README`.
-The flag is written `--index-basename README,index`. A name that is not a plain
-file name, the `--name=value` form and an unknown option make the command exit with
-status 2. `--help` lists the options.
+`--index-basename` is optional. If you pass it, it must list the same names as your
+`astro.config.mjs` (order and letter case are ignored, and the config's order wins),
+or the command exits with status 2. A name that is not a plain file name, the
+`--name=value` form and an unknown option also exit with status 2. `--help` lists
+the options.
+
+**Two files on one address stop the build.** If `guide/README.md` and
+`guide/index.md` both exist, or `page.md` beside `page.mdx`, or two pages whose
+addresses differ only by letter case, the build, `dockitty-check-links --strict` and
+`dockitty-validate-frontmatter` stop and name every file and the address. Drafts
+count. The message looks like this:
+
+```text
+[dk-routes] 1 route collision(s) in docs: two or more files would be served at the same address.
+
+  /guide/
+    docs/guide/README.md
+    docs/guide/index.md
+
+Each address can hold one page. Rename or remove all but one file in each group
+(for example rename docs/guide/index.md to docs/guide/overview.md), or merge their content.
+```
+
+Rename or remove all but one file in each group. Markdown under a `_meta/` folder,
+or named `_meta.md`, is not a page: it is not published, linked or checked.
 
 ## 8. Govern your docs — the documentation charter
 
@@ -654,7 +683,8 @@ What happens on each build and dev-server start:
 - One page per feature (drafts included) and one hub per directory with at
   least one non-draft feature below it are written into `docs/<section>/`, and
   pages whose source is gone are removed. The hub file is the
-  first entry of `indexBasename` (`README.md` by default).
+  first entry of `indexBasename` (`README.md` by default). A feature file named
+  `index.feature` is rejected on any setting.
 - The section belongs to the generator. Any file in it without the generator's
   `generated.by` stamp fails the build, so don't point `section` at an authored
   folder.
@@ -679,21 +709,19 @@ Register the section so it gets a label, a sidebar group and its
 files on disk, and reviewers see how a spec change changes the page. Then guard
 them in CI with the `--check` mode of `dockitty-generate-feature-pages`, which
 writes nothing and exits 1 when the committed pages differ from the sources. The
-script can't read `astro.config.mjs`, so its flags must mirror the option, and
-`--index-basename` must match your `indexBasename`:
+script reads your index names from `astro.config.mjs`, so you do not pass
+`--index-basename`:
 
 ```sh
 # Regenerate locally without a build:
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/ \
-  --index-basename README,index
+  --source-url-prefix https://github.com/you/repo/blob/main/
 
 # CI drift gate (same flags, plus --check):
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/ \
-  --index-basename README,index --check
+  --source-url-prefix https://github.com/you/repo/blob/main/ --check
 ```
 
 Run it from the site directory, or pass `--root <site dir>`; every other path is

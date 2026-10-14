@@ -102,6 +102,8 @@ name that is not a plain file name (it contains `/` or `\`, starts with `.`, or 
 surrounding whitespace) is rejected before anything is written. The Gherkin hub uses
 the first index name instead, so one site can hold a `README.md` Gherkin hub and an
 `index.md` glossary hub. See [ADR-0048](../adr/0048-generated-page-names-and-empty-sources.md).
+The index names are set once, in `defineDocKittyIntegrations`, and two files on one
+address stop the build ([ADR-0050](../adr/0050-route-collisions-and-single-index-setting.md)).
 
 **Authored files and symbolic links stop the build.** If a file or a symbolic link
 sits at a path the generator writes and is not a generated glossary page, the build
@@ -121,7 +123,8 @@ index name changes, the generator removes an old page only when all of these hol
 
 A page with the generator's keys whose content differs is kept, and the build warns:
 the folder now has two index-named files, so delete the old one if it is a leftover
-or rename it if you wrote it. A page with the generator's `kind` but different keys is
+or rename it if you wrote it. Because two files on one address stop the build, the
+next build fails until you do. A page with the generator's `kind` but different keys is
 kept with a second warning that says the same about its fields. Each warning is
 per file. Because of the byte comparison, a default-settings site whose 0.2.0 build
 left `glossary/index.md` pages loses them silently when the glossary source has not

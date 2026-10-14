@@ -221,7 +221,7 @@ gate checked a build made with another value.
 
    ```sh
    pnpm exec dockitty-check-redirect-coverage url-baseline.txt dist \
-     --docs docs --index-basename README,index \
+     --docs docs \
      --declared-redirects redirects.json
    ```
 
