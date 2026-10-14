@@ -80,7 +80,7 @@ import {
   takeSiteFlags,
   unpublishedDraftPaths,
 } from '../lib/draft-publication.mjs';
-import { buildRouteTable, isPlainIndexName, resolveIndexEntries, resolveRelativeDocLink } from '../lib/vocabulary-core.mjs';
+import { buildRouteTable, formatRouteCollisions, isPlainIndexName, resolveIndexEntries, resolveRelativeDocLink } from '../lib/vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 
@@ -415,6 +415,8 @@ export function run(argv) {
   };
   let checked = 0;
   let fileCount = 0;
+  /** Route-collision reports of strict roots, printed after the other findings (FR-005). */
+  const collisionReports = [];
 
   for (const root of roots) {
     let files;
@@ -441,7 +443,9 @@ export function run(argv) {
     // withholds it). A non-strict root is read as files and needs neither.
     const indexBasenames = namesByRoot.get(root) ?? ['README'];
     const paths = strict ? walkMarkdownPaths(absRoot) : [];
-    const allRoutes = buildRouteTable(paths, { indexBasename: indexBasenames }).routes;
+    const { routes: allRoutes, collisions } = buildRouteTable(paths, { indexBasename: indexBasenames });
+    // Collisions are computed over every path, drafts included (FR-004/FR-005).
+    if (collisions.length) collisionReports.push(formatRouteCollisions(collisions, { docsDir: root }));
     const unpublished = new Set(strict ? unpublishedDraftPaths(absRoot, publishDrafts, indexBasenames) : []);
     const visibleRoutes = buildRouteTable(paths, {
       indexBasename: indexBasenames,
@@ -566,6 +570,15 @@ export function run(argv) {
     }
   }
 
+  if (collisionReports.length) {
+    if (dangling) {
+      console.error(
+        `\n${dangling} link problem(s) in ${filesWithProblems.size} file(s); ${fileCount} file(s) scanned, ${checked} reference(s) checked.`,
+      );
+    }
+    for (const report of collisionReports) console.error(`\n${report}`);
+    process.exit(1);
+  }
   if (dangling) {
     console.error(
       `\n${dangling} link problem(s) in ${filesWithProblems.size} file(s); ${fileCount} file(s) scanned, ${checked} reference(s) checked.`,

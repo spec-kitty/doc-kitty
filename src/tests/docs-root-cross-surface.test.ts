@@ -85,10 +85,13 @@ describe('integration ↔ route resolve the SAME docs root (F3/F5)', () => {
  */
 describe('integration -> loader: index names are set once (FR-007)', () => {
   /** A docs tree with `x/index.md` and `y/README.md`; returns the ids `load()` stores. */
-  async function loadedIds(loaderOptions: { indexBasename?: string | string[] } = {}): Promise<string[]> {
+  async function loadedIds(
+    loaderOptions: { indexBasename?: string | string[] } = {},
+    files: string[] = ['x/index.md', 'y/README.md'],
+  ): Promise<string[]> {
     const root = mkdtempSync(path.join(tmpdir(), 'dk-loader-ids-'));
     tmpRoots.push(root);
-    for (const rel of ['x/index.md', 'y/README.md']) {
+    for (const rel of files) {
       mkdirSync(path.dirname(path.join(root, 'docs', rel)), { recursive: true });
       writeFileSync(path.join(root, 'docs', rel), '---\ntitle: T\ndoc_status: active\n---\nBody.\n');
     }
@@ -161,5 +164,16 @@ describe('integration -> loader: index names are set once (FR-007)', () => {
     expect((error as Error).message).toMatch(/\["index"\].*\["README","index"\]/);
     // Positive control: the same value in both places loads the same tree.
     expect(await loadedIds({ indexBasename: ['README', 'index'] })).toEqual(['x', 'y']);
+  });
+
+  it('refuses a tree where two files share a route, naming both; one file less loads (FR-004)', async () => {
+    defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['README'] });
+    const error = await loadedIds({}, ['x/README.md', 'x/index.md']).catch((e: Error) => e);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toMatch(/x\/README\.md/);
+    expect((error as Error).message).toMatch(/x\/index\.md/);
+    expect((error as Error).message).toContain('Rename or remove');
+    // Positive control: the same tree minus one file loads.
+    expect(await loadedIds({}, ['x/README.md'])).toEqual(['x']);
   });
 });

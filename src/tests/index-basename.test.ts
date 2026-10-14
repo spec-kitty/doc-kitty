@@ -66,27 +66,19 @@ describe('readmeToIndexId — configurable basename (US1-AS1/AS2/AS6)', () => {
 });
 
 describe('resolveIndexEntries — collision-aware whole-tree resolution (E-05/FR-004)', () => {
-  it('both README.md and index.md in one folder: the configured basename wins, the other demotes', () => {
+  // FR-004: collisions are fatal and route-keyed; no winner. Every path keeps its own id and
+  // the group names every file, whichever name is configured first (the former
+  // "index configured first" pin asserted the same thing in the other order: RETIRED).
+  it.each([
+    ['README first', ['README', 'index']],
+    ['index first', ['index', 'README']],
+  ])('both README.md and index.md in one folder collide, no winner: %s', (_n, indexBasename) => {
     const paths = ['guides/README.md', 'guides/index.md', 'guides/deploy.md'];
-    const { ids, collisions } = resolveIndexEntries(paths, {
-      indexBasename: ['README', 'index'],
-    });
-    expect(ids.get('guides/README.md')).toBe('guides'); // README ranks first → wins
-    expect(ids.get('guides/index.md')).toBe('guides/index'); // demoted → ordinary page
-    expect(ids.get('guides/deploy.md')).toBe('guides/deploy'); // untouched
-    expect(collisions).toEqual([
-      { dir: 'guides', winner: 'guides/README.md', demoted: ['guides/index.md'] },
-    ]);
-  });
-
-  it('index configured first: index.md wins, README.md demotes', () => {
-    const paths = ['guides/README.md', 'guides/index.md'];
-    const { ids, collisions } = resolveIndexEntries(paths, {
-      indexBasename: ['index', 'README'],
-    });
+    const { ids, collisions } = resolveIndexEntries(paths, { indexBasename });
+    expect(ids.get('guides/README.md')).toBe('guides');
     expect(ids.get('guides/index.md')).toBe('guides');
-    expect(ids.get('guides/README.md')).toBe('guides/README');
-    expect(collisions[0]?.winner).toBe('guides/index.md');
+    expect(ids.get('guides/deploy.md')).toBe('guides/deploy'); // untouched
+    expect(collisions).toEqual([{ route: '/guides/', paths: ['guides/README.md', 'guides/index.md'] }]);
   });
 
   it('no collision when only one configured basename is present', () => {
@@ -195,17 +187,36 @@ describe('FR-003 per-surface coverage — every index-detecting surface honours 
 });
 
 describe('E-05/FR-004 collision, bare-Node twin (detectIndexCollisions)', () => {
-  it('reports a directory with both configured basenames present, winner first-in-config', () => {
-    const collisions = detectIndexCollisions(
-      ['guides/README.md', 'guides/index.md', 'guides/deploy.md'],
-      ['README', 'index'],
-    );
-    expect(collisions).toEqual([
-      { dir: 'guides', winner: 'guides/README.md', demoted: ['guides/index.md'] },
-    ]);
-  });
-
+  // FR-004: the twin reports the route-keyed shape. The collision case itself is pinned in
+  // vocabulary-core.test.ts and section-type-parity.test.ts (this winner/demoted pin: RETIRED, duplicate).
   it('no collision under the default basename (single candidate)', () => {
     expect(detectIndexCollisions(['guides/README.md', 'guides/deploy.md'])).toEqual([]);
+  });
+});
+
+describe('FR-004 route collision in the standalone validator', () => {
+  const validatorPath = fileURLToPath(new URL('../scripts/validate-frontmatter.mjs', import.meta.url));
+  const page = '---\ntitle: T\ndescription: D\nupdated: 2026-01-01\ndoc_status: active\ntype: Guide\n---\n\nBody.\n';
+  const validate = (files: string[]) => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'dk-validator-collision-'));
+    try {
+      for (const rel of files) {
+        mkdirSync(path.dirname(path.join(dir, 'docs', rel)), { recursive: true });
+        writeFileSync(path.join(dir, 'docs', rel), page);
+      }
+      return spawnSync('node', [validatorPath, path.join(dir, 'docs')], { encoding: 'utf8' });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  it('exits non-zero naming both files; the tree minus one file passes', () => {
+    const res = validate(['x/README.md', 'x/index.md']);
+    expect(res.status, res.stdout).toBe(1);
+    expect(res.stderr).toContain('x/README.md');
+    expect(res.stderr).toContain('x/index.md');
+    expect(res.stderr).toContain('Rename or remove');
+    const ok = validate(['x/README.md', 'x/other.md']);
+    expect(ok.status, ok.stderr).toBe(0);
   });
 });

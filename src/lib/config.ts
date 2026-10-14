@@ -45,7 +45,7 @@ import {
   REVEAL_CURRENT_SCRIPT,
   type DirectoryMetaInput,
 } from './route-shaping.js';
-import { buildRouteTable, compareCodeUnit, normalizeIndexBasenames } from './vocabulary-core.mjs';
+import { buildRouteTable, compareCodeUnit, formatRouteCollisions, normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -482,10 +482,13 @@ function baseAbsoluteLinksIntegration(
         // target is renamed or its draft state flips, and the pages that link to it re-render.
         // An absent docs root walks to an empty table, which makes the plugin a no-op.
         const docsRoot = path.resolve(process.cwd(), docsDir);
-        const { routes } = buildRouteTable(walkMarkdownPaths(docsRoot), {
+        const { routes, collisions } = buildRouteTable(walkMarkdownPaths(docsRoot), {
           indexBasename,
           unpublishedPaths: unpublishedDraftPaths(docsRoot, publishDraftsInForce(), indexBasename),
         });
+        // FR-004: two files served at one address stop the build. Drafts count whether or
+        // not they are published, so the same tree fails the same way in every mode.
+        if (collisions.length) throw new Error(formatRouteCollisions(collisions, { docsDir }));
         updateConfig({
           markdown: {
             remarkPlugins: [[relativeMdLinks, { routes, base: prefix, docsRoot }]],

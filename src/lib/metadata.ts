@@ -379,22 +379,20 @@ export interface IndexBasenameOptions {
   indexBasename?: IndexBasenameOption;
 }
 
-/** One resolved both-index collision (E-05): a directory with 2+ candidates. */
-export interface IndexCollision {
-  /** The directory the collision occurred in ('' for the bundle root). */
-  dir: string;
-  /** The path that won and became the section index. */
-  winner: string;
-  /** The rest — demoted to ordinary pages. */
-  demoted: string[];
+/** One route collision (FR-004): paths the site would serve at the same address. */
+export interface RouteCollision {
+  /** The route of the first path in code-unit order (base-less). */
+  route: string;
+  /** Every colliding source path, code-unit sorted. */
+  paths: string[];
 }
 
 /** The result of a whole-tree, collision-aware index resolution. */
 export interface ResolveIndexEntriesResult {
   /** Every input path mapped to its resolved route-slug id. */
   ids: Map<string, string>;
-  /** Every directory where more than one configured basename was present. */
-  collisions: IndexCollision[];
+  /** Every group of paths served at one route (case-insensitive). */
+  collisions: RouteCollision[];
 }
 
 /**

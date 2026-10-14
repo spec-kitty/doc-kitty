@@ -255,6 +255,25 @@ describe('check-links CLI — agrees with the build on relative Markdown links',
     }
   });
 
+  // FR-004/FR-005: two files served at one address fail the strict check, drafts included.
+  it.each([
+    ['published', 'active', 'on'],
+    ['draft, drafts published', 'draft', 'on'],
+    ['draft, drafts withheld', 'draft', 'off'],
+  ])('--strict fails a route collision and names both files: %s', (_n, status, drafts) => {
+    const { root } = tree({ 'x/README.md': page('A', status), 'x/index.md': page('B') });
+    const res = run(root, ['--strict'], drafts);
+    expect(res.status, res.stdout).toBe(1);
+    expect(res.stderr).toContain('x/README.md');
+    expect(res.stderr).toContain('x/index.md');
+    expect(res.stderr).toContain('Rename or remove');
+    // Not strict: files are read as on GitHub, nothing new is checked.
+    expect(run(root, [], drafts).status).toBe(0);
+    // Positive control: one file less passes the same strict run.
+    const { root: ok } = tree({ 'x/README.md': page('A', status) });
+    expect(run(ok, ['--strict'], drafts).status).toBe(0);
+  });
+
   it('lets a draft page link to another draft: neither is built', () => {
     const { root } = tree({ 'a.md': page('[w](./wip.md)', 'draft'), 'wip.md': page('W', 'draft') });
     expect(run(root, ['--strict'], 'off').status).toBe(0);

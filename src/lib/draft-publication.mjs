@@ -292,8 +292,8 @@ function draftFilesOf(docsRoot, paths) {
  * withheld redirects) and the bare-Node gates all call it. It uses the shared
  * walk (`docs-walk.mjs`: every `.md`/`.mdx` the site loads, so `_meta/` counts;
  * `log.md` and anything under a dot-prefixed name do not) and the shared route rule (`buildRouteTable`),
- * so it is collision-aware: a demoted or stray `index.md` can share its folder's
- * route with the folder's other page. A route is a draft route only when NO
+ * so it is collision-aware: a stray `index.md` can share its folder's
+ * route with the folder's other page (the build refuses that tree, FR-004). A route is a draft route only when NO
  * non-draft file resolves to it, so a draft that shares a route with a published
  * page does not mark that page as a draft. The table is built with no
  * `unpublishedPaths`, because a draft's own route is what is wanted. The bundle
@@ -305,6 +305,8 @@ function draftFilesOf(docsRoot, paths) {
  */
 export function draftRoutesOf(docsRoot, indexBasename) {
   const paths = walkMarkdownPaths(docsRoot);
+  // Reads `routes` only: route collisions are fatal in the build's own check (FR-004), which
+  // runs before these callers matter, so this deliberately does not throw on `collisions`.
   const { routes } = buildRouteTable(paths, { indexBasename });
   /** @type {Set<string>} */
   const drafts = new Set();
@@ -338,6 +340,7 @@ export function draftRoutesOf(docsRoot, indexBasename) {
 export function unpublishedDraftPaths(docsRoot, publishDrafts, indexBasename) {
   if (publishDrafts) return [];
   const paths = walkMarkdownPaths(docsRoot);
+  // `routes` only; collisions are the build's own fatal check (FR-004), so no throw here.
   const { routes } = buildRouteTable(paths, { indexBasename });
   return draftFilesOf(docsRoot, paths).filter((rel) => routes[rel] !== '/');
 }

@@ -16,6 +16,7 @@ import path from 'node:path';
 
 import {
   buildRouteTable,
+  formatRouteCollisions,
   generatedIndexBasename,
   resolveIndexEntries,
   resolveRelativeDocLink,
@@ -52,25 +53,23 @@ function site(files: Record<string, 'draft' | 'active'>): string {
 }
 
 describe('one route rule for every consumer', () => {
-  // `guides/` holds both index names and the `index.md` is a draft: under
-  // `['index','README']` the draft is the folder index, under the others it is
-  // an ordinary page or the demoted duplicate.
+  // FR-004: collisions are fatal and route-keyed; no winner. A folder holding both
+  // `README.md` and `index.md` is no longer a fixture here (see the collision table
+  // below); this tree is collision-free under every setting.
   const FILES = {
     'README.md': 'active',
     'guides/README.md': 'active',
-    'guides/index.md': 'draft',
     'guides/deploy.md': 'active',
     'other/index.md': 'active',
     'other/draft-page.md': 'draft',
   } as const;
 
-  // Literal draft routes per setting (not derived from the table). `guides/index.md` is a draft:
-  // it is a draft route only where no published file shares `/guides/`.
+  // Literal draft routes per setting (not derived from the table).
   const DRAFT_ROUTES: Record<string, string[]> = {
     'default (README)': ['/other/draft-page/'],
-    index: ['/guides/', '/other/draft-page/'],
+    index: ['/other/draft-page/'],
     'README then index': ['/other/draft-page/'],
-    'index then README': ['/guides/', '/other/draft-page/'],
+    'index then README': ['/other/draft-page/'],
   };
 
   it.each(SETTINGS)('the loader, route table, draft routes and sidebar agree: %s', (_name, indexBasename) => {
@@ -138,7 +137,7 @@ describe('one route rule for every consumer', () => {
     const root = site(FILES);
     const docs = path.join(root, 'docs');
     expect(unpublishedDraftPaths(docs, true)).toEqual([]);
-    expect(unpublishedDraftPaths(docs, false).sort()).toEqual(['guides/index.md', 'other/draft-page.md']);
+    expect(unpublishedDraftPaths(docs, false).sort()).toEqual(['other/draft-page.md']);
   });
 
   it('never withholds the root page, whatever its status', () => {
@@ -176,14 +175,61 @@ describe('one route rule for every consumer', () => {
     expect(unpublishedDraftPaths(bare, false, 'README')).toEqual([]);
   });
 
-  it('resolves ids over all files before dropping the unpublished ones', () => {
-    // Dropping the draft winner first would promote `guides/README.md` to the folder route.
+  it('reports a collision that involves a draft whether or not it is unpublished', () => {
+    // FR-004 (was: the draft winner decided the route): drafts count, so the same tree
+    // reports the same collision with `unpublishedPaths` set or empty (US2 scenario 5).
     const paths = ['guides/README.md', 'guides/index.md'];
-    const { routes } = buildRouteTable(paths, {
-      indexBasename: ['index', 'README'],
-      unpublishedPaths: ['guides/index.md'],
+    const names = ['README', 'index'];
+    const open = buildRouteTable(paths, { indexBasename: names });
+    const withheld = buildRouteTable(paths, { indexBasename: names, unpublishedPaths: ['guides/README.md'] });
+    expect(withheld.collisions).toEqual(open.collisions);
+    expect(open.collisions).toEqual([{ route: '/guides/', paths }]);
+    expect(withheld.routes).toEqual({ 'guides/index.md': '/guides/' });
+  });
+});
+
+describe('route collisions (FR-004)', () => {
+  // [name, names, paths, expected group paths]. Research S3 fixtures; each row has a
+  // positive control below that differs by one file.
+  const ROWS: [string, string | string[], string[], string, string[]][] = [
+    ['README + index, README only', 'README', ['x/README.md', 'x/index.md'], '/x/', ['x/README.md', 'x/index.md']],
+    ['README + index, both names', ['README', 'index'], ['x/index.md', 'x/README.md'], '/x/', ['x/README.md', 'x/index.md']],
+    ['root pair', 'README', ['README.md', 'index.md'], '/', ['README.md', 'index.md']],
+    ['index.md + index.mdx', 'README', ['x/index.md', 'x/index.mdx'], '/x/', ['x/index.md', 'x/index.mdx']],
+    ['README.mdx + index.md', 'README', ['x/README.mdx', 'x/index.md'], '/x/', ['x/README.mdx', 'x/index.md']],
+    ['case-only pair', 'README', ['x/guide.md', 'x/Guide.md'], '/x/Guide/', ['x/Guide.md', 'x/guide.md']],
+  ];
+
+  it.each(ROWS)('reports %s with every path and the shared route', (_n, indexBasename, paths, route, group) => {
+    expect(buildRouteTable(paths, { indexBasename }).collisions).toEqual([{ route, paths: group }]);
+  });
+
+  it.each([
+    ['x/README.md alone', 'README', ['x/README.md'], { 'x/README.md': '/x/' }],
+    ['README + a different page', 'README', ['x/README.md', 'x/other.md'], { 'x/README.md': '/x/', 'x/other.md': '/x/other/' }],
+    ['index.md under both names, alone', ['README', 'index'], ['x/index.md'], { 'x/index.md': '/x/' }],
+    ['root README alone', 'README', ['README.md'], { 'README.md': '/' }],
+    ['guide.md alone', 'README', ['x/guide.md'], { 'x/guide.md': '/x/guide/' }],
+  ] as [string, string | string[], string[], Record<string, string>][])(
+    'positive control: %s has no collision',
+    (_n, indexBasename, paths, routes) => {
+      const table = buildRouteTable(paths, { indexBasename });
+      expect(table.collisions).toEqual([]);
+      expect(table.routes).toEqual(routes);
+    },
+  );
+
+  it('formats every path, the route, a fix and the draft rule', () => {
+    const { collisions } = buildRouteTable(['x/README.md', 'x/index.md', 'README.md', 'index.md'], {
+      indexBasename: 'README',
     });
-    expect(routes).toEqual({ 'guides/README.md': '/guides/README/' });
+    const message = formatRouteCollisions(collisions, { docsDir: 'docs' });
+    for (const needle of ['docs/x/README.md', 'docs/x/index.md', 'docs/README.md', 'docs/index.md', '/x/', 'Rename or remove', 'Draft files count']) {
+      expect(message).toContain(needle);
+    }
+    // The fix names the second path of the first group (routes sort `/` first).
+    expect(message).toContain('rename docs/index.md');
+    expect(message).not.toContain('/doc-kitty/');
   });
 });
 

@@ -9,7 +9,7 @@
  * a rule-level test cannot show: the plugin through the pipeline, the node
  * kinds it touches, its no-op rules, and the integration's freshness.
  */
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, afterEach } from 'vitest';
 import { createRequire } from 'node:module';
 import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -27,6 +27,12 @@ type MarkdownRemark = {
 };
 
 const tmpRoots: string[] = [];
+// `defineDocKittyIntegrations` publishes DK_INDEX_BASENAME; a leaked value would reach the next file.
+const originalIndexEnv = process.env.DK_INDEX_BASENAME;
+afterEach(() => {
+  if (originalIndexEnv === undefined) delete process.env.DK_INDEX_BASENAME;
+  else process.env.DK_INDEX_BASENAME = originalIndexEnv;
+});
 afterAll(() => {
   for (const r of tmpRoots) rmSync(r, { recursive: true, force: true });
 });
@@ -176,5 +182,16 @@ describe('integration freshness (FR-021)', () => {
     expect(routes['guides/home.md']).toBe('/guides/');
     // The root page is never withheld: present with drafts off even though it is a draft.
     expect(routes['home.md']).toBe('/');
+  });
+
+  it('stops the build on a route collision, drafts included; the tree minus one file passes (FR-004)', () => {
+    const run = (docs: string) => optionsFor(docs, 'off');
+    const clash = tree({ 'x/README.md': page('published'), 'x/index.md': page('published') });
+    expect(() => run(clash)).toThrow(/x\/README\.md[\s\S]*x\/index\.md|Rename or remove/);
+    // A draft counts even though drafts are withheld in this build (US2 scenario 5).
+    const draftClash = tree({ 'x/README.md': page('draft'), 'x/index.md': page('published') });
+    expect(() => run(draftClash)).toThrow(/Rename or remove/);
+    // Positive control: one file less builds.
+    expect(() => run(tree({ 'x/README.md': page('published') }))).not.toThrow();
   });
 });

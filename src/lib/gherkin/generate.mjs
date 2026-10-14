@@ -249,6 +249,15 @@ export function planFeaturePages(model, opts) {
           `basename that collides with the generated hub ${section}/${hubOut}; rename the feature file`,
       );
     }
+    // FR-006: `index.feature` is rejected on every setting. Under a `README`-only site the
+    // page `x/index.md` is not an index name, but the site still serves it at its folder's
+    // address (`/x/`), the route of the hub.
+    if (slugged[slugged.length - 1] === 'index') {
+      throw new Error(
+        `${PREFIX} reserved output name: ${sourceLabel} maps to ${section}/${out}, which the site ` +
+          `serves at its folder's address (/${[section, ...slugged.slice(0, -1)].join('/')}/). Rename the feature file.`,
+      );
+    }
     if (slugged[slugged.length - 1] === RESERVED_LEAF) {
       throw new Error(
         `${PREFIX} reserved output name: ${sourceLabel} maps to ${section}/${out}, but log.md is the ` +

@@ -471,7 +471,9 @@ describe('draftPublicationIntegration', () => {
     it('off: the draft title does not label the group, and the served route is not unpublished', () => {
       const { options, source, data } = meta('off');
       expect(source).not.toContain('SECRET DRAFT TITLE');
-      expect(data.directoryMeta.map(([dir]: [string]) => dir)).not.toContain('x');
+      // FR-004: there is no demotion now (the build refuses this tree before the sidebar matters);
+      // the published `x/index.md` labels the group, never the withheld draft.
+      expect(data.directoryMeta.filter(([dir]: [string]) => dir === 'x').map(([, m]: [string, { label: string }]) => m.label)).toEqual(['Public']);
       expect(options.unpublishedDirs).not.toContain('x');
     });
 

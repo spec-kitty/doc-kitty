@@ -223,14 +223,14 @@ describe('index-basename detection: literal verdicts', () => {
     },
   );
 
-  it('both-index collision resolution (E-05): literal winner/demoted', () => {
+  // FR-004: collisions are fatal and route-keyed; no winner.
+  it('both-index collision resolution (E-05): literal route-keyed groups', () => {
     const paths = ['guides/README.md', 'guides/index.md', 'guides/deploy.md', 'index.md', 'README.md'];
     const EXPECTED = [
-      { dir: 'guides', winner: 'guides/README.md', demoted: ['guides/index.md'] },
-      { dir: '', winner: 'README.md', demoted: ['index.md'] },
+      { route: '/', paths: ['README.md', 'index.md'] },
+      { route: '/guides/', paths: ['guides/README.md', 'guides/index.md'] },
     ];
-    // Literal oracle: README wins over index at each directory (earliest-configured
-    // basename), the other is demoted; root and `guides/` both collide.
+    // Literal oracle: the root pair and the `guides/` pair each share a route; no winner.
     expect(detectIndexCollisions(paths, ['README', 'index'])).toEqual(EXPECTED);
   });
 });

@@ -34,10 +34,11 @@
  * CLI runner only executes when the file is invoked directly.
  */
 import { readdirSync, statSync, readFileSync, realpathSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { z } from 'zod';
 // The Gherkin pipeline's `generated.by` stamp, single-sourced in its pure core.
 import { GENERATED_BY as GHERKIN_GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
@@ -59,6 +60,7 @@ import {
   isIndexPath,
   isRootIndex,
   detectIndexCollisions,
+  formatRouteCollisions,
   identityVocabulary,
   parseVocabulary,
 } from '../lib/vocabulary-core.mjs';
@@ -637,17 +639,13 @@ export function run(argv) {
 
     const rels = files.map((f) => relative(root, f).split('\\').join('/'));
 
-    // E-05/FR-004: both-index collision — the configured basename wins, the
-    // rest are demoted; report every collision as a warning (never silent).
-    for (const collision of detectIndexCollisions(rels, indexBasename)) {
-      warned++;
-      const label = collision.dir === '' ? '(root)' : collision.dir;
-      console.warn(
-        `⚠ ${root}: both "${collision.winner}" and ${collision.demoted
-          .map((d) => `"${d}"`)
-          .join(', ')} are section-index candidates in ${label} — "${collision.winner}" wins ` +
-          `as the section index; the rest are ordinary pages (E-05).`,
-      );
+    // FR-004: two files served at one address are an error, as in the build. Fed from the
+    // shared walk (`docs-walk.mjs`), so this gate and the loader see the same paths (dot-names,
+    // `log.md` excluded); the frontmatter checks below keep this gate's own wider walk.
+    const collisions = detectIndexCollisions(walkMarkdownPaths(resolve(root)), indexBasename);
+    if (collisions.length) {
+      console.error(`✖ ${formatRouteCollisions(collisions, { docsDir: root })}`);
+      failures++;
     }
 
     for (const file of files) {

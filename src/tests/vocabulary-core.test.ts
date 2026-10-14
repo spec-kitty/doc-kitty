@@ -179,11 +179,14 @@ describe('index-basename detection (metadata.ts:407-525 + validate-frontmatter t
     expect(isIndexPath('guides/index.md', ['README', 'index'])).toBe(true);
   });
 
-  it('detectIndexCollisions reports the collision winner + demoted set', () => {
+  // FR-004: collisions are fatal and route-keyed; no winner.
+  it('detectIndexCollisions groups the paths served at one route', () => {
     const paths = ['guide/README.md', 'guide/index.md', 'guide/page.md'];
     expect(detectIndexCollisions(paths, ['README', 'index'])).toEqual([
-      { dir: 'guide', winner: 'guide/README.md', demoted: ['guide/index.md'] },
+      { route: '/guide/', paths: ['guide/README.md', 'guide/index.md'] },
     ]);
+    // Positive control: without the second index file there is nothing to report.
+    expect(detectIndexCollisions(['guide/README.md', 'guide/page.md'], ['README', 'index'])).toEqual([]);
   });
 });
 

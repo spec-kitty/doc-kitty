@@ -13,6 +13,7 @@ import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
 import { docsSchema } from '@astrojs/starlight/schema';
+import { formatRouteCollisions } from './vocabulary-core.mjs';
 import {
   readmeToIndexId,
   resolveIndexEntries,
@@ -320,13 +321,12 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
  * The reserved `log.md` (an optional, frontmatter-free change log) is excluded
  * so it never fails schema validation.
  *
- * Both-index collision (E-05, FR-004): the id map is resolved ONCE, lazily, via
- * a synchronous pre-scan of `base` (`resolveIndexEntries`) — Astro's
- * `generateId` callback sees one entry at a time with no sibling context, so a
- * directory holding BOTH configured basenames needs the whole-tree resolution
- * to pick a deterministic winner and demote the rest, exactly like the
- * `validate-frontmatter.mjs` twin (D-02/D-06). A collision is reported via
- * `console.warn` at scan time (not silently resolved).
+ * Route collision (FR-004): the id map is resolved ONCE, lazily, via a
+ * synchronous pre-scan of `base` (`resolveIndexEntries`) — Astro's `generateId`
+ * callback sees one entry at a time with no sibling context, so finding two
+ * files served at one route needs the whole tree. A collision is fatal: the
+ * scan throws one error naming every colliding path (`formatRouteCollisions`),
+ * exactly like the integration and `check-links --strict`.
  *
  * NOTE: depending on the installed Starlight version, Starlight may expect its
  * own `docsLoader()` wrapper or a specific way to point the `docs` collection
@@ -362,15 +362,7 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     const absBase = path.resolve(process.cwd(), base);
     const paths = walkMarkdownPaths(absBase);
     const { ids, collisions } = resolveIndexEntries(paths, { indexBasename });
-    for (const collision of collisions) {
-      const label = collision.dir === '' ? '(bundle root)' : collision.dir;
-      console.warn(
-        `[dk-loader] both "${collision.winner}" and ${collision.demoted
-          .map((d) => `"${d}"`)
-          .join(', ')} are section-index candidates in ${label} — "${collision.winner}" wins ` +
-          `as the section index; the rest are ordinary pages (E-05).`,
-      );
-    }
+    if (collisions.length) throw new Error(formatRouteCollisions(collisions, { docsDir: base }));
     resolvedIds = ids;
     return ids;
   };

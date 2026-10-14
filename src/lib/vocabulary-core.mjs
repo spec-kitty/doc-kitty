@@ -808,12 +808,13 @@ function indexBasenamePattern(basenames) {
 }
 
 /**
- * One resolved both-index collision (E-05): a directory with 2+ candidates.
+ * One route collision (FR-004): two or more source paths that the site would
+ * serve at the same address, compared case-insensitively. There is no winner:
+ * the build, the loader and the strict link check all refuse the tree.
  *
- * @typedef {object} IndexCollision
- * @property {string} dir The directory the collision occurred in ('' for root).
- * @property {string} winner The path that won and became the section index.
- * @property {string[]} demoted The rest — demoted to ordinary pages.
+ * @typedef {object} RouteCollision
+ * @property {string} route The route of the first path in code-unit order (base-less).
+ * @property {string[]} paths Every colliding source path, code-unit sorted.
  */
 
 /**
@@ -830,9 +831,8 @@ function indexBasenamePattern(basenames) {
  * configured set is never collapsed — a stray `index.md` under the default
  * stays an ordinary page (NFR-003).
  *
- * Sibling-unaware: when a directory holds MORE THAN ONE configured-basename
- * file (the collision case, E-05), use {@link resolveIndexEntries}, which
- * resolves the collision deterministically across the whole file list.
+ * Sibling-unaware: it maps one path. Whether two paths share a route is the
+ * whole-tree question {@link resolveIndexEntries} answers.
  *
  * @param {string} entry
  * @param {IndexBasenameOptions} [options]
@@ -846,68 +846,80 @@ export function readmeToIndexId(entry, options = {}) {
 }
 
 /**
- * Group the index-named candidates of a path list by directory and resolve
- * each directory holding more than one: the EARLIEST-configured basename wins,
- * a tie between same-rank basenames (case variants) is broken by code-unit path
- * order. The one grouping loop behind {@link resolveIndexEntries} (the loader's
- * ids) and {@link detectIndexCollisions} (the bare-Node gate).
+ * Group every path by the route it is served at (case-insensitively) and keep
+ * the groups with more than one path (FR-004). Keyed by route, not by folder or
+ * index name, so `x/README.md` + `x/index.md` on a `README`-only site collide
+ * (both are served at `/x/`) and so do `.md`/`.mdx` pairs and case-only pairs.
+ * The one grouping loop behind {@link resolveIndexEntries} (the loader's ids)
+ * and {@link detectIndexCollisions} (the bare-Node gate).
  *
  * @param {readonly string[]} paths
  * @param {IndexBasenameOption | undefined} indexBasename
- * @returns {IndexCollision[]}
+ * @returns {RouteCollision[]}
  */
-function groupIndexCollisions(paths, indexBasename) {
-  const basenames = normalizeIndexBasenames(indexBasename);
-  const pattern = indexBasenamePattern(basenames);
+function groupRouteCollisions(paths, indexBasename) {
   /** @type {Map<string, string[]>} */
-  const byDir = new Map();
+  const byRoute = new Map();
   for (const p of paths) {
-    const withoutExt = p.replace(/\.mdx?$/i, '');
-    if (!pattern.test(withoutExt)) continue;
-    const dir = withoutExt.replace(pattern, '$1').replace(/\/$/, '');
-    const list = byDir.get(dir) ?? [];
+    const key = routeOfSlug(readmeToIndexId(p, { indexBasename })).toLowerCase();
+    const list = byRoute.get(key) ?? [];
     list.push(p);
-    byDir.set(dir, list);
+    byRoute.set(key, list);
   }
-  /** @param {string} file */
-  const rankOf = (file) => {
-    const base = file.replace(/\.mdx?$/i, '').split('/').pop() ?? '';
-    const idx = basenames.findIndex((b) => b.toLowerCase() === base.toLowerCase());
-    return idx === -1 ? basenames.length : idx;
-  };
-  /** @type {IndexCollision[]} */
+  /** @type {RouteCollision[]} */
   const collisions = [];
-  for (const [dir, files] of byDir) {
+  for (const files of byRoute.values()) {
     if (files.length <= 1) continue;
-    const sorted = [...files].sort((a, b) => rankOf(a) - rankOf(b) || compareCodeUnit(a, b));
-    collisions.push({ dir, winner: sorted[0], demoted: sorted.slice(1) });
+    const sorted = [...files].sort(compareCodeUnit);
+    collisions.push({ route: routeOfSlug(readmeToIndexId(sorted[0], { indexBasename })), paths: sorted });
   }
-  return collisions;
+  return collisions.sort((a, b) => compareCodeUnit(a.route, b.route));
 }
 
 /**
- * Collision-aware, whole-tree twin of {@link readmeToIndexId} (E-05, FR-004) and
- * the canonical file-to-slug rule: the content loader (`schema.ts`) uses it for
- * entry ids, and every route table is built from it. Given every Markdown path
- * under a content root, resolves each to its route slug id; when a directory
- * holds MULTIPLE configured-basename candidates, the earliest-configured one
- * wins the section-index id and the rest are demoted to ordinary pages (their id
- * keeps the basename segment) and reported in `collisions`. Fs-free: the caller
- * supplies the path list (the shared walk, `docs-walk.mjs`).
+ * Whole-tree twin of {@link readmeToIndexId} and the canonical file-to-slug
+ * rule: the content loader (`schema.ts`) uses it for entry ids, and every route
+ * table is built from it. Given every Markdown path under a content root,
+ * resolves each to its route slug id (`readmeToIndexId`, no demotion) and
+ * reports in `collisions` every group of paths served at one route (FR-004).
+ * Fs-free: the caller supplies the path list (the shared walk, `docs-walk.mjs`).
  *
  * @param {readonly string[]} paths
  * @param {IndexBasenameOptions} [options]
- * @returns {{ ids: Map<string, string>, collisions: IndexCollision[] }}
+ * @returns {{ ids: Map<string, string>, collisions: RouteCollision[] }}
  */
 export function resolveIndexEntries(paths, options = {}) {
-  const collisions = groupIndexCollisions(paths, options.indexBasename);
-  const demoted = new Set(collisions.flatMap((c) => c.demoted));
   /** @type {Map<string, string>} */
   const ids = new Map();
-  for (const p of paths) {
-    ids.set(p, demoted.has(p) ? p.replace(/\.mdx?$/i, '') : readmeToIndexId(p, options));
-  }
-  return { ids, collisions };
+  for (const p of paths) ids.set(p, readmeToIndexId(p, options));
+  return { ids, collisions: groupRouteCollisions(paths, options.indexBasename) };
+}
+
+/**
+ * The text of a route-collision failure (FR-004, NFR-003): every colliding
+ * source path with the docs folder prefix as the author wrote it, the shared
+ * route, and a concrete fix. The one formatter behind the integration, the
+ * loader and `check-links --strict`, so the wording cannot drift.
+ *
+ * @param {readonly RouteCollision[]} collisions
+ * @param {{ docsDir: string }} options
+ * @returns {string}
+ */
+export function formatRouteCollisions(collisions, { docsDir }) {
+  const dir = docsDir.replace(/\/+$/, '');
+  /** @param {string} p */
+  const shown = (p) => (dir === '' ? p : `${dir}/${p}`);
+  const groups = collisions.map((c) => `  ${c.route}\n${c.paths.map((p) => `    ${shown(p)}`).join('\n')}`);
+  const first = collisions[0];
+  return [
+    `[dk-routes] ${collisions.length} route collision(s) in ${docsDir}: two or more files would be served at the same address.`,
+    '',
+    groups.join('\n\n'),
+    '',
+    'Each address can hold one page. Rename or remove all but one file in each group',
+    `(for example rename ${shown(first.paths[1])} to a different page id), or merge their content.`,
+    'Draft files count: a draft that collides is reported whether drafts are published or not.',
+  ].join('\n');
 }
 
 /**
@@ -924,9 +936,9 @@ const ROOT_ENTRY_SLUG = 'index';
  * reserved root id `index` are `/`, a slug ending in `/index` is served at its
  * folder (`x/index` at `/x/`), any other slug is `/<slug>/`. This mirrors
  * Starlight's `slugToParam`, which strips a trailing `/index`: a nested
- * `index.md` on a site whose index names are only `README`, or an `index.md`
- * demoted by a sibling `README.md`, has the id `x/index` and is served at `/x/`.
- * Two files in one folder can therefore share a route, as they do on the site.
+ * `index.md` on a site whose index names are only `README` has the id `x/index`
+ * and is served at `/x/`. Two files can therefore share a route, as they do on
+ * the site; `resolveIndexEntries` reports that as a collision.
  * No site base; callers add that (`withBase`).
  *
  * @param {string} slug
@@ -961,10 +973,10 @@ export function generatedIndexBasename(indexBasename, { prefer } = {}) {
 
 /**
  * The published route of every docs page: docs-relative POSIX file path ->
- * root-absolute route. Ids are resolved over ALL paths first (the loader's rule,
- * including which of two index files wins a folder), THEN every path in
- * `unpublishedPaths` (draft FILE paths, not routes) is dropped, so a draft that
- * is one of two index files in a folder cannot hand its route to the other.
+ * root-absolute route. Ids and collisions are resolved over ALL paths first (the
+ * loader's rule), THEN every path in `unpublishedPaths` (draft FILE paths, not
+ * routes) is dropped from `routes`, so drafts count toward collisions whether
+ * drafts are published or not (FR-004).
  *
  * Plain JSON only (no `Map`/`Set`/function): the table is a plugin option and
  * takes part in Astro's config digest, which serialises a `Map` as `{}`. Keys
@@ -972,7 +984,7 @@ export function generatedIndexBasename(indexBasename, { prefer } = {}) {
  *
  * @param {readonly string[]} paths docs-relative POSIX Markdown paths (shared walk)
  * @param {{ indexBasename?: IndexBasenameOption, unpublishedPaths?: readonly string[] }} [options]
- * @returns {{ routes: Record<string, string>, collisions: IndexCollision[] }}
+ * @returns {{ routes: Record<string, string>, collisions: RouteCollision[] }}
  */
 export function buildRouteTable(paths, { indexBasename, unpublishedPaths = [] } = {}) {
   const { ids, collisions } = resolveIndexEntries(paths, { indexBasename });
@@ -1086,17 +1098,13 @@ export function isRootIndex(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
 }
 
 /**
- * Both-index collision detection (E-05, FR-004) — the flat-list bare-Node
- * collision detector (`validate-frontmatter.mjs`), the collision half of
- * {@link resolveIndexEntries} (the same grouping loop). Groups index-candidates by directory and
- * reports every directory holding MORE THAN ONE configured basename; the
- * EARLIEST-configured basename wins (ties broken by path sort), matching the
- * loader's resolution exactly.
+ * Route collision detection (FR-004) — the flat-list bare-Node twin, the
+ * collision half of {@link resolveIndexEntries} (the same grouping loop).
  *
  * @param {readonly string[]} relPaths
  * @param {IndexBasenameOption} [indexBasename=DEFAULT_INDEX_BASENAME]
- * @returns {IndexCollision[]}
+ * @returns {RouteCollision[]}
  */
 export function detectIndexCollisions(relPaths, indexBasename = DEFAULT_INDEX_BASENAME) {
-  return groupIndexCollisions(relPaths, indexBasename);
+  return groupRouteCollisions(relPaths, indexBasename);
 }

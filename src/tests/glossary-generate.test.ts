@@ -243,6 +243,26 @@ describe('generateGlossaryPages', () => {
       expect(listRelative(out).map((r) => [r, readFileSync(join(out, r), 'utf8')])).toEqual(before);
     });
 
+    // FR-004 / ADR-0048: an authored page at the generated hub's own path raises ONE error, the
+    // authored-file refusal, not also the route-collision message.
+    it('an authored page at the hub path raises only the authored-file error; removed, it generates', () => {
+      const out = makeOutDir();
+      const hub = seed(out, 'glossary/README.md', FOREIGN);
+      const err = (() => {
+        try {
+          generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out, undefined);
+        } catch (e) {
+          return e as Error;
+        }
+        throw new Error('expected a throw');
+      })();
+      expect(err.message).toMatch(/glossary generator writes this path/);
+      expect(err.message).not.toContain('Rename or remove');
+      expect(err.message).not.toContain('[dk-routes]');
+      rmSync(hub);
+      expect(() => generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out, undefined)).not.toThrow();
+    });
+
     it.each([['../x'], ['sub/x'], ['a\\b'], ['..'], ['.hidden']])(
       'rejects index name %j before any write or removal (authored pages outside glossary/ survive)',
       (bad) => {
