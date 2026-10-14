@@ -326,16 +326,25 @@ describe('defineDocKittyIntegrations({ gherkin: { results } })', () => {
   });
 
   const NOT_FOUND = `[dk-gherkin] gherkin.results report not found: ${FIX}/none.ndjson`;
-  it.each(['true', '1', 'yes', ' TRUE '])('a missing report with CI=%j fails the build, naming the opt-out', (value) => {
-    process.env.CI = value;
-    expect(() => setup(`${FIX}/none.ndjson`)).toThrow(
-      `${NOT_FOUND} (CI is set; set gherkin.results.required: false to build without results)`,
-    );
-  });
-
-  it.each(['', ' ', 'false', 'FALSE', '0'])('a missing report with CI=%j only warns (control)', (value) => {
-    process.env.CI = value;
-    expect(setup(`${FIX}/none.ndjson`).warnings).toEqual([`${NOT_FOUND}; scenarios render without results`]);
+  it.each([
+    ['true', true],
+    ['1', true],
+    ['yes', true],
+    [' TRUE ', true],
+    ['', false],
+    [' ', false],
+    ['false', false],
+    ['FALSE', false],
+    ['0', false],
+  ])('a missing report with CI=%j: fails the build naming the opt-out (%s), else only warns', (value, fails) => {
+    process.env.CI = value as string;
+    if (fails) {
+      expect(() => setup(`${FIX}/none.ndjson`)).toThrow(
+        `${NOT_FOUND} (CI is set; set gherkin.results.required: false to build without results)`,
+      );
+    } else {
+      expect(setup(`${FIX}/none.ndjson`).warnings).toEqual([`${NOT_FOUND}; scenarios render without results`]);
+    }
   });
 
   it('required: false keeps a missing report a warning in CI; required: true is the default', () => {
