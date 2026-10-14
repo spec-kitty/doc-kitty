@@ -374,6 +374,10 @@ function flattenChain(theme: DocKittyTheme): DocKittyTheme[] {
   return chain.reverse();
 }
 
+/** How an error message names a theme layer: by its `name` when it has one. */
+const themeOwner = (layer: DocKittyTheme): string =>
+  layer.name === undefined ? 'DocKittyTheme' : `DocKittyTheme "${layer.name}"`;
+
 /**
  * Fold an ordered layer list (base first) into a single `ResolvedTheme`:
  *  - `tokens` shallow-merge (later `--dk-*` keys win; un-named inherit);
@@ -419,7 +423,7 @@ export function mergeLayers(layers: DocKittyTheme[]): ResolvedTheme {
     if (layer.assets) resolved.assets = { ...resolved.assets, ...layer.assets };
     if (layer.slots) {
       if (typeof layer.slots !== 'object' || Array.isArray(layer.slots)) {
-        const owner = layer.name === undefined ? 'DocKittyTheme' : `DocKittyTheme "${layer.name}"`;
+        const owner = themeOwner(layer);
         throw new Error(`${owner}.slots must be an object mapping dk: slot names to component paths.`);
       }
       // A `.mjs` config is not type-checked, so the `DkSlotName` type alone let a
@@ -427,7 +431,7 @@ export function mergeLayers(layers: DocKittyTheme[]): ResolvedTheme {
       // reads and the stock component rendered silently (#114, ADR-0052).
       for (const key of Object.keys(layer.slots)) {
         if (!SLOT_NAME_SET.has(key)) {
-          const owner = layer.name === undefined ? 'DocKittyTheme' : `DocKittyTheme "${layer.name}"`;
+          const owner = themeOwner(layer);
           throw new Error(
             `${owner} fills an unknown slot ${JSON.stringify(key)}. ` +
               `Valid slot names: ${DK_SLOT_NAMES.join(', ')}.`,
