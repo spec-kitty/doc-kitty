@@ -272,8 +272,8 @@ import { bibliographyRoute } from '@spec-kitty/doc-toolkit/routes';
 export const GET = bibliographyRoute();
 ```
 
-If you turn on Gherkin feature pages (the `gherkin` option), also mount the
-scenario index. This is required: the integration does not add the route, and
+If you turn on generated Gherkin feature pages (the `gherkin` option with
+`sources`), also mount the scenario index. This is required: the integration does not add the route, and
 `llms.txt` advertises `/api/scenarios.json` whenever a generated feature page
 exists, so without the route it links to a page that does not exist. Pass it the same `sourceRoot` and `sourceUrlPrefix` you gave
 `gherkin` (omit both when you use the defaults), so it can find each page's
@@ -660,17 +660,29 @@ or `_meta/sections.yaml`, both keep working (you will see one deprecation notice
 ## Optional: Gherkin feature pages
 
 If your repository keeps behaviour specs in Gherkin `.feature` files, the
-`gherkin` option publishes each feature as a `kind: Specification` page. It is off
-unless you set it, and with it unset the build is unchanged. The design is in
-[ADR-0046](../adr/0046-gherkin-feature-pages.md) and
+`gherkin` option can publish each feature as a `kind: Specification` page, and
+render Gherkin inside any page: a ```` ```gherkin ```` fence as a structured
+scenario, and a `::gherkin{src="…"}` directive as an include of a `.feature`
+file. It is off unless you set it, and with it unset the build is unchanged. The
+design is in [ADR-0046](../adr/0046-gherkin-feature-pages.md),
+[ADR-0051](../adr/0051-gherkin-in-any-page.md) and
 [Gherkin feature pages](../architecture/gherkin-pages.md); how to write the files
-is in [Authoring behaviour specs](./authoring.md#authoring-behaviour-specs).
+and the fences is in [Authoring behaviour specs](./authoring.md#authoring-behaviour-specs)
+and [Gherkin in any page](./authoring.md#gherkin-in-any-page).
+
+The option takes `true` or an object:
 
 ```js
 // astro.config.mjs (inside defineDocKittyIntegrations({ … }))
+
+// In-page Gherkin only: fences render, no generated pages, no includes.
+gherkin: true,
+
+// Generated pages, fences and includes:
 gherkin: {
   sources: ['../features'],    // walked for *.feature, relative to the site root
   section: 'behaviour',        // default; pages land in docs/behaviour/
+  includeRoots: ['../features', '../tests/scenarios'], // default: sources
   sourceRoot: '..',            // report source paths relative to the repo root
   sourceUrlPrefix: 'https://github.com/you/repo/blob/main/',
 },
@@ -678,13 +690,27 @@ gherkin: {
 
 | Key | Default | What it does |
 |-----|---------|--------------|
-| `sources` | required | Directories walked recursively for `*.feature`, relative to the site root (`process.cwd()`). Dot-directories and `node_modules` are skipped. A missing directory fails the build. |
-| `section` | `behaviour` | The folder under your docs directory the pages are generated into. It must be a single folder name and can't be `glossary` or `_meta`. |
+| `fences` | `true` | Renders ```` ```gherkin ```` fences and `::gherkin` includes on your pages. `false` leaves fences as code blocks and includes as literal text, so `{ sources, fences: false }` publishes generated pages and leaves authored pages exactly as before. |
+| `includeRoots` | `sources`, else none | The only directories a `::gherkin{src=…}` include may read, relative to the site root. They must be relative paths. With none, every include fails the build. A root that does not exist is reported by each include whose `src` lies below it, not at startup, so a site with no such include builds with it. An include reads only `.feature` files. |
+| `sources` | none | Directories walked recursively for `*.feature`, relative to the site root (`process.cwd()`). Setting it turns on generated pages and the `behaviour` section. Dot-directories and `node_modules` are skipped. A missing directory fails the build. |
+| `section` | `behaviour` | The folder under your docs directory the pages are generated into. It must be a single folder name and can't be `glossary` or `_meta`. Only valid with `sources`. |
 | `sourceRoot` | the site root | The directory each page's `sources:` path is relative to. Set `'..'` when the site lives in a sub-package and the features are elsewhere in the repo. |
-| `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. |
-| `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`. |
+| `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. An include's source line links the same way. |
+| `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`, and only valid with `sources`. |
 
-What happens on each build and dev-server start:
+An unknown key, a non-boolean `fences`, `section` or `allowEmpty` without
+`sources`, and any value other than `true` or an object (including `false`) fail
+the build.
+
+**Existing `{ sources }` sites:** from this release, ```` ```gherkin ```` fences on
+your authored pages render as scenarios too. Add `raw` to a fence's info string
+(```` ```gherkin raw ````) to keep it as code, or set `fences: false`. A
+`::gherkin{…}` line, which used to print as text, is now an include read from
+`includeRoots` (by default your `sources`). Generated pages show quoted
+arguments, in step text and table cells, as code, so regenerate them once: until then the `--check` gate reports
+the drift.
+
+What happens on each build and dev-server start with `sources`:
 
 - Every `.feature` is parsed once. A syntax error fails the build with
   `[dk-gherkin] <path>:<line>:<col>`, listing every error in every file.
@@ -741,6 +767,31 @@ with empty sources and pages present it already exits 1 and lists them as `stale
 To turn the feature off, remove the option **and** delete `docs/<section>/`.
 Removing only the option leaves the last generated pages in place, still building
 as ordinary content.
+
+### In-page Gherkin: errors and caching
+
+A fence that does not parse, or an include whose file, scenario or tag cannot be
+found, fails `astro build` with a `[dk-gherkin] <page>:<line>` error that lists
+every broken page. Astro's content loader on its own only logs a page's render
+error and builds the page empty, so the toolkit collects these errors and fails
+the build in `astro:build:done`.
+
+- **A broken page is never served from the content cache.** In a collection
+  loaded by `docKittyDocsLoader`, a page whose Gherkin failed is rendered again
+  on every later build, so building again, building after `astro sync` or
+  `astro check`, and restarting the dev server all show the error again until
+  the page is fixed. Only the broken pages re-render.
+- **Other collections: the cache is reset after a failure.** For a page in a
+  collection on another loader (such as Astro's plain `glob()`), a failed build
+  deletes the content layer's data store (`<cacheDir>/data-store.json`, by
+  default `node_modules/.astro/data-store.json`), so the next build re-renders
+  every page and fails again; that build is a full one. Running `astro sync` or
+  `astro check` before `astro build` is not covered there: the build can pass
+  with the page empty. Load such pages with `docKittyDocsLoader` if you run a
+  sync first.
+- **Changing an included file re-renders the pages that include it**, in a build
+  and in the dev server, even though their own text did not change (this too
+  needs `docKittyDocsLoader`).
 
 ## Upgrading from 0.2.0
 

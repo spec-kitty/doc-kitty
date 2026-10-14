@@ -1,6 +1,6 @@
 ---
 title: Gherkin feature pages
-description: "How the opt-in gherkin preset turns .feature files into Specification pages: the pipeline, the codegen seam, ownership and pruning, determinism, and the drift gate."
+description: "How the opt-in gherkin preset turns .feature files into Specification pages, and renders Gherkin fences and includes in any page: pipelines, seams, gates and limits."
 doc_status: active
 updated: 2026-10-13
 type: Architecture
@@ -11,6 +11,7 @@ tags: [gherkin, bdd, living-documentation, codegen, glossary]
 related:
   - adr/0046-gherkin-feature-pages
   - adr/0048-generated-page-names-and-empty-sources
+  - adr/0051-gherkin-in-any-page
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - architecture/glossary
@@ -30,7 +31,10 @@ sidebar, sitemap, RSS, `llms.txt`, the agent API, glossary auto-linking and the
 `related`/`audience` blocks all pick them up with no new wiring. This page maps
 the surface. The decision behind it is
 [ADR-0046](../adr/0046-gherkin-feature-pages.md), and that record stays
-authoritative.
+authoritative. The same preset also renders Gherkin inside ordinary pages, from a
+```` ```gherkin ```` fence or a `::gherkin{src=…}` include; that half is
+[ADR-0051](../adr/0051-gherkin-in-any-page.md) and is mapped in
+[In-page scenarios](#in-page-scenarios).
 
 Audience: contributors working on `src/lib/gherkin/`, and site maintainers who
 want to know what the preset does to their tree. How to write the `.feature` files
@@ -54,22 +58,38 @@ flowchart LR
   MD --> OUT["page, sidebar, sitemap,<br/>RSS, llms.txt, /api/*.json"]
 ```
 
-Everything after `generate.mjs` is existing code. The preset adds **no**
-remark or rehype plugins, so the plugin-order pins don't change.
+Everything after `generate.mjs` is existing code. Generated pages add **no**
+remark or rehype plugins. The one remark stage the preset does add is for
+in-page Gherkin, registered by a separate integration (see
+[In-page scenarios](#in-page-scenarios)).
 
-The four modules are plain JSDoc-typed `.mjs` with no Astro imports:
+The modules are plain JSDoc-typed `.mjs` with no Astro imports:
 
 | Module | Role | Imports |
 |--------|------|---------|
-| `load.mjs` | Discover and parse. Walks each source directory in code-unit order, skipping dot-directories and `node_modules` and following symlinks without revisiting a directory (so which path reaches a shared directory first never depends on filesystem order). Parses each file with a fresh `IdGenerator.incrementing()`. Collects **every** syntax error in every file, then throws one `[dk-gherkin] <path>:<line>:<col> <message>` error. A missing source directory is fatal. A file with no `Feature:` is skipped with a warning. | `node:*`, `@cucumber/gherkin`, `@cucumber/messages`, `vocabulary-core.mjs`, `text.mjs` |
+| `load.mjs` | Discover and parse. Walks each source directory in code-unit order, skipping dot-directories and `node_modules` and following symlinks without revisiting a directory (so which path reaches a shared directory first never depends on filesystem order). Parses each file with a fresh `IdGenerator.incrementing()`. Collects **every** syntax error in every file, then throws one `[dk-gherkin] <path>:<line>:<col> <message>` error. A missing source directory is fatal. A file with no `Feature:` is skipped with a warning. | `node:*`, `vocabulary-core.mjs`, `parse.mjs`, `text.mjs` |
 | `feature-core.mjs` | Pure tag and description mapping to ordered frontmatter. Returns warnings; never throws on author input. | `vocabulary-core.mjs`, `text.mjs` |
-| `render.mjs` | Pure AST to Markdown body, including escaping. | `vocabulary-core.mjs`, `text.mjs` |
+| `view.mjs` | Pure view model: the one walk over a parsed document (titles, narrative, sorted tags, summary counts, step text split into prose, quoted arguments and outline placeholders, rules, backgrounds), the tags an embed shows (`displayTags`, no `@dk:*`) and the heading-level plan, shared by both emitters (ADR-0051). | `vocabulary-core.mjs`, `text.mjs` |
+| `render.mjs` | Pure view to Markdown body, including escaping. `baseLevel`, `header`, `embed` (tags laid out as the HTML shows them) and `inContainer` (bold lines for headings) serve the agent Markdown of an include; the defaults are the generated page. A caller may pass the `view` it already built. | `text.mjs`, `view.mjs` |
+| `mdast.mjs` | Pure view to the in-page mdast subtree of an embedded feature (ADR-0051). Description and narrative Markdown is parsed by an injected function. | `view.mjs` |
+| `parse.mjs` | `parseGherkin()`: the one place a Gherkin string is parsed, with errors as `[dk-gherkin] <path>:<line>:<col>` and an optional line offset (a fence's position in its page). `load.mjs` and the in-page stage both call it. `formatProblem()` is the same error text without the prefix, which an include message quotes. | `@cucumber/gherkin`, `@cucumber/messages`, `text.mjs` |
+| `fragment.mjs` | `parseFragment()`: parses a fence, wrapping a Feature-less fragment in a synthetic Feature when the parser's first error asks for a `Feature:` line, and a Scenario-less one in a synthetic Scenario when its first content line is a step line (classified as the parser's token matcher does), then maps lines back to the page. It also reports steps written under a real `Feature:` line, which the parser reads as description. | `@cucumber/gherkin`, `parse.mjs` |
+| `select.mjs` | `selectScenarios()`: prunes a parsed document to a `scenario` name or an any-of `tags` list, using pickle tags for inheritance. Its AST walk is a transform before the view is built, not a second rendering walk. | `@cucumber/gherkin`, `@cucumber/messages` |
+| `include.mjs` | `resolveInclude()`: the `.feature` rule, realpath containment in `includeRoots` (a missing root fails only the includes below it), the size limit, read, and an mtime/size memo. | `node:*`, `load.mjs`, `text.mjs`, `include-path.mjs` |
+| `include-path.mjs` | `isInside()`, the one containment predicate, and `MAX_INCLUDE_BYTES` (1 MiB), shared by the resolver and the loader's include scan without pulling the parser into every site. | `node:path` |
+| `include-scan.mjs` | The docs loader's include scan: `gherkinIncludeSources()` and the guarded per-file hash folded into the page digest. Not reachable from the public `./schema` entry. | `node:*`, `unified`, `remark-parse`, `remark-directive`, `vocabulary-core.mjs`, `text.mjs`, `include-path.mjs` |
+| `errors.mjs` | The process-wide error sink that makes in-page errors build-fatal. | `vocabulary-core.mjs`, `text.mjs` |
+| `agent-includes.mjs` | Reads the include records a page's render left behind and splices them into the agent payload. | none |
 | `generate.mjs` | `planFeaturePages()` builds the path-to-contents map. `generateFeaturePages()` writes it. `diffFeaturePages()` compares it with the tree for `--check`. | `node:*`, `gray-matter`, `vocabulary-loader.mjs`, the modules above |
-| `options.mjs` | `validateGherkinOptions()` and `validateIndexBasenames()`: the one validator for the `gherkin` option and the index basenames, shared by the integration and the CLI. | `vocabulary-core.mjs`, `text.mjs` |
+| `options.mjs` | `normalizeGherkinOptions()` (the integration), `validateGherkinPages()` (the generated-pages rules, which the CLI calls directly) and `validateIndexBasenames()`: the one validator for the `gherkin` option and the index basenames. | `vocabulary-core.mjs`, `text.mjs` |
 
-`text.mjs` imports nothing. It holds the `[dk-gherkin]` log prefix, the one
-dedent and narrative-split rule, and the one unnamed-feature title fallback, all
-shared by the metadata core and the renderer. Orderings use `compareCodeUnit` and
+`text.mjs` imports nothing. It holds the `[dk-gherkin]` log prefix, the `@dk:`
+metadata-tag namespace, the one dedent and narrative-split rule, and the one
+unnamed-feature title fallback, all shared by the metadata core and the
+renderers, the one relative-path rule (`isRelativePosixPath`) shared by the
+option validator, the include resolver and the loader's include scan, and the one
+`.feature` file-name rule (`FEATURE_FILE`) shared by the source walk, the resolver
+and the scan. Orderings use `compareCodeUnit` and
 path slugs use `slug()`, both from `vocabulary-core.mjs`; no module carries its
 own copy.
 
@@ -92,8 +112,9 @@ gherkin. Its section id is appended to the registry sidebar's build-generated id
 so a first build with no committed output doesn't warn about a missing section.
 
 The option is validated when `defineDocKittyIntegrations` runs, before any hook,
-by `validateGherkinOptions()` in `options.mjs`. The generator script runs the same
-function on its flags, so `--section ../../x` fails there too:
+by `normalizeGherkinOptions()` in `options.mjs`, which applies
+`validateGherkinPages()` when `sources` is set. The generator script runs
+`validateGherkinPages()` on its flags, so `--section ../../x` fails there too:
 
 - `sources` must be a non-empty array of non-empty strings.
 - `allowEmpty`, when present, must be `true` or `false`. A value of another type is
@@ -275,7 +296,10 @@ points that matter for maintainers:
 The body puts the feature at `#`. Rules are `##` with their children at `###`;
 without rules, backgrounds and scenarios are `##`. Steps are list items
 (`- **Given** …`), which keeps them prose so glossary auto-linking reaches them.
-Outline placeholders become inline code, data tables become nested GFM tables, and
+Double-quoted step arguments (quotes kept) and outline placeholders become inline
+code, so typography never rewrites an argument (ADR-0051); so do the quoted
+arguments in a data-table or Examples cell (`cellSegments`). Data tables become
+nested GFM tables, and
 docstrings become nested fences. Examples are a bold label and a table, not a
 heading, so the table of contents lists rules and scenarios only. Rule, scenario
 and examples tags render inline as code, de-duplicated and in code-unit order.
@@ -380,6 +404,108 @@ feature carries `@dk:updated=<date>`, so by default:
   unless the author also sets or bumps `@dk:updated`;
 - a draft feature is not in the feed.
 
+## In-page scenarios
+
+With the `gherkin` option set (`true` or an object) and `fences` not `false`,
+a ```` ```gherkin ```` fence on any docs page renders as a structured scenario,
+and a `::gherkin{src scenario tags}` leaf directive renders a `.feature` file, or
+the scenarios it selects, in place. This needs no `sources`: `gherkin: true` is
+in-page Gherkin with no generated pages. How to write them is in
+[Gherkin in any page](../guides/authoring.md#gherkin-in-any-page).
+
+### Pipeline position
+
+One remark stage, `gherkinFence` (`src/lib/remark/gherkin-fence.ts`), registered
+by the `doc-kitty:gherkin-fence` integration after the glossary and the codegen
+hook and immediately before Starlight. It therefore runs after Astro's
+smartypants and glossary auto-linking, and before Starlight's directive
+restoration, Expressive Code and `deckSplit`. `config-invariants.test.ts` pins
+that position, and the re-derive parity test lists the stage as an inert
+exclusion.
+
+```mermaid
+flowchart LR
+  P["page mdast<br/>(gfm, directive, smartypants, glossary)"] --> S["gherkinFence"]
+  S -->|"code lang=gherkin"| F["fragment.mjs<br/>parse with synthetic levels"]
+  S -->|"::gherkin leaf directive"| I["include.mjs<br/>containment, read"] --> SEL["select.mjs"]
+  F --> V["view.mjs"]
+  SEL --> V
+  V --> M["mdast.mjs<br/>dkGherkin subtree"]
+  M --> ST["Starlight, Expressive Code<br/>(doc strings only)"]
+  S -.->|"fatal messages"| E["errors.mjs sink"]
+  E -.-> BD["astro:build:done<br/>throws, exit non-zero"]
+```
+
+The stage swaps each match for a `dkGherkin` node (`<div class="dk-gherkin">`),
+so Expressive Code never sees the fence; only the doc strings inside it stay
+`code` nodes and are highlighted. The subtree goes through `remark-smartypants`
+so its prose matches the page; a double-quoted step argument is inline code, on
+every surface, so it keeps its straight quotes and `--` flags. An empty or
+comment-only fence stays a code block; a fence whose content would only become
+the description of an untitled Feature (prose, a bare table) is fatal. Headings take `max(2, preceding depth + 1)`, capped
+at 6. Inside a list item, quote or aside they become `p[role=heading]`. A fence
+with `raw` in its info string, a fence on a generated page (`generated.by:
+doc-kitty/gherkin`) and every fence on a deck stay code. A directive on a deck is
+fatal.
+
+### The error sink
+
+Astro's `glob()` loader renders each entry inside a `try` and only logs a render
+error, storing the entry with no HTML: a throwing stage alone would build an
+empty page and exit 0. So the stage records every fatal message for the page in
+`errors.mjs` (a sink on `globalThis`, keyed by page, replaced on each render)
+before throwing, and the integration's `astro:build:done` throws one aggregated
+error listing every page and message. The loader persists the failed entry in
+`<cacheDir>/data-store.json` and skips unchanged entries on the next sync, so a
+second build of the same broken page, or a build after `astro sync`/`astro
+check`, would exit 0. Two mechanisms (ADR-0051 decision 5):
+
+- **Primary** (`docKittyDocsLoader` collections): the loader
+  (`createGherkinTracker` in `schema.ts`) notes each entry whose render throws
+  and stores it, when its body mentions `gherkin`, under a digest that never
+  matches, so every later sync renders it again. This covers a second build, a
+  build after `astro sync`/`astro check`, a build that died before
+  `astro:build:done`, and a dev restart.
+- **Fallback** (any other loader, such as a plain `glob()`): when
+  `astro:build:done` fails the build it deletes `<cacheDir>/data-store.json`,
+  so the next build re-renders everything and fails again. A sync before the
+  build never reaches that hook, so it is covered only for `docKittyDocsLoader`
+  collections.
+
+In dev the sink is only logged, and it is reset in `astro:config:setup`.
+`gherkin-fence-build.test.ts` proves the non-zero exit on a real build: twice in
+a row, after `astro sync`, and twice in a plain `glob()` collection.
+
+### Freshness
+
+The loader caches each page by its own contents, which an include does not
+change. `docKittyDocsLoader` (`src/lib/schema.ts`) therefore finds each page's
+`::gherkin` sources with a plain directive parse (`gherkinIncludeSources` in
+`include-scan.mjs`), folds the sha256 of each included file into the page digest
+(a page with no include keeps `glob()`'s digest byte for byte), and in dev
+re-emits a `change` for every page that includes a changed, added or deleted
+file. The loader never sees `includeRoots`, so it is not the trust boundary, but
+it reads nothing the stage would refuse: a `src` that is not a relative POSIX
+path to a `.feature` file, or names anything but a regular file of at most
+1 MiB, is folded as unreadable without being read or watched. The loader is part
+of every site, so it does this even where the preset is off. `include.mjs` memoises file
+reads on path, mtime and size. This is the only part of the feature built on
+Astro 5 `glob()` internals, and it has to be re-checked for Astro 7 (#119).
+
+### Agent surface
+
+`/api/pages/<id>.json` would otherwise hand an agent a bare `::gherkin{…}` line.
+The stage, which has already resolved and selected each include, also renders it
+as the Markdown a generated page holds (`renderFeatureBody` in its `embed`
+layout, so the tags match the HTML, plus `renderSourceLine`) and records `{ start, end, src, scenario?, tags?, markdown }`
+under `dkGherkinIncludes` in the render-time frontmatter. Astro keeps that as the
+entry's `rendered.metadata.frontmatter`, apart from the validated `entry.data`.
+The route splices the records into the body by offset (`agent-includes.mjs`,
+which imports nothing, so the route never loads the parser) and lists them under
+`includes: [{ src, scenario?, tags? }]`, with `tags` as the attribute string.
+Fences reach agents as fences. Embedded scenarios are not in
+`/api/scenarios.json`.
+
 ## Limits
 
 - **New files need a restart.** Only the `.feature` files loaded at startup are
@@ -410,6 +536,29 @@ feature carries `@dk:updated=<date>`, so by default:
   act on that, because an authored file in the generated section stops the build.
   It goes away once one feature in the directory is published, or with
   `DK_PUBLISH_DRAFTS=off`.
+- **In-page freshness rests on Astro 5 internals.** The include digest fold, the
+  dev re-emit, and the never-matching digest of a failed render depend on how
+  Astro 5's `glob()` loader stores and re-syncs entries. They have to be re-checked
+  under #119 (Astro 7).
+- **Includes in `.mdx` pages are not expanded for agents.** Astro 5 renders MDX
+  entries outside the loader, so no include records reach
+  `rendered.metadata.frontmatter` and the agent payload keeps the directive line.
+- **Only the leaf form is an include.** `:gherkin{…}` or `:gherkin[…]` (a text
+  directive with attributes or a label) and `:::gherkin` are fatal, but a bare
+  `:gherkin` is ordinary prose (`lang:gherkin`) and stays literal text.
+- **Embedded steps are not glossary-linked.** The stage runs after the glossary,
+  so only generated pages link terms in step text, until #113.
+- **Only quoted arguments escape typography.** A double-quoted argument, in step
+  text or in a table cell, is code; a `--flag` or an apostrophe outside quotes is
+  typeset like the rest of the page (`--force` becomes a dash). Quote a command
+  or flag to keep it copyable.
+- **A quoted cell argument holding `\|` stays text.** A GFM table cannot hold
+  `\|` inside a code span, so on a generated page and in the agent Markdown such
+  an argument is escaped text and is typeset.
+- **Doc-string languages are stripped to safe characters.** A media type keeps
+  only letters, digits and `+.#-`, so `"""application/json` becomes the language
+  `applicationjson` (unhighlighted). Use `"""json`. This is inherited from
+  generated pages.
 - **The scenario index is a separate mount.** `llms.txt` advertises
   `/api/scenarios.json` whenever at least one published, agent-discoverable
   generated feature page exists, but the integration doesn't inject the route, so

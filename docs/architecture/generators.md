@@ -38,7 +38,9 @@ short endpoint file. This page expands the surfaces the
 - **The agent-API** — `agentIndexRoute` and `agentPageRoute`:
   - `/api/index.json` — a browsable, structured map of the corpus, sections in
     registry order.
-  - `/api/pages/<id>.json` — one page's metadata plus its raw Markdown.
+  - `/api/pages/<id>.json` — one page's metadata plus its raw Markdown. A
+    `::gherkin` include is expanded into the scenarios it renders and listed
+    under `includes` ([ADR-0051](../adr/0051-gherkin-in-any-page.md)).
   - `/api/scenarios.json` (`scenarioIndexRoute`, only on sites with Gherkin
     feature pages) — every published generated feature page with its scenarios:
     rule, heading anchor, tags, steps and Examples. `llms.txt` advertises it only

@@ -8,6 +8,7 @@ kind: ADR
 authors:
   - ivan@spec-kitty.ai
 related:
+  - adr/0051-gherkin-in-any-page
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - adr/0028-glossary-frontmatter-fields
@@ -24,6 +25,12 @@ related:
 Accepted. The preset is switched on in the example site (`gherkin: { sources: ['features'],
 section: 'behaviour' }` in `example/astro.config.mjs`), which builds and gates the
 generated behaviour section end to end.
+
+Decisions 1, 2, 6, 8 and 9 are amended by
+[ADR-0051](./0051-gherkin-in-any-page.md), which delivers options E and F: the
+preset also renders `gherkin` fences and `::gherkin` includes on docs pages,
+`sources` becomes optional and only drives generated pages, and in-page errors are
+build-fatal through an error sink.
 
 ## Context
 
@@ -193,6 +200,10 @@ This ADR delivers slice C first: a configured directory of `.feature` files
 becomes generated pages and hubs (the issue's jobs 1, 3 and 4). Slices A and B
 remain open for separate work. They serve the "show one scenario in a guide" job
 and can reuse this ADR's renderer.
+
+> **Delivered by [ADR-0051](./0051-gherkin-in-any-page.md), 2026-10-13.** Slices A
+> and B render through one remark stage that shares a view model with this ADR's
+> renderer.
 
 ### Option G: the integration injects the scenario index route
 

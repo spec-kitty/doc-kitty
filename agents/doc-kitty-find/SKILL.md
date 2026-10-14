@@ -47,3 +47,9 @@ exist yet and say where it should live.
   for "which scenarios cover X" instead of scraping the pages. `llms.txt` carries
   a `Scenario index:` line when at least one published generated feature page
   exists. Drafts are not listed.
+- A page can embed scenarios from a `.feature` file with a
+  `::gherkin{src="…" scenario="…"}` (or `tags="…"`) include. Its
+  `/api/pages/<id>.json` `markdown` already holds the included scenarios in
+  place of the directive, and `includes` lists each one's `src` and its
+  `scenario` or `tags`. The `.feature` file named in `src` is the source to
+  edit for those scenarios.
