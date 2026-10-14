@@ -71,6 +71,9 @@ Several facts about the pipeline shape the design:
      and validated there whether or not `gherkin` is on, and generated pages follow
      the route rules of [ADR-0050](./0050-route-collisions-and-single-index-setting.md)
      (a colliding route is fatal, and `index.feature` is rejected on any setting).
+   - `gherkin: true` means fences only: it has no include roots, so any include is
+     refused. Includes and the generated section add no index-name or
+     route-collision checks of their own; those follow ADR-0050.
    - `includeRoots` are project-root-relative directories, defaulting to
      `sources ?? []`. An absolute path, drive letter or URL scheme is refused.
      A root that does not exist is not a config error: it is reported, as
@@ -114,6 +117,9 @@ Several facts about the pipeline shape the design:
      include root may hold other files (`.` holds `.env`), and a parse error
      quotes the line it fails on, so a non-Gherkin file is refused before it is
      read.
+   - `src` resolves against the project root and must sit inside an include root,
+     not relative to the page: the roots are the confinement boundary (decision 9).
+     Page-relative links are a different concern ([ADR-0047](./0047-relative-markdown-links.md)).
    - `scenario` selects by exact, case-sensitive name.
    - `tags` is a space-separated **any-of** list over inherited tags, evaluated per
      pickle. A tag expression is refused rather than misread: the words `and`,
