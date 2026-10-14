@@ -73,6 +73,10 @@ function isGuardType(type: string): boolean {
     type === 'inlineCode' ||
     type === 'heading' ||
     type === 'link' ||
+    // Reference links are links: a link inside a link is invalid HTML and fails
+    // accessibility (FR-011, issue 139). `definition` is the `[ref]: url` line.
+    type === 'linkReference' ||
+    type === 'definition' ||
     type === 'dkMermaid'
   );
 }

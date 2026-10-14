@@ -2,7 +2,8 @@
  * Astro-free unit matrix for the glossary auto-linker (ADR-0027 Decision 2,
  * contract `autolink-and-term.md`; FR-005/006/007/009, NFR-004/007). Everything
  * load-bearing lives in `glossary-autolink.internal` and is driven here directly
- * over hand-built mdast — no Astro, unified, or vfile runtime. The wrapper cases
+ * over hand-built mdast (no Astro or vfile runtime); only the reference-link
+ * cases parse real Markdown with unified + remark-parse. The wrapper cases
  * exercise the deck/opt-out/presence gates and the `file.message` warning.
  *
  * The index stubs mirror the resolver's own test discipline: tiny inline
@@ -11,6 +12,8 @@
  * via the shared `slug(termName)` rule.
  */
 import { describe, it, expect } from 'vitest';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
 import {
   computePageLinks,
   collectLinksUsed,
@@ -199,6 +202,66 @@ describe('computePageLinks — eligibility guards (FR-006)', () => {
     const [link] = glossaryLinks(tree);
     expect(link.children![0].value).toBe('bill of lading');
     expect(link.url).toBe('/glossary/shipping/#bill-of-lading');
+  });
+});
+
+// ===========================================================================
+// FR-011 / SC-004 (issue 139): reference-style links are links. Parsed with the
+// real remark-parse so the `linkReference` / `definition` mdast shapes are the
+// ones the site actually produces, not hand-built approximations.
+const parse = (md: string): MdRoot => unified().use(remarkParse).parse(md) as unknown as MdRoot;
+
+const isGlossaryLinkNode = (n: MdNode): boolean =>
+  n.type === 'link' && typeof n.data?.hProperties?.['data-glossary-term'] === 'string';
+
+/** Glossary links that sit anywhere below another link-ish node (a nested link). */
+function nestedGlossaryLinks(tree: MdNode): number {
+  let n = 0;
+  const walk = (node: MdNode, inLink: boolean): void => {
+    if (isGlossaryLinkNode(node) && inLink) n += 1;
+    const next = inLink || node.type === 'link' || node.type === 'linkReference' || node.type === 'definition';
+    for (const c of node.children ?? []) walk(c, next);
+  };
+  walk(tree, false);
+  return n;
+}
+
+describe('computePageLinks — reference-style links are skipped like inline links (FR-011, SC-004)', () => {
+  const forms: Array<[string, string]> = [
+    ['full [term][ref]', 'See [cargo][ref] for details.\n\nThe cargo appears here in plain text.\n\n[ref]: https://example.com/\n'],
+    ['collapsed [term][]', 'See [cargo][] for details.\n\nThe cargo appears here in plain text.\n\n[cargo]: https://example.com/\n'],
+    ['shortcut [term]', 'See [cargo] for details.\n\nThe cargo appears here in plain text.\n\n[cargo]: https://example.com/\n'],
+  ];
+
+  it.each(forms)('%s: no glossary link inside the author link; plain text is still linked', (_name, md) => {
+    const tree = parse(md);
+    computePageLinks(tree, undefined, index, EMPTY_IGNORE);
+    expect(nestedGlossaryLinks(tree)).toBe(0);
+    // Positive control, same fixture: the plain-text occurrence IS autolinked.
+    expect(glossaryLinks(tree)).toHaveLength(1);
+    expect(tree.children[1].children!.some(isGlossaryLinkNode)).toBe(true);
+  });
+
+  it('a shortcut [term] with NO definition is plain text and is autolinked', () => {
+    const tree = parse('See [cargo] for details.\n');
+    computePageLinks(tree, undefined, index, EMPTY_IGNORE);
+    expect(linkCount(tree)).toBe(1);
+  });
+
+  it('first-per-section: a term skipped in a reference link behaves exactly like one skipped in an inline link', () => {
+    const run = (md: string): boolean[] => {
+      const tree = parse(md);
+      computePageLinks(tree, undefined, index, EMPTY_IGNORE);
+      // Per paragraph: does it hold a glossary link?
+      return tree.children
+        .filter((n) => n.type === 'paragraph')
+        .map((p) => (p.children ?? []).some(isGlossaryLinkNode));
+    };
+    const inline = run('See [cargo](https://example.com/) first.\n\nThen cargo in plain text.\n');
+    const reference = run('See [cargo][ref] first.\n\nThen cargo in plain text.\n\n[ref]: https://example.com/\n');
+    expect(reference).toEqual(inline);
+    // Pin the shared behaviour: the skipped occurrence does not consume the slot.
+    expect(inline).toEqual([false, true]);
   });
 });
 
