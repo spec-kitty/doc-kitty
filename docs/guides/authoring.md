@@ -76,6 +76,10 @@ not maintain a navigation file.
   page title. If another page in the group is already labelled "Overview", the
   index keeps its own label; give that page a `sidebar.label` to avoid the
   clash.
+  A deliberate `sidebar.label` on the index page is treated the same way: when it
+  equals the group's label (the group takes its label from that same page), it
+  also reads "Overview". Give the index page a label that differs from its
+  group's if you want it kept.
 - **Within a group the order is always: the index page, then the other pages,
   then the sub-folders.** Pages keep the order Starlight gives them (their own
   `sidebar.order`, then alphabetical). Because pages always come before
