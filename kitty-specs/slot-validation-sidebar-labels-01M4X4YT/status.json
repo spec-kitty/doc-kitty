@@ -1,0 +1,93 @@
+{
+  "event_count": 14,
+  "last_event_id": "01M4X7GHSWJF6FACX5FZ0NGC8F",
+  "materialized_at": "2026-10-14T12:52:03.516803+00:00",
+  "mission_number": "7",
+  "mission_slug": "slot-validation-sidebar-labels-01M4X4YT",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 2,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude-reviewer",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X7GG7FHERKA1WAQ4RGADRM",
+      "last_transition_at": "2026-10-14T12:52:01.903073+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Red 490095b, fix 90de0bb; ADR-0052",
+        "Review passed: independent adversarial review; findings fixed in 073159d"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/kitty-specs/slot-validation-sidebar-labels-01M4X4YT/tasks/WP01-slot-name-validation/review-cycle-1.md",
+        "reference": "review-cycle://slot-validation-sidebar-labels-01M4X4YT/WP01-slot-name-validation/review-cycle-1.md",
+        "reviewer": "claude-reviewer",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 25578,
+      "shell_pid_created_at": "1791982117.76",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done"
+      },
+      "tracker_refs": [
+        "spec-kitty/doc-kitty#114"
+      ]
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude-reviewer",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4X7GHSWJF6FACX5FZ0NGC8F",
+      "last_transition_at": "2026-10-14T12:52:03.516803+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Red 8b15da2, fix 8a98a01",
+        "Review passed: independent adversarial review; findings fixed in 073159d"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/kitty-specs/slot-validation-sidebar-labels-01M4X4YT/tasks/WP02-sidebar-labels/review-cycle-1.md",
+        "reference": "review-cycle://slot-validation-sidebar-labels-01M4X4YT/WP02-sidebar-labels/review-cycle-1.md",
+        "reviewer": "claude-reviewer",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 25578,
+      "shell_pid_created_at": "1791982117.76",
+      "subtasks": {
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      },
+      "tracker_refs": [
+        "spec-kitty/doc-kitty#112"
+      ]
+    }
+  }
+}
