@@ -313,7 +313,7 @@ describe('generate-feature-pages CLI — option validation parity with the integ
       writeFileSync(authored, '# Hand-written\n');
       const res = run(site, '--index-basename', basename);
       expect(res.status).toBe(1);
-      expect(res.stderr).toMatch(/\[dk-gherkin\] --index-basename must be a plain file name/);
+      expect(res.stderr).toMatch(/\[dk-config\] --index-basename must be a plain file name/);
       expect(readFileSync(authored, 'utf8')).toBe('# Hand-written\n');
       expect(existsSync(path.join(site, 'docs', 'behaviour'))).toBe(false);
     },

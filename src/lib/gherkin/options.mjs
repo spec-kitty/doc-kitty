@@ -152,7 +152,7 @@ export function validateGherkinOptions(
  * Validate the site's index basename(s) as the generator will use them: each
  * becomes a file name INSIDE the generated section (`<first>.md`), so an entry
  * with a path separator or a leading `.` could name a file outside it. Throws a
- * `[dk-gherkin]` Error for such an entry. Blank entries are ignored (the
+ * `[dk-config]` Error for such an entry. Blank entries are ignored (the
  * generator drops them too).
  *
  * @param {string | readonly string[] | undefined} indexBasename
@@ -165,7 +165,7 @@ export function validateIndexBasenames(indexBasename, optionName = 'indexBasenam
     if (typeof entry !== 'string' || entry.trim() === '') continue;
     if (!isPlainIndexName(entry)) {
       throw new Error(
-        `${GHERKIN_LOG_PREFIX} ${optionName} must be a plain file name (no '/', '\\', leading '.' or surrounding whitespace): ` +
+        `[dk-config] ${optionName} must be a plain file name (no '/', '\\', leading '.' or surrounding whitespace): ` +
           `a generated page is written as <name>.md inside the section; got ${JSON.stringify(entry)}`,
       );
     }
