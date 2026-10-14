@@ -101,6 +101,13 @@ export const ROUTES = {
   // auto-linked glossary terms, a nested DocString, a step DataTable, a tagged
   // Examples table, plus the audience + related blocks from its `@dk:` tags.
   behaviourFeature: `${BASE}/behaviour/shipping/book-consignment/`,
+  // In-page Gherkin demonstrator (gherkin-in-any-page, ADR-0051) — an ordinary
+  // guide whose ```gherkin fences render as `.dk-gherkin` blocks: a whole
+  // feature, a steps-only fragment, a Rule/Background/Outline/Examples feature
+  // with a data table and a doc string, one fence inside a `:::note` (its
+  // headings become `p[role=heading]`), and a `gherkin raw` fence that stays
+  // code. Structure is asserted by gherkin.spec.ts; axe scans it below.
+  scenariosInPages: `${BASE}/guides/scenarios-in-pages/`,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -269,6 +276,13 @@ const STARLIGHT_BEHAVIOUR_GUARD_ROOTS = [
   BEHAVIOUR_DOCSTRING_ROOT,
 ] as const;
 
+// In-page Gherkin non-vacuity (gherkin-in-any-page, ADR-0051): a rendered step
+// list item. Only the fence stage emits `.dk-gherkin ul li`; a page whose fences
+// fell back to code blocks (preset off, stage dropped) renders `<pre>` instead
+// and fails the gate before axe could report a clean zero.
+export const GHERKIN_STEP_ROOT = 'main .dk-gherkin ul li';
+const STARLIGHT_GHERKIN_GUARD_ROOTS = [...STARLIGHT_GUARD_ROOTS, GHERKIN_STEP_ROOT] as const;
+
 // The axe coverage set: the four in-frame Starlight surfaces + the diagram
 // demonstrator (WP06 T020) + the out-of-frame showcase deck, each run in BOTH
 // colour modes. The diagram routes (demonstrator + deck) carry a `renderWait` gate
@@ -398,6 +412,16 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.behaviourFeature,
     shell: 'starlight',
     guardRoots: STARLIGHT_BEHAVIOUR_GUARD_ROOTS,
+  },
+  // gherkin-in-any-page (ADR-0051) — the in-page Gherkin demonstrator, scanned in
+  // BOTH colour modes (keyword contrast, tables, the aside's role=heading
+  // paragraphs). No `renderWait`: the fence stage runs at build time. The extra
+  // guard root is a rendered step, which a fence left as code cannot satisfy.
+  {
+    name: 'Scenarios in pages (/guides/scenarios-in-pages/)',
+    path: ROUTES.scenariosInPages,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GHERKIN_GUARD_ROOTS,
   },
 ];
 

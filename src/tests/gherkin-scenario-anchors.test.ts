@@ -29,6 +29,8 @@ import { Parser, AstBuilder, GherkinClassicTokenMatcher } from '@cucumber/gherki
 import { IdGenerator, type GherkinDocument } from '@cucumber/messages';
 import remarkDirective from 'remark-directive';
 import { renderFeatureBody } from '../lib/gherkin/render.mjs';
+import { GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
+import gherkinFence from '../lib/remark/gherkin-fence.js';
 import type { RenderedHeading } from '../lib/routes/scenario-index.js';
 
 // `scenario-index.ts` imports `astro:content` (unused by the pure
@@ -37,7 +39,10 @@ vi.mock('astro:content', () => ({ getCollection: async () => [], render: async (
 const { scenarioRecords } = await import('../lib/routes/scenario-index.js');
 
 type MarkdownProcessor = {
-  render: (md: string) => Promise<{ code: string; metadata: { headings: RenderedHeading[] } }>;
+  render: (
+    md: string,
+    opts?: { frontmatter?: Record<string, unknown> },
+  ) => Promise<{ code: string; metadata: { headings: RenderedHeading[] } }>;
 };
 type MarkdownRemark = {
   createMarkdownProcessor: (opts: Record<string, unknown>) => Promise<MarkdownProcessor>;
@@ -56,12 +61,18 @@ async function astroMarkdown(): Promise<MarkdownRemark> {
   return (await import(entry)) as MarkdownRemark;
 }
 
-/** The toolkit's Markdown configuration: Astro defaults + `remark-directive`. */
-async function toolkitProcessor(): Promise<MarkdownProcessor> {
+/**
+ * The toolkit's Markdown configuration: Astro defaults + `remark-directive`, and
+ * optionally the in-page Gherkin stage (`gherkin` on, ADR-0051) after it.
+ */
+async function toolkitProcessor({ fences = false } = {}): Promise<MarkdownProcessor> {
   const { createMarkdownProcessor, markdownConfigDefaults } = await astroMarkdown();
   expect(markdownConfigDefaults.gfm).toBe(true);
   expect(markdownConfigDefaults.smartypants).toBe(true);
-  return createMarkdownProcessor({ ...markdownConfigDefaults, remarkPlugins: [remarkDirective] });
+  return createMarkdownProcessor({
+    ...markdownConfigDefaults,
+    remarkPlugins: fences ? [remarkDirective, gherkinFence] : [remarkDirective],
+  });
 }
 
 function parseGherkin(source: string): GherkinDocument {
@@ -183,5 +194,53 @@ describe('scenario anchors through the real Astro Markdown pipeline', () => {
     const { records, expected } = await anchorsThroughPipeline(ruleFeature(), 3);
     expect(records.map((r) => r.anchor)).toEqual(expected.map((h) => h.slug));
     expect(records.every((r) => r.rule === 'Everything inside a rule')).toBe(true);
+  });
+});
+
+/**
+ * LOCK-DOWN (ADR-0051 decision 7; 02 §Generated pages and nested Gherkin): a
+ * generated page renders a `gherkin` doc string as a ```` ```gherkin ```` fence.
+ * With the in-page stage on, that fence would grow a nested structured scenario
+ * whose headings `scenarioRecords` would mistake for the page's own. The stage
+ * skips any page stamped `generated.by: doc-kitty/gherkin`, so the page renders
+ * byte-identically with the stage on or off, and every anchor still resolves.
+ */
+describe('generated pages are skipped by the in-page Gherkin stage', () => {
+  const NESTED = [
+    'Feature: Generated with a nested feature',
+    '',
+    '  Scenario: Write a feature file',
+    '    Given the file:',
+    '      """gherkin',
+    '      Feature: Nested',
+    '        Scenario: Nested scenario',
+    '          Given a nested step',
+    '      """',
+    '',
+    '  Scenario: Read it back',
+    '    Given a step',
+    '',
+  ].join('\n');
+
+  it('renders the same HTML and headings with the stage on, and its anchors resolve', async () => {
+    const doc = parseGherkin(NESTED);
+    const body = renderFeatureBody(doc, { file: 'nested.feature' });
+    expect(body).toContain('```gherkin'); // non-vacuity: the page really has a gherkin fence
+    const frontmatter = { title: 'Generated', generated: { by: GENERATED_BY, at: 'abc1234' } };
+    const off = await (await toolkitProcessor()).render(body, { frontmatter });
+    const on = await (await toolkitProcessor({ fences: true })).render(body, { frontmatter });
+    expect(on.code).toBe(off.code);
+    expect(on.metadata.headings).toEqual(off.metadata.headings);
+    expect(on.code).not.toContain('dk-gherkin');
+    expect(on.metadata.headings.map((h) => h.text)).not.toContain('Nested');
+    const records = scenarioRecords(doc, on.metadata.headings, { page: 'p/nested', source: 'nested.feature' });
+    const expected = on.metadata.headings.filter((h) => h.depth === 2 && h.text.startsWith('Scenario'));
+    expect(records.map((r) => r.anchor)).toEqual(expected.map((h) => h.slug));
+  });
+
+  it('non-vacuity: WITHOUT the generated stamp the same body does grow a nested block', async () => {
+    const body = renderFeatureBody(parseGherkin(NESTED), { file: 'nested.feature' });
+    const on = await (await toolkitProcessor({ fences: true })).render(body, { frontmatter: { title: 'Authored' } });
+    expect(on.code).toContain('<div class="dk-gherkin">');
   });
 });

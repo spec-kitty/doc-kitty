@@ -4,13 +4,13 @@
 
 ## Background: A parcel exists
 
-- **Given** a parcel "P-1" registered for tracking
+- **Given** a parcel `"P-1"` registered for tracking
 - **And** the carrier has scanned it at the depot
 
 ## Scenario: See the latest scan
 
 - **When** the recipient opens the tracking page
-- **Then** the latest scan location is "the depot"
+- **Then** the latest scan location is `"the depot"`
 
 ## Scenario: No scans yet
 

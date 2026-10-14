@@ -40,6 +40,7 @@ vi.mock('../lib/glossary/load.js', async (importOriginal) => {
 // Imported AFTER the mock is declared (vi.mock is hoisted, so this is safe).
 const { defineDocKittyIntegrations } = await import('../lib/config.js');
 const { isGlossaryActive } = await import('../lib/glossary/load.js');
+const { default: gherkinFence } = await import('../lib/remark/gherkin-fence.js');
 
 const EXPECTED_CARRIER_KEYS = ['Footer', 'Head', 'Header', 'MarkdownContent', 'PageTitle'];
 
@@ -126,9 +127,16 @@ describe('defineDocKittyIntegrations components map (seam 3)', () => {
  * future change that registers the gherkin integration unconditionally, moves it,
  * or makes it contribute a markdown plugin fails here loudly. (The hook's runtime
  * behaviour is covered end-to-end in `gherkin-integration.test.ts`.)
+ *
+ * ADR-0051 adds a SECOND gherkin integration, `doc-kitty:gherkin-fence` (the
+ * in-page remark stage), registered whenever the option is set and `fences` is
+ * not `false`. The two sit together immediately before Starlight, codegen first.
+ * The codegen integration still adds no markdown plugin (pinned with
+ * `fences: false`); the fence stage's ONE remark plugin is pinned on its own.
  */
 describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
   const GHERKIN = 'doc-kitty:gherkin';
+  const FENCE = 'doc-kitty:gherkin-fence';
   const GLOSSARY = 'doc-kitty:glossary';
   const STARLIGHT = '@astrojs/starlight';
   const GHERKIN_OPTS = { sources: ['features'] };
@@ -162,8 +170,9 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
   const starlightConfigOf = (integrations: unknown[]) =>
     named(integrations).find((i) => i.name === STARLIGHT)?.__starlightConfig;
 
-  /** Run every doc-kitty `astro:config:setup` hook EXCEPT gherkin's (which reads
-   * the filesystem) and collect the markdown plugin lists in registration order. */
+  /** Run every doc-kitty `astro:config:setup` hook EXCEPT the codegen gherkin one
+   * (which reads the filesystem) and collect the markdown plugin lists in
+   * registration order. The fence stage's hook only touches the error sink. */
   function markdownRegistrations(integrations: unknown[]) {
     const remark: unknown[] = [];
     const rehype: unknown[] = [];
@@ -201,12 +210,14 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
     expect(starlightConfigOf(undef)).toEqual(starlightConfigOf(omitted));
   });
 
-  it('adds exactly one doc-kitty:gherkin, immediately before starlight, when set', () => {
+  it('adds exactly one doc-kitty:gherkin then one doc-kitty:gherkin-fence, immediately before starlight, when set', () => {
     const names = namesOf(defineDocKittyIntegrations({ title: 'Docs', gherkin: GHERKIN_OPTS }));
     expect(names.filter((n) => n === GHERKIN)).toHaveLength(1);
-    // A pure insertion: removing it yields the pinned baseline unchanged.
-    expect(names.filter((n) => n !== GHERKIN)).toEqual(PINNED_BASELINE);
-    expect(names.indexOf(GHERKIN)).toBe(names.indexOf(STARLIGHT) - 1);
+    expect(names.filter((n) => n === FENCE)).toHaveLength(1);
+    // A pure insertion of two: removing them yields the pinned baseline unchanged.
+    expect(names.filter((n) => n !== GHERKIN && n !== FENCE)).toEqual(PINNED_BASELINE);
+    expect(names.indexOf(FENCE)).toBe(names.indexOf(GHERKIN) + 1);
+    expect(names.indexOf(STARLIGHT)).toBe(names.indexOf(FENCE) + 1);
   });
 
   it('sits immediately AFTER the glossary integration when the glossary is active', () => {
@@ -215,7 +226,8 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
       defineDocKittyIntegrations({ title: 'Docs', markua: true, gherkin: GHERKIN_OPTS }),
     );
     expect(names.indexOf(GHERKIN)).toBe(names.indexOf(GLOSSARY) + 1);
-    expect(names.indexOf(STARLIGHT)).toBe(names.indexOf(GHERKIN) + 1);
+    expect(names.indexOf(FENCE)).toBe(names.indexOf(GHERKIN) + 1);
+    expect(names.indexOf(STARLIGHT)).toBe(names.indexOf(FENCE) + 1);
   });
 
   it('declares only a config:setup hook and leaves the Starlight config unchanged', () => {
@@ -226,10 +238,54 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
     expect(starlightConfigOf(on)).toEqual(starlightConfigOf(off));
   });
 
-  it('leaves every remark/rehype plugin list unchanged (no plugin-order pin moves)', () => {
+  // ADR-0051: generated pages hang off `sources`, not off the option's presence.
+  // `gherkin: true` (and an object without `sources`) must add no codegen
+  // integration and leave the Starlight config (sidebar included) untouched; the
+  // in-page fence stage is a separate integration and is pinned on its own.
+  it.each([
+    ['true', true as const],
+    ['{}', {}],
+    ['{ includeRoots }', { includeRoots: ['features'] }],
+    ['{ fences: false }', { fences: false }],
+  ])('gherkin: %s adds no doc-kitty:gherkin codegen integration (no sources)', (_label, gherkin) => {
+    const off = defineDocKittyIntegrations({ title: 'Docs', markua: true });
+    const on = defineDocKittyIntegrations({ title: 'Docs', markua: true, gherkin });
+    expect(namesOf(on)).not.toContain(GHERKIN);
+    expect(starlightConfigOf(on)).toEqual(starlightConfigOf(off));
+  });
+
+  it.each([
+    ['{ sources, fences: false }', { ...GHERKIN_OPTS, fences: false }, false],
+    ['{ sources, includeRoots }', { ...GHERKIN_OPTS, includeRoots: ['specs'] }, true],
+  ])('gherkin: %s still adds exactly one doc-kitty:gherkin', (_label, gherkin, fences) => {
+    const names = namesOf(defineDocKittyIntegrations({ title: 'Docs', gherkin }));
+    expect(names.filter((n) => n === GHERKIN)).toHaveLength(1);
+    expect(names.filter((n) => n === FENCE)).toHaveLength(fences ? 1 : 0);
+    expect(names.indexOf(GHERKIN)).toBe(names.indexOf(STARLIGHT) - (fences ? 2 : 1));
+  });
+
+  // ADR-0051: the in-page stage hangs off the option's presence and `fences`,
+  // NOT off `sources`.
+  it.each([
+    ['true', true as const, true],
+    ['{}', {}, true],
+    ['{ includeRoots }', { includeRoots: ['features'] }, true],
+    ['{ fences: false }', { fences: false }, false],
+  ])('gherkin: %s registers the fence stage only when fences are on', (_label, gherkin, fences) => {
+    const names = namesOf(defineDocKittyIntegrations({ title: 'Docs', gherkin }));
+    if (fences) {
+      expect(names.filter((n) => n === FENCE)).toHaveLength(1);
+      expect(names.indexOf(STARLIGHT)).toBe(names.indexOf(FENCE) + 1);
+      expect(names.filter((n) => n !== FENCE)).toEqual(PINNED_BASELINE);
+    } else {
+      expect(names).toEqual(PINNED_BASELINE);
+    }
+  });
+
+  it('leaves every remark/rehype plugin list unchanged with { sources, fences: false } (no plugin-order pin moves)', () => {
     const off = markdownRegistrations(defineDocKittyIntegrations({ title: 'Docs', markua: true }));
     const on = markdownRegistrations(
-      defineDocKittyIntegrations({ title: 'Docs', markua: true, gherkin: GHERKIN_OPTS }),
+      defineDocKittyIntegrations({ title: 'Docs', markua: true, gherkin: { ...GHERKIN_OPTS, fences: false } }),
     );
     // Sanity: the comparison is over a non-trivial stack (markua + always-on seams).
     expect(off.remark.length).toBeGreaterThan(0);
@@ -239,5 +295,46 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
     // identity: same plugins, same order, same options.
     expect(shapeOf(on.remark)).toEqual(shapeOf(off.remark));
     expect(shapeOf(on.rehype)).toEqual(shapeOf(off.rehype));
+  });
+
+  // The fence stage's own pin (02 §Config surface): with fences on, the ONLY
+  // markdown change is ONE `gherkinFence` remark plugin, registered as a
+  // `[plugin, options]` tuple carrying the normalised include options, appended
+  // after every plugin of the integrations before Starlight (Markua's here; the
+  // glossary's integration sits before it too, pinned by the name order above),
+  // and before the ones registered after it (deck-split); rehype is untouched.
+  const isFence = (p: unknown) => Array.isArray(p) && p[0] === gherkinFence;
+  it.each([
+    ['true', true as const, { includeRoots: [], sourceRoot: '.' }],
+    ['{ sources }', GHERKIN_OPTS, { includeRoots: ['features'], sourceRoot: '.' }],
+    [
+      '{ includeRoots, sourceRoot, sourceUrlPrefix }',
+      { includeRoots: ['specs'], sourceRoot: 'repo', sourceUrlPrefix: 'https://x/' },
+      { includeRoots: ['specs'], sourceRoot: 'repo', sourceUrlPrefix: 'https://x/' },
+    ],
+  ])('gherkin: %s adds exactly one gherkinFence remark plugin, before every post-Starlight plugin', (_label, gherkin, fenceOptions) => {
+    const offArr = defineDocKittyIntegrations({ title: 'Docs', markua: true });
+    const onArr = defineDocKittyIntegrations({ title: 'Docs', markua: true, gherkin });
+    const off = markdownRegistrations(offArr);
+    const on = markdownRegistrations(onArr);
+    expect(on.remark.filter(isFence)).toEqual([[gherkinFence, fenceOptions]]);
+    expect(shapeOf(on.remark.filter((p) => !isFence(p)))).toEqual(shapeOf(off.remark));
+    expect(shapeOf(on.rehype)).toEqual(shapeOf(off.rehype));
+    // Everything registered by the integrations BEFORE Starlight precedes it.
+    const names = namesOf(onArr);
+    const before = named(onArr).filter((i) => i.name !== FENCE && names.indexOf(i.name) < names.indexOf(STARLIGHT));
+    const beforeCount = markdownRegistrations(before).remark.length;
+    expect(beforeCount).toBeGreaterThan(0); // the directive owner + Markua's passes
+    const at = on.remark.findIndex(isFence);
+    expect(at).toBe(beforeCount);
+    expect(at).toBeLessThan(on.remark.length - 1); // deck-split comes after it
+  });
+
+  it('the fence stage declares config:setup + build:done hooks and leaves the Starlight config unchanged', () => {
+    const off = defineDocKittyIntegrations({ title: 'Docs', markua: true });
+    const on = defineDocKittyIntegrations({ title: 'Docs', markua: true, gherkin: true });
+    const fence = named(on).find((i) => i.name === FENCE);
+    expect(Object.keys(fence?.hooks ?? {})).toEqual(['astro:config:setup', 'astro:build:done']);
+    expect(starlightConfigOf(on)).toEqual(starlightConfigOf(off));
   });
 });

@@ -12,7 +12,8 @@
  */
 import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { runtimeGraph } from './helpers/module-graph.js';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -422,39 +423,6 @@ describe('llms.txt — scenario index advertisement', () => {
 });
 
 describe('llms.txt module graph', () => {
-  /**
-   * Every module the llms route statically loads, following relative runtime
-   * imports (type-only imports erase at build). `.js` specifiers map to the
-   * `.ts` source the way the TypeScript build resolves them.
-   */
-  function runtimeGraph(entry: string): { files: Set<string>; packages: Set<string> } {
-    const files = new Set<string>();
-    const packages = new Set<string>();
-    const queue = [entry];
-    while (queue.length > 0) {
-      const file = queue.pop() as string;
-      if (files.has(file)) continue;
-      files.add(file);
-      const code = readFileSync(file, 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/(^|[^:])\/\/.*$/gm, '$1');
-      const specs = [
-        ...code.matchAll(/^\s*(?:import|export)\s+(?!type\b)[^'"]*?\bfrom\s+['"]([^'"]+)['"]/gm),
-        ...code.matchAll(/^\s*import\s+['"]([^'"]+)['"]/gm),
-      ].map((m) => m[1]);
-      for (const spec of specs) {
-        if (!spec.startsWith('.')) {
-          packages.add(spec);
-          continue;
-        }
-        const abs = path.resolve(path.dirname(file), spec);
-        const ts = abs.replace(/\.js$/, '.ts');
-        queue.push(existsSync(ts) ? ts : abs);
-      }
-    }
-    return { files, packages };
-  }
-
   it('does not pull the Gherkin parser or the .feature loader into every site', () => {
     const llms = fileURLToPath(new URL('../lib/routes/llms-txt.ts', import.meta.url));
     const { files, packages } = runtimeGraph(llms);

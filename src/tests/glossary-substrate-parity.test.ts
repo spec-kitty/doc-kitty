@@ -63,6 +63,7 @@ import glossaryTerm from '../lib/remark/glossary-term.js';
 import glossaryAutolink from '../lib/remark/glossary-autolink.js';
 import deckSplit from '../lib/remark/deck-split.js';
 import relativeMdLinks from '../lib/remark/relative-md-links.js';
+import gherkinFence from '../lib/remark/gherkin-fence.js';
 import type { SharedTermIndex } from '../lib/glossary/types.js';
 
 // ---------------------------------------------------------------------------
@@ -112,7 +113,9 @@ function buildStack() {
   const prior = process.env.DK_DIAGRAM_BUILD_RENDER;
   process.env.DK_DIAGRAM_BUILD_RENDER = 'off';
   try {
-    const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true });
+    // `gherkin: true` turns the in-page Gherkin stage on (ADR-0051) WITHOUT
+    // `sources`, so the filesystem-reading codegen integration is not registered.
+    const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true, gherkin: true });
     return enumerateDocKittyRemarkStack(arr);
   } finally {
     if (prior === undefined) delete process.env.DK_DIAGRAM_BUILD_RENDER;
@@ -185,6 +188,15 @@ const CONSCIOUS_EXCLUSIONS: Exclusion[] = [
     why: 'opt-in Markua: routes callout containerDirectives to their render target; inert without Markua callouts.',
   },
   {
+    plugin: gherkinFence,
+    kind: 'inert',
+    why:
+      'opt-in Gherkin (ADR-0051 decision 2): replaces ```gherkin fences and ::gherkin{…} includes with a structured block; a no-op on a ' +
+      'page without one. It is registered AFTER the glossary passes, so the term/auto-link passes see the fence as a `code` node and ' +
+      'the include as a `leafDirective` in the build exactly as the re-derive does: the "links used" the re-derive computes cannot differ because of it, and embedded step text is never ' +
+      'auto-linked (Q1). Revisit (mirror it) if the stage ever moves before the glossary (#113).',
+  },
+  {
     plugin: glossaryTerm,
     kind: 'boundary',
     why: 'BEYOND the re-derive cut-off by design (issue #16): the re-derive produces the tree the term pass consumes; callers run glossary-term themselves over it.',
@@ -224,14 +236,17 @@ const REMARK_BEARING_INTEGRATIONS = [
   'doc-kitty:remark-directive',
   'doc-kitty:markua',
   'doc-kitty:glossary',
+  'doc-kitty:gherkin-fence',
   'doc-kitty:deck-split',
   'doc-kitty:base-absolute-links',
 ];
 
-// Floor: the nine stages the full seam registers today (diagramMeta,
+// Floor: ten of the stages the full seam registers today (diagramMeta,
 // mermaidFenceTransform, remarkDirective, markuaNormalise/Attributes/Callouts,
-// glossaryTerm, glossaryAutolink, deckSplit). Guards a vacuous enumeration.
-const STAGE_COUNT_FLOOR = 9;
+// glossaryTerm, glossaryAutolink, gherkinFence, deckSplit; markuaFootnotes and
+// relativeMdLinks make twelve, the floor having always sat below the count).
+// Guards a vacuous enumeration.
+const STAGE_COUNT_FLOOR = 10;
 
 // ===========================================================================
 // 1. Enumeration is non-empty and well-formed (vacuous / SetupHook false-green).

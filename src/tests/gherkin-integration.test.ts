@@ -435,6 +435,14 @@ sections:
     expect(sidebar).toEqual([{ label: 'Context', autogenerate: { directory: 'docs/context' } }]);
   });
 
+  it('treats gherkin: true like OFF (no sources ⇒ no generated section, ADR-0051)', () => {
+    enterSite();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const sidebar = sidebarOf(defineDocKittyIntegrations({ title: 't', gherkin: true }));
+    expect(warn.mock.calls.some(([m]) => String(m).includes('"behaviour"'))).toBe(true);
+    expect(sidebar).toEqual([{ label: 'Context', autogenerate: { directory: 'docs/context' } }]);
+  });
+
   it('emits the group without warning when gherkin is ON (section is build-generated)', () => {
     enterSite();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -466,15 +474,15 @@ describe('gherkin option validation is single-sourced (review #6)', () => {
     expect([...RESERVED_GHERKIN_SECTIONS]).toEqual(['_meta', ...BUILD_GENERATED_SECTION_IDS]);
   });
 
-  it('validateGherkinOptions names the option the caller uses', async () => {
-    const { validateGherkinOptions } = await import('../lib/gherkin/options.mjs');
-    expect(() => validateGherkinOptions({ sources: ['f'], section: '../x' })).toThrow(
+  it('validateGherkinPages names the option the caller uses', async () => {
+    const { validateGherkinPages } = await import('../lib/gherkin/options.mjs');
+    expect(() => validateGherkinPages({ sources: ['f'], section: '../x' })).toThrow(
       /^\[dk-gherkin\] gherkin\.section must be a single folder name/,
     );
     expect(() =>
-      validateGherkinOptions({ sources: ['f'], section: '../x' }, { optionName: (k: string) => `--${k}` }),
+      validateGherkinPages({ sources: ['f'], section: '../x' }, { optionName: (k: string) => `--${k}` }),
     ).toThrow(/^\[dk-gherkin\] --section must be a single folder name/);
-    expect(validateGherkinOptions({ sources: ['f'] })).toEqual({ sources: ['f'], section: 'behaviour', sourceRoot: '.' });
+    expect(validateGherkinPages({ sources: ['f'] })).toEqual({ sources: ['f'], section: 'behaviour', sourceRoot: '.' });
   });
 
   it('validateIndexBasenames rejects a name with surrounding whitespace, as the glossary does', async () => {

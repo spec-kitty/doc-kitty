@@ -18,8 +18,9 @@
  *     text, scenario/feature names and table cells, through the same round-trip.
  *  4. LINT: `markdownlint-cli2` with the repo `.markdownlint.jsonc` reports 0
  *     issues on every golden output.
- *  5. PURITY: `render.mjs` imports only `./text.mjs` (it must load in the
- *     bare-Node `--check` gate as well as in the Astro build).
+ *  5. PURITY: `render.mjs` imports only `./text.mjs` and `./view.mjs` (it must
+ *     load in the bare-Node `--check` gate as well as in the Astro build; the
+ *     import-scan table lives in `gherkin-feature-core.test.ts`).
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';

@@ -30,5 +30,9 @@ export default defineConfig({
     // Markua ON, diagrams OFF (no PlantUML/Chromium in CI — research D5).
     markua: true,
     diagrams: false,
+    // In-page Gherkin (ADR-0051) from the tarball: `guides/scenarios.md` holds a
+    // ```gherkin fence and a ::gherkin include of `scenarios/…`. No `sources`, so
+    // no generated feature pages and an empty /api/scenarios.json.
+    gherkin: { includeRoots: ['scenarios'] },
   }),
 });

@@ -14,5 +14,7 @@ agent:
 - [Getting started](/guides/getting-started/) — stand up a consumer site from the
   packed `@spec-kitty/doc-toolkit` tarball.
 - The same toolkit builds larger works too: see [who translated the Rhetoric][translators].
+- [Scenarios](/guides/scenarios/) — a Gherkin fence and an include of a `.feature`
+  file, rendered from the tarball.
 
 [translators]: ../rhetoric/introduction.md#translators

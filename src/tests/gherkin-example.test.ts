@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { loadFeatures } from '../lib/gherkin/load.mjs';
 import { planFeaturePages } from '../lib/gherkin/generate.mjs';
 import { FLAG, parseArgs } from '../scripts/generate-feature-pages.mjs';
-import { GHERKIN_OPTION_KEYS, validateGherkinOptions } from '../lib/gherkin/options.mjs';
+import { GHERKIN_PAGES_KEYS, validateGherkinPages } from '../lib/gherkin/options.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const EXAMPLE_ROOT = path.join(REPO_ROOT, 'example');
@@ -124,14 +124,14 @@ describe('validate:features mirrors the example gherkin option', () => {
     // the reverse) fails here instead of drifting. `allowEmpty` ↔ `--allow-empty`.
     const kebab = (key: string) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
     expect(Object.entries(FLAG).sort()).toEqual(
-      GHERKIN_OPTION_KEYS.map((key) => [key, kebab(key)]).sort(),
+      GHERKIN_PAGES_KEYS.map((key) => [key, kebab(key)]).sort(),
     );
     // ...and the validator must carry every key through: a key it does not
     // destructure would be dropped silently with the lists above still in step.
     const valid = { sources: ['f'], section: 'docs-x', sourceUrlPrefix: 'u', sourceRoot: 'r', allowEmpty: true };
-    expect(Object.keys(valid).sort()).toEqual([...GHERKIN_OPTION_KEYS].sort());
-    const validated = validateGherkinOptions(valid);
-    for (const key of GHERKIN_OPTION_KEYS) expect(validated).toHaveProperty(key);
+    expect(Object.keys(valid).sort()).toEqual([...GHERKIN_PAGES_KEYS].sort());
+    const validated = validateGherkinPages(valid);
+    for (const key of GHERKIN_PAGES_KEYS) expect(validated).toHaveProperty(key);
   });
 
   it('generate:features is the same command without --check', () => {
