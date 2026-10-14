@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "mission_slug": "route-rule-consolidation-01M4WE27",
+  "mission_id": "01M4WE27QW2MQNX6XASRRVSNYJ",
+  "mission_branch": "kitty/mission-route-rule-consolidation-01M4WE27",
+  "target_branch": "fix/route-rule-consolidation",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        ".github/workflows/ci.yml",
+        "example/src/content.config.ts",
+        "package.json",
+        "src/lib/schema.ts",
+        "src/scripts/check-links.mjs",
+        "src/scripts/check-redirect-coverage.mjs",
+        "src/scripts/generate-feature-pages.mjs",
+        "src/scripts/new-doc.mjs",
+        "src/scripts/scaffold.mjs",
+        "src/scripts/site-index-names.mjs",
+        "src/tests/check-links-tightened.test.ts",
+        "src/tests/docs-root-cross-surface.test.ts",
+        "src/tests/fixtures/consumer-sidebar/astro.config.mjs",
+        "src/tests/fixtures/header-theme/astro.config.mjs",
+        "tests/consumption/charter-cleanroom.test.ts",
+        "tests/consumption/charter-governance.test.ts",
+        "tests/consumption/scripts/run-consumption-test.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/remark/glossary-autolink.internal.ts",
+        "src/tests/glossary-autolink.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/gherkin/generate.mjs",
+        "src/lib/vocabulary-core.mjs",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/gherkin-generate.test.ts",
+        "src/tests/index-basename.test.ts",
+        "src/tests/route-table.test.ts",
+        "src/tests/vocabulary-core.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/docs-walk.mjs",
+        "src/tests/sidebar-build-html.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/components/slots/OnThisPage.astro",
+        "src/components/slots/Related.astro",
+        "src/layouts/Hub.astro",
+        "src/lib/metadata.ts",
+        "src/lib/route-shaping.ts",
+        "src/lib/routes/llms-txt.ts",
+        "src/lib/routes/rss.ts",
+        "src/lib/routes/scenario-index.ts",
+        "src/lib/routes/shared.ts",
+        "src/lib/with-base.ts",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/tests/agent-api.test.ts",
+        "src/tests/resolvers.test.ts",
+        "src/tests/route-address-guard.test.ts",
+        "src/tests/route-feeds.test.ts",
+        "src/tests/route-shaping.test.ts",
+        "src/tests/scenario-index.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0050-route-collisions-and-single-index-setting.md",
+        "docs/adr/README.md",
+        "docs/architecture/gherkin-pages.md",
+        "docs/architecture/glossary.md",
+        "docs/guides/authoring.md",
+        "docs/guides/consumer-setup.md",
+        "docs/guides/draft-publication.md",
+        "docs/guides/migrating-to-charter.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-10-14T06:28:45.528705+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "b26f3e8d38f7d93509dfd4723de0a59c4040840b"
+}

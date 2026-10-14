@@ -1,0 +1,123 @@
+{
+  "event_count": 52,
+  "last_event_id": "01M4WN5YVPA9S1F10MQ7E5WMSH",
+  "materialized_at": "2026-10-14T07:31:42.070460+00:00",
+  "mission_number": "",
+  "mission_slug": "route-rule-consolidation-01M4WE27",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 6,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4WN4YQBVDW46G5JTDHFFJAH",
+      "last_transition_at": "2026-10-14T07:31:09.163643+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP01-index-names-set-once/review-cycle-1.md",
+        "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP01-index-names-set-once/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1888166,
+      "shell_pid_created_at": "1791959473.99"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4WN5BG3M7KHRDGB9V56DJY5",
+      "last_transition_at": "2026-10-14T07:31:22.243566+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP02-route-keyed-collisions/review-cycle-1.md",
+        "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP02-route-keyed-collisions/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1927589,
+      "shell_pid_created_at": "1791960153.95"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4WN5J3W7H59CJGMHVF6JVCC",
+      "last_transition_at": "2026-10-14T07:31:29.020318+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP03-sidebar-shared-walk-and-meta/review-cycle-1.md",
+        "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP03-sidebar-shared-walk-and-meta/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1995595,
+      "shell_pid_created_at": "1791960988.4"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4WN5RFDDD9NKKB9VA3V73ZK",
+      "last_transition_at": "2026-10-14T07:31:35.533476+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP04-address-builders-and-guard/review-cycle-1.md",
+        "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP04-address-builders-and-guard/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2039895,
+      "shell_pid_created_at": "1791961693.78"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4WN5575KC68RTK6H4YJZN3W",
+      "last_transition_at": "2026-10-14T07:31:15.813183+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP05-glossary-reference-link-guard/review-cycle-2.md",
+        "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP05-glossary-reference-link-guard/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1914517,
+      "shell_pid_created_at": "1791959779.92"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4WN5YVPA9S1F10MQ7E5WMSH",
+      "last_transition_at": "2026-10-14T07:31:42.070460+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP06-adr-changelog-and-guide/review-cycle-2.md",
+        "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP06-adr-changelog-and-guide/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2077512,
+      "shell_pid_created_at": "1791962733.11"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-14T05:27:45.798601Z",
+      "decision_id": "01M4WE30W61BS7CG5D0KH99T0T",
+      "final_answer": "Exclude _meta everywhere",
+      "input_key": "meta_folder_behaviour",
+      "mission_id": "01M4WE27QW2MQNX6XASRRVSNYJ",
+      "mission_slug": "route-rule-consolidation-01M4WE27",
+      "opened_by": "cli",
+      "options": [
+        "Exclude _meta everywhere",
+        "Exclude nowhere",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "The sidebar's own docs walk skips a _meta/ folder; the shared walk (loader, route table, link check) does not. When the sidebar moves onto the shared walk, should _meta/ be excluded everywhere or nowhere?",
+      "rationale": null,
+      "resolved_at": "2026-10-14T05:29:52.437883Z",
+      "resolved_by": null,
+      "slot_key": "specify.walk.meta-folder",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-14T05:37:58.610698Z",
+      "decision_id": "01M4WENQAJN2S0N7WXR12F7YY4",
+      "final_answer": "Yes: same set is enough (order-insensitive comparison)",
+      "input_key": "flag_order_matching",
+      "mission_id": "01M4WE27QW2MQNX6XASRRVSNYJ",
+      "mission_slug": "route-rule-consolidation-01M4WE27",
+      "opened_by": "cli",
+      "options": [
+        "No: order must match",
+        "Yes: same set is enough",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Should --index-basename index,README count as matching a configured README,index (same names, different order)?",
+      "rationale": null,
+      "resolved_at": "2026-10-14T05:45:35.797312Z",
+      "resolved_by": null,
+      "slot_key": "plan.index-names.flag-order",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-14T05:38:00.250498Z",
+      "decision_id": "01M4WENRXTXVQ7MEFV7EQXFMB2",
+      "final_answer": "Yes: case-only route collisions fail",
+      "input_key": "letter_case_collisions",
+      "mission_id": "01M4WE27QW2MQNX6XASRRVSNYJ",
+      "mission_slug": "route-rule-consolidation-01M4WE27",
+      "opened_by": "cli",
+      "options": [
+        "Yes: fail",
+        "No: allow",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Should two ordinary pages whose routes differ only by letter case (Guide.md and guide.md) be a failing route collision?",
+      "rationale": null,
+      "resolved_at": "2026-10-14T05:45:37.402841Z",
+      "resolved_by": null,
+      "slot_key": "plan.collisions.letter-case",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M4WE27QW2MQNX6XASRRVSNYJ",
+  "version": 1
+}

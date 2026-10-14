@@ -1,0 +1,35 @@
+{
+  "accept_commit": "db2867e2217e6186bc490879e1e44654288ecd43",
+  "acceptance_history": [
+    {
+      "accept_commit": "db2867e2217e6186bc490879e1e44654288ecd43",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-14T07:30:20.977747+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "bc5a01d249a5372dfff12a33b423ec57c65b2db7"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-14T07:30:20.977747+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "bc5a01d249a5372dfff12a33b423ec57c65b2db7",
+  "baseline_merge_commit": "1d5dae1ec5183637daef3b963156c8c218b176db",
+  "created_at": "2026-10-14T05:27:22.977996+00:00",
+  "flattened": true,
+  "friendly_name": "Route rule and index-name consolidation",
+  "merged_at": "2026-10-14T07:31:48.976567+00:00",
+  "merged_commit": "1e7236f1b523b3a6178f9bdb97cfca7efe97dbbc",
+  "mid8": "01M4WE27",
+  "mission_id": "01M4WE27QW2MQNX6XASRRVSNYJ",
+  "mission_number": 6,
+  "mission_slug": "route-rule-consolidation-01M4WE27",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "PR #133 introduced a shared rule that maps a docs file to its route, but several surfaces still build addresses their own way, index names are configured in three places, and some index-file collisions go unreported. This mission closes those follow-ups (#134-#139) before 0.3.0 ships, so adopters migrate once.",
+  "purpose_tldr": "Give DocKitty one source of truth for page routes and index names, so links, feeds, the sidebar and collision checks agree.",
+  "slug": "route-rule-consolidation-01M4WE27",
+  "status_phase": "1",
+  "target_branch": "fix/route-rule-consolidation",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-14T06:31:18.347807+00:00"
+}

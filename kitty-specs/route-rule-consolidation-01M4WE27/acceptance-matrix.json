@@ -1,0 +1,129 @@
+{
+  "mission_slug": "route-rule-consolidation-01M4WE27",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP04 16cb7ca: route-feeds/agent-api/scenario-index/resolvers/route-shaping /index and root cases; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:28:58.590818+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP04 16cb7ca: root id index maps to / on every surface; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:05.181970+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP04 16cb7ca: route-address-guard.test.ts with planted examples and revert check; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:11.770583+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 7d1b433: route-table collision rows plus loader and hook throw tests; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:18.452780+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 7d1b433: check-links-tightened strict collision in three draft modes; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:24.996370+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 7d1b433: gherkin-generate index.feature rejected, other.feature control; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:31.585807+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 ff46d71: docs-root-cross-surface loader/integration cases; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:38.114499+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 ff46d71: check-links-tightened flag mismatch exit 2 with matching control; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:44.634483+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP03 0522a26: route-shaping sidebar index-rule cases, red on revert; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:51.359079+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP03 0522a26: route-table _meta walk and check-links _meta cases; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:29:57.899115+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP05 84e6a08: glossary-autolink reference-link cases with plain-text control; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:30:04.509013+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP06 06a0911: ADR-0050, CHANGELOG rewritten by comms-cleo, guides; review approved; opus review approved with non-vacuity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-14T07:30:11.071556+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
