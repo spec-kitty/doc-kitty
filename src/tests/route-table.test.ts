@@ -24,6 +24,7 @@ import {
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { draftRoutesOf, unpublishedDraftPaths } from '../lib/draft-publication.mjs';
 import { routeShapingSource } from '../lib/config.js';
+import { docKittyDocsLoader } from '../lib/schema.js';
 
 const SETTINGS: [string, string | string[] | undefined][] = [
   ['default (README)', undefined],
@@ -77,6 +78,8 @@ describe('one route rule for every consumer', () => {
     const docs = path.join(root, 'docs');
     const paths = walkMarkdownPaths(docs);
     expect([...paths].sort()).toEqual(Object.keys(FILES).sort());
+    // The table is built from this walk, so a loader pattern that narrowed the load would list unloaded pages.
+    expect(() => docKittyDocsLoader({ base: docs, pattern: 'x/*.md' })).toThrow(/pattern/);
 
     const { ids } = resolveIndexEntries(paths, { indexBasename });
     const { routes } = buildRouteTable(paths, { indexBasename });

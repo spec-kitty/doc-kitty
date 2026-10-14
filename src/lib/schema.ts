@@ -262,7 +262,12 @@ export interface DocKittyLoaderOptions {
    * Defaults to the repo-root `docs/` — the convention's native location.
    */
   base?: string;
-  /** Glob patterns to include. */
+  /**
+   * Glob patterns to include. Only the default is supported: the route table,
+   * the draft sweep and the link gates walk the tree with `walkMarkdownPaths`,
+   * which cannot see a narrowed pattern, so the loader rejects any other value
+   * rather than let the table list pages the loader never loads.
+   */
   pattern?: string | string[];
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
@@ -299,12 +304,21 @@ export interface DocKittyLoaderOptions {
  * marker and the machine-surface exclusions, but its draft pages are emitted
  * whatever the setting says; the integration warns when that happens.
  */
+const DEFAULT_DOCS_PATTERN = ['**/*.{md,mdx}', '!**/log.md'];
+
 export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   const {
     base = 'docs',
-    pattern = ['**/*.{md,mdx}', '!**/log.md'],
+    pattern = DEFAULT_DOCS_PATTERN,
     indexBasename,
   } = options;
+  if (JSON.stringify([pattern].flat()) !== JSON.stringify(DEFAULT_DOCS_PATTERN)) {
+    throw new Error(
+      `[dk-loader] a custom "pattern" is not supported (got ${JSON.stringify(pattern)}): the route ` +
+        `table is built from the same walk as the default pattern, so a narrowed pattern would ` +
+        `rewrite .md links to pages that are never loaded. Omit "pattern".`,
+    );
+  }
 
   let resolvedIds: Map<string, string> | null = null;
   const resolveIds = (): Map<string, string> => {
