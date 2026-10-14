@@ -334,8 +334,8 @@ The `gherkin raw` fences on this page show Gherkin source; see
 
 ## Gherkin in any page
 
-With the `gherkin` option on (`gherkin: true` is enough), Gherkin also renders
-inside ordinary pages: a ```` ```gherkin ```` fence becomes a structured
+With the `gherkin` option on, Gherkin also renders inside ordinary pages
+(`gherkin: true` turns on fences only; includes need `includeRoots` or `sources`): a ```` ```gherkin ```` fence becomes a structured
 scenario, and a `::gherkin` directive includes a `.feature` file from the
 repository. Both use the markup of a generated page: the feature title and each
 scenario as headings, steps as a bulleted list with the keyword in bold, data
@@ -395,9 +395,10 @@ source line names the feature instead (`From Book a consignment, …`). Use one 
 `scenario` and `tags`, not both. Every include ends in a source line naming the
 file, linked when the site sets `sourceUrlPrefix`.
 
-An include may only read files inside the site's `gherkin.includeRoots`
-(directories relative to the project root; by default the `sources` directories,
-and none with `gherkin: true`). Symbolic links are resolved first, so a link that
+An include's `src` is a path relative to the project root (not to the page) and
+must sit inside one of the site's `gherkin.includeRoots` (directories relative to
+the project root; by default the `sources` directories, and none with
+`gherkin: true`, which turns on fences only). Symbolic links are resolved first, so a link that
 points outside every root is refused, even when its target does not exist. Feature-level `@dk:` tags in an included
 file are dropped silently, because the same file may also feed a generated page.
 Includes do not nest.
@@ -423,8 +424,9 @@ build with a `[dk-gherkin]` error naming the page, the line and the reference:
   container form `:::gherkin` or a text form with attributes (`:gherkin{…}`);
 - a Gherkin syntax error in the fence or the included file, at its own line.
 
-The build lists every broken page together and exits non-zero. In the dev server
-the error shows for the page being rendered, and nothing exits. A changed
+The build lists every broken page together at the end of `astro build` and exits
+non-zero. In `astro dev` the error is logged and the page fails to render, and
+nothing exits. A changed
 scenario name or tag that an include depends on is therefore caught by the next
 build.
 

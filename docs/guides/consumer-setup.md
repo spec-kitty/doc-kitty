@@ -675,7 +675,7 @@ The option takes `true` or an object:
 ```js
 // astro.config.mjs (inside defineDocKittyIntegrations({ … }))
 
-// In-page Gherkin only: fences render, no generated pages, no includes.
+// Fences only: fences render, no generated pages, and every include is refused.
 gherkin: true,
 
 // Generated pages, fences and includes:
@@ -691,7 +691,7 @@ gherkin: {
 | Key | Default | What it does |
 |-----|---------|--------------|
 | `fences` | `true` | Renders ```` ```gherkin ```` fences and `::gherkin` includes on your pages. `false` leaves fences as code blocks and includes as literal text, so `{ sources, fences: false }` publishes generated pages and leaves authored pages exactly as before. |
-| `includeRoots` | `sources`, else none | The only directories a `::gherkin{src=…}` include may read, relative to the site root. They must be relative paths. With none, every include fails the build. A root that does not exist is reported by each include whose `src` lies below it, not at startup, so a site with no such include builds with it. An include reads only `.feature` files. |
+| `includeRoots` | `sources`, else none | The only directories a `::gherkin{src=…}` include may read, relative to the site root. They must be relative paths. An include's `src` is relative to the project root, not to the page, and must sit inside one of these roots. With none (`gherkin: true` turns on fences only), every include fails the build: at the end of `astro build`, and in `astro dev` it is logged and the page fails to render. A root that does not exist is reported by each include whose `src` lies below it, not at startup, so a site with no such include builds with it. An include reads only `.feature` files. |
 | `sources` | none | Directories walked recursively for `*.feature`, relative to the site root (`process.cwd()`). Setting it turns on generated pages and the `behaviour` section. Dot-directories and `node_modules` are skipped. A missing directory fails the build. |
 | `section` | `behaviour` | The folder under your docs directory the pages are generated into. It must be a single folder name and can't be `glossary` or `_meta`. Only valid with `sources`. |
 | `sourceRoot` | the site root | The directory each page's `sources:` path is relative to. Set `'..'` when the site lives in a sub-package and the features are elsewhere in the repo. |
