@@ -35,7 +35,8 @@
  *    escape hatch for showing Gherkin AS SOURCE;
  *  - a generated feature page (`generated.by: doc-kitty/gherkin` frontmatter): its
  *    `gherkin` doc strings would otherwise grow nested structured scenarios and
- *    confuse the scenario index (02 §Generated pages and nested Gherkin);
+ *    confuse the scenario index (02 §Generated pages and nested Gherkin). With
+ *    `results` it only gets the results overlay (see RESULTS below);
  *  - a deck page (`isPresentationFile`, deliberately NOT `guardDeck`, which would
  *    no-op the whole transformer and later let a `::gherkin` include leak as
  *    text): fences on a slide stay code blocks, and an include is FATAL
@@ -101,6 +102,18 @@
  * under `dkGherkinIncludes`, which Astro keeps as the entry's
  * `rendered.metadata.frontmatter`, apart from the validated `entry.data`.
  *
+ * RESULTS (ADR-0052). With `results` (the normalised `gherkin.results`), the
+ * report is loaded at most once per render, through `results-load.mjs`'s memo,
+ * and only for a page that shows Gherkin from a file. An include passes its
+ * file's results (checked against the WHOLE file, so a selection cannot hide a
+ * stale report) to both emitters; a generated page gets them through
+ * `results-overlay.mjs` after its source is re-read and checked against
+ * `generated.at`. A fence never has results. A stale report, an ambiguous report
+ * path, an out-of-date generated page or a missing heading is a warning (once per
+ * process and version); a report that cannot be read is fatal on the page. With
+ * `fences: false` (registered for `results` alone) nothing is collected, so only
+ * generated pages are touched.
+ *
  * DESCRIPTIONS are Markdown, parsed with the HOST processor's own micromark and
  * from-markdown extensions (GFM, directives, …), read from the processor data the
  * attacher captured. They are read at transform time, not copied at attach time:
@@ -109,7 +122,8 @@
  * toolkit dependencies; `mdast-util-from-markdown` and `unist-util-visit` are not
  * (`package-runtime-deps.test.ts`), hence the hand-written walk below.
  */
-import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
@@ -125,6 +139,9 @@ import { DOCSTRING_MARK, featureMdast } from '../gherkin/mdast.mjs';
 import { formatProblem, parseGherkin } from '../gherkin/parse.mjs';
 import { AGENT_INCLUDES_KEY, type AgentInclude } from '../gherkin/agent-includes.mjs';
 import { renderFeatureBody, renderSourceLine, warnDuplicates } from '../gherkin/render.mjs';
+import { featureResults } from '../gherkin/results.mjs';
+import { loadReport, type LoadedReport, type ResultsOption } from '../gherkin/results-load.mjs';
+import { overlayResults } from '../gherkin/results-overlay.mjs';
 import { selectScenarios } from '../gherkin/select.mjs';
 import { GHERKIN_LOG_PREFIX } from '../gherkin/text.mjs';
 import { capLevel, featureView, hasMetadataTag } from '../gherkin/view.mjs';
@@ -182,6 +199,17 @@ export interface GherkinFenceOptions {
   sourceRoot?: string;
   /** `gherkin.sourceUrlPrefix`: when set, an include's source path is a link. */
   sourceUrlPrefix?: string;
+  /**
+   * `gherkin.fences` (default `true`): transform fences and includes. `false`
+   * leaves both as authored; the stage is then registered only for `results`,
+   * and only adds results to generated pages.
+   */
+  fences?: boolean;
+  /**
+   * `gherkin.results`, normalised (ADR-0052): the Cucumber report whose results
+   * are shown next to included scenarios and on generated feature pages.
+   */
+  results?: ResultsOption;
   /**
    * The project root `src`, `includeRoots` and `sourceRoot` are relative to,
    * and that page paths in messages are shown relative to.
@@ -425,6 +453,50 @@ export default function gherkinFence(
     return (root.children ?? []).map(stripPositions);
   };
 
+  /** Warnings already given in this process (a dev server renders a page many times). */
+  const warned = new Set<string>();
+  const warnOnce = (key: string, message: string): void => {
+    if (warned.has(key)) return;
+    warned.add(key);
+    warn(message);
+  };
+
+  /**
+   * The results of one rendered `.feature` file (ADR-0052 decisions 3 and 4):
+   * `undefined` when no report is configured or found, or the report does not
+   * name the file. `text` is the WHOLE file, `view` what the page shows and
+   * `whole` the whole file's view (staleness is checked against it).
+   */
+  const resultsFor = (
+    loaded: LoadedReport | undefined,
+    file: { relPath: string; text: string },
+    view: NonNullable<ReturnType<typeof featureView>>,
+    whole: NonNullable<ReturnType<typeof featureView>> = view,
+  ): ReturnType<typeof featureResults> | undefined => {
+    if (!loaded?.ok || !options.results) return undefined;
+    const found = loaded.index.lookup(file.relPath);
+    if (!found) return undefined;
+    const report = options.results.report;
+    if ('ambiguous' in found) {
+      warnOnce(
+        `ambiguous\0${report}\0${file.relPath}`,
+        `${GHERKIN_LOG_PREFIX} ${report}: ${file.relPath} can only be matched by the end of a reported path, ` +
+          `and that is not unique (${found.ambiguous.join(', ')}); its scenarios show no results — ` +
+          `run Cucumber with relative paths and set gherkin.results.root`,
+      );
+      return undefined;
+    }
+    const results = featureResults(found.file, { text: file.text, view, file: whole, run: loaded.report.run });
+    if (results.state === 'stale') {
+      warnOnce(
+        `stale\0${report}\0${file.relPath}\0${createHash('sha256').update(file.text).digest('hex')}`,
+        `${GHERKIN_LOG_PREFIX} ${report} holds results for a different version of ${file.relPath}; ` +
+          `its scenarios show no results until the tests run again`,
+      );
+    }
+    return results;
+  };
+
   /**
    * One ```` ```gherkin ```` fence → its `dkGherkin` container, or its fatal
    * messages (03 §1, §5). An empty or comment-only fence has no Feature and
@@ -474,7 +546,12 @@ export default function gherkinFence(
    * Checks run in the order an author fixes them: the form, the page kind, the
    * attributes, the configuration, the file, its Gherkin, then the selection.
    */
-  const includeBlock = (match: FenceMatch, { page, line, deck }: BlockContext, root: string): BlockResult => {
+  const includeBlock = (
+    match: FenceMatch,
+    { page, line, deck }: BlockContext,
+    root: string,
+    loaded: () => LoadedReport | undefined,
+  ): BlockResult => {
     const { node } = match;
     const at = `${GHERKIN_LOG_PREFIX} ${page}:${line}`;
     const fail = (message: string) => ({ errors: [message] });
@@ -541,14 +618,17 @@ export default function gherkinFence(
     const header = selected ? 'none' : 'full';
     const source = { path: x, ...(href ? { href } : {}), featureTitle: view.title, selected };
     const { baseLevel, inContainer } = match;
-    const container = featureMdast(view, { baseLevel, header, source, parseMarkdown, inContainer }) as MdastNode;
+    // ADR-0052: the file's results, checked against the WHOLE file.
+    const whole = selected ? (featureView(parsed.document) ?? view) : view;
+    const results = resultsFor(loaded(), { relPath: x, text: resolved.bytes }, view, whole);
+    const container = featureMdast(view, { baseLevel, header, source, parseMarkdown, inContainer, results }) as MdastNode;
     // The same include for agents (02 §Agent surface): the re-parse-safe
     // Markdown of a generated page, laid out as an EMBED so it shows the tags
     // the HTML shows where the HTML shows them, at the same base level and
     // header mode (bold lines for headings inside a container), then the
     // source line. Its duplicate-name warnings stay off (the default no-op
     // `warn`): an include gets none (03 §1.5).
-    const body = renderFeatureBody(selection.document, { view, baseLevel, header, embed: true, inContainer });
+    const body = renderFeatureBody(selection.document, { view, baseLevel, header, embed: true, inContainer, results });
     const agent = {
       src,
       ...(scenario !== undefined ? { scenario } : {}),
@@ -558,19 +638,106 @@ export default function gherkinFence(
     return { container, agent };
   };
 
+  /**
+   * Results on a generated feature page (ADR-0052 decision 5): re-read the
+   * page's `.feature` source (`sources[0].resource`, the inverse of
+   * `sourceLink`), check it is the version the page was generated from
+   * (`generated.at`), and overlay its results on the page's mdast. Anything
+   * that stops the overlay is a warning, never an error: the page is still
+   * correct without results, and a page out of date with its source already
+   * fails the drift gate and the scenario index.
+   */
+  const overlayGenerated = (
+    tree: MdastNode,
+    frontmatter: Record<string, unknown>,
+    page: string,
+    root: string,
+    loaded: LoadedReport,
+  ): void => {
+    const sources = frontmatter.sources as Array<{ resource?: unknown }> | undefined;
+    const generatedAt = (frontmatter.generated as { at?: unknown } | undefined)?.at;
+    let resource = typeof sources?.[0]?.resource === 'string' ? sources[0].resource : undefined;
+    if (!resource) return;
+    if (options.sourceUrlPrefix && resource.startsWith(options.sourceUrlPrefix)) {
+      resource = resource.slice(options.sourceUrlPrefix.length);
+    } else if (/^[a-z][a-z0-9+.-]*:/i.test(resource)) {
+      return; // a URL the configured prefix does not explain: nothing to read
+    }
+    const absPath = path.resolve(root, options.sourceRoot ?? '.', ...resource.split('/'));
+    const relPath = toPosix(path.relative(root, absPath));
+    let raw: Buffer;
+    try {
+      const stat = statSync(absPath);
+      if (!stat.isFile() || stat.size > MAX_INCLUDE_BYTES) return;
+      raw = readFileSync(absPath);
+    } catch {
+      return;
+    }
+    const want = typeof generatedAt === 'string' ? generatedAt.replace(/^sha256:/, '') : '';
+    if (want && !createHash('sha256').update(raw).digest('hex').startsWith(want)) {
+      warnOnce(
+        `outdated\0${page}\0${want}`,
+        `${GHERKIN_LOG_PREFIX} ${page} is out of date with ${relPath}; it shows no results until it is regenerated`,
+      );
+      return;
+    }
+    const text = raw.toString('utf8');
+    const parsed = parseGherkin(text, { display: relPath });
+    const view = parsed.document ? featureView(parsed.document) : null;
+    if (!view) return;
+    const results = resultsFor(loaded, { relPath, text }, view);
+    if (!results) return;
+    const { missing } = overlayResults(tree as never, view, results);
+    if (missing.length > 0) {
+      warnOnce(
+        `missing\0${page}\0${want}`,
+        `${GHERKIN_LOG_PREFIX} ${page} has no heading for ${missing.map((m) => `"${m}"`).join(', ')} ` +
+          `of ${relPath}; those scenarios show no result`,
+      );
+    }
+  };
+
   return function transformer(tree: MdastNode, file: GherkinFenceVFile): void {
     const root = options.root ?? process.cwd();
-    const generated = file.data?.astro?.frontmatter?.generated as { by?: unknown } | undefined;
-    // 03 §3: a generated page stays as emitted. 02 §Decks: on a slide, fences
-    // stay code and only directives are collected (to be reported).
+    const frontmatter = file.data?.astro?.frontmatter ?? {};
+    const generated = frontmatter.generated as { by?: unknown } | undefined;
+    const isGenerated = generated?.by === GENERATED_BY;
+    // 03 §3: a generated page's Gherkin stays as emitted. 02 §Decks: on a slide,
+    // fences stay code and only directives are collected (to be reported).
+    // `fences: false`: nothing is collected, so a directive is restored as text.
     const deck = isPresentationFile(file);
-    const blocks = generated?.by === GENERATED_BY ? [] : collectBlocks(tree, { fences: !deck });
+    const blocks = isGenerated || options.fences === false ? [] : collectBlocks(tree, { fences: !deck });
     const page = displayPath(file, root);
+
+    // The report (ADR-0052), loaded at most once per render and only for a page
+    // that shows Gherkin from a file. A report that cannot be read is FATAL on
+    // every page that would show its results (decision 9).
+    let reportError: string | undefined;
+    let report: LoadedReport | undefined;
+    let reportRead = false;
+    const loaded = (): LoadedReport | undefined => {
+      if (reportRead) return report;
+      reportRead = true;
+      if (!options.results) return undefined;
+      try {
+        report = loadReport(options.results, { projectRoot: root });
+      } catch (error) {
+        reportError = (error as Error).message;
+      }
+      return report;
+    };
+
+    if (isGenerated && options.results) {
+      const current = loaded();
+      if (current?.ok) overlayGenerated(tree, frontmatter, page, root, current);
+    }
     if (blocks.length === 0) {
-      // Nothing can fail here. Clear any record from an earlier render of this
-      // page (a dev edit that removed the broken block), so the sink only ever
-      // holds the latest render of each page.
-      recordFatal(page, []);
+      const errors = reportError ? [`${reportError} (shown on ${page})`] : [];
+      // Clear any record from an earlier render of this page (a dev edit that
+      // removed the broken block), so the sink only ever holds the latest render
+      // of each page.
+      recordFatal(page, errors);
+      if (errors.length > 0) throw new Error(errors.join('\n'));
       return;
     }
 
@@ -583,7 +750,7 @@ export default function gherkinFence(
     for (const match of blocks) {
       const { node } = match;
       const ctx = { page, line: node.position ? node.position.start.line + offset() : 0, deck };
-      const result = match.kind === 'directive' ? includeBlock(match, ctx, root) : fenceBlock(match, ctx);
+      const result = match.kind === 'directive' ? includeBlock(match, ctx, root, loaded) : fenceBlock(match, ctx);
       if (!result) continue; // an empty or comment-only fence stays a code block
       if ('errors' in result) {
         errors.push(...result.errors);
@@ -600,6 +767,7 @@ export default function gherkinFence(
       }
       replacements.push({ match, container: result.container });
     }
+    if (reportError) errors.push(`${reportError} (shown on ${page})`);
 
     // Record (or clear) this page's fatal errors BEFORE throwing: Astro's loader
     // swallows the throw, and the sink is what fails the build.

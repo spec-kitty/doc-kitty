@@ -273,7 +273,9 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
     ['{}', {}, true],
     ['{ includeRoots }', { includeRoots: ['features'] }, true],
     ['{ fences: false }', { fences: false }, false],
-  ])('gherkin: %s registers the fence stage only when fences are on', (_label, gherkin, fences) => {
+    // ADR-0052: results on generated pages need the stage even without fences.
+    ['{ fences: false, results }', { fences: false, results: 'reports/cucumber.ndjson' }, true],
+  ])('gherkin: %s registers the fence stage only when fences are on, or results are set', (_label, gherkin, fences) => {
     const names = namesOf(defineDocKittyIntegrations({ title: 'Docs', gherkin }));
     if (fences) {
       expect(names.filter((n) => n === FENCE)).toHaveLength(1);

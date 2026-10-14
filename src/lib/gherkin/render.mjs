@@ -36,8 +36,9 @@
  * owns the Markdown syntax: the escapers and the block layout.
  *
  * PURITY CONTRACT: the only runtime imports are `./text.mjs` (itself
- * import-free) and `./view.mjs` (pure; it brings the fs-free
- * `../vocabulary-core.mjs` comparator), so this module loads in the Astro build
+ * import-free), `./view.mjs` (pure; it brings the fs-free
+ * `../vocabulary-core.mjs` comparator) and `./results.mjs` (pure; `node:path`
+ * and `node:url` only, for the result words of an embed), so this module loads in the Astro build
  * AND in the bare-Node `generate-feature-pages.mjs --check` gate. The AST is a
  * plain object; the `@cucumber/messages` references below are type-only JSDoc
  * imports.
@@ -45,6 +46,7 @@
  * @module gherkin/render
  */
 
+import { RESULT_COLUMN, countsText, outcomeLabel, provenance } from './results.mjs';
 import { GHERKIN_LOG_PREFIX } from './text.mjs';
 import { cellSegments, childLevel, displayTags, featureView, resolveLevels, summaryText } from './view.mjs';
 
@@ -54,6 +56,9 @@ import { cellSegments, childLevel, displayTags, featureView, resolveLevels, summ
 /** @typedef {import('./view.mjs').StepView} StepView */
 /** @typedef {import('./view.mjs').ExamplesView} ExamplesView */
 /** @typedef {import('./view.mjs').HeaderMode} HeaderMode */
+/** @typedef {import('./results.mjs').Outcome} Outcome */
+/** @typedef {import('./results.mjs').FeatureResults} FeatureResults */
+/** @typedef {import('./results.mjs').StaleResults} StaleResults */
 
 /**
  * @typedef {object} RenderOptions
@@ -77,6 +82,12 @@ import { cellSegments, childLevel, displayTags, featureView, resolveLevels, summ
  *   blockquote: headings become bold lines, as the HTML renders
  *   `p[role=heading]` there, so the expansion neither reaches an outline nor
  *   breaks its container's.
+ * @property {FeatureResults | StaleResults} [results] The feature's results
+ *   (ADR-0052), as `mdast.mjs` shows them: a `Result: **<status>**` line after
+ *   each scenario heading, a `Result` column on each Examples table and a
+ *   `**Results:**` line after the summary. Only an EMBED is given results: a
+ *   generated page's committed Markdown never carries them (it would drift
+ *   with every run), and the in-page stage adds them when it renders the page.
  */
 
 /**
@@ -364,19 +375,63 @@ function renderSteps(steps) {
 }
 
 /**
- * One Examples block: bold label (+ inline tags), description, table.
+ * One Examples block: bold label (+ inline tags), description, table (with a
+ * `Result` column when the feature has current results).
  *
  * @param {ExamplesView} examples
  * @param {Layout} layout
+ * @param {FeatureResults | StaleResults} [results]
  * @returns {string[]}
  */
-function renderExamples(examples, layout) {
+function renderExamples(examples, layout, results) {
   const tags = renderTags(layout.tags(examples.tags));
   const label = `**${titled(examples)}**${tags ? ` ${tags}` : ''}`;
   const blocks = [label];
   if (examples.description) blocks.push(examples.description);
-  if (examples.rows.length > 0) blocks.push(tableLines(examples.rows).join('\n'));
+  if (examples.rows.length > 0) {
+    const lines = tableLines(examples.rows);
+    if (results?.state === 'current') {
+      // The `Result` column (ADR-0052): the header, the delimiter, then one
+      // status word per body row, as `mdast.mjs`'s `addResultColumn` adds it.
+      const extra = [
+        RESULT_COLUMN,
+        '---',
+        ...examples.rowLines.map((line) => outcomeLabel(results.rows.get(line) ?? { status: 'not-run' })),
+      ];
+      lines.forEach((l, i) => {
+        lines[i] = `${l} ${extra[i]} |`;
+      });
+    }
+    blocks.push(lines.join('\n'));
+  }
   return blocks;
+}
+
+/**
+ * A scenario's result line: `Result: **Failed** (1 passed, 1 failed)`.
+ *
+ * @param {Outcome} outcome
+ */
+function resultLine(outcome) {
+  const counts = outcome.counts ? countsText(outcome.counts) : '';
+  return `Result: **${outcomeLabel(outcome)}**${counts ? ` (${counts})` : ''}`;
+}
+
+/**
+ * The feature's results line: `**Results:** 1 failed, 3 passed · as of
+ * 2026-10-14 · commit \`3f1c2a9\``, or the "not shown" note for a stale report.
+ *
+ * @param {FeatureResults | StaleResults} results
+ */
+function resultsSummaryLine(results) {
+  if (results.state === 'stale') {
+    return '**Results not shown:** the test report was made from a different version of this file.';
+  }
+  const { day, revision } = provenance(results.run);
+  let line = `**Results:** ${countsText(results.counts) || 'none'}`;
+  if (day) line += ` · as of ${day}`;
+  if (revision) line += ` · commit ${codeSpan(revision)}`;
+  return line;
 }
 
 /**
@@ -427,12 +482,16 @@ function headed(head, { tags, description }, layout) {
  * @param {SectionView} section
  * @param {number} level Heading depth.
  * @param {Layout} layout
+ * @param {FeatureResults | StaleResults} [results]
  * @returns {string[]}
  */
-function renderSection(section, level, layout) {
+function renderSection(section, level, layout, results) {
   const blocks = headed(section.synthetic ? '' : layout.heading(level, titled(section)), section, layout);
+  const outcome = results?.state === 'current' && section.kind === 'scenario' ? results.scenarios.get(section.line) : undefined;
+  // Directly after the heading, as the HTML puts it (ADR-0052).
+  if (outcome) blocks.splice(section.synthetic ? 0 : 1, 0, resultLine(outcome));
   if (section.steps.length > 0) blocks.push(renderSteps(section.steps));
-  for (const ex of section.examples) blocks.push(...renderExamples(ex, layout));
+  for (const ex of section.examples) blocks.push(...renderExamples(ex, layout, results));
   return blocks;
 }
 
@@ -519,15 +578,17 @@ export function renderFeatureBody(document, opts = {}) {
     if (view.description) blocks.push(view.description);
     const summary = summaryText(view.counts);
     if (summary) blocks.push(`*${summary}*`);
+    if (opts.results) blocks.push(resultsSummaryLine(opts.results));
   }
 
+  const { results } = opts;
   for (const child of view.children) {
     if (child.kind !== 'rule') {
-      blocks.push(...renderSection(child, levels.section, layout));
+      blocks.push(...renderSection(child, levels.section, layout, results));
       continue;
     }
     blocks.push(...headed(layout.heading(levels.section, titled(child)), child, layout));
-    for (const rc of child.children) blocks.push(...renderSection(rc, childLevel(levels.section), layout));
+    for (const rc of child.children) blocks.push(...renderSection(rc, childLevel(levels.section), layout, results));
   }
   warnDuplicates(view, opts);
 

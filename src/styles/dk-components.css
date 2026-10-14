@@ -421,6 +421,106 @@
 }
 
 /*
+ * ----- Scenario results (ADR-0052) ----------------------------------------
+ * A result line after a scenario heading, a `Result` column on an Examples
+ * table and a results summary, on a docs page (in `.dk-gherkin`) AND on a
+ * generated feature page (no container), so none of these rules is scoped to
+ * `.dk-gherkin`:
+ *
+ *   <p class="dk-gherkin__result">
+ *     <span class="dk-gherkin__status" data-status="failed">
+ *       <span class="dk-gherkin__sr">Result: </span>Failed</span> (1 passed, 1 failed)</p>
+ *   <td><span class="dk-gherkin__status" data-status="passed">Passed</span></td>
+ *   <p class="dk-gherkin__results"><strong>Results:</strong> 1 failed, 3 passed
+ *     · as of <time datetime="…">2026-10-14</time> · commit <code>3f1c2a9</code></p>
+ *
+ * NO COLOUR-ONLY CUE (WCAG 1.4.1): the STATUS WORD is the signal. A glyph and a
+ * tinted left bar only reinforce it, so neither needs a contrast floor
+ * (1.4.11 covers graphics REQUIRED to understand the content). The glyph's
+ * alternative text is empty (`content: "✓" / ""`), so a screen reader reads
+ * only the word, after the visually hidden "Result:".
+ *
+ * Contrast (1.4.3): the word is `--dk-color-text-strong` on
+ * `--dk-color-surface-inset`, the pairing of the ADR status badge (`hub.css`),
+ * AA by construction in both themes and in the Spec Kitty brand (default
+ * light #101828 on #e4e7ec 15.1:1, dark #f2f4f8 on #0d111a 17.6:1). The bar
+ * uses the semantic `--dk-color-{success,danger,warning,info,neutral}` tokens.
+ * Forced colours keep the border and the word: the bar falls back to the system
+ * border colour, which is still a visible shape.
+ */
+.dk-gherkin__result,
+.dk-gherkin__results {
+  font-size: var(--dk-text-sm);
+}
+
+.dk-gherkin__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dk-space-3xs);
+  color: var(--dk-color-text-strong);
+  background: var(--dk-color-surface-inset);
+  border: 1px solid var(--dk-color-border);
+  border-inline-start: 3px solid var(--dk-color-neutral);
+  border-radius: var(--dk-radius-sm);
+  padding: 0 var(--dk-space-xs);
+  font-size: var(--dk-text-sm);
+  font-weight: var(--dk-weight-medium);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.dk-gherkin__status::before {
+  content: '○' / '';
+}
+
+.dk-gherkin__status[data-status='passed'] {
+  border-inline-start-color: var(--dk-color-success);
+}
+.dk-gherkin__status[data-status='passed']::before {
+  content: '✓' / '';
+}
+
+.dk-gherkin__status[data-status='failed'] {
+  border-inline-start-color: var(--dk-color-danger);
+}
+.dk-gherkin__status[data-status='failed']::before {
+  content: '✗' / '';
+}
+
+.dk-gherkin__status:is([data-status='ambiguous'], [data-status='undefined'], [data-status='pending']) {
+  border-inline-start-color: var(--dk-color-warning);
+}
+.dk-gherkin__status[data-status='ambiguous']::before {
+  content: '⇄' / '';
+}
+.dk-gherkin__status[data-status='undefined']::before {
+  content: '?' / '';
+}
+.dk-gherkin__status[data-status='pending']::before {
+  content: '‖' / '';
+}
+
+.dk-gherkin__status[data-status='skipped'] {
+  border-inline-start-color: var(--dk-color-info);
+}
+.dk-gherkin__status[data-status='skipped']::before {
+  content: '↷' / '';
+}
+
+/* Visually hidden, still read: the "Result: " lead of a scenario's badge. */
+.dk-gherkin__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
  * ===== Glossary term links (`.dk-glossary-link`) =========================
  * glossary-term-ux mission (#64, FR-001/FR-002/FR-003, C-002). Styles the
  * shared link node BOTH `glossary-autolink`(`.internal`) and the `:term`

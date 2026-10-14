@@ -34,7 +34,8 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { docKittyDocsLoader } from '../lib/schema.js';
 import { MAX_INCLUDE_BYTES } from '../lib/gherkin/include-path.mjs';
-import { gherkinIncludeSources } from '../lib/gherkin/include-scan.mjs';
+import { DK_GHERKIN_RESULTS_ENV, GENERATED_MARKER, gherkinIncludeSources } from '../lib/gherkin/include-scan.mjs';
+import { GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
 
 type StoredEntry = { id: string; data: Record<string, unknown>; digest?: string; filePath?: string };
 
@@ -458,5 +459,96 @@ describe('the dev watcher re-syncs dependent pages', () => {
     const emit = vi.spyOn(watcher, 'emit');
     watcher.emit('change', abs('features/a.feature'));
     expect(emit.mock.calls.filter(([, p]) => p === abs('docs/guide.md'))).toHaveLength(1);
+  });
+});
+
+// ===========================================================================
+// Results (ADR-0052 decision 10)
+// ===========================================================================
+
+describe('a results report is folded into the pages that may show results', () => {
+  const GENERATED = ['---', 'title: G', 'doc_status: published', 'generated:', '  by: "doc-kitty/gherkin"', '---', '', '# G', ''].join('\n');
+  beforeEach(() => {
+    write('docs/generated.md', GENERATED);
+    write('reports/cucumber.ndjson', '{"meta":{}}\n');
+  });
+  afterEach(() => {
+    delete process.env[DK_GHERKIN_RESULTS_ENV];
+  });
+
+  it('GENERATED_MARKER is the generated-page stamp', () => {
+    expect(GENERATED_MARKER).toBe(GENERATED_BY);
+  });
+
+  it('without a report no digest changes (no cache is invalidated)', async () => {
+    await load();
+    const before = { guide: digestOf('guide'), generated: digestOf('generated'), plain: digestOf('plain') };
+    store.clear();
+    process.env[DK_GHERKIN_RESULTS_ENV] = 'reports/cucumber.ndjson';
+    write('reports/cucumber.ndjson', '{"meta":{"x":1}}\n');
+    delete process.env[DK_GHERKIN_RESULTS_ENV];
+    await load();
+    expect({ guide: digestOf('guide'), generated: digestOf('generated'), plain: digestOf('plain') }).toEqual(before);
+  });
+
+  it('a new report changes the digest of include and generated pages, and only theirs', async () => {
+    process.env[DK_GHERKIN_RESULTS_ENV] = 'reports/cucumber.ndjson';
+    await load();
+    const before = { guide: digestOf('guide'), generated: digestOf('generated'), plain: digestOf('plain') };
+    write('reports/cucumber.ndjson', '{"meta":{"x":2}}\n');
+    await load();
+    expect(digestOf('guide')).not.toBe(before.guide);
+    expect(digestOf('generated')).not.toBe(before.generated);
+    expect(digestOf('plain')).toBe(before.plain);
+  });
+
+  it('a page without a report fold keeps exactly glob()\'s digest', async () => {
+    process.env[DK_GHERKIN_RESULTS_ENV] = 'reports/cucumber.ndjson';
+    await load();
+    expect(digestOf('plain')).toBe(plainDigest(PLAIN));
+  });
+
+  it('a report that appears or goes away re-renders those pages, deterministically', async () => {
+    process.env[DK_GHERKIN_RESULTS_ENV] = 'reports/cucumber.ndjson';
+    unlinkSync(abs('reports/cucumber.ndjson'));
+    await load();
+    const missing = digestOf('generated');
+    store.clear();
+    await load();
+    expect(digestOf('generated')).toBe(missing);
+    write('reports/cucumber.ndjson', '{"meta":{}}\n');
+    await load();
+    expect(digestOf('generated')).not.toBe(missing);
+  });
+
+  it('the dev watcher re-syncs every page that may show results when the report changes', async () => {
+    process.env[DK_GHERKIN_RESULTS_ENV] = 'reports/cucumber.ndjson';
+    const watcher = new FakeWatcher();
+    await load(undefined, watcher);
+    const emit = vi.spyOn(watcher, 'emit');
+    watcher.emit('change', abs('reports/cucumber.ndjson'));
+    const pages = emit.mock.calls.filter(([, p]) => p !== abs('reports/cucumber.ndjson'));
+    // `fenced.md` names `::gherkin` only in a code fence: the marker test is a
+    // cheap superset, so it is re-synced too (and renders the same).
+    expect(pages).toEqual([
+      ['change', abs('docs/fenced.md')],
+      ['change', abs('docs/generated.md')],
+      ['change', abs('docs/guide.md')],
+    ]);
+    // The report lives inside the project root: Vite already watches it.
+    expect(watcher.added).not.toContain(abs('reports/cucumber.ndjson'));
+  });
+
+  it('a report outside the project root is added to the watcher', async () => {
+    const outside = mkdtempSync(path.join(tmpdir(), 'dk-loader-report-'));
+    try {
+      writeFileSync(path.join(outside, 'r.ndjson'), '{}\n');
+      process.env[DK_GHERKIN_RESULTS_ENV] = path.relative(root, path.join(outside, 'r.ndjson')).split(path.sep).join('/');
+      const watcher = new FakeWatcher();
+      await load(undefined, watcher);
+      expect(watcher.added).toContain(path.join(outside, 'r.ndjson'));
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
   });
 });

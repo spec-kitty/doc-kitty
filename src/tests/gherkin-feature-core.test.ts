@@ -460,9 +460,11 @@ describe('the pure gherkin modules import only their allow-list (import-scan)', 
 
   it.each([
     ['feature-core.mjs', ['../vocabulary-core.mjs', './text.mjs']],
-    ['render.mjs', ['./text.mjs', './view.mjs']],
+    ['render.mjs', ['./results.mjs', './text.mjs', './view.mjs']],
     ['view.mjs', ['../vocabulary-core.mjs', './text.mjs']],
-    ['mdast.mjs', ['./view.mjs']],
+    ['mdast.mjs', ['./results.mjs', './view.mjs']],
+    ['results.mjs', ['node:path', 'node:url', './text.mjs']],
+    ['results-overlay.mjs', ['./mdast.mjs', './text.mjs', './view.mjs']],
     ['options.mjs', ['../vocabulary-core.mjs', './text.mjs']],
     ['parse.mjs', ['@cucumber/gherkin', '@cucumber/messages', './text.mjs']],
     ['fragment.mjs', ['@cucumber/gherkin', './parse.mjs', './text.mjs']],

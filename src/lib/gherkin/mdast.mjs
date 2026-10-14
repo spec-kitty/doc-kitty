@@ -41,6 +41,12 @@
  *    the step's list item.
  *  - Examples: a paragraph `strong("<Keyword>:") <name>`, then tags,
  *    description and a `table`.
+ *  - Results (ADR-0052, only with `results`): a `p.dk-gherkin__result` right
+ *    after each scenario heading (a `span.dk-gherkin__status[data-status]`
+ *    badge holding the status word, and an outline's rows by status), a
+ *    `Result` column on each Examples table, and a `p.dk-gherkin__results`
+ *    summary after the feature summary line (`full` header only). Never inside
+ *    a heading: its TOC entry and slug stay as they are.
  *  - Source line (includes only, last): `Source: <path>` or, with a selection,
  *    `From <Feature title>, <path>`; `<path>` is `inlineCode`, linked when an
  *    `href` is given.
@@ -55,13 +61,15 @@
  * module free of unified. Typography (`remark-smartypants`) is the stage's job,
  * over the whole returned subtree.
  *
- * PURITY CONTRACT: the only runtime import is `./view.mjs` (pure; it brings the
- * import-free `./text.mjs`), so this module loads in bare Node. Nodes are plain
+ * PURITY CONTRACT: the only runtime imports are `./view.mjs` and `./results.mjs`
+ * (pure; they bring the import-free `./text.mjs`, `node:path` and `node:url`),
+ * so this module loads in bare Node. Nodes are plain
  * objects typed structurally below (`@types/mdast` is not a toolkit dependency).
  *
  * @module gherkin/mdast
  */
 
+import { RESULT_COLUMN, countsText, outcomeLabel, provenance } from './results.mjs';
 import { cellSegments, childLevel, displayTags, resolveLevels, summaryText, titleOf } from './view.mjs';
 
 /** @typedef {import('./view.mjs').FeatureView} FeatureView */
@@ -70,6 +78,9 @@ import { cellSegments, childLevel, displayTags, resolveLevels, summaryText, titl
 /** @typedef {import('./view.mjs').StepView} StepView */
 /** @typedef {import('./view.mjs').ExamplesView} ExamplesView */
 /** @typedef {import('./view.mjs').HeaderMode} HeaderMode */
+/** @typedef {import('./results.mjs').Outcome} Outcome */
+/** @typedef {import('./results.mjs').FeatureResults} FeatureResults */
+/** @typedef {import('./results.mjs').StaleResults} StaleResults */
 
 /**
  * Minimal structural mdast node: enough to build the subtree and for the stage
@@ -79,6 +90,8 @@ import { cellSegments, childLevel, displayTags, resolveLevels, summaryText, titl
  * @property {string} type
  * @property {MdNode[]} [children]
  * @property {string} [value]
+ * @property {number} [depth] A heading's level.
+ * @property {Array<string | null>} [align] A table's column alignment.
  * @property {Record<string, unknown>} [data]
  */
 
@@ -105,6 +118,10 @@ import { cellSegments, childLevel, displayTags, resolveLevels, summaryText, titl
  * @property {boolean} [inContainer] The block sits inside a list item,
  *   blockquote, aside or other non-root parent: headings become
  *   `p[role=heading]`.
+ * @property {FeatureResults | StaleResults} [results] The feature's results
+ *   (ADR-0052): a result line after each scenario heading, a `Result` column on
+ *   each Examples table and, with the `full` header, a results summary. A
+ *   `stale` value shows only a "results not shown" note in that summary.
  */
 
 /** The class names of 03 §4 (styled in `src/styles/dk-components.css`). */
@@ -114,7 +131,14 @@ export const GHERKIN_CLASSES = Object.freeze({
   keyword: 'dk-gherkin__kw',
   tags: 'dk-gherkin__tags',
   source: 'dk-gherkin__source',
+  result: 'dk-gherkin__result',
+  results: 'dk-gherkin__results',
+  status: 'dk-gherkin__status',
+  hidden: 'dk-gherkin__sr',
 });
+
+/** The visually hidden lead of a scenario's result line, for a screen reader. */
+const RESULT_LEAD = 'Result: ';
 
 /** The marker on emitted doc-string `code` nodes (03 §3: never revisited). */
 export const DOCSTRING_MARK = 'docstring';
@@ -308,18 +332,129 @@ function stepsList(steps) {
 /**
  * @param {ExamplesView} examples
  * @param {MdastOptions['parseMarkdown']} parseMarkdown
+ * @param {MdastOptions['results']} [results]
  * @returns {MdNode[]}
  */
-function examplesNodes(examples, parseMarkdown) {
+function examplesNodes(examples, parseMarkdown, results) {
   /** @type {MdNode[]} */
   const label = [{ type: 'strong', children: [text(`${examples.keyword}:`)] }];
   if (examples.name) label.push(text(` ${examples.name}`));
+  /** @type {MdNode[]} */
+  const tables = [];
+  if (examples.rows.length > 0) {
+    const node = table(examples.rows);
+    tables.push(results?.state === 'current' ? addResultColumn(node, rowOutcomes(examples, results)) : node);
+  }
   return [
     { type: 'paragraph', children: label },
     ...tagsParagraph(examples.tags),
     ...descriptionNodes(examples.description, parseMarkdown),
-    ...(examples.rows.length > 0 ? [table(examples.rows)] : []),
+    ...tables,
   ];
+}
+
+/**
+ * A status badge (ADR-0052 decision 7): `span.dk-gherkin__status[data-status]`
+ * holding the status WORD, so the status never rests on colour alone. With
+ * `lead`, a visually hidden `Result: ` comes first, for a screen reader that
+ * meets the badge out of a table.
+ *
+ * @param {Outcome} outcome
+ * @param {{ lead?: boolean }} [opts]
+ * @returns {MdNode}
+ */
+export function statusNode(outcome, { lead = false } = {}) {
+  /** @type {MdNode[]} */
+  const children = [];
+  if (lead) {
+    children.push({
+      type: 'dkGherkinHidden',
+      data: { hName: 'span', hProperties: { className: [GHERKIN_CLASSES.hidden] } },
+      children: [text(RESULT_LEAD)],
+    });
+  }
+  children.push(text(outcomeLabel(outcome)));
+  return {
+    type: 'dkGherkinStatus',
+    data: { hName: 'span', hProperties: { className: [GHERKIN_CLASSES.status], dataStatus: outcome.status } },
+    children,
+  };
+}
+
+/**
+ * A scenario's result line: the badge, then (an outline) its rows by status.
+ *
+ * @param {Outcome} outcome
+ * @returns {MdNode}
+ */
+export function resultParagraph(outcome) {
+  /** @type {MdNode[]} */
+  const children = [statusNode(outcome, { lead: true })];
+  const counts = outcome.counts ? countsText(outcome.counts) : '';
+  if (counts) children.push(text(` (${counts})`));
+  return { type: 'paragraph', data: classed(GHERKIN_CLASSES.result), children };
+}
+
+/**
+ * The feature's results summary: `Results: 1 failed, 3 passed · as of <date> ·
+ * commit <id>`, or the "not shown" note for a stale report.
+ *
+ * @param {FeatureResults | StaleResults} results
+ * @returns {MdNode}
+ */
+export function resultsSummaryParagraph(results) {
+  if (results.state === 'stale') {
+    return {
+      type: 'paragraph',
+      data: classed(GHERKIN_CLASSES.results),
+      children: [
+        { type: 'strong', children: [text('Results not shown:')] },
+        text(' the test report was made from a different version of this file.'),
+      ],
+    };
+  }
+  /** @type {MdNode[]} */
+  const children = [{ type: 'strong', children: [text('Results:')] }, text(` ${countsText(results.counts) || 'none'}`)];
+  const { date, day, revision } = provenance(results.run);
+  if (date && day) {
+    children.push(text(' · as of '), {
+      type: 'dkGherkinTime',
+      data: { hName: 'time', hProperties: { dateTime: date } },
+      children: [text(day)],
+    });
+  }
+  if (revision) children.push(text(' · commit '), inlineCode(revision));
+  return { type: 'paragraph', data: classed(GHERKIN_CLASSES.results), children };
+}
+
+/**
+ * Add the `Result` column to an Examples `table` node, in place: a header cell,
+ * then one badge per body row (`outcomes[i]` for body row `i`).
+ *
+ * @param {MdNode} tableNode A table built by {@link table} (or parsed from a
+ *   generated page): its first row is the header.
+ * @param {readonly Outcome[]} outcomes
+ * @returns {MdNode}
+ */
+export function addResultColumn(tableNode, outcomes) {
+  const rows = tableNode.children ?? [];
+  rows.forEach((row, i) => {
+    const cell = i === 0 ? [text(RESULT_COLUMN)] : [statusNode(outcomes[i - 1] ?? { status: 'not-run' })];
+    (row.children ??= []).push({ type: 'tableCell', children: cell });
+  });
+  if (Array.isArray(tableNode.align)) tableNode.align = [...tableNode.align, null];
+  return tableNode;
+}
+
+/**
+ * The outcomes of one Examples block's body rows, in order.
+ *
+ * @param {ExamplesView} examples
+ * @param {FeatureResults} results
+ * @returns {Outcome[]}
+ */
+export function rowOutcomes(examples, results) {
+  return examples.rowLines.map((line) => results.rows.get(line) ?? { status: 'not-run' });
 }
 
 /**
@@ -331,12 +466,15 @@ function examplesNodes(examples, parseMarkdown) {
  * @returns {MdNode[]}
  */
 function sectionNodes(section, level, opts) {
+  const { results } = opts;
+  const outcome = results?.state === 'current' && section.kind === 'scenario' ? results.scenarios.get(section.line) : undefined;
   return [
     ...(section.synthetic ? [] : [heading(level, titleOf(section), Boolean(opts.inContainer))]),
+    ...(outcome ? [resultParagraph(outcome)] : []),
     ...tagsParagraph(section.tags),
     ...descriptionNodes(section.description, opts.parseMarkdown),
     ...stepsList(section.steps),
-    ...section.examples.flatMap((ex) => examplesNodes(ex, opts.parseMarkdown)),
+    ...section.examples.flatMap((ex) => examplesNodes(ex, opts.parseMarkdown, results)),
   ];
 }
 
@@ -379,7 +517,7 @@ function sourceParagraph(source, view) {
  * @returns {MdNode} The container; its `children` are the rendered feature.
  */
 export function featureMdast(view, opts = {}) {
-  const { baseLevel = 2, header = 'full', source, parseMarkdown, inContainer = false } = opts;
+  const { baseLevel = 2, header = 'full', source, parseMarkdown, inContainer = false, results } = opts;
   const levels = resolveLevels(view, { baseLevel, header });
 
   /** @type {MdNode[]} */
@@ -391,6 +529,7 @@ export function featureMdast(view, opts = {}) {
     children.push(...descriptionNodes(view.description, parseMarkdown));
     const summary = summaryText(view.counts);
     if (summary) children.push({ type: 'paragraph', children: [{ type: 'emphasis', children: [text(summary)] }] });
+    if (results) children.push(resultsSummaryParagraph(results));
   }
   for (const child of view.children) {
     if (child.kind === 'rule') children.push(...ruleNodes(child, levels.section, opts));

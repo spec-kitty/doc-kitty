@@ -12,7 +12,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { runtimeGraph } from './helpers/module-graph.js';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
@@ -374,6 +374,64 @@ describe('scenarioIndexRoute — source resolution and parse-once', () => {
     await expect(getJson()).rejects.toThrow(
       /no rendered heading for "Scenario: Approve a request within the allowance" \(features\/hr\/request-leave.feature:3\)/,
     );
+  });
+});
+
+describe('scenarioIndexRoute — results (ADR-0052)', () => {
+  const FIX = fileURLToPath(new URL('./fixtures/gherkin/results/', import.meta.url));
+  const CHECKOUT_HEADINGS: Heading[] = [
+    { depth: 1, slug: 'checkout', text: 'Checkout' },
+    { depth: 2, slug: 'background', text: 'Background' },
+    { depth: 2, slug: 'paying-by-card', text: 'Scenario: Paying by card' },
+    { depth: 2, slug: 'discount', text: 'Scenario Outline: Applying a discount code' },
+    { depth: 2, slug: 'rule', text: 'Rule: Gift cards cover part of the total' },
+    { depth: 3, slug: 'gift-card', text: 'Example: Paying with a gift card' },
+  ];
+  beforeEach(() => {
+    vi.spyOn(process, 'cwd').mockReturnValue(root);
+    mkdirSync(path.join(root, 'reports'), { recursive: true });
+    writeFileSync(path.join(root, 'reports', 'cucumber.ndjson'), readFileSync(path.join(FIX, 'messages.ndjson')));
+  });
+  const checkout = (text = readFileSync(path.join(FIX, 'features/checkout.feature'), 'utf8')) => {
+    const at = writeFeature('features/checkout.feature', text);
+    entries.push(featurePage('behaviour/checkout', 'features/checkout.feature', at, CHECKOUT_HEADINGS));
+  };
+
+  it('each scenario carries its result, each Examples table its rows, and the index names the run', async () => {
+    checkout();
+    const body = await getJson({ results: 'reports/cucumber.ndjson' });
+    expect(body.results).toEqual({
+      report: 'reports/cucumber.ndjson',
+      format: 'messages',
+      as_of: '2026-10-14T13:30:03.455Z',
+      revision: '3f1c2a9b7e4d5c6f8a0b1c2d3e4f5a6b7c8d9e0f',
+    });
+    const [feature] = body.features;
+    expect(feature.results).toBe('current');
+    expect(feature.scenarios.map((sc: { name: string; result: unknown }) => [sc.name, sc.result])).toEqual([
+      ['Paying by card', { status: 'passed' }],
+      ['Applying a discount code', { status: 'failed', counts: { passed: 1, failed: 1 } }],
+      ['Paying with a gift card', { status: 'passed', retried: true }],
+    ]);
+    expect(feature.scenarios[1].examples[0].results).toEqual(['passed', 'failed']);
+  });
+
+  it('a stale report gives no results, and says so', async () => {
+    checkout(readFileSync(path.join(FIX, 'features/checkout.feature'), 'utf8').replace('@billing\n', '@billing\n# moved\n'));
+    // The page's headings are unchanged by the comment.
+    const body = await getJson({ results: 'reports/cucumber.ndjson' });
+    expect(body.features[0].results).toBe('stale');
+    expect(body.features[0].scenarios.every((sc: { result?: unknown }) => sc.result === undefined)).toBe(true);
+  });
+
+  it('without the option, or with a missing report, the shape is unchanged', async () => {
+    checkout();
+    const plain = await getJson();
+    expect(plain).not.toHaveProperty('results');
+    expect(plain.features[0]).not.toHaveProperty('results');
+    expect(plain.features[0].scenarios[0]).not.toHaveProperty('result');
+    const missing = await getJson({ results: 'reports/none.ndjson' });
+    expect(missing).toEqual(plain);
   });
 });
 

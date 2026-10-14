@@ -127,6 +127,10 @@ example/.dk-test-gherkin-fence/
 # src/tests/docs-loader-includes-build.test.ts builds and serves it, then removes it.
 example/.dk-test-loader-includes/
 
+# Scenario-results fixture site (ADR-0052, transient) —
+# src/tests/gherkin-results-build.test.ts builds it, then removes it.
+example/.dk-test-gherkin-results/
+
 # @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.
 .beoe-cache/

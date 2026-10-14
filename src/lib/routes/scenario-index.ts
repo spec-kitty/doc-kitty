@@ -52,6 +52,11 @@ import { sectionOf, slugFromEntryId } from '../metadata.js';
 import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import { feedsSurface, resolveSectionRegistry, sectionFeeds } from '../sections.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures, type FeatureFile } from '../gherkin/load.mjs';
+import { headingKey } from '../gherkin/text.mjs';
+import { normalizeResultsOption } from '../gherkin/options.mjs';
+import { featureResults, type Outcome } from '../gherkin/results.mjs';
+import { loadReport } from '../gherkin/results-load.mjs';
+import { featureView } from '../gherkin/view.mjs';
 import { GENERATED_BY } from '../gherkin/feature-core.mjs';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { absolute, docsRoot } from './shared.js';
@@ -71,6 +76,23 @@ export interface ScenarioIndexRouteOptions {
   sourceUrlPrefix?: string;
   /** Bump when the emitted shape changes so consumers can branch on it. */
   version?: string;
+  /**
+   * The `gherkin.results` integration option, if set (ADR-0052): each scenario
+   * then carries its `result`, each Examples table its row `results`, and the
+   * index a top-level `results` block naming the run. Same shape and meaning:
+   * a report path, or `{ report, root }`.
+   */
+  results?: string | { report: string; root?: string };
+}
+
+/** A scenario's (or outline's) result (ADR-0052). */
+export interface ScenarioResult {
+  /** `passed`, `failed`, `ambiguous`, `undefined`, `pending`, `skipped` or `not-run`. */
+  status: string;
+  /** True when it passed after an earlier attempt that did not (Messages reports only). */
+  retried?: boolean;
+  /** An outline's rows by status. */
+  counts?: Record<string, number>;
 }
 
 /** One step, keyword trimmed, text as written (outline placeholders kept). */
@@ -85,6 +107,8 @@ export interface ScenarioExamples {
   tags: string[];
   header: string[];
   rows: string[][];
+  /** With a results report: each row's status, in row order (ADR-0052). */
+  results?: string[];
 }
 
 export interface ScenarioRecord {
@@ -101,6 +125,8 @@ export interface ScenarioRecord {
   outline: boolean;
   steps: ScenarioStep[];
   examples: ScenarioExamples[];
+  /** With a results report that covers the file (ADR-0052). */
+  result?: ScenarioResult;
 }
 
 export interface FeatureRecord {
@@ -113,6 +139,12 @@ export interface FeatureRecord {
   tags: string[];
   related: string[];
   scenarios: ScenarioRecord[];
+  /**
+   * With a results report that names the file: `current` (scenarios carry
+   * results) or `stale` (the report is for another version of the file, so
+   * none are given).
+   */
+  results?: 'current' | 'stale';
 }
 
 /** The `{ depth, slug, text }` shape of Astro's `render(entry).headings`. */
@@ -151,41 +183,6 @@ export function resolveSourcePath(
 /** Tag names without `@`, de-duplicated, code-unit sorted. */
 function tagNames(tags: readonly Tag[] | undefined): string[] {
   return [...new Set((tags ?? []).map((t) => t.name.replace(/^@/, '')))].sort(compareCodeUnit);
-}
-
-/**
- * Comparison key for a heading's text. Both sides — the `.feature` scenario
- * title and Astro's `render(entry).headings[].text` — go through this SAME fold,
- * which undoes every rewrite the build applies to a heading's text so the two
- * compare equal:
- *
- *  - `rehypeHeadingIds` (`@astrojs/markdown-remark`, `rehype-collect-headings.js`)
- *    does `text += value.replace(/\{/g, "${")` for every non-MDX heading, so
- *    `GET /orders/{id}` arrives as `GET /orders/${id}`. A run of `$` before a
- *    `{` is dropped on BOTH sides (a literal `${x}` in a name arrives as
- *    `$${x}`; both fold to `{x}`).
- *  - `remark-smartypants`: ``` ``x'' ``` and `"x"` → `“x”`, `'x'` → `‘x’`,
- *    `...` and `. . .` → `…`, `--`/`---` → dashes. Quotes fold to straight
- *    `"`/`'` (backtick quotes included), ellipses to `...`, any dash run to `-`.
- *  - entity decoding (`&amp;` → `&`) needs no fold: the text is already decoded.
- *
- * The fold is lossy (two names that differ only in quote style fold together),
- * which is safe because matching is also positional: each scenario takes the
- * NEXT matching heading at its depth, in document order.
- */
-function headingKey(text: string): string {
-  return text
-    .normalize('NFC')
-    .replace(/\$+\{/g, '{')
-    .replace(/[‘’‚‛′`]/g, "'")
-    .replace(/''/g, '"')
-    .replace(/[“”„‟″]/g, '"')
-    .replace(/…/g, '...')
-    .replace(/\. ?\. ?\./g, '...')
-    .replace(/[‐‑‒–—―]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 /** The renderer's heading title: `<Keyword>: <name>`, or the bare keyword. */
@@ -311,6 +308,46 @@ interface ContentEntry {
   data: unknown;
 }
 
+/** An outcome as the index serves it. */
+function resultRecord(outcome: Outcome): ScenarioResult {
+  return {
+    status: outcome.status,
+    ...(outcome.retried ? { retried: true } : {}),
+    ...(outcome.counts ? { counts: { ...outcome.counts } as Record<string, number> } : {}),
+  };
+}
+
+/**
+ * Add a feature's results to its record (ADR-0052), from the same report and
+ * by the same rules as the pages: matched by file and line, never from a
+ * report made for another version of the file.
+ */
+function attachResults(
+  record: FeatureRecord,
+  file: FeatureFile,
+  report: Extract<ReturnType<typeof loadReport>, { ok: true }>,
+): void {
+  const found = report.index.lookup(path.relative(process.cwd(), file.absPath).split(path.sep).join('/'));
+  if (!found || !('file' in found)) return;
+  const view = featureView(file.document);
+  if (!view) return;
+  const results = featureResults(found.file, { text: file.bytes, view, run: report.report.run });
+  record.results = results.state;
+  if (results.state !== 'current') return;
+  const scenarios = [...(file.document.feature?.children ?? [])].flatMap((child) =>
+    child.scenario ? [child.scenario] : (child.rule?.children ?? []).flatMap((rc) => (rc.scenario ? [rc.scenario] : [])),
+  );
+  record.scenarios.forEach((scenarioRecord, i) => {
+    const scenario = scenarios[i];
+    const outcome = scenario ? results.scenarios.get(scenario.location.line) : undefined;
+    if (outcome) scenarioRecord.result = resultRecord(outcome);
+    scenarioRecord.examples.forEach((ex, j) => {
+      const rows = scenario?.examples[j]?.tableBody ?? [];
+      ex.results = rows.map((row) => (results.rows.get(row.location.line) ?? { status: 'not-run' }).status);
+    });
+  });
+}
+
 export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): APIRoute {
   return async ({ site }) => {
     // The same section `feeds` filter `/api/index.json` applies (absent registry
@@ -350,6 +387,10 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
       sourceRoot,
     );
 
+    // ADR-0052: the report, read once per request (memoised by file version).
+    const resultsOption = options.results ? normalizeResultsOption(options.results, 'scenarioIndexRoute results') : undefined;
+    const report = resultsOption ? loadReport(resultsOption, { projectRoot: process.cwd() }) : undefined;
+
     const features: FeatureRecord[] = [];
     for (const p of located) {
       const file = parsedFeatures.get(p.absPath);
@@ -379,12 +420,23 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
         related: (p.data.related ?? []).map((r) => (typeof r === 'string' ? r : r.ref)),
         scenarios: scenarioRecords(file.document, headings, { page: p.slug, source: p.source }),
       });
+      if (report?.ok) attachResults(features[features.length - 1], file, report);
     }
 
     const body = {
       version: options.version ?? '1',
       generated_from: GENERATED_BY,
       count: features.length,
+      ...(report?.ok && resultsOption
+        ? {
+            results: {
+              report: resultsOption.report,
+              format: report.report.format,
+              ...(report.report.run.date ? { as_of: report.report.run.date } : {}),
+              ...(report.report.run.revision ? { revision: report.report.run.revision } : {}),
+            },
+          }
+        : {}),
       features,
     };
     return new Response(JSON.stringify(body, null, 2), {

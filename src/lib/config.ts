@@ -86,6 +86,8 @@ import { generateFeaturePages } from './gherkin/generate.mjs';
 import { normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
 import { drainFatal, formatFatal, resetFatal } from './gherkin/errors.mjs';
 import gherkinFence, { type GherkinFenceOptions } from './remark/gherkin-fence.js';
+import { loadReport } from './gherkin/results-load.mjs';
+import { DK_GHERKIN_RESULTS_ENV } from './gherkin/include-scan.mjs';
 
 /**
  * Internal cross-boundary signal (integration → standalone routes), NOT a public
@@ -271,6 +273,23 @@ export interface DocKittyOptions {
          * directory holding a feature warns. Only valid together with `sources`.
          */
         titles?: Record<string, string>;
+        /**
+         * The Cucumber report whose results are shown next to every scenario the
+         * site renders from a `.feature` file (ADR-0052): on generated feature
+         * pages and in `::gherkin` includes, never on a ```` ```gherkin ```` fence.
+         * Cucumber Messages (`--format message`, NDJSON) or Cucumber JSON
+         * (`--format json`), read at build time; nothing is fetched or run.
+         *
+         * A path relative to the project root, or `{ report, root }` where `root`
+         * is the directory Cucumber ran in (default the project root): the
+         * report's relative `uri`s resolve against it, so a site that checks
+         * another repository out into `vendor/x` sets `root: 'vendor/x'`.
+         *
+         * A missing report is a build warning (a local build has no CI report);
+         * one that cannot be read is build-fatal. Only statuses, counts, the run
+         * date and the commit id reach a page.
+         */
+        results?: string | { report: string; root?: string };
       };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
@@ -1411,6 +1430,38 @@ export function hasOwnScenarioIndexPage(srcDir: URL | string | undefined, root: 
 }
 
 /**
+ * Read the configured Cucumber report once at config time (ADR-0052 decision 9),
+ * so a broken pipeline fails before any page renders:
+ *  - missing: a warning, and the site builds without results (a local build has
+ *    no CI report);
+ *  - not a file, too large, or not a Cucumber report: THROWN, so the build fails
+ *    with the report's path (and line, for an NDJSON envelope);
+ *  - every step skipped: a warning, since that is what `--dry-run` writes.
+ * The report is also a watch file: replacing it restarts a dev server, whose
+ * content layer then re-renders the pages that show results (`schema.ts`).
+ */
+function checkResultsReport(
+  results: NonNullable<ResolvedGherkinOptions['results']>,
+  { addWatchFile, logger }: { addWatchFile?: (path: string) => void; logger: { warn: (m: string) => void } },
+): void {
+  const root = process.cwd();
+  addWatchFile?.(path.resolve(root, results.report));
+  const loaded = loadReport(results, { projectRoot: root });
+  if (!loaded.ok) {
+    logger.warn(
+      `${GHERKIN_LOG_PREFIX} gherkin.results report not found: ${results.report}; scenarios render without results`,
+    );
+    return;
+  }
+  if (loaded.report.allSkipped) {
+    logger.warn(
+      `${GHERKIN_LOG_PREFIX} every step in ${results.report} is skipped; it looks like a --dry-run, ` +
+        `so every scenario shows Skipped`,
+    );
+  }
+}
+
+/**
  * The in-page Gherkin stage (ADR-0051 decisions 2, 3, 5), registered ONLY when the
  * `gherkin` option is set and `fences !== false`. A SEPARATE integration from the
  * `doc-kitty:gherkin` codegen hook: that one reads the filesystem in
@@ -1458,14 +1509,18 @@ function gherkinFenceIntegration(opts: ResolvedGherkinOptions): AstroIntegration
     includeRoots: opts.includeRoots,
     sourceRoot: opts.sourceRoot,
     ...(opts.sourceUrlPrefix !== undefined ? { sourceUrlPrefix: opts.sourceUrlPrefix } : {}),
+    // `fences: false` with `results`: the stage runs for generated pages only.
+    ...(opts.fences ? {} : { fences: false }),
+    ...(opts.results ? { results: opts.results } : {}),
   };
   let cacheDir: URL | undefined;
   return {
     name: 'doc-kitty:gherkin-fence',
     hooks: {
-      'astro:config:setup': ({ updateConfig, config }) => {
+      'astro:config:setup': ({ updateConfig, config, addWatchFile, logger }) => {
         resetFatal();
         cacheDir = config?.cacheDir;
+        if (opts.results) checkResultsReport(opts.results, { addWatchFile, logger });
         updateConfig({ markdown: { remarkPlugins: [[gherkinFence, fenceOptions]] } });
       },
       'astro:build:done': () => {
@@ -1917,6 +1972,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // hangs off `sources`, i.e. `pages`: `gherkin: true` or an object without
   // `sources` adds none of it (ADR-0051).
   const gherkinPages = gherkinOpts?.pages;
+  // The report the docs loader folds into the digest of every page that shows
+  // results (ADR-0052 decision 10), published like DK_INDEX_BASENAME; cleared
+  // when absent, so a later config without results does not inherit it.
+  if (gherkinOpts?.results) process.env[DK_GHERKIN_RESULTS_ENV] = gherkinOpts.results.report;
+  else delete process.env[DK_GHERKIN_RESULTS_ENV];
 
   // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
   // sitemap draft filter resolves internally (`path.resolve(process.cwd(),
@@ -2094,13 +2154,15 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     ...(gherkinPages ? [gherkinIntegration(gherkinPages, docsDir, indexBasename)] : []),
     // Opt-in in-page Gherkin stage (ADR-0051): PREPENDED immediately before
     // Starlight, AFTER the glossary and the codegen hook, whenever the option is
-    // set and `fences` is not `false`. Here the position IS a correctness
-    // constraint, because this integration registers a remark plugin and
-    // `updateConfig` APPENDS: after the glossary means step text is not
-    // auto-linked (Q1); before Starlight means Expressive Code and the directive
-    // restoration run after it. Omitted when absent or `fences: false`, so such a
-    // site's plugin lists are byte-identical.
-    ...(gherkinOpts?.fences ? [gherkinFenceIntegration(gherkinOpts)] : []),
+    // set and `fences` is not `false`, or `results` is set (ADR-0052: it adds
+    // results to generated pages, and with `fences: false` does only that).
+    // Here the position IS a correctness constraint, because this integration
+    // registers a remark plugin and `updateConfig` APPENDS: after the glossary
+    // means step text is not auto-linked (Q1); before Starlight means Expressive
+    // Code and the directive restoration run after it. Omitted when absent, or
+    // with `fences: false` and no `results`, so such a site's plugin lists are
+    // byte-identical.
+    ...(gherkinOpts?.fences || gherkinOpts?.results ? [gherkinFenceIntegration(gherkinOpts)] : []),
     starlight(starlightConfig),
     // Always-on route-shaping seam (FR-011, FR-019..FR-023): serves the data the
     // toolkit's route middleware (registered in `starlightConfig` above) reads,

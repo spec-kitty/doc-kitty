@@ -41,7 +41,15 @@ import {
 import { compareCodeUnit, DOC_TYPES, KINDS, normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { publishDraftsInForce } from './draft-publication.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
-import { gherkinIncludeSources, includeFile, includeHash, INCLUDE_MARKER } from './gherkin/include-scan.mjs';
+import {
+  DK_GHERKIN_RESULTS_ENV,
+  gherkinIncludeSources,
+  includeFile,
+  includeHash,
+  INCLUDE_MARKER,
+  mayShowResults,
+  reportHash,
+} from './gherkin/include-scan.mjs';
 import { isInside } from './gherkin/include-path.mjs';
 
 export { readmeToIndexId };
@@ -352,6 +360,15 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
 //     page is stored under its plain digest. An entry type with no render
 //     function (MDX, rendered by Vite) is never marked.
 //
+//  4. Results (ADR-0052 decision 10). With `gherkin.results` set, the
+//     integration names the report in `DK_GHERKIN_RESULTS`. A page that may
+//     show results (an include, or a generated feature page: `mayShowResults`)
+//     also folds the report's hash into its digest, so a new report re-renders
+//     exactly those pages, and the report is watched like an include: a
+//     `change`, `add` or `unlink` re-emits a `change` for each of them. Pages
+//     that cannot show results keep `glob()`'s digest, and with no report set
+//     every digest is the one before (no existing cache is invalidated).
+//
 // ASTRO 5 INTERNALS — re-check all of this under #119 (Astro 7 loader API). The
 // fix rests on these facts of `astro@5.18.2` `dist/content/loaders/glob.js`:
 //  - `syncData` is private to the loader closure (glob.js:47). The only way to
@@ -421,6 +438,10 @@ function createGherkinTracker() {
     null;
   /** Ids of the entries whose render threw and that `glob()` has not stored yet. */
   const failedRenders = new Set<string>();
+  /** Absolute paths of the pages that may show results (point 4 above). */
+  const resultPages = new Set<string>();
+  /** The configured report, absolute, as last read from `DK_GHERKIN_RESULTS`. */
+  let reportFile: string | null = null;
 
   /** Replace the edges of `page` with `files`. */
   const record = (page: string, files: string[]): void => {
@@ -480,12 +501,29 @@ function createGherkinTracker() {
     const onUnlink = (deleted: string): void => {
       const abs = path.resolve(deleted);
       if (includesOf.has(abs)) record(abs, []);
+      resultPages.delete(abs);
       onInclude(abs);
     };
-    watcher.on('change', onInclude);
-    watcher.on('add', onInclude);
-    watcher.on('unlink', onUnlink);
-    listening = { watcher, onInclude, onUnlink };
+    // The report changed, appeared or went away: re-sync every page that may
+    // show results. A report is never a page, so this cannot recurse.
+    const onReport = (changed: string): void => {
+      if (reportFile === null || path.resolve(changed) !== reportFile) return;
+      for (const page of [...resultPages].sort(compareCodeUnit)) {
+        if (existsSync(page)) watcher.emit('change', page);
+      }
+    };
+    const onAny = (changed: string): void => {
+      onInclude(changed);
+      onReport(changed);
+    };
+    const onAnyUnlink = (deleted: string): void => {
+      onUnlink(deleted);
+      onReport(deleted);
+    };
+    watcher.on('change', onAny);
+    watcher.on('add', onAny);
+    watcher.on('unlink', onAnyUnlink);
+    listening = { watcher, onInclude: onAny, onUnlink: onAnyUnlink };
   };
 
   const wrap = (context: GlobLoaderContext): GlobLoaderContext => {
@@ -535,7 +573,10 @@ function createGherkinTracker() {
           }
         }
         const files = sources.flatMap((src) => includeFile(src, cwd) ?? []);
-        record(fileURLToPath(params.fileUrl), files);
+        const pagePath = fileURLToPath(params.fileUrl);
+        record(pagePath, files);
+        if (mayShowResults(params.contents)) resultPages.add(pagePath);
+        else resultPages.delete(pagePath);
         if (watcher) {
           for (const file of files) {
             if (watchedOutside.has(file) || isInside(file, projectRoot)) continue;
@@ -548,18 +589,32 @@ function createGherkinTracker() {
       return wrapped;
     };
 
+    // The report (point 4), read per sync: a config reload may set or clear it.
+    const report = process.env[DK_GHERKIN_RESULTS_ENV];
+    reportFile = report ? path.resolve(cwd, report) : null;
+
     const digest: LoaderContext['generateDigest'] = (data) => {
       const base = generateDigest(data);
-      if (typeof data !== 'string' || !data.includes(INCLUDE_MARKER)) return base;
-      // A miss means `glob()` no longer calls `getEntryInfo` first: fall back to
-      // parsing the raw contents, frontmatter and all.
-      const sources = sourcesByContents.get(data) ?? gherkinIncludeSources(data);
-      if (sources.length === 0) return base;
-      const folded = sources.map((src) => `${src}\0${includeHash(src, cwd)}`);
+      if (typeof data !== 'string') return base;
+      const folded: string[] = [];
+      if (data.includes(INCLUDE_MARKER)) {
+        // A miss means `glob()` no longer calls `getEntryInfo` first: fall back to
+        // parsing the raw contents, frontmatter and all.
+        const sources = sourcesByContents.get(data) ?? gherkinIncludeSources(data);
+        folded.push(...sources.map((src) => `${src}\0${includeHash(src, cwd)}`));
+      }
+      if (report && mayShowResults(data)) folded.push(`results\0${report}\0${reportHash(report, cwd)}`);
+      if (folded.length === 0) return base;
       return generateDigest([base, ...folded].join('\n'));
     };
 
-    if (watcher) listen(watcher);
+    if (watcher) {
+      listen(watcher);
+      if (reportFile && !watchedOutside.has(reportFile) && !isInside(reportFile, projectRoot)) {
+        watchedOutside.add(reportFile);
+        watcher.add(reportFile);
+      }
+    }
     // Without `entryTypes` (another Astro) there is no reverse map, so no dev
     // re-sync; the digest still folds the includes, from the raw contents.
     const { entryTypes } = context;
