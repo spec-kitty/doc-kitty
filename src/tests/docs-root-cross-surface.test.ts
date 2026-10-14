@@ -163,8 +163,9 @@ describe('integration -> loader: index names are set once (FR-007)', () => {
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toMatch(/\["index"\].*\["README","index"\]/);
     expect((error as Error).message).toMatch(/Move the value to defineDocKittyIntegrations/);
-    // Positive control: the same value in both places loads the same tree.
+    // Positive control: the same set in both places loads the same tree, in any order or case.
     expect(await loadedIds({ indexBasename: ['README', 'index'] })).toEqual(['x', 'y']);
+    expect(await loadedIds({ indexBasename: ['INDEX', 'readme'] })).toEqual(['x', 'y']);
   });
 
   it('refuses a tree where two files share a route, naming both; one file less loads (FR-004)', async () => {

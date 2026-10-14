@@ -303,8 +303,10 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
   if (option === undefined) return published ?? normalizeIndexBasenames(undefined);
   const given = normalizeIndexBasenames(option);
   if (published === undefined) return given;
-  const lower = (names: string[]) => names.map((n) => n.toLowerCase());
-  if (JSON.stringify(lower(given)) !== JSON.stringify(lower(published))) {
+  // The same set of names, ignoring order and case, as the CLIs compare them; the
+  // integration's order wins (the first name decides generated page names).
+  const key = (names: string[]) => JSON.stringify([...new Set(names.map((n) => n.toLowerCase()))].sort());
+  if (key(given) !== key(published)) {
     throw new Error(
       `[dk-loader] indexBasename ${JSON.stringify(given)} passed to docKittyDocsLoader does not match ` +
         `indexBasename ${JSON.stringify(published)} set in defineDocKittyIntegrations. Move the value to ` +
