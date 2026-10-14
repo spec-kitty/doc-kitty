@@ -740,11 +740,12 @@ describe('integration wiring (T022, C-004)', () => {
     });
   });
 
-  it('rejects a blank or non-string sidebar.indexLabel and an unknown sidebar key (#161)', () => {
+  it('rejects a non-array/object sidebar, a blank or non-string sidebar.indexLabel and an unknown sidebar key (#161)', () => {
     const define = (sidebar: unknown) => () => defineDocKittyIntegrations({ title: 'Docs', sidebar: sidebar as never });
     expect(define({ indexLabel: '  ' })).toThrow('[dk-config] sidebar.indexLabel must be a non-empty string');
     expect(define({ indexLabel: 3 })).toThrow('[dk-config] sidebar.indexLabel must be a non-empty string');
     expect(define({ indexLabl: 'x' })).toThrow('indexLabl');
+    expect(define('Overview')).toThrow('[dk-config] sidebar must be a Starlight sidebar array or an object');
   });
 
   it('records a site-wide pagination switch-off', () => {
