@@ -385,7 +385,7 @@ describe('include errors: every 03 §5 row is fatal with its message', () => {
   });
 
   it('no includeRoots configured', () => {
-    const want = [`${at} ::gherkin src="features/shipping.feature" — includes need gherkin.includeRoots`];
+    const want = [`${at} ::gherkin src="features/shipping.feature" — includes need gherkin.includeRoots (or gherkin.sources) — \`gherkin: true\` turns on fences only`];
     expect(errorsOf(page('::gherkin{src="features/shipping.feature"}'), { root: ROOT })).toEqual(want);
     expect(errorsOf(page('::gherkin{src="features/shipping.feature"}'), { root: ROOT, includeRoots: [] })).toEqual(want);
   });
@@ -720,7 +720,7 @@ describe('through defineDocKittyIntegrations', () => {
   });
 
   it('`gherkin: true` has no include roots: the directive is fatal', () => {
-    expect(() => runSite(md, { gherkin: true })).toThrow(`${at} ::gherkin src="${rel}/features/shipping.feature" — includes need gherkin.includeRoots`);
+    expect(() => runSite(md, { gherkin: true })).toThrow(`${at} ::gherkin src="${rel}/features/shipping.feature" — includes need gherkin.includeRoots (or gherkin.sources) — \`gherkin: true\` turns on fences only`);
   });
 
   it('a bare `:gherkin` in prose (lang:gherkin) is not an include: restored as literal text, no error', () => {

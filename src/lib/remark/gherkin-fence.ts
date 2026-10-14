@@ -506,7 +506,11 @@ export default function gherkinFence(
     if (tags !== undefined && isTagExpression(tags)) {
       return fail(`${ref} — tags is a space-separated any-of list; tag expressions are not supported`);
     }
-    if (includeRoots.length === 0) return fail(`${ref} — includes need gherkin.includeRoots`);
+    if (includeRoots.length === 0) {
+      return fail(
+        `${ref} — includes need gherkin.includeRoots (or gherkin.sources) — \`gherkin: true\` turns on fences only`,
+      );
+    }
 
     const resolved = resolveInclude(src, { root, includeRoots });
     if (!resolved.ok) return fail(resolveFailureMessage(resolved, ref, includeRoots));

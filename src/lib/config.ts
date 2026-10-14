@@ -176,10 +176,10 @@ export interface DocKittyOptions {
    * and the registry sidebar's `generatedIds` stay the default seed.
    *
    * Two forms:
-   *  - `true`: in-page Gherkin only (ADR-0051): a ```` ```gherkin ```` fence on a
-   *    docs page renders as a structured scenario, and `::gherkin{src=…}`
-   *    includes a `.feature` file (which needs `includeRoots`, so with `true`
-   *    every include is refused). No generated pages, no `behaviour` section.
+   *  - `true`: Gherkin fences only (ADR-0051): a ```` ```gherkin ```` fence on a
+   *    docs page renders as a structured scenario. There are no include roots,
+   *    so a `::gherkin{src=…}` include is refused (set `includeRoots` or
+   *    `sources` to allow includes). No generated pages, no `behaviour` section.
    *  - an object: the same, tuned by the keys below. Setting `sources` ALSO turns
    *    on generated feature pages (ADR-0046): `sources` is walked for `*.feature`
    *    in `astro:config:setup` and one `kind: Specification` page per feature
