@@ -4,7 +4,13 @@
  * Fast enough for a CI gate.
  *
  * Usage:
- *   node src/scripts/validate-frontmatter.mjs [<root> ...]   # default: docs
+ *   node src/scripts/validate-frontmatter.mjs [<root> ...] [--index-basename <a,b>] [--astro-config <path>]
+ *   # default root: docs
+ *
+ * The index names are read from the site's `astro.config.*` next to each root; with
+ * none, they are README and a warning says so. `--astro-config <path>` names a
+ * config that lives elsewhere (it applies to every root; a missing or unloadable
+ * file exits 2).
  *
  * Accepts one OR MORE roots and validates every `.md`/`.mdx` under each, so the
  * same gate covers both `docs/` (the toolkit's own docs) and `example/docs/`
@@ -37,7 +43,7 @@ import { readdirSync, statSync, readFileSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
-import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { z } from 'zod';
 // The Gherkin pipeline's `generated.by` stamp, single-sourced in its pure core.
@@ -555,12 +561,18 @@ function parseCliArgs(argv) {
     indexBasename = value ? value.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
     roots = [...args.slice(0, flagIdx), ...args.slice(flagIdx + 2)];
   }
-  return { roots, indexBasename };
+  let astroConfig;
+  const configIdx = roots.indexOf('--astro-config');
+  if (configIdx !== -1) {
+    astroConfig = roots[configIdx + 1];
+    roots = [...roots.slice(0, configIdx), ...roots.slice(configIdx + 2)];
+  }
+  return { roots, indexBasename, astroConfig };
 }
 
 /** CLI entry point: validate every `.md`/`.mdx` under each given root. */
 export function run(argv) {
-  const { roots: parsedRoots, indexBasename: flagIndexBasename } = parseCliArgs(argv);
+  const { roots: parsedRoots, indexBasename: flagIndexBasename, astroConfig } = parseCliArgs(argv);
   const roots = parsedRoots.length === 0 ? ['docs'] : parsedRoots;
 
   let failures = 0;
@@ -581,10 +593,13 @@ export function run(argv) {
     // with it (FR-008). A site with no config gets the flag, else `README`.
     let indexBasename;
     try {
-      indexBasename = resolveSiteIndexBasenames(root, {
+      const resolved = resolveSiteIndexBasenames(root, {
         flag: flagIndexBasename,
+        configPath: astroConfig,
         tool: 'dk-validate-frontmatter',
-      }).names;
+      });
+      announceIndexNames(resolved);
+      indexBasename = resolved.names;
     } catch (err) {
       console.error(`✖ ${err.message}`);
       process.exit(2);

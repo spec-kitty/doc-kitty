@@ -5,7 +5,7 @@
  *
  * Usage:
  *   node src/scripts/check-links.mjs [<root> ...] [--strict] [--index-basename <name[,name…]>]
- *                                    [--site-root <dir>] [--mode <mode>]
+ *                                    [--astro-config <path>] [--site-root <dir>] [--mode <mode>]
  *   # default roots: docs example/docs
  *
  * Resolves two classes of internal reference and FAILS on any that dangle
@@ -67,8 +67,10 @@
  * The section-index names come from the site's `astro.config.*`
  * (`defineDocKittyIntegrations({ indexBasename })`), read for each strict root; a
  * root with no site config uses `README`. `--index-basename` is only for a site
- * without a config, and must agree with the config when there is one. Footnote definitions (`[^label]: text`) are
- * not links.
+ * without a config, and must agree with the config when there is one. With no
+ * config found, `README` is assumed and a warning says so; `--astro-config <path>`
+ * names a config elsewhere (it applies to every strict root). Footnote
+ * definitions (`[^label]: text`) are not links.
  */
 import { readdirSync, statSync, existsSync, readFileSync, realpathSync } from 'node:fs';
 import { join, relative, dirname, resolve, extname, sep } from 'node:path';
@@ -82,7 +84,7 @@ import {
 } from '../lib/draft-publication.mjs';
 import { buildRouteTable, formatRouteCollisions, isPlainIndexName, resolveIndexEntries, resolveRelativeDocLink } from '../lib/vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
-import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 // Roots subject to the fail-closed tightening below: built by Astro/Starlight
 // under a base-prefixed, trailing-slash directory-route tree (`example/`'s
@@ -268,6 +270,11 @@ Options:
                                 this flag only for a site without one (default README). With a
                                 config, the flag must name the same set of names or the check
                                 stops with exit 2.
+  --astro-config <path>         Site config file to read the index names from, when it is not the
+                                astro.config.* next to the docs folder. With several roots it
+                                applies to every strict root. A path that does not exist or
+                                cannot load stops the check with exit 2. Without a config (and
+                                without this option) the names are README, with a warning.
   --site-root <dir>             Astro project whose env files set DK_PUBLISH_DRAFTS.
   --mode <mode>                 Astro mode for those env files (default production).
   --help                        Show this text.
@@ -277,10 +284,10 @@ Options:
  * Take this gate's own flags out of `args`; the rest are roots.
  *
  * @param {string[]} args
- * @returns {{ strict: boolean, indexBasenames: string[] | undefined, help: boolean, rest: string[] }}
+ * @returns {{ strict: boolean, indexBasenames: string[] | undefined, astroConfig: string | undefined, help: boolean, rest: string[] }}
  */
 export function takeCheckFlags(args) {
-  const out = { strict: false, indexBasenames: undefined, help: false, rest: /** @type {string[]} */ ([]) };
+  const out = { strict: false, indexBasenames: undefined, astroConfig: undefined, help: false, rest: /** @type {string[]} */ ([]) };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--strict') out.strict = true;
@@ -297,6 +304,11 @@ export function takeCheckFlags(args) {
         );
       }
       out.indexBasenames = names;
+      i += 1;
+    } else if (arg === '--astro-config') {
+      const value = args[i + 1];
+      if (value === undefined || value.startsWith('--')) throw new Error('--astro-config needs a value: --astro-config <path>');
+      out.astroConfig = value;
       i += 1;
     } else if (arg.startsWith('--')) {
       throw new Error(`unknown option "${arg}" (see --help; options that take a value are written "--name value")`);
@@ -374,13 +386,13 @@ export function run(argv) {
   // run with exit 2. A non-strict root is read as files and needs no names.
   /** @type {Map<string, string[]>} */
   const namesByRoot = new Map();
-  const sourceLines = [];
+  const resolutions = [];
   try {
     for (const root of roots) {
       if (!(flags.strict || isSiteRoot(root))) continue;
-      const { names, source } = resolveSiteIndexBasenames(root, { flag: flags.indexBasenames });
-      namesByRoot.set(root, names);
-      sourceLines.push(source);
+      const resolved = resolveSiteIndexBasenames(root, { flag: flags.indexBasenames, configPath: flags.astroConfig });
+      namesByRoot.set(root, resolved.names);
+      resolutions.push(resolved);
     }
   } catch (err) {
     console.error(err.message);
@@ -400,7 +412,7 @@ export function run(argv) {
     });
     publishDrafts = resolved.publish;
     console.log(`check-links: ${resolved.summary}`);
-    for (const line of sourceLines) console.log(line);
+    for (const resolved of resolutions) announceIndexNames(resolved);
   } catch (err) {
     console.error(`✖ ${err.message}`);
     process.exit(2);

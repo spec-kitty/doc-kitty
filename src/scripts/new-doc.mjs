@@ -5,7 +5,7 @@
  * Usage:
  *   node scripts/new-doc.mjs <slug> [--title "Title"] [--type Guide]
  *                                    [--base docs] [--section]
- *                                    [--index-basename index]
+ *                                    [--index-basename index] [--astro-config <path>]
  *
  *   <slug>       path under the docs root, e.g. "guides/deployment"
  *   --section    create the directory's section-index file (default
@@ -14,6 +14,9 @@
  *   --index-basename  which of the site's index names to create with --section.
  *                The names come from the site's astro.config.* (the first is
  *                the default); a site with no config uses this flag, else README.
+ *   --astro-config  site config file, when it is not astro.config.* next to the
+ *                docs folder. Missing or unloadable: exit 2. With no config at all
+ *                the index name is README, with a warning.
  *
  * Examples:
  *   node scripts/new-doc.mjs guides/deployment --title "Deployment"
@@ -28,7 +31,7 @@ import { dirname, join, sep } from 'node:path';
 // `Presentation`, which this tool's old local switch omitted — an additive
 // alignment with the canonical map (NFR-002: no existing value's meaning changes).
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
-import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 function parseArgs(argv) {
   const args = { _: [], flags: {} };
@@ -79,7 +82,10 @@ const title =
 const indexFlag = typeof flags['index-basename'] === 'string' ? flags['index-basename'] : undefined;
 const indexBasename = (() => {
   try {
-    const { names, fromConfig } = resolveSiteIndexBasenames(base, { tool: 'new-doc' });
+    const configPath = typeof flags['astro-config'] === 'string' ? flags['astro-config'] : undefined;
+    const resolved = resolveSiteIndexBasenames(base, { tool: 'new-doc', configPath });
+    announceIndexNames(resolved);
+    const { names, fromConfig } = resolved;
     if (indexFlag === undefined) return names[0];
     if (!fromConfig) return indexFlag;
     const match = names.find((n) => n.toLowerCase() === indexFlag.toLowerCase());

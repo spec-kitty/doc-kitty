@@ -6,7 +6,7 @@
  * Usage:
  *   node src/scripts/generate-feature-pages.mjs \
  *     --root example --sources features --docs docs --section behaviour \
- *     [--index-basename README,index] [--source-root <dir>] \
+ *     [--index-basename README,index] [--astro-config <path>] [--source-root <dir>] \
  *     [--source-url-prefix <url>] [--check] [--allow-empty]
  *
  *   --root               Site directory every other path is relative to (default: cwd).
@@ -17,6 +17,9 @@
  *                        Read from `<root>/astro.config.*`; the flag is only for a
  *                        site without one (default: `README`) and must agree with a
  *                        config when there is one.
+ *   --astro-config       Site config file to read the index names from, when it is not
+ *                        `<root>/astro.config.*`. Missing or unloadable: exit 2. With no
+ *                        config at all the names are README, with a warning.
  *   --source-root        Directory `sources[0].resource` paths are relative to
  *                        (default: `--root`, matching the integration's site root).
  *   --source-url-prefix  Optional browse-URL prefix for `sources[0].resource`.
@@ -50,7 +53,7 @@ import { readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadFeatures } from '../lib/gherkin/load.mjs';
-import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import {
   diffFeaturePages,
   generateFeaturePages,
@@ -112,7 +115,7 @@ function list(value) {
  *
  * @param {string[]} argv `process.argv`-shaped (the first two entries are skipped).
  * @returns {{ root: string, sources: string[], docsRoot: string, section: string,
- *   outDir: string, indexBasename: string[], sourceRoot: string,
+ *   outDir: string, indexBasename: string[], indexNames: ReturnType<typeof resolveSiteIndexBasenames>, sourceRoot: string,
  *   sourceUrlPrefix: string | undefined, check: boolean, allowEmpty: boolean }}
  */
 export function parseArgs(argv) {
@@ -126,6 +129,7 @@ export function parseArgs(argv) {
     sourceUrlPrefix: undefined,
     check: false,
     allowEmpty: false,
+    astroConfig: undefined,
   };
   /** @type {Record<string, keyof typeof raw>} */
   const valued = {
@@ -134,6 +138,7 @@ export function parseArgs(argv) {
     '--docs': 'docs',
     '--section': 'section',
     '--index-basename': 'indexBasename',
+    '--astro-config': 'astroConfig',
     '--source-root': 'sourceRoot',
     '--source-url-prefix': 'sourceUrlPrefix',
   };
@@ -176,18 +181,27 @@ export function parseArgs(argv) {
   // The site config (`<root>/astro.config.*`) is the source of the index names
   // (FR-007); the flag must agree with it (FR-008), and is the value for a site
   // with no config. The hub is `<first>.md`, so the config's order matters.
-  const { names: indexBasename } = resolveSiteIndexBasenames(docsRoot, {
-    flag: flagIndexBasename,
-    siteDir: root,
-    tool: 'generate-feature-pages',
-  });
+  let indexNames;
+  try {
+    indexNames = resolveSiteIndexBasenames(docsRoot, {
+      flag: flagIndexBasename,
+      configPath: raw.astroConfig,
+      siteDir: root,
+      tool: 'generate-feature-pages',
+    });
+  } catch (err) {
+    // A site config that is missing, will not load, or disagrees with the flag
+    // is a setup problem, not a drift or usage error: exit 2 like the other gates.
+    throw Object.assign(/** @type {Error} */ (err), { exitCode: 2 });
+  }
   return {
     root,
     sources,
     docsRoot,
     section,
     outDir: path.join(docsRoot, section),
-    indexBasename,
+    indexBasename: indexNames.names,
+    indexNames,
     sourceRoot: raw.sourceRoot === undefined ? root : path.resolve(root, raw.sourceRoot),
     sourceUrlPrefix: raw.sourceUrlPrefix,
     check: raw.check,
@@ -212,8 +226,9 @@ export function main(argv) {
     opts = parseArgs(argv);
   } catch (err) {
     console.error(`✖ generate-feature-pages: ${/** @type {Error} */ (err).message}`);
-    return 1;
+    return /** @type {{ exitCode?: number }} */ (err).exitCode ?? 1;
   }
+  announceIndexNames(opts.indexNames);
   const warn = (/** @type {string} */ msg) => console.warn(`⚠ ${msg}`);
   const genOpts = {
     sources: opts.sources,

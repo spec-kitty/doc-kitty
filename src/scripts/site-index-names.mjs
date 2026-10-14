@@ -77,17 +77,29 @@ function namesFromConfig(configPath, siteDir, tool, timeoutMs) {
  * @param {object} [options]
  * @param {string[]} [options.flag] Names given with `--index-basename`.
  * @param {string} [options.siteDir] Site folder, when it is not the parent of `root`.
+ * @param {string} [options.configPath] The site config file itself (`--astro-config`),
+ *   when it is not next to the docs folder. It must exist and load.
  * @param {number} [options.timeoutMs] Evaluation time limit (default 30 s).
  * @param {string} [options.tool] Name used in messages (default `dk-check-links`).
- * @returns {{ names: string[], source: string, fromConfig: boolean }} `source` is
- *   the one-line account of where the names came from, for the CLI to print;
- *   `fromConfig` is whether the site config set them.
+ * @returns {{ names: string[], source: string, fromConfig: boolean, warning?: string }}
+ *   `source` is the one-line account of where the names came from, for the CLI to
+ *   print (see {@link announceIndexNames}); `fromConfig` is whether the site config
+ *   set them; `warning` is set when no site config was found and `README` is assumed.
  * @throws {Error} A config that cannot be loaded, or a flag that disagrees with it.
  */
 export function resolveSiteIndexBasenames(root, options = {}) {
   const { flag, tool = 'dk-check-links', timeoutMs = EVALUATE_TIMEOUT_MS } = options;
-  const siteDir = resolve(options.siteDir ?? dirname(resolve(root)));
-  const configPath = CONFIG_NAMES.map((name) => join(siteDir, name)).find((p) => existsSync(p));
+  let siteDir = resolve(options.siteDir ?? dirname(resolve(root)));
+  let configPath;
+  if (options.configPath !== undefined) {
+    configPath = resolve(options.configPath);
+    if (!existsSync(configPath)) {
+      throw new Error(`[${tool}] --astro-config ${options.configPath}: no such file`);
+    }
+    siteDir = dirname(configPath);
+  } else {
+    configPath = CONFIG_NAMES.map((name) => join(siteDir, name)).find((p) => existsSync(p));
+  }
 
   const published = configPath ? namesFromConfig(configPath, siteDir, tool, timeoutMs) : null;
 
@@ -107,10 +119,34 @@ export function resolveSiteIndexBasenames(root, options = {}) {
     };
   }
   if (flag) return { names: flag, source: `index names: ${flag.join(',')} (from --index-basename)`, fromConfig: false };
-  const why = configPath
-    ? `${shown(configPath)} does not call defineDocKittyIntegrations`
-    : `no astro.config.* next to ${shown(resolve(root))}`;
-  return { names: ['README'], source: `index names: README (default; ${why})`, fromConfig: false };
+  if (!configPath) {
+    const shownRoot = shown(resolve(root));
+    return {
+      names: ['README'],
+      source: `index names: README (default; no astro.config.* next to ${shownRoot})`,
+      fromConfig: false,
+      warning:
+        `no astro.config.* found for ${shownRoot}; assuming index names README ` +
+        '\u2014 pass --astro-config <path> if your site config lives elsewhere',
+    };
+  }
+  return {
+    names: ['README'],
+    source: `index names: README (default; ${shown(configPath)} does not call defineDocKittyIntegrations)`,
+    fromConfig: false,
+  };
+}
+
+/**
+ * Print the one line every CLI owes its user: which index names it uses and
+ * where they came from, plus the warning when no site config was found.
+ *
+ * @param {{ source: string, warning?: string }} resolved Result of {@link resolveSiteIndexBasenames}.
+ * @param {{ log?: (line: string) => void, warn?: (line: string) => void }} [sinks]
+ */
+export function announceIndexNames(resolved, { log = console.log, warn = console.error } = {}) {
+  log(resolved.source);
+  if (resolved.warning) warn(`warning: ${resolved.warning}`);
 }
 
 /** Child-process side of {@link namesFromConfig}: print one JSON answer line. */

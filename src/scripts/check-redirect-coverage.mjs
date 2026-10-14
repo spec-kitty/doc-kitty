@@ -5,7 +5,7 @@
  * Usage:
  *   node src/scripts/check-redirect-coverage.mjs <baseline-file> <dist-dir>
  *     [--redirects <map-file>]
- *     [--docs <docs-dir> [--index-basename <a,b>] [--declared-redirects <map-file>]]
+ *     [--docs <docs-dir> [--index-basename <a,b>] [--astro-config <path>] [--declared-redirects <map-file>]]
  *
  * Adopter-loader-migration (#42), WP02 — FR-008/009/010/011, NFR-002/005.
  * Contract: kitty-specs/adopter-loader-migration-01M1KKYA/contracts/redirect-coverage-gate.md
@@ -72,7 +72,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import {
   draftRoutesOf,
   resolveDraftPublicationForGate,
@@ -334,6 +334,7 @@ function parseArgs(argv) {
     '--redirects': 'redirectsFile',
     '--docs': 'docsDir',
     '--index-basename': 'indexBasename',
+    '--astro-config': 'astroConfig',
     '--declared-redirects': 'declaredFile',
   };
   for (let i = 0; i < argv.length; i += 1) {
@@ -357,7 +358,7 @@ export function run(argv) {
     process.exit(2);
     return;
   }
-  const { baselineFile, distDir, redirectsFile, docsDir, indexBasename, declaredFile } = parseArgs(
+  const { baselineFile, distDir, redirectsFile, docsDir, indexBasename, astroConfig, declaredFile } = parseArgs(
     site.rest,
   );
   if (!baselineFile || !distDir) {
@@ -420,11 +421,13 @@ export function run(argv) {
   let draftRoutes = new Set();
   if (docsDir) {
     try {
-      const { names } = resolveSiteIndexBasenames(docsDir, {
+      const resolved = resolveSiteIndexBasenames(docsDir, {
+        configPath: astroConfig,
         flag: indexBasename ? indexBasename.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
         tool: 'redirect-coverage',
       });
-      draftRoutes = draftRoutesOf(path.resolve(docsDir), names);
+      announceIndexNames(resolved);
+      draftRoutes = draftRoutesOf(path.resolve(docsDir), resolved.names);
     } catch (err) {
       console.error(err.message);
       process.exit(2);

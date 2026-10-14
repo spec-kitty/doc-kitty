@@ -10,6 +10,11 @@
  *   node scripts/scaffold.mjs [base]            # default base: docs
  *   node scripts/scaffold.mjs docs --sections context,architecture,guides
  *   node scripts/scaffold.mjs docs --index-basename index   # FR-001/FR-003
+ *   node scripts/scaffold.mjs docs --astro-config site/astro.config.mjs
+ *
+ * The index names are read from the site's astro.config.* next to the docs folder;
+ * with none, they are README and a warning says so. `--astro-config <path>` names a
+ * config that lives elsewhere (missing or unloadable: exit 2).
  */
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
@@ -19,7 +24,7 @@ import { dirname, join, sep } from 'node:path';
 // `presentations` → `Presentation`, which this tool's old switch omitted — an
 // additive alignment with the canonical map (NFR-002).
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
-import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 const argv = process.argv.slice(2);
 const base = argv.find((a) => !a.startsWith('--')) ?? 'docs';
@@ -35,7 +40,11 @@ const indexBasename = (() => {
   const i = argv.indexOf('--index-basename');
   const flag = i !== -1 && argv[i + 1] ? argv[i + 1] : undefined;
   try {
-    const { names, fromConfig } = resolveSiteIndexBasenames(base, { tool: 'scaffold' });
+    const ci = argv.indexOf('--astro-config');
+    const configPath = ci !== -1 && argv[ci + 1] ? argv[ci + 1] : undefined;
+    const resolved = resolveSiteIndexBasenames(base, { tool: 'scaffold', configPath });
+    announceIndexNames(resolved);
+    const { names, fromConfig } = resolved;
     if (flag === undefined) return names[0];
     if (!fromConfig) return flag;
     const match = names.find((n) => n.toLowerCase() === flag.toLowerCase());

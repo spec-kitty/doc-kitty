@@ -114,6 +114,7 @@ describe('generate-feature-pages CLI — write mode', () => {
     const res = run(site);
     expect(res.status).toBe(0);
     expect(res.stdout).toMatch(/2 feature file\(s\) → 4 written, 0 unchanged, 0 removed/);
+    expect(res.stdout).toMatch(/^index names: README,index \(from --index-basename\)$/m);
     expect(Object.keys(snapshot(path.join(site, 'docs', 'behaviour')))).toEqual([
       'README.md',
       'shipping/README.md',
@@ -288,6 +289,7 @@ describe('generate-feature-pages CLI — --help', () => {
     expect(res.status, res.stderr).toBe(0);
     expect(res.stdout).toMatch(/^Usage:\n\s+node src\/scripts\/generate-feature-pages\.mjs/);
     expect(res.stdout).toMatch(/--allow-empty\s+Remove the generated pages/);
+    expect(res.stdout).toMatch(/--astro-config\s+Site config file/);
     expect(res.stdout).not.toMatch(/^ \* /m); // no header-comment markers leaked into the usage
   });
 });

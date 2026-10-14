@@ -510,6 +510,25 @@ describe('check-links CLI — index names come from the site config', () => {
     expect(res.stderr).toMatch(/folder "y"/);
   });
 
+  it('warns when no config sits next to the docs folder, and --astro-config points at one elsewhere', () => {
+    // docs/ nested one level deeper than the site: the config is not in its parent.
+    const dir = site(null);
+    const configDir = path.join(dir, 'conf');
+    mkdirSync(configDir);
+    writeFileSync(path.join(configDir, 'astro.config.mjs'), integration(`['index']`));
+    const root = path.join(dir, 'docs');
+    const warned = check([root]);
+    expect(warned.stderr).toMatch(/warning: no astro\.config\.\* found for .*; assuming index names README .*--astro-config <path>/);
+    expect(warned.stdout).toMatch(/index names: README \(default/);
+    const given = check([root], ['--astro-config', path.join(configDir, 'astro.config.mjs')]);
+    expect(given.stdout).toMatch(/index names: index \(from .*conf.astro\.config\.mjs\)/);
+    expect(given.stderr).not.toMatch(/no astro\.config/);
+    // A given path that does not exist stops the run instead of falling back.
+    const missing = check([root], ['--astro-config', path.join(dir, 'nope.mjs')]);
+    expect(missing.status).toBe(2);
+    expect(missing.stderr).toMatch(/--astro-config .*nope\.mjs: no such file/);
+  });
+
   it('stops with exit 2 when the site config cannot be loaded, instead of falling back', () => {
     const dir = site(`throw new Error('boom from the site config');\n`);
     const res = check([path.join(dir, 'docs')]);
