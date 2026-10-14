@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "mission_slug": "gherkin-trim-and-followups-01M4XVCM",
+  "mission_id": "01M4XVCM3XBX6BXHXDZFBPX7ZV",
+  "mission_branch": "kitty/mission-gherkin-trim-and-followups-01M4XVCM",
+  "target_branch": "chore/gherkin-trim-and-followups",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/tests/fixtures/gherkin/results/**",
+        "src/tests/gherkin-results-build.test.ts",
+        "src/tests/gherkin-results-render.test.ts",
+        "src/tests/gherkin-results.test.ts",
+        "src/tests/scenario-index.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/tests/fixtures/gherkin/generate/**",
+        "src/tests/fixtures/gherkin/load/**",
+        "src/tests/fixtures/gherkin/render/**",
+        "src/tests/gherkin-check-cli.test.ts",
+        "src/tests/gherkin-codegen-guard.test.ts",
+        "src/tests/gherkin-example.test.ts",
+        "src/tests/gherkin-feature-core.test.ts",
+        "src/tests/gherkin-fence-build.test.ts",
+        "src/tests/gherkin-fence.test.ts",
+        "src/tests/gherkin-fixture-parity.test.ts",
+        "src/tests/gherkin-generate.test.ts",
+        "src/tests/gherkin-integration.test.ts",
+        "src/tests/gherkin-load.test.ts",
+        "src/tests/gherkin-mdast.test.ts",
+        "src/tests/gherkin-options.test.ts",
+        "src/tests/gherkin-parse.test.ts",
+        "src/tests/gherkin-render.test.ts",
+        "src/tests/gherkin-scenario-anchors.test.ts",
+        "src/tests/gherkin-select.test.ts",
+        "src/tests/gherkin-view.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/tests/agent-page-includes.test.ts",
+        "src/tests/docs-loader-includes-build.test.ts",
+        "src/tests/docs-loader-includes.test.ts",
+        "src/tests/fixtures/gherkin/include/**",
+        "src/tests/gherkin-include.test.ts",
+        "tests/a11y/gherkin.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/gherkin/results-overlay.mjs",
+        "src/scripts/assert-build-artifacts.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/gherkin-scenario-index-module.d.ts",
+        "src/lib/gherkin/include.mjs",
+        "src/lib/gherkin/mdast.mjs",
+        "src/lib/gherkin/options.mjs",
+        "src/lib/routes/scenario-index.ts",
+        "src/lib/vocabulary-core.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "src/lib/i18n-plugin.ts",
+        "src/lib/route-middleware.ts",
+        "src/lib/route-shaping-module.d.ts",
+        "src/lib/route-shaping.ts",
+        "src/tests/route-shaping.test.ts",
+        "src/tests/sidebar-build-html.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0056-gherkin-results-followups.md",
+        "docs/adr/README.md",
+        "docs/architecture/gherkin-pages.md",
+        "docs/changelog/2026-10-14-gherkin-trim-and-followups.md",
+        "docs/guides/authoring.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "kitty-specs/gherkin-trim-and-followups-01M4XVCM/research/baseline.md",
+        "kitty-specs/gherkin-trim-and-followups-01M4XVCM/research/count-lines.mjs",
+        "kitty-specs/gherkin-trim-and-followups-01M4XVCM/research/coverage-map.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-10-14T18:57:06.761054+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP01"
+  ],
+  "planning_commit_sha": "f0e56cbc4dfcdf452f3a83851a44713070e09032"
+}
