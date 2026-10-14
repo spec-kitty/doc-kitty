@@ -81,7 +81,7 @@
   --dk-shadow-focus: 0 0 0 3px var(--dk-color-accent-low);
 
   /* ---- Layout widths (once) -------------------------------------------- */
-  --dk-width-content: 45rem;
+  --dk-width-content: 60rem;
   --dk-width-sidebar: 18rem;
   --dk-width-band: 50rem;
   --dk-width-deck: 60rem;

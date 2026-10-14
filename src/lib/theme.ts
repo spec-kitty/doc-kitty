@@ -206,7 +206,7 @@ const DEFAULT_BASE: Record<string, string> = {
   '--dk-shadow-lg': '0 4px 8px rgba(16, 24, 40, 0.08), 0 12px 24px rgba(16, 24, 40, 0.12)',
   '--dk-shadow-focus': '0 0 0 3px var(--dk-color-accent-low)',
   // Layout widths
-  '--dk-width-content': '45rem',
+  '--dk-width-content': '60rem',
   '--dk-width-sidebar': '18rem',
   '--dk-width-band': '50rem',
   '--dk-width-deck': '60rem',

@@ -115,6 +115,15 @@ describe('frame-width token registration (FR-002, FR-003)', () => {
     expect(root!.decls['--dk-width-frame']).toBe('100%');
     expect(resolveTheme(undefined).tokens['--dk-width-frame']).toBe('100%');
   });
+
+  // reading-width mission (issue 154, ADR-0053): the reading column is declared
+  // in both places too, and must agree.
+  it('theme.css and the Default catalog agree on --dk-width-content: 60rem', () => {
+    const root = theme.rules.find((r) => r.selector === ':root' && '--dk-width-content' in r.decls);
+    expect(root, 'theme.css :root does not declare --dk-width-content').toBeDefined();
+    expect(root!.decls['--dk-width-content']).toBe('60rem');
+    expect(resolveTheme(undefined).tokens['--dk-width-content']).toBe('60rem');
+  });
 });
 
 describe('placement and direction', () => {
