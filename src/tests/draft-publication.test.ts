@@ -7,6 +7,13 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
+import {
+  INTERNAL_ENV_NAMES,
+  DK_INDEX_BASENAME_ENV,
+  DK_DOCS_ROOT_ENV,
+  DK_GHERKIN_ROUTE_ENV,
+  DK_PUBLISH_DRAFTS_RESOLVED_ENV,
+} from '../lib/internal-env.mjs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -1119,13 +1126,13 @@ describe('one draft predicate, and the site root is never a draft', () => {
 });
 
 describe('defineDocKittyIntegrations: internal env handoffs across two configs in one process', () => {
-  const NAMES = ['DK_PUBLISH_DRAFTS', 'DK_PUBLISH_DRAFTS_RESOLVED', 'DK_GHERKIN_ROUTE', 'DK_GHERKIN_RESULTS', 'DK_INDEX_BASENAME', 'DK_DOCS_ROOT'];
-  const saved = Object.fromEntries(NAMES.map((n) => [n, process.env[n]]));
+  // Internal names are restored by the shared helper; only the ADOPTER's own
+  // DK_PUBLISH_DRAFTS (not an internal handoff) is saved/restored by hand.
+  restoreInternalEnv();
+  const adopterDrafts = process.env.DK_PUBLISH_DRAFTS;
   afterEach(() => {
-    for (const n of NAMES) {
-      if (saved[n] === undefined) delete process.env[n];
-      else process.env[n] = saved[n];
-    }
+    if (adopterDrafts === undefined) delete process.env.DK_PUBLISH_DRAFTS;
+    else process.env.DK_PUBLISH_DRAFTS = adopterDrafts;
   });
 
   /** Define a config and return the named integration's `astro:config:setup` runner. */
@@ -1151,17 +1158,22 @@ describe('defineDocKittyIntegrations: internal env handoffs across two configs i
       const a = define({ gherkin: { results } } as Partial<DocKittyOptions>);
       a('doc-kitty:draft-publication', { config: { root } });
       a('doc-kitty:gherkin-fence', { config: { root, srcDir } });
-      expect(process.env.DK_PUBLISH_DRAFTS_RESOLVED).toBe('off');
-      expect(process.env.DK_GHERKIN_ROUTE).toBe('src/pages/api/scenarios.json.ts');
+      expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('off');
+      expect(process.env[DK_GHERKIN_ROUTE_ENV]).toBe('src/pages/api/scenarios.json.ts');
 
       // Config B, defined in the same process: nothing of A's survives its definition...
       delete process.env.DK_PUBLISH_DRAFTS;
       const b = define({});
-      expect(process.env.DK_PUBLISH_DRAFTS_RESOLVED).toBeUndefined();
-      expect(process.env.DK_GHERKIN_ROUTE).toBeUndefined();
+      // Config B republishes only what it owns at define time; every other owned
+      // name is cleared, so a future internal name is covered automatically.
+      const republished = [DK_INDEX_BASENAME_ENV, DK_DOCS_ROOT_ENV];
+      for (const name of INTERNAL_ENV_NAMES) {
+        if (republished.includes(name)) expect(process.env[name], name).toBeDefined();
+        else expect(process.env[name], name).toBeUndefined();
+      }
       // ...and B's own setup records B's value.
       b('doc-kitty:draft-publication', { config: { root } });
-      expect(process.env.DK_PUBLISH_DRAFTS_RESOLVED).toBe('on');
+      expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('on');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
