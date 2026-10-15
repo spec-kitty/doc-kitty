@@ -19,6 +19,7 @@
  * @module gherkin/options
  */
 
+import { DK_GHERKIN_ROUTE_ENV } from '../internal-env.mjs';
 import { isPlainIndexName } from '../vocabulary-core.mjs';
 import { GHERKIN_LOG_PREFIX, isRelativePosixPath } from './text.mjs';
 
@@ -74,7 +75,7 @@ export const GHERKIN_RESULTS_KEYS = Object.freeze(/** @type {const} */ (['report
  * `results` names it in its warning (FR-008). Cleared when nothing is mounted.
  * Internal: the integration owns this variable; adopters must not set it.
  */
-export const DK_GHERKIN_ROUTE_ENV = 'DK_GHERKIN_ROUTE';
+export { DK_GHERKIN_ROUTE_ENV };
 
 /**
  * The raw object form (structurally the object arm of `DocKittyOptions['gherkin']`).

@@ -48,6 +48,7 @@
  */
 
 import matter from 'gray-matter';
+import { DK_INDEX_BASENAME_ENV } from './internal-env.mjs';
 
 // ---------------------------------------------------------------------------
 // The one code-unit string comparator (#85/#88, C-004)
@@ -730,7 +731,7 @@ export function parseCharter(raw, source = 'charter.yaml') {
  * not import `config.ts`) and the CLIs that evaluate the site config read them
  * back. Adopters never set it. One spelling, in this neutral module, for all three.
  */
-export const DK_INDEX_BASENAME_ENV = 'DK_INDEX_BASENAME';
+export { DK_INDEX_BASENAME_ENV };
 
 /**
  * Read the names the integration published.

@@ -36,6 +36,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkDirective from 'remark-directive';
 import { compareCodeUnit } from '../vocabulary-core.mjs';
+import { DK_GHERKIN_RESULTS_ENV } from '../internal-env.mjs';
 import { MAX_INCLUDE_BYTES } from './include-path.mjs';
 import { MAX_REPORT_BYTES } from './results.mjs';
 import { FEATURE_FILE, isRelativePosixPath } from './text.mjs';
@@ -127,7 +128,7 @@ export function includeHash(src, cwd) {
  * option (ADR-0055 decision 10). Set by `defineDocKittyIntegrations`, like
  * `DK_INDEX_BASENAME`, and deleted when `results` is absent.
  */
-export const DK_GHERKIN_RESULTS_ENV = 'DK_GHERKIN_RESULTS';
+export { DK_GHERKIN_RESULTS_ENV };
 
 /**
  * Text every GENERATED feature page holds (its `generated.by` stamp, the

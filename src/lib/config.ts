@@ -46,11 +46,10 @@ import {
   REVEAL_CURRENT_SCRIPT,
   type DirectoryMetaInput,
 } from './route-shaping.js';
-import { DK_INDEX_BASENAME_ENV, buildRouteTable, compareCodeUnit, formatRouteCollisions, normalizeIndexBasenames, routeOfSlug } from './vocabulary-core.mjs';
+import { buildRouteTable, compareCodeUnit, formatRouteCollisions, normalizeIndexBasenames, routeOfSlug } from './vocabulary-core.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
-  DK_PUBLISH_DRAFTS_RESOLVED_ENV,
   PUBLISH_DRAFTS_DEFAULT,
   draftRoutesOf,
   publishDraftsInForce,
@@ -84,11 +83,20 @@ import {
 } from './glossary/definitions-payload.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures } from './gherkin/load.mjs';
 import { generateFeaturePages } from './gherkin/generate.mjs';
-import { DK_GHERKIN_ROUTE_ENV, normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
+import { normalizeGherkinOptions, validateIndexBasenames } from './gherkin/options.mjs';
 import { drainFatal, formatFatal, resetFatal } from './gherkin/errors.mjs';
 import gherkinFence, { type GherkinFenceOptions } from './remark/gherkin-fence.js';
 import { loadReport } from './gherkin/results-load.mjs';
-import { DK_GHERKIN_RESULTS_ENV } from './gherkin/include-scan.mjs';
+import {
+  DK_DOCS_ROOT_ENV,
+  DK_GHERKIN_RESULTS_ENV,
+  DK_GHERKIN_ROUTE_ENV,
+  DK_INDEX_BASENAME_ENV,
+  DK_PUBLISH_DRAFTS_RESOLVED_ENV,
+  clearInternalEnv,
+  deleteInternalEnv,
+  setInternalEnv,
+} from './internal-env.mjs';
 
 /**
  * Internal cross-boundary signal (integration → standalone routes), NOT a public
@@ -100,7 +108,7 @@ import { DK_GHERKIN_RESULTS_ENV } from './gherkin/include-scan.mjs';
  * different `sections.yaml` files). Deliberately un-exported from `index.ts`: it is
  * a runtime handoff between two config surfaces, never something a consumer sets.
  */
-export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
+export { DK_DOCS_ROOT_ENV };
 
 /**
  * Internal handoff of the site's index names (FR-007), written by
@@ -1592,8 +1600,8 @@ function gherkinFenceIntegration(opts: ResolvedGherkinOptions): AstroIntegration
         // names the file in its warning when it is given no `results`. The path is
         // relative to the Astro project root (`--root`), not to the process cwd.
         const ownRoute = opts.results ? findOwnScenarioIndexPage(config?.srcDir, config?.root ? fileURLToPath(config.root) : process.cwd()) : undefined;
-        if (ownRoute) process.env[DK_GHERKIN_ROUTE_ENV] = ownRoute;
-        else delete process.env[DK_GHERKIN_ROUTE_ENV];
+        if (ownRoute) setInternalEnv(DK_GHERKIN_ROUTE_ENV, ownRoute);
+        else deleteInternalEnv(DK_GHERKIN_ROUTE_ENV);
         updateConfig({ markdown: { remarkPlugins: [[gherkinFence, fenceOptions]] } });
       },
       'astro:build:done': () => {
@@ -1949,7 +1957,7 @@ export function draftPublicationIntegration(routeShaping: RouteShapingOptions): 
         const mode = command === 'dev' ? 'development' : 'production';
         const resolved = resolveDraftPublication(root, mode);
         publish = resolved.publish;
-        process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV] = publish ? 'on' : 'off';
+        setInternalEnv(DK_PUBLISH_DRAFTS_RESOLVED_ENV, publish ? 'on' : 'off');
         const drafts = publish ? new Set<string>() : siteDraftRoutes(docsDir, indexBasename);
         routeShaping.unpublishedDirs = [...drafts].map((route) => route.slice(1, -1));
         routeShaping.unpublishedPaths = unpublishedDraftPaths(
@@ -2017,6 +2025,9 @@ export function draftPublicationIntegration(routeShaping: RouteShapingOptions): 
 }
 
 export function defineDocKittyIntegrations(options: DocKittyOptions) {
+  // First, before anything can throw: a config starts from no internal handoffs,
+  // so nothing an earlier config in this process wrote leaks into this one.
+  clearInternalEnv();
   const {
     title,
     description,
@@ -2044,18 +2055,16 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // Publish the one list every consumer reads (config order = priority, so the
   // first name decides `generatedIndexBasename`). A later call overwrites an
   // earlier one, as for DK_DOCS_ROOT.
-  process.env[DK_INDEX_BASENAME_ENV] = JSON.stringify(normalizeIndexBasenames(indexBasename));
+  setInternalEnv(DK_INDEX_BASENAME_ENV, JSON.stringify(normalizeIndexBasenames(indexBasename)));
   // Everything generated-pages (codegen integration, `behaviour` sidebar section)
   // hangs off `sources`, i.e. `pages`: `gherkin: true` or an object without
   // `sources` adds none of it (ADR-0051).
   const gherkinPages = gherkinOpts?.pages;
   // The report the docs loader folds into the digest of every page that shows
-  // results (ADR-0055 decision 10), published like DK_INDEX_BASENAME; cleared
-  // when absent, so a later config without results does not inherit it.
-  if (gherkinOpts?.results) process.env[DK_GHERKIN_RESULTS_ENV] = gherkinOpts.results.report;
-  else delete process.env[DK_GHERKIN_RESULTS_ENV];
-  // Re-published by the fence stage's setup hook when an own route is mounted.
-  delete process.env[DK_GHERKIN_ROUTE_ENV];
+  // results (ADR-0055 decision 10), published like DK_INDEX_BASENAME; absent
+  // (cleared above) when no results are configured. DK_GHERKIN_ROUTE is
+  // re-published by the fence stage's setup hook when an own route is mounted.
+  if (gherkinOpts?.results) setInternalEnv(DK_GHERKIN_RESULTS_ENV, gherkinOpts.results.report);
 
   // Publish the ONE authoritative docs root (F3/F5). This is the exact value the
   // sitemap draft filter resolves internally (`path.resolve(process.cwd(),
@@ -2066,7 +2075,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // (a single-site build calls this once; a later call with a different docsDir
   // should win). Absent this call (standalone route render, route unit tests) the
   // env stays unset and `docsRoot()` keeps #22's content-layer fallback verbatim.
-  process.env[DK_DOCS_ROOT_ENV] = path.resolve(process.cwd(), docsDir);
+  setInternalEnv(DK_DOCS_ROOT_ENV, path.resolve(process.cwd(), docsDir));
 
   // Resolve the default → brand → consumer merge (WP01). `undefined` yields the
   // M1-degenerate path: `generated === false`, `customCss` the Default layer's
