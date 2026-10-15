@@ -114,3 +114,4 @@ than a new top-level option.
 
 - [ADR-0055](./0055-gherkin-scenario-results.md), the decision this amends.
 - [Using Gherkin results](../guides/consumer-setup.md#gherkin-test-results).
+- See [ADR-0057](./0057-internal-env-handoff-seam.md), which owns the internal environment names used here.

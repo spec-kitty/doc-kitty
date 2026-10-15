@@ -46,6 +46,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   per `astro build` and one per `astro dev` run, naming the route file and the
   value to pass.
 
+### Fixed
+
+- **A second DocKitty config in the same process (for example a test suite) no
+  longer inherits the first config's draft-publication setting (#167).** Before,
+  `defineDocKittyIntegrations` left the first config's internal environment
+  values in place, so the second config read the first one's setting. Now each
+  config starts with those values cleared. Production builds, which define one
+  config per process, were not affected.
+
 ## [0.3.0] — 2026-10-14
 
 This release lets you write Gherkin scenarios in any page, shows their test

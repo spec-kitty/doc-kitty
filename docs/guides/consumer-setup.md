@@ -497,7 +497,7 @@ config takes about one second per run. The same holds for
 all print the same `index names:` line and accept `--astro-config`.
 
 `DK_INDEX_BASENAME` is internal: `defineDocKittyIntegrations` sets it, and you must
-not set it by hand.
+not set it by hand. See [Internal environment names](#internal-environment-names).
 
 The other binaries are `dockitty-check-redirect-coverage`,
 `dockitty-validate-catalog`, `dockitty-new-doc`, `dockitty-scaffold`, and
@@ -930,6 +930,15 @@ gherkin: {
   that show results, in a build and in the dev server.
 - **Keep the report out of `public/`.** It holds failure messages and paths; only
   status words reach your pages.
+
+## Internal environment names
+
+DocKitty passes five settings between its own parts through environment
+variables: `DK_INDEX_BASENAME`, `DK_GHERKIN_RESULTS`, `DK_GHERKIN_ROUTE`,
+`DK_PUBLISH_DRAFTS_RESOLVED` and `DK_DOCS_ROOT`. DocKitty sets these for its own
+use; never set them by hand. DocKitty clears any value you set when the config loads.
+Set the matching option on `defineDocKittyIntegrations` instead.
+([ADR-0057](../adr/0057-internal-env-handoff-seam.md) explains the design.)
 
 ## Upgrading from 0.2.0
 

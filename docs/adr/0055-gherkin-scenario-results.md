@@ -222,3 +222,4 @@ and a reader who needs them needs the CI run, which the commit identifies.
   [ADR-0014](./0014-upgrade-starlight-for-route-data-api.md).
 - [cucumber/messages](https://github.com/cucumber/messages),
   [cucumber/query](https://github.com/cucumber/query).
+- See [ADR-0057](./0057-internal-env-handoff-seam.md), which owns the internal environment names used here.

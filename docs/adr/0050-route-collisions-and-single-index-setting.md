@@ -127,3 +127,5 @@ A shared route rule already existed: `routeOfSlug`, `buildRouteTable` and
 - **Publish `_meta` Markdown and exclude it with a pattern.** Rejected: ADR-0047
   removed the loader's custom `pattern`, and the exclusion belongs in the walk that
   every surface shares.
+
+- See [ADR-0057](./0057-internal-env-handoff-seam.md) for the one module that now owns the internal environment names this ADR relies on.
