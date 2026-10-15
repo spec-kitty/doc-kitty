@@ -1,0 +1,35 @@
+{
+  "accept_commit": "de3c1544e51849c5242ae473da471d2802459173",
+  "acceptance_history": [
+    {
+      "accept_commit": "de3c1544e51849c5242ae473da471d2802459173",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-15T12:05:40.540912+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "5df59cc571b5e43fa08f0d66c2765769b14be8a0"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-15T12:05:40.540912+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "5df59cc571b5e43fa08f0d66c2765769b14be8a0",
+  "baseline_merge_commit": "90dadb50915165a523cbc8eb03020e483b76844c",
+  "created_at": "2026-10-15T11:36:37.633087+00:00",
+  "flattened": true,
+  "friendly_name": "One owner for DocKitty's internal process.env handoffs",
+  "merged_at": "2026-10-15T12:06:41.566772+00:00",
+  "merged_commit": "2332561e907cd5714c06915bb5c2c24bec4c214e",
+  "mid8": "01M4ZNK1",
+  "mission_id": "01M4ZNK1YTTHTYXAA1GJBB0YJG",
+  "mission_number": 8,
+  "mission_slug": "internal-env-owner-01M4ZNK1",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "DocKitty passes five values between its Astro hooks through process.env. Each was added on its own, and one (the resolved draft-publication setting) is never cleared, so a second config or test in the same process inherits it. One module will own the names and their lifecycle, with no change to site output.",
+  "purpose_tldr": "Put the values DocKitty passes between its own build hooks under one owner, so none can leak from one site config into the next.",
+  "slug": "internal-env-owner-01M4ZNK1",
+  "status_phase": "1",
+  "target_branch": "chore/internal-env-owner",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-15T11:43:54.516752+00:00"
+}

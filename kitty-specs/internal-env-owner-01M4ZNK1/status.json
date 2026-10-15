@@ -1,0 +1,72 @@
+{
+  "event_count": 26,
+  "last_event_id": "01M4ZQ9ZNEGZSGG2NS87X58F6T",
+  "materialized_at": "2026-10-15T12:06:34.414409+00:00",
+  "mission_number": "",
+  "mission_slug": "internal-env-owner-01M4ZNK1",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 3,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4ZQ9JKRVERBFKYKHVMQQEQ3",
+      "last_transition_at": "2026-10-15T12:06:21.048705+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/internal-env-owner-01M4ZNK1-coord/kitty-specs/internal-env-owner-01M4ZNK1/tasks/WP01-owner-module-and-wiring/review-cycle-1.md",
+        "reference": "review-cycle://internal-env-owner-01M4ZNK1/WP01-owner-module-and-wiring/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3365049,
+      "shell_pid_created_at": "1792064630.21"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4ZQ9S6F776VX6C6FHCPYY21",
+      "last_transition_at": "2026-10-15T12:06:27.791562+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/internal-env-owner-01M4ZNK1-coord/kitty-specs/internal-env-owner-01M4ZNK1/tasks/WP02-one-test-restore-helper/review-cycle-1.md",
+        "reference": "review-cycle://internal-env-owner-01M4ZNK1/WP02-one-test-restore-helper/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3376257,
+      "shell_pid_created_at": "1792065033.13"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M4ZQ9ZNEGZSGG2NS87X58F6T",
+      "last_transition_at": "2026-10-15T12:06:34.414409+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/internal-env-owner-01M4ZNK1-coord/kitty-specs/internal-env-owner-01M4ZNK1/tasks/WP03-adr-guide-changelog/review-cycle-2.md",
+        "reference": "review-cycle://internal-env-owner-01M4ZNK1/WP03-adr-guide-changelog/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3395568,
+      "shell_pid_created_at": "1792065698.91"
+    }
+  }
+}
