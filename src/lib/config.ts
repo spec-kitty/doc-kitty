@@ -2053,8 +2053,8 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // CLIs, so a bad entry must fail here whether or not `gherkin` is on.
   validateIndexBasenames(indexBasename, 'indexBasename');
   // Publish the one list every consumer reads (config order = priority, so the
-  // first name decides `generatedIndexBasename`). A later call overwrites an
-  // earlier one, as for DK_DOCS_ROOT.
+  // first name decides `generatedIndexBasename`). Stale values from an earlier
+  // config are already gone: see clearInternalEnv() above and ADR-0057.
   setInternalEnv(DK_INDEX_BASENAME_ENV, JSON.stringify(normalizeIndexBasenames(indexBasename)));
   // Everything generated-pages (codegen integration, `behaviour` sidebar section)
   // hangs off `sources`, i.e. `pages`: `gherkin: true` or an object without

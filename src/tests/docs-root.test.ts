@@ -25,10 +25,8 @@ import {
 const abs = (rel: string) => path.resolve(process.cwd(), rel);
 
 /**
- * `DK_DOCS_ROOT` is process-global. The derivation/fallback suites assume it is
- * UNSET (they exercise the content-layer signal), and the preference suite sets
- * it explicitly — so snapshot + restore it around every test to keep them
- * order-independent and to never leak into another test file's worker.
+ * `DK_DOCS_ROOT` is process-global and the derivation/fallback suites assume it is
+ * UNSET; restoreInternalEnv() snapshots and restores it around every test.
  */
 restoreInternalEnv();
 
