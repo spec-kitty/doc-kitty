@@ -118,6 +118,7 @@ Facts that shape the design:
     generated-page stamp) folds the report's hash into its digest, and a report
     change re-emits a `change` for each such page in dev, as ADR-0051 decision 11
     does for an included file. With no report, every digest is the one before.
+    Superseded in part by ADR-0057: every internal value is now cleared when a config is defined.
 11. **Agents.** An include's agent Markdown carries the same result lines, column
     and summary as its HTML. `scenarioIndexRoute({ results })` adds `result` to each
     scenario, `results` per Examples row, `results: 'current' | 'stale'` per feature
