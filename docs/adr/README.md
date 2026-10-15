@@ -67,5 +67,6 @@ kind: Hub
 | [0054](./0054-gherkin-draft-hubs-titles-and-scenario-route.md) | ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages | Accepted | 2026-10-14 |
 | [0055](./0055-gherkin-scenario-results.md) | ADR-0055: Show each scenario's result from the site's Cucumber report | Accepted | 2026-10-14 |
 | [0056](./0056-gherkin-results-followups.md) | ADR-0056: Gherkin results in CI, and a translatable Overview label | Accepted | 2026-10-14 |
+| [0057](./0057-internal-env-handoff-seam.md) | ADR-0057: One owner for DocKitty's internal environment handoffs | Accepted | 2026-10-15 |
 
 New ADRs copy [`template.md`](./template.md).
