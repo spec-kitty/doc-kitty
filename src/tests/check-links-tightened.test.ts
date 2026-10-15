@@ -19,6 +19,7 @@
  * point.
  */
 import { describe, it, expect, afterEach } from 'vitest';
+import { clearInternalEnv } from '../lib/internal-env.mjs';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -447,7 +448,7 @@ describe('check-links CLI — index names come from the site config', () => {
   const check = (roots: string[], args: string[] = []) => {
     const env = { ...process.env };
     delete env.DK_PUBLISH_DRAFTS;
-    delete env.DK_INDEX_BASENAME;
+    clearInternalEnv(env);
     return spawnSync('node', [GATE, ...roots, '--strict', ...args], { encoding: 'utf8', env });
   };
 

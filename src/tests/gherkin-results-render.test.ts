@@ -9,6 +9,7 @@
  * relative to that directory, i.e. `results.root`.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -307,10 +308,7 @@ describe('defineDocKittyIntegrations({ gherkin: { results } })', () => {
     });
     return { warnings, watched };
   }
-  afterEach(() => {
-    delete process.env.DK_GHERKIN_RESULTS;
-    delete process.env.DK_GHERKIN_ROUTE;
-  });
+  restoreInternalEnv();
 
   it('a readable report: no warning, and it is watched', () => {
     const { warnings, watched } = setup(RESULTS);

@@ -11,18 +11,13 @@
  * These tests go through `defineDocKittyIntegrations`, the function a config
  * file calls, with the theme as a plain object (what a `.mjs` config passes).
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { defineDocKittyIntegrations, DK_DOCS_ROOT_ENV } from '../lib/config.js';
+import { defineDocKittyIntegrations } from '../lib/config.js';
 import { DK_SLOT_NAMES, type DocKittyTheme } from '../lib/theme.js';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 
-restoreIndexBasenameEnv();
-const docsRootBefore = process.env[DK_DOCS_ROOT_ENV];
-afterEach(() => {
-  if (docsRootBefore === undefined) delete process.env[DK_DOCS_ROOT_ENV];
-  else process.env[DK_DOCS_ROOT_ENV] = docsRootBefore;
-});
+restoreInternalEnv();
 
 /** A theme as a `.mjs` config writes it: no type stands between the author and the slot name. */
 function plainTheme(slots: Record<string, string>): DocKittyTheme {

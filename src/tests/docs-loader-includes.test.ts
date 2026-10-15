@@ -25,6 +25,7 @@
  * `docs-loader-includes-build.test.ts`.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { EventEmitter } from 'node:events';
@@ -36,6 +37,8 @@ import { docKittyDocsLoader } from '../lib/schema.js';
 import { MAX_INCLUDE_BYTES } from '../lib/gherkin/include-path.mjs';
 import { DK_GHERKIN_RESULTS_ENV, GENERATED_MARKER, gherkinIncludeSources } from '../lib/gherkin/include-scan.mjs';
 import { GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
+
+restoreInternalEnv();
 
 type StoredEntry = { id: string; data: Record<string, unknown>; digest?: string; filePath?: string };
 

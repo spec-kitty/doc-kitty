@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -44,15 +45,10 @@ const { docKittyDocsLoader } = await import('../lib/schema.js');
 
 const abs = (rel: string) => path.resolve(process.cwd(), rel);
 
-const originalDocsRootEnv = process.env[DK_DOCS_ROOT_ENV];
-const originalIndexEnv = process.env[DK_INDEX_BASENAME_ENV];
+restoreInternalEnv();
 const tmpRoots: string[] = [];
 afterEach(() => {
   collectionEntries.length = 0;
-  if (originalDocsRootEnv === undefined) delete process.env[DK_DOCS_ROOT_ENV];
-  else process.env[DK_DOCS_ROOT_ENV] = originalDocsRootEnv;
-  if (originalIndexEnv === undefined) delete process.env[DK_INDEX_BASENAME_ENV];
-  else process.env[DK_INDEX_BASENAME_ENV] = originalIndexEnv;
   while (tmpRoots.length) rmSync(tmpRoots.pop()!, { recursive: true, force: true });
 });
 

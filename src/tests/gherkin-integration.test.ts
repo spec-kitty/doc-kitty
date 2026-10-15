@@ -20,7 +20,7 @@
  *  - the section id is threaded into the registry sidebar's `generatedIds`.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -36,7 +36,7 @@ vi.mock('@astrojs/starlight', () => ({
 }));
 
 // Imported AFTER the mock is declared (vi.mock is hoisted, so this is safe).
-const { defineDocKittyIntegrations, DK_DOCS_ROOT_ENV } = await import('../lib/config.js');
+const { defineDocKittyIntegrations } = await import('../lib/config.js');
 
 const GHERKIN = 'doc-kitty:gherkin';
 
@@ -96,7 +96,6 @@ function runGherkinSetup(integrations: unknown[], ctx: StubContext = stubContext
 }
 
 let originalCwd: string;
-let originalDocsRootEnv: string | undefined;
 let tmp: string;
 
 /** Write `files` (POSIX path → contents) under the temp dir. */
@@ -122,19 +121,16 @@ function frontmatterOf(abs: string): Record<string, unknown> {
 
 beforeEach(() => {
   originalCwd = process.cwd();
-  originalDocsRootEnv = process.env[DK_DOCS_ROOT_ENV];
   tmp = mkdtempSync(path.join(tmpdir(), 'dk-gherkin-int-'));
 });
 
 afterEach(() => {
   process.chdir(originalCwd);
-  if (originalDocsRootEnv === undefined) delete process.env[DK_DOCS_ROOT_ENV];
-  else process.env[DK_DOCS_ROOT_ENV] = originalDocsRootEnv;
   rmSync(tmp, { recursive: true, force: true });
   vi.restoreAllMocks();
 });
 
-restoreIndexBasenameEnv();
+restoreInternalEnv();
 
 describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
   it('generates the section pages under docs/behaviour/** by default', () => {
