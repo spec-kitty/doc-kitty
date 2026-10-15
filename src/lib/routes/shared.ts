@@ -7,6 +7,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import { getCollection } from 'astro:content';
+import { DK_DOCS_ROOT_ENV } from '../internal-env.mjs';
 import type { IndexBasenameOption } from '../metadata.js';
 import { readmeToIndexId, slugFromEntryId } from '../metadata.js';
 import { withBase } from '../with-base.js';
@@ -56,12 +57,12 @@ export function docsRootFromSignal(
 
 /**
  * The env var the integration publishes the authoritative docs root through
- * (F3/F5). Kept in sync with `config.ts`'s `DK_DOCS_ROOT_ENV` by VALUE, not by
- * import: `config.ts` runs in the `astro.config` surface where `astro:content`
- * (which this module statically imports) does not resolve, so a shared import
- * would drag that virtual module into the config graph. Two literals, one name.
+ * (F3/F5). The name comes from `src/lib/internal-env.mjs`, the one owner of
+ * DocKitty's internal env names (ADR-0057). That module has no `astro:content`
+ * import, so `config.ts` (the `astro.config` surface, where `astro:content`
+ * does not resolve) and this module can both import it.
  */
-export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
+export { DK_DOCS_ROOT_ENV };
 
 /**
  * Choose the docs root from the two signals a route can see, purely (fs-free,

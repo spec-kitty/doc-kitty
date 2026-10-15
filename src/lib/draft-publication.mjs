@@ -16,6 +16,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
+import { DK_PUBLISH_DRAFTS_RESOLVED_ENV } from './internal-env.mjs';
 import { buildRouteTable, isDraftStatus } from './vocabulary-core.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 
@@ -29,7 +30,7 @@ export const DK_PUBLISH_DRAFTS_ENV = 'DK_PUBLISH_DRAFTS';
  * integration never overwrites what the user put in `DK_PUBLISH_DRAFTS`: a dev
  * server restart re-resolves from the real sources.
  */
-export const DK_PUBLISH_DRAFTS_RESOLVED_ENV = 'DK_PUBLISH_DRAFTS_RESOLVED';
+export { DK_PUBLISH_DRAFTS_RESOLVED_ENV };
 
 /** The accepted values, in the order the error message names them. */
 export const PUBLISH_DRAFTS_VALUES = /** @type {const} */ (['on', 'off']);
