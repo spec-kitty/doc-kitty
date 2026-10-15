@@ -25,6 +25,7 @@
  * Mission: sidebar-frame-header-carrier-01M4T3CB, WP05.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
+import { clearInternalEnv } from '../lib/internal-env.mjs';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -93,7 +94,7 @@ function runBuild(mode: Mode, setting: string | undefined, config?: string): Bui
   // Vitest injects BASE_URL; passed through it would override the site base.
   delete env.BASE_URL;
   delete env.DK_PUBLISH_DRAFTS;
-  delete env.DK_PUBLISH_DRAFTS_RESOLVED;
+  clearInternalEnv(env);
   if (setting !== undefined) env.DK_PUBLISH_DRAFTS = setting;
   const args = config
     ? ['--filter', 'example', 'exec', 'astro', 'build', '--config', path.relative(path.join(REPO_ROOT, 'example'), config)]

@@ -9,7 +9,8 @@
  * a rule-level test cannot show: the plugin through the pipeline, the node
  * kinds it touches, its no-op rules, and the integration's freshness.
  */
-import { describe, it, expect, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { createRequire } from 'node:module';
 import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -28,11 +29,7 @@ type MarkdownRemark = {
 
 const tmpRoots: string[] = [];
 // `defineDocKittyIntegrations` publishes DK_INDEX_BASENAME; a leaked value would reach the next file.
-const originalIndexEnv = process.env.DK_INDEX_BASENAME;
-afterEach(() => {
-  if (originalIndexEnv === undefined) delete process.env.DK_INDEX_BASENAME;
-  else process.env.DK_INDEX_BASENAME = originalIndexEnv;
-});
+restoreInternalEnv();
 afterAll(() => {
   for (const r of tmpRoots) rmSync(r, { recursive: true, force: true });
 });
@@ -144,14 +141,8 @@ describe('integration freshness (FR-021)', () => {
     } as never) as Array<{ name: string; hooks?: Record<string, (a: unknown) => void> }>;
     const integration = integrations.find((i) => i.name === 'doc-kitty:base-absolute-links')!;
     let captured: { markdown: { remarkPlugins: Array<[unknown, unknown]> } } | undefined;
-    const previous = process.env.DK_PUBLISH_DRAFTS_RESOLVED;
     process.env.DK_PUBLISH_DRAFTS_RESOLVED = publish;
-    try {
-      integration.hooks!['astro:config:setup']({ updateConfig: (c: typeof captured) => (captured = c), config: {} });
-    } finally {
-      if (previous === undefined) delete process.env.DK_PUBLISH_DRAFTS_RESOLVED;
-      else process.env.DK_PUBLISH_DRAFTS_RESOLVED = previous;
-    }
+    integration.hooks!['astro:config:setup']({ updateConfig: (c: typeof captured) => (captured = c), config: {} });
     const entry = captured!.markdown.remarkPlugins.find(([p]) => p === relativeMdLinks)!;
     return JSON.stringify(entry[1]);
   }

@@ -32,7 +32,7 @@
  * version axis by assertion — nothing more.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -251,7 +251,7 @@ const STAGE_COUNT_FLOOR = 10;
 // ===========================================================================
 // 1. Enumeration is non-empty and well-formed (vacuous / SetupHook false-green).
 // ===========================================================================
-restoreIndexBasenameEnv();
+restoreInternalEnv();
 
 describe('re-derive parity — enumeration is real, not vacuous', () => {
   it('enumerates at least the stage-count floor', () => {

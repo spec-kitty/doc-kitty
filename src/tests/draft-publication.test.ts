@@ -6,6 +6,7 @@
  * Mission: sidebar-frame-header-carrier-01M4T3CB, WP05.
  */
 import { describe, it, expect, afterEach } from 'vitest';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -34,7 +35,8 @@ import {
 } from '../lib/draft-publication.mjs';
 import { applyDraftPolicy, docKittyDocsLoader } from '../lib/schema.js';
 import { checkCoverage, urlToDistFile } from '../scripts/check-redirect-coverage.mjs';
-import { draftPublicationIntegration, routeShapingSource, type RouteShapingOptions } from '../lib/config.js';
+import { defineDocKittyIntegrations, draftPublicationIntegration, routeShapingSource, type DocKittyOptions, type RouteShapingOptions } from '../lib/config.js';
+import { docKittyIntegrations } from './helpers/remark-stack.js';
 import { shapeSidebar } from '../lib/route-shaping.js';
 import { ROOT_ENTRY_ID, isDraftEntry } from '../lib/metadata.js';
 
@@ -245,11 +247,9 @@ describe('docKittyDocsLoader: a content store kept from a build with the other v
   // `load()` has to correct it; the example cannot show this in a build test,
   // so the loader is driven here against a store seeded the way the earlier
   // build would have left it.
-  const saved = process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV];
+  restoreInternalEnv();
   const dirs: string[] = [];
   afterEach(() => {
-    if (saved === undefined) delete process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV];
-    else process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV] = saved;
     while (dirs.length) rmSync(dirs.pop()!, { recursive: true, force: true });
   });
 
@@ -1115,5 +1115,55 @@ describe('one draft predicate, and the site root is never a draft', () => {
     const frontmatter = head.slice(0, head.indexOf('\n---', 3));
     expect(frontmatter).toMatch(/const isDraft = isDraftEntry\(entry\b/);
     expect(head).toMatch(/\{isDraft && <meta name="robots" content="noindex" \/>\}/);
+  });
+});
+
+describe('defineDocKittyIntegrations: internal env handoffs across two configs in one process', () => {
+  const NAMES = ['DK_PUBLISH_DRAFTS', 'DK_PUBLISH_DRAFTS_RESOLVED', 'DK_GHERKIN_ROUTE', 'DK_GHERKIN_RESULTS', 'DK_INDEX_BASENAME', 'DK_DOCS_ROOT'];
+  const saved = Object.fromEntries(NAMES.map((n) => [n, process.env[n]]));
+  afterEach(() => {
+    for (const n of NAMES) {
+      if (saved[n] === undefined) delete process.env[n];
+      else process.env[n] = saved[n];
+    }
+  });
+
+  /** Define a config and return the named integration's `astro:config:setup` runner. */
+  const define = (options: Partial<DocKittyOptions>) => {
+    const integrations = docKittyIntegrations(defineDocKittyIntegrations({ title: 'Docs', ...options } as DocKittyOptions));
+    return (name: string, ctx: Record<string, unknown>) => {
+      const hook = integrations.find((i) => i.name === name)?.hooks?.['astro:config:setup'] as (c: unknown) => void;
+      hook({ command: 'build', updateConfig: () => {}, addWatchFile: () => {}, logger: { warn: () => {}, info: () => {} }, ...ctx });
+    };
+  };
+
+  it("a later config does not inherit the earlier config's resolved drafts setting or scenario route (#167)", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'dk-env-owner-'));
+    try {
+      mkdirSync(path.join(dir, 'src', 'pages', 'api'), { recursive: true });
+      writeFileSync(path.join(dir, 'src', 'pages', 'api', 'scenarios.json.ts'), 'export const GET = () => new Response();\n');
+      const root = pathToFileURL(`${dir}${path.sep}`);
+      const srcDir = pathToFileURL(`${dir}${path.sep}src${path.sep}`);
+      const results = { report: 'tests/fixtures/gherkin/results/messages.ndjson', root: 'tests/fixtures/gherkin/results' };
+
+      // Config A: drafts withheld, an own scenario route mounted.
+      process.env.DK_PUBLISH_DRAFTS = 'off';
+      const a = define({ gherkin: { results } } as Partial<DocKittyOptions>);
+      a('doc-kitty:draft-publication', { config: { root } });
+      a('doc-kitty:gherkin-fence', { config: { root, srcDir } });
+      expect(process.env.DK_PUBLISH_DRAFTS_RESOLVED).toBe('off');
+      expect(process.env.DK_GHERKIN_ROUTE).toBe('src/pages/api/scenarios.json.ts');
+
+      // Config B, defined in the same process: nothing of A's survives its definition...
+      delete process.env.DK_PUBLISH_DRAFTS;
+      const b = define({});
+      expect(process.env.DK_PUBLISH_DRAFTS_RESOLVED).toBeUndefined();
+      expect(process.env.DK_GHERKIN_ROUTE).toBeUndefined();
+      // ...and B's own setup records B's value.
+      b('doc-kitty:draft-publication', { config: { root } });
+      expect(process.env.DK_PUBLISH_DRAFTS_RESOLVED).toBe('on');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

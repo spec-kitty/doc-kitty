@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -29,11 +30,7 @@ const abs = (rel: string) => path.resolve(process.cwd(), rel);
  * it explicitly — so snapshot + restore it around every test to keep them
  * order-independent and to never leak into another test file's worker.
  */
-const originalDocsRootEnv = process.env[DK_DOCS_ROOT_ENV];
-const restoreDocsRootEnv = (): void => {
-  if (originalDocsRootEnv === undefined) delete process.env[DK_DOCS_ROOT_ENV];
-  else process.env[DK_DOCS_ROOT_ENV] = originalDocsRootEnv;
-};
+restoreInternalEnv();
 
 describe('docsRootFromSignal', () => {
   it('derives a non-default docs root from a plain page filePath', () => {
@@ -111,7 +108,6 @@ describe('docsRoot (resolver the discovery routes call)', () => {
     // must be absent so the fallback is reached (guardrail: preserve #22 exactly).
     delete process.env[DK_DOCS_ROOT_ENV];
   });
-  afterEach(restoreDocsRootEnv);
 
   it('resolves the docs root from the loaded content, honoring a custom docsDir', async () => {
     collectionEntries.push(
@@ -137,7 +133,6 @@ describe('docsRoot — prefers the integration-published DK_DOCS_ROOT (F3/F5)', 
   beforeEach(() => {
     collectionEntries.length = 0;
   });
-  afterEach(restoreDocsRootEnv);
 
   it('returns the published root even when the content-layer signal disagrees', async () => {
     // Content would derive `documentation`, but the integration published a

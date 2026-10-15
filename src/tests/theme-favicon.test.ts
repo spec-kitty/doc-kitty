@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -23,7 +23,7 @@ import { faviconHref, docKittyFavicon, DK_FAVICON_BASENAME } from '../lib/favico
  * site-root path, and hands Starlight that path instead.
  */
 
-restoreIndexBasenameEnv();
+restoreInternalEnv();
 
 describe('faviconHref', () => {
   it('is undefined when the theme declares no favicon', () => {

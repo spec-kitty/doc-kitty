@@ -25,7 +25,7 @@
  * unaffected by those mocks.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -92,7 +92,7 @@ function hProps(node: Node): Record<string, unknown> {
 // 1. Grammar parse matrix
 // ===========================================================================
 
-restoreIndexBasenameEnv();
+restoreInternalEnv();
 
 describe('parseAttrList — {…} grammar', () => {
   it('parses comma-separated pairs, keeping the % on a percentage', () => {

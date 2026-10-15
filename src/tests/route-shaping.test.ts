@@ -12,7 +12,7 @@
  * Mission: sidebar-frame-header-carrier-01M4T3CB, WP04.
  */
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -104,7 +104,7 @@ const childrenOf = (entry: SidebarEntry | undefined): SidebarEntry[] => {
   return entry.entries;
 };
 
-restoreIndexBasenameEnv();
+restoreInternalEnv();
 
 describe('buildDirectoryMeta (T019)', () => {
   const meta = buildDirectoryMeta(RHETORIC_ENTRIES);

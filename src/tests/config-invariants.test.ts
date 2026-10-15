@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import type { DocKittyTheme } from '../lib/theme.js';
 
 /**
@@ -81,7 +81,7 @@ const brandLikeTheme: DocKittyTheme = {
   layouts: { Persona: 'fixture/Persona.astro' },
 };
 
-restoreIndexBasenameEnv();
+restoreInternalEnv();
 
 describe('defineDocKittyIntegrations components map (seam 3)', () => {
   it('registers exactly the five carriers with NO theme', () => {

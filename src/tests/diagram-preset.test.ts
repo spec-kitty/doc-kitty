@@ -29,7 +29,7 @@
  * return integration objects).
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { restoreIndexBasenameEnv } from './helpers/restore-index-env';
+import { restoreInternalEnv } from './helpers/restore-internal-env';
 import diagramMeta from '../lib/remark/diagram-meta.js';
 import plantumlMeta from '../lib/remark/plantuml-meta.js';
 import diagramFigure from '../lib/rehype/diagram-figure.js';
@@ -113,7 +113,7 @@ async function runDiagramsSetup(
   return { configs, scripts };
 }
 
-restoreIndexBasenameEnv();
+restoreInternalEnv();
 
 describe('defineDocKittyIntegrations diagrams preset (opt-in, FR-001)', () => {
   it('omits the diagrams integration by default (off adds nothing)', () => {
