@@ -135,6 +135,23 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
     },
   );
 
+  it('#103: assert-build-artifacts.mjs fails, naming the link, when an api `_links` href points at no built file', () => {
+    // Plant one dangling href in the built index, run the gate, and restore the file.
+    const indexFile = path.join(EXAMPLE_DIST, 'api', 'index.json');
+    const original = readFileSync(indexFile, 'utf8');
+    try {
+      const doc = JSON.parse(original);
+      doc._links.rss = { href: `${new URL(doc._links.self.href).origin}/doc-kitty/no-such-page/` };
+      writeFileSync(indexFile, JSON.stringify(doc));
+      const res = spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], { encoding: 'utf8', env: process.env });
+      expect(res.status).toBe(1);
+      expect(res.stderr).toContain('agent _links: api/index.json links to');
+      expect(res.stderr).toContain('no-such-page/index.html was not built');
+    } finally {
+      writeFileSync(indexFile, original);
+    }
+  });
+
   // -- T019: index.md-indexed section coexists with the README corpus --------
 
   it('T019 (SC-001): the index.md-indexed "plans" section resolves to its section ROOT, not /plans/index/', () => {
