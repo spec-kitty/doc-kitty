@@ -163,8 +163,8 @@ The relation names follow the web-linking convention: `self`, `up`, `html`,
   reads every `_links` href in `dist/api/**/*.json`, removes the site origin and
   base, and fails when the file is missing from the build. A path that ends in
   `/` must have an `index.html`; any other path must be a file. It reads the base
-  from the index's `self` link, so with a custom `indexPath` it skips the check
-  and says so.
+  from the index's `self` link, which must end in `/api/index.json`, the file the
+  gate reads. When it does not, the gate fails and names the link.
 - **The index `version` stays `'2'`.** The new keys are additive, and a reader
   that ignores unknown keys is unaffected (DIRECTIVE_018). A change that removes
   or renames a key bumps the version.

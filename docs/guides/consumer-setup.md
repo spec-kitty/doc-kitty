@@ -299,8 +299,9 @@ assert:artifacts: FAIL — agent _links: api/index.json links to https://docs.ex
 ```
 
 The usual fix is to turn off the link for a surface you do not mount (see
-above). The check reads your base from the index's own `self` link, so with a
-custom `indexPath` it skips and says so. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
+above). The check reads your base from the index's own `self` link, which must
+end in `/api/index.json`, the file it reads. If it does not, the check fails and
+says it cannot derive the base. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
 lists every relation.
 
 ```ts

@@ -147,6 +147,14 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
       expect(res.status).toBe(1);
       expect(res.stderr).toContain('agent _links: api/index.json links to');
       expect(res.stderr).toContain('no-such-page/index.html was not built');
+
+      // A custom `indexPath` that does not match the file the gate read: no skip, a named failure.
+      doc._links.self = { href: `${new URL(doc._links.self.href).origin}/doc-kitty/data/all.json` };
+      writeFileSync(indexFile, JSON.stringify(doc));
+      const custom = spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], { encoding: 'utf8', env: process.env });
+      expect(custom.status).toBe(1);
+      expect(custom.stderr).toContain('agent _links: cannot derive the site base');
+      expect(custom.stderr).toContain('/api/index.json');
     } finally {
       writeFileSync(indexFile, original);
     }
