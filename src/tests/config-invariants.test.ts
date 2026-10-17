@@ -43,6 +43,36 @@ const { defineDocKittyIntegrations } = await import('../lib/config.js');
 const { isGlossaryActive } = await import('../lib/glossary/load.js');
 const { default: gherkinFence } = await import('../lib/remark/gherkin-fence.js');
 
+// The `./config` entry's runtime export list, pinned (#174). Taken from main
+// (a76c5563) before `sitemapDraftFilter` moved to `integrations/route-shaping.ts`;
+// dropping a re-export from `config.ts` must go red here.
+it('pins the runtime export list of ./config', async () => {
+  expect(Object.keys(await import('../lib/config.js')).sort()).toEqual([
+    'BUILD_MERMAID_CONFIG',
+    'BUILD_MERMAID_OPTS',
+    'BUILD_SVGO_CONFIG',
+    'DEFAULT_PLANTUML_SERVER_URL',
+    'DIAGRAM_SENTINELS',
+    'DK_DOCS_ROOT_ENV',
+    'DK_INDEX_BASENAME_ENV',
+    'ROUTE_MIDDLEWARE',
+    'ROUTE_SHAPING_MODULE_ID',
+    'SCENARIO_INDEX_MODULE_ID',
+    'SENTINEL_THEME_VARIABLES',
+    'defineDocKittyIntegrations',
+    'draftPublicationIntegration',
+    'findOwnScenarioIndexPage',
+    'hasOwnScenarioIndexPage',
+    'mermaidFenceTransform',
+    'resolveDiagramMode',
+    'resolvePlantumlServerUrl',
+    'routeShapingIntegration',
+    'routeShapingSource',
+    'sentinelThemeRewrite',
+    'sitemapDraftFilter',
+  ]);
+});
+
 const EXPECTED_CARRIER_KEYS = ['Footer', 'Head', 'Header', 'MarkdownContent', 'PageTitle'];
 
 /** The captured `components` map itself, for assertions on its values. */
