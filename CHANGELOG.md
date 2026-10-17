@@ -54,8 +54,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   because the keys are additive. The `links` option on `agentIndexRoute` and
   `agentPageRoute` defaults to all on, as in the worked example; pass `false`
   for a surface your site does not mount. If you mount the index elsewhere,
-  pass `indexPath` to both routes, and keep it ending in `/api/index.json`. `pnpm assert:artifacts` now fails when a
-  `_links` href in `dist/api/` points at a file the build did not produce. See
+  pass `indexPath` to both routes, and keep it ending in `/api/index.json`.
+  `pnpm assert:artifacts` now fails when a `_links` href in `dist/api/` points
+  at a file the build did not produce. See
   [ADR-0058](docs/adr/0058-build-state-owner-and-config-split.md).
 
 ### Changed
