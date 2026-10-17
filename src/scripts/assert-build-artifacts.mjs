@@ -426,7 +426,7 @@ async function textFilesUnder(dir) {
   }
   return out;
 }
-const TOOLKIT_CONFIG_SRC = path.join(REPO_ROOT, 'src', 'lib', 'config.ts');
+const TOOLKIT_CONFIG_SRC = path.join(REPO_ROOT, 'src', 'lib', 'integrations', 'diagrams.ts');
 const PNPM_LOCKFILE = path.join(REPO_ROOT, 'pnpm-lock.yaml');
 // #13 (C-002): the build-render deps are exact-pinned (golden-file deps):
 // `@beoe/rehype-mermaid` (Mermaid) and `astro-plantuml` (PlantUML, WP02), AND the
@@ -1066,7 +1066,7 @@ async function assertPlantumlDemonstrator(distDir, mode) {
 
 /**
  * C-001 (#13) — the public plantuml.com endpoint is NEVER contacted. Two proofs:
- *   (a) the SHIPPED toolkit config (`src/lib/config.ts`) contains no plantuml.com
+ *   (a) the SHIPPED toolkit config (`src/lib/integrations/diagrams.ts`, the PlantUML stage's owner) contains no plantuml.com
  *       URL and its resolved default server is SELF-HOSTED (a localhost/private
  *       host), so a default build cannot reach the public endpoint; and
  *   (b) no built artifact (the plantuml page + every shipped `_astro` asset)
@@ -1079,13 +1079,13 @@ async function assertNoPlantumlDotCom(distDir) {
   const configSrc = await readTextOrFail(TOOLKIT_CONFIG_SRC, `toolkit config (${TOOLKIT_CONFIG_SRC})`);
   if (PLANTUML_COM_URL_RE.test(configSrc)) {
     fail(
-      `no-plantuml.com: src/lib/config.ts contains a plantuml.com URL — the PlantUML build stage must resolve ` +
+      `no-plantuml.com: src/lib/integrations/diagrams.ts contains a plantuml.com URL — the PlantUML build stage must resolve ` +
         `only a self-hosted server (#13 C-001)`,
     );
   }
   const defMatch = /DEFAULT_PLANTUML_SERVER_URL\s*=\s*['"]([^'"]+)['"]/.exec(configSrc);
   if (!defMatch) {
-    fail(`no-plantuml.com: could not find DEFAULT_PLANTUML_SERVER_URL in src/lib/config.ts — the self-hosted default is unverifiable (#13 C-001)`);
+    fail(`no-plantuml.com: could not find DEFAULT_PLANTUML_SERVER_URL in src/lib/integrations/diagrams.ts — the self-hosted default is unverifiable (#13 C-001)`);
   }
   const defaultServer = defMatch[1];
   if (PLANTUML_COM_URL_RE.test(defaultServer) || /plantuml\.com/i.test(defaultServer)) {
