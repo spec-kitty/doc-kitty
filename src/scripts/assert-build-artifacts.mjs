@@ -405,6 +405,9 @@ async function assertAgentLinksResolve(distDir, index) {
     if (!inSite) return { url, rel: null };
     let rel = decodeURIComponent(url.pathname.slice(basePath.length)).replace(/^\//, '');
     if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+    // A decoded `..` (e.g. `..%2F..%2Fx.json`) must not walk out of `dist`: treat it as outside the site.
+    const abs = path.resolve(distDir, rel);
+    if (abs !== distDir && !abs.startsWith(distDir + path.sep)) return { url, rel: null };
     return { url, rel };
   };
   // Scan set (follow-the-links): start from the index and every JSON beside it (`dirname(indexPath)`,
