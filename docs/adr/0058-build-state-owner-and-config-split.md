@@ -1,6 +1,6 @@
 ---
 title: "ADR-0058: One owner for build state, a split config, and the env reader"
-description: DocKitty keeps what draft publication decides in one per-config object, splits config.ts into eight integration modules, reads Vite's envDir and --mode, and adds _links to the agent API.
+description: One owner for draft-publication build state, config.ts split into integration modules, envDir and --mode for env files, and _links in the agent API.
 doc_status: active
 updated: 2026-10-17
 type: ADR
