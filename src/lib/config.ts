@@ -772,13 +772,13 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // byte-identical.
     ...(gherkinOpts?.fences || gherkinOpts?.results ? [gherkinFenceIntegration(gherkinOpts)] : []),
     starlight(starlightConfig),
-    // Always-on route-shaping seam (FR-011, FR-019..FR-023): serves the data the
-    // toolkit's route middleware (registered in `starlightConfig` above) reads,
-    // and prints the shaping warnings once when the build is done.
     // Always-on draft-publication seam (FR-013..FR-018): resolves
     // DK_PUBLISH_DRAFTS for this build and hands the draft slugs to the
     // build state below, so it sits BEFORE that integration.
     draftPublicationIntegration(routeShaping, buildState),
+    // Always-on route-shaping seam (FR-011, FR-019..FR-023): serves the data the
+    // toolkit's route middleware (registered in `starlightConfig` above) reads,
+    // and prints the shaping warnings once when the build is done.
     routeShapingIntegration(routeShaping, buildState),
     // Always-on collapsible-TOC-rail client seam (FR-006, IC-04, D2): appended
     // UNCONDITIONALLY — the TOC rail is baseline chrome, so it is NOT gated on a
