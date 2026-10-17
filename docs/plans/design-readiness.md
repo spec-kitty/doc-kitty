@@ -92,8 +92,9 @@ real decision), a new or expanded architecture doc, or a refinement.
    (PlantUML normally needs Java or a Kroki server). Artifact: an ADR.
 9. **Glossary and Contextive** — near-greenfield: the `.contextive` loader and the
    first-occurrence auto-link plugin. Artifact: an architecture doc and an ADR.
-10. **Sitemap and HATEOAS read API** — the `_links` relation set is undefined.
-    Artifact: a `generators.md` refinement.
+10. **Sitemap and HATEOAS read API** — CLOSED (2026-10-17). The `_links`
+    relation set is defined and shipped; see
+    [ADR-0058](../adr/0058-build-state-owner-and-config-split.md).
 11. **Doctrine variation** — vague by nature; defer to its mission.
 
 ## Sequence of design passes
@@ -103,4 +104,4 @@ real decision), a new or expanded architecture doc, or a refinement.
   deferred until after this design PR lands; backfill the outline docs.
 - **Cross-cutting, before portals are scheduled:** 5 (CI persistence), 6 (portal
   ingestion).
-- **Later:** Markua ADR, diagrams, glossary, `_links`, doctrine.
+- **Later:** Markua ADR, diagrams, glossary, doctrine (`_links` is done).

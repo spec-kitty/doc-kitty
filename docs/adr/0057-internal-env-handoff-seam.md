@@ -35,6 +35,9 @@ old values. A second config in the same process, for example a test suite, kept
 the first config's draft-publication setting. Production builds define one
 config per process, so they were not affected.
 
+The drafts a build withholds are not among the five values. They live in a
+per-config build state; see [ADR-0058](./0058-build-state-owner-and-config-split.md).
+
 ## Decision
 
 1. **One module owns the five names.** `src/lib/internal-env.mjs` defines each

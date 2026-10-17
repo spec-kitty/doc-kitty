@@ -45,6 +45,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   no sign why. Now, while `gherkin.results` is set, the build logs one warning
   per `astro build` and one per `astro dev` run, naming the route file and the
   value to pass.
+- **Follow `_links` through the agent API instead of building URLs (#103).**
+  Before, `api/index.json` and the per-page records held no links, so an agent
+  had to know the URL scheme. Now the index links to itself, `llms.txt` and the
+  sitemap, plus the feed, bibliography and scenarios routes you mount. Each
+  record links to its per-page JSON, its HTML page and its related pages, and a
+  per-page record also links up to the index. The index `version` stays `'2'`,
+  because the keys are additive. The `links` option on `agentIndexRoute` and
+  `agentPageRoute` defaults to all on, as in the worked example; pass `false`
+  for a surface your site does not mount. See
+  [ADR-0058](docs/adr/0058-build-state-owner-and-config-split.md).
+
+### Changed
+
+- **The env reader honours `vite.envDir` and `--mode`, so drafts follow the
+  files your build uses (#115).** This affects sites that set `vite.envDir` or
+  build with a custom mode. Before, DocKitty read `.env*` files only from the
+  site directory and always used `production` (or `development` for `astro
+  dev`), so `DK_PUBLISH_DRAFTS` in `envDir`, or in `.env.staging`, was ignored.
+  Now a relative `envDir` is read from the site directory, `envDir: false` reads
+  no files, and `--mode staging` reads `.env.staging`. The mode `local` is
+  refused, as in Vite. The process environment still wins. The gates follow
+  your config's `envDir`; `dockitty-assert-build-artifacts` and
+  `dockitty-check-redirect-coverage` without `--docs` stop when the config
+  mentions `envDir` unless you pass `--env-dir <dir|false>`. Sites with neither
+  setting are unchanged.
+- `RouteShapingOptions` no longer has `unpublishedDirs` or `unpublishedPaths`;
+  the withheld drafts now travel in a per-config build state. The type is an
+  internal seam, not supported API.
 
 ### Fixed
 
