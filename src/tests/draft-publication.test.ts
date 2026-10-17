@@ -1192,6 +1192,7 @@ describe('one resolver for the build and its gates', () => {
     expect(staged.stdout).toContain(OFF_FROM_FILE);
     expect(staged.stdout).toContain('mode: staging)');
     expect(gate('check-redirect-coverage.mjs', [...args, '--site-root']).status).toBe(2);
+    expect(gate('assert-build-artifacts.mjs', [elsewhere, '--astro-config']).status).toBe(2);
   });
 
   it('the development env file reaches the dev server only, so a gate in the default mode ignores it', () => {
