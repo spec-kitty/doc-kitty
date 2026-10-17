@@ -16,6 +16,7 @@ import {
   unpublishedDraftPaths,
   resolveDraftPublication,
   activeMode,
+  viteEnvDirOf,
   redirectsToDrafts,
 } from '../draft-publication.mjs';
 import { DK_PUBLISH_DRAFTS_RESOLVED_ENV, setInternalEnv } from '../internal-env.mjs';
@@ -77,7 +78,7 @@ export function draftPublicationIntegration(
       'astro:config:setup': ({ command, config }) => {
         const root = config?.root ? fileURLToPath(config.root) : process.cwd();
         const mode = activeMode({ argv: process.argv, command });
-        const resolved = resolveDraftPublication(root, mode, process.env, config?.vite?.envDir);
+        const resolved = resolveDraftPublication(root, mode, process.env, viteEnvDirOf(config?.vite));
         publish = resolved.publish;
         setInternalEnv(DK_PUBLISH_DRAFTS_RESOLVED_ENV, publish ? 'on' : 'off');
         const drafts = publish ? new Set<string>() : siteDraftRoutes(docsDir, indexBasename);
