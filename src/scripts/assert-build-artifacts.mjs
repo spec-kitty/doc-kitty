@@ -340,6 +340,82 @@ async function htmlFilesUnder(dir) {
   }
   return out;
 }
+/** Every `.json` file under `dir`, as absolute paths. */
+async function jsonFilesUnder(dir) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...(await jsonFilesUnder(abs)));
+    else if (entry.name.endsWith('.json')) out.push(abs);
+  }
+  return out;
+}
+
+/** Every `href` in a parsed `_links` object, including the entries of array relations (`related`). */
+function linkHrefsOf(links) {
+  const hrefs = [];
+  for (const value of Object.values(links ?? {})) {
+    for (const rel of Array.isArray(value) ? value : [value]) {
+      if (rel && typeof rel.href === 'string') hrefs.push(rel.href);
+    }
+  }
+  return hrefs;
+}
+
+/** Collect every `_links` object in a parsed agent payload (top level and per record). */
+function collectLinkObjects(doc) {
+  const found = [];
+  if (doc && typeof doc === 'object' && !Array.isArray(doc)) {
+    if (doc._links) found.push(doc._links);
+    for (const page of Array.isArray(doc.pages) ? doc.pages : []) {
+      if (page && page._links) found.push(page._links);
+    }
+  }
+  return found;
+}
+
+/**
+ * Every `_links` href in `dist/api/**\/*.json` must resolve to a built file. The
+ * site origin and base are read off the index's own `self` link; a path ending
+ * in `/` resolves to `<path>/index.html`, anything else is a file path as-is.
+ * An href outside the site fails too: these links point at the site's own output.
+ */
+async function assertAgentLinksResolve(distDir, index) {
+  const selfHref = index?._links?.self?.href;
+  const selfSuffix = '/api/index.json';
+  if (typeof selfHref !== 'string' || !new URL(selfHref).pathname.endsWith(selfSuffix)) {
+    // A site that mounts the index elsewhere has no known base to strip; skip loudly.
+    ok('agent _links: index self link is not /api/index.json, so the base is unknown — links not resolved');
+    return;
+  }
+  const selfUrl = new URL(selfHref);
+  const basePath = selfUrl.pathname.slice(0, selfUrl.pathname.length - selfSuffix.length);
+  let checked = 0;
+  for (const file of await jsonFilesUnder(path.join(distDir, 'api'))) {
+    let doc;
+    try {
+      doc = JSON.parse(await readFile(file, 'utf8'));
+    } catch {
+      continue; // well-formedness is asserted for the pinned endpoints elsewhere
+    }
+    const label = path.relative(distDir, file).split(path.sep).join('/');
+    for (const links of collectLinkObjects(doc)) {
+      for (const href of linkHrefsOf(links)) {
+        const url = new URL(href, selfUrl);
+        const inSite = url.origin === selfUrl.origin && (url.pathname === basePath || url.pathname.startsWith(`${basePath}/`));
+        if (!inSite) fail(`agent _links: ${label} links to ${href}, which is outside the site (${selfUrl.origin}${basePath}/)`);
+        let rel = decodeURIComponent(url.pathname.slice(basePath.length)).replace(/^\//, '');
+        if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+        if (!existsSync(path.join(distDir, rel))) {
+          fail(`agent _links: ${label} links to ${href}, but ${rel} was not built`);
+        }
+        checked += 1;
+      }
+    }
+  }
+  ok(`agent _links: all ${checked} href(s) in api/**/*.json resolve to a built file`);
+}
+
 /** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
 async function textFilesUnder(dir) {
   const out = [];
@@ -2141,6 +2217,9 @@ async function main() {
     );
   }
   ok(`agent index: enriched related[] ({ref,title,kind,doc_status}) + audience[] ({profile,guidance_text}) shapes valid`);
+
+  // 4b2) Every `_links` href in dist/api/**/*.json resolves to a built file (#103).
+  await assertAgentLinksResolve(distDir, index);
 
   // 4c) /api/bibliography.json — a catalog projection OUTSIDE page gating: valid
   // JSON, { version, count, records[] }, each record carrying id/title/url
