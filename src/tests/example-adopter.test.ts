@@ -148,13 +148,72 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
       expect(res.stderr).toContain('agent _links: api/index.json links to');
       expect(res.stderr).toContain('no-such-page/index.html was not built');
 
-      // A custom `indexPath` that does not match the file the gate read: no skip, a named failure.
+      // A custom `indexPath` the gate was not told about: no skip, a named failure.
       doc._links.self = { href: `${new URL(doc._links.self.href).origin}/doc-kitty/data/all.json` };
       writeFileSync(indexFile, JSON.stringify(doc));
       const custom = spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], { encoding: 'utf8', env: process.env });
       expect(custom.status).toBe(1);
       expect(custom.stderr).toContain('agent _links: cannot derive the site base');
       expect(custom.stderr).toContain('/api/index.json');
+
+      // ...and told about it with `--index-path` (#172): the same index, now at a path the flag names.
+      const mounted = path.join(EXAMPLE_DIST, 'v2', 'data', 'index.json');
+      mkdirSync(path.dirname(mounted), { recursive: true });
+      const mountedDoc = JSON.parse(original);
+      mountedDoc._links.self = { href: `${new URL(mountedDoc._links.self.href).origin}/doc-kitty/v2/data/index.json` };
+      writeFileSync(mounted, JSON.stringify(mountedDoc));
+      writeFileSync(indexFile, original);
+      const gate = (...flags: string[]) =>
+        spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST, ...flags], { encoding: 'utf8', env: process.env });
+      try {
+        const pass = gate('--index-path', 'v2/data/index.json');
+        expect(pass.stdout).toContain('resolve to a built file (index: v2/data/index.json)');
+        // (the exit-0 assertion for this run is at the end: it depends on the PlantUML service, which
+        // must not stop the steps below from running locally)
+
+        // The index's own top-level `_links` targets are walked too, not only `dirname(indexPath)`:
+        // a dangling href planted in api/bibliography.json fails the custom-path run.
+        const biblioFile = path.join(EXAMPLE_DIST, 'api', 'bibliography.json');
+        const biblioOriginal = readFileSync(biblioFile, 'utf8');
+        try {
+          const biblioDoc = JSON.parse(biblioOriginal);
+          biblioDoc._links = { related: { href: `${new URL(mountedDoc._links.self.href).origin}/doc-kitty/no-such-biblio-target/` } };
+          writeFileSync(biblioFile, JSON.stringify(biblioDoc));
+          const biblio = gate('--index-path', 'v2/data/index.json');
+          expect(biblio.status).toBe(1);
+          expect(biblio.stderr).toContain('agent _links: api/bibliography.json links to');
+          expect(biblio.stderr).toContain('no-such-biblio-target/index.html was not built');
+        } finally {
+          writeFileSync(biblioFile, biblioOriginal);
+        }
+
+        // One planted dangling href in the mounted index still fails, naming the flag's path.
+        mountedDoc._links.rss = { href: `${new URL(mountedDoc._links.self.href).origin}/doc-kitty/no-such-page/` };
+        writeFileSync(mounted, JSON.stringify(mountedDoc));
+        const dangling = gate('--index-path', '/v2/data/index.json');
+        expect(dangling.status).toBe(1);
+        expect(dangling.stderr).toContain('agent _links: v2/data/index.json links to');
+
+        // A path that includes the site base names no file: it fails and says the base is not part of it.
+        const withBase = gate('--index-path', 'doc-kitty/v2/data/index.json');
+        expect(withBase.status).toBe(1);
+        expect(withBase.stderr).toContain('doc-kitty/v2/data/index.json');
+        expect(withBase.stderr).toContain('base');
+
+        // Unusable values exit 2 before any check runs.
+        for (const bad of ['../x', 'C:\\x', '', '//x']) {
+          expect(gate('--index-path', bad).status, `--index-path ${JSON.stringify(bad)}`).toBe(2);
+        }
+
+        // Last, so a missing PlantUML service (a different gate failure) cannot hide the steps above.
+        // Local runs without the PlantUML service fail on that one unrelated check; the `_links` line
+        // asserted above already proves this gate passed.
+        if (!/plantuml demonstrator/.test(pass.stderr)) {
+          expect(pass.status, `custom index path stderr:\n${pass.stderr}`).toBe(0);
+        }
+      } finally {
+        rmSync(path.join(EXAMPLE_DIST, 'v2'), { recursive: true, force: true });
+      }
     } finally {
       writeFileSync(indexFile, original);
     }
