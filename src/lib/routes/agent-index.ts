@@ -27,6 +27,12 @@ export interface AgentIndexRouteOptions {
    * the link would dangle. (A route cannot see another route's existence.)
    */
   links?: AgentIndexLinks;
+  /**
+   * Where this route is mounted, as a site-absolute path. Used for the index's
+   * own `self` link. Default `/api/index.json`; set it if you mount the route
+   * elsewhere, or `self` would dangle.
+   */
+  indexPath?: string;
 }
 
 export interface AgentIndexLinks {
@@ -38,6 +44,7 @@ export interface AgentIndexLinks {
 }
 
 export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
+  const indexPath = options.indexPath ?? '/api/index.json';
   const declared = { pages: true, rss: true, bibliography: true, scenarios: true, ...options.links };
   return async ({ site }) => {
     const all = await collectDocEntries();
@@ -101,7 +108,7 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       generatedFrom: 'doc-kitty',
       count: pages.length,
       _links: {
-        self: { href: absolute(site, '/api/index.json') },
+        self: { href: absolute(site, indexPath) },
         llms: { href: absolute(site, '/llms.txt') },
         sitemap: { href: absolute(site, '/sitemap-index.xml') },
         ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),

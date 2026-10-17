@@ -30,13 +30,19 @@ import { readAgentIncludes, spliceAgentIncludes } from '../gherkin/agent-include
 export interface AgentPageRouteOptions {
   /** Site-owned surfaces to link from `_links`. Defaults match the worked example. */
   links?: {
-    /** Link `up` to `/api/index.json`; pass `false` if the site does not mount the index route. */
+    /** Link `up` to the index (`indexPath`); pass `false` if the site does not mount the index route. */
     index?: boolean;
   };
+  /**
+   * Where the index route is mounted, as a site-absolute path. Used for each
+   * page's `up` link. Default `/api/index.json`.
+   */
+  indexPath?: string;
 }
 
 export function agentPageRoute(options: AgentPageRouteOptions = {}) {
   const linkIndex = options.links?.index ?? true;
+  const indexPath = options.indexPath ?? '/api/index.json';
   const getStaticPaths: GetStaticPaths = async () => {
     const entries = await getCollection('docs');
     return entries.map((entry) => ({
@@ -97,7 +103,7 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
       // No `source` relation: the record's `source` IS the per-page JSON, i.e. `self`.
       _links: {
         self: { href: absolute(site, record.source) },
-        ...(linkIndex ? { up: { href: absolute(site, '/api/index.json') } } : {}),
+        ...(linkIndex ? { up: { href: absolute(site, indexPath) } } : {}),
         html: { href: url },
         related: related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title })),
       },
