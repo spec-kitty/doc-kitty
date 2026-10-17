@@ -148,6 +148,13 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
       expect(res.stderr).toContain('agent _links: api/index.json links to');
       expect(res.stderr).toContain('no-such-page/index.html was not built');
 
+      // A decoded `..` must not walk out of `dist`: it is outside the site, not a missing built file.
+      doc._links.rss = { href: `${new URL(doc._links.self.href).origin}/doc-kitty/..%2F..%2Fx.json` };
+      writeFileSync(indexFile, JSON.stringify(doc));
+      const escape = spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], { encoding: 'utf8', env: process.env });
+      expect(escape.status).toBe(1);
+      expect(escape.stderr).toContain('which is outside the site');
+
       // A custom `indexPath` the gate was not told about: no skip, a named failure.
       doc._links.self = { href: `${new URL(doc._links.self.href).origin}/doc-kitty/data/all.json` };
       writeFileSync(indexFile, JSON.stringify(doc));
