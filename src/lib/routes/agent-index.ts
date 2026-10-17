@@ -12,6 +12,7 @@ import type { APIRoute } from 'astro';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
 import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
+import { routeOfSlug } from '../vocabulary-core.mjs';
 import { absolute, docsRoot } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 
@@ -19,9 +20,25 @@ export interface AgentIndexRouteOptions {
   title: string;
   /** Bump when the emitted shape changes so consumers can branch on it. */
   version?: string;
+  /**
+   * Which optional site-owned surfaces to link from `_links` (#103). `llms` and
+   * `sitemap` are always linked. The defaults match the worked example, which
+   * mounts all four; pass `false` for a surface your site does not build, or
+   * the link would dangle. (A route cannot see another route's existence.)
+   */
+  links?: AgentIndexLinks;
+}
+
+export interface AgentIndexLinks {
+  /** Per-page JSON at `/api/pages/<slug>.json`: gates each record's `self` link. */
+  pages?: boolean;
+  rss?: boolean;
+  bibliography?: boolean;
+  scenarios?: boolean;
 }
 
 export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
+  const declared = { pages: true, rss: true, bibliography: true, scenarios: true, ...options.links };
   return async ({ site }) => {
     const all = await collectDocEntries();
     // Resolve against the full corpus, not just the discoverable subset, so a
@@ -59,12 +76,20 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
         };
       });
       const audience: AudienceEntry[] = entry.data.audience ?? [];
+      const url = absolute(site, record.route);
+      const source = absolute(site, record.source);
       return {
         ...record,
         related,
         audience,
-        url: absolute(site, record.route),
-        source: absolute(site, record.source),
+        url,
+        source,
+        _links: {
+          ...(declared.pages ? { self: { href: source } } : {}),
+          html: { href: url },
+          source: { href: source },
+          related: related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title })),
+        },
       };
     });
 
@@ -76,6 +101,14 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       version: options.version ?? '2',
       generatedFrom: 'doc-kitty',
       count: pages.length,
+      _links: {
+        self: { href: absolute(site, '/api/index.json') },
+        llms: { href: absolute(site, '/llms.txt') },
+        sitemap: { href: absolute(site, '/sitemap-index.xml') },
+        ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
+        ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
+        ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
+      },
       pages,
     };
 

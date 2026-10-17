@@ -22,11 +22,21 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import type { AudienceEntry, DocKittyFrontmatter, ResolvedRelated } from '../metadata.js';
 import { pageSourceId, resolveRelated, slugFromEntryId, toAgentRecord } from '../metadata.js';
+import { routeOfSlug } from '../vocabulary-core.mjs';
 import { absolute } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { readAgentIncludes, spliceAgentIncludes } from '../gherkin/agent-includes.mjs';
 
-export function agentPageRoute() {
+export interface AgentPageRouteOptions {
+  /** Site-owned surfaces to link from `_links`. Defaults match the worked example. */
+  links?: {
+    /** Link `up` to `/api/index.json`; pass `false` if the site does not mount the index route. */
+    index?: boolean;
+  };
+}
+
+export function agentPageRoute(options: AgentPageRouteOptions = {}) {
+  const linkIndex = options.links?.index ?? true;
   const getStaticPaths: GetStaticPaths = async () => {
     const entries = await getCollection('docs');
     return entries.map((entry) => ({
@@ -65,11 +75,12 @@ export function agentPageRoute() {
     // its frontmatter is the remark-time copy, not the validated `entry.data`.
     const rendered = (entry as { rendered?: { metadata?: { frontmatter?: unknown } } }).rendered;
     const expanded = spliceAgentIncludes(body, readAgentIncludes(rendered?.metadata?.frontmatter));
+    const url = absolute(site, record.route);
     const payload = {
       ...record,
       related,
       audience,
-      url: absolute(site, record.route),
+      url,
       authors: data.authors ?? [],
       keywords: data.agent?.keywords ?? [],
       ...(data.generated ? { generated: data.generated } : {}),
@@ -81,6 +92,15 @@ export function agentPageRoute() {
        * every `::gherkin` include replaced by the scenarios it renders.
        */
       markdown: expanded.markdown,
+      // Navigation links (#103). Built here, never in `toAgentRecord`, which
+      // other consumers share. hrefs go through `absolute` like `url`/`source`.
+      _links: {
+        self: { href: absolute(site, record.source) },
+        ...(linkIndex ? { up: { href: absolute(site, '/api/index.json') } } : {}),
+        html: { href: url },
+        source: { href: absolute(site, record.source) },
+        related: related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title })),
+      },
     };
 
     return new Response(JSON.stringify(payload, null, 2), {
