@@ -32,6 +32,7 @@ import {
   type DocKittyOptions,
   type HastNode,
 } from './helpers/gherkin-render-harness.js';
+import { PINNED_DOC_KITTY_ORDER } from './helpers/integration-names.js';
 
 // Keep the glossary seam out (no `.contextive` probe of the runner's cwd), as
 // the other config-level suites do; Starlight's factory only has to return an
@@ -124,16 +125,7 @@ describe('preset off: a gherkin fence renders exactly as before', () => {
   // The doc-kitty integration names with no gherkin option: the in-page stage
   // must not appear, and `{ fences: false }` must give the SAME list (the
   // `PINNED_BOTH_OFF_BASELINE` pattern of `markua-attributes.test.ts`).
-  const PINNED_OFF_BASELINE = [
-    'doc-kitty:draft-publication',
-    'doc-kitty:route-shaping',
-    'doc-kitty:toc-rail',
-    'doc-kitty:deck-split',
-    'doc-kitty:base-absolute-links',
-    'doc-kitty:sitemap-order',
-    'doc-kitty:manifest',
-    'doc-kitty:favicon',
-  ];
+  const PINNED_OFF_BASELINE = [...PINNED_DOC_KITTY_ORDER];
 
   it('registers no fence stage when the preset is absent or `fences: false`', () => {
     expect(docKittyMarkdown({}).names).toEqual(PINNED_OFF_BASELINE);

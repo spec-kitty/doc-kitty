@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
 import type { DocKittyTheme } from '../lib/theme.js';
+import { PINNED_INTEGRATION_ORDER } from './helpers/integration-names.js';
 
 /**
  * T036 — Components-map invariant (ADR-0013 seam 3 / ADR-0015 decision 3/4).
@@ -143,18 +144,7 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
 
   // The plain-path (no theme/diagrams/markua, glossary-free) named order — the
   // same pinned baseline `glossary-config.test.ts` guards.
-  const PINNED_BASELINE = [
-    '@astrojs/starlight',
-    'doc-kitty:draft-publication',
-    'doc-kitty:route-shaping',
-    'doc-kitty:toc-rail',
-    'doc-kitty:deck-split',
-    'doc-kitty:base-absolute-links',
-    '@astrojs/sitemap',
-    'doc-kitty:sitemap-order',
-    'doc-kitty:manifest',
-    'doc-kitty:favicon',
-  ];
+  const PINNED_BASELINE = [...PINNED_INTEGRATION_ORDER];
 
   interface Named {
     name: string;

@@ -35,6 +35,7 @@ import glossaryAutolink from '../lib/remark/glossary-autolink.js';
 import { DEFAULT_IGNORE_LIST } from '../lib/glossary/ignore-list.js';
 import { glossaryDefinitions } from '../lib/glossary/definitions-payload.js';
 import type { SharedTermIndex } from '../lib/glossary/types.js';
+import { PINNED_INTEGRATION_ORDER } from './helpers/integration-names.js';
 
 vi.mock('@astrojs/starlight', () => ({
   default: (config: Record<string, unknown>) => ({
@@ -151,20 +152,7 @@ describe('defineDocKittyIntegrations glossary presence-gate (byte-identity, R-4)
     // presence/opt-in-gated like the glossary/diagrams/markua seams) — it
     // base-prefixes authored root-absolute markdown links on every build, so it
     // is present in every named-array shape, glossary-free or not.
-    const PINNED_GLOSSARY_FREE_BASELINE = [
-      '@astrojs/starlight',
-      // sidebar-frame-header-carrier WP04: the always-on route-shaping seam
-      // (sidebar labels/order + near-empty TOC), never gated.
-      'doc-kitty:draft-publication',
-      'doc-kitty:route-shaping',
-      'doc-kitty:toc-rail',
-      'doc-kitty:deck-split',
-      'doc-kitty:base-absolute-links',
-      '@astrojs/sitemap',
-      'doc-kitty:sitemap-order',
-      'doc-kitty:manifest',
-      'doc-kitty:favicon',
-    ];
+    const PINNED_GLOSSARY_FREE_BASELINE = [...PINNED_INTEGRATION_ORDER];
     const names = named(defineDocKittyIntegrations({ title: 'Docs' })).map((i) => i.name);
     expect(names).toEqual(PINNED_GLOSSARY_FREE_BASELINE);
   });
