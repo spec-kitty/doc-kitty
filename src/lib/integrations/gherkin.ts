@@ -8,6 +8,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
 import type { IndexBasenameOption } from '../metadata.js';
+import type { DocKittyGherkinOption } from './shared.js';
 import { BUILD_GENERATED_SECTION_IDS } from '../sections.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures } from '../gherkin/load.mjs';
 import { generateFeaturePages } from '../gherkin/generate.mjs';
@@ -34,7 +35,7 @@ export type ResolvedGherkinPages = NonNullable<ResolvedGherkinOptions['pages']>;
  * (a parity test pins the CLI's default to it).
  */
 export function resolveGherkinOptions(
-  raw: Parameters<typeof normalizeGherkinOptions>[0],
+  raw: DocKittyGherkinOption,
 ): ResolvedGherkinOptions {
   return normalizeGherkinOptions(raw, {
     reservedSections: ['_meta', ...BUILD_GENERATED_SECTION_IDS],
