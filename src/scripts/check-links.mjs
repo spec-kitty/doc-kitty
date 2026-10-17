@@ -78,6 +78,7 @@ import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import {
   draftRoutesOf,
+  findAstroConfig,
   resolveDraftPublicationForGate,
   takeSiteFlags,
   unpublishedDraftPaths,
@@ -85,6 +86,7 @@ import {
 import { buildRouteTable, formatRouteCollisions, isPlainIndexName, resolveIndexEntries, resolveRelativeDocLink } from '../lib/vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { assertEvaluatedConfigDecides } from './site-config-eval.mjs';
 
 // Roots subject to the fail-closed tightening below: built by Astro/Starlight
 // under a base-prefixed, trailing-slash directory-route tree (`example/`'s
@@ -100,9 +102,6 @@ export function isSiteRoot(root) {
   const normalized = root.replace(/\/+$/, '');
   return SITE_ROOTS.some((siteRoot) => normalized === siteRoot || normalized.endsWith(`/${siteRoot}`));
 }
-
-// An Astro config next to a docs folder means the folder is built as a site.
-const ASTRO_CONFIG_NAMES = ['astro.config.mjs', 'astro.config.ts', 'astro.config.js'];
 
 export const EXTERNAL = /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|mailto:|tel:)/i;
 const MD_EXT = /\.mdx?$/i;
@@ -417,13 +416,23 @@ export function run(argv) {
     };
     for (const [i, root] of strictRoots.entries()) {
       const own = resolutions[i];
+      // The draft setting is read from the site root's own config, and that must be the config
+      // evaluated for this root: otherwise (a config above a nested docs tree) the gate would
+      // vouch for env files it never read. Refuse instead (FR-004, fail closed).
+      const siteRoot = site.siteRoot ?? (own.configPath ? dirname(own.configPath) : undefined);
+      assertEvaluatedConfigDecides({
+        checkedDir: root,
+        siteRoot,
+        evaluatedConfig: own.configPath,
+        envDir: site.envDir,
+        label: relative(process.cwd(), root) || root,
+      });
       const resolved = resolveDraftPublicationForGate({
         checkedDir: root,
-        siteRoot: site.siteRoot,
+        siteRoot,
         mode: site.mode,
         // The config was evaluated for index names above; its `vite.envDir` is the build's (FR-010a).
         envDir: site.envDir ?? own.envDir,
-        configEvaluated: own.configEvaluated,
       });
       publishByRoot.set(root, resolved.publish);
       announce(resolved.summary);
@@ -435,7 +444,6 @@ export function run(argv) {
           siteRoot: site.siteRoot,
           mode: site.mode,
           envDir: site.envDir,
-          configEvaluated: false,
         }).summary,
       );
     }
@@ -473,7 +481,7 @@ export function run(argv) {
       process.exit(2);
     }
     fileCount += files.length;
-    if (!strict && ASTRO_CONFIG_NAMES.some((name) => existsSync(join(dirname(absRoot), name)))) {
+    if (!strict && findAstroConfig(dirname(absRoot))) {
       console.error(
         `check-links: note: ${root} looks like a built site (an Astro config sits next to it). ` +
           'It is checked as plain files; pass --strict to check it the way the build does, which agrees with the built-link gate.',
