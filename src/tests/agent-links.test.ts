@@ -6,7 +6,7 @@
  * outDir (DK_OUTDIR, relative to example/) so it cannot race the other build suites.
  */
 import { spawnSync } from 'node:child_process';
-import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -54,6 +54,8 @@ describe('agent-API _links (FR-005)', () => {
     expect(pageBodies.length).toBeGreaterThan(0);
     for (const body of pageBodies) expect('source' in body._links).toBe(false);
     for (const body of pageBodies) expect(body._links.up.href).toBe(index._links.self.href);
+    // The artifact gate catches a dangling `scenarios` link, not a missing one.
+    expect('scenarios' in index._links).toBe(existsSync(path.join(DIST, 'api/scenarios.json')));
 
     rmSync(DIST, { recursive: true, force: true });
   });
