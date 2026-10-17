@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "mission_slug": "build-context-and-config-split-01M549SB",
+  "mission_id": "01M549SBTFBRRV679FCWJ7JR57",
+  "mission_branch": "kitty/mission-build-context-and-config-split-01M549SB",
+  "target_branch": "chore/build-context-and-config-split",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "README.md",
+        "agents/doc-kitty-find/SKILL.md",
+        "docs/architecture/README.md",
+        "docs/architecture/generators.md",
+        "docs/architecture/metadata-model.md",
+        "docs/architecture/overview.md",
+        "docs/context/convention.md",
+        "docs/context/product.md",
+        "docs/guides/adopting.md",
+        "example/README.md",
+        "example/docs/architecture/overview.md",
+        "example/docs/context/product.md",
+        "example/docs/presentations/feature-tour.md"
+      ],
+      "predicted_surfaces": [],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/build-state.ts",
+        "src/lib/config.ts",
+        "src/lib/integrations/draft-publication.ts",
+        "src/lib/integrations/route-shaping.ts",
+        "src/lib/integrations/shared.ts",
+        "src/lib/route-middleware.ts",
+        "src/lib/route-shaping.ts",
+        "src/tests/draft-publication.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/integrations/diagrams.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/draft-publication.mjs",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/scripts/check-links.mjs",
+        "src/scripts/check-redirect-coverage.mjs",
+        "src/scripts/site-index-names.mjs",
+        "src/tests/draft-publication.env.test.ts"
+      ],
+      "predicted_surfaces": [
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "example/src/pages/api/index.json.ts",
+        "example/src/pages/api/pages/[...slug].json.ts",
+        "src/lib/routes/agent-index.ts",
+        "src/lib/routes/agent-page.ts",
+        "src/tests/agent-links.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/integrations/gherkin.ts",
+        "src/lib/integrations/glossary.ts",
+        "src/lib/integrations/markua.ts",
+        "src/tests/deck-guard.test.ts",
+        "src/tests/glossary-config.test.ts",
+        "src/tests/glossary-substrate-parity.test.ts",
+        "src/tests/helpers/integration-names.ts",
+        "src/tests/markua-attributes.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0058-build-state-owner-and-config-split.md",
+        "docs/adr/README.md",
+        "docs/context/agent-first.md",
+        "docs/guides/consumer-setup.md",
+        "docs/guides/draft-publication.md",
+        "docs/plans/design-readiness.md",
+        "docs/plans/features/README.md",
+        "docs/plans/features/generated-sitemap-and-read-api.md",
+        "docs/plans/roadmap.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-10-17T07:07:02.703685+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "e80a2d426f5f5d3169120181442e1e41fdd747ed"
+}

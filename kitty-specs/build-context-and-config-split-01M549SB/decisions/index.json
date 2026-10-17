@@ -1,0 +1,56 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-17T06:46:50.659679Z",
+      "decision_id": "01M549SZH3QDE24BQ4R9V24SYH",
+      "final_answer": "Keep withholding, static only; document the limit in the ADR",
+      "input_key": "redirect_integrity",
+      "mission_id": "01M549SBTFBRRV679FCWJ7JR57",
+      "mission_slug": "build-context-and-config-split-01M549SB",
+      "opened_by": "cli",
+      "options": [
+        "Keep withholding, static only",
+        "Fail the build listing the redirects",
+        "Warn only, no deletion",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "With drafts off, a configured redirect that ends at a draft page would send its old URL to a 404. DocKitty now deletes those redirect stubs after a static build. Should DocKitty own this?",
+      "rationale": null,
+      "resolved_at": "2026-10-17T06:52:39.819935Z",
+      "resolved_by": null,
+      "slot_key": "specify.drafts.redirect-integrity",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-17T06:46:52.212169Z",
+      "decision_id": "01M549T11MWQV14CCSDB4HPSN4",
+      "final_answer": "Keep the reader and honour Vite's envDir and the active --mode",
+      "input_key": "env_file_contract",
+      "mission_id": "01M549SBTFBRRV679FCWJ7JR57",
+      "mission_slug": "build-context-and-config-split-01M549SB",
+      "opened_by": "cli",
+      "options": [
+        "Keep the reader as is",
+        "Process environment only",
+        "Keep it and honour envDir and --mode",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "DocKitty reads .env files itself to find DK_PUBLISH_DRAFTS, with documented limits (two modes, no envDir, simplified quoting). Keep it or change the contract?",
+      "rationale": null,
+      "resolved_at": "2026-10-17T06:52:41.422981Z",
+      "resolved_by": null,
+      "slot_key": "specify.drafts.env-file-contract",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M549SBTFBRRV679FCWJ7JR57",
+  "version": 1
+}
