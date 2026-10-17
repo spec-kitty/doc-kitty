@@ -213,10 +213,11 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
         }
 
         // Last, so a missing PlantUML service (a different gate failure) cannot hide the steps above.
-        // Local runs without the PlantUML service fail on that one unrelated check; the `_links` line
-        // asserted above already proves this gate passed.
-        if (!/plantuml demonstrator/.test(pass.stderr)) {
+        // Local runs without the PlantUML service fail on that one unrelated check (exit 1, still pinned).
+        if (process.env.CI || !/plantuml demonstrator/.test(pass.stderr)) {
           expect(pass.status, `custom index path stderr:\n${pass.stderr}`).toBe(0);
+        } else {
+          expect(pass.status).toBe(1);
         }
       } finally {
         rmSync(path.join(EXAMPLE_DIST, 'v2'), { recursive: true, force: true });
