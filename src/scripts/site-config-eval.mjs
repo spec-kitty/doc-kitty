@@ -54,6 +54,18 @@ export function shown(absPath) {
   return rel.startsWith('..') ? absPath : rel;
 }
 
+/** What the child left when it gave no JSON answer: the tail of its stderr (bounded) and how it ended. */
+function noAnswerReason(res) {
+  let text = (res.stderr || '').trim();
+  const lines = text.split('\n');
+  if (lines.length > 20) text = lines.slice(-20).join('\n');
+  if (text.length > 2048) text = text.slice(-2048);
+  const ended = [res.status !== null && res.status !== undefined ? `exit status ${res.status}` : '', res.signal ? `signal ${res.signal}` : '']
+    .filter(Boolean)
+    .join(', ');
+  return [text || 'the config process produced no answer', ended && `(${ended})`].filter(Boolean).join(' ');
+}
+
 /**
  * Evaluate `configPath`; throws {@link ConfigEvalError} on any failure.
  * @returns {EvaluatedConfig}
@@ -76,7 +88,7 @@ function evaluateConfigFile(configPath, siteDir, tool, timeoutMs) {
   try {
     answer = JSON.parse(res.stdout.trim().split('\n').pop() ?? '');
   } catch {
-    answer = { ok: false, message: (res.stderr || 'the config process produced no answer').trim() };
+    answer = { ok: false, message: noAnswerReason(res) };
   }
   if (!answer.ok) throw fail(answer.message);
   /** @type {EvaluatedConfig} */
