@@ -291,7 +291,7 @@ const route = agentPageRoute({ indexPath: '/v2/api/index.json' });
 ```
 
 Tell `pnpm assert:artifacts` where the build puts the index with `--index-path`.
-The value is relative to `dist` and leaves out the site base, so the route above
+The value is relative to `dist` (without the site base), so the route above
 needs:
 
 ```sh
@@ -299,8 +299,10 @@ pnpm assert:artifacts --index-path v2/api/index.json
 ```
 
 The check then reads that file, takes your base from its `self` link and follows
-its `_links` to other JSON files. It exits 2 on a value with `..`, an absolute
-path or an empty value.
+its `_links` to other JSON files. Usage or config errors exit 2, and check
+failures exit 1. One leading `/` is ignored; a value containing `..`, an empty
+value, or a drive or `//` path exits 2. A `--index-path` that names no built
+file fails the check (exit 1).
 
 `pnpm assert:artifacts` then checks the links. It reads every `_links` href in
 `dist/api/**/*.json`, removes your site origin and base, and looks for the file

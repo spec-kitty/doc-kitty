@@ -30,8 +30,8 @@ export interface AgentIndexRouteOptions {
   /**
    * Where this route is mounted, as a site-absolute path. Used for the index's
    * own `self` link. Default `/api/index.json`; set it if you mount the route
-   * elsewhere, or `self` would dangle. Pass the same path, relative to the site
-   * base, to `assert-build-artifacts --index-path`; without the flag the gate
+   * elsewhere, or `self` would dangle. Pass the same path, relative to `dist`
+   * (without the site base), to `assert-build-artifacts --index-path`; without the flag the gate
    * reads `api/index.json` and fails (it does not skip) on any other path.
    */
   indexPath?: string;

@@ -173,7 +173,8 @@ The relation names follow the web-linking convention: `self`, `up`, `html`,
   `/api/index.json` and sets the index's own `self` link and each page's `up`
   link, both with the site base added. Pass it when you mount the index route
   somewhere else, or those links dangle. Then pass the same file to the build
-  check as `--index-path <path relative to dist>` (see the next bullet).
+  check as `--index-path`, relative to `dist` (without the site base; see the next
+  bullet).
 - **A build check keeps the links honest.** `dockitty-assert-build-artifacts`
   reads every `_links` href in `dist/api/**/*.json`, removes the site origin and
   base, and fails when the file is missing from the build. A path that ends in
@@ -181,12 +182,15 @@ The relation names follow the web-linking convention: `self`, `up`, `html`,
   from the index's `self` link, which must end in the path of the file the gate
   reads. When it does not, the gate fails and names the link.
 - **`--index-path` moves the index the gate reads.** The default is
-  `api/index.json`. `assert-build-artifacts --index-path <path relative to
-  dist>` moves every index check to that file. The path never includes the site
-  base, because `dist` does not nest it. The gate derives the base from the
+  `api/index.json`. `assert-build-artifacts --index-path <path>`, relative to
+  `dist` (without the site base), moves every index check to that file. `dist`
+  does not nest the site base. The gate derives the base from the
   index's `self` link. It scans the JSON files in the index's folder, and
-  follows `_links` to other JSON files transitively, wherever they sit. A path
-  with `..`, an absolute path or an empty value exits 2.
+  follows `_links` to other JSON files transitively, wherever they sit. Exit
+  codes split two ways: usage or config errors exit 2, check failures exit 1.
+  One leading `/` is ignored; a value containing `..`, an empty value, or a
+  drive or `//` path exits 2. A `--index-path` that names no built file fails
+  the check (exit 1).
 - **The index `version` stays `'2'`.** The new keys are additive, and a reader
   that ignores unknown keys is unaffected (DIRECTIVE_018). A change that removes
   or renames a key bumps the version.

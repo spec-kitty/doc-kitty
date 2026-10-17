@@ -35,8 +35,8 @@ export interface AgentPageRouteOptions {
   };
   /**
    * Where the index route is mounted, as a site-absolute path. Used for each
-   * page's `up` link. Default `/api/index.json`. Pass the same path, relative to
-   * the site base, to `assert-build-artifacts --index-path`; without the flag
+   * page's `up` link. Default `/api/index.json`. Pass the same path, relative to `dist`
+   * (without the site base), to `assert-build-artifacts --index-path`; without the flag
    * the gate reads `api/index.json` and fails (it does not skip) on any other path.
    */
   indexPath?: string;
