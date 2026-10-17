@@ -24,7 +24,6 @@ import matter from 'gray-matter';
 
 import {
   DK_PUBLISH_DRAFTS_ENV,
-  DK_PUBLISH_DRAFTS_RESOLVED_ENV,
   PUBLISH_DRAFTS_DEFAULT,
   describePublishDrafts,
   draftRoutesOf,
