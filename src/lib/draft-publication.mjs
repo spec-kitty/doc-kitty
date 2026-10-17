@@ -322,7 +322,7 @@ export function takeSiteFlags(args) {
  * `envDir` is the site's `vite.envDir`, taken from the evaluated config or from
  * `--env-dir`. A gate that did not evaluate the config passes
  * `configEvaluated: false`; when it also has no `envDir` and the config text
- * mentions `envDir`, it cannot know where the build read its env files, so it
+ * mentions `envDir` or `envFile`, it cannot know where the build read its env files, so it
  * fails rather than guess (FR-010a).
  *
  * @param {{ checkedDir: string, siteRoot?: string, mode?: string, env?: EnvLike,
@@ -340,9 +340,9 @@ export function resolveDraftPublicationForGate({
   const root = siteRoot ? path.resolve(siteRoot) : findSiteRoot(checkedDir);
   if (envDir === undefined && !configEvaluated) {
     const config = ASTRO_CONFIG_NAMES.map((name) => path.join(root, name)).find((file) => existsSync(file));
-    if (config && /\benvDir\b/.test(readFileSync(config, 'utf8'))) {
+    if (config && /\b(?:envDir|envFile)\b/.test(readFileSync(config, 'utf8'))) {
       throw new Error(
-        `[dk-drafts] ${path.basename(config)} sets vite.envDir, and this gate does not evaluate the ` +
+        `[dk-drafts] ${path.basename(config)} sets vite.envDir or vite.envFile, and this gate does not evaluate the ` +
           'site config, so it cannot tell where the build read its env files. Pass ' +
           '--env-dir <dir|false> with the same value.',
       );
