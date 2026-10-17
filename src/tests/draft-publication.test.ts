@@ -1066,6 +1066,15 @@ describe('one resolver for the build and its gates', () => {
     }
     // `--env-dir false` is "no env files": the default applies.
     expect(gate('assert-build-artifacts.mjs', [site.dist, '--env-dir', 'false']).stdout).toContain(ON_BY_DEFAULT);
+    // With several roots each is resolved on its own: a root whose config was evaluated does not
+    // vouch for one whose config was not (its config sits above it, and sets envDir).
+    const outer = path.join(site.tmp, 'outer');
+    mkdirSync(path.join(outer, 'nested', 'docs'), { recursive: true });
+    writeFileSync(path.join(outer, 'astro.config.mjs'), "export default { vite: { envDir: 'env' } };\n");
+    writeFileSync(path.join(outer, 'nested', 'docs', 'README.md'), '---\ntitle: Home\n---\n');
+    const twoRoots = gate('check-links.mjs', ['--strict', site.docs, path.join(outer, 'nested', 'docs')]);
+    expect(twoRoots.status, twoRoots.stdout).toBe(2);
+    expect(twoRoots.stderr).toMatch(/\[dk-drafts\].*vite\.envDir/);
   });
 
   it('an env-file-only value: the redirect-coverage gate sees what the integration saw', () => {

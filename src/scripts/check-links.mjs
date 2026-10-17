@@ -400,21 +400,45 @@ export function run(argv) {
   }
 
   // The same resolver the build uses, so a value kept in the site's env files
-  // counts here too. The site root is the one given, else the nearest Astro
-  // config above the first site-built tree (or above the first tree, when none
-  // of them is site-built and the value therefore changes nothing).
-  let publishDrafts;
+  // counts here too. Each strict root is resolved on its own: its own site
+  // config (found above its tree, or the one given), its own evaluated
+  // `vite.envDir`, and its own fail-closed guard, so one root whose config was
+  // evaluated cannot vouch for another whose config was not. When no root is
+  // site-built, the first tree is resolved once (the value then changes nothing).
+  /** @type {Map<string, boolean>} */
+  const publishByRoot = new Map();
   try {
-    const resolved = resolveDraftPublicationForGate({
-      checkedDir: roots.find(isSiteRoot) ?? roots[0],
-      siteRoot: site.siteRoot,
-      mode: site.mode,
-      // The config was evaluated for index names above; its `vite.envDir` is the build's (FR-010a).
-      envDir: site.envDir ?? resolutions.find((r) => r.configEvaluated)?.envDir,
-      configEvaluated: resolutions.some((r) => r.configEvaluated),
-    });
-    publishDrafts = resolved.publish;
-    console.log(`check-links: ${resolved.summary}`);
+    const strictRoots = roots.filter((root) => flags.strict || isSiteRoot(root));
+    const announced = new Set();
+    const announce = (summary) => {
+      if (announced.has(summary)) return;
+      announced.add(summary);
+      console.log(`check-links: ${summary}`);
+    };
+    for (const [i, root] of strictRoots.entries()) {
+      const own = resolutions[i];
+      const resolved = resolveDraftPublicationForGate({
+        checkedDir: root,
+        siteRoot: site.siteRoot,
+        mode: site.mode,
+        // The config was evaluated for index names above; its `vite.envDir` is the build's (FR-010a).
+        envDir: site.envDir ?? own.envDir,
+        configEvaluated: own.configEvaluated,
+      });
+      publishByRoot.set(root, resolved.publish);
+      announce(resolved.summary);
+    }
+    if (strictRoots.length === 0) {
+      announce(
+        resolveDraftPublicationForGate({
+          checkedDir: roots[0],
+          siteRoot: site.siteRoot,
+          mode: site.mode,
+          envDir: site.envDir,
+          configEvaluated: false,
+        }).summary,
+      );
+    }
     for (const resolved of resolutions) announceIndexNames(resolved);
   } catch (err) {
     console.error(`✖ ${err.message}`);
@@ -437,6 +461,7 @@ export function run(argv) {
   for (const root of roots) {
     const strict = flags.strict || isSiteRoot(root);
     const absRoot = resolve(root);
+    const publishDrafts = publishByRoot.get(root);
     let files;
     try {
       // A strict root reads the tree the build does (the shared walk: no `_meta`,
