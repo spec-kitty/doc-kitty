@@ -400,8 +400,8 @@ async function assertAgentLinksResolve(distDir, index) {
     let doc;
     try {
       doc = JSON.parse(await readFile(file, 'utf8'));
-    } catch {
-      continue; // well-formedness is asserted for the pinned endpoints elsewhere
+    } catch (error) {
+      fail(`agent _links: ${path.relative(distDir, file).split(path.sep).join('/')} is not valid JSON (${error.message})`);
     }
     const label = path.relative(distDir, file).split(path.sep).join('/');
     for (const links of collectLinkObjects(doc)) {
@@ -417,6 +417,15 @@ async function assertAgentLinksResolve(distDir, index) {
         checked += 1;
       }
     }
+  }
+  // The index's own `self` link always counts, so a regression that drops every per-page link
+  // would still leave `checked` above zero: count the per-page hrefs of the index on their own.
+  const pageHrefs = (Array.isArray(index.pages) ? index.pages : []).reduce(
+    (sum, page) => sum + linkHrefsOf(page?._links).length,
+    0,
+  );
+  if (Array.isArray(index.pages) && index.pages.length > 0 && pageHrefs === 0) {
+    fail(`agent _links: the index lists ${index.pages.length} page(s) but none carries a _links href (emission regression)`);
   }
   ok(`agent _links: all ${checked} href(s) in api/**/*.json resolve to a built file`);
 }
