@@ -282,14 +282,25 @@ On the page route, `agentPageRoute({ links: { index: false } })` drops the `up`
 link when you do not mount the index route. A site that mounts the index but not
 the per-page route must pass `links: { pages: false }` to `agentIndexRoute`. If you mount the index somewhere
 other than `/api/index.json`, pass the same `indexPath` to both routes. The index
-uses it for its own `self` link and each page uses it for `up`. Keep the path
-ending in `/api/index.json`, or `pnpm assert:artifacts` fails (see below):
+uses it for its own `self` link and each page uses it for `up`:
 
 ```ts
 export const GET = agentIndexRoute({ title: 'My Docs', indexPath: '/v2/api/index.json' });
 // and in the page route:
 const route = agentPageRoute({ indexPath: '/v2/api/index.json' });
 ```
+
+Tell `pnpm assert:artifacts` where the build puts the index with `--index-path`.
+The value is relative to `dist` and leaves out the site base, so the route above
+needs:
+
+```sh
+pnpm assert:artifacts --index-path v2/api/index.json
+```
+
+The check then reads that file, takes your base from its `self` link and follows
+its `_links` to other JSON files. It exits 2 on a value with `..`, an absolute
+path or an empty value.
 
 `pnpm assert:artifacts` then checks the links. It reads every `_links` href in
 `dist/api/**/*.json`, removes your site origin and base, and looks for the file
@@ -302,8 +313,8 @@ assert:artifacts: FAIL — agent _links: api/index.json links to https://docs.ex
 
 The usual fix is to turn off the link for a surface you do not mount (see
 above). The check reads your base from the index's own `self` link, which must
-end in `/api/index.json`, the file it reads. If it does not, the check fails and
-says it cannot derive the base. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
+end in the path of the file it reads (`api/index.json`, or your `--index-path`).
+If it does not, the check fails and says it cannot derive the base. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
 lists every relation.
 
 ```ts
@@ -520,7 +531,10 @@ astro build && pnpm exec dockitty-assert-no-broken-links dist --base /docs --sit
 ```
 
 The gates read your index names from the `indexBasename` in `astro.config.mjs`, so
-they agree with the build. `dockitty-check-links` prints where it got them, once per
+they agree with the build. `dockitty-check-links`, `dockitty-assert-build-artifacts`
+and `dockitty-check-redirect-coverage` also evaluate `astro.config.*` to find your
+`envDir`: a config that will not evaluate stops them with exit 2, and
+`--env-dir <dir|false>` skips the evaluation. `dockitty-check-links` prints where it got them, once per
 root:
 
 ```text

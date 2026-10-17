@@ -58,6 +58,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `pnpm assert:artifacts` now fails when a `_links` href in `dist/api/` points
   at a file the build did not produce. See
   [ADR-0058](docs/adr/0058-build-state-owner-and-config-split.md).
+- **Point the build check at a moved agent index with `--index-path` (#172).**
+  Before, `assert:artifacts` read only `dist/api/index.json`, so a site that
+  mounts the index elsewhere (`indexPath: '/v2/api/index.json'`) could not run
+  the check. Now `assert:artifacts --index-path v2/api/index.json` moves every
+  index check to that file. The path is relative to `dist` and leaves out the
+  site base. The check takes the base from the index's `self` link and follows
+  `_links` to other JSON files wherever they sit. A value with `..`, an absolute
+  path or an empty value exits 2. Without the flag, nothing changes.
 
 ### Changed
 
@@ -85,6 +93,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   values in place, so the second config read the first one's setting. Now each
   config starts with those values cleared. Production builds, which define one
   config per process, were not affected.
+- **The build gates now follow the `envDir` of an imported base config, and a
+  broken config stops them (#173).** Before, `assert-build-artifacts` and
+  `check-redirect-coverage` searched the config's text for `envDir`, so a value
+  set in an imported base config went unseen and a comment could trigger a
+  failure. Now `assert-build-artifacts`, `check-redirect-coverage` (with and
+  without `--docs`) and `check-links` evaluate `astro.config.*` in a child
+  process, find it under any of Astro's six config names, and honour the base
+  config's `envDir`. They exit 2 when the config will not evaluate, times out,
+  or is not the config that decides the site root. `--astro-config` picks the
+  config; `--env-dir <dir|false>` skips evaluation. An `envDir` set in an
+  integration's `updateConfig` hook, and configs that vary by build mode, are
+  still not seen.
 
 ## [0.3.0] — 2026-10-14
 
