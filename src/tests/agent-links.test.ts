@@ -67,8 +67,10 @@ describe('agent-API _links (FR-005)', () => {
     expect(index.pages.length).toBeGreaterThan(0);
     for (const record of index.pages) expect(record._links.html.href).toBe(record.url);
     expect(index.pages.some((r: { _links: Links }) => (r._links.related as Link[])?.length > 0)).toBe(true);
-    expect(index.pages.some((r: { _links: Links }) => r._links.source)).toBe(true);
+    // `source` is not a relation: the record's source IS the per-page JSON (`self`).
+    for (const r of index.pages) expect('source' in r._links).toBe(false);
     expect(pageBodies.length).toBeGreaterThan(0);
+    for (const body of pageBodies) expect('source' in body._links).toBe(false);
     for (const body of pageBodies) expect(body._links.up.href).toBe(index._links.self.href);
 
     const hrefs = [...collectHrefs(index), ...pageBodies.flatMap((b) => collectHrefs(b))];

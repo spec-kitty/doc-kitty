@@ -94,11 +94,11 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
       markdown: expanded.markdown,
       // Navigation links (#103). Built here, never in `toAgentRecord`, which
       // other consumers share. hrefs go through `absolute` like `url`/`source`.
+      // No `source` relation: the record's `source` IS the per-page JSON, i.e. `self`.
       _links: {
         self: { href: absolute(site, record.source) },
         ...(linkIndex ? { up: { href: absolute(site, '/api/index.json') } } : {}),
         html: { href: url },
-        source: { href: absolute(site, record.source) },
         related: related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title })),
       },
     };

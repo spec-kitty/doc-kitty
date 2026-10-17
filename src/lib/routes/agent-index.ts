@@ -87,7 +87,6 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
         _links: {
           ...(declared.pages ? { self: { href: source } } : {}),
           html: { href: url },
-          source: { href: source },
           related: related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title })),
         },
       };
