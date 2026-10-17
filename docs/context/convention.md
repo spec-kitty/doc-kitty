@@ -251,7 +251,8 @@ agent:
 
 Beyond rendering, the toolkit generates from this metadata:
 
-- **`sitemap-index.xml`** — every published page.
+- **`sitemap-index.xml`** — the index of the sitemap files, which together list
+  every published page.
 - **`rss.xml`** — published pages, newest `updated` first.
 - **`llms.txt`** — discoverable pages grouped by section in canonical order.
 - **`/api/index.json`** + **`/api/pages/<id>.json`** — the agent-API: a

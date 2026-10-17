@@ -1,6 +1,6 @@
 ---
 title: "ADR-0058: One owner for build state, a split config, and the env reader"
-description: DocKitty keeps what draft publication decides in one per-config object, splits config.ts into six integration modules, reads Vite's envDir and --mode, and adds _links to the agent API.
+description: DocKitty keeps what draft publication decides in one per-config object, splits config.ts into eight integration modules, reads Vite's envDir and --mode, and adds _links to the agent API.
 doc_status: active
 updated: 2026-10-17
 type: ADR
@@ -62,9 +62,9 @@ integration clears it at the start of each build.
 state object now carries them. The type is `@internal`, as the changelog already
 says of the internal seams, so this is not a breaking change.
 
-### 2. The config splits into six integrations
+### 2. The config splits into eight integrations
 
-`config.ts` goes from 2,298 to 936 lines. The `./config` package export is
+`config.ts` goes from 2,298 to 739 lines. The `./config` package export is
 unchanged: the export list matches the list taken before the split.
 
 | Module (`src/lib/integrations/`) | Owns |
@@ -75,9 +75,17 @@ unchanged: the export list matches the list taken before the split.
 | `markua.ts` | The Markua integration |
 | `route-shaping.ts` | Sidebar and route shaping, and the virtual module |
 | `draft-publication.ts` | The draft setting, the withheld lists and the build summary |
+| `markdown-pipeline.ts` | The always-on remark and rehype stages: deck split, relative-link and base-absolute-link rewriting, and the single `remark-directive` owner |
+| `toc-rail.ts` | The collapsible table-of-contents rail's client script |
 | `shared.ts` | Helpers two or more of the above use. A leaf: it imports nothing from `config.ts` |
 
-No integration module imports `../config`, so there is no import cycle. The
+The last integrations to leave `config.ts` went into two modules, because they
+share a seam or a purpose. `markdown-pipeline.ts` holds the always-on stages
+that all register through `markdown.remarkPlugins` and `rehypePlugins` with
+`updateConfig`, so one file shows their order against each other. `toc-rail.ts`
+holds the table-of-contents rail's client script, which has no option and no
+shared state. Moving them left `config.ts` with the option types, the preset and
+the registration list, and no integration code. No integration module imports `../config`, so there is no import cycle. The
 registration order of the integrations is pinned by one literal list,
 `src/tests/helpers/integration-names.ts`. It is a literal on purpose: the tests
 use it as the expected value of an order assertion, so deriving it from
@@ -103,8 +111,17 @@ itself.
   comment that mentions `envDir` also triggers the failure. That is deliberate:
   the gate fails closed and names the fix.
 
-Two limits remain. A bare `--mode` at the end of the command line falls back to
-the default mode. Vite's deprecated `envFile: false` is not honoured.
+- **A `--mode` with no value stops the build.** A bare `--mode`, or one followed
+  by another flag, fails with `[dk-drafts] --mode needs a value`. The command-line
+  parsers of Vite (cac) and Astro (yargs-parser) read it as `true`, which is no
+  mode, so the build would otherwise fall back to the default mode unnoticed.
+- **Vite's deprecated `envFile: false` still means no env files.** Vite 6 turns
+  it into `envDir: false`, so the integration and the gates do the same.
+
+One limit remains. The gates read `vite.envDir` from the exported config
+(`module.default.vite.envDir`). A config that sets `envDir` only through an
+integration's `updateConfig` hook is not seen by them, and they read the site
+root instead. Set `envDir` in the config object itself, or pass `--env-dir`.
 
 ### 4. Two behaviours stay as they were
 
@@ -138,6 +155,16 @@ The relation names follow the web-linking convention: `self`, `up`, `html`,
   (`agentIndexRoute({ links: { rss: false } })`, `agentPageRoute({ links: { index:
   false } })`), or the link dangles. A route cannot see whether another route
   exists.
+- **The index and page routes take an `indexPath`.** It defaults to
+  `/api/index.json` and sets the index's own `self` link and each page's `up`
+  link, both with the site base added. Pass it when you mount the index route
+  somewhere else, or those links dangle.
+- **A build check keeps the links honest.** `dockitty-assert-build-artifacts`
+  reads every `_links` href in `dist/api/**/*.json`, removes the site origin and
+  base, and fails when the file is missing from the build. A path that ends in
+  `/` must have an `index.html`; any other path must be a file. It reads the base
+  from the index's `self` link, so with a custom `indexPath` it skips the check
+  and says so.
 - **The index `version` stays `'2'`.** The new keys are additive, and a reader
   that ignores unknown keys is unaffected (DIRECTIVE_018). A change that removes
   or renames a key bumps the version.

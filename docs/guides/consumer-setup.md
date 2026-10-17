@@ -279,7 +279,28 @@ export const GET = agentIndexRoute({
 ```
 
 On the page route, `agentPageRoute({ links: { index: false } })` drops the `up`
-link when you do not mount `api/index.json`. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
+link when you do not mount the index route. If you mount the index somewhere
+other than `/api/index.json`, pass the same `indexPath` to both routes. The index
+uses it for its own `self` link and each page uses it for `up`:
+
+```ts
+export const GET = agentIndexRoute({ title: 'My Docs', indexPath: '/data/all.json' });
+// and in the page route:
+const route = agentPageRoute({ indexPath: '/data/all.json' });
+```
+
+`pnpm assert:artifacts` then checks the links. It reads every `_links` href in
+`dist/api/**/*.json`, removes your site origin and base, and looks for the file
+in the build. A link to `/guides/setup/` must have `guides/setup/index.html`. A
+link that points nowhere fails the build:
+
+```text
+assert:artifacts: FAIL — agent _links: api/index.json links to https://docs.example/docs/rss.xml, but rss.xml was not built
+```
+
+The usual fix is to turn off the link for a surface you do not mount (see
+above). The check reads your base from the index's own `self` link, so with a
+custom `indexPath` it skips and says so. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
 lists every relation.
 
 ```ts
