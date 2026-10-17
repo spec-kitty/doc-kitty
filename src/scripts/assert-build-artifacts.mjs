@@ -546,6 +546,25 @@ function takeIndexPathFlag(args) {
   return { indexPath: path.join(...value.split('/')), rest };
 }
 
+/**
+ * Take `--astro-config <file>` out of the arguments, like the other gates. A missing value exits 2;
+ * other arguments pass through untouched.
+ *
+ * @param {readonly string[]} args
+ * @returns {{ astroConfig: string | undefined, rest: string[] }}
+ */
+function takeAstroConfigFlag(args) {
+  const flag = '--astro-config';
+  const at = args.indexOf(flag);
+  if (at === -1) return { astroConfig: undefined, rest: [...args] };
+  const value = args[at + 1];
+  if (value === undefined || value.startsWith('--')) {
+    process.stderr.write(`assert:artifacts: ${flag} needs a value: ${flag} <file>\n`);
+    process.exit(2);
+  }
+  return { astroConfig: value, rest: [...args.slice(0, at), ...args.slice(at + 2)] };
+}
+
 /** Emit a precise failure and exit non-zero (first failure wins). */
 function fail(message) {
   process.stderr.write(`assert:artifacts: FAIL — ${message}\n`);
@@ -2017,14 +2036,9 @@ async function assertComponentCssDelivered(distDir) {
 
 // ---------------------------------------------------------------------------
 
-/** The value after `flag` in `args`, or undefined. */
-function argValue(args, flag) {
-  const i = args.indexOf(flag);
-  return i === -1 ? undefined : args[i + 1];
-}
-
 async function main() {
-  const { indexPath, rest: siteArgs } = takeIndexPathFlag(process.argv.slice(2));
+  const { indexPath, rest: afterIndexPath } = takeIndexPathFlag(process.argv.slice(2));
+  const { astroConfig, rest: siteArgs } = takeAstroConfigFlag(afterIndexPath);
   if (indexPath !== undefined) INDEX_RELPATH = indexPath;
   const indexLabel = INDEX_RELPATH.split(path.sep).join('/');
   let site;
@@ -2055,7 +2069,7 @@ async function main() {
       ({ siteRoot, envDir } = evaluateGateConfig({
         checkedDir: distDir,
         siteRoot,
-        astroConfig: argValue(site.rest, '--astro-config'),
+        astroConfig,
         tool: 'assert-build-artifacts',
       }));
     }
