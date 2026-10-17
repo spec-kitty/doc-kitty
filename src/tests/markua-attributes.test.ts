@@ -40,6 +40,7 @@ import markuaTocDemote from '../lib/rehype/markua-toc-demote.js';
 import glossaryTerm from '../lib/remark/glossary-term.js';
 import glossaryAutolink from '../lib/remark/glossary-autolink.js';
 import type { SharedTermIndex } from '../lib/glossary/types.js';
+import { PINNED_INTEGRATION_ORDER } from './helpers/integration-names.js';
 
 vi.mock('@astrojs/starlight', () => ({
   default: (config: Record<string, unknown>) => ({
@@ -443,20 +444,7 @@ describe('config wiring — markua OFF byte-identity (FR-011, the diagrams:false
   // review-cycle-1 Fix A (WP01 FR-004/SC-002) intentionally grows this list:
   // `doc-kitty:base-absolute-links` is the ONE new always-on entry (unlike
   // markua/directive, it is never gated) — present in every named-array shape.
-  const PINNED_BOTH_OFF_BASELINE = [
-    '@astrojs/starlight',
-    // sidebar-frame-header-carrier WP04: the always-on route-shaping seam
-    // (sidebar labels/order + near-empty TOC), never gated.
-    'doc-kitty:draft-publication',
-    'doc-kitty:route-shaping',
-    'doc-kitty:toc-rail',
-    'doc-kitty:deck-split',
-    'doc-kitty:base-absolute-links',
-    '@astrojs/sitemap',
-    'doc-kitty:sitemap-order',
-    'doc-kitty:manifest',
-    'doc-kitty:favicon',
-  ];
+  const PINNED_BOTH_OFF_BASELINE = [...PINNED_INTEGRATION_ORDER];
 
   it('omits the whole markua seam when markua is absent (and no .contextive)', () => {
     const arr = defineDocKittyIntegrations({ title: 'Docs' });
