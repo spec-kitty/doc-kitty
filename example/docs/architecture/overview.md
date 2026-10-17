@@ -26,7 +26,7 @@ tree.
 flowchart LR
   D[docs/**  README-as-index + frontmatter] --> L[toolkit loader]
   L --> S[Starlight  nav / search / theme]
-  L --> M[sitemap.xml]
+  L --> M[sitemap-index.xml]
   L --> R[rss.xml]
   L --> T[llms.txt]
   L --> A["/api/*.json  agent-API"]

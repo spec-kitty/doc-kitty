@@ -37,7 +37,7 @@ pnpm --filter example dev
 | Command            | What it does                                                        |
 | ------------------ | ------------------------------------------------------------------- |
 | `pnpm dev`         | Local dev server with hot reload.                                   |
-| `pnpm build`       | Static build to `dist/` — site + `sitemap.xml` + `rss.xml` + `llms.txt` + `/api/*.json`. |
+| `pnpm build`       | Static build to `dist/` — site + `sitemap-index.xml` + `rss.xml` + `llms.txt` + `/api/*.json`. |
 | `pnpm preview`     | Serve the built `dist/` locally.                                    |
 | `pnpm validate`    | Validate `src/content/docs` frontmatter against the convention.     |
 

@@ -39,7 +39,7 @@ page:
 - [Section registry](./section-registry.md) — the `docs/_meta/sections.yaml`
   schema: section label, order, type, and which surfaces each section feeds.
 - [Generators](./generators.md) — the four output surfaces
-  (`sitemap.xml`, `rss.xml`, `llms.txt`, the agent-API) and their route
+  (`sitemap-index.xml`, `rss.xml`, `llms.txt`, the agent-API) and their route
   handlers.
 - [Starlight integration](./starlight-integration.md) —
   `defineDocKittyIntegrations`: the Starlight and sitemap preset, the feed and

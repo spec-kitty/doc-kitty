@@ -20,7 +20,7 @@ flowchart LR
   D["docs/**  README-as-index + frontmatter"] --> L[docKittyDocsLoader]
   L --> SC[docKittyDocsSchema  zod validation]
   SC --> ST[Starlight  nav / search / theme]
-  L --> SM[sitemap.xml  @astrojs/sitemap]
+  L --> SM[sitemap-index.xml  @astrojs/sitemap]
   L --> RS[rss.xml  rssRoute]
   L --> LT[llms.txt  llmsTxtRoute]
   L --> AI["/api/index.json  agentIndexRoute"]
