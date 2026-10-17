@@ -105,7 +105,7 @@ tree; the second competes with Leanpub, which we are not doing.
 | CI/CD pipeline | M0 | Must | MVP | ✅ Done | The harness every feature lands on; the stated primary concern. |
 | Metadata model + chrome | M1 | Must | MVP | ✅ Done | The contract every other feature reads and renders from. |
 | Generators: RSS + llms.txt | — | Must | MVP | ✅ Done | The agent- and human-facing discovery basics. |
-| Generated sitemap + HATEOAS read API | — | Should | Extended | ✅ Done | SEO sitemap and the enriched machine-readable (`_links`) agent-API both ship. |
+| Generated sitemap + HATEOAS read API | — | Should | Extended | ✅ Done | SEO sitemap and the enriched machine-readable (`_links`) agent-API both ship; the relations are in [ADR-0058](../adr/0058-build-state-owner-and-config-split.md). |
 | Component system + swappable theme | M2 | Must | MVP | ✅ Done | Theme swappability is a hard requirement (ADR-0008); per-kind layouts underpin later features. |
 | Markua syntax support (subset) | — | Should | MVP | ✅ Done | Near-term focus and Leanpub compatibility; ADR-0030, plus opt-in footnotes (ADR-0041). |
 | Audience + related + external references | M3 | Must | MVP | ✅ Done | Core to the human-first, agent-supported promise: audience targeting and rendered relationships. |

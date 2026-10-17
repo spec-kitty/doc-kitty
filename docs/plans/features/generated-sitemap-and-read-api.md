@@ -22,4 +22,9 @@ This refines the discovery the MVP already provides through `rss.xml` and
 
 Scope: Extended.
 
+Status: shipped. `api/index.json` links to itself, `llms.txt`, the sitemap and
+the feeds the site mounts; each page record links to its JSON, its HTML page and
+its related pages. The relation names and the `links` option are in
+[ADR-0058](../../adr/0058-build-state-owner-and-config-split.md).
+
 Design: [generators](../../architecture/generators.md).

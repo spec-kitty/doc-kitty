@@ -26,11 +26,17 @@ they can rely on: a predictable tree, consistent metadata, and stable links.
 DocKitty gives agents a map, not a search index. From the same frontmatter that
 drives navigation, it generates:
 
-- `sitemap.xml` for crawlers,
+- `sitemap-index.xml` for crawlers,
 - `rss.xml` for changes,
 - `llms.txt` as a compact index for language models,
 - a JSON agent-API (`/api/index.json` and per-page records) carrying each page's
   metadata and a link to its raw Markdown.
+
+Each record carries `_links`, so an agent can follow links instead of building
+URLs. The index links to itself, `llms.txt`, the sitemap and the feeds you
+mount. A page record links to itself, back up to the index, to its HTML page and
+to the pages it relates to. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
+lists the relations.
 
 An agent can list the whole corpus from one file and fetch the exact page it
 needs. There is no embedding server to run and no chunking to tune, and it works

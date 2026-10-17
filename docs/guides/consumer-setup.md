@@ -266,6 +266,22 @@ import { agentIndexRoute } from '@spec-kitty/doc-toolkit/routes';
 export const GET = agentIndexRoute({ title: 'My Docs' });
 ```
 
+The index and each page record carry `_links` to the surfaces below. The links
+to the feed, the bibliography and the scenarios index, and the per-page record,
+are on by default because the worked example mounts them. If your site does not
+mount one, turn its link off or it points at a 404:
+
+```ts
+export const GET = agentIndexRoute({
+  title: 'My Docs',
+  links: { rss: false, bibliography: false, scenarios: false },
+});
+```
+
+On the page route, `agentPageRoute({ links: { index: false } })` drops the `up`
+link when you do not mount `api/index.json`. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
+lists every relation.
+
 ```ts
 // src/pages/api/bibliography.json.ts
 import { bibliographyRoute } from '@spec-kitty/doc-toolkit/routes';
@@ -463,8 +479,10 @@ out of site search. With `DK_PUBLISH_DRAFTS=off` the page is not built and not
 listed. The sitemap, `rss.xml`, `llms.txt` and `api/index.json` never list a
 draft, with either value. Set the value in the deploy job's environment, or
 commit a `.env.production` file containing `DK_PUBLISH_DRAFTS=off`, which
-`astro build` reads and `astro dev` does not. The values, the env-file order
-and a deployment check are in [Draft publication](./draft-publication.md).
+`astro build` reads and `astro dev` does not. If your Vite config sets `envDir`,
+put the file there; if you build with `--mode <name>`, name it `.env.<name>`. The
+gates take `--mode` and `--env-dir` for the same cases. The values, the env-file
+order and a deployment check are in [Draft publication](./draft-publication.md).
 
 ### Run the gates on your tree
 

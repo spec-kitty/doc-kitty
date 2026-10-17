@@ -43,7 +43,8 @@ split and the MoSCoW levels are set in the roadmap; this index reflects them.
 - [Glossary + Contextive](./glossary-and-contextive.md) (Should) — auto-linked
   glossary with Contextive.
 - [Generated sitemap + HATEOAS read API](./generated-sitemap-and-read-api.md)
-  (Should) — SEO sitemap and a richer `_links` read API.
+  (Should) — SEO sitemap and a richer `_links` read API (shipped; see
+  [ADR-0058](../../adr/0058-build-state-owner-and-config-split.md)).
 - [Gherkin feature pages](./gherkin-feature-pages.md) (Should) — `.feature` files
   rendered as glossary-linked `Specification` pages.
 
@@ -100,7 +101,7 @@ Verdicts: `correct-feature` (leave) · `kind-wrong` (fix `kind` in place) ·
 | `diagrams.md` | Feature / Feature | Mermaid/PlantUML diagrams, themed + accessible (M5) | correct-feature |
 | `doctrine-variation.md` | Feature / Feature | Recast the docs convention as charter + doctrine (M7) | correct-feature |
 | `glossary-and-contextive.md` | Feature / Feature | Auto-linked glossary integrated with Contextive (M4) | correct-feature |
-| `generated-sitemap-and-read-api.md` | Feature / Feature | `sitemap.xml` + HATEOAS `_links` read API | correct-feature |
+| `generated-sitemap-and-read-api.md` | Feature / Feature | `sitemap-index.xml` + HATEOAS `_links` read API | correct-feature |
 | `example-content-ars-rethorica.md` | Feature / Feature | Ship realistic ars-rethorica example content | correct-feature |
 | `mission-status-portal.md` | Feature / Feature | Planned portal surfacing spec-kitty mission status (Could) | correct-feature (verified — see note) |
 | `qa-portal.md` | Feature / Feature | Planned portal surfacing CI test artifacts / QA signals (Could) | correct-feature (verified — see note) |

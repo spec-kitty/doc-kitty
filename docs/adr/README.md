@@ -68,5 +68,6 @@ kind: Hub
 | [0055](./0055-gherkin-scenario-results.md) | ADR-0055: Show each scenario's result from the site's Cucumber report | Accepted | 2026-10-14 |
 | [0056](./0056-gherkin-results-followups.md) | ADR-0056: Gherkin results in CI, and a translatable Overview label | Accepted | 2026-10-14 |
 | [0057](./0057-internal-env-handoff-seam.md) | ADR-0057: One owner for DocKitty's internal environment handoffs | Accepted | 2026-10-15 |
+| [0058](./0058-build-state-owner-and-config-split.md) | ADR-0058: One owner for build state, a split config, and the env reader | Accepted | 2026-10-17 |
 
 New ADRs copy [`template.md`](./template.md).

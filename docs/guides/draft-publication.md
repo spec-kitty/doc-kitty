@@ -101,6 +101,15 @@ Two consequences of `off` are easy to miss:
   A chain is followed to its end: `/old/ -> /renamed/ -> /draft/` removes both
   stubs. Publish the target, or accept the 404 until you do.
 
+## "Published" and "emitted"
+
+These two words mean different things on this page and in the toolkit's
+messages. A page is **published** when its `doc_status` makes
+`isPublished()` true, that is, it is not a draft. A page is **emitted** when the
+build writes it to the output. A published page is always emitted. A draft is
+emitted only under `DK_PUBLISH_DRAFTS=on`, and even then it is not published: it
+is marked `noindex` and stays out of the sitemap, feeds and agent index.
+
 ## Where to set it
 
 The build reads the value from two places, in this order:
@@ -111,14 +120,19 @@ The build reads the value from two places, in this order:
    DK_PUBLISH_DRAFTS=off astro build
    ```
 
-2. **An env file in the site directory** (next to `astro.config.mjs`). Use this
-   to keep the value with the site. Four files are read, in this order, and a
-   later file wins:
+2. **An env file.** Use this to keep the value with the site. The files are in
+   the site directory (next to `astro.config.mjs`), or in the directory your
+   Vite `envDir` option names. A relative `envDir` is read from the site
+   directory, and `envDir: false` means no env files are read. Four files are
+   read, in this order, and a later file wins:
    `.env`, `.env.local`, `.env.<mode>`, `.env.<mode>.local`.
 
-   **Mode is `development` for `astro dev` and `production` for everything
-   else**: `astro build`, `astro preview` and the gates. So `.env.development`
-   reaches the dev server only, and `.env.production` reaches every build.
+   **The mode is the one you pass with `--mode`.** `astro build --mode staging`
+   reads `.env.staging`. Without `--mode`, the mode is `development` for
+   `astro dev` and `production` for everything else: `astro build`,
+   `astro preview` and the gates. So `.env.development` reaches the dev server
+   only, and `.env.production` reaches every build without `--mode`. The mode
+   `local` is refused, because `.env.local` is a file of its own.
 
    The process environment always wins over a file. Only keys that start with
    `DK_` are read from these files. The toolkit reads them with a small reader
@@ -203,7 +217,18 @@ gate checked a build made with another value.
 | Flag | Default | Use it when |
 |---|---|---|
 | `--site-root <dir>` | the nearest directory with an `astro.config.*` above the directory the gate checks, else the working directory | the docs tree or the build output is outside the site directory |
-| `--mode <mode>` | `production` | you check against what `astro dev` reads (`--mode development`) |
+| `--mode <mode>` | `production` | you check against what `astro dev` reads (`--mode development`), or a build made with `--mode <mode>` |
+| `--env-dir <dir\|false>` | the `envDir` of the evaluated config | see below |
+
+`dockitty-check-links` and `dockitty-check-redirect-coverage` with `--docs`
+evaluate your `astro.config` and read its `vite.envDir`, so they look where the
+build looked. `dockitty-assert-build-artifacts` and
+`dockitty-check-redirect-coverage` without `--docs` do not evaluate it. If the
+config text mentions `envDir`, they stop and name the problem, because they
+cannot tell where the build read its env files. Pass the same value with
+`--env-dir <dir>`, or `--env-dir false` for no env files. A comment that
+mentions `envDir` triggers the same stop; the message names the fix, so pass the
+flag.
 
 ## Check your deployment
 
@@ -243,12 +268,10 @@ checks the script's own.
 - **The env-file reader is the toolkit's own, and smaller than the build
   tool's.** The build tool's loader cannot be imported from an installed copy
   of the package. The differences:
-  - Mode is `development` for `astro dev` and `production` for everything else.
-    `astro build --mode staging` therefore reads `.env.production`, not
-    `.env.staging`. Set the variable in the process environment for such a
-    build. (A gate can be told a mode with `--mode`.)
-  - Vite's `envDir` option is ignored. The files are read from the site
-    directory only.
+  - Without `--mode`, the mode is `development` for `astro dev` and
+    `production` for everything else. A bare `--mode` at the very end of the
+    command line, with no value, falls back to that default.
+  - Vite's deprecated `envFile: false` is not honoured. Use `envDir: false`.
   - Only keys that start with `DK_` are read.
   - Variables are not expanded (`DK_PUBLISH_DRAFTS=$OTHER` is read literally,
     and stops the build as a mistyped value), and quoting is simpler than
