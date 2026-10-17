@@ -158,7 +158,8 @@ export function parseEnvFile(text) {
  * The toolkit reads the files itself because `vite` is a dependency of Astro,
  * not of this package, and is therefore not importable from an installed copy.
  *
- * @param {string} root the site root (where `astro.config.*` lives)
+ * @param {string} root the directory that holds the env files: the site root,
+ *   or the directory {@link resolveEnvSource} names for the site's `vite.envDir`
  * @param {string} mode
  * @returns {Record<string, string>}
  */
@@ -171,6 +172,46 @@ export function readEnvFiles(root, mode) {
     Object.assign(out, parseEnvFile(readFileSync(file, 'utf8')));
   }
   return out;
+}
+
+/**
+ * The build mode in force: `--mode <x>` or `--mode=<x>` in `argv` (Astro gives
+ * an integration no mode, so the command line is the only place it shows), else
+ * `development` for `astro dev` and `production` for anything else. Vite
+ * refuses the mode `local`, because `.env.local` is a file of its own.
+ *
+ * @param {{ argv?: readonly string[], command?: string }} [options]
+ * @returns {string}
+ * @throws {Error} for the mode `local`
+ */
+export function activeMode({ argv = [], command } = {}) {
+  let mode;
+  for (let i = 0; i < argv.length && mode === undefined; i += 1) {
+    const arg = /** @type {string} */ (argv[i]);
+    if (arg === '--mode') mode = argv[i + 1];
+    else if (arg.startsWith('--mode=')) mode = arg.slice('--mode='.length);
+  }
+  if (mode === undefined || mode === '') return command === 'dev' ? 'development' : 'production';
+  if (mode === 'local') {
+    throw new Error(
+      "[dk-drafts] --mode local is not allowed: '.env.local' is a file of its own, so Vite refuses " +
+        'it as a mode. Use another mode name.',
+    );
+  }
+  return mode;
+}
+
+/**
+ * The directory Vite reads env files from: `vite.envDir` resolved against the
+ * site root, the root itself when unset, and `null` when `envDir` is `false`
+ * (no env files at all).
+ *
+ * @param {{ root: string, envDir?: string | false }} options
+ * @returns {string | null}
+ */
+export function resolveEnvSource({ root, envDir }) {
+  if (envDir === false) return null;
+  return path.resolve(root, envDir ?? '.');
 }
 
 /** The file names Astro accepts for a site's config, in its own lookup order. */
@@ -214,33 +255,39 @@ export function findSiteRoot(fromDir, fallback = process.cwd()) {
  * @param {string} siteRoot the directory that holds the Astro config
  * @param {string} [mode] `development` for `astro dev`, `production` otherwise
  * @param {EnvLike} [env]
+ * @param {string | false} [envDir] the site's `vite.envDir`: relative to `siteRoot`,
+ *   or `false` for no env files (FR-010)
  * @returns {PublishDraftsResolution}
  */
-export function resolveDraftPublication(siteRoot, mode = 'production', env = process.env) {
-  return describePublishDrafts(env, readEnvFiles(siteRoot, mode));
+export function resolveDraftPublication(siteRoot, mode = 'production', env = process.env, envDir) {
+  const source = resolveEnvSource({ root: siteRoot, envDir });
+  return describePublishDrafts(env, source === null ? {} : readEnvFiles(source, mode));
 }
 
 /**
- * Take `--site-root <dir>` and `--mode <mode>` out of a gate's arguments.
+ * Take `--site-root <dir>`, `--mode <mode>` and `--env-dir <dir|false>` out of a
+ * gate's arguments. `--env-dir false` is the boolean `false` (Vite's "no env files").
  *
  * @param {readonly string[]} args the arguments after the script name
- * @returns {{ siteRoot?: string, mode?: string, rest: string[] }}
+ * @returns {{ siteRoot?: string, mode?: string, envDir?: string | false, rest: string[] }}
  * @throws {Error} when a flag is given without a value
  */
 export function takeSiteFlags(args) {
-  /** @type {{ siteRoot?: string, mode?: string, rest: string[] }} */
+  /** @type {{ siteRoot?: string, mode?: string, envDir?: string | false, rest: string[] }} */
   const out = { rest: [] };
+  const usage = { '--mode': '--mode <mode>', '--site-root': '--site-root <dir>', '--env-dir': '--env-dir <dir|false>' };
   for (let i = 0; i < args.length; i += 1) {
     const arg = /** @type {string} */ (args[i]);
-    if (arg !== '--site-root' && arg !== '--mode') {
+    if (!(arg in usage)) {
       out.rest.push(arg);
       continue;
     }
     const value = args[i + 1];
     if (value === undefined || value.startsWith('--')) {
-      throw new Error(`${arg} needs a value: ${arg === '--mode' ? '--mode <mode>' : '--site-root <dir>'}`);
+      throw new Error(`${arg} needs a value: ${usage[/** @type {keyof typeof usage} */ (arg)]}`);
     }
     if (arg === '--mode') out.mode = value;
+    else if (arg === '--env-dir') out.envDir = value === 'false' ? false : value;
     else out.siteRoot = value;
     i += 1;
   }
@@ -255,12 +302,36 @@ export function takeSiteFlags(args) {
  * directory the gate checks. The mode is `production` unless given, which is
  * what `astro build` and `astro preview` use.
  *
- * @param {{ checkedDir: string, siteRoot?: string, mode?: string, env?: EnvLike }} options
+ * `envDir` is the site's `vite.envDir`, taken from the evaluated config or from
+ * `--env-dir`. A gate that did not evaluate the config passes
+ * `configEvaluated: false`; when it also has no `envDir` and the config text
+ * mentions `envDir`, it cannot know where the build read its env files, so it
+ * fails rather than guess (FR-010a).
+ *
+ * @param {{ checkedDir: string, siteRoot?: string, mode?: string, env?: EnvLike,
+ *   envDir?: string | false, configEvaluated?: boolean }} options
  * @returns {PublishDraftsResolution & { siteRoot: string, mode: string, summary: string }}
  */
-export function resolveDraftPublicationForGate({ checkedDir, siteRoot, mode = 'production', env = process.env }) {
+export function resolveDraftPublicationForGate({
+  checkedDir,
+  siteRoot,
+  mode = 'production',
+  env = process.env,
+  envDir,
+  configEvaluated = true,
+}) {
   const root = siteRoot ? path.resolve(siteRoot) : findSiteRoot(checkedDir);
-  const resolved = resolveDraftPublication(root, mode, env);
+  if (envDir === undefined && !configEvaluated) {
+    const config = ASTRO_CONFIG_NAMES.map((name) => path.join(root, name)).find((file) => existsSync(file));
+    if (config && /\benvDir\b/.test(readFileSync(config, 'utf8'))) {
+      throw new Error(
+        `[dk-drafts] ${path.basename(config)} sets vite.envDir, and this gate does not evaluate the ` +
+          'site config, so it cannot tell where the build read its env files. Pass ' +
+          '--env-dir <dir|false> with the same value.',
+      );
+    }
+  }
+  const resolved = resolveDraftPublication(root, mode, env, envDir);
   const shown = path.relative(process.cwd(), root) || '.';
   return {
     ...resolved,

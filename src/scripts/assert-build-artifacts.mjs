@@ -1881,7 +1881,7 @@ async function main() {
   const distArg = site.rest[0];
   if (!distArg) {
     fail(
-      'usage: node src/scripts/assert-build-artifacts.mjs <distDir> [--site-root <dir>] [--mode <mode>]',
+      'usage: node src/scripts/assert-build-artifacts.mjs <distDir> [--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>]',
     );
   }
   const distDir = path.resolve(distArg);
@@ -1896,6 +1896,9 @@ async function main() {
       checkedDir: distDir,
       siteRoot: site.siteRoot,
       mode: site.mode,
+      // This gate does not evaluate the site config: `--env-dir` carries the build's `vite.envDir`.
+      envDir: site.envDir,
+      configEvaluated: false,
     });
     publishDrafts = resolved.publish;
     console.log(`assert-build-artifacts: ${resolved.summary}`);

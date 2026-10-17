@@ -409,6 +409,9 @@ export function run(argv) {
       checkedDir: roots.find(isSiteRoot) ?? roots[0],
       siteRoot: site.siteRoot,
       mode: site.mode,
+      // The config was evaluated for index names above; its `vite.envDir` is the build's (FR-010a).
+      envDir: site.envDir ?? resolutions.find((r) => r.configEvaluated)?.envDir,
+      configEvaluated: resolutions.some((r) => r.configEvaluated),
     });
     publishDrafts = resolved.publish;
     console.log(`check-links: ${resolved.summary}`);

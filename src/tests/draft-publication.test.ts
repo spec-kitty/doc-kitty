@@ -921,7 +921,7 @@ describe('one resolver for the build and its gates', () => {
    * check-links treats it as site-built) with one draft that a published page
    * links to, and a build output in which the draft page was not built.
    */
-  function envFileSite(envFiles: Record<string, string>) {
+  function envFileSite(envFiles: Record<string, string>, config = 'export default {};\n') {
     const tmp = mkdtempSync(path.join(tmpdir(), 'dk-one-resolver-'));
     dirs.push(tmp);
     const root = path.join(tmp, 'example');
@@ -929,8 +929,11 @@ describe('one resolver for the build and its gates', () => {
     const dist = path.join(root, 'dist');
     mkdirSync(path.join(docs, 'guides'), { recursive: true });
     mkdirSync(path.join(dist, 'guides/done'), { recursive: true });
-    writeFileSync(path.join(root, 'astro.config.mjs'), 'export default {};\n');
-    for (const [name, text] of Object.entries(envFiles)) writeFileSync(path.join(root, name), text);
+    writeFileSync(path.join(root, 'astro.config.mjs'), config);
+    for (const [name, text] of Object.entries(envFiles)) {
+      mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
+      writeFileSync(path.join(root, name), text);
+    }
     writeFileSync(path.join(docs, 'README.md'), '---\ntitle: Home\n---\n');
     writeFileSync(path.join(docs, 'guides/done.md'), '---\ntitle: D\ndoc_status: active\n---\n\n[wip](/guides/wip/)\n');
     writeFileSync(path.join(docs, 'guides/wip.md'), '---\ntitle: W\ndoc_status: draft\n---\n');
@@ -1017,6 +1020,53 @@ describe('one resolver for the build and its gates', () => {
     expect(integration(root)).toBe('off');
     // Without the file the same site builds its drafts: the default.
     expect(integration(envFileSite({}).root)).toBe('on');
+  });
+
+  it('vite.envDir and --mode pick the env file the integration reads (SC-003)', () => {
+    const { root } = envFileSite({ 'env/.env': 'DK_PUBLISH_DRAFTS=off\n', 'env/.env.staging': 'DK_PUBLISH_DRAFTS=on\n' });
+    const argv = process.argv;
+    const run = (args: string[]): { resolved: string | undefined; unpublished: string[] } => {
+      process.argv = [...argv, ...args];
+      try {
+        delete process.env[DK_PUBLISH_DRAFTS_ENV];
+        const state = createBuildState();
+        const hook = draftPublicationIntegration(
+          { docsDir: path.join(root, 'docs'), base: '/', shapeSidebar: true, pagination: true },
+          state,
+        ).hooks['astro:config:setup'] as unknown as (arg: unknown) => void;
+        hook({ command: 'build', config: { root: pathToFileURL(`${root}/`), vite: { envDir: 'env' } } });
+        return { resolved: process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV], unpublished: [...state.unpublishedPaths] };
+      } finally {
+        process.argv = argv;
+      }
+    };
+    // `.env.staging` in `env/` turns drafts on, so the draft page is emitted ...
+    expect(run(['--mode', 'staging'])).toEqual({ resolved: 'on', unpublished: [] });
+    // ... and without the flag the production mode reads `env/.env`, which turns them off.
+    expect(run([])).toEqual({ resolved: 'off', unpublished: ['guides/wip.md'] });
+  });
+
+  it('a gate reads vite.envDir from the config it evaluates, or from --env-dir when it cannot (FR-010a)', () => {
+    const site = envFileSite({ 'env/.env': 'DK_PUBLISH_DRAFTS=off\n' }, "export default { vite: { envDir: 'env' } };\n");
+    // check-links and redirect-coverage --docs evaluate the config and follow its envDir.
+    const links = gate('check-links.mjs', [site.docs]);
+    expect(links.stdout).toContain(`check-links: ${OFF_FROM_FILE}`);
+    const covArgs = [site.baseline, site.dist, '--declared-redirects', site.declared];
+    const withDocs = gate('check-redirect-coverage.mjs', [...covArgs, '--docs', site.docs]);
+    expect(withDocs.stdout).toContain(`redirect-coverage: ${OFF_FROM_FILE}`);
+    // Without the config evaluated, a config that sets envDir is a named failure; --env-dir answers it.
+    for (const [script, args, target] of [
+      ['check-redirect-coverage.mjs', covArgs, 'redirect-coverage'],
+      ['assert-build-artifacts.mjs', [site.dist], 'assert-build-artifacts'],
+    ] as const) {
+      const refused = gate(script, [...args]);
+      expect(refused.status, `${script} refuses`).not.toBe(0);
+      expect(`${refused.stdout}${refused.stderr}`).toMatch(/\[dk-drafts\].*vite\.envDir.*--env-dir <dir\|false>/);
+      const given = gate(script, [...args, '--env-dir', 'env']);
+      expect(given.stdout, script).toContain(`${target}: ${OFF_FROM_FILE}`);
+    }
+    // `--env-dir false` is "no env files": the default applies.
+    expect(gate('assert-build-artifacts.mjs', [site.dist, '--env-dir', 'false']).stdout).toContain(ON_BY_DEFAULT);
   });
 
   it('an env-file-only value: the redirect-coverage gate sees what the integration saw', () => {
