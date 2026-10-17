@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -375,8 +376,9 @@ function collectLinkObjects(doc) {
  * An href outside the site fails too: these links point at the site's own output.
  */
 async function assertAgentLinksResolve(distDir, index) {
-  // The gate reads the index at `dist/<INDEX_RELPATH>`; the site base is whatever
-  // precedes that path in the index's own `self` link. No derivable base is a failure.
+  // The gate reads the index at `dist/<INDEX_RELPATH>` (the `--index-path` value, default
+  // `api/index.json`); the site base is whatever precedes that path in the index's own
+  // `self` link. No derivable base is a failure.
   const indexRel = INDEX_RELPATH.split(path.sep).join('/');
   const selfSuffix = `/${indexRel}`;
   const selfHref = index?._links?.self?.href;
@@ -389,14 +391,57 @@ async function assertAgentLinksResolve(distDir, index) {
   if (selfPath === null || !selfPath.endsWith(selfSuffix)) {
     fail(
       `agent _links: cannot derive the site base — ${indexRel}'s _links.self.href is ${JSON.stringify(selfHref ?? null)}, ` +
-        `which must be an absolute URL ending in ${selfSuffix} (the file this gate read). If the index route is mounted ` +
-        `elsewhere, its indexPath must match where the build emits it (#103)`,
+        `which must be an absolute URL ending in ${selfSuffix} (the file this gate read). --index-path is relative to ` +
+        `dist, so drop any site-base prefix from it; if the index route is mounted elsewhere, pass its path relative ` +
+        `to the site base as --index-path and make its indexPath match where the build emits it (#103)`,
     );
   }
   const selfUrl = new URL(selfHref);
   const basePath = selfPath.slice(0, selfPath.length - selfSuffix.length);
+  /** The `dist`-relative file an in-site href names, or null when it is outside the site. */
+  const builtRelOf = (href) => {
+    const url = new URL(href, selfUrl);
+    const inSite = url.origin === selfUrl.origin && (url.pathname === basePath || url.pathname.startsWith(`${basePath}/`));
+    if (!inSite) return { url, rel: null };
+    let rel = decodeURIComponent(url.pathname.slice(basePath.length)).replace(/^\//, '');
+    if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+    // A decoded `..` (e.g. `..%2F..%2Fx.json`) must not walk out of `dist`: treat it as outside the site.
+    const abs = path.resolve(distDir, rel);
+    if (abs !== distDir && !abs.startsWith(distDir + path.sep)) return { url, rel: null };
+    return { url, rel };
+  };
+  // Scan set (follow-the-links): start from the index and every JSON beside it (`dirname(indexPath)`,
+  // `api/` by default), then follow every in-site `.json` href of every scanned doc until the set stops
+  // growing, so the index's own top-level `_links` targets (bibliography, scenarios) are walked wherever
+  // they live, independent of directory layout.
+  const scan = new Set([path.join(distDir, INDEX_RELPATH)]);
+  const indexDir = path.dirname(INDEX_RELPATH);
+  if (indexDir !== '.' && existsSync(path.join(distDir, indexDir))) {
+    for (const file of await jsonFilesUnder(path.join(distDir, indexDir))) scan.add(file);
+  }
+  const queue = [...scan];
+  while (queue.length > 0) {
+    const file = queue.pop();
+    let doc;
+    try {
+      doc = JSON.parse(await readFile(file, 'utf8'));
+    } catch {
+      continue; // reported as invalid JSON by the check loop below
+    }
+    for (const links of collectLinkObjects(doc)) {
+      for (const href of linkHrefsOf(links)) {
+        const { rel } = builtRelOf(href);
+        if (rel === null || !rel.endsWith('.json')) continue;
+        const abs = path.join(distDir, rel);
+        if (!scan.has(abs) && existsSync(abs)) {
+          scan.add(abs);
+          queue.push(abs);
+        }
+      }
+    }
+  }
   let checked = 0;
-  for (const file of await jsonFilesUnder(path.join(distDir, 'api'))) {
+  for (const file of [...scan].sort()) {
     let doc;
     try {
       doc = JSON.parse(await readFile(file, 'utf8'));
@@ -406,11 +451,8 @@ async function assertAgentLinksResolve(distDir, index) {
     const label = path.relative(distDir, file).split(path.sep).join('/');
     for (const links of collectLinkObjects(doc)) {
       for (const href of linkHrefsOf(links)) {
-        const url = new URL(href, selfUrl);
-        const inSite = url.origin === selfUrl.origin && (url.pathname === basePath || url.pathname.startsWith(`${basePath}/`));
-        if (!inSite) fail(`agent _links: ${label} links to ${href}, which is outside the site (${selfUrl.origin}${basePath}/)`);
-        let rel = decodeURIComponent(url.pathname.slice(basePath.length)).replace(/^\//, '');
-        if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+        const { rel } = builtRelOf(href);
+        if (rel === null) fail(`agent _links: ${label} links to ${href}, which is outside the site (${selfUrl.origin}${basePath}/)`);
         if (!existsSync(path.join(distDir, rel))) {
           fail(`agent _links: ${label} links to ${href}, but ${rel} was not built`);
         }
@@ -427,7 +469,7 @@ async function assertAgentLinksResolve(distDir, index) {
   if (Array.isArray(index.pages) && index.pages.length > 0 && pageHrefs === 0) {
     fail(`agent _links: the index lists ${index.pages.length} page(s) but none carries a _links href (emission regression)`);
   }
-  ok(`agent _links: all ${checked} href(s) in api/**/*.json resolve to a built file`);
+  ok(`agent _links: all ${checked} href(s) in ${scan.size} agent JSON file(s) resolve to a built file (index: ${indexRel})`);
 }
 
 /** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
@@ -475,8 +517,53 @@ const DK_DIAGRAM_VAR_RE =
 
 // ---------------------------------------------------------------------------
 
-/** The agent index file, relative to dist. */
-const INDEX_RELPATH = path.join('api', 'index.json');
+/** The agent index file, relative to dist; `--index-path` replaces the default in `main`. */
+let INDEX_RELPATH = path.join('api', 'index.json');
+
+/**
+ * Take `--index-path <dist-relative path>` out of the arguments (FR-006). The value is relative to
+ * `dist`, which never nests the site base; one leading `/` is stripped. A `..` segment, an absolute
+ * or drive path, or an empty value is refused with exit 2. Other arguments pass through untouched.
+ *
+ * @param {readonly string[]} args
+ * @returns {{ indexPath: string | undefined, rest: string[] }}
+ */
+function takeIndexPathFlag(args) {
+  const flag = '--index-path';
+  const at = args.indexOf(flag);
+  if (at === -1) return { indexPath: undefined, rest: [...args] };
+  const rest = [...args.slice(0, at), ...args.slice(at + 2)];
+  const raw = args[at + 1];
+  const refuse = (why) => {
+    process.stderr.write(`assert:artifacts: ${flag} ${JSON.stringify(raw ?? null)} refused — ${why}\n`);
+    process.exit(2);
+  };
+  if (raw === undefined || raw.startsWith('--')) refuse('the flag needs a value: --index-path <path relative to dist>');
+  const value = raw.replace(/^\//, '');
+  if (value === '') refuse('the path is empty');
+  if (value.startsWith('/') || value.startsWith('\\') || /^[A-Za-z]:/.test(value)) refuse('the path must be relative to dist, not absolute');
+  if (value.split(/[\\/]/).includes('..')) refuse('the path must not contain a `..` segment');
+  return { indexPath: path.join(...value.split('/')), rest };
+}
+
+/**
+ * Take `--astro-config <file>` out of the arguments, like the other gates. A missing value exits 2;
+ * other arguments pass through untouched.
+ *
+ * @param {readonly string[]} args
+ * @returns {{ astroConfig: string | undefined, rest: string[] }}
+ */
+function takeAstroConfigFlag(args) {
+  const flag = '--astro-config';
+  const at = args.indexOf(flag);
+  if (at === -1) return { astroConfig: undefined, rest: [...args] };
+  const value = args[at + 1];
+  if (value === undefined || value.startsWith('--')) {
+    process.stderr.write(`assert:artifacts: ${flag} needs a value: ${flag} <file>\n`);
+    process.exit(2);
+  }
+  return { astroConfig: value, rest: [...args.slice(0, at), ...args.slice(at + 2)] };
+}
 
 /** Emit a precise failure and exit non-zero (first failure wins). */
 function fail(message) {
@@ -1950,16 +2037,20 @@ async function assertComponentCssDelivered(distDir) {
 // ---------------------------------------------------------------------------
 
 async function main() {
+  const { indexPath, rest: afterIndexPath } = takeIndexPathFlag(process.argv.slice(2));
+  const { astroConfig, rest: siteArgs } = takeAstroConfigFlag(afterIndexPath);
+  if (indexPath !== undefined) INDEX_RELPATH = indexPath;
+  const indexLabel = INDEX_RELPATH.split(path.sep).join('/');
   let site;
   try {
-    site = takeSiteFlags(process.argv.slice(2));
+    site = takeSiteFlags(siteArgs);
   } catch (err) {
     fail(err.message);
   }
   const distArg = site.rest[0];
   if (!distArg) {
     fail(
-      'usage: node src/scripts/assert-build-artifacts.mjs <distDir> [--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>]',
+      'usage: node src/scripts/assert-build-artifacts.mjs <distDir> [--index-path <path relative to dist>] [--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>] [--astro-config <file>]',
     );
   }
   const distDir = path.resolve(distArg);
@@ -1969,18 +2060,31 @@ async function main() {
   // the log opens with the value this gate checks the build against. The site
   // root is the one given, else the nearest Astro config above the output.
   let publishDrafts;
+  // `--env-dir` decides and skips evaluation; otherwise the site config is
+  // evaluated (once per run) and its `vite.envDir` is the build's (FR-010a).
+  let { siteRoot } = site;
+  let envDir = site.envDir;
+  if (envDir === undefined) {
+    try {
+      ({ siteRoot, envDir } = evaluateGateConfig({
+        checkedDir: distDir,
+        siteRoot,
+        astroConfig,
+        tool: 'assert-build-artifacts',
+      }));
+    } catch (err) {
+      // Fail closed: a config that cannot be evaluated (or a missing --astro-config file) is a
+      // usage/config error, exit 2, never a guess at the env files.
+      process.stderr.write(`${err instanceof ConfigEvalError ? evalRefusal(err, 'assert-build-artifacts') : err.message}\n`);
+      process.exit(2);
+    }
+  }
   try {
-    const resolved = resolveDraftPublicationForGate({
-      checkedDir: distDir,
-      siteRoot: site.siteRoot,
-      mode: site.mode,
-      // This gate does not evaluate the site config: `--env-dir` carries the build's `vite.envDir`.
-      envDir: site.envDir,
-      configEvaluated: false,
-    });
+    const resolved = resolveDraftPublicationForGate({ checkedDir: distDir, siteRoot, mode: site.mode, envDir });
     publishDrafts = resolved.publish;
     console.log(`assert-build-artifacts: ${resolved.summary}`);
   } catch (err) {
+    // An env file that does not parse is a failed check (exit 1), as before.
     fail(err.message);
   }
 
@@ -2110,8 +2214,14 @@ async function main() {
 
   // 4) agent index JSON — valid JSON, expected top-level shape, pinned count.
   const indexAbs = path.join(distDir, INDEX_RELPATH);
-  await assertNonEmptyFile(indexAbs, 'agent index (api/index.json)');
-  const indexText = await readTextOrFail(indexAbs, 'agent index (api/index.json)');
+  if (indexPath !== undefined && !existsSync(indexAbs)) {
+    fail(
+      `agent index: --index-path ${indexLabel} names no file under ${distDir}. The path is relative to dist, ` +
+        `which does not nest the site base: drop any base prefix from it`,
+    );
+  }
+  await assertNonEmptyFile(indexAbs, `agent index (${indexLabel})`);
+  const indexText = await readTextOrFail(indexAbs, `agent index (${indexLabel})`);
   let index;
   try {
     index = JSON.parse(indexText);
@@ -2288,7 +2398,7 @@ async function main() {
   if (scenarioIndex.features.length !== specPages.length) {
     fail(
       `scenario index: features.length (${scenarioIndex.features.length}) does not match the ` +
-        `${specPages.length} published behaviour Specification page(s) in api/index.json`,
+        `${specPages.length} published behaviour Specification page(s) in ${indexLabel}`,
     );
   }
   const scenarioIds = scenarioIndex.features.map((f) => f.id);

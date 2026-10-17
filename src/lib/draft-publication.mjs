@@ -232,7 +232,7 @@ export function resolveEnvSource({ root, envDir }) {
 }
 
 /** The file names Astro accepts for a site's config, in its own lookup order. */
-const ASTRO_CONFIG_NAMES = [
+export const ASTRO_CONFIG_NAMES = [
   'astro.config.mjs',
   'astro.config.js',
   'astro.config.ts',
@@ -240,6 +240,17 @@ const ASTRO_CONFIG_NAMES = [
   'astro.config.cjs',
   'astro.config.cts',
 ];
+
+/**
+ * The Astro config in `dir` itself (no walking up), first in Astro's lookup order.
+ *
+ * @param {string} dir
+ * @returns {string | null} absolute path
+ */
+export function findAstroConfig(dir) {
+  const found = ASTRO_CONFIG_NAMES.map((name) => path.join(path.resolve(dir), name)).find((file) => existsSync(file));
+  return found ?? null;
+}
 
 /**
  * The site root a checked directory belongs to: the nearest directory, starting
@@ -253,7 +264,7 @@ const ASTRO_CONFIG_NAMES = [
 export function findSiteRoot(fromDir, fallback = process.cwd()) {
   let dir = path.resolve(fromDir);
   for (;;) {
-    if (ASTRO_CONFIG_NAMES.some((name) => existsSync(path.join(dir, name)))) return dir;
+    if (findAstroConfig(dir)) return dir;
     const parent = path.dirname(dir);
     if (parent === dir) return path.resolve(fallback);
     dir = parent;
@@ -319,14 +330,11 @@ export function takeSiteFlags(args) {
  * directory the gate checks. The mode is `production` unless given, which is
  * what `astro build` and `astro preview` use.
  *
- * `envDir` is the site's `vite.envDir`, taken from the evaluated config or from
- * `--env-dir`. A gate that did not evaluate the config passes
- * `configEvaluated: false`; when it also has no `envDir` and the config text
- * mentions `envDir` or `envFile`, it cannot know where the build read its env files, so it
- * fails rather than guess (FR-010a).
+ * `envDir` is the site's `vite.envDir`: the evaluated config's, or `--env-dir`
+ * (`false` is "no env files"), which the caller resolves before it gets here.
  *
  * @param {{ checkedDir: string, siteRoot?: string, mode?: string, env?: EnvLike,
- *   envDir?: string | false, configEvaluated?: boolean }} options
+ *   envDir?: string | false }} options
  * @returns {PublishDraftsResolution & { siteRoot: string, mode: string, summary: string }}
  */
 export function resolveDraftPublicationForGate({
@@ -335,19 +343,8 @@ export function resolveDraftPublicationForGate({
   mode = 'production',
   env = process.env,
   envDir,
-  configEvaluated = true,
 }) {
   const root = siteRoot ? path.resolve(siteRoot) : findSiteRoot(checkedDir);
-  if (envDir === undefined && !configEvaluated) {
-    const config = ASTRO_CONFIG_NAMES.map((name) => path.join(root, name)).find((file) => existsSync(file));
-    if (config && /\b(?:envDir|envFile)\b/.test(readFileSync(config, 'utf8'))) {
-      throw new Error(
-        `[dk-drafts] ${path.basename(config)} sets vite.envDir or vite.envFile, and this gate does not evaluate the ` +
-          'site config, so it cannot tell where the build read its env files. Pass ' +
-          '--env-dir <dir|false> with the same value.',
-      );
-    }
-  }
   const resolved = resolveDraftPublication(root, mode, env, envDir);
   const shown = path.relative(process.cwd(), root) || '.';
   return {

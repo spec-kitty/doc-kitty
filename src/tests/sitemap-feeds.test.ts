@@ -8,7 +8,8 @@ import path from 'node:path';
  * existing draft gate). `config.ts` statically imports `@astrojs/starlight`; the
  * config-invariants suite mocks it, and we do the same so importing the module is
  * side-effect-free (we only exercise the exported `sitemapDraftFilter`, never the
- * full integrations array).
+ * full integrations array). The filter lives in `integrations/route-shaping.ts`;
+ * `config.ts` re-exports it, which the identity check below pins.
  */
 vi.mock('@astrojs/starlight', () => ({
   default: (config: Record<string, unknown>) => ({
@@ -18,7 +19,9 @@ vi.mock('@astrojs/starlight', () => ({
   }),
 }));
 
-const { sitemapDraftFilter } = await import('../lib/config.js');
+const config = await import('../lib/config.js');
+const routeShaping = await import('../lib/integrations/route-shaping.js');
+const { sitemapDraftFilter } = routeShaping;
 
 /** Write a docs tree (content .md files + optional sections.yaml) under a temp root. */
 function makeDocs(
@@ -78,6 +81,10 @@ sections:
     root = makeDocs(CONTENT, registry);
     roots.push(root);
     keep = sitemapDraftFilter(root, '/');
+  });
+
+  it('is re-exported from ./config as the very same function', () => {
+    expect(config.sitemapDraftFilter).toBe(routeShaping.sitemapDraftFilter);
   });
 
   it('keeps a published page whose section feeds sitemap', () => {

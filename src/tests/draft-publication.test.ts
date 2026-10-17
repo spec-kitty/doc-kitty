@@ -1045,41 +1045,70 @@ describe('one resolver for the build and its gates', () => {
     expect(run([])).toEqual({ resolved: 'off', unpublished: ['guides/wip.md'] });
   });
 
-  it('a gate reads vite.envDir from the config it evaluates, or from --env-dir when it cannot (FR-010a)', () => {
+  it('every gate reads vite.envDir from the config it evaluates, with no flag; --env-dir overrides (FR-010a, #173)', () => {
     const site = envFileSite({ 'env/.env': 'DK_PUBLISH_DRAFTS=off\n' }, "export default { vite: { envDir: 'env' } };\n");
-    // check-links and redirect-coverage --docs evaluate the config and follow its envDir.
     const links = gate('check-links.mjs', [site.docs]);
     expect(links.stdout).toContain(`check-links: ${OFF_FROM_FILE}`);
     const covArgs = [site.baseline, site.dist, '--declared-redirects', site.declared];
-    const withDocs = gate('check-redirect-coverage.mjs', [...covArgs, '--docs', site.docs]);
-    expect(withDocs.stdout).toContain(`redirect-coverage: ${OFF_FROM_FILE}`);
-    // Without the config evaluated, a config that sets envDir is a named failure; --env-dir answers it.
+    // redirect-coverage reads it with --docs and without; assert-build-artifacts without any flag.
+    expect(gate('check-redirect-coverage.mjs', [...covArgs, '--docs', site.docs]).stdout).toContain(
+      `redirect-coverage: ${OFF_FROM_FILE}`,
+    );
+    for (const [script, args, target] of [
+      ['check-redirect-coverage.mjs', covArgs, 'redirect-coverage'],
+      ['assert-build-artifacts.mjs', [site.dist], 'assert-build-artifacts'],
+    ] as const) {
+      expect(gate(script, [...args]).stdout, `${script} evaluates the config`).toContain(`${target}: ${OFF_FROM_FILE}`);
+      expect(gate(script, [...args, '--env-dir', 'env']).stdout, script).toContain(`${target}: ${OFF_FROM_FILE}`);
+      // `--env-dir false` is "no env files": the default applies, whatever the config says.
+      expect(gate(script, [...args, '--env-dir', 'false']).stdout, script).toContain(ON_BY_DEFAULT);
+    }
+    // Vite's `envFile: false` also means no env files; the evaluating gate follows it.
+    const legacy = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=off\n' }, 'export default { vite: { envFile: false } };\n');
+    expect(gate('assert-build-artifacts.mjs', [legacy.dist]).stdout).toContain(ON_BY_DEFAULT);
+  });
+
+  it('a gate follows an envDir set in an imported base config, where a text search found nothing (#173)', () => {
+    const site = envFileSite(
+      { 'env/.env': 'DK_PUBLISH_DRAFTS=off\n' },
+      "import base from './astro.base.mjs';\nexport default { ...base };\n",
+    );
+    writeFileSync(path.join(site.root, 'astro.base.mjs'), "export default { vite: { envDir: 'env' } };\n");
+    const covArgs = [site.baseline, site.dist, '--declared-redirects', site.declared];
+    expect(gate('assert-build-artifacts.mjs', [site.dist]).stdout).toContain(`assert-build-artifacts: ${OFF_FROM_FILE}`);
+    expect(gate('check-redirect-coverage.mjs', covArgs).stdout).toContain(`redirect-coverage: ${OFF_FROM_FILE}`);
+  });
+
+  it('a config that will not evaluate fails the gates closed (exit 2); --env-dir on the same site passes (#173)', () => {
+    const site = envFileSite({ 'env/.env': 'DK_PUBLISH_DRAFTS=off\n' }, "throw new Error('boom');\n");
+    const covArgs = [site.baseline, site.dist, '--declared-redirects', site.declared];
     for (const [script, args, target] of [
       ['check-redirect-coverage.mjs', covArgs, 'redirect-coverage'],
       ['assert-build-artifacts.mjs', [site.dist], 'assert-build-artifacts'],
     ] as const) {
       const refused = gate(script, [...args]);
-      expect(refused.status, `${script} refuses`).not.toBe(0);
-      expect(`${refused.stdout}${refused.stderr}`).toMatch(/\[dk-drafts\].*vite\.envDir.*--env-dir <dir\|false>/);
-      const given = gate(script, [...args, '--env-dir', 'env']);
-      expect(given.stdout, script).toContain(`${target}: ${OFF_FROM_FILE}`);
+      expect(refused.status, `${script} fails closed`).toBe(2);
+      expect(refused.stderr).toMatch(/could not evaluate .*astro\.config\.mjs \(.*boom.*\)\..*--env-dir <dir\|false>/);
+      // Same fixture, positive control: the flag skips evaluation.
+      expect(gate(script, [...args, '--env-dir', 'env']).stdout, script).toContain(`${target}: ${OFF_FROM_FILE}`);
     }
-    // `--env-dir false` is "no env files": the default applies.
-    expect(gate('assert-build-artifacts.mjs', [site.dist, '--env-dir', 'false']).stdout).toContain(ON_BY_DEFAULT);
-    // Vite's `envFile: false` also moves the env files, so the unevaluated gate refuses it too.
-    const legacy = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=off\n' }, 'export default { vite: { envFile: false } };\n');
-    const legacyRefused = gate('assert-build-artifacts.mjs', [legacy.dist]);
-    expect(legacyRefused.status).not.toBe(0);
-    expect(`${legacyRefused.stdout}${legacyRefused.stderr}`).toMatch(/\[dk-drafts\].*vite\.envFile.*--env-dir <dir\|false>/);
-    // With several roots each is resolved on its own: a root whose config was evaluated does not
-    // vouch for one whose config was not (its config sits above it, and sets envDir).
+  });
+
+  it('check-links refuses a root whose site config is not the one evaluated for it (fail closed)', () => {
+    const site = envFileSite({ 'env/.env': 'DK_PUBLISH_DRAFTS=off\n' }, "export default { vite: { envDir: 'env' } };\n");
+    // The nested docs tree has no config of its own: its site config sits above it, and sets envDir.
     const outer = path.join(site.tmp, 'outer');
     mkdirSync(path.join(outer, 'nested', 'docs'), { recursive: true });
     writeFileSync(path.join(outer, 'astro.config.mjs'), "export default { vite: { envDir: 'env' } };\n");
     writeFileSync(path.join(outer, 'nested', 'docs', 'README.md'), '---\ntitle: Home\n---\n');
-    const twoRoots = gate('check-links.mjs', ['--strict', site.docs, path.join(outer, 'nested', 'docs')]);
+    const nested = path.join(outer, 'nested', 'docs');
+    const twoRoots = gate('check-links.mjs', ['--strict', site.docs, nested]);
     expect(twoRoots.status, twoRoots.stdout).toBe(2);
-    expect(twoRoots.stderr).toMatch(/\[dk-drafts\].*vite\.envDir/);
+    expect(twoRoots.stderr).toMatch(/built by .*outer.astro\.config\.mjs.*--env-dir <dir\|false>/);
+    // Positive control, same roots: --env-dir decides, so nothing is left to vouch for.
+    const decided = gate('check-links.mjs', ['--strict', site.docs, nested, '--env-dir', 'env']);
+    expect(decided.stderr).not.toContain('built by');
+    expect(decided.status).not.toBe(2);
   });
 
   it('an env-file-only value: the redirect-coverage gate sees what the integration saw', () => {
@@ -1163,6 +1192,7 @@ describe('one resolver for the build and its gates', () => {
     expect(staged.stdout).toContain(OFF_FROM_FILE);
     expect(staged.stdout).toContain('mode: staging)');
     expect(gate('check-redirect-coverage.mjs', [...args, '--site-root']).status).toBe(2);
+    expect(gate('assert-build-artifacts.mjs', [elsewhere, '--astro-config']).status).toBe(2);
   });
 
   it('the development env file reaches the dev server only, so a gate in the default mode ignores it', () => {

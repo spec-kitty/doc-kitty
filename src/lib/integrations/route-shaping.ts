@@ -8,12 +8,13 @@ import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
 import type { AstroIntegration } from 'astro';
-import { resolveIndexEntries, type IndexBasenameOption } from '../metadata.js';
+import { resolveIndexEntries, sectionOf, type IndexBasenameOption } from '../metadata.js';
+import { resolveSectionRegistry, sectionFeeds, feedsSurface } from '../sections.js';
 import { buildDirectoryMeta, type DirectoryMetaInput } from '../route-shaping.js';
 import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
 import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
-import { normalizeBasePrefix } from './shared.js';
+import { normalizeBasePrefix, siteDraftRoutes } from './shared.js';
 
 // ===========================================================================
 // Sidebar and table-of-contents shaping seam (FR-011, FR-019..FR-023, C-004).
@@ -201,5 +202,68 @@ export function routeShapingIntegration(
         sink.clear();
       },
     },
+  };
+}
+
+/**
+ * Build the `@astrojs/sitemap` `filter`. It receives each candidate page's full
+ * absolute URL and returns TRUE to keep the page. A page is kept iff BOTH gates
+ * pass (INV-1 publication AND the section-level `feeds`):
+ *
+ *   1. **Draft gate.** Drop a page iff its route (the pathname with the site
+ *      `base` stripped) EQUALS a draft route exactly. The match is ANCHORED — a
+ *      plain `endsWith` would over-exclude a published page whose slug tail
+ *      coincides with a draft's (e.g. `/architecture/overview/` vs a draft
+ *      `/overview/`).
+ *   2. **`feeds` gate.** Drop a page whose section does not feed `sitemap`.
+ *      Resolved from `<docsDir>/_meta/sections.yaml`; a section that OMITS
+ *      `feeds` feeds ALL FOUR surfaces (absent = all, {@link feedsSurface}), and
+ *      an ABSENT registry means no feeds filtering at all — byte-compatible with
+ *      the pre-feeds sitemap (a registry that declares no `feeds` drops nothing).
+ *
+ * The draft routes are read LAZILY, on the filter's first call (sitemap runs it
+ * in `astro:build:done`), NOT when the integrations array is built: the opt-in
+ * `doc-kitty:gherkin` integration (ADR-0046) writes `kind: Specification` pages
+ * in `astro:config:setup`, which runs AFTER `defineDocKittyIntegrations`
+ * returns. An eager read would gate the sitemap on the PRE-generation tree, so a
+ * feature that had just gained `@wip` would leak its draft URL into the sitemap
+ * (and one that just lost it would be wrongly dropped) for that build, while the
+ * collection-backed surfaces (llms.txt, RSS, agent API) saw the fresh status.
+ *
+ * Exported so the composed draft+feeds gate is unit-testable without spinning up
+ * the whole Astro integrations array.
+ */
+export function sitemapDraftFilter(
+  docsDir: string,
+  base: string,
+  indexBasename?: IndexBasenameOption,
+): (page: string) => boolean {
+  let routes: Set<string> | undefined;
+  const basePrefix = normalizeBasePrefix(base);
+  // Load the registry from the SAME docs root the sidebar synthesis uses. Absent
+  // registry → `feeds` undefined → `feedsSurface` is always true (no filtering).
+  const registry = resolveSectionRegistry(path.resolve(process.cwd(), docsDir));
+  const feeds = registry ? sectionFeeds(registry) : undefined;
+  return (page: string): boolean => {
+    let pathname: string;
+    try {
+      pathname = new URL(page).pathname;
+    } catch {
+      pathname = page;
+    }
+    let normalized = pathname.endsWith('/') ? pathname : `${pathname}/`;
+    // Strip the site base prefix so what remains is the base-free doc route.
+    if (basePrefix && normalized.startsWith(`${basePrefix}/`)) {
+      normalized = normalized.slice(basePrefix.length) || '/';
+    }
+    // Anchored equality: the route must BE a draft route, not merely end with one.
+    // Read once, at the first call (after every config:setup generator has run).
+    routes ??= siteDraftRoutes(docsDir, indexBasename);
+    if (routes.has(normalized)) return false;
+    // `feeds` gate: derive the section from the base-free route (first path
+    // segment; the root '/' → section '') and drop it if it does not feed sitemap.
+    const slug = normalized.replace(/^\//, '').replace(/\/$/, '');
+    if (!feedsSurface(feeds, sectionOf(slug), 'sitemap')) return false;
+    return true;
   };
 }
