@@ -6,6 +6,11 @@
  * pure string / hast-node exercise (the config-side resolver reads only env).
  */
 import { describe, it, expect } from 'vitest';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { checkPlantumlSources } from '../scripts/plantuml-guard.mjs';
 import {
   parsePlantumlMeta,
   injectSkinparam,
@@ -266,5 +271,34 @@ describe('diagramFigure — PlantUML raw-node branch (shared figure + var rewrit
     expect(out).toContain('<span class="dk-diagram__attr">Credit</span>');
     expect(out).not.toContain('javascript:');
     expect(out).not.toContain('<a ');
+  });
+});
+
+describe('no-plantuml.com source guard (the build gate\'s C-001 step)', () => {
+  const realLib = fileURLToPath(new URL('../lib', import.meta.url));
+
+  it('passes on the shipped src/lib and finds the default wherever it is defined', () => {
+    const res = checkPlantumlSources(realLib);
+    expect(res).toMatchObject({ ok: true, defaultServer: DEFAULT_PLANTUML_SERVER_URL });
+  });
+
+  it('follows the constant to any file, and fails when it is gone or points at plantuml.com', () => {
+    const lib = mkdtempSync(path.join(tmpdir(), 'dk-plantuml-guard-'));
+    try {
+      mkdirSync(path.join(lib, 'deep', 'er'), { recursive: true });
+      const moved = path.join(lib, 'deep', 'er', 'moved.ts');
+      writeFileSync(moved, "export const DEFAULT_PLANTUML_SERVER_URL = 'http://localhost:8091/svg/';\n");
+      expect(checkPlantumlSources(lib)).toMatchObject({ ok: true, defaultServer: 'http://localhost:8091/svg/' });
+
+      writeFileSync(moved, "export const RENAMED = 'http://localhost:8091/svg/';\n");
+      const missing = checkPlantumlSources(lib);
+      expect(missing.ok).toBe(false);
+      expect(missing).toMatchObject({ message: expect.stringContaining('could not find a DEFAULT_PLANTUML_SERVER_URL') });
+
+      writeFileSync(moved, "export const DEFAULT_PLANTUML_SERVER_URL = 'https://www.plantuml.com/plantuml/svg/';\n");
+      expect(checkPlantumlSources(lib).ok).toBe(false);
+    } finally {
+      rmSync(lib, { recursive: true, force: true });
+    }
   });
 });
