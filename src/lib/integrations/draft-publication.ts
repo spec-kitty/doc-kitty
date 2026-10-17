@@ -15,6 +15,7 @@ import {
   PUBLISH_DRAFTS_DEFAULT,
   unpublishedDraftPaths,
   resolveDraftPublication,
+  activeMode,
   redirectsToDrafts,
 } from '../draft-publication.mjs';
 import { DK_PUBLISH_DRAFTS_RESOLVED_ENV, setInternalEnv } from '../internal-env.mjs';
@@ -30,8 +31,9 @@ const REDIRECT_STUB_RE = /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta htt
  * (FR-013..FR-018, research R8).
  *
  * The value comes from the process environment, else from the site's env files
- * for the build mode (`development` for `astro dev`, `production` for anything
- * else, so `.env.development` reaches the dev server only), else `on`. An
+ * for the build mode (`--mode <x>` when given, else `development` for `astro dev`
+ * and `production` for anything else, so `.env.development` reaches the dev
+ * server only), read from Vite's `envDir` when the site sets one, else `on`. An
  * invalid value throws here, which stops the build before anything is emitted.
  * A live deployment sets `off`; a build that leaves the setting unset says in
  * its log line how to turn drafts off.
@@ -74,8 +76,8 @@ export function draftPublicationIntegration(
     hooks: {
       'astro:config:setup': ({ command, config }) => {
         const root = config?.root ? fileURLToPath(config.root) : process.cwd();
-        const mode = command === 'dev' ? 'development' : 'production';
-        const resolved = resolveDraftPublication(root, mode);
+        const mode = activeMode({ argv: process.argv, command });
+        const resolved = resolveDraftPublication(root, mode, process.env, config?.vite?.envDir);
         publish = resolved.publish;
         setInternalEnv(DK_PUBLISH_DRAFTS_RESOLVED_ENV, publish ? 'on' : 'off');
         const drafts = publish ? new Set<string>() : siteDraftRoutes(docsDir, indexBasename);

@@ -366,7 +366,7 @@ export function run(argv) {
     console.error(
       'Usage: check-redirect-coverage.mjs <baseline-file> <dist-dir> [--redirects <map-file>] ' +
         '[--docs <docs-dir> [--index-basename <a,b>] [--declared-redirects <map-file>]] ' +
-        '[--site-root <dir>] [--mode <mode>]',
+        '[--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>]',
     );
     process.exit(2);
     return;
@@ -391,6 +391,25 @@ export function run(argv) {
       return;
     }
   }
+  // Index names come from the site config next to the docs folder (FR-007); the
+  // flag, when given, must agree with it (FR-008).
+  let draftRoutes = new Set();
+  let indexNames;
+  if (docsDir) {
+    try {
+      const resolved = resolveSiteIndexBasenames(docsDir, {
+        configPath: astroConfig,
+        flag: indexBasename ? indexBasename.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        tool: 'redirect-coverage',
+      });
+      indexNames = resolved;
+      draftRoutes = draftRoutesOf(path.resolve(docsDir), resolved.names);
+    } catch (err) {
+      console.error(err.message);
+      process.exit(2);
+      return;
+    }
+  }
   // The same resolver the build uses, so a value kept in the site's env files
   // counts here too. The site root is the one given, else the nearest Astro
   // config above the build output.
@@ -400,9 +419,14 @@ export function run(argv) {
       checkedDir: distDir,
       siteRoot: site.siteRoot,
       mode: site.mode,
+      // With --docs the site config was evaluated above and its `vite.envDir` is the build's;
+      // without it, `--env-dir` carries the value (FR-010a).
+      envDir: site.envDir ?? indexNames?.envDir,
+      configEvaluated: Boolean(indexNames?.configEvaluated),
     });
     publishDrafts = resolved.publish;
     console.log(`redirect-coverage: ${resolved.summary}`);
+    if (indexNames) announceIndexNames(indexNames);
   } catch (err) {
     console.error(`redirect-coverage: ${err.message}`);
     process.exit(2);
@@ -415,24 +439,6 @@ export function run(argv) {
   if (declaredFile) {
     for (const [from, to] of Object.entries(loadRedirectMap(declaredFile))) {
       if (typeof to === 'string') declaredRedirects[normalizeUrlPath(from)] = to;
-    }
-  }
-  // Index names come from the site config next to the docs folder (FR-007); the
-  // flag, when given, must agree with it (FR-008).
-  let draftRoutes = new Set();
-  if (docsDir) {
-    try {
-      const resolved = resolveSiteIndexBasenames(docsDir, {
-        configPath: astroConfig,
-        flag: indexBasename ? indexBasename.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
-        tool: 'redirect-coverage',
-      });
-      announceIndexNames(resolved);
-      draftRoutes = draftRoutesOf(path.resolve(docsDir), resolved.names);
-    } catch (err) {
-      console.error(err.message);
-      process.exit(2);
-      return;
     }
   }
   const { uncovered, unpublished, deadStubs, ok } = checkCoverage(distDir, baselineUrls, redirectMap, {

@@ -27,7 +27,7 @@ import { DK_INDEX_BASENAME_ENV as ENV_NAME, parsePublishedIndexBasenames } from 
 const EVALUATE_TIMEOUT_MS = 30_000;
 const CONFIG_NAMES = ['astro.config.mjs', 'astro.config.ts', 'astro.config.js'];
 
-/** Config path -> names published by evaluating it (null: it never published). */
+/** Config path -> `{ names, envDir }` from evaluating it (names null: it never published; envDir null: it sets none). */
 const evaluated = new Map();
 
 /** A path as shown to a person: relative to the working directory when inside it. */
@@ -43,8 +43,9 @@ function sameNames(a, b) {
 }
 
 /**
- * Evaluate `configPath` and return the names it published, or null when it did
- * not call `defineDocKittyIntegrations`. Throws `could not load` on any failure.
+ * Evaluate `configPath` and return the names it published (null when it did not
+ * call `defineDocKittyIntegrations`) and its `vite.envDir` (null when unset;
+ * `false` is Vite's "no env files"). Throws `could not load` on any failure.
  */
 function namesFromConfig(configPath, siteDir, tool, timeoutMs) {
   if (evaluated.has(configPath)) return evaluated.get(configPath);
@@ -66,8 +67,9 @@ function namesFromConfig(configPath, siteDir, tool, timeoutMs) {
     answer = { ok: false, message: (res.stderr || 'the config process produced no answer').trim() };
   }
   if (!answer.ok) throw new Error(`[${tool}] could not load ${shown(configPath)}: ${answer.message}`);
-  evaluated.set(configPath, answer.names);
-  return answer.names;
+  const result = { names: answer.names, envDir: answer.envDir ?? null };
+  evaluated.set(configPath, result);
+  return result;
 }
 
 /**
@@ -81,7 +83,8 @@ function namesFromConfig(configPath, siteDir, tool, timeoutMs) {
  *   when it is not next to the docs folder. It must exist and load.
  * @param {number} [options.timeoutMs] Evaluation time limit (default 30 s).
  * @param {string} [options.tool] Name used in messages (default `dk-check-links`).
- * @returns {{ names: string[], source: string, fromConfig: boolean, warning?: string }}
+ * @returns {{ names: string[], source: string, fromConfig: boolean, envDir?: string | false,
+ *   configEvaluated: boolean, warning?: string }}
  *   `source` is the one-line account of where the names came from, for the CLI to
  *   print (see {@link announceIndexNames}); `fromConfig` is whether the site config
  *   set them; `warning` is set when no site config was found and `README` is assumed.
@@ -101,7 +104,10 @@ export function resolveSiteIndexBasenames(root, options = {}) {
     configPath = CONFIG_NAMES.map((name) => join(siteDir, name)).find((p) => existsSync(p));
   }
 
-  const published = configPath ? namesFromConfig(configPath, siteDir, tool, timeoutMs) : null;
+  const evaluatedConfig = configPath ? namesFromConfig(configPath, siteDir, tool, timeoutMs) : null;
+  const published = evaluatedConfig?.names ?? null;
+  // `undefined` when no config was evaluated; `null` is not passed on, so a gate reads it as "unset".
+  const envDir = evaluatedConfig ? (evaluatedConfig.envDir ?? undefined) : undefined;
 
   if (published) {
     if (flag && !sameNames(flag, published)) {
@@ -116,15 +122,18 @@ export function resolveSiteIndexBasenames(root, options = {}) {
       names: published,
       source: `index names: ${published.join(',')} (from ${shown(configPath)})`,
       fromConfig: true,
+      envDir,
+      configEvaluated: true,
     };
   }
-  if (flag) return { names: flag, source: `index names: ${flag.join(',')} (from --index-basename)`, fromConfig: false };
+  if (flag) return { names: flag, source: `index names: ${flag.join(',')} (from --index-basename)`, fromConfig: false, envDir, configEvaluated: Boolean(evaluatedConfig) };
   if (!configPath) {
     const shownRoot = shown(resolve(root));
     return {
       names: ['README'],
       source: `index names: README (default; no astro.config.* next to ${shownRoot})`,
       fromConfig: false,
+      configEvaluated: false,
       warning:
         `no astro.config.* found for ${shownRoot}; assuming index names README ` +
         '\u2014 pass --astro-config <path> if your site config lives elsewhere',
@@ -134,6 +143,8 @@ export function resolveSiteIndexBasenames(root, options = {}) {
     names: ['README'],
     source: `index names: README (default; ${shown(configPath)} does not call defineDocKittyIntegrations)`,
     fromConfig: false,
+    envDir,
+    configEvaluated: true,
   };
 }
 
@@ -149,15 +160,18 @@ export function announceIndexNames(resolved, { log = console.log, warn = console
   if (resolved.warning) warn(`warning: ${resolved.warning}`);
 }
 
-/** Child-process side of {@link namesFromConfig}: print one JSON answer line. */
+/** Child-process side of {@link namesFromConfig}: print one JSON answer line,
+ * `{ ok, names, envDir }`. */
 async function evaluate(configPath, siteDir) {
   try {
     const astroPkg = createRequire(join(siteDir, 'package.json')).resolve('astro/package.json');
     const vitePath = createRequire(astroPkg).resolve('vite');
     const { runnerImport } = await import(pathToFileURL(vitePath).href);
-    await runnerImport(configPath, { configFile: false });
+    const { module } = await runnerImport(configPath, { configFile: false });
     const names = parsePublishedIndexBasenames(process.env[ENV_NAME]) ?? null;
-    console.log(JSON.stringify({ ok: true, names }));
+    // Vite's raw `envDir`: the build resolves it against the site root (FR-010a).
+    const envDir = module?.default?.vite?.envDir ?? null;
+    console.log(JSON.stringify({ ok: true, names, envDir }));
   } catch (err) {
     console.log(JSON.stringify({ ok: false, message: err instanceof Error ? err.message : String(err) }));
   }
