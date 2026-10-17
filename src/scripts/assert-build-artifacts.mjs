@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
   draftRoutesOf,
@@ -277,13 +278,6 @@ const PLANTUML_DEMO_RELPATH = path.join('architecture', 'plantuml-demonstrator',
 const PLANTUML_ACC_NAME = 'Build-time PlantUML render';
 const PLANTUML_CAPTION =
   'Markdown is parsed, the loader hands the themed source to a self-hosted PlantUML server, which renders the static SVG the reader is served with no client JavaScript.';
-// A plantuml.com *URL* (C-001) — matched only in URL position (a `//host`
-// authority or a `plantuml.com/plantuml` path), so prose that merely names
-// "plantuml.com" (this gate's own docs, the example page's explanation, the
-// config guard's error message) never false-fails. A real request to the public
-// endpoint — the thing C-001 forbids — always appears in one of these forms.
-const PLANTUML_COM_URL_RE = /(?:https?:)?\/\/[a-z0-9.-]*plantuml\.com|plantuml\.com\/plantuml/i;
-
 // The two demonstrator diagrams, in DOCUMENT ORDER, each keyed by the tokens the
 // no-JS degradation guarantee (FR-008/NFR-003) must preserve in the static HTML:
 //   - `keyword` — the diagram-TYPE declaration (proves the raw source survives),
@@ -437,7 +431,7 @@ async function textFilesUnder(dir) {
   }
   return out;
 }
-const TOOLKIT_CONFIG_SRC = path.join(REPO_ROOT, 'src', 'lib', 'integrations', 'diagrams.ts');
+const TOOLKIT_LIB_DIR = path.join(REPO_ROOT, 'src', 'lib');
 const PNPM_LOCKFILE = path.join(REPO_ROOT, 'pnpm-lock.yaml');
 // #13 (C-002): the build-render deps are exact-pinned (golden-file deps):
 // `@beoe/rehype-mermaid` (Mermaid) and `astro-plantuml` (PlantUML, WP02), AND the
@@ -1080,8 +1074,8 @@ async function assertPlantumlDemonstrator(distDir, mode) {
 
 /**
  * C-001 (#13) — the public plantuml.com endpoint is NEVER contacted. Two proofs:
- *   (a) the SHIPPED toolkit config (`src/lib/integrations/diagrams.ts`, the PlantUML stage's owner) contains no plantuml.com
- *       URL and its resolved default server is SELF-HOSTED (a localhost/private
+ *   (a) the SHIPPED toolkit sources (everything under `src/lib`) contain no plantuml.com
+ *       URL and the default server (`DEFAULT_PLANTUML_SERVER_URL`, found wherever it is defined) is SELF-HOSTED (a localhost/private
  *       host), so a default build cannot reach the public endpoint; and
  *   (b) no built artifact (the plantuml page + every shipped `_astro` asset)
  *       references a plantuml.com URL at runtime.
@@ -1089,25 +1083,10 @@ async function assertPlantumlDemonstrator(distDir, mode) {
  * (this file, the example page, the config's own guard message) never false-fails.
  */
 async function assertNoPlantumlDotCom(distDir) {
-  // (a) The shipped config: no plantuml.com URL; self-hosted default.
-  const configSrc = await readTextOrFail(TOOLKIT_CONFIG_SRC, `toolkit config (${TOOLKIT_CONFIG_SRC})`);
-  if (PLANTUML_COM_URL_RE.test(configSrc)) {
-    fail(
-      `no-plantuml.com: src/lib/integrations/diagrams.ts contains a plantuml.com URL — the PlantUML build stage must resolve ` +
-        `only a self-hosted server (#13 C-001)`,
-    );
-  }
-  const defMatch = /DEFAULT_PLANTUML_SERVER_URL\s*=\s*['"]([^'"]+)['"]/.exec(configSrc);
-  if (!defMatch) {
-    fail(`no-plantuml.com: could not find DEFAULT_PLANTUML_SERVER_URL in src/lib/integrations/diagrams.ts — the self-hosted default is unverifiable (#13 C-001)`);
-  }
-  const defaultServer = defMatch[1];
-  if (PLANTUML_COM_URL_RE.test(defaultServer) || /plantuml\.com/i.test(defaultServer)) {
-    fail(`no-plantuml.com: DEFAULT_PLANTUML_SERVER_URL is "${defaultServer}" — it must be a self-hosted server, never plantuml.com (#13 C-001)`);
-  }
-  if (!/^https?:\/\/(?:localhost|127\.0\.0\.1|\[?::1\]?|0\.0\.0\.0|[a-z0-9-]+)(?::\d+)?\//i.test(defaultServer)) {
-    fail(`no-plantuml.com: DEFAULT_PLANTUML_SERVER_URL "${defaultServer}" is not a recognisably self-hosted http(s) endpoint (#13 C-001)`);
-  }
+  // (a) The shipped sources: no plantuml.com URL anywhere in src/lib; self-hosted default.
+  const sources = checkPlantumlSources(TOOLKIT_LIB_DIR);
+  if (!sources.ok) fail(sources.message);
+  const defaultServer = sources.defaultServer;
 
   // (b) No built artifact references a plantuml.com URL.
   const demoAbs = path.join(distDir, PLANTUML_DEMO_RELPATH);
