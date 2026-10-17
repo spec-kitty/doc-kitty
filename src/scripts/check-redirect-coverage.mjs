@@ -73,6 +73,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { ConfigEvalError, assertEvaluatedConfigDecides, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import {
   draftRoutesOf,
   resolveDraftPublicationForGate,
@@ -366,7 +367,7 @@ export function run(argv) {
     console.error(
       'Usage: check-redirect-coverage.mjs <baseline-file> <dist-dir> [--redirects <map-file>] ' +
         '[--docs <docs-dir> [--index-basename <a,b>] [--declared-redirects <map-file>]] ' +
-        '[--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>]',
+        '[--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>] [--astro-config <file>]',
     );
     process.exit(2);
     return;
@@ -415,20 +416,42 @@ export function run(argv) {
   // config above the build output.
   let publishDrafts;
   try {
-    const resolved = resolveDraftPublicationForGate({
-      checkedDir: distDir,
-      siteRoot: site.siteRoot,
-      mode: site.mode,
-      // With --docs the site config was evaluated above and its `vite.envDir` is the build's;
-      // without it, `--env-dir` carries the value (FR-010a).
-      envDir: site.envDir ?? indexNames?.envDir,
-      configEvaluated: Boolean(indexNames?.configEvaluated),
-    });
+    // With --docs the config was evaluated above (index names + `vite.envDir`, one evaluation);
+    // without it, the config is evaluated here. `--env-dir` always decides the env files and,
+    // without --docs, skips evaluation (FR-010a).
+    let { siteRoot } = site;
+    let envDir = site.envDir;
+    if (indexNames) {
+      const docsSite = indexNames.configPath ? path.dirname(indexNames.configPath) : undefined;
+      if (siteRoot && docsSite && path.resolve(siteRoot) !== docsSite) {
+        throw new Error(
+          `--docs ${docsDir} belongs to the site at ${docsSite}, but --site-root is ${path.resolve(siteRoot)}. ` +
+            'Give both the same site.',
+        );
+      }
+      assertEvaluatedConfigDecides({
+        checkedDir: distDir,
+        siteRoot: siteRoot ?? docsSite,
+        evaluatedConfig: indexNames.configPath,
+        envDir: envDir,
+        label: `--docs ${docsDir}`,
+      });
+      siteRoot ??= docsSite;
+      envDir ??= indexNames.envDir;
+    } else if (envDir === undefined) {
+      ({ siteRoot, envDir } = evaluateGateConfig({
+        checkedDir: distDir,
+        siteRoot,
+        astroConfig,
+        tool: 'redirect-coverage',
+      }));
+    }
+    const resolved = resolveDraftPublicationForGate({ checkedDir: distDir, siteRoot, mode: site.mode, envDir });
     publishDrafts = resolved.publish;
     console.log(`redirect-coverage: ${resolved.summary}`);
     if (indexNames) announceIndexNames(indexNames);
   } catch (err) {
-    console.error(`redirect-coverage: ${err.message}`);
+    console.error(err instanceof ConfigEvalError ? evalRefusal(err, 'redirect-coverage') : `redirect-coverage: ${err.message}`);
     process.exit(2);
     return;
   }

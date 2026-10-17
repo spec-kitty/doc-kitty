@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -1949,6 +1950,12 @@ async function assertComponentCssDelivered(distDir) {
 
 // ---------------------------------------------------------------------------
 
+/** The value after `flag` in `args`, or undefined. */
+function argValue(args, flag) {
+  const i = args.indexOf(flag);
+  return i === -1 ? undefined : args[i + 1];
+}
+
 async function main() {
   let site;
   try {
@@ -1959,7 +1966,7 @@ async function main() {
   const distArg = site.rest[0];
   if (!distArg) {
     fail(
-      'usage: node src/scripts/assert-build-artifacts.mjs <distDir> [--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>]',
+      'usage: node src/scripts/assert-build-artifacts.mjs <distDir> [--site-root <dir>] [--mode <mode>] [--env-dir <dir|false>] [--astro-config <file>]',
     );
   }
   const distDir = path.resolve(distArg);
@@ -1970,18 +1977,25 @@ async function main() {
   // root is the one given, else the nearest Astro config above the output.
   let publishDrafts;
   try {
-    const resolved = resolveDraftPublicationForGate({
-      checkedDir: distDir,
-      siteRoot: site.siteRoot,
-      mode: site.mode,
-      // This gate does not evaluate the site config: `--env-dir` carries the build's `vite.envDir`.
-      envDir: site.envDir,
-      configEvaluated: false,
-    });
+    // `--env-dir` decides and skips evaluation; otherwise the site config is
+    // evaluated (once per run) and its `vite.envDir` is the build's (FR-010a).
+    let { siteRoot } = site;
+    let envDir = site.envDir;
+    if (envDir === undefined) {
+      ({ siteRoot, envDir } = evaluateGateConfig({
+        checkedDir: distDir,
+        siteRoot,
+        astroConfig: argValue(site.rest, '--astro-config'),
+        tool: 'assert-build-artifacts',
+      }));
+    }
+    const resolved = resolveDraftPublicationForGate({ checkedDir: distDir, siteRoot, mode: site.mode, envDir });
     publishDrafts = resolved.publish;
     console.log(`assert-build-artifacts: ${resolved.summary}`);
   } catch (err) {
-    fail(err.message);
+    // Fail closed: a config that cannot be evaluated is exit 2, never a guess at the env files.
+    process.stderr.write(`${err instanceof ConfigEvalError ? evalRefusal(err, 'assert-build-artifacts') : err.message}\n`);
+    process.exit(2);
   }
 
   try {

@@ -317,4 +317,47 @@ describe('CLI (check-redirect-coverage.mjs run directly)', () => {
     expect(result.status).toBe(2);
     expect(result.stderr).toMatch(/dist dir not found/);
   });
+
+  it('exits 2 when --docs and --site-root name different sites (#173)', () => {
+    const tmp = makeTmpDir();
+    for (const site of ['a', 'b']) {
+      mkdirSync(path.join(tmp, site, 'docs'), { recursive: true });
+      writeFileSync(path.join(tmp, site, 'astro.config.mjs'), 'export default {};\n');
+    }
+    mkdirSync(path.join(tmp, 'a', 'dist'), { recursive: true });
+    const baselineFile = path.join(tmp, 'url-baseline.txt');
+    writeFileSync(baselineFile, '', 'utf8');
+
+    const result = spawnSync(
+      'node',
+      [gatePath, baselineFile, path.join(tmp, 'a', 'dist'), '--docs', path.join(tmp, 'a', 'docs'), '--site-root', path.join(tmp, 'b')],
+      { encoding: 'utf8' },
+    );
+
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain(path.join(tmp, 'a'));
+    expect(result.stderr).toContain(path.join(tmp, 'b'));
+  });
+
+  it('exits 2 when --docs is nested below a config it did not evaluate (fail closed, FR-004)', () => {
+    const tmp = makeTmpDir();
+    mkdirSync(path.join(tmp, 'site', 'content', 'docs'), { recursive: true });
+    mkdirSync(path.join(tmp, 'site', 'dist'), { recursive: true });
+    writeFileSync(path.join(tmp, 'site', 'content', 'docs', 'README.md'), '# Docs\n');
+    writeFileSync(
+      path.join(tmp, 'site', 'astro.config.mjs'),
+      "throw new Error('boom'); export default { vite: { envDir: 'env' } };\n",
+    );
+    const baselineFile = path.join(tmp, 'url-baseline.txt');
+    writeFileSync(baselineFile, '', 'utf8');
+
+    const result = spawnSync(
+      'node',
+      [gatePath, baselineFile, path.join(tmp, 'site', 'dist'), '--docs', path.join(tmp, 'site', 'content', 'docs')],
+      { encoding: 'utf8' },
+    );
+
+    expect(result.status).toBe(2);
+    expect(result.stderr).toMatch(/built by .*astro\.config\.mjs, but the config evaluated for it is none/);
+  });
 });
