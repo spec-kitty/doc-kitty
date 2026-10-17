@@ -1066,6 +1066,11 @@ describe('one resolver for the build and its gates', () => {
     }
     // `--env-dir false` is "no env files": the default applies.
     expect(gate('assert-build-artifacts.mjs', [site.dist, '--env-dir', 'false']).stdout).toContain(ON_BY_DEFAULT);
+    // Vite's `envFile: false` also moves the env files, so the unevaluated gate refuses it too.
+    const legacy = envFileSite({ '.env': 'DK_PUBLISH_DRAFTS=off\n' }, 'export default { vite: { envFile: false } };\n');
+    const legacyRefused = gate('assert-build-artifacts.mjs', [legacy.dist]);
+    expect(legacyRefused.status).not.toBe(0);
+    expect(`${legacyRefused.stdout}${legacyRefused.stderr}`).toMatch(/\[dk-drafts\].*vite\.envFile.*--env-dir <dir\|false>/);
     // With several roots each is resolved on its own: a root whose config was evaluated does not
     // vouch for one whose config was not (its config sits above it, and sets envDir).
     const outer = path.join(site.tmp, 'outer');

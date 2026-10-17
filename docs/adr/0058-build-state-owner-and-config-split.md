@@ -122,6 +122,9 @@ One limit remains. The gates read `vite.envDir` from the exported config
 (`module.default.vite.envDir`). A config that sets `envDir` only through an
 integration's `updateConfig` hook is not seen by them, and they read the site
 root instead. Set `envDir` in the config object itself, or pass `--env-dir`.
+The guard that refuses an unevaluated config is a text check of the config file
+only: an `envDir` or `envFile` set in a module the config imports (a shared
+base, say) is not seen by it.
 
 ### 4. Two behaviours stay as they were
 
