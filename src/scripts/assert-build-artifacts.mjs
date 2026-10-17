@@ -2060,26 +2060,32 @@ async function main() {
   // the log opens with the value this gate checks the build against. The site
   // root is the one given, else the nearest Astro config above the output.
   let publishDrafts;
-  try {
-    // `--env-dir` decides and skips evaluation; otherwise the site config is
-    // evaluated (once per run) and its `vite.envDir` is the build's (FR-010a).
-    let { siteRoot } = site;
-    let envDir = site.envDir;
-    if (envDir === undefined) {
+  // `--env-dir` decides and skips evaluation; otherwise the site config is
+  // evaluated (once per run) and its `vite.envDir` is the build's (FR-010a).
+  let { siteRoot } = site;
+  let envDir = site.envDir;
+  if (envDir === undefined) {
+    try {
       ({ siteRoot, envDir } = evaluateGateConfig({
         checkedDir: distDir,
         siteRoot,
         astroConfig,
         tool: 'assert-build-artifacts',
       }));
+    } catch (err) {
+      // Fail closed: a config that cannot be evaluated (or a missing --astro-config file) is a
+      // usage/config error, exit 2, never a guess at the env files.
+      process.stderr.write(`${err instanceof ConfigEvalError ? evalRefusal(err, 'assert-build-artifacts') : err.message}\n`);
+      process.exit(2);
     }
+  }
+  try {
     const resolved = resolveDraftPublicationForGate({ checkedDir: distDir, siteRoot, mode: site.mode, envDir });
     publishDrafts = resolved.publish;
     console.log(`assert-build-artifacts: ${resolved.summary}`);
   } catch (err) {
-    // Fail closed: a config that cannot be evaluated is exit 2, never a guess at the env files.
-    process.stderr.write(`${err instanceof ConfigEvalError ? evalRefusal(err, 'assert-build-artifacts') : err.message}\n`);
-    process.exit(2);
+    // An env file that does not parse is a failed check (exit 1), as before.
+    fail(err.message);
   }
 
   try {
