@@ -182,13 +182,18 @@ export function readEnvFiles(root, mode) {
  *
  * @param {{ argv?: readonly string[], command?: string }} [options]
  * @returns {string}
- * @throws {Error} for the mode `local`
+ * @throws {Error} for the mode `local`, or a `--mode` with no value
  */
 export function activeMode({ argv = [], command } = {}) {
   let mode;
   for (let i = 0; i < argv.length && mode === undefined; i += 1) {
     const arg = /** @type {string} */ (argv[i]);
-    if (arg === '--mode') mode = argv[i + 1];
+    if (arg === '--mode') {
+      mode = argv[i + 1];
+      // A bare `--mode`, or one followed by another flag, names no mode. The
+      // CLI's parsers (cac in Vite, yargs-parser in Astro) read it as `true`.
+      if (mode === undefined || mode.startsWith('-')) throw new Error('[dk-drafts] --mode needs a value');
+    }
     else if (arg.startsWith('--mode=')) mode = arg.slice('--mode='.length);
   }
   if (mode === undefined || mode === '') return command === 'dev' ? 'development' : 'production';
@@ -199,6 +204,18 @@ export function activeMode({ argv = [], command } = {}) {
     );
   }
   return mode;
+}
+
+/**
+ * The `envDir` a site's Vite config asks for. Vite still reads its deprecated
+ * `envFile: false` as "no env files" (it turns `envDir` into `false`), so this
+ * does too.
+ *
+ * @param {{ envDir?: string | false, envFile?: false } | undefined} vite a site's `vite` config
+ * @returns {string | false | undefined}
+ */
+export function viteEnvDirOf(vite) {
+  return vite?.envFile === false ? false : vite?.envDir;
 }
 
 /**

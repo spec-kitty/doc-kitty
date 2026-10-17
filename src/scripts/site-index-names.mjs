@@ -17,6 +17,7 @@ import { existsSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { viteEnvDirOf } from '../lib/draft-publication.mjs';
 import { DK_INDEX_BASENAME_ENV as ENV_NAME, parsePublishedIndexBasenames } from '../lib/vocabulary-core.mjs';
 
 /**
@@ -170,7 +171,7 @@ async function evaluate(configPath, siteDir) {
     const { module } = await runnerImport(configPath, { configFile: false });
     const names = parsePublishedIndexBasenames(process.env[ENV_NAME]) ?? null;
     // Vite's raw `envDir`: the build resolves it against the site root (FR-010a).
-    const envDir = module?.default?.vite?.envDir ?? null;
+    const envDir = viteEnvDirOf(module?.default?.vite) ?? null;
     console.log(JSON.stringify({ ok: true, names, envDir }));
   } catch (err) {
     console.log(JSON.stringify({ ok: false, message: err instanceof Error ? err.message : String(err) }));

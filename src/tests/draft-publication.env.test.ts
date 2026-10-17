@@ -7,7 +7,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { activeMode, resolveDraftPublication, resolveEnvSource } from '../lib/draft-publication.mjs';
+import { activeMode, resolveDraftPublication, resolveEnvSource, viteEnvDirOf } from '../lib/draft-publication.mjs';
 
 const tmp = mkdtempSync(path.join(tmpdir(), 'dk-env-'));
 afterAll(() => rmSync(tmp, { recursive: true, force: true }));
@@ -32,6 +32,8 @@ type Row = {
   argv: string[];
   command?: string;
   envDir?: string | false;
+  /** A site's `vite` config; its `envDir`/`envFile` go through `viteEnvDirOf`, as in the build and the gates. */
+  vite?: { envDir?: string; envFile?: false };
   env?: Record<string, string>;
   expected: { mode: string; publish: boolean; source: string } | { throws: string };
 };
@@ -42,13 +44,18 @@ const ROWS: Row[] = [
   { name: '--mode staging picks .env.staging', files: { '.env': OFF, '.env.staging': ON }, argv: ['--mode', 'staging'], expected: { mode: 'staging', publish: true, source: 'env file' } },
   { name: '--mode=staging picks .env.staging', files: { '.env': OFF, '.env.staging': ON }, argv: ['--mode=staging'], expected: { mode: 'staging', publish: true, source: 'env file' } },
   { name: '--mode local is rejected', files: {}, argv: ['--mode', 'local'], expected: { throws: '[dk-drafts]' } },
+  { name: 'a bare --mode at the end of argv is rejected', files: {}, argv: ['--mode'], expected: { throws: '[dk-drafts] --mode needs a value' } },
+  { name: '--mode followed by another flag is rejected', files: {}, argv: ['--mode', '--host'], expected: { throws: '[dk-drafts] --mode needs a value' } },
+  { name: "Vite's deprecated envFile false reads no env files", files: { '.env': OFF }, argv: [], vite: { envFile: false }, expected: { mode: 'production', publish: true, source: 'default' } },
+  { name: 'envFile false wins over an envDir', files: { 'env/.env': OFF }, argv: [], vite: { envFile: false, envDir: 'env' }, expected: { mode: 'production', publish: true, source: 'default' } },
   { name: 'relative envDir resolves against the root', files: { 'env/.env.staging': ON, '.env.staging': OFF }, argv: ['--mode', 'staging'], envDir: 'env', expected: { mode: 'staging', publish: true, source: 'env file' } },
   { name: 'envDir false reads no env files', files: { '.env': OFF }, argv: [], envDir: false, expected: { mode: 'production', publish: true, source: 'default' } },
   { name: 'the process environment still wins over files', files: { 'env/.env': OFF }, argv: [], envDir: 'env', env: { DK_PUBLISH_DRAFTS: 'on' }, expected: { mode: 'production', publish: true, source: 'process environment' } },
 ];
 
 describe('activeMode, resolveEnvSource and the env-file reader', () => {
-  it.each(ROWS)('$name', ({ name, files, argv, command, envDir, env, expected }) => {
+  it.each(ROWS)('$name', ({ name, files, argv, command, envDir: rowEnvDir, vite, env, expected }) => {
+    const envDir = vite ? viteEnvDirOf(vite) : rowEnvDir;
     const root = site(name.replace(/\W+/g, '-'), files);
     if ('throws' in expected) {
       expect(() => activeMode({ argv, command })).toThrow(expected.throws);
