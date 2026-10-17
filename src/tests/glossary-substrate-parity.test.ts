@@ -65,6 +65,7 @@ import deckSplit from '../lib/remark/deck-split.js';
 import relativeMdLinks from '../lib/remark/relative-md-links.js';
 import gherkinFence from '../lib/remark/gherkin-fence.js';
 import type { SharedTermIndex } from '../lib/glossary/types.js';
+import { PINNED_FULL_INTEGRATION_ORDER } from './helpers/integration-names.js';
 
 // ---------------------------------------------------------------------------
 // Build the stack with markua:true, diagrams:true + glossary ACTIVE.
@@ -104,7 +105,7 @@ beforeEach(() => {
   vi.mocked(loadGlossary).mockReturnValue({ present: true, index: fakeIndex });
 });
 
-function buildStack() {
+function withClientMode<T>(build: () => T): T {
   // #13 mode-awareness: the diagrams integration wires a MODE-DEPENDENT remark
   // stage — `mermaidFenceTransform` in CLIENT mode, dropped in BUILD mode. This
   // re-derive parity gate enumerates the CLIENT stack (where the fence transform
@@ -113,14 +114,20 @@ function buildStack() {
   const prior = process.env.DK_DIAGRAM_BUILD_RENDER;
   process.env.DK_DIAGRAM_BUILD_RENDER = 'off';
   try {
-    // `gherkin: true` turns the in-page Gherkin stage on (ADR-0051) WITHOUT
-    // `sources`, so the filesystem-reading codegen integration is not registered.
-    const arr = defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true, gherkin: true });
-    return enumerateDocKittyRemarkStack(arr);
+    return build();
   } finally {
     if (prior === undefined) delete process.env.DK_DIAGRAM_BUILD_RENDER;
     else process.env.DK_DIAGRAM_BUILD_RENDER = prior;
   }
+}
+
+// `gherkin: true` turns the in-page Gherkin stage on (ADR-0051) WITHOUT `sources`,
+// so the filesystem-reading codegen integration is not registered.
+const buildArray = () =>
+  defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true, gherkin: true });
+
+function buildStack() {
+  return withClientMode(() => enumerateDocKittyRemarkStack(buildArray()));
 }
 
 // ---------------------------------------------------------------------------
@@ -254,6 +261,15 @@ const STAGE_COUNT_FLOOR = 10;
 restoreInternalEnv();
 
 describe('re-derive parity — enumeration is real, not vacuous', () => {
+  it('registers the full integration order (every seam before Starlight pinned)', () => {
+    const names = (withClientMode(buildArray) as { name?: unknown }[])
+      .map((i) => i.name)
+      .filter((n): n is string => typeof n === 'string');
+    // `doc-kitty:gherkin` (codegen) needs `sources`, which this build omits.
+    const expected = PINNED_FULL_INTEGRATION_ORDER.filter((n) => n !== 'doc-kitty:gherkin');
+    expect(names).toEqual(expected);
+  });
+
   it('enumerates at least the stage-count floor', () => {
     const { stages } = buildStack();
     expect(
