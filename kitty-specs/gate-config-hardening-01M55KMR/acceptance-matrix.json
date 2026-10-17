@@ -1,0 +1,129 @@
+{
+  "mission_slug": "gate-config-hardening-01M55KMR",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "draft-publication.test.ts imported-base-config case; red-first in the WP01 report; review approved in cycle 2",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:07.316421+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "draft-publication.test.ts throwing-config case; redirect-coverage nested --docs case (75f97a59)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:13.855328+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "draft-publication.test.ts --env-dir positive controls on the throwing-config fixture",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:20.392278+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "redirect-coverage, check-links-tightened and draft-publication-workflows suites green",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:26.865967+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "grep for configEvaluated and the regex finds nothing under src (WP01 review)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:33.393750+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "example-adopter #103 custom-path and dangling bibliography href cases (a3194c96)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:39.851081+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "default scan 385 hrefs in 76 files before and after (WP02 review)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:46.234726+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "route JSDoc, ADR-0058, consumer-setup.md (976b4309, 388c2dad)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:52.719251+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "939050b6; no ../config import in integrations; sitemap-feeds identity check",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:07:59.277814+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "config-invariants.test.ts export-list test, red when the re-export is removed (cfae533c)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:08:05.886304+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "976b4309, f24f7bb3; validate:links and validate:adr-index pass",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:08:12.311765+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "redirect-coverage.test.ts conflict case; shared assertEvaluatedConfigDecides helper",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T20:08:18.875664+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

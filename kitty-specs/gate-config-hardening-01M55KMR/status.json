@@ -1,0 +1,89 @@
+{
+  "event_count": 38,
+  "last_event_id": "01M55QQVAGWPVR31FZ0T1CK15A",
+  "materialized_at": "2026-10-17T20:09:35.312765+00:00",
+  "mission_number": "",
+  "mission_slug": "gate-config-hardening-01M55KMR",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 4,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M55QQ7VS903RY5H6N2NTC186",
+      "last_transition_at": "2026-10-17T20:09:15.385297+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP01-draft-gates-evaluate-config/review-cycle-2.md",
+        "reference": "review-cycle://gate-config-hardening-01M55KMR/WP01-draft-gates-evaluate-config/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3464433,
+      "shell_pid_created_at": "1792265761.73"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M55QQMVGHZVQ02214J4W6A93",
+      "last_transition_at": "2026-10-17T20:09:28.688279+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP02-artifact-gate-index-path/review-cycle-2.md",
+        "reference": "review-cycle://gate-config-hardening-01M55KMR/WP02-artifact-gate-index-path/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3504438,
+      "shell_pid_created_at": "1792266428.76"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M55QQEBPWKQDAY77H7Z3RQNV",
+      "last_transition_at": "2026-10-17T20:09:22.038309+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP03-sitemap-filter-move/review-cycle-1.md",
+        "reference": "review-cycle://gate-config-hardening-01M55KMR/WP03-sitemap-filter-move/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3321301,
+      "shell_pid_created_at": "1792265168.06"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M55QQVAGWPVR31FZ0T1CK15A",
+      "last_transition_at": "2026-10-17T20:09:35.312765+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP04-adr-guide-changelog/review-cycle-1.md",
+        "reference": "review-cycle://gate-config-hardening-01M55KMR/WP04-adr-guide-changelog/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 3526136,
+      "shell_pid_created_at": "1792266726.5"
+    }
+  }
+}
