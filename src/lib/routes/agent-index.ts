@@ -30,7 +30,9 @@ export interface AgentIndexRouteOptions {
   /**
    * Where this route is mounted, as a site-absolute path. Used for the index's
    * own `self` link. Default `/api/index.json`; set it if you mount the route
-   * elsewhere, or `self` would dangle.
+   * elsewhere, or `self` would dangle. Keep it ending in `/api/index.json`:
+   * `pnpm assert:artifacts` checks only an index at `api/index.json` and fails
+   * (it does not skip) on any other path.
    */
   indexPath?: string;
 }

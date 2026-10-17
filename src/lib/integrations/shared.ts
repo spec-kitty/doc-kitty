@@ -1,8 +1,8 @@
 /**
  * Helpers shared by the integrations and by `defineDocKittyIntegrations`.
  *
- * A leaf module: it imports nothing from `config.ts`, so the integration modules
- * and `config.ts` can both use it without a cycle.
+ * A module that imports no integration module and nothing from `config.ts`, so
+ * the integration modules and `config.ts` can both use it without a cycle.
  */
 import path from 'node:path';
 import process from 'node:process';

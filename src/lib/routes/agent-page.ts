@@ -35,7 +35,9 @@ export interface AgentPageRouteOptions {
   };
   /**
    * Where the index route is mounted, as a site-absolute path. Used for each
-   * page's `up` link. Default `/api/index.json`.
+   * page's `up` link. Default `/api/index.json`. Keep it ending in
+   * `/api/index.json`: `pnpm assert:artifacts` checks only an index at
+   * `api/index.json` and fails (it does not skip) on any other path.
    */
   indexPath?: string;
 }

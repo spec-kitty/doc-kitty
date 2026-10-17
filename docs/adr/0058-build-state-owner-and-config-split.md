@@ -161,7 +161,9 @@ The relation names follow the web-linking convention: `self`, `up`, `html`,
 - **The index and page routes take an `indexPath`.** It defaults to
   `/api/index.json` and sets the index's own `self` link and each page's `up`
   link, both with the site base added. Pass it when you mount the index route
-  somewhere else, or those links dangle.
+  somewhere else, or those links dangle. Keep it ending in `/api/index.json`:
+  `pnpm assert:artifacts` checks only an index at `api/index.json` and fails,
+  it does not skip, on any other path.
 - **A build check keeps the links honest.** `dockitty-assert-build-artifacts`
   reads every `_links` href in `dist/api/**/*.json`, removes the site origin and
   base, and fails when the file is missing from the build. A path that ends in

@@ -279,14 +279,16 @@ export const GET = agentIndexRoute({
 ```
 
 On the page route, `agentPageRoute({ links: { index: false } })` drops the `up`
-link when you do not mount the index route. If you mount the index somewhere
+link when you do not mount the index route. A site that mounts the index but not
+the per-page route must pass `links: { pages: false }` to `agentIndexRoute`. If you mount the index somewhere
 other than `/api/index.json`, pass the same `indexPath` to both routes. The index
-uses it for its own `self` link and each page uses it for `up`:
+uses it for its own `self` link and each page uses it for `up`. Keep the path
+ending in `/api/index.json`, or `pnpm assert:artifacts` fails (see below):
 
 ```ts
-export const GET = agentIndexRoute({ title: 'My Docs', indexPath: '/data/all.json' });
+export const GET = agentIndexRoute({ title: 'My Docs', indexPath: '/v2/api/index.json' });
 // and in the page route:
-const route = agentPageRoute({ indexPath: '/data/all.json' });
+const route = agentPageRoute({ indexPath: '/v2/api/index.json' });
 ```
 
 `pnpm assert:artifacts` then checks the links. It reads every `_links` href in
