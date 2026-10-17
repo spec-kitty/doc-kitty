@@ -1,0 +1,189 @@
+{
+  "mission_slug": "build-context-and-config-split-01M549SB",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 0bb78d32; example build serves sitemap-index.xml/sitemap-0.xml",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:52:25.113004+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 T002 grep: nothing claims unpublished",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:52:32.085297+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP06 agent-links.test.ts top-level self/llms/sitemap",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:52:38.871500+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP06 record self/html/related; source relation deferred (ADR-0058 \u00a75)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:52:45.580645+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004a",
+      "description": "Verify FR-004a is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP06 per-page self/up/html/related",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:52:52.242710+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004b",
+      "description": "Verify FR-004b is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "version stays 2 (ADR-0058)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:52:58.989796+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004c",
+      "description": "Verify FR-004c is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "links option + agent-links-gating.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:05.682739+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "agent-links.test.ts resolves every href against dist",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:12.259782+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP07 docs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:18.920136+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "shared pinned order list (helpers/integration-names.ts) used by four order tests",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:25.612242+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 createBuildState per config; sink owned in build-state.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:32.399762+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008a",
+      "description": "Verify FR-008a is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "two-config route-shaping payload test",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:39.140628+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "six modules in src/lib/integrations; config.ts 936 lines",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:45.867889+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP05 activeMode/resolveEnvSource + SC-003 hook test",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:52.586717+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010a",
+      "description": "Verify FR-010a is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP05 gates follow evaluated envDir; --env-dir",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:53:59.260080+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP07 published vs emitted note",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:54:06.033762+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "ADR-0058",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:54:12.798139+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "CHANGELOG [Unreleased]",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-17T07:54:19.551793+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

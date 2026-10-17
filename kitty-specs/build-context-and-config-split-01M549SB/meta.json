@@ -1,0 +1,35 @@
+{
+  "accept_commit": "0f47b19f5869ced453186de342a9f94ddf4c765e",
+  "acceptance_history": [
+    {
+      "accept_commit": "0f47b19f5869ced453186de342a9f94ddf4c765e",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-17T07:55:01.805342+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "055d1a5a8628ae1e3081d9b52b3d478d4dfd8644"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-17T07:55:01.805342+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "055d1a5a8628ae1e3081d9b52b3d478d4dfd8644",
+  "baseline_merge_commit": "363e20461ea8725921a59ab6bfc7e9dd731d33fe",
+  "created_at": "2026-10-17T06:46:33.438645+00:00",
+  "flattened": true,
+  "friendly_name": "One owner for build state, a smaller config.ts, and an honest agent API",
+  "merged_at": "2026-10-17T07:56:26.535422+00:00",
+  "merged_commit": "58c060cd309a8195f7fb3ff224122cd283399501",
+  "mid8": "01M549SB",
+  "mission_id": "01M549SBTFBRRV679FCWJ7JR57",
+  "mission_number": 9,
+  "mission_slug": "build-context-and-config-split-01M549SB",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Two integrations still pass draft-publication state through a mutated options object and a globalThis sink, config.ts has grown to 2,298 lines, and adopter docs point at a sitemap path and agent-API links that the site does not serve. This mission fixes the docs and adds the agent-API links (#103), gives the build state one owner and splits config.ts (#115), and settles how DocKitty treats redirects to drafts and its env-file reader.",
+  "purpose_tldr": "Give DocKitty's draft-publication build state one owner, split the oversized config module along its existing seams, and make the agent-API index and docs match what the site really serves.",
+  "slug": "build-context-and-config-split-01M549SB",
+  "status_phase": "1",
+  "target_branch": "chore/build-context-and-config-split",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-17T07:08:21.242670+00:00"
+}

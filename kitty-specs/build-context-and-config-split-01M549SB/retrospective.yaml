@@ -1,0 +1,148 @@
+schema_version: 1
+mission_id: 01M549SBTFBRRV679FCWJ7JR57
+mission_slug: build-context-and-config-split-01M549SB
+mission_number: 9
+friendly_name: One owner for build state, a smaller config.ts, and an honest agent API
+mission_type: software-dev
+target_branch: chore/build-context-and-config-split
+created_at: '2026-10-17T07:56:42.520817+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-17T07:56:42.520817+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-004
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-005
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-012
+- id: h-006
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-012
+not_helpful:
+- id: n-002
+  category: doc
+  summary: analysis-report.md records 3 finding(s)
+  evidence_refs:
+  - e-014
+  details: The analysis-report.md artifact for this mission records 3 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-001
+  category: review_loop
+  summary: WP06 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-013
+  details: WP WP06 was sent back to an earlier lane with documented review feedback 1 time(s).
+gaps:
+- id: g-001
+  category: doc
+  summary: research.md absent
+  evidence_refs:
+  - e-002
+  details: spec.md is present but research.md is missing. Research artifacts help future maintainers understand design
+    decisions.
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks/WP01-sitemap-doc-truth.md
+- id: e-006
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks/WP02-build-state-and-route-shaping-split.md
+- id: e-007
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks/WP03-diagrams-split.md
+- id: e-008
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks/WP04-gherkin-glossary-markua-split.md
+- id: e-009
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks/WP05-env-dir-and-mode.md
+- id: e-010
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks/WP06-agent-api-links.md
+- id: e-011
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/tasks/WP07-adr-docs-changelog.md
+- id: e-012
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/status.events.jsonl
+- id: e-013
+  kind: event_range
+  path: kitty-specs/build-context-and-config-split-01M549SB/status.events.jsonl
+  range: 01M54BNJSW3CN8ZQZQ3QEKCTWX
+- id: e-014
+  kind: file
+  path: kitty-specs/build-context-and-config-split-01M549SB/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

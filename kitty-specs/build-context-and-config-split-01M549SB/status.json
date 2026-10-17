@@ -1,0 +1,140 @@
+{
+  "event_count": 54,
+  "last_event_id": "01M54DS6MES4VSP0JKPN5NDZYQ",
+  "materialized_at": "2026-10-17T07:56:19.470408+00:00",
+  "mission_number": "",
+  "mission_slug": "build-context-and-config-split-01M549SB",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 7,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M54DQZJXDW5GDYC566EKD248",
+      "last_transition_at": "2026-10-17T07:55:39.485083+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP01-sitemap-doc-truth/review-cycle-1.md",
+        "reference": "review-cycle://build-context-and-config-split-01M549SB/WP01-sitemap-doc-truth/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1549722,
+      "shell_pid_created_at": "1792220896.79"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M54DR620WN33SF9F9BYM9N6E",
+      "last_transition_at": "2026-10-17T07:55:46.112643+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP02-build-state-and-route-shaping-split/review-cycle-1.md",
+        "reference": "review-cycle://build-context-and-config-split-01M549SB/WP02-build-state-and-route-shaping-split/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1549722,
+      "shell_pid_created_at": "1792220896.79"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M54DRCHQ82GQCJ9ZVCMJMCZ0",
+      "last_transition_at": "2026-10-17T07:55:52.759420+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP03-diagrams-split/review-cycle-1.md",
+        "reference": "review-cycle://build-context-and-config-split-01M549SB/WP03-diagrams-split/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1596269,
+      "shell_pid_created_at": "1792221519.03"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M54DS02G0CS2004Y8FEJAGXR",
+      "last_transition_at": "2026-10-17T07:56:12.752389+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP04-gherkin-glossary-markua-split/review-cycle-1.md",
+        "reference": "review-cycle://build-context-and-config-split-01M549SB/WP04-gherkin-glossary-markua-split/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1631977,
+      "shell_pid_created_at": "1792222036.64"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M54DRK1Y1BE2A2AHTMZHYVX6",
+      "last_transition_at": "2026-10-17T07:55:59.422495+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP05-env-dir-and-mode/review-cycle-1.md",
+        "reference": "review-cycle://build-context-and-config-split-01M549SB/WP05-env-dir-and-mode/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1596269,
+      "shell_pid_created_at": "1792221519.03"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M54DRSGQP8NSYAXY8533KZ4Y",
+      "last_transition_at": "2026-10-17T07:56:06.039309+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP06-agent-api-links/review-cycle-2.md",
+        "reference": "review-cycle://build-context-and-config-split-01M549SB/WP06-agent-api-links/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1597863,
+      "shell_pid_created_at": "1792221594.76"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M54DS6MES4VSP0JKPN5NDZYQ",
+      "last_transition_at": "2026-10-17T07:56:19.470408+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP07-adr-docs-changelog/review-cycle-1.md",
+        "reference": "review-cycle://build-context-and-config-split-01M549SB/WP07-adr-docs-changelog/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1686157,
+      "shell_pid_created_at": "1792222692.15"
+    }
+  }
+}
