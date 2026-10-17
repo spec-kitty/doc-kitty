@@ -8,6 +8,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
+import { createBuildState, type BuildState } from '../build-state.js';
 import { compareCodeUnit } from '../vocabulary-core.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -39,7 +40,8 @@ const REDIRECT_STUB_RE = /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta htt
  *  - the content loader and carriers, through `process.env` — the same
  *    same-process seam `DK_DOCS_ROOT` uses above — under its own name, so the
  *    user's `DK_PUBLISH_DRAFTS` is never overwritten;
- *  - sidebar shaping, as `unpublishedDirs`: with drafts off, a directory whose
+ *  - sidebar shaping, as `unpublishedDirs` on the {@link BuildState} this config's
+ *    route-shaping integration reads (the integration never mutates its options): with drafts off, a directory whose
  *    index page is a draft keeps its fallback label without a "missing title"
  *    warning. Every draft slug is passed; the shaping step only looks up the
  *    ones that are directories.
@@ -60,7 +62,10 @@ const REDIRECT_STUB_RE = /<title>Redirecting to: [^<]*<\/title>[\s\S]*?<meta htt
  *
  * @internal An internal seam the toolkit's own tests use; not supported API.
  */
-export function draftPublicationIntegration(routeShaping: RouteShapingOptions): AstroIntegration {
+export function draftPublicationIntegration(
+  routeShaping: RouteShapingOptions,
+  state: BuildState = createBuildState(),
+): AstroIntegration {
   const { docsDir, base, indexBasename } = routeShaping;
   let publish: boolean = PUBLISH_DRAFTS_DEFAULT;
   let withheld: Array<{ from: string; route: string }> = [];
@@ -74,8 +79,8 @@ export function draftPublicationIntegration(routeShaping: RouteShapingOptions): 
         publish = resolved.publish;
         setInternalEnv(DK_PUBLISH_DRAFTS_RESOLVED_ENV, publish ? 'on' : 'off');
         const drafts = publish ? new Set<string>() : siteDraftRoutes(docsDir, indexBasename);
-        routeShaping.unpublishedDirs = [...drafts].map((route) => route.slice(1, -1));
-        routeShaping.unpublishedPaths = unpublishedDraftPaths(
+        state.unpublishedDirs = [...drafts].map((route) => route.slice(1, -1));
+        state.unpublishedPaths = unpublishedDraftPaths(
           path.resolve(process.cwd(), docsDir),
           publish,
           indexBasename,

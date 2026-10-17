@@ -764,14 +764,16 @@ describe('integration wiring (T022, C-004)', () => {
 
   it('leaves an unpublished index out of the metadata and lists its directory', () => {
     const source = inSite(() =>
-      routeShapingSource({
-        docsDir: 'docs',
-        base: '/',
-        indexBasename: ['README', 'index'],
-        shapeSidebar: true,
-        pagination: true,
-        unpublishedDirs: ['guides/setup', 'guides/setup'],
-      }),
+      routeShapingSource(
+        {
+          docsDir: 'docs',
+          base: '/',
+          indexBasename: ['README', 'index'],
+          shapeSidebar: true,
+          pagination: true,
+        },
+        { unpublishedDirs: ['guides/setup', 'guides/setup'], unpublishedPaths: [] },
+      ),
     );
     const data = JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
     expect(data.directoryMeta.map(([dir]: [string]) => dir)).toEqual(['guides']);
@@ -813,8 +815,7 @@ describe('sidebar index decision follows the route rule (FR-009, issue 138)', ()
       indexBasename,
       shapeSidebar: true,
       pagination: true,
-      unpublishedPaths,
-    });
+    }, { unpublishedDirs: [], unpublishedPaths });
     const data = JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
     return Object.fromEntries(data.directoryMeta);
   }

@@ -9,7 +9,8 @@ import process from 'node:process';
 import matter from 'gray-matter';
 import type { AstroIntegration } from 'astro';
 import { resolveIndexEntries, type IndexBasenameOption } from '../metadata.js';
-import { buildDirectoryMeta, shapingWarningSink, type DirectoryMetaInput } from '../route-shaping.js';
+import { buildDirectoryMeta, type DirectoryMetaInput } from '../route-shaping.js';
+import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
 import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
 import { normalizeBasePrefix } from './shared.js';
@@ -58,19 +59,6 @@ export interface RouteShapingOptions {
   shapeSidebar: boolean;
   /** False when the site switched Starlight's prev/next links off. */
   pagination: boolean;
-  /**
-   * Directories (route slugs, no slashes) whose index page exists on disk but is
-   * not published in this build. Their index is left out of the metadata, so the
-   * group takes the fallback label, and no "missing title" warning is raised.
-   */
-  unpublishedDirs?: readonly string[];
-  /**
-   * Docs-relative paths of the draft FILES withheld from this build. A withheld
-   * file contributes no metadata, so a draft `README.md` beside a published
-   * `index.md` does not label the group, although the folder's route is still
-   * served. Derived from the draft files, not from {@link unpublishedDirs}.
-   */
-  unpublishedPaths?: readonly string[];
   /** The `sidebar.indexLabel` option (#161); absent = the locale's UI string. */
   indexLabel?: string;
 }
@@ -134,19 +122,23 @@ function directoryMetaInputs(
  * Generate the source of `virtual:doc-kitty/route-shaping`. Plain JSON data, so
  * the middleware needs no filesystem access; the map is serialised as sorted
  * entries, so two builds of one tree emit the same module (NFR-006). Exported so
- * the consumer-precedence switch is testable without a build.
+ * the consumer-precedence switch is testable without a build. The withheld
+ * drafts come from the {@link BuildState} the draft-publication integration fills.
  *
  * @internal An internal seam the toolkit's own tests use; not supported API.
  */
-export function routeShapingSource(options: RouteShapingOptions): string {
-  const unpublished = [...new Set(options.unpublishedDirs ?? [])].sort(compareCodeUnit);
+export function routeShapingSource(
+  options: RouteShapingOptions,
+  state: BuildState = createBuildState(),
+): string {
+  const unpublished = [...new Set(state.unpublishedDirs)].sort(compareCodeUnit);
   const hidden = new Set(unpublished);
   const meta = options.shapeSidebar
     ? buildDirectoryMeta(
         directoryMetaInputs(
           options.docsDir,
           options.indexBasename,
-          new Set(options.unpublishedPaths),
+          new Set(state.unpublishedPaths),
         ).filter(
           (input) => !hidden.has(input.slug),
         ),
@@ -174,12 +166,16 @@ export function routeShapingSource(options: RouteShapingOptions): string {
  * their index pages must be on disk before the tree is read.
  *
  * Warnings are raised by the middleware on every page that renders the sidebar,
- * so they are collected in a process-wide set and printed here, sorted, when the
+ * so they are collected in the process-wide sink of `build-state.ts` (cleared at
+ * the start of each build's setup, so a second config starts empty) and printed here, sorted, when the
  * build is done — one line per untitled group, not one per page (FR-023).
  *
  * @internal An internal seam the toolkit's own tests use; not supported API.
  */
-export function routeShapingIntegration(options: RouteShapingOptions): AstroIntegration {
+export function routeShapingIntegration(
+  options: RouteShapingOptions,
+  state: BuildState = createBuildState(),
+): AstroIntegration {
   const RESOLVED = `\0${ROUTE_SHAPING_MODULE_ID}`;
   const plugin = {
     name: 'doc-kitty:route-shaping',
@@ -187,7 +183,7 @@ export function routeShapingIntegration(options: RouteShapingOptions): AstroInte
       return id === ROUTE_SHAPING_MODULE_ID ? RESOLVED : null;
     },
     load(id: string): string | null {
-      return id === RESOLVED ? routeShapingSource(options) : null;
+      return id === RESOLVED ? routeShapingSource(options, state) : null;
     },
   };
   return {
