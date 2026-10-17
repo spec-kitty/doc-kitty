@@ -63,7 +63,7 @@ A page's metadata says who it's for and what to read next — no hand-built "see
 ## The same metadata, twice
 
 - `llms.txt` and a JSON agent-API (`/api/index.json`, `/api/pages/*.json`) — a crawlable map, not a RAG index.
-- `sitemap.xml` and `rss.xml`, generated from the same source.
+- `sitemap-index.xml` and `rss.xml`, generated from the same source.
 - An agent discovers the whole corpus from one file.
 
 Note: the differentiator slide for this audience — the same metadata that drives human navigation also drives machine discovery. Let it breathe; don't crowd it with more bullets.

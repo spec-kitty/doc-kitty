@@ -9,7 +9,7 @@ convention.
 Point it at a documentation tree that follows the convention and you get a
 docsite plus, out of the box:
 
-- 🗺️ `sitemap.xml` — standard search-engine discovery
+- 🗺️ `sitemap-index.xml` — standard search-engine discovery
 - 📰 `rss.xml` — subscribe to documentation changes
 - 🤖 `llms.txt` + a JSON **agent-API** — optimized browsing/discovery for LLM
   agents (not a RAG index; a structured, crawlable map of the docs)

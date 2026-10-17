@@ -24,7 +24,7 @@ need.
 ## What it is
 
 A library (`@spec-kitty/doc-toolkit`) plus builder scripts. Point it at a
-DocKitty `docs/` tree; get a Starlight site with `sitemap.xml`,
+DocKitty `docs/` tree; get a Starlight site with `sitemap-index.xml`,
 `rss.xml`, `llms.txt`, and a JSON agent-API.
 
 ## Out of scope

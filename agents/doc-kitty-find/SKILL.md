@@ -29,7 +29,7 @@ exist yet and say where it should live.
 
 - A `README.md` maps to its directory route (README-as-index).
 - `doc_status: draft` pages are left out of the agent-API, `llms.txt`,
-  `rss.xml` and `sitemap.xml`, and out of the built site entirely when it is
+  `rss.xml` and `sitemap-index.xml`, and out of the built site entirely when it is
   built with `DK_PUBLISH_DRAFTS=off` — check the source tree, not just the API,
   when a doc seems missing.
 - Terms live in `context/domain.md`; decisions in `adr/`; present-tense design in

@@ -34,6 +34,6 @@ node src/scripts/scaffold.mjs docs
 
 ## What you get
 
-After `pnpm build`, `dist/` contains the site plus `sitemap.xml`, `rss.xml`,
+After `pnpm build`, `dist/` contains the site plus `sitemap-index.xml`, `rss.xml`,
 `llms.txt`, and `/api/*.json`. Deploy `dist/` to GitHub Pages with the provided
 [`deploy.yml`](../../.github/workflows/deploy.yml).

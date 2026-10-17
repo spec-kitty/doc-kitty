@@ -1,6 +1,6 @@
 ---
 title: Generators
-description: The four generated surfaces — sitemap.xml, rss.xml, llms.txt, and the JSON agent-API — and their route handlers.
+description: The four generated surfaces — sitemap-index.xml, rss.xml, llms.txt, and the JSON agent-API — and their route handlers.
 doc_status: draft
 updated: 2026-08-21
 type: Architecture
@@ -22,7 +22,7 @@ short endpoint file. This page expands the surfaces the
 
 <!-- Outline — to be fleshed out. One short section per surface. -->
 
-- **`sitemap.xml`** — every published page whose section feeds `sitemap`, via the
+- **`sitemap-index.xml`** — the sitemap entry point. It links to `sitemap-0.xml`, which lists every published page whose section feeds `sitemap`, via the
   `@astrojs/sitemap` preset. Inclusion composes the per-page `doc_status` gate with
   the section-level `feeds` filter (a section that omits `feeds` feeds all four
   surfaces; an absent registry filters nothing).

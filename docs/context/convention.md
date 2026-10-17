@@ -173,7 +173,7 @@ throughline — a foundational document expected to stay current indefinitely, s
 adopters can mark it without hard-failing the strict enum; see
 [ADR-0035](../adr/0035-vocabulary-core-consolidation.md)).
 
-> **Publication:** `draft` pages are excluded from `sitemap.xml`, `rss.xml`, and
+> **Publication:** `draft` pages are excluded from `sitemap-index.xml`, `rss.xml`, and
 > the agent-API. A rendered draft is also `noindex` and out of site search;
 > `DK_PUBLISH_DRAFTS=off` leaves it out of the build
 > ([Draft publication](../guides/draft-publication.md)). `active` /
@@ -251,7 +251,7 @@ agent:
 
 Beyond rendering, the toolkit generates from this metadata:
 
-- **`sitemap.xml`** — every published page.
+- **`sitemap-index.xml`** — every published page.
 - **`rss.xml`** — published pages, newest `updated` first.
 - **`llms.txt`** — discoverable pages grouped by section in canonical order.
 - **`/api/index.json`** + **`/api/pages/<id>.json`** — the agent-API: a
