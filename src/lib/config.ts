@@ -40,6 +40,7 @@ import {
   type RouteShapingOptions,
 } from './integrations/route-shaping.js';
 import { draftPublicationIntegration } from './integrations/draft-publication.js';
+import { createBuildState } from './build-state.js';
 import { normalizeBasePrefix, siteDraftRoutes } from './integrations/shared.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
@@ -1803,9 +1804,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // toolkit (registry groups) or Starlight (bare autogeneration) generated is.
   const sidebarIsGenerated = sidebar === undefined && overrides?.sidebar === undefined;
 
-  // Options for the route-shaping seam, resolved once here. `unpublishedDirs` is
-  // filled in by `draftPublicationIntegration` when its setup hook has resolved
-  // DK_PUBLISH_DRAFTS; the module source is generated later, on load.
+  // Options for the route-shaping seam, resolved once here, and the ONE build
+  // state of this config. `draftPublicationIntegration` writes the withheld
+  // drafts into it when its setup hook has resolved DK_PUBLISH_DRAFTS; the
+  // route-shaping module source is generated later, on load, and reads it.
+  const buildState = createBuildState();
   const routeShaping: RouteShapingOptions = {
     docsDir,
     base,
@@ -1933,9 +1936,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // and prints the shaping warnings once when the build is done.
     // Always-on draft-publication seam (FR-013..FR-018): resolves
     // DK_PUBLISH_DRAFTS for this build and hands the draft slugs to the
-    // route-shaping options below, so it sits BEFORE that integration.
-    draftPublicationIntegration(routeShaping),
-    routeShapingIntegration(routeShaping),
+    // build state below, so it sits BEFORE that integration.
+    draftPublicationIntegration(routeShaping, buildState),
+    routeShapingIntegration(routeShaping, buildState),
     // Always-on collapsible-TOC-rail client seam (FR-006, IC-04, D2): appended
     // UNCONDITIONALLY — the TOC rail is baseline chrome, so it is NOT gated on a
     // `DocKittyOptions` toggle. Its `injectScript('page', …)` island early-returns

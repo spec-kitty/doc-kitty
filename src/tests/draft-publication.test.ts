@@ -42,7 +42,8 @@ import {
 } from '../lib/draft-publication.mjs';
 import { applyDraftPolicy, docKittyDocsLoader } from '../lib/schema.js';
 import { checkCoverage, urlToDistFile } from '../scripts/check-redirect-coverage.mjs';
-import { defineDocKittyIntegrations, draftPublicationIntegration, routeShapingSource, type DocKittyOptions, type RouteShapingOptions } from '../lib/config.js';
+import { createBuildState, type BuildState } from '../lib/build-state.js';
+import { defineDocKittyIntegrations, draftPublicationIntegration, routeShapingSource, ROUTE_SHAPING_MODULE_ID, type DocKittyOptions, type RouteShapingOptions } from '../lib/config.js';
 import { docKittyIntegrations } from './helpers/remark-stack.js';
 import { shapeSidebar } from '../lib/route-shaping.js';
 import { ROOT_ENTRY_ID, isDraftEntry } from '../lib/metadata.js';
@@ -373,7 +374,7 @@ describe('draftPublicationIntegration', () => {
   });
 
   const DOCS = path.resolve(import.meta.dirname, '../../example/docs');
-  const setup = (value: string | undefined, command = 'build'): RouteShapingOptions => {
+  const setup = (value: string | undefined, command = 'build'): BuildState => {
     if (value === undefined) delete process.env[DK_PUBLISH_DRAFTS_ENV];
     else process.env[DK_PUBLISH_DRAFTS_ENV] = value;
     const options: RouteShapingOptions = {
@@ -383,36 +384,37 @@ describe('draftPublicationIntegration', () => {
       shapeSidebar: true,
       pagination: true,
     };
-    const hook = draftPublicationIntegration(options).hooks['astro:config:setup'] as unknown as (
+    const state = createBuildState();
+    const hook = draftPublicationIntegration(options, state).hooks['astro:config:setup'] as unknown as (
       arg: unknown,
     ) => void;
     // A site root with no env files, so only the process environment counts.
     hook({ command, config: { root: new URL('file:///nonexistent-dk-site/') } });
-    return options;
+    return state;
   };
 
   it('on by default: records on, lists no unpublished directory, and says how to turn drafts off', () => {
     const lines: string[] = [];
     const log = console.log;
     console.log = (line: string) => void lines.push(line);
-    let options: RouteShapingOptions;
+    let state: BuildState;
     try {
-      options = setup(undefined);
+      state = setup(undefined);
     } finally {
       console.log = log;
     }
     expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('on');
     expect(process.env[DK_PUBLISH_DRAFTS_ENV]).toBeUndefined();
-    expect(options.unpublishedDirs).toEqual([]);
+    expect(state.unpublishedDirs).toEqual([]);
     expect(lines).toHaveLength(1);
     expect(lines[0]).toContain('[dk-drafts] DK_PUBLISH_DRAFTS=on (default): draft pages are built, listed and marked noindex.');
     expect(lines[0]).toContain('Set DK_PUBLISH_DRAFTS=off in a live deployment');
   });
 
   it('off: records off and hands the draft slugs to sidebar shaping', () => {
-    const options = setup('off');
+    const state = setup('off');
     expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('off');
-    expect([...(options.unpublishedDirs ?? [])].sort()).toEqual([
+    expect([...state.unpublishedDirs].sort()).toEqual([
       'adr/template',
       'behaviour/shipping/track-consignment',
       'context/audience/draft-persona',
@@ -420,15 +422,15 @@ describe('draftPublicationIntegration', () => {
       'presentations/draft-preview',
     ]);
     // Published pages are not listed, the promoted Plans section among them.
-    expect(options.unpublishedDirs).not.toContain('guides/getting-started');
-    expect(options.unpublishedDirs).not.toContain('plans');
+    expect(state.unpublishedDirs).not.toContain('guides/getting-started');
+    expect(state.unpublishedDirs).not.toContain('plans');
   });
 
   it('on: records on, lists no unpublished directory, and leaves the user setting alone', () => {
-    const options = setup('on');
+    const state = setup('on');
     expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('on');
     expect(process.env[DK_PUBLISH_DRAFTS_ENV]).toBe('on');
-    expect(options.unpublishedDirs).toEqual([]);
+    expect(state.unpublishedDirs).toEqual([]);
   });
 
   it('an invalid value throws from the setup hook, which stops the build (FR-017)', () => {
@@ -438,7 +440,7 @@ describe('draftPublicationIntegration', () => {
   it('the bare-Node draft routes are the ones the integration hands to sidebar shaping', () => {
     // The integration calls `draftRoutesOf`, the walker the gates use; this
     // checks the hand-over to sidebar shaping on the example tree.
-    const fromIntegration = [...(setup('off').unpublishedDirs ?? [])].sort();
+    const fromIntegration = [...setup('off').unpublishedDirs].sort();
     const fromGates = [...draftRoutesOf(DOCS, ['README', 'index'])].map((r) => r.slice(1, -1)).sort();
     expect(fromGates).toEqual(fromIntegration);
     expect(fromGates).toContain('context/audience/draft-persona');
@@ -466,28 +468,29 @@ describe('draftPublicationIntegration', () => {
         shapeSidebar: true,
         pagination: true,
       };
-      const hook = draftPublicationIntegration(options).hooks['astro:config:setup'] as unknown as (
+      const state = createBuildState();
+      const hook = draftPublicationIntegration(options, state).hooks['astro:config:setup'] as unknown as (
         arg: unknown,
       ) => void;
       hook({ command: 'build', config: { root: new URL('file:///nonexistent-dk-site/') } });
-      const source = routeShapingSource(options);
+      const source = routeShapingSource(options, state);
       const data = JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
-      return { options, source, data };
+      return { state, source, data };
     };
 
     it('off: the draft title does not label the group, and the served route is not unpublished', () => {
-      const { options, source, data } = meta('off');
+      const { state, source, data } = meta('off');
       expect(source).not.toContain('SECRET DRAFT TITLE');
       // FR-004: there is no demotion now (the build refuses this tree before the sidebar matters);
       // the published `x/index.md` labels the group, never the withheld draft.
       expect(data.directoryMeta.filter(([dir]: [string]) => dir === 'x').map(([, m]: [string, { label: string }]) => m.label)).toEqual(['Public']);
-      expect(options.unpublishedDirs).not.toContain('x');
+      expect(state.unpublishedDirs).not.toContain('x');
     });
 
     it('on: the metadata is unchanged', () => {
-      const { options, source } = meta('on');
+      const { state, source } = meta('on');
       expect(source).toContain('SECRET DRAFT TITLE');
-      expect(options.unpublishedDirs).toEqual([]);
+      expect(state.unpublishedDirs).toEqual([]);
     });
   });
 
@@ -1177,5 +1180,32 @@ describe('defineDocKittyIntegrations: internal env handoffs across two configs i
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it("a later config's route-shaping module carries none of the earlier config's withheld drafts (#115)", () => {
+    const docsDir = path.resolve(import.meta.dirname, '../../example/docs');
+    const root = new URL('file:///nonexistent-dk-site/');
+    const virtualModule = (options: Partial<DocKittyOptions>, drafts: 'on' | 'off') => {
+      process.env.DK_PUBLISH_DRAFTS = drafts;
+      const integrations = docKittyIntegrations(defineDocKittyIntegrations({ title: 'Docs', docsDir, ...options } as DocKittyOptions));
+      let plugin: { load: (id: string) => string | null } | undefined;
+      const run = (name: string) => {
+        const hook = integrations.find((i) => i.name === name)?.hooks?.['astro:config:setup'] as (c: unknown) => void;
+        hook({ command: 'build', config: { root }, updateConfig: (c: { vite?: { plugins?: unknown[] } }) => { plugin = c.vite?.plugins?.[0] as typeof plugin; } });
+      };
+      run('doc-kitty:draft-publication');
+      run('doc-kitty:route-shaping');
+      return () => {
+        const source = plugin!.load(`\0${ROUTE_SHAPING_MODULE_ID}`) as string;
+        return JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1)) as { unpublishedDirs: string[] };
+      };
+    };
+
+    const a = virtualModule({}, 'off');
+    const b = virtualModule({}, 'on');
+    // B publishes drafts, so its payload withholds nothing, whatever A set up first...
+    expect(b().unpublishedDirs).toEqual([]);
+    // ...and A, loaded after B was set up, still carries its own withheld drafts.
+    expect(a().unpublishedDirs).toContain('presentations/draft-preview');
   });
 });

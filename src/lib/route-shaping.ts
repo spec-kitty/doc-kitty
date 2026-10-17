@@ -420,20 +420,9 @@ export function shapePagination(
   };
 }
 
-/**
- * Key under which shaping warnings are collected on `globalThis` during a build.
- * The middleware runs in Astro's bundled prerender module and the integration's
- * build hook in the config module — two module instances in one process — so a
- * process-global set is the hand-off. A `Set` de-duplicates: every page shapes
- * the same tree and would otherwise repeat each warning once per page.
- */
-const WARNING_SINK = Symbol.for('doc-kitty.route-shaping.warnings');
-
-/** The per-process set of shaping warnings (created on first use). */
-export function shapingWarningSink(): Set<string> {
-  const store = globalThis as unknown as Record<symbol, Set<string> | undefined>;
-  return (store[WARNING_SINK] ??= new Set<string>());
-}
+// The warning sink lives in `build-state.ts`, the one `Symbol.for` channel; re-exported
+// so the middleware and existing importers keep their path (C-004).
+export { shapingWarningSink } from './build-state.js';
 
 /**
  * Inline script that brings the current sidebar entry into view (T023, FR-022).
