@@ -1,0 +1,37 @@
+{
+  "accept_commit": "3b9708744fe83fad0908a8065f47b983f1ef8670",
+  "acceptance_history": [
+    {
+      "accept_commit": "3b9708744fe83fad0908a8065f47b983f1ef8670",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-17T20:08:28.149015+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "4772f7203f67a7b61d62cf867c914050049dc22b"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-17T20:08:28.149015+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "4772f7203f67a7b61d62cf867c914050049dc22b",
+  "baseline_merge_commit": "11e3eb55e555b1ffc2aef7b38d3393f7547a89d6",
+  "contracts": "none",
+  "contracts_rationale": "No network/API interface; the only new surface is CLI flags on internal gate scripts, documented in data-model.md.",
+  "created_at": "2026-10-17T18:58:02.677356+00:00",
+  "flattened": true,
+  "friendly_name": "Gate config hardening",
+  "merged_at": "2026-10-17T20:09:42.019639+00:00",
+  "merged_commit": "103c325f7e31a6c848018dd53132a61a94d60fde",
+  "mid8": "01M55KMR",
+  "mission_id": "01M55KMRC9PHHXQ9RM0E0KV7ZE",
+  "mission_number": 10,
+  "mission_slug": "gate-config-hardening-01M55KMR",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "The PR #171 landing left three follow-ups. The draft gates guess envDir/envFile by searching config text, so a setting in an imported base config is missed and the gate silently reads the wrong .env file (#173). The _links dead-link check only accepts an index at api/index.json, so a site using a custom indexPath cannot pass it (#172). sitemapDraftFilter still sits in config.ts instead of its integration module (#174).",
+  "purpose_tldr": "Make DocKitty's build gates read the site's real Astro config and agent-API index path, and finish the config.ts split.",
+  "slug": "gate-config-hardening-01M55KMR",
+  "status_phase": "1",
+  "target_branch": "fix/gate-config-hardening",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-17T19:25:39.723282+00:00"
+}
