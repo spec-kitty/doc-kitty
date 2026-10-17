@@ -381,15 +381,26 @@ function collectLinkObjects(doc) {
  * An href outside the site fails too: these links point at the site's own output.
  */
 async function assertAgentLinksResolve(distDir, index) {
+  // The gate reads the index at `dist/<INDEX_RELPATH>`; the site base is whatever
+  // precedes that path in the index's own `self` link. No derivable base is a failure.
+  const indexRel = INDEX_RELPATH.split(path.sep).join('/');
+  const selfSuffix = `/${indexRel}`;
   const selfHref = index?._links?.self?.href;
-  const selfSuffix = '/api/index.json';
-  if (typeof selfHref !== 'string' || !new URL(selfHref).pathname.endsWith(selfSuffix)) {
-    // A site that mounts the index elsewhere has no known base to strip; skip loudly.
-    ok('agent _links: index self link is not /api/index.json, so the base is unknown — links not resolved');
-    return;
+  let selfPath = null;
+  try {
+    selfPath = typeof selfHref === 'string' ? new URL(selfHref).pathname : null;
+  } catch {
+    selfPath = null;
+  }
+  if (selfPath === null || !selfPath.endsWith(selfSuffix)) {
+    fail(
+      `agent _links: cannot derive the site base — ${indexRel}'s _links.self.href is ${JSON.stringify(selfHref ?? null)}, ` +
+        `which must be an absolute URL ending in ${selfSuffix} (the file this gate read). If the index route is mounted ` +
+        `elsewhere, its indexPath must match where the build emits it (#103)`,
+    );
   }
   const selfUrl = new URL(selfHref);
-  const basePath = selfUrl.pathname.slice(0, selfUrl.pathname.length - selfSuffix.length);
+  const basePath = selfPath.slice(0, selfPath.length - selfSuffix.length);
   let checked = 0;
   for (const file of await jsonFilesUnder(path.join(distDir, 'api'))) {
     let doc;
@@ -460,6 +471,9 @@ const DK_DIAGRAM_VAR_RE =
   /var\(--dk-diagram-(?:node-fill|node-border|node-text|edge|subgraph-title|cluster-fill)\)/i;
 
 // ---------------------------------------------------------------------------
+
+/** The agent index file, relative to dist. */
+const INDEX_RELPATH = path.join('api', 'index.json');
 
 /** Emit a precise failure and exit non-zero (first failure wins). */
 function fail(message) {
@@ -2107,7 +2121,7 @@ async function main() {
   ok('llms.txt: present and non-empty');
 
   // 4) agent index JSON — valid JSON, expected top-level shape, pinned count.
-  const indexAbs = path.join(distDir, 'api', 'index.json');
+  const indexAbs = path.join(distDir, INDEX_RELPATH);
   await assertNonEmptyFile(indexAbs, 'agent index (api/index.json)');
   const indexText = await readTextOrFail(indexAbs, 'agent index (api/index.json)');
   let index;
