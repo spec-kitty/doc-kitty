@@ -570,6 +570,14 @@ describe('schema/validator parity — OKF metadata forms (#177)', () => {
     // Orchestrator ruling (ADR-0059): a non-Z offset is a valid instant, with a sanity warning.
     ['non-Z offset updated', 'context/x.md', page({ updated: '2026-10-18T09:30:00+02:00' }), false, 'Z'],
     ['garbage updated', 'context/x.md', page({ updated: 'not-a-date' }), true, null],
+    // NFR-004: every instant form that built on 0.2.x (z.coerce.date) keeps building.
+    ['zoneless date-time updated (read as UTC)', 'context/x.md', page({ updated: '2024-05-01T10:00:00' }), false, 'no zone'],
+    ['compact +HHMM offset updated', 'context/x.md', page({ updated: '2024-05-01T10:00:00+0200' }), false, 'not UTC'],
+    ['short +HH offset updated', 'context/x.md', page({ updated: '2024-05-01T10:00:00+02' }), false, 'not UTC'],
+    ['time without seconds updated', 'context/x.md', page({ updated: '2024-05-01T10:00Z' }), false, null],
+    ['non-ISO updated that Date parses', 'context/x.md', page({ updated: 'May 1, 2024' }), false, 'not ISO'],
+    ['out-of-range offset updated (Date rejects it too)', 'context/x.md', page({ updated: '2024-05-01T10:00:00+25:99' }), true, null],
+    ['zoneless stale_after', 'context/x.md', page({ stale_after: '2027-01-01T00:00:00' }), false, 'no zone'],
     ['email author', 'context/x.md', page({ authors: ['jane@example.com'] }), false, 'human:jane'],
     ['human actor author', 'context/x.md', page({ authors: ['human:jane'] }), false, null],
     ['tool actor author', 'context/x.md', page({ authors: ['doc-kitty-gherkin/0.3.0'] }), false, null],
@@ -630,9 +638,21 @@ describe('vocabulary-core metadata rules (#177, C-009)', () => {
     expect(d?.date.toISOString()).toBe('2026-10-18T00:00:00.000Z');
     expect(normaliseInstant('2026-10-18T09:30:00+02:00')?.date.toISOString()).toBe('2026-10-18T07:30:00.000Z');
     expect(normaliseInstant(new Date('2026-10-18T09:30:00Z'))?.dateOnly).toBe(false);
-    for (const bad of ['', 'not-a-date', '2026-13-01', '2026-02-30', '2026-10-18T09:30:00', 20261018, null, undefined]) {
+    for (const bad of ['', 'not-a-date', '2026-13-01', '2024-05-01T10:00:00+25:99', '2024-05-01T10:00:00+02:60', null, undefined]) {
       expect(normaliseInstant(bad as string)).toBeNull();
     }
+  });
+
+  it('normaliseInstant keeps main\'s accept-set (NFR-004): zoneless, compact offsets, no seconds, anything Date parses', () => {
+    expect(normaliseInstant('2024-05-01T10:00:00')).toMatchObject({ noZone: true, nonIso: false });
+    expect(normaliseInstant('2024-05-01T10:00:00')?.date.toISOString()).toBe('2024-05-01T10:00:00.000Z');
+    expect(normaliseInstant('2024-05-01T10:00:00+0200')?.date.toISOString()).toBe('2024-05-01T08:00:00.000Z');
+    expect(normaliseInstant('2024-05-01T10:00:00-02')?.date.toISOString()).toBe('2024-05-01T12:00:00.000Z');
+    expect(normaliseInstant('2024-05-01T10:00:00+0200')).toMatchObject({ nonUtc: true });
+    expect(normaliseInstant('2024-05-01T10:00Z')).toMatchObject({ noZone: false, nonIso: false });
+    expect(normaliseInstant('2024-05-01T10:00Z')?.date.toISOString()).toBe('2024-05-01T10:00:00.000Z');
+    expect(normaliseInstant('May 1, 2024')).toMatchObject({ nonIso: true });
+    expect(normaliseInstant('2026-02-30')).toMatchObject({ nonIso: true });
   });
 });
 
@@ -677,6 +697,9 @@ describe('NFR-004 — old-forms tree: advisories only, exit code 0, Zod twin par
     expect(out).toContain('is date-only');
     expect(out).toContain('human:jane');
     expect(out).toContain('index file is missing `okf_version`');
+    expect(out).toContain('has no zone');
+    expect(out).toContain('is not UTC');
+    expect(out).toContain('is not ISO-8601');
     expect(out).toMatch(/okf_version: 0\.2` is not the string "0\.2"/);
     expect(out).toContain('old-forms/README.md'); // each warning names its file
   });
