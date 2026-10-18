@@ -17,6 +17,7 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:draft-publication',
   'doc-kitty:route-shaping',
   'doc-kitty:toc-rail',
+  'doc-kitty:lightbox',
   'doc-kitty:content-graph',
   'doc-kitty:deck-split',
   'doc-kitty:base-absolute-links',
