@@ -200,8 +200,9 @@ The exported index lists entries as `- [Title](/path.md) - description`.
   `sha256:` value in `at` is still read.
 - **`generated.by`** is `<producer>/<toolkit version>`. The legacy
   `doc-kitty/gherkin` value is still recognised.
-- **The scenarios API is unchanged.** `api/scenarios.json` keeps
+- **The scenarios API keeps `generated_from`.** `api/scenarios.json` keeps
   `generated_from: doc-kitty/gherkin`, so adopters that read it see no change.
+- **The scenarios API adds `generated_by`** (#182): `doc-kitty-gherkin/<version>`, an OKF tool actor; `generated_from` stays byte-identical but is deprecated and goes in the next breaking release.
 
 ### Agent API
 
