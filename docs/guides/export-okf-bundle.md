@@ -45,7 +45,7 @@ The CLI writes the same bundle as the build, byte for byte.
 | `--docs <dir>` | `./docs` | Source docs tree |
 | `--out <dir>` | `./okf-export` | Output directory. It is emptied first |
 | `--index-basename <names>` | from site config | Index file names, such as `README,index`. Used when no site config is found next to the docs folder |
-| `--base <path>` | empty | The site's `base`, stripped from links |
+| `--base <path>` | empty | The site's `base`, stripped from links. Not inferred: the graph's hrefs carry no base. Without it, if every unresolved link starts with the same segment, the export prints `hint: ... pass --base /<segment>` |
 | `--site-url <url>` | empty | The site's `site`; internal links that are not bundle pages become absolute against it |
 | `--check` | off | Validate the bundle already in `--out` (OKF §11) and write nothing |
 

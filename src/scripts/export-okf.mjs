@@ -11,7 +11,9 @@
  * docs tree (default `./docs`), empties `--out` (default `./okf-export`) and writes
  * the bundle. The index names come from the site's config next to the docs folder,
  * as for the other bins; `--index-basename` is the fallback when there is none.
- * `--base` and `--site-url` are the site's `base` and `site`; both default to empty.
+ * `--base` and `--site-url` are the site's `base` and `site`; both default to empty. The
+ * built graph carries neither (its hrefs are unbased), so they are not inferred; when `--base`
+ * is not given and every unresolved link starts with the same segment, a hint suggests it.
  *
  * `--check` only validates the existing bundle in `--out` (OKF §11).
  *
@@ -31,15 +33,30 @@ const OPTIONS = {
   docs: { type: 'string', default: 'docs' },
   out: { type: 'string', default: 'okf-export' },
   'index-basename': { type: 'string' },
-  base: { type: 'string', default: '' },
+  base: { type: 'string' },
   'site-url': { type: 'string', default: '' },
   check: { type: 'boolean', default: false },
 };
 
+const UNRESOLVED = /^link target is not in the bundle: (\/[^/#?\s]+)/;
+
+/**
+ * The one hint for a missing `--base`: when every unresolved internal link starts with the
+ * same first segment, that segment is very likely the site's `base`. Never applied, only
+ * suggested; a graph's hrefs carry no base, and guessing would hide real broken links.
+ */
+function baseHint(warnings) {
+  const unresolved = warnings.filter((w) => w.rule === 'unresolved-link');
+  const segments = new Set(unresolved.map((w) => UNRESOLVED.exec(w.message)?.[1] ?? ''));
+  return segments.size === 1 && !segments.has('') ? [...segments][0] : null;
+}
+
 /** Print the advisory warnings and the violations; 1 when there is a violation. */
-function report(outDir) {
+function report(outDir, { baseGiven = true } = {}) {
   const { errors, warnings } = checkOkfBundleReport(outDir);
   for (const w of warnings) console.error(`warning: ${w.path}: ${w.message}`);
+  const hint = baseGiven ? null : baseHint(warnings);
+  if (hint) console.error(`hint: every unresolved link starts with ${hint}; if that is the site's base, pass --base ${hint} (and --site-url for absolute links)`);
   for (const v of errors) console.error(`error: ${v.path}: rule ${v.rule}: ${v.message}`);
   return errors.length > 0 ? 1 : 0;
 }
@@ -63,10 +80,10 @@ function run(argv) {
     graphFile,
     docsDir: values.docs,
     outDir,
-    options: { indexBasename: resolved.names, base: values.base, siteUrl: values['site-url'] },
+    options: { indexBasename: resolved.names, base: values.base ?? '', siteUrl: values['site-url'] ?? '' },
   });
   console.error(`wrote ${bundle.size} file(s) to ${values.out}`);
-  return report(outDir);
+  return report(outDir, { baseGiven: values.base !== undefined });
 }
 
 try {

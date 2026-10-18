@@ -5,7 +5,7 @@
  * core never touches the file system.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -215,6 +215,31 @@ describe('okfExportIntegration build hook', () => {
       expect(call).not.toThrow(/ENOENT/);
     } finally {
       rmSync(dist, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('dockitty-export-okf CLI base hint', () => {
+  it('suggests --base when unresolved links share a leading segment, and is quiet once it is given', () => {
+    const bin = path.join(import.meta.dirname, '..', 'scripts', 'export-okf.mjs');
+    const dir = mkdtempSync(path.join(tmpdir(), 'okf-base-'));
+    try {
+      mkdirSync(path.join(dir, 'docs'));
+      writeFileSync(path.join(dir, 'docs', 'README.md'), '---\ntitle: Home\n---\nSee [setup](/docs/setup/).\n');
+      writeFileSync(path.join(dir, 'docs', 'setup.md'), '---\ntitle: Setup\n---\nBack [home](/docs/).\n');
+      const page = (id: string, href: string) => ({ id, kind: 'page', type: 'Context', title: id, href });
+      const graph = { schema: 'dockitty.content-graph/1', okf_version: '0.2', nodes: [page('README', '/'), page('setup', '/setup/')], edges: [] };
+      writeFileSync(path.join(dir, 'graph.json'), JSON.stringify(graph));
+      const args = ['--graph', path.join(dir, 'graph.json'), '--docs', path.join(dir, 'docs'), '--index-basename', 'README', '--out', path.join(dir, 'out')];
+      const bare = spawnSync(process.execPath, [bin, ...args], { encoding: 'utf8' });
+      expect(bare.status, bare.stderr).toBe(0);
+      expect(bare.stderr).toContain('pass --base /docs');
+      const based = spawnSync(process.execPath, [bin, ...args, '--base', '/docs'], { encoding: 'utf8' });
+      expect(based.status, based.stderr).toBe(0);
+      expect(based.stderr).not.toContain('hint:');
+      expect(based.stderr).not.toContain('not in the bundle');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 });
