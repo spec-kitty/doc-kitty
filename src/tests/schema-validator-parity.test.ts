@@ -11,7 +11,7 @@ import {
   isGeneratedPage,
 } from '../scripts/validate-frontmatter.mjs';
 import { parseActor, isActor, normaliseInstant } from '../lib/vocabulary-core.mjs';
-import { LEGACY_GENERATED_BY as GHERKIN_GENERATED_BY, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
+import { LEGACY_GENERATED_BY as GHERKIN_GENERATED_BY, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
@@ -407,8 +407,7 @@ describe('index-basename + subtypes options do not perturb shape parity (NFR-001
 // `updated`/`type` for every page; the standalone gate exempts only MACHINE-
 // GENERATED pages from those authored-metadata rules. Recognition is keyed on the
 // `generated.by` MARKER (`doc-kitty/gherkin`), plus the
-// legacy glossary path rule (the glossary codegen writes no stamp, so its existing
-// output must stay valid unchanged). The marker — not the path — is what makes a
+// glossary path rule (a glossary stamp grants no exemption; the path alone does). The marker — not the path — is what makes a
 // Gherkin feature page exempt: the SAME page with its `generated` block removed
 // must fail exactly like an authored page missing `updated`.
 //
@@ -456,6 +455,11 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
     const scaffolded = withStamp(base, { by: 'doc-kitty-scaffold/9.9.9', at: '2026-10-18T09:30:00Z' });
     expect(isGeneratedPage(FEATURE_REL, scaffolded)).toBe(false);
     expect(isGeneratedStamp('doc-kitty-scaffold/9.9.9')).toBe(false);
+    // A glossary stamp grants no exemption either: glossary pages are exempt by the
+    // `glossary/` path rule, so an authored page elsewhere cannot opt out by claiming one.
+    const claimed = withStamp(base, { by: `${GLOSSARY_PRODUCER}/9.9.9`, at: '2026-10-18T09:30:00Z' });
+    expect(isGeneratedPage(FEATURE_REL, claimed)).toBe(false);
+    expect(validate(FEATURE_REL, claimed).problems).toEqual(['`updated`: required']);
   });
 
   it('a generated feature page WITHOUT `updated` passes the gate, and the build schema accepts it too', () => {

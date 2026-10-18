@@ -350,8 +350,8 @@ The pages are committed, like the glossary's. Two gates keep them honest:
 - **Frontmatter parity.** `validate-frontmatter.mjs` recognises a generated page by
   its `generated.by: "doc-kitty/gherkin"` stamp, imported from `feature-core.mjs`
   rather than repeated, or by the legacy glossary path rule (a `kind: Glossary` or
-  `kind: Hub` page under `glossary/`). The glossary codegen writes no stamp, so a
-  `doc-kitty/glossary` stamp grants no exemption. Accepting one would only let an
+  `kind: Hub` page under `glossary/`). The glossary codegen does write a
+  `doc-kitty-glossary/<version>` stamp, but it grants no exemption: glossary output is exempt by the path rule alone. Accepting one would only let an
   authored page anywhere opt out of the rules by claiming it. Generated pages are
   exempt from `type`, and from `updated` unless a `@dk:updated` tag supplied one,
   in which case the value is checked normally. `check-links.mjs` needs no change: generated `related` refs are
