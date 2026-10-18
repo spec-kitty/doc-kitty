@@ -208,11 +208,16 @@ describe('okfExportIntegration build hook', () => {
     const dist = mkdtempSync(path.join(tmpdir(), 'okf-dist-'));
     try {
       const hook = okfExportIntegration(path.join(FIX, 'docs'), undefined).hooks['astro:build:done'] as (a: unknown) => void;
-      const call = () => hook({ dir: pathToFileURL(`${dist}/`), logger: { info() {} } });
-      expect(call).toThrow(/content graph.*not found/i);
-      expect(call).toThrow(path.join(dist, 'api', 'content-graph.json'));
-      expect(call).toThrow(/\/api\/content-graph\.json/);
-      expect(call).not.toThrow(/ENOENT/);
+      let message = '';
+      try {
+        hook({ dir: pathToFileURL(`${dist}/`), logger: { info() {} } });
+      } catch (e) {
+        message = (e as Error).message;
+      }
+      expect(message).toMatch(/content graph.*not found/i);
+      expect(message).toContain(path.join(dist, 'api', 'content-graph.json'));
+      expect(message).toMatch(/\/api\/content-graph\.json/);
+      expect(message).not.toMatch(/ENOENT/);
     } finally {
       rmSync(dist, { recursive: true, force: true });
     }
@@ -226,7 +231,7 @@ describe('dockitty-export-okf CLI base hint', () => {
     try {
       mkdirSync(path.join(dir, 'docs'));
       writeFileSync(path.join(dir, 'docs', 'README.md'), '---\ntitle: Home\n---\nSee [setup](/docs/setup/).\n');
-      writeFileSync(path.join(dir, 'docs', 'setup.md'), '---\ntitle: Setup\n---\nBack [home](/docs/).\n');
+      writeFileSync(path.join(dir, 'docs', 'setup.md'), '---\ntitle: Setup\n---\nBack [home](/docs/) or [top](/docs/#top).\n');
       const page = (id: string, href: string) => ({ id, kind: 'page', type: 'Context', title: id, href });
       const graph = { schema: 'dockitty.content-graph/1', okf_version: '0.2', nodes: [page('README', '/'), page('setup', '/setup/')], edges: [] };
       writeFileSync(path.join(dir, 'graph.json'), JSON.stringify(graph));
@@ -238,6 +243,11 @@ describe('dockitty-export-okf CLI base hint', () => {
       expect(based.status, based.stderr).toBe(0);
       expect(based.stderr).not.toContain('hint:');
       expect(based.stderr).not.toContain('not in the bundle');
+      // One stray link is not evidence of a base: no hint.
+      writeFileSync(path.join(dir, 'docs', 'setup.md'), '---\ntitle: Setup\n---\nBack [home](/docs/).\n');
+      const single = spawnSync(process.execPath, [bin, ...args], { encoding: 'utf8' });
+      expect(single.stderr, single.stderr).toContain('not in the bundle');
+      expect(single.stderr).not.toContain('hint:');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

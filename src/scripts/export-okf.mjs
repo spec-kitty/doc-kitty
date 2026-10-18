@@ -38,17 +38,16 @@ const OPTIONS = {
   check: { type: 'boolean', default: false },
 };
 
-const UNRESOLVED = /^link target is not in the bundle: (\/[^/#?\s]+)/;
-
 /**
- * The one hint for a missing `--base`: when every unresolved internal link starts with the
- * same first segment, that segment is very likely the site's `base`. Never applied, only
- * suggested; a graph's hrefs carry no base, and guessing would hide real broken links.
+ * The one hint for a missing `--base`: when several unresolved internal links all start with
+ * the same first segment, that segment is very likely the site's `base`. One stray link is
+ * not evidence. Never applied, only suggested; a graph's hrefs carry no base, and guessing
+ * would hide real broken links.
  */
 function baseHint(warnings) {
   const unresolved = warnings.filter((w) => w.rule === 'unresolved-link');
-  const segments = new Set(unresolved.map((w) => UNRESOLVED.exec(w.message)?.[1] ?? ''));
-  return segments.size === 1 && !segments.has('') ? [...segments][0] : null;
+  const segments = new Set(unresolved.map((w) => /^\/[^/#?\s]+/.exec(w.target)?.[0] ?? ''));
+  return unresolved.length >= 2 && segments.size === 1 && !segments.has('') ? [...segments][0] : null;
 }
 
 /** Print the advisory warnings and the violations; 1 when there is a violation. */

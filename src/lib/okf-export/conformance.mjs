@@ -38,6 +38,7 @@ import { rootLinks } from './links.mjs';
  * @property {'warning'} severity
  * @property {'unresolved-link'} rule
  * @property {string} message names the link destination
+ * @property {string} target the link as written (root-relative), for tools that group findings
  */
 
 const RESERVED = new Set(['index.md', 'log.md']);
@@ -161,7 +162,7 @@ export function checkOkfLinks(bundle) {
     for (const link of new Set(rootLinks(parse(text)?.content ?? text))) {
       const target = link.replace(/[?#].*$/, '').replace(/^\//, '').replace(/\/$/, '');
       const hit = files.has(target) || files.has(`${target}/index.md`) || (target === '' && files.has('index.md'));
-      if (!hit) warnings.push({ path: file, severity: 'warning', rule: 'unresolved-link', message: `link target is not in the bundle: ${link}` });
+      if (!hit) warnings.push({ path: file, severity: 'warning', rule: 'unresolved-link', message: `link target is not in the bundle: ${link}`, target: link });
     }
   }
   return warnings.sort((a, b) => compareCodeUnit(a.path, b.path) || compareCodeUnit(a.message, b.message));
