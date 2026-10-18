@@ -1,0 +1,32 @@
+{
+  "schema": "dockitty.content-graph/1",
+  "okf_version": "0.2",
+  "generatedFrom": "doc-kitty",
+  "nodes": [
+    { "id": "README", "kind": "page", "type": "Context", "title": "Home", "description": "The bundle root.", "status": "stable" },
+    { "id": "catalog:biblio:b1", "kind": "catalog", "title": "A Book", "url": "https://books.example/b1" },
+    { "id": "catalog:tool:t2", "kind": "catalog", "title": "A Tool" },
+    { "id": "context/audience/maintainer", "kind": "persona", "type": "Context", "title": "Maintainer", "description": "Who keeps the docs.", "status": "stable", "section": "context" },
+    { "id": "guides/README", "kind": "page", "type": "Guide", "title": "Guides", "description": "How-to guides.", "status": "stable", "section": "guides" },
+    { "id": "guides/bare", "kind": "page", "type": "Guide", "title": "Bare", "description": "No stamp and no authors.", "status": "stable", "section": "guides" },
+    { "id": "guides/deploy", "kind": "page", "type": "Guide", "title": "Deploy", "description": "Ship it.", "status": "stable", "doc_status": "active", "section": "guides", "authors": ["stijn@sddevelopment.be"], "updated": "2026-10-18T00:00:00Z" },
+    { "id": "guides/setup", "kind": "page", "type": "Guide", "title": "Setup", "description": "Set it up.", "status": "stable", "section": "guides", "tags": ["setup"], "authors": ["human:jane", "human:joe"], "updated": "2026-10-17T00:00:00Z", "verified": [{ "by": "human:jane", "at": "2026-10-01T10:00:00Z" }], "stale_after": "2027-01-01T00:00:00Z", "sources": [{ "resource": "features/x.feature", "title": "Gherkin source" }] },
+    { "id": "guides/stamped", "kind": "page", "type": "Guide", "title": "Stamped", "description": "A generated page.", "status": "stable", "section": "guides", "authors": ["human:amy"], "generated": { "by": "doc-kitty-gherkin/0.3.0", "at": "2026-10-02T09:30:00Z", "content_hash": "sha256:0123456789ab" }, "updated": "2026-10-05T00:00:00Z" },
+    { "id": "resource:features/x.feature", "kind": "resource", "title": "Gherkin source", "resource": "features/x.feature" },
+    { "id": "resource:https://x.example/a", "kind": "resource", "title": "Inline A", "url": "https://x.example/a" }
+  ],
+  "edges": [
+    { "id": "guides/bare|in-section|guides/README", "source": "guides/bare", "target": "guides/README", "rel": "in-section" },
+    { "id": "guides/deploy|in-section|guides/README", "source": "guides/deploy", "target": "guides/README", "rel": "in-section" },
+    { "id": "guides/README|in-section|README", "source": "guides/README", "target": "README", "rel": "in-section" },
+    { "id": "guides/setup|audience|context/audience/maintainer", "source": "guides/setup", "target": "context/audience/maintainer", "rel": "audience", "note": "Read this first." },
+    { "id": "guides/setup|cites|catalog:biblio:b1", "source": "guides/setup", "target": "catalog:biblio:b1", "rel": "cites" },
+    { "id": "guides/setup|cites|catalog:tool:t2", "source": "guides/setup", "target": "catalog:tool:t2", "rel": "cites" },
+    { "id": "guides/setup|cites|resource:https://x.example/a", "source": "guides/setup", "target": "resource:https://x.example/a", "rel": "cites" },
+    { "id": "guides/setup|derived-from|resource:features/x.feature", "source": "guides/setup", "target": "resource:features/x.feature", "rel": "derived-from" },
+    { "id": "guides/setup|in-section|guides/README", "source": "guides/setup", "target": "guides/README", "rel": "in-section" },
+    { "id": "guides/setup|related|guides/deploy", "source": "guides/setup", "target": "guides/deploy", "rel": "related" },
+    { "id": "guides/setup|related|guides/README", "source": "guides/setup", "target": "guides/README", "rel": "related" },
+    { "id": "guides/stamped|in-section|guides/README", "source": "guides/stamped", "target": "guides/README", "rel": "in-section" }
+  ]
+}

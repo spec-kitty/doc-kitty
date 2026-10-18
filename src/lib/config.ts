@@ -59,6 +59,7 @@ import {
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
 import sitemapOrderIntegration from './sitemap-order.js';
+import { okfExportIntegration } from './okf-export/integration.js';
 import { DOC_KITTY_I18N_PLUGIN } from './i18n-plugin.js';
 import { PRE_PAINT_SCRIPT } from './toc-rail/pre-paint.js';
 import { REVEAL_CURRENT_SCRIPT } from './route-shaping.js';
@@ -667,6 +668,10 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // outside the contiguous `<url>` run. Registered AFTER `sitemap(...)` so the page files already exist when
     // the hook runs; the `sitemap-index.xml` is left untouched.
     sitemapOrderIntegration(),
+    // Always-on OKF export (#178, FR-018): an `astro:build:done` step that writes
+    // `dist/okf/` from the graph file the content-graph route already built. No
+    // option disables it. Registered AFTER the graph route and the sitemap step.
+    okfExportIntegration(docsDir, indexBasename),
     // Transport the merged `kind → layout` + `dk:slot → component` maps to the
     // carriers as `virtual:doc-kitty/manifest` (synchronous `resolveLayout`, no
     // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports

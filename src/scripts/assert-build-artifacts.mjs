@@ -32,6 +32,7 @@ import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import { compareCodeUnit } from '../lib/vocabulary-core.mjs';
+import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
 import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -533,6 +534,17 @@ async function assertContentGraph(distDir, index, builtRelOf) {
     }
   }
   ok(`content-graph: ${rel} — ${graph.nodes.length} node(s), ${graph.edges.length} edge(s), sorted, every edge end a node, every page a built route`);
+}
+
+/** The bundle the build wrote (#178, FR-018) must exist and satisfy OKF section 11. */
+function assertOkfBundle(distDir) {
+  const bundle = path.join(distDir, 'okf');
+  if (!existsSync(path.join(bundle, 'index.md'))) fail('okf-export: dist/okf/index.md was not written');
+  const violations = checkOkfBundle(bundle);
+  if (violations.length > 0) {
+    fail(`okf-export: ${violations.length} conformance violation(s): ${violations.map((v) => `${v.path}: rule ${v.rule}`).join('; ')}`);
+  }
+  ok('okf-export: dist/okf/ is an OKF v0.2 bundle with no conformance violation');
 }
 
 /** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
@@ -2396,6 +2408,7 @@ async function main() {
   // 4b2) Every `_links` href in dist/api/**/*.json resolves to a built file (#103).
   const builtRelOf = await assertAgentLinksResolve(distDir, index);
   await assertContentGraph(distDir, index, builtRelOf);
+  assertOkfBundle(distDir);
 
   // 4c) /api/bibliography.json — a catalog projection OUTSIDE page gating: valid
   // JSON, { version, count, records[] }, each record carrying id/title/url

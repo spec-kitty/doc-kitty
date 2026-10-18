@@ -22,6 +22,7 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:base-absolute-links',
   '@astrojs/sitemap',
   'doc-kitty:sitemap-order',
+  'doc-kitty:okf-export',
   'doc-kitty:manifest',
   'doc-kitty:favicon',
 ];
