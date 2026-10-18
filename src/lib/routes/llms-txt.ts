@@ -15,6 +15,7 @@ import {
   sectionOf,
   sectionRank,
   sectionLabel,
+  SECTION_LABEL,
   type IndexBasenameOption,
 } from '../metadata.js';
 import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
@@ -122,7 +123,9 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     );
 
     for (const section of orderedSections) {
-      const heading = sectionLabel(section, labels) ?? section;
+      // A registry that omits the root section ('') would leave its heading empty
+      // (`## `, #189): fall back to the default label table, then the key.
+      const heading = sectionLabel(section, labels) ?? SECTION_LABEL[section] ?? section;
       lines.push(`## ${heading}`, '');
       // Section blurb: the README description ?? the registry purpose (README
       // wins). Neither → no blurb line at all (no empty line). Emitted as a plain

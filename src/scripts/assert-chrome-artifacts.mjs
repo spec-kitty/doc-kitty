@@ -1073,6 +1073,15 @@ export async function assertChromeArtifacts(distDir) {
   }
   ok(`footer override: brand footer marker \`${FOOTER_BRAND_MARKER}\` present on ${FOOTER_PAGE}`);
 
+  // #187 — "Back to top" must target an id that exists on the page (Starlight's
+  // anchor is `_top`, not `top`).
+  const backToTop = footerHtml.match(/<a[^>]*href="#([^"]*)"[^>]*>\s*Back to top/i);
+  if (!backToTop) fail(`footer: no "Back to top" link on ${FOOTER_PAGE} (#187)`);
+  if (!footerHtml.includes(`id="${backToTop[1]}"`)) {
+    fail(`footer: "Back to top" links #${backToTop[1]} but no element on ${FOOTER_PAGE} has that id (#187)`);
+  }
+  ok('footer: "Back to top" targets an existing anchor');
+
   // === 12) Footer COMPOSES: article footer survives the brand band (F1) ==========
   // The brand sets `dk:site-footer`; the Footer carrier must still render
   // Starlight's ARTICLE footer (Pagination/EditLink/LastUpdated) — never replace it.
