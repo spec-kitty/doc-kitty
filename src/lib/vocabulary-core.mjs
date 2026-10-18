@@ -228,53 +228,92 @@ export function toActor(s) {
 }
 
 const INSTANT =
-  /^(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2}):(\d{2})(\.\d+)?([Zz]|[+-]\d{2}:\d{2}))?$/;
+  /^(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?([Zz]|[+-]\d{2}(?::?\d{2})?)?)?$/;
 
 /**
  * Parse an instant without locale parsing. Accepts a `Date` (YAML may already
- * have parsed it), an ISO-8601 string with a `Z` or `±HH:MM` offset (fractional
- * seconds allowed), or a date-only `YYYY-MM-DD` (read as midnight UTC with
- * `dateOnly: true`). A non-`Z` offset is a valid instant that sets `nonUtc` so
- * the gate can recommend `Z` (ADR-0059). A `Date` cannot reveal whether its
- * source was date-only, so it reports `dateOnly: false`; callers that need the
- * flag pass the raw string. Calendar-invalid values and strings without a zone
- * are `null`.
+ * have parsed it), an ISO-8601 string (seconds optional, fractional seconds
+ * allowed) with a `Z`, `±HH:MM`, `±HHMM` or `±HH` offset, or a date-only
+ * `YYYY-MM-DD` (midnight UTC, `dateOnly: true`). Flags the gate turns into
+ * advisories, never errors (ADR-0059, NFR-004):
+ *
+ * - `nonUtc`: a non-`Z` offset (offset hours <= 14, minutes < 60);
+ * - `noZone`: a date-time with no zone, read as UTC;
+ * - `nonIso`: anything else `new Date()` still parses (what `z.coerce.date()`
+ *   accepted before the content graph), so a page that built before keeps building.
+ *
+ * A `Date` cannot reveal whether its source was date-only, so it reports
+ * `dateOnly: false`; callers that need the flag pass the raw string. Only values
+ * `Date` cannot parse are `null`.
  *
  * @param {unknown} v
- * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean} | null}
+ * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean} | null}
  */
 export function normaliseInstant(v) {
   if (v instanceof Date) {
-    return Number.isNaN(v.getTime()) ? null : { date: v, dateOnly: false, nonUtc: false };
+    return Number.isNaN(v.getTime())
+      ? null
+      : { date: v, dateOnly: false, nonUtc: false, noZone: false, nonIso: false };
   }
+  if (typeof v === 'number') return legacyInstant(v);
   if (typeof v !== 'string') return null;
-  const m = INSTANT.exec(v.trim());
+  const text = v.trim();
+  return isoInstant(text) ?? legacyInstant(text);
+}
+
+/**
+ * @param {string | number} v
+ * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean} | null}
+ */
+function legacyInstant(v) {
+  if (v === '') return null;
+  const date = new Date(v);
+  return Number.isNaN(date.getTime())
+    ? null
+    : { date, dateOnly: false, nonUtc: false, noZone: false, nonIso: true };
+}
+
+/**
+ * @param {string} text
+ * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean} | null}
+ */
+function isoInstant(text) {
+  const m = INSTANT.exec(text);
   if (!m) return null;
-  const [, y, mo, d, h = '00', mi = '00', sec = '00', frac = '', zone] = m;
-  const dateOnly = zone === undefined;
-  const base = Date.UTC(+y, +mo - 1, +d, +h, +mi, +sec);
+  const [, y, mo, d, h, mi, sec = '00', frac = '', zone] = m;
+  const dateOnly = h === undefined;
+  const base = Date.UTC(+y, +mo - 1, +d, +(h ?? 0), +(mi ?? 0), +sec);
   const check = new Date(base);
   const valid =
     check.getUTCFullYear() === +y &&
     check.getUTCMonth() === +mo - 1 &&
     check.getUTCDate() === +d &&
-    +h < 24 &&
-    +mi < 60 &&
+    +(h ?? 0) < 24 &&
+    +(mi ?? 0) < 60 &&
     +sec < 60;
   if (!valid) return null;
-  const ms = frac ? Math.round(Number(`0${frac}`) * 1000) : 0;
-  const nonUtc = !dateOnly && !/^[Zz]$/.test(zone);
+  const nonUtc = zone !== undefined && !/^[Zz]$/.test(zone);
   const offset = nonUtc ? offsetMinutes(zone) : 0;
-  return { date: new Date(base + ms - offset * 60_000), dateOnly, nonUtc };
+  if (Number.isNaN(offset)) return null;
+  const ms = frac ? Math.round(Number(`0${frac}`) * 1000) : 0;
+  return {
+    date: new Date(base + ms - offset * 60_000),
+    dateOnly,
+    nonUtc,
+    noZone: !dateOnly && zone === undefined,
+    nonIso: false,
+  };
 }
 
 /**
- * @param {string} zone `±HH:MM`
- * @returns {number} signed minutes east of UTC
+ * @param {string} zone `±HH`, `±HHMM` or `±HH:MM`
+ * @returns {number} signed minutes east of UTC, `NaN` when out of range (hours > 14, minutes >= 60)
  */
 function offsetMinutes(zone) {
   const sign = zone[0] === '-' ? -1 : 1;
-  return sign * (Number(zone.slice(1, 3)) * 60 + Number(zone.slice(4, 6)));
+  const hours = Number(zone.slice(1, 3));
+  const minutes = Number(zone.slice(3).replace(':', '') || 0);
+  return hours > 14 || minutes >= 60 ? NaN : sign * (hours * 60 + minutes);
 }
 
 /**
