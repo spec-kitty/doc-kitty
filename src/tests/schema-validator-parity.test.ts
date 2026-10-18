@@ -452,6 +452,11 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
     expect(isGeneratedPage(FEATURE_REL, authored)).toBe(false);
     expect(validate(FEATURE_REL, authored).problems).toEqual(['`updated`: required']);
     expect(buildRejects(stamped)).toBe(false);
+    // A scaffold stamp is provenance only: the scaffolded page is AUTHORED, so it
+    // is not exempt (the same page with an ownership stamp is).
+    const scaffolded = withStamp(base, { by: 'doc-kitty-scaffold/9.9.9', at: '2026-10-18T09:30:00Z' });
+    expect(isGeneratedPage(FEATURE_REL, scaffolded)).toBe(false);
+    expect(isGeneratedStamp('doc-kitty-scaffold/9.9.9')).toBe(false);
   });
 
   it('a generated feature page WITHOUT `updated` passes the gate, and the build schema accepts it too', () => {
