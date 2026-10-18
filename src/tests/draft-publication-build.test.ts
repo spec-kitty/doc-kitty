@@ -69,7 +69,7 @@ const PROMOTED = [
 /** Published pages: present, indexable and searchable in both modes. */
 const PUBLISHED = ['guides/getting-started', 'adr', 'context/audience/example-persona', ...PROMOTED];
 /** The files agents and crawlers read. Drafts are in none of them, in either mode. */
-const MACHINE_SURFACES = ['sitemap-0.xml', 'rss.xml', 'llms.txt', 'api/index.json'];
+const MACHINE_SURFACES = ['sitemap-0.xml', 'rss.xml', 'llms.txt', 'api/index.json', 'api/content-graph.json'];
 
 /** The example's redirects. All three end at a published page, so all are built in both modes. */
 const REDIRECTS = ['plans/features/mission-alpha', 'plans/features/mission-beta', 'guides/old-getting-started'];
@@ -364,7 +364,7 @@ describe('WP05 — draft publication in the built example', () => {
     });
 
     it('are the same in both modes', () => {
-      for (const surface of ['llms.txt', 'api/index.json', 'sitemap-0.xml']) {
+      for (const surface of ['llms.txt', 'api/index.json', 'api/content-graph.json', 'sitemap-0.xml']) {
         expect(read('on', surface), surface).toBe(read('off', surface));
       }
       expect(read('off', 'sitemap-0.xml').match(/<loc>/g)!.length).toBeGreaterThan(40);

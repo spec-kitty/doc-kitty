@@ -32,6 +32,7 @@
     "./schema": "./lib/schema.ts",
     "./routes": "./lib/routes/index.ts",
     "./routes/scenario-index-injected": "./lib/routes/scenario-index-injected.ts",
+    "./routes/content-graph-injected": "./lib/routes/content-graph-injected.ts",
     "./route-middleware": "./lib/route-middleware.ts",
     "./deck/*": "./lib/deck/*.ts",
     "./components/*": "./components/*",

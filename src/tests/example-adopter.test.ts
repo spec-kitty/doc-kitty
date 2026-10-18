@@ -231,6 +231,45 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
     }
   });
 
+  it('#176: the gate walks the content graph: a dangling edge, a missing link, a draft node or a missorted graph fails', () => {
+    const indexFile = path.join(EXAMPLE_DIST, 'api', 'index.json');
+    const graphFile = path.join(EXAMPLE_DIST, 'api', 'content-graph.json');
+    const indexOriginal = readFileSync(indexFile, 'utf8');
+    const graphOriginal = readFileSync(graphFile, 'utf8');
+    const gate = () => spawnSync('node', [ASSERT_ARTIFACTS_SCRIPT, EXAMPLE_DIST], { encoding: 'utf8', env: process.env });
+    const graph = () => JSON.parse(graphOriginal) as { nodes: Array<Record<string, unknown>>; edges: Array<Record<string, unknown>> };
+    try {
+      const dangling = graph();
+      const source = dangling.nodes[0].id as string;
+      dangling.edges.push({ id: `${source}|related|no-such-node`, source, target: 'no-such-node', rel: 'related' });
+      writeFileSync(graphFile, JSON.stringify(dangling));
+      const edge = gate();
+      expect(edge.status).toBe(1);
+      expect(edge.stderr).toContain(`content-graph: dangling edge ${source}|related|no-such-node`);
+
+      const missorted = graph();
+      missorted.nodes.reverse();
+      writeFileSync(graphFile, JSON.stringify(missorted));
+      expect(gate().stderr).toContain('content-graph: nodes are not strictly sorted by id');
+
+      const draft = graph();
+      draft.nodes.push({ id: 'zz-draft', kind: 'page', href: '/context/audience/draft-persona/' });
+      writeFileSync(graphFile, JSON.stringify(draft));
+      expect(gate().stderr).toContain('content-graph: draft page zz-draft is a node');
+
+      writeFileSync(graphFile, graphOriginal);
+      const doc = JSON.parse(indexOriginal);
+      delete doc._links.contentGraph;
+      writeFileSync(indexFile, JSON.stringify(doc));
+      const unlinked = gate();
+      expect(unlinked.status).toBe(1);
+      expect(unlinked.stderr).toContain('content-graph: the index has no _links.contentGraph');
+    } finally {
+      writeFileSync(indexFile, indexOriginal);
+      writeFileSync(graphFile, graphOriginal);
+    }
+  });
+
   // -- T019: index.md-indexed section coexists with the README corpus --------
 
   it('T019 (SC-001): the index.md-indexed "plans" section resolves to its section ROOT, not /plans/index/', () => {

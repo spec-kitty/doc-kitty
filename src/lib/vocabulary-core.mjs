@@ -212,6 +212,21 @@ export function isActor(s) {
   return parsed !== null && parsed.kind !== 'email';
 }
 
+/**
+ * Normalise a value to a schema-valid actor string: a well-formed actor is
+ * returned as is, an email becomes `human:<local-part>` (data-model.md, Actor),
+ * anything else (including an email whose local part is not a valid id) is `null`.
+ *
+ * @param {unknown} s
+ * @returns {string | null}
+ */
+export function toActor(s) {
+  const parsed = parseActor(s);
+  if (parsed === null) return null;
+  if (parsed.kind === 'email') return /^[A-Za-z0-9._-]+$/.test(parsed.id) ? `human:${parsed.id}` : null;
+  return /** @type {string} */ (s);
+}
+
 const INSTANT =
   /^(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2}):(\d{2})(\.\d+)?([Zz]|[+-]\d{2}:\d{2}))?$/;
 

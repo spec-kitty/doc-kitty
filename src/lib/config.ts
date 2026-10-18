@@ -50,6 +50,7 @@ import {
   directiveIntegration,
 } from './integrations/markdown-pipeline.js';
 import { tocRailIntegration } from './integrations/toc-rail.js';
+import { contentGraphIntegration } from './integrations/content-graph.js';
 import { createBuildState } from './build-state.js';
 import {
   normalizeBasePrefix,
@@ -646,6 +647,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // `DocKittyOptions` toggle. Its `injectScript('page', …)` island early-returns
     // on any TOC-free page, so a non-TOC route stays cost-free.
     tocRailIntegration,
+    // Always-on content-graph route (#176, FR-010): injects `/api/content-graph.json`
+    // UNCONDITIONALLY, like the TOC rail, so no adopter adds a page file and the
+    // agent index's `_links.contentGraph` never dangles. Registers no remark/rehype
+    // plugin, so no plugin-order pin moves.
+    contentGraphIntegration(docsDir, indexBasename),
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.
     deckSplitIntegration,

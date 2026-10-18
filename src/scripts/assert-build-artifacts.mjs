@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
+import { compareCodeUnit } from '../lib/vocabulary-core.mjs';
 import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -375,6 +376,7 @@ function collectLinkObjects(doc) {
  * site origin and base are read off the index's own `self` link; a path ending
  * in `/` resolves to `<path>/index.html`, anything else is a file path as-is.
  * An href outside the site fails too: these links point at the site's own output.
+ * Returns the href -> `dist`-relative-file mapper, so callers resolve against the same base.
  */
 async function assertAgentLinksResolve(distDir, index) {
   // The gate reads the index at `dist/<INDEX_RELPATH>` (the `--index-path` value, default
@@ -471,6 +473,66 @@ async function assertAgentLinksResolve(distDir, index) {
     fail(`agent _links: the index lists ${index.pages.length} page(s) but none carries a _links href (emission regression)`);
   }
   ok(`agent _links: all ${checked} href(s) in ${scan.size} agent JSON file(s) resolve to a built file (index: ${indexRel})`);
+  return builtRelOf;
+}
+
+const CONTENT_GRAPH_SCHEMA = 'dockitty.content-graph/1';
+
+/** Load the graph the index's `_links.contentGraph` names; a missing link or file fails closed. */
+async function loadContentGraph(distDir, index, builtRelOf) {
+  const href = index?._links?.contentGraph?.href;
+  if (typeof href !== 'string') {
+    fail('content-graph: the index has no _links.contentGraph (the always-on route must be declared)');
+  }
+  const { rel } = builtRelOf(href);
+  if (rel === null || !existsSync(path.join(distDir, rel))) {
+    fail(`content-graph: _links.contentGraph ${href} names no built file`);
+  }
+  let graph;
+  try {
+    graph = JSON.parse(await readFile(path.join(distDir, rel), 'utf8'));
+  } catch (error) {
+    fail(`content-graph: ${rel} is not valid JSON (${error.message})`);
+  }
+  if (graph?.schema !== CONTENT_GRAPH_SCHEMA || !Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) {
+    fail(`content-graph: ${rel} is not a ${CONTENT_GRAPH_SCHEMA} document (schema, nodes[], edges[])`);
+  }
+  return { graph, rel };
+}
+
+/** The graph's own determinism contract: nodes by `id`, edges by `(source, rel, target)`, by code unit. */
+function assertGraphOrder({ nodes, edges }) {
+  const misordered = (items, compare) => items.findIndex((item, i) => i > 0 && compare(items[i - 1], item) >= 0);
+  const nodeAt = misordered(nodes, (a, b) => compareCodeUnit(a.id, b.id));
+  if (nodeAt >= 0) fail(`content-graph: nodes are not strictly sorted by id (at ${nodes[nodeAt].id})`);
+  const edgeAt = misordered(
+    edges,
+    (a, b) => compareCodeUnit(a.source, b.source) || compareCodeUnit(a.rel, b.rel) || compareCodeUnit(a.target, b.target),
+  );
+  if (edgeAt >= 0) fail(`content-graph: edges are not strictly sorted by (source, rel, target) (at ${edges[edgeAt].id})`);
+}
+
+/**
+ * Broken edges cannot ship (#176, FR-014): every edge end is a node of the graph itself, every page
+ * or persona node is a built route, and no node is a draft (drafts are absent, so edges into them
+ * never exist to dangle).
+ */
+async function assertContentGraph(distDir, index, builtRelOf) {
+  const { graph, rel } = await loadContentGraph(distDir, index, builtRelOf);
+  const ids = new Set(graph.nodes.map((node) => node.id));
+  for (const edge of graph.edges) {
+    if (!ids.has(edge.source) || !ids.has(edge.target)) fail(`content-graph: dangling edge ${edge.id}`);
+  }
+  assertGraphOrder(graph);
+  const drafts = draftRoutesOf(EXAMPLE_DOCS_DIR, exampleIndexNames());
+  for (const node of graph.nodes) {
+    if (node.kind !== 'page' && node.kind !== 'persona') continue;
+    if (drafts.has(node.href)) fail(`content-graph: draft page ${node.id} is a node (drafts must be absent)`);
+    if (!existsSync(path.join(distDir, node.href, 'index.html'))) {
+      fail(`content-graph: node ${node.id} names ${node.href}, which was not built`);
+    }
+  }
+  ok(`content-graph: ${rel} — ${graph.nodes.length} node(s), ${graph.edges.length} edge(s), sorted, every edge end a node, every page a built route`);
 }
 
 /** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
@@ -2332,7 +2394,8 @@ async function main() {
   ok(`agent index: enriched related[] ({ref,title,kind,doc_status}) + audience[] ({profile,guidance_text}) shapes valid`);
 
   // 4b2) Every `_links` href in dist/api/**/*.json resolves to a built file (#103).
-  await assertAgentLinksResolve(distDir, index);
+  const builtRelOf = await assertAgentLinksResolve(distDir, index);
+  await assertContentGraph(distDir, index, builtRelOf);
 
   // 4c) /api/bibliography.json — a catalog projection OUTSIDE page gating: valid
   // JSON, { version, count, records[] }, each record carrying id/title/url

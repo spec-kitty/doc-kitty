@@ -115,6 +115,9 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
         self: { href: absolute(site, indexPath) },
         llms: { href: absolute(site, '/llms.txt') },
         sitemap: { href: absolute(site, '/sitemap-index.xml') },
+        // Always declared: the `doc-kitty:content-graph` integration injects the route
+        // on every site (#176), so unlike the site-owned surfaces below it cannot dangle.
+        contentGraph: { href: absolute(site, '/api/content-graph.json') },
         ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
         ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
         ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
