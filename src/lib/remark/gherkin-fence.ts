@@ -129,7 +129,8 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkSmartypants from 'remark-smartypants';
 import { isPresentationFile } from '../deck/is-presentation.js';
-import { GENERATED_BY } from '../gherkin/feature-core.mjs';
+import { isGeneratedStamp } from '../generator-stamp.mjs';
+import { stampContentHash } from '../gherkin/feature-core.mjs';
 import { recordFatal } from '../gherkin/errors.mjs';
 import { parseFragment } from '../gherkin/fragment.mjs';
 import { resolveInclude } from '../gherkin/include.mjs';
@@ -642,7 +643,7 @@ export default function gherkinFence(
    * Results on a generated feature page (ADR-0055 decision 5): re-read the
    * page's `.feature` source (`sources[0].resource`, the inverse of
    * `sourceLink`), check it is the version the page was generated from
-   * (`generated.at`), and overlay its results on the page's mdast. Anything
+   * (its `generated` content hash), and overlay its results on the page's mdast. Anything
    * that stops the overlay is a warning, never an error: the page is still
    * correct without results, and a page out of date with its source already
    * fails the drift gate and the scenario index.
@@ -655,7 +656,7 @@ export default function gherkinFence(
     loaded: LoadedReport,
   ): void => {
     const sources = frontmatter.sources as Array<{ resource?: unknown }> | undefined;
-    const generatedAt = (frontmatter.generated as { at?: unknown } | undefined)?.at;
+    const generatedHash = stampContentHash(frontmatter.generated as { at?: unknown; content_hash?: unknown } | undefined);
     let resource = typeof sources?.[0]?.resource === 'string' ? sources[0].resource : undefined;
     if (!resource) return;
     if (options.sourceUrlPrefix && resource.startsWith(options.sourceUrlPrefix)) {
@@ -673,7 +674,7 @@ export default function gherkinFence(
     } catch {
       return;
     }
-    const want = typeof generatedAt === 'string' ? generatedAt.replace(/^sha256:/, '') : '';
+    const want = generatedHash?.replace(/^sha256:/, '') ?? '';
     if (want && !createHash('sha256').update(raw).digest('hex').startsWith(want)) {
       warnOnce(
         `outdated\0${page}\0${want}`,
@@ -701,7 +702,7 @@ export default function gherkinFence(
     const root = options.root ?? process.cwd();
     const frontmatter = file.data?.astro?.frontmatter ?? {};
     const generated = frontmatter.generated as { by?: unknown } | undefined;
-    const isGenerated = generated?.by === GENERATED_BY;
+    const isGenerated = isGeneratedStamp(generated?.by);
     // 03 §3: a generated page's Gherkin stays as emitted. 02 §Decks: on a slide,
     // fences stay code and only directives are collected (to be reported).
     // `fences: false`: nothing is collected, so a directive is restored as text.

@@ -2,7 +2,7 @@
 title: Overview
 description: How the example turns a Common Docs tree into a site plus feeds and an agent-API.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Architecture
 kind: Explanation
 sidebar:

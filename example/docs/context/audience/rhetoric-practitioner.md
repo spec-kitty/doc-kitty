@@ -2,11 +2,11 @@
 title: The Rhetoric Practitioner
 description: A working communicator mining Aristotle's Rhetoric for persuasion technique, wanting cross-referenced, footnoted primary text.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Context
 kind: Persona
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [persona, audience, rhetoric]
 role: A speechwriter, debater, or professional communicator who returns to Aristotle's Rhetoric for reusable argumentative and persuasive technique rather than historical study.
 goals:

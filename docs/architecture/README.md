@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Architecture
 description: "How the toolkit turns a Common Docs tree into a site plus feeds and an agent-API: the current design."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Architecture
 kind: Hub
 agent:

@@ -34,6 +34,8 @@ import {
   readmeToIndexId,
   resolveIndexEntries,
   routeOfSlug,
+  normaliseInstant,
+  formatInstant,
 } from './vocabulary-core.mjs';
 
 export { SECTION_TYPE, expectedDocType };
@@ -98,6 +100,7 @@ export interface AgentHints {
 export interface GeneratedStamp {
   by: string;
   at: string;
+  content_hash?: string;
 }
 
 export interface VerifiedStamp {
@@ -283,10 +286,7 @@ export function agentPriority(data: DocKittyFrontmatter): number {
 
 /** Normalize `updated` to epoch millis for stable sorting (missing → 0). */
 export function updatedMillis(data: DocKittyFrontmatter): number {
-  if (!data.updated) return 0;
-  const d = data.updated instanceof Date ? data.updated : new Date(data.updated);
-  const t = d.getTime();
-  return Number.isNaN(t) ? 0 : t;
+  return normaliseInstant(data.updated)?.date.getTime() ?? 0;
 }
 
 /** A minimal entry shape the helpers below operate on. */
@@ -326,9 +326,8 @@ export function pageSourceId(slug: string): string {
 /** Build the machine-readable record for a single page. */
 export function toAgentRecord(entry: DocEntry): AgentRecord {
   const { slug, data } = entry;
-  const updated = data.updated
-    ? new Date(data.updated).toISOString().slice(0, 10)
-    : null;
+  const instant = normaliseInstant(data.updated);
+  const updated = instant ? formatInstant(instant.date) : null;
   return {
     slug,
     // Base-less on purpose: the agent-API `route` is a committed contract read by

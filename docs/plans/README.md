@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Plans
 description: Forward-looking design and roadmap for doc-kitty — future work, not present state.
 doc_status: draft
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Plan
 kind: Hub
 agent:

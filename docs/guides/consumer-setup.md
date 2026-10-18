@@ -2,12 +2,12 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - guides/adopting
   - guides/draft-publication

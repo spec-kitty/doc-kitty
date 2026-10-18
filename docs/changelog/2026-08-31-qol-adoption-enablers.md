@@ -2,7 +2,7 @@
 title: QOL adoption enablers — optional/overridable frontmatter, generated ADR index, doc-honesty
 description: "Closes #38/#40/#41/#44 — makes type/kind optional and vocabulary-overridable, generates the ADR index instead of hand-maintaining it, and brings AGENTS.md/README into truth."
 doc_status: active
-updated: 2026-08-31
+updated: 2026-08-31T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [frontmatter, metadata, adr, vocabulary, adoption, doc-honesty, testing]

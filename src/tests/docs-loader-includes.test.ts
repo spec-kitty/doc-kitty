@@ -36,7 +36,7 @@ import { pathToFileURL } from 'node:url';
 import { docKittyDocsLoader } from '../lib/schema.js';
 import { MAX_INCLUDE_BYTES } from '../lib/gherkin/include-path.mjs';
 import { DK_GHERKIN_RESULTS_ENV, GENERATED_MARKER, gherkinIncludeSources } from '../lib/gherkin/include-scan.mjs';
-import { GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
+import { GHERKIN_PRODUCER } from '../lib/gherkin/feature-core.mjs';
 
 restoreInternalEnv();
 
@@ -462,7 +462,7 @@ describe('a results report is folded into the pages that may show results', () =
   });
 
   it('GENERATED_MARKER is the generated-page stamp', () => {
-    expect(GENERATED_MARKER).toBe(GENERATED_BY);
+    expect(GENERATED_MARKER).toBe(GHERKIN_PRODUCER);
   });
 
   it('without a report no digest changes (no cache is invalidated)', async () => {

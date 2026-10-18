@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Features
 description: "The doc-kitty feature pages, grouped by MoSCoW priority as set in the roadmap."
 doc_status: draft
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Feature
 kind: Hub
 agent:

@@ -2,11 +2,11 @@
 title: Gherkin in any page
 description: "A gherkin fence renders as a structured scenario on any page, and a ::gherkin directive includes a .feature file or chosen scenarios; errors fail the build."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Changelog
 kind: Changelog
 authors:
-  - ivan@spec-kitty.ai
+  - human:ivan
 tags: [gherkin, bdd, living-documentation, authoring]
 related:
   - adr/0051-gherkin-in-any-page

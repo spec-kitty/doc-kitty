@@ -2,11 +2,11 @@
 title: "ADR-0055: Show each scenario's result from the site's Cucumber report"
 description: gherkin.results reads a Cucumber report and shows each scenario's result next to it, matched by file and line, never from a stale report.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - ivan@spec-kitty.ai
+  - human:ivan
 related:
   - adr/0046-gherkin-feature-pages
   - adr/0051-gherkin-in-any-page

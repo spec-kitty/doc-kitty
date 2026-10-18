@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Architecture research
 description: Investigations that inform architecture decisions but are not themselves the present-state design.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Architecture
 kind: Hub
 agent:

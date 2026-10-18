@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: User journeys
 description: "The section for doc-kitty user-journey pages; a placeholder until the product's user flows firm up."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Plan
 kind: Hub
 agent:

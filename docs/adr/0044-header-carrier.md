@@ -2,11 +2,11 @@
 title: "ADR-0044: Header is the fifth carrier; a theme replaces the site header through dk:site-header"
 description: The Starlight components map grows from four carriers to five. The Header carrier renders a theme's dk:site-header component in place of the stock header.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0013-m1-chrome-substrate-single-layer
   - adr/0015-m2-slot-resolution-and-components-map-seam

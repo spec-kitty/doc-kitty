@@ -2,11 +2,11 @@
 title: "ADR-0014: Upgrade Starlight to 0.32 for the route-data API"
 description: The carrier route-data API ADR-0011 requires lives in Starlight 0.32, not 0.30; M1 upgrades Starlight to reach it.
 doc_status: active
-updated: 2026-08-23
+updated: 2026-08-23T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0013-m1-chrome-substrate-single-layer

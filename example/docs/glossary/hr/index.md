@@ -1,9 +1,14 @@
 ---
+okf_version: "0.2"
 title: "hr"
 description: "Glossary terms for the hr context."
 kind: Glossary
 glossary_context: "hr"
 doc_status: active
+generated:
+  by: "doc-kitty-glossary/0.3.0"
+  at: "2026-10-18T06:09:39Z"
+  content_hash: "sha256:647872872f73"
 ---
 
 # hr

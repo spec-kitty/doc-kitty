@@ -2,11 +2,11 @@
 title: "ADR-0032: Generate the ADR index; two-tree mechanism with a lockfile sync-check"
 description: The own-tree ADR index becomes a generated artifact kept honest by a regeneration-clean CI check; the example tree drops its table and lets the Hub layout auto-list.
 doc_status: active
-updated: 2026-08-31
+updated: 2026-08-31T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0002-readme-as-index
   - adr/0030-markua-preprocess-to-directive

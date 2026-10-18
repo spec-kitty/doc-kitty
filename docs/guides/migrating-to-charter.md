@@ -2,12 +2,12 @@
 title: Migrating to the documentation charter
 description: Consolidate legacy _meta/vocabulary.yaml and _meta/sections.yaml into a single _meta/charter.yaml without changing governance behavior.
 doc_status: active
-updated: 2026-09-14
+updated: 2026-09-14T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, charter, migration, governance]
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - context/convention
   - guides/consumer-setup

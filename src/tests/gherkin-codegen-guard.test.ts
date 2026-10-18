@@ -9,7 +9,7 @@
  * tick and loop, and the `--check` drift gate would never be clean. This asserts
  * the generator is byte-identical run-to-run, that a re-run over its own output
  * writes NOTHING (the files are not even touched), and that `generated.at` is a
- * content hash — never a timestamp.
+ * stable instant that only moves with `content_hash`.
  *
  * Mutation evidence (05-verification.md): stamping `generated.at` with
  * `new Date().toISOString()` turns this suite red.
@@ -94,6 +94,8 @@ function generate(root: string, outDir: string) {
     outDir,
     sourceRoot: root,
     indexBasename: ['README', 'index'],
+    // Pinned: two fresh trees generated seconds apart must still be byte-identical.
+    now: new Date('2026-10-18T09:30:00Z'),
   });
 }
 
@@ -155,7 +157,7 @@ describe('generateFeaturePages codegen guard (WP05, risk R3)', () => {
     expect(mtimes(dir)).toEqual(stamps);
   });
 
-  it('emits NO timestamp: generated.at is a content hash; the only date is an authored `updated:`', () => {
+  it('emits no wall-clock timestamp beyond the stable `generated.at`; the only other date is an authored `updated:`', () => {
     const root = makeSources();
     const dir = path.join(tmp('dk-gherkin-guard-ts-'), 'behaviour');
     generate(root, dir);
@@ -163,12 +165,11 @@ describe('generateFeaturePages codegen guard (WP05, risk R3)', () => {
     expect(Object.keys(files).length).toBeGreaterThan(0);
     let updatedLines = 0;
     for (const [rel, body] of Object.entries(files)) {
-      expect(body, `${rel} must carry no ISO timestamp`).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
-      expect(body, `${rel}: generated.at must be sha256:<12 hex>`).toMatch(
-        /^generated:\n {2}by: "doc-kitty\/gherkin"\n {2}at: "sha256:[0-9a-f]{12}"$/m,
+      expect(body, `${rel}: generated carries the version, a stable instant and the content hash`).toMatch(
+        /^generated:\n {2}by: "doc-kitty-gherkin\/[^"]+"\n {2}at: "[0-9T:Z-]{20}"\n {2}content_hash: "sha256:[0-9a-f]{12}"$/m,
       );
       for (const line of body.split('\n')) {
-        if (!/\d{4}-\d{2}-\d{2}/.test(line)) continue;
+        if (!/\d{4}-\d{2}-\d{2}/.test(line) || /^ {2}at: "/.test(line)) continue;
         expect(line, `${rel}: a date may only appear on an \`updated:\` line`).toMatch(
           /^updated: \d{4}-\d{2}-\d{2}$/,
         );

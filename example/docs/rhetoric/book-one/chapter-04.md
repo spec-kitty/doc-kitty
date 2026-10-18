@@ -2,7 +2,7 @@
 title: "Chapter 4: Topics of deliberative rhetoric"
 description: "The five subjects the deliberative orator must be ready to advise on: ways and means, war and peace, defence, food supply, and legislation."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

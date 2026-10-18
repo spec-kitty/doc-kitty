@@ -2,11 +2,11 @@
 title: Diagrams
 description: "How the diagrams surface fits together: the metadata transform, the single client render owner and its token map, the opt-in seam, and the two shells."
 doc_status: active
-updated: 2026-09-07
+updated: 2026-09-07T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [diagrams, mermaid, plantuml, build-time, accessibility, theming]
 related:
   - adr/0023-diagram-render-and-metadata-seam

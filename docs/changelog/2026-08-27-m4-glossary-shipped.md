@@ -2,7 +2,7 @@
 title: M4 shipped — glossary + Contextive
 description: A multi-context project glossary sourced from a Contextive definitions file, with per-section auto-linking, a hover preview, and an auto per-page "On this page" block.
 doc_status: active
-updated: 2026-08-27
+updated: 2026-08-27T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [glossary, contextive, accessibility]

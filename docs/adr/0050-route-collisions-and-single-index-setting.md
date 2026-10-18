@@ -2,11 +2,11 @@
 title: "ADR-0050: Route collisions are fatal, and index names are set once"
 description: Two files on one address stop the build, index names live in one setting, and _meta Markdown is never published. Amends ADR-0047 and ADR-0048.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0002-readme-as-index
   - adr/0018-citation-catalog-collections

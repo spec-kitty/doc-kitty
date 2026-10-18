@@ -2,7 +2,7 @@
 title: M5 shipped — diagrams (client-side Mermaid)
 description: Author diagrams as ```mermaid fences that render client-side as themed, accessible figures on doc pages and slide decks. Opt-in.
 doc_status: active
-updated: 2026-08-25
+updated: 2026-08-25T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [diagrams, mermaid, accessibility]

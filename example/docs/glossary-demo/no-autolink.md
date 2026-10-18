@@ -2,7 +2,7 @@
 title: A page that opts out of auto-linking
 description: Setting glossary_autolink to false turns off automatic links for the whole page, while an explicit :term directive still resolves and links.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: Guide
 kind: How-To
 tags: [glossary, demonstrator, opt-out]

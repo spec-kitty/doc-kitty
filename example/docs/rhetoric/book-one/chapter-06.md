@@ -2,7 +2,7 @@
 title: "Chapter 6: The greater good, and its components"
 description: "Aristotle defines the good as what all things aim at, catalogs the things generally recognized as good, and lists arguments for doubtful goods."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

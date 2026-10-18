@@ -60,6 +60,14 @@ const CANONICAL_DEFINITIONS: Record<string, RegExp> = {
   // gherkin-feature-pages review #7: the folder-name → title rule shared by the
   // registry sidebar (`sections.ts`) and the generated hub titles (`generate.mjs`).
   humanizeSection: /\bfunction\s+humanizeSection\b/,
+  // OKF alignment (#177, C-009): the actor / instant / okf_version / status rules
+  // are defined once; both validator twins and the generators import them.
+  parseActor: /\bfunction\s+parseActor\b/,
+  isActor: /\bfunction\s+isActor\b/,
+  normaliseInstant: /\bfunction\s+normaliseInstant\b/,
+  formatInstant: /\bfunction\s+formatInstant\b/,
+  checkOkfVersion: /\bfunction\s+checkOkfVersion\b/,
+  okfStatusOf: /\bfunction\s+okfStatusOf\b/,
 };
 
 /**

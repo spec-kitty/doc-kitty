@@ -2,11 +2,11 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [metadata, frontmatter, schema]
 related:
   - context/convention
@@ -32,7 +32,7 @@ put in frontmatter.
 | `title` | yes | string | nav, `<title>`, feeds, agent-API |
 | `description` | yes | string, 50–180 chars | chrome, feeds, agent-API |
 | `doc_status` | yes | `draft \| active \| deprecated \| superseded` | publication gating |
-| `updated` | yes | `YYYY-MM-DD` | feeds, freshness |
+| `updated` | yes | UTC instant `YYYY-MM-DDTHH:MM:SSZ` (date-only is read as midnight UTC, with a warning) | feeds, freshness |
 | `type` | yes¹ | canonical section kind (open vocabulary), authored | agent-API, validation |
 | `kind` | yes | page kind (see "Page kind"), open vocabulary | reading-mode grouping, per-kind layout |
 | `audience` | no | `[{ profile, guidance_text }]` | "Who is this for" block |
@@ -44,10 +44,10 @@ put in frontmatter.
 | `moscow` | no | `{ level: Must\|Should\|Could\|Won't, rationale }` | MVP/extended split and MoSCoW board on planning pages |
 | `tags` | no | `[string]` | agent-API, filtering |
 | `authors`, `resource`, `generated`, `verified`, `sources`, `stale_after` | no | as Common Docs | metadata, freshness |
-| `okf_version` | root only | `"0.2"` | OKF conformance marker |
+| `okf_version` | every index file | `"0.2"` | OKF conformance marker |
 
 ¹ `type` is required on every page except the bundle-root `README.md`, which
-carries `okf_version` instead. See "Sections and type".
+carries `okf_version` instead (every other index file carries it as well). See "Sections and type".
 
 `doc_status` and `kind` are the M1 additions to the contract (ADR-0005 and
 ADR-0009). The repo uses `status` and omits `kind` until the M1 migration, so this
@@ -64,8 +64,9 @@ authoritative), `active` (current and maintained), `deprecated` (kept for histor
 `superseded` (replaced; link the replacement in `related`). The rename from
 `status` is [ADR-0005](../adr/0005-frontmatter-doc-status-and-divio-type.md).
 
-`updated` is the date the content was last checked against reality, not the date
-of an incidental edit. It drives feed ordering and freshness.
+`updated` is the moment the content was last checked against reality, not the
+time of an incidental edit. It drives feed ordering and freshness. See
+"OKF alignment" for the instant rule.
 
 ## Page kind: `kind`
 
@@ -304,3 +305,67 @@ The metadata contract is finalized in
 supersedes ADR-0005's `divio_type`), the `related` and `external_references`
 shapes, the `hero_image`/`social_thumb` images, authored `type`, and freshness. This
 page describes the contract; ADR-0009 records the decisions and their rationale.
+
+## OKF alignment
+
+[ADR-0059](../adr/0059-content-graph-and-okf-alignment.md) aligns the tree with
+the Open Knowledge Format (OKF v0.2). Our own `docs/` and `example/docs/` trees
+were migrated once; the doc-sanity gate warns (never fails) on the old forms.
+
+### Instants
+
+Every instant (`updated`, `stale_after`, `generated.at`, `verified[].at`) is a UTC
+`YYYY-MM-DDTHH:MM:SSZ`; fractional seconds are allowed. A date-only value is read
+as `T00:00:00Z` and draws a warning. A non-UTC offset also warns.
+
+### Actors
+
+An actor names who or what wrote a page, in `authors`, `generated.by` and
+`verified[].by`:
+
+| Form | Example |
+|---|---|
+| `human:<id>` | `human:stijn` |
+| `process:<id>` | `process:ci-nightly` |
+| `<tool>/<version>` | `doc-kitty-gherkin/0.3.0` |
+
+An email address is still accepted on `authors`, with a warning suggesting
+`human:<local-part>`. The export rewrites any email it finds the same way.
+
+### `okf_version` per index
+
+Every index file carries `okf_version: "0.2"`, not only the bundle root. Which
+files count as index files follows the site's configured `indexBasename`.
+
+### Generated stamp
+
+Generated pages carry a `generated` block:
+
+```yaml
+generated:
+  by: doc-kitty-glossary/0.3.0
+  at: 2026-10-18T09:30:00Z
+  content_hash: sha256:0123456789ab
+```
+
+`by` is `<producer>/<toolkit version>`. `content_hash` is the DocKitty extension
+to OKF's `generated`: a hash of the page content without the stamp. `at` only
+moves when the hash does, so regeneration over unchanged input is byte-stable.
+
+### `verified`
+
+Either a list of `{ by: actor, at: instant }` entries or one bare mapping. The
+graph and the export normalise it to a list.
+
+### `doc_status` to OKF `status`
+
+The canonical `doc_status` vocabulary maps to OKF `status` as follows:
+
+| `doc_status` | OKF `status` |
+|---|---|
+| `draft` | `draft` (drafts are excluded from the graph and export) |
+| `active` | `stable` |
+| `deprecated` | `deprecated` |
+| `superseded` | `deprecated` |
+| absent | `stable` |
+| charter-added value | `stable` (default, so the mapping is total) |

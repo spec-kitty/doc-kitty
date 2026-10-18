@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Missions
 description: Short mission write-ups for the example docsite, one page per mission.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Mission
 kind: Hub
 ---

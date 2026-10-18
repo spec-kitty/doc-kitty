@@ -2,11 +2,11 @@
 title: "ADR-0024: Promote --dk-diagram-* to the Default catalog and the brand layer, retire the orphan"
 description: The diagram tokens move from an orphan brand asset into the Default catalog and the brand tokens.css, so both vanilla and branded sites theme diagrams in both modes.
 doc_status: active
-updated: 2026-08-25
+updated: 2026-08-25T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - plans/features/diagrams
   - adr/0023-diagram-render-and-metadata-seam

@@ -2,7 +2,7 @@
 title: Generated sitemap + HATEOAS read API
 description: "An SEO sitemap and a richer machine-readable read API with _links, refining discovery beyond the basics."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

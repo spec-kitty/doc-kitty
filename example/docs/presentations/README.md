@@ -1,12 +1,13 @@
 ---
+okf_version: "0.2"
 title: Presentations
 description: The overview hub for published slide decks — the in-frame entry point that links each deck's out-of-frame reveal.js view and its print or PDF export.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Presentation
 kind: Hub
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 Slide decks live outside the documentation frame: a `kind: Presentation` page

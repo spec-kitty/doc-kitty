@@ -2,11 +2,11 @@
 title: "ADR-0059: A published content graph, and alignment with OKF v0.2"
 description: Every build publishes api/content-graph.json of frontmatter relations; metadata adopts OKF UTC timestamps, actors and per-index okf_version; export converts.
 doc_status: active
-updated: 2026-10-18
+updated: 2026-10-18T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0009-finalize-metadata-contract
   - adr/0018-citation-catalog-collections

@@ -2,11 +2,11 @@
 title: Build-time diagram render (Mermaid + PlantUML)
 description: Diagrams pre-render to static, themed, accessible SVG at build, dual-mode with a client fallback, and PlantUML support arrives.
 doc_status: active
-updated: 2026-09-07
+updated: 2026-09-07T00:00:00Z
 type: Changelog
 kind: Changelog
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [diagrams, mermaid, plantuml, build-time, accessibility]
 related:
   - adr/0040-build-time-diagram-render-dual-mode

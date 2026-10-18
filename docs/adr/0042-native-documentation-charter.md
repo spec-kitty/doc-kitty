@@ -2,11 +2,11 @@
 title: "ADR-0042: A native documentation charter — borrow the shape, not the engine"
 description: doc-kitty resolves its documentation charter with its own pure-core/fs-loader/gate triad and zero Spec Kitty runtime dependency, via a single _meta/charter.yaml surface.
 doc_status: active
-updated: 2026-09-14
+updated: 2026-09-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - context/convention
   - adr/0004-amend-common-docs-as-extensible-variation

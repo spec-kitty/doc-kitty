@@ -36,7 +36,7 @@ import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
-import { compareCodeUnit } from '../lib/vocabulary-core.mjs';
+import { compareCodeUnit, normaliseInstant, formatInstant } from '../lib/vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 
 /** The `NNNN-` ADR number prefix on a filename/slug leaf — the SOLE number source (F6). */
@@ -74,12 +74,9 @@ export function extractStatusToken(content) {
 
 /** Format a frontmatter `updated` value to a UTC `YYYY-MM-DD` slice. */
 export function formatUpdated(updated) {
-  if (updated instanceof Date) return updated.toISOString().slice(0, 10);
-  const s = String(updated ?? '');
-  const iso = s.match(/^(\d{4}-\d{2}-\d{2})/);
-  if (iso) return iso[1];
-  const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? s : d.toISOString().slice(0, 10);
+  const instant = normaliseInstant(updated);
+  // A full timestamp still displays as its UTC date, so the README never churns.
+  return instant ? formatInstant(instant.date).slice(0, 10) : String(updated ?? '');
 }
 
 /**

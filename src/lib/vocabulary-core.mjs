@@ -164,6 +164,146 @@ export const STATUSES = /** @type {const} */ ([
   'durable',
 ]);
 
+// ---------------------------------------------------------------------------
+// OKF metadata rules (#177, ADR-0059, C-009) — the ONE owner of actor, instant,
+// `okf_version` and `doc_status`→`status` rules. The Zod twin (`schema.ts`), the
+// standalone gate (`validate-frontmatter.mjs`), the graph and the export import
+// these; none re-implements them.
+// ---------------------------------------------------------------------------
+
+const ID = '[A-Za-z0-9._-]+';
+const HUMAN_OR_PROCESS = new RegExp(`^(human|process):(${ID})$`);
+const TOOL = /^([a-z0-9][a-z0-9-]*)\/(\S+)$/;
+const EMAIL = /^([^\s@]+)@[^\s@]+$/;
+
+/**
+ * @typedef {{kind: 'human' | 'process', id: string}
+ *   | {kind: 'tool', name: string, version: string}
+ *   | {kind: 'email', id: string}} ParsedActor
+ */
+
+/**
+ * Parse an actor: `human:<id>`, `process:<id>` or `<name>/<version>` (a tool).
+ * An email address parses as `{kind: 'email', id: <local-part>}` so a caller can
+ * warn and suggest `human:<local-part>`; it is NOT an actor ({@link isActor}).
+ * Anything else, or a non-string, is `null`.
+ *
+ * @param {unknown} s
+ * @returns {ParsedActor | null}
+ */
+export function parseActor(s) {
+  if (typeof s !== 'string') return null;
+  const hp = HUMAN_OR_PROCESS.exec(s);
+  if (hp) return { kind: /** @type {'human' | 'process'} */ (hp[1]), id: hp[2] };
+  const tool = TOOL.exec(s);
+  if (tool) return { kind: 'tool', name: tool[1], version: tool[2] };
+  const email = EMAIL.exec(s);
+  return email ? { kind: 'email', id: email[1] } : null;
+}
+
+/**
+ * Is `s` a well-formed actor (human, process or tool)? An email is not.
+ *
+ * @param {unknown} s
+ * @returns {boolean}
+ */
+export function isActor(s) {
+  const parsed = parseActor(s);
+  return parsed !== null && parsed.kind !== 'email';
+}
+
+const INSTANT =
+  /^(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2}):(\d{2})(\.\d+)?([Zz]|[+-]\d{2}:\d{2}))?$/;
+
+/**
+ * Parse an instant without locale parsing. Accepts a `Date` (YAML may already
+ * have parsed it), an ISO-8601 string with a `Z` or `±HH:MM` offset (fractional
+ * seconds allowed), or a date-only `YYYY-MM-DD` (read as midnight UTC with
+ * `dateOnly: true`). A non-`Z` offset is a valid instant that sets `nonUtc` so
+ * the gate can recommend `Z` (ADR-0059). A `Date` cannot reveal whether its
+ * source was date-only, so it reports `dateOnly: false`; callers that need the
+ * flag pass the raw string. Calendar-invalid values and strings without a zone
+ * are `null`.
+ *
+ * @param {unknown} v
+ * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean} | null}
+ */
+export function normaliseInstant(v) {
+  if (v instanceof Date) {
+    return Number.isNaN(v.getTime()) ? null : { date: v, dateOnly: false, nonUtc: false };
+  }
+  if (typeof v !== 'string') return null;
+  const m = INSTANT.exec(v.trim());
+  if (!m) return null;
+  const [, y, mo, d, h = '00', mi = '00', sec = '00', frac = '', zone] = m;
+  const dateOnly = zone === undefined;
+  const base = Date.UTC(+y, +mo - 1, +d, +h, +mi, +sec);
+  const check = new Date(base);
+  const valid =
+    check.getUTCFullYear() === +y &&
+    check.getUTCMonth() === +mo - 1 &&
+    check.getUTCDate() === +d &&
+    +h < 24 &&
+    +mi < 60 &&
+    +sec < 60;
+  if (!valid) return null;
+  const ms = frac ? Math.round(Number(`0${frac}`) * 1000) : 0;
+  const nonUtc = !dateOnly && !/^[Zz]$/.test(zone);
+  const offset = nonUtc ? offsetMinutes(zone) : 0;
+  return { date: new Date(base + ms - offset * 60_000), dateOnly, nonUtc };
+}
+
+/**
+ * @param {string} zone `±HH:MM`
+ * @returns {number} signed minutes east of UTC
+ */
+function offsetMinutes(zone) {
+  const sign = zone[0] === '-' ? -1 : 1;
+  return sign * (Number(zone.slice(1, 3)) * 60 + Number(zone.slice(4, 6)));
+}
+
+/**
+ * Format a date as the canonical instant `YYYY-MM-DDTHH:MM:SSZ` (whole seconds).
+ *
+ * @param {Date} date
+ * @returns {string}
+ */
+export function formatInstant(date) {
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+/** The only `okf_version` this toolkit writes and accepts without a warning. */
+export const OKF_VERSION = '0.2';
+
+/**
+ * Advisory check of an `okf_version` value: `"0.2"` (a string) is clean. An
+ * unquoted `0.2` (YAML yields the number) or any other value is a warning
+ * message. An absent value is `null` here; a missing version on an index file is
+ * the caller's rule.
+ *
+ * @param {unknown} v
+ * @returns {string | null}
+ */
+export function checkOkfVersion(v) {
+  if (v === undefined || v === OKF_VERSION) return null;
+  const shown = typeof v === 'string' ? `"${v}"` : String(v);
+  return `\`okf_version: ${shown}\` is not the string "${OKF_VERSION}"`;
+}
+
+/**
+ * Map a Common Docs `doc_status` to the OKF `status`. Total: `draft` → `draft`;
+ * `deprecated`/`superseded` → `deprecated`; every other value (`active`,
+ * `durable`, a charter-added one) and an absent value → `stable`.
+ *
+ * @param {string | undefined | null} docStatus
+ * @returns {'draft' | 'stable' | 'deprecated'}
+ */
+export function okfStatusOf(docStatus) {
+  if (docStatus === 'draft') return 'draft';
+  if (docStatus === 'deprecated' || docStatus === 'superseded') return 'deprecated';
+  return 'stable';
+}
+
 /**
  * OKF `type` vocabulary — one value per Common Docs section (18 items).
  * `Specification` is APPENDED (ADR-0046) for the opt-in, registry-declared

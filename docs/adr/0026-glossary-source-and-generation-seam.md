@@ -2,11 +2,11 @@
 title: "ADR-0026: Glossary source, validation, and the codegen-into-collection generation seam"
 description: The glossary loads once from the Contextive definitions file, validates build-fatally against a pinned schema, and generates one Markdown page per context into the docs collection.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@spec-kitty.ai
+  - human:stijn
 related:
   - plans/features/glossary-and-contextive
   - adr/0027-auto-link-resolution-scoping-and-term-directive

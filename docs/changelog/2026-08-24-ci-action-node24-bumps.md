@@ -2,7 +2,7 @@
 title: CI actions bumped off deprecated Node 20
 description: actions/checkout and dorny/paths-filter re-pinned to their Node 24 majors to clear GitHub's Node 20 deprecation warning.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [ci]

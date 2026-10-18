@@ -2,11 +2,11 @@
 title: "ADR-0016: Bridge --sl-color-text-accent from --dk-color-text-accent"
 description: The accent-text bridge pointed at the ink-on-fill token and failed AA on dark nav; correct it to the readable accent-on-background token.
 doc_status: active
-updated: 2026-08-23
+updated: 2026-08-23T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - architecture/theming
   - architecture/theming-spec-kitty-brand

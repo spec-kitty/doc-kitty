@@ -2,7 +2,7 @@
 title: Ticketing report page
 description: "A build-time report of a repo's tracker tickets, via an adaptor layer, so the docsite also serves as a ticketing portal."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [portal, ticketing, github, integration, acl]

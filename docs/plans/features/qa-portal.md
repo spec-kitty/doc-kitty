@@ -2,7 +2,7 @@
 title: QA portal
 description: "A repository portal view that surfaces CI test artifacts and quality signals in the docsite."
 doc_status: draft
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

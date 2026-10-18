@@ -2,7 +2,7 @@
 title: Domain
 description: Glossary and terms of art for the toolkit and convention.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Context
 kind: Explanation
 tags: [glossary]

@@ -2,11 +2,11 @@
 title: Markua subset
 description: "The curated, opt-in Markua subset doc-kitty renders: the five constructs, the callout mapping, the build-time pipeline, and — explicitly — what is out of scope."
 doc_status: active
-updated: 2026-09-06
+updated: 2026-09-06T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [markua, leanpub, callouts, figures, remark, rehype, slide-decks]
 related:
   - adr/0030-markua-preprocess-to-directive

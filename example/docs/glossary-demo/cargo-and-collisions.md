@@ -2,7 +2,7 @@
 title: Cargo, consignments, and a cross-context collision
 description: The context-free demonstrator — auto-linking, an unresolved collision left plain with one build warning, a forced :term link, and a suppressed one.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: Guide
 kind: Explanation
 tags: [glossary, demonstrator, autolink, collision]

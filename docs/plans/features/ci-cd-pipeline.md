@@ -2,7 +2,7 @@
 title: CI/CD pipeline
 description: "Path-scoped CI lanes for tests, doc sanity checks, and example-site deployment that keep the repo green."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

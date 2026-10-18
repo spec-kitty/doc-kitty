@@ -2,13 +2,13 @@
 title: "doc-kitty: your docs, already a site"
 description: How a Common Docs tree becomes an on-brand, agent-readable, self-checking site, with no theme build.
 doc_status: active
-updated: 2026-09-05
+updated: 2026-09-05T00:00:00Z
 type: Presentation
 kind: Presentation
 sidebar:
   hidden: true
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 ## Already structured — now it's a site

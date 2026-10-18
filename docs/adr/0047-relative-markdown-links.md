@@ -2,11 +2,11 @@
 title: "ADR-0047: Relative Markdown links are rewritten at build"
 description: The build rewrites a relative .md or .mdx link between pages to the target's route, so one link works on GitHub and on the site; amends ADR-0037.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0037-base-aware-link-fail-closed-gate
   - adr/0038-decks-markua-capable

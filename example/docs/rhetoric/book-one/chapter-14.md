@@ -2,7 +2,7 @@
 title: "Chapter 14: Severity of transgressions"
 description: How to argue that a wrong act is greater or lesser in degree, with the rhetorical grounds for each.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

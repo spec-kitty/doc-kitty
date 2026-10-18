@@ -2,11 +2,11 @@
 title: "ADR-0031: Consumer-overridable type/kind vocabulary"
 description: A declarative _meta/vocabulary.yaml seam that aliases, neutralizes, or forbids type/kind terms, resolved default → consumer and applied to authored and derived values.
 doc_status: active
-updated: 2026-08-31
+updated: 2026-08-31T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0004-amend-common-docs-as-extensible-variation
   - adr/0009-finalize-metadata-contract

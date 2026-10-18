@@ -2,7 +2,7 @@
 title: Component system and swappable theme
 description: The three-layer theme, the merged manifest, the Spec Kitty brand, the Persona layout, and the accessibility lane (M2).
 doc_status: active
-updated: 2026-08-23
+updated: 2026-08-23T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [theming, components, accessibility, brand]

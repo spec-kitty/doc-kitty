@@ -2,12 +2,12 @@
 title: Theme header — replace the site header from a theme
 description: How a theme supplies its own site header through the dk:site-header slot, what Starlight keeps for it, and which parts of the stock header the replacement has to put back.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Guide
 kind: How-To
 tags: [theming, header, slots, consumer]
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - guides/consumer-setup
   - architecture/theming

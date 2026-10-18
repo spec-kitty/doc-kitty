@@ -2,11 +2,11 @@
 title: "ADR-0038: Decks are Markua-capable"
 description: The four Markua content passes now act on slide content, composed before deckSplit; supersedes ADR-0030's 2026-08-30 amendment that made decks Markua-agnostic.
 doc_status: active
-updated: 2026-09-06
+updated: 2026-09-06T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0030-markua-preprocess-to-directive
   - architecture/markua

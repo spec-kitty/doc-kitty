@@ -2,7 +2,7 @@
 title: Why docs next to code rot
 description: "Docs-next-to-code fails for two reasons: structure too rigid to grow, and contents too hard to browse."
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Context
 kind: Explanation
 tags: [motivation, docs-as-code]

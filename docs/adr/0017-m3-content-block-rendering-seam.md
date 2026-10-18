@@ -2,11 +2,11 @@
 title: "ADR-0017: M3 content-block rendering seam (carrier-body, token-styled)"
 description: The audience/related/external-references blocks render in the carrier body from resolved data and are theme-styled by tokens, not by a props-carrying slot override.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0013-m1-chrome-substrate-single-layer

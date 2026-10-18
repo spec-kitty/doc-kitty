@@ -7,7 +7,7 @@
  * Mission: adopter-loader-migration-01M1KKYA, WP01.
  */
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -148,6 +148,15 @@ describe('FR-003 per-surface coverage — every index-detecting surface honours 
       expect(existsSync(path.join(dir, 'index.md'))).toBe(true);
       expect(existsSync(path.join(dir, 'guides', 'index.md'))).toBe(true);
       expect(existsSync(path.join(dir, 'guides', 'README.md'))).toBe(false);
+      // #177: every scaffolded index declares okf_version; pages carry a UTC instant,
+      // a human placeholder author and a versioned stamp.
+      for (const rel of ['index.md', 'guides/index.md']) {
+        const page = readFileSync(path.join(dir, rel), 'utf8');
+        expect(page, rel).toMatch(/^okf_version: "0\.2"$/m);
+        expect(page, rel).toMatch(/^updated: \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/m);
+        expect(page, rel).toMatch(/^authors:\n {2}- human:\S+$/m);
+        expect(page, rel).toMatch(/^ {2}by: doc-kitty-scaffold\/\d/m);
+      }
 
       const res2 = spawnSync(
         'node',

@@ -2,11 +2,11 @@
 title: Gherkin feature pages
 description: "An opt-in gherkin preset turns .feature files into glossary-linked Specification pages, with owned-output pruning and a --check drift gate."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Changelog
 kind: Changelog
 authors:
-  - ivan@spec-kitty.ai
+  - human:ivan
 tags: [gherkin, bdd, living-documentation, glossary, codegen, ci]
 related:
   - adr/0046-gherkin-feature-pages

@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Changelog
 description: Dated record of notable changes to the doc-kitty toolkit and its documentation.
 doc_status: active
-updated: 2026-08-29
+updated: 2026-08-29T00:00:00Z
 type: Changelog
 kind: Hub
 agent:

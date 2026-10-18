@@ -2,7 +2,7 @@
 title: Mission Alpha
 description: A short mission write-up used to demonstrate the registry subtypes rename (plans/features -> plans/missions).
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Mission
 kind: Planning
 related:

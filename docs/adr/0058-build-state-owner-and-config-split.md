@@ -2,11 +2,11 @@
 title: "ADR-0058: One owner for build state, a split config, and the env reader"
 description: One owner for draft-publication build state, config.ts split into integration modules, envDir and --mode for env files, and _links in the agent API.
 doc_status: active
-updated: 2026-10-17
+updated: 2026-10-17T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0050-route-collisions-and-single-index-setting
   - adr/0057-internal-env-handoff-seam

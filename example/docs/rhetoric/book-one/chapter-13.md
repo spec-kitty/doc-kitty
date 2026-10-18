@@ -2,7 +2,7 @@
 title: "Chapter 13: Justice and Legislation"
 description: Aristotle classifies just and unjust acts under particular and general law, and defines equity.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

@@ -2,11 +2,11 @@
 title: "ADR-0056: Gherkin results in CI, and a translatable Overview label"
 description: A missing Cucumber report fails the build when CI is set, plus stale and route notices, and a translatable sidebar Overview label.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0055-gherkin-scenario-results
   - adr/0054-gherkin-draft-hubs-titles-and-scenario-route

@@ -106,7 +106,9 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       // Bumped from '1': the `related` array changed shape (raw slugs →
       // resolved objects) and records now carry `audience`, a
       // published-contract change that consumers branch on (DIRECTIVE_018).
-      version: options.version ?? '2',
+      // '2' -> '3': `updated` is now a full UTC instant (YYYY-MM-DDTHH:MM:SSZ),
+      // not a date-only slice (FR-024).
+      version: options.version ?? '3',
       generatedFrom: 'doc-kitty',
       count: pages.length,
       _links: {

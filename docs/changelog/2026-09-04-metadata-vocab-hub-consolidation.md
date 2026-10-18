@@ -2,7 +2,7 @@
 title: Metadata / vocabulary / Hub consolidation — one source of truth, durable status, ADR-ordered hub
 description: "Closes #49/#39/#50 — section vocabulary and type-derivation live in one pure-ESM core (no more mjs↔ts twin), doc_status gains durable, and the ADR Hub card orders by number."
 doc_status: active
-updated: 2026-09-04
+updated: 2026-09-04T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [vocabulary, metadata, refactor, doc_status, adr, hub, single-source]

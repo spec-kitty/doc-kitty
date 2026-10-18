@@ -2,11 +2,11 @@
 title: "ADR-0001: Build on Astro + Starlight"
 description: Why the toolkit renders Common Docs trees with Astro and Starlight.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 # ADR-0001: Build on Astro + Starlight

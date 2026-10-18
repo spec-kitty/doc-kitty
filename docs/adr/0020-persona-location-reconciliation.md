@@ -2,11 +2,11 @@
 title: "ADR-0020: Persona location reconciliation (context/audience/)"
 description: Personas live at context/audience/ per the design of record; the example persona relocates, an Audiences hub is added, and the agent-surface reorder is accepted.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0009-finalize-metadata-contract
   - architecture/metadata-model

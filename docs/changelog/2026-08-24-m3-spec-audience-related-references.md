@@ -2,7 +2,7 @@
 title: M3 specified — audience, related & external references
 description: The M3 mission spec landed and passed a four-lens post-spec adversarial review, folded into rev 2.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [planning, metadata, relationships]

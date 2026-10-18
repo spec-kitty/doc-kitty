@@ -2,7 +2,7 @@
 title: "Deck & layout polish — legible deck, fitted title slide, wide-screen cap"
 description: "The deck follows light/dark and fits its stage with a stack cue, wide screens cap the reading frame, and Persona renders one clean identity card (#65/#66/#67)."
 doc_status: active
-updated: 2026-09-05
+updated: 2026-09-05T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [deck, layout, accessibility, css]

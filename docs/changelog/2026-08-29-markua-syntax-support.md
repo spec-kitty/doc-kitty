@@ -2,7 +2,7 @@
 title: Markua syntax support (subset) — Leanpub-authored Markdown renders in the docsite
 description: Opt-in rendering of a curated Leanpub Markua subset — asides, callouts, figures, crosslink ids, icons — via Astro remark/rehype; plain Markdown is unchanged.
 doc_status: active
-updated: 2026-08-29
+updated: 2026-08-29T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [markua, markdown, remark, rehype, callouts, asides, figures, accessibility]

@@ -2,11 +2,11 @@
 title: CI/CD Pipeline
 description: "Efficient, path-scoped CI/CD for doc-kitty: tests, doc sanity checks, and example deployment."
 doc_status: draft
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [ci, cd, testing, github-actions]
 related:
   - plans/roadmap

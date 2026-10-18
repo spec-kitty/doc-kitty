@@ -2,7 +2,7 @@
 title: Diagrams (Mermaid + PlantUML)
 description: "Author Mermaid and PlantUML diagrams in Markdown — themed, accessible, self-contained. M5 shipped client-side Mermaid; #13 added build-time static-SVG render for both (dual-mode)."
 doc_status: draft
-updated: 2026-09-07
+updated: 2026-09-07T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

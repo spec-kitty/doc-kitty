@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Guides
 description: How-to guides for humans and agents working on this project.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Guide
 kind: Hub
 agent:

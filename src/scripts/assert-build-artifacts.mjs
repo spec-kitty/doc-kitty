@@ -187,7 +187,8 @@ const EXPECTED_PAGE_KEYS = ['slug', 'route', 'section', 'title', 'doc_status', '
 // '2' because `related` changed shape (raw slugs → resolved objects) and records
 // gained `audience` — a published-contract change consumers branch on (DIRECTIVE_018).
 // Pinned to the CONCRETE value, not just its type, so a silent re-bump/regress reds.
-const EXPECTED_AGENT_API_VERSION = '2';
+// WP03/FR-024 then bumped '2' -> '3': `updated` became a UTC timestamp (YYYY-MM-DDTHH:MM:SSZ).
+const EXPECTED_AGENT_API_VERSION = '3';
 
 // `/api/bibliography.json` is a catalog projection emitted OUTSIDE page gating
 // (ADR-0018 / FR-015): { version, count, records[] } with each record carrying at
@@ -2269,7 +2270,7 @@ async function main() {
     fail(
       `agent index: version is ${JSON.stringify(index.version)}, expected ` +
         `${JSON.stringify(EXPECTED_AGENT_API_VERSION)} — the enriched-record shape bump (raw slugs → ` +
-        `resolved related objects + audience) must carry version "2" (DIRECTIVE_018)`,
+        `resolved related objects + audience; UTC updated) must carry the pinned version (DIRECTIVE_018)`,
     );
   }
   ok(`agent index: version pinned to "${index.version}" (enriched-record contract)`);

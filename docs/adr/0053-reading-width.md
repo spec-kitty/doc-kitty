@@ -2,11 +2,11 @@
 title: "ADR-0053: The reading column defaults to 60rem for all body content"
 description: The default reading width rises from 45rem to 60rem and every kind of body content uses that one column, so wide tables, diagrams and code get the room too.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0045-frame-width-token
   - architecture/theming

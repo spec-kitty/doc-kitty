@@ -2,11 +2,11 @@
 title: Gherkin scenario results
 description: "Set gherkin.results to the Cucumber report your CI writes, and every scenario shown from a .feature file gets its last result next to it."
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Changelog
 kind: Changelog
 authors:
-  - ivan@spec-kitty.ai
+  - human:ivan
 tags: [gherkin, bdd, cucumber, living-documentation, qa]
 related:
   - adr/0055-gherkin-scenario-results

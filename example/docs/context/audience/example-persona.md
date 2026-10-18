@@ -2,11 +2,11 @@
 title: Marzipan the Mapmaker
 description: A worked Persona page exercising the passport per-kind layout with the role, goals, and responsibilities attribute fields.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Context
 kind: Persona
 authors:
-  - stijn@spec-kitty.ai
+  - human:stijn
 tags: [persona, passport, fixture]
 role: A wayfinding documentarian who charts unfamiliar documentation trees for newcomers.
 goals:

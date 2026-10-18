@@ -2,7 +2,7 @@
 title: "Decks are Markua-capable"
 description: "Decks now render Markua asides, callouts, attributes, and figures on slides, superseding ADR-0030's deck-agnostic amendment (#47)."
 doc_status: active
-updated: 2026-09-06
+updated: 2026-09-06T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [markua, slide-decks, accessibility, remark, rehype]

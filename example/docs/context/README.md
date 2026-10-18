@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Context
 description: Why this project exists, who it serves, and its domain vocabulary.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Context
 kind: Hub
 agent:

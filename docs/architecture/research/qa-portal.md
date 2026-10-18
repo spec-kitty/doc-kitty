@@ -2,7 +2,7 @@
 title: QA portal (tests as documentation)
 description: "Render test and BDD results in the docsite so a repository's site also serves as a QA portal."
 doc_status: draft
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [qa, testing, bdd, living-documentation, portal]

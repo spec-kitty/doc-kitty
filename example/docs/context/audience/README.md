@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Audiences
 description: The reader personas this documentation serves — who they are, what they want, and what they are accountable for.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Context
 kind: Hub
 agent:

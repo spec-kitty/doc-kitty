@@ -4,9 +4,8 @@
  *
  * The glossary integration pins `generateGlossaryPages` to `astro:config:setup`, and
  * the content layer watches the glob base — so each `config:setup` re-run regenerates
- * the files. If generation were nondeterministic (a timestamp, a `generated:` stamp,
- * Map-iteration order), `astro dev` would rewrite the files every tick and loop. This
- * asserts the generator is byte-identical run-to-run and emits NO timestamp field, so
+ * the files. If generation were nondeterministic (an unpinned timestamp, Map-iteration order), `astro dev` would rewrite the files every tick and loop. This
+ * asserts the generator is byte-identical run-to-run and its only instant is the stable `generated.at`, so
  * a post-build `git diff docs/glossary example/docs/glossary` stays clean (drift would
  * otherwise fail loudly).
  */
@@ -67,8 +66,9 @@ describe('generateGlossaryPages codegen guard (T029)', () => {
     const a = mkdtempSync(join(tmpdir(), 'dk-gloss-a-'));
     const b = mkdtempSync(join(tmpdir(), 'dk-gloss-b-'));
     try {
-      generateGlossaryPages(index, a, ['README', 'index']);
-      generateGlossaryPages(index, b, ['README', 'index']);
+      const now = new Date('2026-10-18T09:30:00Z'); // pinned: two fresh trees must not differ by clock
+      generateGlossaryPages(index, a, ['README', 'index'], undefined, now);
+      generateGlossaryPages(index, b, ['README', 'index'], undefined, now);
       expect(readTree(a)).toEqual(readTree(b));
     } finally {
       rmSync(a, { recursive: true, force: true });
@@ -76,17 +76,16 @@ describe('generateGlossaryPages codegen guard (T029)', () => {
     }
   });
 
-  it('emits NO timestamp / `generated:` field (nothing nondeterministic)', () => {
+  it('stamps every page; the only instant is the stable `generated.at` (nothing nondeterministic)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'dk-gloss-ts-'));
     try {
       generateGlossaryPages(index, dir, ['README', 'index']);
       const files = readTree(dir);
       expect(Object.keys(files).length).toBeGreaterThan(0);
       for (const [rel, body] of Object.entries(files)) {
-        expect(body, `${rel} must carry no generated: stamp`).not.toMatch(/^generated:/m);
-        expect(body, `${rel} must carry no ISO timestamp`).not.toMatch(
-          /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/,
-        );
+        expect(body, `${rel} must carry the generated: stamp`).toMatch(/^generated:$/m);
+        const instants = body.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/g) ?? [];
+        expect(instants, `${rel}: the stamp's \`at\` is the only timestamp`).toHaveLength(1);
       }
     } finally {
       rmSync(dir, { recursive: true, force: true });

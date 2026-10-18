@@ -52,6 +52,7 @@ import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { resolveColocatedKey, matchGlobKey } from '../components/slots/image-paths.ts';
+import { normaliseInstant, formatInstant } from '../lib/vocabulary-core.mjs';
 
 const route = Astro.props as StarlightRoute;
 const entry = route.entry;
@@ -90,8 +91,8 @@ const avatar = matchedKey ? modules[matchedKey].default : undefined;
 // Field grid: one row per PRESENT generic field, in a stable reading order.
 const asDate = (v: string | Date | undefined): string | undefined => {
   if (!v) return undefined;
-  const d = v instanceof Date ? v : new Date(v);
-  return Number.isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10);
+  const instant = normaliseInstant(v);
+  return instant ? formatInstant(instant.date).slice(0, 10) : undefined;
 };
 // A value is either a scalar string (rendered inline) or a list of strings
 // (rendered as a <ul> so each item is a discrete, navigable line).

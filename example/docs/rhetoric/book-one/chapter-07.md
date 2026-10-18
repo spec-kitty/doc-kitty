@@ -2,7 +2,7 @@
 title: "Chapter 7: The Impact of actions and trade-offs"
 description: "How to weigh one good against another: Aristotle's rules for comparing things by size, cause, scarcity, duration, and general opinion."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

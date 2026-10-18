@@ -2,11 +2,11 @@
 title: "ADR-0037: Base-aware internal links and a fail-closed, built-output link gate"
 description: Internal links AND emitted RSS/llms.txt/agent-API absolute URLs carry the site base, enforced end-to-end by a base-aware built-output link gate.
 doc_status: active
-updated: 2026-09-04
+updated: 2026-09-04T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0034-redirect-coverage-gate
   - context/convention

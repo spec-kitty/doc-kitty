@@ -2,7 +2,7 @@
 title: Component system + swappable theme
 description: "A component and per-kind layout system with a swappable theme layer a consumer can rebrand without forking."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

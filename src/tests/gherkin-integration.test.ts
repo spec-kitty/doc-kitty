@@ -145,7 +145,7 @@ describe('doc-kitty:gherkin config:setup (generate-before-glob)', () => {
     expect(existsSync(page)).toBe(true);
     const fm = frontmatterOf(page);
     expect(fm.title).toBe('Book a consignment');
-    expect(fm.generated).toMatchObject({ by: 'doc-kitty/gherkin' });
+    expect(fm.generated).toMatchObject({ by: expect.stringMatching(/^doc-kitty-gherkin\/\d/) });
     expect(fm.sources).toEqual([
       { resource: 'features/shipping/x.feature', title: 'Gherkin source' },
     ]);

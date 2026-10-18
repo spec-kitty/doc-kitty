@@ -14,8 +14,9 @@ sources:
   - resource: "features/shipping/declare-customs.feature"
     title: "Gherkin source"
 generated:
-  by: "doc-kitty/gherkin"
-  at: "sha256:5220a00af8fb"
+  by: "doc-kitty-gherkin/0.3.0"
+  at: "2026-10-18T05:55:21Z"
+  content_hash: "sha256:5220a00af8fb"
 ---
 
 # Declare a consignment to customs

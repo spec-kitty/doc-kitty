@@ -2,7 +2,7 @@
 title: Adopting the toolkit
 description: Bring DocKitty into another repository.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup]

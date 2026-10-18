@@ -2,11 +2,11 @@
 title: Section registry
 description: "The docs/_meta/sections.yaml schema: how sections are labelled, ordered, typed, and filtered into the generated surfaces."
 doc_status: draft
-updated: 2026-08-28
+updated: 2026-08-28T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [sections, registry, loader, feeds, metadata]
 related:
   - adr/0004-amend-common-docs-as-extensible-variation

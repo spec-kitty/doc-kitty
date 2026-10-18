@@ -2,11 +2,11 @@
 title: "ADR-0045: The page frame is full width by default; --dk-width-frame caps it"
 description: The fixed 90rem wide-screen cap gives way to a public frame-width token that defaults to 100%. Sidebar, header content and rail follow a capped frame.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0044-header-carrier
   - adr/0013-m1-chrome-substrate-single-layer

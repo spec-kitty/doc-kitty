@@ -176,6 +176,10 @@ describe('formatUpdated — UTC YYYY-MM-DD slice (byte-idempotent)', () => {
   it('slices a Date object via UTC (no local-tz drift)', () => {
     expect(formatUpdated(new Date('2026-08-21T00:00:00.000Z'))).toBe('2026-08-21');
   });
+  it('shows a full timestamp as its UTC date, past a non-UTC offset (FR-009)', () => {
+    expect(formatUpdated('2026-08-21T09:30:00Z')).toBe('2026-08-21');
+    expect(formatUpdated('2026-08-21T23:30:00-05:00')).toBe('2026-08-22');
+  });
 });
 
 describe('discoverAdrs — recursive, template excluded, number-ordered', () => {

@@ -2,11 +2,11 @@
 title: "ADR-0023: Client-side diagram rendering, one render owner, and the %%-metadata → accessible-figure seam"
 description: doc-kitty owns a single shared Mermaid render module; metadata is parsed by a remark plugin and wrapped at rehype; the deck imports the same module.
 doc_status: active
-updated: 2026-08-25
+updated: 2026-08-25T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - plans/features/diagrams
   - adr/0024-diagram-token-promotion-and-brand-wiring

@@ -2,7 +2,7 @@
 title: Gherkin scenario results (research)
 description: "What Cucumber reports contain, how a result is matched to a rendered scenario, and how other tools show status: the research behind slice D of issue #120."
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [qa, testing, bdd, gherkin, cucumber, living-documentation]

@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Plans
 description: Forward-looking mission write-ups for the example docsite — not the current state (see architecture/).
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Plan
 kind: Hub
 ---

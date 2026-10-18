@@ -277,8 +277,8 @@ async function assertAgentIndex(distDir) {
     fail('api/index.json: top-level `pages` is not an array (agent-index.ts emits `pages[]`)');
   }
   const pages = body.pages;
-  if (body.version !== '2') {
-    fail(`api/index.json: version must be '2' (got ${JSON.stringify(body.version)})`);
+  if (body.version !== '3') {
+    fail(`api/index.json: version must be '3' (got ${JSON.stringify(body.version)})`);
   }
   if (body.count !== pages.length) {
     fail(`api/index.json: count (${JSON.stringify(body.count)}) !== pages.length (${pages.length})`);
@@ -300,7 +300,7 @@ async function assertAgentIndex(distDir) {
       fail(`api/index.json: pages[${idx}].audience present but not an array`);
     }
   });
-  ok(`api/index.json: version '2', pages[] array (${pages.length}), count===pages.length, records well-shaped`);
+  ok(`api/index.json: version '3', pages[] array (${pages.length}), count===pages.length, records well-shaped`);
 }
 
 // ---------------------------------------------------------------------------

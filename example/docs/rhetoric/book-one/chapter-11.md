@@ -2,7 +2,7 @@
 title: "Chapter 11: Motive"
 description: Aristotle explains motive through what people find pleasant, laying the ground for why people commit wrongdoing.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

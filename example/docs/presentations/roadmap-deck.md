@@ -2,13 +2,13 @@
 title: Roadmap Deck
 description: A published, diagram-free slide deck used to prove a deck with no diagrams never pulls the Mermaid runtime onto its route (the NFR-002 footprint guard).
 doc_status: active
-updated: 2026-08-28
+updated: 2026-08-28T00:00:00Z
 type: Presentation
 kind: Presentation
 sidebar:
   hidden: true
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 This deck deliberately contains no diagrams, so its route must resolve zero Mermaid

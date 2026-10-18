@@ -2,7 +2,7 @@
 title: "Chapter 5: What people care about"
 description: "A working definition of happiness and its parts — birth, friends, wealth, honor, health, beauty, strength, and good fortune — for the deliberative orator."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

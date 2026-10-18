@@ -2,7 +2,7 @@
 title: Diagram demonstrator
 description: One page with two diagrams — a fully-annotated flowchart and a description-only sequence — showing the metadata surface across two guaranteed types.
 doc_status: active
-updated: 2026-08-25
+updated: 2026-08-25T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [architecture, diagrams, demonstrator, fixture]

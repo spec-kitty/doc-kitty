@@ -2,7 +2,7 @@
 title: "Glossary term-link UX polish — affordance, same-tab, popover caret + flip"
 description: "Glossary term links now read as distinct-but-quiet, open same-tab, and the hover popover gains a caret and flips above the term near the viewport bottom (#64)."
 doc_status: active
-updated: 2026-09-06
+updated: 2026-09-06T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [glossary, accessibility, css]

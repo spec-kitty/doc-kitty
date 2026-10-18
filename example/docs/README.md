@@ -4,9 +4,9 @@ title: DocKitty Example
 description: Master entry point for the example docsite built with DocKitty.
 doc_status: active
 kind: Hub
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 # DocKitty Example

@@ -2,7 +2,7 @@
 title: Book / manuscript content type
 description: "A dedicated book or manuscript content type for long-form, chaptered publishing."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

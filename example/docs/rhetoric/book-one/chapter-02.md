@@ -2,7 +2,7 @@
 title: "Chapter 2: Argumentation techniques"
 description: "Rhetoric as the faculty of finding the available means of persuasion: moral character, emotion, and the argument itself, via example and enthymeme."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

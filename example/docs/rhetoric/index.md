@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Rhetoric
 description: A real Markua conversion of Aristotle's Rhetoric Book I, showcasing custom sections, footnotes, a native glossary, and personas.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Hub
 ---

@@ -2,11 +2,11 @@
 title: "ADR-0018: Citation catalog collections (bibliography + tools)"
 description: Two build-time data collections back the external-reference catalog form; a CSL-JSON-lite record cited by stable id, resolved fail-fast, exported for one-step consumer wiring.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0009-finalize-metadata-contract
   - architecture/metadata-model

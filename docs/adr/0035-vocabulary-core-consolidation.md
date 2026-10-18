@@ -2,11 +2,11 @@
 title: "ADR-0035: Single-sourced vocabulary/type-derivation core (two-layer pure-ESM)"
 description: One two-layer pure-ESM core makes section vocabulary and type-derivation impossible to diverge between the bare-Node gate and the Astro toolkit, retiring a hand-mirrored twin.
 doc_status: active
-updated: 2026-09-04
+updated: 2026-09-04T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0004-amend-common-docs-as-extensible-variation
   - adr/0005-frontmatter-doc-status-and-divio-type

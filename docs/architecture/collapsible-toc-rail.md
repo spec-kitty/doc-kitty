@@ -2,11 +2,11 @@
 title: Collapsible TOC rail
 description: The desktop-only collapsible on-this-page TOC rail — what it does, why it is a client augmentation rather than a PageSidebar override, and the Starlight internals it depends on.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [toc, chrome, starlight, client-augmentation]
 related:
   - architecture/starlight-integration

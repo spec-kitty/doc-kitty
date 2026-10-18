@@ -2,11 +2,11 @@
 title: "ADR-0036: Diagram-figure ownership — one node type per pipeline stage"
 description: remark emits one dkMermaid node, rehype wraps the figure, and a standalone sheet owns caption presentation — closing the double-pre and branded-CSS-drop defects (#59/#60/#68).
 doc_status: active
-updated: 2026-09-04
+updated: 2026-09-04T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0022-reveal-integration-and-token-theme
   - adr/0023-diagram-render-and-metadata-seam

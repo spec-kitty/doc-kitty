@@ -2,7 +2,7 @@
 title: Supporting Markua syntax
 description: "How doc-kitty could support a curated subset of Markua (images, ids, asides, blurbs, icons) through remark, rehype, and Starlight."
 doc_status: active
-updated: 2026-08-30
+updated: 2026-08-30T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [markua, markdown, remark, starlight, images, asides]

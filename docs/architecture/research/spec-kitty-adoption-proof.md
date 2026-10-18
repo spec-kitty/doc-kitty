@@ -2,7 +2,7 @@
 title: Adopting doc-kitty — the spec-kitty proving ground
 description: "What a demanding real adoption (spec-kitty) proves about doc-kitty: two asymmetries, the SWOT, reuse ceiling, and the phased path with two hard gates."
 doc_status: active
-updated: 2026-08-30
+updated: 2026-08-30T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [adoption, spec-kitty, common-docs, migration, markua, leanpub, swot]

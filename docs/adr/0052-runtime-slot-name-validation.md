@@ -2,11 +2,11 @@
 title: "ADR-0052: Theme slot names are checked when the config loads"
 description: An unknown dk slot name in a theme now fails the build at config time, listing the valid names, instead of being ignored.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0015-m2-slot-resolution-and-components-map-seam

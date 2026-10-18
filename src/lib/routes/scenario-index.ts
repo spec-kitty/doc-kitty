@@ -31,12 +31,12 @@
  * semantics and defaults: `sourceRoot` (default the site root, `process.cwd()`)
  * and `sourceUrlPrefix` (stripped from the resource before resolving). Pass the
  * values you gave `gherkin`. A source that cannot be found, has changed since its
- * page was generated (the `generated.at` content hash disagrees), or whose
+ * page was generated (the `generated` content hash disagrees), or whose
  * scenarios have no matching rendered heading is a BUILD ERROR naming the page —
  * never a silent omission.
  *
  * PARSE-ONCE: parsed files are memoised at module level by absolute path and
- * re-validated against each page's `generated.at` hash, so a build parses each
+ * re-validated against each page's `generated` content hash, so a build parses each
  * referenced file once and a dev-server edit is never served stale.
  *
  * ORDER: features by `id` (code-unit); scenarios in document order.
@@ -58,7 +58,7 @@ import { DK_GHERKIN_RESULTS_ENV } from '../gherkin/include-scan.mjs';
 import { featureResults, type Outcome } from '../gherkin/results.mjs';
 import { loadReport } from '../gherkin/results-load.mjs';
 import { featureView } from '../gherkin/view.mjs';
-import { GENERATED_BY } from '../gherkin/feature-core.mjs';
+import { GENERATED_BY, stampContentHash } from '../gherkin/feature-core.mjs';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { absolute, docsRoot } from './shared.js';
 
@@ -258,10 +258,10 @@ export function scenarioRecords(
 /** Parsed `.feature` files by absolute path (parse-once; see the module doc). */
 const parsedFeatures = new Map<string, FeatureFile>();
 
-/** Does `file`'s content hash match the page's `generated.at` stamp? */
-function hashMatches(file: FeatureFile, at: string | undefined): boolean {
-  if (!at) return true;
-  const want = at.replace(/^sha256:/, '');
+/** Does `file`'s content hash match the hash the page's `generated` stamp records? */
+function hashMatches(file: FeatureFile, recorded: string | undefined): boolean {
+  if (!recorded) return true;
+  const want = recorded.replace(/^sha256:/, '');
   return want !== '' && file.sha256.startsWith(want);
 }
 
@@ -408,7 +408,7 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
         sourceUrlPrefix: options.sourceUrlPrefix,
         page: p.slug,
       });
-      return { ...p, source, absPath, at: p.data.generated?.at };
+      return { ...p, source, absPath, at: stampContentHash(p.data.generated) };
     });
     ensureParsed(
       located.map(({ absPath, at, slug, source }) => ({ absPath, at, page: slug, source })),

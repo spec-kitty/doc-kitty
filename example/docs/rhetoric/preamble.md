@@ -2,7 +2,7 @@
 title: Preamble
 description: Editorial preface to Book I — how to read this conversion, the editor's-note convention, and where the source Glossary of key rhetoric terms now lives.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Reference
 kind: Explanation
 sidebar:

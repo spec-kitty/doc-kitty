@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: "III: Stylistic Delivery and Arrangement Techniques"
 description: Book III of Aristotle's Rhetoric covers style, word choice, and speech arrangement. Out of scope for this showcase.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Hub
 sidebar:

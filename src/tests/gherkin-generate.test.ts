@@ -46,6 +46,9 @@ const FIXTURE = fileURLToPath(new URL('./fixtures/gherkin/generate/', import.met
 const GOLDEN_FEATURE = fileURLToPath(new URL('./fixtures/gherkin/render/book-consignment.feature', import.meta.url));
 /** The three expected output files, relative to `<docsRoot>/behaviour`. */
 const GOLDEN_EXPECTED = path.join(FIXTURE, 'expected', 'behaviour');
+/** The clock and `by` value the golden files were written with. */
+const GOLDEN_NOW = new Date('2026-10-18T09:30:00Z');
+const GOLDEN_BY = 'doc-kitty-gherkin/0.0.0-golden';
 /** The example docs root: READ-ONLY (ADR listing + section registry). */
 const EXAMPLE_DOCS = fileURLToPath(new URL('../../example/docs/', import.meta.url));
 
@@ -189,7 +192,7 @@ function fm(contents: string): Record<string, unknown> {
 }
 
 function generatedAt(contents: string): string {
-  return (fm(contents).generated as { at: string }).at;
+  return (fm(contents).generated as { content_hash: string }).content_hash;
 }
 
 // ---------------------------------------------------------------------------
@@ -206,6 +209,7 @@ describe('golden: the worked example (contract §1/§3/§6)', () => {
       outDir,
       sourceRoot: site,
       indexBasename: ['README', 'index'],
+      now: GOLDEN_NOW,
       warn: (m) => warnings.push(m),
     });
 
@@ -215,13 +219,36 @@ describe('golden: the worked example (contract §1/§3/§6)', () => {
       'shipping/README.md',
       'shipping/book-consignment.md',
     ]);
-    expect(readTree(outDir)).toEqual(expected);
+    // The toolkit version is not part of the golden: it moves every release.
+    const actual = Object.fromEntries(
+      Object.entries(readTree(outDir)).map(([rel, text]) => [rel, text.replace(/doc-kitty-gherkin\/[^"]+/, GOLDEN_BY)]),
+    );
+    expect(actual).toEqual(expected);
     expect(result).toEqual({
       written: ['README.md', 'shipping/README.md', 'shipping/book-consignment.md'],
       unchanged: [],
       removed: [],
     });
     expect(warnings).toEqual([]);
+  });
+});
+
+describe('stable stamps: a rerun with unchanged input changes 0 bytes (NFR-001)', () => {
+  it('a later clock rewrites nothing, `--check` is clean, and only a source change moves `at`', () => {
+    const site = makeSite({ 'features/shipping/book.feature': feature('Book a slot') });
+    gen(site, { now: new Date('2026-10-18T09:30:00Z') });
+    const first = readTree(site.outDir);
+
+    const again = gen(site, { now: new Date('2027-01-01T00:00:00Z') });
+    expect(again.result.written).toEqual([]);
+    expect(readTree(site.outDir)).toEqual(first);
+    const planned = plan(site, { now: new Date('2027-02-02T00:00:00Z') });
+    expect(diffFeaturePages(planned.plan, site.outDir)).toEqual({ added: [], changed: [], stale: [], authored: [] });
+
+    writeTree(site.root, { 'features/shipping/book.feature': feature('Book a slot', { step: 'another precondition' }) });
+    gen(site, { now: new Date('2027-03-03T00:00:00Z') });
+    const page = fm(readTree(site.outDir)['shipping/book.md'] as string).generated as { at: string };
+    expect(page.at).toBe('2027-03-03T00:00:00Z');
   });
 });
 
@@ -482,7 +509,12 @@ describe('nested directories: one hub per directory, direct children only (contr
       const data = fm(tree[hub] as string);
       expect(data.kind, hub).toBe('Hub');
       expect(data.doc_status, hub).toBe('active');
-      expect(data.generated, hub).toEqual({ by: 'doc-kitty/gherkin', at: expect.stringMatching(/^sha256:[0-9a-f]{12}$/) });
+      expect(data.generated, hub).toEqual({
+        by: expect.stringMatching(/^doc-kitty-gherkin\/\d/),
+        at: expect.stringMatching(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/),
+        content_hash: expect.stringMatching(/^sha256:[0-9a-f]{12}$/),
+      });
+      expect(data.okf_version, hub).toBe('0.2');
     }
     expect(fm(tree['a/README.md'] as string).title).toBe('A');
     expect(fm(tree['a/b/README.md'] as string).description).toBe('Behaviour specifications for B, generated from Gherkin feature files.');

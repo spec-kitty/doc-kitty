@@ -2,7 +2,7 @@
 title: "Chapter 15: Trial Proceedings"
 description: The five inartificial proofs of forensic oratory — laws, witnesses, contracts, torture, and oaths.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

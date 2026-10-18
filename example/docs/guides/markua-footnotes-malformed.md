@@ -2,7 +2,7 @@
 title: Markua footnotes graceful degradation
 description: Unmatched Markua footnote marker + orphan definition that must never fail the build (NFR-002).
 doc_status: draft
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Guide
 kind: Reference
 tags: [markua, footnotes, fixture, degradation]

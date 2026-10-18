@@ -2,11 +2,11 @@
 title: "ADR-0010: Planning page kinds and a MoSCoW field"
 description: Add Planning, Feature, and User-Journey page kinds and a moscow priority field with rationale.
 doc_status: active
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0009-finalize-metadata-contract
   - architecture/metadata-model

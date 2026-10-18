@@ -2,7 +2,7 @@
 title: Authoring a document
 description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, show scenarios in any page, and show their test results.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Guide
 kind: How-To
 tags: [authoring, workflow, gherkin, bdd]

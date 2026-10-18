@@ -2,11 +2,11 @@
 title: "ADR-0004: Amend Common Docs as an extensible variation"
 description: Why doc-kitty treats Common Docs as an amendable base rather than a fixed spec, and adds presentations/ as canonical.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - context/convention
   - adr/0002-readme-as-index
