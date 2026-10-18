@@ -2194,6 +2194,35 @@ async function main() {
   }
   ok(`sitemap: ${sitemaps.length} file(s) present, non-empty, well-formed (${sitemaps.join(', ')})`);
 
+  // #188 — the site root's sitemap <loc> and the home page's canonical both end in
+  // `/` (the form GitHub Pages serves; the slash-less form is a 301). The root is
+  // read from the home page's own canonical; every other page's form is untouched.
+  const allLocs = [];
+  for (const name of sitemaps) {
+    const xml = await readTextOrFail(path.join(distDir, name), `sitemap ${name}`);
+    for (const m of xml.matchAll(/<loc>([^<]*)<\/loc>/g)) allLocs.push(m[1]);
+  }
+  const homeHtml = await readTextOrFail(path.join(distDir, 'index.html'), 'home page');
+  const canonicalTags = [...homeHtml.matchAll(/<link\b[^>]*\brel="canonical"[^>]*>/gi)].map((m) => m[0]);
+  if (canonicalTags.length !== 1) {
+    fail(`home page: expected exactly one canonical link, found ${canonicalTags.length} (#188)`);
+  }
+  const rootLoc = canonicalTags[0].match(/\bhref="([^"]*)"/i)?.[1] ?? '';
+  if (!rootLoc.endsWith('/')) {
+    fail(`home canonical "${rootLoc}" lacks the trailing slash (#188)`);
+  }
+  // Starlight drops every other <link> once a page head carries its own canonical,
+  // so the home page must still have its favicon and sitemap links (#188).
+  for (const rel of ['icon', 'sitemap']) {
+    if (!new RegExp(`<link\\b[^>]*\\brel="(shortcut )?${rel}"`, 'i').test(homeHtml)) {
+      fail(`home page: <link rel="${rel}"> is missing; the canonical fix must not drop the page's other links (#188)`);
+    }
+  }
+  if (!allLocs.includes(rootLoc)) {
+    fail(`sitemap: no <loc> equals the home canonical "${rootLoc}" (the root <loc> must carry the slash too, #188)`);
+  }
+  ok(`sitemap/canonical: root "${rootLoc}" carries the trailing slash in both (#188)`);
+
   // Draft-exclusion (INV-1 / WP02 filter): the draft route must be absent and
   // the page-URL count must equal the published set.
   if (draftSeenIn !== null) {
@@ -2286,6 +2315,12 @@ async function main() {
   const llmsAbs = path.join(distDir, 'llms.txt');
   await assertNonEmptyFile(llmsAbs, 'llms.txt');
   ok('llms.txt: present and non-empty');
+  // #189 — no empty `## ` heading (a section whose label resolved to '').
+  const llmsHeadingText = await readTextOrFail(llmsAbs, 'llms.txt');
+  if (/^##[ \t]*$/m.test(llmsHeadingText)) {
+    fail('llms.txt: contains an empty `## ` section heading — the root section lost its label (#189)');
+  }
+  ok('llms.txt: no empty section heading');
 
   // 4) agent index JSON — valid JSON, expected top-level shape, pinned count.
   const indexAbs = path.join(distDir, INDEX_RELPATH);

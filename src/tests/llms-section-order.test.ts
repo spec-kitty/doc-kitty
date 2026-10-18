@@ -134,3 +134,31 @@ sections:
     }
   });
 });
+
+/**
+ * #189 — the root section ('') has no registry label when the registry omits it,
+ * which emitted an empty `## ` heading. It falls back to the default label table.
+ */
+describe('llms.txt root section heading (#189)', () => {
+  it('never emits an empty H2: a registry without a root entry still labels the root page', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'dk-root-label-llms-'));
+    try {
+      mkdirSync(path.join(dir, '_meta'), { recursive: true });
+      writeFileSync(
+        path.join(dir, '_meta', 'charter.yaml'),
+        'version: 1\nsections:\n  entries:\n    - id: guides\n      label: Guides\n      order: 10\n      type: Guide\n',
+        'utf8',
+      );
+      vi.stubEnv('DK_DOCS_ROOT', dir);
+      entries.push(
+        { id: 'index', data: { title: 'Home', doc_status: 'active' } },
+        { id: 'guides/getting-started', data: { title: 'Getting Started', doc_status: 'active' } },
+      );
+      const txt = await renderText();
+      expect(txt).not.toMatch(/^##\s*$/m);
+      expect(txt).toContain('## Overview');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

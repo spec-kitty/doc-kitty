@@ -16,7 +16,7 @@
 // runs. The `sitemap-index.xml` is left untouched: it references the page files
 // by name, which do not change.
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
@@ -64,17 +64,17 @@ export function sortSitemapXml(xml: string): string {
 }
 
 /**
- * Give the site root's `<loc>` one form. `@astrojs/sitemap` appends a trailing
- * slash to the site path the first time it meets a non-root page, so on a site
- * with a base path the root entry is `…/base` when the root page is handed over
- * first and `…/base/` otherwise: the same order dependence the sort above
- * removes for the other entries. The slash-less form is the one a build emits
- * when the root page comes first, so that is the form kept.
+ * Give the site root's `<loc>` one form: the trailing-slash form. `@astrojs/sitemap`
+ * appends a trailing slash to the site path the first time it meets a non-root
+ * page, so on a site with a base path the root entry is `…/base` when the root
+ * page is handed over first and `…/base/` otherwise: the same order dependence the
+ * sort above removes for the other entries. The slash form is the one kept: it is
+ * the URL the host serves (GitHub Pages 301s `…/base` to `…/base/`, #188), and it
+ * matches the root page's canonical ({@link normalizeRootCanonical}).
  *
- * `rootUrl` is the site URL joined with the base path, without a trailing
- * slash. A site with no base path has the origin as its root, which always
- * carries the slash, so there is nothing to normalise and the XML is returned
- * as-is.
+ * `rootUrl` is the site URL joined with the base path. A site with no base path
+ * has the origin as its root, which always carries the slash, so there is nothing
+ * to normalise and the XML is returned as-is.
  */
 export function normalizeRootLoc(xml: string, rootUrl: string | undefined): string {
   if (!rootUrl) return xml;
@@ -87,7 +87,32 @@ export function normalizeRootLoc(xml: string, rootUrl: string | undefined): stri
   const pathname = root.pathname.replace(/\/+$/, '');
   if (pathname === '') return xml;
   const bare = `${root.origin}${pathname}`;
-  return xml.split(`<loc>${bare}/</loc>`).join(`<loc>${bare}</loc>`);
+  return xml.split(`<loc>${bare}</loc>`).join(`<loc>${bare}/</loc>`);
+}
+
+/**
+ * Give the built root page's canonical and `og:url` the same trailing-slash form
+ * as the root `<loc>` (#188). Starlight builds both from `Astro.url.pathname`,
+ * which for the root of a site with a base path is `…/base`. The fix runs on the
+ * built HTML, not in the Head: Starlight 0.32 drops every earlier `<link>`
+ * (favicon, sitemap, feed) once a page head carries its own canonical.
+ */
+export function normalizeRootCanonical(html: string, rootUrl: string | undefined): string {
+  if (!rootUrl) return html;
+  let root: URL;
+  try {
+    root = new URL(rootUrl);
+  } catch {
+    return html;
+  }
+  const pathname = root.pathname.replace(/\/+$/, '');
+  if (pathname === '') return html;
+  const bare = `${root.origin}${pathname}`;
+  return html
+    .split(`rel="canonical" href="${bare}"`)
+    .join(`rel="canonical" href="${bare}/"`)
+    .split(`property="og:url" content="${bare}"`)
+    .join(`property="og:url" content="${bare}/"`);
 }
 
 /**
@@ -95,7 +120,8 @@ export function normalizeRootLoc(xml: string, rootUrl: string | undefined): stri
  * Its `astro:build:done` hook sorts every `sitemap-N.xml` page file present
  * under `dist/` (never the `sitemap-index.xml`, which references those files by
  * unchanged name) with {@link sortSitemapXml}, after giving the root entry one
- * form with {@link normalizeRootLoc}.
+ * form with {@link normalizeRootLoc}, and gives the built root page's canonical
+ * the same form with {@link normalizeRootCanonical}.
  */
 export default function sitemapOrderIntegration(): AstroIntegration {
   let rootUrl: string | undefined;
@@ -119,6 +145,12 @@ export default function sitemapOrderIntegration(): AstroIntegration {
             writeFileSync(file, ordered);
             logger.info(`normalised <url> entries in ${name} (root form, sorted by <loc>: deterministic sitemap)`);
           }
+        }
+        const home = path.join(distDir, 'index.html');
+        if (rootUrl && existsSync(home)) {
+          const html = readFileSync(home, 'utf8');
+          const fixed = normalizeRootCanonical(html, rootUrl);
+          if (fixed !== html) writeFileSync(home, fixed);
         }
       },
     },
