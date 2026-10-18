@@ -25,6 +25,7 @@ authoritative_surface: src/scripts/
 create_intent:
 - src/scripts/assert-chrome-artifacts.mjs
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/assert-chrome-artifacts.mjs
 role: implementer

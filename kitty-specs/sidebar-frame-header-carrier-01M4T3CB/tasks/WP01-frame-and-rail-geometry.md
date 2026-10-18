@@ -29,6 +29,7 @@ authoritative_surface: src/styles/
 create_intent:
 - src/tests/layout-css-contract.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/styles/dk-components.css
 - src/styles/theme.css

@@ -24,6 +24,7 @@ create_intent:
 - docs/adr/0034-redirect-coverage-gate.md
 - docs/changelog/2026-09-03-adopter-loader-migration.md
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - docs/adr/**

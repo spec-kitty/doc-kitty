@@ -26,6 +26,8 @@ create_intent:
 - src/tests/toc-rail-preference.test.ts
 - src/tests/toc-rail-prepaint.test.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M23HNA98TDYF7KDT8MWQBNZA
 owned_files:
 - src/lib/toc-rail/preference.ts
 - src/lib/toc-rail/pre-paint.ts
@@ -34,6 +36,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP01
 ---
 
 ## ⚡ Do This First: Load Agent Profile

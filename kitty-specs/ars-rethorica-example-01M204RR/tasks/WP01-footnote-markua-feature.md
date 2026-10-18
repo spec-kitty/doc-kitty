@@ -27,6 +27,7 @@ create_intent:
 - example/docs/guides/markua-footnotes-showcase.md
 - example/docs/guides/markua-footnotes-malformed.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/remark/markua-footnotes.ts
 - src/lib/remark/markua-footnotes.internal.ts

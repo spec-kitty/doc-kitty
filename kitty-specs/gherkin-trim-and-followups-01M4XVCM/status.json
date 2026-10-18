@@ -1,0 +1,94 @@
+{
+  "event_count": 8,
+  "last_event_id": "52VS5SEEXZ5T8SXKDXA87ZVQA3",
+  "materialized_at": "2026-10-14T18:39:29.240307+00:00",
+  "mission_number": "",
+  "mission_slug": "gherkin-trim-and-followups-01M4XVCM",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 8,
+    "done": 0,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "32RBBV39V07ASK81HVFTYN4KPV",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    },
+    "WP02": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "3XEFJQ4X04K156AFMV8EGYQDRB",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    },
+    "WP03": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "0E7TGSRXQV2E4HA0P04TEW04EK",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    },
+    "WP04": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "52VS5SEEXZ5T8SXKDXA87ZVQA3",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    },
+    "WP05": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "184H5PFRPXGN4V99GKPDKAQFC3",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    },
+    "WP06": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "170ASSE1739YM36TV5ZABF3VR2",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    },
+    "WP07": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "23CA4K2MDZ0R0QWM5D2R9AX5V3",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    },
+    "WP08": {
+      "actor": "migration:backfill_runtime_state",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "claimed",
+      "last_event_id": "3GMYWN8E9Y1Y7Y655MJWQX60BR",
+      "last_transition_at": "2026-10-14T18:39:29.240307+00:00"
+    }
+  }
+}

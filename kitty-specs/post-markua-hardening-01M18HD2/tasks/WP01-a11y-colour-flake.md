@@ -22,6 +22,7 @@ create_intent:
 - tests/a11y/helpers/colour.ts
 - tests/a11y/helpers/colour.test.ts
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-4-6
 owned_files:
 - tests/a11y/diagram.spec.ts

@@ -1,0 +1,182 @@
+{
+  "event_count": 35,
+  "last_event_id": "01M18RMD40YQ38ASJBJC5M9MFN",
+  "materialized_at": "2026-08-30T07:20:07.040703+00:00",
+  "mission_number": "",
+  "mission_slug": "post-markua-hardening-01M18HD2",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 5,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M18RKE74JYMFPT09C2GPW17X",
+      "last_transition_at": "2026-08-30T07:19:35.396922+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready (moved by orchestrator; implementer completed commit 6713a45 but did not transition): shared empty-tolerant colour helper + toPass; fillBefore pinned to real triple; token-inequality guard kept; duplicates removed; colour.ts unit test added",
+        "Review passed (reviewer-renata): C34 satisfied — sentinel never green-washes, toPass retries whole callback so a real colour divergence still fails, fillBefore fail-on-sentinel, token-inequality guard kept; unit test 14/14 + target theme-toggle test 2/2 green (light+dark); #31 deferred test untouched. Lane hygiene cleared by orchestrator."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata): C34 satisfied — sentinel never green-washes, toPass retries whole callback so a real colour divergence still fails, fillBefore fail-on-sentinel, token-inequality guard kept; unit test 14/14 + target theme-toggle test 2/2 green (light+dark); #31 deferred test untouched. Lane hygiene cleared by orchestrator.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 443313,
+      "shell_pid_created_at": "1788072874.48",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M18RKNXJS45GXNXM5E576TM8",
+      "last_transition_at": "2026-08-30T07:19:43.282483+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready: one predicate (isPresentationFile/Entry) + guardDeck wrap on both remark:604/rehype:606 arrays; __inner exposed + name preserved (C36c); folds behaviour-preserving (markua-figure/glossary-autolink/metadata-RSS); deckSplit/remarkDirective untouched. deck-Markua inertness proven by structure (adversarial). Gates: toolkit test 569/569 green incl deck-guard.test.ts(16); eslint changed+new exit 0; typecheck 0 errors; build+assert:markua green; T011 byte-identity: deck pages diff -r clean baseline-vs-feat, RSS item set identical.",
+        "Review passed (reviewer-renata, opus): guardDeck wraps both Markua arrays; deckSplit/remarkDirective bare; __inner+name preserved; folds byte-equivalent; C36a structure-adversarial; C36f+C36b automated; 569 tests + build + assert:markua green. Lane hygiene cleared by orchestrator."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata, opus): guardDeck wraps both Markua arrays; deckSplit/remarkDirective bare; __inner+name preserved; folds byte-equivalent; C36a structure-adversarial; C36f+C36b automated; 569 tests + build + assert:markua green. Lane hygiene cleared by orchestrator.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 400855,
+      "shell_pid_created_at": "1788070819.02",
+      "subtasks": {
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done",
+        "T011": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M18RM5B6VABRDTRJBXNFF1VY",
+      "last_transition_at": "2026-08-30T07:19:59.078577+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready: REDERIVE_REMARK_PLUGINS export in page-processor.ts is the single source; createPageProcessor consumes it (PluggableList form, behaviour-preserving); MIRRORED derived from it. Enumeration selects by doc-kitty: prefix + sees through guardDeck.__inner (helpers/remark-stack.ts). runSetup copied from markua-attributes.test.ts (O-1, that file untouched) + loosened via Proxy shim; per-integration remarkCount>=1 + stage-count floor guard vacuous/SetupHook false-green. Golden-tree diffs mdast (build mirrored+inert vs re-derive) — catches a wrong 'inert' exclusion. Version-parity: in-test assertion (no issue needed) resolving substrate vs Astro remark-gfm/smartypants; also covered by committed remark-version-pin.test.ts. Negative check: adding an unmirrored doc-kitty stage reds naming 'dummyDriftStage' (reverted). Gates: toolkit test 47 files/578 green incl glossary-substrate-parity(9); pnpm build + assert:markua green (re-derive unchanged); root pnpm typecheck (example astro check) 0 errors; eslint on 3 changed files exit 0. Note: toolkit tsc --noEmit has PRE-EXISTING errors in unrelated untouched files (lib/routes/*, deck-split.test, type-registry-authority.test).",
+        "Review passed (reviewer-renata, opus): structural re-derive parity guard — MIRRORED derived from REDERIVE_REMARK_PLUGINS (consumed by createPageProcessor, behaviour-preserving), prefix enumeration through guardDeck.__inner, keyed+justified exclusions, real golden-tree + version-parity; 578 tests + build + assert:markua green; negative check reds naming the stage; markua-attributes.test.ts untouched (O-1). Lane hygiene cleared by orchestrator."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata, opus): structural re-derive parity guard — MIRRORED derived from REDERIVE_REMARK_PLUGINS (consumed by createPageProcessor, behaviour-preserving), prefix enumeration through guardDeck.__inner, keyed+justified exclusions, real golden-tree + version-parity; 578 tests + build + assert:markua green; negative check reds naming the stage; markua-attributes.test.ts untouched (O-1). Lane hygiene cleared by orchestrator.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 439907,
+      "shell_pid_created_at": "1788072710.14",
+      "subtasks": {
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M18RKXQ12QDXEK7EPW6S6RPZ",
+      "last_transition_at": "2026-08-30T07:19:51.265367+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready: coalesce-run stacked-attr fix + regression (fails pre-fix); callouts three-form now distinct/normalise-layer; tests 43 passed, build+assert:markua PASS, eslint exit 0, typecheck 0 errors",
+        "Review passed (reviewer-renata): C36d coalesce/nearest-wins mutation-verified + pre-fix regression; C36e non-vacuous via real markuaNormalise fold (reds on broken fold); 43/43 green. Lane status-artifact hygiene cleared by orchestrator."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata): C36d coalesce/nearest-wins mutation-verified + pre-fix regression; C36e non-vacuous via real markuaNormalise fold (reds on broken fold); 43/43 green. Lane status-artifact hygiene cleared by orchestrator.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 389585,
+      "shell_pid_created_at": "1788070589.79",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M18RMD40YQ38ASJBJC5M9MFN",
+      "last_transition_at": "2026-08-30T07:20:07.040703+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready (lane hygiene cleared by orchestrator): 6 docs synced — ADR-0025+glossary.md parity enforcement note; markua.md Limits + slide-decks.md deck-agnostic; ADR-0030 Consequences (a)+(b)-placeholder; research-note scope breadcrumb; validate:docs green (104 valid); no new ADR",
+        "Review passed (reviewer-renata): all 6 docs verified accurate against shipped guardDeck/isPresentationFile + REDERIVE_REMARK_PLUGINS parity guard; no new ADR; frontmatter bumped; validate:docs green (104 valid). Lane hygiene cleared by orchestrator."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "Review passed (reviewer-renata): all 6 docs verified accurate against shipped guardDeck/isPresentationFile + REDERIVE_REMARK_PLUGINS parity guard; no new ADR; frontmatter bumped; validate:docs green (104 valid). Lane hygiene cleared by orchestrator.",
+        "reviewer": "Stijn Dejongh",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 470005,
+      "shell_pid_created_at": "1788073723.14",
+      "subtasks": {
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
+    }
+  }
+}

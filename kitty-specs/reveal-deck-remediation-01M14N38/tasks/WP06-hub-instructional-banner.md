@@ -19,6 +19,7 @@ authoritative_surface: example/docs/presentations/README.md
 create_intent:
 - tests/a11y/presentations-hub.spec.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/presentations/README.md
 - tests/a11y/presentations-hub.spec.ts

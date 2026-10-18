@@ -24,6 +24,7 @@ create_intent:
 - src/tests/helpers/remark-stack.ts
 - src/tests/glossary-substrate-parity.test.ts
 execution_mode: code_change
+lane: planned
 model: claude-opus-4-8
 owned_files:
 - src/lib/glossary/page-processor.ts

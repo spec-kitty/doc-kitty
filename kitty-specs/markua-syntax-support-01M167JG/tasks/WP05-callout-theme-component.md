@@ -16,16 +16,17 @@ subtasks:
 - T018
 - T019
 - T020
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: frontend-freddy
 authoritative_surface: src/styles/theme.css
 create_intent: []
 execution_mode: code_change
+lane: planned
+model: sonnet
 owned_files:
 - src/styles/theme.css
-agent_profile: frontend-freddy
-agent: claude
-model: sonnet
 role: implementer
 tags: []
 tracker_refs: []

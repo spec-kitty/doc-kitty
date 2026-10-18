@@ -29,6 +29,7 @@ create_intent:
 - src/tests/adr-referential-integrity.test.ts
 - docs/adr/0032-adr-index-generation.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/generate-adr-index.mjs
 - src/scripts/assert-build-artifacts.mjs

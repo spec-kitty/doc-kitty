@@ -18,7 +18,7 @@
   "flattened": true,
   "friendly_name": "Internal link integrity — base-prefix, relative-link & glossary-anchor 404s",
   "mission_id": "01M1PSEH7Q72MYA6V7WF8FQW5S",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "link-integrity-01M1PSEH",
   "mission_type": "software-dev",
   "pr_bound": true,

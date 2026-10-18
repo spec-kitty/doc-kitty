@@ -28,6 +28,7 @@ authoritative_surface: src/tests/helpers/
 create_intent:
 - src/tests/helpers/restore-internal-env.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/tests/helpers/restore-internal-env.ts

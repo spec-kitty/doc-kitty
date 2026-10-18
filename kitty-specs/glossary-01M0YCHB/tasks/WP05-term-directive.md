@@ -21,6 +21,7 @@ create_intent:
 - src/lib/remark/glossary-term.ts
 - src/tests/glossary-term.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/remark/glossary-term.ts
 - src/tests/glossary-term.test.ts

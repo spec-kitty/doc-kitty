@@ -4,7 +4,7 @@
   "flattened": true,
   "friendly_name": "Reveal-deck remediation",
   "mission_id": "01M14N38FYPNRM7SHD19YZS39S",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "reveal-deck-remediation-01M14N38",
   "mission_type": "software-dev",
   "pr_bound": true,

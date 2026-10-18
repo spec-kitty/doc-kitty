@@ -18,6 +18,7 @@ authoritative_surface: src/lib/
 create_intent:
 - src/tests/metadata-sections.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/routes/rss.ts
 - src/lib/metadata.ts

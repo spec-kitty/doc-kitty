@@ -29,6 +29,7 @@ create_intent:
 - example/docs/rhetoric/book-one/chapter-14.md
 - example/docs/rhetoric/book-one/chapter-15.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/rhetoric/book-one/chapter-11.md
 - example/docs/rhetoric/book-one/chapter-12.md

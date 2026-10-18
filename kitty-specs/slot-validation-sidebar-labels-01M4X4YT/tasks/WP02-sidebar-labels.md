@@ -28,6 +28,7 @@ agent_profile: node-norris
 authoritative_surface: src/lib/route-shaping.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/route-shaping.ts
 - src/tests/route-shaping.test.ts

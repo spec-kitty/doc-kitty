@@ -19,17 +19,18 @@ subtasks:
 - T010
 - T011
 - T012
+agent: claude
 history:
 - '2026-08-24: authored by /spec-kitty.tasks'
 - '2026-08-24: post-tasks squad remediation (config.ts is net-new remark plumbing; insertion point; extra edge cases)'
 agent_profile: implementer-ivan
-agent: claude
 authoritative_surface: src/lib/remark/
 create_intent:
 - src/lib/remark/deck-split.ts
 - src/lib/remark/deck-split.internal.ts
 - src/tests/deck-split.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/remark/deck-split.ts
 - src/lib/remark/deck-split.internal.ts

@@ -35,6 +35,7 @@ authoritative_surface: src/scripts/
 create_intent:
 - src/scripts/site-config-eval.mjs
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/scripts/site-index-names.mjs

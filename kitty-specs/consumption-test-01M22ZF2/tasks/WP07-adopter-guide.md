@@ -21,12 +21,15 @@ create_intent:
 - docs/guides/consumer-setup.md
 - tests/consumption/scripts/assert-guide-no-internal-paths.mjs
 execution_mode: code_change
+lane: planned
+mission_id: 01M22ZF2KP2Y0DM6M4YBFJ31CC
 owned_files:
 - docs/guides/consumer-setup.md
 - tests/consumption/scripts/assert-guide-no-internal-paths.mjs
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP07
 ---
 
 ## ⚡ Do This First: Load Agent Profile

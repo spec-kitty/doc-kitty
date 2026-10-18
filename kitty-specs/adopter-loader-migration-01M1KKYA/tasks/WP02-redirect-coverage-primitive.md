@@ -28,6 +28,7 @@ create_intent:
 - src/tests/redirect-coverage.test.ts
 - example/url-baseline.txt
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - src/scripts/check-redirect-coverage.mjs

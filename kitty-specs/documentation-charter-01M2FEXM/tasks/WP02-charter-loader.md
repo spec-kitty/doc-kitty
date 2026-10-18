@@ -31,6 +31,7 @@ create_intent:
 - src/lib/effective-charter.mjs
 - src/tests/charter-loader.test.ts
 execution_mode: code_change
+lane: planned
 model: ''
 owned_files:
 - src/lib/vocabulary-loader.mjs

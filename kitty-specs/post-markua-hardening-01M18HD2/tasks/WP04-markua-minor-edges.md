@@ -18,6 +18,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/remark/markua-attributes.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-4-6
 owned_files:
 - src/lib/remark/markua-attributes.ts

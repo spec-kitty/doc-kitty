@@ -26,6 +26,7 @@ agent_profile: implementer-ivan
 authoritative_surface: tests/consumption/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - tests/consumption/**
 role: implementer

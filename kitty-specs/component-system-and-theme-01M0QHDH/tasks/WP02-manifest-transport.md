@@ -22,15 +22,16 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: node-norris
-role: implementer
 authoritative_surface: src/lib/
 create_intent:
 - src/lib/manifest.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/manifest.ts
 - src/lib/config.ts
 - src/layouts/kind-layouts.ts
+role: implementer
 tags: []
 tracker_refs: []
 ---

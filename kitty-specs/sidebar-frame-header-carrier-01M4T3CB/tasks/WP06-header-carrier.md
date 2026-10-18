@@ -26,6 +26,7 @@ create_intent:
 - src/components/Header.astro
 - src/tests/header-carrier.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/components/Header.astro
 - src/lib/manifest.ts

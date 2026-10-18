@@ -17,19 +17,20 @@ subtasks:
 - T026
 - T027
 - T028
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: frontend-freddy
 authoritative_surface: src/lib/rehype/markua-figure.ts
 create_intent:
 - src/lib/rehype/markua-figure.ts
 - src/tests/markua-figure.test.ts
 execution_mode: code_change
+lane: planned
+model: opus
 owned_files:
 - src/lib/rehype/markua-figure.ts
 - src/tests/markua-figure.test.ts
-agent_profile: frontend-freddy
-agent: claude
-model: opus
 role: implementer
 tags: []
 tracker_refs: []

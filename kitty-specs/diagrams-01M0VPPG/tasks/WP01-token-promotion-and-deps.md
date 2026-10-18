@@ -21,6 +21,7 @@ authoritative_surface: src/lib/theme.ts
 create_intent:
 - src/tests/diagram-tokens.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/theme.ts
 - src/styles/theme.css

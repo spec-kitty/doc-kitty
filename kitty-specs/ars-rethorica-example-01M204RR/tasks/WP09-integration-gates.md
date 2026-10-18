@@ -34,6 +34,7 @@ authoritative_surface: src/
 create_intent:
 - docs/changelog/2026-09-08-ars-rethorica-example.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/assert-build-artifacts.mjs
 - tests/a11y/routes.ts

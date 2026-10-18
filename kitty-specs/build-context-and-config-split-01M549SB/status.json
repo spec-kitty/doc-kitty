@@ -2,9 +2,9 @@
   "event_count": 54,
   "last_event_id": "01M54DS6MES4VSP0JKPN5NDZYQ",
   "materialized_at": "2026-10-17T07:56:19.470408+00:00",
-  "mission_number": "",
+  "mission_number": "9",
   "mission_slug": "build-context-and-config-split-01M549SB",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,121 +20,219 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M54DQZJXDW5GDYC566EKD248",
       "last_transition_at": "2026-10-17T07:55:39.485083+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Replaced served /sitemap.xml with sitemap-index.xml (+sitemap-0.xml note) in 13 owned files; T002 clean; links+markdownlint green",
+        "Review passed (reviewer-renata, opus): example build has sitemap-index.xml + sitemap-0.xml and no sitemap.xml; only owned files changed; history entry kept. Nit folded pre-PR."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP01-sitemap-doc-truth/review-cycle-1.md",
         "reference": "review-cycle://build-context-and-config-split-01M549SB/WP01-sitemap-doc-truth/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1549722,
-      "shell_pid_created_at": "1792220896.79"
+      "role": "reviewer",
+      "shell_pid": 1559248,
+      "shell_pid_created_at": "1792221045.63",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M54DR620WN33SF9F9BYM9N6E",
       "last_transition_at": "2026-10-17T07:55:46.112643+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "One BuildState per config, integrations moved, exports unchanged, 14 suites green",
+        "Review passed: verbatim move of route-shaping/draft-publication into integrations/ with only build-state wiring; one createBuildState per defineDocKittyIntegrations; sink in build-state.ts (cleared at config:setup, flushed at build:done); FR-008a test non-vacuous (shared-singleton mutation red); ./config runtime exports equal snapshot; no ../config imports in integrations/build-state; 10 suites + import guards green, eslint clean, tsc 31 with none new. RouteShapingOptions field removal is on an @internal seam (CHANGELOG says not supported API): acceptable, recommend a CHANGELOG line."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP02-build-state-and-route-shaping-split/review-cycle-1.md",
         "reference": "review-cycle://build-context-and-config-split-01M549SB/WP02-build-state-and-route-shaping-split/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1549722,
-      "shell_pid_created_at": "1792220896.79"
+      "role": "reviewer",
+      "shell_pid": 1580734,
+      "shell_pid_created_at": "1792221272.62",
+      "subtasks": {
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M54DRCHQ82GQCJ9ZVCMJMCZ0",
       "last_transition_at": "2026-10-17T07:55:52.759420+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Diagram block moved verbatim to src/lib/integrations/diagrams.ts; config.ts re-exports; export list unchanged; suites + example build green; out-of-map edit: src/lib/config.ts",
+        "Review passed: verbatim move (only import paths, export, injectScript ../ URL, file header changed); export runtime diff empty; no ../config import; eslint 0, tsc 31 baseline; 22 suites/470 tests green; client-mode example build rc=0 with diagram-render.client chunk referenced from built HTML"
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP03-diagrams-split/review-cycle-1.md",
         "reference": "review-cycle://build-context-and-config-split-01M549SB/WP03-diagrams-split/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1596269,
-      "shell_pid_created_at": "1792221519.03"
+      "role": "reviewer",
+      "shell_pid": 1616768,
+      "shell_pid_created_at": "1792221771.94",
+      "subtasks": {
+        "T009": "done",
+        "T010": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M54DS02G0CS2004Y8FEJAGXR",
       "last_transition_at": "2026-10-17T07:56:12.752389+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Gherkin/glossary/Markua moved to integrations/*.ts (config.ts 1403->936), exports identical, suites+build green. T012: no INPUT integration-name lists exist in src/tests (all are EXPECTED order/registration pins), so no helper/second commit.",
+        "Review passed: verbatim move (only imports/exports, preview URL, param type differ); example build rc=0 with api/scenarios.json + preview chunk; config.ts 936; no ../config imports; export diff empty; order mutation reds all 4 suites; 48 suites/1145 green, eslint clean, tsc 31. Nit: resolveGherkinOptions param is now unknown (wider than DocKittyOptions['gherkin']), internal-only"
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP04-gherkin-glossary-markua-split/review-cycle-1.md",
         "reference": "review-cycle://build-context-and-config-split-01M549SB/WP04-gherkin-glossary-markua-split/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1631977,
-      "shell_pid_created_at": "1792222036.64"
+      "role": "reviewer",
+      "shell_pid": 1666115,
+      "shell_pid_created_at": "1792222409.14",
+      "subtasks": {
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M54DRK1Y1BE2A2AHTMZHYVX6",
       "last_transition_at": "2026-10-17T07:55:59.422495+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "activeMode/resolveEnvSource + envDir in build hook and gates (config-evaluating gates follow vite.envDir; others need --env-dir); red-first table test; SC-003 hook test",
+        "Review passed: Vite 6.4.3 parity verified (loadEnv local throw, resolveConfig envDir resolve/false), SC-003 hook test non-vacuous, gates green, eslint clean. Non-blocking: \\benvDir\\b text match fails closed on comments; envFile:false (deprecated) not honoured; '--mode --x' takes '--x'."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP05-env-dir-and-mode/review-cycle-1.md",
         "reference": "review-cycle://build-context-and-config-split-01M549SB/WP05-env-dir-and-mode/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1596269,
-      "shell_pid_created_at": "1792221519.03"
+      "role": "reviewer",
+      "shell_pid": 1631097,
+      "shell_pid_created_at": "1792221998.76",
+      "subtasks": {
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M54DRSGQP8NSYAXY8533KZ4Y",
       "last_transition_at": "2026-10-17T07:56:06.039309+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "_links added in agent-index/agent-page routes (links option, example defaults); FR-005 test agent-links.test.ts; NFR-001 byte check vs merge-base: only _links + WP01 sitemap text differ",
+        "Cycle 2: dropped duplicated _links.source (index+page); asserted absent + route-level pages:false gating test; NFR-001 re-verified",
+        "Review passed (cycle 2): source relation removed from both routes, record source field untouched, gating test non-vacuous (mutation red), suites 56/56, eslint 0 errors"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP06-agent-api-links/review-cycle-2.md",
         "reference": "review-cycle://build-context-and-config-split-01M549SB/WP06-agent-api-links/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1597863,
-      "shell_pid_created_at": "1792221594.76"
+      "role": "reviewer",
+      "shell_pid": 1619158,
+      "shell_pid_created_at": "1792221834.14",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done"
+      }
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M54DS6MES4VSP0JKPN5NDZYQ",
       "last_transition_at": "2026-10-17T07:56:19.470408+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "ADR-0058, _links/env/published docs, CHANGELOG, T026 gates all pass (config.ts 936 lines, exports identical, NFR-001 byte-identical except example-doc sitemap-path edits and random mermaid ids)",
+        "Review passed: NFR-001 re-verified (merge-base x2 byte-identical; final vs merge-base differs only by _links JSON, WP01 sitemap-index.xml text, and the content-hashed Mermaid id on architecture/overview whose diagram text changed). ADR-0058/CHANGELOG/docs accurate."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/build-context-and-config-split-01M549SB-coord/kitty-specs/build-context-and-config-split-01M549SB/tasks/WP07-adr-docs-changelog/review-cycle-1.md",
         "reference": "review-cycle://build-context-and-config-split-01M549SB/WP07-adr-docs-changelog/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1686157,
-      "shell_pid_created_at": "1792222692.15"
+      "role": "reviewer",
+      "shell_pid": 1740566,
+      "shell_pid_created_at": "1792223328.17",
+      "subtasks": {
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done",
+        "T026": "done"
+      }
     }
   }
 }

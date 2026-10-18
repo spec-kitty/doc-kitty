@@ -12,17 +12,18 @@ subtasks:
 - T001
 - T002
 - T003
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: curator-carla
 authoritative_surface: docs/adr/
 create_intent:
 - docs/adr/0030-markua-preprocess-to-directive.md
 execution_mode: code_change
+lane: planned
+model: sonnet
 owned_files:
 - docs/adr/0030-markua-preprocess-to-directive.md
-agent_profile: curator-carla
-agent: claude
-model: sonnet
 role: implementer
 tags: []
 tracker_refs: []

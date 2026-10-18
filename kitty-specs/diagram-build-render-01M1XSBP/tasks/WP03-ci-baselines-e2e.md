@@ -23,6 +23,7 @@ agent_profile: implementer-ivan
 authoritative_surface: tests/a11y/diagram.spec.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - .github/workflows/ci.yml
 - .github/workflows/deploy.yml

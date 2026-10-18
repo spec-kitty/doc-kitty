@@ -33,6 +33,7 @@ create_intent:
 - src/layouts/Default.astro
 - src/layouts/kind-layouts.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/components/Head.astro
 - src/components/PageTitle.astro

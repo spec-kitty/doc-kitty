@@ -29,6 +29,7 @@ agent_profile: node-norris
 authoritative_surface: src/lib/vocabulary-core.mjs
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: ''
 owned_files:
 - src/lib/vocabulary-core.mjs

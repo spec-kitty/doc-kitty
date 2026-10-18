@@ -26,6 +26,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/metadata.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/metadata.ts
 - src/lib/routes/shared.ts

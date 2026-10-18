@@ -17,6 +17,7 @@ authoritative_surface: docs/
 create_intent:
 - docs/architecture/diagrams.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/plans/features/diagrams.md
 - docs/architecture/diagrams.md

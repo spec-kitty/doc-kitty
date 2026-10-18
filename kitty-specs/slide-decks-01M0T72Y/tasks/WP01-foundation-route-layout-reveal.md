@@ -21,11 +21,11 @@ subtasks:
 - T005
 - T006
 - T007
+agent: claude
 history:
 - '2026-08-24: authored by /spec-kitty.tasks'
 - '2026-08-24: post-tasks squad remediation (URL-parity helper, CSS-isolation mechanism, AA hard gate, BA-8 test, draft Pagefind, astro.config owner)'
 agent_profile: frontend-freddy
-agent: claude
 authoritative_surface: src/layouts/
 create_intent:
 - src/layouts/DeckLayout.astro
@@ -35,6 +35,7 @@ create_intent:
 - example/src/pages/presentations/[...slug].astro
 - example/docs/presentations/draft-preview.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/layouts/DeckLayout.astro
 - src/lib/deck/reveal-init.client.ts

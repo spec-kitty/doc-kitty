@@ -30,6 +30,7 @@ agent_profile: frontend-freddy
 authoritative_surface: src/lib/metadata.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/metadata.ts

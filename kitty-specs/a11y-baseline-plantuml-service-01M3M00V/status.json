@@ -4,7 +4,7 @@
   "materialized_at": "2026-09-28T13:17:09.873799+00:00",
   "mission_number": "",
   "mission_slug": "a11y-baseline-plantuml-service-01M3M00V",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -30,7 +30,17 @@
         "verdict": "approved"
       },
       "shell_pid": 3332839,
-      "shell_pid_created_at": "1790600219.28"
+      "shell_pid_created_at": "1790600219.28",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      },
+      "tracker_refs": [
+        "#106"
+      ]
     }
   }
 }

@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-10-18T18:23:44.239111+00:00",
+  "friendly_name": "starlight migration 01M57Y2C",
+  "mission_id": "01M5843HMT094EW212V4SY0SRF",
+  "mission_number": "",
+  "mission_slug": "astro7-starlight-migration-01M57Y2C",
+  "mission_type": "research",
+  "slug": "astro7-starlight-migration-01M57Y2C",
+  "status_phase": "1",
+  "target_branch": "main"
+}

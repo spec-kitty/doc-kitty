@@ -20,11 +20,14 @@ authoritative_surface: tests/consumption/scripts/
 create_intent:
 - tests/consumption/scripts/assert-consumer-artifacts.mjs
 execution_mode: code_change
+lane: planned
+mission_id: 01M22ZF2KP2Y0DM6M4YBFJ31CC
 owned_files:
 - tests/consumption/scripts/assert-consumer-artifacts.mjs
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP04
 ---
 
 ## ⚡ Do This First: Load Agent Profile

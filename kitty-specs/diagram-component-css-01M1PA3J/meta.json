@@ -18,7 +18,7 @@
   "flattened": true,
   "friendly_name": "Diagram markup + component-CSS delivery fixes",
   "mission_id": "01M1PA3JC2SX50KXRS4C60ZAQ5",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "diagram-component-css-01M1PA3J",
   "mission_type": "software-dev",
   "pr_bound": true,

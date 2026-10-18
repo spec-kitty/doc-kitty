@@ -22,6 +22,7 @@ authoritative_surface: src/scripts/
 create_intent:
 - src/scripts/assert-no-broken-links.mjs
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/assert-no-broken-links.mjs
 - src/scripts/check-links.mjs

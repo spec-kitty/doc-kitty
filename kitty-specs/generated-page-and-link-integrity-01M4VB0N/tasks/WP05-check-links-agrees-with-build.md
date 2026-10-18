@@ -24,6 +24,7 @@ agent_profile: node-norris
 authoritative_surface: src/scripts/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/check-links.mjs
 - src/tests/check-links-tightened.test.ts

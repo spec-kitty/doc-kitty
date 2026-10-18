@@ -33,6 +33,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/config.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/package.json
 - src/lib/config.ts

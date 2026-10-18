@@ -42,6 +42,7 @@ create_intent:
 - src/tests/okf-export.test.ts
 - src/tests/fixtures/okf-export/
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/okf-export/core.mjs

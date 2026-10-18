@@ -30,6 +30,7 @@ agent_profile: randy-reducer
 authoritative_surface: src/tests/gherkin-include.test.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/tests/gherkin-parse.test.ts
 - src/tests/gherkin-select.test.ts

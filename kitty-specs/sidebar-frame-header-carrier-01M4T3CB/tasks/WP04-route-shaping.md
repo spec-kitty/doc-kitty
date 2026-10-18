@@ -36,6 +36,7 @@ create_intent:
 - src/tests/route-shaping.test.ts
 - src/tests/sidebar-build-html.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/route-shaping.ts
 - src/lib/route-middleware.ts

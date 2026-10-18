@@ -21,6 +21,7 @@ create_intent:
 - docs/adr/0038-decks-markua-capable.md
 - docs/changelog/2026-09-06-markua-decks.md
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - docs/architecture/markua.md

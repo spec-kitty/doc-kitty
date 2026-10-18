@@ -18,7 +18,7 @@
   "flattened": true,
   "friendly_name": "Post-Markua Hardening",
   "mission_id": "01M18HD2G0ZEW57XYN24BV7SQT",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "post-markua-hardening-01M18HD2",
   "mission_type": "software-dev",
   "pr_bound": true,

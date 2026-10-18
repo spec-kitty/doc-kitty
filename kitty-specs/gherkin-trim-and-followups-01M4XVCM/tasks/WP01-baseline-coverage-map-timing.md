@@ -26,12 +26,15 @@ history:
 agent_profile: planner-priti
 authoritative_surface: kitty-specs/gherkin-trim-and-followups-01M4XVCM/research/coverage-map.md
 execution_mode: planning_artifact
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - kitty-specs/gherkin-trim-and-followups-01M4XVCM/research/baseline.md
 - kitty-specs/gherkin-trim-and-followups-01M4XVCM/research/coverage-map.md
 - kitty-specs/gherkin-trim-and-followups-01M4XVCM/research/count-lines.mjs
 role: planner
+wp_code: WP01
 ---
 # WP01 — Baseline re-measure, coverage map and suite timing
 

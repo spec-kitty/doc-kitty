@@ -25,6 +25,7 @@ authoritative_surface: src/lib/remark/plantuml-meta.internal.ts
 create_intent:
 - src/lib/remark/plantuml-meta.internal.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/remark/plantuml-meta.internal.ts
 role: implementer

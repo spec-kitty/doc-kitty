@@ -36,6 +36,7 @@ create_intent:
 - src/scripts/export-okf.mjs
 - src/lib/okf-export/integration.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/scripts/export-okf.mjs

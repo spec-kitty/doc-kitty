@@ -4,7 +4,7 @@
   "flattened": true,
   "friendly_name": "Audience, Related & External References",
   "mission_id": "01M0S3F42YGRST73Y5R4T15VZA",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "audience-related-external-references-01M0S3F4",
   "mission_type": "software-dev",
   "pr_bound": true,

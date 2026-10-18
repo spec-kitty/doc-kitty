@@ -57,7 +57,7 @@ WP04, WP05 and the link halves of WP06 and WP07 are the #131 work and can be cut
 
 ### WP01 — Shared route rule and one docs walk
 
-**Prompt**: [tasks/WP01-shared-route-rule.md](tasks/WP01-shared-route-rule.md)
+**Prompt**: [tasks/WP01-shared-route-rule.md
 **Goal**: One pure file-to-route rule and one docs walk, used by the loader, draft handling, sidebar inputs and the Gherkin generator. No output change for the example or the fixture.
 **Independent test**: `route-table.test.ts` agreement case is red before the convergence and green after; existing metadata, index-basename, draft-publication and gherkin-generate tests stay green.
 **Dependencies**: none
@@ -75,7 +75,7 @@ T005 Agreement test and parity-test cleanup (WP01)
 
 ### WP02 — Gherkin empty-source guard and allowEmpty
 
-**Prompt**: [tasks/WP02-gherkin-empty-source-guard.md](tasks/WP02-gherkin-empty-source-guard.md)
+**Prompt**: [tasks/WP02-gherkin-empty-source-guard.md
 **Goal**: Stop the build on empty Gherkin sources when generated pages exist; `gherkin.allowEmpty` and `--allow-empty` opt out.
 **Independent test**: `gherkin-generate.test.ts` empty-source case throws and leaves the tree untouched; CLI write mode exits 1, `--allow-empty` exits 0, `--check` unchanged.
 **Dependencies**: WP01
@@ -91,7 +91,7 @@ T010 Scenario tests and a real setting/flag parity assertion (WP02)
 
 ### WP03 — Glossary index file name and guarded prune
 
-**Prompt**: [tasks/WP03-glossary-index-name-and-prune.md](tasks/WP03-glossary-index-name-and-prune.md)
+**Prompt**: [tasks/WP03-glossary-index-name-and-prune.md
 **Goal**: Glossary pages are section indexes on any index-name setting; stale generated pages are removed, authored pages never.
 **Independent test**: Generated files map to routes `glossary` and `glossary/<slug>` under the default index name; existing `index.md` pins stay byte-identical for sites listing `index`.
 **Dependencies**: WP01, WP02
@@ -109,7 +109,7 @@ T015 Update direct callers and pins (WP03)
 
 ### WP04 — Relative Markdown link rewrite at build
 
-**Prompt**: [tasks/WP04-relative-md-link-rewrite.md](tasks/WP04-relative-md-link-rewrite.md)
+**Prompt**: [tasks/WP04-relative-md-link-rewrite.md
 **Goal**: A remark plugin rewrites relative `.md`/`.mdx` links to based routes; the route table rides in the Astro config digest so links never go stale.
 **Independent test**: Through the real Markdown processor, `../adr/0001-x.md#status` from `context/product.md` with base `/site` renders `href="/site/adr/0001-x/#status"`.
 **Dependencies**: WP01, WP03
@@ -125,7 +125,7 @@ T020 Freshness: the table is in the config digest (WP04)
 
 ### WP05 — Source link check agrees with the build
 
-**Prompt**: [tasks/WP05-check-links-agrees-with-build.md](tasks/WP05-check-links-agrees-with-build.md)
+**Prompt**: [tasks/WP05-check-links-agrees-with-build.md
 **Goal**: `dockitty-check-links` accepts a relative Markdown link exactly when the build resolves it; `--strict`, `--index-basename`, reference definitions.
 **Independent test**: On a non-example tree with no flag, a relative link to a page passes and one to a non-page is reported; `check-links docs example/docs` exits 0.
 **Dependencies**: WP01
@@ -143,7 +143,7 @@ T025 Update pinned classifications (WP05)
 
 ### WP06 — Consumer proof on the default index name with both link forms
 
-**Prompt**: [tasks/WP06-consumer-proof.md](tasks/WP06-consumer-proof.md)
+**Prompt**: [tasks/WP06-consumer-proof.md
 **Goal**: The packaged-toolkit consumer site runs on the default index name with both link forms and asserts the glossary routes and rewritten hrefs. Verified by CI only.
 **Independent test**: CI Consumption test passes with the new assertions; `url-baseline.txt` and the lockfile are unchanged.
 **Dependencies**: WP03, WP04, WP05
@@ -158,7 +158,7 @@ T029 Pass `--strict --index-basename` to the proof's source check (WP06)
 
 ### WP07 — Decision record, adopter documentation and changelog
 
-**Prompt**: [tasks/WP07-records-and-docs.md](tasks/WP07-records-and-docs.md)
+**Prompt**: [tasks/WP07-records-and-docs.md
 **Goal**: ADR-0047 amends ADR-0037 and ADR-0048 amends ADR-0026 and ADR-0046, as new records; guide, architecture pages and the 0.3.0 changelog match the shipped behaviour.
 **Independent test**: Frontmatter validation, source link check and ADR-index check pass on `docs`; no existing ADR has a diff.
 **Dependencies**: WP02, WP03, WP04, WP05

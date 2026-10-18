@@ -26,12 +26,15 @@ create_intent:
 - src/scripts/assert-build-artifacts.mjs
 - .github/actions/build-example/action.yml
 execution_mode: code_change
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - src/scripts/assert-build-artifacts.mjs
 - .github/actions/build-example/action.yml
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP03
 ---
 
 ## ⚡ Do This First: Load Agent Profile

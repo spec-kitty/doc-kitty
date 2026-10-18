@@ -18,7 +18,7 @@
   "flattened": true,
   "friendly_name": "Test-Guard Hardening",
   "mission_id": "01M1NDDJKHT8Y56ED8K74GGMN3",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "test-guard-hardening-01M1NDDJ",
   "mission_type": "software-dev",
   "pr_bound": true,

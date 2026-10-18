@@ -3,16 +3,12 @@ project:
   slug: doc-kitty
   node_id: 6ad7860a01ff
   build_id: ac6c4415-b320-5d99-ab63-ff3b72a23cd7
-mission_type_activations:
-- software-dev
-- documentation
-- research
-- plan
 vcs:
   type: git
-agents:
+charter: .kittify/charter/charter.yaml
+tools:
   available:
   - claude
   auto_commit: true
   lint_on_edit: false
-charter: .kittify/charter/charter.yaml
+env_file: ${SPEC_KITTY_HOME}/.kitty.env

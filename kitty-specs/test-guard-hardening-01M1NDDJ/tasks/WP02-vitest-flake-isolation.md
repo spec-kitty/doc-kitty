@@ -18,6 +18,7 @@ agent_profile: node-norris
 authoritative_surface: src/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/vitest.config.ts
 role: implementer

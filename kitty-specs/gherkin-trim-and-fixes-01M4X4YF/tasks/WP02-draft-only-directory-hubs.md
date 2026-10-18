@@ -25,6 +25,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/gherkin/generate.mjs
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/gherkin/generate.mjs
 - src/tests/gherkin-generate.test.ts

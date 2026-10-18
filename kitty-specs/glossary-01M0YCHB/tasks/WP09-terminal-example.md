@@ -37,6 +37,7 @@ create_intent:
 - docs/architecture/glossary.md
 - tests/a11y/glossary.spec.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/.contextive/**
 - example/docs/glossary/**

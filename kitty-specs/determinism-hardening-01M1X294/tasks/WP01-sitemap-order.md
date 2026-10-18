@@ -23,6 +23,7 @@ authoritative_surface: src/lib/sitemap-order.ts
 create_intent:
 - src/lib/sitemap-order.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/sitemap-order.ts
 - src/lib/config.ts

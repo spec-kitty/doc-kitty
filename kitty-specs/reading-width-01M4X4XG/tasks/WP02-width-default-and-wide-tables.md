@@ -35,6 +35,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/styles/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/styles/theme.css
 - src/styles/dk-components.css

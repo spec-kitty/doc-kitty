@@ -23,6 +23,8 @@ create_intent:
 - src/tests/toc-rail-build-html.test.ts
 - tests/a11y/toc-rail.interaction.spec.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M23HNA98TDYF7KDT8MWQBNZA
 owned_files:
 - src/tests/toc-rail-build-html.test.ts
 - tests/a11y/toc-rail.interaction.spec.ts
@@ -30,6 +32,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP04
 ---
 
 ## ⚡ Do This First: Load Agent Profile

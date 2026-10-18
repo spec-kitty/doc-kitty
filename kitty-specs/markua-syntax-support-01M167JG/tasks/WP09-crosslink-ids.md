@@ -14,17 +14,18 @@ subtasks:
 - T036
 - T037
 - T038
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: implementer-ivan
 authoritative_surface: src/tests/markua-crosslink.test.ts
 create_intent:
 - src/tests/markua-crosslink.test.ts
 execution_mode: code_change
+lane: planned
+model: sonnet
 owned_files:
 - src/tests/markua-crosslink.test.ts
-agent_profile: implementer-ivan
-agent: claude
-model: sonnet
 role: implementer
 tags: []
 tracker_refs: []

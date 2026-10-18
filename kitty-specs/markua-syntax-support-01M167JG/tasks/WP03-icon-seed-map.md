@@ -14,19 +14,20 @@ subtasks:
 - T009
 - T010
 - T011
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: implementer-ivan
 authoritative_surface: src/lib/markua/
 create_intent:
 - src/lib/markua/icon-map.ts
 - src/tests/markua-icon-map.test.ts
 execution_mode: code_change
+lane: planned
+model: sonnet
 owned_files:
 - src/lib/markua/icon-map.ts
 - src/tests/markua-icon-map.test.ts
-agent_profile: implementer-ivan
-agent: claude
-model: sonnet
 role: implementer
 tags: []
 tracker_refs: []

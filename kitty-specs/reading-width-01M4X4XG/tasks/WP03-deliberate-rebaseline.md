@@ -23,6 +23,7 @@ agent_profile: implementer-ivan
 authoritative_surface: tests/a11y/layout-geometry.spec.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - tests/a11y/layout-geometry.spec.ts
 - tests/a11y/__screenshots__/visual.spec.ts/**

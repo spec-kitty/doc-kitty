@@ -33,6 +33,7 @@ authoritative_surface: tests/a11y/reading-width.spec.ts
 create_intent:
 - tests/a11y/reading-width.spec.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - tests/a11y/reading-width.spec.ts
 - tests/a11y/routes.ts

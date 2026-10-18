@@ -28,6 +28,7 @@ agent_profile: frontend-freddy
 authoritative_surface: src/lib/toc-rail/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/toc-rail/**
 - src/styles/toc-rail.css

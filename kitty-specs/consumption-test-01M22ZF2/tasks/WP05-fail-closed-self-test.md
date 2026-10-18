@@ -20,11 +20,14 @@ authoritative_surface: tests/consumption/
 create_intent:
 - tests/consumption/consumption-gap.test.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M22ZF2KP2Y0DM6M4YBFJ31CC
 owned_files:
 - tests/consumption/consumption-gap.test.ts
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP05
 ---
 
 ## ⚡ Do This First: Load Agent Profile

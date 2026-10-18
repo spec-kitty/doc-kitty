@@ -27,11 +27,14 @@ authoritative_surface: kitty-specs/ci-cd-pipeline-01M0N1DZ/acceptance.md
 create_intent:
 - kitty-specs/ci-cd-pipeline-01M0N1DZ/acceptance.md
 execution_mode: planning_artifact
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - kitty-specs/ci-cd-pipeline-01M0N1DZ/acceptance.md
 role: reviewer
 tags: []
 tracker_refs: []
+wp_code: WP08
 ---
 
 ## ⚡ Do This First: Load Agent Profile

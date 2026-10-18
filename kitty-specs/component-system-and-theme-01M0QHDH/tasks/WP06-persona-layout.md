@@ -18,15 +18,16 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: frontend-freddy
-role: implementer
 authoritative_surface: src/layouts/
 create_intent:
 - src/layouts/Persona.astro
 - example/docs/personas/example-persona.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/layouts/Persona.astro
 - example/docs/personas/example-persona.md
+role: implementer
 tags: []
 tracker_refs: []
 ---

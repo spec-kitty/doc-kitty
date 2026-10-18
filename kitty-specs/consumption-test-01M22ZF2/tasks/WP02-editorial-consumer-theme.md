@@ -22,12 +22,15 @@ create_intent:
 - tests/consumption/consumer-fixture/src/theme/press.css
 - tests/consumption/scripts/assert-consumer-theme.mjs
 execution_mode: code_change
+lane: planned
+mission_id: 01M22ZF2KP2Y0DM6M4YBFJ31CC
 owned_files:
 - tests/consumption/consumer-fixture/src/theme/**
 - tests/consumption/scripts/assert-consumer-theme.mjs
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP02
 ---
 
 ## ⚡ Do This First: Load Agent Profile

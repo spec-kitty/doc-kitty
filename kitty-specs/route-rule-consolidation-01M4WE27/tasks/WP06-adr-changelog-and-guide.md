@@ -35,6 +35,7 @@ authoritative_surface: docs/adr/0050-route-collisions-and-single-index-setting.m
 create_intent:
 - docs/adr/0050-route-collisions-and-single-index-setting.md
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - docs/adr/0050-route-collisions-and-single-index-setting.md

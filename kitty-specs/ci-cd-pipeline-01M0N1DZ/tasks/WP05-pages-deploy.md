@@ -27,11 +27,14 @@ agent_profile: implementer-ivan
 authoritative_surface: .github/workflows/deploy.yml
 create_intent: []
 execution_mode: code_change
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - .github/workflows/deploy.yml
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP05
 ---
 
 ## ⚡ Do This First: Load Agent Profile

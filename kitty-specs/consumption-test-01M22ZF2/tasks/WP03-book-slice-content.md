@@ -25,6 +25,8 @@ create_intent:
 - tests/consumption/consumer-fixture/docs/_meta/sections.yaml
 - tests/consumption/consumer-fixture/docs/_meta/bibliography.yaml
 execution_mode: code_change
+lane: planned
+mission_id: 01M22ZF2KP2Y0DM6M4YBFJ31CC
 owned_files:
 - tests/consumption/consumer-fixture/docs/rhetoric/**
 - tests/consumption/consumer-fixture/docs/context/**
@@ -34,6 +36,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP03
 ---
 
 ## ⚡ Do This First: Load Agent Profile

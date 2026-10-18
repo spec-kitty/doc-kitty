@@ -34,6 +34,7 @@ agent_profile: frontend-freddy
 authoritative_surface: tests/a11y/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - tests/a11y/deck.interaction.spec.ts
 - tests/a11y/diagram.spec.ts

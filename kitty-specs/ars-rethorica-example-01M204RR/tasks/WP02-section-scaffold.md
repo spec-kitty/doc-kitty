@@ -25,6 +25,7 @@ create_intent:
 - example/docs/rhetoric/book-two/index.md
 - example/docs/rhetoric/book-three/index.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/_meta/sections.yaml
 - example/docs/rhetoric/index.md

@@ -19,14 +19,15 @@ subtasks:
 - T010
 - T011
 - T012
+agent: claude
 history:
 - created by /spec-kitty.tasks
 - amended by post-tasks adversarial squad (F7, F8, F10, F11, F12)
 agent_profile: node-norris
-role: implementer
-agent: claude
 authoritative_surface: src/
+create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/schema.ts
 - src/lib/metadata.ts
@@ -35,7 +36,7 @@ owned_files:
 - src/scripts/new-doc.mjs
 - src/scripts/scaffold.mjs
 - src/tests/metadata.test.ts
-create_intent: []
+role: implementer
 tags: []
 tracker_refs: []
 ---

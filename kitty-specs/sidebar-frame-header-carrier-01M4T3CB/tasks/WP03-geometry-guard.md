@@ -33,6 +33,7 @@ create_intent:
 - tests/a11y/layout-geometry.spec.ts
 - tests/a11y/helpers/geometry.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - tests/a11y/layout-geometry.spec.ts
 - tests/a11y/helpers/geometry.ts

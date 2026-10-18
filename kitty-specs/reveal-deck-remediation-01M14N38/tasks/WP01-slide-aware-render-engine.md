@@ -22,6 +22,7 @@ agent_profile: frontend-freddy
 authoritative_surface: src/lib/deck/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/deck/reveal-init.client.ts
 - src/lib/diagram/diagram-render.client.ts

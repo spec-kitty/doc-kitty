@@ -43,6 +43,8 @@ create_intent:
 - .github/scripts/ci-ok-decision.mjs
 - .github/scripts/ci-ok-decision.test.mjs
 execution_mode: code_change
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - .github/workflows/ci.yml
 - .github/filters.yml
@@ -50,6 +52,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP04
 ---
 
 ## ⚡ Do This First: Load Agent Profile

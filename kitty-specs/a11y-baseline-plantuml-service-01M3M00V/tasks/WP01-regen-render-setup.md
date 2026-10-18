@@ -33,6 +33,7 @@ authoritative_surface: .github/workflows/
 create_intent:
 - src/tests/regen-workflow-render-setup.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - .github/workflows/update-a11y-baselines.yml
 - src/tests/regen-workflow-render-setup.test.ts

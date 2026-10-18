@@ -42,6 +42,7 @@ create_intent:
 - src/tests/schema-validator-parity.test.ts
 - src/tests/fixtures/
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/schema.ts
 - src/lib/metadata.ts

@@ -29,6 +29,7 @@ create_intent:
 - src/lib/with-base.ts
 - src/tests/link-integrity.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/config.ts
 - src/lib/with-base.ts

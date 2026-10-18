@@ -23,15 +23,16 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: node-norris
-role: implementer
 authoritative_surface: src/scripts/
 create_intent:
 - src/tests/config-invariants.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/assert-chrome-artifacts.mjs
 - src/scripts/assert-build-artifacts.mjs
 - src/tests/config-invariants.test.ts
+role: implementer
 tags: []
 tracker_refs: []
 ---

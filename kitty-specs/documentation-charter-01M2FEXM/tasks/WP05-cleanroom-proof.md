@@ -24,6 +24,7 @@ authoritative_surface: tests/consumption/
 create_intent:
 - docs/_meta/charter.yaml
 execution_mode: code_change
+lane: planned
 model: ''
 owned_files:
 - docs/_meta/charter.yaml

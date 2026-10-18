@@ -19,6 +19,7 @@ agent_profile: scribe-sally
 authoritative_surface: AGENTS.md
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - AGENTS.md
 - README.md

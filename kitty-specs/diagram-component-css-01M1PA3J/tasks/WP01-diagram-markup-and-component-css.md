@@ -32,6 +32,7 @@ create_intent:
 - src/styles/dk-components.css
 - src/tests/diagram-pipeline.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/config.ts
 - src/styles/dk-components.css

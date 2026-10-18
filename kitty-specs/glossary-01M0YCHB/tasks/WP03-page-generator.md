@@ -23,6 +23,7 @@ create_intent:
 - src/lib/glossary/generate.ts
 - src/tests/glossary-generate.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/glossary/generate.ts
 - src/tests/glossary-generate.test.ts

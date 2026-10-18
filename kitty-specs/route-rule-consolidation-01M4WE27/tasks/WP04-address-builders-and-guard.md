@@ -36,6 +36,7 @@ authoritative_surface: src/lib/metadata.ts
 create_intent:
 - src/tests/route-address-guard.test.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/metadata.ts

@@ -20,62 +20,131 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 3,
       "lane": "done",
       "last_event_id": "01M1M9KBMHV4EZHNQQ1ZPX08CR",
       "last_transition_at": "2026-09-03T18:48:17.297531+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Implemented flexible section identity: indexBasename option (readmeToIndexId broadened + resolveIndexEntries collision-aware whole-tree resolver) threaded through schema.ts loader, config.ts draftRoutes/sitemap, routes/shared.ts + routes/llms-txt.ts; bare-Node twin added to validate-frontmatter.mjs (isIndexPath/isRootIndex/detectIndexCollisions); check-links/scaffold/new-doc honour the basename. Registry subtypes field added (sections.ts parser + sectionSubtypes/sectionIds), consulted by expectedDocType(ts)/expectedType(mjs) ahead of the built-in table (E-06); built-in table stays fallback (verified no-op on doc-kitty's own tree). Unknown-section-id warning implemented as a capability (expectedTypeForPath warn option / validate() knownSectionIds option, both twins, tested directly) but deliberately NOT wired into the default CLI gate run to avoid false-positive noise on doc-kitty's own long-standing unregistered folders (ops, glossary-demo) -- flagging this as a design decision for the reviewer to confirm. ATDD: index-basename.test.ts + section-rename.test.ts written and verified red for the right reasons via git-stash revert of impl files, now green. Both parity twins (section-type-parity, schema-validator-parity) extended, 0 drift. Verification (all local, this worktree's gates ran cleanly, no env hazard hit): full toolkit suite 684/684 green, eslint clean, validate-frontmatter.mjs (docs + example/docs) green with IDENTICAL warning counts to pre-change baseline, check-links green, example build green (35 pages), assert-build-artifacts PASS (56 checks incl. sidebar/deck/README-as-index), validate-catalog/generate-adr-index/assert-markua-builds all green.",
+        "Cycle 2: dead loadSectionIds removed (src-only 9e173cc). Lane-hygiene catch-22 (planning advanced during reject cycle); forcing per gate escape — review-claim auto-rebase reconciles coordination artifacts.",
+        "Cycle 2 approved: dead loadSectionIds removed (9e173cc); parity/surfaces/NFR-003 verified; CI is test verifier; issue-matrix resolved."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "reference": "Cycle 2 approved: dead loadSectionIds removed (9e173cc); parity/surfaces/NFR-003 verified; CI is test verifier; issue-matrix resolved.",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "shell_pid": 3019634,
-      "shell_pid_created_at": "1788454846.76"
+      "role": "reviewer",
+      "shell_pid": 17814,
+      "shell_pid_created_at": "1788456451.37",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M1M9KKSYSJ10X1B5SPFATTE7",
       "last_transition_at": "2026-09-03T18:48:25.662312+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP02 redirect-coverage: target-aware bare-Node gate + committed baseline + Astro redirects + example indexBasename + CI wiring. Verified via direct node execution (all scenarios pass); vitest unavailable locally, CI verifies. Reviewer: check example-wide indexBasename collapses glossary hub routes (a11y pins suggest latent-fix). Forced past lane-hygiene status.* drift.",
+        "Review passed (opus/reviewer-renata): target-aware gate incl. dead-target+chain+loop (B1 closed); committed self-contained baseline (NFR-005); bare-Node deterministic (NFR-002); CI wired under ci-ok. Glossary-collapse is NOT a regression (indexBasename reaches sitemap filter only, loader unchanged). CARRY-FORWARD to WP04: wire indexBasename into docKittyDocsLoader in example/src/content.config.ts — integration-level line does not drive route collapse."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review passed (opus/reviewer-renata): target-aware gate incl. dead-target+chain+loop (B1 closed); committed self-contained baseline (NFR-005); bare-Node deterministic (NFR-002); CI wired under ci-ok. Glossary-collapse is NOT a regression (indexBasename reaches sitemap filter only, loader unchanged). CARRY-FORWARD to WP04: wire indexBasename into docKittyDocsLoader in example/src/content.config.ts — integration-level line does not drive route collapse.",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "shell_pid": 35446,
-      "shell_pid_created_at": "1788457283.11"
+      "role": "reviewer",
+      "shell_pid": 54684,
+      "shell_pid_created_at": "1788458756.2",
+      "subtasks": {
+        "T009": "done",
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M1M9KVMYK84N8DHQWF83WCT8",
       "last_transition_at": "2026-09-03T18:48:33.694864+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP03 governance ADRs+docs: ADR-0033 (flexible section identity, reverses ADR-0004 in words), ADR-0034 (redirect-coverage), ADR index regen clean, convention/authoring updated, changelog. markdownlint 0 issues; generate-adr-index --check clean. Forced past lane-hygiene status.* drift.",
+        "Review passed (opus/reviewer-renata): ADR-0033 reverses ADR-0004 stance in words (carve-out disciplined); ADR-0002/0004 additive-only (immutability intact); ADR-0034 matches WP02 contract; generate-adr-index --check clean; markdownlint 0; links resolve. Non-blocking follow-up: docs omit indexBasename string[] set form (fold in pre-PR pass)."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review passed (opus/reviewer-renata): ADR-0033 reverses ADR-0004 stance in words (carve-out disciplined); ADR-0002/0004 additive-only (immutability intact); ADR-0034 matches WP02 contract; generate-adr-index --check clean; markdownlint 0; links resolve. Non-blocking follow-up: docs omit indexBasename string[] set form (fold in pre-PR pass).",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "shell_pid": 79429,
-      "shell_pid_created_at": "1788459282.27"
+      "role": "reviewer",
+      "shell_pid": 104789,
+      "shell_pid_created_at": "1788459887.75",
+      "subtasks": {
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done",
+        "T018": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M1M9M3DC78J2CX7ZVWZG2VK1",
       "last_transition_at": "2026-09-03T18:48:41.644152+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP04 worked example: content.config.ts loader wiring (build-confirmed collapse), index.md section, plans/features→plans/missions rename w/ subtypes+sidebar+link-integrity, redirect pass+fail fixtures, 17 tests. Full suite 725/725 green on real build. Forced past lane-hygiene status.* drift.",
+        "Review passed (opus/reviewer-renata): SC-001..004 proven end-to-end. content.config.ts loader wiring collapses index.md; rename data-only (subtypes before built-in table, sidebar renders, zero dangling links B1); redirect gate pass + both failure modes as focused tests (target-aware); NFR-003/004 pinned counts unchanged. 725/725 per implementer; CI verifies. Forced past lane-hygiene."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review passed (opus/reviewer-renata): SC-001..004 proven end-to-end. content.config.ts loader wiring collapses index.md; rename data-only (subtypes before built-in table, sidebar renders, zero dangling links B1); redirect gate pass + both failure modes as focused tests (target-aware); NFR-003/004 pinned counts unchanged. 725/725 per implementer; CI verifies. Forced past lane-hygiene.",
         "reviewer": "Stijn Dejongh",
         "verdict": "approved"
       },
-      "shell_pid": 82526,
-      "shell_pid_created_at": "1788459383.09"
+      "role": "reviewer",
+      "shell_pid": 188757,
+      "shell_pid_created_at": "1788460788.41",
+      "subtasks": {
+        "T019": "done",
+        "T020": "done",
+        "T021": "done",
+        "T022": "done",
+        "T023": "done"
+      }
     }
   }
 }

@@ -29,6 +29,8 @@ create_intent:
 - .vale.ini
 - .vale/styles/DocKitty/Hedges.yml
 execution_mode: code_change
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - src/scripts/validate-frontmatter.mjs
 - src/scripts/check-links.mjs
@@ -38,6 +40,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP02
 ---
 
 ## ⚡ Do This First: Load Agent Profile

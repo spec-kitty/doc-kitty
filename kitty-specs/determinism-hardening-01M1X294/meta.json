@@ -17,7 +17,7 @@
   "flattened": false,
   "friendly_name": "Determinism hardening (#87 + #88)",
   "mission_id": "01M1X294Q0TYGVWAJ2RH8GY8ZC",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "determinism-hardening-01M1X294",
   "mission_type": "software-dev",
   "purpose_context": "Follow-ups from #85, surfaced by its two-build corpus oracle. #87: sitemap-0.xml order is nondeterministic because @astrojs/sitemap serializes Starlight routes unsorted. #88: rankForAgents/llms-txt/hub sorts are only positionally deterministic or locale-exposed, and the code-unit comparator idiom is duplicated. Byte-neutral except the sitemap.",

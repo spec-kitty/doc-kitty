@@ -19,6 +19,7 @@ agent_profile: curator-carla
 authoritative_surface: docs/plans/features/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/plans/features/**
 role: implementer

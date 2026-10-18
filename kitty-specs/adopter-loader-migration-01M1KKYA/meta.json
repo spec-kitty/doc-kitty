@@ -4,7 +4,7 @@
   "flattened": true,
   "friendly_name": "Adopter loader & migration",
   "mission_id": "01M1KKYAR1D3Z5WPRC8Y55F6RY",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "adopter-loader-migration-01M1KKYA",
   "mission_type": "software-dev",
   "pr_bound": true,

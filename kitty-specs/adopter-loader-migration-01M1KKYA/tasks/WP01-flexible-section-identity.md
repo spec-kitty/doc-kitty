@@ -33,6 +33,7 @@ create_intent:
 - src/tests/index-basename.test.ts
 - src/tests/section-rename.test.ts
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - src/lib/metadata.ts

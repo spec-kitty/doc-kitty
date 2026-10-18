@@ -36,6 +36,7 @@ create_intent:
 - src/lib/remark/markua-attributes.ts
 - src/tests/markua-attributes.test.ts
 execution_mode: code_change
+lane: planned
 model: opus
 owned_files:
 - src/lib/remark/markua-attributes.internal.ts

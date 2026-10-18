@@ -24,6 +24,7 @@ authoritative_surface: src/lib/gherkin/scenario-index-check.mjs
 create_intent:
 - src/lib/gherkin/scenario-index-check.mjs
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/gherkin/scenario-index-check.mjs
 - src/lib/config.ts

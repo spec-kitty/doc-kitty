@@ -34,6 +34,8 @@ create_intent:
 - lychee.toml
 - lighthouserc.json
 execution_mode: code_change
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - .github/workflows/nightly.yml
 - lychee.toml
@@ -41,6 +43,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP06
 ---
 
 ## ⚡ Do This First: Load Agent Profile

@@ -32,6 +32,7 @@ authoritative_surface: src/lib/glossary/
 create_intent:
 - docs/changelog/2026-09-06-glossary-term-ux.md
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - src/lib/remark/glossary-term.ts

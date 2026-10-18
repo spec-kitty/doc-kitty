@@ -28,6 +28,7 @@ create_intent:
 - docs/adr/0042-native-documentation-charter.md
 - docs/guides/migrating-to-charter.md
 execution_mode: code_change
+lane: planned
 model: ''
 owned_files:
 - docs/adr/0042-native-documentation-charter.md

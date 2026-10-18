@@ -32,6 +32,7 @@ authoritative_surface: src/scripts/check-links.mjs
 create_intent:
 - src/scripts/site-index-names.mjs
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/scripts/check-links.mjs

@@ -1,6 +1,6 @@
 ---
 work_package_id: WP03
-title: 'Retarget parity tests to the single core (keep coverage, keep genuine two-arm guards) (#49 IC-03)'
+title: Retarget parity tests to the single core (keep coverage, keep genuine two-arm guards) (#49 IC-03)
 dependencies:
 - WP02
 requirement_refs:
@@ -14,19 +14,20 @@ subtasks:
 - T014
 - T015
 - T016
+agent: claude
 history:
 - created by /spec-kitty.tasks
 - amended by post-tasks adversarial squad (F1, F2, F3, F4 — premise corrected)
 agent_profile: node-norris
-role: implementer
-agent: claude
 authoritative_surface: src/tests/
+create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/tests/vocabulary-resolver.test.ts
 - src/tests/section-type-parity.test.ts
 - src/tests/schema-validator-parity.test.ts
-create_intent: []
+role: implementer
 tags: []
 tracker_refs: []
 ---

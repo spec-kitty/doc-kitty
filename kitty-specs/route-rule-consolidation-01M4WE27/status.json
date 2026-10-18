@@ -2,9 +2,9 @@
   "event_count": 52,
   "last_event_id": "01M4WN5YVPA9S1F10MQ7E5WMSH",
   "materialized_at": "2026-10-14T07:31:42.070460+00:00",
-  "mission_number": "",
+  "mission_number": "6",
   "mission_slug": "route-rule-consolidation-01M4WE27",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,104 +20,199 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4WN4YQBVDW46G5JTDHFFJAH",
       "last_transition_at": "2026-10-14T07:31:09.163643+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Index names set once: integration publishes DK_INDEX_BASENAME; loader reads lazily; check-links/validate-frontmatter/redirect-coverage/generate-feature-pages/new-doc/scaffold read site config via site-index-names.mjs; flag must agree. Tests in docs-root-cross-surface + check-links-tightened.",
+        "Review passed: 84 tests green, 10 new tests fail with source reverted, eslint clean. Carry: [dk-gherkin]->[dk-config] prefix (WP06/docs), spawnSync timeout, new-doc/scaffold default changelog entry, assert-build-artifacts EXAMPLE_INDEX_BASENAMES (WP04)."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP01-index-names-set-once/review-cycle-1.md",
         "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP01-index-names-set-once/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1888166,
-      "shell_pid_created_at": "1791959473.99"
+      "role": "reviewer",
+      "shell_pid": 1922902,
+      "shell_pid_created_at": "1791960032.01",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4WN5BG3M7KHRDGB9V56DJY5",
       "last_transition_at": "2026-10-14T07:31:22.243566+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Route-keyed collisions (case-insensitive, drafts count) fatal in build hook, loader, check-links --strict, validator; one formatter; index.feature rejected; pins rewritten",
+        "Review passed: route-keyed collisions fatal across build/loader/check-links --strict/validator per contract; non-vacuity (13 fail on base core); no new tsc errors; draft-publication test pins non-throwing helper output (comment states tree is refused)"
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP02-route-keyed-collisions/review-cycle-1.md",
         "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP02-route-keyed-collisions/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1927589,
-      "shell_pid_created_at": "1791960153.95"
+      "role": "reviewer",
+      "shell_pid": 1981527,
+      "shell_pid_created_at": "1791960719.71",
+      "subtasks": {
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4WN5J3W7H59CJGMHVF6JVCC",
       "last_transition_at": "2026-10-14T07:31:29.020318+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Sidebar on shared walk+route rule; _meta excluded in walk/loader/strict check-links; gherkin-example regression fixed (test env); example dist byte-identical before/after",
+        "Review passed: isIndex change non-vacuous (revert reds route-shaping 'honours the configured index basename'); 298/298 targeted tests; tsc 29 known; _meta walk guard present. Carry: generate-feature-pages discards resolveSiteIndexBasenames().source (silent fallback) -> pre-PR fold; README-only index.md sidebar label change -> WP06 changelog."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP03-sidebar-shared-walk-and-meta/review-cycle-1.md",
         "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP03-sidebar-shared-walk-and-meta/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1995595,
-      "shell_pid_created_at": "1791960988.4"
+      "role": "reviewer",
+      "shell_pid": 2032412,
+      "shell_pid_created_at": "1791961502.65",
+      "subtasks": {
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4WN5RFDDD9NKKB9VA3V73ZK",
       "last_transition_at": "2026-10-14T07:31:35.533476+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Builders onto routeOfSlug/hrefOfSlug, guard test, assert-build-artifacts derives index names; NFR-001 zero-diff, NFR-002 byte-identical, NFR-004 -3%",
+        "Review passed: 120/120 targeted tests, guard+llms tests go red on reverted surface, lint 0 errors, tsc 29 baseline, example config resolves cwd-independently"
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP04-address-builders-and-guard/review-cycle-1.md",
         "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP04-address-builders-and-guard/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 2039895,
-      "shell_pid_created_at": "1791961693.78"
+      "role": "reviewer",
+      "shell_pid": 2060409,
+      "shell_pid_created_at": "1791962162.86",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done",
+        "T022": "done",
+        "T023": "done"
+      }
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4WN5575KC68RTK6H4YJZN3W",
       "last_transition_at": "2026-10-14T07:31:15.813183+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Guard linkReference+definition in isGuardType; red-first tests via remark-parse; skipped ref link matches inline (slot not consumed)",
+        "Cycle 1 fix: test header comment; eslint verified",
+        "Review passed (reviewer-renata, opus): guard + tests verified non-vacuous; cycle-1 header comment fixed; eslint exit 0; 31/31"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP05-glossary-reference-link-guard/review-cycle-2.md",
         "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP05-glossary-reference-link-guard/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1914517,
-      "shell_pid_created_at": "1791959779.92"
+      "role": "reviewer",
+      "shell_pid": 1918816,
+      "shell_pid_created_at": "1791959876.97",
+      "subtasks": {
+        "T024": "done",
+        "T025": "done",
+        "T026": "done"
+      }
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4WN5YVPA9S1F10MQ7E5WMSH",
       "last_transition_at": "2026-10-14T07:31:42.070460+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "ADR-0050, changelog (comms-cleo rewrite + issue refs), guides, convention.md",
+        "Cycle 1: --index-basename / new-doc --section / scaffold flags corrected in CHANGELOG + ADR-0050",
+        "Review passed (cycle 1): CHANGELOG/ADR-0050 flag fixes verified against new-doc.mjs/scaffold.mjs; guide hunks consistent with code; check-links + markdownlint green"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/route-rule-consolidation-01M4WE27-coord/kitty-specs/route-rule-consolidation-01M4WE27/tasks/WP06-adr-changelog-and-guide/review-cycle-2.md",
         "reference": "review-cycle://route-rule-consolidation-01M4WE27/WP06-adr-changelog-and-guide/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 2077512,
-      "shell_pid_created_at": "1791962733.11"
+      "role": "reviewer",
+      "shell_pid": 2078965,
+      "shell_pid_created_at": "1791962785.82",
+      "subtasks": {
+        "T027": "done",
+        "T028": "done",
+        "T029": "done",
+        "T030": "done",
+        "T031": "done"
+      }
     }
   }
 }

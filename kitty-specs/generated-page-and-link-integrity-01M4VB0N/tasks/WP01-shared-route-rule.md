@@ -26,6 +26,7 @@ create_intent:
 - src/lib/docs-walk.mjs
 - src/tests/route-table.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/vocabulary-core.mjs
 - src/lib/docs-walk.mjs

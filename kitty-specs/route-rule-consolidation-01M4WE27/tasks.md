@@ -53,7 +53,7 @@ Shared-file ownership: `src/scripts/check-links.mjs` and `src/lib/schema.ts` -> 
 
 ### WP01 — Index names set once
 
-**Prompt**: [tasks/WP01-index-names-set-once.md](tasks/WP01-index-names-set-once.md)
+**Prompt**: [tasks/WP01-index-names-set-once.md
 **Goal**: index names set in `defineDocKittyIntegrations` only; the loader and `dockitty-check-links` read them; disagreements fail with both values.
 **Priority**: P2 (spec US3), but first in sequence: WP02's strict check uses these names.
 **Independent test**: config-only `['index']` fixture: loader routes `x/index.md` at `/x/`, and `check-links --strict` with no flag agrees; a disagreeing flag exits 2, a matching one passes.
@@ -76,7 +76,7 @@ T006 Example content config and callers on the single setting (WP01)
 
 ### WP02 — Route-keyed collisions stop the build and the strict check
 
-**Prompt**: [tasks/WP02-route-keyed-collisions.md](tasks/WP02-route-keyed-collisions.md)
+**Prompt**: [tasks/WP02-route-keyed-collisions.md
 **Goal**: two files on one route fail the loader, the build and `check-links --strict` with one message; `index.feature` rejected.
 **Priority**: P1 (spec US2)
 **Independent test**: `x/README.md` + `x/index.md` on a `README`-only site fails the loader and the strict check naming both; `x/README.md` alone passes.
@@ -99,7 +99,7 @@ T012 Rewrite winner/demote pins and the validator (WP02)
 
 ### WP03 — Sidebar on the shared walk and route rule, `_meta` excluded
 
-**Prompt**: [tasks/WP03-sidebar-shared-walk-and-meta.md](tasks/WP03-sidebar-shared-walk-and-meta.md)
+**Prompt**: [tasks/WP03-sidebar-shared-walk-and-meta.md
 **Goal**: the sidebar decides folder index pages with `routeOfSlug` and reads `walkMarkdownPaths`; `_meta` excluded everywhere.
 **Priority**: P2 (spec US4)
 **Independent test**: `['index']`, draft `x/README.md` + published `x/index.md`, drafts off: folder labelled with `index.md`'s title; `_meta/x.md` gets no route while `_meta/bibliography.yaml` still loads.
@@ -123,7 +123,7 @@ T017 Clean up readers of the old model (WP03)
 
 ### WP04 — Address builders onto the shared route rule, with a guard
 
-**Prompt**: [tasks/WP04-address-builders-and-guard.md](tasks/WP04-address-builders-and-guard.md)
+**Prompt**: [tasks/WP04-address-builders-and-guard.md
 **Goal**: every listing surface gives the served address for `/index` ids and the root; a guard test prevents hand-built addresses.
 **Priority**: P1 (spec US1)
 **Independent test**: id `guide/index` through RSS, `llms.txt`, scenario index, agent record, `resolveRelated` and the Hub helper shows `/guide/`; `guide/setup` unchanged; the guard flags a planted `` `/${slug}/` ``.
@@ -146,7 +146,7 @@ T023 Sweep remaining template addresses (WP04)
 
 ### WP05 — Glossary autolinker skips reference-style link text
 
-**Prompt**: [tasks/WP05-glossary-reference-link-guard.md](tasks/WP05-glossary-reference-link-guard.md)
+**Prompt**: [tasks/WP05-glossary-reference-link-guard.md
 **Goal**: no glossary link inside `[term][ref]`, `[term][]`, `[term]` or a definition; plain text still autolinked.
 **Priority**: P3 (spec US5)
 **Independent test**: one fixture page: the reference link holds one link; the plain-text occurrence is autolinked.
@@ -168,7 +168,7 @@ T026 First-per-section parity with inline links (WP05)
 
 ### WP06 — ADR-0050, changelog and consumer guide
 
-**Prompt**: [tasks/WP06-adr-changelog-and-guide.md](tasks/WP06-adr-changelog-and-guide.md)
+**Prompt**: [tasks/WP06-adr-changelog-and-guide.md
 **Goal**: decisions recorded in ADR-0050; 0.3.0 Breaking/Fixed entries an adopter can act on; consumer guide on the single setting.
 **Priority**: P1 (release blocker for 0.3.0, C-003)
 **Independent test**: docs gates green; ADR index regenerated; comms-cleo review of the changelog (C-006) passes before the PR is ready.

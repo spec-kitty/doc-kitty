@@ -30,6 +30,7 @@ create_intent:
 - docs/adr/0047-relative-markdown-links.md
 - docs/adr/0048-generated-page-names-and-empty-sources.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/adr/0047-relative-markdown-links.md
 - docs/adr/0048-generated-page-names-and-empty-sources.md

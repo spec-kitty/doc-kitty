@@ -3,13 +3,14 @@
   "flattened": false,
   "friendly_name": "Component system + swappable theme",
   "mission_id": "01M0QHDH2H1SM31VEYRD8G1D8P",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "component-system-and-theme-01M0QHDH",
   "mission_type": "software-dev",
   "pr_bound": true,
   "purpose_context": "doc-kitty is built to become a general documentation template. Its look and chrome must be a swappable, layered concern so any product line can apply its own brand without copying and diverging the toolkit. This mission builds that theme layer (default -> brand -> consumer), ships the first real brand theme end-to-end to prove the contract, and stands up the accessibility/visual test harness that keeps every theme WCAG-conformant.",
-  "purpose_tldr": "Let a consumer rebrand the docsite by selecting a theme \u2014 no fork required \u2014 and ship the first brand theme (Spec Kitty).",
+  "purpose_tldr": "Let a consumer rebrand the docsite by selecting a theme — no fork required — and ship the first brand theme (Spec Kitty).",
   "slug": "component-system-and-theme-01M0QHDH",
+  "status_phase": "1",
   "target_branch": "feat/component-system-and-theme",
   "topology": "coord"
 }

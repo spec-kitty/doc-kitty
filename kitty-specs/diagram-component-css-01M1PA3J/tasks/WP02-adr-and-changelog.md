@@ -18,6 +18,7 @@ agent_profile: curator-carla
 authoritative_surface: docs/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/adr/**
 - docs/changelog/**

@@ -18,21 +18,22 @@ subtasks:
 - T006
 - T007
 - T008
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: frontend-freddy
 authoritative_surface: src/lib/remark/markua-normalise
 create_intent:
 - src/lib/remark/markua-normalise.internal.ts
 - src/lib/remark/markua-normalise.ts
 - src/tests/markua-normalise.test.ts
 execution_mode: code_change
+lane: planned
+model: opus
 owned_files:
 - src/lib/remark/markua-normalise.internal.ts
 - src/lib/remark/markua-normalise.ts
 - src/tests/markua-normalise.test.ts
-agent_profile: frontend-freddy
-agent: claude
-model: opus
 role: implementer
 tags: []
 tracker_refs: []

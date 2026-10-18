@@ -32,6 +32,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/vocabulary-core.mjs
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/vocabulary-core.mjs

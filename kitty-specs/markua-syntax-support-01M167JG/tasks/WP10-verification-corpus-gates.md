@@ -37,6 +37,7 @@ create_intent:
 - example/docs/guides/palm-trees.svg
 - tests/a11y/markua.spec.ts
 execution_mode: code_change
+lane: planned
 model: opus
 owned_files:
 - example/docs/guides/markua-showcase.md

@@ -12,18 +12,19 @@ subtasks:
 - T045
 - T046
 - T047
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: curator-carla
 authoritative_surface: docs/architecture/markua.md
 create_intent:
 - docs/architecture/markua.md
 execution_mode: code_change
+lane: planned
+model: sonnet
 owned_files:
 - docs/architecture/markua.md
 - docs/plans/design-readiness.md
-agent_profile: curator-carla
-agent: claude
-model: sonnet
 role: implementer
 tags: []
 tracker_refs: []

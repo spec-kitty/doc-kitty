@@ -22,6 +22,7 @@ agent_profile: frontend-freddy
 authoritative_surface: src/layouts/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/layouts/DeckLayout.astro
 - src/styles/dk-reveal-theme.css

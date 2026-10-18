@@ -43,6 +43,8 @@ create_intent:
 - tests/consumption/consumer-fixture/docs/guides/getting-started.md
 - tests/consumption/scripts/run-consumption-test.mjs
 execution_mode: code_change
+lane: planned
+mission_id: 01M22ZF2KP2Y0DM6M4YBFJ31CC
 owned_files:
 - tests/consumption/consumer-fixture/package.json
 - tests/consumption/consumer-fixture/pnpm-workspace.yaml
@@ -58,6 +60,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP01
 ---
 
 ## ⚡ Do This First: Load Agent Profile

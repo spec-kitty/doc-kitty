@@ -27,6 +27,7 @@ authoritative_surface: src/lib/docs-index.ts
 create_intent:
 - src/lib/docs-index.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/docs-index.ts
 - src/lib/routes/shared.ts

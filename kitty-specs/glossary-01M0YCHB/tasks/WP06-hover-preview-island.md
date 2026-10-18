@@ -19,6 +19,7 @@ authoritative_surface: src/lib/glossary/preview.client.ts
 create_intent:
 - src/lib/glossary/preview.client.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/glossary/preview.client.ts
 role: implementer

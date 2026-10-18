@@ -17,6 +17,7 @@ agent_profile: lexical-larry
 authoritative_surface: example/.contextive/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/.contextive/definitions.yaml
 role: implementer

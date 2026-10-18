@@ -25,6 +25,7 @@ agent_profile: implementer-ivan
 authoritative_surface: docs/
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - README.md

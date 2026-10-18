@@ -26,6 +26,7 @@ create_intent:
 - src/lib/rehype/diagram-figure.ts
 - src/tests/diagram-meta.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/remark/diagram-meta.ts
 - src/lib/remark/diagram-meta.internal.ts

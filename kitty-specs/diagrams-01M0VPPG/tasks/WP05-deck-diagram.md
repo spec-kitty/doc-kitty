@@ -17,6 +17,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/layouts/DeckLayout.astro
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/layouts/DeckLayout.astro
 - example/docs/presentations/showcase-deck.md

@@ -18,6 +18,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/rehype/
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - src/lib/rehype/markua-figure.ts

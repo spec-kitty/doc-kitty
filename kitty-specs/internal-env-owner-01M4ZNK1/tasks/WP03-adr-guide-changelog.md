@@ -32,6 +32,7 @@ authoritative_surface: docs/
 create_intent:
 - docs/adr/0057-internal-env-handoff-seam.md
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - docs/adr/0057-internal-env-handoff-seam.md

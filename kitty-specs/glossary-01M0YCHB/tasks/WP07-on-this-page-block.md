@@ -15,6 +15,7 @@ subtasks:
 - T024
 - T025
 - T036
+agent: claude
 history:
 - '2026-08-26: authored by /spec-kitty.tasks'
 - '2026-08-26: post-tasks squad A-1/A-2/A-3 remediation'
@@ -23,11 +24,11 @@ authoritative_surface: src/components/slots/OnThisPage.astro
 create_intent:
 - src/components/slots/OnThisPage.astro
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/components/slots/OnThisPage.astro
 - src/components/MarkdownContent.astro
 role: implementer
-agent: claude
 tags: []
 tracker_refs: []
 ---

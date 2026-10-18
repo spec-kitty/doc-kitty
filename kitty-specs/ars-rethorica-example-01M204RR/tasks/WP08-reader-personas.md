@@ -19,6 +19,7 @@ create_intent:
 - example/docs/context/audience/rhetoric-student.md
 - example/docs/context/audience/rhetoric-practitioner.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/context/audience/rhetoric-student.md
 - example/docs/context/audience/rhetoric-practitioner.md

@@ -32,6 +32,7 @@ create_intent:
 - src/lib/integrations/markua.ts
 - src/tests/helpers/integration-names.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/integrations/gherkin.ts

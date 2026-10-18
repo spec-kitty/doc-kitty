@@ -43,6 +43,7 @@ create_intent:
 - src/lib/integrations/content-graph.ts
 - src/tests/content-graph.test.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/docs-index.ts

@@ -41,7 +41,7 @@ WP01 ─► WP02 ─┬─► WP03
 
 ## WP01 — Acceptance spec and wide-table fixture (red first)
 
-**Prompt**: [tasks/WP01-acceptance-spec-red.md](tasks/WP01-acceptance-spec-red.md)
+**Prompt**: [tasks/WP01-acceptance-spec-red.md
 **Goal**: encode the spec's layout scenarios as a Playwright spec, with a real wide table in the example, committed while the current layout fails them.
 **Priority**: P1. **Independent test**: `playwright test tests/a11y/reading-width.spec.ts --project=light` is red on the current CSS for the growth and width cases, green for the unchanged cases.
 **Dependencies**: none.
@@ -57,7 +57,7 @@ T006 Show the spec red on the current layout; record counts (WP01)
 
 ## WP02 — Width default and wide-table rule
 
-**Prompt**: [tasks/WP02-width-default-and-wide-tables.md](tasks/WP02-width-default-and-wide-tables.md)
+**Prompt**: [tasks/WP02-width-default-and-wide-tables.md
 **Goal**: change the default to 52rem, add `--dk-width-wide: 80rem`, and add the container and table rules so WP01's spec passes.
 **Priority**: P1. **Independent test**: WP01's spec green; `pnpm test`, `assert-chrome-artifacts`, the axe and no-scroll specs green.
 **Dependencies**: WP01.
@@ -73,7 +73,7 @@ T012 Acceptance spec green; full a11y lane and unit suites (WP02)
 
 ## WP03 — Deliberate rebaseline
 
-**Prompt**: [tasks/WP03-deliberate-rebaseline.md](tasks/WP03-deliberate-rebaseline.md)
+**Prompt**: [tasks/WP03-deliberate-rebaseline.md
 **Goal**: move the column ratchet and the two visual baselines to the new layout, with evidence.
 **Priority**: P1. **Independent test**: `layout-geometry.spec.ts` and `visual.spec.ts` green in CI.
 **Dependencies**: WP02.
@@ -86,7 +86,7 @@ T015 Confirm the whole layout spec and the visual spec green (WP03)
 
 ## WP04 — Documentation and release note
 
-**Prompt**: [tasks/WP04-docs-adr-changelog.md](tasks/WP04-docs-adr-changelog.md)
+**Prompt**: [tasks/WP04-docs-adr-changelog.md
 **Goal**: document both tokens and the restore line, record the decision in ADR-0052, add the changelog entry.
 **Priority**: P2. **Independent test**: docs validators green; the changelog names `52rem` and `--dk-width-content: 45rem`.
 **Dependencies**: WP02.

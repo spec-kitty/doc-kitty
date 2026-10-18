@@ -2,9 +2,9 @@
   "event_count": 38,
   "last_event_id": "01M55QQVAGWPVR31FZ0T1CK15A",
   "materialized_at": "2026-10-17T20:09:35.312765+00:00",
-  "mission_number": "",
+  "mission_number": "10",
   "mission_slug": "gate-config-hardening-01M55KMR",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,70 +20,129 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M55QQ7VS903RY5H6N2NTC186",
       "last_transition_at": "2026-10-17T20:09:15.385297+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Draft gates evaluate astro.config via shared site-config-eval; fail closed exit 2; text sniff retired",
+        "Cycle 2: redirect-coverage --docs fails closed on nested config via shared assertEvaluatedConfigDecides; check-links uses findAstroConfig",
+        "Review passed (cycle 2): nested --docs below unevaluated config now exits 2 via shared assertEvaluatedConfigDecides; check-links uses findAstroConfig; new test red on fix revert; redirect-coverage 26, draft-publication 77, check-links-tightened 64 green"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP01-draft-gates-evaluate-config/review-cycle-2.md",
         "reference": "review-cycle://gate-config-hardening-01M55KMR/WP01-draft-gates-evaluate-config/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 3464433,
-      "shell_pid_created_at": "1792265761.73"
+      "role": "reviewer",
+      "shell_pid": 3473137,
+      "shell_pid_created_at": "1792265901.76",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M55QQMVGHZVQ02214J4W6A93",
       "last_transition_at": "2026-10-17T20:09:28.688279+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "--index-path flag on artifact gate; scan = index + page links + dirname; #103 test extended; PlantUML local failure pre-existing",
+        "Cycle 2: transitive _links scan (index top-level targets walked under custom --index-path), #103 bibliography dangling case, PlantUML-tolerant exit-0 assertion moved last",
+        "Review passed (cycle 2): transitive _links walk bounded by visited set, in-site .json only; #103 bibliography case non-vacuous (fails on f6e0ae64); default scan parity 385/76. Non-blocking: PlantUML exit-0 skip is presence-based (CI still enforces); %2F-encoded traversal edge in pre-existing builtRelOf."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP02-artifact-gate-index-path/review-cycle-2.md",
         "reference": "review-cycle://gate-config-hardening-01M55KMR/WP02-artifact-gate-index-path/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 3504438,
-      "shell_pid_created_at": "1792266428.76"
+      "role": "reviewer",
+      "shell_pid": 3519978,
+      "shell_pid_created_at": "1792266591.02",
+      "subtasks": {
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M55QQEBPWKQDAY77H7Z3RQNV",
       "last_transition_at": "2026-10-17T20:09:22.038309+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "sitemapDraftFilter moved verbatim to integrations/route-shaping.ts, re-exported from config; export-list pin + identity check added; tests 34/34, lint clean, tsc 29->29",
+        "Review passed: verbatim move of sitemapDraftFilter to integrations/route-shaping.ts, leaf-module imports only (no ../config, no cycle), unused config.ts imports dropped, 22-name export list matches a76c5563; 34/34 green, non-vacuity confirmed"
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP03-sitemap-filter-move/review-cycle-1.md",
         "reference": "review-cycle://gate-config-hardening-01M55KMR/WP03-sitemap-filter-move/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 3321301,
-      "shell_pid_created_at": "1792265168.06"
+      "role": "reviewer",
+      "shell_pid": 3417100,
+      "shell_pid_created_at": "1792265319.57",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M55QQVAGWPVR31FZ0T1CK15A",
       "last_transition_at": "2026-10-17T20:09:35.312765+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "ADR-0058 amended, consumer guide and CHANGELOG (#172, #173) written as built; links/adr-index/markdownlint clean; NFR-002 build diff blocked by env (no usable install), reasoned fallback given",
+        "Review passed: ADR-0058 amendment, consumer guide and CHANGELOG match the code (3 gates, exit 2, six names in Astro order, 30 s timeout, --astro-config/--env-dir, updateConfig + mode limits, dist-relative --index-path with self-derived base and transitive _links walk); validate:links and validate:adr-index green; no sitemapDraftFilter/config.ts contradiction. Non-blocking: a single leading '/' in --index-path is stripped, not refused, so 'an absolute path exits 2' overstates it. NFR-002 dist diff deferred to closeout."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "kitty-specs/gate-config-hardening-01M55KMR/tasks/WP04-adr-guide-changelog/review-cycle-1.md",
         "reference": "review-cycle://gate-config-hardening-01M55KMR/WP04-adr-guide-changelog/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 3526136,
-      "shell_pid_created_at": "1792266726.5"
+      "role": "reviewer",
+      "shell_pid": 3576092,
+      "shell_pid_created_at": "1792267454.84",
+      "subtasks": {
+        "T013": "done",
+        "T014": "done",
+        "T015": "done"
+      }
     }
   }
 }

@@ -18,21 +18,22 @@ subtasks:
 - T014
 - T015
 - T016
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: frontend-freddy
 authoritative_surface: src/lib/remark/markua-callouts
 create_intent:
 - src/lib/remark/markua-callouts.internal.ts
 - src/lib/remark/markua-callouts.ts
 - src/tests/markua-callouts.test.ts
 execution_mode: code_change
+lane: planned
+model: opus
 owned_files:
 - src/lib/remark/markua-callouts.internal.ts
 - src/lib/remark/markua-callouts.ts
 - src/tests/markua-callouts.test.ts
-agent_profile: frontend-freddy
-agent: claude
-model: opus
 role: implementer
 tags: []
 tracker_refs: []

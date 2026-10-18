@@ -35,6 +35,7 @@ authoritative_surface: src/lib/internal-env.mjs
 create_intent:
 - src/lib/internal-env.mjs
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/internal-env.mjs

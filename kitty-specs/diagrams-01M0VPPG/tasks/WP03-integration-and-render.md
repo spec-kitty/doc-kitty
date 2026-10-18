@@ -26,6 +26,7 @@ create_intent:
 - src/lib/diagram/diagram-render.client.ts
 - src/tests/diagram-preset.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/config.ts
 - src/lib/diagram/diagram-render.client.ts

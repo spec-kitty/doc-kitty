@@ -25,6 +25,7 @@ create_intent:
 - src/lib/markua/deck-guard.ts
 - src/tests/deck-guard.test.ts
 execution_mode: code_change
+lane: planned
 model: claude-opus-4-8
 owned_files:
 - src/lib/deck/is-presentation.ts

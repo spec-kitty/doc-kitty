@@ -28,6 +28,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/glossary/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/glossary/generate.ts
 - src/tests/glossary-generate.test.ts

@@ -2,9 +2,9 @@
   "event_count": 88,
   "last_event_id": "01M56ZF1FXAWSJAJYBZTZEFWT8",
   "materialized_at": "2026-10-18T07:43:49.757542+00:00",
-  "mission_number": "",
+  "mission_number": "11",
   "mission_slug": "okf-alignment-content-graph-01M56PNW",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,155 +20,296 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZDDWPVZH4G7V23525WZ00",
       "last_transition_at": "2026-10-18T07:42:56.918330+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review. Red-first: 12 new parity rows failed before impl. vitest (parity, okf-status-mapping, vocabulary-single-source, type-registry-authority) 95 pass; full suite 2279 pass, 61 fail all in astro-build tests (pnpm refuses install in worktree, env-only; direct astro build of example exit 0). eslint on changed files exit 0. tsc --noEmit: no errors in changed files (29 pre-existing: astro:content, HastNode). validate-frontmatter docs + example/docs exit 0 with advisory warnings. Also touched type-registry-authority.test.ts (date-only fixture -> UTC instant).",
+        "Review passed: shared OKF rules single-owned, both twins + validator copies wired, FR-023/FR-006/NFR-004 non-vacuous; makeStamp/toolkitVersion/okfStatusOf callers in WP02; out-of-map edit tests/type-registry-authority.test.ts; astro-build reds environmental (pnpm deps-status under symlinked node_modules; direct astro build passes)"
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP01-shared-metadata-rules/review-cycle-1.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP01-shared-metadata-rules/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 534757,
-      "shell_pid_created_at": "1792301683.6"
+      "role": "reviewer",
+      "shell_pid": 588001,
+      "shell_pid_created_at": "1792302262.22",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZDMBRBFQNE7TXNHAVC299",
       "last_transition_at": "2026-10-18T07:43:03.544693+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Stamps via makeStamp (gherkin/glossary/scaffold+new-doc); shared stampContentHash reader routes scenario-index + gherkin-fence; isGeneratedStamp in filter/fence/generate. Out-of-map: schema.ts+metadata.ts content_hash, scenario-index/fence/filter, codegen-guard/integration/scenario-index/docs-loader-includes tests, example/docs/glossary regen. Full vitest 2345/2346 (only plantuml build demo red, env); eslint 0; tsc 29 (baseline); validate:features green; rerun 0 bytes.",
+        "Review passed: makeStamp keeps at on unchanged content_hash (hash excludes stamp; version bump re-stamps by only), --check clean on unchanged tree tested, stampContentHash single helper for scenario-index+gherkin-fence with legacy fallback, isGeneratedStamp in all by-readers, schema/validator content_hash parity, 343 targeted tests green. Plantuml red = no PlantUML service reachable (env). Non-blocking: generated_from stays legacy pipeline id (pinned by assert-build-artifacts) - acceptable stable identifier, track for FR-005 follow-up; generate.mjs:507 '|| by === GENERATED_BY' redundant-looking; no explicit version-bump-keeps-at test."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP02-generator-stamps/review-cycle-1.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP02-generator-stamps/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 609896,
-      "shell_pid_created_at": "1792302586.67"
+      "role": "reviewer",
+      "shell_pid": 714644,
+      "shell_pid_created_at": "1792303475.38",
+      "subtasks": {
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done",
+        "T011": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZDTQZYT04FCS8GQ1B5XR8",
       "last_transition_at": "2026-10-18T07:43:10.079216+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "updatedMillis/toAgentRecord via normaliseInstant (record = YYYY-MM-DDTHH:MM:SSZ); agent index v2->v3; Persona + ADR formatUpdated via normaliseInstant (UTC date); rss/PageTitle/MetadataBand unchanged (already instant/UTC). Vitest fast project 2254 pass (UTC and TZ=Pacific/Auckland), eslint 0, tsc 29 pre-existing. Full build project hung (>20min) - not completed.",
+        "Cycle2: agent-index version pin 2->3 in tests/consumption/scripts/assert-consumer-artifacts.mjs (out-of-map, justified) and src/scripts/assert-build-artifacts.mjs. No date-only pages[].updated assertions. validate:adr-index 0; vitest 121 pass; agent-links alone 11s pass; eslint 0; tsc pre-existing only.",
+        "Review passed: consumer + build asserts pin agent-index '3'; no stale '2' pins in tests/src/example/e2e; node --check clean; core changes previously verified"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP03-updated-consumers/review-cycle-2.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP03-updated-consumers/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 677181,
-      "shell_pid_created_at": "1792303099.75"
+      "role": "reviewer",
+      "shell_pid": 697444,
+      "shell_pid_created_at": "1792303255.49",
+      "subtasks": {
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZE16WYQDEZRNCZK2M9ADK",
       "last_transition_at": "2026-10-18T07:43:16.700461+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Migrated docs (161 files) + example/docs (62 files); 223 updated, 97 author emails->human:, 22 okf_version added; 4 generated glossary indexes regenerated after generator (src/lib/glossary/generate.ts, out-of-map WP02 gap) now emits okf_version. Frontmatter warnings date-only/email/okf_version: 0 on both trees (before docs 161/85/9... example 62/12/17). Script rerun: 0 changes. validate:docs/example/links/adr-index/features/catalog exit 0; pnpm build ok; pnpm test 2348/2349 (1 local PlantUML-service red, unrelated). metadata-model.md updated.",
+        "Deleted one-off migration script (evidence in commit 5313b240); npm pack has no oneoff; validate clean; glossary tests pass",
+        "Review passed: oneoff script gone from pack; 10-file sample shows only updated/authors changes; human:stijn/ivan collision-free; okf_version \"0.2\" on every index in docs+example; status mapping table matches okfStatusOf; both trees validate; glossary/okf/index-basename vitest 55/55. Non-blocking: no explicit assertion of okf_version in glossary output (covered by byte-identical rerun only)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP04-tree-migration/review-cycle-2.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP04-tree-migration/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 758334,
-      "shell_pid_created_at": "1792304188.12"
+      "role": "reviewer",
+      "shell_pid": 763925,
+      "shell_pid_created_at": "1792304308.32",
+      "subtasks": {
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done"
+      }
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZE7J78PB5ZRMF5KDSWXCV",
       "last_transition_at": "2026-10-18T07:43:23.207384+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "buildContentGraph+locatePages in docs-index.ts; routes/content-graph(+injected, package export), integrations/content-graph always-on in config.ts; _links.contentGraph. Out-of-map (justified): agent-index.ts, agent-api.test.ts, package.json exports, config-invariants.test.ts (injectRoute stub + new injection/export assertion), helpers/integration-names.ts pinned order, content-graph-module.d.ts. in-section also links nested section indexes to parent index (so WP07 section trees are reachable). Validation: content-graph.test red(8 fail)->green; full vitest 2352/2353 pass, sole red example-adopter plantuml demonstrator (local PlantUML service absent, unrelated); eslint exit 0; tsc 29 (unchanged); two example builds cmp IDENTICAL (77 nodes/119 edges).",
+        "Fix: authors/generated.by/verified.by normalised via new toActor (vocabulary-core.mjs). Email-author test added. vitest 77 pass, eslint 0, tsc 0 errors, example build exit 0, dist graph 0 actor violations.",
+        "Review passed: built content-graph.json validates 0 errors with ajv (draft 2020-12) against contract schema; toActor reuses parseActor (no duplication), email->human:<local> per data-model Actor, unparseable dropped (authoring validator already warns); email test non-vacuous; low complexity; no regressions in prior aspects. Note: review_status ack not recorded by implementer."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP05-content-graph-builder/review-cycle-2.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP05-content-graph-builder/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 757562,
-      "shell_pid_created_at": "1792304150.57"
+      "role": "reviewer",
+      "shell_pid": 765459,
+      "shell_pid_created_at": "1792304361.53",
+      "subtasks": {
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZEE76HXYCEQW9V5GZF0WB",
       "last_transition_at": "2026-10-18T07:43:30.022291+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "assertContentGraph (follows _links.contentGraph, node-set edge check, sort order, built routes, no drafts); 1 new test + draft-publication-build surfaces; red-first: dangling edge passed before; two-build cmp IDENTICAL; full vitest 2359 pass, 1 fail = pre-existing local PlantUML-service; eslint 0; tsc errors pre-existing only; no baseline ripple",
+        "Review passed: assertContentGraph wired into live gate main (line 2398), fails closed on missing link/file/schema; endpoints checked vs node set only (C-010); drafts excluded in both modes via MACHINE_SURFACES on/off + equality; gate green on example/dist; mutation test non-vacuous. Minor: edge-sort and unbuilt-node branches lack mutation cases; vitest not runnable locally (half-materialized node_modules)."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP06-graph-artifact-gate/review-cycle-1.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP06-graph-artifact-gate/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 770530,
-      "shell_pid_created_at": "1792304593.85"
+      "role": "reviewer",
+      "shell_pid": 808256,
+      "shell_pid_created_at": "1792305220.95",
+      "subtasks": {
+        "T026": "done",
+        "T027": "done",
+        "T028": "done",
+        "T029": "done"
+      }
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZEMJQJEQKPTZ9RN7MKWFA",
       "last_transition_at": "2026-10-18T07:43:36.535921+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "exportOkfBundle + checkOkfBundle in src/lib/okf-export/; okf-export.test.ts 21/21; full vitest 2374/2375 (sole fail: example-adopter plantuml service, local-only env); eslint 0; tsc no new errors; example dist export 88 files, checker []. Exporter/checker unused by prod code until WP08 CLI/hook.",
+        "Body links rewritten to bundle paths via graph node href (links.mjs); advisory unresolved-link warnings (checkOkfLinks/checkOkfBundleReport); tests added",
+        "Review passed (c2): body links rewritten via graph node hrefs only (routeIndex, no 2nd resolver); base strip, trailing-slash, relative, ?#tail, <a href>, refdefs, titles, angle-brackets, nested brackets, ~~~ fences, code spans verified; example export reproduced: README+index 0 errors, 1 advisory warning (/api/bibliography.json), README-only 176 errors; 28/28 tests. Non-blocking: indented code blocks (.md only), HTML comments and escaped \\[x\\](/y) are rewritten; none occur in example. WP08 MUST derive indexBasename from site config via normalizeIndexBasenames (example sets ['README','index']) and pass base/siteUrl from astro site/base."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP07-okf-export-core/review-cycle-2.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP07-okf-export-core/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 810444,
-      "shell_pid_created_at": "1792305317.12"
+      "role": "reviewer",
+      "shell_pid": 815028,
+      "shell_pid_created_at": "1792305545.49",
+      "subtasks": {
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done",
+        "T034": "done"
+      }
     },
     "WP08": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZETYCZVQEGKD7DRJ0TGH7",
       "last_transition_at": "2026-10-18T07:43:43.052744+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "CLI export-okf.mjs (exit 0/1/2 verified by test), always-on okf hook via disk.mjs (docsDir,indexBasename; base/site from config:done), assert gate okfExport, consumption T021 arm extended (NOT run: clean-room pnpm install stalled/timed out ~30min offline). Example build 10.55s with vs 10.48s without hook (~1.00x, NFR-006). Two builds dist/okf diff -r identical. Full vitest 2388/2389 (only plantuml-service env failure, pre-existing). Out-of-map: config.ts, assert-build-artifacts.mjs, integration-names.ts, okf-export tests, links.mjs REFDEF footnote fix (siteUrl turned [^^n]: defs into absolute URLs), new disk.mjs.",
+        "Review passed: unconditional okfExportIntegration reads dist graph from disk via shared disk.mjs; CLI 0/1/2 test non-vacuous; footnote REFDEF fix correct; artifact gate added; 29/29 targeted tests. Non-blocking: hook missing-graph surfaces raw ENOENT (fails closed, names path, no remedy hint); consumption T021 assertions correct by reading, CI-proven-later; CLI base default empty yields unresolved warnings not wrong links."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP08-export-cli-hook/review-cycle-1.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP08-export-cli-hook/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 817188,
-      "shell_pid_created_at": "1792305667.34"
+      "role": "reviewer",
+      "shell_pid": 892320,
+      "shell_pid_created_at": "1792308528.67",
+      "subtasks": {
+        "T035": "done",
+        "T036": "done",
+        "T037": "done",
+        "T038": "done"
+      }
     },
     "WP09": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M56ZF1FXAWSJAJYBZTZEFWT8",
       "last_transition_at": "2026-10-18T07:43:49.757542+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Guide, content-graph reference, ADR-0059 implementation notes, authoring fix committed (b6856417). T041: changelog deferred to closeout per operator order. validate:docs/links/adr-index green; Vale not installed. TODO(operator): upstream issue URL placeholder in guide. Out-of-map docs/** edits sequenced after WP04.",
+        "Cycle 2: removed upstream-issue TODO placeholder; no TODOs in WP docs; ADR-0059 append-only; validate gates exit 0",
+        "Review passed: content-graph + export guide claims match code (schema, rels, ids, flags, exit codes, sidecar, actor fallback); ADR-0059 append-only; no TODOs; validate:docs/links green"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP09-docs-adr-changelog/review-cycle-2.md",
         "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP09-docs-adr-changelog/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 898318,
-      "shell_pid_created_at": "1792308916.06"
+      "role": "reviewer",
+      "shell_pid": 899929,
+      "shell_pid_created_at": "1792309009.57",
+      "subtasks": {
+        "T039": "done",
+        "T040": "done",
+        "T041": "done"
+      }
     }
   }
 }

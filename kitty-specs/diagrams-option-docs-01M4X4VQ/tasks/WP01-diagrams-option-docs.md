@@ -28,6 +28,7 @@ agent_profile: scribe-sally
 authoritative_surface: docs/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/guides/consumer-setup.md
 - src/lib/config.ts

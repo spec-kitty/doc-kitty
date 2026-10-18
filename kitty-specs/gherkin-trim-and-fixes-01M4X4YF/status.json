@@ -2,9 +2,9 @@
   "event_count": 47,
   "last_event_id": "01M4X9QF4MKFZ33ZY02KVCDBEB",
   "materialized_at": "2026-10-14T13:30:47.316935+00:00",
-  "mission_number": "",
+  "mission_number": "7",
   "mission_slug": "gherkin-trim-and-fixes-01M4X4YF",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,104 +20,190 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4X9PWA357J0A2FQ6D8ZXDXG",
       "last_transition_at": "2026-10-14T13:30:28.035059+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Parity test + near-miss warning; red-first commits 54d029f -> 2c9e0bf",
+        "Review passed: red commit 54d029f fails 4 rows on the old parseMetadataTags and fix 2c9e0bf greens them; the parity test goes red on a planted byte; the example stays warning-free; the feature-core frontmatter golden now hashes the real fixture."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP01-parity-and-status-shorthand/review-cycle-1.md",
         "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP01-parity-and-status-shorthand/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 9783,
-      "shell_pid_created_at": "1791980592.71"
+      "role": "reviewer",
+      "shell_pid": 11398,
+      "shell_pid_created_at": "1791980727.44",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4X9PZT7WZ5PWTQT5DJBNMCQ",
       "last_transition_at": "2026-10-14T13:30:31.623462+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Draft hubs; red 32bea7f -> fix 7fa4a8d; ad-hoc example builds on/off verified",
+        "Review passed: red 32bea7f fails 6 rows on the old planner; fix 7fa4a8d greens them; parent-link loop still skips unpublished dirs; ad-hoc example builds show the [dk-sidebar] missing-index warning with the old planner and none with the fix; drafts-off build omits hub and page; --check clean."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP02-draft-only-directory-hubs/review-cycle-1.md",
         "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP02-draft-only-directory-hubs/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 12749,
-      "shell_pid_created_at": "1791980834.65"
+      "role": "reviewer",
+      "shell_pid": 16337,
+      "shell_pid_created_at": "1791981144.72",
+      "subtasks": {
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4X9Q3R4H1CX3B9RAXS5X1NH",
       "last_transition_at": "2026-10-14T13:30:35.652271+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "titles: options+CLI, planner, integration, example; red-first per layer",
+        "Review passed: red rows at each entry point (options 18 rows, planner 3, integration 1) committed before their fixes; FR-004a parity guard forced the CLI flag; validate:features clean after regeneration; typecheck/lint clean."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP03-gherkin-titles/review-cycle-1.md",
         "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP03-gherkin-titles/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 16627,
-      "shell_pid_created_at": "1791981167.05"
+      "role": "reviewer",
+      "shell_pid": 22324,
+      "shell_pid_created_at": "1791981501.77",
+      "subtasks": {
+        "T009": "done",
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done",
+        "T014": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4X9Q7Y37CAQXJ2HJM729EJB",
       "last_transition_at": "2026-10-14T13:30:39.939119+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "build:done scenario-index check; red-first; example build proof",
+        "Review passed: red 282e57e fails 4 rows (no build:done hook); fix 38e080a greens them; config-invariants hook-set pin re-pointed (not loosened); example build passes with the mounted route and exits 1 with the named remedy without it; no integration added, no route injected."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP04-scenario-index-check/review-cycle-1.md",
         "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP04-scenario-index-check/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 22930,
-      "shell_pid_created_at": "1791981544.92"
+      "role": "reviewer",
+      "shell_pid": 24728,
+      "shell_pid_created_at": "1791981726.34",
+      "subtasks": {
+        "T015": "done",
+        "T016": "done",
+        "T017": "done"
+      }
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4X9QBNS21EEP1KEF3734311",
       "last_transition_at": "2026-10-14T13:30:43.769983+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "18 tests + 1 row retired, each with a planted break proving its cover; 665 -> 640 cases",
+        "Cycle 1 feedback addressed: two integration rows restored and proven red (0bda8a1)",
+        "Review cycle 2 passed: both cycle-1 findings fixed in 0bda8a1, each restored row red under the reviewer's planted break; the adversarial pass verified every other retirement holds; 642/642 Gherkin tests green."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP05-trim-gherkin-suites/review-cycle-2.md",
         "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP05-trim-gherkin-suites/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 7216,
-      "shell_pid_created_at": "1791983034.73"
+      "role": "reviewer",
+      "shell_pid": 10213,
+      "shell_pid_created_at": "1791983236.02",
+      "subtasks": {
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done"
+      }
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4X9QF4MKFZ33ZY02KVCDBEB",
       "last_transition_at": "2026-10-14T13:30:47.316935+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "ADR-0054, guides, architecture, changelog",
+        "Review passed: ADR-0046/0051 untouched, new ADR-0054 amends by reference; frontmatter, ADR index, links, markdownlint, Vale (error level) and the guide internal-path check all clean; consumer-setup edits confined to the Gherkin section and the step-5 scenario-route sentence."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/gherkin-trim-and-fixes-01M4X4YF-coord/kitty-specs/gherkin-trim-and-fixes-01M4X4YF/tasks/WP06-records-and-docs/review-cycle-1.md",
         "reference": "review-cycle://gherkin-trim-and-fixes-01M4X4YF/WP06-records-and-docs/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 10761,
-      "shell_pid_created_at": "1791983275.33"
+      "role": "reviewer",
+      "shell_pid": 12155,
+      "shell_pid_created_at": "1791983460.86",
+      "subtasks": {
+        "T022": "done",
+        "T023": "done",
+        "T024": "done"
+      }
     }
   }
 }

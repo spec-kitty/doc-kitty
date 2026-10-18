@@ -24,6 +24,7 @@ authoritative_surface: docs/architecture/theming.md
 create_intent:
 - docs/adr/0052-reading-width-and-wide-tables.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/architecture/theming.md
 - docs/adr/0052-reading-width-and-wide-tables.md

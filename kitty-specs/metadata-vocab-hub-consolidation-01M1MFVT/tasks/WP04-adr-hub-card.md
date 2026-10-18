@@ -25,6 +25,7 @@ authoritative_surface: src/
 create_intent:
 - src/tests/hub-adr-card.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/layouts/Hub.astro
 - src/scripts/generate-adr-index.mjs

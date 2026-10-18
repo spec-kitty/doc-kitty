@@ -43,6 +43,7 @@ create_intent:
 - src/lib/generator-stamp.mjs
 - src/tests/okf-status-mapping.test.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/vocabulary-core.mjs

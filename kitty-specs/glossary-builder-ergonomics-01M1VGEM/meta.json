@@ -17,7 +17,7 @@
   "flattened": false,
   "friendly_name": "Glossary builder ergonomics (#83)",
   "mission_id": "01M1VGEMVDK9HXQCACXRQJZEFX",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "glossary-builder-ergonomics-01M1VGEM",
   "mission_type": "software-dev",
   "purpose_context": "The #77/#79 pre-PR adversarial squad left three equivalent subtree-text concatenators (aria-label, links-used surface, :term label) and two `as unknown as` casts at the shared-builder call sites. They cannot drift today, but the duplication is a standing DRY hazard and the double-casts disable the one compile-time shape check. This mission removes both, as DISCIPLINED_REFACTORING with a byte-identical corpus, inside the glossary bounded context.",

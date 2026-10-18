@@ -36,6 +36,8 @@ create_intent:
 - docs/adr/0056-gherkin-results-followups.md
 - docs/changelog/2026-10-14-gherkin-trim-and-followups.md
 execution_mode: code_change
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - docs/adr/0056-gherkin-results-followups.md
@@ -45,6 +47,7 @@ owned_files:
 - docs/architecture/gherkin-pages.md
 - docs/changelog/2026-10-14-gherkin-trim-and-followups.md
 role: implementer
+wp_code: WP08
 ---
 # WP08 — ADR-0056, CHANGELOG and adopter docs
 

@@ -30,6 +30,7 @@ authoritative_surface: src/lib/glossary/
 create_intent:
 - src/lib/glossary/link-node.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/glossary/link-node.ts
 - src/lib/remark/glossary-autolink.internal.ts

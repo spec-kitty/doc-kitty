@@ -24,6 +24,7 @@ create_intent:
 - example/docs/presentations/markua-deck.md
 - tests/a11y/deck-markua.spec.ts
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - example/docs/presentations/markua-deck.md

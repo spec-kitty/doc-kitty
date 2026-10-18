@@ -36,6 +36,7 @@ create_intent:
 - src/lib/integrations/route-shaping.ts
 - src/lib/integrations/draft-publication.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/config.ts

@@ -27,6 +27,7 @@ create_intent:
 - src/tests/glossary-load.test.ts
 - src/tests/glossary-anchor.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/glossary/types.ts
 - src/lib/glossary/anchor.ts

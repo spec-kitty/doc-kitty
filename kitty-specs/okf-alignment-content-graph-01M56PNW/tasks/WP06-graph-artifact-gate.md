@@ -32,6 +32,7 @@ agent_profile: node-norris
 authoritative_surface: src/scripts/assert-build-artifacts.mjs
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/scripts/assert-build-artifacts.mjs

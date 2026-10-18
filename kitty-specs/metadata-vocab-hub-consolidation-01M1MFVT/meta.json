@@ -18,7 +18,7 @@
   "flattened": true,
   "friendly_name": "Metadata / Vocabulary / Hub Consolidation",
   "mission_id": "01M1MFVTZGD9KQ6QWYV54ZDBQH",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "metadata-vocab-hub-consolidation-01M1MFVT",
   "mission_type": "software-dev",
   "pr_bound": true,

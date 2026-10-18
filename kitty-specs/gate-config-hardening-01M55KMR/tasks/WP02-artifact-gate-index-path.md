@@ -26,6 +26,7 @@ agent_profile: node-norris
 authoritative_surface: src/lib/routes/
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/routes/agent-index.ts

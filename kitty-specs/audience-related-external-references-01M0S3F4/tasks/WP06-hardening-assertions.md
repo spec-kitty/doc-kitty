@@ -30,6 +30,7 @@ create_intent:
 - src/tests/fixtures/catalog/unknown-type.md
 - src/tests/fixtures/err/audience-dangling-profile.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/assert-chrome-artifacts.mjs
 - src/scripts/assert-build-artifacts.mjs

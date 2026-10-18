@@ -24,6 +24,7 @@ authoritative_surface: example/docs/
 create_intent:
 - src/tests/example-adopter.test.ts
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - example/docs/**

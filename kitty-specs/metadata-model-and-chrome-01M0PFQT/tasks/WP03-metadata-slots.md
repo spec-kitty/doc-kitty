@@ -26,6 +26,7 @@ create_intent:
 - src/components/slots/
 - src/assets/
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/components/slots/**
 - src/assets/**

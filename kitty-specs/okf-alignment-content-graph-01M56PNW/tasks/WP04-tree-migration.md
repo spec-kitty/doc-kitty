@@ -34,6 +34,7 @@ authoritative_surface: src/scripts/oneoff/
 create_intent:
 - src/scripts/oneoff/migrate-okf-metadata.mjs
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/scripts/oneoff/migrate-okf-metadata.mjs

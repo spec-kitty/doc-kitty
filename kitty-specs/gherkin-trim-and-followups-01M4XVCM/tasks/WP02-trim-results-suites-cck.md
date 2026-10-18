@@ -39,6 +39,8 @@ history:
 agent_profile: implementer-ivan
 authoritative_surface: src/tests/gherkin-results.test.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - src/tests/gherkin-results.test.ts
@@ -47,6 +49,7 @@ owned_files:
 - src/tests/scenario-index.test.ts
 - src/tests/fixtures/gherkin/results/**
 role: implementer
+wp_code: WP02
 ---
 # WP02 — Trim the results suites and swap in CCK fixtures
 

@@ -18,6 +18,7 @@ authoritative_surface: src/styles/dk-components.css
 create_intent:
 - docs/changelog/2026-09-05-deck-layout-polish.md
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - src/styles/dk-components.css

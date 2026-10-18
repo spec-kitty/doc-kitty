@@ -31,6 +31,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: ''
 owned_files:
 - src/scripts/validate-frontmatter.mjs

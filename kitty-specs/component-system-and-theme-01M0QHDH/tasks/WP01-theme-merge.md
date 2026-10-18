@@ -21,15 +21,16 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: node-norris
-role: implementer
 authoritative_surface: src/lib/
 create_intent:
 - src/lib/theme.ts
 - src/tests/theme-merge.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/theme.ts
 - src/tests/theme-merge.test.ts
+role: implementer
 tags: []
 tracker_refs: []
 ---

@@ -26,12 +26,15 @@ create_intent:
 - src/lib/toc-rail/toc-rail.client.ts
 - src/styles/toc-rail.css
 execution_mode: code_change
+lane: planned
+mission_id: 01M23HNA98TDYF7KDT8MWQBNZA
 owned_files:
 - src/lib/toc-rail/toc-rail.client.ts
 - src/styles/toc-rail.css
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP02
 ---
 
 ## ⚡ Do This First: Load Agent Profile

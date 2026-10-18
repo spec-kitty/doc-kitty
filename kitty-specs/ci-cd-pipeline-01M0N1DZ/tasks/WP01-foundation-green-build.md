@@ -30,6 +30,8 @@ create_intent:
 - pnpm-lock.yaml
 - eslint.config.js
 execution_mode: code_change
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - package.json
 - src/package.json
@@ -40,6 +42,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP01
 ---
 
 ## ⚡ Do This First: Load Agent Profile

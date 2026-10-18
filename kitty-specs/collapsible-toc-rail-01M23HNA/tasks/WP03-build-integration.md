@@ -21,6 +21,8 @@ agent_profile: node-norris
 authoritative_surface: src/
 create_intent: []
 execution_mode: code_change
+lane: planned
+mission_id: 01M23HNA98TDYF7KDT8MWQBNZA
 owned_files:
 - src/lib/config.ts
 - src/lib/theme.ts
@@ -28,6 +30,7 @@ owned_files:
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP03
 ---
 
 ## ⚡ Do This First: Load Agent Profile

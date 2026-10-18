@@ -22,18 +22,19 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: frontend-freddy
-role: implementer
 authoritative_surface: tests/a11y/
 create_intent:
 - playwright.config.ts
 - tests/a11y/
 execution_mode: code_change
+lane: planned
 owned_files:
 - playwright.config.ts
 - tests/a11y/**
 - .github/workflows/**
 - package.json
 - pnpm-lock.yaml
+role: implementer
 tags: []
 tracker_refs: []
 ---

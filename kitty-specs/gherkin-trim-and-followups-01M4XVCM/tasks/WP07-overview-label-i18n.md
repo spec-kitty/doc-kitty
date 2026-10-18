@@ -31,6 +31,8 @@ authoritative_surface: src/lib/route-shaping.ts
 create_intent:
 - src/lib/i18n-plugin.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - src/lib/route-shaping.ts
@@ -40,6 +42,7 @@ owned_files:
 - src/tests/route-shaping.test.ts
 - src/tests/sidebar-build-html.test.ts
 role: implementer
+wp_code: WP07
 ---
 # WP07 — Translatable Overview label and indexLabel option (#161)
 

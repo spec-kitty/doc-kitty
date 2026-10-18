@@ -22,17 +22,18 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: frontend-freddy
-role: implementer
 authoritative_surface: src/themes/spec-kitty/
 create_intent:
 - src/themes/spec-kitty/index.ts
 - src/themes/spec-kitty/tokens.css
 - src/themes/spec-kitty/assets/
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/themes/spec-kitty/index.ts
 - src/themes/spec-kitty/tokens.css
 - src/themes/spec-kitty/assets/**
+role: implementer
 tags: []
 tracker_refs: []
 ---

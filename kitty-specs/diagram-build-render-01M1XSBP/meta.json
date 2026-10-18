@@ -17,7 +17,7 @@
   "flattened": false,
   "friendly_name": "Build-time diagram render — Mermaid + PlantUML (#13)",
   "mission_id": "01M1XSBPF18QMVM1S5TVJBZ3ZB",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "diagram-build-render-01M1XSBP",
   "mission_type": "software-dev",
   "purpose_context": "Issue #13, deferred from M5. Large feature: two build-render engines, dual-mode fallback, theme-aware SVG via var(--dk-diagram-*) rewrite, greenfield PlantUML with ' -metadata twin, CI/deploy Chromium+PlantUML server, and mode-aware inversion of every diagram gate. Feasibility spiked (research D7).",

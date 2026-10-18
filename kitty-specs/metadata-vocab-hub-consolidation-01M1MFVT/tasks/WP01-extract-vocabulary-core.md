@@ -16,24 +16,25 @@ subtasks:
 - T004
 - T005
 - T006
+agent: claude
 history:
 - created by /spec-kitty.tasks
 - amended by post-tasks adversarial squad (F3, F6, F7, F8, F9)
 agent_profile: node-norris
-role: implementer
-agent: claude
 authoritative_surface: src/lib/
-execution_mode: code_change
-owned_files:
-- src/lib/vocabulary-core.mjs
-- src/lib/vocabulary-loader.mjs
-- src/tests/vocabulary-core.test.ts
-- src/tests/vocabulary-single-source.test.ts
 create_intent:
 - src/lib/vocabulary-core.mjs
 - src/lib/vocabulary-loader.mjs
 - src/tests/vocabulary-core.test.ts
 - src/tests/vocabulary-single-source.test.ts
+execution_mode: code_change
+lane: planned
+owned_files:
+- src/lib/vocabulary-core.mjs
+- src/lib/vocabulary-loader.mjs
+- src/tests/vocabulary-core.test.ts
+- src/tests/vocabulary-single-source.test.ts
+role: implementer
 tags: []
 tracker_refs: []
 ---

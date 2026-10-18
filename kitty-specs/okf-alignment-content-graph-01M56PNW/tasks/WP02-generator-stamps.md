@@ -34,6 +34,7 @@ agent_profile: node-norris
 authoritative_surface: src/lib/gherkin/
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/gherkin/feature-core.mjs

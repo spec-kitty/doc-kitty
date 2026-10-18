@@ -34,6 +34,7 @@ create_intent:
 - src/tests/draft-publication-build.test.ts
 - example/.env.development
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/draft-publication.mjs
 - src/lib/schema.ts

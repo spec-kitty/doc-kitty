@@ -21,6 +21,7 @@ create_intent:
 - src/lib/glossary/resolve.ts
 - src/tests/glossary-resolve.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/glossary/resolve.ts
 - src/tests/glossary-resolve.test.ts

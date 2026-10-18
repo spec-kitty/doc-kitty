@@ -25,6 +25,7 @@ authoritative_surface: docs/
 create_intent:
 - docs/adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/adr/0054-gherkin-draft-hubs-titles-and-scenario-route.md
 - docs/adr/README.md

@@ -3,7 +3,7 @@
   "flattened": false,
   "friendly_name": "Example content from ars-rethorica",
   "mission_id": "01M204RR40YR1QQAQV8Q8N3NN3",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "ars-rethorica-example-01M204RR",
   "mission_type": "software-dev",
   "pr_bound": true,
@@ -11,6 +11,7 @@
   "purpose_tldr": "Give the example site a real Markua-authored showcase converted from an open-license book, instead of placeholder prose.",
   "slug": "ars-rethorica-example-01M204RR",
   "source_description": "Converts Book I of the CC-BY-SA-4.0 Markua book github.com/stijn-dejongh/ars-rethorica (revamp of the public-domain J.H. Freese 1926 translation of Aristotle's Rhetoric via the Perseus Project) into a nested content showcase inside example/.",
+  "status_phase": "1",
   "target_branch": "feat/ars-rethorica-example",
   "topology": "coord",
   "vcs": "git"

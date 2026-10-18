@@ -29,6 +29,7 @@ authoritative_surface: src/lib/draft-publication.mjs
 create_intent:
 - src/tests/draft-publication.env.test.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/draft-publication.mjs

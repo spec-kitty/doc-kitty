@@ -22,6 +22,7 @@ authoritative_surface: example/docs/architecture/
 create_intent:
 - example/docs/architecture/diagram-demonstrator.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/architecture/diagram-demonstrator.md
 - src/scripts/assert-build-artifacts.mjs

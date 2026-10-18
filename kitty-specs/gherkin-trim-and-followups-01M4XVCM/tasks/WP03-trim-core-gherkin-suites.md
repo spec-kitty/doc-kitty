@@ -39,6 +39,8 @@ history:
 agent_profile: implementer-ivan
 authoritative_surface: src/tests/gherkin-generate.test.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - src/tests/gherkin-parse.test.ts
@@ -62,6 +64,7 @@ owned_files:
 - src/tests/fixtures/gherkin/load/**
 - src/tests/fixtures/gherkin/generate/**
 role: implementer
+wp_code: WP03
 ---
 # WP03 — Trim the core Gherkin suites
 

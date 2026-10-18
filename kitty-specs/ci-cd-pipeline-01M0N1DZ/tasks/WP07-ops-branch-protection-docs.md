@@ -23,11 +23,14 @@ authoritative_surface: docs/ops/
 create_intent:
 - docs/ops/ci-cd.md
 execution_mode: code_change
+lane: planned
+mission_id: 01M0N1DZNZ8QPTKEX7RY5DYTNP
 owned_files:
 - docs/ops/ci-cd.md
 role: implementer
 tags: []
 tracker_refs: []
+wp_code: WP07
 ---
 
 ## ⚡ Do This First: Load Agent Profile

@@ -18,15 +18,16 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: frontend-freddy
-role: implementer
 authoritative_surface: src/components/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/components/Head.astro
 - src/components/PageTitle.astro
 - src/components/MarkdownContent.astro
 - src/components/Footer.astro
+role: implementer
 tags: []
 tracker_refs: []
 ---

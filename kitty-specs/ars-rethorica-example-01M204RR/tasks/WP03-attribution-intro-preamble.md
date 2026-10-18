@@ -27,6 +27,7 @@ create_intent:
 - example/docs/rhetoric/introduction.md
 - example/docs/rhetoric/preamble.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/_meta/bibliography.yaml
 - example/docs/rhetoric/about-and-license.md

@@ -19,7 +19,7 @@
   "friendly_name": "Gherkin test trim, scenario-results follow-ups and a translatable Overview label",
   "mid8": "01M4XVCM",
   "mission_id": "01M4XVCM3XBX6BXHXDZFBPX7ZV",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "gherkin-trim-and-followups-01M4XVCM",
   "mission_type": "software-dev",
   "pr_bound": true,

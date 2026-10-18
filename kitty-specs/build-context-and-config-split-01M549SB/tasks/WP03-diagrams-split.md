@@ -26,6 +26,7 @@ authoritative_surface: src/lib/integrations/diagrams.ts
 create_intent:
 - src/lib/integrations/diagrams.ts
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/integrations/diagrams.ts

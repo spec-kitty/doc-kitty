@@ -38,6 +38,7 @@ create_intent:
 - docs/guides/draft-publication.md
 - docs/guides/theme-header.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/adr/0044-header-carrier.md
 - docs/adr/0045-frame-width-token.md

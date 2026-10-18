@@ -20,6 +20,7 @@ authoritative_surface: example/docs/presentations/
 create_intent:
 - example/docs/presentations/roadmap-deck.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/presentations/showcase-deck.md
 - example/docs/presentations/roadmap-deck.md

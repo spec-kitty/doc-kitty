@@ -23,6 +23,7 @@ agent_profile: frontend-freddy
 authoritative_surface: src/lib/deck/
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - src/layouts/DeckLayout.astro

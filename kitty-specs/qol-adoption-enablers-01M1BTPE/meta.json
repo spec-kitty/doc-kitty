@@ -4,7 +4,7 @@
   "flattened": true,
   "friendly_name": "QOL Adoption-Enabler Cluster",
   "mission_id": "01M1BTPEYFPJ6G0DPY7P7JPBY1",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "qol-adoption-enablers-01M1BTPE",
   "mission_type": "software-dev",
   "pr_bound": true,

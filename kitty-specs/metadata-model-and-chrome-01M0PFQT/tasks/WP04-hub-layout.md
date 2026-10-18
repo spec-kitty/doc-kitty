@@ -23,6 +23,7 @@ create_intent:
 - src/layouts/Hub.astro
 - src/styles/hub.css
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/layouts/Hub.astro
 - src/styles/hub.css

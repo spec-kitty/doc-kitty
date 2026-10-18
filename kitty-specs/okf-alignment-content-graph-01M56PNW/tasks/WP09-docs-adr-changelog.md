@@ -31,6 +31,7 @@ agent_profile: implementer-ivan
 authoritative_surface: CHANGELOG.md
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - CHANGELOG.md

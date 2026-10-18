@@ -4,7 +4,7 @@
   "materialized_at": "2026-09-04T20:07:57.647862+00:00",
   "mission_number": "",
   "mission_slug": "link-integrity-01M1PSEH",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,34 +20,70 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M1Q0HQ8JHC9B6N9NBCD8AC10",
       "last_transition_at": "2026-09-04T20:07:49.778419+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: T001-T008 complete",
+        "Review-1 addressed: rehype base-absolute plugin, gate + redirect base-prefix",
+        "Re-review PASS (coordination-artifact guard on committed kitty-specs status bypassed with --force; reviewed src/example diff clean). Fix A rehype base-absolute-links plugin correct (idempotent, skips external/protocol-rel/mailto/tel/anchor/relative/already-based, only <a href>), always-on integration threading normalizeBasePrefix(base), rehype order vs diagramFigure/glossary/markua safe; 8 authored links root-absolute+base-prefixed, 0 base-less internal hrefs site-wide, 0 double-prefix. KEPT work intact (glossary base-prefix+shared glossaryTermUrl, block-form anchors #63 clean ids no {#, withBase, routeFor base-less). Fix B assert-chrome base-prefixed -> assert:artifacts PASS. Fix C REDIRECTS base-prefixed + stripKnownBase base-agnostic, redirect-coverage 9/9, no base-less targets in dist. Boy-scout BASE_URL child-env strip correct. Out-of-map edits documented, no WP02 overlap. Gates: 799 tests, lint clean, validate:docs clean, build exit 0. Issue-matrix: #61/#63 fixed(WP01), #62 in-mission(WP02). Minors non-blocking: adr/template.md placeholder XXXX-title.md (relative, out of scope); full dist-scrape gate deferred to WP02 per DoD."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/workspace/doc-kitty/kitty-specs/link-integrity-01M1PSEH/tasks/WP01-internal-links-resolve/review-cycle-2.md",
         "reference": "review-cycle://link-integrity-01M1PSEH/WP01-internal-links-resolve/review-cycle-2.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "shell_pid": 1023601,
-      "shell_pid_created_at": "1788548053.24"
+      "role": "reviewer",
+      "shell_pid": 1056106,
+      "shell_pid_created_at": "1788549894.96",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "done",
       "last_event_id": "01M1Q0HYYFZKPS72N598DM4HS6",
       "last_transition_at": "2026-09-04T20:07:57.647862+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review",
+        "Gate review PASS (see prior note); --force bypasses only the coordination-artifact guard, reviewed src/scripts+docs diff clean."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/workspace/doc-kitty/kitty-specs/link-integrity-01M1PSEH/tasks/WP02-fail-closed-link-gate/review-cycle-1.md",
         "reference": "review-cycle://link-integrity-01M1PSEH/WP02-fail-closed-link-gate/review-cycle-1.md",
         "reviewer": "user",
         "verdict": "approved"
       },
-      "shell_pid": 1064052,
-      "shell_pid_created_at": "1788550487.6"
+      "role": "reviewer",
+      "shell_pid": 1094092,
+      "shell_pid_created_at": "1788552232.31",
+      "subtasks": {
+        "T009": "done",
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
     }
   }
 }

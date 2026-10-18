@@ -25,16 +25,17 @@ subtasks:
 - T020
 - T021
 - T028
+agent: claude
 history:
 - '2026-08-24: authored by /spec-kitty.tasks'
 - '2026-08-24: post-tasks squad remediation (sidebar D5 owner, buildable print+CSS-signature+draft-Pagefind assertions, lint-config ownership, deckSlug parity)'
 agent_profile: implementer-ivan
-agent: claude
 authoritative_surface: src/scripts/
 create_intent:
 - example/docs/presentations/README.md
 - example/docs/presentations/showcase-deck.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/presentations/README.md
 - example/docs/presentations/showcase-deck.md

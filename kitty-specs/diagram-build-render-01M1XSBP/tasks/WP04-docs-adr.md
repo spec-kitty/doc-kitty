@@ -19,6 +19,7 @@ agent_profile: implementer-ivan
 authoritative_surface: docs/architecture/diagrams.md
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/architecture/diagrams.md
 role: implementer

@@ -17,13 +17,14 @@ subtasks:
 history:
 - '2026-08-23: authored by /spec-kitty.tasks'
 agent_profile: frontend-freddy
-role: implementer
 authoritative_surface: src/themes/spec-kitty/components/
 create_intent:
 - src/themes/spec-kitty/components/
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/themes/spec-kitty/components/**
+role: implementer
 tags: []
 tracker_refs: []
 ---

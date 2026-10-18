@@ -22,6 +22,7 @@ authoritative_surface: src/lib/gherkin/feature-core.mjs
 create_intent:
 - src/tests/gherkin-fixture-parity.test.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/gherkin/feature-core.mjs
 - src/tests/gherkin-feature-core.test.ts

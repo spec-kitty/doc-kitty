@@ -53,4 +53,4 @@ work package because the guard must land in the same commit as the surface it gu
   `localhost`).
 - **Estimated prompt size**: ~180 lines (5 subtasks, small surface).
 
-**Prompt**: [tasks/WP01-regen-render-setup.md](./tasks/WP01-regen-render-setup.md)
+**Prompt**: [tasks/WP01-regen-render-setup.md

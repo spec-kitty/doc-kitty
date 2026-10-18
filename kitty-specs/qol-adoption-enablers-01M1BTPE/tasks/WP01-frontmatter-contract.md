@@ -33,6 +33,7 @@ create_intent:
 - src/tests/vocabulary-resolver.test.ts
 - docs/adr/0031-vocabulary-override.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/scripts/validate-frontmatter.mjs
 - src/lib/metadata.ts

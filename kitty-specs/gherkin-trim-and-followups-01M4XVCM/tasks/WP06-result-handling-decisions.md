@@ -34,6 +34,8 @@ history:
 agent_profile: implementer-ivan
 authoritative_surface: src/lib/config.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - src/lib/config.ts
@@ -44,6 +46,7 @@ owned_files:
 - src/lib/vocabulary-core.mjs
 - src/lib/gherkin-scenario-index-module.d.ts
 role: implementer
+wp_code: WP06
 ---
 # WP06 — CI-required report, stale include note and hand-mounted route warning
 

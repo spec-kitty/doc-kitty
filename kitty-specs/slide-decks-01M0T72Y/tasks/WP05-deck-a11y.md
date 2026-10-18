@@ -21,6 +21,7 @@ authoritative_surface: tests/a11y/
 create_intent:
 - tests/a11y/deck.interaction.spec.ts
 execution_mode: code_change
+lane: planned
 owned_files:
 - tests/a11y/routes.ts
 - tests/a11y/deck.interaction.spec.ts

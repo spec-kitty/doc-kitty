@@ -37,6 +37,8 @@ history:
 agent_profile: implementer-ivan
 authoritative_surface: src/tests/gherkin-include.test.ts
 execution_mode: code_change
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - src/tests/gherkin-include.test.ts
@@ -46,6 +48,7 @@ owned_files:
 - src/tests/fixtures/gherkin/include/**
 - tests/a11y/gherkin.spec.ts
 role: implementer
+wp_code: WP04
 ---
 # WP04 — Trim the include and loader suites and the a11y spec
 

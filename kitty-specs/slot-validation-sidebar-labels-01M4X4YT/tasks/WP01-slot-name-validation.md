@@ -23,6 +23,7 @@ create_intent:
 - src/tests/slot-names-config.test.ts
 - docs/adr/0052-runtime-slot-name-validation.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/lib/theme.ts
 - src/lib/manifest.ts

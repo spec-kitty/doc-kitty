@@ -2,9 +2,9 @@
   "event_count": 84,
   "last_event_id": "01M4VHH5XA7M66TED24QJPAKHC",
   "materialized_at": "2026-10-13T21:08:41.002542+00:00",
-  "mission_number": "",
+  "mission_number": "5",
   "mission_slug": "generated-page-and-link-integrity-01M4VB0N",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,121 +20,237 @@
     "WP01": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4VHFYK3RFXSMVM0C9KMBHNB",
       "last_transition_at": "2026-10-13T21:08:00.739479+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review",
+        "Review passed (reviewer-renata, opus): route rule, shared walk and convergences meet the acceptance criteria; old-vs-new draftRoutesOf identical on example, docs and fixture trees; both non-vacuity reverts turn the agreement test red. Minor notes: unused export indexBasenamePattern; one duplicated expect in section-type-parity."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/generated-page-and-link-integrity-01M4VB0N-coord/kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP01-shared-route-rule/review-cycle-1.md",
         "reference": "review-cycle://generated-page-and-link-integrity-01M4VB0N/WP01-shared-route-rule/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1296939,
-      "shell_pid_created_at": "1791920951.18"
+      "role": "reviewer",
+      "shell_pid": 1306666,
+      "shell_pid_created_at": "1791921262.34",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4VHG511A20C00JCE5BAC8K9",
       "last_transition_at": "2026-10-13T21:08:07.329956+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review",
+        "Review passed: guard throws before any write (authored check still first, whole-set only, allowEmpty strictly === true); allowEmpty/--allow-empty registered at every site; non-vacuity reverts a-e all red, plus validator-return drop red; 136 tests green in the four Gherkin files; no tsc errors in touched files. Minor notes: validator does not iterate GHERKIN_OPTION_KEYS (list/validator drift for a future key is untested); --check parity test asserts status + one stale line rather than identical output; FLAG is now a named export of a module reachable via the ./scripts/* export."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/generated-page-and-link-integrity-01M4VB0N-coord/kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP02-gherkin-empty-source-guard/review-cycle-1.md",
         "reference": "review-cycle://generated-page-and-link-integrity-01M4VB0N/WP02-gherkin-empty-source-guard/review-cycle-1.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1314287,
-      "shell_pid_created_at": "1791921579.62"
+      "role": "reviewer",
+      "shell_pid": 1332724,
+      "shell_pid_created_at": "1791921836.14",
+      "subtasks": {
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4VHGJ8XEEDKTP341Z8S9EQG",
       "last_transition_at": "2026-10-13T21:08:20.893244+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review",
+        "Rework cycle 1: review feedback addressed",
+        "Review passed (cycle 2, 8ac1f74): path-separator hole closed - '../x' and 20+ bypass variants either throw with the tree byte-unchanged or stay inside glossary/ and the context folders; validation precedes mkdir; prune scans only glossaryDir and each current context dir, non-recursive, four conditions intact; symlink at a target stops the run. Five reverts red (key-set, prune, stop-on-any-target via codegen-guard, validation call, lstat->existsSync). 50 tests green in the four suites; example glossary regenerates byte-identical; tsc 31 pre-existing, none in touched files. Non-blocking follow-ups: (MINOR) a symlinked glossary/ or context DIRECTORY is still written and pruned through (exact-key pages only) - lstat the directories and stop; (MINOR) glossary name rule is stricter than Gherkin validateIndexBasenames (also rejects surrounding whitespace and NUL) - share one validator; (NOTE) zero-context glossary returns before validation; over-long name surfaces raw ENAMETOOLONG."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/generated-page-and-link-integrity-01M4VB0N-coord/kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP03-glossary-index-name-and-prune/review-cycle-2.md",
         "reference": "review-cycle://generated-page-and-link-integrity-01M4VB0N/WP03-glossary-index-name-and-prune/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1370393,
-      "shell_pid_created_at": "1791922549.17"
+      "role": "reviewer",
+      "shell_pid": 1387030,
+      "shell_pid_created_at": "1791922698.46",
+      "subtasks": {
+        "T011": "done",
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4VHGRSME6RFCKXDT91FN9D3",
       "last_transition_at": "2026-10-13T21:08:27.572294+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review",
+        "Rework cycle 1: review feedback addressed",
+        "Review passed (cycle 2): draftRoutesOf no longer lists a route a published file shares (cases a/b/c/root verified; real trees byte-identical before/after for draft routes, route table, unpublished paths); 10 test files 289 green; mutations red for the shared-route rule and both hook index-name wirings; tsc 29 pre-existing, none in added lines. Follow-up (minor, not blocking): x/README.md draft + x/index.md published -> /x/ correctly not a draft route, but unpublishedDirs is derived from routes, so the draft README's title still labels the sidebar group with drafts off (config.ts:1619, routeShapingSource); derive unpublishedDirs from draft index files. Root skip in draftRoutesOf is not pinned by route-table/draft-publication tests. Implementer's statement that a status-less page is not a draft is false (isDraftStatus: missing = draft); the test marks the root explicitly draft so its assertions hold."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/generated-page-and-link-integrity-01M4VB0N-coord/kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP04-relative-md-link-rewrite/review-cycle-2.md",
         "reference": "review-cycle://generated-page-and-link-integrity-01M4VB0N/WP04-relative-md-link-rewrite/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1435609,
-      "shell_pid_created_at": "1791923819.17"
+      "role": "reviewer",
+      "shell_pid": 1445374,
+      "shell_pid_created_at": "1791924088.8",
+      "subtasks": {
+        "T016": "done",
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done"
+      }
     },
     "WP05": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4VHGBE1G40TXD03HM4WXRGB",
       "last_transition_at": "2026-10-13T21:08:13.889794+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review",
+        "Rework cycle 1: review feedback addressed",
+        "Review passed (cycle 2, commit 4990375): B1/M1/m1-m5 resolved. Gates exit 0 with 1084 refs, drafts on and off; consumer fixture exit 0 plain and --strict, both ways. Out-of-map edits (routeOfSlug index->/, unpublishedDraftPaths 3rd param + root exemption) match the loader and are output-neutral for docs, example/docs and the consumer fixture under all four index settings. All five requested reverts go red. Minor, non-blocking: (1) 'lets a draft page link to another draft' is now inert, it needs --strict; (2) no test fails when unpublishedDraftPaths ignores its indexBasename argument; (3) directory/extensionless draft check (resolvesToDraft) still matches index names case-sensitively: g/Readme.md draft + ./g/ passes on a strict root with drafts off; (4) --help first line says 'exactly when the build would rewrite it', which holds on strict roots only. Cross-package for WP01/WP04: Starlight slugToParam also strips a trailing /index, so a non-index or demoted x/index.md is served at /x/, while the table says /x/index/ (pre-existing WP01 rule, pinned again in the new route-table case); root README.md + root index.md both map to / with no collision under a README-only setting."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/generated-page-and-link-integrity-01M4VB0N-coord/kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP05-check-links-agrees-with-build/review-cycle-2.md",
         "reference": "review-cycle://generated-page-and-link-integrity-01M4VB0N/WP05-check-links-agrees-with-build/review-cycle-2.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1359006,
-      "shell_pid_created_at": "1791922352.87"
+      "role": "reviewer",
+      "shell_pid": 1387587,
+      "shell_pid_created_at": "1791922752.14",
+      "subtasks": {
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
     },
     "WP06": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4VHGZ8520WNYTFSW9CS1NMW",
       "last_transition_at": "2026-10-13T21:08:34.181602+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review; consumer proof not run locally, CI is the verifier",
+        "Rework cycle 1: assertions bound to authored content; proof not run locally",
+        "Rework cycle 2: hub assertion bounded to page content; proof not run locally",
+        "Review passed: cycle-3 re-review of 490a864. Hub assertion now slices <main to first <footer; on the pre-package build that slice holds exactly two anchors (body ./rhetoric/ and dk-hub__card). Verified on scratch copies: unmodified passes; body+card removed with sidebar and rel=next kept FAILS; either link alone passes; no footer after main fails the footer check and the context check. Commit touches only assert-consumer-surfaces.mjs; node --check passes. Not run end to end; CI Consumption test is the verifier."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/generated-page-and-link-integrity-01M4VB0N-coord/kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP06-consumer-proof/review-cycle-3.md",
         "reference": "review-cycle://generated-page-and-link-integrity-01M4VB0N/WP06-consumer-proof/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1464489,
-      "shell_pid_created_at": "1791925300.17"
+      "role": "reviewer",
+      "shell_pid": 1466379,
+      "shell_pid_created_at": "1791925421.36",
+      "subtasks": {
+        "T026": "done",
+        "T027": "done",
+        "T028": "done",
+        "T029": "done"
+      }
     },
     "WP07": {
       "actor": "merge",
       "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M4VHH5XA7M66TED24QJPAKHC",
       "last_transition_at": "2026-10-13T21:08:41.002542+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review",
+        "Rework cycle 1: review feedback addressed",
+        "Rework cycle 2: stale glossary bullet replaced; guide lists completed",
+        "Review passed (round 3): the stale glossary bullet in docs/architecture/gherkin-pages.md is replaced by a statement that matches generatedIndexBasename (glossary prefer:'index', Gherkin first name); guide additions match checkMarkdownLink (up-and-back-in and malformed % escape reported on every root); ADR-0047 Option A is a re-wrap only; no superseded claim left in the owned documents; adr-index, frontmatter, check-links (drafts on/off) and guide-path gates all exit 0. Non-blocking wording: two over-long lines in consumer-setup.md (507, 695) want re-wrapping; the malformed-% and up-and-back-in cases apply to .md/.mdx links only, which the upgrade bullet could say."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/generated-page-and-link-integrity-01M4VB0N-coord/kitty-specs/generated-page-and-link-integrity-01M4VB0N/tasks/WP07-records-and-docs/review-cycle-3.md",
         "reference": "review-cycle://generated-page-and-link-integrity-01M4VB0N/WP07-records-and-docs/review-cycle-3.md",
         "reviewer": "claude",
         "verdict": "approved"
       },
-      "shell_pid": 1465924,
-      "shell_pid_created_at": "1791925385.77"
+      "role": "reviewer",
+      "shell_pid": 1467694,
+      "shell_pid_created_at": "1791925502.14",
+      "subtasks": {
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done",
+        "T034": "done"
+      }
     }
   }
 }

@@ -17,6 +17,7 @@ agent_profile: scribe-sally
 authoritative_surface: docs/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - docs/architecture/slide-decks.md
 - docs/adr/0012-slide-decks-static-reveal-from-markdown.md

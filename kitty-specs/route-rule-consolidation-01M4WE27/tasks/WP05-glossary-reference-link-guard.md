@@ -25,6 +25,7 @@ agent_profile: implementer-ivan
 authoritative_surface: src/lib/remark/glossary-autolink.internal.ts
 create_intent: []
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - src/lib/remark/glossary-autolink.internal.ts

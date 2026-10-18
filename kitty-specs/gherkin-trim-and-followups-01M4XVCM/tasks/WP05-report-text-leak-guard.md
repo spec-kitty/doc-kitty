@@ -27,11 +27,14 @@ history:
 agent_profile: implementer-ivan
 authoritative_surface: src/scripts/assert-build-artifacts.mjs
 execution_mode: code_change
+lane: planned
+mission_id: 01M4XVCM3XBX6BXHXDZFBPX7ZV
 model: sonnet
 owned_files:
 - src/scripts/assert-build-artifacts.mjs
 - src/lib/gherkin/results-overlay.mjs
 role: implementer
+wp_code: WP05
 ---
 # WP05 — No report text in any built output
 

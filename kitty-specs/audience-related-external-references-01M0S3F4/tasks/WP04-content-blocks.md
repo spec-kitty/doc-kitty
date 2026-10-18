@@ -35,6 +35,7 @@ create_intent:
 - src/components/slots/Related.astro
 - src/components/slots/ExternalReferences.astro
 execution_mode: code_change
+lane: planned
 owned_files:
 - src/components/MarkdownContent.astro
 - src/components/slots/Audience.astro

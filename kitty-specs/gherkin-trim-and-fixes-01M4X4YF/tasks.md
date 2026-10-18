@@ -46,7 +46,7 @@ red test committed alone through the existing entry point, then the fix.
 
 ## WP01 — Worked-example parity and the status-shorthand warning
 
-**Prompt**: [tasks/WP01-parity-and-status-shorthand.md](tasks/WP01-parity-and-status-shorthand.md)
+**Prompt**: [tasks/WP01-parity-and-status-shorthand.md
 **Goal**: #128 one source of truth for `book-consignment.feature`; #123 near-miss warning.
 **Priority**: P1. **Independent test**: `vitest run tests/gherkin-feature-core.test.ts tests/gherkin-fixture-parity.test.ts`.
 
@@ -59,7 +59,7 @@ Dependencies: none. Risks: example must stay warning-free.
 
 ## WP02 — Draft hubs for draft-only directories
 
-**Prompt**: [tasks/WP02-draft-only-directory-hubs.md](tasks/WP02-draft-only-directory-hubs.md)
+**Prompt**: [tasks/WP02-draft-only-directory-hubs.md
 **Goal**: #124 option 1, generation independent of the draft setting.
 **Priority**: P1. **Independent test**: `vitest run tests/gherkin-generate.test.ts`.
 
@@ -72,7 +72,7 @@ Dependencies: WP01. Risks: R3 purity; parent hub must not link a draft hub.
 
 ## WP03 — `gherkin.titles`
 
-**Prompt**: [tasks/WP03-gherkin-titles.md](tasks/WP03-gherkin-titles.md)
+**Prompt**: [tasks/WP03-gherkin-titles.md
 **Goal**: #125.
 **Priority**: P2. **Independent test**: `vitest run tests/gherkin-options.test.ts tests/gherkin-generate.test.ts tests/gherkin-example.test.ts tests/gherkin-check-cli.test.ts`; `pnpm validate:features`.
 
@@ -87,7 +87,7 @@ Dependencies: WP02. Risks: config literal parsing in `gherkin-example.test.ts`; 
 
 ## WP04 — Advertised scenario index must exist
 
-**Prompt**: [tasks/WP04-scenario-index-check.md](tasks/WP04-scenario-index-check.md)
+**Prompt**: [tasks/WP04-scenario-index-check.md
 **Goal**: #126 option 2 as a build-end check.
 **Priority**: P2. **Independent test**: `vitest run tests/gherkin-integration.test.ts`.
 
@@ -99,7 +99,7 @@ Dependencies: WP03 (both edit `config.ts`). Risks: integration-name pins must no
 
 ## WP05 — Trim the Gherkin suites
 
-**Prompt**: [tasks/WP05-trim-gherkin-suites.md](tasks/WP05-trim-gherkin-suites.md)
+**Prompt**: [tasks/WP05-trim-gherkin-suites.md
 **Goal**: #156.
 **Priority**: P1 (release gate). **Independent test**: `pnpm test` green; every RETIRE has planted-break evidence.
 
@@ -112,7 +112,7 @@ Dependencies: WP04. Risks: coverage disguised as a duplicate.
 
 ## WP06 — Records and adopter docs
 
-**Prompt**: [tasks/WP06-records-and-docs.md](tasks/WP06-records-and-docs.md)
+**Prompt**: [tasks/WP06-records-and-docs.md
 **Goal**: ADR, guides, changelog.
 **Priority**: P2. **Independent test**: `pnpm validate:docs`, `pnpm validate:adr-index`, `pnpm validate:links`.
 

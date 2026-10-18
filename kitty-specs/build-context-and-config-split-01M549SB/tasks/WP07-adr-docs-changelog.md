@@ -39,6 +39,7 @@ authoritative_surface: docs/
 create_intent:
 - docs/adr/0058-build-state-owner-and-config-split.md
 execution_mode: code_change
+lane: planned
 model: sonnet
 owned_files:
 - docs/adr/0058-build-state-owner-and-config-split.md

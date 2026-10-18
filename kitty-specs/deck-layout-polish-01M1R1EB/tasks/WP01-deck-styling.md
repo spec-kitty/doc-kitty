@@ -25,6 +25,7 @@ authoritative_surface: src/styles/dk-reveal-theme.css
 create_intent:
 - src/tests/deck-theme-parity.test.ts
 execution_mode: code_change
+lane: planned
 model: claude-sonnet-5
 owned_files:
 - src/styles/dk-reveal-theme.css

@@ -15,19 +15,20 @@ subtasks:
 - T022
 - T023
 - T024
+agent: claude
 history:
 - '2026-08-29: authored by /spec-kitty.tasks'
+agent_profile: frontend-freddy
 authoritative_surface: src/lib/rehype/markua-toc-demote.ts
 create_intent:
 - src/lib/rehype/markua-toc-demote.ts
 - src/tests/markua-toc-demote.test.ts
 execution_mode: code_change
+lane: planned
+model: opus
 owned_files:
 - src/lib/rehype/markua-toc-demote.ts
 - src/tests/markua-toc-demote.test.ts
-agent_profile: frontend-freddy
-agent: claude
-model: opus
 role: implementer
 tags: []
 tracker_refs: []

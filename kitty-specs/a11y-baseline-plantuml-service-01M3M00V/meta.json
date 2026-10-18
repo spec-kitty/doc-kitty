@@ -21,7 +21,7 @@
   "merged_commit": "e1f3272ac382a69207ac38075cae7ce3ff93ccef",
   "mid8": "01M3M00V",
   "mission_id": "01M3M00VBVXS8132VENRKH7BYV",
-  "mission_number": null,
+  "mission_number": "",
   "mission_slug": "a11y-baseline-plantuml-service-01M3M00V",
   "mission_type": "software-dev",
   "pr_bound": true,

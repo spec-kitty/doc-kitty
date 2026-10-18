@@ -16,6 +16,7 @@ agent_profile: implementer-ivan
 authoritative_surface: tests/a11y/
 create_intent: []
 execution_mode: code_change
+lane: planned
 owned_files:
 - tests/a11y/glossary.spec.ts
 role: implementer

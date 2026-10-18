@@ -30,6 +30,7 @@ create_intent:
 - src/tests/fixtures/persona/valid-persona.md
 - src/tests/fixtures/persona/missing-role.md
 execution_mode: code_change
+lane: planned
 owned_files:
 - example/docs/context/audience/**
 - src/scripts/validate-frontmatter.mjs
