@@ -88,6 +88,31 @@ describe('docKittyFavicon integration', () => {
     expect(readFileSync(emitted, 'utf8')).toBe(bytes);
   });
 
+  it('dev middleware serves the favicon at the base-less root path too', () => {
+    const { specifier, resolveFrom, bytes } = fixturePackage();
+    const integration = docKittyFavicon(specifier, { resolveFrom }, '/doc-kitty');
+    let plugin: { configureServer: (s: unknown) => void } | undefined;
+    integration.hooks['astro:config:setup']!({
+      updateConfig: (c: { vite: { plugins: typeof plugin[] } }) => {
+        plugin = c.vite.plugins[0];
+      },
+    } as never);
+    let handler!: (req: unknown, res: unknown, next: () => void) => void;
+    plugin!.configureServer({ middlewares: { use: (fn: typeof handler) => (handler = fn) } });
+
+    const serve = (url: string): string | null => {
+      let body: string | null = null;
+      handler(
+        { url },
+        { setHeader: vi.fn(), end: (b: Buffer) => (body = b.toString()) },
+        () => {},
+      );
+      return body;
+    };
+    expect(serve(`/doc-kitty/${DK_FAVICON_BASENAME}.svg`)).toBe(bytes);
+    expect(serve(`/${DK_FAVICON_BASENAME}.svg?v=1`)).toBe(bytes);
+  });
+
   it('is a no-op when the theme declares no favicon', async () => {
     const outDir = mkdtempSync(path.join(tmpdir(), 'dk-dist-'));
     const integration = docKittyFavicon(undefined, {});

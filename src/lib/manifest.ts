@@ -162,6 +162,7 @@ export function docKittyManifest(resolved: ResolvedTheme): AstroIntegration {
   const manifestSource = generateManifestSource(resolved);
   const themeCss = emitTokenSheet(resolved);
   const RESOLVED_MANIFEST = `\0${MANIFEST_MODULE_ID}`;
+  const isThemeCss = (id: string): boolean => id.split('?')[0] === THEME_CSS_MODULE_ID;
 
   // A minimal Vite plugin; its shape is checked structurally against Vite's
   // `PluginOption` at the `updateConfig({ vite })` call below (no `vite` type
@@ -172,12 +173,14 @@ export function docKittyManifest(resolved: ResolvedTheme): AstroIntegration {
       // JS manifest: \0-prefixed so no other plugin transforms it.
       if (id === MANIFEST_MODULE_ID) return RESOLVED_MANIFEST;
       // CSS sheet: keep the `.css` id (un-prefixed) so Vite treats it as CSS.
-      if (id === THEME_CSS_MODULE_ID) return THEME_CSS_MODULE_ID;
+      // Any query suffix (`?inline`, `?direct`, …) still names the sheet; keep it
+      // on the id so Vite applies the query's own handling in `astro dev`.
+      if (isThemeCss(id)) return id;
       return null;
     },
     load(id: string): string | null {
       if (id === RESOLVED_MANIFEST) return manifestSource;
-      if (id === THEME_CSS_MODULE_ID) return themeCss;
+      if (isThemeCss(id)) return themeCss;
       return null;
     },
   };

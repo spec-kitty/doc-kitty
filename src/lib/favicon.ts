@@ -98,6 +98,9 @@ export function docKittyFavicon(
   const emitting = Boolean(favicon) && href !== favicon;
   const fileName = href ? href.slice(1) : '';
   const devPath = `${base}/${fileName}`.replace(/\/{2,}/g, '/');
+  // `astro dev` also answers the unprefixed path, so a site with a `base` does
+  // not 404 a bare `/<file>` request.
+  const devPaths = new Set([devPath, `/${fileName}`]);
 
   return {
     name: 'doc-kitty:favicon',
@@ -116,7 +119,7 @@ export function docKittyFavicon(
                 }) {
                   server.middlewares.use((req, res, next) => {
                     const url = (req as { url?: string }).url ?? '';
-                    if (url.split('?')[0] !== devPath) return next();
+                    if (!devPaths.has(url.split('?')[0])) return next();
                     const file = resolveFaviconFile(favicon!, resolveFrom);
                     if (!file) return next();
                     const response = res as {
