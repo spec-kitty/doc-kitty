@@ -55,7 +55,7 @@ import {
   normalizeIndexBasenames,
   OKF_VERSION,
 } from '../vocabulary-core.mjs';
-import { makeStamp } from '../generator-stamp.mjs';
+import { GLOSSARY_PRODUCER, makeStamp, serializeStamp } from '../generator-stamp.mjs';
 import type { SharedTermIndex, Term } from './types.js';
 
 /**
@@ -162,9 +162,6 @@ function renderTerm(term: Term, anchor: string): string[] {
 const HUB_KEYS = ['okf_version', 'title', 'description', 'kind', 'doc_status'];
 const CONTEXT_KEYS = ['okf_version', 'title', 'description', 'kind', 'glossary_context', 'doc_status'];
 
-/** The producer id of the glossary's `generated.by` stamp (`doc-kitty-glossary/<version>`). */
-const GLOSSARY_PRODUCER = 'doc-kitty-glossary';
-
 /** The `generated:` block (stable key order: by, at, content_hash). */
 const STAMP_BLOCK = /^generated:\n(?: {2}.*\n)+/m;
 
@@ -181,12 +178,7 @@ function stampPage(text: string, file: string, now: Date | undefined): string {
     previous: readFrontmatter(file)?.generated as { at?: string; content_hash?: string } | undefined,
     now,
   });
-  const block = [
-    'generated:',
-    `  by: ${yamlString(stamp.by)}`,
-    `  at: ${yamlString(stamp.at)}`,
-    `  content_hash: ${yamlString(stamp.content_hash)}`,
-  ].join('\n');
+  const block = serializeStamp(stamp).join('\n');
   const close = text.indexOf('\n---\n', 3);
   return `${text.slice(0, close)}\n${block}${text.slice(close)}`;
 }

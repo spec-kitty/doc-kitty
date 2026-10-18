@@ -11,14 +11,25 @@
 
 import { readFileSync } from 'node:fs';
 import { formatInstant } from './vocabulary-core.mjs';
-// The legacy unversioned Gherkin stamp, single-sourced where it is written.
-import { GENERATED_BY as LEGACY_GHERKIN_STAMP } from './gherkin/feature-core.mjs';
+
+/** The producer id of the Gherkin pipeline's stamp (`doc-kitty-gherkin/<version>`). */
+export const GHERKIN_PRODUCER = 'doc-kitty-gherkin';
+
+/** The producer id of the glossary codegen's stamp (`doc-kitty-glossary/<version>`). */
+export const GLOSSARY_PRODUCER = 'doc-kitty-glossary';
+
+/**
+ * The LEGACY `generated.by` stamp (unversioned) of Gherkin pages written before
+ * versioned stamps. Still needed: pages not yet regenerated carry it and must stay
+ * recognised (exemptions, include scan) until they are. New pages never get it.
+ */
+export const LEGACY_GENERATED_BY = 'doc-kitty/gherkin';
 
 /**
  * The OWNERSHIP producers: they generate (and so own) the pages they stamp
  * (each stamps `<producer>/<version>`). Only these make a page "generated".
  */
-export const PRODUCERS = Object.freeze(['doc-kitty-gherkin', 'doc-kitty-glossary']);
+export const PRODUCERS = Object.freeze([GHERKIN_PRODUCER, GLOSSARY_PRODUCER]);
 
 /**
  * The PROVENANCE-ONLY producer: the scaffold stamps the starting point of a page
@@ -29,10 +40,44 @@ export const PRODUCERS = Object.freeze(['doc-kitty-gherkin', 'doc-kitty-glossary
 export const SCAFFOLD_PRODUCER = 'doc-kitty-scaffold';
 
 /**
- * Stamps written before versioned stamps existed. Still recognised so pages not
- * yet regenerated keep their generated-page exemptions.
+ * Stamps written before versioned stamps existed, keyed by the producer that
+ * wrote them. Still recognised so pages not yet regenerated keep their
+ * generated-page exemptions.
  */
-export const LEGACY_STAMPS = Object.freeze([LEGACY_GHERKIN_STAMP]);
+export const LEGACY_STAMP_BY_PRODUCER = Object.freeze({ [GHERKIN_PRODUCER]: LEGACY_GENERATED_BY });
+
+export const LEGACY_STAMPS = Object.freeze(Object.values(LEGACY_STAMP_BY_PRODUCER));
+
+/**
+ * The content hash a generated page's `generated` stamp records: `content_hash`,
+ * else the legacy `at` when that still holds a `sha256:` hash (stamps written
+ * before `at` became an instant). The ONE reader every consumer routes through,
+ * so none treats an instant as a hash.
+ *
+ * @param {{ at?: unknown, content_hash?: unknown } | undefined | null} generated
+ * @returns {string | undefined} `sha256:<hex>` (or undefined: no recorded hash)
+ */
+export function stampContentHash(generated) {
+  if (typeof generated?.content_hash === 'string') return generated.content_hash;
+  const { at } = generated ?? {};
+  return typeof at === 'string' && at.startsWith('sha256:') ? at : undefined;
+}
+
+/**
+ * The `generated:` block lines, in the stable key order `by`, `at`, `content_hash`
+ * (JSON-quoted scalars). The ONE serializer for every generator.
+ *
+ * @param {{ by: string, at: string, content_hash: string }} stamp
+ * @returns {string[]}
+ */
+export function serializeStamp(stamp) {
+  return [
+    'generated:',
+    `  by: ${JSON.stringify(stamp.by)}`,
+    `  at: ${JSON.stringify(stamp.at)}`,
+    `  content_hash: ${JSON.stringify(stamp.content_hash)}`,
+  ];
+}
 
 /** @type {string | undefined} */
 let cachedVersion;
@@ -92,6 +137,7 @@ export function isGeneratedStamp(by, producer) {
   if (typeof by !== 'string') return false;
   const producers = producer ? [producer] : PRODUCERS;
   if (producers.some((p) => by.startsWith(`${p}/`) && by.length > p.length + 1)) return true;
-  // The legacy stamp is the Gherkin pipeline's: a named other producer never owns it.
-  return (!producer || producer === 'doc-kitty-gherkin') && LEGACY_STAMPS.includes(by);
+  // A named producer recognises only its own legacy stamp.
+  const legacy = producer ? [LEGACY_STAMP_BY_PRODUCER[producer]] : LEGACY_STAMPS;
+  return legacy.includes(by);
 }

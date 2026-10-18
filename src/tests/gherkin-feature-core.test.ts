@@ -20,9 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import {
-  GHERKIN_PRODUCER,
   DEFAULT_GUIDANCE_TEXT,
-  stampContentHash,
   buildFrontmatter,
   deriveDescription,
   extractNarrative,
@@ -32,7 +30,7 @@ import {
   serializeFrontmatter,
   truncateDescription,
 } from '../lib/gherkin/feature-core.mjs';
-import { makeStamp } from '../lib/generator-stamp.mjs';
+import { GHERKIN_PRODUCER, makeStamp, stampContentHash } from '../lib/generator-stamp.mjs';
 import { loadSectionRegistry } from '../lib/vocabulary-loader.mjs';
 
 const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -463,7 +461,8 @@ describe('the pure gherkin modules import only their allow-list (import-scan)', 
   const stripComments = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
   it.each([
-    ['feature-core.mjs', ['../vocabulary-core.mjs', './text.mjs']],
+    // generator-stamp.mjs: the one stamp owner; core only calls its pure serializeStamp (fs is used solely by toolkitVersion, which core never calls).
+    ['feature-core.mjs', ['../generator-stamp.mjs', '../vocabulary-core.mjs', './text.mjs']],
     ['render.mjs', ['./results.mjs', './text.mjs', './view.mjs']],
     ['view.mjs', ['../vocabulary-core.mjs', './text.mjs']],
     ['mdast.mjs', ['./results.mjs', './view.mjs']],

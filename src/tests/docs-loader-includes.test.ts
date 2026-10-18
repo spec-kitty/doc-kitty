@@ -36,7 +36,7 @@ import { pathToFileURL } from 'node:url';
 import { docKittyDocsLoader } from '../lib/schema.js';
 import { MAX_INCLUDE_BYTES } from '../lib/gherkin/include-path.mjs';
 import { DK_GHERKIN_RESULTS_ENV, GENERATED_MARKER, gherkinIncludeSources } from '../lib/gherkin/include-scan.mjs';
-import { GHERKIN_PRODUCER } from '../lib/gherkin/feature-core.mjs';
+import { GHERKIN_PRODUCER } from '../lib/generator-stamp.mjs';
 
 restoreInternalEnv();
 

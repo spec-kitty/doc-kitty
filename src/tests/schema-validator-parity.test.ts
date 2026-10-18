@@ -10,9 +10,8 @@ import {
   GENERATED_BY_STAMPS,
   isGeneratedPage,
 } from '../scripts/validate-frontmatter.mjs';
-import { GENERATED_BY as GHERKIN_GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
 import { parseActor, isActor, normaliseInstant } from '../lib/vocabulary-core.mjs';
-import { makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
+import { LEGACY_GENERATED_BY as GHERKIN_GENERATED_BY, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
