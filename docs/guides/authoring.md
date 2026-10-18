@@ -32,8 +32,12 @@ related:
    a section `README.md`.
 
 3. **Fill in metadata.** Required: `title`, `description`, `status`, `updated`,
-   `type`. Add optional fields (`tags`, `related`, `authors`, `agent`, …) only
-   when there's a real value. See [the convention](../context/convention.md).
+   `type`. Write `updated` as a UTC instant (`2026-10-18T09:30:00Z`); a date-only
+   value is still read, with a warning. Write `authors` as actors such as
+   `human:stijn`, not email addresses. Add optional fields (`tags`, `related`,
+   `agent`, …) only when there's a real value. See
+   [the convention](../context/convention.md) and the
+   [metadata model](../architecture/metadata-model.md#okf-alignment).
 
 4. **Validate:**
 

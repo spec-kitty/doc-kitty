@@ -311,6 +311,9 @@ page describes the contract; ADR-0009 records the decisions and their rationale.
 [ADR-0059](../adr/0059-content-graph-and-okf-alignment.md) aligns the tree with
 the Open Knowledge Format (OKF v0.2). Our own `docs/` and `example/docs/` trees
 were migrated once; the doc-sanity gate warns (never fails) on the old forms.
+The [content graph](./content-graph.md) and the
+[OKF export guide](../guides/export-okf-bundle.md) describe what consumes these
+fields.
 
 ### Instants
 
