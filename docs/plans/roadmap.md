@@ -2,11 +2,11 @@
 title: Roadmap
 description: "Phased plan for doc-kitty, split into MVP and extended scope with MoSCoW priorities."
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Plan
 kind: Planning
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - architecture/ci-cd-pipeline
   - adr/0010-planning-kinds-and-moscow

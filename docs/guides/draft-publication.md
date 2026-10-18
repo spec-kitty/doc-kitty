@@ -2,12 +2,12 @@
 title: Draft publication — keep drafts off the live site
 description: Set DK_PUBLISH_DRAFTS=off in your live deployment. What the setting does, where to set it, and how to check that a deployment publishes no draft.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Guide
 kind: How-To
 tags: [drafts, deployment, configuration, consumer]
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - guides/consumer-setup
   - guides/authoring

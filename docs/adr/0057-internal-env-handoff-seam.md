@@ -2,11 +2,11 @@
 title: "ADR-0057: One owner for DocKitty's internal environment handoffs"
 description: DocKitty passes five settings between its own parts through process.env; one module now names, writes and clears them.
 doc_status: active
-updated: 2026-10-15
+updated: 2026-10-15T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0050-route-collisions-and-single-index-setting
   - adr/0055-gherkin-scenario-results

@@ -2,7 +2,7 @@
 title: CI gate single-sourced and nightly smoke repaired
 description: The a11y lane folded into the ci-ok decision helper, plus six fixes to the nightly smoke and the published site's links and favicon.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [ci, nightly, accessibility, links]

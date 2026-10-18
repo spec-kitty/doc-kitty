@@ -2,11 +2,11 @@
 title: "ADR-0049: OpenAPI reference pages through an existing integration"
 description: Build API reference pages from an OpenAPI definition with an existing Starlight integration that keeps DocKitty's frame, theming and gates intact.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0026-glossary-source-and-generation-seam
   - adr/0046-gherkin-feature-pages

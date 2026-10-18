@@ -2,7 +2,7 @@
 title: Example content from ars-rethorica — the docsite showcase corpus
 description: "The ars-rethorica showcase lands in the example site: Introduction, Preamble, Book I (15 chapters), Book II/III landings, a generated rhetoric glossary, and two reader personas."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [example, content, markua, footnotes, glossary, personas, showcase]

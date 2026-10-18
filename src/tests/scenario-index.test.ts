@@ -129,7 +129,8 @@ function featurePage(
       kind: 'Specification',
       doc_status: 'active',
       sources: [{ resource, title: 'Gherkin source' }],
-      generated: { by: 'doc-kitty/gherkin', at },
+      // The current stamp: `at` is an instant, the source hash lives in `content_hash`.
+      generated: { by: 'doc-kitty-gherkin/1.0.0', at: '2026-10-18T09:30:00Z', content_hash: at },
       ...extra,
     },
   };

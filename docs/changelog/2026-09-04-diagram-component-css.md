@@ -2,7 +2,7 @@
 title: Diagrams render as clean figures, and component CSS survives branding
 description: "Closes #59/#60/#68 — Mermaid diagrams no longer render as boxed code-cards, captions are styled, and branded sites ship styled callouts and diagrams on docs and decks."
 doc_status: active
-updated: 2026-09-04
+updated: 2026-09-04T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [diagrams, theming, accessibility, css]

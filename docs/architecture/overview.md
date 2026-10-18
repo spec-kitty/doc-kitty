@@ -2,7 +2,7 @@
 title: Overview
 description: Components and data flow of the DocKitty toolkit.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [astro, starlight, okf]

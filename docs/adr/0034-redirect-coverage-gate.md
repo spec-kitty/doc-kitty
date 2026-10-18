@@ -2,11 +2,11 @@
 title: "ADR-0034: Redirect-coverage primitive — committed baseline, native redirects, target-aware bare-Node gate"
 description: A committed URL baseline, Astro's native redirects for emission, and a bare-Node target-aware CI gate give migrating adopters the redirect-parity doc-kitty lacked.
 doc_status: active
-updated: 2026-09-03
+updated: 2026-09-03T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0033-flexible-section-identity
   - adr/0029-sidebar-autogenerate-content-root-coupling

@@ -2,11 +2,11 @@
 title: "ADR-0013: M1 chrome substrate — single-layer manifest and static token delivery"
 description: How the M1 metadata chrome ships the ADR-0011 slot surface in a degenerate single-layer form that M2 extends without rework.
 doc_status: active
-updated: 2026-08-23
+updated: 2026-08-23T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0008-swappable-theme-layer

@@ -2,11 +2,11 @@
 title: Gherkin feature pages
 description: "How the opt-in gherkin preset turns .feature files into Specification pages, and renders Gherkin fences and includes in any page: pipelines, seams, gates and limits."
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
-  - ivan@spec-kitty.ai
+  - human:ivan
 tags: [gherkin, bdd, living-documentation, codegen, glossary]
 related:
   - adr/0046-gherkin-feature-pages

@@ -35,6 +35,7 @@
  * It is **wired** by WP08's config hook (not here) and **dormant** until WP09 lands
  * the example `.contextive/definitions.yaml`.
  */
+import { createHash } from 'node:crypto';
 import matter from 'gray-matter';
 import {
   existsSync,
@@ -52,7 +53,9 @@ import {
   generatedIndexBasename,
   isPlainIndexName,
   normalizeIndexBasenames,
+  OKF_VERSION,
 } from '../vocabulary-core.mjs';
+import { makeStamp } from '../generator-stamp.mjs';
 import type { SharedTermIndex, Term } from './types.js';
 
 /**
@@ -149,12 +152,44 @@ function renderTerm(term: Term, anchor: string): string[] {
 }
 
 /**
- * The exact frontmatter key set the generator writes, per position. This is how a
- * generated page is recognised (no `generated:` stamp is allowed, C-003): an authored
- * page that adds, drops or renames any field is not a match and is never removed.
+ * The frontmatter key set the generator writes, per position (plus the optional
+ * `generated` stamp, see {@link hasGeneratorKeys}). This is how a generated page is
+ * recognised: an authored page that adds, drops or renames any field is not a match
+ * and is never removed. The stamp overrides the former C-003 rule that forbade a
+ * `generated:` key (FR-005, #177; recorded in the ADR-0059 addendum); pages written
+ * before the stamp existed (no `generated`) are still recognised.
  */
-const HUB_KEYS = ['title', 'description', 'kind', 'doc_status'];
-const CONTEXT_KEYS = ['title', 'description', 'kind', 'glossary_context', 'doc_status'];
+const HUB_KEYS = ['okf_version', 'title', 'description', 'kind', 'doc_status'];
+const CONTEXT_KEYS = ['okf_version', 'title', 'description', 'kind', 'glossary_context', 'doc_status'];
+
+/** The producer id of the glossary's `generated.by` stamp (`doc-kitty-glossary/<version>`). */
+const GLOSSARY_PRODUCER = 'doc-kitty-glossary';
+
+/** The `generated:` block (stable key order: by, at, content_hash). */
+const STAMP_BLOCK = /^generated:\n(?: {2}.*\n)+/m;
+
+/**
+ * Add the `generated` stamp to a rendered page. `content_hash` covers the page
+ * WITHOUT the stamp, so a rerun over unchanged input hashes identically; `at` is
+ * carried over from the page already at `file` until that hash moves.
+ */
+function stampPage(text: string, file: string, now: Date | undefined): string {
+  const hash = createHash('sha256').update(text).digest('hex');
+  const stamp = makeStamp({
+    producer: GLOSSARY_PRODUCER,
+    hash,
+    previous: readFrontmatter(file)?.generated as { at?: string; content_hash?: string } | undefined,
+    now,
+  });
+  const block = [
+    'generated:',
+    `  by: ${yamlString(stamp.by)}`,
+    `  at: ${yamlString(stamp.at)}`,
+    `  content_hash: ${yamlString(stamp.content_hash)}`,
+  ].join('\n');
+  const close = text.indexOf('\n---\n', 3);
+  return `${text.slice(0, close)}\n${block}${text.slice(close)}`;
+}
 
 /** The hub page body: a bullet list linking every context (name-sorted). */
 function renderHub(contexts: Array<{ name: string; slug: string; vision?: string }>): string {
@@ -163,6 +198,7 @@ function renderHub(contexts: Array<{ name: string; slug: string; vision?: string
     return vision ? `${link} — ${vision}` : link;
   });
   const body = frontmatter([
+    ['okf_version', yamlString(OKF_VERSION)],
     ['title', yamlString('Glossary')],
     ['description', yamlString('Bounded-context vocabulary for this documentation.')],
     ['kind', 'Hub'],
@@ -184,6 +220,7 @@ function renderContextPage(
   anchors: Map<string, string>,
 ): string {
   const head = frontmatter([
+    ['okf_version', yamlString(OKF_VERSION)],
     ['title', yamlString(name)],
     ['description', yamlString(`Glossary terms for the ${name} context.`.slice(0, 180))],
     ['kind', 'Glossary'],
@@ -244,10 +281,12 @@ function hasGeneratedKind(data: Record<string, unknown> | null, kind: string): d
   return data !== null && data.kind === kind;
 }
 
-/** Condition 4: exactly the generator's key set (order-insensitive). */
+/** Condition 4: exactly the generator's key set, with or without the stamp (order-insensitive). */
 function hasGeneratorKeys(data: Record<string, unknown>, keys: string[]): boolean {
   const own = Object.keys(data);
-  return own.length === keys.length && keys.every((k) => own.includes(k));
+  // `okf_version` is optional: pages written before it was emitted are still recognised.
+  const required = keys.filter((k) => k !== 'okf_version');
+  return required.every((k) => own.includes(k)) && own.every((k) => k === 'generated' || keys.includes(k));
 }
 
 /** Files directly in `dir` whose base name (sans `.md`) is in `names`, case-insensitively. */
@@ -268,6 +307,8 @@ function indexFilesIn(dir: string, names: Set<string>): string[] {
  *                      file name written is `generatedIndexBasename(…, { prefer: 'index' })`,
  *                      so the pages are a section index on THIS site (FR-006).
  * @param warn          where a kept look-alike is reported (default `console.warn`).
+ * @param now           injectable clock: a page's `generated.at` takes it only when
+ *                      the page's content changed (the on-disk `at` is carried over).
  * @returns the written file paths (hub first, then contexts name-sorted); `[]` when
  *          the index is absent or has no contexts (presence gate, INV-G4).
  * @throws  when an AUTHORED file already sits at a path this generator writes (FR-007);
@@ -278,6 +319,7 @@ export function generateGlossaryPages(
   outDocsDir: string,
   indexBasename: GlossaryIndexBasename,
   warn: (message: string) => void = (m) => console.warn(m),
+  now?: Date,
 ): string[] {
   // Presence gate (INV-G4): nothing to generate → write nothing, return [].
   if (!index || index.contexts.size === 0) return [];
@@ -350,7 +392,7 @@ export function generateGlossaryPages(
 
   mkdirSync(glossaryDir, { recursive: true });
   const hubPath = targets[0].path;
-  const hubText = renderHub(contexts);
+  const hubText = stampPage(renderHub(contexts), hubPath, now);
   writeFileSync(hubPath, hubText, 'utf8');
   written.push(hubPath);
 
@@ -361,7 +403,11 @@ export function generateGlossaryPages(
     const contextDir = join(glossaryDir, context.slug);
     mkdirSync(contextDir, { recursive: true });
     const pagePath = join(contextDir, `${target}.md`);
-    const pageText = renderContextPage(context.name, context.vision, context.terms, context.anchors);
+    const pageText = stampPage(
+      renderContextPage(context.name, context.vision, context.terms, context.anchors),
+      pagePath,
+      now,
+    );
     writeFileSync(pagePath, pageText, 'utf8');
     written.push(pagePath);
     positions.push({ dir: contextDir, kind: 'Glossary', keys: CONTEXT_KEYS, current: pageText });
@@ -375,6 +421,11 @@ export function generateGlossaryPages(
     warn,
   );
   return written;
+}
+
+/** A page's text without its `generated:` stamp block. */
+function stripStamp(text: string): string {
+  return text.replace(STAMP_BLOCK, '');
 }
 
 /**
@@ -419,7 +470,9 @@ function pruneStaleIndexPages(
         );
         continue;
       }
-      if (!readFileSync(file).equals(Buffer.from(t.current, 'utf8'))) {
+      // The stamp (version, instant) is not content: a leftover differs from the page just
+      // written only by it, so compare without it.
+      if (stripStamp(readFileSync(file, 'utf8')) !== stripStamp(t.current)) {
         warn(
           `Glossary generation: keeping ${file}: it looks like a generated ${t.kind} page ` +
             'but its content differs from the page the generator just wrote at this position, ' +

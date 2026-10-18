@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Context
 description: Why DocKitty exists, what it solves for, the convention it renders, and why agents are first-class readers.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Context
 kind: Hub
 agent:

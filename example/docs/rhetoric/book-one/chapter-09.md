@@ -2,7 +2,7 @@
 title: "Chapter 9: Epideictic Rhetoric, praise and blame, virtue and vice"
 description: "Aristotle defines virtue and the noble, then sets out the topics and amplification techniques used in epideictic praise and blame."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

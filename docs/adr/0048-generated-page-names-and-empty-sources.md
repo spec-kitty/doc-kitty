@@ -2,11 +2,11 @@
 title: "ADR-0048: Generated index page names and empty Gherkin sources"
 description: Glossary index pages follow the site's index name, and the Gherkin generator stops on empty sources instead of deleting pages; amends ADR-0026 and ADR-0046.
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0026-glossary-source-and-generation-seam
   - adr/0046-gherkin-feature-pages

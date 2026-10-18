@@ -2,11 +2,11 @@
 title: "ADR-0039: One shared glossary link-node builder + aria-label term affordance"
 description: Collapse the two byte-identical glossary link-node builders into one shared builder and add an aria-label so glossary terms are AT-perceivable.
 doc_status: active
-updated: 2026-09-06
+updated: 2026-09-06T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0025-glossary-on-this-page-block-and-remark-render-channel
   - adr/0027-auto-link-resolution-scoping-and-term-directive

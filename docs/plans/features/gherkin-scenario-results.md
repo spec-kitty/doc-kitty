@@ -2,7 +2,7 @@
 title: Gherkin scenario results
 description: "Show each scenario's last pass or fail result next to it, read at build time from the Cucumber report a site's CI produces (slice D of issue #120)."
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

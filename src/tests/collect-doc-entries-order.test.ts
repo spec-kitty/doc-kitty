@@ -18,7 +18,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import type { DocEntry } from '../lib/metadata.js';
-import { sortBySlug } from '../lib/metadata.js';
+import { sortBySlug, rankForFeed } from '../lib/metadata.js';
 
 const { collectionEntries } = vi.hoisted(() => ({
   collectionEntries: [] as Array<{ id: string; data: Record<string, unknown>; body?: string }>,
@@ -90,5 +90,21 @@ describe('collectDocEntries', () => {
     collectionEntries[0] = { id: 'x', data: { title: 'X', doc_status: 'active' } };
     const [noBody] = await collectDocEntries({ withBody: true });
     expect(noBody.body).toBe('');
+  });
+});
+
+describe('rankForFeed — date-only and timestamp share one ordering (FR-009)', () => {
+  const dated = (slug: string, updated: string): DocEntry => ({
+    slug,
+    data: { title: slug, doc_status: 'active', updated },
+  });
+
+  it('sorts by instant then slug; a date-only page ties with its T00:00:00Z twin', () => {
+    const ranked = rankForFeed([
+      dated('b-twin', '2026-10-18T00:00:00Z'),
+      dated('a-dateonly', '2026-10-18'),
+      dated('c-late', '2026-10-18T09:30:00Z'),
+    ]);
+    expect(ranked.map((e) => e.slug)).toEqual(['c-late', 'a-dateonly', 'b-twin']);
   });
 });

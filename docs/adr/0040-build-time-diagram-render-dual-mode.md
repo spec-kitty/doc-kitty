@@ -2,11 +2,11 @@
 title: "ADR-0040: Build-time diagram render (Mermaid + PlantUML), dual-mode"
 description: Pre-render Mermaid and PlantUML to static, themed, accessible SVG at build, with a client-render fallback and a CSS-variable theming rewrite.
 doc_status: active
-updated: 2026-09-07
+updated: 2026-09-07T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0023-diagram-render-and-metadata-seam
   - adr/0024-diagram-token-promotion-and-brand-wiring

@@ -2,11 +2,11 @@
 title: "ADR-0051: Render Gherkin in any page, from a fence or an include"
 description: A gherkin fence renders as a structured scenario and a ::gherkin directive includes a .feature file or chosen scenarios, via one remark stage whose errors fail the build.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - ivan@spec-kitty.ai
+  - human:ivan
 related:
   - adr/0046-gherkin-feature-pages
   - adr/0055-gherkin-scenario-results

@@ -2,7 +2,7 @@
 title: Getting started
 description: Install, run, and see the generated feeds and agent-API.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Guide
 kind: Tutorial
 tags: [setup, getting-started]

@@ -2,11 +2,11 @@
 title: "ADR-0012: Slide decks are static reveal.js built from Markdown"
 description: Decks are authored in Markdown, split by headings at build time, and rendered as a self-hosted static reveal.js deck with a linear fallback.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - architecture/slide-decks
   - adr/0021-deck-routing-seam-out-of-frame-override

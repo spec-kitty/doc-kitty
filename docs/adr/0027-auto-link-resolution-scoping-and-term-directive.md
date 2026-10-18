@@ -2,11 +2,11 @@
 title: "ADR-0027: Auto-link resolution, per-page scoping, and the :term directive"
 description: A pure resolver owns collision, alias, and anchor resolution; a remark plugin auto-links the first per section; remark-directive parses :term; order is pinned after gfm.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@spec-kitty.ai
+  - human:stijn
 related:
   - plans/features/glossary-and-contextive
   - adr/0026-glossary-source-and-generation-seam

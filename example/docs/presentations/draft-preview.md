@@ -2,11 +2,11 @@
 title: Draft Preview Deck
 description: A draft slide deck that exercises the out-of-frame presentation route without publishing anything or moving the build counts.
 doc_status: draft
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Presentation
 kind: Presentation
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 sidebar:
   hidden: true
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
@@ -11,6 +11,8 @@ import {
   isGeneratedPage,
 } from '../scripts/validate-frontmatter.mjs';
 import { GENERATED_BY as GHERKIN_GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
+import { parseActor, isActor, normaliseInstant } from '../lib/vocabulary-core.mjs';
+import { makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
@@ -425,15 +427,31 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
     return copy;
   }
 
-  it('the gate allow-list is exactly the gherkin pipeline stamp, imported (not repeated) from feature-core', () => {
-    // The glossary codegen never writes a `generated` stamp, so a
-    // `doc-kitty/glossary` entry here was a pure bypass (review #10); the legacy
-    // path rule below is what keeps glossary output valid.
+  it('the gate detects stamps by producer prefix; the legacy exact gherkin stamp stays recognised', () => {
+    // The legacy exact value is single-sourced from feature-core (never repeated
+    // as a literal in the gate) and is the only entry of the exported allow-list.
     expect(GENERATED_BY_STAMPS).toEqual([GHERKIN_GENERATED_BY]);
     expect(GENERATED_BY_STAMPS).toEqual(['doc-kitty/gherkin']);
     const gate = readFileSync(new URL('../scripts/validate-frontmatter.mjs', import.meta.url), 'utf8');
-    expect(gate).toMatch(/import \{[^}]*\bGENERATED_BY\b[^}]*\} from '\.\.\/lib\/gherkin\/feature-core\.mjs'/);
     expect(gate).not.toMatch(/['"]doc-kitty\/(?:gherkin|glossary)['"]/);
+    expect(isGeneratedStamp('doc-kitty-gherkin/0.3.0')).toBe(true);
+    expect(isGeneratedStamp('doc-kitty-gherkin/0.3.0', 'doc-kitty-gherkin')).toBe(true);
+    expect(isGeneratedStamp('doc-kitty-gherkin/0.3.0', 'doc-kitty-glossary')).toBe(false);
+    expect(isGeneratedStamp('doc-kitty/gherkin')).toBe(true); // legacy, pre-regeneration
+    expect(isGeneratedStamp('someone-else')).toBe(false);
+  });
+
+  // FR-006 positive control, two-sided: a test that only asserted the exempt case
+  // would also pass on a no-op that exempts everything.
+  it('a versioned stamp (`doc-kitty-gherkin/9.9.9`) is exempt; the same body authored (no stamp) is NOT', () => {
+    const base = parse('generated/feature-page.md');
+    const stamped = withStamp(base, { by: 'doc-kitty-gherkin/9.9.9', at: '2026-10-18T09:30:00Z' });
+    expect(isGeneratedPage(FEATURE_REL, stamped)).toBe(true);
+    expect(validate(FEATURE_REL, stamped).problems).toEqual([]);
+    const authored = withStamp(base, undefined);
+    expect(isGeneratedPage(FEATURE_REL, authored)).toBe(false);
+    expect(validate(FEATURE_REL, authored).problems).toEqual(['`updated`: required']);
+    expect(buildRejects(stamped)).toBe(false);
   });
 
   it('a generated feature page WITHOUT `updated` passes the gate, and the build schema accepts it too', () => {
@@ -511,5 +529,164 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
     expect(validate('vocab/hr.md', ctx).problems).toEqual(['`updated`: required']);
     // …while real glossary output, under `glossary/`, stays exempt by the path rule.
     expect(isGeneratedPage('glossary/hr/index.md', ctx)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// OKF alignment (#177, FR-001..FR-004/FR-008/FR-021..FR-023, NFR-002/NFR-004):
+// the new metadata forms are judged IDENTICALLY by both twins (accept/reject);
+// the advisory WARNING class is the standalone validator's job only — the Zod
+// twin has no warning channel, so warnings are asserted on the validator alone.
+// ---------------------------------------------------------------------------
+describe('schema/validator parity — OKF metadata forms (#177)', () => {
+  const page = (extra: Record<string, unknown>): Record<string, unknown> => ({
+    title: 'An OKF form',
+    description: 'x'.repeat(60),
+    updated: '2026-10-18T09:30:00Z',
+    doc_status: 'active',
+    type: 'Context',
+    kind: 'Reference',
+    ...extra,
+  });
+  const index = (extra: Record<string, unknown>): Record<string, unknown> => ({
+    title: 'Index',
+    description: 'x'.repeat(60),
+    updated: '2026-10-18T09:30:00Z',
+    doc_status: 'active',
+    kind: 'Hub',
+    ...extra,
+  });
+
+  // [name, relPath, data, reject, warning needle (null = no warning at all)]
+  const ROWS: [string, string, Record<string, unknown>, boolean, string | null][] = [
+    ['UTC updated', 'context/x.md', page({}), false, null],
+    ['UTC updated with fraction', 'context/x.md', page({ updated: '2026-10-18T09:30:00.123Z' }), false, null],
+    ['updated already parsed to a Date by YAML', 'context/x.md', page({ updated: new Date('2026-10-18T09:30:00Z') }), false, null],
+    ['date-only updated', 'context/x.md', page({ updated: '2026-10-18' }), false, 'date-only'],
+    // Orchestrator ruling (ADR-0059): a non-Z offset is a valid instant, with a sanity warning.
+    ['non-Z offset updated', 'context/x.md', page({ updated: '2026-10-18T09:30:00+02:00' }), false, 'Z'],
+    ['garbage updated', 'context/x.md', page({ updated: 'not-a-date' }), true, null],
+    ['email author', 'context/x.md', page({ authors: ['jane@example.com'] }), false, 'human:jane'],
+    ['human actor author', 'context/x.md', page({ authors: ['human:jane'] }), false, null],
+    ['tool actor author', 'context/x.md', page({ authors: ['doc-kitty-gherkin/0.3.0'] }), false, null],
+    ['process actor author', 'context/x.md', page({ authors: ['process:ci'] }), false, null],
+    ['root index okf_version "0.2"', 'README.md', index({ okf_version: '0.2' }), false, null],
+    ['root index okf_version 0.2 unquoted', 'README.md', index({ okf_version: 0.2 }), false, 'okf_version'],
+    ['root index okf_version "0.1"', 'README.md', index({ okf_version: '0.1' }), false, 'okf_version'],
+    ['section index missing okf_version', 'context/README.md', index({}), false, 'okf_version'],
+    ['bare-mapping verified', 'context/x.md', page({ verified: { by: 'human:jane', at: '2026-10-18T00:00:00Z' } }), false, null],
+    ['list verified', 'context/x.md', page({ verified: [{ by: 'human:jane', at: '2026-10-18T00:00:00Z' }] }), false, null],
+    ['UTC stale_after', 'context/x.md', page({ stale_after: '2027-01-01T00:00:00Z' }), false, null],
+    ['date-only stale_after', 'context/x.md', page({ stale_after: '2027-01-01' }), false, null],
+    ['generated with content_hash', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: '2026-10-18T09:30:00Z', content_hash: 'sha256:0123456789ab' } }), false, null],
+    ['generated.at already a Date', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: new Date('2026-10-18T09:30:00Z') } }), false, null],
+  ];
+
+  for (const [name, relPath, data, reject, needle] of ROWS) {
+    it(`${name}: both twins agree (${reject ? 'reject' : 'accept'}); warning ${needle ? `contains "${needle}"` : 'none'}`, () => {
+      expect(buildRejects(data)).toBe(reject);
+      expect(validatorRejects(relPath, data)).toBe(reject);
+      if (reject) return;
+      const { warnings } = validate(relPath, data);
+      if (needle === null) expect(warnings).toEqual([]);
+      else expect(warnings.join('\n')).toContain(needle);
+    });
+  }
+
+  it('the Zod twin normalises bare `verified` to a list and a Date `at` to a string', () => {
+    const parsed = buildSchema.parse(
+      page({ verified: { by: 'human:jane', at: new Date('2026-10-18T00:00:00Z') } }),
+    );
+    expect(parsed.verified).toEqual([{ by: 'human:jane', at: '2026-10-18T00:00:00Z' }]);
+  });
+});
+
+describe('vocabulary-core metadata rules (#177, C-009)', () => {
+  it('parseActor/isActor recognise the three actor forms and flag emails separately', () => {
+    expect(parseActor('human:jane')).toEqual({ kind: 'human', id: 'jane' });
+    expect(parseActor('process:ci')).toEqual({ kind: 'process', id: 'ci' });
+    expect(parseActor('doc-kitty-gherkin/0.3.0')).toEqual({
+      kind: 'tool',
+      name: 'doc-kitty-gherkin',
+      version: '0.3.0',
+    });
+    expect(parseActor('jane@example.com')?.kind).toBe('email');
+    expect(isActor('jane@example.com')).toBe(false);
+    expect(isActor('human:jane')).toBe(true);
+    for (const bad of ['', 'human:', 'human:a b', 'Tool/1', 'jane', 'tool/', 42, null]) {
+      expect(parseActor(bad as string)).toBeNull();
+    }
+  });
+
+  it('normaliseInstant: Z / fraction / date-only (midnight UTC, dateOnly) / offset / invalid', () => {
+    expect(normaliseInstant('2026-10-18T09:30:00Z')).toMatchObject({ dateOnly: false });
+    expect(normaliseInstant('2026-10-18T09:30:00.123Z')?.date.getUTCMilliseconds()).toBe(123);
+    const d = normaliseInstant('2026-10-18');
+    expect(d?.dateOnly).toBe(true);
+    expect(d?.date.toISOString()).toBe('2026-10-18T00:00:00.000Z');
+    expect(normaliseInstant('2026-10-18T09:30:00+02:00')?.date.toISOString()).toBe('2026-10-18T07:30:00.000Z');
+    expect(normaliseInstant(new Date('2026-10-18T09:30:00Z'))?.dateOnly).toBe(false);
+    for (const bad of ['', 'not-a-date', '2026-13-01', '2026-02-30', '2026-10-18T09:30:00', 20261018, null, undefined]) {
+      expect(normaliseInstant(bad as string)).toBeNull();
+    }
+  });
+});
+
+describe('generator-stamp (#177, FR-008, C-004)', () => {
+  const NOW = new Date('2026-10-18T09:30:00.456Z');
+
+  it('toolkitVersion() is the published src/package.json version', () => {
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+    expect(toolkitVersion()).toBe(pkg.version);
+  });
+
+  it('makeStamp: versioned producer, 12-hex content hash, whole-second UTC `at`', () => {
+    const stamp = makeStamp({ producer: 'doc-kitty-gherkin', hash: 'a'.repeat(64), now: NOW });
+    expect(stamp).toEqual({
+      by: `doc-kitty-gherkin/${toolkitVersion()}`,
+      at: '2026-10-18T09:30:00Z',
+      content_hash: `sha256:${'a'.repeat(12)}`,
+    });
+  });
+
+  it('makeStamp keeps `at` while the content hash is unchanged (even across a version bump), moves it when it changes', () => {
+    const previous = { by: 'doc-kitty-gherkin/0.0.1', at: '2026-01-01T00:00:00Z', content_hash: `sha256:${'a'.repeat(12)}` };
+    expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'a'.repeat(64), previous, now: NOW }).at).toBe(
+      '2026-01-01T00:00:00Z',
+    );
+    expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'b'.repeat(64), previous, now: NOW }).at).toBe(
+      '2026-10-18T09:30:00Z',
+    );
+  });
+});
+
+// NFR-004 proof that survives the migration of our own trees: a frozen tree of
+// OLD-form pages, so "exit 0 + advisories" is asserted here and not by running
+// the gate on the (soon clean) live docs.
+describe('NFR-004 — old-forms tree: advisories only, exit code 0, Zod twin parses every page', () => {
+  const oldRoot = fileURLToPath(new URL('old-forms/', fixturesUrl));
+
+  it('the CLI exits 0 and prints every advisory warning', () => {
+    const res = spawnSync('node', [validatorPath, oldRoot], { encoding: 'utf8' });
+    expect(res.status).toBe(0);
+    const out = `${res.stdout}${res.stderr}`;
+    expect(out).toContain('is date-only');
+    expect(out).toContain('human:jane');
+    expect(out).toContain('index file is missing `okf_version`');
+    expect(out).toMatch(/okf_version: 0\.2` is not the string "0\.2"/);
+    expect(out).toContain('old-forms/README.md'); // each warning names its file
+  });
+
+  it('the Zod twin parses every page of the tree', () => {
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory() ? walk(`${dir}/${e.name}`) : e.name.endsWith('.md') ? [`${dir}/${e.name}`] : [],
+      );
+    const files = walk(oldRoot);
+    expect(files.length).toBeGreaterThanOrEqual(3);
+    for (const f of files) {
+      const data = matter(readFileSync(f, 'utf8')).data;
+      expect(buildSchema.safeParse(data).success, f).toBe(true);
+    }
   });
 });

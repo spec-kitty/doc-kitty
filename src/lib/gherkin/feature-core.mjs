@@ -22,11 +22,34 @@
  * @module gherkin/feature-core
  */
 
-import { compareCodeUnit } from '../vocabulary-core.mjs';
+import { OKF_VERSION, compareCodeUnit } from '../vocabulary-core.mjs';
 import { DK_TAG_PREFIX as DK_PREFIX, GHERKIN_LOG_PREFIX as PREFIX, featureTitle, splitNarrative } from './text.mjs';
 
-/** The `generated.by` stamp of every page this generator owns. */
+/**
+ * The LEGACY `generated.by` stamp (unversioned) of pages this generator wrote
+ * before versioned stamps. Still recognised (`isGeneratedStamp`) and still the
+ * public scenario-index `generated_from` identifier; new pages are stamped
+ * `GHERKIN_PRODUCER/<toolkit version>` by `makeStamp` (`generator-stamp.mjs`).
+ */
 export const GENERATED_BY = 'doc-kitty/gherkin';
+
+/** The producer id of the versioned stamp (`doc-kitty-gherkin/<version>`). */
+export const GHERKIN_PRODUCER = 'doc-kitty-gherkin';
+
+/**
+ * The content hash a generated page's `generated` stamp records: `content_hash`,
+ * else the legacy `at` when that still holds a `sha256:` hash (stamps written
+ * before `at` became an instant). The ONE reader every consumer routes through,
+ * so none treats an instant as a hash.
+ *
+ * @param {{ at?: unknown, content_hash?: unknown } | undefined | null} generated
+ * @returns {string | undefined} `sha256:<hex>` (or undefined: no recorded hash)
+ */
+export function stampContentHash(generated) {
+  if (typeof generated?.content_hash === 'string') return generated.content_hash;
+  const { at } = generated ?? {};
+  return typeof at === 'string' && at.startsWith('sha256:') ? at : undefined;
+}
 
 /** Maximum `description` length (contract §3 rule 4). */
 const DESCRIPTION_MAX = 180;
@@ -118,7 +141,7 @@ const SINGLE_VALUED = new Set(['context', 'status', 'updated', 'autolink', 'prio
  * @property {Array<{ profile: string, guidance_text: string }>} audience (omitted when empty)
  * @property {string[]} related (omitted when empty)
  * @property {Array<{ resource: string, title: string }>} sources (omitted when empty)
- * @property {{ by: string, at: string }} generated `at` is `sha256:<12 hex>`.
+ * @property {{ by: string, at: string, content_hash: string }} generated the `makeStamp` result.
  * @property {{ priority: number }} [agent]
  */
 
@@ -203,17 +226,6 @@ function isIsoDate(value) {
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   const date = new Date(Date.UTC(y, mo - 1, d));
   return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
-}
-
-/**
- * The `sha256:<first 12 hex>` stamp for `generated.at`. Accepts a bare hex
- * digest or one already prefixed with `sha256:`.
- *
- * @param {string} hash
- * @returns {string}
- */
-function shortHash(hash) {
-  return `sha256:${String(hash).replace(/^sha256:/, '').slice(0, 12)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -597,7 +609,9 @@ export function missionPrefix(registry) {
  * @param {ReadonlyArray<GherkinTag> | undefined} input.tags The Feature-level AST tags.
  * @param {string} [input.file] Source path for warnings.
  * @param {string} [input.sourceResource] `sources[0].resource` (omitted when absent).
- * @param {string} input.hash Full hex sha256 of the source bytes (`sha256:<12>` is emitted).
+ * @param {{ by: string, at: string, content_hash: string }} input.stamp The page's
+ *   `generated` stamp (`makeStamp` over the source hash; built by the caller, which
+ *   reads the page's previous stamp).
  * @param {string | { prefix: string, warning?: string }} [input.missionPrefix] The
  *   {@link missionPrefix} result (or its `prefix`). Omitted ⇒ `missionPrefix(null)`.
  *   Its warning is reported only when the feature has an `@dk:mission` tag.
@@ -614,7 +628,7 @@ export function buildFrontmatter({
   tags,
   file,
   sourceResource,
-  hash,
+  stamp,
   missionPrefix: missionPrefixInput,
   adrFileNames,
   location,
@@ -655,7 +669,7 @@ export function buildFrontmatter({
     audience: meta.personas.map((profile) => ({ profile, guidance_text: guidance })),
     related,
     sources: sourceResource ? [{ resource: sourceResource, title: 'Gherkin source' }] : [],
-    generated: { by: GENERATED_BY, at: shortHash(hash) },
+    generated: stamp,
   };
   if (meta.updated !== undefined) fields.updated = meta.updated;
   if (meta.context !== undefined) fields.glossary_context = meta.context;
@@ -709,32 +723,45 @@ export function serializeFrontmatter(fields) {
       lines.push(`  - resource: ${q(resource)}`, `    title: ${q(title)}`);
     }
   }
-  lines.push('generated:', `  by: ${q(fields.generated.by)}`, `  at: ${q(fields.generated.at)}`);
+  lines.push(...serializeStamp(fields.generated));
   if (fields.agent !== undefined) lines.push('agent:', `  priority: ${String(fields.agent.priority)}`);
   lines.push('---');
   return lines.join('\n');
 }
 
 /**
+ * The `generated:` block lines, in the stable key order `by`, `at`, `content_hash`.
+ *
+ * @param {{ by: string, at: string, content_hash: string }} stamp
+ * @returns {string[]}
+ */
+function serializeStamp(stamp) {
+  return [
+    'generated:',
+    `  by: ${q(stamp.by)}`,
+    `  at: ${q(stamp.at)}`,
+    `  content_hash: ${q(stamp.content_hash)}`,
+  ];
+}
+
+/**
  * Serialise a generated hub page's frontmatter (contract §6), same style as
  * {@link serializeFrontmatter}: `kind: Hub`, `doc_status` (`active` unless the
- * caller passes another status), and a `generated` block whose `at` is
- * `sha256:<first 12>` of `hash` (the caller hashes the sorted child list). No
- * trailing newline.
+ * caller passes another status), `okf_version`, and the `generated` stamp (the
+ * caller hashes the sorted child list into it). No trailing newline.
  *
- * @param {{ title: string, description: string, hash: string, status?: string }} input
+ * @param {{ title: string, description: string, stamp: { by: string, at: string, content_hash: string }, status?: string }} input
  * @returns {string}
  */
-export function serializeHubFrontmatter({ title, description, hash, status = 'active' }) {
+export function serializeHubFrontmatter({ title, description, stamp, status = 'active' }) {
   return [
     '---',
     `title: ${q(title)}`,
     `description: ${q(description)}`,
     'kind: Hub',
     `doc_status: ${status}`,
-    'generated:',
-    `  by: ${q(GENERATED_BY)}`,
-    `  at: ${q(shortHash(hash))}`,
+    `okf_version: ${q(OKF_VERSION)}`,
+    ...serializeStamp(stamp),
     '---',
   ].join('\n');
 }

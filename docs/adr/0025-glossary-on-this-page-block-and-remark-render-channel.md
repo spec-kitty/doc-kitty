@@ -2,11 +2,11 @@
 title: "ADR-0025: The \"On this page\" block and the remark→render data channel (ADR-0017 companion)"
 description: A doc-kitty-owned carrier-body block composes the M3 references/related renderers and re-derives the glossary links a page used at render time, never editing M3-owned files.
 doc_status: active
-updated: 2026-08-30
+updated: 2026-08-30T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@spec-kitty.ai
+  - human:stijn
 related:
   - plans/features/glossary-and-contextive
   - adr/0017-m3-content-block-rendering-seam

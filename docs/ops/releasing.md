@@ -2,11 +2,11 @@
 title: Releasing the toolkit to GitHub Packages
 description: How a maintainer publishes @spec-kitty/doc-toolkit to the GitHub Packages npm registry by pushing a version tag, and why it needs no publish secret.
 doc_status: active
-updated: 2026-10-11
+updated: 2026-10-11T00:00:00Z
 type: Operations
 kind: How-To
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [release, github-packages, ops, github-actions]
 related:
   - ops/ci-cd

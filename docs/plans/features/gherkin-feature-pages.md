@@ -2,7 +2,7 @@
 title: Gherkin feature pages
 description: "Render Gherkin .feature files as glossary-linked Specification pages in the docsite, with related missions, ADRs and personas."
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

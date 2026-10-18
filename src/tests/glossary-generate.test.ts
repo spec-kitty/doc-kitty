@@ -103,6 +103,25 @@ describe('generateGlossaryPages', () => {
     }
   });
 
+  it('stamps every page (doc-kitty-glossary/<version>) and a rerun with a later clock changes 0 bytes (NFR-001)', () => {
+    const out = makeOutDir();
+    const written = generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out, SITE_INDEX_NAMES, undefined, new Date('2026-10-18T09:30:00Z'));
+    const first = written.map((p) => readFileSync(p, 'utf8'));
+    for (const text of first) {
+      expect(text).toMatch(
+        /\ngenerated:\n {2}by: "doc-kitty-glossary\/[^"]+"\n {2}at: "2026-10-18T09:30:00Z"\n {2}content_hash: "sha256:[0-9a-f]{12}"\n---\n/,
+      );
+    }
+    // The generator recognises its own stamped pages: no authored-file refusal on the rerun.
+    generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out, SITE_INDEX_NAMES, undefined, new Date('2027-05-05T00:00:00Z'));
+    expect(written.map((p) => readFileSync(p, 'utf8'))).toEqual(first);
+    // A definition change moves `at` and the hash.
+    generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT.replace('A request for payment.', 'A demand.')), out, SITE_INDEX_NAMES, undefined, new Date('2027-05-05T00:00:00Z'));
+    const billing = readFileSync(join(out, 'glossary', 'billing', 'index.md'), 'utf8');
+    expect(billing).toContain('at: "2027-05-05T00:00:00Z"');
+    expect(readFileSync(join(out, 'glossary', 'shipping', 'index.md'), 'utf8')).toContain('at: "2026-10-18T09:30:00Z"');
+  });
+
   it('presence-gates an empty index: writes nothing, returns [] (INV-G4)', () => {
     const out = makeOutDir();
     const empty = buildIndex([]); // no contexts

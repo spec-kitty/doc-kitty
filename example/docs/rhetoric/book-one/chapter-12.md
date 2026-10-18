@@ -2,7 +2,7 @@
 title: "Chapter 12: Intent"
 description: The frame of mind of wrongdoers and the circumstances and victims that make wrongdoing seem safe to attempt.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

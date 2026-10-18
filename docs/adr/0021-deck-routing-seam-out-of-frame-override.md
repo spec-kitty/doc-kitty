@@ -2,11 +2,11 @@
 title: "ADR-0021: Decks render out-of-frame by a path-scoped Astro route override"
 description: A Presentation under presentations/ renders out-of-frame via a higher-specificity Astro route that shadows Starlight's catch-all — the switch is path+kind, shadow not exclude.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0012-slide-decks-static-reveal-from-markdown
   - adr/0011-theme-slot-surface-and-per-kind-layouts

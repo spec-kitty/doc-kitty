@@ -2,7 +2,7 @@
 title: Markua-Capable Deck
 description: A published reveal.js deck proving the Markua subset renders on slides — asides, an attributed paragraph, and a captioned figure — without swallowing a slide boundary.
 doc_status: active
-updated: 2026-09-06
+updated: 2026-09-06T00:00:00Z
 type: Presentation
 kind: Presentation
 hero_image:
@@ -11,7 +11,7 @@ hero_image:
 sidebar:
   hidden: true
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 ## A slide aside that respects its boundary

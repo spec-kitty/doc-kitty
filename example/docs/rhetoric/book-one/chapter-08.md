@@ -2,7 +2,7 @@
 title: "Chapter 8: Types of Governments"
 description: "The four forms of government — democracy, oligarchy, aristocracy, monarchy — their ends, and why an orator must know them."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

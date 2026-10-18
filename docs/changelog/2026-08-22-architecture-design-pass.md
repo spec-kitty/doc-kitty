@@ -2,7 +2,7 @@
 title: Architecture design pass
 description: Portals research, planning + MoSCoW, the theme layer and brand, slide decks, and the section registry.
 doc_status: active
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [architecture, theme, presentations, planning, sections]

@@ -2,11 +2,11 @@
 title: "ADR-0015: M2 slot resolution, the pass-through surface, and the components-map seam"
 description: Where each dk slot resolves, how the pass-through surface reaches Starlight, and why the components map stays the four carriers in M2.
 doc_status: active
-updated: 2026-08-23
+updated: 2026-08-23T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0013-m1-chrome-substrate-single-layer

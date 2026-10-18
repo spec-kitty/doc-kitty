@@ -2,7 +2,7 @@
 title: "Link integrity — base-prefixed internal links + a fail-closed built-output gate"
 description: "Closes #61/#62/#63 — internal links AND RSS/llms.txt/agent-API absolute URLs no longer 404 on the deployed site, gated end-to-end by a base-aware built-output check."
 doc_status: active
-updated: 2026-09-04
+updated: 2026-09-04T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [links, gate, ci, glossary, reliability]

@@ -24,6 +24,7 @@ import { dirname, join, sep } from 'node:path';
 // `presentations` → `Presentation`, which this tool's old switch omitted — an
 // additive alignment with the canonical map (NFR-002).
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
+import { scaffoldMeta } from './scaffold-meta.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 const argv = process.argv.slice(2);
@@ -97,8 +98,7 @@ const SECTIONS = {
 
 const RUNBOOKS = ['deploy.md', 'rollback.md', 'scale.md', 'incident.md'];
 
-const today = new Date().toISOString().slice(0, 10);
-const now = new Date().toISOString();
+const meta = scaffoldMeta();
 
 function titleize(name) {
   return name.replace(/\.md$/, '').replace(/[-_/]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim();
@@ -111,11 +111,8 @@ function leafFrontmatter(relPath, title) {
 title: ${title}
 description: TODO one sentence describing what this document contains.
 doc_status: draft
-updated: ${today}
 ${typeLine}kind: ${expectedKind(relPath, false)}
-generated:
-  by: agent/doc-kitty-scaffold
-  at: ${now}
+${meta}
 ---
 
 # ${title}
@@ -131,11 +128,9 @@ function indexFrontmatter(relPath, title, blurb) {
 title: ${title}
 description: ${blurb}
 doc_status: draft
-updated: ${today}
+okf_version: "0.2"
 ${typeLine}kind: ${expectedKind(relPath, true)}
-generated:
-  by: agent/doc-kitty-scaffold
-  at: ${now}
+${meta}
 ---
 
 # ${title}
@@ -163,11 +158,8 @@ okf_version: "0.2"
 title: Documentation
 description: Master entry point for this project's documentation.
 doc_status: draft
-updated: ${today}
 kind: Hub
-generated:
-  by: agent/doc-kitty-scaffold
-  at: ${now}
+${meta}
 ---
 
 # Documentation

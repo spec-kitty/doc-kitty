@@ -2,7 +2,7 @@
 title: A page that lives in the shipping context
 description: Declaring glossary_context lets the auto-linker settle a collision by itself — here policy resolves to shipping with no directive and no warning.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: Guide
 kind: How-To
 tags: [glossary, demonstrator, context]

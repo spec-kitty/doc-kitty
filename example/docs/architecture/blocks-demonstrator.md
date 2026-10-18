@@ -2,7 +2,7 @@
 title: Content blocks demonstrator
 description: A single page that declares audience, related, and external references so all three doc-kitty content blocks render together for the accessibility lane.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [architecture, blocks, demonstrator, fixture]

@@ -2,7 +2,7 @@
 title: What DocKitty solves for
 description: "The four outcomes DocKitty is built for: structure, maintainability, agent interoperability, and flexibility."
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Context
 kind: Explanation
 tags: [motivation, goals]

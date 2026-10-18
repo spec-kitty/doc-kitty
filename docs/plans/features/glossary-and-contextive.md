@@ -2,7 +2,7 @@
 title: Glossary + Contextive
 description: "A multi-context project glossary sourced from Contextive, with per-section auto-linking, hover previews, and an auto per-page references block."
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

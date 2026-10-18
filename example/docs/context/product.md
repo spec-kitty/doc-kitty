@@ -2,7 +2,7 @@
 title: Product
 description: The problem this example solves and who it is for.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Context
 kind: Explanation
 tags: [product, vision]

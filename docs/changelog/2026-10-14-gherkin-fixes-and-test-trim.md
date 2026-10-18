@@ -2,11 +2,11 @@
 title: Gherkin fixes and a leaner Gherkin test suite
 description: Draft-only directories get a draft hub, gherkin.titles names hubs, a mis-cased @wip warns, the scenario index route is injected, and the Gherkin tests lose their duplicates.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Changelog
 kind: Changelog
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [gherkin, bdd, testing]
 related:
   - adr/0054-gherkin-draft-hubs-titles-and-scenario-route

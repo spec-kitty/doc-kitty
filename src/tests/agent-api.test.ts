@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { toAgentRecord, type DocEntry } from '../lib/metadata.js';
 
 describe('toAgentRecord', () => {
@@ -29,7 +29,7 @@ describe('toAgentRecord', () => {
       tags: ['ci'],
       related: ['operations/runbooks/deploy'],
       priority: 0.7,
-      updated: '2026-08-01',
+      updated: '2026-08-01T00:00:00Z',
       source: '/api/pages/guides/deployment.json',
     });
   });
@@ -60,5 +60,27 @@ describe('toAgentRecord', () => {
     expect(record.related).toEqual([]);
     expect(record.priority).toBe(0.5);
     expect(record.updated).toBeNull();
+  });
+});
+
+// FR-009/FR-024: `updated` is serialised as a full UTC instant, and the index
+// version moves '2' -> '3' because that published-contract format changed.
+vi.mock('astro:content', () => ({
+  getCollection: async () => [
+    { id: 'a', data: { title: 'A', doc_status: 'active', updated: new Date('2026-10-18T09:30:00Z') } },
+  ],
+}));
+
+describe('agentIndexRoute — version and updated format', () => {
+  it('reports version 3 and a UTC-instant updated (timestamp and date-only alike)', async () => {
+    const { agentIndexRoute } = await import('../lib/routes/agent-index.js');
+    const res = await (agentIndexRoute({ title: 'Docs' }) as (c: { site: URL }) => Promise<Response>)({
+      site: new URL('https://docs.example/'),
+    });
+    const json = JSON.parse(await res.text());
+    expect(json.version).toBe('3');
+    expect(json.pages[0].updated).toBe('2026-10-18T09:30:00Z');
+    expect(toAgentRecord({ slug: 'd', data: { title: 'D', updated: '2026-10-18' } }).updated)
+      .toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
   });
 });

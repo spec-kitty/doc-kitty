@@ -2,7 +2,7 @@
 title: Glossary follow-ups — anchor de-collision, build-parity, section registry
 description: M4 glossary follow-ups — anchor de-collision (#17), render/build parse parity (#16), and the wired sections.yaml registry driving nav, type, feeds, blurbs (#18, #20–#24).
 doc_status: active
-updated: 2026-08-28
+updated: 2026-08-28T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [glossary, anchors, sections, registry, sidebar, navigation]

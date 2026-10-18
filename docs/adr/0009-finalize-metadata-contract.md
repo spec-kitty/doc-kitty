@@ -2,11 +2,11 @@
 title: "ADR-0009: Finalize the metadata contract"
 description: Promote the metadata-model design decisions into the record and rename the page-kind axis to kind.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - architecture/metadata-model
   - adr/0004-amend-common-docs-as-extensible-variation

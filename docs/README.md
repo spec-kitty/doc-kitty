@@ -4,9 +4,9 @@ title: DocKitty — Toolkit Documentation
 description: Master entry point for the documentation of the DocKitty toolkit itself.
 doc_status: active
 kind: Hub
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 # DocKitty — Toolkit Documentation

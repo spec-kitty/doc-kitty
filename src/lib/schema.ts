@@ -15,7 +15,13 @@ import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
 import { docsSchema } from '@astrojs/starlight/schema';
-import { DK_INDEX_BASENAME_ENV, formatRouteCollisions, parsePublishedIndexBasenames } from './vocabulary-core.mjs';
+import {
+  DK_INDEX_BASENAME_ENV,
+  formatInstant,
+  formatRouteCollisions,
+  normaliseInstant,
+  parsePublishedIndexBasenames,
+} from './vocabulary-core.mjs';
 import {
   readmeToIndexId,
   resolveIndexEntries,
@@ -136,6 +142,19 @@ export function expectedTypeForPathInRoot(
  */
 export const DESCRIPTION_MAX = 180;
 
+// OKF instants (#177, ADR-0059): `normaliseInstant` in the vocabulary core is the
+// ONE parser — `z.coerce.date()` must not be a second one. A date-only value reads
+// as midnight UTC and a non-`Z` offset is a valid instant; the standalone gate
+// (not this schema, which has no warning channel) warns on both.
+const instantDate = z.preprocess((v) => normaliseInstant(v)?.date ?? v, z.date());
+
+// A stamp's `at` stays a string whatever YAML did to it: a `Date` becomes the
+// canonical `YYYY-MM-DDTHH:MM:SSZ` form (older pages carry a hash here, so no
+// instant check — only the gate warns).
+const stampAt = z.preprocess((v) => (v instanceof Date ? formatInstant(v) : v), z.string());
+
+const stamp = z.object({ by: z.string(), at: stampAt, content_hash: z.string().optional() });
+
 const agentHints = z
   .object({
     discoverable: z.boolean().default(true),
@@ -173,7 +192,7 @@ export const docKittyFields = {
   // the gate and builds on the site — never a hard divergence). `STATUSES` stays
   // the canonical reference set exported from the core for that gate check.
   doc_status: z.string().min(1).default('draft'),
-  updated: z.coerce.date().optional(),
+  updated: instantDate.optional(),
   // Open vocabulary (FR-003): a non-canonical `type` is ADVISORY, not a build
   // failure — the site schema accepts any string; the standalone validator warns
   // on a value outside DOC_TYPES (which stays exported for that warn check).
@@ -181,8 +200,9 @@ export const docKittyFields = {
   // Open vocabulary (ADR-0009): site schema is permissive, the standalone
   // validator warns on a value outside `KINDS`.
   kind: z.string().optional(),
-  // Bundle-root README only.
-  okf_version: z.string().optional(),
+  // Index files (#177). Lenient on purpose: an unquoted `0.2` parses to a number
+  // and must not fail the build; the standalone gate warns (`checkOkfVersion`).
+  okf_version: z.union([z.string(), z.number()]).optional(),
   authors: z.array(z.string()).optional(),
   // A related ref is a bare slug or `{ ref, note? }` (ADR-0009). Ref integrity
   // is enforced by the build and `check-links.mjs`, not by shape here.
@@ -225,16 +245,15 @@ export const docKittyFields = {
   // doc-sanity gate), so a non-URL `resource` does not pass validate but fail
   // the build. Parity test guards this alignment going forward.
   resource: z.string().optional(),
-  generated: z
-    .object({ by: z.string(), at: z.string() })
-    .optional(),
+  generated: stamp.extend({ content_hash: z.string().optional() }).optional(),
+  // A list of stamps, or one bare mapping (normalised to a list).
   verified: z
-    .array(z.object({ by: z.string(), at: z.string() }))
+    .preprocess((v) => (v !== null && typeof v === 'object' && !Array.isArray(v) ? [v] : v), z.array(stamp))
     .optional(),
   sources: z
     .array(z.object({ resource: z.string(), title: z.string() }))
     .optional(),
-  stale_after: z.coerce.date().optional(),
+  stale_after: instantDate.optional(),
   // Persona attribute fields (ADR-0019): present on `kind: Persona` pages.
   // Kept OPTIONAL here — `kind` is open `z.string()`, so no clean per-kind
   // discriminated union exists in the build schema; requiredness for

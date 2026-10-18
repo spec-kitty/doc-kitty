@@ -2,7 +2,7 @@
 title: Example content from ars-rethorica
 description: "Ship realistic Markua-authored example content drawn from the ars-rethorica book to showcase the docsite."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

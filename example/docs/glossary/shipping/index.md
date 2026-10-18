@@ -1,9 +1,14 @@
 ---
+okf_version: "0.2"
 title: "shipping"
 description: "Glossary terms for the shipping context."
 kind: Glossary
 glossary_context: "shipping"
 doc_status: active
+generated:
+  by: "doc-kitty-glossary/0.3.0"
+  at: "2026-10-18T06:09:39Z"
+  content_hash: "sha256:1fc1f255099a"
 ---
 
 # shipping

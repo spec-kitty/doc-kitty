@@ -2,11 +2,11 @@
 title: Glossary
 description: "How the glossary surface fits together: the load-once index, the shared resolver behind thin plugins, codegen into the docs collection, and the render-time links-used re-derive."
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [glossary, contextive, autolink, accessibility]
 related:
   - adr/0025-glossary-on-this-page-block-and-remark-render-channel

@@ -2,7 +2,7 @@
 title: Reveal-deck remediation — rendering fixes + slide-aware diagrams
 description: Fixes the shipped reveal.js decks on the docsite (#12) and makes deck diagrams render on every slide, not just the first (#15).
 doc_status: active
-updated: 2026-08-29
+updated: 2026-08-29T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [decks, reveal, diagrams, mermaid, accessibility, slide-aware]

@@ -2,11 +2,11 @@
 title: Pending the Placeholder
 description: A deliberately unpublished persona retained as the draft-exclusion demonstrator — it must stay out of the hub, sitemap, RSS, and agent index.
 doc_status: draft
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Context
 kind: Persona
 authors:
-  - stijn@spec-kitty.ai
+  - human:stijn
 tags: [persona, draft, fixture]
 role: A persona still being drafted, kept unpublished to prove draft exclusion.
 goals:

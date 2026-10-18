@@ -2,7 +2,7 @@
 title: Showcase Deck
 description: A published reveal.js deck exercising the full out-of-frame pipeline — a title slide, horizontal slides, a vertical stack, a fragment, and speaker notes.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Presentation
 kind: Presentation
 hero_image:
@@ -11,7 +11,7 @@ hero_image:
 sidebar:
   hidden: true
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 ---
 
 ## Out-of-frame deck pipeline

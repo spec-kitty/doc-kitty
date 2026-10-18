@@ -2,7 +2,7 @@
 title: Scenarios in pages
 description: Gherkin in an ordinary page — a gherkin code fence or an included .feature file renders as headings, step lists and tables instead of a code block.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Guide
 kind: Reference
 tags: [gherkin, scenarios, showcase, fixture]

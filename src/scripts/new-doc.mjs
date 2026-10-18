@@ -31,6 +31,7 @@ import { dirname, join, sep } from 'node:path';
 // `Presentation`, which this tool's old local switch omitted — an additive
 // alignment with the canonical map (NFR-002: no existing value's meaning changes).
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
+import { scaffoldMeta } from './scaffold-meta.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 
 function parseArgs(argv) {
@@ -111,18 +112,14 @@ if (existsSync(target)) {
   process.exit(1);
 }
 
-const today = new Date().toISOString().slice(0, 10);
-const now = new Date().toISOString();
-const typeLine = type ? `type: ${type}\n` : '';
+const meta = scaffoldMeta();
+const extraLines = (flags.section ? 'okf_version: "0.2"\n' : '') + (type ? `type: ${type}\n` : '');
 const frontmatter = `---
 title: ${title}
 description: TODO one sentence describing what this document contains.
 doc_status: draft
-updated: ${today}
-${typeLine}kind: ${kind}
-generated:
-  by: agent/doc-kitty-new-doc
-  at: ${now}
+${extraLines}kind: ${kind}
+${meta}
 ---
 
 # ${title}

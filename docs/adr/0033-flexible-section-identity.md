@@ -2,11 +2,11 @@
 title: "ADR-0033: Flexible section identity — configurable index basename and first-class section rename"
 description: index.md joins README.md as a section-index basename, and a registry-driven section rename is first-class supported — reversing ADR-0004's tolerated-not-supported stance.
 doc_status: active
-updated: 2026-09-03
+updated: 2026-09-03T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0002-readme-as-index
   - adr/0004-amend-common-docs-as-extensible-variation

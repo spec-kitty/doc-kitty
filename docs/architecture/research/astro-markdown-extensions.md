@@ -2,7 +2,7 @@
 title: Astro Markdown extensions
 description: How Astro and Starlight support custom Markdown syntax — callouts, rich images, and components.
 doc_status: active
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [markdown, mdx, remark, rehype, starlight, images]

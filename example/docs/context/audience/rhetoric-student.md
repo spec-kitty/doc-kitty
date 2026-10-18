@@ -2,11 +2,11 @@
 title: The Rhetoric Student
 description: A student of communication and argument who wants Aristotle's classical text made navigable and glossed for a modern reader.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Context
 kind: Persona
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [persona, audience, rhetoric]
 role: An undergraduate or self-directed learner studying rhetoric, communication, or classical argument, working through Aristotle's Rhetoric as coursework or independent study.
 goals:

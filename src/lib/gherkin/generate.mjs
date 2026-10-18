@@ -13,7 +13,7 @@
  * new wiring — and so do the bare-Node gates, which walk files on disk.
  *
  * OWNERSHIP (contract §7, risk R4): every page carries
- * `generated.by: "doc-kitty/gherkin"`. Before writing, the generator scans the
+ * `generated.by: "doc-kitty-gherkin/<version>"`. Before writing, the generator scans the
  * output directory; a file WITHOUT that stamp — or ANY symlink, which a write
  * would follow out of the section — is authored content and the run fails
  * BEFORE any write. Stale owned files are deleted, then empty directories. The
@@ -66,8 +66,10 @@ import {
   slug,
 } from '../vocabulary-core.mjs';
 import { resolveSectionRegistryEntries } from '../vocabulary-loader.mjs';
+import { isGeneratedStamp, makeStamp } from '../generator-stamp.mjs';
 import {
   GENERATED_BY,
+  GHERKIN_PRODUCER,
   buildFrontmatter,
   missionPrefix,
   serializeFrontmatter,
@@ -120,7 +122,11 @@ function hubDescription(title) {
  *   source-relative directory as written (`{ hr: 'HR' }`, `gherkin.titles`,
  *   #125); a directory without one is titled from its name. A key that names no
  *   directory holding a feature warns.
+ * @property {string} [outDir] Where the pages are (or will be) written; the
+ *   previous `generated` stamps are read from here. Default `<docsRoot>/<section>`.
  * @property {(msg: string) => void} [warn] Warning sink. Default no-op.
+ * @property {Date} [now] Injectable clock: a page's `generated.at` takes it only
+ *   when the page's content changed (otherwise the on-disk `at` is carried over).
  */
 
 /**
@@ -170,6 +176,22 @@ function sha256(text) {
 }
 
 /**
+ * The `generated` stamp already on disk at `file` (so `makeStamp` can carry its
+ * `at` over while the content is unchanged); `undefined` when the file is
+ * missing or unparseable. This is why `--check` and a rerun are byte-stable.
+ *
+ * @param {string} file
+ * @returns {{ at?: string, content_hash?: string } | undefined}
+ */
+function previousStamp(file) {
+  try {
+    return matter(readFileSync(file, 'utf8')).data?.generated ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Plan every generated file WITHOUT touching the output tree: a map from the
  * output path (POSIX, relative to `<docsRoot>/<section>`) to its exact contents,
  * in code-unit order. The single source the writer and the `--check` gate share.
@@ -192,7 +214,12 @@ export function planFeaturePages(model, opts) {
     sourceUrlPrefix,
     titles = {},
     warn = () => {},
+    now,
+    outDir = path.join(docsRoot, section),
   } = opts;
+  /** @param {string} out @param {string} hash */
+  const stampFor = (out, hash) =>
+    makeStamp({ producer: GHERKIN_PRODUCER, hash, previous: previousStamp(path.join(outDir, out)), now });
   /** @type {Map<string, string>} */
   const plan = new Map();
   if (model.files.length === 0) return plan;
@@ -298,7 +325,7 @@ export function planFeaturePages(model, opts) {
       tags: feature.tags,
       file: sourceLabel,
       sourceResource,
-      hash: file.sha256,
+      stamp: stampFor(out, file.sha256),
       missionPrefix: mission,
       adrFileNames,
       location: feature.location,
@@ -389,8 +416,8 @@ export function planFeaturePages(model, opts) {
     const title = /** @type {string} */ (dirTitles.get(dir));
     const description = dir === '' ? HUB_INTRO : hubDescription(title);
     const sorted = [...list].sort((a, b) => compareCodeUnit(a.out, b.out));
-    // `generated.at` hashes the sorted child list (contract §6): it changes
-    // exactly when a child is added, removed or renamed.
+    // `generated.content_hash` hashes the sorted child list (contract §6): it
+    // changes (and so does `at`) exactly when a child is added, removed or renamed.
     const hash = sha256(sorted.map((c) => c.out).join('\n'));
     const items = sorted.map((c) => `- [${escapeInline(c.title)}](${c.href}) — ${c.body}`);
     const out = dir === '' ? hubFile : `${dir}/${hubFile}`;
@@ -404,7 +431,7 @@ export function planFeaturePages(model, opts) {
     const listing = items.length > 0 ? `\n\n${items.join('\n')}` : '';
     plan.set(
       out,
-      `${serializeHubFrontmatter({ title, description, hash, status })}\n\n` +
+      `${serializeHubFrontmatter({ title, description, stamp: stampFor(out, hash), status })}\n\n` +
         `# ${escapeHeading(title)}\n\n${HUB_INTRO}${listing}\n`,
     );
   }
@@ -427,7 +454,7 @@ export function planFeaturePages(model, opts) {
 
 /**
  * Walk `outDir` and classify every file: OWNED (a `.md` whose frontmatter has
- * `generated.by === "doc-kitty/gherkin"`) or AUTHORED (anything else). ANY
+ * `generated.by` is a gherkin stamp) or AUTHORED (anything else). ANY
  * symlink — to a file or a directory, stamped target or not — is AUTHORED and
  * never followed: the writer would otherwise write (or prune) through it,
  * outside `outDir`. Dotfiles are ignored. Returns POSIX paths relative to
@@ -477,7 +504,7 @@ export function scanOutputDir(outDir) {
 function isOwnedPage(contents) {
   try {
     const { data } = matter(contents);
-    return data?.generated?.by === GENERATED_BY;
+    return isGeneratedStamp(data?.generated?.by, GHERKIN_PRODUCER) || data?.generated?.by === GENERATED_BY;
   } catch {
     return false;
   }

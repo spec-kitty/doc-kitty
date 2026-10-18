@@ -20,8 +20,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import {
-  GENERATED_BY,
+  GHERKIN_PRODUCER,
   DEFAULT_GUIDANCE_TEXT,
+  stampContentHash,
   buildFrontmatter,
   deriveDescription,
   extractNarrative,
@@ -31,12 +32,15 @@ import {
   serializeFrontmatter,
   truncateDescription,
 } from '../lib/gherkin/feature-core.mjs';
+import { makeStamp } from '../lib/generator-stamp.mjs';
 import { loadSectionRegistry } from '../lib/vocabulary-loader.mjs';
 
 const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EXAMPLE_DOCS = path.resolve(SRC_ROOT, '..', 'example', 'docs');
 const FILE = 'features/x.feature';
 const HASH = '0123456789abcdef'.repeat(4);
+const NOW = new Date('2026-10-18T09:30:00Z');
+const STAMP = makeStamp({ producer: GHERKIN_PRODUCER, hash: HASH, now: NOW });
 
 /** Build AST-shaped tags (`@name` at line 1, increasing columns). */
 function tagsOf(...names: string[]) {
@@ -63,7 +67,7 @@ function render(names: string[], extra: Partial<Parameters<typeof buildFrontmatt
     tags: tagsOf(...names),
     file: FILE,
     sourceResource: 'features/x.feature',
-    hash: HASH,
+    stamp: STAMP,
     missionPrefix: 'plans/missions',
     adrFileNames: ['0001-use-astro-starlight.md', 'README.md', 'template.md'],
     ...extra,
@@ -532,12 +536,41 @@ describe('@dk:status values are validated and doc_status always serialises to a 
     const block = serializeFrontmatter({ ...fields, doc_status: value });
     const data = matter(`${block}\n`).data as Record<string, unknown>;
     expect(data.doc_status).toBe(value);
-    expect((data.generated as { by: string }).by).toBe(GENERATED_BY);
+    expect((data.generated as { by: string }).by).toMatch(/^doc-kitty-gherkin\/\d/);
   });
 
   it('a slug-shaped doc_status stays bare (goldens unchanged)', () => {
     const { fields } = render([]);
     expect(serializeFrontmatter({ ...fields, doc_status: 'charter-custom' })).toContain('\ndoc_status: charter-custom\n');
+  });
+});
+
+describe('the generated stamp (#177, FR-005)', () => {
+  it('serialises by/at/content_hash in a stable order; the hash is the source hash, `at` an instant', () => {
+    const { fields, yaml } = render([]);
+    expect(fields.generated).toEqual({
+      by: expect.stringMatching(/^doc-kitty-gherkin\/\d/),
+      at: '2026-10-18T09:30:00Z',
+      content_hash: `sha256:${HASH.slice(0, 12)}`,
+    });
+    expect(yaml).toMatch(
+      /\ngenerated:\n {2}by: "doc-kitty-gherkin\/[^"]+"\n {2}at: "2026-10-18T09:30:00Z"\n {2}content_hash: "sha256:0123456789ab"\n/,
+    );
+  });
+
+  it('stampContentHash reads content_hash, else a legacy `at` hash, never an instant', () => {
+    expect(stampContentHash(STAMP)).toBe('sha256:0123456789ab');
+    expect(stampContentHash({ at: 'sha256:abcdef012345' })).toBe('sha256:abcdef012345');
+    expect(stampContentHash({ at: '2026-10-18T09:30:00Z' })).toBeUndefined();
+    expect(stampContentHash(undefined)).toBeUndefined();
+  });
+
+  it('same hash + previous stamp keeps `at`; changed hash moves `at` and the hash', () => {
+    const later = new Date('2026-11-01T00:00:00Z');
+    const same = makeStamp({ producer: GHERKIN_PRODUCER, hash: HASH, previous: STAMP, now: later });
+    expect(same.at).toBe(STAMP.at);
+    const changed = makeStamp({ producer: GHERKIN_PRODUCER, hash: 'f'.repeat(64), previous: STAMP, now: later });
+    expect(changed).toMatchObject({ at: '2026-11-01T00:00:00Z', content_hash: `sha256:${'f'.repeat(12)}` });
   });
 });
 
@@ -549,7 +582,7 @@ describe('an unnamed Feature has ONE title fallback (review #5)', () => {
       description: undefined,
       tags: [],
       file: FILE,
-      hash: HASH,
+      stamp: STAMP,
       location: { line: 3, column: 1 },
     });
     expect(fields.title).toBe('Functionaliteit');
@@ -558,7 +591,7 @@ describe('an unnamed Feature has ONE title fallback (review #5)', () => {
   });
 
   it('defaults to "Feature" when no keyword is supplied', () => {
-    const { fields } = buildFrontmatter({ featureName: '', description: 'Some text here.', tags: [], hash: HASH });
+    const { fields } = buildFrontmatter({ featureName: '', description: 'Some text here.', tags: [], stamp: STAMP });
     expect(fields.title).toBe('Feature');
   });
 });

@@ -2,7 +2,7 @@
 title: "Chapter 3: Types of Rhetoric"
 description: "The three kinds of rhetorical speech — deliberative, forensic, and epideictic — their proper times, and the distinct end each one argues toward."
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Explanation
 tags: [rhetoric, book-one]

@@ -2,7 +2,7 @@
 title: Domain
 description: The ubiquitous language for DocKitty.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Context
 kind: Explanation
 tags: [glossary, domain]

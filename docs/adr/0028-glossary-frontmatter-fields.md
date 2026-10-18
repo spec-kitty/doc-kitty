@@ -2,11 +2,11 @@
 title: "ADR-0028: The glossary_context and glossary_autolink frontmatter fields"
 description: Two optional page-local frontmatter fields extend the M4 metadata contract — a bounded-context selector and an auto-link opt-out — per ADR-0009's new-field-means-new-ADR rule.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@spec-kitty.ai
+  - human:stijn
 related:
   - plans/features/glossary-and-contextive
   - adr/0009-finalize-metadata-contract

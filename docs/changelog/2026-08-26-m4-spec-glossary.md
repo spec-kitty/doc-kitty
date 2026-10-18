@@ -2,7 +2,7 @@
 title: M4 specified — glossary + Contextive
 description: The M4 glossary mission spec landed and passed a four-lens post-spec adversarial review, folded into rev 2.
 doc_status: active
-updated: 2026-08-26
+updated: 2026-08-26T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [planning, glossary, contextive]

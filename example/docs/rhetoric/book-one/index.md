@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: "I: Purposes and Definitions of Rhetoric"
 description: Book I of Aristotle's Rhetoric — its purposes, the three species of rhetoric, and the topics orators build arguments from, across 15 chapters.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: Reference
 kind: Hub
 sidebar:

@@ -2,11 +2,11 @@
 title: "ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages"
 description: Draft-only Gherkin directories get a draft hub, gherkin.titles sets hub titles, a mis-cased @wip warns, and the integration injects the scenario index route.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0046-gherkin-feature-pages
   - adr/0051-gherkin-in-any-page

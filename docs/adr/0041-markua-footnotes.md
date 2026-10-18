@@ -2,11 +2,11 @@
 title: "ADR-0041: Markua footnotes via remark-gfm identifier normalisation"
 description: Render the source's double-caret `[^^N_M]` footnotes as clean GFM footnotes by normalising the id remark-gfm already parsed — no new dependency, inert when Markua is off.
 doc_status: active
-updated: 2026-09-08
+updated: 2026-09-08T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0030-markua-preprocess-to-directive
   - adr/0038-decks-markua-capable

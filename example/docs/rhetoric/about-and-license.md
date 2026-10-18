@@ -2,7 +2,7 @@
 title: About and license
 description: Attribution and license (CC-BY-SA-4.0) for the Rhetoric showcase — the public-domain Freese/Perseus source and the Dejongh revamp.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Reference
 kind: Explanation
 sidebar:

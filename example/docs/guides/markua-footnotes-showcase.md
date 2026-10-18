@@ -2,7 +2,7 @@
 title: Markua footnotes showcase
 description: Markua double-caret footnotes rendered as real, back-linked GFM footnotes (FR-004).
 doc_status: active
-updated: 2026-10-13
+updated: 2026-10-13T00:00:00Z
 type: Guide
 kind: Reference
 tags: [markua, footnotes, fixture, showcase]

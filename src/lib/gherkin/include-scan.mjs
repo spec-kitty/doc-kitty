@@ -37,6 +37,7 @@ import remarkParse from 'remark-parse';
 import remarkDirective from 'remark-directive';
 import { compareCodeUnit } from '../vocabulary-core.mjs';
 import { DK_GHERKIN_RESULTS_ENV } from '../internal-env.mjs';
+import { GENERATED_BY, GHERKIN_PRODUCER } from './feature-core.mjs';
 import { MAX_INCLUDE_BYTES } from './include-path.mjs';
 import { MAX_REPORT_BYTES } from './results.mjs';
 import { FEATURE_FILE, isRelativePosixPath } from './text.mjs';
@@ -131,13 +132,17 @@ export function includeHash(src, cwd) {
 export { DK_GHERKIN_RESULTS_ENV };
 
 /**
- * Text every GENERATED feature page holds (its `generated.by` stamp, the
- * `GENERATED_BY` of `feature-core.mjs`; a parity test pins the two). With
+ * Text every GENERATED feature page holds (its `generated.by` stamp: the
+ * `GHERKIN_PRODUCER` of `feature-core.mjs`, which the versioned stamp
+ * `doc-kitty-gherkin/<version>` starts with; a parity test pins the two). With
  * {@link INCLUDE_MARKER} it is the cheap test for "this page may show
  * results": a superset, since a page merely mentioning it only re-renders
  * when the report changes.
  */
-export const GENERATED_MARKER = 'doc-kitty/gherkin';
+export const GENERATED_MARKER = GHERKIN_PRODUCER;
+
+/** The unversioned stamp of pages not yet regenerated (`GENERATED_BY`). */
+const LEGACY_GENERATED_MARKER = GENERATED_BY;
 
 /** The hash of a report that is missing or must not be read. */
 const UNREADABLE_REPORT = 'unreadable';
@@ -149,7 +154,7 @@ const UNREADABLE_REPORT = 'unreadable';
  * @param {string} contents
  */
 export function mayShowResults(contents) {
-  return contents.includes(INCLUDE_MARKER) || contents.includes(GENERATED_MARKER);
+  return contents.includes(INCLUDE_MARKER) || contents.includes(GENERATED_MARKER) || contents.includes(LEGACY_GENERATED_MARKER);
 }
 
 /** @type {Map<string, { mtimeMs: number, size: number, hash: string }>} */

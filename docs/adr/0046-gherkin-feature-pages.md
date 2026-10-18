@@ -2,11 +2,11 @@
 title: "ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection"
 description: An opt-in gherkin preset parses .feature sources once and generates one Specification page per feature into the docs collection, reusing the ADR-0026 seam.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - ivan@spec-kitty.ai
+  - human:ivan
 related:
   - adr/0051-gherkin-in-any-page
   - adr/0055-gherkin-scenario-results

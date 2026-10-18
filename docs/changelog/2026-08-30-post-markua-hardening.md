@@ -2,7 +2,7 @@
 title: Post-Markua hardening — a11y flake fix + structural guards for the Markua/re-derive boundaries
 description: Resolves the three post-Markua-merge follow-ups (#34/#35/#36) — stops the deck-diagram a11y flake and turns two by-convention boundaries into structural, drift-catching guards.
 doc_status: active
-updated: 2026-08-30
+updated: 2026-08-30T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [markua, accessibility, remark, rehype, testing, slide-decks, glossary]

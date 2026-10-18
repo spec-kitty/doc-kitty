@@ -1,9 +1,14 @@
 ---
+okf_version: "0.2"
 title: "rhetoric"
 description: "Glossary terms for the rhetoric context."
 kind: Glossary
 glossary_context: "rhetoric"
 doc_status: active
+generated:
+  by: "doc-kitty-glossary/0.3.0"
+  at: "2026-10-18T06:09:39Z"
+  content_hash: "sha256:1d0bb7c2a0ee"
 ---
 
 # rhetoric

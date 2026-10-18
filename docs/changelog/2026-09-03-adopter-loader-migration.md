@@ -2,7 +2,7 @@
 title: Adopter loader & migration — index.md, section rename, redirect-coverage gate
 description: "Closes #37/#48/#42 — index.md is an accepted section index, a section rename is a data-only registry edit, and a coverage gate proves old URLs still resolve after migration."
 doc_status: active
-updated: 2026-09-03
+updated: 2026-09-03T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [loader, migration, adoption, redirects, registry, testing]

@@ -2,11 +2,11 @@
 title: "ADR-0022: reveal.js integration — pinned 6.0.1, core+Notes, browser-only init, --dk-* token theme"
 description: How doc-kitty vendors and initializes reveal.js for the deck route, and how the deck is themed by mapping --dk-* tokens onto reveal's --r-* variables scoped to .reveal.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0012-slide-decks-static-reveal-from-markdown
   - adr/0021-deck-routing-seam-out-of-frame-override

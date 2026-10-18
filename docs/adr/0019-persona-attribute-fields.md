@@ -2,11 +2,11 @@
 title: "ADR-0019: Persona attribute fields (role, goals, responsibilities)"
 description: The Persona kind gains role/goals/responsibilities; the zod schema stays lenient and the standalone validator enforces requiredness for kind Persona.
 doc_status: active
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0009-finalize-metadata-contract
   - adr/0011-theme-slot-surface-and-per-kind-layouts

@@ -2,7 +2,7 @@
 title: Audience + related + external references
 description: "Render the audience, related, and external-references frontmatter as consistent on-page metadata blocks."
 doc_status: draft
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: Feature
 kind: Feature
 moscow:

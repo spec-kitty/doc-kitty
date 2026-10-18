@@ -2,7 +2,7 @@
 title: Test-guard hardening — Hub draft-exclusion guard + no CI vitest build-race
 description: "Closes #53/#54 — Hub's draft-exclusion is now a mutation-true unit guard, and the two astro-build test suites no longer race under vitest parallelism."
 doc_status: active
-updated: 2026-09-04
+updated: 2026-09-04T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [testing, ci, hub, reliability]

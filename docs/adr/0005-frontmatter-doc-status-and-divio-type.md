@@ -2,11 +2,11 @@
 title: "ADR-0005: Rename status to doc_status and add divio_type"
 description: Two changes to the frontmatter contract — a clearer lifecycle field name and a reading-mode axis.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - context/convention
   - adr/0004-amend-common-docs-as-extensible-variation

@@ -2,11 +2,11 @@
 title: "ADR-0030: Render Markua by preprocessing to remark-directive"
 description: Support a curated Markua subset by compiling its non-CommonMark blocks into remark-directive containers plus a small attribute-list plugin, rather than a micromark extension.
 doc_status: active
-updated: 2026-08-30
+updated: 2026-08-30T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - architecture/research/markua-syntax-support
   - architecture/research/astro-markdown-extensions

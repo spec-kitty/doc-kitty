@@ -2,11 +2,11 @@
 title: "ADR-0006: Direct render by default; projection deferred"
 description: Render the repo-root docs/ tree directly; keep the projection pipeline as an optional, deferred mode.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - adr/0003-root-docs-and-agent-extension
   - adr/0004-amend-common-docs-as-extensible-variation

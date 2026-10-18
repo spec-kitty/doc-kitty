@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Changelog
 description: Release history for the example docsite.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: Changelog
 kind: Hub
 ---

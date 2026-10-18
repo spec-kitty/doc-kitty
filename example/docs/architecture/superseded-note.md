@@ -2,7 +2,7 @@
 title: Superseded architecture note
 description: A published-but-superseded architecture note kept as the stale related-target so the demonstrator can render a real superseded status marker.
 doc_status: superseded
-updated: 2026-08-24
+updated: 2026-08-24T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [architecture, superseded, fixture]

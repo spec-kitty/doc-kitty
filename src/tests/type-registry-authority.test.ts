@@ -115,7 +115,7 @@ describe('validate() honours the registry map and keeps the mismatch ADVISORY', 
   it('warns (does not fail) when a declared type mismatches the registry default', () => {
     const { problems, warnings } = validate(
       'guides/deploy.md',
-      { title: 'Deploy', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27', type: 'Guide', kind: 'How-To' },
+      { title: 'Deploy', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27T00:00:00Z', type: 'Guide', kind: 'How-To' },
       types,
     );
     // Registry says guides → 'Handbook'; declared 'Guide' is a canonical DOC_TYPE,
@@ -129,7 +129,7 @@ describe('validate() honours the registry map and keeps the mismatch ADVISORY', 
     // warning and no path-suggests warning — a clean pass.
     const { problems, warnings } = validate(
       'architecture/overview.md',
-      { title: 'Overview', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27', type: 'Architecture', kind: 'Reference' },
+      { title: 'Overview', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27T00:00:00Z', type: 'Architecture', kind: 'Reference' },
       types,
     );
     expect(problems).toEqual([]);
@@ -139,7 +139,7 @@ describe('validate() honours the registry map and keeps the mismatch ADVISORY', 
   it('keeps the bundle-root README exempt from `type` regardless of registry', () => {
     const { problems, warnings } = validate(
       'README.md',
-      { title: 'Docs', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27', okf_version: '0.2', kind: 'Hub' },
+      { title: 'Docs', description: 'x'.repeat(60), doc_status: 'active', updated: '2026-08-27T00:00:00Z', okf_version: '0.2', kind: 'Hub' },
       types,
     );
     // No `type` present and none required for the bundle root.

@@ -2,7 +2,7 @@
 title: Metadata model and chrome (M1)
 description: Finalized the frontmatter metadata contract, its validator, the whole-tree migration, and the per-kind metadata-driven page chrome.
 doc_status: active
-updated: 2026-08-23
+updated: 2026-08-23T00:00:00Z
 type: Changelog
 kind: Changelog
 tags: [metadata, chrome, doc_status, kind, theme]

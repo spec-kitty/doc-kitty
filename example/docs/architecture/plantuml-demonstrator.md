@@ -2,7 +2,7 @@
 title: PlantUML demonstrator
 description: A PlantUML diagram rendered to a static, themed, accessible SVG at build time — the build-only twin of the Mermaid demonstrator, named by a leading '-comment block.
 doc_status: active
-updated: 2026-09-07
+updated: 2026-09-07T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [architecture, diagrams, plantuml, demonstrator, fixture]

@@ -1,8 +1,9 @@
 ---
+okf_version: "0.2"
 title: Decision Records
 description: The immutable log of architectural decisions for the example.
 doc_status: active
-updated: 2026-08-21
+updated: 2026-08-21T00:00:00Z
 type: ADR
 kind: Hub
 ---

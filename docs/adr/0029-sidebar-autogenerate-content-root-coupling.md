@@ -2,11 +2,11 @@
 title: "ADR-0029: The registry sidebar prefixes autogenerate directories with docsDir"
 description: The registry sidebar prefixes each autogenerate directory with docsDir to compensate Starlight's hard-coded src/content/docs route-matching root — a version-pinned coupling.
 doc_status: active
-updated: 2026-08-28
+updated: 2026-08-28T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@spec-kitty.ai
+  - human:stijn
 related:
   - architecture/section-registry
   - adr/0004-amend-common-docs-as-extensible-variation

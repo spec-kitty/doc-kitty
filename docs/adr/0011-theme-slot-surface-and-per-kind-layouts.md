@@ -2,11 +2,11 @@
 title: "ADR-0011: Theme slot surface and per-kind layouts"
 description: How the theme layer works — a curated slot surface, per-kind layout resolution, and the hero_image rename.
 doc_status: active
-updated: 2026-08-22
+updated: 2026-08-22T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - architecture/theming
   - adr/0008-swappable-theme-layer

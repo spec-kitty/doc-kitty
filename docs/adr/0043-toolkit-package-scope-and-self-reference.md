@@ -2,11 +2,11 @@
 title: "ADR-0043: DocKitty ships under the @spec-kitty scope; NFR-001 forbids runtime coupling, not self-reference"
 description: DocKitty ships as @spec-kitty/doc-toolkit, so NFR-001's zero-coupling guard forbids the Spec Kitty runtime and other @spec-kitty packages but exempts its own self-reference.
 doc_status: active
-updated: 2026-09-28
+updated: 2026-09-28T00:00:00Z
 type: ADR
 kind: ADR
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 related:
   - context/convention
   - adr/0042-native-documentation-charter

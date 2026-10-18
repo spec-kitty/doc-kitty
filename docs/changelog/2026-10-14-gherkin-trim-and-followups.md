@@ -2,11 +2,11 @@
 title: Gherkin results in CI, and a translatable Overview label
 description: A missing Gherkin report fails CI builds, stale and route problems are flagged, the Overview label is translatable, and the Gherkin tests shrink.
 doc_status: active
-updated: 2026-10-14
+updated: 2026-10-14T00:00:00Z
 type: Changelog
 kind: Changelog
 authors:
-  - stijn@sddevelopment.be
+  - human:stijn
 tags: [gherkin, bdd, testing, i18n]
 related:
   - adr/0056-gherkin-results-followups

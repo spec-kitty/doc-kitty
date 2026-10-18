@@ -1,8 +1,13 @@
 ---
+okf_version: "0.2"
 title: "Glossary"
 description: "Bounded-context vocabulary for this documentation."
 kind: Hub
 doc_status: active
+generated:
+  by: "doc-kitty-glossary/0.3.0"
+  at: "2026-10-18T06:09:39Z"
+  content_hash: "sha256:3c372a59ef6a"
 ---
 
 # Glossary
