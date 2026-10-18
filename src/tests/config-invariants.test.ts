@@ -205,6 +205,7 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
           rehype.push(...(c.markdown?.rehypePlugins ?? []));
         },
         injectScript: () => {},
+        injectRoute: () => {},
         addWatchFile: () => {},
         logger: { warn: () => {}, info: () => {} },
       });
@@ -228,6 +229,25 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
     expect(namesOf(omitted)).toEqual(PINNED_BASELINE);
     expect(namesOf(undef)).toEqual(PINNED_BASELINE);
     expect(starlightConfigOf(undef)).toEqual(starlightConfigOf(omitted));
+  });
+
+  it('always injects /api/content-graph.json through a package-exported entrypoint (#176)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const exportsMap = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).exports;
+    const graph = named(defineDocKittyIntegrations({ title: 'Docs' })).find(
+      (i) => i.name === 'doc-kitty:content-graph',
+    );
+    const injected: Array<{ pattern: string; entrypoint: string }> = [];
+    (graph?.hooks?.['astro:config:setup'] as (ctx: unknown) => void)({
+      updateConfig: () => {},
+      injectRoute: (r: { pattern: string; entrypoint: string }) => injected.push(r),
+    });
+    expect(injected).toEqual([
+      expect.objectContaining({ pattern: '/api/content-graph.json', prerender: true }),
+    ]);
+    // The entrypoint is a package specifier a consuming site resolves, not a file path.
+    const subpath = injected[0].entrypoint.replace('@spec-kitty/doc-toolkit/', './');
+    expect(exportsMap[subpath]).toBe('./lib/routes/content-graph-injected.ts');
   });
 
   it('adds exactly one doc-kitty:gherkin then one doc-kitty:gherkin-fence, immediately before starlight, when set', () => {

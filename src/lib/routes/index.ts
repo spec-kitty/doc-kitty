@@ -9,3 +9,5 @@ export { bibliographyRoute } from './bibliography.js';
 export type { BibliographyRouteOptions } from './bibliography.js';
 export { scenarioIndexRoute } from './scenario-index.js';
 export type { ScenarioIndexRouteOptions } from './scenario-index.js';
+export { contentGraphRoute } from './content-graph.js';
+export type { ContentGraphRouteOptions } from './content-graph.js';

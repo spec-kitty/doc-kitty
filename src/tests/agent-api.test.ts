@@ -79,6 +79,8 @@ describe('agentIndexRoute — version and updated format', () => {
     });
     const json = JSON.parse(await res.text());
     expect(json.version).toBe('3');
+    // #176: the content graph is always linked (the integration always injects the route).
+    expect(json._links.contentGraph).toEqual({ href: 'https://docs.example/api/content-graph.json' });
     expect(json.pages[0].updated).toBe('2026-10-18T09:30:00Z');
     expect(toAgentRecord({ slug: 'd', data: { title: 'D', updated: '2026-10-18' } }).updated)
       .toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
