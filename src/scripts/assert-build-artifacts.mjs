@@ -2496,6 +2496,12 @@ async function main() {
   if (!rss.includes(`/${SCENARIO_KNOWN_FEATURE_ID}/`)) {
     fail(`rss.xml: the feature page ${SCENARIO_KNOWN_FEATURE_ID} is missing (the behaviour section feeds rss)`);
   }
+  // A generated hub lists its children and carries no news of its own (#127).
+  for (const hub of ['/behaviour/', '/behaviour/hr/', '/behaviour/shipping/', '/glossary/']) {
+    if (rss.includes(`${hub}</link>`)) {
+      fail(`rss.xml: the generated hub ${hub} is a feed item; generated hubs stay out of the feed (#127)`);
+    }
+  }
   if (rss.includes(SCENARIO_DRAFT_FEATURE_ID)) {
     fail(`rss.xml: the draft feature ${SCENARIO_DRAFT_FEATURE_ID} leaked past draft gating`);
   }

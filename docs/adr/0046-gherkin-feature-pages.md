@@ -116,6 +116,8 @@ gates (ADR-0026's finding AS-6).
     and hubs in RSS (its `behaviour` section feeds `rss`). A generated page has no
     `updated` date unless the feature carries `@dk:updated=<date>`, so by default
     its item has no `<pubDate>` and sorts after the dated items.
+    *Amended 2026-10-18 (#127): generated hubs (`kind: Hub` with a generator
+    stamp) are no longer feed items (`includedInRssFeed`); authored hubs stay.*
 
 ## Consequences
 

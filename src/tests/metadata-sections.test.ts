@@ -271,6 +271,26 @@ describe('RSS excludes kind:Presentation (FR-011 / T013)', () => {
     expect(includedInRssFeed(misfiledDeck)).toBe(false);
   });
 
+  it('drops a generated Hub (no news of its own) but keeps an authored one (#127)', () => {
+    const generatedHub: DocEntry = {
+      slug: 'behaviour',
+      data: {
+        title: 'Behaviour',
+        doc_status: 'active',
+        kind: 'Hub',
+        generated: { by: 'doc-kitty-gherkin/0.3.0', at: '2026-10-18T05:55:21Z', content_hash: 'sha256:16468cd02ce6' },
+      },
+    };
+    expect(includedInRssFeed(generatedHub)).toBe(false);
+    const glossaryHub: DocEntry = {
+      ...generatedHub,
+      slug: 'glossary',
+      data: { ...generatedHub.data, generated: { ...generatedHub.data.generated!, by: 'doc-kitty-glossary/0.3.0' } },
+    };
+    expect(includedInRssFeed(glossaryHub)).toBe(false);
+    expect(includedInRssFeed({ slug: 'guides', data: { title: 'Guides', doc_status: 'active', kind: 'Hub' } })).toBe(true);
+  });
+
   it('keeps a doc with no kind (undefined) in the feed', () => {
     const noKind: DocEntry = {
       slug: 'context/intro',
