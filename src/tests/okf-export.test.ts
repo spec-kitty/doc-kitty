@@ -8,7 +8,9 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, it, expect } from 'vitest';
+import { okfExportIntegration } from '../lib/okf-export/integration.js';
 import { bundlePathOf, exportOkfBundle } from '../lib/okf-export/core.mjs';
 import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
 
@@ -198,6 +200,22 @@ describe('checkOkfBundle (FR-026)', () => {
       'nonroot-index.md',
       'root-extra-key.md',
     ]);
+  });
+});
+
+describe('okfExportIntegration build hook', () => {
+  it('explains a missing content graph instead of a raw ENOENT', () => {
+    const dist = mkdtempSync(path.join(tmpdir(), 'okf-dist-'));
+    try {
+      const hook = okfExportIntegration(path.join(FIX, 'docs'), undefined).hooks['astro:build:done'] as (a: unknown) => void;
+      const call = () => hook({ dir: pathToFileURL(`${dist}/`), logger: { info() {} } });
+      expect(call).toThrow(/content graph.*not found/i);
+      expect(call).toThrow(path.join(dist, 'api', 'content-graph.json'));
+      expect(call).toThrow(/\/api\/content-graph\.json/);
+      expect(call).not.toThrow(/ENOENT/);
+    } finally {
+      rmSync(dist, { recursive: true, force: true });
+    }
   });
 });
 
