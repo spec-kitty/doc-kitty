@@ -139,6 +139,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **Shared links show a full card on Slack, WhatsApp and LinkedIn (#180).**
+  Before, the spec-kitty theme's share image was an SVG, which those platforms
+  do not show, and the card carried no image size or type. Now every page's
+  `og:image` is a 1200x630 PNG with `og:image:width`, `og:image:height` and
+  `og:image:type`, and the site-wide card's alt text is the site title. A page
+  whose `social_thumb` or `hero_image` is an SVG gets the site-wide card, with a
+  build warning. A theme whose `assets.socialImage` is an SVG gets the toolkit's
+  default card, with a warning to give it a PNG or JPEG.
+- **Generated hub pages no longer appear as RSS items (#127).** Before, the
+  section and folder indexes the Gherkin generator writes, and the generated
+  glossary index, showed up in `rss.xml` with no news of their own. Now
+  generated hubs stay out of the feed; authored hubs are unchanged.
 - **A second DocKitty config in the same process (for example a test suite) no
   longer inherits the first config's draft-publication setting (#167).** Before,
   `defineDocKittyIntegrations` left the first config's internal environment
