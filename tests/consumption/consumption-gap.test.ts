@@ -61,6 +61,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { pinToolkitIntegrity } from './scripts/pin-toolkit-integrity.mjs';
+import { checkOkfBundle } from '../../src/lib/okf-export/conformance.mjs';
 
 // ── repository layout (derived from this file's location) ────────────────────
 const HERE = path.dirname(fileURLToPath(import.meta.url)); // tests/consumption
@@ -361,6 +362,14 @@ describe('consumption packaging-gap self-test (C-2/C-4, INV-15) — two-arm', ()
     expect(existsSync(path.join(craftFixture, 'dist'))).toBe(true);
     // A real consumer artifact proves the toolkit routes actually ran.
     expect(existsSync(path.join(craftFixture, 'dist', 'api', 'index.json'))).toBe(true);
+    // The always-on graph route and OKF export ship with no page file in the consumer (#176, #178).
+    const dist = path.join(craftFixture, 'dist');
+    expect(existsSync(path.join(dist, 'api', 'content-graph.json'))).toBe(true);
+    expect(JSON.parse(readFileSync(path.join(dist, 'api', 'content-graph.json'), 'utf8')).schema).toBe(
+      'dockitty.content-graph/1',
+    );
+    expect(readFileSync(path.join(dist, 'okf', 'index.md'), 'utf8')).toContain('okf_version: "0.2"');
+    expect(checkOkfBundle(path.join(dist, 'okf'))).toEqual([]);
   }, 600_000);
 
   it('T022 (ARM 2 — fail-closed): removing the derived module FAILS the build, naming the specifier', () => {

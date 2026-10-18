@@ -1,0 +1,5 @@
+---
+title: Stamped
+---
+
+Generated body.

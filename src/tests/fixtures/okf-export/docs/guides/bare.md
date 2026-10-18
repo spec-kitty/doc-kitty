@@ -1,0 +1,5 @@
+---
+title: Bare
+---
+
+Bare body.
