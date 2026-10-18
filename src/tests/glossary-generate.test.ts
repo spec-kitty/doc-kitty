@@ -108,6 +108,8 @@ describe('generateGlossaryPages', () => {
     const written = generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out, SITE_INDEX_NAMES, undefined, new Date('2026-10-18T09:30:00Z'));
     const first = written.map((p) => readFileSync(p, 'utf8'));
     for (const text of first) {
+      // Every generated index declares the OKF version as a QUOTED string (never a bare 0.2 float).
+      expect(text).toMatch(/\nokf_version: "0\.2"\n/);
       expect(text).toMatch(
         /\ngenerated:\n {2}by: "doc-kitty-glossary\/[^"]+"\n {2}at: "2026-10-18T09:30:00Z"\n {2}content_hash: "sha256:[0-9a-f]{12}"\n---\n/,
       );
