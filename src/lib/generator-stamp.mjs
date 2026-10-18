@@ -2,15 +2,17 @@
  * The generated-page stamp (`generated: {by, at, content_hash}`, #177, FR-008,
  * C-004): who produced a page, when its content last changed, and a hash of that
  * content. Owns the stamp shape and its detection; the pure instant/actor rules
- * live in `vocabulary-core.mjs`. This module reads `src/package.json` (the
+ * live in `vocabulary-core.mjs`. This module imports `src/package.json` (the
  * published `@spec-kitty/doc-toolkit` manifest — never the repo root manifest),
  * so it is not part of the fs-free core.
  *
  * @module generator-stamp
  */
 
-import { readFileSync } from 'node:fs';
 import { formatInstant } from './vocabulary-core.mjs';
+// A JSON module, not a path read from `import.meta.url`: Vite inlines it, so the
+// version still resolves once a route that stamps is bundled (#182).
+import toolkitManifest from '../package.json' with { type: 'json' };
 
 /** The producer id of the Gherkin pipeline's stamp (`doc-kitty-gherkin/<version>`). */
 export const GHERKIN_PRODUCER = 'doc-kitty-gherkin';
@@ -79,19 +81,13 @@ export function serializeStamp(stamp) {
   ];
 }
 
-/** @type {string | undefined} */
-let cachedVersion;
-
 /**
- * The toolkit version, read once from `src/package.json`.
+ * The toolkit version, from `src/package.json`.
  *
  * @returns {string}
  */
 export function toolkitVersion() {
-  cachedVersion ??= JSON.parse(
-    readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
-  ).version;
-  return /** @type {string} */ (cachedVersion);
+  return toolkitManifest.version;
 }
 
 /**

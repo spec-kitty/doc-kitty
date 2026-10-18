@@ -461,7 +461,7 @@ describe('the pure gherkin modules import only their allow-list (import-scan)', 
   const stripComments = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
   it.each([
-    // generator-stamp.mjs: the one stamp owner; core only calls its pure serializeStamp (fs is used solely by toolkitVersion, which core never calls).
+    // generator-stamp.mjs: the one stamp owner; core only calls its pure serializeStamp (the manifest import serves only toolkitVersion, which core never calls).
     ['feature-core.mjs', ['../generator-stamp.mjs', '../vocabulary-core.mjs', './text.mjs']],
     ['render.mjs', ['./results.mjs', './text.mjs', './view.mjs']],
     ['view.mjs', ['../vocabulary-core.mjs', './text.mjs']],
