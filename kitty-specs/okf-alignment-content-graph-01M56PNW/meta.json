@@ -1,0 +1,37 @@
+{
+  "accept_commit": "1bb6c1157a441dfafd718bc5fe57aadda186df57",
+  "acceptance_history": [
+    {
+      "accept_commit": "1bb6c1157a441dfafd718bc5fe57aadda186df57",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-18T07:41:56.649730+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "cb2d35cb85dd65b116205a92c1d4fc3020b3b956"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-18T07:41:56.649730+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "cb2d35cb85dd65b116205a92c1d4fc3020b3b956",
+  "baseline_merge_commit": "68e66746dbc5ca4c1062ac82d18b055da7ce3c1b",
+  "coordination_branch": "kitty/mission-okf-alignment-content-graph-01M56PNW",
+  "created_at": "2026-10-18T05:10:19.902150+00:00",
+  "flattened": false,
+  "friendly_name": "OKF alignment and content graph",
+  "merged_at": "2026-10-18T07:43:56.775532+00:00",
+  "merged_commit": "49fb551ea820273e17af4925dc7c3ce46a1c5690",
+  "mid8": "01M56PNW",
+  "mission_id": "01M56PNWJD5A79AWFQG6HGVQ5V",
+  "mission_number": 11,
+  "mission_slug": "okf-alignment-content-graph-01M56PNW",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "DocKitty claims OKF v0.2 conformance but its dates, authors and index versions differ from the spec, its page relations are not published together, and OKF readers see DocKitty bundles as unconnected pages. This mission fixes all three per ADR-0059 (#177, #176, #178).",
+  "purpose_tldr": "Align DocKitty metadata with OKF v0.2, publish a site-wide content graph, and export plain OKF bundles.",
+  "slug": "okf-alignment-content-graph-01M56PNW",
+  "status_phase": "1",
+  "target_branch": "feat/okf-alignment-content-graph",
+  "topology": "coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-18T05:34:47.974080+00:00"
+}

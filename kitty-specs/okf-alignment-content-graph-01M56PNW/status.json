@@ -1,0 +1,174 @@
+{
+  "event_count": 88,
+  "last_event_id": "01M56ZF1FXAWSJAJYBZTZEFWT8",
+  "materialized_at": "2026-10-18T07:43:49.757542+00:00",
+  "mission_number": "",
+  "mission_slug": "okf-alignment-content-graph-01M56PNW",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 9,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZDDWPVZH4G7V23525WZ00",
+      "last_transition_at": "2026-10-18T07:42:56.918330+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP01-shared-metadata-rules/review-cycle-1.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP01-shared-metadata-rules/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 534757,
+      "shell_pid_created_at": "1792301683.6"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZDMBRBFQNE7TXNHAVC299",
+      "last_transition_at": "2026-10-18T07:43:03.544693+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP02-generator-stamps/review-cycle-1.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP02-generator-stamps/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 609896,
+      "shell_pid_created_at": "1792302586.67"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZDTQZYT04FCS8GQ1B5XR8",
+      "last_transition_at": "2026-10-18T07:43:10.079216+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP03-updated-consumers/review-cycle-2.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP03-updated-consumers/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 677181,
+      "shell_pid_created_at": "1792303099.75"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZE16WYQDEZRNCZK2M9ADK",
+      "last_transition_at": "2026-10-18T07:43:16.700461+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP04-tree-migration/review-cycle-2.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP04-tree-migration/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 758334,
+      "shell_pid_created_at": "1792304188.12"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZE7J78PB5ZRMF5KDSWXCV",
+      "last_transition_at": "2026-10-18T07:43:23.207384+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP05-content-graph-builder/review-cycle-2.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP05-content-graph-builder/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 757562,
+      "shell_pid_created_at": "1792304150.57"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZEE76HXYCEQW9V5GZF0WB",
+      "last_transition_at": "2026-10-18T07:43:30.022291+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP06-graph-artifact-gate/review-cycle-1.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP06-graph-artifact-gate/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 770530,
+      "shell_pid_created_at": "1792304593.85"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZEMJQJEQKPTZ9RN7MKWFA",
+      "last_transition_at": "2026-10-18T07:43:36.535921+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP07-okf-export-core/review-cycle-2.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP07-okf-export-core/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 810444,
+      "shell_pid_created_at": "1792305317.12"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZETYCZVQEGKD7DRJ0TGH7",
+      "last_transition_at": "2026-10-18T07:43:43.052744+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP08-export-cli-hook/review-cycle-1.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP08-export-cli-hook/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 817188,
+      "shell_pid_created_at": "1792305667.34"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M56ZF1FXAWSJAJYBZTZEFWT8",
+      "last_transition_at": "2026-10-18T07:43:49.757542+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/okf-alignment-content-graph-01M56PNW-coord/kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP09-docs-adr-changelog/review-cycle-2.md",
+        "reference": "review-cycle://okf-alignment-content-graph-01M56PNW/WP09-docs-adr-changelog/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 898318,
+      "shell_pid_created_at": "1792308916.06"
+    }
+  }
+}

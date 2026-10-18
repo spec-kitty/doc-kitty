@@ -1,0 +1,269 @@
+{
+  "mission_slug": "okf-alignment-content-graph-01M56PNW",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:38:59.578172+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:05.915283+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:12.387336+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:18.904866+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP02 approved (stamp tests, regen idempotence)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:25.461105+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:32.039956+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP04 approved (migration: 0 warnings both trees; metadata-model.md)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:38.495791+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP04 approved (migration: 0 warnings both trees; metadata-model.md)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:44.933203+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP03 approved (agent-api v3, feed-order tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:51.411198+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP05 approved (content-graph.test.ts; built graph validates vs contract; 2-build cmp)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:39:57.965023+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP05 approved (content-graph.test.ts; built graph validates vs contract; 2-build cmp)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:04.531150+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP05 approved (content-graph.test.ts; built graph validates vs contract; 2-build cmp)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:10.973141+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP05 approved (content-graph.test.ts; built graph validates vs contract; 2-build cmp)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:17.540953+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Verify FR-014 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP06 approved (assertContentGraph + example-adopter test)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:24.086694+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Verify FR-015 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP07 approved (okf-export + links tests; example export checker [])",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:30.681426+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Verify FR-016 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP07 approved (okf-export + links tests; example export checker [])",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:37.243214+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Verify FR-017 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP07 approved (okf-export + links tests; example export checker [])",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:43.761974+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Verify FR-018 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP08 approved (CLI exit-code test; build hook; dist/okf byte-identical)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:50.101853+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Verify FR-019 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP07 approved (okf-export + links tests; example export checker [])",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:40:56.594455+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "Verify FR-020 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP09 approved: viewer gap documented in docs/guides/export-okf-bundle.md; upstream OKF-viewer report is an operator step, not yet filed",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:41:03.123312+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "Verify FR-021 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:41:09.723309+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "Verify FR-022 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:41:16.281721+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "Verify FR-023 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP01 approved (parity + vocabulary-core tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:41:22.830534+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "Verify FR-024 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP03 approved (agent-api v3, feed-order tests)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:41:29.344946+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "Verify FR-025 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP07 approved (okf-export + links tests; example export checker [])",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:41:35.910596+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "Verify FR-026 is satisfied",
+      "proof_type": "WP review + tests",
+      "evidence": "WP07 approved (okf-export + links tests; example export checker [])",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-18T07:41:42.510117+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
