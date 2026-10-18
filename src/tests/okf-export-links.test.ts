@@ -76,7 +76,7 @@ describe('advisory link check', () => {
     const report = checkOkfBundleReport(files);
     expect(report.errors).toEqual([]);
     expect(report.warnings).toEqual([
-      { path: 'a.md', severity: 'warning', rule: 'unresolved-link', message: 'link target is not in the bundle: /x.md#frag' },
+      { path: 'a.md', severity: 'warning', rule: 'unresolved-link', message: 'link target is not in the bundle: /x.md#frag', target: '/x.md#frag' },
     ]);
   });
 
