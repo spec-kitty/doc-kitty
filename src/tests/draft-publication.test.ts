@@ -1108,7 +1108,10 @@ describe('one resolver for the build and its gates', () => {
     // Positive control, same roots: --env-dir decides, so nothing is left to vouch for.
     const decided = gate('check-links.mjs', ['--strict', site.docs, nested, '--env-dir', 'env']);
     expect(decided.stderr).not.toContain('built by');
-    expect(decided.status).not.toBe(2);
+    // Exit 1 is the fixture's own draft link (done.md -> wip), not a refusal: nothing else is wrong.
+    expect(decided.status).toBe(1);
+    expect(decided.stderr).toContain('link points at a draft page');
+    expect(decided.stderr).toContain('1 link problem(s) in 1 file(s)');
   });
 
   it('an env-file-only value: the redirect-coverage gate sees what the integration saw', () => {

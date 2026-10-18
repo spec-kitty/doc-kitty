@@ -346,7 +346,7 @@ describe('CLI (check-redirect-coverage.mjs run directly)', () => {
     writeFileSync(path.join(tmp, 'site', 'content', 'docs', 'README.md'), '# Docs\n');
     writeFileSync(
       path.join(tmp, 'site', 'astro.config.mjs'),
-      "throw new Error('boom'); export default { vite: { envDir: 'env' } };\n",
+      "export default { vite: { envDir: 'env' } };\n",
     );
     const baselineFile = path.join(tmp, 'url-baseline.txt');
     writeFileSync(baselineFile, '', 'utf8');
@@ -359,5 +359,6 @@ describe('CLI (check-redirect-coverage.mjs run directly)', () => {
 
     expect(result.status).toBe(2);
     expect(result.stderr).toMatch(/built by .*astro\.config\.mjs, but the config evaluated for it is none/);
+    expect(result.stderr).not.toMatch(/could not evaluate/);
   });
 });

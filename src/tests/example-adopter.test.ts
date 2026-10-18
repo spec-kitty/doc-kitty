@@ -205,11 +205,15 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
         const withBase = gate('--index-path', 'doc-kitty/v2/data/index.json');
         expect(withBase.status).toBe(1);
         expect(withBase.stderr).toContain('doc-kitty/v2/data/index.json');
-        expect(withBase.stderr).toContain('base');
+        expect(withBase.stderr).toContain('agent index: --index-path doc-kitty/v2/data/index.json names no file under');
+        expect(withBase.stderr).toContain('does not nest the site base: drop any base prefix from it');
+        expect(withBase.stderr).not.toContain('cannot derive');
 
         // Unusable values exit 2 before any check runs.
         for (const bad of ['../x', 'C:\\x', '', '//x']) {
-          expect(gate('--index-path', bad).status, `--index-path ${JSON.stringify(bad)}`).toBe(2);
+          const refused = gate('--index-path', bad);
+          expect(refused.status, `--index-path ${JSON.stringify(bad)}`).toBe(2);
+          expect(refused.stderr, `--index-path ${JSON.stringify(bad)}`).toMatch(/--index-path/);
         }
 
         // Last, so a missing PlantUML service (a different gate failure) cannot hide the steps above.
