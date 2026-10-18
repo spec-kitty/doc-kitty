@@ -749,6 +749,12 @@ flowchart LR
 
 Mermaid needs nothing else. Build, and the block is drawn.
 
+Readers can expand any diagram to the full window with the button in its
+top-right corner, and close it with Esc or a click outside it. Images in page
+content expand the same way when clicked or focused and activated with Enter;
+an image inside a link keeps its link. This needs no option and is on in every
+site.
+
 ### Render modes
 
 With `diagrams: true`, each build draws diagrams in one of two modes:

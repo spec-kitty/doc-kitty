@@ -43,6 +43,9 @@ Scope: Extended.
 - **Decks included.** The same render owner draws diagrams inside the out-of-frame
   reveal.js decks, closing the diagrams-in-slides gap M6 left open.
 
+- **Expand to the full window (#185).** Every diagram gets an expand button that
+  opens it in a modal lightbox; images in page content expand the same way.
+
 ## Build-time render + PlantUML (delivered by #13)
 
 M5 shipped **client-side Mermaid**. Issue **#13 "Enhanced diagram support"** then

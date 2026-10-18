@@ -29,6 +29,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Readers can expand diagrams and images to the full window again (#185).**
+  Before, sites built on the toolkit drew diagrams and images at page width
+  with no way to enlarge them; the older portal sites had a lightbox that the
+  toolkit never carried over. Now every diagram has an expand button, and every
+  image in page content expands on click or Enter. It opens in a modal that
+  closes with Esc, the close button or a click outside, and focus returns to
+  where it was. It is on for every site, with no option and no new dependency.
+  Its labels are English only for now (#161).
+
 - **Every build publishes `api/content-graph.json` (#176).** Before, an agent
   or tool that wanted the site's structure fetched one JSON file per page, and
   nothing held the reverse edges. Now one file lists every published page,
