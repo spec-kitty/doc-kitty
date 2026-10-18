@@ -90,6 +90,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Read the scenarios API's producer from `generated_by`; `generated_from` is
+  deprecated (#182).** Before, `api/scenarios.json` named its producer only as
+  `generated_from: "doc-kitty/gherkin"`, while the generated feature pages'
+  stamp says `doc-kitty-gherkin/<version>`. Now it also carries
+  `generated_by: "doc-kitty-gherkin/<version>"`, an OKF tool actor matching
+  that stamp. `generated_from` keeps its exact value, so nothing breaks, and the
+  API `version` stays `"1"` because the change is additive. Switch to
+  `generated_by`: `generated_from` is removed in the next breaking release.
+
 - **Metadata follows OKF v0.2 (#177).** Before, `updated` was a date,
   `okf_version` sat only on the root index, and authors were email addresses.
   Now `updated` and `stale_after` take UTC timestamps
