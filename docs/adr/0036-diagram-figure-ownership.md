@@ -103,6 +103,12 @@ never let it re-drift:
    and the out-of-frame deck shell now ship the same component rules,
    branded or not.
 
+4. **Addendum (#185): runtime chrome on the figure is owned by
+   `src/lib/lightbox/`.** After render, the always-on lightbox client appends
+   one expand `<button>` to each `figure.dk-diagram`. It never changes the
+   figure's static markup, and it adds no `<svg>` (its glyph is text), so a
+   figure still holds exactly one `<svg>`: its drawing.
+
 ## Consequences
 
 ### Positive
