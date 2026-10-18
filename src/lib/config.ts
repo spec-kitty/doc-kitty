@@ -50,6 +50,7 @@ import {
   directiveIntegration,
 } from './integrations/markdown-pipeline.js';
 import { tocRailIntegration } from './integrations/toc-rail.js';
+import { lightboxIntegration } from './integrations/lightbox.js';
 import { contentGraphIntegration } from './integrations/content-graph.js';
 import { createBuildState } from './build-state.js';
 import {
@@ -648,6 +649,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // `DocKittyOptions` toggle. Its `injectScript('page', …)` island early-returns
     // on any TOC-free page, so a non-TOC route stays cost-free.
     tocRailIntegration,
+    // Always-on diagram/image lightbox (#185): like the TOC rail, baseline reading
+    // behaviour with no toggle; its island returns early on a page with no target.
+    lightboxIntegration,
     // Always-on content-graph route (#176, FR-010): injects `/api/content-graph.json`
     // UNCONDITIONALLY, like the TOC rail, so no adopter adds a page file and the
     // agent index's `_links.contentGraph` never dangles. Registers no remark/rehype

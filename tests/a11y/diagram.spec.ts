@@ -118,6 +118,61 @@ test.describe('Diagram accessible figure — doc shell (DX-2)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Lightbox (#185) — every diagram can be expanded to the viewport and closed
+// again by keyboard, with focus returned to its trigger. MODE-AGNOSTIC: the
+// trigger is static-figure chrome, and the expanded copy is the rendered SVG.
+// ---------------------------------------------------------------------------
+test.describe('Diagram lightbox (#185)', () => {
+  test('the expand button opens a modal copy of the diagram; Esc closes it and restores focus', async ({
+    page,
+  }, testInfo) => {
+    await gotoInMode(page, ROUTES.diagram, modeOf(testInfo.project.name));
+    await expect(page.locator(DIAGRAM_SVG)).toHaveCount(2);
+    const seqFigure = page.locator('figure.dk-diagram', {
+      has: page.locator('.dk-diagram__desc', { hasText: SEQ_DESC }),
+    });
+    const trigger = seqFigure.getByRole('button', { name: /^Expand diagram: / });
+    await expect(trigger).toHaveAccessibleName(new RegExp(SEQ_DESC.slice(0, 40)));
+
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.locator('dialog.dk-lightbox[open]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('svg.dk-lightbox__content')).toHaveAttribute('aria-hidden', 'true');
+    const original = await seqFigure.locator('svg[aria-labelledby]').boundingBox();
+    const box = await dialog.locator('svg.dk-lightbox__content').boundingBox();
+    expect(box?.width ?? 0, 'the copy is scaled up, not left at figure size').toBeGreaterThan(original?.width ?? 0);
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('.dk-lightbox__content')).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+
+    // The close button closes it too.
+    await trigger.click();
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await expect(dialog).toHaveCount(0);
+  });
+
+  test('a content image expands on click and closes on a backdrop click; site chrome images do not', async ({
+    page,
+  }, testInfo) => {
+    await gotoInMode(page, ROUTES.markuaShowcase, modeOf(testInfo.project.name));
+    const image = page.getByRole('button', { name: 'Expand image: a palm-lined tropical beach' });
+    await expect(image).toHaveCount(1);
+    await expect(page.locator('header img[role="button"]')).toHaveCount(0);
+
+    await image.click();
+    const dialog = page.locator('dialog.dk-lightbox[open]');
+    await expect(dialog.locator('img.dk-lightbox__content')).toBeVisible();
+    // (5,5) is outside the 96vw x 92vh dialog box: a click on the backdrop.
+    await page.mouse.click(5, 5);
+    await expect(dialog).toHaveCount(0);
+    await expect(image).toBeFocused();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // DX-2/DX-5 (deck shell) — the out-of-frame deck's 'Out-of-frame deck pipeline'
 // diagram (slide 2) is a named accessible figure. MODE-AWARE render-gate: in build
 // mode ALL THREE deck slides carry their static SVG at load (count 3); in client
