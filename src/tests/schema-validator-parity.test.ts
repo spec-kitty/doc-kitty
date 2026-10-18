@@ -656,7 +656,10 @@ describe('vocabulary-core metadata rules (#177, C-009)', () => {
     expect(normaliseInstant('2024-05-01T10:00Z')).toMatchObject({ noZone: false, nonIso: false });
     expect(normaliseInstant('2024-05-01T10:00Z')?.date.toISOString()).toBe('2024-05-01T10:00:00.000Z');
     expect(normaliseInstant('May 1, 2024')).toMatchObject({ nonIso: true });
-    expect(normaliseInstant('2026-02-30')).toMatchObject({ nonIso: true });
+    // An ISO-shaped date that is not on the calendar still builds (rolled over), but is flagged as such, not as non-ISO.
+    expect(normaliseInstant('2026-02-30')).toMatchObject({ rolledOver: true, nonIso: false });
+    expect(normaliseInstant('2026-02-30')?.date.toISOString()).toBe('2026-03-02T00:00:00.000Z');
+    expect(normaliseInstant('2026-02-28')).toMatchObject({ rolledOver: false });
   });
 });
 

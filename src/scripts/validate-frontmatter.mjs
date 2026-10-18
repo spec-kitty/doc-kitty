@@ -330,6 +330,9 @@ function instantAdvisories(data) {
     const parsed = normaliseInstant(value);
     if (parsed?.nonUtc) out.push(`\`${field}: ${value}\` is not UTC; write the instant with a \`Z\` offset`);
     if (parsed?.noZone) out.push(`\`${field}: ${value}\` has no zone (read as UTC); write the instant with a \`Z\` offset`);
+    if (parsed?.rolledOver) {
+      out.push(`\`${field}: ${value}\` is not a real calendar date; read as ${formatInstant(parsed.date)}`);
+    }
     if (parsed?.nonIso) out.push(`\`${field}: ${value}\` is not ISO-8601 (accepted as written); use YYYY-MM-DDTHH:MM:SSZ`);
     if (field === 'updated' && parsed?.dateOnly) {
       out.push(`\`updated: ${value}\` is date-only; use a UTC instant (YYYY-MM-DDTHH:MM:SSZ)`);
