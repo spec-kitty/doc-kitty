@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### 💥 Breaking
 
+- **Read `updated` as a full UTC timestamp in the agent API, now version 3
+  (#177).** Before, `api/index.json` reported `version: "2"` and each page's
+  `updated` as a date such as `2026-10-18`. Now it reports `version: "3"` and
+  `updated` as `2026-10-18T00:00:00Z`. Agents or scripts that pin the version
+  or parse a date-only value need updating. Nothing else in the record moved.
 - **Produce the Gherkin report before every CI docs build, or set
   `gherkin.results.required: false` (#166).** Before, a missing
   `gherkin.results` report only logged a warning and the site built without
@@ -24,6 +29,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Every build publishes `api/content-graph.json` (#176).** Before, an agent
+  or tool that wanted the site's structure fetched one JSON file per page, and
+  nothing held the reverse edges. Now one file lists every published page,
+  persona, catalog entry and external resource, plus each frontmatter relation
+  between them (`related`, `audience`, `cites`, `in-section`, `derived-from`).
+  It is built by the same resolvers as the rendered blocks, sorted for
+  identical bytes on every build, linked from `api/index.json`, and drafts stay
+  out. The artifact gate fails on any edge that points nowhere.
+- **Export a plain OKF v0.2 bundle (#178).** Before, OKF readers saw a DocKitty
+  site as unconnected pages, because they only follow body links. Now every
+  build writes `dist/okf/`, and `dockitty-export-okf` writes the same bundle on
+  demand. Relations become `/`-prefixed body links, links to pages point at
+  bundle paths, index files take OKF form, and `doc_status`, `updated` and
+  authors map to OKF `status`, `generated` and actors. A built-in checker
+  (`--check`) verifies OKF §11. Drafts are left out.
 - **Translate the sidebar "Overview" label, or set it once (#161).** Before, the
   index entry of a nested group read "Overview" in English on every site. Now the
   word is the UI string `dockitty.sidebar.indexLabel`: translate it in your
@@ -70,6 +90,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Metadata follows OKF v0.2 (#177).** Before, `updated` was a date,
+  `okf_version` sat only on the root index, and authors were email addresses.
+  Now `updated` and `stale_after` take UTC timestamps
+  (`2026-10-18T09:30:00Z`), every index declares `okf_version: "0.2"`, and
+  `authors`, `generated.by` and `verified[].by` use OKF actors (`human:<id>`,
+  `<tool>/<version>`, `process:<id>`). Old forms still build, with a warning
+  from the doc checks. Generated Gherkin and glossary pages name the tool and
+  version that wrote them, and keep `generated.at` unchanged until their
+  content changes. The metadata model documents how `doc_status` maps to OKF
+  `status`.
 - **The env reader honours `vite.envDir` and `--mode`, so drafts follow the
   files your build uses (#115).** This affects sites that set `vite.envDir` or
   build with a custom mode. Before, DocKitty read `.env*` files only from the
