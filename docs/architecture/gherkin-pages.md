@@ -385,8 +385,12 @@ relative to `gherkin.sourceRoot`, prefixed with `gherkin.sourceUrlPrefix` when s
 so an agent can fetch the executable `.feature` itself.
 
 Sites with `gherkin.sources` also serve `/api/scenarios.json` (the integration injects
-`scenarioIndexRoute()`; a hand-mounted `src/pages/api/scenarios.json.ts` is kept): `{ version, generated_from: "doc-kitty/gherkin", count,
-features[] }`. It has one record per published, agent-discoverable generated page,
+`scenarioIndexRoute()`; a hand-mounted `src/pages/api/scenarios.json.ts` is kept): `{ version, generated_from: "doc-kitty/gherkin",
+generated_by: "doc-kitty-gherkin/<version>", count, features[] }`. `generated_by`
+names the producer as an OKF tool actor, the same value the pages' `generated.by`
+stamp carries. `generated_from` is **deprecated** (#182): it keeps its exact value
+for existing consumers, is replaced by `generated_by`, and is removed in the next
+breaking release. It has one record per published, agent-discoverable generated page,
 ordered by id, carrying `id`, `title`, `url`, `source`, `doc_status`,
 `glossary_context`, `tags` and `related`, plus `scenarios[]` in document order.
 Each scenario has `name`, `rule` (`null` outside a rule), `anchor`, `line`, its own
