@@ -17,6 +17,8 @@ import { runtimeGraph } from './helpers/module-graph.js';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { GHERKIN_PRODUCER, toolkitVersion } from '../lib/generator-stamp.mjs';
+import { parseActor } from '../lib/vocabulary-core.mjs';
 
 type Heading = { depth: number; slug: string; text: string };
 type Entry = { id: string; data: Record<string, unknown>; headings?: Heading[] };
@@ -182,7 +184,10 @@ describe('scenarioIndexRoute — shape', () => {
 
     const body = await getJson();
     expect(body.version).toBe('1');
+    // `generated_from` is deprecated (#182); `generated_by` names the producer as an OKF tool actor.
     expect(body.generated_from).toBe('doc-kitty/gherkin');
+    expect(body.generated_by).toBe(`${GHERKIN_PRODUCER}/${toolkitVersion()}`);
+    expect(parseActor(body.generated_by)).toMatchObject({ kind: 'tool', name: GHERKIN_PRODUCER });
     expect(body.count).toBe(1);
     const [feature] = body.features;
     expect(feature).toMatchObject({
@@ -291,6 +296,7 @@ describe('scenarioIndexRoute — selection and order', () => {
     expect(await getJson()).toEqual({
       version: '1',
       generated_from: 'doc-kitty/gherkin',
+      generated_by: `${GHERKIN_PRODUCER}/${toolkitVersion()}`,
       count: 0,
       features: [],
     });
