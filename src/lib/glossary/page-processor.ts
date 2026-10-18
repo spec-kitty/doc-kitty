@@ -57,9 +57,13 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkSmartypants from 'remark-smartypants';
 import remarkDirective from 'remark-directive';
+import markuaNormalise from '../remark/markua-normalise.js';
+import markuaFootnotes from '../remark/markua-footnotes.js';
+import markuaAttributes from '../remark/markua-attributes.js';
+import markuaCallouts from '../remark/markua-callouts.js';
 
 /** When a mirrored plugin is attached: always, or only under `opts.directive`. */
-type RemarkPluginWhen = 'always' | 'directive';
+type RemarkPluginWhen = 'always' | 'directive' | 'markua';
 
 /**
  * REDERIVE_REMARK_PLUGINS — the single, ordered source of truth for the build
@@ -75,6 +79,10 @@ type RemarkPluginWhen = 'always' | 'directive';
  * `always` plugins ride every processor; `directive` plugins are attached only when
  * the caller passes `{ directive: true }` (the "links used" re-derive needs
  * `:term[...]{...}` as a real `textDirective`; the definitions strip does not).
+ * `markua` plugins are attached only under `{ markua: true }` (the site opted into
+ * Markua), in the build's pinned order right after `remarkDirective` (#113).
+ * `markuaFootnotes` is mirrored unwrapped: the build's `guardDeck` only no-ops it
+ * on a deck, and a deck page never reaches a docs-page re-derive.
  */
 export const REDERIVE_REMARK_PLUGINS: ReadonlyArray<{
   plugin: import('unified').Plugin;
@@ -83,6 +91,10 @@ export const REDERIVE_REMARK_PLUGINS: ReadonlyArray<{
   { plugin: remarkGfm, when: 'always' },
   { plugin: remarkSmartypants, when: 'always' },
   { plugin: remarkDirective, when: 'directive' },
+  { plugin: markuaNormalise as unknown as import('unified').Plugin, when: 'markua' },
+  { plugin: markuaFootnotes as unknown as import('unified').Plugin, when: 'markua' },
+  { plugin: markuaAttributes as unknown as import('unified').Plugin, when: 'markua' },
+  { plugin: markuaCallouts as unknown as import('unified').Plugin, when: 'markua' },
 ];
 
 /** Which optional passes the caller needs beyond the always-on gfm + smartypants. */
@@ -90,6 +102,10 @@ export interface PageProcessorOptions {
   /** Add `remarkDirective` so `:term[...]{...}` becomes a real `textDirective`
    * node (the "links used" re-derive needs it; the definitions strip does not). */
   directive?: boolean;
+  /** Replay the four Markua remark passes (the site has `markua: true`). Implies
+   * the directive pass, which they run on: Markua compiles to `containerDirective`
+   * nodes. Off → the processor is byte-identical to the pre-Markua one (#113). */
+  markua?: boolean;
   /* mdx?: boolean — reserved; deferred with remark-mdx (issue #16 reduced scope). */
 }
 
@@ -107,7 +123,10 @@ export function createPageProcessor(opts: PageProcessorOptions = {}) {
   // Applied as one PluggableList after the base parser — same runtime pipeline as
   // the former `.use(gfm).use(smartypants)[.use(directive)]` chain.
   const plugins = REDERIVE_REMARK_PLUGINS.filter(
-    ({ when }) => when === 'always' || (when === 'directive' && opts.directive),
+    ({ when }) =>
+      when === 'always' ||
+      (when === 'directive' && (opts.directive || opts.markua)) ||
+      (when === 'markua' && opts.markua),
   ).map(({ plugin }) => plugin);
   return unified().use(remarkParse).use(plugins);
 }

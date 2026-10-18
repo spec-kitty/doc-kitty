@@ -57,6 +57,7 @@ import {
   type InlineReference,
   type DocsIndex,
 } from '../../lib/metadata.js';
+import { DK_MARKUA_ENV } from '../../lib/internal-env.mjs';
 import { loadGlossary } from '../../lib/glossary/load.js';
 import { createPageProcessor } from '../../lib/glossary/page-processor.js';
 import { DEFAULT_IGNORE_LIST } from '../../lib/glossary/ignore-list.js';
@@ -107,7 +108,8 @@ function linksForBody(
   //     no longer produces a phantom used-list entry the build never emits.
   // remark-directive has no transformer, so `runSync` leaves the `textDirective`
   // node intact for the `glossary-term` pass below.
-  const p = createPageProcessor({ directive: true });
+  // Markua sites replay the four Markua passes too (#113), else `A>` etc. stay literal text.
+  const p = createPageProcessor({ directive: true, markua: process.env[DK_MARKUA_ENV] === 'on' });
   const tree = p.runSync(p.parse(body)) as unknown as MdRoot;
 
   // WP05: turn every resolvable `:term` directive into the shared glossary link

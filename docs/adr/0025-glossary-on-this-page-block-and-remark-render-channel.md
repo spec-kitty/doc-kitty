@@ -129,6 +129,9 @@ does not, and joining them is the risk.
   `REDERIVE_REMARK_PLUGINS` as the single source of the mirrored set (the `MIRRORED`
   classification is derived from it, not hand-listed), so the re-derive stage list
   and the build stage list cannot silently diverge.
+  *Amended 2026-10-18 (#113): the re-derive now also replays the four Markua
+  passes (`when: 'markua'`, on when `DK_MARKUA` is set), so a Markua body
+  re-derives to the build's tree; a golden-tree case on a Markua body pins it.*
 
 ### Negative
 

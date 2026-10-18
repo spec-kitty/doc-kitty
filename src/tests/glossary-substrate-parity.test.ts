@@ -56,7 +56,6 @@ import {
 // the same modules `config.ts` registers, so `===` holds through `guardDeck.__inner`.
 import diagramMeta from '../lib/remark/diagram-meta.js';
 import markuaNormalise from '../lib/remark/markua-normalise.js';
-import markuaFootnotes from '../lib/remark/markua-footnotes.js';
 import markuaAttributes from '../lib/remark/markua-attributes.js';
 import markuaCallouts from '../lib/remark/markua-callouts.js';
 import glossaryTerm from '../lib/remark/glossary-term.js';
@@ -167,32 +166,6 @@ const CONSCIOUS_EXCLUSIONS: Exclusion[] = [
     name: 'mermaidFenceTransform',
     kind: 'inert',
     why: 'diagrams-only: rewrites ```mermaid fences to `<pre class="mermaid">`; a no-op without a fence. Defined inline in config.ts (unexported) → keyed by name.',
-  },
-  {
-    plugin: markuaNormalise,
-    kind: 'inert',
-    why:
-      'opt-in Markua: compiles `A>`/`W>`/`{aside}` line-prefix runs into containerDirectives; inert on the non-Markua fixture of this test. ' +
-      'KNOWN GAP (pre-existing): the "links used" re-derive (OnThisPage.astro linksForBody, mounted by MarkdownContent.astro and not gated by ' +
-      '`tableOfContents`) replays none of the four Markua passes, so on a Markua body its mdast differs from the build substrate. The golden-tree ' +
-      'below cannot hold for a Markua fixture until the passes are mirrored in REDERIVE_REMARK_PLUGINS, and no test compares "links used" with ' +
-      '"links inserted" on a Markua body. No visible difference on the example site today: the four `example/docs/guides/markua-*.md` pages have ' +
-      'no glossary links in their bodies and render no block.',
-  },
-  {
-    plugin: markuaFootnotes,
-    kind: 'inert',
-    why: 'opt-in Markua: strips the leading `^` off the identifier remark-gfm parsed for a `[^^N_M]` footnote node; inert on the non-Markua bodies the re-derive corpus uses (no `[^^…]` footnote, and a plain GFM `[^x]` has no leading caret to strip).',
-  },
-  {
-    plugin: markuaAttributes,
-    kind: 'inert',
-    why: 'opt-in Markua: folds `{…}` attribute lists onto their target; inert without Markua attribute syntax.',
-  },
-  {
-    plugin: markuaCallouts,
-    kind: 'inert',
-    why: 'opt-in Markua: routes callout containerDirectives to their render target; inert without Markua callouts.',
   },
   {
     plugin: gherkinFence,
@@ -386,6 +359,20 @@ const FIXTURE = [
   '',
 ].join('\n');
 
+// A Markua body: an `A>` aside run with a `:term` inside, a `{#id}` attribute line
+// on a heading, and a `[^^1_1]` double-caret footnote reference.
+const MARKUA_FIXTURE = [
+  '# Heading {#custom-id}',
+  '',
+  'A> Cargo is a :term[Cargo]{#cargo} thing.',
+  'A> Second line.',
+  '',
+  'Body with a note.[^^1_1]',
+  '',
+  '[^^1_1]: The note.',
+  '',
+].join('\n');
+
 /** Deep clone dropping mdast `position` — the golden-tree asserts SEMANTIC mdast
  * parity (node types/values/data), the surface the re-derive callers consume; byte
  * offsets are not part of the substrate-parity contract. */
@@ -422,6 +409,36 @@ describe('re-derive parity — behavioural golden-tree (wrong-exclusion catch)',
         '(re-opening #16/#20), or a stage marked CONSCIOUS_EXCLUSIONS kind:"inert" actually ' +
         'mutates a normal page and should be MIRRORED (a WRONG exclusion, C35).',
     ).toEqual(buildTree);
+  });
+
+  it('Markua body: build substrate and the markua-aware re-derive agree on mdast (#113)', () => {
+    const { stages } = buildStack();
+    let build = unified().use(remarkParse).use(remarkGfm).use(remarkSmartypants);
+    for (const stage of stages) {
+      const excl = findExclusion(stage);
+      if (MIRRORED.has(stage.plugin) || excl?.kind === 'inert') {
+        build = build.use(stage.plugin as Parameters<typeof build.use>[0]);
+      }
+    }
+    const rederive = createPageProcessor({ directive: true, markua: true });
+
+    const buildTree = stripPosition(build.runSync(build.parse(MARKUA_FIXTURE)));
+    const rederiveTree = stripPosition(rederive.runSync(rederive.parse(MARKUA_FIXTURE)));
+
+    // Non-vacuous: the build really compiled the Markua syntax (a containerDirective
+    // for `A>`), so equality below is not two identical untouched trees.
+    expect(JSON.stringify(buildTree)).toContain('containerDirective');
+    expect(
+      rederiveTree,
+      'The markua-aware re-derive produced a DIFFERENT mdast than the build substrate on a Markua body. ' +
+        'A Markua pass is missing from REDERIVE_REMARK_PLUGINS (when: "markua") or out of order (#113).',
+    ).toEqual(buildTree);
+  });
+
+  it('site without Markua: the re-derive stays Markua-free (A> remains literal text)', () => {
+    const rederive = createPageProcessor({ directive: true });
+    const tree = rederive.runSync(rederive.parse(MARKUA_FIXTURE));
+    expect(JSON.stringify(tree)).not.toContain('containerDirective');
   });
 
   it('sanity: the fixture exercises gfm + smartypants + directive (golden-tree is not trivial)', () => {
