@@ -98,8 +98,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `<tool>/<version>`, `process:<id>`). Old forms still build, with a warning
   from the doc checks. Generated Gherkin and glossary pages name the tool and
   version that wrote them, and keep `generated.at` unchanged until their
-  content changes. The metadata model documents how `doc_status` maps to OKF
-  `status`.
+  content changes. Date-times without a zone are now read as UTC; before they
+  were read in the build machine's local time, so such values may shift by its
+  offset. Newly scaffolded pages carry a `generated:` stamp that records
+  provenance only and grants no generated-page exemption. The metadata model
+  documents how `doc_status` maps to OKF `status`.
 - **The env reader honours `vite.envDir` and `--mode`, so drafts follow the
   files your build uses (#115).** This affects sites that set `vite.envDir` or
   build with a custom mode. Before, DocKitty read `.env*` files only from the
