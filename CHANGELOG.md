@@ -151,6 +151,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   section and folder indexes the Gherkin generator writes, and the generated
   glossary index, showed up in `rss.xml` with no news of their own. Now
   generated hubs stay out of the feed; authored hubs are unchanged.
+- **The home page's address no longer redirects (#188).** Before, the home
+  page's canonical URL, its `og:url` and its sitemap entry had no trailing
+  slash (`…/doc-kitty`), and GitHub Pages answered that address with a 301.
+  Now all three end in `/`. This reverses the 0.2.x choice of a slash-less
+  root sitemap entry; every other page is unchanged.
+- **Footer "Back to top" jumps to the top again (#187).** Before, it linked
+  `#top`, an anchor no page has. Now it links `#_top`.
+- **`llms.txt` no longer has an empty heading (#189).** Before, the root group
+  was headed `## ` when the section registry had no root label. Now it is
+  `## Overview`.
+- **`astro dev` shows the theme and the favicon on every request (#170).**
+  Before, a theme stylesheet request with a query such as `?inline` rendered
+  the page unthemed, and a site with a `base` got a 404 for its favicon at the
+  path without the base. Built sites were never affected.
+- **Glossary links on Markua pages match the build (#113).** Before, the page's
+  "terms used" block re-read a Markua page without the Markua passes, so its
+  links could differ from the page's. Now it replays them when `markua: true`.
 - **A second DocKitty config in the same process (for example a test suite) no
   longer inherits the first config's draft-publication setting (#167).** Before,
   `defineDocKittyIntegrations` left the first config's internal environment
