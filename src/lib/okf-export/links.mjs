@@ -41,6 +41,7 @@ const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
  */
 export function mapOutsideCode(markdown, fn) {
   const out = [];
+  /** @type {string[]} */
   let prose = [];
   let fenceMark = '';
   const flush = () => {
