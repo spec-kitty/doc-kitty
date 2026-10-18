@@ -71,6 +71,7 @@ import {
   DK_DOCS_ROOT_ENV,
   DK_GHERKIN_RESULTS_ENV,
   DK_INDEX_BASENAME_ENV,
+  DK_MARKUA_ENV,
   clearInternalEnv,
   setInternalEnv,
 } from './internal-env.mjs';
@@ -585,6 +586,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // With `markua` absent/false the whole seam below is omitted, so the array +
   // corpus stay byte-identical (NFR-001). WP10 flips it on for the example.
   const markuaActive = markua === true;
+  // The render-time glossary re-derive (OnThisPage.astro) runs in a separate module
+  // graph, so it learns the Markua opt-in through this handoff (#113). Absent when off.
+  if (markuaActive) setInternalEnv(DK_MARKUA_ENV, 'on');
 
   return [
     // Opt-in diagrams seam (FR-001): PREPENDED before Starlight when

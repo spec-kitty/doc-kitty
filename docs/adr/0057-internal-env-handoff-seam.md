@@ -54,6 +54,10 @@ per-config build state; see [ADR-0058](./0058-build-state-owner-and-config-split
 2. **Every write goes through the module.** Code sets a value with
    `setInternalEnv` and removes one with `deleteInternalEnv`. Both refuse a name
    that is not one of the five.
+
+   *Amended 2026-10-18 (#113): a sixth name, `DK_MARKUA` (written at define by
+   `defineDocKittyIntegrations` when `markua: true`; read by the glossary
+   re-derive in `OnThisPage.astro`), joins the table under the same rules.*
 3. **A config definition starts clean.** `defineDocKittyIntegrations` calls
    `clearInternalEnv` first, so a later config never inherits an earlier one's
    values.

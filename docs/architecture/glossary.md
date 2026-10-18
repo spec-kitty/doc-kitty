@@ -155,7 +155,8 @@ build-time remark stage is neither mirrored by the re-derive path nor recorded a
 keyed, conscious exclusion. `page-processor.ts` exports `REDERIVE_REMARK_PLUGINS`
 as the single source of truth for the mirrored set, so the two stage lists cannot
 silently diverge (see [ADR-0025](../adr/0025-glossary-on-this-page-block-and-remark-render-channel.md)
-Decision 2).
+Decision 2). On a site with `markua: true`, the re-derive also replays the four
+Markua passes, so a Markua page's links match its build (#113).
 
 ## Hover preview footprint
 

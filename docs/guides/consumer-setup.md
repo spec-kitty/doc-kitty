@@ -997,9 +997,9 @@ gherkin: {
 
 ## Internal environment names
 
-DocKitty passes five settings between its own parts through environment
+DocKitty passes six settings between its own parts through environment
 variables: `DK_INDEX_BASENAME`, `DK_GHERKIN_RESULTS`, `DK_GHERKIN_ROUTE`,
-`DK_PUBLISH_DRAFTS_RESOLVED` and `DK_DOCS_ROOT`. DocKitty sets these for its own
+`DK_PUBLISH_DRAFTS_RESOLVED`, `DK_DOCS_ROOT` and `DK_MARKUA`. DocKitty sets these for its own
 use; never set them by hand. DocKitty clears any value you set when the config loads.
 Set the matching option on `defineDocKittyIntegrations` instead.
 ([ADR-0057](../adr/0057-internal-env-handoff-seam.md) explains the design.)
