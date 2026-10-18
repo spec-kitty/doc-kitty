@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
-import { compareCodeUnit } from '../lib/vocabulary-core.mjs';
+import { compareCodeUnit, parseActor } from '../lib/vocabulary-core.mjs';
 import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
 import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
@@ -2467,6 +2467,11 @@ async function main() {
   }
   if (scenarioIndex.generated_from !== 'doc-kitty/gherkin') {
     fail(`scenario index: generated_from is ${JSON.stringify(scenarioIndex.generated_from)}, expected "doc-kitty/gherkin"`);
+  }
+  // `generated_by` replaces the deprecated `generated_from` (#182): the Gherkin pipeline as an OKF tool actor.
+  const scenarioProducer = parseActor(scenarioIndex.generated_by);
+  if (scenarioProducer?.kind !== 'tool' || scenarioProducer.name !== 'doc-kitty-gherkin') {
+    fail(`scenario index: generated_by is ${JSON.stringify(scenarioIndex.generated_by)}, expected the OKF tool actor "doc-kitty-gherkin/<version>"`);
   }
   if (scenarioIndex.count !== scenarioIndex.features.length) {
     fail(`scenario index: count (${scenarioIndex.count}) does not match features.length (${scenarioIndex.features.length})`);

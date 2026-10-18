@@ -58,9 +58,17 @@ import { DK_GHERKIN_RESULTS_ENV } from '../gherkin/include-scan.mjs';
 import { featureResults, type Outcome } from '../gherkin/results.mjs';
 import { loadReport } from '../gherkin/results-load.mjs';
 import { featureView } from '../gherkin/view.mjs';
-import { LEGACY_GENERATED_BY, stampContentHash } from '../generator-stamp.mjs';
+import { GHERKIN_PRODUCER, stampContentHash, toolkitVersion } from '../generator-stamp.mjs';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { absolute, docsRoot } from './shared.js';
+
+/**
+ * DEPRECATED (#182): the scenario index's legacy unversioned producer id, kept
+ * byte-identical in `generated_from` because consumers match on it. Use
+ * `generated_by` (an OKF tool actor, `doc-kitty-gherkin/<version>`) instead;
+ * `generated_from` is removed in the next breaking release.
+ */
+const SCENARIO_INDEX_SOURCE_DEPRECATED = 'doc-kitty/gherkin';
 
 export interface ScenarioIndexRouteOptions {
   /**
@@ -453,9 +461,9 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
 
     const body = {
       version: options.version ?? '1',
-      // Public API value, kept as the legacy unversioned id for stability (consumers
-      // match on it); it is NOT the page stamp, which is now `doc-kitty-gherkin/<version>`.
-      generated_from: LEGACY_GENERATED_BY,
+      generated_from: SCENARIO_INDEX_SOURCE_DEPRECATED,
+      // The producer as an OKF tool actor, the same name the feature pages' stamp carries.
+      generated_by: `${GHERKIN_PRODUCER}/${toolkitVersion()}`,
       count: features.length,
       ...(report?.ok && resultsOption
         ? {
