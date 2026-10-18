@@ -42,6 +42,8 @@ page:
 - [Generators](./generators.md) — the four output surfaces
   (`sitemap-index.xml`, `rss.xml`, `llms.txt`, the agent-API) and their route
   handlers.
+- [Content graph](./content-graph.md) — the `api/content-graph.json` file: nodes,
+  edges, relation kinds and ordering.
 - [Starlight integration](./starlight-integration.md) —
   `defineDocKittyIntegrations`: the Starlight and sitemap preset, the feed and
   agent-API `<head>` links, and theming.

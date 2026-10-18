@@ -15,3 +15,5 @@ agent:
 - [Authoring a document](./authoring.md) — write a page that satisfies the
   convention.
 - [Adopting the toolkit](./adopting.md) — bring DocKitty into another repo.
+- [Exporting an OKF bundle](./export-okf-bundle.md) — write the docs as an Open
+  Knowledge Format bundle and check it.

@@ -154,3 +154,58 @@ claiming OKF conformance.
 - [OKF v0.2 specification](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md):
   §3.1, §5, §6.1, §7, §8, §11 and §12.
 - [Metadata model](../architecture/metadata-model.md).
+
+## Implementation notes (2026-10-18)
+
+These notes record what the implementation settled. The decisions above are
+unchanged. ADR-0059 had not reached `main` when they were written, so this
+completes the ADR rather than amending an accepted one.
+
+### Plan decisions
+
+1. **Export location.** The bundle is a directory, `dist/okf/`, written in
+   `astro:build:done` from `dist/api/content-graph.json` and the source tree.
+   There is no archive. The sitemap does not list the bundle. The CLI
+   (`dockitty-export-okf`) writes the same layout to `--out`.
+2. **Catalog and persona links.** Personas are pages and link as bundle paths.
+   A catalog citation links to the entry's `url` as an external link. An entry
+   with no URL is kept as a `sources` entry and not linked. Catalog entries are
+   never invented as bundle files.
+3. **Sidecar.** The original frontmatter of each non-root index is saved
+   verbatim in `_index.meta.yaml` next to the exported `index.md`.
+4. **Sources of `in-section` and `derived-from`.** `in-section` points from a
+   page to its nearest published ancestor index. `derived-from` comes from
+   `sources[].resource`: the target is a page when the resource is one, else a
+   `resource:` node.
+5. **Index basenames.** An index file is one whose basename is in the site's
+   configured `indexBasename` (default `README`), the same rule that drives
+   routing.
+6. **`log.md`.** The name is reserved. A source `log.md` is copied unchanged and
+   none is generated.
+
+### Index entry form
+
+The exported index lists entries as `- [Title](/path.md) - description`.
+
+### Generated stamps
+
+- **The glossary generator is now stamped.** Glossary pages carry a `generated`
+  block like the Gherkin pages. This overrides the glossary generator's earlier
+  rule that its output carries no stamp.
+- **`generated.at` changed meaning.** It was a content hash (`sha256:…`). It is
+  now the UTC instant of the last content change, and the hash moved to the
+  DocKitty extension `generated.content_hash`. `at` only moves when the hash
+  moves, so regeneration over unchanged input is byte-stable, including across
+  a toolkit version bump, which re-stamps `generated.by` once. A legacy
+  `sha256:` value in `at` is still read.
+- **`generated.by`** is `<producer>/<toolkit version>`. The legacy
+  `doc-kitty/gherkin` value is still recognised.
+- **The scenarios API is unchanged.** `api/scenarios.json` keeps
+  `generated_from: doc-kitty/gherkin`, so adopters that read it see no change.
+
+### Agent API
+
+`api/index.json` reports `version: "3"` (it was `2`). The bump covers the
+`_links.contentGraph` entry and the UTC `updated` instants and actor `authors`
+in the page records. See the [content graph reference](../architecture/content-graph.md)
+and the [export guide](../guides/export-okf-bundle.md).
