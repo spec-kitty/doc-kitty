@@ -5,7 +5,7 @@
  *
  * @module scaffold-meta
  */
-import { toolkitVersion } from '../lib/generator-stamp.mjs';
+import { SCAFFOLD_PRODUCER, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { formatInstant } from '../lib/vocabulary-core.mjs';
 
 /**
@@ -23,7 +23,7 @@ export function scaffoldMeta(now = new Date()) {
     'authors:',
     '  - human:TODO-your-id',
     'generated:',
-    `  by: doc-kitty-scaffold/${toolkitVersion()}`,
+    `  by: ${SCAFFOLD_PRODUCER}/${toolkitVersion()}`,
     `  at: ${instant}`,
   ].join('\n');
 }

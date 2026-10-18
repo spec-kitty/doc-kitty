@@ -8,6 +8,7 @@
 import type { DocKittyFrontmatter } from '../metadata.js';
 import { isAgentDiscoverable } from '../metadata.js';
 import { isGeneratedStamp } from '../generator-stamp.mjs';
+import { GHERKIN_PRODUCER } from '../gherkin/feature-core.mjs';
 
 /**
  * True for a page the scenario index lists: a GENERATED feature page (not a
@@ -18,7 +19,7 @@ import { isGeneratedStamp } from '../generator-stamp.mjs';
 export function isScenarioIndexed(data: DocKittyFrontmatter): boolean {
   return (
     data.kind === 'Specification' &&
-    isGeneratedStamp(data.generated?.by) &&
+    isGeneratedStamp(data.generated?.by, GHERKIN_PRODUCER) &&
     isAgentDiscoverable(data)
   );
 }

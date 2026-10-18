@@ -130,7 +130,7 @@ import remarkParse from 'remark-parse';
 import remarkSmartypants from 'remark-smartypants';
 import { isPresentationFile } from '../deck/is-presentation.js';
 import { isGeneratedStamp } from '../generator-stamp.mjs';
-import { stampContentHash } from '../gherkin/feature-core.mjs';
+import { GHERKIN_PRODUCER, stampContentHash } from '../gherkin/feature-core.mjs';
 import { recordFatal } from '../gherkin/errors.mjs';
 import { parseFragment } from '../gherkin/fragment.mjs';
 import { resolveInclude } from '../gherkin/include.mjs';
@@ -702,7 +702,7 @@ export default function gherkinFence(
     const root = options.root ?? process.cwd();
     const frontmatter = file.data?.astro?.frontmatter ?? {};
     const generated = frontmatter.generated as { by?: unknown } | undefined;
-    const isGenerated = isGeneratedStamp(generated?.by);
+    const isGenerated = isGeneratedStamp(generated?.by, GHERKIN_PRODUCER);
     // 03 §3: a generated page's Gherkin stays as emitted. 02 §Decks: on a slide,
     // fences stay code and only directives are collected (to be reported).
     // `fences: false`: nothing is collected, so a directive is restored as text.

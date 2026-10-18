@@ -14,12 +14,19 @@ import { formatInstant } from './vocabulary-core.mjs';
 // The legacy unversioned Gherkin stamp, single-sourced where it is written.
 import { GENERATED_BY as LEGACY_GHERKIN_STAMP } from './gherkin/feature-core.mjs';
 
-/** The producers that stamp pages they generate (each stamps `<producer>/<version>`). */
-export const PRODUCERS = Object.freeze([
-  'doc-kitty-gherkin',
-  'doc-kitty-glossary',
-  'doc-kitty-scaffold',
-]);
+/**
+ * The OWNERSHIP producers: they generate (and so own) the pages they stamp
+ * (each stamps `<producer>/<version>`). Only these make a page "generated".
+ */
+export const PRODUCERS = Object.freeze(['doc-kitty-gherkin', 'doc-kitty-glossary']);
+
+/**
+ * The PROVENANCE-ONLY producer: the scaffold stamps the starting point of a page
+ * a human then authors. It records where the page came from but never makes it
+ * "generated" (exemptions, raw fences, scenario index), so it is not in
+ * {@link PRODUCERS}.
+ */
+export const SCAFFOLD_PRODUCER = 'doc-kitty-scaffold';
 
 /**
  * Stamps written before versioned stamps existed. Still recognised so pages not
@@ -73,8 +80,9 @@ export function makeStamp({ producer, hash, previous, now = new Date() }) {
 }
 
 /**
- * Is `by` a generator stamp? Prefix match on `<producer>/` (any known producer
- * when none is given), plus the legacy exact values.
+ * Is `by` an OWNERSHIP generator stamp? Prefix match on `<producer>/` (any
+ * ownership producer when none is given; never the scaffold), plus the legacy
+ * exact values.
  *
  * @param {unknown} by
  * @param {string} [producer]
@@ -84,5 +92,6 @@ export function isGeneratedStamp(by, producer) {
   if (typeof by !== 'string') return false;
   const producers = producer ? [producer] : PRODUCERS;
   if (producers.some((p) => by.startsWith(`${p}/`) && by.length > p.length + 1)) return true;
-  return !producer && LEGACY_STAMPS.includes(by);
+  // The legacy stamp is the Gherkin pipeline's: a named other producer never owns it.
+  return (!producer || producer === 'doc-kitty-gherkin') && LEGACY_STAMPS.includes(by);
 }
