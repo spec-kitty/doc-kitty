@@ -239,6 +239,8 @@ const INSTANT =
  *
  * - `nonUtc`: a non-`Z` offset (offset hours <= 14, minutes < 60);
  * - `noZone`: a date-time with no zone, read as UTC;
+ * - `rolledOver`: ISO-shaped but not a real calendar date (`2026-02-30`), which
+ *   `new Date()` rolls forward (to 03-02); accepted for parity, read as the rolled date;
  * - `nonIso`: anything else `new Date()` still parses (what `z.coerce.date()`
  *   accepted before the content graph), so a page that built before keeps building.
  *
@@ -247,35 +249,66 @@ const INSTANT =
  * `Date` cannot parse are `null`.
  *
  * @param {unknown} v
- * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean} | null}
+ * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean, rolledOver: boolean} | null}
  */
 export function normaliseInstant(v) {
   if (v instanceof Date) {
     return Number.isNaN(v.getTime())
       ? null
-      : { date: v, dateOnly: false, nonUtc: false, noZone: false, nonIso: false };
+      : { date: v, dateOnly: false, nonUtc: false, noZone: false, nonIso: false, rolledOver: false };
   }
   if (typeof v === 'number') return legacyInstant(v);
   if (typeof v !== 'string') return null;
   const text = v.trim();
-  return isoInstant(text) ?? legacyInstant(text);
+  const iso = isoInstant(text);
+  if (iso) return iso;
+  const legacy = legacyInstant(text);
+  // An ISO-shaped value whose date `Date` rolled over (2026-02-30 -> 03-02) is not
+  // "non-ISO"; it is a calendar-invalid date the build still accepts.
+  return legacy && isRolledOver(text) ? { ...legacy, nonIso: false, rolledOver: true } : legacy;
+}
+
+/**
+ * @param {string} text
+ * @returns {boolean} ISO-shaped, but its date or time components do not round-trip
+ */
+function isRolledOver(text) {
+  const m = INSTANT.exec(text);
+  return m !== null && !componentsValid(m);
+}
+
+/**
+ * @param {RegExpExecArray} m
+ * @returns {boolean}
+ */
+function componentsValid(m) {
+  const [, y, mo, d, h, mi, sec = '00'] = m;
+  const check = new Date(Date.UTC(+y, +mo - 1, +d, +(h ?? 0), +(mi ?? 0), +sec));
+  return (
+    check.getUTCFullYear() === +y &&
+    check.getUTCMonth() === +mo - 1 &&
+    check.getUTCDate() === +d &&
+    +(h ?? 0) < 24 &&
+    +(mi ?? 0) < 60 &&
+    +sec < 60
+  );
 }
 
 /**
  * @param {string | number} v
- * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean} | null}
+ * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean, rolledOver: boolean} | null}
  */
 function legacyInstant(v) {
   if (v === '') return null;
   const date = new Date(v);
   return Number.isNaN(date.getTime())
     ? null
-    : { date, dateOnly: false, nonUtc: false, noZone: false, nonIso: true };
+    : { date, dateOnly: false, nonUtc: false, noZone: false, nonIso: true, rolledOver: false };
 }
 
 /**
  * @param {string} text
- * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean} | null}
+ * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean, rolledOver: boolean} | null}
  */
 function isoInstant(text) {
   const m = INSTANT.exec(text);
@@ -283,15 +316,7 @@ function isoInstant(text) {
   const [, y, mo, d, h, mi, sec = '00', frac = '', zone] = m;
   const dateOnly = h === undefined;
   const base = Date.UTC(+y, +mo - 1, +d, +(h ?? 0), +(mi ?? 0), +sec);
-  const check = new Date(base);
-  const valid =
-    check.getUTCFullYear() === +y &&
-    check.getUTCMonth() === +mo - 1 &&
-    check.getUTCDate() === +d &&
-    +(h ?? 0) < 24 &&
-    +(mi ?? 0) < 60 &&
-    +sec < 60;
-  if (!valid) return null;
+  if (!componentsValid(m)) return null;
   const nonUtc = zone !== undefined && !/^[Zz]$/.test(zone);
   const offset = nonUtc ? offsetMinutes(zone) : 0;
   if (Number.isNaN(offset)) return null;
@@ -302,6 +327,7 @@ function isoInstant(text) {
     nonUtc,
     noZone: !dateOnly && zone === undefined,
     nonIso: false,
+    rolledOver: false,
   };
 }
 
