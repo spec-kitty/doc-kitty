@@ -1,0 +1,177 @@
+schema_version: 1
+mission_id: 01M56PNWJD5A79AWFQG6HGVQ5V
+mission_slug: okf-alignment-content-graph-01M56PNW
+mission_number: 11
+friendly_name: OKF alignment and content graph
+mission_type: software-dev
+target_branch: feat/okf-alignment-content-graph
+created_at: '2026-10-18T07:44:13.013302+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-18T07:44:13.013302+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-003
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-004
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-014
+not_helpful:
+- id: n-006
+  category: doc
+  summary: analysis-report.md records 2 finding(s)
+  evidence_refs:
+  - e-020
+  details: The analysis-report.md artifact for this mission records 2 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-001
+  category: review_loop
+  summary: WP03 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-015
+  details: WP WP03 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP04 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-016
+  details: WP WP04 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP05 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-017
+  details: WP WP05 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP07 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-018
+  details: WP WP07 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-005
+  category: review_loop
+  summary: WP09 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-019
+  details: WP WP09 was sent back to an earlier lane with documented review feedback 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP01-shared-metadata-rules.md
+- id: e-006
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP02-generator-stamps.md
+- id: e-007
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP03-updated-consumers.md
+- id: e-008
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP04-tree-migration.md
+- id: e-009
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP05-content-graph-builder.md
+- id: e-010
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP06-graph-artifact-gate.md
+- id: e-011
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP07-okf-export-core.md
+- id: e-012
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP08-export-cli-hook.md
+- id: e-013
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/tasks/WP09-docs-adr-changelog.md
+- id: e-014
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/status.events.jsonl
+- id: e-015
+  kind: event_range
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/status.events.jsonl
+  range: 01M56SD6QXPVJKR5NFX0TS8AXV
+- id: e-016
+  kind: event_range
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/status.events.jsonl
+  range: 01M56TEDNQ0YPTG2XREC8C2AXK
+- id: e-017
+  kind: event_range
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/status.events.jsonl
+  range: 01M56TD390N3GCJC8DTTWNKKQ9
+- id: e-018
+  kind: event_range
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/status.events.jsonl
+  range: 01M56VGQ4C3DXJ76BJAHCZWZJC
+- id: e-019
+  kind: event_range
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/status.events.jsonl
+  range: 01M56YYPHN3B99PHH70EM0HXTJ
+- id: e-020
+  kind: file
+  path: kitty-specs/okf-alignment-content-graph-01M56PNW/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

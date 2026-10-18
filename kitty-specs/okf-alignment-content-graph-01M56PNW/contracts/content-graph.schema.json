@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec-kitty.github.io/doc-kitty/schemas/content-graph-1.json",
+  "title": "DocKitty content graph",
+  "type": "object",
+  "required": ["schema", "okf_version", "generatedFrom", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "dockitty.content-graph/1" },
+    "okf_version": { "const": "0.2" },
+    "generatedFrom": { "const": "doc-kitty" },
+    "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+    "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } }
+  },
+  "$defs": {
+    "actor": {
+      "type": "string",
+      "pattern": "^(human:[A-Za-z0-9._-]+|process:[A-Za-z0-9._-]+|[a-z0-9][a-z0-9-]*/\\S+)$"
+    },
+    "instant": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "stamp": {
+      "type": "object",
+      "required": ["by", "at"],
+      "additionalProperties": false,
+      "properties": {
+        "by": { "$ref": "#/$defs/actor" },
+        "at": { "$ref": "#/$defs/instant" },
+        "content_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{12,64}$" }
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["page", "persona", "catalog", "resource"] },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "resource": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "status": { "enum": ["draft", "stable", "deprecated"] },
+        "generated": { "$ref": "#/$defs/stamp" },
+        "verified": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["by", "at"],
+            "properties": { "by": { "$ref": "#/$defs/actor" }, "at": { "$ref": "#/$defs/instant" } }
+          }
+        },
+        "stale_after": { "$ref": "#/$defs/instant" },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["resource", "title"],
+            "properties": { "resource": { "type": "string" }, "title": { "type": "string" } }
+          }
+        },
+        "doc_status": { "type": "string" },
+        "doc_kind": { "type": "string" },
+        "section": { "type": "string" },
+        "href": { "type": "string" },
+        "url": { "type": "string" },
+        "authors": { "type": "array", "items": { "$ref": "#/$defs/actor" } },
+        "updated": { "$ref": "#/$defs/instant" }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["id", "source", "target", "rel"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "source|rel|target" },
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "rel": { "enum": ["related", "audience", "cites", "in-section", "derived-from"] },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}
