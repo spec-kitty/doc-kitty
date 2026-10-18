@@ -412,8 +412,8 @@ const ARTICLE_FOOTER_MARKER = 'pagination-links';
 // --- F2 (FR-009 theme site-default share image) ---------------------------------
 // On the branded build, the SITEDEFAULT page's og:image AND twitter:image must
 // derive from the THEME's assets.socialImage (the brand social-card), not the
-// toolkit-shipped social-default. The theme ships an SVG social-card, so the
-// resolved share URL is a hashed `/_astro/…social-card….svg`.
+// toolkit-shipped social-default. The resolved share URL is a hashed
+// `/_astro/…social-card….png` (a raster card since #180).
 const THEME_SOCIAL_MARKER = 'social-card';
 const TOOLKIT_DEFAULT_SOCIAL_MARKER = 'social-default';
 
@@ -669,6 +669,23 @@ export async function assertChromeArtifacts(distDir) {
   ]) {
     if (!val) fail(`share image: og:image absent on ${page}`);
   }
+  // #180: share cards render only raster images, so each og:image is a PNG or
+  // JPEG and announces its type and size before a crawler fetches it.
+  for (const [html, val, page] of [
+    [heroHtml, heroOg, HERO_PAGE],
+    [socialHtml, socialOg, SOCIAL_PAGE],
+    [siteDefaultHtml, siteOg, SITEDEFAULT_PAGE],
+  ]) {
+    if (!/\.(png|jpe?g)(\?|$)/i.test(val)) {
+      fail(`share image: og:image on ${page} is not a PNG or JPEG (${val}); share cards cannot show it (#180)`);
+    }
+    for (const tag of ['og:image:width', 'og:image:height', 'og:image:type']) {
+      if (!new RegExp(`<meta\\s+property="${tag}"\\s+content="[^"]+"`, 'i').test(html)) {
+        fail(`share image: ${tag} missing on ${page} (#180)`);
+      }
+    }
+  }
+  ok(`share image: every og:image is a raster image with width, height and type (#180)`);
   const distinct = new Set([heroOg, socialOg, siteOg]);
   if (distinct.size !== 3) {
     fail(

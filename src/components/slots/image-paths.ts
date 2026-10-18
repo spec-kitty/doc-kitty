@@ -57,3 +57,45 @@ export function matchGlobKey(
   const suffixed = globKeys.filter((k) => k.endsWith('/' + tail) || k.endsWith(tail));
   return suffixed.length === 1 ? suffixed[0] : null;
 }
+
+/** The shape of an image the share slot picks between (an `ImageMetadata` subset). */
+export interface ShareImageLike {
+  src: string;
+  format: string;
+}
+
+/**
+ * Pick the share image to emit (#180). Slack, WhatsApp, LinkedIn, Facebook and X
+ * show no SVG card, so an SVG falls back, never failing the build: a page's SVG to
+ * the site default, and an SVG site default (a theme's `assets.socialImage`) to the
+ * toolkit's raster default. A fallback takes the site title as its alt and
+ * returns the warning the caller logs.
+ */
+export function pickShareImage<T extends ShareImageLike>(args: {
+  image: T;
+  alt: string;
+  siteDefault: T;
+  toolkitDefault: T;
+  siteTitle?: string;
+  page?: string;
+}): { image: T; alt: string; warning?: string } {
+  const { image, alt, siteDefault, toolkitDefault, siteTitle, page } = args;
+  if (image.format !== 'svg') return { image, alt };
+  const fallbackAlt = siteTitle ?? alt;
+  if (image !== siteDefault && siteDefault.format !== 'svg') {
+    return {
+      image: siteDefault,
+      alt: fallbackAlt,
+      warning:
+        `[dk:head] ${page ?? 'a page'}: share image ${image.src} is an SVG, which share ` +
+        `cards cannot show; using the site-default share image instead`,
+    };
+  }
+  return {
+    image: toolkitDefault,
+    alt: fallbackAlt,
+    warning:
+      `[dk:head] share image ${image.src} is an SVG, which share cards cannot show; using ` +
+      `the toolkit default. Set the theme's assets.socialImage to a PNG or JPEG (1200x630).`,
+  };
+}

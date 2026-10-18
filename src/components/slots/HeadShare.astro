@@ -23,6 +23,7 @@ import {
   resolveColocatedKey,
   matchGlobKey,
   isAbsoluteOrRemote,
+  pickShareImage,
 } from './image-paths.ts';
 
 interface Props {
@@ -31,6 +32,8 @@ interface Props {
   filePath?: string;
   /** Page title, used as the fallback alt for a bare-string social_thumb. */
   title?: string;
+  /** Site title: the alt of the site-default share image (#180). */
+  siteTitle?: string;
   /**
    * The theme's `assets.socialImage` (FR-009), forwarded by the Head carrier. When
    * set it is the terminal site-default share image, overriding the toolkit
@@ -41,7 +44,7 @@ interface Props {
   siteDefault?: ImageMetadata;
 }
 
-const { heroImage, socialThumb, filePath, title, siteDefault } = Astro.props;
+const { heroImage, socialThumb, filePath, title, siteTitle, siteDefault } = Astro.props;
 
 // The terminal site-default: the theme's socialImage when set, else the toolkit's.
 const defaultSocial = siteDefault ?? siteDefaultSocial;
@@ -70,7 +73,7 @@ if (typeof socialThumb === 'string') {
   } else {
     image = lookup(socialThumb) ?? defaultSocial;
   }
-  alt = title ?? 'Share image';
+  alt = title ?? siteTitle ?? 'Share image';
 } else if (socialThumb) {
   image = lookup(socialThumb.src) ?? defaultSocial;
   alt = socialThumb.alt;
@@ -79,7 +82,21 @@ if (typeof socialThumb === 'string') {
   alt = heroImage.alt;
 } else {
   image = defaultSocial;
-  alt = 'DocKitty documentation';
+  alt = siteTitle ?? 'DocKitty documentation';
+}
+
+// Never an SVG card (#180): `pickShareImage` falls an SVG back, with a warning.
+if (image) {
+  const picked = pickShareImage({
+    image,
+    alt,
+    siteDefault: defaultSocial,
+    toolkitDefault: siteDefaultSocial,
+    siteTitle,
+    page: filePath,
+  });
+  if (picked.warning) console.warn(picked.warning);
+  ({ image, alt } = picked);
 }
 
 const OG_WIDTH = 1200;
@@ -88,26 +105,18 @@ const OG_HEIGHT = 630;
 let rawSrc: string | undefined;
 let width: number | undefined;
 let height: number | undefined;
+let type: string | undefined;
 if (image) {
-  if (image.format === 'svg') {
-    // An SVG (e.g. the brand social-card) is emitted VERBATIM through the asset
-    // pipeline (getImage with NO transforms → passthrough, base-prefix correct):
-    // rasterizing SVG→PNG would be non-deterministic across the sharp toolchain, so
-    // we ship its hashed `/_astro/…svg` at its intrinsic card geometry (no OG
-    // width/height override).
-    const passthrough = await getImage({ src: image });
-    rawSrc = passthrough.src;
-  } else {
-    const optimized = await getImage({
-      src: image,
-      width: OG_WIDTH,
-      height: OG_HEIGHT,
-      format: 'png',
-    });
-    rawSrc = optimized.src;
-    width = OG_WIDTH;
-    height = OG_HEIGHT;
-  }
+  const optimized = await getImage({
+    src: image,
+    width: OG_WIDTH,
+    height: OG_HEIGHT,
+    format: 'png',
+  });
+  rawSrc = optimized.src;
+  width = OG_WIDTH;
+  height = OG_HEIGHT;
+  type = 'image/png';
 } else if (literalUrl) {
   rawSrc = literalUrl;
 }
@@ -133,6 +142,7 @@ if (rawSrc) {
       <meta property="og:image:alt" content={alt} />
       {width && <meta property="og:image:width" content={String(width)} />}
       {height && <meta property="og:image:height" content={String(height)} />}
+      {type && <meta property="og:image:type" content={type} />}
       <meta name="twitter:image" content={absolute} />
       <meta name="twitter:image:alt" content={alt} />
     </Fragment>

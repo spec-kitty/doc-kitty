@@ -112,7 +112,10 @@ export const specKittyTheme: DocKittyTheme = {
   assets: {
     logo: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/logo.svg',
     favicon: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/favicon.svg',
-    socialImage: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/social-card.svg',
+    // A PNG, not the SVG: Slack, WhatsApp and LinkedIn render only raster share
+    // images (#180). `social-card.svg` stays as its editable source; the PNG is
+    // its 1200x630 rasterization, committed so every build ships the same bytes.
+    socialImage: '@spec-kitty/doc-toolkit/themes/spec-kitty/assets/social-card.png',
     fonts: [],
   },
 

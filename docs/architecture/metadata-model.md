@@ -207,8 +207,16 @@ social_thumb: ./assets/architecture-share.png   # or { src, alt }
 
 The `Head` override generates the share metadata from these fields plus the page's
 `title` and `description`: `og:title`, `og:description`, `og:image`,
-`og:image:alt`, `twitter:card` (`summary_large_image`), `twitter:image`, and the
-canonical URL. This is part of the metadata-driven chrome (M1).
+`og:image:alt`, `og:image:width`, `og:image:height`, `og:image:type`,
+`twitter:card` (`summary_large_image`), `twitter:image`, and the canonical URL.
+This is part of the metadata-driven chrome (M1).
+
+The share image is always a 1200x630 PNG, because Slack, WhatsApp, LinkedIn,
+Facebook and X show no SVG card (#180). A page whose `social_thumb` or
+`hero_image` is an SVG gets the site-wide default instead, and a theme whose
+`assets.socialImage` is an SVG gets the toolkit's default PNG, each with a build
+warning: give the theme's `assets.socialImage` a PNG or JPEG. The site-wide default's `og:image:alt` is the
+site title.
 
 Image handling differs by purpose:
 

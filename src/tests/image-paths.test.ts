@@ -3,7 +3,10 @@ import {
   isAbsoluteOrRemote,
   resolveColocatedKey,
   matchGlobKey,
+  pickShareImage,
 } from '../components/slots/image-paths.js';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 // Unit coverage for the framework-agnostic path math behind the WP03
 // optimized-image slots (dk:page-hero + dk:head share). The Astro-coupled
@@ -81,3 +84,43 @@ describe('matchGlobKey', () => {
     expect(matchGlobKey('/docs/nope/missing.png', keys)).toBeNull();
   });
 });
+
+describe('pickShareImage (#180: never an SVG card)', () => {
+  const png = { src: '/hero.png', format: 'png' };
+  const pageSvg = { src: '/hero.svg', format: 'svg' };
+  const themePng = { src: '/social-card.png', format: 'png' };
+  const themeSvg = { src: '/social-card.svg', format: 'svg' };
+  const toolkit = { src: '/social-default.png', format: 'png' };
+
+  it('passes a raster image through unchanged, without a warning', () => {
+    const r = pickShareImage({ image: png, alt: 'Hero', siteDefault: themePng, toolkitDefault: toolkit, siteTitle: 'Docs' });
+    expect(r).toEqual({ image: png, alt: 'Hero' });
+  });
+  it('falls a page SVG back to the site default, with the site title as alt and a warning', () => {
+    const r = pickShareImage({ image: pageSvg, alt: 'Hero', siteDefault: themePng, toolkitDefault: toolkit, siteTitle: 'Docs' });
+    expect(r.image).toBe(themePng);
+    expect(r.alt).toBe('Docs');
+    expect(r.warning).toMatch(/is an SVG/);
+  });
+  it('falls an SVG site default (and a page SVG under it) back to the toolkit default, never throwing', () => {
+    for (const image of [themeSvg, pageSvg]) {
+      const r = pickShareImage({ image, alt: 'x', siteDefault: themeSvg, toolkitDefault: toolkit, siteTitle: 'Docs' });
+      expect(r.image).toBe(toolkit);
+      expect(r.warning).toMatch(/assets\.socialImage to a PNG/);
+    }
+  });
+});
+
+describe('spec-kitty theme share card (#180)', () => {
+  const assets = new URL('../themes/spec-kitty/assets/', import.meta.url);
+  it('ships a 1200x630 PNG rasterized from the pinned SVG source', () => {
+    const png = readFileSync(new URL('social-card.png', assets));
+    // PNG IHDR: width and height are big-endian uint32s at bytes 16 and 20.
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+    // Editing the SVG source without regenerating the PNG fails here: re-rasterize
+    // social-card.png at 1200x630, then update this hash.
+    const svgHash = createHash('sha256').update(readFileSync(new URL('social-card.svg', assets))).digest('hex');
+    expect(svgHash).toBe('d04ebfed87c53f53a5df7ccc0a1758a183336604592c24339364857330d3569e');
+  });
+});
+
