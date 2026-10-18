@@ -2,7 +2,7 @@
  * `scenarioIndexRoute` — the structured scenario index at `/api/scenarios.json`
  * (ADR-0046, gherkin-feature-pages WP10). One JSON document listing every
  * agent-discoverable GENERATED feature page (`kind: Specification`,
- * `generated.by: doc-kitty/gherkin`) with its rules, scenarios, anchors, tags and
+ * `generated.by: doc-kitty-gherkin/<version>`) with its rules, scenarios, anchors, tags and
  * steps, so an agent can answer "which scenarios cover mission-alpha?" without
  * scraping Markdown.
  *
@@ -58,7 +58,7 @@ import { DK_GHERKIN_RESULTS_ENV } from '../gherkin/include-scan.mjs';
 import { featureResults, type Outcome } from '../gherkin/results.mjs';
 import { loadReport } from '../gherkin/results-load.mjs';
 import { featureView } from '../gherkin/view.mjs';
-import { GENERATED_BY, stampContentHash } from '../gherkin/feature-core.mjs';
+import { LEGACY_GENERATED_BY, stampContentHash } from '../generator-stamp.mjs';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { absolute, docsRoot } from './shared.js';
 
@@ -453,7 +453,9 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
 
     const body = {
       version: options.version ?? '1',
-      generated_from: GENERATED_BY,
+      // Public API value, kept as the legacy unversioned id for stability (consumers
+      // match on it); it is NOT the page stamp, which is now `doc-kitty-gherkin/<version>`.
+      generated_from: LEGACY_GENERATED_BY,
       count: features.length,
       ...(report?.ok && resultsOption
         ? {

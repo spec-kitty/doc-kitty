@@ -23,33 +23,9 @@
  */
 
 import { OKF_VERSION, compareCodeUnit } from '../vocabulary-core.mjs';
+// Stamps are built by the callers and injected (`fields.generated`); core only serialises.
+import { serializeStamp } from '../generator-stamp.mjs';
 import { DK_TAG_PREFIX as DK_PREFIX, GHERKIN_LOG_PREFIX as PREFIX, featureTitle, splitNarrative } from './text.mjs';
-
-/**
- * The LEGACY `generated.by` stamp (unversioned) of pages this generator wrote
- * before versioned stamps. Still recognised (`isGeneratedStamp`) and still the
- * public scenario-index `generated_from` identifier; new pages are stamped
- * `GHERKIN_PRODUCER/<toolkit version>` by `makeStamp` (`generator-stamp.mjs`).
- */
-export const GENERATED_BY = 'doc-kitty/gherkin';
-
-/** The producer id of the versioned stamp (`doc-kitty-gherkin/<version>`). */
-export const GHERKIN_PRODUCER = 'doc-kitty-gherkin';
-
-/**
- * The content hash a generated page's `generated` stamp records: `content_hash`,
- * else the legacy `at` when that still holds a `sha256:` hash (stamps written
- * before `at` became an instant). The ONE reader every consumer routes through,
- * so none treats an instant as a hash.
- *
- * @param {{ at?: unknown, content_hash?: unknown } | undefined | null} generated
- * @returns {string | undefined} `sha256:<hex>` (or undefined: no recorded hash)
- */
-export function stampContentHash(generated) {
-  if (typeof generated?.content_hash === 'string') return generated.content_hash;
-  const { at } = generated ?? {};
-  return typeof at === 'string' && at.startsWith('sha256:') ? at : undefined;
-}
 
 /** Maximum `description` length (contract §3 rule 4). */
 const DESCRIPTION_MAX = 180;
@@ -727,21 +703,6 @@ export function serializeFrontmatter(fields) {
   if (fields.agent !== undefined) lines.push('agent:', `  priority: ${String(fields.agent.priority)}`);
   lines.push('---');
   return lines.join('\n');
-}
-
-/**
- * The `generated:` block lines, in the stable key order `by`, `at`, `content_hash`.
- *
- * @param {{ by: string, at: string, content_hash: string }} stamp
- * @returns {string[]}
- */
-function serializeStamp(stamp) {
-  return [
-    'generated:',
-    `  by: ${q(stamp.by)}`,
-    `  at: ${q(stamp.at)}`,
-    `  content_hash: ${q(stamp.content_hash)}`,
-  ];
 }
 
 /**

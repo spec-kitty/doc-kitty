@@ -29,7 +29,7 @@ import { Parser, AstBuilder, GherkinClassicTokenMatcher } from '@cucumber/gherki
 import { IdGenerator, type GherkinDocument } from '@cucumber/messages';
 import remarkDirective from 'remark-directive';
 import { renderFeatureBody } from '../lib/gherkin/render.mjs';
-import { GENERATED_BY } from '../lib/gherkin/feature-core.mjs';
+import { LEGACY_GENERATED_BY as GENERATED_BY } from '../lib/generator-stamp.mjs';
 import gherkinFence from '../lib/remark/gherkin-fence.js';
 import type { RenderedHeading } from '../lib/routes/scenario-index.js';
 

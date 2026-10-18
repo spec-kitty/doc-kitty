@@ -7,8 +7,7 @@
  */
 import type { DocKittyFrontmatter } from '../metadata.js';
 import { isAgentDiscoverable } from '../metadata.js';
-import { isGeneratedStamp } from '../generator-stamp.mjs';
-import { GHERKIN_PRODUCER } from '../gherkin/feature-core.mjs';
+import { GHERKIN_PRODUCER, isGeneratedStamp } from '../generator-stamp.mjs';
 
 /**
  * True for a page the scenario index lists: a GENERATED feature page (not a

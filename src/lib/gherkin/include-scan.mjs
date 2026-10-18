@@ -37,7 +37,7 @@ import remarkParse from 'remark-parse';
 import remarkDirective from 'remark-directive';
 import { compareCodeUnit } from '../vocabulary-core.mjs';
 import { DK_GHERKIN_RESULTS_ENV } from '../internal-env.mjs';
-import { GENERATED_BY, GHERKIN_PRODUCER } from './feature-core.mjs';
+import { GHERKIN_PRODUCER, LEGACY_STAMP_BY_PRODUCER } from '../generator-stamp.mjs';
 import { MAX_INCLUDE_BYTES } from './include-path.mjs';
 import { MAX_REPORT_BYTES } from './results.mjs';
 import { FEATURE_FILE, isRelativePosixPath } from './text.mjs';
@@ -133,7 +133,7 @@ export { DK_GHERKIN_RESULTS_ENV };
 
 /**
  * Text every GENERATED feature page holds (its `generated.by` stamp: the
- * `GHERKIN_PRODUCER` of `feature-core.mjs`, which the versioned stamp
+ * `GHERKIN_PRODUCER` of `generator-stamp.mjs`, which the versioned stamp
  * `doc-kitty-gherkin/<version>` starts with; a parity test pins the two). With
  * {@link INCLUDE_MARKER} it is the cheap test for "this page may show
  * results": a superset, since a page merely mentioning it only re-renders
@@ -141,8 +141,8 @@ export { DK_GHERKIN_RESULTS_ENV };
  */
 export const GENERATED_MARKER = GHERKIN_PRODUCER;
 
-/** The unversioned stamp of pages not yet regenerated (`GENERATED_BY`). */
-const LEGACY_GENERATED_MARKER = GENERATED_BY;
+/** The unversioned stamp of pages not yet regenerated (`LEGACY_STAMP_BY_PRODUCER`). */
+const LEGACY_GENERATED_MARKER = LEGACY_STAMP_BY_PRODUCER[GHERKIN_PRODUCER];
 
 /** The hash of a report that is missing or must not be read. */
 const UNREADABLE_REPORT = 'unreadable';
