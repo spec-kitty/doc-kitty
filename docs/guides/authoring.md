@@ -285,7 +285,7 @@ Across a large suite, that floods the build log.
 
 ### Feature pages in the RSS feed
 
-The example site lists its feature pages (and their hubs) in `rss.xml`, because
+The example site lists its feature pages in `rss.xml`, because
 its `behaviour` section feeds `rss` in `_meta/sections.yaml`. A generated page has
 no date unless you give it one, so by default its feed item has no `<pubDate>` and
 sorts after every dated item. A new `.feature` file shows up as one new undated
@@ -293,7 +293,9 @@ item. A new scenario in an existing feature changes nothing a subscriber sees. T
 have subscribers notice added scenarios, tag the feature
 `@dk:updated=<YYYY-MM-DD>` when you add them; the item then carries that date and
 sorts by it. Draft (`@wip`) features stay out of the feed. A site that doesn't want
-specs in its feed removes `rss` from the section's `feeds`.
+specs in its feed removes `rss` from the section's `feeds`. The generated hub
+pages (the section and folder indexes) are not feed items: they only list their
+children.
 
 ### Write declarative scenarios
 

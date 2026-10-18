@@ -411,7 +411,9 @@ so a site without Gherkin pages is unaffected. The route exists whenever
 
 Whether the pages reach `rss.xml` is the section's choice: the example site's
 `behaviour` section lists `rss` in `feeds` (`example/docs/_meta/sections.yaml`), and
-a site drops it to keep specs out. The feed ranks by `updated`, newest first, with
+a site drops it to keep specs out. Generated hubs (`kind: Hub` with a generator
+stamp, which includes the glossary index) never reach the feed: `includedInRssFeed` drops them, while an authored hub
+stays (#127). The feed ranks by `updated`, newest first, with
 undated items last in slug order (`rankForFeed` in `metadata.ts`), and omits
 `<pubDate>` when there is no date. A generated page has no `updated` unless its
 feature carries `@dk:updated=<date>`, so by default:

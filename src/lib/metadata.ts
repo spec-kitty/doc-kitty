@@ -15,6 +15,7 @@
  * real frontmatter lives in `./schema.ts` and mirrors these types.
  */
 import { isPresentationEntry } from './deck/is-presentation.js';
+import { isGeneratedStamp } from './generator-stamp.mjs';
 import { hrefOfSlug } from './with-base.js';
 // The section vocabulary + type-derivation lives in ONE fs-free, Astro-free place
 // (#49 IC-01/IC-02): `vocabulary-core.mjs`. `metadata.ts` stays fs-free by
@@ -502,8 +503,13 @@ export function rankForFeed(entries: DocEntry[]): DocEntry[] {
  * it deliberately does NOT touch {@link rankForFeed}, which must keep identical
  * behaviour for the other feed surfaces (RT-07). Keyed on the frontmatter
  * `kind`, never the section path, so a deck filed anywhere is still excluded.
+ *
+ * A GENERATED hub (`kind: Hub` with a generator stamp: a Gherkin section or
+ * folder index, or the glossary index) is left out too (#127): it lists its children and carries no news of
+ * its own. An authored hub stays, since its author may write news into it.
  */
 export function includedInRssFeed(entry: DocEntry): boolean {
+  if (entry.data.kind === 'Hub' && isGeneratedStamp(entry.data.generated?.by)) return false;
   return !isPresentationEntry(entry);
 }
 
