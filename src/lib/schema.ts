@@ -48,6 +48,7 @@ import {
 // `z.enum(STATUSES)`; the canonical `STATUSES` set stays the core's reference for
 // the bare-Node gate's warn-not-fail legality check (documentation-charter WP03).
 import { compareCodeUnit, DOC_TYPES, KINDS, normalizeIndexBasenames } from './vocabulary-core.mjs';
+import { retiredStampProblem } from './generator-stamp.mjs';
 import { publishDraftsInForce } from './draft-publication.mjs';
 import { walkMarkdownPaths } from './docs-walk.mjs';
 import {
@@ -155,7 +156,10 @@ const instantDate = z.preprocess((v) => normaliseInstant(v)?.date ?? v, z.date({
 // canonical `YYYY-MM-DDTHH:MM:SSZ` form, and the same parser as `updated` checks it (#227).
 const stampAt = z
   .preprocess((v) => (v instanceof Date ? formatInstant(v) : v), z.string({ message: NOT_A_DATE_MESSAGE }))
-  .refine((s) => normaliseInstant(s) !== null, { message: NOT_A_DATE_MESSAGE });
+  .refine((s) => normaliseInstant(s) !== null, {
+    // A legacy `sha256:` value is a retired stamp, not a mistyped date: say so (one wording, shared with the gate).
+    error: (issue) => retiredStampProblem({ at: issue.input }) ?? NOT_A_DATE_MESSAGE,
+  });
 
 const stamp = z.object({ by: z.string(), at: stampAt, content_hash: z.string().optional() });
 

@@ -628,6 +628,15 @@ describe('schema/validator parity — OKF metadata forms (#177)', () => {
     });
   }
 
+  it('a legacy `sha256:` generated.at is told to regenerate by both twins, not to write a date', () => {
+    const legacy = page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: 'sha256:0123456789ab' } });
+    const built = buildSchema.safeParse(legacy);
+    const buildMessages = built.success ? [] : built.error.issues.map((i) => i.message);
+    expect(buildMessages.join('\n')).toMatch(/legacy stamp.*regenerate/);
+    expect(buildMessages.join('\n')).not.toContain('not a date');
+    expect(validate('context/x.md', legacy).problems.join('\n')).toMatch(/legacy stamp.*regenerate/);
+  });
+
   it('the Zod twin normalises bare `verified` to a list and a Date `at` to a string', () => {
     const parsed = buildSchema.parse(
       page({ verified: { by: 'human:jane', at: new Date('2026-10-18T00:00:00Z') } }),
