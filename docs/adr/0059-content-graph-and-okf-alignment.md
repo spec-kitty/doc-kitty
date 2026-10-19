@@ -210,3 +210,5 @@ The exported index lists entries as `- [Title](/path.md) - description`.
 `_links.contentGraph` entry and the UTC `updated` instants and actor `authors`
 in the page records. See the [content graph reference](../architecture/content-graph.md)
 and the [export guide](../guides/export-okf-bundle.md).
+
+**Implementation note (0.4.0, #183, #210):** the legacy `sha256:` `at` reading and the unversioned `doc-kitty/gherkin` / `doc-kitty/glossary` stamps above are retired (a retired stamp now fails the frontmatter gate with a regenerate message), and `api/scenarios.json` dropped `generated_from` and moved to `version: "2"`.
