@@ -454,6 +454,7 @@ export { shapingWarningSink } from './build-state.js';
  */
 export const REVEAL_CURRENT_SCRIPT: string =
   "(function(){function m(p){try{var c=p.querySelector('[aria-current=\"page\"]');if(!c)return;" +
+  'if(c.getClientRects().length===0)return;' +
   'var a=p.getBoundingClientRect(),b=c.getBoundingClientRect();' +
   'if(b.top>=a.top&&b.bottom<=a.bottom)return;' +
   'p.scrollTop+=b.top-a.top-(a.height-b.height)/2;}catch(e){}}' +
