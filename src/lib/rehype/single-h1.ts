@@ -6,25 +6,32 @@
  * A body that also starts with `# Title` therefore publishes two `<h1>`s. This
  * pass fixes it in the body, so Starlight's title semantics stay as they are:
  *
- * - a LEADING body `<h1>` whose text repeats the title is dropped;
- * - every other body `<h1>` (a leading one that says something else, or one
- *   further down) becomes an `<h2>`, so its text and outline position survive.
+ * - the FIRST body `<h1>`, wherever it sits (an MDX component, a badge, a
+ *   callout or an intro paragraph may precede it), is dropped when its text
+ *   repeats the title. An empty `<span id="…">` takes its place with the id
+ *   `rehypeHeadingIds` would have given the heading, so links to `#overview`
+ *   keep working;
+ * - every other body `<h1>` becomes an `<h2>`, so its text and outline position
+ *   survive.
  *
- * "Leading" skips whitespace, HTML and MDX comments, and MDX `import`/`export`
- * lines. Text is compared after undoing what remark-smartypants did to the body
+ * Text is compared after undoing what remark-smartypants did to the body
  * (curly quotes, dashes, ellipses), with case and runs of whitespace ignored, so
  * `# Don't panic` repeats `title: "Don't panic"`.
  *
  * ── Ordering ─────────────────────────────────────────────────────────────────
  * Astro runs USER rehype plugins before `rehypeHeadingIds`, so a demoted heading
  * gets its `id` and its ToC entry as an `<h2>`, and a dropped one never reaches
- * the collector.
+ * the collector. `rehypeHeadingIds` slugs with github-slugger, so the alias id
+ * does too; when a later heading would take the same id once this one is gone,
+ * no alias is emitted (ids stay unique).
  *
  * ── Scope ────────────────────────────────────────────────────────────────────
  * A no-op on a file with no Astro frontmatter `title`, and on a
  * `kind: Presentation` deck, whose slide `<h1>`s are the deck layout's own.
  */
+import GithubSlugger from 'github-slugger';
 import { isPresentationFile } from '../deck/is-presentation.js';
+import { textOf } from '../glossary/link-node.js';
 
 /** Minimal structural hast node. */
 interface HastNode {
@@ -42,11 +49,6 @@ interface SingleH1VFile {
 
 const isH1 = (node: HastNode) => node.type === 'element' && node.tagName === 'h1';
 
-function textOf(node: HastNode): string {
-  if (typeof node.value === 'string') return node.type === 'comment' ? '' : node.value;
-  return (node.children ?? []).map(textOf).join('');
-}
-
 /** Undo smartypants, then fold case and whitespace, for a title comparison. */
 export function comparableTitle(text: string): string {
   return text
@@ -61,35 +63,24 @@ export function comparableTitle(text: string): string {
     .toLowerCase();
 }
 
-/**
- * Nodes that never render as content. When user rehype plugins run, `rehype-raw`
- * has not yet parsed raw HTML, so a Markdown `<!-- … -->` is a `raw` node, and an
- * MDX comment expression (a block or line JS comment in braces) is an
- * `mdxFlowExpression`; `comment` covers a tree that has been parsed already.
- */
-const HTML_COMMENTS = /^\s*(?:<!--[\s\S]*?-->\s*)+$/;
-const JS_COMMENTS = /^\s*(?:\/\*[\s\S]*?\*\/\s*|\/\/[^\n]*\s*)+$/;
+const isHeading = (node: HastNode) => node.type === 'element' && /^h[1-6]$/.test(node.tagName ?? '');
 
-function isSkipped(node: HastNode): boolean {
-  const value = node.value ?? '';
-  switch (node.type) {
-    case 'comment':
-    case 'mdxjsEsm':
-      return true;
-    case 'text':
-      return !value.trim();
-    case 'raw':
-      return HTML_COMMENTS.test(value);
-    case 'mdxFlowExpression':
-      return JS_COMMENTS.test(value);
-    default:
-      return false;
-  }
+/** Every heading under `node`, in document order. */
+function headingsIn(node: HastNode, out: HastNode[] = []): HastNode[] {
+  if (isHeading(node)) out.push(node);
+  for (const child of node.children ?? []) headingsIn(child, out);
+  return out;
 }
 
-/** The first child that is not whitespace, a comment or an MDX import. */
-function leadingNode(tree: HastNode): HastNode | undefined {
-  return (tree.children ?? []).find((node) => !isSkipped(node));
+/** Swap `target` for `replacement` in its parent's children. */
+function replaceNode(parent: HastNode, target: HastNode, replacement: HastNode[]): boolean {
+  const children = parent.children ?? [];
+  const at = children.indexOf(target);
+  if (at >= 0) {
+    children.splice(at, 1, ...replacement);
+    return true;
+  }
+  return children.some((child) => replaceNode(child, target, replacement));
 }
 
 function demoteH1s(node: HastNode): void {
@@ -106,9 +97,19 @@ export default function singleH1() {
     const title = file.data?.astro?.frontmatter?.title;
     if (typeof title !== 'string' || isPresentationFile(file)) return;
 
-    const lead = leadingNode(tree);
-    if (lead && isH1(lead) && comparableTitle(textOf(lead)) === comparableTitle(title)) {
-      tree.children = (tree.children ?? []).filter((node) => node !== lead);
+    const headings = headingsIn(tree);
+    const first = headings.find(isH1);
+    if (first && comparableTitle(textOf(first)) === comparableTitle(title)) {
+      // Slug the headings that stay, as `rehypeHeadingIds` will: if one of them
+      // takes the bare slug, an alias would duplicate its id.
+      const slugger = new GithubSlugger();
+      const taken = new Set(headings.filter((h) => h !== first).map((h) => slugger.slug(textOf(h))));
+      const id = new GithubSlugger().slug(textOf(first));
+      const alias: HastNode[] =
+        id && !taken.has(id)
+          ? [{ type: 'element', tagName: 'span', properties: { id }, children: [] }]
+          : [];
+      replaceNode(tree, first, alias);
     }
     demoteH1s(tree);
   };

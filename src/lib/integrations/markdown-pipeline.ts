@@ -41,8 +41,9 @@ export const deckSplitIntegration: AstroIntegration = {
 };
 
 /**
- * One `<h1>` per page (#191): an always-on rehype pass that drops a leading body
- * `# Title` repeating the frontmatter title and demotes any other body H1 to H2,
+ * One `<h1>` per page (#191): an always-on rehype pass that drops the first body
+ * `# Title` repeating the frontmatter title (leaving an empty id anchor) and
+ * demotes any other body H1 to H2,
  * so Starlight's title `<h1 id="_top">` stays the page's only one. User rehype
  * plugins run before Astro's `rehypeHeadingIds`, so a demoted heading is
  * collected as an `<h2>`. A no-op on a deck and on a body with no H1.

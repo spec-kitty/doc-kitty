@@ -1,8 +1,8 @@
 /**
  * One `<h1>` per published page (#191). Starlight renders the frontmatter
  * `title` as the page's `<h1 id="_top">`, so a body `# Title` adds a second one.
- * `singleH1` drops a LEADING body `<h1>` that repeats the title, and demotes any
- * other body `<h1>` to `<h2>`, so the title stays the page's only `<h1>`. A
+ * `singleH1` drops the first body `<h1>` when it repeats the title (leaving an
+ * anchor alias with its id), and demotes any other body `<h1>` to `<h2>`, so the title stays the page's only `<h1>`. A
  * `kind: Presentation` deck is left alone: its slides own their headings.
  */
 import { describe, it, expect } from 'vitest';
@@ -38,6 +38,12 @@ function headings(node: Hast, out: string[] = []): string[] {
   return out;
 }
 
+function hastWith(...children: Hast[]): Hast {
+  const tree: Hast = { type: 'root', children };
+  singleH1()(tree, { data: { astro: { frontmatter: { title: 'Title' } } } });
+  return tree;
+}
+
 const h1s = (tree: Hast) => headings(tree).filter((h) => h.startsWith('h1:')).length;
 
 describe('singleH1 — a body H1 never adds a second page <h1> (#191)', () => {
@@ -57,30 +63,15 @@ describe('singleH1 — a body H1 never adds a second page <h1> (#191)', () => {
     expect(h1s(tree)).toBe(0);
   });
 
-  it('skips a leading HTML comment when finding the leading H1', () => {
-    // A `.md` comment is still a `raw` node when user rehype plugins run.
-    const tree = render('<!-- markdownlint-disable -->\n\n# Title\n\n## Next\n', { title: 'Title' });
-    expect(headings(tree)).toEqual(['h2: Next']);
-  });
-
-  it('skips several leading comments, but not other leading raw HTML', () => {
-    expect(headings(render('<!-- a -->\n<!-- b -->\n\n# Title\n', { title: 'Title' }))).toEqual([]);
-    expect(headings(render('<div>x</div>\n\n# Title\n', { title: 'Title' }))).toEqual(['h2: Title']);
-  });
-
-  it('skips a leading MDX comment expression when finding the leading H1', () => {
-    const h1 = { type: 'element', tagName: 'h1', children: [{ type: 'text', value: 'Title' }] };
-    const tree: Hast = { type: 'root', children: [{ type: 'mdxFlowExpression', value: '/* note */' }, h1] };
-    singleH1()(tree, { data: { astro: { frontmatter: { title: 'Title' } } } });
-    expect(headings(tree)).toEqual([]);
-  });
-
-  it('skips a leading MDX import when finding the leading H1', () => {
-    const h1 = { type: 'element', tagName: 'h1', children: [{ type: 'text', value: 'Title' }] };
-    const tree: Hast = { type: 'root', children: [{ type: 'mdxjsEsm', value: "import X from './x';" }, h1] };
-    singleH1()(tree, { data: { astro: { frontmatter: { title: 'Title' } } } });
+  const h1 = { type: 'element', tagName: 'h1', children: [{ type: 'text', value: 'Title' }] };
+  it.each([
+    ['an HTML comment', () => render('<!-- markdownlint-disable -->\n\n# Title\n\n## Next\n', { title: 'Title' })],
+    ['an MDX comment expression', () => hastWith({ type: 'mdxFlowExpression', value: '/* note */' }, h1)],
+    ['an MDX import', () => hastWith({ type: 'mdxjsEsm', value: "import X from './x';" }, h1)],
+  ])('drops the title H1 after %s', (_name, build) => {
+    const tree = build();
     expect(h1s(tree)).toBe(0);
-    expect(headings(tree)).toEqual([]);
+    expect(headings(tree).filter((h) => h.startsWith('h2: Title'))).toEqual([]);
   });
 
   it('demotes a leading H1 that differs from the title to h2', () => {
@@ -89,10 +80,12 @@ describe('singleH1 — a body H1 never adds a second page <h1> (#191)', () => {
     expect(headings(tree)).toEqual(['h2: v0.1.0 — 2026-08-21']);
   });
 
-  it('demotes a body H1 that is not the first block, even when it repeats the title', () => {
+  it('drops the first title H1 even when content precedes it, keeps its anchor, and demotes the other H1s', () => {
     const tree = render('Intro.\n\n# Title\n\nMore.\n\n# Second\n', { title: 'Title' });
     expect(h1s(tree)).toBe(0);
-    expect(headings(tree)).toEqual(['h2: Title', 'h2: Second']);
+    expect(headings(tree)).toEqual(['h2: Second']);
+    // The alias carries the id rehypeHeadingIds would have given the dropped heading.
+    expect(JSON.stringify(tree)).toContain('"properties":{"id":"title"}');
   });
 
   it('leaves every other heading level alone', () => {
