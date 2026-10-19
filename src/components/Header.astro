@@ -12,8 +12,10 @@
  * `data-dk-slot` marker, no attribute, and no text or comment node around the
  * expression. Starlight's `PageFrame` already wraps whatever renders here in
  * `<header class="header">`, so anything added would change the header markup of
- * every site that supplies no header (NFR-007: byte-identical to the build before
- * this carrier existed; `header-carrier.test.ts` holds the committed block).
+ * every site that supplies no header (NFR-007: byte-identical to Starlight's
+ * stock header, as captured without the carrier by `pnpm fixture:stock-header`,
+ * stamped in `src/tests/fixtures/header-theme/stock-header.meta.json`;
+ * `header-carrier.test.ts` holds the committed block).
  *
  * Starlight renders this override as `<Header slot="header" />` (re-checked
  * against 0.42.6, #144): no props, no children. The `slot` attribute is

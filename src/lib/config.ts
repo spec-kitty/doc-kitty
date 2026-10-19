@@ -2,7 +2,7 @@
  * Starlight configuration preset for DocKitty.
  *
  * `defineDocKittyIntegrations()` returns the Astro integrations array a docs
- * site needs: Starlight (themed, with the convention's head links and the five
+ * site needs: Starlight (themed, with the convention's head links and the six
  * chrome carriers) plus `@astrojs/sitemap` (with the draft-exclusion filter). A
  * site's `astro.config.mjs` spreads it and can override anything.
  *
@@ -13,7 +13,7 @@
  * integration), and layers brand/consumer `customCss` AFTER it (seam 2). With NO
  * theme the call is byte-compatible with M1 — the single static `theme.css`
  * `customCss` entry and no generated sheet (NFR-002). The `components` map stays
- * the five carriers in both cases (seam 3); theme `assets` ride Starlight-native
+ * the six carriers in both cases (seam 3, ADR-0061); theme `assets` ride Starlight-native
  * `logo`/`favicon`/`title`, never a components override (ADR-0015 decision 4/5).
  */
 import { readdirSync, statSync } from 'node:fs';
@@ -65,7 +65,6 @@ import sitemapOrderIntegration from './sitemap-order.js';
 import { okfExportIntegration } from './okf-export/integration.js';
 import { DOC_KITTY_I18N_PLUGIN } from './i18n-plugin.js';
 import { PRE_PAINT_SCRIPT } from './toc-rail/pre-paint.js';
-import { REVEAL_CURRENT_SCRIPT } from './route-shaping.js';
 import { normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { isGlossaryActive } from './glossary/load.js';
 import { validateIndexBasenames } from './gherkin/options.mjs';
@@ -171,8 +170,9 @@ export interface DocKittyOptions {
    * `resolveTheme`. Omit for the byte-compatible M1 path (single static
    * `theme.css`, no generated sheet). Providing a theme emits the merged token
    * sheet + bridge and layers brand/consumer `customCss` after it (seam 2). Note
-   * the `components` map is FIXED at the five carriers regardless of theme (seam
-   * 3); the `starlight` escape hatch cannot add a sixth carrier override.
+   * the `components` map is FIXED at the six carriers regardless of theme (seam
+   * 3, ADR-0061); the `starlight` escape hatch cannot add a seventh carrier
+   * override.
    */
   theme?: DocKittyTheme;
   /**
@@ -281,11 +281,14 @@ function discoveryHead(basePrefix: string): NonNullable<StarlightUserConfig['hea
 }
 
 /**
- * The five chrome carriers doc-kitty registers with Starlight (ADR-0013, as
- * amended by ADR-0044, which adds `Header`). A theme targets the carriers' `dk:`
- * slot names, never Starlight's `components` map. `Header` hosts the single
- * `dk:site-header` slot and renders Starlight's stock header when no theme fills
- * it, with no wrapper, so a site without a theme header is unchanged. Paths are
+ * The six chrome carriers doc-kitty registers with Starlight (ADR-0013, as
+ * amended by ADR-0044, which adds `Header`, and ADR-0061, which adds `Sidebar`).
+ * A theme targets the carriers' `dk:` slot names, never Starlight's `components`
+ * map. `Header` hosts the single `dk:site-header` slot and renders Starlight's
+ * stock header when no theme fills it, with no wrapper, so a site without a theme
+ * header is unchanged. `Sidebar` composes Starlight's sidebar unchanged and ships
+ * the current-entry reveal right after it, so the entry is in view before the
+ * sidebar is first painted (FR-004). Paths are
  * package-export specifiers so a consuming site resolves the `.astro` carriers
  * from the `@spec-kitty/doc-toolkit` workspace dependency.
  */
@@ -295,7 +298,22 @@ const carriers: NonNullable<StarlightUserConfig['components']> = {
   MarkdownContent: '@spec-kitty/doc-toolkit/components/MarkdownContent.astro',
   Footer: '@spec-kitty/doc-toolkit/components/Footer.astro',
   Header: '@spec-kitty/doc-toolkit/components/Header.astro',
+  Sidebar: '@spec-kitty/doc-toolkit/components/Sidebar.astro',
 };
+
+/**
+ * The carriers handed to Starlight for THIS config, read at config time (not at
+ * import time). `DK_INTERNAL_STOCK_HEADER=on` drops only `Header`, so the build
+ * renders Starlight's stock header. It is a test-only input, used solely by
+ * `src/scripts/capture-stock-header.mjs` (research D-01, owner decision
+ * 01M59CR08D2F8D3P8T3D0GN9VD); consumers must not set it. Only exactly `on`
+ * counts. It is read here, not an internal handoff, so it is deliberately absent
+ * from `INTERNAL_ENV_NAMES` (which would clear it).
+ */
+function carriersForBuild(): NonNullable<StarlightUserConfig['components']> {
+  if (process.env.DK_INTERNAL_STOCK_HEADER !== 'on') return carriers;
+  return Object.fromEntries(Object.entries(carriers).filter(([name]) => name !== 'Header'));
+}
 
 /**
  * The top-level CONTENT folders under the docs root (the candidate sidebar
@@ -550,10 +568,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
       // outline never flashes expanded then collapses. The SOURCE lives in
       // WP01's `toc-rail/pre-paint` (blocked-storage-safe `try/catch`).
       { tag: 'script', content: PRE_PAINT_SCRIPT },
-      // Reveal the current sidebar entry (FR-022): a classic inline script that
-      // waits for `DOMContentLoaded`, so it runs after Starlight has restored
-      // the sidebar's scroll position and only moves the sidebar pane.
-      { tag: 'script', content: REVEAL_CURRENT_SCRIPT },
+      // The current-sidebar-entry reveal (FR-022) is not a head entry: the
+      // `Sidebar` carrier ships it right after Starlight's sidebar, so it runs
+      // before the sidebar is first painted (FR-004, ADR-0061).
     ],
     customCss,
     ...overrides,
@@ -587,15 +604,17 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // plugin (kept, after ours) can still override the `en` default.
     plugins: [DOC_KITTY_I18N_PLUGIN, ...(overrides?.plugins ?? [])],
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
-    // five carriers, in EVERY case (with or without a theme; ADR-0044 added
-    // `Header` to the original four). The exactly-five invariant is established
-    // HERE by config ordering — `components: carriers` is applied AFTER
-    // `...overrides`, so a consumer's escape hatch cannot silently add a sixth
-    // carrier override (a theme addresses the carriers' `dk:` slots, never this
-    // map). `assert-chrome-artifacts.mjs` proves the four marker-emitting carriers
-    // are live in the built output (`Header` emits no marker, by design); the
-    // ordering below is what makes these the only five.
-    components: carriers,
+    // six carriers, in EVERY case (with or without a theme; ADR-0044 added
+    // `Header` to the original four, ADR-0061 added `Sidebar`). The exactly-six
+    // invariant is established HERE by config ordering — `components` is
+    // applied AFTER `...overrides`, so a consumer's escape hatch cannot silently
+    // add a seventh carrier override (a theme addresses the carriers' `dk:`
+    // slots, never this map). `assert-chrome-artifacts.mjs` proves the five
+    // marker-emitting carriers are live in the built output (`Header` emits no
+    // marker, by design); the ordering below is what makes these the only six.
+    // The one exception is the test-only `DK_INTERNAL_STOCK_HEADER=on`, which
+    // drops `Header` (see `carriersForBuild`).
+    components: carriersForBuild(),
   };
 
   // Presence-gate (NFR-002): the glossary seam is added ONLY when a definitions
