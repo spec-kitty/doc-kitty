@@ -10,6 +10,8 @@ import {
   releaseVersions,
   h2Texts,
   missingReleases,
+  missingBodies,
+  releaseSections,
   run,
 } from '../scripts/assert-changelog-page.mjs';
 
@@ -20,8 +22,11 @@ const CHANGELOG = [
   '',
   '## [0.4.0] — 2026-10-18',
   '### Added',
+  '- **Shared links show a `full` card** on [Slack](https://slack.com) (#180).',
   '## [0.3.0] — 2026-10-14',
+  'Intro paragraph for "three" -- with smart punctuation.',
   '## [0.1.0] — 2026-09-09',
+  '- First tagged release.',
   '',
 ].join('\n');
 
@@ -45,6 +50,12 @@ function fixture(html: string | null): { dist: string; changelog: string } {
   return { dist, changelog };
 }
 
+const FULL_PAGE = [
+  '<h2>[0.4.0] — x</h2><ul><li><strong>Shared links show a <code>full</code> card</strong> on <a href="#">Slack</a> (#180).</li></ul>',
+  '<h2><a>0.3.0</a></h2><p>Intro paragraph for &#x201C;three&#x201D; – with smart punctuation.</p>',
+  '<h2>0.1.0</h2><ul><li>First tagged release.</li></ul>',
+].join('');
+
 describe('changelog page gate (#192)', () => {
   it('reads the released versions, skipping [Unreleased]', () => {
     expect(releaseVersions(CHANGELOG)).toEqual(['0.4.0', '0.3.0', '0.1.0']);
@@ -61,12 +72,31 @@ describe('changelog page gate (#192)', () => {
   });
 
   it('passes when every release has an h2', () => {
-    const { dist, changelog } = fixture('<h2>[0.4.0] — x</h2><h2><a>0.3.0</a></h2><h2>0.1.0</h2>');
+    const { dist, changelog } = fixture(FULL_PAGE);
     expect(run(['node', 'gate', dist, '--changelog', changelog])).toBe(0);
   });
 
   it('fails when the page stops at an older release', () => {
     const { dist, changelog } = fixture('<h2>v0.1.0 — 2026-08-21</h2>');
+    expect(run(['node', 'gate', dist, '--changelog', changelog])).toBe(1);
+  });
+
+  it('takes the first entry of each release section as its body sample', () => {
+    expect(releaseSections(CHANGELOG)).toEqual([
+      { version: '0.4.0', sample: 'Shared links show a full card on Slack (#180).' },
+      { version: '0.3.0', sample: 'Intro paragraph for "three" -- with smart punctuation.' },
+      { version: '0.1.0', sample: 'First tagged release.' },
+    ]);
+  });
+
+  it('reports a release whose body is missing although its heading is there', () => {
+    const headingsOnly = '<h2>[0.4.0] — x</h2><h2>0.3.0</h2><h2>0.1.0</h2>';
+    expect(missingBodies(CHANGELOG, headingsOnly)).toEqual(['0.4.0', '0.3.0', '0.1.0']);
+    expect(missingBodies(CHANGELOG, FULL_PAGE)).toEqual([]);
+  });
+
+  it('fails the CLI when the bodies were dropped', () => {
+    const { dist, changelog } = fixture('<h2>[0.4.0] — x</h2><h2>0.3.0</h2><h2>0.1.0</h2>');
     expect(run(['node', 'gate', dist, '--changelog', changelog])).toBe(1);
   });
 

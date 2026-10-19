@@ -11,7 +11,9 @@
  * renders it at build time (example/src/changelog-loader.ts), so there is no
  * hand-maintained copy. This gate reads every `## [x.y.z]` heading of
  * CHANGELOG.md and fails when the built page has no `<h2>` naming that version
- * — the page it guards once stopped at v0.1.0 while the toolkit shipped 0.4.0.
+ * — the page it guards once stopped at v0.1.0 while the toolkit shipped 0.4.0 —
+ * or when the first entry of that release's section (its first words, compared
+ * as plain words) is not on the page, so a heading without its body fails too.
  *
  * Bare Node, zero dependencies, offline. It does not build.
  */
@@ -43,6 +45,60 @@ export function missingReleases(changelogText, html) {
   return releaseVersions(changelogText).filter(
     (v) => !headings.some((h) => new RegExp(`(^|[^0-9.])${v.replace(/\./g, '\\.')}($|[^0-9.])`).test(h)),
   );
+}
+
+/** Inline Markdown reduced to its text: links, emphasis and code marks go. */
+function markdownText(line) {
+  return line
+    .replace(/^\s*(?:[-*+]|\d+\.)\s+/, '')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\*\*|__|`/g, '')
+    .trim();
+}
+
+/**
+ * Each release with a body sample: the first line of text under its heading
+ * (a list item or a paragraph, not a `###` subheading), inline marks removed.
+ */
+export function releaseSections(changelogText) {
+  const lines = changelogText.split('\n');
+  const sections = [];
+  let current = null;
+  for (const line of lines) {
+    const heading = /^## \[(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\]/.exec(line);
+    if (heading) {
+      current = { version: heading[1], sample: '' };
+      sections.push(current);
+    } else if (/^## /.test(line) || /^\[[^\]]+\]:/.test(line)) {
+      current = null;
+    } else if (current && !current.sample && line.trim() && !/^#{3,} /.test(line)) {
+      current.sample = markdownText(line);
+    }
+  }
+  return sections;
+}
+
+/** Lowercased words of letters and digits only, so markup, entities and smart punctuation cannot matter. */
+function words(text) {
+  return text
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[#a-z0-9]+;/gi, ' ')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
+
+const SAMPLE_WORDS = 8;
+
+/** Versions whose body sample (its first words, in order) is not on the page. */
+export function missingBodies(changelogText, html) {
+  const page = ` ${words(html).join(' ')} `;
+  return releaseSections(changelogText)
+    .filter(({ sample }) => {
+      const probe = words(sample).slice(0, SAMPLE_WORDS);
+      return probe.length > 0 && !page.includes(` ${probe.join(' ')} `);
+    })
+    .map(({ version }) => version);
 }
 
 function parseArgs(argv) {
@@ -85,16 +141,18 @@ export function run(argv) {
     );
     return 1;
   }
-  const missing = missingReleases(readFileSync(changelog, 'utf8'), readFileSync(htmlPath, 'utf8'));
-  if (missing.length > 0) {
-    console.error(
-      `assert-changelog-page: FAILED — ${missing.length} release(s) of ${changelog} missing from ${htmlPath}:`,
-    );
-    for (const v of missing) console.error(`  ✖ ## [${v}]`);
+  const text = readFileSync(changelog, 'utf8');
+  const html = readFileSync(htmlPath, 'utf8');
+  const missing = missingReleases(text, html);
+  const bodiless = missingBodies(text, html);
+  if (missing.length > 0 || bodiless.length > 0) {
+    console.error(`assert-changelog-page: FAILED — ${changelog} is not fully on ${htmlPath}:`);
+    for (const v of missing) console.error(`  ✖ ## [${v}]: release heading missing`);
+    for (const v of bodiless) console.error(`  ✖ ## [${v}]: the first entry of its section is missing`);
     return 1;
   }
   console.log(
-    `assert-changelog-page: OK — all ${versions.length} release(s) of ${changelog} (${versions.join(', ')}) appear on /${page}/.`,
+    `assert-changelog-page: OK — all ${versions.length} release(s) of ${changelog} (${versions.join(', ')}) appear on /${page}/ with their section bodies.`,
   );
   return 0;
 }
