@@ -23,6 +23,7 @@ import {
   distFileExists,
   findBrokenLinks,
   findBaselessFeedUrls,
+  findExternalImages,
 } from '../scripts/assert-no-broken-links.mjs';
 
 const gatePath = fileURLToPath(new URL('../scripts/assert-no-broken-links.mjs', import.meta.url));
@@ -483,5 +484,74 @@ describe('CLI (assert-no-broken-links.mjs run directly)', () => {
     const result = spawnSync('node', [gatePath, path.join(dist, 'no-such-dist')], { encoding: 'utf8' });
     expect(result.status).toBe(2);
     expect(result.stderr).toMatch(/dist dir not found/);
+  });
+});
+
+// -- findExternalImages — offline external-image scan (#194) -------------------
+
+describe('findExternalImages (#194)', () => {
+  const SITE = 'https://spec-kitty.github.io';
+
+  it('flags an <img> whose src is on another host', () => {
+    const dist = makeTmpDir();
+    writeDistFile(dist, 'guides/x/index.html', '<p><img src="https://example.com/mac.jpg" alt=""></p>');
+    expect(findExternalImages(dist, SITE, [])).toEqual([
+      expect.objectContaining({ page: 'guides/x/index.html', src: 'https://example.com/mac.jpg' }),
+    ]);
+  });
+
+  it('flags a protocol-relative src and an srcset candidate on another host', () => {
+    const dist = makeTmpDir();
+    writeDistFile(
+      dist,
+      'index.html',
+      '<img src="//cdn.example.net/a.png"><img src="/doc-kitty/a.png" srcset="/doc-kitty/a.png 1x, https://cdn.example.net/b.png 2x">',
+    );
+    expect(findExternalImages(dist, SITE, []).map((f) => f.src)).toEqual([
+      '//cdn.example.net/a.png',
+      'https://cdn.example.net/b.png',
+    ]);
+  });
+
+  it('accepts local, same-origin and allowlisted hosts', () => {
+    const dist = makeTmpDir();
+    writeDistFile(dist, 'b.png', 'x');
+    writeDistFile(
+      dist,
+      'index.html',
+      '<img src="/doc-kitty/_astro/a.svg"><img src="a.png"><img src="data:image/png;base64,AA=="><img src="https://spec-kitty.github.io/doc-kitty/b.png"><img src="https://img.shields.io/x.svg">',
+    );
+    expect(findExternalImages(dist, SITE, ['img.shields.io'], '/doc-kitty')).toEqual([]);
+  });
+
+  it('requires a same-site absolute image to exist in the build output', () => {
+    const dist = makeTmpDir();
+    writeDistFile(dist, 'mac.svg', '<svg/>');
+    writeDistFile(
+      dist,
+      'index.html',
+      '<img src="https://spec-kitty.github.io/doc-kitty/mac.svg"><img src="https://spec-kitty.github.io/doc-kitty/gone.svg">',
+    );
+    expect(findExternalImages(dist, SITE, [], '/doc-kitty').map((f) => f.src)).toEqual([
+      'https://spec-kitty.github.io/doc-kitty/gone.svg',
+    ]);
+  });
+
+  it('fails the CLI on an external image unless its host is allowed', () => {
+    const dist = makeTmpDir();
+    writeDistFile(dist, 'index.html', '<img src="https://example.com/mac.jpg">');
+    const red = spawnSync(process.execPath, [gatePath, dist, '--base', '', '--site', SITE, '--no-external-images'], {
+      encoding: 'utf8',
+    });
+    expect(red.status).toBe(1);
+    expect(red.stderr).toContain('https://example.com/mac.jpg');
+    const green = spawnSync(
+      process.execPath,
+      [gatePath, dist, '--base', '', '--site', SITE, '--no-external-images', '--allow-image-host', 'example.com'],
+      { encoding: 'utf8' },
+    );
+    expect(green.status).toBe(0);
+    const optOut = spawnSync(process.execPath, [gatePath, dist, '--base', '', '--site', SITE], { encoding: 'utf8' });
+    expect(optOut.status).toBe(0);
   });
 });

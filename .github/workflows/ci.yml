@@ -267,7 +267,7 @@ jobs:
       - name: Assert no broken internal links (drafts off)
         env:
           DK_PUBLISH_DRAFTS: 'off'
-        run: node src/scripts/assert-no-broken-links.mjs example/dist-nodrafts --base /doc-kitty --site https://spec-kitty.github.io
+        run: node src/scripts/assert-no-broken-links.mjs example/dist-nodrafts --base /doc-kitty --site https://spec-kitty.github.io --no-external-images
       # Every baselined URL of the example resolves on this build too: its
       # redirects all end at published pages. The flags stay, so a redirect that
       # is later pointed at a draft page is reported as unpublished (derived

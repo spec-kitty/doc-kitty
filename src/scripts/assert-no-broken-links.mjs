@@ -5,6 +5,7 @@
  *
  * Usage:
  *   node src/scripts/assert-no-broken-links.mjs <distDir> [--base <prefix>] [--site <origin>]
+ *        [--no-external-images [--allow-image-host <host>]...]
  *   pnpm assert:no-broken-links   # wired to `example/dist --base /doc-kitty --site https://spec-kitty.github.io`
  *
  * ## Why this exists (research.md D4)
@@ -313,12 +314,87 @@ export function findBaselessFeedUrls(distDir, base, siteOrigin) {
   return failures;
 }
 
+// -- External images (#194) ---------------------------------------------------
+//
+// With `--no-external-images`, every `<img>` `src` / `srcset` candidate in the
+// built HTML must be local: relative, root-relative, `data:`, on the `--site`
+// origin, or on a host named by `--allow-image-host`. A page that loads an
+// image from another host breaks offline, leaks the reader to that host, and
+// (as the Markua showcase's example.com/mac.jpg did, #194) can 404 for good.
+// Offline by design: hosts are compared, nothing is fetched. Opt-in, so the
+// published bin keeps its link-only behaviour for adopters.
+
+/** Every `src` and `srcset` URL of every `<img>` in the HTML, in order. */
+export function extractImageSources(html) {
+  const out = [];
+  for (const [tag] of html.matchAll(/<img\b[^>]*>/gi)) {
+    const src = /\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
+    if (src) out.push(src[1] ?? src[2]);
+    const srcset = /\ssrcset\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
+    if (srcset) {
+      for (const candidate of (srcset[1] ?? srcset[2]).split(',')) {
+        const url = candidate.trim().split(/\s+/)[0];
+        if (url) out.push(url);
+      }
+    }
+  }
+  return out;
+}
+
+/** The host of an absolute or protocol-relative URL, else null (local). */
+function externalHost(src) {
+  if (!/^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(src)) return null;
+  try {
+    return new URL(src, 'https://local.invalid/').host;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Every `<img>` that loads from another host. An absolute image URL on the
+ * `--site` host must exist in `distDir` (base stripped), so a same-site web
+ * image cannot 404 either.
+ */
+export function findExternalImages(distDir, site, allowHosts, base = '') {
+  const siteHost = site ? new URL(site).host : null;
+  const allowed = new Set(allowHosts.map((h) => h.toLowerCase()));
+  const failures = [];
+  for (const relPath of walkHtmlFiles(distDir).sort()) {
+    const html = readFileSync(path.join(distDir, relPath), 'utf8');
+    for (const src of extractImageSources(html)) {
+      const host = externalHost(src)?.toLowerCase();
+      if (host && host === siteHost) {
+        const route = stripBase(new URL(src, site).pathname, base);
+        if (route === null || !distFileExists(distDir, route)) {
+          failures.push({ page: relPath, src, reason: 'same-site image is not in the build output (#194)' });
+        }
+        continue;
+      }
+      if (!host || allowed.has(host)) continue;
+      failures.push({
+        page: relPath,
+        src,
+        reason: `image loaded from another host (${host}); ship it as a local asset or allow the host with --allow-image-host (#194)`,
+      });
+    }
+  }
+  return failures;
+}
+
 function parseArgs(argv) {
   let base = '';
   let site = '';
+  let noExternalImages = false;
+  const allowImageHosts = [];
   const positional = [];
   for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i] === '--base') {
+    if (argv[i] === '--no-external-images') {
+      noExternalImages = true;
+    } else if (argv[i] === '--allow-image-host') {
+      allowImageHosts.push(argv[i + 1] ?? '');
+      i += 1;
+    } else if (argv[i] === '--base') {
       base = argv[i + 1] ?? '';
       i += 1;
     } else if (argv[i] === '--site') {
@@ -328,13 +404,22 @@ function parseArgs(argv) {
       positional.push(argv[i]);
     }
   }
-  return { distDir: positional[0], base: base.replace(/\/+$/, ''), site: site.replace(/\/+$/, '') };
+  return {
+    distDir: positional[0],
+    base: base.replace(/\/+$/, ''),
+    site: site.replace(/\/+$/, ''),
+    noExternalImages,
+    allowImageHosts: allowImageHosts.filter(Boolean),
+  };
 }
 
 export function run(argv) {
-  const { distDir, base, site } = parseArgs(argv.slice(2));
+  const { distDir, base, site, noExternalImages, allowImageHosts } = parseArgs(argv.slice(2));
   if (!distDir) {
-    console.error('Usage: assert-no-broken-links.mjs <distDir> [--base <prefix>] [--site <origin>]');
+    console.error(
+      'Usage: assert-no-broken-links.mjs <distDir> [--base <prefix>] [--site <origin>] ' +
+        '[--no-external-images [--allow-image-host <host>]...]',
+    );
     process.exit(2);
     return;
   }
@@ -348,24 +433,29 @@ export function run(argv) {
 
   const linkFailures = findBrokenLinks(distDir, base);
   const feedFailures = findBaselessFeedUrls(distDir, base, site);
+  const imageFailures = noExternalImages ? findExternalImages(distDir, site, allowImageHosts, base) : [];
 
-  if (linkFailures.length === 0 && feedFailures.length === 0) {
+  if (linkFailures.length === 0 && feedFailures.length === 0 && imageFailures.length === 0) {
     console.log(
       `assert-no-broken-links: OK — every internal <a href> in ${distDir} resolves (base "${base || '(none)'}")` +
-        `${site ? `, and every RSS/llms.txt/agent-API absolute URL carries it (site "${site}").` : '.'}`,
+        `${site ? `, and every RSS/llms.txt/agent-API absolute URL carries it (site "${site}").` : '.'}` +
+        `${noExternalImages ? ' No <img> loads from another host.' : ''}`,
     );
     process.exit(0);
     return;
   }
 
-  const total = linkFailures.length + feedFailures.length;
-  console.error(`assert-no-broken-links: FAILED — ${total} broken internal link(s):`);
+  const total = linkFailures.length + feedFailures.length + imageFailures.length;
+  console.error(`assert-no-broken-links: FAILED — ${total} broken internal link(s) or external image(s):`);
   for (const f of linkFailures) {
     const resolvedNote = f.resolved ? ` (resolved: ${f.resolved})` : '';
     console.error(`  ✖ ${f.page} → ${f.href}${resolvedNote}: ${f.reason}`);
   }
   for (const f of feedFailures) {
     console.error(`  ✖ ${f.file} → ${f.url}: ${f.reason}`);
+  }
+  for (const f of imageFailures) {
+    console.error(`  ✖ ${f.page} → <img> ${f.src}: ${f.reason}`);
   }
   process.exit(1);
 }

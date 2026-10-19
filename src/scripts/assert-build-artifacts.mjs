@@ -1615,7 +1615,9 @@ async function assertMarkuaArtifacts(distDir) {
       note: 'authoritative byte-identical proof is Playwright markua-three-form-equivalence' },
     { row: 15, what: 'mapped class + {#id} routes to theme hast, id survives', ok: () => showcaseHas('<aside class="dk-callout dk-callout--tip" id="pinned-tip">') },
     { row: 16, what: 'figure local optimised', ok: () => palmFig !== null && /src="[^"]*palm-trees[^"]*\.svg/.test(palmImg ?? '') },
-    { row: 17, what: 'figure web-URL passthrough', ok: () => /<img\b[^>]*src="https:\/\/example\.com\/mac\.jpg"/.test(showcase) },
+    // #194: the web URL is the site's own public/macintosh.svg, so the
+    // passthrough is still a real http(s) URL but loads from no other host.
+    { row: 17, what: 'figure web-URL passthrough', ok: () => /<img\b[^>]*src="https:\/\/spec-kitty\.github\.io\/doc-kitty\/macintosh\.svg"/.test(showcase) },
     { row: '18-25', what: 'figure attrs (alt/caption/title/width/height/align/class/#id)', ok: () => {
       // Local palm figure carries alt(18)/title(20)/width(21)/align→center(23)/class(24)/#id(25).
       const local = /alt="[^"]*palm-lined tropical beach/.test(palmImg ?? '') &&
@@ -1626,7 +1628,7 @@ async function assertMarkuaArtifacts(distDir) {
         (palmFig ?? '').includes('id="palm-fig"');
       // Web mac figure (anchored by its src) carries caption-override(19)/
       // height(22)/align→left, and passes the web URL through unoptimised.
-      const macFig = figureByImgSrc(showcase, 'https://example.com/mac.jpg');
+      const macFig = figureByImgSrc(showcase, 'https://spec-kitty.github.io/doc-kitty/macintosh.svg');
       const macImg = macFig ? imgTagOf(macFig) : null;
       const web = macImg !== null &&
         /style="[^"]*height:\s*240/.test(macImg) &&

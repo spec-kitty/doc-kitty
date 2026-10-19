@@ -2,7 +2,7 @@
 title: Markua showcase
 description: Every in-scope Markua construct on one page — the author reference and the coverage fixture.
 doc_status: active
-updated: 2026-08-29T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Guide
 kind: Reference
 tags: [markua, showcase, fixture, reference]
@@ -239,11 +239,13 @@ class/id attributes are honoured.
 <!-- rows 16, 18 (alt), 20 (title), 21 (width, round-trip), 23 (align), 24 (class), 25 (#id) -->
 
 A web image passes through unoptimised, and `{caption:}` overrides the bracket
-text while `{height:}` sizes it:
+text while `{height:}` sizes it. The web URL here is this site's own copy of the
+image (served from `example/public/`), so the page loads no image from another
+host:
 
 {caption: "The original Macintosh", height: 240, align: left}
 
-![alt text is overridden by caption](https://example.com/mac.jpg)
+![alt text is overridden by caption](https://spec-kitty.github.io/doc-kitty/macintosh.svg)
 
 <!-- rows 17 (web passthrough), 19 (caption), 22 (height) -->
 

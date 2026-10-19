@@ -233,7 +233,7 @@ test.describe('markua figures (US2, rows 16–25)', () => {
     const mode: Mode = modeOf(testInfo.project.name);
     await gotoInMode(page, ROUTES.markuaShowcase, mode);
     const mac = page.locator('figure.dk-figure', {
-      has: page.locator('img[src="https://example.com/mac.jpg"]'),
+      has: page.locator('img[src="https://spec-kitty.github.io/doc-kitty/macintosh.svg"]'),
     });
     await expect(mac, 'the web figure keeps its absolute src (passthrough)').toHaveCount(1);
   });
