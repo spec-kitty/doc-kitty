@@ -35,7 +35,8 @@ date, such as a bare number or `"2024"`. **Upgrading: read the Breaking section.
   advisory). Numbers, `"1/2"`, `"abc 2024"`, `"2024.5"` and `18/10/2026` fail,
   in both, with a message that names the field and `YYYY-MM-DDTHH:MM:SSZ`. A
   retired `sha256:` stamp in `generated.at` is also rejected by the build, where
-  only the gate did before. Fix each page named, for example
+  only the gate did before. To list every page in one pass, run
+  `dockitty-validate-frontmatter docs`, then fix each, for example
   `updated: 2024-10-01T00:00:00Z`. See the
   [ADR-0059 note](docs/adr/0059-content-graph-and-okf-alignment.md#per-output-dates-and-the-date-shape-rule-226-227).
 
