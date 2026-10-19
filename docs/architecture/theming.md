@@ -2,7 +2,7 @@
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -16,6 +16,8 @@ related:
   - adr/0044-header-carrier
   - adr/0045-frame-width-token
   - adr/0053-reading-width
+  - adr/0061-sidebar-carrier
+  - adr/0062-default-frame-cap
   - guides/theme-header
   - architecture/metadata-model
 ---
@@ -77,7 +79,7 @@ Notation: **→ `--sl-x`** means the base layer copies this token into `--sl-x`;
 | Spacing | `--dk-space-3xs…2xl` (4px ramp) | (dk) — Starlight has no spacing surface |
 | Radius | `--dk-radius-sm/md/lg/pill` | (dk) |
 | Elevation | `--dk-shadow-sm/md/lg`, `--dk-shadow-focus` | (dk) |
-| Layout widths | `--dk-width-content/-sidebar/-band/-deck/-passport`, `--dk-width-frame` | content/sidebar → `--sl-content-width`/`-sidebar-width`; rest (dk). `--dk-width-content` is described under [Reading width](#reading-width), `--dk-width-frame` under [Frame width](#frame-width). |
+| Layout widths | `--dk-width-content/-sidebar/-band/-deck/-passport`, `--dk-width-frame` | content/sidebar → `--sl-content-width`/`-sidebar-width`; rest (dk). `--dk-width-content` (60rem) is described under [Reading width](#reading-width), `--dk-width-frame` (120rem) under [Frame width](#frame-width), and `--dk-width-passport` (the band width, 50rem) under [The per-kind layouts](#the-per-kind-layouts). |
 
 This is the full curated set, deliberately minimal-but-complete: enough to rebrand
 colour, type, spacing, and shape, and to drive every chrome and per-kind layout,
@@ -93,21 +95,22 @@ dark selector, so a brand or consumer override applies in both modes.
 
 The page frame holds the sidebar, the reading pane and the "On this page" rail.
 The reading pane is the area between sidebar and rail; the reading column is the
-text block centred in it, at most 960px (60rem). The frame spans the viewport by
-default. To cap it, set one token on `:root` in a stylesheet your theme loads
-through `customCss`:
+text block centred in it, at most 960px (60rem). The frame is capped at 120rem
+(1920px) by default, so it spans the viewport up to 1920px and is centred on a
+wider screen. To change the cap, set one token on `:root` in a stylesheet your
+theme loads through `customCss`. To keep the full width:
 
 ```css
-:root { --dk-width-frame: 90rem; }
+:root { --dk-width-frame: 100%; }
 ```
 
 | | |
 |---|---|
 | Token | `--dk-width-frame` |
-| Default | `100%` (full width) |
-| Accepts | a length (`90rem`, `1440px`) or a percentage (`80%`) |
+| Default | `120rem` (1920px) |
+| Accepts | a length (`120rem`, `1440px`) or a percentage (`100%`, `80%`) |
 | Applies from | the 50rem breakpoint; below it the frame is never capped |
-| Invalid value | behaves as `100%` |
+| Invalid value | behaves as `120rem` |
 
 What follows a cap that is narrower than the viewport:
 
@@ -119,8 +122,10 @@ What follows a cap that is narrower than the viewport:
   rail's edge;
 - on a right-to-left page all of this is mirrored.
 
-With `--dk-width-frame: 90rem` on a 1920px viewport the frame is 1440px wide,
-from 240px to 1680px.
+With the default on a 2560px viewport the frame is 1920px wide, from 320px to
+2240px. A 90rem or 100rem cap would leave only 24px or 32px beside the column
+on a rail page at that width, which is why the docs no longer suggest a 90rem
+cap.
 
 Three things to know:
 
@@ -129,15 +134,17 @@ Three things to know:
   `:root`. A token set on a descendant element caps the frame and leaves those
   three at the viewport edge.
 - **An invalid value is harmless.** The token is a registered property
-  (`@property`, `<length-percentage>`, initial value `100%`), so
-  `--dk-width-frame: banana` computes to `100%` and the layout is the default.
+  (`@property`, `<length-percentage>`, initial value `120rem`), so
+  `--dk-width-frame: banana` computes to `120rem` and the layout is the default.
 - **The rail keeps one width.** From 72rem the rail is as wide as the sidebar
   (`--dk-width-sidebar`, 18rem). The reading pane takes the rest of the frame;
   its column is at most `--dk-width-content` (60rem, 960px). With the default
   frame it is 528px at a 1152px viewport, 656px at 1280px and 960px from 1600px.
 
-`--dk-frame-gutter` is derived. Do not set it. The decision and the measurements
-behind it are in [ADR-0045](../adr/0045-frame-width-token.md). This page is the
+`--dk-frame-gutter` is derived. Do not set it. The token and the measurements
+behind it are in [ADR-0045](../adr/0045-frame-width-token.md); the 120rem default,
+which replaces ADR-0045's full-width default, is in
+[ADR-0062](../adr/0062-default-frame-cap.md). This page is the
 architectural description; the reference a site owner works from is
 [Cap the page width](../guides/consumer-setup.md#cap-the-page-width) in the
 consumer setup guide.
@@ -175,9 +182,12 @@ prose-measure-optimised one, and the line-length measurements are in
 
 ## The slot surface
 
-doc-kitty registers **five carrier overrides** with Starlight — `Head`,
-`PageTitle`, `MarkdownContent`, `Footer`, `Header` — and nothing else
-([ADR-0044](../adr/0044-header-carrier.md) added `Header` to the original four).
+doc-kitty registers **six carrier overrides** with Starlight — `Head`,
+`PageTitle`, `MarkdownContent`, `Footer`, `Header`, `Sidebar` — and nothing else
+([ADR-0044](../adr/0044-header-carrier.md) added `Header` to the original four,
+and [ADR-0061](../adr/0061-sidebar-carrier.md) added `Sidebar`). `Sidebar` hosts
+no slot: it renders Starlight's own sidebar unchanged and then the script that
+reveals the current entry.
 The carriers host doc-kitty's own named `dk:` slots. Themes target `dk:` slot names
 through a merged virtual manifest; they never write a Starlight override directly, so
 a Starlight rename is a one-file fix in the carriers rather than a break in every
@@ -189,7 +199,7 @@ and looks up `kind → layout` in the merged manifest, and nowhere else. Slots r
 per-carrier: each carrier reads the merged manifest for the `dk:` slots it
 hosts and renders the theme's component (or doc-kitty's default) at those slot points.
 There is no second single site for slots. Through all of this the Starlight `components`
-map stays exactly the five carriers — a theme never registers a Starlight override, so
+map stays exactly the six carriers — a theme never registers a Starlight override, so
 all theme choice flows through the manifest the carriers read.
 
 **Pass-through slots** are `dk:` names that map 1:1 onto a Starlight override.
@@ -276,6 +286,21 @@ Component-level structure and token usage, all specified to WCAG 2.2 AA.
   links personas to pages **shipped in M3**. Personas live at their location of
   record `context/audience/` ([ADR-0020](../adr/0020-persona-location-reconciliation.md)),
   so an `audience` profile slug resolves against a page in the `context` section.
+
+  **The card is start-aligned with the column and as wide as the metadata band**
+  (#206). `--dk-width-passport` resolves to the band width, `--dk-width-band`
+  (50rem, 800px), so the card and the band share one width and one start edge
+  with the page title and the prose below. A site can still set
+  `--dk-width-passport` on its own. Two other placements were measured at 1920px
+  and rejected:
+
+  - *Centred.* It left 224px blank on each side, and the card's title started
+    329px right of the prose below it, breaking the shared left edge.
+  - *Stretched.* The card was 960px wide and field values ran to about 120
+    characters a line.
+
+  `tests/a11y/persona-card.spec.ts` checks at 1920px that the card starts at the
+  column start and has the token width.
 - **`Hub` — described link list** (in-frame). A lead paragraph, then a `<nav>` with
   an accessible name wrapping a list of described items (each the related-card
   pattern: title in `--dk-color-text-accent`, the target's own description in
@@ -350,13 +375,14 @@ Resolution: merge default → brand → consumer (per-key last-wins; `customCss`
 concatenates; `tokens` shallow-merge). Emit the merged `--dk-*` map as a generated
 stylesheet carrying the `--dk-* → --sl-*` bridge. Forward `assets` to Starlight
 `logo`/`favicon` (and `socialImage` to `dk:head`), and `customCss` in precedence
-order. Point Starlight's `components` at doc-kitty's five carriers, and expose
+order. Point Starlight's `components` at doc-kitty's six carriers, and expose
 `slots`/`layouts` through a virtual manifest the carriers read. Starlight's
-`components` map is always doc-kitty's five carriers, applied after a consumer's
+`components` map is always doc-kitty's six carriers, applied after a consumer's
 `starlight.components`, so an override passed that way is discarded; all theme
 choice flows through the manifest
 ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md),
-[ADR-0044](../adr/0044-header-carrier.md)).
+[ADR-0044](../adr/0044-header-carrier.md),
+[ADR-0061](../adr/0061-sidebar-carrier.md)).
 
 The Spec Kitty brand header rides this `assets` forwarding: its logo-in-nav wordmark
 comes from Starlight-native `logo`/`title` config plus brand CSS, so it needs no
@@ -365,13 +391,21 @@ header component. A theme that wants a different header supplies one through
 
 ## Version and risk notes
 
-Verify against the pinned Starlight/Astro at build:
+Verify against the pinned Starlight/Astro at build. These notes were last checked
+against `@astrojs/starlight@0.42.6`.
 
-- The five carrier overrides (`Head`, `PageTitle`, `MarkdownContent`, `Footer`,
-  `Header`) are the coupling points to re-verify on any Starlight bump; carriers must use
+- The six carrier overrides (`Head`, `PageTitle`, `MarkdownContent`, `Footer`,
+  `Header`, `Sidebar`) are the coupling points to re-verify on any Starlight bump; carriers must use
   `Astro.locals.starlightRoute` (Starlight ≥0.32, ADR-0014), not the older `Astro.props`.
   `Header` also depends on where Starlight renders the skip link and the mobile
-  menu toggle (outside the header in 0.32.6).
+  menu toggle (outside the header in 0.42.6). `Sidebar` depends on Starlight's
+  `Sidebar` props and on `SidebarPersister`'s restore script coming before the
+  reveal ([Collapsible TOC rail](./collapsible-toc-rail.md#upgrade-tripwire)).
+- The header-neutrality fixture (`src/tests/fixtures/header-theme/stock-header.html`)
+  is captured from a build without the `Header` carrier, so the check compares the
+  carrier with real Starlight output (#207). A stamp beside it records the
+  Starlight version, the Astro version and `compressHTML`; a fast test fails on a
+  mismatch and names the command that regenerates it, `pnpm fixture:stock-header`.
 - The frame geometry styles Starlight's own `.main-frame`, `.sidebar-pane`,
   `header.header`, `.main-pane` and `.right-sidebar*` elements and its 50rem and
   72rem breakpoints. `tests/a11y/layout-geometry.spec.ts` measures the result at
@@ -395,6 +429,7 @@ Verify against the pinned Starlight/Astro at build:
   resolution split, pass-through sequencing, and the components-map seam.
 - [ADR-0044](../adr/0044-header-carrier.md), the Header carrier and the
   `dk:site-header` replacement contract.
-- [ADR-0045](../adr/0045-frame-width-token.md), the full-width frame and the
-  `--dk-width-frame` token.
+- [ADR-0045](../adr/0045-frame-width-token.md), the `--dk-width-frame` token.
+- [ADR-0061](../adr/0061-sidebar-carrier.md), the `Sidebar` carrier.
+- [ADR-0062](../adr/0062-default-frame-cap.md), the 120rem default frame.
 - [Metadata model](./metadata-model.md).

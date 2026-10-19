@@ -72,5 +72,7 @@ kind: Hub
 | [0058](./0058-build-state-owner-and-config-split.md) | ADR-0058: One owner for build state, a split config, and the env reader | Accepted | 2026-10-17 |
 | [0059](./0059-content-graph-and-okf-alignment.md) | ADR-0059: A published content graph, and alignment with OKF v0.2 | Accepted | 2026-10-18 |
 | [0060](./0060-markdown-processor-unified-for-astro-7.md) | ADR-0060: Keep remark and rehype on Astro's unified() processor for Astro 7 | Accepted | 2026-10-18 |
+| [0061](./0061-sidebar-carrier.md) | ADR-0061: Sidebar is the sixth carrier; the sidebar reveal runs right after the sidebar markup | Accepted | 2026-10-19 |
+| [0062](./0062-default-frame-cap.md) | ADR-0062: The page frame is capped at 120rem by default | Accepted | 2026-10-19 |
 
 New ADRs copy [`template.md`](./template.md).

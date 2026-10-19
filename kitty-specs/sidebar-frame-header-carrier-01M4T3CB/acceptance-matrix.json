@@ -97,12 +97,12 @@
     {
       "criterion_id": "FR-010",
       "description": "Collapsed recentre without a left sidebar",
-      "proof_type": "code_review",
-      "evidence": "src/styles/toc-rail.css recentre rule; runtime simulation by two reviewers at 1280 and 1920",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/no-sidebar-recentre.spec.ts: DOM-derived simulation (data-has-sidebar and the sidebar removed from a real page), centring asserted at five widths, rail expanded and collapsed; added by mission layout-guards-decisions-01M59CGE. Originally: src/styles/toc-rail.css recentre rule; runtime simulation by two reviewers at 1280 and 1920",
       "pass_fail": "pass",
       "verified_by": "claude-orchestrator (per-WP reviews by reviewer-renata; pre-PR squad)",
       "verified_at": "2026-10-13T11:41:37.869343+00:00",
-      "notes": "No committed test: no built page has a rail without a sidebar. Recorded in ADR-0045 and the changelog."
+      "notes": "Amended 2026-10-19 (issue #199, owner decision 2026-10-19): guarded by the committed DOM-derived simulation, shown to match a real StarlightPage hasSidebar:false page at all ten measured points. A real fixture page is on the Starlight upgrade tripwire (docs/architecture/collapsible-toc-rail.md). Originally: no committed test, because no built page has a rail without a sidebar; recorded in ADR-0045 and the changelog."
     },
     {
       "criterion_id": "FR-011",

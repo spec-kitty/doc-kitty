@@ -2,7 +2,7 @@
 title: Markua subset
 description: "The curated, opt-in Markua subset doc-kitty renders: the five constructs, the callout mapping, the build-time pipeline, and — explicitly — what is out of scope."
 doc_status: active
-updated: 2026-09-06T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
@@ -85,8 +85,9 @@ callout: `<aside class="dk-callout dk-callout--{variant}">`, styled by a
 `--dk-callout-*` token family in `theme.css`. This mirrors how
 `rehype/diagram-figure.ts` already builds a `<figure>` as raw hast rather than an
 Astro component — the Starlight `components` map is a fixed set of toolkit
-carriers (five since [ADR-0044](../adr/0044-header-carrier.md); four when this
-was decided, ADR-0013/ADR-0015), so no directive → component seam exists for a
+carriers (six since [ADR-0061](../adr/0061-sidebar-carrier.md), five since
+[ADR-0044](../adr/0044-header-carrier.md); four when this was decided,
+ADR-0013/ADR-0015), so no directive → component seam exists for a
 markua callout to ride.
 
 ### The attribute tradeoff (pinned)

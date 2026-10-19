@@ -228,4 +228,9 @@ The requirement text above is as written at planning time. Where it differs from
 - **Reading column.** It is 528px at a 1152px viewport and 656px at 1280px.
 - **SC-006.** Met for five of the eight labels. The three generated glossary-context groups keep a raw id as label.
 - **FR-010.** Verified by simulation only. No page in the example has a rail and no sidebar.
+  - *Note (2026-10-19).* FR-010 is now guarded by `tests/a11y/no-sidebar-recentre.spec.ts`, a DOM-derived simulation shown to match a real `StarlightPage hasSidebar:false` page at all ten measured points (mission `layout-guards-decisions-01M59CGE`, issue #199, owner decision 2026-10-19). The acceptance matrix records it as an automated test.
 - Owner decision 2026-10-13: the draft-publication default is `on`; the live deployment sets `off` explicitly. This supersedes FR-014, scenario 3.3 and the fail-closed assumption.
+
+## Amendments (2026-10-19, after delivery)
+
+- **NFR-005.** Its reveal half ("revealing the current sidebar entry") is replaced by `layout-guards-decisions-01M59CGE#NFR-005`: the reveal is measured at first paint, not through layout shift, because a scroll inside the sidebar is not a layout shift. The toggle half stands. See [ADR-0061](../../docs/adr/0061-sidebar-carrier.md) (issue #203).
