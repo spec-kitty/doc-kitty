@@ -13,7 +13,9 @@
  * CHANGELOG.md and fails when the built page has no `<h2>` naming that version
  * — the page it guards once stopped at v0.1.0 while the toolkit shipped 0.4.0 —
  * or when the first entry of that release's section (its first words, compared
- * as plain words) is not on the page, so a heading without its body fails too.
+ * as plain words, at least 3) is not within that release's own part of the page, so a heading without its body fails too.
+ *
+ * Any other `## ` heading than `[Unreleased]` or `[x.y.z]` fails the gate too.
  *
  * Bare Node, zero dependencies, offline. It does not build.
  */
@@ -39,13 +41,45 @@ export function h2Texts(html) {
   );
 }
 
+/** Whether an `<h2>` text names exactly this version (`0.4.0` does not match `0.4.01` or `10.4.0`). */
+function namesVersion(heading, version) {
+  return new RegExp(`(^|[^0-9.])${version.replace(/\./g, '\\.')}($|[^0-9.])`).test(heading);
+}
+
 /** Versions whose release heading is missing from the page's `<h2>`s. */
 export function missingReleases(changelogText, html) {
   const headings = h2Texts(html);
-  return releaseVersions(changelogText).filter(
-    (v) => !headings.some((h) => new RegExp(`(^|[^0-9.])${v.replace(/\./g, '\\.')}($|[^0-9.])`).test(h)),
-  );
+  return releaseVersions(changelogText).filter((v) => !headings.some((h) => namesVersion(h, v)));
 }
+
+/** The page HTML of one release: from its `<h2>` up to the next `<h2>` (or the end). */
+function pageSection(html, version) {
+  const parts = html.split(/(?=<h2\b)/i);
+  const mine = parts.find((part) => {
+    const m = /^<h2\b[^>]*>([\s\S]*?)<\/h2>/i.exec(part);
+    return m && namesVersion(m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(), version);
+  });
+  return mine ?? '';
+}
+
+/**
+ * `## ` headings of the changelog that are neither `[Unreleased]` nor a
+ * `[x.y.z]` release. Such a heading would otherwise be skipped without a word.
+ */
+export function unparsableHeadings(changelogText) {
+  let fence = false;
+  const bad = [];
+  for (const line of changelogText.split('\n')) {
+    if (/^ {0,3}(```|~~~)/.test(line)) fence = !fence;
+    else if (!fence && /^## /.test(line) && !/^## \[Unreleased\]/i.test(line) && !new RegExp(RELEASE_HEADING_RE.source).test(line)) {
+      bad.push(line.trim());
+    }
+  }
+  return bad;
+}
+
+const SAMPLE_WORDS = 8;
+const MIN_SAMPLE_WORDS = 3;
 
 /** Inline Markdown reduced to its text: links, emphasis and code marks go. */
 function markdownText(line) {
@@ -72,7 +106,9 @@ export function releaseSections(changelogText) {
     } else if (/^## /.test(line) || /^\[[^\]]+\]:/.test(line)) {
       current = null;
     } else if (current && !current.sample && line.trim() && !/^#{3,} /.test(line)) {
-      current.sample = markdownText(line);
+      const text = markdownText(line);
+      // A line of fewer than MIN_SAMPLE_WORDS words is too weak a probe: try the next one.
+      if (words(text).length >= MIN_SAMPLE_WORDS) current.sample = text;
     }
   }
   return sections;
@@ -88,15 +124,25 @@ function words(text) {
     .filter(Boolean);
 }
 
-const SAMPLE_WORDS = 8;
 
-/** Versions whose body sample (its first words, in order) is not on the page. */
-export function missingBodies(changelogText, html) {
-  const page = ` ${words(html).join(' ')} `;
+/** Releases with no line of at least MIN_SAMPLE_WORDS words to probe the page with. */
+export function unprobeableBodies(changelogText) {
   return releaseSections(changelogText)
-    .filter(({ sample }) => {
+    .filter(({ sample }) => !sample)
+    .map(({ version }) => version);
+}
+
+/**
+ * Versions whose body sample (its first words, in order) is not in THAT
+ * version's section of the page, so another release's text cannot vouch for it.
+ */
+export function missingBodies(changelogText, html) {
+  return releaseSections(changelogText)
+    .filter(({ version, sample }) => {
+      if (!sample) return false;
       const probe = words(sample).slice(0, SAMPLE_WORDS);
-      return probe.length > 0 && !page.includes(` ${probe.join(' ')} `);
+      const section = ` ${words(pageSection(html, version)).join(' ')} `;
+      return !section.includes(` ${probe.join(' ')} `);
     })
     .map(({ version }) => version);
 }
@@ -130,6 +176,12 @@ export function run(argv) {
     return 2;
   }
   const versions = releaseVersions(readFileSync(changelog, 'utf8'));
+  const badHeadings = unparsableHeadings(readFileSync(changelog, 'utf8'));
+  if (badHeadings.length > 0) {
+    console.error(`assert-changelog-page: FAILED — ${changelog} has "## " headings that are not a release version:`);
+    for (const h of badHeadings) console.error(`  ✖ ${h} (use "## [x.y.z]" or "## [Unreleased]")`);
+    return 1;
+  }
   if (versions.length === 0) {
     console.error(`assert-changelog-page: no "## [x.y.z]" release heading in ${changelog}`);
     return 1;
@@ -145,10 +197,14 @@ export function run(argv) {
   const html = readFileSync(htmlPath, 'utf8');
   const missing = missingReleases(text, html);
   const bodiless = missingBodies(text, html);
-  if (missing.length > 0 || bodiless.length > 0) {
+  const unprobeable = unprobeableBodies(text);
+  if (missing.length > 0 || bodiless.length > 0 || unprobeable.length > 0) {
     console.error(`assert-changelog-page: FAILED — ${changelog} is not fully on ${htmlPath}:`);
     for (const v of missing) console.error(`  ✖ ## [${v}]: release heading missing`);
     for (const v of bodiless) console.error(`  ✖ ## [${v}]: the first entry of its section is missing`);
+    for (const v of unprobeable) {
+      console.error(`  ✖ ## [${v}]: no line of at least ${MIN_SAMPLE_WORDS} words to check its body with`);
+    }
     return 1;
   }
   console.log(
