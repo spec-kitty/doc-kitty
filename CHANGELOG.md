@@ -6,14 +6,75 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-This release caps the page frame at 120rem by default, so pages on screens
-wider than 1920px keep the navigation close to the text. It reveals the current
-sidebar entry before first paint, lines the header search up with the column,
-and adds layout and build guards. It also rejects a date field that is not a
-date, such as a bare number or `"2024"`. **Upgrading: read the Breaking section.**
+## [0.4.0] — 2026-10-19
+
+This release moves the toolkit to Astro 7.4 and Starlight 0.42.6, and needs
+Node 22.22.0 or later. Pages render as they did on 0.3.0: heading anchor links
+stay off and the HTML keeps its whitespace. Readers get a full-window view for
+diagrams and images, a draft notice on draft pages, and a sidebar that no longer
+jumps. Authors get Gherkin authoring aids and a `Specification` layout for
+feature pages. Every build publishes a content graph and an OKF export bundle,
+and the agent API is now version 3. The page frame is capped at 120rem by
+default. The release removes what 0.3.0 deprecated, so committed generated pages
+must be regenerated once, and it rejects a date field that is not a date.
+**Upgrading from 0.3.0: read the Breaking section and the
+[0.3 to 0.4 migration guide](docs/migrations/0.3-to-0.4.md) first.**
 
 ### 💥 Breaking
 
+- **Install Astro 7, Starlight 0.42 and `@astrojs/markdown-remark` 7, on Node
+  22.22.0 or later (#119, #144, #145, #146).** Before, the toolkit needed
+  Astro 5 and Starlight 0.32. Now its peer ranges are `astro >=7.2.10 <8`,
+  `@astrojs/starlight >=0.42.0 <0.43.0` and `@astrojs/markdown-remark >=7.3.0
+  <8`, and `engines.node` is `>=22.22.0`. Run
+  `pnpm add astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3`
+  and use Node 22.22 or later locally and in CI. The toolkit sets Astro's
+  Markdown processor to `unified()` itself (ADR-0060), so remark and rehype
+  plugins you add through `markdown.remarkPlugins` / `rehypePlugins` keep
+  working; do not set `markdown.processor` yourself. Astro 7 and Starlight 0.42
+  bring their own breaking changes for code you wrote outside the toolkit, such
+  as your own components or pages; see their upgrade guides.
+- **Build schema extensions on zod 4 via `astro/zod`: the exported docs schema
+  (`./schema`) is now a zod 4 schema.** Before, it was built on zod 3. Now it
+  imports from `astro/zod`, and `.default(...)` becomes `.prefault(...)`
+  semantics (the default is parsed through the schema, not returned as is). If
+  you extend `docKittyDocsSchema` with your own fields, import `z` from
+  `astro/zod` and write them for zod 4; a zod 3 schema no longer composes with
+  it.
+- **Read the producer from `generated_by`: `api/scenarios.json` no longer has
+  `generated_from`, and its `version` is `"2"` (#183).** Before, every record
+  carried `generated_from: "doc-kitty/gherkin"` next to `generated_by`, with
+  `version: "1"`. Now `generated_from` is gone and `version` is `"2"`; nothing
+  else in the record moved. Clients that read `generated_from` or pin version
+  `"1"` need updating.
+- **Regenerate committed Gherkin and glossary pages once: the 0.3.0 stamps now
+  fail the frontmatter check (#210).** Before, a page stamped with the
+  unversioned `generated.by: doc-kitty/gherkin` or `doc-kitty/glossary`, or
+  with a `sha256:` hash in `generated.at`, was still treated as generated. Now
+  such a stamp is retired: the page is no longer exempt as a generated page,
+  and `dockitty-validate-frontmatter` fails it with a message that names the
+  regeneration step. Run `dockitty-generate-feature-pages` for Gherkin pages,
+  and `astro build` (or `astro dev`) for glossary pages; both still own and
+  overwrite pages with a retired stamp, and write the versioned
+  `<producer>/<version>` stamp with `content_hash`. Commit the result.
+- **Read `updated` as a full UTC timestamp in the agent API, now version 3
+  (#177).** Before, `api/index.json` reported `version: "2"` and each page's
+  `updated` as a date such as `2026-10-18`. Now it reports `version: "3"` and
+  `updated` as `2026-10-18T00:00:00Z`. Agents or scripts that pin the version
+  or parse a date-only value need updating. Nothing else in the record moved.
+- **Produce the Gherkin report before every CI docs build, or set
+  `gherkin.results.required: false` (#166).** Before, a missing
+  `gherkin.results` report only logged a warning and the site built without
+  results, so a CI job could publish a site with no results unnoticed. Now, when
+  the `CI` environment variable holds anything other than empty, `false` or `0`,
+  a missing report stops the build and the message names the report and the
+  opt-out. GitHub Actions sets `CI=true` in every job, so preview and docs-only
+  jobs without a report are the ones that fail. Run Cucumber in the same job
+  first, or download its report as an artifact. For jobs that never run the
+  tests, set
+  `gherkin: { results: { report: 'reports/cucumber.ndjson', required: false } }`
+  and they warn as before. Local builds still warn only. An unreadable or
+  malformed report fails as it did.
 - **The page frame is capped at 120rem by default (#205).** Before, the frame
   spanned the viewport unless a site set `--dk-width-frame`. Now the default is
   `120rem`. Viewports of 1920px and narrower look as before. On a wider
@@ -23,7 +84,6 @@ date, such as a bare number or `"2024"`. **Upgrading: read the Breaking section.
   unaffected. See
   [Cap the page width](docs/guides/consumer-setup.md#cap-the-page-width) and
   [ADR-0064](docs/adr/0064-default-frame-cap.md).
-
 - **Write every date as a date, not a bare number or a short string: the build
   and the frontmatter gate now reject what they accepted before (#227).**
   Before, the build took anything JavaScript's `Date` could parse for `updated`,
@@ -42,6 +102,72 @@ date, such as a bare number or `"2024"`. **Upgrading: read the Breaking section.
 
 ### Added
 
+- **Readers can expand diagrams and images to the full window again (#185).**
+  Before, sites built on the toolkit drew diagrams and images at page width
+  with no way to enlarge them; the older portal sites had a lightbox that the
+  toolkit never carried over. Now every diagram has an expand button, and every
+  image in page content expands on click or Enter. It opens in a modal that
+  closes with Esc, the close button or a click outside, and focus returns to
+  where it was. It is on for every site, with no option and no new dependency.
+  Its labels are English only for now (#161).
+- **Every build publishes `api/content-graph.json` (#176).** Before, an agent
+  or tool that wanted the site's structure fetched one JSON file per page, and
+  nothing held the reverse edges. Now one file lists every published page,
+  persona, catalog entry and external resource, plus each frontmatter relation
+  between them (`related`, `audience`, `cites`, `in-section`, `derived-from`).
+  It is built by the same resolvers as the rendered blocks, sorted for
+  identical bytes on every build, linked from `api/index.json`, and drafts stay
+  out. The artifact gate fails on any edge that points nowhere.
+- **Export a plain OKF v0.2 bundle (#178).** Before, OKF readers saw a DocKitty
+  site as unconnected pages, because they only follow body links. Now every
+  build writes `dist/okf/`, and `dockitty-export-okf` writes the same bundle on
+  demand. Relations become `/`-prefixed body links, links to pages point at
+  bundle paths, index files take OKF form, and `doc_status`, `updated` and
+  authors map to OKF `status`, `generated` and actors. A built-in checker
+  (`--check`) verifies OKF §11. Drafts are left out.
+- **Translate the sidebar "Overview" label, or set it once (#161).** Before, the
+  index entry of a nested group read "Overview" in English on every site. Now the
+  word is the UI string `dockitty.sidebar.indexLabel`: translate it in your
+  Starlight `i18n` files and each language shows its own word. To set one label
+  for all languages, use `defineDocKittyIntegrations({ sidebar: { indexLabel:
+  'Intro' } })`; it wins over the translation. The `sidebar` option accepts
+  either the Starlight sidebar array you may already pass or this
+  `{ indexLabel }` object; an unknown key or a blank label stops the build.
+  Previous and next links keep the page title. With neither set, your sidebar is
+  unchanged.
+- **A stale report now says so on a single scenario (#166).** Before, a
+  `::gherkin{src=… scenario=…}` include showed nothing when the report was made
+  from another version of the file, so the missing result looked like a gap.
+  Now its result line reads "Results not shown: the test report was made from a
+  different version of this file."
+- **A hand-mounted scenarios route without results warns (#166).** Before, a
+  site with its own `src/pages/api/scenarios.json` route that called
+  `scenarioIndexRoute()` without `results` served an index with no results and
+  no sign why. Now, while `gherkin.results` is set, the build logs one warning
+  per `astro build` and one per `astro dev` run, naming the route file and the
+  value to pass.
+- **Follow `_links` through the agent API instead of building URLs (#103).**
+  Before, `api/index.json` and the per-page records held no links, so an agent
+  had to know the URL scheme. Now the index links to itself, `llms.txt` and the
+  sitemap, plus the feed, bibliography and scenarios routes you mount. Each
+  record links to its per-page JSON, its HTML page and its related pages, and a
+  per-page record also links up to the index. The keys are additive; the index
+  `version` is `'3'` because of the `updated` change (#177). The `links` option on `agentIndexRoute` and
+  `agentPageRoute` defaults to all on, as in the worked example; pass `false`
+  for a surface your site does not mount. If you mount the index elsewhere,
+  pass `indexPath` to both routes, and keep it ending in `/api/index.json`.
+  `pnpm assert:artifacts` now fails when a `_links` href in `dist/api/` points
+  at a file the build did not produce. See
+  [ADR-0058](docs/adr/0058-build-state-owner-and-config-split.md).
+- **Point the build check at a moved agent index with `--index-path` (#172).**
+  Before, `assert:artifacts` read only `dist/api/index.json`, so a site that
+  mounts the index elsewhere (`indexPath: '/v2/api/index.json'`) could not run
+  the check. Now `assert:artifacts --index-path v2/api/index.json` moves every
+  index check to that file. The path is relative to `dist` (without the site
+  base). The check takes the base from the index's `self` link and follows
+  `_links` to other JSON files wherever they sit. One leading `/` is ignored; a
+  value containing `..`, an empty value, or a drive or `//` path exits 2.
+  Without the flag, nothing changes.
 - **Set a glossary context once per folder with
   `gherkin.defaultGlossaryContext` (#197).** Before, a generated feature page
   got `glossary_context` only from a `@dk:context` tag on each feature. Now a
@@ -114,219 +240,6 @@ date, such as a bare number or `"2024"`. **Upgrading: read the Breaking section.
 
 ### Changed
 
-- **Draft pages gain one `p.dk-draft-notice` in their HTML (#198).** Pages that
-  are not drafts are unchanged.
-- **Existing `@dk:context` tags are now checked against the glossary (#197).**
-  Before, a tag naming a context the glossary does not define was silently
-  ignored for disambiguation. Now the site build warns about it, even on a site
-  that does not set `defaultGlossaryContext`. The warning never fails the build
-  or changes a page.
-- **Feature pages use the `Specification` layout by default.** Before,
-  `kind: Specification` fell back to the `Default` layout. Now it uses the new
-  layout, so pages with tags or a source gain the card.
-- **The example site maps its shipping and HR folders to glossary contexts.**
-  The three shipping features no longer carry `@dk:context=shipping`, and the
-  HR page now resolves `policy` to the HR definition. The example also turns on
-  the imperative-step lint, with zero warnings.
-
-- **The column shift between pages with and without a rail is intended
-  (#204).** A page without a rail starts its column further along, by 144px
-  from a 1600px viewport. Stock Starlight shifts too, and reserving a rail on
-  every page was rejected. See
-  [Collapsible TOC rail](docs/architecture/collapsible-toc-rail.md#rail-and-no-rail-pages-the-column-shift-is-accepted).
-- **The sidebar reveal script moved from `head` to the `Sidebar` carrier.** It
-  is now one inline script right after the sidebar markup, and the `head`
-  entry is gone.
-
-### Fixed
-
-- **The sidebar no longer jumps on a first visit (#203).** Before, the sidebar
-  painted at the top and scrolled to the current entry only after the whole
-  page had loaded, which took seconds on a slow link. Now the entry is in view
-  at first paint, once the sidebar markup has arrived. In-session navigation
-  still restores the position Starlight saved.
-- **The header search starts where the column starts (#216).** Before, it sat
-  24px before the column on a rail page and 168px off with the rail collapsed.
-  Now it lines up with the column on pages with and without a rail, with the
-  frame capped or not. A site title wider than the space before the column
-  keeps the search after the title, as stock Starlight does.
-- **The column no longer runs under the collapsed rail toggle (#217).** From
-  1152 to 1296px with the rail collapsed, the column ran 7px under the toggle.
-  Now, below 84rem (1344px), the pane's end padding with the rail collapsed is
-  the toggle's width plus 4px.
-- **The Persona card no longer leaves a large blank at wide widths (#206).**
-  `--dk-width-passport` now defaults to the metadata band's width, 50rem
-  instead of 32rem, and the card is start-aligned with the text below it. The
-  card now follows `--dk-width-band`, so a site that sets `--dk-width-band` also
-  resizes the card. A site can still set `--dk-width-passport` itself.
-
-- **The OKF export no longer credits a human edit to the scaffold (#226).**
-  Before, the export took `generated.by`, `at` and `content_hash` from any
-  `generated` stamp, so a page that began as a scaffold and was then rewritten
-  was exported as generated by `doc-kitty-scaffold`. Now only an ownership
-  stamp (`doc-kitty-gherkin/<version>` or `doc-kitty-glossary/<version>`)
-  supplies them. For any other stamp, `by` is the first author, who leaves
-  `authors`, else `process:dockitty-export`, and `at` is `updated`, else that
-  stamp's `at`. RSS still dates an item from `updated`, else `generated.at`,
-  and the agent API is unchanged. See the
-  [ADR-0059 note](docs/adr/0059-content-graph-and-okf-alignment.md#per-output-dates-and-the-date-shape-rule-226-227).
-
-### Documentation
-
-- **ADR-0061 and ADR-0062 record the decisions.** The consumer setup guide, the
-  authoring guide, the Gherkin architecture page and the theming page cover the
-  new options, the tag, the layout and the notice.
-
-### Known limitations
-
-- With a frame cap between 72rem and 84rem on a wider viewport, the column can
-  still run under the collapsed rail toggle (#220). The 120rem default is not
-  affected.
-- Above the 120rem cap, the sidebar's tint starts at the frame edge while the
-  header bar spans the viewport (#224, open design decision).
-- On a slow first paint, Starlight's rail can be drawn next to the left sidebar
-  and then jump into place (#223). The layout-shift check counts such
-  partial-paint shifts and can flake under parallel load (#222); it runs in the
-  `light` project only until it is redesigned.
-
-## [0.4.0] — 2026-10-18
-
-This release moves the toolkit to Astro 7.4 and Starlight 0.42.6, and needs
-Node 22.22.0 or later. Pages render as they did on 0.3.0: heading anchor links
-stay off and the HTML keeps its whitespace. It also removes what 0.3.0
-deprecated: the scenarios API's `generated_from` and the unversioned generator
-stamps, so committed generated pages must be regenerated once. The agent API is
-now version 3. **Upgrading from 0.3.0: read the Breaking section and the
-[0.3 to 0.4 migration guide](docs/migrations/0.3-to-0.4.md) first.**
-
-### 💥 Breaking
-
-- **Install Astro 7, Starlight 0.42 and `@astrojs/markdown-remark` 7, on Node
-  22.22.0 or later (#119, #144, #145, #146).** Before, the toolkit needed
-  Astro 5 and Starlight 0.32. Now its peer ranges are `astro >=7.2.10 <8`,
-  `@astrojs/starlight >=0.42.0 <0.43.0` and `@astrojs/markdown-remark >=7.3.0
-  <8`, and `engines.node` is `>=22.22.0`. Run
-  `pnpm add astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3`
-  and use Node 22.22 or later locally and in CI. The toolkit sets Astro's
-  Markdown processor to `unified()` itself (ADR-0060), so remark and rehype
-  plugins you add through `markdown.remarkPlugins` / `rehypePlugins` keep
-  working; do not set `markdown.processor` yourself. Astro 7 and Starlight 0.42
-  bring their own breaking changes for code you wrote outside the toolkit, such
-  as your own components or pages; see their upgrade guides.
-- **Build schema extensions on zod 4 via `astro/zod`: the exported docs schema
-  (`./schema`) is now a zod 4 schema.** Before, it was built on zod 3. Now it
-  imports from `astro/zod`, and `.default(...)` becomes `.prefault(...)`
-  semantics (the default is parsed through the schema, not returned as is). If
-  you extend `docKittyDocsSchema` with your own fields, import `z` from
-  `astro/zod` and write them for zod 4; a zod 3 schema no longer composes with
-  it.
-- **Read the producer from `generated_by`: `api/scenarios.json` no longer has
-  `generated_from`, and its `version` is `"2"` (#183).** Before, every record
-  carried `generated_from: "doc-kitty/gherkin"` next to `generated_by`, with
-  `version: "1"`. Now `generated_from` is gone and `version` is `"2"`; nothing
-  else in the record moved. Clients that read `generated_from` or pin version
-  `"1"` need updating.
-- **Regenerate committed Gherkin and glossary pages once: the 0.3.0 stamps now
-  fail the frontmatter check (#210).** Before, a page stamped with the
-  unversioned `generated.by: doc-kitty/gherkin` or `doc-kitty/glossary`, or
-  with a `sha256:` hash in `generated.at`, was still treated as generated. Now
-  such a stamp is retired: the page is no longer exempt as a generated page,
-  and `dockitty-validate-frontmatter` fails it with a message that names the
-  regeneration step. Run `dockitty-generate-feature-pages` for Gherkin pages,
-  and `astro build` (or `astro dev`) for glossary pages; both still own and
-  overwrite pages with a retired stamp, and write the versioned
-  `<producer>/<version>` stamp with `content_hash`. Commit the result.
-- **Read `updated` as a full UTC timestamp in the agent API, now version 3
-  (#177).** Before, `api/index.json` reported `version: "2"` and each page's
-  `updated` as a date such as `2026-10-18`. Now it reports `version: "3"` and
-  `updated` as `2026-10-18T00:00:00Z`. Agents or scripts that pin the version
-  or parse a date-only value need updating. Nothing else in the record moved.
-- **Produce the Gherkin report before every CI docs build, or set
-  `gherkin.results.required: false` (#166).** Before, a missing
-  `gherkin.results` report only logged a warning and the site built without
-  results, so a CI job could publish a site with no results unnoticed. Now, when
-  the `CI` environment variable holds anything other than empty, `false` or `0`,
-  a missing report stops the build and the message names the report and the
-  opt-out. GitHub Actions sets `CI=true` in every job, so preview and docs-only
-  jobs without a report are the ones that fail. Run Cucumber in the same job
-  first, or download its report as an artifact. For jobs that never run the
-  tests, set
-  `gherkin: { results: { report: 'reports/cucumber.ndjson', required: false } }`
-  and they warn as before. Local builds still warn only. An unreadable or
-  malformed report fails as it did.
-
-### Added
-
-- **Readers can expand diagrams and images to the full window again (#185).**
-  Before, sites built on the toolkit drew diagrams and images at page width
-  with no way to enlarge them; the older portal sites had a lightbox that the
-  toolkit never carried over. Now every diagram has an expand button, and every
-  image in page content expands on click or Enter. It opens in a modal that
-  closes with Esc, the close button or a click outside, and focus returns to
-  where it was. It is on for every site, with no option and no new dependency.
-  Its labels are English only for now (#161).
-
-- **Every build publishes `api/content-graph.json` (#176).** Before, an agent
-  or tool that wanted the site's structure fetched one JSON file per page, and
-  nothing held the reverse edges. Now one file lists every published page,
-  persona, catalog entry and external resource, plus each frontmatter relation
-  between them (`related`, `audience`, `cites`, `in-section`, `derived-from`).
-  It is built by the same resolvers as the rendered blocks, sorted for
-  identical bytes on every build, linked from `api/index.json`, and drafts stay
-  out. The artifact gate fails on any edge that points nowhere.
-- **Export a plain OKF v0.2 bundle (#178).** Before, OKF readers saw a DocKitty
-  site as unconnected pages, because they only follow body links. Now every
-  build writes `dist/okf/`, and `dockitty-export-okf` writes the same bundle on
-  demand. Relations become `/`-prefixed body links, links to pages point at
-  bundle paths, index files take OKF form, and `doc_status`, `updated` and
-  authors map to OKF `status`, `generated` and actors. A built-in checker
-  (`--check`) verifies OKF §11. Drafts are left out.
-- **Translate the sidebar "Overview" label, or set it once (#161).** Before, the
-  index entry of a nested group read "Overview" in English on every site. Now the
-  word is the UI string `dockitty.sidebar.indexLabel`: translate it in your
-  Starlight `i18n` files and each language shows its own word. To set one label
-  for all languages, use `defineDocKittyIntegrations({ sidebar: { indexLabel:
-  'Intro' } })`; it wins over the translation. The `sidebar` option accepts
-  either the Starlight sidebar array you may already pass or this
-  `{ indexLabel }` object; an unknown key or a blank label stops the build.
-  Previous and next links keep the page title. With neither set, your sidebar is
-  unchanged.
-- **A stale report now says so on a single scenario (#166).** Before, a
-  `::gherkin{src=… scenario=…}` include showed nothing when the report was made
-  from another version of the file, so the missing result looked like a gap.
-  Now its result line reads "Results not shown: the test report was made from a
-  different version of this file."
-- **A hand-mounted scenarios route without results warns (#166).** Before, a
-  site with its own `src/pages/api/scenarios.json` route that called
-  `scenarioIndexRoute()` without `results` served an index with no results and
-  no sign why. Now, while `gherkin.results` is set, the build logs one warning
-  per `astro build` and one per `astro dev` run, naming the route file and the
-  value to pass.
-- **Follow `_links` through the agent API instead of building URLs (#103).**
-  Before, `api/index.json` and the per-page records held no links, so an agent
-  had to know the URL scheme. Now the index links to itself, `llms.txt` and the
-  sitemap, plus the feed, bibliography and scenarios routes you mount. Each
-  record links to its per-page JSON, its HTML page and its related pages, and a
-  per-page record also links up to the index. The index `version` stays `'2'`,
-  because the keys are additive. The `links` option on `agentIndexRoute` and
-  `agentPageRoute` defaults to all on, as in the worked example; pass `false`
-  for a surface your site does not mount. If you mount the index elsewhere,
-  pass `indexPath` to both routes, and keep it ending in `/api/index.json`.
-  `pnpm assert:artifacts` now fails when a `_links` href in `dist/api/` points
-  at a file the build did not produce. See
-  [ADR-0058](docs/adr/0058-build-state-owner-and-config-split.md).
-- **Point the build check at a moved agent index with `--index-path` (#172).**
-  Before, `assert:artifacts` read only `dist/api/index.json`, so a site that
-  mounts the index elsewhere (`indexPath: '/v2/api/index.json'`) could not run
-  the check. Now `assert:artifacts --index-path v2/api/index.json` moves every
-  index check to that file. The path is relative to `dist` (without the site
-  base). The check takes the base from the index's `self` link and follows
-  `_links` to other JSON files wherever they sit. One leading `/` is ignored; a
-  value containing `..`, an empty value, or a drive or `//` path exits 2.
-  Without the flag, nothing changes.
-
-### Changed
-
 - **The toolkit sets Starlight `markdown.processedDirs` itself.** Before, only
   `src/content/docs` got Starlight's Markdown processing. Now the docs root is
   listed first, any directory you list under `starlight.markdown.processedDirs`
@@ -338,7 +251,6 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
   `generated_by: "doc-kitty-gherkin/<version>"`, an OKF tool actor matching
   that stamp. `generated_from` is removed in this same release (#183, see
   Breaking).
-
 - **Metadata follows OKF v0.2 (#177).** Before, `updated` was a date,
   `okf_version` sat only on the root index, and authors were email addresses.
   Now `updated` and `stale_after` take UTC timestamps
@@ -386,6 +298,28 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
 - `RouteShapingOptions` no longer has `unpublishedDirs` or `unpublishedPaths`;
   the withheld drafts now travel in a per-config build state. The type is an
   internal seam, not supported API.
+- **Draft pages gain one `p.dk-draft-notice` in their HTML (#198).** Pages that
+  are not drafts are unchanged.
+- **Existing `@dk:context` tags are now checked against the glossary (#197).**
+  Before, a tag naming a context the glossary does not define was silently
+  ignored for disambiguation. Now the site build warns about it, even on a site
+  that does not set `defaultGlossaryContext`. The warning never fails the build
+  or changes a page.
+- **Feature pages use the `Specification` layout by default.** Before,
+  `kind: Specification` fell back to the `Default` layout. Now it uses the new
+  layout, so pages with tags or a source gain the card.
+- **The example site maps its shipping and HR folders to glossary contexts.**
+  The three shipping features no longer carry `@dk:context=shipping`, and the
+  HR page now resolves `policy` to the HR definition. The example also turns on
+  the imperative-step lint, with zero warnings.
+- **The column shift between pages with and without a rail is intended
+  (#204).** A page without a rail starts its column further along, by 144px
+  from a 1600px viewport. Stock Starlight shifts too, and reserving a rail on
+  every page was rejected. See
+  [Collapsible TOC rail](docs/architecture/collapsible-toc-rail.md#rail-and-no-rail-pages-the-column-shift-is-accepted).
+- **The sidebar reveal script moved from `head` to the `Sidebar` carrier.** It
+  is now one inline script right after the sidebar markup, and the `head`
+  entry is gone.
 
 ### Fixed
 
@@ -459,6 +393,35 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
   that fails a built `<img>` loaded from another host, or a same-site absolute
   image missing from the build, without fetching anything; the example's
   `pnpm assert:no-broken-links` turns it on.
+- **The sidebar no longer jumps on a first visit (#203).** Before, the sidebar
+  painted at the top and scrolled to the current entry only after the whole
+  page had loaded, which took seconds on a slow link. Now the entry is in view
+  at first paint, once the sidebar markup has arrived. In-session navigation
+  still restores the position Starlight saved.
+- **The header search starts where the column starts (#216).** Before, it sat
+  24px before the column on a rail page and 168px off with the rail collapsed.
+  Now it lines up with the column on pages with and without a rail, with the
+  frame capped or not. A site title wider than the space before the column
+  keeps the search after the title, as stock Starlight does.
+- **The column no longer runs under the collapsed rail toggle (#217).** From
+  1152 to 1296px with the rail collapsed, the column ran 7px under the toggle.
+  Now, below 84rem (1344px), the pane's end padding with the rail collapsed is
+  the toggle's width plus 4px.
+- **The Persona card no longer leaves a large blank at wide widths (#206).**
+  `--dk-width-passport` now defaults to the metadata band's width, 50rem
+  instead of 32rem, and the card is start-aligned with the text below it. The
+  card now follows `--dk-width-band`, so a site that sets `--dk-width-band` also
+  resizes the card. A site can still set `--dk-width-passport` itself.
+- **The OKF export no longer credits a human edit to the scaffold (#226).**
+  Before, the export took `generated.by`, `at` and `content_hash` from any
+  `generated` stamp, so a page that began as a scaffold and was then rewritten
+  was exported as generated by `doc-kitty-scaffold`. Now only an ownership
+  stamp (`doc-kitty-gherkin/<version>` or `doc-kitty-glossary/<version>`)
+  supplies them. For any other stamp, `by` is the first author, who leaves
+  `authors`, else `process:dockitty-export`, and `at` is `updated`, else that
+  stamp's `at`. RSS still dates an item from `updated`, else `generated.at`,
+  and the agent API is unchanged. See the
+  [ADR-0059 note](docs/adr/0059-content-graph-and-okf-alignment.md#per-output-dates-and-the-date-shape-rule-226-227).
 
 ### Documentation
 
@@ -475,6 +438,9 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
   started points consumers there. A test keeps the guide's Node floor, peer
   ranges, package name and wiring equal to `src/package.json` and the
   consumption-test fixture.
+- **ADR-0061 and ADR-0062 record the decisions.** The consumer setup guide, the
+  authoring guide, the Gherkin architecture page and the theming page cover the
+  new options, the tag, the layout and the notice.
 
 ### Known limitations
 
@@ -487,6 +453,15 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
   an empty `i18n` collection only replaces the warning with another, and
   keeping deck pages out of Starlight's route needs a change to how decks are
   collected, so both are left for a later release.
+- With a frame cap between 72rem and 84rem on a wider viewport, the column can
+  still run under the collapsed rail toggle (#220). The 120rem default is not
+  affected.
+- Above the 120rem cap, the sidebar's tint starts at the frame edge while the
+  header bar spans the viewport (#224, open design decision).
+- On a slow first paint, Starlight's rail can be drawn next to the left sidebar
+  and then jump into place (#223). The layout-shift check counts such
+  partial-paint shifts and can flake under parallel load (#222); it runs in the
+  `light` project only until it is redesigned.
 
 ## [0.3.0] — 2026-10-14
 
