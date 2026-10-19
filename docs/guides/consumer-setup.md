@@ -841,6 +841,8 @@ gherkin: {
   sourceRoot: '..',            // report source paths relative to the repo root
   sourceUrlPrefix: 'https://github.com/you/repo/blob/main/',
   titles: { hr: 'HR' },        // hub title for ../features/hr/ (default: "Hr")
+  defaultGlossaryContext: { shipping: 'shipping', hr: 'hr' }, // glossary context by folder
+  lint: { imperativeSteps: true }, // warn about steps that script the UI
 },
 ```
 
@@ -854,12 +856,14 @@ gherkin: {
 | `sourceUrlPrefix` | none | Prefixed verbatim to that path, so `sources:` links to the file in your repository browser. Without it, `sources:` holds the bare relative path. An include's source line links the same way. |
 | `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`, and only valid with `sources`. |
 | `titles` | none | Hub titles by source directory, for names a directory can't spell: `{ hr: 'HR', 'shipping/edi': 'EDI messages' }`. A key is the directory relative to its source, as written on disk; the title replaces the directory name in the hub and its sidebar group. A key that matches no directory with a feature warns. Keys must be plain relative paths and titles non-blank strings. Only valid with `sources`. |
+| `defaultGlossaryContext` | none | The glossary context of every generated page under a source directory, so features need no `@dk:context` tag: `{ shipping: 'shipping', 'shipping/eu': 'customs' }`. A key is a directory relative to its source, written like a `titles` key, and covers its subdirectories; the longest matching key wins, compared by whole folder name. A feature's own `@dk:context` tag wins over it. Generated pages only. Only valid with `sources`. See [Gherkin: glossary context by folder](#gherkin-glossary-context-by-folder). |
+| `lint` | none (off) | Warn-only authoring checks. Today it holds one key, `imperativeSteps`: `false` (the default), `true`, or `{ verbs, extend, keywords }`. It never fails a build or changes a page. See [Gherkin: the imperative-step check](#gherkin-the-imperative-step-check). |
 | `results` | none | A Cucumber report (Messages NDJSON or JSON) whose results are shown next to every scenario rendered from a `.feature` file. A path relative to the site root, or `{ report, root, required }` with `root` the directory Cucumber ran in and `required` a boolean (see below). See [Gherkin: test results](#gherkin-test-results). |
 | `results.required` | `true` | Whether a missing report fails the build when the `CI` environment variable is set. Set `false` for preview or docs-only jobs that never run the tests. Must be `true` or `false`. |
 
-An unknown key, a non-boolean `fences`, `section`, `allowEmpty` or `titles`
-without `sources`, and any value other than `true` or an object (including
-`false`) fail the build.
+An unknown key, a non-boolean `fences`, `section`, `allowEmpty`, `titles` or
+`defaultGlossaryContext` without `sources`, a malformed `lint`, and any value
+other than `true` or an object (including `false`) fail the build.
 
 **Existing `{ sources }` sites:** from this release, ```` ```gherkin ```` fences on
 your authored pages render as scenarios too. Add `raw` to a fence's info string
@@ -910,12 +914,14 @@ script reads your index names from `astro.config.mjs`, so you do not pass
 # Regenerate locally without a build:
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR
+  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR \
+  --default-glossary-context shipping=shipping --default-glossary-context hr=hr
 
 # CI drift gate (same flags, plus --check):
 pnpm exec dockitty-generate-feature-pages --sources ../features --docs docs \
   --section behaviour --source-root .. \
-  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR --check
+  --source-url-prefix https://github.com/you/repo/blob/main/ --titles hr=HR \
+  --default-glossary-context shipping=shipping --default-glossary-context hr=hr --check
 ```
 
 Run it from the site directory, or pass `--root <site dir>`; every other path is
@@ -923,12 +929,95 @@ relative to that root. `--help` (or `-h`) prints the flags. `--check` lists each
 `authored` path it finds. Add `--allow-empty` to remove the pages when no source
 yields a feature, the command-line twin of `allowEmpty`. Pass one
 `--titles <dir>=<title>` per entry of `titles`, and quote a title with spaces:
-`--titles "shipping/edi=EDI messages"`. `--check` is not affected:
+`--titles "shipping/edi=EDI messages"`. Pass one
+`--default-glossary-context <dir>=<context>` per entry of
+`defaultGlossaryContext`. A value without `=`, or a directory given twice, is a
+usage error and exits 1. There is no flag for `lint`, because it never changes a
+page. `--check` is not affected:
 with empty sources and pages present it already exits 1 and lists them as `stale`.
 
 To turn the feature off, remove the option **and** delete `docs/<section>/`.
 Removing only the option leaves the last generated pages in place, still building
 as ordinary content.
+
+### Gherkin: glossary context by folder
+
+`gherkin.defaultGlossaryContext` gives every generated page under a source
+directory its `glossary_context`, so you declare a context once per folder
+instead of tagging each feature
+([ADR-0061](../adr/0061-gherkin-authoring-aids.md)).
+
+```js
+gherkin: {
+  sources: ['features'],
+  defaultGlossaryContext: { shipping: 'shipping', 'shipping/eu': 'customs', hr: 'hr' },
+},
+```
+
+- **Matching.** A key covers its directory and every directory below it. The
+  key that names the longest matching path wins, compared by whole folder name:
+  `features/shipping/eu/b.feature` gets `customs`, `features/shipping/a.feature`
+  gets `shipping`, and a key `ship` does not match `shipping/`. With several
+  `sources`, a key applies under each of them.
+- **Precedence.** A feature's own `@dk:context` tag wins, then the folder
+  default, then none. An empty `@dk:context=` still warns, and the folder
+  default applies. A feature in a folder no key covers is generated exactly as
+  without the option.
+- **Generated pages only.** The value is written into the page's frontmatter.
+  Authored pages, fences and includes are not affected.
+- **CLI twin.** Pass the same map to the drift gate as repeated
+  `--default-glossary-context <dir>=<context>` flags, or `--check` reports
+  drift.
+- **Warnings.** A key that matches no directory holding a feature warns
+  `gherkin.defaultGlossaryContext key "<key>" matches no source directory with a
+  feature; ignored`, in the build and the CLI. When
+  `.contextive/definitions.yaml` is present, the site build also warns about a
+  page whose context, from the map or a tag, is not a context there, and names
+  where the value came from. The CLI does not run that check.
+- **Regenerating.** The generator stamp covers the `.feature` bytes only. A
+  change to the map alone rewrites `glossary_context` but keeps `generated.at`.
+
+### Gherkin: the imperative-step check
+
+`gherkin.lint.imperativeSteps` prints a build warning for each Given or When
+step that describes user-interface mechanics instead of behaviour
+([ADR-0061](../adr/0061-gherkin-authoring-aids.md)). It is off by default and
+warn-only: it never fails a build and never changes a generated page. Which
+phrases it flags, and how to silence a deliberate case, is in
+[Write declarative scenarios](./authoring.md#write-declarative-scenarios).
+
+```js
+gherkin: {
+  sources: ['features'],
+  lint: {
+    imperativeSteps: true,
+    // or: { extend: ['select'], keywords: ['context', 'action', 'outcome'] }
+  },
+},
+```
+
+| Form | Effect |
+|------|--------|
+| `false` or absent | Off. |
+| `true` | The built-in phrase list, on `context` (Given) and `action` (When) steps. `And`, `But` and `*` take the type of the step before them. |
+| `{ verbs: [...] }` | Replaces the built-in list with your words or phrases. |
+| `{ extend: [...] }` | Appends your words or phrases to the effective list. |
+| `{ keywords: [...] }` | Replaces the scope with one or more of `context`, `action` and `outcome`. An empty list is refused, because it would check no step. |
+
+- **Entries are plain words or phrases**, never regular expressions. The first
+  word matches in any common inflection (`select`, `selects`, `selected`,
+  `selecting`), whole words only. An unknown key, a blank entry, an unknown
+  keyword type, or `verbs: []` with nothing to `extend` fails the build.
+- **Where it runs.** On generated feature pages, while they are generated, and
+  on ```` ```gherkin ```` fences when their page renders. Includes and
+  ```` ```gherkin raw ```` fences are not checked. `dockitty-generate-feature-pages`
+  and `--check` do not check, so the warnings appear in the site build log only.
+- **English only.** A feature declared `# language: nl` (or any language other
+  than `en` or `en-*`) is skipped, so no warning there does not mean the steps
+  are declarative.
+- **Fences on a cache hit.** A fence is checked when its page renders. A page
+  the content layer serves from its cache, as after a dev-server restart, prints
+  no warnings. Generated pages are checked on every run.
 
 ### In-page Gherkin: errors and caching
 

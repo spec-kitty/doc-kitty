@@ -15,6 +15,7 @@ agent:
 Notable changes to doc-kitty, newest first. The reasoning behind decisions lives in
 the [decision records](../adr/); this log records what changed and when.
 
+- [2026-10-19 — Gherkin authoring aids and the Specification layout](./2026-10-19-gherkin-authoring-aids.md)
 - [2026-10-19 — Site release history and install guide](./2026-10-19-site-release-history-and-install-guide.md)
 - [2026-10-18 — OKF alignment and content graph](./2026-10-18-okf-alignment-and-content-graph.md)
 - [2026-10-14 — Gherkin results in CI, and a translatable Overview label](./2026-10-14-gherkin-trim-and-followups.md)

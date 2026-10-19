@@ -6,6 +6,60 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Set a glossary context once per folder with
+  `gherkin.defaultGlossaryContext` (#197).** Before, a generated feature page
+  got `glossary_context` only from a `@dk:context` tag on each feature. Now a
+  map such as `{ shipping: 'shipping', 'shipping/eu': 'customs' }` gives every
+  page under a source folder its context. The longest matching folder wins,
+  compared by whole folder name, and a feature's own `@dk:context` tag still
+  wins over it. The drift gate takes the same map as repeated
+  `--default-glossary-context <dir>=<context>` flags. A key that matches no
+  feature folder warns, and the site build warns about a context the glossary
+  does not define (ADR-0061).
+- **Turn on a warning for steps that script the UI with
+  `gherkin.lint.imperativeSteps` (#196).** Before, nothing checked for steps
+  such as `When I click "#book-button"`. Now, when the option is on, the build
+  warns about each Given or When step that names a UI action (click, tap, fill
+  in, …) or quotes a CSS selector, on generated feature pages and in-page
+  `gherkin` fences. It is off by default, never fails a build and never changes
+  a page. `verbs`, `extend` and `keywords` adjust the phrase list and scope.
+  Includes, `gherkin raw` fences and non-English features are not checked
+  (ADR-0061).
+- **Silence the step warning with `@dk:allow=imperative`.** The tag works on a
+  Feature, a Rule or a Scenario, and is the first `@dk:` tag read below
+  Feature level. Any other value warns (ADR-0061).
+- **Feature pages show their tags and source in a header card (#198).** The
+  new base `Specification` layout renders a labelled card above the scenarios.
+  The source is a link when the site sets `sourceUrlPrefix`. The "On this page"
+  list stays the scenario list, and the results summary stays in the body. A
+  theme opts out by mapping `layouts.Specification` to `Default.astro`
+  (ADR-0062).
+- **Every draft page shows a draft notice (#198).** A page with
+  `doc_status: draft`, of any kind, shows "Draft. This page is work in progress
+  and may change." under its title when drafts are built. Out-of-frame slide
+  decks are not covered (ADR-0062).
+
+### Changed
+
+- **Draft pages now render a notice.** Before, a draft page looked exactly like
+  an active one. Now its HTML gains one `p.dk-draft-notice`. Pages that are not
+  drafts are unchanged.
+- **Feature pages use the `Specification` layout by default.** Before,
+  `kind: Specification` fell back to the `Default` layout. Now it uses the new
+  layout, so pages with tags or a source gain the card.
+- **The example site maps its shipping and HR folders to glossary contexts.**
+  The three shipping features no longer carry `@dk:context=shipping`, and the
+  HR page now resolves `policy` to the HR definition. The example also turns on
+  the imperative-step check, with zero warnings.
+
+### Documentation
+
+- **ADR-0061 and ADR-0062 record the decisions.** The consumer setup guide, the
+  authoring guide, the Gherkin architecture page and the theming page cover the
+  new options, the tag, the layout and the notice.
+
 ## [0.4.0] — 2026-10-18
 
 This release moves the toolkit to Astro 7.4 and Starlight 0.42.6, and needs

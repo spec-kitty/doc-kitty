@@ -2,7 +2,7 @@
 title: Authoring a document
 description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, show scenarios in any page, and show their test results.
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Guide
 kind: How-To
 tags: [authoring, workflow, gherkin, bdd]
@@ -13,6 +13,8 @@ related:
   - adr/0046-gherkin-feature-pages
   - adr/0051-gherkin-in-any-page
   - adr/0055-gherkin-scenario-results
+  - adr/0061-gherkin-authoring-aids
+  - adr/0062-specification-layout-and-draft-notice
   - architecture/gherkin-pages
 ---
 
@@ -206,6 +208,12 @@ file; the toolkit writes the page. The design is in
 [Gherkin feature pages](../architecture/gherkin-pages.md) and
 [ADR-0046](../adr/0046-gherkin-feature-pages.md).
 
+Readers see a card above the scenarios with the feature's tags and its source
+file. The file name is a link when the site sets `sourceUrlPrefix`. A draft
+feature (`@wip`) shows a "Draft" notice under its title, as every draft page in
+the docs frame does. The right-hand "On this page" list stays the list of rules
+and scenarios ([ADR-0062](../adr/0062-specification-layout-and-draft-notice.md)).
+
 ### Where the files live
 
 `.feature` files stay where your test runner expects them, in the directories
@@ -256,7 +264,7 @@ Feature: Book a consignment
 
 | Tag | Becomes | Notes |
 |-----|---------|-------|
-| `@dk:context=<ctx>` | `glossary_context` | The glossary context used to resolve terms in the step text. At most one. |
+| `@dk:context=<ctx>` | `glossary_context` | The glossary context used to resolve terms in the step text. At most one. Wins over the site's folder default (`gherkin.defaultGlossaryContext`). |
 | `@dk:status=<s>` | `doc_status` | Wins over `@wip` and `@deprecated`. The value must be a lower-case slug such as `active` or `in-review`; anything else warns and makes the page a draft, as do two `@dk:status` tags that disagree. A non-canonical slug passes through, and the frontmatter gate warns about it. |
 | `@wip` | `doc_status: draft` | Draft pages are left out of the sitemap, feeds and agent API. Exact case only, as in Cucumber: `@WIP` stays an ordinary tag, and the build warns "did you mean `@wip`?". |
 | `@deprecated` | `doc_status: deprecated` | Exact case only; `@Deprecated` warns the same way. |
@@ -268,6 +276,7 @@ Feature: Book a consignment
 | `@dk:updated=<YYYY-MM-DD>` | `updated` | Optional. Without it the page is exempt from `updated`. |
 | `@dk:autolink=false` | `glossary_autolink: false` | Turns off glossary auto-linking for the page. |
 | `@dk:priority=<0..1>` | `agent.priority` | Optional agent hint. |
+| `@dk:allow=imperative` | *(nothing)* | Silences the imperative-step check for the whole feature. Also accepted on a Rule or Scenario. See [Write declarative scenarios](#write-declarative-scenarios). |
 | any other tag | `tags` | Passed through without the `@`, such as `@smoke` or `@FR-003`. |
 
 `@dk:` values run to the end of the tag, after the first `=`. A misspelt key, a
@@ -277,11 +286,16 @@ missing value, a second copy of a single-valued key, or an invalid `updated`,
 hand-written refs.
 
 Only **feature** tags are metadata. Tags on a Rule, Scenario or Examples block,
-`@dk:` ones included, are shown on the page as inline code.
+`@dk:` ones included, are shown on the page as inline code. The one `@dk:` tag
+that also has an effect there is `@dk:allow=imperative`.
 
-Put a `@dk:context` on every feature. Without it, a step that uses a term defined
-in more than one glossary context is left unlinked and logs a collision warning.
-Across a large suite, that floods the build log.
+Give every feature a glossary context. Without one, a step that uses a term
+defined in more than one glossary context is left unlinked and logs a collision
+warning. Across a large suite, that floods the build log. Rather than tag each
+file, the site can map whole source folders to a context with
+`gherkin.defaultGlossaryContext`
+([consumer setup](./consumer-setup.md#gherkin-glossary-context-by-folder)). A
+`@dk:context` tag on a feature still wins over the folder's context.
 
 ### Feature pages in the RSS feed
 
@@ -313,8 +327,63 @@ When I click "#book-button"
 And I fill in "size" with "12"
 ```
 
-Click paths and CSS selectors publish as they are written. Nothing checks for
-them yet, so the style is the author's responsibility.
+Click paths and CSS selectors publish as they are written. The site can turn on
+a warn-only check for them, `gherkin.lint.imperativeSteps`
+([consumer setup](./consumer-setup.md#gherkin-the-imperative-step-check)). The
+example above is a `gherkin raw` fence, so it stays code and is never checked.
+
+With the check on, each Given or When step that matches warns once, with the file
+and line. A step in an in-page fence cites the page and its line. The build still
+succeeds and the page does not change:
+
+```text
+[dk-gherkin] features/booking.feature:14 step "When I click "Book"" names a UI action ("click") — describe the behaviour instead; silence with @dk:allow=imperative
+```
+
+The built-in phrases name user-interface mechanics only:
+
+| Phrase | Flags | Does not flag |
+|--------|-------|---------------|
+| `click`, `double-click`, `right-click` | `When I click "Book"` | `the clickstream` |
+| `tap`, `hover`, `scroll`, `drag` | `When I tap "Pay"` | `the tape` |
+| `fill in`, `fill out` | `When I fill in "size" with "12"` | `fill the gap in` |
+| `navigate to` | `Given I navigate to the bookings` | `the system navigates the route` |
+| `type` … `into` (one word between) | `When I type "x" into "y"` | `the leave type is entered into …` |
+| `press` … `button` or `key` | `When I press the submit button` | `the press release`, `presses charges` |
+| `refresh` or `reload` … `page` | `When I refresh the page` | `reload the data` |
+| `check`, `uncheck` or `tick` … `box` or `checkbox` | `When I tick the "agree" box` | `checks the balance` |
+| `visit` … `page`, `url` or `link` | `Given I visit the home page` | `the inspector visits the warehouse` |
+
+Each phrase also matches its inflections (`clicks`, `clicked`, `clicking`), as
+whole words only. A quoted argument shaped like a CSS selector, such as
+`"#book-button"`, `".primary"` or `"[data-id=7]"`, is flagged too. Only the step's
+own words are read: the text inside quotes, placeholders, doc strings and tables is
+never matched against the phrases.
+
+Some verbs are left out because they are often domain language: `enter` ("enters a
+contract"), `select` ("select a plan"), `submit` ("submit the declaration") and
+`open`. If they mean clicks in your suite, the site adds them with
+`imperativeSteps: { extend: ['select', 'submit'] }`.
+
+The check reads English features only. A feature with another `# language:` is
+skipped.
+
+To keep a scenario that really is about the interface, tag it
+`@dk:allow=imperative`. On a Scenario or Scenario Outline it covers that
+scenario, on a Rule it covers the Rule's Background and scenarios, and on the
+Feature it covers every step:
+
+```text
+Feature: Keyboard access
+
+  @dk:allow=imperative
+  Scenario: Tab order reaches the booking button
+    When I press the Tab key three times
+    Then the "Book" button has focus
+```
+
+Any other `@dk:allow` value warns and is ignored. In an in-page fence, the tag does
+not trigger the "metadata tags have no effect" warning.
 
 ### What renders as written, and what as Markdown
 
@@ -475,7 +544,7 @@ list. Two embeds of the same scenario on one page get heading ids with numbered
 suffixes, so their anchors stay unique.
 
 Step text is not glossary-linked in a fence or an include, unlike on a generated
-page (#113). Text is typeset as in the rest of the page (curled quotes, dashes),
+page. Text is typeset as in the rest of the page (curled quotes, dashes),
 except quoted arguments in steps and table cells, which are code.
 
 ### Decks, generated pages and agents
