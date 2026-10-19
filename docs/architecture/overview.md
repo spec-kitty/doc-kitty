@@ -38,6 +38,15 @@ flowchart LR
   `agentPageRoute`; a site mounts them as two-line endpoint files.
 - **`lib/metadata.ts`** — framework-agnostic model + helpers (publication
   gating, section ordering, agent-record shaping); unit-tested in isolation.
+- **Single-h1 pass** (`lib/rehype/single-h1.ts`) — an always-on rehype pass that
+  keeps the page title the only `<h1>` (#191). Starlight renders the frontmatter
+  `title` as `<h1 id="_top">`, so the pass drops the first body `# Title` that
+  repeats it, wherever it sits, and leaves an empty `<span id>` with the id the
+  heading would have had, so links to it still work. Any other body `<h1>`
+  becomes an `<h2>`. A `kind: Presentation` deck is skipped. It is a rehype pass
+  because it works on the rendered heading tree, which covers `.md` and `.mdx`
+  alike, and it runs before Astro's `rehypeHeadingIds`, so a dropped heading never
+  reaches the table of contents and a demoted one enters it as an `<h2>`.
 - **Builder scripts** — `scaffold.mjs` (emit the tree), `new-doc.mjs` (one
   page), `validate-frontmatter.mjs` (CI gate).
 

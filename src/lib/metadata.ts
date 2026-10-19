@@ -291,9 +291,15 @@ export function updatedMillis(data: DocKittyFrontmatter): number {
 }
 
 /**
- * The date a feed item carries (#190): `updated`, else the generator stamp's
- * `generated.at` (generated Gherkin and glossary pages carry no `updated`).
- * 0 when the page has neither; {@link rankForFeed} leaves such a page out.
+ * The date a feed item carries (#190): `updated` first, then the generator
+ * stamp's `generated.at` (generated Gherkin and glossary pages carry no
+ * `updated`). 0 when the page has neither; {@link rankForFeed} leaves such a
+ * page out.
+ *
+ * The OKF export (`okf-export/core.mjs`, `generatedFor`) deliberately uses the
+ * inverse precedence: there `generated.at` wins and `updated` is the fallback,
+ * because in OKF `generated.at` means the last content change. Do not unify
+ * the two.
  */
 export function feedDateMillis(data: DocKittyFrontmatter): number {
   return updatedMillis(data) || (normaliseInstant(data.generated?.at)?.date.getTime() ?? 0);
