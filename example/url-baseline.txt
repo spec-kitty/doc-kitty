@@ -57,3 +57,8 @@
 # gherkin-in-any-page (ADR-0051): the in-page Gherkin demonstrator guide. Its
 # fences render in place, so the guide is the only new URL.
 /guides/scenarios-in-pages/
+
+# #192: the hand-written v0.1.0 changelog page was replaced by the release
+# history rendered from CHANGELOG.md; its old URL redirects there.
+/changelog/2026-08-21-v0.1.0/
+/changelog/releases/

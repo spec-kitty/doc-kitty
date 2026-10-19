@@ -1,5 +1,6 @@
 {
   "/guides/old-getting-started/": "/guides/getting-started/",
   "/plans/features/mission-alpha/": "/plans/missions/mission-alpha/",
-  "/plans/features/mission-beta/": "/plans/missions/mission-beta/"
+  "/plans/features/mission-beta/": "/plans/missions/mission-beta/",
+  "/changelog/2026-08-21-v0.1.0/": "/changelog/releases/"
 }
