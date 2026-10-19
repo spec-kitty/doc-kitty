@@ -13,6 +13,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { isDraftEntry } from '../lib/metadata.js';
 import { fileURLToPath } from 'node:url';
 
 const read = (rel: string): string => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
@@ -94,6 +95,10 @@ describe('PageTitle.astro placement', () => {
     // (the schema defaults every collection entry), which must not show it.
     expect(frontmatter).toMatch(/import \{[^}]*\bisDraftEntry\b[^}]*\} from '\.\.\/lib\/metadata\.js';/);
     expect(frontmatter).toMatch(/const isDraft = data\.doc_status !== undefined && isDraftEntry\(/);
+    // Why the extra guard: the shared predicate calls a page with NO doc_status a draft
+    // (right for Head's noindex), so without the guard the 404 fallback would show it.
+    expect(isDraftEntry({ id: '404', data: {} })).toBe(true);
+    expect(isDraftEntry({ id: '404', data: { doc_status: 'active' } })).toBe(false);
   });
 
   it('sits after the band host and outside the dk:metadata-band slot', () => {
