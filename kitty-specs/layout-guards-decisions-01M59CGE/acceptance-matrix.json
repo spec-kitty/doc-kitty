@@ -1,0 +1,169 @@
+{
+  "mission_slug": "layout-guards-decisions-01M59CGE",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/draft-publication-build.test.ts (MACHINE_SURFACE_GLOBS, diffSurfaces + positive controls); WP02 approved by reviewer-renata",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:16:55.284732+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/stock-header-stamp.test.ts (field-named mismatch messages, positive control); WP04 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:00.318483+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/scripts/capture-stock-header.mjs + DK_INTERNAL_STOCK_HEADER (config-invariants.test.ts); reviewer proved switch effective with a probe carrier; WP03+WP04 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:05.388250+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/sidebar-reveal.spec.ts red on base, green on lane; src/components/Sidebar.astro; assert-chrome-artifacts reveal check; WP03 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:10.740875+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/frame-alignment.spec.ts S1; exact (0px) on rail/no-rail/collapsed in frames >=1920 and collapsed/no-rail at 1440; accepted deviation: rail-expanded at 1440 (and under a 90rem cap) the site title floors the search 11px right of the column, as stock Starlight; WP05 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:16.072780+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/frame-alignment.spec.ts T1 (box-based, incl. RTL); collapsed column ends 5px before toggle 1152-1296; narrow consumer cap edge tracked in #220; WP05 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:21.551292+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "theme.css 120rem default; frame-alignment C1/C2/N1 (2560 cap, 100% opt-out, NARROW_BASELINE); layout-css-contract.test.ts; ADR-0062; docs+changelog (WP07); WP05 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:26.710547+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/persona-card.spec.ts P1-P3 (start-aligned, band width, passport override); WP05 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:32.069875+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "inspection",
+      "evidence": "docs/architecture/collapsible-toc-rail.md accepted-shift section with measured values; WP01 approved (2 cycles)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:38.123214+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/no-sidebar-recentre.spec.ts R0-R5 with positive control and +-1px column-shift mutations red; WP06 approved (2 cycles)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:43.774255+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/target-size.spec.ts + helpers/targets.ts (per-region non-vacuity, WCAG 2.5.8 spacing exception, rail-link mutation red); WP06 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:49.285140+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "playwright.config.ts published-light/dark on example/dist-nodrafts running layout-geometry, target-size, axe, visual, sidebar-membership; ci.yml uploads dist-nodrafts; WP08 approved (2 cycles)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:54.618121+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/serve-dist.mjs fatal both ways + unknown value + missing dist (red/green in WP08 history); WP08 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:17:59.918517+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Verify FR-014 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/sidebar-membership.spec.ts with positive control; WP08 approved",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:18:05.544789+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Verify FR-015 is satisfied",
+      "proof_type": "inspection",
+      "evidence": "stale 0.32/no-cascade-layers/five-carriers/720px/provenance comments fixed across WP01, WP04, WP05, WP07 (markua.md, Header.astro); reviewers confirmed",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:18:10.722591+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Verify FR-016 is satisfied",
+      "proof_type": "inspection",
+      "evidence": "CHANGELOG.md [Unreleased]: Breaking (#205 + opt-out line), Added, Changed, Fixed; WP07 approved, #200 bullet cross-checked against WP08",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-10-19T09:18:16.477592+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
