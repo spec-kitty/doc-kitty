@@ -1,0 +1,29 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-18T16:38:59.799836Z",
+      "decision_id": "01M57Y2YYQR0K2FB1STTQQCK51",
+      "final_answer": "Yes. The operator's session brief is the confirmed intent; operator said the listed decisions are made and must not be re-asked.",
+      "input_key": "intent_source",
+      "mission_id": "01M57Y2CA6NMDPCE75CCG0P9QD",
+      "mission_slug": "astro7-starlight-migration-01M57Y2C",
+      "opened_by": "cli",
+      "options": [
+        "Yes, brief is confirmed intent",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Is the operator brief in the session prompt the confirmed intent (spike-first, go/no-go gate, unified() kept, 0.4.0 carries #183 and #210)?",
+      "rationale": null,
+      "resolved_at": "2026-10-18T16:39:06.470221Z",
+      "resolved_by": null,
+      "slot_key": "specify.intent.brief-source",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M57Y2CA6NMDPCE75CCG0P9QD",
+  "version": 1
+}
