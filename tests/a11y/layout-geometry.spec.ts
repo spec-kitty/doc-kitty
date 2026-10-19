@@ -507,11 +507,15 @@ test.describe('layout geometry — no horizontal page scroll', () => {
   ] as const;
 
   for (const width of SCROLL_WIDTHS) {
-    test(`${width}px: scroll width equals viewport width on ${SCROLL_ROUTES.length} routes`, async ({
+    test(`${width}px: scroll width equals viewport width on the published routes`, async ({
       page,
-    }) => {
+    }, testInfo) => {
       await page.setViewportSize({ width, height: HEIGHT });
-      for (const [name, path] of SCROLL_ROUTES) {
+      // The published projects serve the drafts-off dist, where the draft page does
+      // not exist; measure it only where it is built.
+      const published = testInfo.project.name.startsWith('published-');
+      const routes = SCROLL_ROUTES.filter(([name]) => !(published && name === 'draft feature page'));
+      for (const [name, path] of routes) {
         await page.goto(path, { waitUntil: 'load' });
         await expect(page.locator('main'), `non-vacuity: ${name} rendered`).toHaveCount(1);
         await settle(page);
