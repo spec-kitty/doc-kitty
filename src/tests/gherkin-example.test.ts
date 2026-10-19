@@ -24,8 +24,8 @@
  *      pages keep `shipping` with no `@dk:context` in their sources;
  *   5. NFR-002 / SC-002: the example corpus (every `.feature` and every in-page
  *      fence of `example/docs/**`) has zero imperative-step findings under the
- *      example's own `gherkin.lint`, while the authoring guide's two "reads badly"
- *      steps give exactly two (the positive control).
+ *      example's own `gherkin.lint`, while a copy of the authoring guide's two
+ *      "reads badly" steps gives exactly two (the positive control).
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -247,7 +247,11 @@ describe('folder defaults supply the glossary context (SC-001, #197)', () => {
   });
 
   it('the shipping pages keep "shipping", and no shipping source carries a @dk:context tag', () => {
-    expect(shippingFeatures.length).toBe(3);
+    // The three features that used to carry the tag must be among them; more
+    // example features may be added without breaking this test.
+    expect(shippingFeatures).toEqual(
+      expect.arrayContaining(['book-consignment.feature', 'declare-customs.feature', 'track-consignment.feature']),
+    );
     for (const name of shippingFeatures) {
       expect(committedContext(`shipping/${name.replace(/\.feature$/, '.md')}`), name).toBe('shipping');
       const source = readFileSync(path.join(EXAMPLE_ROOT, 'features', 'shipping', name), 'utf8');
@@ -301,7 +305,10 @@ describe('the example corpus has zero imperative-step findings (NFR-002, SC-002,
     const warnings: string[] = [];
     let steps = 0;
     const model = featureModel();
-    expect(model.files.length).toBe(4);
+    // Non-vacuity: the corpus includes both demonstrated folders (more may be added).
+    expect(model.files.map((f) => f.relPath)).toEqual(
+      expect.arrayContaining(['shipping/book-consignment.feature', 'hr/request-leave.feature']),
+    );
     for (const file of model.files) {
       const view = featureView(file.document);
       expect(view).not.toBeNull();
@@ -330,8 +337,9 @@ describe('the example corpus has zero imperative-step findings (NFR-002, SC-002,
       expect(lines, page).toEqual([]);
     }
 
-    // 3. Positive control (SC-002): the authoring guide's two "reads badly" steps,
-    //    with the same rules, give exactly two warnings — on a feature and in a fence.
+    // 3. Positive control (SC-002): a copy of the two "reads badly" steps the
+    //    authoring guide shows (inlined here, not read from the guide), with the
+    //    same rules, give exactly two warnings — on a feature and in a fence.
     const control = ['Feature: Book', '  Scenario: Book by clicking', '    When I click "#book-button"', '    And I fill in "size" with "12"', ''].join('\n');
     const { document } = parseGherkin(control, { display: 'control.feature' });
     const controlWarnings: string[] = [];

@@ -35,11 +35,11 @@ const NON_SPEC_PAGES = [
   'guides/getting-started/index.html', // prose guide
   'guides/scenarios-in-pages/index.html', // in-page Gherkin, not kind: Specification
 ];
-const CARD_OPEN = '<section class="dk-spec-card" aria-labelledby="dk-spec-card-h">';
-// `data-pagefind-ignore`: the visually hidden heading names the region for screen
-// readers only; without it Pagefind lists "Specification details" as a sub-result
-// on every feature page. The tags and source path stay searchable.
-const CARD_HEADING = '<h2 id="dk-spec-card-h" class="sr-only" data-pagefind-ignore>Specification details</h2>';
+// The card is a region named by `aria-label`, not by a heading: a heading
+// (even a visually hidden one) would file the page's lead prose under it in
+// screen-reader heading navigation, because the body's own `# Title` is
+// dropped by the single-h1 pass. It also keeps the name out of Pagefind.
+const CARD_OPEN = '<section class="dk-spec-card" aria-label="Specification details">';
 
 function fail(message) {
   process.stderr.write(`assert:specification: FAIL — ${message}\n`);
@@ -74,9 +74,10 @@ function assertCard(html, relPath) {
   const n = count(html, 'class="dk-spec-card"');
   if (n !== 1) fail(`${relPath}: expected exactly one class="dk-spec-card", found ${n} (FR-014)`);
   const card = cardOf(html, relPath);
-  if (!card.includes(CARD_HEADING)) {
-    fail(`${relPath}: the card has no visually hidden heading \`${CARD_HEADING}\` (contract)`);
+  if (!card.startsWith(CARD_OPEN)) {
+    fail(`${relPath}: the card does not open with \`${CARD_OPEN}\` (contract)`);
   }
+  if (/<h[1-6]\b/i.test(card)) fail(`${relPath}: the card contains a heading; it is named by aria-label (contract)`);
   if (/<nav\b/i.test(card)) fail(`${relPath}: the card contains a <nav>; the TOC is the only scenario navigation (FR-015)`);
   if (/role="navigation"/i.test(card)) fail(`${relPath}: the card carries role="navigation" (FR-015)`);
   if (/aria-current/i.test(card)) fail(`${relPath}: the card carries aria-current (FR-015)`);
@@ -84,9 +85,6 @@ function assertCard(html, relPath) {
   if (card.includes('dk-draft-notice')) fail(`${relPath}: the card renders its own draft notice (WP05 owns it)`);
   const tocs = count(html, '<starlight-toc');
   if (tocs !== 1) fail(`${relPath}: expected exactly one <starlight-toc>, found ${tocs} (FR-015)`);
-  if (html.includes('href="#dk-spec-card-h"')) {
-    fail(`${relPath}: a TOC lists the hidden card heading (#dk-spec-card-h)`);
-  }
   const results = count(html, 'class="dk-gherkin__results"');
   if (results > 1) fail(`${relPath}: ${results} results summaries; the card must not repeat it (R-08)`);
   return card;

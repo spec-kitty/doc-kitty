@@ -46,4 +46,4 @@ recorded in [ADR-0061](../adr/0061-gherkin-authoring-aids.md) and
   page.
 
 The example site uses both new options: its shipping and HR folders map to their
-contexts, and the step check runs with zero warnings.
+contexts, and the imperative-step lint runs with zero warnings.

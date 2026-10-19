@@ -2,6 +2,9 @@
 /*
  * Draft notice (gherkin-authoring-aids WP05 / FR-016, research R-07).
  *
+ * Not a theme slot, although it lives beside them: it renders outside the
+ * `dk:metadata-band` host on purpose, so a theme cannot remove it (ADR-0062).
+ *
  * A static line that tells the reader the page is a draft. The PageTitle carrier
  * decides whether to render it (`doc_status: draft`, every kind, Persona
  * included); this component takes no props and owns the copy, so the text has one
@@ -13,4 +16,4 @@
  */
 ---
 
-<p class="dk-draft-notice"><span class="sr-only">Document status: </span>Draft. This page is work in progress and may change.</p>
+<p class="dk-draft-notice"><span class="sr-only">Document status: </span>Draft. This page is a work in progress and may change.</p>

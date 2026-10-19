@@ -857,7 +857,7 @@ gherkin: {
 | `allowEmpty` | `false` | Lets the build remove the generated pages when no source yields a feature. Leave it off unless you removed the features on purpose. Must be `true` or `false`, and only valid with `sources`. |
 | `titles` | none | Hub titles by source directory, for names a directory can't spell: `{ hr: 'HR', 'shipping/edi': 'EDI messages' }`. A key is the directory relative to its source, as written on disk; the title replaces the directory name in the hub and its sidebar group. A key that matches no directory with a feature warns. Keys must be plain relative paths and titles non-blank strings. Only valid with `sources`. |
 | `defaultGlossaryContext` | none | The glossary context of every generated page under a source directory, so features need no `@dk:context` tag: `{ shipping: 'shipping', 'shipping/eu': 'customs' }`. A key is a directory relative to its source, written like a `titles` key, and covers its subdirectories; the longest matching key wins, compared by whole folder name. A feature's own `@dk:context` tag wins over it. Generated pages only. Only valid with `sources`. See [Gherkin: glossary context by folder](#gherkin-glossary-context-by-folder). |
-| `lint` | none (off) | Warn-only authoring checks. Today it holds one key, `imperativeSteps`: `false` (the default), `true`, or `{ verbs, extend, keywords }`. It never fails a build or changes a page. See [Gherkin: the imperative-step check](#gherkin-the-imperative-step-check). |
+| `lint` | none (off) | Warn-only authoring lints. Today it holds one key, `imperativeSteps`: `false` (the default), `true`, or `{ verbs, extend, keywords }`. It never fails a build or changes a page. See [Gherkin: the imperative-step lint](#gherkin-the-imperative-step-lint). |
 | `results` | none | A Cucumber report (Messages NDJSON or JSON) whose results are shown next to every scenario rendered from a `.feature` file. A path relative to the site root, or `{ report, root, required }` with `root` the directory Cucumber ran in and `required` a boolean (see below). See [Gherkin: test results](#gherkin-test-results). |
 | `results.required` | `true` | Whether a missing report fails the build when the `CI` environment variable is set. Set `false` for preview or docs-only jobs that never run the tests. Must be `true` or `false`. |
 
@@ -977,7 +977,7 @@ gherkin: {
 - **Regenerating.** The generator stamp covers the `.feature` bytes only. A
   change to the map alone rewrites `glossary_context` but keeps `generated.at`.
 
-### Gherkin: the imperative-step check
+### Gherkin: the imperative-step lint
 
 `gherkin.lint.imperativeSteps` prints a build warning for each Given or When
 step that describes user-interface mechanics instead of behaviour
