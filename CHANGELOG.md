@@ -255,6 +255,30 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
   frontmatter error for a retired glossary stamp pointed at the Gherkin
   generator. Now it names `dockitty-generate-feature-pages` for Gherkin pages
   and a site build for glossary pages.
+- **The Markua showcase no longer requests a missing image (#194).** Before,
+  its web-image figure loaded `https://example.com/mac.jpg`, which does not
+  exist. Now it loads the site's own `macintosh.svg` by its absolute site URL,
+  so it still shows web-URL passthrough. `dockitty-assert-no-broken-links`
+  takes an opt-in `--no-external-images` (with `--allow-image-host <host>`)
+  that fails a built `<img>` loaded from another host, or a same-site absolute
+  image missing from the build, without fetching anything; the example's
+  `pnpm assert:no-broken-links` turns it on.
+
+### Documentation
+
+- **The site's changelog shows every release, from CHANGELOG.md (#192).**
+  Before, the example site's changelog was a hand-written page that stopped at
+  v0.1.0. Now `/changelog/releases/` renders the repository's `CHANGELOG.md` at
+  build time, so there is no copy to keep in sync, and `pnpm assert:changelog`
+  fails when a `## [x.y.z]` release is missing from the built page.
+- **Install 0.4.0 from the site's new install guide (#193).** Before, the site
+  had no install guide and Getting started showed repository-internal commands.
+  Now `/guides/install/` covers Node `>=22.22.0`, the astro 7, Starlight 0.42
+  and `@astrojs/markdown-remark` 7 peers, the GitHub Packages `.npmrc` setup
+  and the first build, and links the 0.3 to 0.4 migration guide; Getting
+  started points consumers there. A test keeps the guide's Node floor, peer
+  ranges, package name and wiring equal to `src/package.json` and the
+  consumption-test fixture.
 
 ### Known limitations
 
