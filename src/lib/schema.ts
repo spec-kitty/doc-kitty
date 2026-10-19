@@ -148,12 +148,13 @@ export const DESCRIPTION_MAX = 180;
 // ONE parser — `z.coerce.date()` must not be a second one. A date-only value reads
 // as midnight UTC and a non-`Z` offset is a valid instant; the standalone gate
 // (not this schema, which has no warning channel) warns on both.
-const instantDate = z.preprocess((v) => normaliseInstant(v)?.date ?? v, z.date());
+const instantDate = z.preprocess((v) => normaliseInstant(v)?.date ?? v, z.date({ message: 'not a date: write a UTC instant, YYYY-MM-DDTHH:MM:SSZ' }));
 
 // A stamp's `at` stays a string whatever YAML did to it: a `Date` becomes the
-// canonical `YYYY-MM-DDTHH:MM:SSZ` form (older pages carry a hash here, so no
-// instant check — only the gate warns).
-const stampAt = z.preprocess((v) => (v instanceof Date ? formatInstant(v) : v), z.string());
+// canonical `YYYY-MM-DDTHH:MM:SSZ` form, and the same parser as `updated` checks it (#227).
+const stampAt = z
+  .preprocess((v) => (v instanceof Date ? formatInstant(v) : v), z.string({ message: 'not a date: write a UTC instant, YYYY-MM-DDTHH:MM:SSZ' }))
+  .refine((s) => normaliseInstant(s) !== null, { message: 'not a date: write a UTC instant, YYYY-MM-DDTHH:MM:SSZ' });
 
 const stamp = z.object({ by: z.string(), at: stampAt, content_hash: z.string().optional() });
 

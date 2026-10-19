@@ -510,6 +510,9 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
     expect(validate(FEATURE_REL, { ...base, updated: '2026-09-01' }).problems).toEqual([]);
     const bad = validate(FEATURE_REL, { ...base, updated: 'not-a-date' }).problems;
     expect(bad.some((p) => p.startsWith('`updated`:'))).toBe(true);
+    // #227: the message names the field and the accepted form.
+    const bare = validate(FEATURE_REL, { ...base, updated: '1' }).problems;
+    expect(bare.some((p) => p.startsWith('`updated`:') && p.includes('YYYY-MM-DDTHH:MM:SSZ'))).toBe(true);
   });
 
   it('legacy glossary output (no `generated` stamp) still validates unchanged via the path rule', () => {
@@ -595,6 +598,23 @@ describe('schema/validator parity — OKF metadata forms (#177)', () => {
     ['date-only stale_after', 'context/x.md', page({ stale_after: '2027-01-01' }), false, null],
     ['generated with content_hash', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: '2026-10-18T09:30:00Z', content_hash: 'sha256:0123456789ab' } }), false, null],
     ['generated.at already a Date', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: new Date('2026-10-18T09:30:00Z') } }), false, null],
+    // #227: a value that is not date-shaped is rejected by both twins, through the one parser.
+    ['bare-number string updated', 'context/x.md', page({ updated: '1' }), true, null],
+    ['YAML number updated', 'context/x.md', page({ updated: 20241001 }), true, null],
+    ['small YAML number updated', 'context/x.md', page({ updated: 1 }), true, null],
+    ['YAML number generated.at', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: 1 } }), true, null],
+    ['year-only updated', 'context/x.md', page({ updated: '2024' }), true, null],
+    ['two-group numeric updated', 'context/x.md', page({ updated: '1/2' }), true, null],
+    ['word plus year updated', 'context/x.md', page({ updated: 'abc 2024' }), true, null],
+    ['decimal updated', 'context/x.md', page({ updated: '2024.5' }), true, null],
+    ['bare-number stale_after', 'context/x.md', page({ stale_after: '12' }), true, null],
+    ['bare-number generated.at', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: '1' } }), true, null],
+    ['bare-number verified at', 'context/x.md', page({ verified: { by: 'human:jane', at: '1' } }), true, null],
+    // ...while every realistic non-ISO form keeps building with its advisory.
+    ['numeric US-style updated', 'context/x.md', page({ updated: '1/2/24' }), false, 'not ISO'],
+    ['rolled-over calendar updated', 'context/x.md', page({ updated: '2026-02-30' }), false, 'not a real calendar date'],
+    ['month-year updated', 'context/x.md', page({ updated: 'May 2024' }), false, 'not ISO'],
+    ['year-month updated', 'context/x.md', page({ updated: '2024-10' }), false, 'not ISO'],
   ];
 
   for (const [name, relPath, data, reject, needle] of ROWS) {
@@ -641,12 +661,14 @@ describe('vocabulary-core metadata rules (#177, C-009)', () => {
     expect(d?.date.toISOString()).toBe('2026-10-18T00:00:00.000Z');
     expect(normaliseInstant('2026-10-18T09:30:00+02:00')?.date.toISOString()).toBe('2026-10-18T07:30:00.000Z');
     expect(normaliseInstant(new Date('2026-10-18T09:30:00Z'))?.dateOnly).toBe(false);
-    for (const bad of ['', 'not-a-date', '2026-13-01', '2024-05-01T10:00:00+25:99', '2024-05-01T10:00:00+02:60', null, undefined]) {
+    for (const bad of ['', 'not-a-date', '2026-13-01', '2024-05-01T10:00:00+25:99', '2024-05-01T10:00:00+02:60', null, undefined,
+      // #227: not date-shaped, though `new Date()` would parse them
+      '1', '2024', '1/2', 'abc 2024', '2024.5', ' 1 ', 1, 20241001]) {
       expect(normaliseInstant(bad as string)).toBeNull();
     }
   });
 
-  it('normaliseInstant keeps main\'s accept-set (NFR-004): zoneless, compact offsets, no seconds, anything Date parses', () => {
+  it('normaliseInstant keeps main\'s accept-set (NFR-004): zoneless, compact offsets, no seconds, a month name plus a number, or three numeric groups (#227)', () => {
     expect(normaliseInstant('2024-05-01T10:00:00')).toMatchObject({ noZone: true, nonIso: false });
     expect(normaliseInstant('2024-05-01T10:00:00')?.date.toISOString()).toBe('2024-05-01T10:00:00.000Z');
     expect(normaliseInstant('2024-05-01T10:00:00+0200')?.date.toISOString()).toBe('2024-05-01T08:00:00.000Z');
@@ -655,6 +677,9 @@ describe('vocabulary-core metadata rules (#177, C-009)', () => {
     expect(normaliseInstant('2024-05-01T10:00Z')).toMatchObject({ noZone: false, nonIso: false });
     expect(normaliseInstant('2024-05-01T10:00Z')?.date.toISOString()).toBe('2024-05-01T10:00:00.000Z');
     expect(normaliseInstant('May 1, 2024')).toMatchObject({ nonIso: true });
+    for (const written of ['1/2/24', 'May 2024', '2024-10', '1 May 2024']) {
+      expect(normaliseInstant(written)).toMatchObject({ nonIso: true });
+    }
     // An ISO-shaped date that is not on the calendar still builds (rolled over), but is flagged as such, not as non-ISO.
     expect(normaliseInstant('2026-02-30')).toMatchObject({ rolledOver: true, nonIso: false });
     expect(normaliseInstant('2026-02-30')?.date.toISOString()).toBe('2026-03-02T00:00:00.000Z');

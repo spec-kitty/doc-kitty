@@ -241,12 +241,14 @@ const INSTANT =
  * - `noZone`: a date-time with no zone, read as UTC;
  * - `rolledOver`: ISO-shaped but not a real calendar date (`2026-02-30`), which
  *   `new Date()` rolls forward (to 03-02); accepted for parity, read as the rolled date;
- * - `nonIso`: anything else `new Date()` still parses (what `z.coerce.date()`
+ * - `nonIso`: a written-out or numeric date (a month name and a number, or three
+ *   numeric groups) that `new Date()` still parses (what `z.coerce.date()`
  *   accepted before the content graph), so a page that built before keeps building.
  *
  * A `Date` cannot reveal whether its source was date-only, so it reports
- * `dateOnly: false`; callers that need the flag pass the raw string. Only values
- * `Date` cannot parse are `null`.
+ * `dateOnly: false`; callers that need the flag pass the raw string. Values
+ * `Date` cannot parse are `null`, and so are a number and any other string that
+ * is not date-shaped (#227).
  *
  * @param {unknown} v
  * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean, rolledOver: boolean} | null}
@@ -257,15 +259,35 @@ export function normaliseInstant(v) {
       ? null
       : { date: v, dateOnly: false, nonUtc: false, noZone: false, nonIso: false, rolledOver: false };
   }
-  if (typeof v === 'number') return legacyInstant(v);
   if (typeof v !== 'string') return null;
   const text = v.trim();
   const iso = isoInstant(text);
   if (iso) return iso;
-  const legacy = legacyInstant(text);
   // An ISO-shaped value whose date `Date` rolled over (2026-02-30 -> 03-02) is not
   // "non-ISO"; it is a calendar-invalid date the build still accepts.
-  return legacy && isRolledOver(text) ? { ...legacy, nonIso: false, rolledOver: true } : legacy;
+  const rolledOver = isRolledOver(text);
+  if (!rolledOver && !isDateShaped(text)) return null;
+  const legacy = legacyInstant(text);
+  return legacy && rolledOver ? { ...legacy, nonIso: false, rolledOver: true } : legacy;
+}
+
+const MONTH_NAME = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i;
+
+/**
+ * A non-ISO string reads as a date only with a year-month (`2024-10`), a month
+ * name and a digit, or at least three numeric groups; `"1"`, `"2024"`, `"abc 2024"`
+ * and `"2024.5"` are not dates though `Date` parses them (#227). V8 matches month
+ * names by prefix, so `"Decimal 2024"` and `"1.2.3"` still pass; left as is.
+ *
+ * @param {string} text
+ * @returns {boolean}
+ */
+function isDateShaped(text) {
+  return (
+    /^\d{4}-\d{1,2}$/.test(text) ||
+    (MONTH_NAME.test(text) && /\d/.test(text)) ||
+    (text.match(/\d+/g) ?? []).length >= 3
+  );
 }
 
 /**
@@ -295,7 +317,7 @@ function componentsValid(m) {
 }
 
 /**
- * @param {string | number} v
+ * @param {string} v
  * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean, rolledOver: boolean} | null}
  */
 function legacyInstant(v) {

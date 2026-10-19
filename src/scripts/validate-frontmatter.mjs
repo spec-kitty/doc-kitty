@@ -144,8 +144,10 @@ export function isGeneratedPage(relPath, data) {
 
 // Instants and stamps (#177): the same shared parser as `docKittyFields` in
 // schema.ts, so the two twins accept and reject identically (NFR-002).
-const instantDate = z.preprocess((v) => normaliseInstant(v)?.date ?? v, z.date());
-const stampAt = z.preprocess((v) => (v instanceof Date ? formatInstant(v) : v), z.string());
+const instantDate = z.preprocess((v) => normaliseInstant(v)?.date ?? v, z.date({ message: 'not a date: write a UTC instant, YYYY-MM-DDTHH:MM:SSZ' }));
+const stampAt = z
+  .preprocess((v) => (v instanceof Date ? formatInstant(v) : v), z.string({ message: 'not a date: write a UTC instant, YYYY-MM-DDTHH:MM:SSZ' }))
+  .refine((s) => normaliseInstant(s) !== null, { message: 'not a date: write a UTC instant, YYYY-MM-DDTHH:MM:SSZ' });
 const stamp = z.object({ by: z.string(), at: stampAt });
 
 // A `related` entry: a bare slug or `{ ref, note? }` (ADR-0009). Ref integrity
@@ -463,6 +465,8 @@ export function validate(
     for (const issue of result.error.issues) {
       // Generated pages without an `updated` carry none by design — skip that issue.
       if (updatedExempt && issue.path[0] === 'updated') continue;
+      // A retired stamp is already reported once, by name; skip its `at` issue.
+      if (retired && issue.path.join('.') === 'generated.at') continue;
       const where = issue.path.length ? `\`${issue.path.join('.')}\`: ` : '';
       problems.push(`${where}${issue.message}`);
     }
