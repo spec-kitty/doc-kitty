@@ -21,12 +21,17 @@ interface Hast {
 
 /** remark → hast with the Astro VFile shape (`data.astro.frontmatter`), then `singleH1`. */
 function render(markdown: string, frontmatter: Record<string, unknown> | undefined): Hast {
+  return renderWithFile(markdown, frontmatter).hast;
+}
+
+/** As `render`, also returning the VFile (`history[0]` is what `rehypeHeadingIds` reads). */
+function renderWithFile(markdown: string, frontmatter: Record<string, unknown> | undefined) {
   const processor = unified().use(remarkParse).use(remarkSmartypants);
-  const file = { data: frontmatter ? { astro: { frontmatter } } : {} };
+  const file = { history: ['page.md'], data: frontmatter ? { astro: { frontmatter } } : {} };
   const mdast = processor.runSync(processor.parse(markdown));
   const hast = toHast(mdast as Parameters<typeof toHast>[0], { allowDangerousHtml: true }) as unknown as Hast;
   singleH1()(hast, file);
-  return hast;
+  return { hast, file };
 }
 
 const textOf = (node: Hast): string => node.value ?? (node.children ?? []).map(textOf).join('');
@@ -35,6 +40,13 @@ const textOf = (node: Hast): string => node.value ?? (node.children ?? []).map(t
 function headings(node: Hast, out: string[] = []): string[] {
   if (node.type === 'element' && /^h[1-6]$/.test(node.tagName ?? '')) out.push(`${node.tagName}: ${textOf(node)}`);
   for (const child of node.children ?? []) headings(child, out);
+  return out;
+}
+
+/** Every element carrying `properties.id === id`, in document order. */
+function elementsWithId(node: Hast, id: string, out: Hast[] = []): Hast[] {
+  if ((node as { properties?: { id?: unknown } }).properties?.id === id) out.push(node);
+  for (const child of node.children ?? []) elementsWithId(child, id, out);
   return out;
 }
 
@@ -80,12 +92,26 @@ describe('singleH1 — a body H1 never adds a second page <h1> (#191)', () => {
     expect(headings(tree)).toEqual(['h2: v0.1.0 — 2026-08-21']);
   });
 
-  it('drops the first title H1 even when content precedes it, keeps its anchor, and demotes the other H1s', () => {
-    const tree = render('Intro.\n\n# Title\n\nMore.\n\n# Second\n', { title: 'Title' });
+  it('drops the first title H1 even when content precedes it, keeps its anchor unless a later heading takes the id, and demotes the other H1s', async () => {
+    // A different later H1 is demoted; the dropped title leaves an alias span with its id.
+    const { hast: tree } = renderWithFile('Intro.\n\n# Title\n\nMore.\n\n# Second\n', { title: 'Title' });
     expect(h1s(tree)).toBe(0);
     expect(headings(tree)).toEqual(['h2: Second']);
-    // The alias carries the id rehypeHeadingIds would have given the dropped heading.
+    const aliases = elementsWithId(tree, 'title');
+    expect(aliases).toHaveLength(1);
+    expect(aliases[0]?.tagName).toBe('span');
     expect(JSON.stringify(tree)).toContain('"properties":{"id":"title"}');
+
+    // A later `## Title` takes the id itself, so no alias is emitted for the dropped heading.
+    const { hast: tree2, file: file2 } = renderWithFile('Intro.\n\n# Title\n\nMore.\n\n## Title\n', { title: 'Title' });
+    expect(headings(tree2)).toEqual(['h2: Title']);
+    expect(elementsWithId(tree2, 'title')).toHaveLength(0);
+    // Run the real, pinned rehypeHeadingIds: exactly one element holds the id, and it is the h2.
+    const { rehypeHeadingIds } = await import('@astrojs/markdown-remark');
+    (rehypeHeadingIds() as unknown as (tree: Hast, file: unknown) => void)(tree2, file2);
+    const holders = elementsWithId(tree2, 'title');
+    expect(holders).toHaveLength(1);
+    expect(holders[0]?.tagName).toBe('h2');
   });
 
   it('leaves every other heading level alone', () => {
