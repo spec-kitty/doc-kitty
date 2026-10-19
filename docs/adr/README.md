@@ -71,5 +71,6 @@ kind: Hub
 | [0057](./0057-internal-env-handoff-seam.md) | ADR-0057: One owner for DocKitty's internal environment handoffs | Accepted | 2026-10-15 |
 | [0058](./0058-build-state-owner-and-config-split.md) | ADR-0058: One owner for build state, a split config, and the env reader | Accepted | 2026-10-17 |
 | [0059](./0059-content-graph-and-okf-alignment.md) | ADR-0059: A published content graph, and alignment with OKF v0.2 | Accepted | 2026-10-18 |
+| [0060](./0060-markdown-processor-unified-for-astro-7.md) | ADR-0060: Keep remark and rehype on Astro's unified() processor for Astro 7 | Accepted | 2026-10-18 |
 
 New ADRs copy [`template.md`](./template.md).
