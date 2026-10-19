@@ -115,8 +115,14 @@ example/dist-wp06-header-theme-test/
 # transient) — the second build of src/tests/sidebar-build-html.test.ts.
 example/dist-wp07-consumer-sidebar-test/
 
-# Draft-free example build asserted by CI next to the main build (WP05).
+# Draft-free example build asserted by CI next to the main build (WP05), and
+# served to the a11y lane's published projects (layout-guards-decisions WP08).
 example/dist-nodrafts/
+
+# Carrier-free stock-header capture build (layout-guards-decisions WP04,
+# transient): the capture script builds into its own DK_OUTDIR and removes it,
+# ignored in case the script is killed mid-build.
+example/dist-stock-header-capture/
 
 # In-page Gherkin build-failure fixture site (ADR-0051, transient) —
 # src/tests/gherkin-fence-build.test.ts writes, builds and removes it; ignored in

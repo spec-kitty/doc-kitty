@@ -1,0 +1,7 @@
+{
+  "starlight": "0.42.6",
+  "astro": "7.4.0",
+  "compressHTML": true,
+  "carrier": "disabled",
+  "capturedFrom": "example/dist/index.html"
+}
