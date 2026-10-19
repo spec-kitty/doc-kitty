@@ -85,7 +85,7 @@ callout: `<aside class="dk-callout dk-callout--{variant}">`, styled by a
 `--dk-callout-*` token family in `theme.css`. This mirrors how
 `rehype/diagram-figure.ts` already builds a `<figure>` as raw hast rather than an
 Astro component — the Starlight `components` map is a fixed set of toolkit
-carriers (six since [ADR-0061](../adr/0061-sidebar-carrier.md), five since
+carriers (six since [ADR-0063](../adr/0063-sidebar-carrier.md), five since
 [ADR-0044](../adr/0044-header-carrier.md); four when this was decided,
 ADR-0013/ADR-0015), so no directive → component seam exists for a
 markua callout to ride.

@@ -16,8 +16,8 @@ related:
   - adr/0044-header-carrier
   - adr/0045-frame-width-token
   - adr/0053-reading-width
-  - adr/0061-sidebar-carrier
-  - adr/0062-default-frame-cap
+  - adr/0063-sidebar-carrier
+  - adr/0064-default-frame-cap
   - guides/theme-header
   - architecture/metadata-model
 ---
@@ -144,7 +144,7 @@ Three things to know:
 `--dk-frame-gutter` is derived. Do not set it. The token and the measurements
 behind it are in [ADR-0045](../adr/0045-frame-width-token.md); the 120rem default,
 which replaces ADR-0045's full-width default, is in
-[ADR-0062](../adr/0062-default-frame-cap.md). This page is the
+[ADR-0064](../adr/0064-default-frame-cap.md). This page is the
 architectural description; the reference a site owner works from is
 [Cap the page width](../guides/consumer-setup.md#cap-the-page-width) in the
 consumer setup guide.
@@ -185,7 +185,7 @@ prose-measure-optimised one, and the line-length measurements are in
 doc-kitty registers **six carrier overrides** with Starlight — `Head`,
 `PageTitle`, `MarkdownContent`, `Footer`, `Header`, `Sidebar` — and nothing else
 ([ADR-0044](../adr/0044-header-carrier.md) added `Header` to the original four,
-and [ADR-0061](../adr/0061-sidebar-carrier.md) added `Sidebar`). `Sidebar` hosts
+and [ADR-0063](../adr/0063-sidebar-carrier.md) added `Sidebar`). `Sidebar` hosts
 no slot: it renders Starlight's own sidebar unchanged and then the script that
 reveals the current entry.
 The carriers host doc-kitty's own named `dk:` slots. Themes target `dk:` slot names
@@ -401,7 +401,7 @@ order. Point Starlight's `components` at doc-kitty's six carriers, and expose
 choice flows through the manifest
 ([ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md),
 [ADR-0044](../adr/0044-header-carrier.md),
-[ADR-0061](../adr/0061-sidebar-carrier.md)).
+[ADR-0063](../adr/0063-sidebar-carrier.md)).
 
 The Spec Kitty brand header rides this `assets` forwarding: its logo-in-nav wordmark
 comes from Starlight-native `logo`/`title` config plus brand CSS, so it needs no
@@ -449,6 +449,6 @@ against `@astrojs/starlight@0.42.6`.
 - [ADR-0044](../adr/0044-header-carrier.md), the Header carrier and the
   `dk:site-header` replacement contract.
 - [ADR-0045](../adr/0045-frame-width-token.md), the `--dk-width-frame` token.
-- [ADR-0061](../adr/0061-sidebar-carrier.md), the `Sidebar` carrier.
-- [ADR-0062](../adr/0062-default-frame-cap.md), the 120rem default frame.
+- [ADR-0063](../adr/0063-sidebar-carrier.md), the `Sidebar` carrier.
+- [ADR-0064](../adr/0064-default-frame-cap.md), the 120rem default frame.
 - [Metadata model](./metadata-model.md).

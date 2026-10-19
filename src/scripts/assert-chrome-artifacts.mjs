@@ -202,7 +202,7 @@ const HERO_PAGE = path.join('architecture', 'overview', 'index.html'); // hero_i
 const SOCIAL_PAGE = path.join('guides', 'getting-started', 'index.html'); // social_thumb
 const SITEDEFAULT_PAGE = path.join('context', 'index.html'); // neither → site-default
 const HUB_PAGE = path.join('context', 'index.html'); // kind: Hub
-// Sidebar carrier (ADR-0061): a Starlight page without a sidebar (the 404 page
+// Sidebar carrier (ADR-0063): a Starlight page without a sidebar (the 404 page
 // renders with `hasSidebar: false`); the page with one is SIDEBAR_SAMPLE_PAGE.
 const NO_SIDEBAR_PAGE = '404.html';
 
@@ -839,7 +839,7 @@ export async function assertChromeArtifacts(distDir) {
   }
   ok(`carriers: Head, PageTitle and MarkdownContent carriers active (dk-chrome + dk:page-hero + dk:metadata-band + Hub layout)`);
 
-  // Sidebar carrier (ADR-0061, FR-004): on a page with a sidebar, the reveal
+  // Sidebar carrier (ADR-0063, FR-004): on a page with a sidebar, the reveal
   // script ships exactly once, as a classic inline script AFTER Starlight's tree
   // (`</sl-sidebar-state-persist>`, whose last script is the in-session scroll
   // restore), and never in <head> (no double reveal from a leftover head entry).
@@ -855,7 +855,7 @@ export async function assertChromeArtifacts(distDir) {
     fail(`carriers: ${SIDEBAR_SAMPLE_PAGE} has no </sl-sidebar-state-persist> (no Starlight sidebar tree?)`);
   }
   if (reveals[0].index < persistClose) {
-    fail(`carriers: the reveal script precedes </sl-sidebar-state-persist> on ${SIDEBAR_SAMPLE_PAGE}; it must follow Starlight's tree and restore (ADR-0061)`);
+    fail(`carriers: the reveal script precedes </sl-sidebar-state-persist> on ${SIDEBAR_SAMPLE_PAGE}; it must follow Starlight's tree and restore (ADR-0063)`);
   }
   if (/\btype="module"|\bdefer\b|\basync\b/.test(reveals[0][0])) {
     fail(`carriers: the reveal script on ${SIDEBAR_SAMPLE_PAGE} is not a classic inline script: ${reveals[0][0]}`);

@@ -1,5 +1,5 @@
 ---
-title: "ADR-0061: Sidebar is the sixth carrier; the sidebar reveal runs right after the sidebar markup"
+title: "ADR-0063: Sidebar is the sixth carrier; the sidebar reveal runs right after the sidebar markup"
 description: The Starlight components map grows from five carriers to six. The Sidebar carrier renders Starlight's sidebar and then the reveal script, so the reveal lands before paint.
 doc_status: active
 updated: 2026-10-19T00:00:00Z
@@ -15,7 +15,7 @@ related:
   - architecture/research/layout-guards-and-decisions
 ---
 
-# ADR-0061: `Sidebar` is the sixth carrier; the sidebar reveal runs right after the sidebar markup
+# ADR-0063: `Sidebar` is the sixth carrier; the sidebar reveal runs right after the sidebar markup
 
 ## Status
 

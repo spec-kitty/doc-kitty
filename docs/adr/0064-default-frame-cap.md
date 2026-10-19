@@ -1,5 +1,5 @@
 ---
-title: "ADR-0062: The page frame is capped at 120rem by default"
+title: "ADR-0064: The page frame is capped at 120rem by default"
 description: --dk-width-frame now defaults to 120rem, keeping wide-screen navigation close to the text; one line restores full width. Supersedes ADR-0045 decision 1 and its 100% default.
 doc_status: active
 updated: 2026-10-19T00:00:00Z
@@ -16,7 +16,7 @@ related:
   - architecture/research/layout-guards-and-decisions
 ---
 
-# ADR-0062: The page frame is capped at 120rem by default
+# ADR-0064: The page frame is capped at 120rem by default
 
 ## Status
 

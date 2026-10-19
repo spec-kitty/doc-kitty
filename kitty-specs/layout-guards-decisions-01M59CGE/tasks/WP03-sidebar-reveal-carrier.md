@@ -91,7 +91,7 @@ Use language identifiers in code blocks: ````python`,````bash`
 
 The current sidebar entry is revealed before the sidebar is first painted, by an
 inline script placed right after Starlight's sidebar tree, through a new sixth
-carrier (#203, ADR-0061). The same carrier map also gets a test-only switch that
+carrier (#203, ADR-0063). The same carrier map also gets a test-only switch that
 drops the `Header` carrier, which WP04 needs. When this WP is done:
 
 - `tests/a11y/sidebar-reveal.spec.ts` is red on `feat/layout-guards-decisions`
@@ -113,7 +113,7 @@ Requirements: FR-004, NFR-005, C-002, SC-002. The switch is needed by FR-003
 
 ## Context & Constraints
 
-- **Decision records**: ADR-0061 (written in WP01), research D-01 and D-02
+- **Decision records**: ADR-0063 (written in WP01), research D-01 and D-02
   (`kitty-specs/layout-guards-decisions-01M59CGE/research.md`).
 - **The reveal today**: `REVEAL_CURRENT_SCRIPT` in `src/lib/route-shaping.ts`
   (around lines 427 to 456). It is a raw string, a classic inline script.
@@ -232,7 +232,7 @@ spec-kitty agent action implement WP03 --agent claude --mission layout-guards-de
      ```astro
      ---
      /*
-      * DocKitty carrier: Sidebar (the sixth carrier, ADR-0061; FR-004).
+      * DocKitty carrier: Sidebar (the sixth carrier, ADR-0063; FR-004).
       * COMPOSE: renders Starlight's own Sidebar unchanged, then the reveal script.
       * ... (explain why after-the-tree ordering means after Starlight's restore)
       */
@@ -283,7 +283,7 @@ spec-kitty agent action implement WP03 --agent claude --mission layout-guards-de
   2. Remove `{ tag: 'script', content: REVEAL_CURRENT_SCRIPT }` from `head`, and its
      import if it is now unused there.
   3. Update every comment that says "five carriers" or "exactly-five" (around lines
-     174, 285 to 291 and 589 to 597) to six, citing ADR-0061.
+     174, 285 to 291 and 589 to 597) to six, citing ADR-0063.
   4. In `route-shaping.test.ts`, replace `ships the reveal script as a head entry`
      with `does not ship the reveal script as a head entry` and
      `registers the Sidebar carrier that ships it`.

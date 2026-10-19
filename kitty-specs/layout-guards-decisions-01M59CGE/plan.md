@@ -42,7 +42,7 @@ by the CI baseline workflow.
 | Charter rule | How the plan meets it | Result |
 | --- | --- | --- |
 | Build on Astro + Starlight (ADR-0001); theme and chrome are a layered, swappable concern (ADR-0008) | The reveal stays inside a carrier that composes around Starlight's own `Sidebar`; all layout changes are tokens and CSS, overridable by a site | Pass |
-| ADRs are immutable; a change is a new or superseding ADR | ADR-0061 amends the carrier lock (ADR-0013, ADR-0015 and ADR-0044); ADR-0062 supersedes ADR-0045 decision 1 | Pass |
+| ADRs are immutable; a change is a new or superseding ADR | ADR-0063 amends the carrier lock (ADR-0013, ADR-0015 and ADR-0044); ADR-0064 supersedes ADR-0045 decision 1 | Pass |
 | Path-scoped CI with one `ci-ok` aggregate (ADR-0007) | The published lane joins the existing a11y job, so the `needs` graph and `ci-ok` are unchanged | Pass |
 | WCAG 2.2 AA | Target size becomes an explicit check; axe stays at 0 new violations (NFR-004) | Pass |
 | Living documentation: a behaviour change updates its docs in the same change | Each concern below names the docs it updates; the changelog carries the breaking default | Pass |
@@ -82,7 +82,7 @@ src/
     └── fixtures/header-theme/   # stock-header.html, stock-header.meta.json (new), README.txt
 tests/a11y/              # playwright: layout-geometry, reading-width, toc-rail, visual, axe, serve-dist.mjs, routes.ts
 .github/workflows/       # ci.yml (a11y job, build-example uploads), update-a11y-baselines.yml
-docs/adr/                # 0061-sidebar-carrier.md, 0062-default-frame-cap.md (new)
+docs/adr/                # 0063-sidebar-carrier.md, 0064-default-frame-cap.md (new)
 docs/architecture/       # collapsible-toc-rail.md, theming.md, starlight-integration.md
 docs/guides/             # consumer-setup.md, adopting.md
 example/                 # no new pages (C-003)
@@ -97,7 +97,7 @@ one component, one script, one sidecar, one unit test and two ADRs.
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 | --- | --- | --- |
 | A test-only switch in `createConfig` that drops the `Header` carrier (IC-03) | The owner decided (decision `01M59CR08D2F8D3P8T3D0GN9VD`) that the stock-header fixture must come from the real example built without the carrier | A separate plain-Starlight fixture site would have to mirror by hand whatever `createConfig` passes to Starlight, and drift would silently change what "stock" means |
-| A sixth carrier (`Sidebar`) against the five-carrier lock | The owner chose to inline the reveal right after the sidebar markup (#203), which only a `Sidebar` override can place | A head-script observer was offered and declined; ADR-0061 records the choice |
+| A sixth carrier (`Sidebar`) against the five-carrier lock | The owner chose to inline the reveal right after the sidebar markup (#203), which only a `Sidebar` override can place | A head-script observer was offered and declined; ADR-0063 records the choice |
 
 ## Implementation Concern Map
 
@@ -123,8 +123,8 @@ flowchart LR
   code that depends on it lands.
 - **Relevant requirements**: FR-009, FR-015 (partly), SC-005; C-002
 - **Affected surfaces**:
-  - `docs/adr/0061-sidebar-carrier.md`: the sixth carrier; amends the carrier lock.
-  - `docs/adr/0062-default-frame-cap.md`: the 120rem default; supersedes ADR-0045
+  - `docs/adr/0063-sidebar-carrier.md`: the sixth carrier; amends the carrier lock.
+  - `docs/adr/0064-default-frame-cap.md`: the 120rem default; supersedes ADR-0045
     decision 1.
   - `docs/adr/README.md` (regenerated with `validate:adr-index`).
   - `docs/architecture/collapsible-toc-rail.md`: the accepted rail/no-rail shift
@@ -135,7 +135,7 @@ flowchart LR
     reveal half points to this mission.
 - **Sequencing/depends-on**: none
 - **Risks**:
-  - The ADR numbers 0061 and 0062 assume nothing else lands first; re-check before
+  - The ADR numbers 0063 and 0064 assume nothing else lands first; re-check before
     writing.
   - The ADR index generator must pass `--check`.
 

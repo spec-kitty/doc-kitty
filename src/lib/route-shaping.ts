@@ -426,7 +426,7 @@ export { shapingWarningSink } from './build-state.js';
 
 /**
  * Inline script that brings the current sidebar entry into view (T023, FR-022;
- * before first paint since FR-004, ADR-0061, #203).
+ * before first paint since FR-004, ADR-0063, #203).
  *
  * Measured on the example site: on a deep page the `aria-current` entry sat at
  * y=1621 with the sidebar at scroll position 0. The script ships from the

@@ -9,7 +9,7 @@
 //   W3  `--dk-width-content: 45rem` restores the 720px column (the documented way back)
 //   R1  the column never reaches under the rail: expanded, collapsed, and under a
 //       frame cap, and it stays inside the pane. At 2560px the frame is the 120rem
-//       default (ADR-0062); one case restores `--dk-width-frame: 100%` so the
+//       default (ADR-0064); one case restores `--dk-width-frame: 100%` so the
 //       uncapped wide geometry stays covered
 //   U1  below 72rem the column fills its pane (small screens unchanged)
 //

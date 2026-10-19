@@ -1,5 +1,5 @@
 // The current sidebar entry is revealed BEFORE the sidebar is first painted
-// (layout-guards-decisions-01M59CGE WP03 T011; FR-004, NFR-005, ADR-0061, #203).
+// (layout-guards-decisions-01M59CGE WP03 T011; FR-004, NFR-005, ADR-0063, #203).
 //
 // Why this spec exists: `layout-geometry.spec.ts` (FR-022) measures the pane after
 // `load`, and its CLS test cannot see a scroll INSIDE a scroll container. A reveal

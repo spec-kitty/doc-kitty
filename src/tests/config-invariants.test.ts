@@ -10,7 +10,7 @@ import { PINNED_INTEGRATION_ORDER } from './helpers/integration-names.js';
  *
  * `defineDocKittyIntegrations` must register EXACTLY the six chrome carriers
  * (`Head`, `PageTitle`, `MarkdownContent`, `Footer`, `Header`, `Sidebar`; ADR-0044
- * added `Header`, ADR-0061 `Sidebar`) on the Starlight integration's `components`
+ * added `Header`, ADR-0063 `Sidebar`) on the Starlight integration's `components`
  * map — in EVERY case (no theme, a brand-like theme, and even when a consumer's
  * `starlight` escape hatch tries to add a seventh override). The one exception
  * is the test-only `DK_INTERNAL_STOCK_HEADER=on`, which drops `Header` alone. A theme addresses the carriers' `dk:` slot names, never Starlight's

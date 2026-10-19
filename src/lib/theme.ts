@@ -212,7 +212,7 @@ const DEFAULT_BASE: Record<string, string> = {
   '--dk-width-deck': '60rem',
   // The Persona card defaults to the metadata band's width (#206).
   '--dk-width-passport': 'var(--dk-width-band)',
-  // Caps the page frame at 120rem by default (ADR-0062); `100%` is full width.
+  // Caps the page frame at 120rem by default (ADR-0064); `100%` is full width.
   '--dk-width-frame': '120rem',
   // Mode-varying COLOUR tokens — LIGHT (default)
   '--dk-color-bg': '#ffffff',

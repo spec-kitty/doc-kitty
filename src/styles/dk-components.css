@@ -560,7 +560,7 @@
  *
  * The earlier constraint that layout below 100rem stays unchanged from `main`
  * is withdrawn (FR-030; recorded in ADR-0045). The frame is capped at 120rem
- * by default (ADR-0062, which supersedes ADR-0045's full-width default). That
+ * by default (ADR-0064, which supersedes ADR-0045's full-width default). That
  * leaves every viewport up to 1920px full width. A consumer sets another cap,
  * or restores a full-width frame, with one token:
  *
@@ -582,7 +582,7 @@
  * Registering the token is what makes an invalid value harmless (FR-003). An
  * unregistered custom property holding `banana` would make every declaration
  * that reads it invalid at computed-value time; a registered one computes to
- * its initial value, so the layout is the default frame (ADR-0062). A
+ * its initial value, so the layout is the default frame (ADR-0064). A
  * browser without `@property` support still honours a valid value; for an
  * invalid one `max-width` falls back to `none`, a full-width frame.
  *

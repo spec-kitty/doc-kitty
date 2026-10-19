@@ -8,7 +8,7 @@
 //   R0  collapsed: the rail column is the 1px hairline, exactly (as
 //       layout-geometry A8: a 1px tolerance on a 1px box would accept 0 and 2)
 //   R1  collapsed: the column is centred in the frame (`.main-frame`, capped at
-//       120rem by ADR-0062) less the 1px hairline, i.e. between the frame start
+//       120rem by ADR-0064) less the 1px hairline, i.e. between the frame start
 //       and the rail column's start, less the padding, +-1px
 //   R2  expanded: the column is centred between the frame start and the rail
 //       start, less the padding, +-1px

@@ -63,7 +63,7 @@ wrapper components, "and it takes its own record then".
    fixed set, owned by the toolkit, identical with or without a theme, applied
    after the consumer's escape hatch.
 
-   > **Superseded in part by [ADR-0061](./0061-sidebar-carrier.md) (six
+   > **Superseded in part by [ADR-0063](./0063-sidebar-carrier.md) (six
    > carriers).** The map is still fixed, toolkit-owned and the same with or
    > without a theme; `Sidebar` joined it as the sixth carrier. Read "five
    > carriers" in this record as the state when it was accepted.

@@ -21,7 +21,7 @@ and adds layout and build guards. **Upgrading: read the Breaking section.**
   `:root { --dk-width-frame: 100%; }`. A site that already sets the token is
   unaffected. See
   [Cap the page width](docs/guides/consumer-setup.md#cap-the-page-width) and
-  [ADR-0062](docs/adr/0062-default-frame-cap.md).
+  [ADR-0064](docs/adr/0064-default-frame-cap.md).
 
 ### Added
 
@@ -67,7 +67,7 @@ and adds layout and build guards. **Upgrading: read the Breaking section.**
   `starlight.components`. A Starlight plugin that overrides `Sidebar` still
   wins over the carrier, and the current-entry reveal is then lost: such a
   plugin must render the toolkit's `Sidebar`. See
-  [ADR-0061](docs/adr/0061-sidebar-carrier.md).
+  [ADR-0063](docs/adr/0063-sidebar-carrier.md).
 - **The accessibility lane also checks the published sidebar (#200).** Before,
   it measured only the drafts-on build, so the sidebar readers see was never
   checked. Now CI also serves `example/dist-nodrafts` to two more Playwright

@@ -13,7 +13,7 @@
 // a failing assertion here is a layout finding.
 //
 // Assertion ids (used in the messages and in the evidence below):
-//   A1  frame fills the viewport up to the 120rem default cap (ADR-0062), or is
+//   A1  frame fills the viewport up to the 120rem default cap (ADR-0064), or is
 //       exactly the cap a test sets; a capped frame is centred
 //   A2  sidebar start edge = frame start edge
 //   A2b reading pane starts where the sidebar ends (SC-001: no dead gutter)
@@ -90,7 +90,7 @@
 // That move is recorded at the table; this evidence block describes the frame
 // mission's fail-first run and is otherwise unchanged.
 //
-// LATER MOVE. ADR-0062 (issue #205, layout-guards-decisions WP05) caps the frame
+// LATER MOVE. ADR-0064 (issue #205, layout-guards-decisions WP05) caps the frame
 // at 120rem by default. Per width, with the default frame now:
 //
 //   width  frame       frame start  default-frame cases that moved
@@ -117,7 +117,7 @@ const WIDTHS = [1152, 1280, 1600, 1920, 2560] as const;
 const HEIGHT = 900;
 /** NFR-001. */
 const TOLERANCE = 1;
-/** ADR-0062: the default frame cap, 120rem at 16px. */
+/** ADR-0064: the default frame cap, 120rem at 16px. */
 const DEFAULT_FRAME = 120 * 16;
 /** NFR-002: the floor from 1600px up. */
 const COLUMN_FLOOR = 720;
@@ -212,7 +212,7 @@ function near(actual: number, expected: number, label: string): void {
 
 /**
  * A1. `cap` is the expected frame width in pixels when a test sets the token;
- * without one the frame is the 120rem default (ADR-0062), full width up to 1920px.
+ * without one the frame is the 120rem default (ADR-0064), full width up to 1920px.
  */
 function assertFrame(g: Geometry, cap?: number): void {
   const frame = inline(need(g.frame, 'frame'), g);
@@ -386,7 +386,7 @@ test.describe('layout geometry — capped frame', () => {
   const CAPS = [
     { label: '90rem', css: ':root { --dk-width-frame: 90rem }', px: () => 90 * REM, widths: [1920, 2560] },
     { label: '80%', css: ':root { --dk-width-frame: 80% }', px: (w: number) => w * 0.8, widths: [1920] },
-    // The opt-out (ADR-0062): full width where the default would cap.
+    // The opt-out (ADR-0064): full width where the default would cap.
     { label: '100%', css: ':root { --dk-width-frame: 100% }', px: (w: number) => w, widths: [2560] },
   ];
   for (const cap of CAPS) {
