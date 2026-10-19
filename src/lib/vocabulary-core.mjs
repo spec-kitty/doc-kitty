@@ -230,6 +230,9 @@ export function toActor(s) {
 const INSTANT =
   /^(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?([Zz]|[+-]\d{2}(?::?\d{2})?)?)?$/;
 
+/** The one rejection message for a value that is not a UTC instant, shared by both validator twins (#227). */
+export const NOT_A_DATE_MESSAGE = 'not a date: write a UTC instant, YYYY-MM-DDTHH:MM:SSZ';
+
 /**
  * Parse an instant without locale parsing. Accepts a `Date` (YAML may already
  * have parsed it), an ISO-8601 string (seconds optional, fractional seconds
