@@ -39,7 +39,8 @@
  */
 import process from 'node:process';
 import Default from '@astrojs/starlight/components/MarkdownContent.astro';
-import { Fragment } from 'astro/runtime/server/index.js';
+// Aliased (#145, B6): Astro 7's Rust compiler declares `Fragment` itself.
+import { Fragment as EmptyFragment } from 'astro/runtime/server/index.js';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { resolveLayout } from '../layouts/kind-layouts.ts';
 import { isGlossaryActive } from '../lib/glossary/load.js';
@@ -72,7 +73,7 @@ const Layout = resolveLayout(kind);
 //     empty `<Fragment/>` so refs/related are never double-rendered.
 const glossaryActive = isGlossaryActive(process.cwd());
 const AfterRelated = glossaryActive ? OnThisPage : Related;
-const AfterExternalRefs = glossaryActive ? Fragment : ExternalReferences;
+const AfterExternalRefs = glossaryActive ? EmptyFragment : ExternalReferences;
 ---
 
 <Layout {...route}>

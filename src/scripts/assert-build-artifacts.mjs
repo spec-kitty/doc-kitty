@@ -2500,10 +2500,14 @@ async function main() {
   if (scenarioIndex === null || typeof scenarioIndex !== 'object' || !Array.isArray(scenarioIndex.features)) {
     fail('scenario index: top level is not an object with a "features" array');
   }
-  if (scenarioIndex.generated_from !== 'doc-kitty/gherkin') {
-    fail(`scenario index: generated_from is ${JSON.stringify(scenarioIndex.generated_from)}, expected "doc-kitty/gherkin"`);
+  // 0.4.0 (#183): the deprecated `generated_from` is gone and the shape is version 2.
+  if ('generated_from' in scenarioIndex) {
+    fail('scenario index: carries the removed `generated_from` field (removed in 0.4.0, #183)');
   }
-  // `generated_by` replaces the deprecated `generated_from` (#182): the Gherkin pipeline as an OKF tool actor.
+  if (scenarioIndex.version !== '2') {
+    fail(`scenario index: version is ${JSON.stringify(scenarioIndex.version)}, expected "2"`);
+  }
+  // `generated_by` names the Gherkin pipeline as an OKF tool actor (#182).
   const scenarioProducer = parseActor(scenarioIndex.generated_by);
   if (scenarioProducer?.kind !== 'tool' || scenarioProducer.name !== 'doc-kitty-gherkin') {
     fail(`scenario index: generated_by is ${JSON.stringify(scenarioIndex.generated_by)}, expected the OKF tool actor "doc-kitty-gherkin/<version>"`);
@@ -2809,7 +2813,7 @@ async function main() {
   let printChunk = null;
   for (const n of astroEntries.filter((f) => f.endsWith('.js') && f.includes('reveal-init'))) {
     const js = await readFile(path.join(astroDir, n), 'utf8');
-    if (js.includes('print-pdf') && /view:\s*["']print["']/.test(js)) {
+    if (js.includes('print-pdf') && /view:\s*(["'`])print\1/.test(js)) {
       printChunk = n;
       break;
     }

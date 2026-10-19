@@ -1,9 +1,15 @@
 Fixtures for src/tests/header-carrier.test.ts (the Header carrier).
 
 stock-header.html
-  The <header ...>...</header> block of example/dist/index.html, captured from a
-  build of commit 2ffe856, the commit before the Header carrier existed. Every
-  framed page of the example shares this block.
+  The <header ...>...</header> block of example/dist/index.html. First captured
+  from a build of commit 2ffe856, the commit before the Header carrier existed;
+  recaptured for Starlight 0.42.6 / Astro 7.4 (#144), whose stock header drops
+  `sl-flex` from its root, minifies its inline script differently and is
+  emitted under Astro 7's `compressHTML` default; recaptured again under the
+  toolkit's `compressHTML: true` pin (#145, operator decision 2026-10-18).
+  Every framed page of the
+  example shares this block. A change to `compressHTML` changes the whitespace
+  in this block and needs a recapture.
 
   One thing in it is normalised: each Astro scoped-class name ("astro-" followed
   by eight characters of [a-z0-9]) has been replaced with the fixed token

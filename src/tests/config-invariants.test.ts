@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
+import path from 'node:path';
+import process from 'node:process';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
 import type { DocKittyTheme } from '../lib/theme.js';
 import { PINNED_INTEGRATION_ORDER } from './helpers/integration-names.js';
@@ -380,5 +382,55 @@ describe('defineDocKittyIntegrations gherkin opt-in seam (ADR-0046)', () => {
     const fence = named(on).find((i) => i.name === FENCE);
     expect(Object.keys(fence?.hooks ?? {})).toEqual(['astro:config:setup', 'astro:build:done']);
     expect(starlightConfigOf(on)).toEqual(starlightConfigOf(off));
+  });
+});
+
+// Starlight 0.41+ runs its Markdown transforms (asides, heading links, RTL code)
+// only on `src/content/docs` and `markdown.processedDirs` (#144, spike B5), and
+// 0.34 turned heading links on by default (B7). Operator decision 2026-10-18:
+// keep heading links off for parity; adopting anchors is a separate later change.
+describe('Starlight markdown options (#144: B5 processedDirs, B7 headingLinks)', () => {
+  const markdownOf = (integrations: unknown[]) => {
+    const entry = integrations.find(
+      (i): i is { __starlightConfig: { markdown?: { processedDirs?: string[]; headingLinks?: boolean } } } =>
+        typeof i === 'object' && i !== null && '__starlightConfig' in i,
+    );
+    return entry?.__starlightConfig.markdown;
+  };
+
+  it('adds the docs root to processedDirs and turns heading links off', () => {
+    const md = markdownOf(defineDocKittyIntegrations({ title: 'Docs', docsDir: 'docs' }));
+    expect(md?.headingLinks).toBe(false);
+    expect(md?.processedDirs).toHaveLength(1);
+    expect(path.resolve(md?.processedDirs?.[0] ?? '')).toBe(path.resolve('docs'));
+  });
+
+  it('does not list the docs root twice when the consumer already names it', () => {
+    const md = markdownOf(
+      defineDocKittyIntegrations({
+        title: 'Docs',
+        docsDir: 'docs',
+        starlight: { markdown: { processedDirs: ['./docs/', 'extra'] } },
+      }),
+    );
+    expect(md?.processedDirs?.map((p) => path.relative(process.cwd(), path.resolve(p)))).toEqual([
+      'docs',
+      'extra',
+    ]);
+  });
+
+  it('keeps a consumer markdown override and their extra processedDirs', () => {
+    const md = markdownOf(
+      defineDocKittyIntegrations({
+        title: 'Docs',
+        docsDir: 'docs',
+        starlight: { markdown: { headingLinks: true, processedDirs: ['extra'] } },
+      }),
+    );
+    expect(md?.headingLinks).toBe(true);
+    expect(md?.processedDirs?.map((p) => path.relative(process.cwd(), path.resolve(p)))).toEqual([
+      'docs',
+      'extra',
+    ]);
   });
 });

@@ -1,5 +1,6 @@
 /**
- * The FULL registered order, every opt-in seam on: diagrams, directive owner
+ * The FULL registered order, every opt-in seam on: the Markdown processor pin,
+ * the compressHTML pin, diagrams, directive owner
  * (glossary or markua), markua, glossary, gherkin codegen, gherkin fence stage,
  * then Starlight and the always-on tail. Update here when an integration is
  * added; the order tests pin against this one list. A literal on purpose:
@@ -7,6 +8,11 @@
  * tautological.
  */
 export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
+  // Always first (ADR-0060, #119): pins Astro 7's Markdown processor to
+  // `unified()` before any integration appends a remark/rehype plugin.
+  'doc-kitty:markdown-processor',
+  // Always on (#145, B11): `compressHTML: true`, operator decision 2026-10-18.
+  'doc-kitty:compress-html',
   'doc-kitty:diagrams',
   'doc-kitty:remark-directive',
   'doc-kitty:markua',

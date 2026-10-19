@@ -3,7 +3,7 @@
  * 02 §Content-layer freshness; 05 mutation check 6).
  *
  * `docKittyDocsLoader` wraps Astro's `glob()`. These tests drive the REAL
- * `glob()` through a fake loader context shaped like the one the Astro 5 content
+ * `glob()` through a fake loader context shaped like the one the Astro content
  * layer passes (`content-layer.js` `#getLoaderContext`): a Map-backed store, a
  * string digest, an `.md` entry type that strips frontmatter, and an
  * EventEmitter standing in for the dev watcher. What they pin:
@@ -17,9 +17,10 @@
  *    include it, and only those, and `glob()` then re-syncs the page; a page
  *    named as an include `src` (not a `.feature` file, so the stage refuses
  *    it) is never tracked, so a page cannot include itself or form a cycle;
- *  - a page whose Gherkin render threw is stored under a digest no sync
- *    computes, so every sync renders it again until it renders (ADR-0051
- *    decision 5).
+ *  - a page whose Gherkin render threw fails the sync and is never stored, so
+ *    it can never be a cache hit (ADR-0051 decision 5; Astro 7's `glob()`
+ *    rethrows render errors, #119); once fixed it is stored under its plain
+ *    digest.
  *
  * The build-level proof (a real `astro build` twice over one content cache) is
  * `docs-loader-includes-build.test.ts`.
@@ -305,18 +306,20 @@ describe('a failed render is never a cache hit', () => {
   const BROKEN = page('```gherkin\nBROKEN\n```');
   const raw = (rel: string) => plainDigest(readFileSync(abs(rel), 'utf8'));
 
-  it('renders a page whose Gherkin render failed on every sync, until it renders', async () => {
+  it('fails the sync on a failed Gherkin render and never stores the page, until it renders', async () => {
     write('docs/broken.md', BROKEN);
     const { rendered, entryType } = renderingEntryType();
-    const loader = await load(undefined, undefined, entryType);
-    expect(digestOf('broken')).not.toBe(raw('docs/broken.md'));
-    expect(digestOf('plain')).toBe(raw('docs/plain.md'));
+    const loader = docKittyDocsLoader({ base: 'docs' });
+    await expect(load(loader, undefined, entryType)).rejects.toThrow('[dk-gherkin] broken');
+    expect(store.has('broken')).toBe(false);
 
+    // Every later sync renders it again (nothing was cached) and fails again.
     rendered.length = 0;
-    await load(loader, undefined, entryType);
-    // Unchanged pages are cache hits; the broken one is rendered again.
-    expect(rendered).toEqual(['broken']);
+    await expect(load(loader, undefined, entryType)).rejects.toThrow('[dk-gherkin] broken');
+    expect(rendered).toContain('broken');
+    expect(store.has('broken')).toBe(false);
 
+    // Fixed: stored under its plain digest, then a cache hit like any page.
     write('docs/broken.md', page('```gherkin\nFeature: Fixed\n```'));
     await load(loader, undefined, entryType);
     expect(digestOf('broken')).toBe(raw('docs/broken.md'));
@@ -325,33 +328,23 @@ describe('a failed render is never a cache hit', () => {
     expect(rendered).toEqual([]);
   });
 
-  it('forgets a failed render whose entry is dropped as a draft', async () => {
-    // Drafts off: the broken draft renders (and throws) but is never stored.
+  it('fails the sync on a failed render of a draft that the draft policy would drop', async () => {
     vi.stubEnv('DK_PUBLISH_DRAFTS_RESOLVED', 'off');
     try {
       const draft = (body: string) => ['---', 'title: T', 'doc_status: draft', '---', '', body, ''].join('\n');
       write('docs/later.md', draft('```gherkin\nBROKEN\n```'));
-      const { rendered, entryType } = renderingEntryType();
-      const loader = await load(undefined, undefined, entryType);
+      const { entryType } = renderingEntryType();
+      await expect(load(undefined, undefined, entryType)).rejects.toThrow('[dk-gherkin] broken');
       expect(store.has('later')).toBe(false);
-
-      // Published and fixed: stored under its plain digest, then a cache hit.
-      write('docs/later.md', page('```gherkin\nFeature: Fixed\n```'));
-      await load(loader, undefined, entryType);
-      expect(digestOf('later')).toBe(raw('docs/later.md'));
-      rendered.length = 0;
-      await load(loader, undefined, entryType);
-      expect(rendered).toEqual([]);
     } finally {
       vi.unstubAllEnvs();
     }
   });
 
-  it('leaves a failed render that does not mention gherkin to Astro', async () => {
-    write('docs/other.md', page('BROKEN for another reason'));
+  it('stores a page that renders under the digest glob() alone computes', async () => {
     const { entryType } = renderingEntryType();
     await load(undefined, undefined, entryType);
-    expect(digestOf('other')).toBe(raw('docs/other.md'));
+    expect(digestOf('plain')).toBe(raw('docs/plain.md'));
   });
 });
 
@@ -452,7 +445,7 @@ describe('the dev watcher re-syncs dependent pages', () => {
 // ===========================================================================
 
 describe('a results report is folded into the pages that may show results', () => {
-  const GENERATED = ['---', 'title: G', 'doc_status: published', 'generated:', '  by: "doc-kitty/gherkin"', '---', '', '# G', ''].join('\n');
+  const GENERATED = ['---', 'title: G', 'doc_status: published', 'generated:', '  by: "doc-kitty-gherkin/0.3.0"', '---', '', '# G', ''].join('\n');
   beforeEach(() => {
     write('docs/generated.md', GENERATED);
     write('reports/cucumber.ndjson', '{"meta":{}}\n');

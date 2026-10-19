@@ -7,11 +7,10 @@ import { z } from 'zod';
 import {
   validate,
   SECTION_TYPE,
-  GENERATED_BY_STAMPS,
   isGeneratedPage,
 } from '../scripts/validate-frontmatter.mjs';
 import { parseActor, isActor, normaliseInstant } from '../lib/vocabulary-core.mjs';
-import { LEGACY_GENERATED_BY as GHERKIN_GENERATED_BY, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
+import { GHERKIN_PRODUCER, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
@@ -425,17 +424,13 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
     return copy;
   }
 
-  it('the gate detects stamps by producer prefix; the legacy exact gherkin stamp stays recognised', () => {
-    // The legacy exact value is single-sourced from feature-core (never repeated
-    // as a literal in the gate) and is the only entry of the exported allow-list.
-    expect(GENERATED_BY_STAMPS).toEqual([GHERKIN_GENERATED_BY]);
-    expect(GENERATED_BY_STAMPS).toEqual(['doc-kitty/gherkin']);
+  it('the gate detects stamps by producer prefix; the retired unversioned stamp is not recognised (#210)', () => {
     const gate = readFileSync(new URL('../scripts/validate-frontmatter.mjs', import.meta.url), 'utf8');
     expect(gate).not.toMatch(/['"]doc-kitty\/(?:gherkin|glossary)['"]/);
     expect(isGeneratedStamp('doc-kitty-gherkin/0.3.0')).toBe(true);
     expect(isGeneratedStamp('doc-kitty-gherkin/0.3.0', 'doc-kitty-gherkin')).toBe(true);
     expect(isGeneratedStamp('doc-kitty-gherkin/0.3.0', 'doc-kitty-glossary')).toBe(false);
-    expect(isGeneratedStamp('doc-kitty/gherkin')).toBe(true); // legacy, pre-regeneration
+    expect(isGeneratedStamp('doc-kitty/gherkin')).toBe(false); // retired in 0.4.0 (#210)
     expect(isGeneratedStamp('someone-else')).toBe(false);
   });
 
@@ -465,7 +460,7 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
   it('a generated feature page WITHOUT `updated` passes the gate, and the build schema accepts it too', () => {
     const data = parse('generated/feature-page.md');
     expect(data.updated).toBeUndefined();
-    expect((data.generated as { by: string }).by).toBe('doc-kitty/gherkin');
+    expect((data.generated as { by: string }).by).toBe(`${GHERKIN_PRODUCER}/0.3.0`);
     expect(isGeneratedPage(FEATURE_REL, data)).toBe(true);
     const { problems, warnings, effective } = validate(FEATURE_REL, data);
     expect(problems).toEqual([]);
@@ -496,7 +491,8 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
   it('a page stamped `generated.by: "someone-else"` is NOT exempt', () => {
     const data = withStamp(parse('generated/feature-page.md'), {
       by: 'someone-else',
-      at: 'sha256:aa67f517f6ea',
+      at: '2026-10-18T09:30:00Z',
+      content_hash: 'sha256:aa67f517f6ea',
     });
     expect(isGeneratedPage(FEATURE_REL, data)).toBe(false);
     expect(validate(FEATURE_REL, data).problems).toEqual(['`updated`: required']);
@@ -534,7 +530,10 @@ describe('schema/validator parity — generated pages are exempt by marker (ADR-
   it('a `doc-kitty/glossary` stamp is NOT an exemption (no pipeline writes it — it would be a bypass)', () => {
     const ctx = { ...parse('generated/glossary-context.md'), generated: { by: 'doc-kitty/glossary', at: 'x' } };
     expect(isGeneratedPage('vocab/hr.md', ctx)).toBe(false);
-    expect(validate('vocab/hr.md', ctx).problems).toEqual(['`updated`: required']);
+    const { problems } = validate('vocab/hr.md', ctx);
+    expect(problems).toContain('`updated`: required');
+    // 0.4.0 (#210): the retired unversioned stamp is itself an error telling the author to regenerate.
+    expect(problems.some((p) => /legacy stamp.*regenerate/.test(p))).toBe(true);
     // …while real glossary output, under `glossary/`, stays exempt by the path rule.
     expect(isGeneratedPage('glossary/hr/index.md', ctx)).toBe(true);
   });

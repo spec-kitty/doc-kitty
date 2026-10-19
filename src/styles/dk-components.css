@@ -805,3 +805,40 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+ * Starlight cascade-layer parity (#144)
+ *
+ * Starlight 0.34 moved its CSS into the `starlight` cascade layer, so this
+ * unlayered sheet now beats every Starlight rule regardless of specificity.
+ * Before that, two of Starlight's Markdown spacing rules out-ranked component
+ * margins in this sheet. A computed-style audit of every framed page of the
+ * example against the Starlight 0.32 build found exactly these, and no other
+ * DocKitty declaration that used to lose:
+ *
+ *   - the flow gap (`.sl-markdown-content :not(…) + :not(…)`) above a callout,
+ *     a diagram, a diagram caption and an in-page Gherkin block that follow a
+ *     sibling (24px / 24px / 8px / 24px instead of 16px);
+ *   - the list-item gap below the last block in a Gherkin step (8px instead
+ *     of 20px).
+ *
+ * The rules below restore the old outcome with Starlight's own selectors and
+ * values, so a first child and anything inside `.not-content` keep the
+ * component margin. Pinned by `tests/a11y/starlight-layer-parity.spec.ts`.
+ * ========================================================================== */
+.sl-markdown-content
+  :not(a, strong, em, del, span, input, code, br)
+  + :is(.dk-callout, .dk-diagram, .dk-diagram__caption, .dk-gherkin):not(:where(.not-content *)) {
+  margin-top: var(--sl-content-gap-y);
+}
+
+.sl-markdown-content
+  .dk-gherkin__steps
+  > li
+  > :is(table, .expressive-code, pre):is(:last-child, :has(~ script:last-child):not(:has(~ :not(script)))):not(
+    :where(.not-content *)
+  ) {
+  /* Mirrors Starlight's list-item gap (markdown.css, a literal 1.25rem; Starlight
+     exposes no variable for it). */
+  margin-bottom: 1.25rem;
+}

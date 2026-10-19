@@ -196,7 +196,11 @@ These are fatal, and name the files involved:
 Feature files get renamed and deleted, so unlike the glossary the generator also
 removes pages. It never deletes authored content:
 
-1. Every generated page and hub carries `generated.by: "doc-kitty/gherkin"`.
+1. Every generated page and hub carries a versioned stamp,
+   `generated.by: "doc-kitty-gherkin/<version>"`. The unversioned
+   `doc-kitty/gherkin` stamp written before 0.3.x is no longer recognised (0.4.0,
+   #210): a page that still carries it fails the frontmatter gate with an error that
+   says to regenerate it.
 2. Before writing, the generator scans the section folder. A `.md` with that stamp
    is **owned**. Any other file (dotfiles aside) is **authored**, and the run fails
    before any write, naming it. A generated section has a single owner. A symlink
@@ -205,7 +209,7 @@ removes pages. It never deletes authored content:
    frontmatter doesn't parse is also authored, which is the safe default. The same
    rule covers the section folder itself: a symlinked `<docsDir>/<section>` stops
    the run. Ownership is by stamp only: a hand-written page that carries
-   `generated.by: doc-kitty/gherkin` counts as generated, and is pruned when no
+   `generated.by: doc-kitty-gherkin/<version>` counts as generated, and is pruned when no
    feature maps to it.
 3. It writes the planned files whose bytes changed, deletes owned files that are no
    longer planned, then removes directories left empty.
@@ -232,10 +236,12 @@ listing and the section registry). Files are ordered by source index, then by
 code-unit order of the path. Every ordering inside a page uses the same code-unit
 comparison, never locale or filesystem order. No clock is read.
 
-`generated.at` holds a content hash, not a timestamp: `sha256:<first 12 hex>` of
+`generated.content_hash` holds a content hash: `sha256:<first 12 hex>` of
 the raw source bytes for a feature page, and of the sorted child-path list for a
-hub. An agent can tell which version of the source a page reflects, and unchanged
-input gives byte-identical output. Because the hash covers the raw bytes, a
+hub. `generated.at` is a UTC instant, carried over unchanged while the hash is
+unchanged. An agent can tell which version of the source a page reflects, and
+unchanged input gives byte-identical output. A `sha256:` hash in `at` (the stamp
+form before `content_hash`) is no longer read as the content hash (0.4.0, #210). Because the hash covers the raw bytes, a
 checkout that converts line endings (Windows `autocrlf`) changes the hash and
 `--check` reports drift. This repository pins `*.feature text eol=lf` in
 `.gitattributes`; a consumer repository should add the same line.
@@ -348,8 +354,8 @@ author fixes the name at source.
 The pages are committed, like the glossary's. Two gates keep them honest:
 
 - **Frontmatter parity.** `validate-frontmatter.mjs` recognises a generated page by
-  its `generated.by: "doc-kitty/gherkin"` stamp, imported from `feature-core.mjs`
-  rather than repeated, or by the legacy glossary path rule (a `kind: Glossary` or
+  its versioned `generated.by: "doc-kitty-gherkin/<version>"` stamp (the producer id
+  is imported from `generator-stamp.mjs`, never repeated), or by the legacy glossary path rule (a `kind: Glossary` or
   `kind: Hub` page under `glossary/`). The glossary codegen does write a
   `doc-kitty-glossary/<version>` stamp, but it grants no exemption: glossary output is exempt by the path rule alone. Accepting one would only let an
   authored page anywhere opt out of the rules by claiming it. Generated pages are
@@ -385,12 +391,11 @@ relative to `gherkin.sourceRoot`, prefixed with `gherkin.sourceUrlPrefix` when s
 so an agent can fetch the executable `.feature` itself.
 
 Sites with `gherkin.sources` also serve `/api/scenarios.json` (the integration injects
-`scenarioIndexRoute()`; a hand-mounted `src/pages/api/scenarios.json.ts` is kept): `{ version, generated_from: "doc-kitty/gherkin",
+`scenarioIndexRoute()`; a hand-mounted `src/pages/api/scenarios.json.ts` is kept): `{ version: "2",
 generated_by: "doc-kitty-gherkin/<version>", count, features[] }`. `generated_by`
 names the producer as an OKF tool actor, the same value the pages' `generated.by`
-stamp carries. `generated_from` is **deprecated** (#182): it keeps its exact value
-for existing consumers, is replaced by `generated_by`, and is removed in the next
-breaking release. It has one record per published, agent-discoverable generated page,
+stamp carries. The deprecated `generated_from` (`"doc-kitty/gherkin"`) was removed in
+0.4.0 (#183) and `version` went from `"1"` to `"2"`; read `generated_by` instead. It has one record per published, agent-discoverable generated page,
 ordered by id, carrying `id`, `title`, `url`, `source`, `doc_status`,
 `glossary_context`, `tags` and `related`, plus `scenarios[]` in document order.
 Each scenario has `name`, `rule` (`null` outside a rule), `anchor`, `line`, its own
@@ -465,7 +470,7 @@ comment-only fence stays a code block; a fence whose content would only become
 the description of an untitled Feature (prose, a bare table) is fatal. Headings take `max(2, preceding depth + 1)`, capped
 at 6. Inside a list item, quote or aside they become `p[role=heading]`. A fence
 with `raw` in its info string, a fence on a generated page (`generated.by:
-doc-kitty/gherkin`) and every fence on a deck stay code. A directive on a deck is
+doc-kitty-gherkin/<version>`) and every fence on a deck stay code. A directive on a deck is
 fatal.
 
 ### The error sink

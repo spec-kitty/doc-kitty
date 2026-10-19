@@ -15,8 +15,9 @@ sources:
   - resource: "features/shipping/book-consignment.feature"
     title: "Gherkin source"
 generated:
-  by: "doc-kitty/gherkin"
-  at: "sha256:aa67f517f6ea"
+  by: "doc-kitty-gherkin/0.3.0"
+  at: "2026-10-18T09:30:00Z"
+  content_hash: "sha256:aa67f517f6ea"
 ---
 
 # Book a consignment

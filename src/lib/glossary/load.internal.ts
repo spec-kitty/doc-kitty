@@ -30,7 +30,7 @@ const TermSchema = z.object({
   definition: z.string(),
   aliases: z.array(z.string()).optional(),
   examples: z.array(z.string()).optional(),
-  meta: z.record(z.string()).optional(),
+  meta: z.record(z.string(), z.string()).optional(),
 });
 
 const ContextSchema = z.object({
@@ -70,7 +70,9 @@ function label(value: unknown, index: number): string {
  * field "definition"`. Falls back to a positional index when a `name` is itself
  * the missing/invalid field.
  */
-function locate(raw: unknown, path: ReadonlyArray<string | number>): string {
+// Zod 4 types an issue path as `PropertyKey[]` (#119); a symbol key never names a
+// context, term or field here, so it only ever reaches the positional fallback.
+function locate(raw: unknown, path: ReadonlyArray<PropertyKey>): string {
   const segs: string[] = [];
   let contextIndex = -1;
   let termIndex = -1;

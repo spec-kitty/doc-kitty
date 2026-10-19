@@ -21,7 +21,7 @@
  *   2. block `{#id}` / `{id: …}` sets `hProperties.id` on the following block
  *      (T036);
  *   3. explicit-id-wins precedence, proven by RUNNING the real, pinned
- *      `@astrojs/markdown-remark@6.3.11` `rehypeHeadingIds` pass over a tree
+ *      `@astrojs/markdown-remark@7.3.3` `rehypeHeadingIds` pass over a tree
  *      carrying a genuine collision — not cited, not re-implemented (T037);
  *   4. a closing consistency check (T038) that the ids proven here are exactly
  *      the anchors WP10's fixture links (`[go](#intro)`, `[span](#ipsum)`)
@@ -31,7 +31,7 @@
  * mission (D-06) — `rehypeHeadingIds` (Astro's own built-in, which runs LAST,
  * after user rehype plugins) already skips slug generation whenever
  * `node.properties.id` is already a string
- * (`@astrojs/markdown-remark/dist/rehype-collect-headings.js:52`). The comment
+ * (`@astrojs/markdown-remark/dist/rehype-collect-headings.js:57`). The comment
  * is here for the reader; the PASSING TEST below is the proof, never this
  * citation.
  */
@@ -221,14 +221,14 @@ function resolveRemarkRehype(markdownRemarkEntry: string): string {
 }
 
 describe('crosslink id precedence — the REAL, pinned rehypeHeadingIds pass (C-005, US3 sc.3, FR-008)', () => {
-  it('pins @astrojs/markdown-remark@6.3.11 — the exact version research.md (D-06) proves this against', () => {
+  it('pins @astrojs/markdown-remark@7.3.3 — the exact version research.md (D-06) proves this against', () => {
     const { version } = resolveAstroMarkdownRemark();
     expect(
       version,
       'astro now resolves a different @astrojs/markdown-remark version than the one D-06 ' +
-        'proved explicit-id-wins against; re-verify rehype-collect-headings.js:52 still skips ' +
+        'proved explicit-id-wins against; re-verify rehype-collect-headings.js:57 still skips ' +
         'slugging when node.properties.id is already a string, then update this pin.',
-    ).toBe('6.3.11');
+    ).toBe('7.3.3');
   });
 
   it('an explicit {#overview} heading keeps its id UNCHANGED while a sibling plain heading still gets an auto-slug — same tree, real pass', async () => {
@@ -267,7 +267,7 @@ describe('crosslink id precedence — the REAL, pinned rehypeHeadingIds pass (C-
 
     // (a) explicit id survives EXACTLY unchanged — the real rehypeHeadingIds
     // pass saw `properties.id === 'overview'` already a string and skipped
-    // slug generation entirely (rehype-collect-headings.js:52) — it did NOT
+    // slug generation entirely (rehype-collect-headings.js:57) — it did NOT
     // suffix it (e.g. "overview-1") the way a naive collision handler would.
     expect(explicitHeading, 'the {#overview} heading must still be present after the real pass').toBeDefined();
     expect(explicitHeading?.properties?.id).toBe('overview');

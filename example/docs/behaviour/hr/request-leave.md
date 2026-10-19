@@ -8,7 +8,7 @@ sources:
   - resource: "features/hr/request-leave.feature"
     title: "Gherkin source"
 generated:
-  by: "doc-kitty-gherkin/0.3.0"
+  by: "doc-kitty-gherkin/0.4.0"
   at: "2026-10-18T05:55:21Z"
   content_hash: "sha256:2ba67bcafd1f"
 ---

@@ -33,7 +33,7 @@
  * WHAT IT SKIPS (03 §3):
  *  - a fence whose info string has the word `raw` (```` ```gherkin raw ````): the
  *    escape hatch for showing Gherkin AS SOURCE;
- *  - a generated feature page (`generated.by: doc-kitty/gherkin` frontmatter): its
+ *  - a generated feature page (`generated.by: doc-kitty-gherkin/<version>`): its
  *    `gherkin` doc strings would otherwise grow nested structured scenarios and
  *    confuse the scenario index (02 §Generated pages and nested Gherkin). With
  *    `results` it only gets the results overlay (see RESULTS below);

@@ -565,8 +565,11 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022)', () => {
 
   /** Run the inline script against a stub document; returns the pane after load. */
   function run(opts: { pane?: Rect; current?: Rect | null; readyState?: string; scrollTop?: number }) {
+    const paneListeners: Array<{ type: string; fn: (e: { newState: string }) => void }> = [];
     const pane = {
       scrollTop: opts.scrollTop ?? 0,
+      paneListeners,
+      addEventListener: (type: string, fn: (e: { newState: string }) => void) => paneListeners.push({ type, fn }),
       getBoundingClientRect: () => opts.pane ?? rect(64, 800),
       querySelector: (selector: string) => {
         expect(selector).toBe('[aria-current="page"]');
@@ -613,6 +616,19 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022)', () => {
     const late = run({ current: rect(1621, 32), readyState: 'interactive' });
     expect(late.ranEarly).toBe(true);
     expect(late.pane.scrollTop).toBe(1621 - 448);
+  });
+
+  // Starlight 0.42's mobile menu is a popover (#144, B9): closed, the pane is
+  // `display: none` and cannot scroll, so the reveal runs again when it opens.
+  it('reveals the entry again when the mobile menu popover opens', () => {
+    const { pane } = run({ current: rect(1621, 32) });
+    pane.scrollTop = 0; // as a closed popover leaves it
+    const toggles = pane.paneListeners.filter((l) => l.type === 'toggle');
+    expect(toggles).toHaveLength(1);
+    toggles[0].fn({ newState: 'closed' });
+    expect(pane.scrollTop).toBe(0);
+    toggles[0].fn({ newState: 'open' });
+    expect(pane.scrollTop).toBe(1621 - 448);
   });
 
   it('never calls scrollIntoView, which would also scroll the page', () => {

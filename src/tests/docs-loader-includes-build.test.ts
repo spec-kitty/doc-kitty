@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SITE = path.join(REPO_ROOT, 'example', '.dk-test-loader-includes');
-const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'astro.js');
+const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'bin', 'astro.mjs');
 
 /** The included file; only the scenario name changes between the two states. */
 const feature = (scenario: string) =>
@@ -80,6 +80,9 @@ function write(rel: string, contents: string) {
 function childEnv() {
   const env = { ...process.env };
   delete env.BASE_URL;
+  // Astro 7's dev server skips its SSR middleware when `VITEST` is set (every
+  // route 404s), and Vitest exports it to this process; the child is not a test.
+  delete env.VITEST;
   return env;
 }
 
@@ -160,7 +163,9 @@ describe('the dev server refreshes a page whose include changed, without a resta
     'serves the edited .feature after the file changes',
     async () => {
       write('features/book.feature', feature('Dev before'));
-      dev = spawn(process.execPath, [ASTRO_BIN, 'dev', '--port', '4400', '--host', '127.0.0.1'], {
+      // `--ignore-lock`: Astro 7 auto-backgrounds `dev` when it detects an AI agent
+      // and exits; this test needs the foreground server it spawned (and kills).
+      dev = spawn(process.execPath, [ASTRO_BIN, 'dev', '--port', '4400', '--host', '127.0.0.1', '--ignore-lock'], {
         cwd: SITE,
         env: childEnv(),
         detached: true,

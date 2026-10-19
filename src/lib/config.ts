@@ -44,10 +44,12 @@ import {
 import { glossaryIntegration } from './integrations/glossary.js';
 import { markuaIntegration } from './integrations/markua.js';
 import { diagramsIntegration } from './integrations/diagrams.js';
+import { compressHtmlIntegration } from './integrations/compress-html.js';
 import {
   deckSplitIntegration,
   baseAbsoluteLinksIntegration,
   directiveIntegration,
+  markdownProcessorIntegration,
 } from './integrations/markdown-pipeline.js';
 import { tocRailIntegration } from './integrations/toc-rail.js';
 import { lightboxIntegration } from './integrations/lightbox.js';
@@ -555,6 +557,26 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     ],
     customCss,
     ...overrides,
+    // Starlight's own Markdown options (#144), merged so a consumer override
+    // keeps its keys. Applied after `...overrides` for the same reason as
+    // `routeMiddleware`.
+    markdown: {
+      // Starlight 0.34 turned heading links on by default. Operator decision
+      // 2026-10-18: parity (off); adopting anchors is a separate later change.
+      // A consumer can still opt in through `starlight.markdown.headingLinks`.
+      headingLinks: false,
+      ...overrides?.markdown,
+      // Starlight 0.41+ runs its Markdown transforms (asides, heading links, RTL
+      // code, which Markua `T>` tips rely on) only on `src/content/docs` and
+      // these directories. The docs root is always one of them.
+      // A consumer entry that resolves to the docs root is not listed twice.
+      processedDirs: [
+        docsDir,
+        ...(overrides?.markdown?.processedDirs ?? []).filter(
+          (dir) => path.resolve(dir) !== path.resolve(docsDir),
+        ),
+      ],
+    },
     // Route middleware is MERGED, not replaced (C-004): the toolkit's runs first
     // and whatever the consumer lists under `starlight.routeMiddleware` runs
     // after it, on the already shaped route data, so the consumer has the last
@@ -591,6 +613,14 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   if (markuaActive) setInternalEnv(DK_MARKUA_ENV, 'on');
 
   return [
+    // Markdown processor pin (ADR-0060, #119): ALWAYS FIRST. Astro 7 defaults to
+    // Sätteri, which drops every remark/rehype plugin; the `unified()` processor
+    // must be set before the first integration below (or Starlight) appends one.
+    // It registers no plugin, so every order comment below still holds.
+    markdownProcessorIntegration,
+    // HTML whitespace parity (#145, B11): `compressHTML: true`, operator
+    // decision 2026-10-18. Registers no plugin, so no order pin moves.
+    compressHtmlIntegration,
     // Opt-in diagrams seam (FR-001): PREPENDED before Starlight when
     // `diagrams: true`, so the diagram machinery sits ahead of `starlight()` in
     // the integrations array (ordering contract). Omitted entirely when off —

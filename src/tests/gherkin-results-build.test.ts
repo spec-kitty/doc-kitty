@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SITE = path.join(REPO_ROOT, 'example', '.dk-test-gherkin-results');
-const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'astro.js');
+const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'bin', 'astro.mjs');
 const FIX = fileURLToPath(new URL('./fixtures/gherkin/results/', import.meta.url));
 
 const doc = (title: string, body = '') => `---\ntitle: ${title}\ndescription: Fixture.\n---\n\n# ${title}\n\n${body}\n`;

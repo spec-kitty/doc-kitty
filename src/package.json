@@ -1,6 +1,6 @@
 {
   "name": "@spec-kitty/doc-toolkit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Reusable Astro + Starlight toolkit for DocKitty — a documentation convention based on Common Docs: schema, README-as-index loader, and rss/llms.txt/agent-API route handlers.",
   "type": "module",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "agent-docs"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.22.0"
   },
   "exports": {
     ".": "./index.ts",
@@ -72,11 +72,12 @@
     "lint": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@astrojs/starlight": ">=0.32.0 <0.33.0",
-    "astro": ">=5.0.0"
+    "@astrojs/markdown-remark": ">=7.3.0 <8",
+    "@astrojs/starlight": ">=0.42.0 <0.43.0",
+    "astro": ">=7.2.10 <8"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.2.0",
+    "@astrojs/sitemap": "^3.7.4",
     "@beoe/rehype-mermaid": "0.4.2",
     "@cucumber/gherkin": "42.0.1",
     "@cucumber/messages": "34.2.1",
@@ -89,11 +90,12 @@
     "remark-smartypants": "^3.0.3",
     "reveal.js": "6.0.1",
     "unified": "^11.0.5",
-    "zod": "^3.23.0"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@astrojs/starlight": "^0.32.6",
-    "astro": "^5.2.0",
+    "@astrojs/markdown-remark": "^7.3.3",
+    "@astrojs/starlight": "^0.42.6",
+    "astro": "^7.4.0",
     "mdast-util-to-hast": "13.2.1",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"

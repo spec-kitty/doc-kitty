@@ -438,16 +438,19 @@ export { shapingWarningSink } from './build-state.js';
  * It sets the pane's own `scrollTop` rather than calling `scrollIntoView`, which
  * would also scroll the document. Only the fixed sidebar pane scrolls, so the
  * reading column does not move (NFR-005). Below Starlight's desktop breakpoint
- * the same pane is the mobile menu. It is not `display: none` there: measured
- * at 390px it has a box and scrolls, so the script can act at that width too.
+ * the same pane is the mobile menu. Since Starlight 0.42 that menu is a popover
+ * (#144): closed, the pane is `display: none` and cannot scroll, so the script
+ * also listens for the pane's `toggle` event and reveals the entry again each
+ * time the menu opens.
  *
  * A raw string for the same reason as `toc-rail/pre-paint`: it ships as a
  * classic inline `<head>` script and tests execute it against a stub document.
  */
 export const REVEAL_CURRENT_SCRIPT: string =
-  "(function(){function r(){try{var p=document.getElementById('starlight__sidebar');" +
-  "var c=p&&p.querySelector('[aria-current=\"page\"]');if(!c)return;" +
+  "(function(){function m(p){try{var c=p.querySelector('[aria-current=\"page\"]');if(!c)return;" +
   'var a=p.getBoundingClientRect(),b=c.getBoundingClientRect();' +
   'if(b.top>=a.top&&b.bottom<=a.bottom)return;' +
   'p.scrollTop+=b.top-a.top-(a.height-b.height)/2;}catch(e){}}' +
+  "function r(){try{var p=document.getElementById('starlight__sidebar');if(!p)return;m(p);" +
+  "p.addEventListener('toggle',function(e){if(e.newState==='open')m(p);});}catch(e){}}" +
   "if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',r);}else{r();}})();";

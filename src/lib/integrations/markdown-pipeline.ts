@@ -1,8 +1,9 @@
 /**
  * Markdown-pipeline integrations: the always-on / hoisted remark and rehype
  * stages (deck split, relative-link + base-absolute-link rewriting, the single
- * `remark-directive` owner). They share one seam (`markdown.remarkPlugins` /
- * `rehypePlugins` via `updateConfig`), so they live together.
+ * `remark-directive` owner), and the processor pin that keeps that seam alive
+ * on Astro 7. They share one seam (`markdown.remarkPlugins` / `rehypePlugins`
+ * via `updateConfig`), so they live together.
  *
  * Imports nothing from `config.ts`.
  */
@@ -10,6 +11,7 @@ import path from 'node:path';
 import process from 'node:process';
 import type { AstroIntegration } from 'astro';
 import remarkDirective from 'remark-directive';
+import { unified } from '@astrojs/markdown-remark';
 import type { IndexBasenameOption } from '../metadata.js';
 import { buildRouteTable, formatRouteCollisions } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
@@ -106,6 +108,27 @@ export const directiveIntegration: AstroIntegration = {
   hooks: {
     'astro:config:setup': ({ updateConfig }) => {
       updateConfig({ markdown: { remarkPlugins: [remarkDirective] } });
+    },
+  },
+};
+
+/**
+ * Pin Astro's Markdown processor to `unified()` (ADR-0060, #119).
+ *
+ * Astro 7 renders Markdown with Sätteri by default, and Sätteri drops every
+ * remark/rehype plugin with a warning. Astro folds the legacy
+ * `markdown.remarkPlugins` / `rehypePlugins` keys into the processor after each
+ * integration's `astro:config:setup`, in integration order, but only while the
+ * processor is `unified()`. So this integration must run FIRST: before any
+ * DocKitty stage, and before Starlight, appends a plugin. Plugin registration
+ * itself is unchanged (every stage still appends through `updateConfig`), so the
+ * resolved plugin order is the one the comments in `config.ts` describe.
+ */
+export const markdownProcessorIntegration: AstroIntegration = {
+  name: 'doc-kitty:markdown-processor',
+  hooks: {
+    'astro:config:setup': ({ updateConfig }) => {
+      updateConfig({ markdown: { processor: unified() } });
     },
   },
 };
