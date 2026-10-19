@@ -1,0 +1,35 @@
+{
+  "accept_commit": "720f4c22d76161746d51eec4a47f5397e371f77c",
+  "acceptance_history": [
+    {
+      "accept_commit": "720f4c22d76161746d51eec4a47f5397e371f77c",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-19T10:21:19.114862+00:00",
+      "accepted_by": "system",
+      "accepted_from_commit": "9158b5a78b7c8138812ca20e7db9a768f2753910"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-19T10:21:19.114862+00:00",
+  "accepted_by": "system",
+  "accepted_from_commit": "9158b5a78b7c8138812ca20e7db9a768f2753910",
+  "baseline_merge_commit": "6c187679073c35f6b0356491df30cab6f85950f0",
+  "created_at": "2026-10-19T05:29:19.615206+00:00",
+  "flattened": true,
+  "friendly_name": "Gherkin authoring aids and Specification layout",
+  "merged_at": "2026-10-19T10:23:36.826214+00:00",
+  "merged_commit": "b63c091d712e662965e53a8568313352bd66d1a5",
+  "mid8": "01M59A5E",
+  "mission_id": "01M59A5EFK2ZEGNDZ61GAQTZS8",
+  "mission_number": 13,
+  "mission_slug": "gherkin-authoring-aids-01M59A5E",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Feature pages generated from Gherkin are a core DocKitty surface. Authors get no feedback when steps describe UI clicks instead of behaviour, must repeat a glossary context tag in every file of a bounded-context folder, and readers cannot see a page's tags, source or draft status. This mission adds an opt-in wording check, a per-folder default glossary context, and a Specification layout with a draft notice for every draft page (issues #196, #197, #198).",
+  "purpose_tldr": "Help authors write feature files that read well as living documentation, and give generated feature pages a layout that shows their status, tags and source.",
+  "slug": "gherkin-authoring-aids-01M59A5E",
+  "status_phase": "1",
+  "target_branch": "feat/gherkin-authoring-aids",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-19T06:39:37.391302+00:00"
+}

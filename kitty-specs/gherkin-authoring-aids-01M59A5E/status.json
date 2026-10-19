@@ -1,0 +1,157 @@
+{
+  "event_count": 56,
+  "last_event_id": "01M59TZZJRVTX74Q1A799SYA5J",
+  "materialized_at": "2026-10-19T10:23:25.272164+00:00",
+  "mission_number": "",
+  "mission_slug": "gherkin-authoring-aids-01M59A5E",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 8,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZ2HRJ980E65T3AVY77T0",
+      "last_transition_at": "2026-10-19T10:22:55.545020+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP01-gherkin-option-and-metadata-contract/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP01-gherkin-option-and-metadata-contract/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1973,
+      "shell_pid_created_at": "1792391971.06"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZF534A72Q85C16TCET1K",
+      "last_transition_at": "2026-10-19T10:23:08.451732+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP02-folder-default-resolution-and-context-warnings/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP02-folder-default-resolution-and-context-warnings/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 27218,
+      "shell_pid_created_at": "1792395413.9"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZ6Q1VGKZASXB99RJS6NT",
+      "last_transition_at": "2026-10-19T10:22:59.809544+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP03-step-view-enrichment-and-lint-core/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP03-step-view-enrichment-and-lint-core/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2466,
+      "shell_pid_created_at": "1792392001.65"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZQF2PJ863ZV6RPCTVWGQ",
+      "last_transition_at": "2026-10-19T10:23:16.962997+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP04-lint-wiring-into-pages-and-fences/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP04-lint-wiring-into-pages-and-fences/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 17948,
+      "shell_pid_created_at": "1792398128.21"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZB3C79VW0E3ZPC2KJ8W5",
+      "last_transition_at": "2026-10-19T10:23:04.300290+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP05-draft-notice-on-every-draft-page/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP05-draft-notice-on-every-draft-page/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2943,
+      "shell_pid_created_at": "1792392035.25"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZK5EX7VACNMTT2REQ316",
+      "last_transition_at": "2026-10-19T10:23:12.558833+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP06-specification-layout-and-test-lanes/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP06-specification-layout-and-test-lanes/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 28599,
+      "shell_pid_created_at": "1792395497.18"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZVFREW86HC46MP33E9Q7",
+      "last_transition_at": "2026-10-19T10:23:21.080727+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP07-example-site-demonstration/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP07-example-site-demonstration/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 8386,
+      "shell_pid_created_at": "1792400053.74"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59TZZJRVTX74Q1A799SYA5J",
+      "last_transition_at": "2026-10-19T10:23:25.272164+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/gherkin-authoring-aids-01M59A5E-coord/kitty-specs/gherkin-authoring-aids-01M59A5E/tasks/WP08-decisions-documentation-and-changelog/review-cycle-1.md",
+        "reference": "review-cycle://gherkin-authoring-aids-01M59A5E/WP08-decisions-documentation-and-changelog/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 1838,
+      "shell_pid_created_at": "1792402642.14"
+    }
+  }
+}
