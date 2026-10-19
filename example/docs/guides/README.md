@@ -13,3 +13,5 @@ agent:
 # Guides
 
 - [Getting started](/guides/getting-started/) — first-time setup from zero.
+- [Install the toolkit](/guides/install/) — install `@spec-kitty/doc-toolkit` from
+  GitHub Packages and build your own docsite.
