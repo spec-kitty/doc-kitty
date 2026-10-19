@@ -86,7 +86,7 @@ export function retiredStampProblem(generated) {
   if (generated === null || typeof generated !== 'object') return undefined;
   const { by, at, content_hash } = /** @type {{ by?: unknown, at?: unknown, content_hash?: unknown }} */ (generated);
   const unversioned = typeof by === 'string' && RETIRED_STAMP_BY.includes(by);
-  const hashInAt = typeof at === 'string' && at.startsWith('sha256:') && content_hash === undefined;
+  const hashInAt = typeof at === 'string' && at.startsWith('sha256:') && typeof content_hash !== 'string';
   if (!unversioned && !hashInAt) return undefined;
   const form = unversioned ? `the unversioned \`generated.by: ${by}\`` : `a content hash in \`generated.at: ${at}\``;
   return (
