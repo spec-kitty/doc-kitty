@@ -112,7 +112,10 @@ The research note recommended the second. The owner chose the first.
   carrier. That has been true of every carrier since ADR-0013. For `Sidebar` it
   means the reveal script no longer ships: before this record, the reveal was a
   `head` entry that a plugin could not remove. A plugin that overrides `Sidebar`
-  must render the toolkit's carrier to keep the reveal.
+  must render the toolkit's carrier to keep the reveal. The carrier is exported
+  as `@spec-kitty/doc-toolkit/components/Sidebar.astro`; see
+  [consumer setup](../guides/consumer-setup.md#starlight-plugins-that-override-the-sidebar).
+- The reveal needs JavaScript. Without it the sidebar stays scrolled to the top.
 
 ### Risks
 

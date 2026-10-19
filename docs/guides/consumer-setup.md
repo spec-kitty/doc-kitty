@@ -537,7 +537,16 @@ adds the script that scrolls the current entry into view before first paint
 through `starlight.components` is discarded. A Starlight plugin in
 `starlight.plugins` that overrides `Sidebar` does win, because plugins run after
 the user config, and the reveal is then lost. If you use such a plugin, have its
-sidebar render `@spec-kitty/doc-toolkit/components/Sidebar.astro` to keep it.
+sidebar render `@spec-kitty/doc-toolkit/components/Sidebar.astro` to keep it:
+
+```astro
+---
+import ToolkitSidebar from '@spec-kitty/doc-toolkit/components/Sidebar.astro';
+---
+<ToolkitSidebar {...Astro.props} />
+```
+
+The reveal needs JavaScript. Without it the sidebar stays scrolled to the top.
 
 ## 7. Build
 
