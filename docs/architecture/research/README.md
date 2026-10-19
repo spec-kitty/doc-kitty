@@ -3,7 +3,7 @@ okf_version: "0.2"
 title: Architecture research
 description: Investigations that inform architecture decisions but are not themselves the present-state design.
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Architecture
 kind: Hub
 agent:
@@ -32,6 +32,9 @@ how it works, so a decision can cite them. They are not the present-state design
 - [Gherkin scenario results](./gherkin-results.md) — what Cucumber reports contain,
   how a result is tied to a rendered scenario, and how other tools show status;
   the research behind ADR-0055.
+- [Gherkin authoring aids and the Specification layout](./gherkin-authoring-aids.md) —
+  pre-spec research for the imperative-step lint, per-folder glossary context and
+  Specification layout (#196–#198), with the decisions they need.
 - [Ticketing report page](./ticketing-report.md) — a build-time report of a repo's
   tracker tickets, via an adaptor layer (GitHub first), so the docsite also serves
   as a ticketing portal.
