@@ -712,6 +712,10 @@ describe('generator-stamp (#177, FR-008, C-004)', () => {
     expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'b'.repeat(64), previous, now: NOW }).at).toBe(
       '2026-10-18T09:30:00Z',
     );
+    // An unchanged hash never carries forward an `at` the gate would reject (#227).
+    expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'a'.repeat(64), previous: { ...previous, at: 'pending' }, now: NOW }).at).toBe(
+      '2026-10-18T09:30:00Z',
+    );
   });
 });
 
