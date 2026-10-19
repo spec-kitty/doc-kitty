@@ -171,7 +171,8 @@ function contentHashOf(hash) {
  */
 export function makeStamp({ producer, hash, previous, now = new Date() }) {
   const content_hash = contentHashOf(hash);
-  const keep = previous?.content_hash === content_hash && typeof previous.at === 'string';
+  // A kept `at` must still read as a date: the gate rejects one that does not (#227).
+  const keep = previous?.content_hash === content_hash && typeof previous.at === 'string' && normaliseInstant(previous.at) !== null;
   return {
     by: `${producer}/${toolkitVersion()}`,
     at: keep ? /** @type {string} */ (previous.at) : formatInstant(now),
