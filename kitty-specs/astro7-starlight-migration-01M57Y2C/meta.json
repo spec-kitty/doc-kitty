@@ -1,0 +1,21 @@
+{
+  "baseline_merge_commit": "4112a2e4b06ad247eaf1c68355e9254d698f23ce",
+  "created_at": "2026-10-18T16:38:41.680574+00:00",
+  "flattened": true,
+  "friendly_name": "Astro 7 and Starlight 0.41 migration",
+  "merged_at": "2026-10-19T04:31:39.825064+00:00",
+  "merged_commit": "118902323a286a175acaf8eb51d26ad6965c0302",
+  "mid8": "01M57Y2C",
+  "mission_id": "01M57Y2CA6NMDPCE75CCG0P9QD",
+  "mission_number": 12,
+  "mission_slug": "astro7-starlight-migration-01M57Y2C",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "DocKitty is pinned to Astro 5 and Starlight 0.32, which blocks OpenAPI support and leaves adopters on unsupported versions. A spike with a go/no-go gate proves the upgrade first; if it holds, the same line carries the core bump, gate rebaselines, two deprecated-surface removals and 0.4.0 release prep.",
+  "purpose_tldr": "Move DocKitty to Astro 7 and Starlight 0.41+ and ship it as the 0.4.0 breaking release.",
+  "slug": "astro7-starlight-migration-01M57Y2C",
+  "status_phase": "1",
+  "target_branch": "claude/ecstatic-mccarthy-pm655w",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-18T19:02:53.634083+00:00"
+}

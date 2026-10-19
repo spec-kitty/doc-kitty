@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "mission_slug": "astro7-starlight-migration-01M57Y2C",
+  "mission_id": "01M57Y2CA6NMDPCE75CCG0P9QD",
+  "mission_branch": "kitty/mission-astro7-starlight-migration-01M57Y2C",
+  "target_branch": "claude/ecstatic-mccarthy-pm655w",
+  "lanes": [
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01",
+        "WP02"
+      ],
+      "write_scope": [
+        "docs/adr/0060-keep-remark-rehype-on-unified-processor.md",
+        "docs/adr/README.md",
+        "docs/architecture/research/astro7-starlight-041-migration-spike.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "example/astro.config.mjs",
+        "example/package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "src/index.ts",
+        "src/lib/config.ts",
+        "src/lib/docs-index.ts",
+        "src/lib/favicon.ts",
+        "src/lib/integrations/**",
+        "src/lib/manifest.ts",
+        "src/lib/schema.ts",
+        "src/lib/sitemap-order.ts",
+        "src/package.json",
+        "tests/consumption/consumer-fixture/astro.config.mjs",
+        "tests/consumption/consumer-fixture/package.json",
+        "tests/consumption/consumer-fixture/pnpm-lock.yaml"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-planning"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "docs/architecture/gherkin-pages.md",
+        "src/lib/generator-stamp.mjs",
+        "src/lib/routes/scenario-index.ts",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/fixtures/old-forms/**",
+        "src/tests/gherkin-codegen-guard.test.ts",
+        "src/tests/gherkin-generate.test.ts",
+        "src/tests/glossary-generate.test.ts",
+        "src/tests/legacy-stamp-removal.test.ts",
+        "src/tests/scenario-index.test.ts",
+        "src/tests/schema-validator-parity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-planning"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/components/Footer.astro",
+        "src/components/Head.astro",
+        "src/components/Header.astro",
+        "src/components/MarkdownContent.astro",
+        "src/components/PageTitle.astro",
+        "src/lib/route-middleware.ts",
+        "src/lib/route-shaping.ts",
+        "src/lib/theme.ts",
+        "src/styles/**",
+        "src/themes/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tests"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/components/slots/**",
+        "src/layouts/**",
+        "src/lib/deck/**",
+        "src/lib/lightbox/**",
+        "src/lib/toc-rail/**"
+      ],
+      "predicted_surfaces": [
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "example/url-baseline.txt",
+        "src/tests/example-adopter.test.ts",
+        "src/tests/remark-version-pin.test.ts",
+        "tests/a11y/**",
+        "tests/consumption/*.test.ts",
+        "tests/consumption/consumer-fixture/url-baseline.txt"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/changelog/2026-10-*-astro7*.md",
+        "docs/migrations/**",
+        "src/tests/compatibility-matrix.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 5
+    }
+  ],
+  "computed_at": "2026-10-18T16:45:02.577835+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP01",
+    "WP02"
+  ],
+  "planning_commit_sha": "7e96946947fbed3421375748c0968362f56c39f1"
+}
