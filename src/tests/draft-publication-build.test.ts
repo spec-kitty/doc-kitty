@@ -27,6 +27,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { clearInternalEnv } from '../lib/internal-env.mjs';
 import { spawnSync } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { gunzipSync } from 'node:zlib';
@@ -105,7 +106,7 @@ function runBuild(mode: Mode, setting: string | undefined, config?: string): Bui
     env,
     maxBuffer: 64 * 1024 * 1024,
   });
-  return { status: res.status, output: `${res.stdout ?? ''}${res.stderr ?? ''}` };
+  return { status: res.status, output: stripVTControlCharacters(`${res.stdout ?? ''}${res.stderr ?? ''}`) };
 }
 
 const abs = (mode: Mode, rel: string): string => path.join(REPO_ROOT, 'example', OUT[mode], rel);

@@ -22,6 +22,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -88,7 +89,7 @@ function childEnv() {
 
 function build() {
   const r = spawnSync(process.execPath, [ASTRO_BIN, 'build'], { cwd: SITE, encoding: 'utf8', env: childEnv() });
-  return { status: r.status, output: `${r.stdout}\n${r.stderr}` };
+  return { status: r.status, output: stripVTControlCharacters(`${r.stdout}\n${r.stderr}`) };
 }
 
 const guideHtml = () => readFileSync(path.join(SITE, 'dist', 'guide', 'index.html'), 'utf8');
