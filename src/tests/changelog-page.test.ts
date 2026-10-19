@@ -140,6 +140,25 @@ describe('changelogBody (#192)', async () => {
     expect(out).toContain('[f](https://github.com/o/r/blob/main/docs/f.md)');
   });
 
+  it('points images at raw URLs, not blob pages', () => {
+    const out = changelogBody('![shot](docs/img/a.png) and [![b](./b.svg)](docs/x.md)', base);
+    expect(out).toContain('![shot](https://raw.githubusercontent.com/o/r/main/docs/img/a.png)');
+    expect(out).toContain('[![b](https://raw.githubusercontent.com/o/r/main/b.svg)](https://github.com/o/r/blob/main/docs/x.md)');
+  });
+
+  it('rewrites titled links and keeps the title', () => {
+    const out = changelogBody('[a](x.md "T") [b](./y.md \'u v\')', base);
+    expect(out).toContain('[a](https://github.com/o/r/blob/main/x.md "T")');
+    expect(out).toContain("[b](https://github.com/o/r/blob/main/y.md 'u v')");
+  });
+
+  it('rewrites reference-style definitions, but not inside a fence', () => {
+    const out = changelogBody('[x]: docs/a.md\n[y]: https://z.io\n```\n[q]: docs/q.md\n```\n', base);
+    expect(out).toContain('[x]: https://github.com/o/r/blob/main/docs/a.md');
+    expect(out).toContain('[y]: https://z.io');
+    expect(out).toContain('[q]: docs/q.md');
+  });
+
   it('leaves absolute, anchor and root-relative links alone', () => {
     const src = '[a](https://x.y/z) [b](#top) [c](/abs/) [d](mailto:q@r.s)';
     expect(changelogBody(src, base)).toBe(src);
