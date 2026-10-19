@@ -34,12 +34,13 @@
  * nothing.
  *
  * PURITY CONTRACT: no I/O, no console, no globals; `warn` is the only output.
- * The runtime imports are `./text.mjs` (import-free) and `./view.mjs` (itself
- * pure), so this module loads in the Astro build and in the bare-Node CLI.
+ * The runtime imports are `./text.mjs` (import-free), `./view.mjs` and
+ * `./feature-core.mjs` (the `@dk:allow` authority; both fs-free), so this module loads in the Astro build and in the bare-Node CLI.
  *
  * @module gherkin/imperative
  */
 
+import { ALLOW_VALUES, unknownAllowWarning } from './feature-core.mjs';
 import { GHERKIN_LOG_PREFIX } from './text.mjs';
 import { allowTagValue } from './view.mjs';
 
@@ -104,8 +105,8 @@ export const DEFAULT_IMPERATIVE_PHRASES = deepFreeze([
 /** The scope `imperativeSteps: true` means: Given and When (and their conjunctions). */
 const DEFAULT_KEYWORDS = /** @type {const} */ (['context', 'action']);
 
-/** The one `@dk:allow` value that suppresses (R-06). */
-const ALLOW_IMPERATIVE = 'imperative';
+/** The one `@dk:allow` value that suppresses (R-06); the allowed set lives in feature-core. */
+const ALLOW_IMPERATIVE = ALLOW_VALUES[0];
 
 /** A word boundary that also refuses a hyphen, so `click` misses `click-through`. */
 const BEFORE = '(?<![\\w-])';
@@ -322,10 +323,7 @@ export function lintSteps(view, opts) {
       if (value === null) continue;
       if (value === ALLOW_IMPERATIVE) allow = true;
       else if (report) {
-        warn(
-          `${GHERKIN_LOG_PREFIX} ${file}:${line + lineOffset} unknown @dk:allow value "${value}" ` +
-            `(expected ${ALLOW_IMPERATIVE}); ignored`,
-        );
+        warn(unknownAllowWarning(`${file}:${line + lineOffset}`, value));
       }
     }
     return allow;

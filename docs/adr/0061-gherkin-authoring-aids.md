@@ -155,7 +155,9 @@ Facts that shape the design:
   it is a known, repeatable metadata key that feeds no frontmatter. At Rule and
   Scenario level the lint reads it directly.
 - Any other value warns once, `unknown @dk:allow value "<v>" (expected
-  imperative); ignored`, and suppresses nothing.
+  imperative); ignored` (an empty value reads `metadata tag @dk:allow= has no
+  value`), and suppresses nothing. One formatter in `feature-core.mjs` serves
+  the frontmatter parse and the lint.
 - In a fence, `@dk:allow` does not trigger the "metadata tags have no effect"
   warning, because the lint reads it there.
 
