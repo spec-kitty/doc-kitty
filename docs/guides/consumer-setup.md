@@ -445,25 +445,37 @@ the consumer layer actually won the cascade in the built output.
 ### Cap the page width
 
 The page frame holds the sidebar, the reading pane and the "On this page" rail.
-The reading pane is the area between sidebar and rail; the reading column is the
-text block centred in it, at most 720px. The frame spans the viewport by
-default. To cap it, set one token on `:root` in the same sheet:
+The reading pane is the area between sidebar and rail. The reading column is the
+text block centred in it, at most 960px (60rem, see
+[ADR-0053](../adr/0053-reading-width.md)).
+
+Since 0.5.0 the frame is capped at 120rem by default
+([ADR-0062](../adr/0062-default-frame-cap.md)). On a viewport wider than 1920px
+the frame is 1920px wide and centred. At 1920px and narrower the frame is the
+full viewport, so those layouts are unchanged.
+
+To keep the frame full width at every viewport, set one token on `:root` in the
+same sheet:
 
 ```css
 /* src/theme/press.css */
 :root {
-  --dk-width-frame: 90rem;
+  --dk-width-frame: 100%;
 }
 ```
+
+To set another cap, give the token any length or percentage, such as `100rem`.
+A much narrower cap, such as `90rem`, leaves little space beside the column on
+very wide screens: 24px on each side at 2560px on a rail page.
 
 | | |
 |---|---|
 | Token | `--dk-width-frame` |
 | What it does | sets the width of the page frame |
-| Default | `100%` (full width) |
-| Accepts | a length (`90rem`, `1440px`) or a percentage (`80%`) |
+| Default | `120rem` (1920px at the default root font size) |
+| Accepts | a length (`100rem`, `1440px`) or a percentage (`100%`, `80%`) |
 | Applies from | a 50rem (800px) viewport; below it the frame is never capped |
-| Invalid value | behaves as `100%` |
+| Invalid value | behaves as `1920px`, the registered initial value |
 
 What follows a cap that is narrower than the viewport:
 
@@ -475,28 +487,35 @@ What follows a cap that is narrower than the viewport:
   rail's edge;
 - on a right-to-left page all of this is mirrored.
 
-With `--dk-width-frame: 90rem` on a 1920px viewport the frame is 1440px wide,
-from 240px to 1680px.
+With the default on a 2560px viewport the frame is 1920px wide, from 320px to
+2240px. On a rail page the column then has 192px of space on each side; with a
+full-width frame it has 512px.
 
-Four things to know:
+Five things to know:
 
 - **Set it on `:root`.** The gutter beside a capped frame is computed on
   `:root`, and the sidebar, the header content and the toggle are moved in by
   it. A token set on an inner element caps the frame and leaves those three at
   the viewport edge.
 - **An invalid value is harmless.** The token is a registered property, so
-  `--dk-width-frame: banana` behaves as `100%` and the layout is the default.
+  `--dk-width-frame: banana` behaves as its registered initial value, `1920px`.
+  That equals the 120rem default at the default 16px root font size.
 - **The rail keeps one width.** From a 72rem (1152px) viewport the rail is as
   wide as the sidebar (18rem, 288px). The reading pane takes the rest of the
-  frame; its column is at most 720px. With the default frame the column is
-  528px at a 1152px viewport, 656px at 1280px and 720px from 1600px.
-- **Very wide screens may want a cap.** With the default, the sidebar and the
-  rail sit at the two edges of the viewport. On a 2560px screen that leaves the
-  720px column centred in a 1984px reading pane. A cap such as `90rem` keeps
-  the three together.
+  frame, and the column is the pane less 24px of padding on each side, up to
+  960px. On a rail page the column is 528px at a 1152px viewport, 656px at
+  1280px, 816px at 1440px, and 960px from 1584px.
+- **The header search starts where the column starts.** On pages with and
+  without a rail, with the rail expanded or collapsed, the search box lines up
+  with the column's start edge. A site title wider than the space before the
+  column keeps the search after the title, as stock Starlight does.
+- **The column moves between rail and no-rail pages.** A page without a rail
+  centres the column in a wider pane, so it starts further along: 144px further
+  from a 1600px viewport. This is intended (#204); see
+  [Collapsible TOC rail](../architecture/collapsible-toc-rail.md#rail-and-no-rail-pages-the-column-shift-is-accepted).
 
-The decision and the measurements behind it are in
-[ADR-0045](../adr/0045-frame-width-token.md).
+The token is described in [ADR-0045](../adr/0045-frame-width-token.md), and the
+120rem default in [ADR-0062](../adr/0062-default-frame-cap.md).
 
 ### Replace the site header
 

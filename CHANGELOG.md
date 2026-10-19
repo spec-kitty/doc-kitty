@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+This release caps the page frame at 120rem by default, so pages on screens
+wider than 1920px keep the navigation close to the text. It reveals the current
+sidebar entry before first paint, lines the header search up with the column,
+and adds layout and build guards. **Upgrading: read the Breaking section.**
+
+### 💥 Breaking
+
+- **The page frame is capped at 120rem by default (#205).** Before, the frame
+  spanned the viewport unless a site set `--dk-width-frame`. Now the default is
+  `120rem`. Viewports of 1920px and narrower look as before. On a wider
+  viewport the frame is 1920px wide and centred: at 2560px a rail page has
+  192px beside the column instead of 512px. To keep a full-width frame, set
+  `:root { --dk-width-frame: 100%; }`. A site that already sets the token is
+  unaffected. See
+  [Cap the page width](docs/guides/consumer-setup.md#cap-the-page-width) and
+  [ADR-0062](docs/adr/0062-default-frame-cap.md).
+
 ### Added
 
 - **Set a glossary context once per folder with
@@ -44,6 +61,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   built. The site root is never shown as a draft, and out-of-frame slide decks
   are not covered (ADR-0062).
 
+- **`Sidebar` is the sixth toolkit carrier.** It renders Starlight's own
+  sidebar unchanged and then the script that reveals the current entry. Like
+  the other carriers, it replaces a `Sidebar` override passed through
+  `starlight.components`. See [ADR-0061](docs/adr/0061-sidebar-carrier.md).
+- **The accessibility lane also checks the published sidebar (#200).** Before,
+  it measured only the drafts-on build, so the sidebar readers see was never
+  checked. Now CI also serves `example/dist-nodrafts` to two more Playwright
+  projects, `published-light` and `published-dark`, which run the sidebar
+  specs. A new spec checks that draft entries appear only in the drafts-on
+  sidebar and that previous and next links skip drafts in the published build.
+  The server stops when the dist and the draft mode it was given disagree.
+- **Every machine surface is compared across builds (#201).** The sitemap,
+  RSS feed, `llms.txt` files, `api/` JSON, the OKF bundle and the Pagefind
+  index must be byte-identical between two builds with the same draft setting.
+  Between the drafts-on and drafts-off builds only the drafts' own page records
+  may differ. Each surface must match at least one file, so a renamed surface
+  fails the check instead of dropping out.
+- **The page chrome has an explicit target-size check (#202).** Every link and
+  button in the header, sidebar, rail and footer must be at least 24 by 24 CSS
+  px, or meet the WCAG 2.2 spacing exception. It runs at 1280px and 1920px with
+  the rail expanded and collapsed, and on a phone with the menu open.
+- **The column on a page with a rail and no sidebar is checked to be centred
+  (#199).** Before, this was a code-review item. Now a Playwright spec measures
+  it at each width, with the rail expanded and collapsed.
+- **The stock-header fixture has a stamp, and `pnpm fixture:stock-header`
+  recaptures it (#207).** The fixture that the `Header` carrier is compared
+  with is now captured from a build with the carrier switched off, so it is
+  Starlight's own header. `stock-header.meta.json` records the Starlight and
+  Astro versions and the `compressHTML` setting it was captured with, and a fast
+  test names the field that no longer matches and the command to run.
+
 ### Changed
 
 - **Draft pages gain one `p.dk-draft-notice` in their HTML (#198).** Pages that
@@ -61,11 +109,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   HR page now resolves `policy` to the HR definition. The example also turns on
   the imperative-step lint, with zero warnings.
 
+- **The column shift between pages with and without a rail is intended
+  (#204).** A page without a rail starts its column further along, by 144px
+  from a 1600px viewport. Stock Starlight shifts too, and reserving a rail on
+  every page was rejected. See
+  [Collapsible TOC rail](docs/architecture/collapsible-toc-rail.md#rail-and-no-rail-pages-the-column-shift-is-accepted).
+- **The sidebar reveal script moved from `head` to the `Sidebar` carrier.** It
+  is now one inline script right after the sidebar markup, and the `head`
+  entry is gone.
+
+### Fixed
+
+- **The sidebar no longer jumps on a first visit (#203).** Before, the sidebar
+  painted at the top and scrolled to the current entry only after the whole
+  page had loaded, which took seconds on a slow link. Now the entry is in view
+  at first paint, once the sidebar markup has arrived. In-session navigation
+  still restores the position Starlight saved.
+- **The header search starts where the column starts (#216).** Before, it sat
+  24px before the column on a rail page and 168px off with the rail collapsed.
+  Now it lines up with the column on pages with and without a rail, with the
+  frame capped or not. A site title wider than the space before the column
+  keeps the search after the title, as stock Starlight does.
+- **The column no longer runs under the collapsed rail toggle (#217).** From
+  1152 to 1295px with the rail collapsed, the column ran 7px under the toggle.
+  Now, below 84rem (1344px), the pane's end padding with the rail collapsed is
+  the toggle's width plus 4px.
+- **The Persona card no longer leaves a large blank at wide widths (#206).**
+  `--dk-width-passport` now defaults to the metadata band's width, 50rem
+  instead of 32rem, and the card is start-aligned with the text below it. A site
+  can still set the token.
+
 ### Documentation
 
 - **ADR-0061 and ADR-0062 record the decisions.** The consumer setup guide, the
   authoring guide, the Gherkin architecture page and the theming page cover the
   new options, the tag, the layout and the notice.
+
 
 ## [0.4.0] — 2026-10-18
 
