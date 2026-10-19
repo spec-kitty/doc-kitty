@@ -45,7 +45,7 @@ import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
-import { z } from 'zod';
+import { z } from 'astro/zod';
 // Generator stamps (#177): prefix-based detection, with the legacy unversioned
 // Gherkin stamp (single-sourced from its pure core) still recognised.
 import { GHERKIN_PRODUCER, isGeneratedStamp, retiredStampProblem } from '../lib/generator-stamp.mjs';

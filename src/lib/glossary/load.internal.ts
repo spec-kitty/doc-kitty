@@ -13,7 +13,7 @@
  * ADR-0026 Risks). Bump {@link PINNED_CONTEXTIVE_SCHEMA_VERSION} and this schema
  * together when the pinned format is intentionally moved.
  */
-import { z } from 'zod';
+import { z } from 'astro/zod';
 import matter from 'gray-matter';
 // Reuse the M5 scheme allowlist verbatim (FR-004, INV-G6) — do NOT reinvent it.
 // safeHref returns the value for http:/https:/mailto:/no-scheme, `undefined` for
