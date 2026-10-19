@@ -212,3 +212,46 @@ in the page records. See the [content graph reference](../architecture/content-g
 and the [export guide](../guides/export-okf-bundle.md).
 
 **Implementation note (0.4.0, #183, #210):** the legacy `sha256:` `at` reading and the unversioned `doc-kitty/gherkin` / `doc-kitty/glossary` stamps above are retired (a retired stamp now fails the frontmatter gate with a regenerate message), and `api/scenarios.json` dropped `generated_from` and moved to `version: "2"`.
+
+### Per-output dates and the date-shape rule (#226, #227)
+
+These notes record two follow-up fixes. The decisions above are unchanged.
+
+**Per-output "last changed" (#226).** RSS and the OKF export date a page
+differently, so each has its own rule. Both live in
+`src/lib/generator-stamp.mjs`.
+
+- An RSS `<pubDate>` is when the author last said the page changed.
+- OKF `generated.at` is the producing tool's last content change (OKF §5 and
+  §5.2). Only a tool that owns the page can say that.
+- The scaffold stamp is provenance. It records where a page started, not a
+  content change, so the export never takes its `at` as one.
+
+- RSS (`feedInstant`) dates an item from `updated`, else from `generated.at`.
+  It reads any stamp.
+- The OKF export (`okfGenerated`) takes `by`, `at` and `content_hash` only from
+  an ownership stamp: `doc-kitty-gherkin/<version>` or
+  `doc-kitty-glossary/<version>`. It ignores any other stamp, such as the
+  scaffold's. Then `by` is the first author, who leaves `authors`, else
+  `process:dockitty-export`. `at` is `updated`, else the ignored stamp's `at`.
+- The agent API is unchanged. It reports `updated` and the raw `generated`
+  block.
+
+The operator chose per-output precedence in one module at Decision Moment
+01M5A02GSJ9YZHCEK9SZ482MTY. Two options were rejected. A shared helper would
+force one precedence on two outputs with different meanings. A feed that took
+the export's rule would drop the author's `updated`. An export that took the
+feed's rule would report a scaffold stamp, or a human edit, as the tool's
+content change. Documenting the difference alone would leave the export wrong.
+
+**Date shape (#227).** The Astro build and the frontmatter gate share one
+parser, `normaliseInstant` in `src/lib/vocabulary-core.mjs`. It covers
+`updated`, `stale_after`, `generated.at` and `verified[].at`. A value passes
+when it has one of these shapes and `Date` can read it: a YAML date, ISO-8601,
+`YYYY-MM`, a string with a month name and a number, or a string with three or
+more numeric groups. `18/10/2026` has a shape but no month 18, so it fails.
+Numbers and strings such as `"1"`, `"2024"`, `"1/2"`, `"abc 2024"` and `"2024.5"` fail, though
+`Date` parses them. The error names the field and `YYYY-MM-DDTHH:MM:SSZ`.
+A retired `sha256:` stamp keeps its regenerate message in the gate, and the
+build now rejects it too. A YAML-number `updated` built on 0.4.0, so the fix
+is breaking.
