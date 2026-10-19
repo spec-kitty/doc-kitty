@@ -32,8 +32,8 @@ short endpoint file. This page expands the surfaces the
   and a page with neither is not an item (#190, #226). A scaffold stamp
   (`doc-kitty-scaffold/<version>`) is provenance only. It records where a page
   started and never makes the page "generated". RSS may read its `at` as a
-  fallback date, but the OKF export never takes it as the last content change. The `feeds` filter composes with the publication state / `kind`
-  gating.
+  fallback date, but the OKF export never takes it as the last content change.
+  The `feeds` filter composes with the publication state / `kind` gating.
 - **`llms.txt`** — discoverable pages whose section feeds `llms`, grouped by section
   in registry `order` with the section `label` as the group heading; the
   `llmsTxtRoute` handler; how the `agent` block filters and orders entries within a
