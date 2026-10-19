@@ -8,7 +8,9 @@
 //       EXPANDED_MEASURE in layout-geometry.spec.ts)
 //   W3  `--dk-width-content: 45rem` restores the 720px column (the documented way back)
 //   R1  the column never reaches under the rail: expanded, collapsed, and under a
-//       frame cap, and it stays inside the pane
+//       frame cap, and it stays inside the pane. At 2560px the frame is the 120rem
+//       default (ADR-0062); one case restores `--dk-width-frame: 100%` so the
+//       uncapped wide geometry stays covered
 //   U1  below 72rem the column fills its pane (small screens unchanged)
 //
 // The "reading pane" is the content box of the `.content-panel` that holds the
@@ -131,6 +133,16 @@ test.describe('reading width', () => {
     assertInPane(r, 'R1 collapsed');
     expect
       .soft(inline(r.column, r.g).end, 'R1 collapsed: column end vs rail hairline start')
+      .toBeLessThanOrEqual(inline(r.g.railContainer!, r.g).start + TOLERANCE);
+  });
+
+  test('R1 2560px expanded, full-width frame: the column stays clear of the rail', async ({ page }) => {
+    const r = await load(page, { width: 2560, css: ':root { --dk-width-frame: 100% }' });
+    // Non-vacuity: the opt-out really gave the uncapped frame.
+    expect(r.g.frame!.width, 'R1 full width: frame width').toBe(r.g.viewportWidth);
+    assertInPane(r, 'R1 full width');
+    expect
+      .soft(inline(r.column, r.g).end, 'R1 full width: column end vs rail start')
       .toBeLessThanOrEqual(inline(r.g.railContainer!, r.g).start + TOLERANCE);
   });
 

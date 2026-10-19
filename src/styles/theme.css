@@ -85,10 +85,13 @@
   --dk-width-sidebar: 18rem;
   --dk-width-band: 50rem;
   --dk-width-deck: 60rem;
-  --dk-width-passport: 32rem;
-  /* Caps the page frame (sidebar + reading column + rail). The default is
-     full-width; set a length or percentage to cap and centre the frame. */
-  --dk-width-frame: 100%;
+  /* The Persona card: as wide as the metadata band by default (#206); set a
+     length to override it. */
+  --dk-width-passport: var(--dk-width-band);
+  /* Caps the page frame (sidebar + reading column + rail) and centres it.
+     The default is 120rem (ADR-0062), which leaves every viewport up to
+     1920px full width; `100%` restores a full-width frame at every width. */
+  --dk-width-frame: 120rem;
 
   /* ===== Mode-varying COLOUR tokens — LIGHT (default) ==================== */
 

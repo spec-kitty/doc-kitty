@@ -96,7 +96,7 @@ const geometryRules = components.rules.filter(
 );
 
 describe('frame-width token registration (FR-002, FR-003)', () => {
-  it('registers --dk-width-frame so an invalid value computes to 100%', () => {
+  it('registers --dk-width-frame so an invalid value computes to the 120rem default', () => {
     const registration = components.atBlocks.find(
       (b) => b.prelude === '@property --dk-width-frame',
     );
@@ -104,7 +104,10 @@ describe('frame-width token registration (FR-002, FR-003)', () => {
     const body = registration!.body.replace(/\s+/g, ' ');
     expect(body).toContain("syntax: '<length-percentage>'");
     expect(body).toContain('inherits: true');
-    expect(body).toContain('initial-value: 100%');
+    // 120rem at 16px. An `@property` initial value must be computationally
+    // independent, so `120rem` would make the browser drop the registration.
+    expect(body).toContain('initial-value: 1920px');
+    expect(body).not.toMatch(/initial-value:[^;]*(r?em|vw|vh|%)/);
   });
 
   it('theme.css and the Default catalog agree on the token and its default', () => {
@@ -112,8 +115,8 @@ describe('frame-width token registration (FR-002, FR-003)', () => {
       (r) => r.selector === ':root' && '--dk-width-frame' in r.decls,
     );
     expect(root, 'theme.css :root does not declare --dk-width-frame').toBeDefined();
-    expect(root!.decls['--dk-width-frame']).toBe('100%');
-    expect(resolveTheme(undefined).tokens['--dk-width-frame']).toBe('100%');
+    expect(root!.decls['--dk-width-frame']).toBe('120rem');
+    expect(resolveTheme(undefined).tokens['--dk-width-frame']).toBe('120rem');
   });
 
   // reading-width mission (issue 154, ADR-0053): the reading column is declared
@@ -127,9 +130,12 @@ describe('frame-width token registration (FR-002, FR-003)', () => {
 });
 
 describe('placement and direction', () => {
-  it('finds all eight geometry rules', () => {
-    // Guards the two sweeps below against passing on an empty set.
-    expect(geometryRules).toHaveLength(8);
+  it('finds all ten geometry rules', () => {
+    // Guards the two sweeps below against passing on an empty set. WP05 of
+    // layout-guards-decisions added two: the pane's end padding
+    // (`.main-pane`, #217) and the header's first track
+    // (`header.header > .header`, #216).
+    expect(geometryRules).toHaveLength(10);
   });
 
   it('keeps geometry out of the token sheet, which a brand swap replaces', () => {
@@ -147,6 +153,21 @@ describe('placement and direction', () => {
         expect(property, `${rule.selector} uses physical ${property}`).not.toMatch(physical);
       }
     }
+  });
+});
+
+describe('the header search follows the column (#216)', () => {
+  it('sizes the stock header first track from the toolkit column start, keeping the title floor', () => {
+    const track = components.rules.find((r) => r.selector === 'header.header > .header');
+    expect(track, 'no rule owns the stock header grid').toBeDefined();
+    expect(track!.media).toEqual(['@media (min-width: 72rem)']);
+    expect(track!.decls['grid-template-columns']).toBe(
+      'minmax(max(0px, var(--dk-column-inline-start) - var(--sl-nav-gap)), auto) 1fr auto',
+    );
+  });
+
+  it("does not depend on Starlight's private header lengths", () => {
+    expect(COMPONENTS).not.toMatch(/--__[a-z]/);
   });
 });
 
