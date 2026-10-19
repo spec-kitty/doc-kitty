@@ -3,7 +3,7 @@ okf_version: "0.2"
 title: Architecture research
 description: Investigations that inform architecture decisions but are not themselves the present-state design.
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Architecture
 kind: Hub
 agent:
@@ -35,3 +35,6 @@ how it works, so a decision can cite them. They are not the present-state design
 - [Ticketing report page](./ticketing-report.md) — a build-time report of a repo's
   tracker tickets, via an adaptor layer (GitHub first), so the docsite also serves
   as a ticketing portal.
+- [Layout guards and layout decisions after Astro 7](./layout-guards-and-decisions.md) —
+  current behaviour on Starlight 0.42.6, options, and a recommendation for the
+  layout guard and decision issues #199 to #207.
