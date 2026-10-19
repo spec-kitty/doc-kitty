@@ -15,10 +15,10 @@
  *
  * Before the slot it renders a labelled header card with the feature's tags and
  * its source (`specCard`, src/lib/spec-card.ts, decides both; only an http(s)
- * resource becomes a link). The card is a `<section aria-labelledby>` region —
- * not a nav, no `aria-current`: Starlight's "On this page" TOC stays the only
- * scenario navigation. Its heading is visually hidden (Starlight's global
- * `sr-only`) and is not a Markdown heading, so the TOC does not list it. The
+ * resource becomes a link). The card is a `<section aria-label>`
+ * region (named by the attribute, with no heading element at all) — not a nav, no
+ * `aria-current`: Starlight's "On this page" TOC stays the only scenario navigation,
+ * and the page's lead prose is not filed under a card heading. The
  * ADR-0055 results summary stays in the body, unrepeated (operator decision
  * 01M59CQM76Q0NJ3F3GM1S8BYAN), and the draft notice belongs to the PageTitle
  * carrier (WP05), never to the card.
