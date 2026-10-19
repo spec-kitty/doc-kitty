@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -40,6 +40,9 @@ reuse contract (SC-005) and is machine-checked by
 
 ## Quick install
 
+The short version of this page is published on the docsite as
+[Install the toolkit](https://spec-kitty.github.io/doc-kitty/guides/install/).
+
 If you just want the commands, this is the whole of
 [step 1](#1-authenticate-to-github-packages) and
 [step 2](#2-install-the-toolkit-and-its-peers) in one place. The toolkit lives on
@@ -60,7 +63,7 @@ the **GitHub Packages** registry, so you need a GitHub token with `read:packages
 
 ```sh
 export GITHUB_TOKEN=<your read:packages token>
-pnpm add @spec-kitty/doc-toolkit@0.2.0 astro @astrojs/starlight @astrojs/sitemap
+pnpm add @spec-kitty/doc-toolkit@0.4.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3 @astrojs/sitemap
 ```
 
 Getting `401 Unauthorized` from `pnpm add`? The usual causes: the `_authToken`
@@ -71,7 +74,7 @@ configure, theme, and build the site.
 
 ## Prerequisites
 
-- Node ≥ 22 (the package's `engines` floor) and pnpm (`corepack enable`).
+- Node `>=22.22.0` (the package's `engines` floor) and pnpm (`corepack enable`).
 - A GitHub account with a **personal access token** that has the `read:packages`
   scope. GitHub Packages never serves npm packages anonymously, even public ones,
   so you need this to install — see [step 1](#1-authenticate-to-github-packages).
@@ -129,17 +132,20 @@ runner-level npmrc, so the env expansion works there too. GitHub's reference is
 
 ## 2. Install the toolkit and its peers
 
-The toolkit declares Astro and Starlight as peers, so install them alongside it.
+The toolkit declares three peers, so install them alongside it: `astro`
+(`>=7.2.10 <8`), `@astrojs/starlight` (`>=0.42.0 <0.43.0`) and
+`@astrojs/markdown-remark` (`>=7.3.0 <8`).
 `@astrojs/sitemap` ships as a regular dependency of the toolkit, so listing it
 yourself is optional; the command keeps it explicit, as the consumption-test
 fixture does. Pin the version you want to track:
 
 ```sh
-pnpm add @spec-kitty/doc-toolkit astro @astrojs/starlight @astrojs/sitemap
+pnpm add @spec-kitty/doc-toolkit@0.4.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3 @astrojs/sitemap
 ```
 
-Pin a real release (for example `@spec-kitty/doc-toolkit@0.2.0`) rather than a
-floating range so your build is reproducible against a known published surface.
+Pin a real release (as above, 0.4.0) rather than a floating range so your build
+is reproducible against a known published surface. Upgrading from 0.3? Follow the
+[0.3 to 0.4 migration guide](../migrations/0.3-to-0.4.md) first.
 
 ## 3. `astro.config.mjs` — wire the integrations
 
@@ -1003,6 +1009,11 @@ variables: `DK_INDEX_BASENAME`, `DK_GHERKIN_RESULTS`, `DK_GHERKIN_ROUTE`,
 use; never set them by hand. DocKitty clears any value you set when the config loads.
 Set the matching option on `defineDocKittyIntegrations` instead.
 ([ADR-0057](../adr/0057-internal-env-handoff-seam.md) explains the design.)
+
+## Upgrading from 0.3.0
+
+Toolkit 0.4.0 moves to Astro 7, Starlight 0.42 and Node 22.22. Follow the
+[0.3 to 0.4 migration guide](../migrations/0.3-to-0.4.md).
 
 ## Upgrading from 0.2.0
 
