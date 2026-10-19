@@ -60,13 +60,13 @@ and adds layout and build guards. **Upgrading: read the Breaking section.**
   page is a work in progress and may change." under its title when drafts are
   built. The site root is never shown as a draft, and out-of-frame slide decks
   are not covered (ADR-0062).
-
-- **`Sidebar` is the sixth toolkit carrier.** It renders Starlight's own
-  sidebar unchanged and then the script that reveals the current entry. Like
-  the other carriers, it replaces a `Sidebar` override passed through
-  `starlight.components`. A Starlight plugin that overrides `Sidebar` still
-  wins over the carrier, and the current-entry reveal is then lost: such a
-  plugin must render the toolkit's `Sidebar`. See
+- **The current sidebar entry is revealed before first paint (#203).** Before,
+  the reveal ran from a head script after the page had loaded. Now `Sidebar` is
+  the toolkit's sixth carrier: it renders Starlight's own sidebar unchanged and
+  then the script that reveals the current entry. Like the other carriers, it
+  replaces a `Sidebar` override passed through `starlight.components`. A
+  Starlight plugin that overrides `Sidebar` still wins over the carrier, and the
+  reveal is then lost: such a plugin must render the toolkit's `Sidebar`. See
   [ADR-0063](docs/adr/0063-sidebar-carrier.md).
 - **The accessibility lane also checks the published sidebar (#200).** Before,
   it measured only the drafts-on build, so the sidebar readers see was never
@@ -139,8 +139,9 @@ and adds layout and build guards. **Upgrading: read the Breaking section.**
   the toggle's width plus 4px.
 - **The Persona card no longer leaves a large blank at wide widths (#206).**
   `--dk-width-passport` now defaults to the metadata band's width, 50rem
-  instead of 32rem, and the card is start-aligned with the text below it. A site
-  can still set the token.
+  instead of 32rem, and the card is start-aligned with the text below it. The
+  card now follows `--dk-width-band`, so a site that sets `--dk-width-band` also
+  resizes the card. A site can still set `--dk-width-passport` itself.
 
 ### Documentation
 
