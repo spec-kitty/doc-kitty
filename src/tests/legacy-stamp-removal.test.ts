@@ -60,6 +60,14 @@ describe('#210 legacy generator stamps are retired', () => {
     expect(problems.join('\n')).toMatch(/regenerate/i);
   });
 
+  it('a sha256 hash in `at` with `content_hash: null` fails too', () => {
+    const { problems } = validate('behaviour/book-consignment.md', {
+      ...legacyGherkinPage,
+      generated: { by: 'doc-kitty-gherkin/0.3.0', at: 'sha256:aa67f517f6ea', content_hash: null },
+    });
+    expect(problems.join('\n')).toMatch(/regenerate/i);
+  });
+
   it('the legacy stamp no longer makes a page generated', () => {
     expect(isGeneratedStamp('doc-kitty/gherkin')).toBe(false);
     expect(isGeneratedStamp('doc-kitty/gherkin', 'doc-kitty-gherkin')).toBe(false);
