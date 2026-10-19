@@ -10,9 +10,9 @@
  * - every other body `<h1>` (a leading one that says something else, or one
  *   further down) becomes an `<h2>`, so its text and outline position survive.
  *
- * "Leading" skips whitespace, HTML comments and MDX `import`/`export` lines.
- * Text is compared after undoing what remark-smartypants did to the body (curly
- * quotes, dashes, ellipses), with case and runs of whitespace ignored, so
+ * "Leading" skips whitespace, HTML and MDX comments, and MDX `import`/`export`
+ * lines. Text is compared after undoing what remark-smartypants did to the body
+ * (curly quotes, dashes, ellipses), with case and runs of whitespace ignored, so
  * `# Don't panic` repeats `title: "Don't panic"`.
  *
  * ── Ordering ─────────────────────────────────────────────────────────────────
@@ -61,14 +61,35 @@ export function comparableTitle(text: string): string {
     .toLowerCase();
 }
 
-/** Nodes that never render as content: comments and MDX `import`/`export`. */
-const SKIPPED = new Set(['comment', 'mdxjsEsm']);
+/**
+ * Nodes that never render as content. When user rehype plugins run, `rehype-raw`
+ * has not yet parsed raw HTML, so a Markdown `<!-- … -->` is a `raw` node, and an
+ * MDX comment expression (a block or line JS comment in braces) is an
+ * `mdxFlowExpression`; `comment` covers a tree that has been parsed already.
+ */
+const HTML_COMMENTS = /^\s*(?:<!--[\s\S]*?-->\s*)+$/;
+const JS_COMMENTS = /^\s*(?:\/\*[\s\S]*?\*\/\s*|\/\/[^\n]*\s*)+$/;
+
+function isSkipped(node: HastNode): boolean {
+  const value = node.value ?? '';
+  switch (node.type) {
+    case 'comment':
+    case 'mdxjsEsm':
+      return true;
+    case 'text':
+      return !value.trim();
+    case 'raw':
+      return HTML_COMMENTS.test(value);
+    case 'mdxFlowExpression':
+      return JS_COMMENTS.test(value);
+    default:
+      return false;
+  }
+}
 
 /** The first child that is not whitespace, a comment or an MDX import. */
 function leadingNode(tree: HastNode): HastNode | undefined {
-  return (tree.children ?? []).find(
-    (node) => !SKIPPED.has(node.type) && !(node.type === 'text' && !node.value?.trim()),
-  );
+  return (tree.children ?? []).find((node) => !isSkipped(node));
 }
 
 function demoteH1s(node: HastNode): void {
