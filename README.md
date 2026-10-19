@@ -71,6 +71,10 @@ The full install → configure → theme → build path is in
 [Working with the npm registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
 Maintainers publishing a release follow [Releasing the toolkit](./docs/ops/releasing.md).
 
+The page frame is capped at 120rem by default. One line,
+`:root { --dk-width-frame: 100%; }`, keeps it full width; see
+[Cap the page width](./docs/guides/consumer-setup.md#cap-the-page-width).
+
 ## Quickstart
 
 ```sh

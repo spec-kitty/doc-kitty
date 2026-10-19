@@ -1,8 +1,8 @@
 ---
 title: Adopting the toolkit
-description: Bring DocKitty into another repository.
+description: Bring DocKitty into another repository, from an existing Common Docs tree or from scratch, and see what a build gives you.
 doc_status: active
-updated: 2026-08-21T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup]
@@ -37,3 +37,8 @@ node src/scripts/scaffold.mjs docs
 After `pnpm build`, `dist/` contains the site plus `sitemap-index.xml`, `rss.xml`,
 `llms.txt`, and `/api/*.json`. Deploy `dist/` to GitHub Pages with the provided
 [`deploy.yml`](../../.github/workflows/deploy.yml).
+
+The page frame is capped at 120rem (1920px) by default, so on wider screens the
+sidebar, text and rail stay together in the middle. To keep it full width, or
+to set another cap, see
+[Cap the page width](./consumer-setup.md#cap-the-page-width).
