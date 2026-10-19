@@ -568,7 +568,7 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022; inline since FR-004)', () => {
    * Starlight's sidebar (the `Sidebar` carrier, ADR-0063), where the document is
    * still `'loading'`, so it must act at once and never wait for an event.
    */
-  function run(opts: { pane?: Rect; current?: Rect | null; readyState?: string; scrollTop?: number }) {
+  function run(opts: { pane?: Rect; current?: Rect | null; noBox?: boolean; readyState?: string; scrollTop?: number }) {
     const paneListeners: Array<{ type: string; fn: (e: { newState: string }) => void }> = [];
     const pane = {
       scrollTop: opts.scrollTop ?? 0,
@@ -577,7 +577,9 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022; inline since FR-004)', () => {
       getBoundingClientRect: () => opts.pane ?? rect(64, 800),
       querySelector: (selector: string) => {
         expect(selector).toBe('[aria-current="page"]');
-        return opts.current ? { getBoundingClientRect: () => opts.current } : null;
+        return opts.current
+          ? { getBoundingClientRect: () => opts.current, getClientRects: () => (opts.noBox ? [] : [opts.current]) }
+          : null;
       },
     };
     const documentListeners: string[] = [];
@@ -628,6 +630,11 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022; inline since FR-004)', () => {
 
   it('does nothing when the sidebar is hidden (every rect is zero)', () => {
     expect(run({ pane: rect(0, 0), current: rect(0, 0) }).pane.scrollTop).toBe(0);
+  });
+
+  it('does nothing when the current entry has no box (inside a closed <details>)', () => {
+    // Such an entry reports a zero rect at top=0, which would scroll to nonsense.
+    expect(run({ current: rect(0, 0), noBox: true, scrollTop: 240 }).pane.scrollTop).toBe(240);
   });
 
   it('does nothing without a current entry, and runs at once on a parsed document', () => {
