@@ -2,7 +2,7 @@
 title: Gherkin feature pages
 description: "How the opt-in gherkin preset turns .feature files into Specification pages, and renders Gherkin fences and includes in any page: pipelines, seams, gates and limits."
 doc_status: active
-updated: 2026-10-19T00:00:00Z
+updated: 2026-10-19T15:00:00Z
 type: Architecture
 kind: Explanation
 authors:
@@ -499,9 +499,12 @@ Whether the pages reach `rss.xml` is the section's choice: the example site's
 a site drops it to keep specs out. Generated hubs (`kind: Hub` with a generator
 stamp, which includes the glossary index) never reach the feed: `includedInRssFeed` drops them, while an authored hub
 stays (#127). Every item has a `<pubDate>` (#190): the route dates an item from
-`updated`, else from the page's `generated.at` stamp (`feedDateMillis` in
-`metadata.ts`), ranks by that date, newest first, with ties in slug order, and
-leaves out a page with neither date. A generated page has no `updated` unless its
+`updated`, else from the page's `generated.at` stamp (`feedInstant` in
+`generator-stamp.mjs`), ranks by that date, newest first, with ties in slug order,
+and leaves out a page with neither date. The RSS feed reads any stamp's `at`. The
+[OKF export](../guides/export-okf-bundle.md) reads only an ownership stamp, so
+the two outputs can differ for one page (#226; see the
+[ADR-0059 note](../adr/0059-content-graph-and-okf-alignment.md#per-output-dates-and-the-date-shape-rule-226-227)). A generated page has no `updated` unless its
 feature carries `@dk:updated=<date>`, and the generator moves `generated.at` only
 when the page's content changes, so by default:
 

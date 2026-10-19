@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-08-21T00:00:00Z
+updated: 2026-10-19T17:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -326,8 +326,35 @@ fields.
 ### Instants
 
 Every instant (`updated`, `stale_after`, `generated.at`, `verified[].at`) is a UTC
-`YYYY-MM-DDTHH:MM:SSZ`; fractional seconds are allowed. A date-only value is read
-as `T00:00:00Z` and draws a warning. A non-UTC offset also warns.
+`YYYY-MM-DDTHH:MM:SSZ`; fractional seconds are allowed. The Astro build and the
+frontmatter gate read an instant with the same parser, so they accept and reject
+the same values (#227).
+
+A value is accepted when it has one of these shapes and JavaScript's `Date` can
+read it:
+
+- a YAML date;
+- an ISO-8601 string. A date-only value is read as `T00:00:00Z`. A value with no
+  zone, a non-UTC offset or a calendar rollover (`2026-02-30`) is read too;
+- a `YYYY-MM`;
+- a string with a month name and a number, such as `Oct 2026`;
+- a string with three or more numeric groups, such as `1/2/24`.
+
+The shape is not enough. `18/10/2026` has the shape, but `Date` reads the first
+group as the month, so it is rejected. `10/18/2026` is accepted. Write an
+ISO-8601 instant to avoid the ambiguity.
+
+A value is rejected when it is a number (`1`, `20241001`) or a string without a
+date shape (`"1"`, `"2024"`, `"1/2"`, `"abc 2024"`, `"2024.5"`). The message
+names the field and asks for `YYYY-MM-DDTHH:MM:SSZ`.
+
+The gate warns as follows. A YAML timestamp with a time, such as
+`2026-10-19T10:00:00Z`, draws no warning. A zone-less, non-UTC, rolled-over or
+non-ISO string draws a warning on every instant field. A date-only value, bare
+or quoted, warns on `updated` and draws no warning on `stale_after`,
+`generated.at` or `verified[].at`. A `generated.at` that holds a `sha256:` hash is a
+retired stamp. The gate answers it with a regenerate message, and the build
+rejects it as well.
 
 ### Actors
 
@@ -362,6 +389,13 @@ generated:
 `by` is `<producer>/<toolkit version>`. `content_hash` is the DocKitty extension
 to OKF's `generated`: a hash of the page content without the stamp. `at` only
 moves when the hash does, so regeneration over unchanged input is byte-stable.
+
+Two outputs read a stamp differently (#226). RSS dates an item from `updated`,
+else the stamp's `at`, whatever the stamp's `by`. The OKF export takes `by`, `at`
+and `content_hash` only from an ownership stamp (`doc-kitty-gherkin/<version>` or
+`doc-kitty-glossary/<version>`). It ignores any other stamp, such as the
+scaffold's. The agent API is unchanged: it reports `updated` and the raw
+`generated` block.
 
 ### `verified`
 

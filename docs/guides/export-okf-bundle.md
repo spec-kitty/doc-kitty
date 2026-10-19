@@ -2,7 +2,7 @@
 title: Exporting an OKF bundle
 description: Produce an Open Knowledge Format v0.2 bundle from your built site with dockitty-export-okf, check it, and know what the conversion changes.
 doc_status: active
-updated: 2026-10-18T07:40:00Z
+updated: 2026-10-19T13:00:00Z
 type: Guide
 kind: How-To
 authors:
@@ -81,9 +81,11 @@ and the pages from the source tree. Draft pages are not exported.
   ([mapping](../architecture/metadata-model.md#doc_status-to-okf-status)),
   and `authors` become actors. An email author is rewritten as
   `human:<local-part>`. Every exported page gets a `generated` block, as OKF
-  §5.2 requires: `at` is the page's own `generated.at` or else its `updated`,
-  and `by` is its own `generated.by`, else its first author, else
-  `process:dockitty-export`.
+  §5.2 requires. `by`, `at` and `content_hash` come from the page's `generated`
+  block only when it is an ownership stamp (`doc-kitty-gherkin/<version>` or
+  `doc-kitty-glossary/<version>`). Any other stamp, such as the scaffold's, is
+  ignored. Then `by` is the page's first author, who leaves `authors`, else
+  `process:dockitty-export`, and `at` is `updated`, else that stamp's `at`.
 - **`log.md`** is reserved. If your docs have one it is copied unchanged.
 
 ## The OKF reference viewer skips these links

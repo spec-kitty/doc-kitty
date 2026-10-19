@@ -2,7 +2,7 @@
 title: Generators
 description: The four generated surfaces — sitemap-index.xml, rss.xml, llms.txt, and the JSON agent-API — and their route handlers.
 doc_status: draft
-updated: 2026-08-21T00:00:00Z
+updated: 2026-10-19T15:00:00Z
 type: Architecture
 kind: Reference
 tags: [generators, sitemap, rss, llms-txt, agent-api]
@@ -28,8 +28,11 @@ short endpoint file. This page expands the surfaces the
   surfaces; an absent registry filters nothing).
 - **`rss.xml`** — published, non-deck pages whose section feeds `rss`, newest
   first; the `rssRoute` handler and its item shape. Every item has a `<pubDate>`:
-  `updated`, else the page's `generated.at` stamp, and a page with neither is not
-  an item (#190). The `feeds` filter composes with the publication state / `kind`
+  `updated`, else the page's `generated.at` stamp (any stamp, `feedInstant`),
+  and a page with neither is not an item (#190, #226). A scaffold stamp
+  (`doc-kitty-scaffold/<version>`) is provenance only. It records where a page
+  started and never makes the page "generated". RSS may read its `at` as a
+  fallback date, but the OKF export never takes it as the last content change. The `feeds` filter composes with the publication state / `kind`
   gating.
 - **`llms.txt`** — discoverable pages whose section feeds `llms`, grouped by section
   in registry `order` with the section `label` as the group heading; the
