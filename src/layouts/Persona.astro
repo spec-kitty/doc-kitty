@@ -12,7 +12,8 @@
  * `Astro.locals.starlightRoute` upstream; this layout receives resolved props).
  *
  * Structure (theming-spec-kitty-brand.md §Organisms):
- *   1. A bounded passport CARD (`--dk-width-passport`, `--dk-radius-lg`,
+ *   1. A bounded, start-aligned passport CARD (`--dk-width-passport`, the band
+ *      width by default; `--dk-radius-lg`,
  *      `--dk-shadow-lg`) carrying the layout-UNIQUE marker `.dk-passport` — the
  *      non-fakeable Persona proof WP08 (T033/T047) binds to on the branded build
  *      (Hub uses `.dk-hub__list`; Persona uses `.dk-passport`).
@@ -166,7 +167,15 @@ if (data.tags && data.tags.length > 0)
   /* Bounded, elevated passport card — the ONE in-frame organism that uses -lg
    * shadow (the brand prefers hairline depth elsewhere). Tokens resolve against
    * the brand catalog on the branded build; the `.dk-passport` class is the
-   * layout-unique, non-fakeable marker WP08 binds to. */
+   * layout-unique, non-fakeable marker WP08 binds to.
+   *
+   * Width and placement (#206): `--dk-width-passport` defaults to the metadata
+   * band's width (`--dk-width-band`, 50rem), so the identity blocks share one
+   * width, and a site can still set the token on its own. The card is
+   * start-aligned with the column and the prose below it (`margin` has no
+   * inline auto). Centring was measured and rejected: at 1920px it put the
+   * card's title 329px to the right of the prose (docs/architecture/theming.md,
+   * "The per-kind layouts"). */
   .dk-passport {
     max-width: var(--dk-width-passport);
     margin: var(--dk-space-lg) 0;
