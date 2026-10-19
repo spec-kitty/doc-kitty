@@ -69,8 +69,33 @@ const PROMOTED = [
 ];
 /** Published pages: present, indexable and searchable in both modes. */
 const PUBLISHED = ['guides/getting-started', 'adr', 'context/audience/example-persona', ...PROMOTED];
-/** The files agents and crawlers read. Drafts are in none of them, in either mode. */
-const MACHINE_SURFACES = ['sitemap-0.xml', 'rss.xml', 'llms.txt', 'api/index.json', 'api/content-graph.json'];
+/**
+ * Every machine surface: the files agents, crawlers and the search client read
+ * (data-model.md, "Machine-surface manifest"). The single list both build
+ * comparisons walk; each glob must match at least one file in every dist, so a
+ * renamed surface fails here instead of dropping out. `*` matches within one
+ * path segment, `**` at any depth.
+ */
+export const MACHINE_SURFACE_GLOBS = [
+  'sitemap*.xml',
+  'rss.xml',
+  'llms*.txt',
+  'api/**/*.json',
+  'okf/**',
+  'pagefind/**',
+] as const;
+/**
+ * The manifest's surfaces that list every published page, read as text: drafts
+ * are in none of them, in either mode. Each is matched by the manifest (asserted
+ * below); the rest of the manifest is per-page or binary, so it cannot be.
+ */
+const LISTING_SURFACES = ['sitemap-0.xml', 'rss.xml', 'llms.txt', 'api/index.json', 'api/content-graph.json'];
+/**
+ * The only machine-surface files expected in the drafts-on build and not in the
+ * drafts-off one: each draft page's own record in the page API. Everything else
+ * the manifest matches is byte-identical across the two settings.
+ */
+const DRAFT_ONLY_SURFACES = DRAFTS.map((slug) => `api/pages/${slug}.json`);
 
 /** The example's redirects. All three end at a published page, so all are built in both modes. */
 const REDIRECTS = ['plans/features/mission-alpha', 'plans/features/mission-beta', 'guides/old-getting-started'];
@@ -128,18 +153,72 @@ const sidebarHrefs = (doc: string): string[] =>
   [...sidebarHtml(doc).matchAll(/<a href="([^"]*)"/g)].map((m) => m[1]!);
 const href = (slug: string): string => `${SITE_BASE}/${slug}/`;
 
+/** Every file under `root`, relative and `/`-separated. */
+function filesUnder(root: string, dir = ''): string[] {
+  return readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((entry) => {
+    const rel = dir ? `${dir}/${entry.name}` : entry.name;
+    return entry.isDirectory() ? filesUnder(root, rel) : [rel];
+  });
+}
+
 /** Every built HTML file, relative to the output directory. */
-function htmlFiles(mode: Mode): string[] {
-  const out: string[] = [];
-  const walk = (dir: string): void => {
-    for (const name of readdirSync(abs(mode, dir), { withFileTypes: true })) {
-      const rel = path.join(dir, name.name);
-      if (name.isDirectory()) walk(rel);
-      else if (name.name.endsWith('.html')) out.push(rel);
+const htmlFiles = (mode: Mode): string[] => filesUnder(abs(mode, '')).filter((file) => file.endsWith('.html'));
+
+/** A manifest glob as an anchored RegExp: a `**` segment spans any depth, `*` stays within one segment. */
+function globRegExp(glob: string): RegExp {
+  let re = '';
+  for (let i = 0; i < glob.length; i++) {
+    if (glob.startsWith('**/', i)) {
+      re += '(?:[^/]+/)*';
+      i += 2;
+    } else if (glob.startsWith('**', i)) {
+      re += '.+';
+      i += 1;
+    } else if (glob[i] === '*') re += '[^/]*';
+    else re += glob[i]!.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  }
+  return new RegExp(`^${re}$`);
+}
+
+/**
+ * Compares the machine surfaces of two dists byte for byte and returns every
+ * difference (empty when they agree): a glob that matches nothing in either
+ * dist, a file in one dist only (unless listed in `expectedOnlyInA`, each of
+ * which must then really be in A only), and a file whose bytes differ. Buffers,
+ * not strings: `pagefind/**` holds gzipped binary fragments.
+ */
+function diffSurfaces(
+  rootA: string,
+  rootB: string,
+  expectedOnlyInA: readonly string[] = [],
+  globs: readonly string[] = MACHINE_SURFACE_GLOBS,
+): string[] {
+  const patterns = globs.map((glob) => ({ glob, re: globRegExp(glob) }));
+  const problems: string[] = [];
+  const matched = (root: string): Set<string> => {
+    const all = filesUnder(root);
+    const hits = new Set<string>();
+    for (const { glob, re } of patterns) {
+      const files = all.filter((file) => re.test(file));
+      if (files.length === 0) problems.push(`glob ${glob} matches nothing in ${root}`);
+      for (const file of files) hits.add(file);
     }
+    return hits;
   };
-  walk('');
-  return out;
+  const a = matched(rootA);
+  const b = matched(rootB);
+  for (const file of expectedOnlyInA) {
+    if (!a.has(file) || b.has(file)) problems.push(`expected in ${rootA} only, but is not: ${file}`);
+  }
+  for (const file of [...new Set([...a, ...b])].sort()) {
+    if (!b.has(file)) {
+      if (!expectedOnlyInA.includes(file)) problems.push(`only in ${rootA}: ${file}`);
+    } else if (!a.has(file)) problems.push(`only in ${rootB}: ${file}`);
+    else if (!readFileSync(path.join(rootA, file)).equals(readFileSync(path.join(rootB, file)))) {
+      problems.push(`differs: ${file}`);
+    }
+  }
+  return problems;
 }
 
 /** The page URLs Pagefind indexed (one gzipped fragment per page; base-less routes). */
@@ -350,7 +429,7 @@ describe('WP05 — draft publication in the built example', () => {
 
   describe('machine surfaces, both settings', () => {
     it.each(['off', 'on'] as const)('list no draft with the setting %s', (mode) => {
-      for (const surface of MACHINE_SURFACES) {
+      for (const surface of LISTING_SURFACES) {
         const text = read(mode, surface);
         // Non-vacuity: the surface does list a published page.
         expect(text, `${surface} lists published pages`).toContain('guides/getting-started');
@@ -364,10 +443,16 @@ describe('WP05 — draft publication in the built example', () => {
       }
     });
 
-    it('are the same in both modes', () => {
-      for (const surface of ['llms.txt', 'api/index.json', 'api/content-graph.json', 'sitemap-0.xml']) {
-        expect(read('on', surface), surface).toBe(read('off', surface));
+    it('the listing surfaces are part of the manifest', () => {
+      const patterns = MACHINE_SURFACE_GLOBS.map(globRegExp);
+      for (const surface of LISTING_SURFACES) {
+        expect(patterns.some((re) => re.test(surface)), surface).toBe(true);
       }
+    });
+
+    it('are the same in both modes, apart from the draft pages\' own API records', () => {
+      expect(diffSurfaces(abs('on', ''), abs('off', ''), DRAFT_ONLY_SURFACES)).toEqual([]);
+      // Non-vacuity: the sitemap compared does list the site.
       expect(read('off', 'sitemap-0.xml').match(/<loc>/g)!.length).toBeGreaterThan(40);
     });
   });
@@ -376,6 +461,32 @@ describe('WP05 — draft publication in the built example', () => {
     for (const slug of ['guides/getting-started', 'adr']) {
       expect(sidebarHtml(page('offRepeat', slug)), slug).toBe(sidebarHtml(page('off', slug)));
     }
+  });
+
+  it('two drafts-off builds produce byte-identical machine surfaces (NFR-006)', () => {
+    expect(diffSurfaces(abs('off', ''), abs('offRepeat', ''))).toEqual([]);
+  });
+
+  describe('the machine-surface comparison fails when it should (positive controls)', () => {
+    it('reports a one-byte difference, naming exactly that file', () => {
+      const tmp = mkdtempSync(path.join(tmpdir(), 'dk-surface-diff-'));
+      try {
+        const bytes = readFileSync(abs('off', 'llms.txt'));
+        bytes[0] = bytes[0]! ^ 1;
+        writeFileSync(path.join(tmp, 'llms.txt'), bytes);
+        expect(diffSurfaces(tmp, abs('off', ''), [], ['llms.txt'])).toEqual(['differs: llms.txt']);
+      } finally {
+        rmSync(tmp, { recursive: true, force: true });
+      }
+    });
+
+    it('reports a manifest glob that matches nothing', () => {
+      const root = abs('off', '');
+      expect(diffSurfaces(root, abs('offRepeat', ''), [], ['no-such-surface*.xml'])).toEqual([
+        `glob no-such-surface*.xml matches nothing in ${root}`,
+        `glob no-such-surface*.xml matches nothing in ${abs('offRepeat', '')}`,
+      ]);
+    });
   });
 });
 
