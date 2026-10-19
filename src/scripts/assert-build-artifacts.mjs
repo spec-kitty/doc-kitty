@@ -2628,13 +2628,22 @@ async function main() {
   // body `# Title` that repeats it must not render a second one. Redirect stubs
   // (meta refresh, no layout) carry no heading and are skipped.
   const h1Offenders = [];
+  const h1Repeats = [];
   let h1Pages = 0;
   for (const abs of await htmlFilesUnder(distDir)) {
     const html = await readFile(abs, 'utf8');
     if (/<meta http-equiv="refresh"/i.test(html)) continue;
     h1Pages += 1;
+    const rel = path.relative(distDir, abs).split(path.sep).join('/');
     const count = (html.match(/<h1[\s>]/gi) ?? []).length;
-    if (count !== 1) h1Offenders.push(`${path.relative(distDir, abs).split(path.sep).join('/')} (${count})`);
+    if (count !== 1) h1Offenders.push(`${rel} (${count})`);
+    // A body `# Title` repeating the title is dropped, not demoted: no <h2> may
+    // repeat the page title (a leading comment once hid the duplicate, #191).
+    const title = html.match(/<h1 id="_top"[^>]*>([\s\S]*?)<\/h1>/)?.[1];
+    const plain = (fragment) => fragment.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (title && [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].some(([, h2]) => plain(h2) === plain(title))) {
+      h1Repeats.push(rel);
+    }
   }
   if (h1Pages === 0) fail('one <h1> per page: no published HTML page was found to check (#191)');
   if (h1Offenders.length) {
@@ -2643,7 +2652,10 @@ async function main() {
         `${h1Offenders.slice(0, 10).join(', ')}${h1Offenders.length > 10 ? ', …' : ''}`,
     );
   }
-  ok(`one <h1> per page: all ${h1Pages} published HTML page(s) have exactly one <h1> (#191)`);
+  if (h1Repeats.length) {
+    fail(`one <h1> per page: ${h1Repeats.length} page(s) repeat their title as an <h2> (#191): ${h1Repeats.slice(0, 10).join(', ')}`);
+  }
+  ok(`one <h1> per page: all ${h1Pages} published HTML page(s) have exactly one <h1>, and none repeats it as an <h2> (#191)`);
 
   // 6a) diagrams — the published diagram demonstrator, asserted for the ACTIVE
   // render MODE (#13, C-005). The mode is detected once from the demonstrator's
