@@ -24,6 +24,7 @@ import {
   toActor,
 } from '../vocabulary-core.mjs';
 import { rewriteBodyLinks, routeIndex } from './links.mjs';
+import { okfGenerated } from '../generator-stamp.mjs';
 
 /** `generated.by` of a page that has neither a stamp nor an author (FR-025). */
 export const EXPORT_PROCESS_ACTOR = 'process:dockitty-export';
@@ -159,18 +160,17 @@ const fence = (/** @type {string} */ yaml) => `---\n${yaml}\n---\n`;
 // --- concept frontmatter ----------------------------------------------------
 
 /**
- * FR-025: `generated.by` = the existing stamp's `by`, else the first author,
- * else the export process; `generated.at` = the existing `at`, else `updated`.
- * The author consumed as `by` leaves `authors`.
+ * FR-025: `generated.by` = an ownership stamp's `by`, else the first author,
+ * else the export process; `at` = the stamp's, else `updated`, else a
+ * non-ownership stamp's `at` (#226). The author consumed as `by` leaves `authors`.
  *
  * @param {Record<string, any>} node
  * @returns {{generated: Record<string, string>, authors: string[]}}
  */
 export function generatedFor(node) {
   const authors = /** @type {string[]} */ ((node.authors ?? []).flatMap((/** @type {unknown} */ a) => toActor(a) ?? []));
-  const stamp = node.generated;
+  const { stamp, at } = okfGenerated(node);
   const fromAuthor = stamp?.by === undefined && authors.length > 0;
-  const at = stamp?.at ?? node.updated;
   return {
     generated: {
       by: stamp?.by ?? authors[0] ?? EXPORT_PROCESS_ACTOR,
