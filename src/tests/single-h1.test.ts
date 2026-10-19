@@ -58,8 +58,21 @@ describe('singleH1 — a body H1 never adds a second page <h1> (#191)', () => {
   });
 
   it('skips a leading HTML comment when finding the leading H1', () => {
-    const tree = render('<!-- note -->\n\n# Title\n\nBody.\n', { title: 'Title' });
-    expect(h1s(tree)).toBe(0);
+    // A `.md` comment is still a `raw` node when user rehype plugins run.
+    const tree = render('<!-- markdownlint-disable -->\n\n# Title\n\n## Next\n', { title: 'Title' });
+    expect(headings(tree)).toEqual(['h2: Next']);
+  });
+
+  it('skips several leading comments, but not other leading raw HTML', () => {
+    expect(headings(render('<!-- a -->\n<!-- b -->\n\n# Title\n', { title: 'Title' }))).toEqual([]);
+    expect(headings(render('<div>x</div>\n\n# Title\n', { title: 'Title' }))).toEqual(['h2: Title']);
+  });
+
+  it('skips a leading MDX comment expression when finding the leading H1', () => {
+    const h1 = { type: 'element', tagName: 'h1', children: [{ type: 'text', value: 'Title' }] };
+    const tree: Hast = { type: 'root', children: [{ type: 'mdxFlowExpression', value: '/* note */' }, h1] };
+    singleH1()(tree, { data: { astro: { frontmatter: { title: 'Title' } } } });
+    expect(headings(tree)).toEqual([]);
   });
 
   it('skips a leading MDX import when finding the leading H1', () => {
