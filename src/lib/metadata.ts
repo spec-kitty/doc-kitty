@@ -290,6 +290,15 @@ export function updatedMillis(data: DocKittyFrontmatter): number {
   return normaliseInstant(data.updated)?.date.getTime() ?? 0;
 }
 
+/**
+ * The date a feed item carries (#190): `updated`, else the generator stamp's
+ * `generated.at` (generated Gherkin and glossary pages carry no `updated`).
+ * 0 when the page has neither; the RSS route leaves such a page out.
+ */
+export function feedDateMillis(data: DocKittyFrontmatter): number {
+  return updatedMillis(data) || (normaliseInstant(data.generated?.at)?.date.getTime() ?? 0);
+}
+
 /** A minimal entry shape the helpers below operate on. */
 export interface DocEntry {
   /** Route slug, e.g. "architecture/overview" or "" for the bundle root. */
