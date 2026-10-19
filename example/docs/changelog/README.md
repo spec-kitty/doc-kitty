@@ -1,13 +1,14 @@
 ---
 okf_version: "0.2"
 title: Changelog
-description: Release history for the example docsite.
+description: Release history for the DocKitty toolkit.
 doc_status: active
-updated: 2026-08-21T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Changelog
 kind: Hub
 ---
 
 # Changelog
 
-- [v0.1.0](/changelog/2026-08-21-v0.1.0/) — 2026-08-21
+- [Release history](/changelog/releases/) — every release of
+  `@spec-kitty/doc-toolkit`, rendered from the repository's `CHANGELOG.md`.
