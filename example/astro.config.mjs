@@ -120,11 +120,26 @@ export default defineConfig({
     // Messages report of those files (see reports/PROVENANCE.txt). Every
     // generated feature page and every include shows each scenario's result
     // from it; the committed pages themselves never change.
+    //
+    // `defaultGlossaryContext` (#197) gives every feature under a source folder
+    // its glossary context, so no feature repeats `@dk:context`: `policy` is a
+    // term in both `shipping` and `hr`, and the HR page resolves it to `hr`.
+    // A feature's own `@dk:context` tag still wins. `pnpm validate:features`
+    // restates it as `--default-glossary-context` flags. See
+    // docs/guides/consumer-setup.md (Gherkin feature pages).
+    //
+    // `lint.imperativeSteps` (#196) warns at build time about a Given/When step
+    // that scripts the UI ("click", "fill in", a quoted CSS selector) instead of
+    // describing behaviour. The example's features and fences are written to
+    // pass it with zero warnings; it never changes a generated page, so it has
+    // no CLI flag. See docs/guides/consumer-setup.md and docs/guides/authoring.md.
     gherkin: {
       sources: ['features'],
       section: 'behaviour',
       includeRoots: ['features', 'scenarios'],
       titles: { hr: 'HR' },
+      defaultGlossaryContext: { shipping: 'shipping', hr: 'hr' },
+      lint: { imperativeSteps: true },
       results: 'reports/cucumber.ndjson',
     },
   }),

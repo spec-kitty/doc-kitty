@@ -7,7 +7,8 @@
  *   node src/scripts/generate-feature-pages.mjs \
  *     --root example --sources features --docs docs --section behaviour \
  *     [--index-basename README,index] [--astro-config <path>] [--source-root <dir>] \
- *     [--source-url-prefix <url>] [--titles <dir>=<title> ...] [--check] [--allow-empty]
+ *     [--source-url-prefix <url>] [--titles <dir>=<title> ...] \
+ *     [--default-glossary-context <dir>=<context> ...] [--check] [--allow-empty]
  *
  *   --root               Site directory every other path is relative to (default: cwd).
  *   --sources            Comma-separated `.feature` source directories (required).
@@ -26,6 +27,11 @@
  *   --titles             A hub title for one source directory, as `<dir>=<title>`
  *                        (`hr=HR`, `"shipping/edi=EDI messages"`); repeat the flag
  *                        for each directory. The twin of `gherkin.titles`.
+ *   --default-glossary-context
+ *                        A glossary context for one source directory, as
+ *                        `<dir>=<context>` (`shipping=shipping`); repeat the flag for
+ *                        each directory. A `@dk:context` tag still wins. The twin of
+ *                        `gherkin.defaultGlossaryContext`.
  *   --check              Compare in memory, write nothing; exit 1 on any drift.
  *   --allow-empty        Remove the generated pages when no source yields a feature.
  *                        Without it, write mode stops (exit 1) and removes nothing:
@@ -84,6 +90,7 @@ export const FLAG = /** @type {const} */ ({
   sourceRoot: '--source-root',
   allowEmpty: '--allow-empty',
   titles: '--titles',
+  defaultGlossaryContext: '--default-glossary-context',
 });
 
 /**
@@ -121,7 +128,8 @@ function list(value) {
  * @returns {{ root: string, sources: string[], docsRoot: string, section: string,
  *   outDir: string, indexBasename: string[], indexNames: ReturnType<typeof resolveSiteIndexBasenames>, sourceRoot: string,
  *   sourceUrlPrefix: string | undefined, check: boolean, allowEmpty: boolean,
- *   titles: Record<string, string> | undefined }}
+ *   titles: Record<string, string> | undefined,
+ *   defaultGlossaryContext: Record<string, string> | undefined }}
  */
 export function parseArgs(argv) {
   const raw = {
@@ -139,6 +147,9 @@ export function parseArgs(argv) {
   /** `--titles <dir>=<title>`, in the order given (repeatable). */
   /** @type {string[]} */
   const titleArgs = [];
+  /** `--default-glossary-context <dir>=<context>`, in the order given (repeatable). */
+  /** @type {string[]} */
+  const contextArgs = [];
   /** @type {Record<string, keyof typeof raw>} */
   const valued = {
     '--root': 'root',
@@ -161,10 +172,10 @@ export function parseArgs(argv) {
       raw.allowEmpty = true;
       continue;
     }
-    if (flag === '--titles') {
+    if (flag === '--titles' || flag === '--default-glossary-context') {
       const value = args[i + 1];
       if (value === undefined || value.startsWith('--')) throw new Error(`${flag} needs a value`);
-      titleArgs.push(value);
+      (flag === '--titles' ? titleArgs : contextArgs).push(value);
       i++;
       continue;
     }
@@ -177,7 +188,7 @@ export function parseArgs(argv) {
   }
   const sourceList = list(raw.sources);
   if (sourceList.length === 0) throw new Error('--sources is required (comma-separated directories)');
-  const { sources, section, allowEmpty, titles } = validateGherkinPages(
+  const { sources, section, allowEmpty, titles, defaultGlossaryContext } = validateGherkinPages(
     {
       sources: sourceList,
       section: raw.section,
@@ -185,6 +196,9 @@ export function parseArgs(argv) {
       ...(raw.sourceRoot === undefined ? {} : { sourceRoot: raw.sourceRoot }),
       allowEmpty: raw.allowEmpty,
       ...(titleArgs.length > 0 ? { titles: parseTitles(titleArgs) } : {}),
+      ...(contextArgs.length > 0
+        ? { defaultGlossaryContext: parseDefaultGlossaryContext(contextArgs) }
+        : {}),
     },
     { optionName: (key) => FLAG[key] },
   );
@@ -223,6 +237,7 @@ export function parseArgs(argv) {
     check: raw.check,
     allowEmpty: allowEmpty === true,
     titles,
+    defaultGlossaryContext,
   };
 }
 
@@ -235,22 +250,47 @@ export function parseArgs(argv) {
  * @returns {Record<string, string>}
  */
 function parseTitles(values) {
+  return parseDirPairs(values, FLAG.titles, '<dir>=<title>');
+}
+
+/**
+ * Turn the `--default-glossary-context <dir>=<context>` values into the
+ * `gherkin.defaultGlossaryContext` object (#197), exactly as {@link parseTitles}
+ * does for titles. The shared validator then checks the keys and contexts.
+ *
+ * @param {readonly string[]} values
+ * @returns {Record<string, string>}
+ */
+function parseDefaultGlossaryContext(values) {
+  return parseDirPairs(values, FLAG.defaultGlossaryContext, '<dir>=<context>');
+}
+
+/**
+ * Split each `<dir>=<value>` on its FIRST `=` into a plain object. A value with
+ * no `=`, or a `<dir>` given twice, is a usage error naming `flag`.
+ *
+ * @param {readonly string[]} values
+ * @param {string} flag
+ * @param {string} shape The expected shape, for the error.
+ * @returns {Record<string, string>}
+ */
+function parseDirPairs(values, flag, shape) {
   /** @type {Record<string, string>} */
-  const titles = {};
+  const map = {};
   for (const value of values) {
     const eq = value.indexOf('=');
-    if (eq === -1) throw new Error(`--titles expects <dir>=<title>; got ${JSON.stringify(value)}`);
+    if (eq === -1) throw new Error(`${flag} expects ${shape}; got ${JSON.stringify(value)}`);
     const dir = value.slice(0, eq);
-    if (Object.hasOwn(titles, dir)) throw new Error(`--titles names ${JSON.stringify(dir)} twice`);
-    // defineProperty, not assignment: `titles['__proto__'] = …` sets the prototype and drops the key.
-    Object.defineProperty(titles, dir, {
+    if (Object.hasOwn(map, dir)) throw new Error(`${flag} names ${JSON.stringify(dir)} twice`);
+    // defineProperty, not assignment: `map['__proto__'] = …` sets the prototype and drops the key.
+    Object.defineProperty(map, dir, {
       value: value.slice(eq + 1),
       enumerable: true,
       writable: true,
       configurable: true,
     });
   }
-  return titles;
+  return map;
 }
 
 /**
@@ -284,6 +324,7 @@ export function main(argv) {
     sourceUrlPrefix: opts.sourceUrlPrefix,
     allowEmpty: opts.allowEmpty,
     titles: opts.titles,
+    defaultGlossaryContext: opts.defaultGlossaryContext,
     warn,
   };
   // cwd-relative when the section is under cwd (the `pnpm validate:features`

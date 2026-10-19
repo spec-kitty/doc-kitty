@@ -3,6 +3,7 @@ title: "Request annual leave"
 description: "Leave requests are checked against the employee's remaining allowance."
 kind: Specification
 doc_status: active
+glossary_context: "hr"
 tags: ["FR-012"]
 sources:
   - resource: "features/hr/request-leave.feature"

@@ -37,6 +37,13 @@ import {
  * Gherkin page is one of them, and no other page warns (a third offender, or a
  * lost dedup, changes the count and reds).
  *
+ * gherkin-authoring-aids WP07 (#197, SC-001) fixes that second offender: the
+ * example maps `features/hr/` to the `hr` context with
+ * `gherkin.defaultGlossaryContext`, so the generated HR page now carries
+ * `glossary_context: "hr"` and links "policy" to the hr definition. It moves from
+ * OFFENDING_PAGES to RESOLVED_PAGES, which pins the fix the same two ways: the
+ * page emits no pinned line through the core, and the build count drops to one.
+ *
  * The build is spawned with a cleared Astro content cache so the markdown pipeline
  * genuinely re-runs (a warm cache would reuse a prior render and emit nothing).
  * This is an integration test over the shipped example, so it is given a generous
@@ -55,8 +62,13 @@ const PINNED_WARNING =
 const OFFENDING_PAGES = [
   // WP09 T033 — the hand-authored glossary demonstrator.
   'glossary-demo/cargo-and-collisions.md',
-  // gherkin-feature-pages WP08 — generated from example/features/hr/request-leave.feature.
-  'behaviour/hr/request-leave.md',
+] as const;
+
+// Pages that say "policy" and resolve it through their (folder-default) context.
+const RESOLVED_PAGES = [
+  // gherkin-feature-pages WP08 — generated from example/features/hr/request-leave.feature;
+  // gherkin-authoring-aids WP07 — its context comes from gherkin.defaultGlossaryContext.
+  ['behaviour/hr/request-leave.md', 'hr'],
 ] as const;
 
 /** The pinned-warning lines the build's term + auto-link core emits for one page. */
@@ -87,6 +99,14 @@ describe('example build surfaces the unresolved-collision warning (NFR-007 / R-2
     expect(data.glossary_context, `${relPath} must declare no glossary_context`).toBeUndefined();
     const pinned = unresolvedWarningsFor(relPath).filter((w) => w === PINNED_WARNING);
     expect(pinned, relPath).toHaveLength(1);
+  });
+
+  it.each(RESOLVED_PAGES)('%s resolves "policy" in its %s context and emits no pinned warning', (relPath, context) => {
+    const { data, content } = matter(readFileSync(`${EXAMPLE_ROOT}docs/${relPath}`, 'utf8'));
+    expect(data.glossary_context).toBe(context);
+    // Non-vacuity: the page still says the colliding word.
+    expect(content).toMatch(/\bpolicy\b/);
+    expect(unresolvedWarningsFor(relPath).filter((w) => w === PINNED_WARNING)).toEqual([]);
   });
 
   it(

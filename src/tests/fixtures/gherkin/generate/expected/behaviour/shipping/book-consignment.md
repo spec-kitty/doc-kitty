@@ -17,7 +17,7 @@ sources:
 generated:
   by: "doc-kitty-gherkin/0.0.0-golden"
   at: "2026-10-18T09:30:00Z"
-  content_hash: "sha256:aa67f517f6ea"
+  content_hash: "sha256:817e81f1d8da"
 ---
 
 # Book a consignment

@@ -435,6 +435,40 @@ describe('renderFeatureBody — duplicate scenario warnings', () => {
   });
 });
 
+describe('renderFeatureBody — imperative-step lint (#196, FR-009)', () => {
+  // WP01's normalised `gherkin.lint` for `{ imperativeSteps: true }`.
+  const LINT: NonNullable<NonNullable<Parameters<typeof renderFeatureBody>[1]>['lint']> = {
+    imperativeSteps: { verbs: undefined, extend: [], keywords: ['context', 'action'] },
+  };
+  const SOURCE = ['Feature: Booking', '  Scenario: Book', '    Given a sailing', '    When I click "Book"', '    Then it is booked'].join('\n');
+  const lintLines = (warnings: string[]) => warnings.filter((m) => m.includes('names a UI action'));
+
+  it('warns once, with the contract text, when lint is on; never when it is off; same bytes either way', () => {
+    const on: string[] = [];
+    const off: string[] = [];
+    const doc = parseGherkin(SOURCE);
+    const withLint = renderFeatureBody(doc, { file: 'features/x.feature', warn: (m) => on.push(m), lint: LINT });
+    const without = renderFeatureBody(doc, { file: 'features/x.feature', warn: (m) => off.push(m) });
+    expect(lintLines(on)).toEqual([
+      '[dk-gherkin] features/x.feature:4 step "When I click "Book"" names a UI action ("click") — describe the behaviour instead; silence with @dk:allow=imperative',
+    ]);
+    expect(lintLines(off)).toEqual([]);
+    expect(withLint).toBe(without);
+  });
+
+  it("skips a non-English feature: the document's # language: reaches the lint", () => {
+    const warnings: string[] = [];
+    const fr = ['# language: fr', 'Fonctionnalité: F', '  Scénario: S', '    Quand I click "Book"'].join('\n');
+    renderFeatureBody(parseGherkin(fr), { file: 'f.feature', warn: (m) => warnings.push(m), lint: LINT });
+    expect(lintLines(warnings)).toEqual([]);
+  });
+
+  it('an embed (the include path) passes no lint and no warn: silent', () => {
+    const doc = parseGherkin(SOURCE);
+    expect(() => renderFeatureBody(doc, { embed: true, header: 'none' })).not.toThrow();
+  });
+});
+
 // ===========================================================================
 // 4. Escapers (per character class)
 // ===========================================================================

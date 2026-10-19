@@ -16,6 +16,7 @@ import { normalizeGherkinOptions } from '../gherkin/options.mjs';
 import { drainFatal, formatFatal, resetFatal } from '../gherkin/errors.mjs';
 import gherkinFence, { type GherkinFenceOptions } from '../remark/gherkin-fence.js';
 import { loadReport } from '../gherkin/results-load.mjs';
+import { loadGlossary } from '../glossary/load.js';
 import { DK_GHERKIN_ROUTE_ENV, deleteInternalEnv, setInternalEnv } from '../internal-env.mjs';
 
 /** The normalised `gherkin` option (see {@link resolveGherkinOptions}). */
@@ -55,7 +56,10 @@ export function resolveGherkinOptions(
  *   (b) `generateFeaturePages`: codegen into `<docsDir>/<section>/**`. The writer
  *       is deterministic and only rewrites changed bytes, so the dev-server restart
  *       triggered by (c) regenerates identically and never loops; stale OWNED pages
- *       are pruned, and an AUTHORED file in the section is fatal.
+ *       are pruned, and an AUTHORED file in the section is fatal. It is handed
+ *       `defaultGlossaryContext` (#197), the glossary's context names when
+ *       `.contextive/definitions.yaml` is present (so a page whose context is
+ *       not one of them warns; research R-02), and the resolved `lint` (#196).
  *   (c) `addWatchFile` for every loaded source, in model (sorted) order, so editing
  *       a `.feature` in dev restarts the server and re-runs (a)–(b). A NEW file is
  *       only picked up on the next restart (documented limit).
@@ -75,6 +79,7 @@ export function gherkinIntegration(
   docsDir: string,
   indexBasename: IndexBasenameOption | undefined,
   results?: ResolvedGherkinOptions['results'],
+  lint?: ResolvedGherkinOptions['lint'],
 ): AstroIntegration {
   return {
     name: 'doc-kitty:gherkin',
@@ -84,6 +89,7 @@ export function gherkinIntegration(
         const warn = (message: string) => logger.warn(message);
         const model = loadFeatures({ sources: opts.sources, root, warn });
         const docsRoot = path.resolve(root, docsDir);
+        const glossary = loadGlossary(root);
         const { written, unchanged, removed } = generateFeaturePages(model, {
           sources: opts.sources,
           docsRoot,
@@ -94,6 +100,9 @@ export function gherkinIntegration(
           sourceUrlPrefix: opts.sourceUrlPrefix,
           allowEmpty: opts.allowEmpty,
           titles: opts.titles,
+          defaultGlossaryContext: opts.defaultGlossaryContext,
+          ...(glossary.present ? { knownContexts: new Set(glossary.index.contexts.keys()) } : {}),
+          lint,
           warn,
         });
         for (const file of model.files) addWatchFile(file.absPath);
@@ -273,6 +282,7 @@ export function gherkinFenceIntegration(opts: ResolvedGherkinOptions): AstroInte
     // `fences: false` with `results`: the stage runs for generated pages only.
     ...(opts.fences ? {} : { fences: false }),
     ...(opts.results ? { results: opts.results } : {}),
+    ...(opts.lint ? { lint: opts.lint } : {}),
   };
   let cacheDir: URL | undefined;
   return {

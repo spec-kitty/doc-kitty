@@ -93,6 +93,40 @@ export type DocKittyGherkinOption =
      */
     titles?: Record<string, string>;
     /**
+     * Default glossary context by source directory (#197): a key is a
+     * directory relative to a source, written like a `titles` key, and its
+     * value is the `glossary_context` of every generated page below it that
+     * carries no `@dk:context` tag (the tag wins). A key that names no
+     * directory holding a feature warns, and so does a value that is not a
+     * context in `.contextive/definitions.yaml`. Only valid together with
+     * `sources`.
+     */
+    defaultGlossaryContext?: Readonly<Record<string, string>>;
+    /**
+     * Warn-only authoring lints (#196). They never fail a build and never
+     * change a page.
+     */
+    lint?: {
+      /**
+       * Warn about a step that describes UI mechanics (`When I click "Book"`)
+       * or quotes a CSS selector instead of behaviour, on generated feature
+       * pages and ```` ```gherkin ```` fences (never on includes or
+       * ```` ```gherkin raw ```` fences). `true` checks the built-in verb list
+       * on `Given` (`context`) and `When` (`action`) steps. The object form
+       * replaces the list (`verbs`), appends to it (`extend`) or replaces the
+       * keyword scope (`keywords`); entries are plain words or phrases, never
+       * regexes. Silence a step with `@dk:allow=imperative` on its Scenario,
+       * Rule or Feature. Default off.
+       */
+      imperativeSteps?:
+        | boolean
+        | {
+            verbs?: readonly string[];
+            extend?: readonly string[];
+            keywords?: readonly ('context' | 'action' | 'outcome')[];
+          };
+    };
+    /**
      * The Cucumber report whose results are shown next to every scenario the
      * site renders from a `.feature` file (ADR-0055): on generated feature
      * pages and in `::gherkin` includes, never on a ```` ```gherkin ```` fence.

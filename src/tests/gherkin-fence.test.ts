@@ -374,10 +374,10 @@ describe('errors are fatal at the page line; warnings name the page line', () =>
 
   /** Write `contents` to `<dir>/page.md` (the stage reads it back to map body
    * lines to file lines) and render it with the file's absolute path. */
-  async function renderFile(contents: string) {
+  async function renderFile(contents: string, options: Partial<DocKittyOptions> = ON) {
     const file = path.join(dir, 'page.md');
     writeFileSync(file, contents);
-    return render(contents, ON, file);
+    return render(contents, options, file);
   }
   const display = () => path.relative(process.cwd(), path.join(dir, 'page.md')).split(path.sep).join('/');
 
@@ -537,6 +537,124 @@ describe('errors are fatal at the page line; warnings name the page line', () =>
 // ===========================================================================
 // The plugin on its own (no Astro): defaults for a bare unified run
 // ===========================================================================
+
+describe('the imperative-step lint on fences (#196, FR-009, FR-011)', () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), 'dk-gherkin-fence-lint-'));
+  });
+  afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+  const display = () => path.relative(process.cwd(), path.join(dir, 'page.md')).split(path.sep).join('/');
+  const LINT_ON: Partial<DocKittyOptions> = { gherkin: { lint: { imperativeSteps: true } } };
+  // Lines: 1 `---`, 2 title, 3 `---`, 4 blank, 5 `# Guide`, 6 blank, then the fences.
+  const PAGE = page(
+    '# Guide',
+    '',
+    '```gherkin', // 7
+    'Feature: F',
+    '  Scenario: S',
+    '    When I click "Book"', // 10
+    '```',
+    '',
+    '```gherkin raw', // 13
+    'Feature: Raw',
+    '  Scenario: S',
+    '    When I click "Book"',
+    '```',
+    '',
+    '```gherkin', // 19
+    'Feature: Allowed',
+    '  @dk:allow=imperative',
+    '  Scenario: S',
+    '    When I click "Book"',
+    '```',
+    '',
+    '```gherkin', // 26: a Feature-less fragment (the wrap shifts AST lines)
+    'Scenario: Fragment',
+    '  When I tap "Pay"', // 28
+    '```',
+    '',
+    '```gherkin', // 31
+    '@dk:allow=bogus',
+    'Feature: Bad allow', // 33
+    '  Scenario: S',
+    '    Given a sailing',
+    '```',
+  );
+
+  async function warningsFor(options: Partial<DocKittyOptions>): Promise<string[]> {
+    const file = path.join(dir, 'page.md');
+    writeFileSync(file, PAGE);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      await render(PAGE, options, file);
+      return warn.mock.calls.map(([m]) => String(m));
+    } finally {
+      warn.mockRestore();
+    }
+  }
+  const lintOnly = (msgs: string[]) => msgs.filter((m) => m.includes('describe the behaviour instead') || m.includes('@dk:allow value'));
+
+  it('on: warns at the host page and absolute page line; raw and @dk:allow=imperative fences stay silent', async () => {
+    const msgs = await warningsFor(LINT_ON);
+    expect(lintOnly(msgs)).toEqual([
+      `[dk-gherkin] ${display()}:10 step "When I click "Book"" names a UI action ("click") — describe the behaviour instead; silence with @dk:allow=imperative`,
+      `[dk-gherkin] ${display()}:28 step "When I tap "Pay"" names a UI action ("tap") — describe the behaviour instead; silence with @dk:allow=imperative`,
+      // A fence runs no feature-core metadata, so the lint reports a bad Feature-level value itself.
+      `[dk-gherkin] ${display()}:33 unknown @dk:allow value "bogus" (expected imperative); ignored`,
+    ]);
+    // `@dk:allow` is the lint's own tag, not page metadata (WP03 T012).
+    expect(msgs.filter((m) => m.includes('metadata tags have no effect'))).toEqual([]);
+  });
+
+  it('off: the same page gives no lint warning', async () => {
+    expect(lintOnly(await warningsFor(ON))).toEqual([]);
+  });
+
+  it('skips a non-English fence; an English fence with the same step on the same page still warns (FR-013)', async () => {
+    const file = path.join(dir, 'page.md');
+    const mixed = page(
+      '# Guide',
+      '',
+      '```gherkin', // 7
+      '# language: fr',
+      'Fonctionnalité: F',
+      '  Scénario: S',
+      '    Quand I click "Book"', // 11: English wording, French dialect: not linted
+      '```',
+      '',
+      '```gherkin', // 14
+      'Feature: F',
+      '  Scenario: S',
+      '    When I click "Book"', // 17
+      '```',
+    );
+    writeFileSync(file, mixed);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      await render(mixed, LINT_ON, file);
+      expect(lintOnly(warn.mock.calls.map(([m]) => String(m)))).toEqual([
+        `[dk-gherkin] ${display()}:17 step "When I click "Book"" names a UI action ("click") — describe the behaviour instead; silence with @dk:allow=imperative`,
+      ]);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('the lint never changes the rendered HTML (FR-009)', async () => {
+    const file = path.join(dir, 'page.md');
+    writeFileSync(file, PAGE);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const on = await render(PAGE, LINT_ON, file);
+      const off = await render(PAGE, ON, file);
+      expect(on.html).toBe(off.html);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
 
 describe('gherkinFence without Astro file data', () => {
   it('names the page `<page>` when the file has no path', async () => {

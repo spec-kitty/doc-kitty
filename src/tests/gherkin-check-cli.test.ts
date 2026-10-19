@@ -29,6 +29,7 @@ import {
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FLAG, parseArgs } from '../scripts/generate-feature-pages.mjs';
 
 const SCRIPT = fileURLToPath(new URL('../scripts/generate-feature-pages.mjs', import.meta.url));
 
@@ -243,6 +244,68 @@ describe('generate-feature-pages CLI — --check drift gate', () => {
     const res = spawnSync(process.execPath, [SCRIPT, '--check'], { encoding: 'utf8' });
     expect(res.status).toBe(1);
     expect(res.stderr).toMatch(/--sources is required/);
+  });
+});
+
+describe('generate-feature-pages CLI — --default-glossary-context (#197)', () => {
+  /** `parseArgs` in-process against a throwaway site (the flag has no page effect until it is resolved). */
+  const parse = (site: string, ...extra: string[]) =>
+    parseArgs(['node', SCRIPT, '--root', site, '--sources', 'features', '--index-basename', 'README,index', ...extra]);
+
+  it('is the CLI twin of gherkin.defaultGlossaryContext', () => {
+    expect(FLAG.defaultGlossaryContext).toBe('--default-glossary-context');
+  });
+
+  it('repeated values parse into the map, splitting on the first "="', () => {
+    const site = makeSite();
+    expect(parse(site).defaultGlossaryContext).toBeUndefined();
+    const opts = parse(
+      site,
+      '--default-glossary-context',
+      'shipping=shipping',
+      '--default-glossary-context',
+      'shipping/eu=customs=eu',
+    );
+    expect(opts.defaultGlossaryContext).toEqual({ shipping: 'shipping', 'shipping/eu': 'customs=eu' });
+  });
+
+  it('keeps a __proto__ dir as an own key', () => {
+    const opts = parse(makeSite(), '--default-glossary-context', '__proto__=customs');
+    expect(Object.keys(opts.defaultGlossaryContext ?? {})).toEqual(['__proto__']);
+    expect(Object.getPrototypeOf(opts.defaultGlossaryContext)).toBe(Object.prototype);
+  });
+
+  it('a value without "=" → exit 1 naming the expected shape (as --titles)', () => {
+    const site = makeSite();
+    expect(run(site, '--default-glossary-context', 'shipping=shipping').status).toBe(0);
+    const res = run(site, '--default-glossary-context', 'shipping');
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('--default-glossary-context expects <dir>=<context>; got "shipping"');
+  });
+
+  it('a repeated <dir> → exit 1 (usage error)', () => {
+    const res = run(
+      makeSite(),
+      '--default-glossary-context',
+      'shipping=shipping',
+      '--default-glossary-context',
+      'shipping=customs',
+    );
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('--default-glossary-context names "shipping" twice');
+  });
+
+  it('runs the shared validator, naming the flag', () => {
+    const res = run(makeSite(), '--default-glossary-context', '../up=shipping');
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain(
+      '[dk-gherkin] --default-glossary-context key "../up" must be a directory path relative to a source',
+    );
+  });
+
+  it('is listed in the usage block', () => {
+    const res = spawnSync(process.execPath, [SCRIPT, '--help'], { encoding: 'utf8' });
+    expect(res.stdout).toMatch(/--default-glossary-context\s+A glossary context for one source directory/);
   });
 });
 

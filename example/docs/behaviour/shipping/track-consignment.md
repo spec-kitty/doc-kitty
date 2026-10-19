@@ -9,8 +9,8 @@ sources:
     title: "Gherkin source"
 generated:
   by: "doc-kitty-gherkin/0.4.0"
-  at: "2026-10-18T05:55:21Z"
-  content_hash: "sha256:1234779c913f"
+  at: "2026-10-19T08:58:27Z"
+  content_hash: "sha256:89bc5addda4b"
 ---
 
 # Track a consignment in transit

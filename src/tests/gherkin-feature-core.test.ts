@@ -27,6 +27,7 @@ import {
   missionPrefix,
   parseMetadataTags,
   resolveAdrRef,
+  resolveGlossaryContext,
   serializeFrontmatter,
   truncateDescription,
 } from '../lib/gherkin/feature-core.mjs';
@@ -199,6 +200,111 @@ describe('§2 metadata tags — one case per contract row', () => {
   it('never throws on junk input', () => {
     expect(() => parseMetadataTags(undefined, {})).not.toThrow();
     expect(() => parseMetadataTags([{ name: '@' }, { name: '@dk:' }, { name: '@dk:=x' }], {})).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Folder default glossary context (#197): one resolution point
+// ---------------------------------------------------------------------------
+
+describe('glossary_context precedence: tag, then folder default, then none (#197)', () => {
+  it('a non-empty @dk:context tag wins over the folder default', () => {
+    const { fields, warnings } = render(['@dk:context=customs'], { defaultGlossaryContext: 'shipping' });
+    expect(fields.glossary_context).toBe('customs');
+    expect(warnings).toEqual([]);
+  });
+
+  it('no tag takes the folder default', () => {
+    const { fields, yaml } = render([], { defaultGlossaryContext: 'shipping' });
+    expect(fields.glossary_context).toBe('shipping');
+    expect(yaml).toContain('glossary_context: "shipping"');
+  });
+
+  it('an empty @dk:context= falls through to the default, still warning "has no value"', () => {
+    const { fields, warnings } = render(['@dk:context='], { defaultGlossaryContext: 'shipping' });
+    expect(fields.glossary_context).toBe('shipping');
+    expect(warnings).toEqual([
+      '[dk-gherkin] features/x.feature:1:1 metadata tag @dk:context= has no value (expected @dk:context=<value>); ignored',
+    ]);
+  });
+
+  it('no tag and no default emits no glossary_context, byte-identical to before', () => {
+    // Today's output for this page, pinned before the option existed.
+    const golden = [
+      '---',
+      'title: "Book a consignment"',
+      'description: "A booking reserves space on one sailing."',
+      'kind: Specification',
+      'doc_status: active',
+      'sources:',
+      '  - resource: "features/x.feature"',
+      '    title: "Gherkin source"',
+      'generated:',
+      `  by: ${JSON.stringify(STAMP.by)}`,
+      `  at: ${JSON.stringify(STAMP.at)}`,
+      `  content_hash: ${JSON.stringify(STAMP.content_hash)}`,
+      '---',
+    ].join('\n');
+    const base = { description: '  A booking reserves space on one sailing.', missionPrefix: undefined, adrFileNames: [] };
+    expect(render([], base).yaml).toBe(golden);
+    expect(render([], { ...base, defaultGlossaryContext: undefined }).yaml).toBe(golden);
+    expect(render([], { ...base, defaultGlossaryContext: 'shipping' }).yaml).not.toBe(golden);
+  });
+
+  it('resolveGlossaryContext reports the origin of the resolved value', () => {
+    const tagged = parseMetadataTags(tagsOf('@dk:context=customs')).meta;
+    const empty = parseMetadataTags(tagsOf('@dk:context=')).meta;
+    const none = parseMetadataTags(tagsOf()).meta;
+    expect(resolveGlossaryContext(tagged, 'shipping')).toEqual({ context: 'customs', origin: 'tag' });
+    expect(resolveGlossaryContext(empty, 'shipping')).toEqual({ context: 'shipping', origin: 'default' });
+    expect(resolveGlossaryContext(none, 'shipping')).toEqual({ context: 'shipping', origin: 'default' });
+    expect(resolveGlossaryContext(none, undefined)).toEqual({ context: undefined, origin: undefined });
+    expect(resolveGlossaryContext(tagged, undefined)).toEqual({ context: 'customs', origin: 'tag' });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// @dk:allow (#196): a known, repeatable Feature-level key that never feeds frontmatter
+// ---------------------------------------------------------------------------
+
+describe('@dk:allow=imperative (#196)', () => {
+  it('is accepted silently, exposed on meta, and changes no frontmatter', () => {
+    const { meta, warnings } = parseMetadataTags(tagsOf('@dk:allow=imperative'), { file: FILE });
+    expect(warnings).toEqual([]);
+    expect(meta.allow).toEqual(['imperative']);
+    expect(render(['@dk:allow=imperative']).yaml).toBe(render([]).yaml);
+    expect(parseMetadataTags(tagsOf(), { file: FILE }).meta).not.toHaveProperty('allow');
+  });
+
+  it('an unknown value warns and is ignored (never throws)', () => {
+    const { meta, warnings } = parseMetadataTags(tagsOf('@dk:allow=bogus'), { file: FILE });
+    expect(warnings).toEqual([
+      '[dk-gherkin] features/x.feature:1:1 unknown @dk:allow value "bogus" (expected imperative); ignored',
+    ]);
+    expect(meta).not.toHaveProperty('allow');
+    expect(render(['@dk:allow=bogus']).yaml).toBe(render([]).yaml);
+  });
+
+  it('an empty value warns "has no value"', () => {
+    const { warnings } = parseMetadataTags(tagsOf('@dk:allow='), { file: FILE });
+    expect(warnings).toEqual([
+      '[dk-gherkin] features/x.feature:1:1 metadata tag @dk:allow= has no value (expected @dk:allow=<value>); ignored',
+    ]);
+  });
+
+  it('is repeatable: no "multiple" warning, the value kept once', () => {
+    const { meta, warnings } = parseMetadataTags(tagsOf('@dk:allow=imperative', '@dk:allow=imperative'), {
+      file: FILE,
+    });
+    expect(warnings).toEqual([]);
+    expect(meta.allow).toEqual(['imperative']);
+  });
+
+  it('is in the did-you-mean pool', () => {
+    const { warnings } = parseMetadataTags(tagsOf('@dk:alow=imperative'), { file: FILE });
+    expect(warnings).toEqual([
+      '[dk-gherkin] features/x.feature:1:1 unknown metadata tag @dk:alow=imperative (did you mean allow?)',
+    ]);
   });
 });
 
@@ -463,7 +569,7 @@ describe('the pure gherkin modules import only their allow-list (import-scan)', 
   it.each([
     // generator-stamp.mjs: the one stamp owner; core only calls its pure serializeStamp (the manifest import serves only toolkitVersion, which core never calls).
     ['feature-core.mjs', ['../generator-stamp.mjs', '../vocabulary-core.mjs', './text.mjs']],
-    ['render.mjs', ['./results.mjs', './text.mjs', './view.mjs']],
+    ['render.mjs', ['./imperative.mjs', './results.mjs', './text.mjs', './view.mjs']],
     ['view.mjs', ['../vocabulary-core.mjs', './text.mjs']],
     ['mdast.mjs', ['./results.mjs', './view.mjs']],
     ['results.mjs', ['node:path', 'node:url', './text.mjs']],

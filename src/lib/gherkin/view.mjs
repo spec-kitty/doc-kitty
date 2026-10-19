@@ -89,6 +89,19 @@ import { DK_TAG_PREFIX, dedent, featureTitle, splitNarrative } from './text.mjs'
  *   prose runs are omitted.
  * @property {string[][] | null} dataTable Cell values, row by row (first row = header).
  * @property {DocStringView | null} docString
+ * @property {number} line Source line of the step (1-based, within the parsed
+ *   text; a fence's caller adds its `lineOffset`, as for every view line).
+ * @property {KeywordType} keywordType The step's resolved keyword type
+ *   ({@link resolveKeywordTypes}). Read by the imperative-step lint
+ *   (`imperative.mjs`) only: no emitter renders it.
+ */
+
+/**
+ * A step's resolved keyword type (R-05), dialect-neutral: `Given`/`Gegeven` is
+ * `context`, `When`/`Als` is `action`, `Then`/`Dan` is `outcome`. `unknown` is a
+ * conjunction (`And`, `But`, `*`) with nothing before it in its section.
+ *
+ * @typedef {'context' | 'action' | 'outcome' | 'unknown'} KeywordType
  */
 
 /**
@@ -258,11 +271,39 @@ export function cellSegments(line) {
 }
 
 /**
+ * `@cucumber/messages` `StepKeywordType` → {@link KeywordType}. `Conjunction`
+ * and `Unknown` (the `*` bullet) are absent: they inherit.
+ *
+ * @type {Readonly<Record<string, KeywordType>>}
+ */
+const KEYWORD_TYPES = Object.freeze({ Context: 'context', Action: 'action', Outcome: 'outcome' });
+
+/**
+ * Resolve each step's keyword type within ONE section (a Background or a
+ * Scenario / Outline), as the pickle compiler does: a conjunction or `*` takes
+ * the type of the step before it, and the chain starts afresh in every section,
+ * so a Background's `Given` never leaks into the scenario after it. A leading
+ * conjunction stays `unknown`.
+ *
+ * @param {readonly Step[]} steps
+ * @returns {KeywordType[]}
+ */
+function resolveKeywordTypes(steps) {
+  /** @type {KeywordType} */
+  let previous = 'unknown';
+  return steps.map((step) => {
+    previous = KEYWORD_TYPES[step.keywordType ?? 'Unknown'] ?? previous;
+    return previous;
+  });
+}
+
+/**
  * @param {Step} step
  * @param {boolean} outline
+ * @param {KeywordType} keywordType Resolved at section level ({@link resolveKeywordTypes}).
  * @returns {StepView}
  */
-function stepView(step, outline) {
+function stepView(step, outline, keywordType) {
   const doc = step.docString;
   const mediaType = (doc?.mediaType ?? '').trim();
   return {
@@ -277,6 +318,8 @@ function stepView(step, outline) {
           language: mediaType.replace(/[^A-Za-z0-9+.#-]/g, '') || 'text',
         }
       : null,
+    line: step.location.line,
+    keywordType,
   };
 }
 
@@ -305,6 +348,7 @@ function examplesView(examples) {
 function sectionView(node, kind, synthetic) {
   const examples = 'examples' in node ? node.examples : [];
   const outline = examples.length > 0;
+  const keywordTypes = resolveKeywordTypes(node.steps);
   return {
     kind,
     keyword: node.keyword.trim(),
@@ -312,7 +356,7 @@ function sectionView(node, kind, synthetic) {
     tags: 'tags' in node ? tagNames(node.tags) : [],
     description: describe(node.description),
     outline,
-    steps: node.steps.map((s) => stepView(s, outline)),
+    steps: node.steps.map((s, i) => stepView(s, outline, keywordTypes[i])),
     examples: examples.map(examplesView),
     line: node.location.line,
     synthetic,
@@ -400,17 +444,37 @@ export function displayTags(tags) {
   return tags.filter((t) => !t.startsWith(DK_TAG_PREFIX));
 }
 
+/** The `@dk:allow` suppression tag's name (R-06). */
+const ALLOW_TAG = `${DK_TAG_PREFIX}allow`;
+
+/**
+ * The value of a `@dk:allow` suppression tag (`@dk:allow=imperative` →
+ * `imperative`; a bare `@dk:allow` or `@dk:allow=` → `''`), or `null` when `tag`
+ * is not one. The one reading of the tag: `hasMetadataTag` here and the
+ * imperative-step lint (`imperative.mjs`) both use it.
+ *
+ * @param {string} tag
+ * @returns {string | null}
+ */
+export function allowTagValue(tag) {
+  if (tag === ALLOW_TAG) return '';
+  return tag.startsWith(`${ALLOW_TAG}=`) ? tag.slice(ALLOW_TAG.length + 1) : null;
+}
+
 /**
  * Does the view carry a reserved `@dk:*` metadata tag anywhere (feature, rule,
  * scenario, examples)? A fence warns about them: an embed has no frontmatter
  * for them to feed, so they have no effect (03 §1.5).
+ *
+ * `@dk:allow` is not counted: it does have an effect in a fence, where the
+ * imperative-step lint reads it (R-06). {@link displayTags} still hides it.
  *
  * @param {FeatureView} view
  * @returns {boolean}
  */
 export function hasMetadataTag(view) {
   /** @param {readonly string[]} tags */
-  const dk = (tags) => tags.length !== displayTags(tags).length;
+  const dk = (tags) => tags.some((t) => t.startsWith(DK_TAG_PREFIX) && allowTagValue(t) === null);
   /** @param {SectionView | RuleView} node @returns {boolean} */
   const any = (node) =>
     node.kind === 'rule'

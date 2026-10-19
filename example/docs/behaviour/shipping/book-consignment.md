@@ -16,8 +16,8 @@ sources:
     title: "Gherkin source"
 generated:
   by: "doc-kitty-gherkin/0.4.0"
-  at: "2026-10-18T05:55:21Z"
-  content_hash: "sha256:aa67f517f6ea"
+  at: "2026-10-19T08:58:27Z"
+  content_hash: "sha256:817e81f1d8da"
 ---
 
 # Book a consignment

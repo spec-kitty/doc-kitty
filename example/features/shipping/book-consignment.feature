@@ -1,5 +1,5 @@
 # language: en
-@dk:context=shipping @dk:persona=example-persona @dk:mission=mission-alpha @dk:adr=0001 @FR-003
+@dk:persona=example-persona @dk:mission=mission-alpha @dk:adr=0001 @FR-003
 Feature: Book a consignment
   As a shipper
   I want to book cargo onto a sailing

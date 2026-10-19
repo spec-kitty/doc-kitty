@@ -72,7 +72,11 @@ const METADATA_KEYS = /** @type {const} */ ([
   'updated',
   'autolink',
   'priority',
+  'allow',
 ]);
+
+/** The values `@dk:allow` accepts (#196): each names a lint the tag suppresses. */
+const ALLOW_VALUES = /** @type {const} */ (['imperative']);
 
 /** Keys that may appear at most once; a repeat warns and the first wins. */
 const SINGLE_VALUED = new Set(['context', 'status', 'updated', 'autolink', 'priority']);
@@ -99,6 +103,16 @@ const SINGLE_VALUED = new Set(['context', 'status', 'updated', 'autolink', 'prio
  * @property {string} [updated] `@dk:updated` (a valid `YYYY-MM-DD`).
  * @property {false} [autolink] Present (as `false`) only for `@dk:autolink=false`.
  * @property {number} [priority] `@dk:priority`, a number in `0..1`.
+ * @property {string[]} [allow] `@dk:allow` values (#196), de-duplicated, source
+ *   order; present only when one is given. Repeatable, never written to
+ *   frontmatter: the imperative-step lint reads it to stay silent.
+ */
+
+/**
+ * Where a page's `glossary_context` came from (#197): a `@dk:context` tag, the
+ * folder default the caller looked up, or nowhere (no key is emitted).
+ *
+ * @typedef {'tag' | 'default' | undefined} GlossaryContextOrigin
  */
 
 /**
@@ -245,6 +259,8 @@ export function parseMetadataTags(tags, { file } = {}) {
   const adrs = [];
   /** @type {string[]} */
   const related = [];
+  /** @type {string[]} */
+  const allow = [];
   let wip = false;
   let deprecated = false;
   // A `@dk:status` that cannot be honoured (malformed, valueless, mis-cased key,
@@ -351,6 +367,14 @@ export function parseMetadataTags(tags, { file } = {}) {
     } else if (key === 'mission') missions.push(value);
     else if (key === 'adr') adrs.push(value);
     else if (key === 'related') related.push(value);
+    else if (key === 'allow') {
+      if (!(/** @type {readonly string[]} */ (ALLOW_VALUES)).includes(value)) {
+        warnings.push(
+          `${PREFIX} ${loc} unknown @dk:allow value ${JSON.stringify(value)} ` +
+            `(expected ${ALLOW_VALUES.join(' or ')}); ignored`,
+        );
+      } else if (!allow.includes(value)) allow.push(value);
+    }
   }
 
   const status = statusFailedClosed
@@ -366,8 +390,30 @@ export function parseMetadataTags(tags, { file } = {}) {
   if (single.get('autolink') === 'false') meta.autolink = false;
   const priority = single.get('priority');
   if (priority !== undefined) meta.priority = Number(priority);
+  if (allow.length > 0) meta.allow = allow;
 
   return { meta, tags: uniqueSorted(passthrough), warnings };
+}
+
+/**
+ * Resolve a page's glossary context (#197, research R-01): a non-empty
+ * `@dk:context` tag wins, then the folder default, then none. An empty
+ * `@dk:context=` never sets `meta.context` ({@link parseMetadataTags} warns and
+ * ignores it), so it falls through to the default.
+ *
+ * This is the ONE resolution point: {@link buildFrontmatter} uses it for the
+ * emitted `glossary_context`, and the generator calls it too when it needs the
+ * origin (the unknown-context warning names it). A separate helper rather than a
+ * new `buildFrontmatter` return field keeps that function's result shape as is.
+ *
+ * @param {Pick<FeatureMeta, 'context'>} meta The parsed Feature metadata.
+ * @param {string | undefined} folderDefault The already-looked-up folder default.
+ * @returns {{ context: string | undefined, origin: GlossaryContextOrigin }}
+ */
+export function resolveGlossaryContext(meta, folderDefault) {
+  if (meta.context !== undefined) return { context: meta.context, origin: 'tag' };
+  if (folderDefault !== undefined) return { context: folderDefault, origin: 'default' };
+  return { context: undefined, origin: undefined };
 }
 
 // ---------------------------------------------------------------------------
@@ -593,6 +639,10 @@ export function missionPrefix(registry) {
  *   Its warning is reported only when the feature has an `@dk:mission` tag.
  * @param {ReadonlyArray<string>} [input.adrFileNames] Basenames under `<docsRoot>/adr/`.
  * @param {{ line?: number, column?: number }} [input.location] The Feature's location (warnings).
+ * @param {string} [input.defaultGlossaryContext] The folder default glossary
+ *   context for this page (#197), already looked up by the caller from its
+ *   source-relative directory. Used only when no non-empty `@dk:context` tag is
+ *   given ({@link resolveGlossaryContext}); omitted ⇒ the output is unchanged.
  * @returns {{ fields: FeatureFrontmatter, warnings: string[], descriptionIsName?: true }}
  *   `descriptionIsName` (only when set): `fields.description` is built from the
  *   Feature name, so a Markdown context must escape it.
@@ -608,6 +658,7 @@ export function buildFrontmatter({
   missionPrefix: missionPrefixInput,
   adrFileNames,
   location,
+  defaultGlossaryContext,
 }) {
   const parsed = parseMetadataTags(tags, { file });
   const title = featureTitle(featureName, featureKeyword);
@@ -648,7 +699,8 @@ export function buildFrontmatter({
     generated: stamp,
   };
   if (meta.updated !== undefined) fields.updated = meta.updated;
-  if (meta.context !== undefined) fields.glossary_context = meta.context;
+  const { context } = resolveGlossaryContext(meta, defaultGlossaryContext);
+  if (context !== undefined) fields.glossary_context = context;
   if (meta.autolink === false) fields.glossary_autolink = false;
   if (meta.priority !== undefined) fields.agent = { priority: meta.priority };
 
