@@ -285,9 +285,15 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
     expect(/<html[^>]*data-has-toc/.test(chapter)).toBe(true);
   });
 
-  it('ships the reveal-current-entry script inline in <head> (FR-022)', () => {
+  it('ships the reveal-current-entry script once, after the sidebar tree, not in <head> (FR-022, FR-004)', () => {
     const head = home.slice(0, home.search(/<body[\s>]/i));
-    expect(head).toContain(REVEAL_CURRENT_SCRIPT);
+    expect(head).not.toContain(REVEAL_CURRENT_SCRIPT);
+    const reveals = [...home.matchAll(/<script\b[^>]*\bdata-dk-sidebar-reveal\b[^>]*>/g)];
+    expect(reveals).toHaveLength(1);
+    expect(home.split(REVEAL_CURRENT_SCRIPT)).toHaveLength(2);
+    const persistClose = home.indexOf('</sl-sidebar-state-persist>');
+    expect(persistClose).toBeGreaterThan(-1);
+    expect(reveals[0].index).toBeGreaterThan(persistClose);
   });
 });
 

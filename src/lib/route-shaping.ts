@@ -425,15 +425,21 @@ export function shapePagination(
 export { shapingWarningSink } from './build-state.js';
 
 /**
- * Inline script that brings the current sidebar entry into view (T023, FR-022).
+ * Inline script that brings the current sidebar entry into view (T023, FR-022;
+ * before first paint since FR-004, ADR-0061, #203).
  *
  * Measured on the example site: on a deep page the `aria-current` entry sat at
- * y=1621 with the sidebar at scroll position 0. Starlight restores sidebar
- * scroll from `sessionStorage` on in-session navigation, from an inline script
- * placed right after the sidebar markup; on a first visit there is nothing to
- * restore. This runs on `DOMContentLoaded` — after that restore — and acts only
- * when the entry is outside the visible part of the pane, so it never fights a
- * restored position.
+ * y=1621 with the sidebar at scroll position 0. The script ships from the
+ * `Sidebar` carrier (`components/Sidebar.astro`), as a classic inline script
+ * placed right AFTER Starlight's own sidebar. The parser runs it as soon as it
+ * reaches it, before the sidebar is first painted, so a reader never sees the
+ * pane at the top and then jump. That placement also orders it after
+ * everything it depends on: the pane, the current entry, and Starlight's
+ * in-session scroll restore, an inline script at the end of
+ * `<sl-sidebar-state-persist>` inside the same sidebar. So it runs at once,
+ * with no `DOMContentLoaded` wait (in the body `readyState` is still
+ * `'loading'`), and acts only when the entry is outside the visible part of
+ * the pane, so it never fights a restored position.
  *
  * It sets the pane's own `scrollTop` rather than calling `scrollIntoView`, which
  * would also scroll the document. Only the fixed sidebar pane scrolls, so the
@@ -444,13 +450,12 @@ export { shapingWarningSink } from './build-state.js';
  * time the menu opens.
  *
  * A raw string for the same reason as `toc-rail/pre-paint`: it ships as a
- * classic inline `<head>` script and tests execute it against a stub document.
+ * classic inline script and tests execute it against a stub document.
  */
 export const REVEAL_CURRENT_SCRIPT: string =
   "(function(){function m(p){try{var c=p.querySelector('[aria-current=\"page\"]');if(!c)return;" +
   'var a=p.getBoundingClientRect(),b=c.getBoundingClientRect();' +
   'if(b.top>=a.top&&b.bottom<=a.bottom)return;' +
   'p.scrollTop+=b.top-a.top-(a.height-b.height)/2;}catch(e){}}' +
-  "function r(){try{var p=document.getElementById('starlight__sidebar');if(!p)return;m(p);" +
-  "p.addEventListener('toggle',function(e){if(e.newState==='open')m(p);});}catch(e){}}" +
-  "if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',r);}else{r();}})();";
+  "try{var p=document.getElementById('starlight__sidebar');if(!p)return;m(p);" +
+  "p.addEventListener('toggle',function(e){if(e.newState==='open')m(p);});}catch(e){}})();";

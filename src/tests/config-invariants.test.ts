@@ -8,11 +8,12 @@ import { PINNED_INTEGRATION_ORDER } from './helpers/integration-names.js';
 /**
  * T036 — Components-map invariant (ADR-0013 seam 3 / ADR-0015 decision 3/4).
  *
- * `defineDocKittyIntegrations` must register EXACTLY the five chrome carriers
- * (`Head`, `PageTitle`, `MarkdownContent`, `Footer`, `Header`) on the Starlight
- * integration's `components` map — in EVERY case (no theme, a brand-like theme,
- * and even when a consumer's `starlight` escape hatch tries to add a sixth
- * override). A theme addresses the carriers' `dk:` slot names, never Starlight's
+ * `defineDocKittyIntegrations` must register EXACTLY the six chrome carriers
+ * (`Head`, `PageTitle`, `MarkdownContent`, `Footer`, `Header`, `Sidebar`; ADR-0044
+ * added `Header`, ADR-0061 `Sidebar`) on the Starlight integration's `components`
+ * map — in EVERY case (no theme, a brand-like theme, and even when a consumer's
+ * `starlight` escape hatch tries to add a seventh override). The one exception
+ * is the test-only `DK_INTERNAL_STOCK_HEADER=on`, which drops `Header` alone. A theme addresses the carriers' `dk:` slot names, never Starlight's
  * `components` map, so no pass-through may expand it. This is the config-level
  * decision point where seam 3 is actually made — proven here, not just observed
  * in the rendered dist.
@@ -75,7 +76,7 @@ it('pins the runtime export list of ./config', async () => {
   ]);
 });
 
-const EXPECTED_CARRIER_KEYS = ['Footer', 'Head', 'Header', 'MarkdownContent', 'PageTitle'];
+const EXPECTED_CARRIER_KEYS = ['Footer', 'Head', 'Header', 'MarkdownContent', 'PageTitle', 'Sidebar'];
 
 /** The captured `components` map itself, for assertions on its values. */
 function componentsOf(entry: {
@@ -102,7 +103,7 @@ function carrierKeysOf(integrations: unknown[]): string[] {
 
 // A brand-LIKE fixture (not the real Spec Kitty brand — do not couple this test
 // to WP04). It carries tokens/customCss/slots/layouts a theme legitimately sets;
-// none of these may add a sixth `components` carrier.
+// none of these may add a seventh `components` carrier.
 const brandLikeTheme: DocKittyTheme = {
   name: 'fixture-brand',
   tokens: { '--dk-color-accent': '#abcdef', '--dk-radius-md': '0.75rem' },
@@ -117,23 +118,23 @@ const brandLikeTheme: DocKittyTheme = {
 restoreInternalEnv();
 
 describe('defineDocKittyIntegrations components map (seam 3)', () => {
-  it('registers exactly the five carriers with NO theme', () => {
+  it('registers exactly the six carriers with NO theme', () => {
     const integrations = defineDocKittyIntegrations({ title: 'Docs' });
     expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
   });
 
-  it('registers exactly the five carriers WITH a brand-like theme', () => {
+  it('registers exactly the six carriers WITH a brand-like theme', () => {
     const integrations = defineDocKittyIntegrations({ title: 'Docs', theme: brandLikeTheme });
     expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
   });
 
-  it('does not let a consumer starlight escape hatch add a sixth carrier', () => {
+  it('does not let a consumer starlight escape hatch add a seventh carrier', () => {
     const integrations = defineDocKittyIntegrations({
       title: 'Docs',
       theme: brandLikeTheme,
-      // A pass-through override attempting to register a sixth component must NOT
-      // expand the map — `components: carriers` is applied AFTER `...overrides`.
-      starlight: { components: { Sidebar: 'consumer/Sidebar.astro' } as never },
+      // A pass-through override attempting to register a seventh component must
+      // NOT expand the map — `components` is applied AFTER `...overrides`.
+      starlight: { components: { PageSidebar: 'consumer/PageSidebar.astro' } as never },
     });
     expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
   });
@@ -150,6 +151,86 @@ describe('defineDocKittyIntegrations components map (seam 3)', () => {
     expect(componentsOf(starlightEntry).Header).toBe(
       '@spec-kitty/doc-toolkit/components/Header.astro',
     );
+  });
+
+  it('keeps the toolkit Sidebar carrier when the escape hatch names its own Sidebar', () => {
+    const integrations = defineDocKittyIntegrations({
+      title: 'Docs',
+      starlight: { components: { Sidebar: 'consumer/Sidebar.astro' } },
+    });
+    expect(carrierKeysOf(integrations)).toEqual(EXPECTED_CARRIER_KEYS);
+    const starlightEntry = integrations.find(
+      (i) => typeof i === 'object' && i !== null && '__starlightConfig' in i,
+    ) as unknown as { __starlightConfig: { components?: Record<string, unknown> } };
+    expect(componentsOf(starlightEntry).Sidebar).toBe(
+      '@spec-kitty/doc-toolkit/components/Sidebar.astro',
+    );
+  });
+});
+
+/**
+ * WP03 T016 — the test-only stock-header switch (research D-01). WP04's capture
+ * script builds the real example without the `Header` carrier by setting
+ * `DK_INTERNAL_STOCK_HEADER=on`. Only exactly `on` counts; it is read when the
+ * config is built, and it is not an internal handoff name.
+ */
+describe('DK_INTERNAL_STOCK_HEADER (test-only, WP03 T016)', () => {
+  const NAME = 'DK_INTERNAL_STOCK_HEADER';
+
+  function withSwitch<T>(value: string | undefined, run: () => T): T {
+    const saved = process.env[NAME];
+    if (value === undefined) delete process.env[NAME];
+    else process.env[NAME] = value;
+    try {
+      return run();
+    } finally {
+      if (saved === undefined) delete process.env[NAME];
+      else process.env[NAME] = saved;
+    }
+  }
+
+  it('unset: all six carriers', () => {
+    withSwitch(undefined, () => {
+      expect(carrierKeysOf(defineDocKittyIntegrations({ title: 'Docs' }))).toEqual(EXPECTED_CARRIER_KEYS);
+    });
+  });
+
+  it('on: exactly the five carriers without Header', () => {
+    withSwitch('on', () => {
+      expect(carrierKeysOf(defineDocKittyIntegrations({ title: 'Docs' }))).toEqual(
+        EXPECTED_CARRIER_KEYS.filter((key) => key !== 'Header'),
+      );
+      // A theme does not bring it back either.
+      expect(
+        carrierKeysOf(defineDocKittyIntegrations({ title: 'Docs', theme: brandLikeTheme })),
+      ).toEqual(['Footer', 'Head', 'MarkdownContent', 'PageTitle', 'Sidebar']);
+    });
+  });
+
+  it('is read at config time, not import time', () => {
+    withSwitch('on', () => {
+      expect(carrierKeysOf(defineDocKittyIntegrations({ title: 'Docs' }))).not.toContain('Header');
+    });
+    withSwitch(undefined, () => {
+      expect(carrierKeysOf(defineDocKittyIntegrations({ title: 'Docs' }))).toContain('Header');
+    });
+  });
+
+  for (const value of ['yes', '1', 'ON', 'true', '']) {
+    it(`${JSON.stringify(value)}: all six carriers (only exactly "on" counts)`, () => {
+      withSwitch(value, () => {
+        expect(carrierKeysOf(defineDocKittyIntegrations({ title: 'Docs' }))).toEqual(EXPECTED_CARRIER_KEYS);
+      });
+    });
+  }
+
+  it('is not an internal handoff name, so createConfig never clears it', async () => {
+    const { INTERNAL_ENV_NAMES } = await import('../lib/internal-env.mjs');
+    expect(INTERNAL_ENV_NAMES).not.toContain(NAME);
+    withSwitch('on', () => {
+      defineDocKittyIntegrations({ title: 'Docs' });
+      expect(process.env[NAME]).toBe('on');
+    });
   });
 });
 

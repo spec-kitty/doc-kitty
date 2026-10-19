@@ -13,7 +13,7 @@
  */
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -559,11 +559,15 @@ describe('shapePagination', () => {
   });
 });
 
-describe('REVEAL_CURRENT_SCRIPT (T023, FR-022)', () => {
+describe('REVEAL_CURRENT_SCRIPT (T023, FR-022; inline since FR-004)', () => {
   interface Rect { top: number; bottom: number; height: number }
   const rect = (top: number, height: number): Rect => ({ top, bottom: top + height, height });
 
-  /** Run the inline script against a stub document; returns the pane after load. */
+  /**
+   * Run the inline script against a stub document. It ships right after
+   * Starlight's sidebar (the `Sidebar` carrier, ADR-0061), where the document is
+   * still `'loading'`, so it must act at once and never wait for an event.
+   */
   function run(opts: { pane?: Rect; current?: Rect | null; readyState?: string; scrollTop?: number }) {
     const paneListeners: Array<{ type: string; fn: (e: { newState: string }) => void }> = [];
     const pane = {
@@ -576,25 +580,25 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022)', () => {
         return opts.current ? { getBoundingClientRect: () => opts.current } : null;
       },
     };
-    const listeners: Array<() => void> = [];
+    const documentListeners: string[] = [];
     const document = {
       readyState: opts.readyState ?? 'loading',
       getElementById: (id: string) => (id === 'starlight__sidebar' && opts.pane !== null ? pane : null),
-      addEventListener: (type: string, fn: () => void) => {
-        expect(type).toBe('DOMContentLoaded');
-        listeners.push(fn);
+      addEventListener: (type: string) => {
+        documentListeners.push(type);
       },
     };
+    const before = pane.scrollTop;
     new Function('document', REVEAL_CURRENT_SCRIPT)(document);
-    const ranEarly = listeners.length === 0;
-    for (const fn of listeners) fn();
-    return { pane, ranEarly };
+    // What the pane looked like the moment the script returned, before any event.
+    const ranEarly = pane.scrollTop !== before;
+    return { pane, ranEarly, documentListeners };
   }
 
   it('centres an entry that is below the visible part of the sidebar', () => {
     // Pane 64..864; entry at y=1621, 32px tall → centred at 64 + (800-32)/2 = 448.
     const { pane, ranEarly } = run({ current: rect(1621, 32) });
-    expect(ranEarly).toBe(false); // waits for DOMContentLoaded, after Starlight's restore
+    expect(ranEarly).toBe(true); // runs at once although readyState is 'loading'
     expect(pane.scrollTop).toBe(1621 - 448);
   });
 
@@ -605,6 +609,21 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022)', () => {
 
   it('leaves the pane alone when the entry is already in view', () => {
     expect(run({ current: rect(500, 32), scrollTop: 240 }).pane.scrollTop).toBe(240);
+  });
+
+  it('runs at once while the document is still loading, and leaves a visible entry alone', () => {
+    // A restored position (Starlight's in-session restore ran just before) that
+    // already shows the entry is kept, even though the script ran immediately.
+    const restored = run({ current: rect(500, 32), scrollTop: 1881, readyState: 'loading' });
+    expect(restored.ranEarly).toBe(false);
+    expect(restored.pane.scrollTop).toBe(1881);
+  });
+
+  it('registers no DOMContentLoaded (or any other document) listener', () => {
+    for (const readyState of ['loading', 'interactive', 'complete']) {
+      expect(run({ current: rect(1621, 32), readyState }).documentListeners).toEqual([]);
+    }
+    expect(REVEAL_CURRENT_SCRIPT).not.toContain('DOMContentLoaded');
   });
 
   it('does nothing when the sidebar is hidden (every rect is zero)', () => {
@@ -640,7 +659,7 @@ describe('integration wiring (T022, C-004)', () => {
   type Hook = (args: { updateConfig: (config: unknown) => void }) => void;
   interface Captured {
     name: string;
-    __starlightConfig?: { routeMiddleware?: string[]; plugins?: Array<{ name: string; hooks: unknown }>; head?: Array<{ content?: string }> };
+    __starlightConfig?: { routeMiddleware?: string[]; plugins?: Array<{ name: string; hooks: unknown }>; head?: Array<{ content?: string }>; components?: Record<string, string> };
     hooks: Record<string, Hook>;
   }
 
@@ -773,9 +792,19 @@ describe('integration wiring (T022, C-004)', () => {
     });
   });
 
-  it('ships the reveal script as a head entry', () => {
+  it('does not ship the reveal script as a head entry', () => {
     const head = starlightOf(defineDocKittyIntegrations({ title: 'Docs' })).head ?? [];
-    expect(head.some((entry) => entry.content === REVEAL_CURRENT_SCRIPT)).toBe(true);
+    expect(head.length).toBeGreaterThan(0); // non-vacuity: the head is populated
+    expect(head.some((entry) => String(entry.content ?? '').includes("addEventListener('toggle'"))).toBe(false);
+    expect(head.some((entry) => entry.content === REVEAL_CURRENT_SCRIPT)).toBe(false);
+  });
+
+  it('registers the Sidebar carrier that ships it (ADR-0061)', () => {
+    const components = starlightOf(defineDocKittyIntegrations({ title: 'Docs' })).components ?? {};
+    expect(components.Sidebar).toBe('@spec-kitty/doc-toolkit/components/Sidebar.astro');
+    const carrier = readFileSync(new URL('../components/Sidebar.astro', import.meta.url), 'utf8');
+    expect(carrier).toContain("import { REVEAL_CURRENT_SCRIPT } from '../lib/route-shaping.js'");
+    expect(carrier).toMatch(/<script is:inline[^>]*data-dk-sidebar-reveal[^>]*set:html=\{REVEAL_CURRENT_SCRIPT\}/);
   });
 
   it('leaves an unpublished index out of the metadata and lists its directory', () => {

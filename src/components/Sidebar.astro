@@ -1,0 +1,35 @@
+---
+/*
+ * DocKitty carrier: Sidebar (the sixth carrier, ADR-0061; FR-004, NFR-005, #203).
+ *
+ * COMPOSE: renders Starlight's own Sidebar unchanged, then the reveal script
+ * (`REVEAL_CURRENT_SCRIPT`, `lib/route-shaping.ts`) that scrolls the sidebar pane
+ * so the current page's entry is in view. Nothing wraps the default and nothing
+ * is added inside it, so the sidebar markup stays exactly Starlight's.
+ *
+ * Why here and not in `<head>`: a head script cannot reach the pane until the
+ * document is parsed, so it had to wait for `DOMContentLoaded`, and on a slow
+ * connection the sidebar was painted at the top and then jumped. Rendered after
+ * the default, the script follows the whole sidebar in source order, so when
+ * the parser runs it the pane and its `aria-current` entry exist and Starlight's
+ * in-session scroll restore (the inline script at the end of
+ * `<sl-sidebar-state-persist>`, inside the default) has already run. The reveal
+ * moves the pane only when the entry is outside its visible part, so a restored
+ * position wins. It runs before the sidebar is first painted.
+ *
+ * The script is classic and inline (`is:inline`: no `type=module`, no `defer`,
+ * no `async`), so it runs as soon as it is parsed. `aria-hidden="true"` follows
+ * Starlight's own sidebar scripts, which carry it for a Safari/VoiceOver bug that
+ * reads out scripts inside a `display: contents` container. `data-dk-sidebar-reveal`
+ * marks it for `assert-chrome-artifacts.mjs`.
+ *
+ * Starlight renders this override as `<Sidebar />` with no props and no
+ * children; the default reads `Astro.locals.starlightRoute`. `Astro.props` and
+ * the slot are still forwarded, so a later Starlight that passes either reaches
+ * the default unchanged.
+ */
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { REVEAL_CURRENT_SCRIPT } from '../lib/route-shaping.js';
+---
+<Default {...Astro.props}><slot /></Default>
+<script is:inline aria-hidden="true" data-dk-sidebar-reveal set:html={REVEAL_CURRENT_SCRIPT} />
