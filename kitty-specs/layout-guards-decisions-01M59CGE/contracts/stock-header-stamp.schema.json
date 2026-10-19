@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec-kitty.github.io/doc-kitty/contracts/stock-header-stamp.schema.json",
+  "title": "Stock header fixture stamp",
+  "description": "What src/tests/fixtures/header-theme/stock-header.html was captured with. Written only by src/scripts/capture-stock-header.mjs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["starlight", "astro", "compressHTML", "carrier", "capturedFrom"],
+  "properties": {
+    "starlight": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$" },
+    "astro": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$" },
+    "compressHTML": { "type": "boolean" },
+    "carrier": { "const": "disabled" },
+    "capturedFrom": { "const": "example/dist/index.html" }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "accept_commit": "673baf69b2b5aa2d57229252c2a83e714c92a868",
+  "acceptance_history": [
+    {
+      "accept_commit": "673baf69b2b5aa2d57229252c2a83e714c92a868",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-19T09:18:22.774900+00:00",
+      "accepted_by": "system",
+      "accepted_from_commit": "f264f81b7dfee9615d57ca5f5d6eb16ec0e98638"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-19T09:18:22.774900+00:00",
+  "accepted_by": "system",
+  "accepted_from_commit": "f264f81b7dfee9615d57ca5f5d6eb16ec0e98638",
+  "baseline_merge_commit": "f6adfd7f6923880e0a6aee269fa78495583ffab8",
+  "created_at": "2026-10-19T06:10:17.394609+00:00",
+  "flattened": true,
+  "friendly_name": "Layout guards and decisions",
+  "merged_at": "2026-10-19T09:20:00.289368+00:00",
+  "merged_commit": "8a97a0fafc696c9d560f3e77bcff16e6c0b5071d",
+  "mid8": "01M59CGE",
+  "mission_id": "01M59CGETVTAJTWKCJHATHXH2A",
+  "mission_number": 13,
+  "mission_slug": "layout-guards-decisions-01M59CGE",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Issues #199 to #207 were split from #116 after the sidebar, frame and header carrier work. Research on Starlight 0.42.6 (docs/architecture/research/layout-guards-and-decisions.md) re-measured them, found two more defects (#216, #217), and the owner chose an option for each. This mission adds the missing guards (determinism, target size, the published sidebar, the header fixture, the no-sidebar recentre) and ships the chosen layout changes (an inline sidebar reveal, aligned header search, toggle clearance, a 120rem default page cap, and a band-width persona card).",
+  "purpose_tldr": "Close the layout guard gaps left after PR #111 and carry out the owner's layout decisions, so DocKitty's page frame stays correct and stays tested.",
+  "slug": "layout-guards-decisions-01M59CGE",
+  "status_phase": "1",
+  "target_branch": "feat/layout-guards-decisions",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-19T06:55:27.015185+00:00"
+}

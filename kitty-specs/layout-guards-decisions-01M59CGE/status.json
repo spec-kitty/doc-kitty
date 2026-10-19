@@ -1,0 +1,157 @@
+{
+  "event_count": 71,
+  "last_event_id": "01M59QBKZMFPEZ1QK0BHGPCRWW",
+  "materialized_at": "2026-10-19T09:19:52.308814+00:00",
+  "mission_number": "",
+  "mission_slug": "layout-guards-decisions-01M59CGE",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 8,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QB25VFCC2HE7TQ1SYXVF4",
+      "last_transition_at": "2026-10-19T09:19:34.075547+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP01-decision-records-and-adrs/review-cycle-2.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP01-decision-records-and-adrs/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 12052,
+      "shell_pid_created_at": "1792394019.04"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QAYWK7RTTJK9KZR78H9R8",
+      "last_transition_at": "2026-10-19T09:19:30.707706+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP02-machine-surface-determinism-guard/review-cycle-1.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP02-machine-surface-determinism-guard/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2575,
+      "shell_pid_created_at": "1792392922.59"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QB587KXKRNS95XNREHK5R",
+      "last_transition_at": "2026-10-19T09:19:37.223858+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP03-sidebar-reveal-carrier/review-cycle-1.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP03-sidebar-reveal-carrier/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 14113,
+      "shell_pid_created_at": "1792394316.38"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QBB3XEGMXX7NTYPYVPHY0",
+      "last_transition_at": "2026-10-19T09:19:43.229803+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP04-header-fixture-stamp-and-capture/review-cycle-1.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP04-header-fixture-stamp-and-capture/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 14194,
+      "shell_pid_created_at": "1792396995.42"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QB86EPNFGTZT35N62HSWX",
+      "last_transition_at": "2026-10-19T09:19:40.238787+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP05-frame-geometry/review-cycle-1.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP05-frame-geometry/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 14113,
+      "shell_pid_created_at": "1792394316.38"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QBE458J3J6NXXZKPJ17FG",
+      "last_transition_at": "2026-10-19T09:19:46.309898+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP06-geometry-guards/review-cycle-2.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP06-geometry-guards/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 11535,
+      "shell_pid_created_at": "1792398187.15"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QBH41K8P3M97BB657BTJT",
+      "last_transition_at": "2026-10-19T09:19:49.377047+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP07-consumer-docs-and-changelog/review-cycle-1.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP07-consumer-docs-and-changelog/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 4914,
+      "shell_pid_created_at": "1792399054.59"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M59QBKZMFPEZ1QK0BHGPCRWW",
+      "last_transition_at": "2026-10-19T09:19:52.308814+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/layout-guards-decisions-01M59CGE-coord/kitty-specs/layout-guards-decisions-01M59CGE/tasks/WP08-published-sidebar-lane/review-cycle-2.md",
+        "reference": "review-cycle://layout-guards-decisions-01M59CGE/WP08-published-sidebar-lane/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 28890,
+      "shell_pid_created_at": "1792400631.91"
+    }
+  }
+}
