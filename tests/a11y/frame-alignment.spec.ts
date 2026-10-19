@@ -36,7 +36,7 @@
 // Geometry does not depend on the colour scheme, so this spec runs in the
 // `light` project only.
 import { test, expect, type Page } from '@playwright/test';
-import { ROUTES, TOC_RAIL_TOGGLE } from './routes';
+import { BASE, ROUTES, TOC_RAIL_TOGGLE } from './routes';
 import { measure, settle, inline, type Box, type Geometry } from './helpers/geometry';
 
 const HEIGHT = 900;
@@ -50,7 +50,9 @@ const TOGGLE_CLEARANCE = 4;
 
 const PAGES = {
   rail: { name: 'rail page', path: ROUTES.markuaShowcase, rail: true },
-  noRail: { name: 'no-rail page', path: ROUTES.prose, rail: false },
+  // A section index: it carries no headings, so no rail (getting-started gained
+  // one when #193 rewrote it).
+  noRail: { name: 'no-rail page', path: `${BASE}/guides/`, rail: false },
   persona: { name: 'persona page', path: ROUTES.persona, rail: false },
 } as const;
 type PageKey = keyof typeof PAGES;

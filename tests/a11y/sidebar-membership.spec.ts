@@ -71,10 +71,11 @@ test('the sidebar lists the draft pages in the drafts-on build and none in the p
   }
 });
 
-test('getting-started links "next" to the footnotes showcase in the published build, not the malformed draft', async ({
+test('the guide before the malformed draft links "next" to the footnotes showcase in the published build', async ({
   page,
 }, testInfo) => {
-  await page.goto(ROUTES.prose, { waitUntil: 'domcontentloaded' });
+  // The install guide is the sidebar entry just before the malformed draft.
+  await page.goto(href('guides/install'), { waitUntil: 'domcontentloaded' });
   const next = page.locator('a[rel="next"]');
   await expect(next, 'non-vacuity: the page has one "next" link').toHaveCount(1);
   const expected = isPublishedProject(testInfo) ? PROMOTED_SHOWCASE : href('guides/markua-footnotes-malformed');
