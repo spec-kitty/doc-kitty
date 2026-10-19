@@ -30,6 +30,13 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
   working; do not set `markdown.processor` yourself. Astro 7 and Starlight 0.42
   bring their own breaking changes for code you wrote outside the toolkit, such
   as your own components or pages; see their upgrade guides.
+- **Build schema extensions on zod 4 via `astro/zod`: the exported docs schema
+  (`./schema`) is now a zod 4 schema.** Before, it was built on zod 3. Now it
+  imports from `astro/zod`, and `.default(...)` becomes `.prefault(...)`
+  semantics (the default is parsed through the schema, not returned as is). If
+  you extend `docKittyDocsSchema` with your own fields, import `z` from
+  `astro/zod` and write them for zod 4; a zod 3 schema no longer composes with
+  it.
 - **Read the producer from `generated_by`: `api/scenarios.json` no longer has
   `generated_from`, and its `version` is `"2"` (#183).** Before, every record
   carried `generated_from: "doc-kitty/gherkin"` next to `generated_by`, with
@@ -137,6 +144,10 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
 
 ### Changed
 
+- **The toolkit sets Starlight `markdown.processedDirs` itself.** Before, only
+  `src/content/docs` got Starlight's Markdown processing. Now the docs root is
+  listed first, any directory you list under `starlight.markdown.processedDirs`
+  follows, de-duplicated, and your other `markdown` options are merged in.
 - **The scenarios API names its producer in `generated_by` (#182).** Before,
   `api/scenarios.json` named its producer only as
   `generated_from: "doc-kitty/gherkin"`, while the generated feature pages'
