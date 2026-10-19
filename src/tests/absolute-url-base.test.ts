@@ -76,7 +76,7 @@ describe('rssRoute — base-prefixed absolute URLs (#61/#62)', () => {
     vi.stubEnv('BASE_URL', '/doc-kitty/');
     entries.push({
       id: 'guides/markua-malformed',
-      data: { title: 'Malformed', doc_status: 'active' },
+      data: { title: 'Malformed', doc_status: 'active', updated: '2026-01-01' },
     });
 
     const route = rssRoute({ title: 'Docs' });

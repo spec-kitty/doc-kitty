@@ -2310,6 +2310,16 @@ async function main() {
     fail(`rss.xml: not well-formed XML (${err.message})`);
   }
   ok('rss.xml: present and well-formed');
+  // 2a) Every feed item carries a <pubDate> (#190): an undated item sorts
+  // unpredictably in feed readers. A page with no date is left out of the feed.
+  const rssItems = rss.match(/<item>[\s\S]*?<\/item>/g) ?? [];
+  const undated = rssItems.filter((item) => !/<pubDate>[^<]+<\/pubDate>/.test(item));
+  if (rssItems.length === 0) fail('rss.xml: the feed has no <item> elements');
+  if (undated.length) {
+    const links = undated.map((item) => item.match(/<link>([^<]*)<\/link>/)?.[1] ?? '(no link)');
+    fail(`rss.xml: ${undated.length} of ${rssItems.length} item(s) have no <pubDate> (#190): ${links.join(', ')}`);
+  }
+  ok(`rss.xml: all ${rssItems.length} item(s) carry a <pubDate> (#190)`);
 
   // 3) llms.txt — present, non-empty.
   const llmsAbs = path.join(distDir, 'llms.txt');

@@ -58,9 +58,10 @@ const { agentIndexRoute } = await import('../lib/routes/agent-index.js');
 
 const SITE = new URL('https://docs.example/');
 
-/** Register one mock content entry (README-as-index: a README's id == its section). */
+/** Register one mock content entry (README-as-index: a README's id == its section).
+ * Dated by default: RSS leaves an undated page out of the feed (#190). */
 function addEntry(id: string, relPath: string, data: Record<string, unknown>): void {
-  entries.push({ id, filePath: path.join(root, relPath), data });
+  entries.push({ id, filePath: path.join(root, relPath), data: { updated: '2026-01-01', ...data } });
 }
 
 async function renderText(route: ReturnType<typeof rssRoute>): Promise<string> {

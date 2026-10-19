@@ -418,15 +418,17 @@ Whether the pages reach `rss.xml` is the section's choice: the example site's
 `behaviour` section lists `rss` in `feeds` (`example/docs/_meta/sections.yaml`), and
 a site drops it to keep specs out. Generated hubs (`kind: Hub` with a generator
 stamp, which includes the glossary index) never reach the feed: `includedInRssFeed` drops them, while an authored hub
-stays (#127). The feed ranks by `updated`, newest first, with
-undated items last in slug order (`rankForFeed` in `metadata.ts`), and omits
-`<pubDate>` when there is no date. A generated page has no `updated` unless its
-feature carries `@dk:updated=<date>`, so by default:
+stays (#127). Every item has a `<pubDate>` (#190): the route dates an item from
+`updated`, else from the page's `generated.at` stamp (`feedDateMillis` in
+`metadata.ts`), ranks by that date, newest first, with ties in slug order, and
+leaves out a page with neither date. A generated page has no `updated` unless its
+feature carries `@dk:updated=<date>`, and the generator moves `generated.at` only
+when the page's content changes, so by default:
 
-- every feature page and every hub is an item, each without a `<pubDate>`;
-- a new `.feature` file is a new undated item;
-- a new scenario in an existing feature changes nothing a subscriber sees,
-  unless the author also sets or bumps `@dk:updated`;
+- every feature page is an item dated when its page last changed;
+- a new `.feature` file is a new item;
+- a new scenario in an existing feature re-dates its item, unless the feature
+  sets `@dk:updated`, which wins;
 - a draft feature is not in the feed.
 
 ## In-page scenarios
