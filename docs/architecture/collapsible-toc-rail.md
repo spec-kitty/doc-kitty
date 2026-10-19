@@ -59,7 +59,7 @@ an opt-in `DocKittyOptions` flag.
   match a real `StarlightPage` with `hasSidebar: false` at all ten measured points
   (#199).
 - **Clear of the toggle.** Collapsed, the reading column ends at least 4px before
-  the toggle at every width from 72rem (#217). From 1152px to 1295px the centred
+  the toggle at every width from 72rem (#217). From 1152px to 1296px the centred
   column box used to run 7px under the toggle, so below 84rem the collapsed pane
   is padded past it. The clearance holds whatever font the page falls back to.
 - **No rail for a near-empty outline.** A page whose outline would hold only

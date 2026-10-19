@@ -207,6 +207,19 @@ describe('DK_INTERNAL_STOCK_HEADER (test-only, WP03 T016)', () => {
     });
   });
 
+  it('on: warns in the build output that Header is disabled; unset: stays silent', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      withSwitch('on', () => defineDocKittyIntegrations({ title: 'Docs' }));
+      expect(warn.mock.calls.some(([m]) => String(m).includes('DK_INTERNAL_STOCK_HEADER=on'))).toBe(true);
+      warn.mockClear();
+      withSwitch(undefined, () => defineDocKittyIntegrations({ title: 'Docs' }));
+      expect(warn.mock.calls.some(([m]) => String(m).includes('DK_INTERNAL_STOCK_HEADER'))).toBe(false);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('is read at config time, not import time', () => {
     withSwitch('on', () => {
       expect(carrierKeysOf(defineDocKittyIntegrations({ title: 'Docs' }))).not.toContain('Header');

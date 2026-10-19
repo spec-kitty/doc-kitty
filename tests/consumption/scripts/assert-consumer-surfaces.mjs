@@ -15,8 +15,10 @@
  *
  *   1. FRAME WIDTH. `src/theme/press.css` sets `--dk-width-frame: 90rem`. The
  *      CSS the built home page loads must hold the token's registration
- *      (`@property`, initial value 100%), the frame rule that reads it, the
- *      frame gutter, and the consumer's value.
+ *      (`@property`, initial value 1920px: a registered initial value cannot
+ *      use rem, so it is the 120rem default at a 16px root), the frame rule
+ *      that reads it, the frame gutter, the toolkit's 120rem default and the
+ *      consumer's value after it.
  *   2. DRAFT PUBLICATION. `docs/guides/draft-note.md` is `doc_status: draft`.
  *      Default build (drafts on): the page exists, carries `noindex`, and the
  *      sidebar lists it; the sitemap, feed, `llms.txt` and agent index do not;
@@ -153,8 +155,8 @@ function main() {
   const registration = /@property--dk-width-frame\{([^}]*)\}/.exec(css)?.[1] ?? '';
   check(registration !== '', 'frame: --dk-width-frame is a registered property');
   check(
-    /initial-value:100%/.test(registration) && /syntax:["']<length-percentage>["']/.test(registration),
-    'frame: the registration is a <length-percentage> with initial value 100%',
+    /initial-value:1920px/.test(registration) && /syntax:["']<length-percentage>["']/.test(registration),
+    'frame: the registration is a <length-percentage> with initial value 1920px (ADR-0062)',
     registration,
   );
   check(
@@ -164,9 +166,9 @@ function main() {
   check(/--dk-width-frame:90rem/.test(css), "frame: the consumer's 90rem cap is in the loaded CSS");
   // Both must be present: `lastIndexOf` is -1 for a missing default, and the
   // comparison below would then pass with nothing to come after.
-  check(/--dk-width-frame:100%/.test(css), "frame: the toolkit's 100% default is in the loaded CSS");
+  check(/--dk-width-frame:120rem/.test(css), "frame: the toolkit's 120rem default is in the loaded CSS (ADR-0062)");
   check(
-    css.lastIndexOf('--dk-width-frame:90rem') > css.lastIndexOf('--dk-width-frame:100%'),
+    css.lastIndexOf('--dk-width-frame:90rem') > css.lastIndexOf('--dk-width-frame:120rem'),
     "frame: the consumer's value comes after the toolkit default",
   );
 
