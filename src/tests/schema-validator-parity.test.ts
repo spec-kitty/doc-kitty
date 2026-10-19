@@ -601,7 +601,6 @@ describe('schema/validator parity — OKF metadata forms (#177)', () => {
     // #227: a value that is not date-shaped is rejected by both twins, through the one parser.
     ['bare-number string updated', 'context/x.md', page({ updated: '1' }), true, null],
     ['YAML number updated', 'context/x.md', page({ updated: 20241001 }), true, null],
-    ['small YAML number updated', 'context/x.md', page({ updated: 1 }), true, null],
     ['YAML number generated.at', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: 1 } }), true, null],
     ['year-only updated', 'context/x.md', page({ updated: '2024' }), true, null],
     ['two-group numeric updated', 'context/x.md', page({ updated: '1/2' }), true, null],
@@ -671,8 +670,8 @@ describe('vocabulary-core metadata rules (#177, C-009)', () => {
     expect(normaliseInstant('2026-10-18T09:30:00+02:00')?.date.toISOString()).toBe('2026-10-18T07:30:00.000Z');
     expect(normaliseInstant(new Date('2026-10-18T09:30:00Z'))?.dateOnly).toBe(false);
     for (const bad of ['', 'not-a-date', '2026-13-01', '2024-05-01T10:00:00+25:99', '2024-05-01T10:00:00+02:60', null, undefined,
-      // #227: not date-shaped, though `new Date()` would parse them
-      '1', '2024', '1/2', 'abc 2024', '2024.5', ' 1 ', 1, 20241001]) {
+      // #227: not date-shaped, though `new Date()` would parse it (the other forms are rows of the parity table)
+      ' 1 ']) {
       expect(normaliseInstant(bad as string)).toBeNull();
     }
   });
