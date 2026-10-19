@@ -26,6 +26,7 @@ export const collections = {
       changelogPath: fileURLToPath(new URL('../../CHANGELOG.md', import.meta.url)),
       entryId: 'changelog/releases',
       repoBlobBase: 'https://github.com/spec-kitty/doc-kitty/blob/main/',
+      repoRawBase: 'https://raw.githubusercontent.com/spec-kitty/doc-kitty/main/',
     }),
     schema: docKittyDocsSchema(),
   }),

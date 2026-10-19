@@ -28,26 +28,71 @@ export interface RepoChangelogOptions {
   entryId: string;
   /** Prefix for repo-relative links, e.g. `https://github.com/o/r/blob/main/`. */
   repoBlobBase: string;
+  /** Prefix for repo-relative images, e.g. `https://raw.githubusercontent.com/o/r/main/`; derived from `repoBlobBase` when omitted. */
+  repoRawBase?: string;
 }
 
-// A code span (kept as is) or a repo-relative inline link (rewritten).
-const SPAN_OR_LINK_RE = /(`+)[^`][\s\S]*?\1|\]\((?!https?:|mailto:|#|\/)(?:\.\/)?([^)\s]+)\)/g;
+// A code span (kept as is), or the `](target "title")` tail of an inline link
+// or image whose target is repo-relative (rewritten).
+const SPAN_OR_LINK_RE =
+  /(`+)[^`][\s\S]*?\1|\]\(\s*(?!https?:|mailto:|#|\/)(?:\.\/)?([^)\s]+)((?:\s+(?:"[^"]*"|'[^']*'))?)\s*\)/g;
+// A reference-style definition: `[label]: target "title"`.
+const REF_DEF_RE = /^( {0,3}\[[^\]]+\]:\s*)(?!https?:|mailto:|#|\/)(?:\.\/)?(\S+)/;
 const FENCE_OPEN_RE = /^ {0,3}(`{3,}|~{3,})/;
 const FENCE_CLOSE_RE = /^ {0,3}(`{3,}|~{3,})\s*$/;
 
+export interface LinkBases {
+  /** Prefix for links to repository files, e.g. `https://github.com/o/r/blob/main/`. */
+  blob: string;
+  /** Prefix for images, which must load as raw bytes, e.g. `https://raw.githubusercontent.com/o/r/main/`. */
+  raw: string;
+}
+
+/** Whether the `]` at `closeAt` ends an image (`![alt]`) rather than a link text. */
+function closesImage(line: string, closeAt: number): boolean {
+  let depth = 0;
+  for (let i = closeAt; i >= 0; i -= 1) {
+    if (line[i] === ']') depth += 1;
+    else if (line[i] === '[') {
+      depth -= 1;
+      if (depth === 0) return line[i - 1] === '!';
+    }
+  }
+  return false;
+}
+
 /** Rewrites repo-relative links in one prose line, never inside a code span. */
-function rewriteProse(line: string, base: string): string {
-  return line.replace(SPAN_OR_LINK_RE, (match, ticks: string | undefined, target: string | undefined) =>
-    ticks ? match : `](${base}${target})`,
+function rewriteProse(line: string, bases: LinkBases): string {
+  const def = REF_DEF_RE.exec(line);
+  if (def) return `${def[1]}${bases.blob}${def[2]}${line.slice(def[0].length)}`;
+  return line.replace(
+    SPAN_OR_LINK_RE,
+    (match, ticks: string | undefined, target: string | undefined, title: string | undefined, offset: number) => {
+      if (ticks) return match;
+      const base = closesImage(line, offset) ? bases.raw : bases.blob;
+      return `](${base}${target}${title ?? ''})`;
+    },
   );
 }
 
+/** `https://github.com/o/r/blob/ref/` -> `https://raw.githubusercontent.com/o/r/ref/`; anything else is kept. */
+export function rawBaseFor(repoBlobBase: string): string {
+  const m = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/blob\/([^/]+)\/?$/.exec(repoBlobBase);
+  return m ? `https://raw.githubusercontent.com/${m[1]}/${m[2]}/` : repoBlobBase;
+}
+
+const withSlash = (u: string): string => (u.endsWith('/') ? u : `${u}/`);
+
 /**
- * CHANGELOG.md as the page body: no H1, repo-relative links made absolute.
- * Fenced code blocks and inline code spans are left exactly as written.
+ * CHANGELOG.md as the page body: no H1, repo-relative links made absolute
+ * (images to raw URLs, everything else to blob URLs). Fenced code blocks and
+ * inline code spans are left exactly as written.
  */
-export function changelogBody(raw: string, repoBlobBase: string): string {
-  const base = repoBlobBase.endsWith('/') ? repoBlobBase : `${repoBlobBase}/`;
+export function changelogBody(raw: string, repoBlobBase: string, repoRawBase?: string): string {
+  const bases: LinkBases = {
+    blob: withSlash(repoBlobBase),
+    raw: withSlash(repoRawBase ?? rawBaseFor(repoBlobBase)),
+  };
   let fence: string | null = null;
   return raw
     .replace(/^# [^\n]*\n+/, '')
@@ -63,7 +108,7 @@ export function changelogBody(raw: string, repoBlobBase: string): string {
         fence = open[1];
         return line;
       }
-      return rewriteProse(line, base);
+      return rewriteProse(line, bases);
     })
     .join('\n');
 }
@@ -121,6 +166,6 @@ async function renderChangelog(
   renderMarkdown: LoaderContext['renderMarkdown'],
 ): Promise<{ raw: string; body: string; rendered: Awaited<ReturnType<LoaderContext['renderMarkdown']>> }> {
   const raw = readFileSync(options.changelogPath, 'utf8');
-  const body = changelogBody(raw, options.repoBlobBase);
+  const body = changelogBody(raw, options.repoBlobBase, options.repoRawBase);
   return { raw, body, rendered: await renderMarkdown(body) };
 }
