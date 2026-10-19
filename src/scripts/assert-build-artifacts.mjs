@@ -2643,6 +2643,7 @@ async function main() {
     const count = (html.match(/<h1[\s>]/gi) ?? []).length;
     if (count !== 1) h1Offenders.push(`${path.relative(distDir, abs).split(path.sep).join('/')} (${count})`);
   }
+  if (h1Pages === 0) fail('one <h1> per page: no published HTML page was found to check (#191)');
   if (h1Offenders.length) {
     fail(
       `one <h1> per page: ${h1Offenders.length} page(s) do not have exactly one <h1> (#191): ` +
