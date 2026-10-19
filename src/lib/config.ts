@@ -658,7 +658,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // read glossary → gherkin. It registers NO remark/rehype plugins (generated
     // pages are plain Markdown on the existing stack), so no plugin-order pin
     // moves. Omitted entirely when absent — byte-identical array.
-    ...(gherkinPages ? [gherkinIntegration(gherkinPages, docsDir, indexBasename, gherkinOpts?.results)] : []),
+    ...(gherkinPages ? [gherkinIntegration(gherkinPages, docsDir, indexBasename, gherkinOpts?.results, gherkinOpts?.lint)] : []),
     // Opt-in in-page Gherkin stage (ADR-0051): PREPENDED immediately before
     // Starlight, AFTER the glossary and the codegen hook, whenever the option is
     // set and `fences` is not `false`, or `results` is set (ADR-0055: it adds

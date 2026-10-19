@@ -70,6 +70,8 @@ import { GHERKIN_PRODUCER, isRegenerableStamp, makeStamp } from '../generator-st
 import {
   buildFrontmatter,
   missionPrefix,
+  parseMetadataTags,
+  resolveGlossaryContext,
   serializeFrontmatter,
   serializeHubFrontmatter,
 } from './feature-core.mjs';
@@ -120,6 +122,18 @@ function hubDescription(title) {
  *   source-relative directory as written (`{ hr: 'HR' }`, `gherkin.titles`,
  *   #125); a directory without one is titled from its name. A key that names no
  *   directory holding a feature warns.
+ * @property {Readonly<Record<string, string>>} [defaultGlossaryContext] Glossary
+ *   context by source-relative directory as written (`{ shipping: 'shipping' }`,
+ *   `gherkin.defaultGlossaryContext`, #197): a feature takes the value of its
+ *   longest matching directory key ({@link folderDefault}) unless a non-empty
+ *   `@dk:context` tag names one. A key that matches no directory holding a
+ *   feature (or one beneath it) warns.
+ * @property {ReadonlySet<string>} [knownContexts] The glossary's context names
+ *   (the build passes them from `.contextive/definitions.yaml`; the CLI passes
+ *   none, research R-02). When given, a page whose resolved `glossary_context`
+ *   is not one of them warns once, naming where the value came from.
+ * @property {import('./options.mjs').NormalizedGherkinLint} [lint] The resolved
+ *   `gherkin.lint` option (#196), handed to {@link renderFeatureBody}.
  * @property {string} [outDir] Where the pages are (or will be) written; the
  *   previous `generated` stamps are read from here. Default `<docsRoot>/<section>`.
  * @property {(msg: string) => void} [warn] Warning sink. Default no-op.
@@ -161,6 +175,25 @@ function indexBasenames(indexBasename) {
  */
 export function hubBasename(indexBasename) {
   return generatedIndexBasename(indexBasename);
+}
+
+/**
+ * The folder default for a feature (#197, `data-model.md` FolderDefaultMap): the
+ * key naming the longest directory prefix of `relPath`, compared by whole path
+ * segment (`ship` never matches `shipments/`). Keys are source-relative and as
+ * written, the same key space for every source, like `gherkin.titles`.
+ *
+ * @param {string} relPath The feature's POSIX, source-relative path.
+ * @param {Readonly<Record<string, string>>} map
+ * @returns {{ key: string, value: string } | undefined}
+ */
+function folderDefault(relPath, map) {
+  const dirs = relPath.split('/').slice(0, -1);
+  for (let depth = dirs.length; depth > 0; depth -= 1) {
+    const key = dirs.slice(0, depth).join('/');
+    if (Object.hasOwn(map, key)) return { key, value: map[key] };
+  }
+  return undefined;
 }
 
 /**
@@ -211,6 +244,9 @@ export function planFeaturePages(model, opts) {
     sourceRoot = process.cwd(),
     sourceUrlPrefix,
     titles = {},
+    defaultGlossaryContext = {},
+    knownContexts,
+    lint,
     warn = () => {},
     now,
     outDir = path.join(docsRoot, section),
@@ -263,7 +299,11 @@ export function planFeaturePages(model, opts) {
    */
   /** @type {Set<string>} */
   const publishedDirs = new Set(['']);
-  /** Every source-relative directory as written, for the unknown-`titles` warning. */
+  /**
+   * Every source-relative directory as written (each ancestor of a feature
+   * included), for the unknown-`titles` and unknown-`defaultGlossaryContext`
+   * warnings.
+   */
   /** @type {Set<string>} */
   const sourceDirs = new Set();
 
@@ -316,6 +356,7 @@ export function planFeaturePages(model, opts) {
     }
     claimedBy.set(out, sourceLabel);
 
+    const folder = folderDefault(file.relPath, defaultGlossaryContext);
     const { fields, warnings, descriptionIsName } = buildFrontmatter({
       featureName: feature.name,
       featureKeyword: feature.keyword,
@@ -327,9 +368,25 @@ export function planFeaturePages(model, opts) {
       missionPrefix: mission,
       adrFileNames,
       location: feature.location,
+      defaultGlossaryContext: folder?.value,
     });
     for (const w of warnings) warn(w);
-    const body = renderFeatureBody(file.document, { file: sourceLabel, warn });
+    if (knownContexts) {
+      // The origin needs the parsed tags, so they are parsed again (silently:
+      // `buildFrontmatter` already reported their warnings) and resolved by the
+      // same rule that set `glossary_context`.
+      const { meta } = parseMetadataTags(feature.tags);
+      const { context, origin } = resolveGlossaryContext(meta, folder?.value);
+      if (context !== undefined && !knownContexts.has(context)) {
+        const from =
+          origin === 'tag' ? 'the @dk:context tag' : `gherkin.defaultGlossaryContext key ${JSON.stringify(folder?.key)}`;
+        warn(
+          `${PREFIX} ${sourceLabel} glossary context ${JSON.stringify(context)} (from ${from}) is not a context in ` +
+            '.contextive/definitions.yaml; terms on this page cannot be disambiguated by it',
+        );
+      }
+    }
+    const body = renderFeatureBody(file.document, { file: sourceLabel, warn, lint });
     plan.set(out, `${serializeFrontmatter(fields)}\n\n${body}`);
 
     // Register the page with its directory hub, and every ancestor directory
@@ -375,6 +432,15 @@ export function planFeaturePages(model, opts) {
   for (const key of Object.keys(titles).sort(compareCodeUnit)) {
     if (!sourceDirs.has(key)) {
       warn(`${PREFIX} gherkin.titles key ${JSON.stringify(key)} matches no source directory with a feature; ignored`);
+    }
+  }
+  // `sourceDirs` holds every ancestor of a feature's directory, so a key with a
+  // feature only BENEATH it (which the lookup inherits) is found here too.
+  for (const key of Object.keys(defaultGlossaryContext).sort(compareCodeUnit)) {
+    if (!sourceDirs.has(key)) {
+      warn(
+        `${PREFIX} gherkin.defaultGlossaryContext key ${JSON.stringify(key)} matches no source directory with a feature; ignored`,
+      );
     }
   }
 

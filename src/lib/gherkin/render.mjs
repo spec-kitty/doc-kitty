@@ -46,6 +46,7 @@
  * @module gherkin/render
  */
 
+import { compileRules, lintSteps } from './imperative.mjs';
 import { RESULT_COLUMN, countsText, outcomeLabel, provenance } from './results.mjs';
 import { GHERKIN_LOG_PREFIX } from './text.mjs';
 import { cellSegments, childLevel, displayTags, featureView, resolveLevels, summaryText } from './view.mjs';
@@ -88,6 +89,11 @@ import { cellSegments, childLevel, displayTags, featureView, resolveLevels, summ
  *   `**Results:**` line after the summary. Only an EMBED is given results: a
  *   generated page's committed Markdown never carries them (it would drift
  *   with every run), and the in-page stage adds them when it renders the page.
+ * @property {import('./options.mjs').NormalizedGherkinLint} [lint] The resolved
+ *   `gherkin.lint` option (#196): when set, the imperative-step lint runs next to
+ *   the duplicate-name check and reports through `warn`. It never changes the
+ *   returned Markdown (FR-009). An include (an EMBED) is given no `lint`, so its
+ *   steps are never linted (FR-011).
  */
 
 /**
@@ -545,6 +551,28 @@ export function warnDuplicates(view, opts = {}) {
 }
 
 /**
+ * Compiled imperative-step rules per normalised `lint` object: the generator
+ * hands every page the same object, so the rules compile once per run, never
+ * per page or step.
+ *
+ * @type {WeakMap<object, import('./imperative.mjs').CompiledImperativeRules>}
+ */
+const compiledLint = new WeakMap();
+
+/**
+ * @param {import('./options.mjs').NormalizedGherkinLint} lint
+ * @returns {import('./imperative.mjs').CompiledImperativeRules}
+ */
+function rulesFor(lint) {
+  let rules = compiledLint.get(lint);
+  if (!rules) {
+    rules = compileRules(lint.imperativeSteps);
+    compiledLint.set(lint, rules);
+  }
+  return rules;
+}
+
+/**
  * Render a parsed Gherkin document as Markdown: by default, the body of its
  * generated feature page.
  *
@@ -597,6 +625,17 @@ export function renderFeatureBody(document, opts = {}) {
     for (const rc of child.children) blocks.push(...renderSection(rc, childLevel(levels.section), layout, results, levels.header === 'full'));
   }
   warnDuplicates(view, opts);
+  if (opts.lint) {
+    // Feature-level `@dk:allow` values are left to feature-core, which already
+    // warns about every Feature-level metadata key on a generated page.
+    lintSteps(view, {
+      rules: rulesFor(opts.lint),
+      file: opts.file,
+      warn: opts.warn,
+      lineOffset: opts.lineOffset,
+      language: document.feature?.language,
+    });
+  }
 
   return blocks.length > 0 ? `${blocks.join('\n\n')}\n` : '';
 }

@@ -1,5 +1,5 @@
 # language: en
-@dk:context=shipping @dk:persona=example-persona @dk:adr=0001 @FR-004
+@dk:persona=example-persona @dk:adr=0001 @FR-004
 Feature: Declare a consignment to customs
   As a shipper
   I want to declare my cargo to customs before it sails

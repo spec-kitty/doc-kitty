@@ -209,6 +209,8 @@ describe('golden: the worked example (contract §1/§3/§6)', () => {
       outDir,
       sourceRoot: site,
       indexBasename: ['README', 'index'],
+      // As the example site maps it: the folder, not a tag, gives the context.
+      defaultGlossaryContext: { shipping: 'shipping' },
       now: GOLDEN_NOW,
       warn: (m) => warnings.push(m),
     });
@@ -1187,5 +1189,169 @@ describe('draft-only directories and sections (final review #2, #124)', () => {
       if (saved === undefined) delete process.env.DK_PUBLISH_DRAFTS;
       else process.env.DK_PUBLISH_DRAFTS = saved;
     }
+  });
+});
+
+describe('gherkin.defaultGlossaryContext sets glossary_context by source folder (#197)', () => {
+  const files = {
+    'features/shipping/a.feature': feature('Alpha'),
+    'features/shipping/eu/b.feature': feature('Bravo'),
+    'features/shipping/tagged.feature': feature('Tagged', { tags: '@dk:context=customs' }),
+    'features/shipping/empty.feature': feature('Empty', { tags: '@dk:context=' }),
+    'features/shipments/c.feature': feature('Charlie'),
+    'features/billing/d.feature': feature('Delta'),
+  };
+  const contextOf = (out: Map<string, string>, rel: string): unknown => fm(out.get(rel) as string).glossary_context;
+  const mapWarnings = (warnings: string[]) => warnings.filter((w) => w.includes('gherkin.defaultGlossaryContext'));
+
+  it('the longest whole-segment key wins, a non-empty tag overrides it, and a partial segment never matches', () => {
+    const site = makeSite(files);
+    const base = { shipping: 'shipping', ship: 'nope' };
+    const first = plan(site, { defaultGlossaryContext: base }).plan;
+    expect(contextOf(first, 'shipping/a.md')).toBe('shipping');
+    expect(contextOf(first, 'shipping/eu/b.md')).toBe('shipping');
+    expect(contextOf(first, 'shipping/tagged.md')).toBe('customs');
+    // An empty `@dk:context=` warns (as before) and falls through to the folder default.
+    expect(contextOf(first, 'shipping/empty.md')).toBe('shipping');
+    expect(contextOf(first, 'shipments/c.md')).toBeUndefined();
+    expect(contextOf(first, 'billing/d.md')).toBeUndefined();
+
+    const nested = plan(site, { defaultGlossaryContext: { ...base, 'shipping/eu': 'customs' } }).plan;
+    expect(contextOf(nested, 'shipping/eu/b.md')).toBe('customs');
+    expect(contextOf(nested, 'shipping/a.md')).toBe('shipping');
+  });
+
+  it('keys are source-relative directories as written, the same key space for every source', () => {
+    const site = makeSite({
+      'features/Shipping Ops/x.feature': feature('X marks'),
+      'more/Shipping Ops/y.feature': feature('Y marks'),
+    });
+    const { plan: out } = plan(site, {
+      sources: ['features', 'more'],
+      defaultGlossaryContext: { 'Shipping Ops': 'shipping' },
+    });
+    expect(contextOf(out, 'shipping-ops/x.md')).toBe('shipping');
+    expect(contextOf(out, 'shipping-ops/y.md')).toBe('shipping');
+  });
+
+  it('a key that matches no directory holding a feature warns exactly once; matching keys do not', () => {
+    const site = makeSite({
+      'features/shipping/a.feature': feature('Alpha'),
+      'features/hr/eu/leave.feature': feature('Leave'),
+    });
+    const stale = plan(site, { defaultGlossaryContext: { shipping: 'shipping', hr: 'hr', nowhere: 'x' } });
+    expect(mapWarnings(stale.warnings)).toEqual([
+      '[dk-gherkin] gherkin.defaultGlossaryContext key "nowhere" matches no source directory with a feature; ignored',
+    ]);
+    // `hr` holds no feature directly, but one beneath it: the lookup inherits, so it matches.
+    expect(contextOf(stale.plan, 'hr/eu/leave.md')).toBe('hr');
+    expect(plan(site, { defaultGlossaryContext: { shipping: 'shipping', hr: 'hr' } }).warnings).toEqual([]);
+  });
+
+  it('unused-key warnings come in code-unit order', () => {
+    const site = makeSite({ 'features/shipping/a.feature': feature('Alpha') });
+    const { warnings } = plan(site, { defaultGlossaryContext: { zeta: 'z', Beta: 'b', alpha: 'a', shipping: 's' } });
+    expect(mapWarnings(warnings).map((w) => /key "([^"]*)"/.exec(w)?.[1])).toEqual(['Beta', 'alpha', 'zeta']);
+  });
+
+  describe('the unknown-context check (build only, research R-02/R-03)', () => {
+    const site = () =>
+      makeSite({
+        'features/shipping/a.feature': feature('Alpha'),
+        'features/shipping/tagged.feature': feature('Tagged', { tags: '@dk:context=customs' }),
+        'features/hr/leave.feature': feature('Leave'),
+      });
+    const map = { shipping: 'shipping', hr: 'peopel' };
+    const unknown = (warnings: string[]) => warnings.filter((w) => w.includes('is not a context in'));
+
+    it('warns once per page whose context is not a known one, naming the file, the context and its origin', () => {
+      const s = site();
+      const { warnings } = plan(s, { defaultGlossaryContext: map, knownContexts: new Set(['shipping', 'hr']) });
+      expect(unknown(warnings)).toEqual([
+        '[dk-gherkin] features/hr/leave.feature glossary context "peopel" (from gherkin.defaultGlossaryContext key "hr") ' +
+          'is not a context in .contextive/definitions.yaml; terms on this page cannot be disambiguated by it',
+        '[dk-gherkin] features/shipping/tagged.feature glossary context "customs" (from the @dk:context tag) ' +
+          'is not a context in .contextive/definitions.yaml; terms on this page cannot be disambiguated by it',
+      ]);
+    });
+
+    it('without knownContexts (the CLI) the same tree raises no unknown-context warning, and the bytes match', () => {
+      const s = site();
+      const checked = plan(s, { defaultGlossaryContext: map, knownContexts: new Set(['shipping', 'hr']) });
+      const unchecked = plan(s, { defaultGlossaryContext: map });
+      expect(unknown(checked.warnings)).toHaveLength(2);
+      expect(unknown(unchecked.warnings)).toEqual([]);
+      expect([...unchecked.plan]).toEqual([...checked.plan]);
+    });
+
+    it('a page with no glossary context is never checked', () => {
+      const s = site();
+      const { warnings } = plan(s, { knownContexts: new Set(['shipping']) });
+      expect(unknown(warnings)).toEqual([
+        '[dk-gherkin] features/shipping/tagged.feature glossary context "customs" (from the @dk:context tag) ' +
+          'is not a context in .contextive/definitions.yaml; terms on this page cannot be disambiguated by it',
+      ]);
+    });
+  });
+
+  it('dormancy: a page in an unmapped folder is byte-identical with the option on and off; a mapped page differs', () => {
+    const site = makeSite(files);
+    const off = plan(site).plan;
+    const on = plan(site, { defaultGlossaryContext: { shipping: 'shipping' } }).plan;
+    expect(on.get('billing/d.md')).toBe(off.get('billing/d.md'));
+    expect(on.get('shipments/c.md')).toBe(off.get('shipments/c.md'));
+    // Positive control: a covered page changes, and only by its glossary_context line.
+    expect(on.get('shipping/a.md')).not.toBe(off.get('shipping/a.md'));
+    const strip = (text: string) => text.replace(/^glossary_context: .*\n/m, '');
+    expect(strip(on.get('shipping/a.md') as string)).toBe(off.get('shipping/a.md'));
+  });
+
+  it('the example corpus plans with zero drift under its current options', () => {
+    const exampleRoot = path.dirname(EXAMPLE_DOCS.replace(/[\\/]$/, ''));
+    const model = loadFeatures({ sources: ['features'], root: exampleRoot });
+    const outDir = path.join(EXAMPLE_DOCS, 'behaviour');
+    const planned = planFeaturePages(model, {
+      docsRoot: EXAMPLE_DOCS,
+      section: 'behaviour',
+      sourceRoot: exampleRoot,
+      titles: { hr: 'HR' },
+      // The example's own folder defaults (gherkin-authoring-aids WP07).
+      defaultGlossaryContext: { shipping: 'shipping', hr: 'hr' },
+      outDir,
+    });
+    expect(diffFeaturePages(planned, outDir)).toEqual({ added: [], changed: [], stale: [], authored: [] });
+  });
+});
+
+describe('the resolved gherkin.lint option reaches the renderer (#196 plumbing)', () => {
+  afterEach(() => {
+    vi.doUnmock('../lib/gherkin/render.mjs');
+    vi.resetModules();
+  });
+
+  it('planFeaturePages forwards opts.lint to renderFeatureBody, and the bytes do not change', async () => {
+    const seen: unknown[] = [];
+    vi.resetModules();
+    vi.doMock('../lib/gherkin/render.mjs', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('../lib/gherkin/render.mjs')>();
+      return {
+        ...actual,
+        renderFeatureBody: (...args: Parameters<typeof actual.renderFeatureBody>) => {
+          seen.push((args[1] as { lint?: unknown } | undefined)?.lint);
+          return actual.renderFeatureBody(...args);
+        },
+      };
+    });
+    const fresh = await import('../lib/gherkin/generate.mjs');
+    const site = makeSite({ 'features/a.feature': feature('Alpha') });
+    const model = loadFeatures({ sources: ['features'], root: site.root });
+    const lint: NonNullable<Parameters<typeof planFeaturePages>[1]['lint']> = {
+      imperativeSteps: { verbs: undefined, extend: [], keywords: ['context', 'action'] },
+    };
+    const opts = { docsRoot: site.docsRoot, sourceRoot: site.root };
+    const linted = fresh.planFeaturePages(model, { ...opts, lint });
+    const plain = fresh.planFeaturePages(model, opts);
+    expect(seen).toEqual([lint, undefined]);
+    expect([...linted]).toEqual([...plain]);
   });
 });

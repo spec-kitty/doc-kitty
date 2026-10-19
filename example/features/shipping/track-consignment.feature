@@ -1,5 +1,5 @@
 # language: en
-@wip @dk:context=shipping
+@wip
 Feature: Track a consignment in transit
   As a shipper
   I want to see where my consignment is on its voyage

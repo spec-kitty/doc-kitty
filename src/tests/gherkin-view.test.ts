@@ -258,6 +258,82 @@ describe('featureView: the shared document walk', () => {
   });
 });
 
+describe('StepView.line and StepView.keywordType (R-05: the imperative-step lint reads them)', () => {
+  const kinds = (section: SectionView | RuleView) => (section as SectionView).steps.map((s) => s.keywordType);
+
+  it('resolves And, But and * to the type of the step before them', () => {
+    const v = view(
+      lines('Feature: F', '  Scenario: S', '    Given a', '    And b', '    When c', '    But d', '    Then e', '    * f'),
+    );
+    expect(kinds(v.children[0])).toEqual(['context', 'context', 'action', 'action', 'outcome', 'outcome']);
+  });
+
+  it('cites each step\'s source line', () => {
+    const v = view(lines('Feature: F', '', '  Scenario: S', '    Given a', '', '    When c', '    Then e'));
+    expect((v.children[0] as SectionView).steps.map((s) => s.line)).toEqual([4, 6, 7]);
+  });
+
+  it('starts a fresh chain per section: a Background, then a scenario opening with `And`', () => {
+    const v = view(
+      lines('Feature: F', '  Background:', '    Given x', '    And y', '  Scenario: S', '    And z', '    When w', '    And v'),
+    );
+    expect(kinds(v.children[0])).toEqual(['context', 'context']);
+    // Nothing to inherit from inside its own section: the Background's chain does not leak.
+    expect(kinds(v.children[1])).toEqual(['unknown', 'action', 'action']);
+  });
+
+  it("resolves a Rule's Background and scenarios the same way, with their lines", () => {
+    const v = view(
+      lines(
+        'Feature: F',
+        '  Rule: R',
+        '    Background:',
+        '      Given x',
+        '      And y',
+        '    Scenario Outline: O',
+        '      * <a>',
+        '      When b',
+        '      But <c>',
+        '      Then d',
+        '      Examples:',
+        '        | a | c |',
+        '        | 1 | 2 |',
+      ),
+    );
+    const rule = v.children[0] as RuleView;
+    expect(rule.children.map((c) => c.steps.map((s) => s.keywordType))).toEqual([
+      ['context', 'context'],
+      ['unknown', 'action', 'action', 'outcome'],
+    ]);
+    expect(rule.children[1].steps.map((s) => s.line)).toEqual([7, 8, 9, 10]);
+  });
+
+  it('is dialect-neutral: a Dutch scenario resolves by keyword type, not by English words', () => {
+    const v = view(lines('# language: nl', 'Functionaliteit: F', '  Scenario: S', '    Gegeven a', '    En b', '    Als c', '    Dan d'));
+    expect(kinds(v.children[0])).toEqual(['context', 'context', 'action', 'outcome']);
+  });
+});
+
+describe('hasMetadataTag ignores the @dk:allow suppression tag (R-06)', () => {
+  const tagged = (featureTags: string, scenarioTags: string) =>
+    view(lines(featureTags, 'Feature: F', `  ${scenarioTags}`, '  Scenario: S', '    When I click "Book"'));
+
+  it('a view whose only @dk: tags are @dk:allow has no metadata tag; adding @dk:persona flips it', () => {
+    expect(hasMetadataTag(tagged('@dk:allow=imperative', '@smoke'))).toBe(false);
+    expect(hasMetadataTag(tagged('@smoke', '@dk:allow=imperative'))).toBe(false);
+    expect(hasMetadataTag(tagged('@smoke', '@dk:allow'))).toBe(false);
+    // Positive control on the same fixture.
+    expect(hasMetadataTag(tagged('@dk:allow=imperative', '@dk:persona=x'))).toBe(true);
+    expect(hasMetadataTag(tagged('@dk:allow=imperative @dk:persona=x', '@smoke'))).toBe(true);
+  });
+
+  it('displayTags still hides every @dk:* tag, @dk:allow included', () => {
+    expect(displayTags(['@dk:allow=imperative', '@dk:allow', '@smoke'])).toEqual(['@smoke']);
+    // `@dk:allowance` is not the allow key: it is an ordinary (unknown) metadata tag.
+    expect(hasMetadataTag(tagged('@dk:allowance=x', '@smoke'))).toBe(true);
+  });
+});
+
 describe('resolveLevels: the heading plan both emitters share (03 §4.2)', () => {
   const v = view(FULL);
   const synth = view('Feature:\n  Scenario:\n    Given x\n', { feature: true });

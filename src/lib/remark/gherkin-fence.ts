@@ -136,6 +136,8 @@ import { resolveInclude } from '../gherkin/include.mjs';
 import { MAX_INCLUDE_BYTES } from '../gherkin/include-path.mjs';
 import { sourceLink, toPosix } from '../gherkin/load.mjs';
 import { DOCSTRING_MARK, featureMdast } from '../gherkin/mdast.mjs';
+import { compileRules, lintSteps } from '../gherkin/imperative.mjs';
+import type { NormalizedGherkinLint } from '../gherkin/options.mjs';
 import { formatProblem, parseGherkin } from '../gherkin/parse.mjs';
 import { AGENT_INCLUDES_KEY, type AgentInclude } from '../gherkin/agent-includes.mjs';
 import { renderFeatureBody, renderSourceLine, warnDuplicates } from '../gherkin/render.mjs';
@@ -210,6 +212,13 @@ export interface GherkinFenceOptions {
    * are shown next to included scenarios and on generated feature pages.
    */
   results?: ResultsOption;
+  /**
+   * `gherkin.lint`, normalised (#196): when set, every structured fence's steps
+   * go through the imperative-step lint, next to the duplicate-name check, and
+   * warn at the host page's lines through `warn`. Includes and `gherkin raw`
+   * fences are never linted (FR-011), and the output never changes (FR-009).
+   */
+  lint?: NormalizedGherkinLint;
   /**
    * The project root `src`, `includeRoots` and `sourceRoot` are relative to,
    * and that page paths in messages are shown relative to.
@@ -437,6 +446,8 @@ export default function gherkinFence(
 ) {
   const warn = options.warn ?? ((message: string) => console.warn(message));
   const includeRoots = options.includeRoots ?? [];
+  // Compiled once per plugin instance, never per fence or step.
+  const lintRules = options.lint ? compileRules(options.lint.imperativeSteps) : undefined;
   const hostData = (typeof this?.data === 'function' ? this.data() : {}) as ProcessorData;
   // Typography: the same `remark-smartypants` (defaults) Astro runs on the page.
   const smarten = (remarkSmartypants as unknown as () => (tree: MdastNode) => void)();
@@ -530,6 +541,18 @@ export default function gherkinFence(
     if (hasMetadataTag(view)) warn(`${at} metadata tags have no effect in an embedded feature`);
     // View lines are in WRAPPED coordinates (fragment.mjs): unshift, then offset.
     warnDuplicates(view, { file: page, warn, lineOffset: line - parsed.lineShift });
+    if (lintRules) {
+      // A fence runs no feature-core metadata, so the lint itself reports an
+      // unknown Feature-level `@dk:allow` value (`checkFeatureAllow`).
+      lintSteps(view, {
+        rules: lintRules,
+        file: page,
+        warn,
+        lineOffset: line - parsed.lineShift,
+        language: parsed.document?.feature?.language,
+        checkFeatureAllow: true,
+      });
+    }
 
     const container = featureMdast(view, {
       baseLevel: match.baseLevel,

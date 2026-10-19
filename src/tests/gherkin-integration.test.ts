@@ -492,3 +492,92 @@ describe('doc-kitty:gherkin injects the scenario index (#126)', () => {
     expect(names).not.toContain(GHERKIN);
   });
 });
+
+describe('doc-kitty:gherkin passes defaultGlossaryContext, the glossary contexts and lint (#197, #196)', () => {
+  const GLOSSARY = `contexts:
+  - name: shipping
+    terms:
+      - name: cargo
+        definition: Goods carried under one transport arrangement.
+  - name: hr
+    terms:
+      - name: leave
+        definition: Time away from work.
+`;
+  const FEATURE_TAGGED = `@dk:context=customs\n${FEATURE_X}`;
+  const mapped = { sources: ['features'], defaultGlossaryContext: { shipping: 'shipping' } };
+  const unknownContext = (ctx: StubContext) =>
+    ctx.logger.warn.mock.calls.map(([m]) => m as string).filter((m) => m.includes('is not a context in'));
+
+  it('a mapped folder sets glossary_context, and an unknown context is a logger.warn', () => {
+    writeTree({
+      '.contextive/definitions.yaml': GLOSSARY,
+      'features/shipping/x.feature': FEATURE_X,
+      'features/shipping/tagged.feature': FEATURE_TAGGED,
+      'features/billing/y.feature': FEATURE_X,
+    });
+    const site = enterSite();
+    const ctx = runGherkinSetup(
+      defineDocKittyIntegrations({
+        title: 't',
+        gherkin: mapped,
+      }),
+    );
+    const out = path.join(site, 'docs', 'behaviour');
+    expect(frontmatterOf(path.join(out, 'shipping', 'x.md')).glossary_context).toBe('shipping');
+    expect(frontmatterOf(path.join(out, 'shipping', 'tagged.md')).glossary_context).toBe('customs');
+    expect(frontmatterOf(path.join(out, 'billing', 'y.md'))).not.toHaveProperty('glossary_context');
+    expect(unknownContext(ctx)).toEqual([
+      '[dk-gherkin] features/shipping/tagged.feature glossary context "customs" (from the @dk:context tag) ' +
+        'is not a context in .contextive/definitions.yaml; terms on this page cannot be disambiguated by it',
+    ]);
+  });
+
+  it('a site without a glossary gets the context but no unknown-context warning', () => {
+    writeTree({
+      'features/shipping/x.feature': FEATURE_X,
+      'features/shipping/tagged.feature': FEATURE_TAGGED,
+    });
+    const site = enterSite();
+    const ctx = runGherkinSetup(
+      defineDocKittyIntegrations({
+        title: 't',
+        gherkin: mapped,
+      }),
+    );
+    expect(frontmatterOf(path.join(site, 'docs', 'behaviour', 'shipping', 'x.md')).glossary_context).toBe('shipping');
+    expect(unknownContext(ctx)).toEqual([]);
+  });
+
+  describe('lint', () => {
+    afterEach(() => {
+      vi.doUnmock('../lib/gherkin/render.mjs');
+      vi.resetModules();
+    });
+
+    it('the normalised gherkin.lint reaches renderFeatureBody through config.ts and the integration', async () => {
+      const seen: unknown[] = [];
+      vi.resetModules();
+      vi.doMock('../lib/gherkin/render.mjs', async (importOriginal) => {
+        const actual = await importOriginal<typeof import('../lib/gherkin/render.mjs')>();
+        return {
+          ...actual,
+          renderFeatureBody: (...args: Parameters<typeof actual.renderFeatureBody>) => {
+            seen.push((args[1] as { lint?: unknown } | undefined)?.lint);
+            return actual.renderFeatureBody(...args);
+          },
+        };
+      });
+      const fresh = await import('../lib/config.js');
+      writeTree({ 'features/shipping/x.feature': FEATURE_X });
+      enterSite();
+      const linted = { sources: ['features'], lint: { imperativeSteps: true } };
+      runGherkinSetup(fresh.defineDocKittyIntegrations({ title: 't', gherkin: linted }));
+      runGherkinSetup(fresh.defineDocKittyIntegrations({ title: 't', gherkin: { sources: ['features'] } }));
+      expect(seen).toEqual([
+        { imperativeSteps: { verbs: undefined, extend: [], keywords: ['context', 'action'] } },
+        undefined,
+      ]);
+    });
+  });
+});
