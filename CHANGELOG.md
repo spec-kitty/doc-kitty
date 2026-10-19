@@ -206,6 +206,16 @@ now version 3. **Upgrading from 0.3.0: read the Breaking section and the
 
 ### Fixed
 
+- **Every RSS item has a `<pubDate>` (#190).** Before, generated Gherkin
+  feature pages and glossary pages, which carry no `updated`, were feed items
+  with no date, so feed readers sorted them unpredictably. Now an item takes its
+  date from `updated`, else from the page's `generated.at` stamp, and the feed
+  is ordered by that date. A page with neither is left out of the feed.
+- **Every page has exactly one `<h1>` (#191).** Before, a page whose body
+  started with `# Title` rendered two: Starlight's title and the body heading.
+  Now a leading body H1 that repeats the frontmatter `title` is dropped, and
+  any other body H1 becomes an H2, so the title stays the page's only `<h1>`.
+  Slide decks are unchanged. You do not need to edit your Markdown.
 - **Shared links show a full card on Slack, WhatsApp and LinkedIn (#180).**
   Before, the spec-kitty theme's share image was an SVG, which those platforms
   do not show, and the card carried no image size or type. Now every page's
