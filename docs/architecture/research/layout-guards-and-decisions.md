@@ -1,7 +1,7 @@
 ---
 title: Layout guards and layout decisions after Astro 7
 description: Current behaviour on Starlight 0.42.6, options, and a recommendation for the layout guard and layout decision issues #199 to #207 split from #116.
-doc_status: draft
+doc_status: active
 updated: 2026-10-19T00:00:00Z
 type: Architecture
 kind: Explanation
@@ -43,6 +43,27 @@ owner to choose from.
   that already carry the header carrier.
 - **The research found four defects that no issue tracks.** They are listed under
   [New findings](#new-findings).
+
+## Decisions taken
+
+The owner chose on 2026-10-19, after reading this note. The ADRs that carry the
+choices with lasting design weight are written in the implementing mission.
+
+| Issue | Decision | Note |
+| --- | --- | --- |
+| #199 | Guard FR-010 with the DOM-derived simulation (option 1b) | Recorded in the spec and acceptance matrix; the real fixture goes on the upgrade tripwire |
+| #200 | Option A: published-sidebar Playwright projects in the same job | No decision was needed |
+| #201 | Option A: extend the existing test | No decision was needed |
+| #202 | Explicit assertion, with the issue's wider scope | No decision was needed |
+| #203 | Option 1: inline the reveal after the sidebar through a `Sidebar` override | Departs from the recommendation (option 1c); needs an ADR for the sixth carrier |
+| #204 | Option 3: accept and document the shift | The search alignment is fixed regardless, as #216 |
+| #205 | Option 2: ship a 120rem default frame cap in 0.5.0 | Departs from the recommendation; a new ADR supersedes ADR-0045 decision 1 |
+| #206 | Start-aligned, widened to `--dk-width-band` | Centring is rejected; a 1920 assertion is added |
+| #207 | Capture the fixture from a build without the header carrier | Plus the version stamp and the regeneration script |
+
+New findings 1 and 2 are tracked as #216 and finding 3 as #217. Both are fixed in
+the same mission. For #217 the owner chose to pad the collapsed pane past the
+toggle below 84rem. Finding 4 is cleanup done alongside.
 
 ## Method
 
@@ -422,7 +443,8 @@ the column start and has the token width. Size: extra small to small.
 
 ## New findings
 
-These came up during the research and are not tracked by any of the issues.
+These came up during the research and were not tracked by any of the issues.
+Findings 1 and 2 are now #216; finding 3 is #217.
 
 1. **On a rail page the header search does not line up with the column.**
    - From about 1700 px the search starts 24 px before the column (456 against 480
