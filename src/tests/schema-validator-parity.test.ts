@@ -601,6 +601,7 @@ describe('schema/validator parity — OKF metadata forms (#177)', () => {
     // #227: a value that is not date-shaped is rejected by both twins, through the one parser.
     ['bare-number string updated', 'context/x.md', page({ updated: '1' }), true, null],
     ['YAML number updated', 'context/x.md', page({ updated: 20241001 }), true, null],
+    ['small YAML number updated', 'context/x.md', page({ updated: 1 }), true, null],
     ['YAML number generated.at', 'context/x.md', page({ generated: { by: 'doc-kitty-gherkin/0.3.0', at: 1 } }), true, null],
     ['year-only updated', 'context/x.md', page({ updated: '2024' }), true, null],
     ['two-group numeric updated', 'context/x.md', page({ updated: '1/2' }), true, null],
