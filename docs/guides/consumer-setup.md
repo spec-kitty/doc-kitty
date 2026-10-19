@@ -135,9 +135,10 @@ runner-level npmrc, so the env expansion works there too. GitHub's reference is
 The toolkit declares three peers, so install them alongside it: `astro`
 (`>=7.2.10 <8`), `@astrojs/starlight` (`>=0.42.0 <0.43.0`) and
 `@astrojs/markdown-remark` (`>=7.3.0 <8`).
-`@astrojs/sitemap` ships as a regular dependency of the toolkit, so listing it
-yourself is optional; the command keeps it explicit, as the consumption-test
-fixture does. Pin the version you want to track:
+`@astrojs/sitemap` comes with the toolkit as a regular dependency, so you do not
+need to add it (the on-site install guide leaves it out); the command below keeps
+it explicit, as the consumption-test fixture does. Pin the version you want to
+track:
 
 ```sh
 pnpm add @spec-kitty/doc-toolkit@0.4.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3 @astrojs/sitemap
