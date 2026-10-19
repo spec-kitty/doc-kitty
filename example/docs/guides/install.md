@@ -65,6 +65,9 @@ workflow token as `NODE_AUTH_TOKEN`, and grant `permissions: packages: read`.
 pnpm add @spec-kitty/doc-toolkit@0.4.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3
 ```
 
+`@astrojs/sitemap` comes with the toolkit as a regular dependency, so you do
+not add it yourself.
+
 A `401 Unauthorized` usually means the `_authToken` line sits in the project
 `.npmrc` (pnpm ignores it there), the token lacks `read:packages`, or your
 account cannot read the package.

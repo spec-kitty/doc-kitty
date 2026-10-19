@@ -115,6 +115,13 @@ describe('repository consumer setup guide agrees with the install guide (#193)',
     }
   });
 
+  it('agrees with the install guide that @astrojs/sitemap comes with the toolkit', () => {
+    expect(toolkit.dependencies?.['@astrojs/sitemap']).toBeTruthy();
+    expect(guide()).toMatch(/`@astrojs\/sitemap` comes with the toolkit/);
+    expect(setup).toMatch(/`@astrojs\/sitemap` comes with the toolkit/);
+    expect(pnpmAdd(guide()).has('@astrojs/sitemap')).toBe(false);
+  });
+
   it('points to the on-site install guide', () => {
     expect(setup).toContain('https://spec-kitty.github.io/doc-kitty/guides/install/');
   });
