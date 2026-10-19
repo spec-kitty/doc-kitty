@@ -1,0 +1,55 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-19T11:52:11.314255Z",
+      "decision_id": "01M5A02GSJ9YZHCEK9SZ482MTY",
+      "final_answer": "Per-output, one module + OKF ownership-stamp fix: RSS keeps updated -> generated.at, the agent API keeps updated only, the OKF export keeps generated.at -> updated but takes generated.at only from an ownership-producer stamp (isGeneratedStamp), so a provenance-only scaffold stamp falls back to updated; both rules exported side by side from one module and pinned by one test; recorded in ADR-0059 implementation notes.",
+      "input_key": "last_changed_precedence",
+      "mission_id": "01M5A01Z4EHFS2YV9KD7QX7RN6",
+      "mission_slug": "dates-actors-anchors-01M5A01Z",
+      "opened_by": "cli",
+      "options": [
+        "Per-output, one module + OKF ownership-stamp fix",
+        "Per-output, document only",
+        "One shared helper",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "#226: one shared lastChanged helper with a single precedence for RSS, the OKF export and the agent API, or a documented per-output precedence?",
+      "rationale": null,
+      "resolved_at": "2026-10-19T11:52:14.502936Z",
+      "resolved_by": null,
+      "slot_key": "specify.dates.last-changed-precedence",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-19T11:52:17.608283Z",
+      "decision_id": "01M5A02PY8EG1MMHHFWXV7NV8R",
+      "final_answer": "Close as done, drop: #229 closed as completed citing #182/#183; mission covers #226-#228.",
+      "input_key": "issue_229_scope",
+      "mission_id": "01M5A01Z4EHFS2YV9KD7QX7RN6",
+      "mission_slug": "dates-actors-anchors-01M5A01Z",
+      "opened_by": "cli",
+      "options": [
+        "Close as done, drop",
+        "Keep, verify-only",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "#229 is already done on main (#182 added generated_by; 0.4.0/#183 removed generated_from). Keep it in the mission?",
+      "rationale": null,
+      "resolved_at": "2026-10-19T11:52:20.724290Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.issue-229",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M5A01Z4EHFS2YV9KD7QX7RN6",
+  "version": 1
+}

@@ -1,0 +1,113 @@
+{
+  "rows": {
+    "#181": {
+      "evidence_ref": "Context citation: parent work this mission follows up; owes no work here.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#182": {
+      "evidence_ref": "Context citation: delivered generated_by on main (8cbba05); cited as why #229 is closed.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#183": {
+      "evidence_ref": "Context citation: 0.4.0 removal of generated_from (91e62f1); cited as why #229 is closed.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#190": {
+      "evidence_ref": "Context citation: origin of the RSS updated->generated.at rule, unchanged by this mission.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#218": {
+      "evidence_ref": "Context citation: parent work this mission follows up; owes no work here.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#226": {
+      "evidence_ref": "3a09914 + src/tests/okf-export.test.ts 'last-changed precedence (#226)' (B and D red on pre-fix code, green after)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP02"
+    },
+    "#227": {
+      "evidence_ref": "0eb7a4f; schema-validator-parity.test.ts OKF ROWS #227 (11 reject + 4 keep), normaliseInstant null loop + nonIso keep loop, updated:'1' message assertion; red reproduced 12 failing on merge-base 285fe72, green 2522/2522",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP01"
+    },
+    "#228": {
+      "evidence_ref": "src/tests/single-h1.test.ts@b2e1533; mutations killed",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "fixed",
+      "wp": "WP03"
+    },
+    "#229": {
+      "evidence_ref": "Delivered by #182 (8cbba05, 68bf61b) and #183 (91e62f1); closed as completed 2026-10-19; operator decision DM-01M5A02PY8EG1MMHHFWXV7NV8R.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "verified-already-fixed",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}

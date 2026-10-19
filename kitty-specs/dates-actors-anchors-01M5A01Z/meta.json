@@ -1,0 +1,37 @@
+{
+  "accept_commit": "96951478b0b4e18b09dcec3e9e567c4f1eb8f65c",
+  "acceptance_history": [
+    {
+      "accept_commit": "96951478b0b4e18b09dcec3e9e567c4f1eb8f65c",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-19T12:52:27.516291+00:00",
+      "accepted_by": "system",
+      "accepted_from_commit": "8e70a9fa21557ef8b87481eb43665c46003e84ae"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-19T12:52:27.516291+00:00",
+  "accepted_by": "system",
+  "accepted_from_commit": "8e70a9fa21557ef8b87481eb43665c46003e84ae",
+  "baseline_merge_commit": "69763658847f122254a96023a38c4eba6338a700",
+  "contracts": "none",
+  "contracts_rationale": "No new interface: the mission tightens existing frontmatter validation, corrects the OKF export generated block and adds a test; no API, schema or route changes.",
+  "created_at": "2026-10-19T11:51:54.094609+00:00",
+  "flattened": true,
+  "friendly_name": "Dates, actors and anchors: follow-ups from #181 and #218",
+  "merged_at": "2026-10-19T12:53:17.510157+00:00",
+  "merged_commit": "e90444d6d8e25028417787d20b5993e804a118eb",
+  "mid8": "01M5A01Z",
+  "mission_id": "01M5A01Z4EHFS2YV9KD7QX7RN6",
+  "mission_number": 13,
+  "mission_slug": "dates-actors-anchors-01M5A01Z",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Follow-ups from the content-graph and single-h1 work (#181, #218). Three outputs pick a page's last-changed date by their own rules and the OKF export can report a stale scaffold time; the date parser accepts values like \"1\" as real dates; and one single-h1 anchor branch has no test. This mission records and enforces a documented per-output date precedence, rejects non-date-shaped values while keeping every realistic form that built before, and pins the anchor-collision case with a test.",
+  "purpose_tldr": "Make page dates trustworthy across RSS, the OKF export and the agent API, reject non-date values, and pin the heading-anchor edge case.",
+  "slug": "dates-actors-anchors-01M5A01Z",
+  "status_phase": "1",
+  "target_branch": "feat/dates-actors-anchors",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-19T12:13:13.338860+00:00"
+}

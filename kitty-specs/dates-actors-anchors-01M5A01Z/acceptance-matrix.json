@@ -1,0 +1,109 @@
+{
+  "mission_slug": "dates-actors-anchors-01M5A01Z",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 3a09914: feedInstant + okfGenerated side by side in src/lib/generator-stamp.mjs; feedDateMillis/generatedFor delegate; reviewer rg found no other last-changed logic (WP02 approved)",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:51:25.639133+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 3a09914: okf-export.test.ts last-changed precedence test cases B (scaffold) and D (foreign stamp) red on old code, green after; coherent by/at (WP02 approved)",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:51:31.294235+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 3a09914: one it() in okf-export.test.ts pins RSS (feedDateMillis) and OKF (generatedFor) on inputs A-D, 12 assertions",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:51:36.516403+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02: old vs new feedDateMillis agree on 392 combinations; case C positive control; metadata.test.ts + collect-doc-entries-order pass; rss.ts/rankForFeed untouched; okf/ and rss.xml byte-identical vs pre-fix build",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:51:42.138883+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "WP04 7edcb96: ADR-0059 implementation note + gherkin-pages, generators, metadata-model, export-okf-bundle corrected; claims probed against the gate over 3 review cycles (WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:51:47.264991+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 0eb7a4f: schema-validator-parity ROWS reject 1, 20241001, '1', '2024', '1/2', 'abc 2024', '2024.5' in updated/stale_after/generated.at/verified.at; gate message names field + YYYY-MM-DDTHH:MM:SSZ",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:51:52.408334+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01: keep rows 1/2/24, 2024-10, May 2024, rollover pass; old-forms tree exits 0 with byte-identical output vs base; validate:docs and validate:example exit 0",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:51:57.673258+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01: parity rows assert both twins reach the same verdict for every FR-006/FR-007 case (101/101)",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:52:03.359738+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01: isDateShaped private inside normaliseInstant; both twins use normaliseInstant for instantDate and stampAt; 8 callers handle null; normaliseInstant null-loop rows",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:52:09.433541+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP03 b2e1533: single-h1 test keeps # Second demotion + alias span, adds ## Title collision via rehypeHeadingIds; both mutations fail the test (WP03 approved cycle 2)",
+      "pass_fail": "pass",
+      "verified_by": "orchestrator",
+      "verified_at": "2026-10-19T12:52:15.429010+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
