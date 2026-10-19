@@ -139,3 +139,6 @@ example/.beoe-cache/
 .cursor/rules/spec-kitty.mdc
 .cursor/commands/
 .cursor/skills/
+
+# spec-kitty decision-index lock files (transient)
+kitty-specs/**/decisions/index.json.lock
