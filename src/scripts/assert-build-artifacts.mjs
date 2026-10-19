@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url';
 // own WP05-owned module to keep lane ownership clean; the main gate awaits them so
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
+import { assertSpecificationArtifacts } from './assert-specification-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import { compareCodeUnit, parseActor } from '../lib/vocabulary-core.mjs';
@@ -2879,6 +2880,9 @@ async function main() {
   // 8) Chrome + pagefind assertions (WP05-owned module + WP04 deck additions).
   // Fails non-zero on the first stubbed/missing chrome element, same contract.
   await assertChromeArtifacts(distDir);
+
+  // 9) Specification layout (gherkin-authoring-aids WP06): the feature page's card.
+  await assertSpecificationArtifacts(distDir);
 
   process.stdout.write(`assert:artifacts: PASS — all build artifacts present and valid in ${distDir}\n`);
 }

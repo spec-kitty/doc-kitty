@@ -101,6 +101,12 @@ export const ROUTES = {
   // auto-linked glossary terms, a nested DocString, a step DataTable, a tagged
   // Examples table, plus the audience + related blocks from its `@dk:` tags.
   behaviourFeature: `${BASE}/behaviour/shipping/book-consignment/`,
+  // Behaviour spec, DRAFT (gherkin-authoring-aids WP06, FR-018): the generated
+  // page for the `@wip` feature example/features/shipping/track-consignment.feature
+  // (`doc_status: draft`). It carries both WP05's draft notice and the
+  // Specification layout's header card, so the axe and geometry lanes cover the
+  // draft shape too. Present only in a drafts-on build (`pnpm build:a11y`).
+  behaviourDraftFeature: `${BASE}/behaviour/shipping/track-consignment/`,
   // In-page Gherkin demonstrator (gherkin-in-any-page, ADR-0051) — an ordinary
   // guide whose ```gherkin fences render as `.dk-gherkin` blocks: a whole
   // feature, a steps-only fragment, a Rule/Background/Outline/Examples feature
@@ -269,11 +275,25 @@ const DECK_MARKUA_GUARD_ROOTS = [
 export const BEHAVIOUR_STEP_GLOSSARY_ROOT = 'main li a[data-glossary-term="cargo"]';
 export const BEHAVIOUR_TABLE_ROOT = 'main table';
 export const BEHAVIOUR_DOCSTRING_ROOT = 'main pre';
+// The Specification layout's header card (gherkin-authoring-aids WP06, FR-014):
+// only `kind: Specification` pages render it, so a page that fell back to
+// Default (or lost the layout registration) fails the gate.
+export const SPEC_CARD_ROOT = 'main section.dk-spec-card';
+// WP05's draft notice (FR-016): only a draft page renders it.
+export const DRAFT_NOTICE_ROOT = 'main p.dk-draft-notice';
 const STARLIGHT_BEHAVIOUR_GUARD_ROOTS = [
   ...STARLIGHT_GUARD_ROOTS,
   BEHAVIOUR_STEP_GLOSSARY_ROOT,
   BEHAVIOUR_TABLE_ROOT,
   BEHAVIOUR_DOCSTRING_ROOT,
+  SPEC_CARD_ROOT,
+] as const;
+// The draft feature page: the notice and the card, so the scan cannot pass on a
+// page without the draft notice (or on the active feature page by mistake).
+const STARLIGHT_BEHAVIOUR_DRAFT_GUARD_ROOTS = [
+  ...STARLIGHT_GUARD_ROOTS,
+  DRAFT_NOTICE_ROOT,
+  SPEC_CARD_ROOT,
 ] as const;
 
 // In-page Gherkin non-vacuity (gherkin-in-any-page, ADR-0051): a rendered step
@@ -412,6 +432,15 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.behaviourFeature,
     shell: 'starlight',
     guardRoots: STARLIGHT_BEHAVIOUR_GUARD_ROOTS,
+  },
+  // gherkin-authoring-aids WP06 (FR-018) — the DRAFT generated feature page,
+  // scanned in BOTH colour modes: the draft notice (warning-tinted surface) and
+  // the spec card sit above the scenarios. No `renderWait` (build-time SSR).
+  {
+    name: 'Behaviour spec, draft (/behaviour/shipping/track-consignment/)',
+    path: ROUTES.behaviourDraftFeature,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_BEHAVIOUR_DRAFT_GUARD_ROOTS,
   },
   // gherkin-in-any-page (ADR-0051) — the in-page Gherkin demonstrator, scanned in
   // BOTH colour modes (keyword contrast, tables, the aside's role=heading

@@ -842,3 +842,25 @@
      exposes no variable for it). */
   margin-bottom: 1.25rem;
 }
+
+/* ==========================================================================
+ * Draft notice (`.dk-draft-notice`, gherkin-authoring-aids WP05, FR-016)
+ *
+ * The line `DraftNotice.astro` renders below the title area of every draft
+ * page (PageTitle carrier). A warning-tinted surface with an inline-start bar,
+ * body-colour text: `--dk-color-text` on `--dk-color-warning-bg` is an AA pair
+ * in both modes of the Default and the brand catalog, and every token here
+ * flips by `[data-theme]` at its declaration site, so there is no dark block.
+ * Tokens only, no literals: pinned by `tests/draft-notice.test.ts` (NFR-005).
+ * The bar width borrows the smallest spacing step; the catalog has no border
+ * width token.
+ * ========================================================================== */
+.dk-draft-notice {
+  margin-block: var(--dk-space-xs) var(--dk-space-lg);
+  padding: var(--dk-space-xs) var(--dk-space-sm);
+  border-inline-start: var(--dk-space-2xs) solid var(--dk-color-warning);
+  border-radius: var(--dk-radius-md);
+  background: var(--dk-color-warning-bg);
+  color: var(--dk-color-text);
+  font-size: var(--dk-text-sm);
+}

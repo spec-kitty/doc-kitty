@@ -33,6 +33,17 @@
  * three sections separate holds that whitespace as close to unchanged as
  * possible without overclaiming a byte-for-byte guarantee (mirrors the
  * dormancy discipline in MarkdownContent.astro).
+ *
+ * gherkin-authoring-aids WP05 (FR-016, research R-07): a `doc_status: draft`
+ * page renders `<DraftNotice />` once, after the band position. It sits OUTSIDE
+ * the `dk:metadata-band` slot host, so a theme that overrides the band cannot
+ * drop it, and OUTSIDE the Persona gates, so a Persona draft shows it too (the
+ * passport card follows it). The test is an explicit `draft`, as the contract
+ * says — not `isDraftEntry`, which also counts a missing status and would put
+ * the notice on Starlight's 404 page. The expression abuts the band section's
+ * closing brace with no blank line between them: a separating line would be a
+ * literal whitespace node that renders on EVERY page, so a non-draft page would
+ * change by one space. Abutted, a non-draft page is byte-identical to before.
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
@@ -40,6 +51,7 @@ import { slotComponents } from 'virtual:doc-kitty/manifest';
 import { isPublished } from '../lib/metadata.js';
 import PageHero from './slots/PageHero.astro';
 import MetadataBand from './slots/MetadataBand.astro';
+import DraftNotice from './slots/DraftNotice.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -66,6 +78,7 @@ const data = entry.data as unknown as {
 const filePath = (entry as unknown as { filePath?: string }).filePath;
 const showBand = isPublished(data as Parameters<typeof isPublished>[0]);
 const isPersona = data.kind === 'Persona';
+const isDraft = data.doc_status === 'draft';
 ---
 
 {
@@ -112,4 +125,4 @@ const isPersona = data.kind === 'Persona';
       </div>
     </>
   )
-}
+}{isDraft && <DraftNotice />}

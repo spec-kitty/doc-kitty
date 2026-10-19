@@ -1,0 +1,66 @@
+/*
+ * DocKitty — Specification layout styles (gherkin-authoring-aids WP06, FR-014).
+ * Loaded by layouts/Specification.astro.
+ *
+ * The header card above a feature's content: a quiet inset surface holding the
+ * tag chips and the source path. Tokens only, no literals (NFR-005), pinned by
+ * src/tests/specification-css.test.ts. Every token flips by `[data-theme]` at
+ * its declaration site, so there is no dark block. Text pairs are the AA pairs
+ * of theme.css: `--dk-color-text` / `--dk-color-text-muted` on surface-1.
+ *
+ * The card sits inside Starlight's `.sl-markdown-content`, whose list rules add
+ * markers, indent and `li + li` margins; the tag list resets them with a
+ * two-class selector so the chips lay out inline. Chips are text, not targets,
+ * so no 24px minimum applies. Long source paths wrap anywhere so the card never
+ * scrolls the page sideways at 390px (NFR-003). The border uses the `thin`
+ * keyword: the catalog has no border-width token.
+ */
+.dk-spec-card {
+  margin-block: var(--dk-space-xs) var(--dk-space-lg);
+  padding: var(--dk-space-sm) var(--dk-space-md);
+  display: grid;
+  gap: var(--dk-space-xs);
+  border: thin solid var(--dk-color-border);
+  border-radius: var(--dk-radius-md);
+  background: var(--dk-color-surface-1);
+  color: var(--dk-color-text);
+  font-size: var(--dk-text-sm);
+  line-height: var(--dk-leading-normal);
+}
+
+.dk-spec-card .dk-spec-card__tags {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dk-space-2xs);
+}
+
+.dk-spec-card .dk-spec-card__tags > li {
+  margin: 0;
+  padding: var(--dk-space-3xs) var(--dk-space-xs);
+  border: thin solid var(--dk-color-border);
+  border-radius: var(--dk-radius-pill);
+  background: var(--dk-color-surface-inset);
+  color: var(--dk-color-text-muted);
+  font-size: var(--dk-text-xs);
+  overflow-wrap: anywhere;
+}
+
+.dk-spec-card .dk-spec-card__source {
+  margin: 0;
+  color: var(--dk-color-text-muted);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dk-spec-card .dk-spec-card__source code,
+.dk-spec-card .dk-spec-card__source a {
+  font-family: var(--dk-font-mono);
+  overflow-wrap: anywhere;
+}
+
+.dk-spec-card .dk-spec-card__source code {
+  color: var(--dk-color-text);
+}

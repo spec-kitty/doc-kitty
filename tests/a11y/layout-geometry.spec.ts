@@ -436,6 +436,10 @@ test.describe('layout geometry — no horizontal page scroll', () => {
     ['long page', ROUTES.rhetoricChapter],
     ['glossary demonstrator', ROUTES.glossaryDemo],
     ['persona', ROUTES.persona],
+    // gherkin-authoring-aids WP06 (FR-018): generated feature pages, active and
+    // draft — the spec card's long source path must wrap at 390px.
+    ['feature page', ROUTES.behaviourFeature],
+    ['draft feature page', ROUTES.behaviourDraftFeature],
   ] as const;
 
   for (const width of SCROLL_WIDTHS) {

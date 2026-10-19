@@ -1,0 +1,16 @@
+---
+/*
+ * Draft notice (gherkin-authoring-aids WP05 / FR-016, research R-07).
+ *
+ * A static line that tells the reader the page is a draft. The PageTitle carrier
+ * decides whether to render it (`doc_status: draft`, every kind, Persona
+ * included); this component takes no props and owns the copy, so the text has one
+ * source. The markup is fixed by contracts/specification-layout.md ("Draft notice
+ * markup"): no landmark role and no live region, because it is page metadata, not
+ * an alert. `sr-only` is Starlight's global visually-hidden utility; the lead
+ * keeps the meaning explicit for screen readers, as the band's status pill does.
+ * Styled by `.dk-draft-notice` in dk-components.css (`--dk-*` tokens only).
+ */
+---
+
+<p class="dk-draft-notice"><span class="sr-only">Document status: </span>Draft. This page is work in progress and may change.</p>

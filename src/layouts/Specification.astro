@@ -1,0 +1,62 @@
+---
+/*
+ * DocKitty layout: Specification (gherkin-authoring-aids WP06; FR-014, FR-015,
+ * FR-017; research R-08; contracts/specification-layout.md).
+ *
+ * The base-kind layout for `kind: Specification` — the generated Gherkin feature
+ * pages and any authored specification. Registered beside `Hub` in
+ * `BASE_KIND_LAYOUTS` (src/lib/manifest.ts), so it is on by default; a theme
+ * opts out by mapping `layouts.Specification` to `Default.astro`.
+ *
+ * Same in-frame contract as Default.astro / Hub.astro: the `MarkdownContent`
+ * carrier forwards the Starlight route data as props, the body flows through
+ * `<slot />` (inside Starlight's searchable flow, NFR-004), and the styles come
+ * from an imported sheet.
+ *
+ * Before the slot it renders a labelled header card with the feature's tags and
+ * its source (`specCard`, src/lib/spec-card.ts, decides both; only an http(s)
+ * resource becomes a link). The card is a `<section aria-labelledby>` region —
+ * not a nav, no `aria-current`: Starlight's "On this page" TOC stays the only
+ * scenario navigation. Its heading is visually hidden (Starlight's global
+ * `sr-only`) and is not a Markdown heading, so the TOC does not list it. The
+ * ADR-0055 results summary stays in the body, unrepeated (operator decision
+ * 01M59CQM76Q0NJ3F3GM1S8BYAN), and the draft notice belongs to the PageTitle
+ * carrier (WP05), never to the card.
+ *
+ * With nothing to show (`specCard` → null) only the slot renders, exactly like
+ * Default.
+ */
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { specCard, type SpecCardInput } from '../lib/spec-card.js';
+import '../styles/specification.css';
+
+const route = Astro.props as StarlightRoute;
+// `tags`/`sources` reach entry.data only via docsSchema({ extend }); read the
+// slice through a narrow cast, as Persona.astro does.
+const card = specCard(route.entry.data as unknown as SpecCardInput);
+---
+
+{
+  card && (
+    <section class="dk-spec-card" aria-labelledby="dk-spec-card-h">
+      <h2 id="dk-spec-card-h" class="sr-only" data-pagefind-ignore>Specification details</h2>
+      {card.tags.length > 0 && (
+        <ul class="dk-spec-card__tags" aria-label="Tags">
+          {card.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+      {card.source && (
+        <p class="dk-spec-card__source">
+          Source:{' '}
+          {'href' in card.source ? (
+            <a href={card.source.href}>{card.source.text}</a>
+          ) : (
+            <code>{card.source.text}</code>
+          )}
+        </p>
+      )}
+    </section>
+  )
+}
+
+<slot />

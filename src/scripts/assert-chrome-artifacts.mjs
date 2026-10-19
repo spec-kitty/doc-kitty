@@ -23,6 +23,11 @@ import { readFile, readdir } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
 import path from 'node:path';
 import process from 'node:process';
+// Draft routes are read from `doc_status` in the example's docs tree, the same
+// derivation assert-build-artifacts.mjs uses for its draft-publication check, so
+// the two gates cannot disagree about which pages are drafts.
+import { draftRoutesOf } from '../lib/draft-publication.mjs';
+import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 // The canonical doc_status enum, imported (not hand-mirrored) from the standalone
 // validator so this gate cannot drift from the contract (DIRECTIVE_043).
 import { STATUSES } from './validate-frontmatter.mjs';
@@ -174,6 +179,22 @@ const REQUIRED_BRIDGE = [
 // (draft/active/deprecated/superseded). The metadata band must render one of
 // these as a TEXT label (not colour-only) on a published page.
 const DOC_STATUS_LABELS = STATUSES;
+
+// Draft notice (gherkin-authoring-aids WP05, FR-016): every built draft page in the
+// Starlight frame carries exactly one `.dk-draft-notice`, and no other page does.
+// The example docs tree is the source of the draft set; the active page is a
+// fixed spot check with a precise message. The notice markup is fixed by
+// contracts/specification-layout.md ("Draft notice markup").
+const EXAMPLE_DOCS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'example', 'docs');
+const DRAFT_NOTICE_RE = /class="dk-draft-notice"/g;
+const DRAFT_NOTICE_ACTIVE_PAGE = path.join('behaviour', 'shipping', 'book-consignment', 'index.html');
+// Drafts the check must see when drafts are built: the @wip feature page and the
+// draft Persona (PageTitle skips its title and band, but not the notice).
+const DRAFT_NOTICE_REQUIRED = ['behaviour/shipping/track-consignment', 'context/audience/draft-persona'];
+// The Head carrier's marker: present on every page in the Starlight frame, absent
+// on an out-of-frame deck (DeckLayout has no PageTitle, so no notice) and on a
+// redirect stub.
+const FRAMED_PAGE_MARKER = '<meta name="dk-chrome"';
 
 // Known demonstrator pages (relative to distDir). WP03 re-tagged these existing
 // example pages so each exercises one share-image fallback branch.
@@ -439,6 +460,15 @@ async function readHtml(distDir, relPath) {
   }
 }
 
+/** Every `.html` file under `dir`, as absolute paths. */
+async function htmlFilesIn(dir) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true, recursive: true })) {
+    if (entry.isFile() && entry.name.endsWith('.html')) out.push(path.join(entry.parentPath, entry.name));
+  }
+  return out;
+}
+
 /** Concatenate every emitted stylesheet under dist/_astro so hashed filenames
  * do not matter and a token present in ANY sheet counts. */
 async function readAllCss(distDir) {
@@ -620,6 +650,64 @@ export async function assertChromeArtifacts(distDir) {
     );
   }
   ok(`metadata band: rendered with text-labelled status "${labelHit}" on ${HERO_PAGE}`);
+
+  // === 1b) Draft notice on every built draft page, and nowhere else (FR-016) ===
+  // A draft page used to render no band at all, so it looked exactly like an
+  // active page. Holds on the drafts-off dist too: no draft page is built there,
+  // so the check reduces to "no page carries a notice".
+  const draftSlugs = [...draftRoutesOf(EXAMPLE_DOCS_DIR, resolveSiteIndexBasenames(EXAMPLE_DOCS_DIR, { tool: 'assert-chrome-artifacts' }).names)]
+    .map((route) => route.slice(1, -1))
+    .sort();
+  const missingRequired = DRAFT_NOTICE_REQUIRED.filter((slug) => !draftSlugs.includes(slug));
+  if (missingRequired.length > 0) {
+    fail(
+      `draft notice: ${missingRequired.join(', ')} not among the draft routes read from ${EXAMPLE_DOCS_DIR} ` +
+        `(${draftSlugs.length} found) — the draft-route derivation is broken`,
+    );
+  }
+  const noticeCount = (html) => (html.match(DRAFT_NOTICE_RE) ?? []).length;
+  const builtFramedDrafts = new Set();
+  for (const slug of draftSlugs) {
+    let html;
+    try {
+      html = await readFile(path.join(dir, slug, 'index.html'), 'utf8');
+    } catch {
+      continue; // not built (drafts off)
+    }
+    if (!html.includes(FRAMED_PAGE_MARKER)) continue; // out-of-frame deck
+    builtFramedDrafts.add(slug);
+    const n = noticeCount(html);
+    if (n !== 1) {
+      fail(
+        `draft notice: the draft page /${slug}/ carries ${n} class="dk-draft-notice" element(s), expected exactly 1 ` +
+          `(PageTitle must render <DraftNotice /> once for doc_status: draft, Persona included)`,
+      );
+    }
+  }
+  if (builtFramedDrafts.size > 0) {
+    const unchecked = DRAFT_NOTICE_REQUIRED.filter((slug) => !builtFramedDrafts.has(slug));
+    if (unchecked.length > 0) {
+      fail(`draft notice: drafts are built, but ${unchecked.join(', ')} was not built in the frame — nothing proves the notice there`);
+    }
+  }
+  const activeHtml = await readHtml(dir, DRAFT_NOTICE_ACTIVE_PAGE);
+  if (noticeCount(activeHtml) !== 0) {
+    fail(`draft notice: the active page ${DRAFT_NOTICE_ACTIVE_PAGE} carries a dk-draft-notice — only draft pages may`);
+  }
+  const strays = [];
+  for (const file of await htmlFilesIn(dir)) {
+    const rel = path.relative(dir, file).split(path.sep).join('/');
+    if (builtFramedDrafts.has(rel.replace(/\/index\.html$/, ''))) continue;
+    if (noticeCount(await readFile(file, 'utf8')) > 0) strays.push(rel);
+  }
+  if (strays.length > 0) {
+    fail(`draft notice: ${strays.length} non-draft page(s) carry a dk-draft-notice: ${strays.join(', ')}`);
+  }
+  ok(
+    builtFramedDrafts.size > 0
+      ? `draft notice: exactly one on each of the ${builtFramedDrafts.size} built draft pages, none elsewhere`
+      : `draft notice: no draft page built (drafts off), and no page carries a notice`,
+  );
 
   // === 2) Optimized hero <img> (hashed /_astro/) with non-empty alt ==========
   // Bind to the HERO image SPECIFICALLY via its own `dk-hero__img` class (the base
