@@ -46,6 +46,16 @@ beforeAll(() => {
     generated: { by: 'doc-kitty-gherkin/0.4.0', at: '2026-05-01T10:00:00Z' },
   });
   addEntry('guides/undated', { title: 'Undated', doc_status: 'active' });
+  // `@dk:updated` on a feature: `updated` wins over the generator stamp.
+  addEntry('behaviour/tagged', {
+    title: 'Tagged feature',
+    doc_status: 'active',
+    kind: 'Specification',
+    updated: '2026-02-01',
+    generated: { by: 'doc-kitty-gherkin/0.4.0', at: '2026-06-01T10:00:00Z' },
+  });
+  // Same date as `guides/authored`: ties sort by slug.
+  addEntry('guides/also-authored', { title: 'Also authored', doc_status: 'active', updated: '2026-03-01' });
 });
 
 afterAll(() => {
@@ -72,7 +82,14 @@ describe('rssRoute — every item has a <pubDate> (#190)', () => {
   it('orders items newest first by the date they carry', async () => {
     expect(itemsOf(await feed()).map(linkOf)).toEqual([
       'https://docs.example/behaviour/feature/',
+      'https://docs.example/guides/also-authored/',
       'https://docs.example/guides/authored/',
+      'https://docs.example/behaviour/tagged/',
     ]);
+  });
+
+  it('prefers updated over generated.at', async () => {
+    const item = itemsOf(await feed()).find((i) => linkOf(i) === 'https://docs.example/behaviour/tagged/');
+    expect(item).toContain(`<pubDate>${new Date('2026-02-01').toUTCString()}</pubDate>`);
   });
 });
