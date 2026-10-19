@@ -2,7 +2,7 @@
 title: Theming and chrome
 description: "How a consumer changes the docsite's look and chrome without forking: slots, tokens, and per-kind layouts."
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-10-19T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -236,6 +236,16 @@ Starlight-native `logo`/`title` config and brand CSS (see §"Wiring").
 | `dk:related` | related-pages block | `entry.data.related[]` + resolved targets | `MarkdownContent`, after `<slot/>` |
 | `dk:external-references` | external/citation block | `entry.data.external_references[]` + catalog | `MarkdownContent`, after `dk:related` |
 
+The `PageTitle` carrier also renders a **draft notice**, which is not a slot. On
+every page whose `doc_status` is exactly `draft`, of any kind, it adds a static
+`p.dk-draft-notice` after the metadata band position: a visually hidden
+"Document status:" lead, then "Draft. This page is work in progress and may
+change." It has no landmark role and no live region. It sits outside the
+`dk:metadata-band` slot host, so a theme that replaces the band keeps it, and it
+is styled with `--dk-*` tokens only. Out-of-frame slide decks render without
+`PageTitle`, so a draft deck shows no notice
+([ADR-0062](../adr/0062-specification-layout-and-draft-notice.md)).
+
 The carriers read page state from `Astro.locals.starlightRoute` (the Starlight
 route-data API, available from Starlight 0.32 — see
 [ADR-0014](../adr/0014-upgrade-starlight-for-route-data-api.md)); custom frontmatter
@@ -249,8 +259,9 @@ A page's `kind` selects the layout that wraps its content.
 - **In-frame layouts via a registry (primary).** The `MarkdownContent` carrier reads
   `entry.data.kind` and looks it up in a merged `kind → layout` map, rendering that
   layout around the content slot. These layouts render **in the normal Starlight
-  frame**, keeping the sidebar, table of contents, search, and pagination. `Persona`
-  and `Hub` are in-frame and keep the sidebar.
+  frame**, keeping the sidebar, table of contents, search, and pagination. `Persona`,
+  `Hub` and `Specification` are in-frame and keep the sidebar. `Hub` and
+  `Specification` are doc-kitty's base kinds, registered before any theme.
 - **Presentation is the exception.** A `Presentation` renders through a dedicated
   reveal.js route, a full-page deck engine outside the docs frame.
 - **Fallback.** An unknown or absent `kind` falls back to the `Default` prose
@@ -280,6 +291,14 @@ Component-level structure and token usage, all specified to WCAG 2.2 AA.
   an accessible name wrapping a list of described items (each the related-card
   pattern: title in `--dk-color-text-accent`, the target's own description in
   `--dk-color-text-muted`, optional kind tag). Card-wide links, ≥24px targets.
+- **`Specification` — header card** (in-frame, base kind,
+  [ADR-0062](../adr/0062-specification-layout-and-draft-notice.md)). Before the
+  content slot, a labelled `<section>` (a region, not a nav) with a visually
+  hidden heading shows the page's `tags` as text chips and its source file, a
+  link only for an `http(s)` URL. The "On this page" list stays the scenario
+  list, and the results summary stays in the body. Tokens only, in
+  `specification.css`. A theme opts out by mapping `layouts.Specification` to
+  `Default.astro`. Generated Gherkin feature pages are the main case.
 - **`Presentation` — deck shell** (reveal.js route). A staged deck with slide
   navigation, and a mandatory no-JS / reduced-motion linear fallback that renders all
   slides stacked and scrollable, so content is never gated behind the deck
