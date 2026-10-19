@@ -12,11 +12,17 @@ import { type Page, expect } from '@playwright/test';
 
 export type Mode = 'light' | 'dark';
 
+// The published projects (`published-light`, `published-dark`; see
+// playwright.config.ts) serve the drafts-off dist in the same two colour modes, so
+// the `published-` prefix names the dist, not the mode.
 export function modeOf(projectName: string): Mode {
-  if (projectName !== 'light' && projectName !== 'dark') {
-    throw new Error(`Unexpected project name '${projectName}'; expected 'light' or 'dark'.`);
+  const name = projectName.replace(/^published-/, '');
+  if (name !== 'light' && name !== 'dark') {
+    throw new Error(
+      `Unexpected project name '${projectName}'; expected 'light', 'dark', 'published-light' or 'published-dark'.`,
+    );
   }
-  return projectName;
+  return name;
 }
 
 // ---------------------------------------------------------------------------

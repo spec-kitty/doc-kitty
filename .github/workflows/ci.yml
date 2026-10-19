@@ -278,8 +278,20 @@ jobs:
         env:
           DK_PUBLISH_DRAFTS: 'off'
         run: node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist-nodrafts --docs example/docs --declared-redirects example/redirects.json
+      # Publish the drafts-off dist too (layout-guards-decisions WP08, FR-012): the
+      # a11y lane's `published-*` projects measure the sidebar readers see on it.
+      # Additive, like the upload above: no assertion, no change to this lane.
+      - name: Upload drafts-off dist for the a11y lane
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: example-dist-nodrafts
+          path: example/dist-nodrafts
+          retention-days: 1
+          include-hidden-files: true
 
-  # --- Lane: a11y (WP09) — axe-core + visual, both modes, on the built dist. ----
+  # --- Lane: a11y (WP09) — axe-core + visual, both modes, on the built dists. ---
+  # Four projects (WP08): `light`/`dark` on the drafts-on dist, and
+  # `published-light`/`published-dark` on the drafts-off dist (sidebar specs only).
   # Runs whenever build-example runs (same change surface: it consumes that lane's
   # dist artifact instead of rebuilding). Executes inside the PINNED Playwright
   # container so the visual baselines are reproducible bit-for-bit (T041). The only
@@ -307,6 +319,14 @@ jobs:
         with:
           name: example-dist
           path: example/dist
+      # The drafts-off dist for the `published-light`/`published-dark` projects
+      # (WP08). playwright.config.ts serves it on a second port; serve-dist.mjs
+      # refuses to start if it was built with drafts on.
+      - name: Download drafts-off dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: example-dist-nodrafts
+          path: example/dist-nodrafts
       # The ONE allowlisted browser download — Chromium only, explicit (never a
       # silent postinstall). A no-op verify in the pinned image, kept for discipline.
       - name: Install Chromium (explicit, allowlisted)
