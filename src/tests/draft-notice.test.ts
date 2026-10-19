@@ -22,7 +22,7 @@ const stripAstroComments = (src: string): string =>
   src.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
 
 const COMPONENTS = stripCssComments(read('../styles/dk-components.css'));
-const NOTICE = read('../components/slots/DraftNotice.astro');
+const NOTICE = read('../components/DraftNotice.astro');
 const PAGE_TITLE = read('../components/PageTitle.astro');
 
 const CONTRACT_MARKUP =

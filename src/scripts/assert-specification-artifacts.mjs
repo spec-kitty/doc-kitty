@@ -9,11 +9,11 @@
  *   (also invoked from assert-build-artifacts.mjs, so `pnpm assert:artifacts` runs it)
  *
  * Positive: the generated feature page `behaviour/shipping/book-consignment/`
- * (`kind: Specification`) renders exactly one header card, labelled by its
- * visually hidden heading, holding the `FR-003` tag and the feature's source
+ * (`kind: Specification`) renders exactly one header card, named by its
+ * `aria-label` (no heading), holding the `FR-003` tag and the feature's source
  * path; the card is not a nav, carries no `aria-current`, never repeats the
- * ADR-0055 results summary or the draft notice, and its hidden heading is not
- * listed by the one Starlight TOC (the only scenario navigation, D9).
+ * ADR-0055 results summary or the draft notice, and the one Starlight TOC lists
+ * only the feature's own headings (the only scenario navigation, D9).
  * Negative: non-Specification pages (a Hub, a guide, the in-page Gherkin guide)
  * render no card.
  *
