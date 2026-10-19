@@ -47,6 +47,7 @@
  */
 import { afterAll, describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -146,7 +147,7 @@ function astro(command: 'build' | 'sync') {
   const env = { ...process.env };
   delete env.BASE_URL;
   const r = spawnSync(process.execPath, [ASTRO_BIN, command], { cwd: SITE, encoding: 'utf8', env });
-  return { status: r.status, output: `${r.stdout}\n${r.stderr}` };
+  return { status: r.status, output: stripVTControlCharacters(`${r.stdout}\n${r.stderr}`) };
 }
 const build = () => astro('build');
 /** Astro 7's glob() loader rethrowing the guide page's render error (B12). */

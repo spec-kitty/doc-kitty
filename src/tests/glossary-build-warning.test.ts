@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 import { readFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
@@ -119,7 +120,7 @@ describe('example build surfaces the unresolved-collision warning (NFR-007 / R-2
 
       // One pinned line per offending page (the dedup is per distinct surface per
       // page), and no more: see the attribution argument in the header.
-      const occurrences = result.stderr.split(PINNED_WARNING).length - 1;
+      const occurrences = stripVTControlCharacters(result.stderr).split(PINNED_WARNING).length - 1;
       expect(
         occurrences,
         `expected exactly ${OFFENDING_PAGES.length} pinned collision warnings ` +

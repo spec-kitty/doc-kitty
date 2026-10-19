@@ -22,6 +22,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -103,7 +104,7 @@ function build(ci = '') {
   const env: NodeJS.ProcessEnv = { ...process.env, CI: ci };
   delete env.BASE_URL;
   const r = spawnSync(process.execPath, [ASTRO_BIN, 'build'], { cwd: SITE, encoding: 'utf8', env });
-  return { status: r.status, output: `${r.stdout}\n${r.stderr}` };
+  return { status: r.status, output: stripVTControlCharacters(`${r.stdout}\n${r.stderr}`) };
 }
 
 const page = (rel: string) => readFileSync(path.join(SITE, 'dist', rel, 'index.html'), 'utf8');
