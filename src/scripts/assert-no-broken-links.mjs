@@ -324,21 +324,47 @@ export function findBaselessFeedUrls(distDir, base, siteOrigin) {
 // Offline by design: hosts are compared, nothing is fetched. Opt-in, so the
 // published bin keeps its link-only behaviour for adopters.
 
-/** Every `src` and `srcset` URL of every `<img>` in the HTML, in order. */
+/** One attribute's value from a tag: double-quoted, single-quoted or unquoted. */
+function attrValue(tag, name) {
+  const m = new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\`]+))`, 'i').exec(tag);
+  return m ? (m[1] ?? m[2] ?? m[3]).trim() : null;
+}
+
+/**
+ * Every `src` and `srcset` URL of every `<img>`, and every `srcset` URL of
+ * every `<source>` (`<picture>`), in the HTML, in order.
+ *
+ * Known limitation: a `srcset` is split on commas, so a candidate URL that
+ * itself contains a comma (an unencoded `a,b.png`, or a `data:` URI) is cut in
+ * two. The pieces are then judged separately: a cut `data:` URI leaves a bare
+ * fragment that reads as local, which is harmless, and a comma inside a remote
+ * URL leaves its scheme-and-host part intact, so the host is still checked.
+ */
 export function extractImageSources(html) {
   const out = [];
-  for (const [tag] of html.matchAll(/<img\b[^>]*>/gi)) {
-    const src = /\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
-    if (src) out.push(src[1] ?? src[2]);
-    const srcset = /\ssrcset\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
+  for (const [tag] of html.matchAll(/<(?:img|source)\b[^>]*>/gi)) {
+    if (/^<img\b/i.test(tag)) {
+      const src = attrValue(tag, 'src');
+      if (src) out.push(src);
+    }
+    const srcset = attrValue(tag, 'srcset');
     if (srcset) {
-      for (const candidate of (srcset[1] ?? srcset[2]).split(',')) {
+      for (const candidate of srcset.split(',')) {
         const url = candidate.trim().split(/\s+/)[0];
         if (url) out.push(url);
       }
     }
   }
   return out;
+}
+
+/** A URL pathname with its percent-escapes decoded, to compare against file names on disk. */
+function decodePathname(pathname) {
+  try {
+    return decodeURIComponent(pathname);
+  } catch {
+    return pathname;
+  }
 }
 
 /** The host of an absolute or protocol-relative URL, else null (local). */
@@ -365,7 +391,7 @@ export function findExternalImages(distDir, site, allowHosts, base = '') {
     for (const src of extractImageSources(html)) {
       const host = externalHost(src)?.toLowerCase();
       if (host && host === siteHost) {
-        const route = stripBase(new URL(src, site).pathname, base);
+        const route = stripBase(decodePathname(new URL(src, site).pathname), base);
         if (route === null || !distFileExists(distDir, route)) {
           failures.push({ page: relPath, src, reason: 'same-site image is not in the build output (#194)' });
         }
@@ -413,13 +439,14 @@ function parseArgs(argv) {
   };
 }
 
+const USAGE =
+  'Usage: assert-no-broken-links.mjs <distDir> [--base <prefix>] [--site <origin>] ' +
+  '[--no-external-images [--allow-image-host <host>]...]';
+
 export function run(argv) {
   const { distDir, base, site, noExternalImages, allowImageHosts } = parseArgs(argv.slice(2));
   if (!distDir) {
-    console.error(
-      'Usage: assert-no-broken-links.mjs <distDir> [--base <prefix>] [--site <origin>] ' +
-        '[--no-external-images [--allow-image-host <host>]...]',
-    );
+    console.error(USAGE);
     process.exit(2);
     return;
   }
@@ -429,6 +456,18 @@ export function run(argv) {
     );
     process.exit(2);
     return;
+  }
+
+  if (allowImageHosts.length > 0 && !noExternalImages) {
+    console.error('assert-no-broken-links: --allow-image-host only applies together with --no-external-images.');
+    console.error(USAGE);
+    process.exit(2);
+    return;
+  }
+  if (noExternalImages && !site) {
+    console.warn(
+      'assert-no-broken-links: warning — --no-external-images without --site: absolute image URLs on the site\'s own host cannot be told from external ones and are not checked against the build output.',
+    );
   }
 
   const linkFailures = findBrokenLinks(distDir, base);
