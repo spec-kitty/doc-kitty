@@ -259,10 +259,13 @@ test.describe('Glossary popover placement + caret (#78)', () => {
     await waitForIslandMounted(page);
 
     // High in the viewport (first H2 section): ample space below at the default
-    // viewport size, so position() must NOT flip.
+    // viewport size, so position() must NOT flip. Centre it explicitly rather than
+    // relying on `scrollIntoViewIfNeeded`, which does not scroll a term that is
+    // already in view, however low (#191 lifted it into view by dropping the
+    // page's duplicate title H1).
     const link = page.locator(CARGO_LINK).first();
     const popover = page.locator(POPOVER);
-    await link.scrollIntoViewIfNeeded();
+    await link.evaluate((el) => el.scrollIntoView({ block: 'center' }));
 
     // HONEST precondition (symmetric with the flip test): the anchor really has
     // ample space below, so a green 'bottom' means position() chose the below
