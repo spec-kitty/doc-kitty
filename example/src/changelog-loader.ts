@@ -28,12 +28,42 @@ export interface RepoChangelogOptions {
   repoBlobBase: string;
 }
 
-/** CHANGELOG.md as the page body: no H1, repo-relative links made absolute. */
+// A code span (kept as is) or a repo-relative inline link (rewritten).
+const SPAN_OR_LINK_RE = /(`+)[^`][\s\S]*?\1|\]\((?!https?:|mailto:|#|\/)(?:\.\/)?([^)\s]+)\)/g;
+const FENCE_OPEN_RE = /^ {0,3}(`{3,}|~{3,})/;
+const FENCE_CLOSE_RE = /^ {0,3}(`{3,}|~{3,})\s*$/;
+
+/** Rewrites repo-relative links in one prose line, never inside a code span. */
+function rewriteProse(line: string, base: string): string {
+  return line.replace(SPAN_OR_LINK_RE, (match, ticks: string | undefined, target: string | undefined) =>
+    ticks ? match : `](${base}${target})`,
+  );
+}
+
+/**
+ * CHANGELOG.md as the page body: no H1, repo-relative links made absolute.
+ * Fenced code blocks and inline code spans are left exactly as written.
+ */
 export function changelogBody(raw: string, repoBlobBase: string): string {
   const base = repoBlobBase.endsWith('/') ? repoBlobBase : `${repoBlobBase}/`;
+  let fence: string | null = null;
   return raw
     .replace(/^# [^\n]*\n+/, '')
-    .replace(/\]\((?!https?:|mailto:|#|\/)(?:\.\/)?([^)\s]+)\)/g, (_m, target: string) => `](${base}${target})`);
+    .split('\n')
+    .map((line) => {
+      if (fence) {
+        const close = FENCE_CLOSE_RE.exec(line);
+        if (close && close[1][0] === fence[0] && close[1].length >= fence.length) fence = null;
+        return line;
+      }
+      const open = FENCE_OPEN_RE.exec(line);
+      if (open) {
+        fence = open[1];
+        return line;
+      }
+      return rewriteProse(line, base);
+    })
+    .join('\n');
 }
 
 export function withRepoChangelog(loader: Loader, options: RepoChangelogOptions): Loader {

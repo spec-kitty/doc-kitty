@@ -87,6 +87,29 @@ describe('changelogBody (#192)', async () => {
     expect(out).toContain('[s](https://github.com/o/r/blob/main/setup.md)');
   });
 
+  it('leaves link syntax inside fenced code blocks and inline code alone', () => {
+    const src = [
+      'See [a](docs/a.md) and `[b](docs/b.md)` and ``x [c](docs/c.md) y``.',
+      '',
+      '```md',
+      '[d](docs/d.md)',
+      '```',
+      '',
+      '~~~',
+      '[e](docs/e.md)',
+      '~~~',
+      '',
+      '[f](docs/f.md)',
+    ].join('\n');
+    const out = changelogBody(src, base);
+    expect(out).toContain('[a](https://github.com/o/r/blob/main/docs/a.md)');
+    expect(out).toContain('`[b](docs/b.md)`');
+    expect(out).toContain('``x [c](docs/c.md) y``');
+    expect(out).toContain('\n[d](docs/d.md)\n');
+    expect(out).toContain('\n[e](docs/e.md)\n');
+    expect(out).toContain('[f](https://github.com/o/r/blob/main/docs/f.md)');
+  });
+
   it('leaves absolute, anchor and root-relative links alone', () => {
     const src = '[a](https://x.y/z) [b](#top) [c](/abs/) [d](mailto:q@r.s)';
     expect(changelogBody(src, base)).toBe(src);
