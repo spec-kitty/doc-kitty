@@ -26,9 +26,11 @@ short endpoint file. This page expands the surfaces the
   `@astrojs/sitemap` preset. Inclusion composes the per-page `doc_status` gate with
   the section-level `feeds` filter (a section that omits `feeds` feeds all four
   surfaces; an absent registry filters nothing).
-- **`rss.xml`** — published, non-deck pages newest `updated` first whose section
-  feeds `rss`; the `rssRoute` handler and its item shape. The `feeds` filter
-  composes with the publication state / `kind` gating.
+- **`rss.xml`** — published, non-deck pages whose section feeds `rss`, newest
+  first; the `rssRoute` handler and its item shape. Every item has a `<pubDate>`:
+  `updated`, else the page's `generated.at` stamp, and a page with neither is not
+  an item (#190). The `feeds` filter composes with the publication state / `kind`
+  gating.
 - **`llms.txt`** — discoverable pages whose section feeds `llms`, grouped by section
   in registry `order` with the section `label` as the group heading; the
   `llmsTxtRoute` handler; how the `agent` block filters and orders entries within a
