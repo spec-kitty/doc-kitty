@@ -118,6 +118,9 @@ gates (ADR-0026's finding AS-6).
     its item has no `<pubDate>` and sorts after the dated items.
     *Amended 2026-10-18 (#127): generated hubs (`kind: Hub` with a generator
     stamp) are no longer feed items (`includedInRssFeed`); authored hubs stay.*
+    *Amended 2026-10-19 (#190): every feed item has a `<pubDate>`. A page with no
+    `updated` takes its date from its `generated.at` stamp, which moves only when
+    the page's content changes; a page with neither date is not a feed item.*
 
 ## Consequences
 
@@ -126,7 +129,8 @@ gates (ADR-0026's finding AS-6).
 - Sidebar, sitemap, RSS, `llms.txt`, agent API, related and audience blocks,
   draft gating and glossary linking all work with **no new render code** and no
   plugin-order change. The example site lists the pages in its RSS feed; the items
-  are undated unless a feature sets `@dk:updated`.
+  are undated unless a feature sets `@dk:updated`. *(Amended #190: an item without
+  `@dk:updated` is dated from `generated.at`.)*
 - Ambiguous domain language in specs surfaces as the existing glossary collision
   warning.
 - Agents get behavioural contracts through the same discovery surface as the

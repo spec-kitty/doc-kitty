@@ -8,7 +8,7 @@
  */
 import type { APIRoute } from 'astro';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { rankForFeed, sectionOf, updatedMillis, sectionLabel, includedInRssFeed } from '../metadata.js';
+import { rankForFeed, sectionOf, feedDateMillis, compareSlug, sectionLabel, includedInRssFeed } from '../metadata.js';
 import { resolveSectionRegistry, sectionLabels, sectionFeeds, feedsSurface } from '../sections.js';
 import { absolute, docsRoot, xmlEscape } from './shared.js';
 import { collectDocEntries } from '../docs-index.js';
@@ -36,17 +36,21 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
     // that OMITS `feeds` feeds all four surfaces (absent = all), and an absent
     // registry means `feeds` is undefined → no filtering (byte-compatible).
     const feeds = registry ? sectionFeeds(registry) : undefined;
+    // #190: every item carries a <pubDate>, so a page with no date (no `updated`
+    // and no `generated.at`) is left out, and items sort by the date they carry.
     const entries = rankForFeed(await collectDocEntries())
       .filter(includedInRssFeed)
-      .filter((entry) => feedsSurface(feeds, sectionOf(entry.slug), 'rss'));
+      .filter((entry) => feedsSurface(feeds, sectionOf(entry.slug), 'rss'))
+      .map((entry) => ({ entry, millis: feedDateMillis(entry.data) }))
+      .filter(({ millis }) => millis > 0)
+      .sort((a, b) => b.millis - a.millis || compareSlug(a.entry.slug, b.entry.slug));
     const self = absolute(site, '/rss.xml');
     const home = absolute(site, '/');
 
     const items = entries
-      .map((entry) => {
+      .map(({ entry, millis }) => {
         const link = absolute(site, routeOfSlug(entry.slug));
-        const millis = updatedMillis(entry.data);
-        const pubDate = millis ? new Date(millis).toUTCString() : undefined;
+        const pubDate = new Date(millis).toUTCString();
         const section = sectionOf(entry.slug);
         const category = entry.data.type ?? sectionLabel(section, labels) ?? 'Doc';
         return [
@@ -57,7 +61,7 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
           entry.data.description
             ? `      <description>${xmlEscape(entry.data.description)}</description>`
             : '',
-          pubDate ? `      <pubDate>${pubDate}</pubDate>` : '',
+          `      <pubDate>${pubDate}</pubDate>`,
           `      <category>${xmlEscape(category)}</category>`,
           '    </item>',
         ]
