@@ -142,7 +142,10 @@ import {
 //   - gherkin-in-any-page (ADR-0051) adds the in-page Gherkin demonstrator
 //     guides/scenarios-in-pages.md (doc_status:active, +1) -> 68. The fences on
 //     it render in place, so they add no page of their own.
-const EXPECTED_INDEX_ENTRY_COUNT = 68;
+//   - #192 replaces changelog/2026-08-21-v0.1.0.md with changelog/releases.md
+//     (both published, +0), and #193 adds the install guide guides/install.md
+//     (doc_status:active, +1) -> 69.
+const EXPECTED_INDEX_ENTRY_COUNT = 69;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -161,7 +164,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 68;
 // features; the @wip draft is filtered), 61 -> 67.
 // gherkin-in-any-page (ADR-0051) adds guides/scenarios-in-pages.md (published,
 // +1), 67 -> 68.
-const EXPECTED_SITEMAP_URL_COUNT = 68;
+// #193 adds guides/install.md (published, +1; #192's changelog swap is +0),
+// 68 -> 69.
+const EXPECTED_SITEMAP_URL_COUNT = 69;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
