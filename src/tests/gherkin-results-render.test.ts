@@ -242,8 +242,8 @@ describe('a generated feature page gets its results at render time', () => {
     const without = await render(generatedPage(), { gherkin: true }, 'docs/behaviour/checkout.md');
     expect(out.headings).toEqual(without.headings);
     expect(without.html).not.toContain('dk-gherkin__result');
+    // The body `# Checkout` repeats the title, so it renders no second <h1> (#191).
     expect(headingResults(out.hast)).toEqual([
-      ['Checkout', ''],
       ['Background', ''],
       ['Scenario: Paying by card', 'Result: Passed'],
       ['Scenario Outline: Applying a discount code', 'Result: Failed (1 failed, 1 passed)'],

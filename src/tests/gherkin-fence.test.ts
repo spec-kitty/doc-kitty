@@ -142,7 +142,8 @@ describe('preset off: a gherkin fence renders exactly as before', () => {
     expect(blocks(absent)).toHaveLength(0);
     // The fence is ONE Expressive Code block holding the source verbatim.
     expect(within(absent.hast, isEl('div', 'expressive-code'))).toHaveLength(1);
-    expect(absent.headings.map((h) => h.text)).toEqual(['Guide']);
+    // The body `# Guide` repeats `title: Guide`, so it renders no second <h1> (#191).
+    expect(absent.headings.map((h) => h.text)).toEqual([]);
   });
 });
 
@@ -174,9 +175,9 @@ describe('preset on: a gherkin fence renders as a structured scenario', () => {
     expect(frames).toHaveLength(2);
     expect(textOf(frames[0])).toContain('{"teu": "2"}');
     expect(textOf(frames[1])).toContain('"no longer needed"');
-    // The embedded headings reach the TOC (file.data headings).
+    // The embedded headings reach the TOC (file.data headings). The body `# Guide`
+    // repeats the title, so it is not a second <h1> (#191).
     expect(r.headings.map((h) => [h.depth, h.text])).toEqual([
-      [1, 'Guide'],
       [2, 'Book a consignment'],
       [3, 'Scenario: Book space on a sailing'],
       [3, 'Scenario: Cancel a booking'],
@@ -307,7 +308,7 @@ describe('a fence inside a container', () => {
       ['Scenario: Book space on a sailing', 3],
       ['Scenario: Cancel a booking', 3],
     ]);
-    expect(r.headings.map((h) => h.text)).toEqual(['Guide']);
+    expect(r.headings.map((h) => h.text)).toEqual([]);
   });
 });
 

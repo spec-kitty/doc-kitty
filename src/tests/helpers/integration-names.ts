@@ -26,6 +26,7 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:lightbox',
   'doc-kitty:content-graph',
   'doc-kitty:deck-split',
+  'doc-kitty:single-h1',
   'doc-kitty:base-absolute-links',
   '@astrojs/sitemap',
   'doc-kitty:sitemap-order',
