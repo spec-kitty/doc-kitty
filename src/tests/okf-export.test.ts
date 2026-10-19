@@ -11,8 +11,9 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, it, expect } from 'vitest';
 import { okfExportIntegration } from '../lib/okf-export/integration.js';
-import { bundlePathOf, exportOkfBundle } from '../lib/okf-export/core.mjs';
+import { bundlePathOf, exportOkfBundle, generatedFor } from '../lib/okf-export/core.mjs';
 import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
+import { feedDateMillis } from '../lib/metadata.js';
 
 const FIX = path.join(import.meta.dirname, 'fixtures', 'okf-export');
 const graph = JSON.parse(readFileSync(path.join(FIX, 'graph.json'), 'utf8'));
@@ -95,6 +96,37 @@ describe('concept frontmatter (FR-025)', () => {
 
   it('(c) with no stamp and no author, generated.by is the export process', () => {
     expect(frontmatter('guides/bare.md')).toContain('by: "process:dockitty-export"');
+  });
+
+  it('last-changed precedence (#226): RSS and the OKF export on the same three inputs', () => {
+    const GHERKIN = 'doc-kitty-gherkin/0.4.0';
+    const stamp = { by: GHERKIN, at: '2026-10-02T09:30:00Z' };
+    const A = { generated: stamp };
+    const B = {
+      generated: { by: 'doc-kitty-scaffold/0.4.0', at: '2026-10-01T00:00:00Z' },
+      updated: '2026-10-05T00:00:00Z',
+      authors: ['human:jane', 'human:joe'],
+    };
+    const C = { generated: stamp, updated: '2026-10-05T00:00:00Z' };
+    const D = {
+      generated: { by: 'other-tool/1.0', at: '2026-10-01T00:00:00Z', content_hash: 'sha256:0123456789ab' },
+      authors: ['human:jane'],
+    };
+    const ms = (iso: string) => Date.parse(iso);
+
+    // RSS: updated, else generated.at.
+    expect(feedDateMillis(A as never)).toBe(ms('2026-10-02T09:30:00Z'));
+    expect(feedDateMillis(B as never)).toBe(ms('2026-10-05T00:00:00Z'));
+    expect(feedDateMillis(C as never)).toBe(ms('2026-10-05T00:00:00Z'));
+    expect(feedDateMillis(D as never)).toBe(ms('2026-10-01T00:00:00Z'));
+
+    // OKF: only an ownership stamp counts; anything else is ignored.
+    expect(generatedFor(A).generated).toEqual({ by: GHERKIN, at: '2026-10-02T09:30:00Z' });
+    const b = generatedFor(B);
+    expect(b.generated).toEqual({ by: 'human:jane', at: '2026-10-05T00:00:00Z' });
+    expect(b.authors).toEqual(['human:joe']);
+    expect(generatedFor(C).generated).toEqual({ by: GHERKIN, at: '2026-10-02T09:30:00Z' });
+    expect(generatedFor(D).generated).toEqual({ by: 'human:jane', at: '2026-10-01T00:00:00Z' });
   });
 
   it('rewrites an email author to human:<local-part> and maps status', () => {

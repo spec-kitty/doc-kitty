@@ -15,7 +15,7 @@
  * real frontmatter lives in `./schema.ts` and mirrors these types.
  */
 import { isPresentationEntry } from './deck/is-presentation.js';
-import { isGeneratedStamp } from './generator-stamp.mjs';
+import { feedInstant, isGeneratedStamp } from './generator-stamp.mjs';
 import { hrefOfSlug } from './with-base.js';
 // The section vocabulary + type-derivation lives in ONE fs-free, Astro-free place
 // (#49 IC-01/IC-02): `vocabulary-core.mjs`. `metadata.ts` stays fs-free by
@@ -296,13 +296,11 @@ export function updatedMillis(data: DocKittyFrontmatter): number {
  * `updated`). 0 when the page has neither; {@link rankForFeed} leaves such a
  * page out.
  *
- * The OKF export (`okf-export/core.mjs`, `generatedFor`) deliberately uses the
- * inverse precedence: there `generated.at` wins and `updated` is the fallback,
- * because in OKF `generated.at` means the last content change. Do not unify
- * the two.
+ * The OKF export uses its own rule ({@link okfGenerated}); both are defined side
+ * by side in `generator-stamp.mjs` (#226).
  */
 export function feedDateMillis(data: DocKittyFrontmatter): number {
-  return updatedMillis(data) || (normaliseInstant(data.generated?.at)?.date.getTime() ?? 0);
+  return feedInstant(data)?.getTime() ?? 0;
 }
 
 /** A minimal entry shape the helpers below operate on. */

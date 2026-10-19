@@ -9,7 +9,7 @@
  * @module generator-stamp
  */
 
-import { formatInstant } from './vocabulary-core.mjs';
+import { formatInstant, normaliseInstant } from './vocabulary-core.mjs';
 // A JSON module, not a path read from `import.meta.url`: Vite inlines it, so the
 // version still resolves once a route that stamps is bundled (#182).
 import toolkitManifest from '../package.json' with { type: 'json' };
@@ -192,4 +192,43 @@ export function isGeneratedStamp(by, producer) {
   if (typeof by !== 'string') return false;
   const producers = producer ? [producer] : PRODUCERS;
   return producers.some((p) => by.startsWith(`${p}/`) && by.length > p.length + 1);
+}
+
+// --- "last changed" per output (#226, ADR-0059 implementation notes) --------
+// Two outputs, two questions, so two rules defined side by side, not one:
+// RSS dates a page by when its author last said it changed; OKF's generated.at
+// is the producing tool's last content change, so only an ownership stamp counts.
+
+/**
+ * The RSS rule (#190, #226): the instant a feed item carries. `updated` first,
+ * else the stamp's `generated.at`, else null. An `updated` at epoch 0 counts as
+ * missing (the `||` of the original `feedDateMillis`), so such a page falls back
+ * to `generated.at`. The OKF export uses the other rule, {@link okfGenerated}.
+ *
+ * @param {{ updated?: unknown, generated?: { at?: unknown } | null }} page raw frontmatter
+ * @returns {Date | null}
+ */
+export function feedInstant(page) {
+  const updated = normaliseInstant(page.updated)?.date;
+  if (updated && updated.getTime()) return updated;
+  return normaliseInstant(page.generated?.at)?.date ?? null;
+}
+
+/**
+ * The OKF export rule (#226): which stamp the export may use, and the
+ * `generated.at` it reports. Only an OWNERSHIP stamp ({@link isGeneratedStamp}:
+ * Gherkin, glossary) is the producing tool's own, so only it supplies `by`,
+ * `at` and `content_hash`. The scaffold stamp is provenance only (it records
+ * where a page started, not who last changed it) and any foreign stamp is not
+ * ours to vouch for: both are ignored as a stamp, so a human edit is not
+ * attributed to them. `at` is the stamp's, else `updated`, else an ignored
+ * stamp's `at`. Instants pass through unchanged (graph nodes carry canonical
+ * strings). The RSS rule is {@link feedInstant}.
+ *
+ * @param {{ updated?: any, generated?: Record<string, any> | null }} page a content-graph node
+ * @returns {{ stamp: Record<string, any> | undefined, at: any }}
+ */
+export function okfGenerated(page) {
+  const stamp = isGeneratedStamp(page.generated?.by) ? page.generated : undefined;
+  return { stamp, at: stamp?.at ?? page.updated ?? page.generated?.at };
 }
