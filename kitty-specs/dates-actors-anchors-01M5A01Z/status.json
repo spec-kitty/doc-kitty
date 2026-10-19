@@ -1,0 +1,89 @@
+{
+  "event_count": 43,
+  "last_event_id": "01M5A3J5P15JRJVEH2EQ1H7QAP",
+  "materialized_at": "2026-10-19T12:53:09.953519+00:00",
+  "mission_number": "",
+  "mission_slug": "dates-actors-anchors-01M5A01Z",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 4,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5A3HWNW63RRSQDRSAFH459T",
+      "last_transition_at": "2026-10-19T12:53:00.732499+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/dates-actors-anchors-01M5A01Z-coord/kitty-specs/dates-actors-anchors-01M5A01Z/tasks/WP01-reject-non-date-values/review-cycle-1.md",
+        "reference": "review-cycle://dates-actors-anchors-01M5A01Z/WP01-reject-non-date-values/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 4047,
+      "shell_pid_created_at": "1792411986.15"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5A3HZP2FW1RE7N8Q1EG1CV3",
+      "last_transition_at": "2026-10-19T12:53:03.810532+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/dates-actors-anchors-01M5A01Z-coord/kitty-specs/dates-actors-anchors-01M5A01Z/tasks/WP02-last-changed-precedence/review-cycle-1.md",
+        "reference": "review-cycle://dates-actors-anchors-01M5A01Z/WP02-last-changed-precedence/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 4047,
+      "shell_pid_created_at": "1792411986.15"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5A3J2M5CA4P3XK8G9VKYDXD",
+      "last_transition_at": "2026-10-19T12:53:06.821864+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/dates-actors-anchors-01M5A01Z-coord/kitty-specs/dates-actors-anchors-01M5A01Z/tasks/WP03-anchor-collision-test/review-cycle-2.md",
+        "reference": "review-cycle://dates-actors-anchors-01M5A01Z/WP03-anchor-collision-test/review-cycle-2.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 22391,
+      "shell_pid_created_at": "1792412500.53"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 2,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5A3J5P15JRJVEH2EQ1H7QAP",
+      "last_transition_at": "2026-10-19T12:53:09.953519+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/dates-actors-anchors-01M5A01Z-coord/kitty-specs/dates-actors-anchors-01M5A01Z/tasks/WP04-docs-adr-changelog/review-cycle-3.md",
+        "reference": "review-cycle://dates-actors-anchors-01M5A01Z/WP04-docs-adr-changelog/review-cycle-3.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 19177,
+      "shell_pid_created_at": "1792414104.59"
+    }
+  }
+}

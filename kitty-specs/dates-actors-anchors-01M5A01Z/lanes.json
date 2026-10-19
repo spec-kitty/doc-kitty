@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "mission_slug": "dates-actors-anchors-01M5A01Z",
+  "mission_id": "01M5A01Z4EHFS2YV9KD7QX7RN6",
+  "mission_branch": "kitty/mission-dates-actors-anchors-01M5A01Z",
+  "target_branch": "feat/dates-actors-anchors",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/schema.ts",
+        "src/lib/vocabulary-core.mjs",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/schema-validator-parity.test.ts",
+        "src/tests/vocabulary-core.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/generator-stamp.mjs",
+        "src/lib/metadata.ts",
+        "src/lib/okf-export/core.mjs",
+        "src/tests/okf-export.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/tests/single-h1.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0059-content-graph-and-okf-alignment.md",
+        "docs/architecture/generators.md",
+        "docs/architecture/gherkin-pages.md",
+        "docs/architecture/metadata-model.md",
+        "docs/guides/export-okf-bundle.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-10-19T12:12:20.531727+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "58f7eca7472dbfab9d98620b8cefdac85dd4f7d3"
+}
