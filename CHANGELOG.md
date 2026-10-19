@@ -9,7 +9,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This release caps the page frame at 120rem by default, so pages on screens
 wider than 1920px keep the navigation close to the text. It reveals the current
 sidebar entry before first paint, lines the header search up with the column,
-and adds layout and build guards. **Upgrading: read the Breaking section.**
+and adds layout and build guards. It also rejects a date field that is not a
+date, such as a bare number or `"2024"`. **Upgrading: read the Breaking section.**
 
 ### 💥 Breaking
 
