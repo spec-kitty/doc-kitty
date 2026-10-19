@@ -28,7 +28,10 @@ and adds layout and build guards. **Upgrading: read the Breaking section.**
 - **`Sidebar` is the sixth toolkit carrier.** It renders Starlight's own
   sidebar unchanged and then the script that reveals the current entry. Like
   the other carriers, it replaces a `Sidebar` override passed through
-  `starlight.components`. See [ADR-0061](docs/adr/0061-sidebar-carrier.md).
+  `starlight.components`. A Starlight plugin that overrides `Sidebar` still
+  wins over the carrier, and the current-entry reveal is then lost: such a
+  plugin must render the toolkit's `Sidebar`. See
+  [ADR-0061](docs/adr/0061-sidebar-carrier.md).
 - **The accessibility lane also checks the published sidebar (#200).** Before,
   it measured only the drafts-on build, so the sidebar readers see was never
   checked. Now CI also serves `example/dist-nodrafts` to two more Playwright
@@ -80,13 +83,25 @@ and adds layout and build guards. **Upgrading: read the Breaking section.**
   frame capped or not. A site title wider than the space before the column
   keeps the search after the title, as stock Starlight does.
 - **The column no longer runs under the collapsed rail toggle (#217).** From
-  1152 to 1295px with the rail collapsed, the column ran 7px under the toggle.
+  1152 to 1296px with the rail collapsed, the column ran 7px under the toggle.
   Now, below 84rem (1344px), the pane's end padding with the rail collapsed is
   the toggle's width plus 4px.
 - **The Persona card no longer leaves a large blank at wide widths (#206).**
   `--dk-width-passport` now defaults to the metadata band's width, 50rem
   instead of 32rem, and the card is start-aligned with the text below it. A site
   can still set the token.
+
+### Known limitations
+
+- With a frame cap between 72rem and 84rem on a wider viewport, the column can
+  still run under the collapsed rail toggle (#220). The 120rem default is not
+  affected.
+- Above the 120rem cap, the sidebar's tint starts at the frame edge while the
+  header bar spans the viewport (#224, open design decision).
+- On a slow first paint, Starlight's rail can be drawn next to the left sidebar
+  and then jump into place (#223). The layout-shift check counts such
+  partial-paint shifts and can flake under parallel load (#222); it runs in the
+  `light` project only until it is redesigned.
 
 ## [0.4.0] — 2026-10-18
 

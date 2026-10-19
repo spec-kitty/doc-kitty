@@ -106,6 +106,13 @@ The research note recommended the second. The owner chose the first.
   upgrade tripwire in [Collapsible TOC rail](../architecture/collapsible-toc-rail.md#upgrade-tripwire).
 - A consumer's own `Sidebar` override passed through `starlight.components` is
   now discarded, as overrides of the other five carriers are.
+- The lock covers the `components` map that the toolkit passes to Starlight. It
+  does not cover Starlight plugins: a plugin's `updateConfig({ components })`
+  runs after the user config, so a plugin that overrides `Sidebar` replaces the
+  carrier. That has been true of every carrier since ADR-0013. For `Sidebar` it
+  means the reveal script no longer ships: before this record, the reveal was a
+  `head` entry that a plugin could not remove. A plugin that overrides `Sidebar`
+  must render the toolkit's carrier to keep the reveal.
 
 ### Risks
 

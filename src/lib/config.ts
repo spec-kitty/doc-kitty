@@ -312,6 +312,11 @@ const carriers: NonNullable<StarlightUserConfig['components']> = {
  */
 function carriersForBuild(): NonNullable<StarlightUserConfig['components']> {
   if (process.env.DK_INTERNAL_STOCK_HEADER !== 'on') return carriers;
+  // Say so in the build output: a stray setting would otherwise drop a theme's
+  // `dk:site-header` without a trace, because `Header` emits no marker.
+  console.warn(
+    '[dk-config] DK_INTERNAL_STOCK_HEADER=on: the Header carrier is disabled (test-only; used by pnpm fixture:stock-header).',
+  );
   return Object.fromEntries(Object.entries(carriers).filter(([name]) => name !== 'Header'));
 }
 

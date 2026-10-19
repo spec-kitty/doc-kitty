@@ -499,7 +499,11 @@ Five things to know:
   the viewport edge.
 - **An invalid value is harmless.** The token is a registered property, so
   `--dk-width-frame: banana` behaves as its registered initial value, `1920px`.
-  That equals the 120rem default at the default 16px root font size.
+  That equals the 120rem default at the default 16px root font size. A browser
+  without `@property` support gives a full-width frame instead.
+- **Outside the frame the page background shows.** On a viewport wider than the
+  cap, the space on each side of the frame is the page background; the header
+  bar and its bottom border still span the full viewport.
 - **The rail keeps one width.** From a 72rem (1152px) viewport the rail is as
   wide as the sidebar (18rem, 288px). The reading pane takes the rest of the
   frame, and the column is the pane less 24px of padding on each side, up to
@@ -524,6 +528,16 @@ The toolkit renders it in place of the stock header; a theme that sets no such
 slot keeps the stock header unchanged. A replacement must put back the parts it
 still wants (site title, search, theme select). See
 [Theme header](./theme-header.md).
+
+### Starlight plugins that override the sidebar
+
+The toolkit renders Starlight's sidebar through its own `Sidebar` carrier, which
+adds the script that scrolls the current entry into view before first paint
+([ADR-0061](../adr/0061-sidebar-carrier.md)). A `Sidebar` override passed
+through `starlight.components` is discarded. A Starlight plugin in
+`starlight.plugins` that overrides `Sidebar` does win, because plugins run after
+the user config, and the reveal is then lost. If you use such a plugin, have its
+sidebar render `@spec-kitty/doc-toolkit/components/Sidebar.astro` to keep it.
 
 ## 7. Build
 

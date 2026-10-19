@@ -110,7 +110,7 @@
 // Geometry does not depend on the colour scheme (the two modes differ in colour
 // tokens only), so this spec runs in the `light` project and skips in `dark`.
 import { test, expect, type Browser, type Page } from '@playwright/test';
-import { ROUTES, TOC_RAIL_ROUTE, TOC_RAIL_TOGGLE, isLightProject } from './routes';
+import { ROUTES, TOC_RAIL_ROUTE, TOC_RAIL_TOGGLE, isLightProject, isPublishedProject } from './routes';
 import { measure, settle, inline, type Box, type Geometry } from './helpers/geometry';
 
 const WIDTHS = [1152, 1280, 1600, 1920, 2560] as const;
@@ -564,7 +564,14 @@ test.describe('layout geometry — no layout shift from enhancement', () => {
     expect(on.boxes).toEqual(off.boxes);
   });
 
-  test('cumulative layout shift for the load is 0', async ({ page }) => {
+  // Runs in `light` only, not `published-light`. Under parallel page loads the
+  // count can pick up a shift in Starlight's own markup during a partial paint
+  // (the 1px `.sidebar-content::after` spacer, 0.000208; once in a while the
+  // right sidebar moving into place, about 0.25), on main as on this branch.
+  // That has nothing to do with which pages the sidebar lists, so a second run
+  // against the published build only doubles the exposure. Follow-up: #222.
+  test('cumulative layout shift for the load is 0', async ({ page }, testInfo) => {
+    test.skip(isPublishedProject(testInfo), 'load shift does not depend on sidebar membership');
     await page.setViewportSize({ width: SHIFT_WIDTH, height: HEIGHT });
     await page.addInitScript(() => {
       const w = window as unknown as { __dkShift: { supported: boolean; total: number; count: number } };

@@ -64,6 +64,12 @@ and the toggle was 24px off. None of this was caught.
 ## Decision
 
 1. **The frame is full width by default.** A cap is something a site opts into.
+
+   > **Superseded in part by [ADR-0062](./0062-default-frame-cap.md) (120rem
+   > default).** The frame is now capped at 120rem by default, and the `100%`
+   > default in decisions 2 and 3 became `120rem` (registered initial value
+   > `1920px`). A site restores full width with `:root { --dk-width-frame: 100%; }`.
+   > The token and the rest of this record stand.
 2. **One public token, `--dk-width-frame`, sets the frame's width.** Default
    `100%`. It accepts a length or a percentage:
 
