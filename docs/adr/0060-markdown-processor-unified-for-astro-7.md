@@ -49,9 +49,12 @@ an optional peer of Astro that a project installs itself.
 
 1. **DocKitty renders Markdown with `markdown.processor: unified()`** from
    `@astrojs/markdown-remark`, which becomes a direct dependency of the toolkit.
-2. **The toolkit sets the processor itself, from an integration that runs
-   before any integration that appends a plugin.** Adopters do not configure
-   it.
+2. **The toolkit sets the processor itself, from an integration named
+   `doc-kitty:markdown-processor` that runs before any integration that appends
+   a plugin.** Adopters do not configure it. `doc-kitty:compress-html` follows
+   it. **Ordering requirement:** an adopter integration listed before DocKitty's
+   that appends remark or rehype plugins has them dropped, because Astro has
+   already chosen Sätteri when it runs. List such integrations after DocKitty's.
 3. **DocKitty integrations keep appending their plugins through `updateConfig`
    with `markdown.remarkPlugins` / `rehypePlugins`.** The spike showed that
    Astro 7 folds these legacy keys into the processor after each integration's
