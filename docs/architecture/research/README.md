@@ -38,3 +38,6 @@ how it works, so a decision can cite them. They are not the present-state design
 - [Ticketing report page](./ticketing-report.md) — a build-time report of a repo's
   tracker tickets, via an adaptor layer (GitHub first), so the docsite also serves
   as a ticketing portal.
+- [Layout guards and layout decisions after Astro 7](./layout-guards-and-decisions.md) —
+  current behaviour on Starlight 0.42.6, options, and a recommendation for the
+  layout guard and decision issues #199 to #207.
