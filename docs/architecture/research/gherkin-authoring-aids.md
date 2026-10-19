@@ -497,11 +497,14 @@ recorded here rather than fixed silently.
 
 - **A stale issue pointer.** `docs/architecture/gherkin-pages.md:664` says
   embedded steps are not glossary-linked "until #113". #113 is closed and was
-  about Markua re-derivation, so the pointer is stale.
+  about Markua re-derivation, so the pointer is stale. Fixed in this mission,
+  together with a second copy in `docs/guides/authoring.md`.
 - **The `kind` contract is stated two ways.** `docs/context/convention.md:213`
   says `kind` is "required on every page", while `AGENTS.md` says it is accepted
-  when absent.
-- **A possible double `<h1>`.** Generated pages and authored pages both carry a
-  body `# Title` under Starlight's title `<h1>`, and no remark step removes it.
-  If confirmed on a built page, this is site-wide, not a #198 concern. It was not
-  verified, because no built output was available.
+  when absent. Filed as [#219](https://github.com/spec-kitty/doc-kitty/issues/219).
+- **A double `<h1>`.** Generated pages and authored pages both carry a body
+  `# Title` under Starlight's title `<h1>`, and no remark step removes it. A
+  build confirmed it on 65 of 76 example pages. It is site-wide, not a #198
+  concern. It was tracked as
+  [#191](https://github.com/spec-kitty/doc-kitty/issues/191) and fixed on `main`
+  by the always-on single-h1 pass (PR #218).
