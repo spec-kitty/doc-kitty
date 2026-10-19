@@ -66,7 +66,7 @@ import {
   slug,
 } from '../vocabulary-core.mjs';
 import { resolveSectionRegistryEntries } from '../vocabulary-loader.mjs';
-import { GHERKIN_PRODUCER, isGeneratedStamp, makeStamp } from '../generator-stamp.mjs';
+import { GHERKIN_PRODUCER, isRegenerableStamp, makeStamp } from '../generator-stamp.mjs';
 import {
   buildFrontmatter,
   missionPrefix,
@@ -502,7 +502,8 @@ export function scanOutputDir(outDir) {
 function isOwnedPage(contents) {
   try {
     const { data } = matter(contents);
-    return isGeneratedStamp(data?.generated?.by, GHERKIN_PRODUCER);
+    // A retired `doc-kitty/gherkin` page stays owned so regenerating replaces it (#210).
+    return isRegenerableStamp(data?.generated?.by, GHERKIN_PRODUCER);
   } catch {
     return false;
   }

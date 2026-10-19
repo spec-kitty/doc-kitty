@@ -96,6 +96,13 @@ export function normalizeRootLoc(xml: string, rootUrl: string | undefined): stri
  * which for the root of a site with a base path is `…/base`. The fix runs on the
  * built HTML, not in the Head: Starlight 0.32 drops every earlier `<link>`
  * (favicon, sitemap, feed) once a page head carries its own canonical.
+ *
+ * Starlight 0.41+ (#119): its head merge dedupes two `<link>`s only when both
+ * are canonical (or both sitemap links), and it emits the root canonical with
+ * its trailing slash natively, so on the built root page this rewrite now
+ * changes nothing. It is kept as a guard: it is idempotent, touches only the
+ * bare root canonical and `og:url`, and keeps #188 fixed should a Starlight
+ * release regress the slash. The sitemap `<loc>` fix above is still needed.
  */
 export function normalizeRootCanonical(html: string, rootUrl: string | undefined): string {
   if (!rootUrl) return html;

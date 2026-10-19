@@ -11,6 +11,7 @@
  */
 import { describe, it, expect, afterAll } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
+import { packageDir } from './helpers/package-dir.js';
 import { createRequire } from 'node:module';
 import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -96,8 +97,7 @@ describe('relativeMdLinks through the real Markdown processor', () => {
 describe('relativeMdLinks on .mdx (hand-built file)', () => {
   it('rewrites inline and reference-style links, not a raw <a>', async () => {
     // `@mdx-js/mdx` is Starlight's `@astrojs/mdx` dependency, reached through the real path.
-    const req = createRequire(import.meta.url);
-    const starlight = createRequire(req.resolve('@astrojs/starlight'));
+    const starlight = createRequire(path.join(packageDir('@astrojs/starlight', import.meta.url), 'package.json'));
     const mdx = createRequire(starlight.resolve('@astrojs/mdx'));
     const mdxEntry = mdx.resolve('@mdx-js/mdx');
     const { createProcessor } = (await import(mdxEntry)) as {

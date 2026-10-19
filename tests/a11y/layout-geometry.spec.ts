@@ -598,7 +598,8 @@ test.describe('the current sidebar entry is revealed on load (FR-022)', () => {
     await page.goto(DEEP_ROUTE, { waitUntil: 'load' });
     await settle(page);
     expect(await page.evaluate(() => window.scrollY), 'the document is not scrolled by the reveal').toBe(0);
-    await page.locator('starlight-menu-button button').click();
+    // Starlight 0.42: the mobile menu is a popover button (#144, B9).
+    await page.locator('button[popovertarget="starlight__sidebar"]').click();
     await expect(page.locator('#starlight__sidebar')).toBeVisible();
     assertRevealed(await measureReveal(page), '390x600, menu open');
   });

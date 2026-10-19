@@ -131,6 +131,20 @@ describe('normalizeRootCanonical (#188)', () => {
     expect(normalizeRootCanonical(head('https://example.org/'), 'https://example.org/')).toBe(head('https://example.org/'));
     expect(normalizeRootCanonical(head('https://example.org/kb'), undefined)).toBe(head('https://example.org/kb'));
   });
+  it('leaves a Starlight 0.41+ root head byte-identical, every other <link> kept (#119)', () => {
+    // Starlight 0.41+ keeps the favicon, sitemap, feed and llms.txt links beside
+    // the canonical and already slash-terminates the root canonical.
+    const starlight042 =
+      '<link rel="canonical" href="https://example.org/kb/"/>' +
+      '<link rel="sitemap" href="/kb/sitemap-index.xml"/>' +
+      '<link rel="alternate" type="application/rss+xml" title="RSS" href="/kb/rss.xml"/>' +
+      '<link rel="alternate" type="text/plain" title="llms.txt" href="/kb/llms.txt"/>' +
+      '<link rel="shortcut icon" href="/kb/favicon.svg" type="image/svg+xml"/>' +
+      '<meta property="og:url" content="https://example.org/kb/"/>';
+    const out = normalizeRootCanonical(starlight042, 'https://example.org/kb/');
+    expect(out).toBe(starlight042);
+    expect(out.match(/<link /g)).toHaveLength(5);
+  });
   it('writes the same root URL as the sitemap root <loc>', () => {
     const xml = '<urlset><url><loc>https://example.org/kb</loc></url></urlset>';
     expect(normalizeRootLoc(xml, 'https://example.org/kb')).toContain('<loc>https://example.org/kb/</loc>');

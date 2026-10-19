@@ -244,3 +244,15 @@ describe('durable end-to-end (#39/FR-004): a durable doc validates on both arms'
     expect(validate('guides/durable-reference.md', durableDoc).problems).toEqual([]);
   });
 });
+
+describe('agent hints defaults under Zod 4 (#119)', () => {
+  // Zod 4's `.default({})` returns `{}` as the parsed output, skipping the inner
+  // field defaults; the schema must still fill them when `agent` is absent.
+  const agent = docKittyFields.agent;
+  it('fills every inner default when `agent` is absent', () => {
+    expect(agent.parse(undefined)).toEqual({ discoverable: true, priority: 0.5, keywords: [] });
+  });
+  it('fills the missing inner defaults of a partial `agent`', () => {
+    expect(agent.parse({ priority: 0.9 })).toEqual({ discoverable: true, priority: 0.9, keywords: [] });
+  });
+});

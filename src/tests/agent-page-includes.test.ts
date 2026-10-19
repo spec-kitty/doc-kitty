@@ -55,9 +55,13 @@ const ROOT = fileURLToPath(new URL('./fixtures/gherkin/include/', import.meta.ur
 const OPTS: GherkinFenceOptions = { root: ROOT, includeRoots: ['features'], warn: () => {} };
 const SITE = new URL('https://docs.example/');
 
+// Astro 7 takes the renderer from `markdown.processor` (B13): astro's own `unified()`.
+const { unified: astroUnified } = (await import(
+  pathToFileURL(createRequire(path.join(astroDir, 'package.json')).resolve('@astrojs/markdown-remark')).href
+)) as { unified: (o: Record<string, unknown>) => unknown };
 const render = await markdownContentEntryType.getRenderFunction({
   image: {},
-  markdown: { syntaxHighlight: false, remarkPlugins: [remarkDirective, [gherkinFence, OPTS]] },
+  markdown: { syntaxHighlight: false, processor: astroUnified({ remarkPlugins: [remarkDirective, [gherkinFence, OPTS]] }) },
 });
 
 /**

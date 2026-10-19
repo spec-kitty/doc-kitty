@@ -33,7 +33,8 @@ export default defineConfig({
     title: 'DocKitty Example',
     description: 'A minimal docsite built with DocKitty.',
     base: BASE,
-    social: { github: 'https://github.com/spec-kitty/doc-kitty' },
+    // Starlight 0.33+ takes `social` as an array of link items (#144).
+    social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/spec-kitty/doc-kitty' }],
     // The consumer layer over the brand: one slot, addressed by absolute path
     // (a theme inside a package would use its package-export specifier).
     theme: {

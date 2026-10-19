@@ -235,8 +235,9 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
   it('renders the same sidebar on every page, apart from the current entry (NFR-006)', () => {
     const strip = (doc: string): string =>
       sidebarHtml(doc)
-        // Starlight renders `aria-current="false"` on every other link.
-        .replace(/aria-current="page"/g, 'aria-current="false"')
+        // Starlight 0.42 marks only the current link (`aria-current="page"`);
+        // the other links carry no `aria-current` at all (#144, B8).
+        .replace(/ aria-current="page"/g, '')
         // Starlight opens the groups on the path to the current page.
         .replace(/<details open/g, '<details');
     const deep = readOut('rhetoric/book-one/chapter-02/index.html');

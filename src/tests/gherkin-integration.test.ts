@@ -335,6 +335,7 @@ describe('sourceRoot / sourceUrlPrefix shape sources[0].resource', () => {
   });
 });
 
+// Group shape is `{ label, items: [{ autogenerate }] }`: Starlight 0.39 removed `{ label, autogenerate }` (#144, B3).
 describe('the gherkin section is threaded into the registry sidebar generatedIds', () => {
   const SECTIONS_YAML = `version: 1
 sections:
@@ -369,7 +370,7 @@ sections:
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const sidebar = sidebarOf(defineDocKittyIntegrations({ title: 't', gherkin }));
     expect(warn.mock.calls.some(([m]) => String(m).includes('"behaviour"'))).toBe(true);
-    expect(sidebar).toEqual([{ label: 'Context', autogenerate: { directory: 'docs/context' } }]);
+    expect(sidebar).toEqual([{ label: 'Context', items: [{ autogenerate: { directory: 'docs/context' } }] }]);
   });
 
   it('emits the group without warning when gherkin is ON (section is build-generated)', () => {
@@ -380,8 +381,8 @@ sections:
     );
     expect(warn).not.toHaveBeenCalled();
     expect(sidebar).toEqual([
-      { label: 'Context', autogenerate: { directory: 'docs/context' } },
-      { label: 'Behaviour', autogenerate: { directory: 'docs/behaviour' } },
+      { label: 'Context', items: [{ autogenerate: { directory: 'docs/context' } }] },
+      { label: 'Behaviour', items: [{ autogenerate: { directory: 'docs/behaviour' } }] },
     ]);
   });
 });

@@ -21,13 +21,6 @@ export const GHERKIN_PRODUCER = 'doc-kitty-gherkin';
 export const GLOSSARY_PRODUCER = 'doc-kitty-glossary';
 
 /**
- * The LEGACY `generated.by` stamp (unversioned) of Gherkin pages written before
- * versioned stamps. Still needed: pages not yet regenerated carry it and must stay
- * recognised (exemptions, include scan) until they are. New pages never get it.
- */
-export const LEGACY_GENERATED_BY = 'doc-kitty/gherkin';
-
-/**
  * The OWNERSHIP producers: they generate (and so own) the pages they stamp
  * (each stamps `<producer>/<version>`). Only these make a page "generated".
  */
@@ -42,27 +35,93 @@ export const PRODUCERS = Object.freeze([GHERKIN_PRODUCER, GLOSSARY_PRODUCER]);
 export const SCAFFOLD_PRODUCER = 'doc-kitty-scaffold';
 
 /**
- * Stamps written before versioned stamps existed, keyed by the producer that
- * wrote them. Still recognised so pages not yet regenerated keep their
- * generated-page exemptions.
+ * The unversioned `generated.by` values written before versioned stamps (#181).
+ * Retired in 0.4.0 (#210): never recognised as generated, only detected so
+ * {@link retiredStampProblem} can tell the author to regenerate.
  */
-export const LEGACY_STAMP_BY_PRODUCER = Object.freeze({ [GHERKIN_PRODUCER]: LEGACY_GENERATED_BY });
-
-export const LEGACY_STAMPS = Object.freeze(Object.values(LEGACY_STAMP_BY_PRODUCER));
+const RETIRED_STAMP_BY_PRODUCER = Object.freeze({
+  [GHERKIN_PRODUCER]: 'doc-kitty/gherkin',
+  [GLOSSARY_PRODUCER]: 'doc-kitty/glossary',
+});
+const RETIRED_STAMP_BY = Object.freeze(Object.values(RETIRED_STAMP_BY_PRODUCER));
 
 /**
- * The content hash a generated page's `generated` stamp records: `content_hash`,
- * else the legacy `at` when that still holds a `sha256:` hash (stamps written
- * before `at` became an instant). The ONE reader every consumer routes through,
- * so none treats an instant as a hash.
+ * May `producer`'s generator OVERWRITE a page stamped `by`? Its own current stamp,
+ * or its own retired unversioned stamp. Used ONLY for section ownership, so the
+ * regeneration {@link retiredStampProblem} prescribes can replace a legacy page
+ * instead of refusing it as authored. Nothing else recognises a retired stamp:
+ * such a page is not "generated" ({@link isGeneratedStamp}) and fails the gate.
+ *
+ * @param {unknown} by
+ * @param {string} producer one of {@link PRODUCERS}
+ * @returns {boolean}
+ */
+export function isRegenerableStamp(by, producer) {
+  return isGeneratedStamp(by, producer) || (typeof by === 'string' && by === RETIRED_STAMP_BY_PRODUCER[producer]);
+}
+
+/**
+ * The content hash a generated page's `generated` stamp records: its
+ * `content_hash`. The ONE reader every consumer routes through. A `sha256:`
+ * hash in `at` (the stamp form before `content_hash`) is no longer read (0.4.0,
+ * #210); such a page fails the frontmatter gate until it is regenerated.
  *
  * @param {{ at?: unknown, content_hash?: unknown } | undefined | null} generated
  * @returns {string | undefined} `sha256:<hex>` (or undefined: no recorded hash)
  */
 export function stampContentHash(generated) {
-  if (typeof generated?.content_hash === 'string') return generated.content_hash;
-  const { at } = generated ?? {};
-  return typeof at === 'string' && at.startsWith('sha256:') ? at : undefined;
+  return typeof generated?.content_hash === 'string' ? generated.content_hash : undefined;
+}
+
+/**
+ * Why a `generated` block is a retired (pre-0.4.0) stamp, or `undefined` when it
+ * is not: an unversioned `by` (`doc-kitty/gherkin`, `doc-kitty/glossary`), or a
+ * `sha256:` hash in `at` with no `content_hash`. The message tells the author to
+ * regenerate the page, since the generated-page exemptions no longer apply.
+ *
+ * @param {unknown} generated the page's `generated` frontmatter value
+ * @returns {string | undefined}
+ */
+export function retiredStampProblem(generated) {
+  if (generated === null || typeof generated !== 'object') return undefined;
+  const { by, at, content_hash } = /** @type {{ by?: unknown, at?: unknown, content_hash?: unknown }} */ (generated);
+  const unversioned = typeof by === 'string' && RETIRED_STAMP_BY.includes(by);
+  const hashInAt = typeof at === 'string' && at.startsWith('sha256:') && content_hash === undefined;
+  if (!unversioned && !hashInAt) return undefined;
+  const form = unversioned ? `the unversioned \`generated.by: ${by}\`` : `a content hash in \`generated.at: ${at}\``;
+  return (
+    `\`generated\` is a legacy stamp (${form}), no longer supported since 0.4.0 (#210); ` +
+    `regenerate the page with the current toolkit (${regenerateHint(stampProducer(by))}) ` +
+    'to write the versioned `<producer>/<version>` stamp with `content_hash`'
+  );
+}
+
+/** How to regenerate a page each ownership producer writes. */
+const REGENERATE_HINT = Object.freeze({
+  [GHERKIN_PRODUCER]: 'run `dockitty-generate-feature-pages`',
+  [GLOSSARY_PRODUCER]: 'run `astro build` or `astro dev`, which rewrites the glossary pages',
+});
+
+/**
+ * The ownership producer a `generated.by` value names: its retired unversioned
+ * form or a `<producer>/<version>` stamp. `undefined` for anything else.
+ *
+ * @param {unknown} by
+ * @returns {string | undefined}
+ */
+function stampProducer(by) {
+  if (typeof by !== 'string') return undefined;
+  const retired = PRODUCERS.find((producer) => RETIRED_STAMP_BY_PRODUCER[producer] === by);
+  return retired ?? PRODUCERS.find((producer) => by.startsWith(`${producer}/`));
+}
+
+/**
+ * @param {string | undefined} producer
+ * @returns {string}
+ */
+function regenerateHint(producer) {
+  if (producer !== undefined) return REGENERATE_HINT[producer];
+  return `Gherkin pages: ${REGENERATE_HINT[GHERKIN_PRODUCER]}; glossary pages: ${REGENERATE_HINT[GLOSSARY_PRODUCER]}`;
 }
 
 /**
@@ -122,8 +181,8 @@ export function makeStamp({ producer, hash, previous, now = new Date() }) {
 
 /**
  * Is `by` an OWNERSHIP generator stamp? Prefix match on `<producer>/` (any
- * ownership producer when none is given; never the scaffold), plus the legacy
- * exact values.
+ * ownership producer when none is given; never the scaffold). The unversioned
+ * pre-0.3 stamps are not recognised (0.4.0, #210).
  *
  * @param {unknown} by
  * @param {string} [producer]
@@ -132,8 +191,5 @@ export function makeStamp({ producer, hash, previous, now = new Date() }) {
 export function isGeneratedStamp(by, producer) {
   if (typeof by !== 'string') return false;
   const producers = producer ? [producer] : PRODUCERS;
-  if (producers.some((p) => by.startsWith(`${p}/`) && by.length > p.length + 1)) return true;
-  // A named producer recognises only its own legacy stamp.
-  const legacy = producer ? [LEGACY_STAMP_BY_PRODUCER[producer]] : LEGACY_STAMPS;
-  return legacy.includes(by);
+  return producers.some((p) => by.startsWith(`${p}/`) && by.length > p.length + 1);
 }

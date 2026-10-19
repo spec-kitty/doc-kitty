@@ -72,8 +72,10 @@ const STOCK_HEADER = normaliseScopeHashes(
 /** The pages named in the hand-off: home, a deep page with a sidebar, and the 404. */
 const PINNED_PAGES = ['index.html', 'guides/getting-started/index.html', '404.html'];
 const MARKER = 'data-dk-test-header="wp06"';
-/** The root element of Starlight's stock `Header.astro`. */
-const STOCK_HEADER_ROOT = '<div class="header sl-flex';
+/** The root element of Starlight's stock `Header.astro` (0.42 dropped its `sl-flex`). */
+const STOCK_HEADER_ROOT = '<div class="header ';
+/** Starlight 0.42's mobile menu control: a popover button, no custom element (#144, B9). */
+const MENU_BUTTON = '<button popovertarget="starlight__sidebar"';
 
 interface Build {
   status: number | null;
@@ -227,12 +229,10 @@ describe('WP06 — Header carrier, theme fills dk:site-header (FR-024)', () => {
       const html = themed.pages.get(page)!;
       const before = stock.pages.get(page)!;
       expect(count(html, '<a href="#_top"'), page).toBe(count(before, '<a href="#_top"'));
-      expect(count(html, '<starlight-menu-button'), page).toBe(
-        count(before, '<starlight-menu-button'),
-      );
+      expect(count(html, MENU_BUTTON), page).toBe(count(before, MENU_BUTTON));
     }
     expect(count(themed.pages.get('index.html')!, '>Skip to content</a>')).toBe(1);
-    expect(count(themed.pages.get('guides/getting-started/index.html')!, '<starlight-menu-button')).toBe(1);
+    expect(count(themed.pages.get('guides/getting-started/index.html')!, MENU_BUTTON)).toBe(1);
   });
 });
 

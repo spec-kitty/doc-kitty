@@ -2,12 +2,13 @@
  * A broken ```` ```gherkin ```` fence FAILS A REAL BUILD (ADR-0051 decision 5;
  * 02 §Making errors fatal; 05 mutation check 9).
  *
- * Why a real build: Astro's content-layer `glob()` loader renders every entry
- * inside a `try`, only LOGS a render error and stores the page with no HTML. A
- * remark stage that throws therefore builds an empty page and `astro build`
- * exits 0. The fence stage records its errors in a process-wide sink and the
- * `doc-kitty:gherkin-fence` integration throws from `astro:build:done`; no unit
- * test can show that the exit code really changes, so this suite runs Astro.
+ * Why a real build: under Astro 5 the content-layer `glob()` loader only LOGGED a
+ * render error and stored an empty page, so the fence stage's process-wide sink
+ * and the `doc-kitty:gherkin-fence` integration's throw from `astro:build:done`
+ * made the build fail. Astro 7's `glob()` rethrows render errors (B12), so a
+ * docs page now aborts the content sync itself; the `astro:build:done` aggregate
+ * still backs the cases that reach it. No unit test can show that the exit code
+ * really changes, so this suite runs Astro.
  *
  * The fixture is a minimal toolkit site (one index page, one guide page,
  * `gherkin: true`) written at test time into `example/.dk-test-gherkin-fence/`:
@@ -52,7 +53,7 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SITE = path.join(REPO_ROOT, 'example', '.dk-test-gherkin-fence');
-const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'astro.js');
+const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'bin', 'astro.mjs');
 
 const FILES: Record<string, string> = {
   'astro.config.mjs': [
@@ -148,6 +149,8 @@ function astro(command: 'build' | 'sync') {
   return { status: r.status, output: `${r.stdout}\n${r.stderr}` };
 }
 const build = () => astro('build');
+/** Astro 7's glob() loader rethrowing the guide page's render error (B12). */
+const LOADER_ABORT = '[glob-loader] Error rendering guide.md';
 
 afterAll(() => {
   rmSync(SITE, { recursive: true, force: true });
@@ -161,9 +164,9 @@ describe('a malformed gherkin fence fails `astro build` (exit code)', () => {
       const r = build();
       expect(r.status, r.output).not.toBe(0);
       expect(r.output).toContain(`[dk-gherkin] ${WHERE}`);
-      // The aggregate thrown from astro:build:done, not only the loader's log line.
-      expect(r.output).toContain('[dk-gherkin] 1 Gherkin error(s) on 1 page');
-      expect(r.output).toContain('astro:build:done');
+      // Astro 7's glob() loader rethrows the render error, so the build aborts in
+      // the content sync naming the page; it never reaches astro:build:done (B12).
+      expect(r.output).toContain(LOADER_ABORT);
 
       // The failed render is cached, but never as a hit.
       const again = build();
@@ -182,7 +185,7 @@ describe('a malformed gherkin fence fails `astro build` (exit code)', () => {
       const r = build();
       expect(r.status, r.output).not.toBe(0);
       expect(r.output).toContain(`[dk-gherkin] ${WHERE}`);
-      expect(r.output).toContain('[dk-gherkin] 1 Gherkin error(s) on 1 page');
+      expect(r.output).toContain(LOADER_ABORT);
     },
     120_000,
   );
@@ -249,7 +252,7 @@ describe('a bad `::gherkin` include fails `astro build` (exit code)', () => {
       const r = build();
       expect(r.status, r.output).not.toBe(0);
       expect(r.output).toContain(`[dk-gherkin] ${INCLUDE_WHERE}`);
-      expect(r.output).toContain('[dk-gherkin] 1 Gherkin error(s) on 1 page');
+      expect(r.output).toContain(LOADER_ABORT);
     },
     120_000,
   );

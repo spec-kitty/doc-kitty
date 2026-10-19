@@ -21,7 +21,7 @@
  * not survive every checkout).
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRequire } from 'node:module';
+import { packageDir } from './helpers/package-dir.js';
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -605,7 +605,7 @@ describe('include rendering', () => {
 
   it('a generated feature page is left alone, directives included', () => {
     const md = page('::gherkin{src="features/nope.feature"}');
-    const tree = run(md, OPTS, { generated: { by: 'doc-kitty/gherkin' } });
+    const tree = run(md, OPTS, { generated: { by: 'doc-kitty-gherkin/0.3.0' } });
     expect(containers(tree)).toHaveLength(0);
     expect(findAll(tree, (n) => n.type === 'leafDirective')).toHaveLength(1);
   });
@@ -617,9 +617,8 @@ describe('include rendering', () => {
 
 type DocKittyOptions = Parameters<typeof defineDocKittyIntegrations>[0];
 
-/** Starlight's own `remarkDirectivesRestoration`, from its source file (not mocked). */
-const req = createRequire(import.meta.url);
-const asides = path.join(path.dirname(req.resolve('@astrojs/starlight')), 'integrations', 'asides.ts');
+/** Starlight's own `remarkDirectivesRestoration`, from its compiled file (not mocked; 0.42 ships dist/ and no main entry, B14). */
+const asides = path.join(packageDir('@astrojs/starlight', import.meta.url), 'dist', 'integrations', 'remark-asides.js');
 const { remarkDirectivesRestoration } = (await import(pathToFileURL(asides).href)) as {
   remarkDirectivesRestoration: () => (tree: Node) => void;
 };

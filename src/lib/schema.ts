@@ -10,7 +10,9 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { z } from 'zod';
+// Zod 4 from Astro itself (#119): `docsSchema({ extend })` merges this schema
+// into Starlight's, so both must come from the one Zod Astro ships.
+import { z } from 'astro/zod';
 import { file, glob } from 'astro/loaders';
 // Starlight re-exports its schema helper here; kept as the single Starlight
 // touch point so the rest of the toolkit stays framework-light.
@@ -161,7 +163,9 @@ const agentHints = z
     priority: z.number().min(0).max(1).default(0.5),
     keywords: z.array(z.string()).default([]),
   })
-  .default({});
+  // `.prefault`, not `.default`: Zod 4 returns a `.default` value as the output
+  // untouched, so the inner defaults above would never apply (#119).
+  .prefault({});
 
 /**
  * The DocKitty frontmatter fields, layered on Starlight's.
@@ -358,28 +362,15 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
 //     A `change`, `add` or `unlink` of an included file is re-emitted as a
 //     `change` of each dependent page, which reaches `glob()`'s own handler.
 //
-// A third fix keeps a FAILED Gherkin render out of the cache (decision 5). The
-// stage fails a build through a process-wide sink that `astro:build:done`
-// reads, because `glob()` only logs a render error (glob.js:116-126): it stores
-// the page with no HTML, under the file's digest, in the persisted data store
-// (`<cacheDir>/data-store.json`; `.astro/data-store.json` in dev). A later sync
-// would skip it as unchanged and never refill the sink, so a second
-// `astro build`, an `astro build` after `astro sync`/`astro check` (which render
-// into the same store but never reach `astro:build:done`), or one after a build
-// that died before that hook, would exit 0 with the page empty (reproduced on
-// Astro 5.18; `gherkin-fence-build.test.ts` pins both).
+// A failed Gherkin render never becomes a cache hit (decision 5). Astro 7's
+// `glob()` rethrows a render error after logging it (glob.js:141-145), before
+// `store.set`, so the page is never stored and the sync, and with it the build
+// or `astro sync`, fails. On Astro 5 `glob()` only logged the error and stored
+// the page with no HTML, which needed the failed-render bookkeeping this file
+// carried until #119; that bookkeeping is gone. `docs-loader-includes.test.ts`
+// pins the new contract.
 //
-//  3. Failed renders. The entry type's render function is wrapped to note the
-//     id of each entry whose render throws. When `glob()` then stores that entry
-//     and its body mentions `gherkin` (a cheap superset of every fence and
-//     include the stage transforms), the stored digest is the real one behind
-//     `FAILED_RENDER_DIGEST`, which no sync ever computes. Every later sync
-//     renders the page again, the stage records the error again and the build
-//     fails again; after a dev restart the page logs its error again. A fixed
-//     page is stored under its plain digest. An entry type with no render
-//     function (MDX, rendered by Vite) is never marked.
-//
-//  4. Results (ADR-0055 decision 10). With `gherkin.results` set, the
+//  3. Results (ADR-0055 decision 10). With `gherkin.results` set, the
 //     integration names the report in `DK_GHERKIN_RESULTS`. A page that may
 //     show results (an include, or a generated feature page: `mayShowResults`)
 //     also folds the report's hash into its digest, so a new report re-renders
@@ -388,8 +379,9 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
 //     that cannot show results keep `glob()`'s digest, and with no report set
 //     every digest is the one before (no existing cache is invalidated).
 //
-// ASTRO 5 INTERNALS — re-check all of this under #119 (Astro 7 loader API). The
-// fix rests on these facts of `astro@5.18.2` `dist/content/loaders/glob.js`:
+// ASTRO INTERNALS — re-checked under #119 against `astro@7.4.0`
+// `dist/content/loaders/glob.js` (line numbers below are from Astro 5.18.2; the
+// facts still hold on 7.4.0, except the render-error fact noted above):
 //  - `syncData` is private to the loader closure (glob.js:47). The only way to
 //    re-sync one entry from outside is the watcher: `onChange` (glob.js:238-249)
 //    re-reads the file and runs `syncData` for it.
@@ -400,9 +392,7 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
 //    when the digest is unchanged (glob.js:83-92). `getEntryInfo` is therefore
 //    the seam that knows the page's path, and it is where the reverse map is
 //    built: it runs for every entry on every sync, cache hit or not.
-//  - A render error is caught and logged, and the entry is still `store.set`
-//    with `rendered` undefined (glob.js:116-136); `render` is handed the entry
-//    `id`. The stored digest is compared by equality (glob.js:83).
+//  - The stored digest is compared by equality (glob.js:83).
 //  - The loader context's `entryTypes` is a fresh `Map` per collection sync
 //    (content-layer.js:94) and the watcher is a proxy that drops every listener
 //    added through it on a full re-sync (content-layer.js:185, watcher.js).
@@ -417,19 +407,10 @@ function resolveLoaderIndexBasenames(option: IndexBasenameOption | undefined): s
 // (`gherkin-fence.ts`, `options.root ?? process.cwd()`).
 // ---------------------------------------------------------------------------
 
-/**
- * Prefixed to the digest stored for a page whose Gherkin render failed, so the
- * stored digest never equals the one `glob()` computes for the same file.
- */
-const FAILED_RENDER_DIGEST = 'dk-render-failed:';
-
 /** One content entry type, as far as this file uses it (Astro's `ContentEntryType`). */
 interface EntryType {
   getEntryInfo?(params: { fileUrl: URL; contents: string }): EntryInfo | Promise<EntryInfo>;
-  getRenderFunction?(config: unknown): Promise<RenderFunction | undefined>;
 }
-/** The part of Astro's render function this file reads: the entry `id` it is handed. */
-type RenderFunction = (params: { id: string } & Record<string, unknown>) => Promise<unknown>;
 type EntryInfo = { body?: unknown } & Record<string, unknown>;
 /**
  * The context `glob()` actually receives. `entryTypes` is passed by the content
@@ -440,11 +421,9 @@ type GlobLoaderContext = LoaderContext & { entryTypes?: Map<string, EntryType> }
 type Watcher = NonNullable<LoaderContext['watcher']>;
 
 /**
- * The freshness state of one docs loader: the include reverse map, the watcher
- * listeners and the entries whose render just failed, kept across the loader's
- * syncs. `wrap(context)` returns the loader context to hand to `glob()` for one
- * sync; `settle(entry)` is applied to every entry `glob()` stores, and
- * `forget(id)` to every entry it hands over that is dropped instead.
+ * The freshness state of one docs loader: the include reverse map and the
+ * watcher listeners, kept across the loader's syncs. `wrap(context)` returns the
+ * loader context to hand to `glob()` for one sync.
  */
 function createGherkinTracker() {
   /** Absolute included file → absolute paths of the pages that include it. */
@@ -455,9 +434,7 @@ function createGherkinTracker() {
   const watchedOutside = new Set<string>();
   let listening: { watcher: Watcher; onInclude: (p: string) => void; onUnlink: (p: string) => void } | null =
     null;
-  /** Ids of the entries whose render threw and that `glob()` has not stored yet. */
-  const failedRenders = new Set<string>();
-  /** Absolute paths of the pages that may show results (point 4 above). */
+  /** Absolute paths of the pages that may show results (point 3 above). */
   const resultPages = new Set<string>();
   /** The configured report, absolute, as last read from `DK_GHERKIN_RESULTS`. */
   let reportFile: string | null = null;
@@ -558,26 +535,11 @@ function createGherkinTracker() {
     const SOURCES_KEPT = 256;
 
     const wrapType = (entryType: EntryType): EntryType => {
-      const { getEntryInfo, getRenderFunction } = entryType;
-      if (typeof getEntryInfo !== 'function' && typeof getRenderFunction !== 'function') return entryType;
+      const { getEntryInfo } = entryType;
+      if (typeof getEntryInfo !== 'function') return entryType;
       // A prototype-linked copy, so `in` checks and every other member
-      // `glob()` reads (`contentModuleTypes`) still hold.
+      // `glob()` reads (`getRenderFunction`, `contentModuleTypes`) still hold.
       const wrapped: EntryType = Object.create(entryType);
-      if (typeof getRenderFunction === 'function') {
-        wrapped.getRenderFunction = async (config: unknown) => {
-          const render = await getRenderFunction.call(entryType, config);
-          if (typeof render !== 'function') return render;
-          return async (params) => {
-            try {
-              return await render(params);
-            } catch (error) {
-              failedRenders.add(params.id);
-              throw error;
-            }
-          };
-        };
-      }
-      if (typeof getEntryInfo !== 'function') return wrapped;
       wrapped.getEntryInfo = async (params: { fileUrl: URL; contents: string }) => {
         const info = await getEntryInfo.call(entryType, params);
         // The body is what the remark stage renders (frontmatter removed), so
@@ -608,7 +570,7 @@ function createGherkinTracker() {
       return wrapped;
     };
 
-    // The report (point 4), read per sync: a config reload may set or clear it.
+    // The report (point 3), read per sync: a config reload may set or clear it.
     const report = process.env[DK_GHERKIN_RESULTS_ENV];
     reportFile = report ? path.resolve(cwd, report) : null;
 
@@ -646,24 +608,7 @@ function createGherkinTracker() {
     };
   };
 
-  /** The entry to store: a failed Gherkin render keeps a never-matching digest. */
-  const settle = <T extends { id: string; digest?: number | string; body?: string }>(entry: T): T => {
-    if (!failedRenders.delete(entry.id) || entry.digest === undefined) return entry;
-    if (typeof entry.body !== 'string' || !entry.body.includes('gherkin')) return entry;
-    return { ...entry, digest: `${FAILED_RENDER_DIGEST}${entry.digest}` };
-  };
-
-  /**
-   * An entry `glob()` handed to the store that is not stored after all (a draft
-   * dropped by the draft policy): forget its failed render, or a later, working
-   * render of the same id would still be stored under the never-matching digest
-   * and re-render on every sync.
-   */
-  const forget = (id: string): void => {
-    failedRenders.delete(id);
-  };
-
-  return { wrap, settle, forget };
+  return { wrap };
 }
 
 /**
@@ -729,9 +674,8 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     },
   });
 
-  // Pages that `::gherkin`-include a file re-render when it changes, and a
-  // failed Gherkin render is never a cache hit (see `createGherkinTracker`). The
-  // state lives here, across this loader's syncs.
+  // Pages that `::gherkin`-include a file re-render when it changes (see
+  // `createGherkinTracker`). The state lives here, across this loader's syncs.
   const gherkin = createGherkinTracker();
 
   // Draft publication (FR-013..FR-016, research R8): the ONE cut every HTML
@@ -757,11 +701,10 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
           set: (entry) => {
             const next = applyDraftPolicy(entry, publishDrafts);
             if (next === null) {
-              gherkin.forget(entry.id);
               store.delete(entry.id);
               return false;
             }
-            return store.set(gherkin.settle(next));
+            return store.set(next);
           },
         },
       });

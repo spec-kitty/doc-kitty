@@ -4,6 +4,7 @@
  * registers, then Starlight's directive parser. The test file mocks
  * `@astrojs/starlight` and `../lib/glossary/load.js` (vi.mock is per test file).
  */
+import { packageDir } from './package-dir.js';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -41,9 +42,11 @@ const astroDir = path.dirname(req.resolve('astro/package.json'));
 const { markdownContentEntryType } = (await import(
   pathToFileURL(path.join(astroDir, 'dist/vite-plugin-markdown/content-entry-type.js')).href
 )) as { markdownContentEntryType: EntryType };
-const { markdownConfigDefaults } = (await import(
+// Astro 7 takes the renderer from `markdown.processor` (B13): build astro's own
+// `unified()` processor with the plugin arrays instead of top-level markdown keys.
+const { markdownConfigDefaults, unified: astroUnified } = (await import(
   createRequire(path.join(astroDir, 'package.json')).resolve('@astrojs/markdown-remark')
-)) as { markdownConfigDefaults: Record<string, unknown> };
+)) as { markdownConfigDefaults: Record<string, unknown>; unified: (o: Record<string, unknown>) => unknown };
 
 export interface DocKittyMarkdown {
   remark: unknown[];
@@ -76,7 +79,7 @@ export function docKittyMarkdown(options: Partial<DocKittyOptions>): DocKittyMar
 
 /** Expressive Code's rehype plugin, resolved through Starlight (the build's own copy). */
 export async function expressiveCodePlugin(): Promise<unknown> {
-  const fromStarlight = createRequire(req.resolve('@astrojs/starlight'));
+  const fromStarlight = createRequire(path.join(packageDir('@astrojs/starlight', import.meta.url), 'package.json'));
   const fromAec = createRequire(fromStarlight.resolve('astro-expressive-code'));
   return ((await import(fromAec.resolve('rehype-expressive-code'))) as { default: unknown }).default;
 }
@@ -91,7 +94,11 @@ export async function render(contents: string, options: Partial<DocKittyOptions>
   const absPath = path.resolve(filePath);
   const { body, data } = await markdownContentEntryType.getEntryInfo({ contents, fileUrl: pathToFileURL(absPath) });
   const renderFn = await markdownContentEntryType.getRenderFunction({
-    markdown: { ...markdownConfigDefaults, syntaxHighlight: false, remarkPlugins: [...remark, remarkDirective], rehypePlugins: [...leadingRehype, ...rehype, capture] },
+    markdown: {
+      ...markdownConfigDefaults,
+      syntaxHighlight: false,
+      processor: astroUnified({ remarkPlugins: [...remark, remarkDirective], rehypePlugins: [...leadingRehype, ...rehype, capture] }),
+    },
   });
   const out = await renderFn({ id: 'page', data, body, filePath: absPath });
   return { html: out.html, headings: out.metadata.headings, hast };

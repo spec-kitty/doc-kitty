@@ -183,9 +183,10 @@ describe('scenarioIndexRoute — shape', () => {
     );
 
     const body = await getJson();
-    expect(body.version).toBe('1');
-    // `generated_from` is deprecated (#182); `generated_by` names the producer as an OKF tool actor.
-    expect(body.generated_from).toBe('doc-kitty/gherkin');
+    // 0.4.0 (#183): `generated_from` is removed, so the shape's major `version` is bumped;
+    // `generated_by` names the producer as an OKF tool actor.
+    expect(body.version).toBe('2');
+    expect(body).not.toHaveProperty('generated_from');
     expect(body.generated_by).toBe(`${GHERKIN_PRODUCER}/${toolkitVersion()}`);
     expect(parseActor(body.generated_by)).toMatchObject({ kind: 'tool', name: GHERKIN_PRODUCER });
     expect(body.count).toBe(1);
@@ -294,8 +295,7 @@ describe('scenarioIndexRoute — selection and order', () => {
   it('emits an empty index for a site without feature pages', async () => {
     entries.push({ id: 'guides/x', data: { title: 'X', doc_status: 'active' } });
     expect(await getJson()).toEqual({
-      version: '1',
-      generated_from: 'doc-kitty/gherkin',
+      version: '2',
       generated_by: `${GHERKIN_PRODUCER}/${toolkitVersion()}`,
       count: 0,
       features: [],

@@ -15,13 +15,14 @@
  * every site that supplies no header (NFR-007: byte-identical to the build before
  * this carrier existed; `header-carrier.test.ts` holds the committed block).
  *
- * Starlight 0.32 renders this override as `<Header slot="header" />`: no props,
- * no children. The `slot` attribute is consumed by `PageFrame`, and the stock
- * header reads its data from Starlight's virtual modules, so there is nothing to
- * forward. `Astro.props` is still spread onto whichever component renders, so a
- * later Starlight that does pass props reaches the header unchanged.
+ * Starlight renders this override as `<Header slot="header" />` (re-checked
+ * against 0.42.6, #144): no props, no children. The `slot` attribute is
+ * consumed by `PageFrame`, and the stock header reads its data from Starlight's
+ * virtual modules, so there is nothing to forward. `Astro.props` is still
+ * spread onto whichever component renders, so a later Starlight that does pass
+ * props reaches the header unchanged.
  *
- * What a `dk:site-header` component gets and gives up (Starlight 0.32.6):
+ * What a `dk:site-header` component gets and gives up (Starlight 0.42.6):
  *
  *  - It renders once, inside Starlight's own `<header class="header">`, which
  *    `PageFrame.astro` owns, with no toolkit wrapper. It must not emit a
@@ -29,7 +30,8 @@
  *    of `header.header`.
  *  - The framework keeps the skip link (`Page.astro` renders it before the page
  *    frame) and, on pages with a sidebar, the mobile menu toggle (`PageFrame`
- *    renders it in the sidebar `<nav>`). The component supplies neither.
+ *    renders it in the sidebar `<nav>`; since 0.42 a `popovertarget` button,
+ *    not a custom element). The component supplies neither.
  *  - The theme loses everything the stock header drew, and must supply what it
  *    still wants: the site title and logo, search, the social icons, the theme
  *    select and the language select.

@@ -316,6 +316,7 @@ describe('sectionPurposes / sectionFeeds / feedsSurface (feeds + purpose consume
   });
 });
 
+// Group shape is `{ label, items: [{ autogenerate }] }`: Starlight 0.39 removed `{ label, autogenerate }` (#144, B3).
 describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
   const reg: SectionRegistry = parseSectionRegistry(REGISTRY_YAML);
 
@@ -327,10 +328,10 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     // this test asserts only on the emitted-groups shape.
     const sidebar = registryToSidebar(reg, present, { warn: () => {} });
     expect(sidebar).toEqual([
-      { label: 'Context', autogenerate: { directory: 'context' } },
-      { label: 'Architecture', autogenerate: { directory: 'architecture' } },
-      { label: 'Decision Records', autogenerate: { directory: 'adr' } },
-      { label: 'Reference', autogenerate: { directory: 'glossary' } },
+      { label: 'Context', items: [{ autogenerate: { directory: 'context' } }] },
+      { label: 'Architecture', items: [{ autogenerate: { directory: 'architecture' } }] },
+      { label: 'Decision Records', items: [{ autogenerate: { directory: 'adr' } }] },
+      { label: 'Reference', items: [{ autogenerate: { directory: 'glossary' } }] },
     ]);
   });
 
@@ -338,7 +339,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     const sidebar = registryToSidebar(reg, ['glossary'], { warn: () => {} });
     expect(sidebar).toContainEqual({
       label: 'Reference',
-      autogenerate: { directory: 'glossary' },
+      items: [{ autogenerate: { directory: 'glossary' } }],
     });
   });
 
@@ -351,7 +352,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     // Registered groups first (in order), then the leftover, humanized + alpha.
     expect(sidebar[sidebar.length - 1]).toEqual({
       label: 'Glossary Demo',
-      autogenerate: { directory: 'glossary-demo' },
+      items: [{ autogenerate: { directory: 'glossary-demo' } }],
     });
     expect(sidebar.map((g) => g.label)).toEqual(['Context', 'Reference', 'Glossary Demo']);
   });
@@ -366,7 +367,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     const sidebar = registryToSidebar(reg, present, { generatedIds: ['glossary'] });
     expect(sidebar).toContainEqual({
       label: 'Reference',
-      autogenerate: { directory: 'glossary' },
+      items: [{ autogenerate: { directory: 'glossary' } }],
     });
     // The generated group keeps registry order (glossary is order 60 → last).
     expect(sidebar.map((g) => g.label)).toEqual([
@@ -393,7 +394,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
       warn: (m) => warnings.push(m),
     });
     // The group is skipped (Starlight would throw on a missing autogenerate dir)...
-    expect(sidebar.some((g) => g.autogenerate.directory === 'faq')).toBe(false);
+    expect(sidebar.some((g) => g.items[0].autogenerate.directory === 'faq')).toBe(false);
     // ...and a clear warning naming the id + the missing folder was emitted.
     expect(warnings.some((w) => /"faq"/.test(w) && /missing/.test(w))).toBe(true);
   });
@@ -422,10 +423,10 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
       warn: () => {},
     });
     expect(sidebar).toEqual([
-      { label: 'Context', autogenerate: { directory: 'docs/context' } },
-      { label: 'Architecture', autogenerate: { directory: 'docs/architecture' } },
-      { label: 'Decision Records', autogenerate: { directory: 'docs/adr' } },
-      { label: 'Reference', autogenerate: { directory: 'docs/glossary' } },
+      { label: 'Context', items: [{ autogenerate: { directory: 'docs/context' } }] },
+      { label: 'Architecture', items: [{ autogenerate: { directory: 'docs/architecture' } }] },
+      { label: 'Decision Records', items: [{ autogenerate: { directory: 'docs/adr' } }] },
+      { label: 'Reference', items: [{ autogenerate: { directory: 'docs/glossary' } }] },
     ]);
   });
 
@@ -440,7 +441,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     });
     expect(sidebar).toContainEqual({
       label: 'Reference',
-      autogenerate: { directory: 'docs/glossary' },
+      items: [{ autogenerate: { directory: 'docs/glossary' } }],
     });
   });
 
@@ -451,7 +452,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     });
     expect(sidebar[sidebar.length - 1]).toEqual({
       label: 'Glossary Demo',
-      autogenerate: { directory: 'docs/glossary-demo' },
+      items: [{ autogenerate: { directory: 'docs/glossary-demo' } }],
     });
   });
 
@@ -463,7 +464,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
       });
       expect(sidebar.find((g) => g.label === 'Context')).toEqual({
         label: 'Context',
-        autogenerate: { directory: 'docs/context' },
+        items: [{ autogenerate: { directory: 'docs/context' } }],
       });
     }
   });
@@ -475,17 +476,17 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
     });
     expect(sidebar).toContainEqual({
       label: 'Reference',
-      autogenerate: { directory: 'content/docs/glossary' },
+      items: [{ autogenerate: { directory: 'content/docs/glossary' } }],
     });
   });
 
   it('omits the prefix when `directoryPrefix` is absent/empty (bare `<id>` directory)', () => {
     const bare = registryToSidebar(reg, ['context', 'glossary'], { warn: () => {} });
-    expect(bare).toContainEqual({ label: 'Context', autogenerate: { directory: 'context' } });
+    expect(bare).toContainEqual({ label: 'Context', items: [{ autogenerate: { directory: 'context' } }] });
     const empty = registryToSidebar(reg, ['context'], {
       directoryPrefix: '',
       warn: () => {},
     });
-    expect(empty).toContainEqual({ label: 'Context', autogenerate: { directory: 'context' } });
+    expect(empty).toContainEqual({ label: 'Context', items: [{ autogenerate: { directory: 'context' } }] });
   });
 });

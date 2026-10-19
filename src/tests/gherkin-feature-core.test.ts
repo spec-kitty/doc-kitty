@@ -557,9 +557,9 @@ describe('the generated stamp (#177, FR-005)', () => {
     );
   });
 
-  it('stampContentHash reads content_hash, else a legacy `at` hash, never an instant', () => {
+  it('stampContentHash reads content_hash only: never a legacy `at` hash (#210), never an instant', () => {
     expect(stampContentHash(STAMP)).toBe('sha256:0123456789ab');
-    expect(stampContentHash({ at: 'sha256:abcdef012345' })).toBe('sha256:abcdef012345');
+    expect(stampContentHash({ at: 'sha256:abcdef012345' })).toBeUndefined();
     expect(stampContentHash({ at: '2026-10-18T09:30:00Z' })).toBeUndefined();
     expect(stampContentHash(undefined)).toBeUndefined();
   });

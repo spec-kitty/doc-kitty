@@ -263,7 +263,9 @@ const DRAFT_DECK_FRAGMENT_URL = '/presentations/draft-preview/';
 // lives in exactly ONE emitted sheet, matching it also proves no shared chunk a
 // doc page links re-emits it. Both sheets are `?url`-imported ONLY in DeckLayout.
 const REVEAL_CORE_SENTINEL = '.reveal-viewport{color:#000'; // ...overflow:hidden (viewport hijack)
-const REVEAL_TOKENMAP_SENTINEL = '--r-background-color: var(--dk-color-bg)';
+// Minifier-agnostic (B10): Vite 8's minifier drops the space after `:`.
+const REVEAL_TOKENMAP_SENTINEL = '--r-background-color:var(--dk-color-bg)';
+const REVEAL_TOKENMAP_SENTINEL_RE = /--r-background-color:\s*var\(--dk-color-bg\)/;
 // Non-deck in-frame pages that must NOT link either reveal sheet (BA-4 non-leak
 // sample). All three are declared above; a doc page pulling in a reveal sheet is
 // the leak this guards against.
@@ -1331,7 +1333,7 @@ export async function assertChromeArtifacts(distDir) {
   for (const n of cssFileNames) {
     const sheet = await readFile(path.join(astroCssDir, n), 'utf8');
     if (sheet.includes(REVEAL_CORE_SENTINEL)) coreSheets.push(n);
-    if (sheet.includes(REVEAL_TOKENMAP_SENTINEL)) tokenSheets.push(n);
+    if (REVEAL_TOKENMAP_SENTINEL_RE.test(sheet)) tokenSheets.push(n);
   }
   if (coreSheets.length !== 1) {
     fail(

@@ -63,12 +63,11 @@ import { isScenarioIndexed } from './scenario-index-filter.js';
 import { absolute, docsRoot } from './shared.js';
 
 /**
- * DEPRECATED (#182): the scenario index's legacy unversioned producer id, kept
- * byte-identical in `generated_from` because consumers match on it. Use
- * `generated_by` (an OKF tool actor, `doc-kitty-gherkin/<version>`) instead;
- * `generated_from` is removed in the next breaking release.
+ * The emitted shape's version. `2` since 0.4.0 (#183): the deprecated
+ * `generated_from` (`"doc-kitty/gherkin"`) is removed; `generated_by` names the
+ * producer.
  */
-const SCENARIO_INDEX_SOURCE_DEPRECATED = 'doc-kitty/gherkin';
+const SCENARIO_INDEX_VERSION = '2';
 
 export interface ScenarioIndexRouteOptions {
   /**
@@ -460,8 +459,7 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
     }
 
     const body = {
-      version: options.version ?? '1',
-      generated_from: SCENARIO_INDEX_SOURCE_DEPRECATED,
+      version: options.version ?? SCENARIO_INDEX_VERSION,
       // The producer as an OKF tool actor, the same name the feature pages' stamp carries.
       generated_by: `${GHERKIN_PRODUCER}/${toolkitVersion()}`,
       count: features.length,

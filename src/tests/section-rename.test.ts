@@ -199,6 +199,7 @@ describe('US2-AS5: rename to an unregistered section id — documented default +
 });
 
 describe('T006: registryToSidebar keeps the renamed section group rendering (ADR-0029)', () => {
+  // Group shape is `{ label, items: [{ autogenerate }] }`: Starlight 0.39 removed `{ label, autogenerate }` (#144, B3).
   it('the plans group still renders (hub + children) after a SUB-PATH rename under it', () => {
     // registryToSidebar is keyed on the TOP-LEVEL section id ("plans"), which
     // did not change — only the sub-path (features → missions) did. The group
@@ -209,7 +210,7 @@ describe('T006: registryToSidebar keeps the renamed section group rendering (ADR
     const sidebar = registryToSidebar(reg, ['plans'], { warn: () => {} });
     expect(sidebar).toContainEqual({
       label: 'Plans',
-      autogenerate: { directory: 'plans' },
+      items: [{ autogenerate: { directory: 'plans' } }],
     });
   });
 
@@ -223,6 +224,6 @@ sections:
 `;
     const reg: SectionRegistry = parseSectionRegistry(renamedTopLevel);
     const sidebar = registryToSidebar(reg, ['missions'], { warn: () => {} });
-    expect(sidebar).toEqual([{ label: 'Missions', autogenerate: { directory: 'missions' } }]);
+    expect(sidebar).toEqual([{ label: 'Missions', items: [{ autogenerate: { directory: 'missions' } }] }]);
   });
 });
