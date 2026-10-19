@@ -8,7 +8,7 @@
  */
 import type { APIRoute } from 'astro';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { rankForFeed, sectionOf, feedDateMillis, compareSlug, sectionLabel, includedInRssFeed } from '../metadata.js';
+import { rankForFeed, sectionOf, feedDateMillis, sectionLabel, includedInRssFeed, isPublished } from '../metadata.js';
 import { resolveSectionRegistry, sectionLabels, sectionFeeds, feedsSurface } from '../sections.js';
 import { absolute, docsRoot, xmlEscape } from './shared.js';
 import { collectDocEntries } from '../docs-index.js';
@@ -21,8 +21,7 @@ export interface RssRouteOptions {
 export function rssRoute(options: RssRouteOptions): APIRoute {
   return async ({ site }) => {
     // FR-011 (T013): exclude `kind: Presentation` decks from RSS *here* in the
-    // route body — `rankForFeed` stays untouched so sitemap/llms/agent keep the
-    // deck (RT-07). The exclusion predicate is a pure metadata helper so it is
+    // route body, so sitemap/llms/agent keep the deck (RT-07). The exclusion predicate is a pure metadata helper so it is
     // unit-testable without pulling in Astro; it keys on frontmatter `kind`,
     // never the section path, so a deck filed anywhere is still excluded (A-05).
     // Registry-driven section labels for the item <category> fallback; a
@@ -36,21 +35,25 @@ export function rssRoute(options: RssRouteOptions): APIRoute {
     // that OMITS `feeds` feeds all four surfaces (absent = all), and an absent
     // registry means `feeds` is undefined → no filtering (byte-compatible).
     const feeds = registry ? sectionFeeds(registry) : undefined;
-    // #190: every item carries a <pubDate>, so a page with no date (no `updated`
-    // and no `generated.at`) is left out, and items sort by the date they carry.
-    const entries = rankForFeed(await collectDocEntries())
+    // #190: every item carries a <pubDate>; `rankForFeed` owns the order and
+    // leaves out a page with no date (no `updated`, no `generated.at`).
+    const candidates = (await collectDocEntries())
       .filter(includedInRssFeed)
-      .filter((entry) => feedsSurface(feeds, sectionOf(entry.slug), 'rss'))
-      .map((entry) => ({ entry, millis: feedDateMillis(entry.data) }))
-      .filter(({ millis }) => millis > 0)
-      .sort((a, b) => b.millis - a.millis || compareSlug(a.entry.slug, b.entry.slug));
+      .filter((entry) => feedsSurface(feeds, sectionOf(entry.slug), 'rss'));
+    const entries = rankForFeed(candidates);
+    const undated = candidates
+      .filter((entry) => isPublished(entry.data) && !entries.includes(entry))
+      .map((entry) => entry.slug || '(root)');
+    if (undated.length > 0) {
+      console.warn(`[dk-rss] left out of rss.xml, no updated or generated.at date: ${undated.join(', ')}`);
+    }
     const self = absolute(site, '/rss.xml');
     const home = absolute(site, '/');
 
     const items = entries
-      .map(({ entry, millis }) => {
+      .map((entry) => {
         const link = absolute(site, routeOfSlug(entry.slug));
-        const pubDate = new Date(millis).toUTCString();
+        const pubDate = new Date(feedDateMillis(entry.data)).toUTCString();
         const section = sectionOf(entry.slug);
         const category = entry.data.type ?? sectionLabel(section, labels) ?? 'Doc';
         return [

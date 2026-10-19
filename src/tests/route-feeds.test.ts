@@ -237,3 +237,63 @@ describe('listed addresses follow the route rule (FR-001, issue 134)', () => {
     expect(routeOf('')).toBe('/');
   });
 });
+
+/**
+ * #190 — an RSS item is dated from `updated`, else the generator stamp's
+ * `generated.at`; a page with neither is left out (with a build warning), so
+ * every item carries a `<pubDate>` (the build gate asserts that on the built
+ * feed). Entries are added for this block only and removed after it.
+ */
+describe('rssRoute — item dates (#190)', () => {
+  const added: string[] = [];
+  const itemsOf = (xml: string) => xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
+  const linkOf = (item: string) => item.match(/<link>([^<]*)<\/link>/)?.[1];
+  const add = (id: string, data: Record<string, unknown>) => {
+    entries.push({ id, filePath: path.join(root, `${id}.md`), data: { doc_status: 'active', ...data } });
+    added.push(id);
+  };
+
+  beforeAll(() => {
+    add('guides/dated-new', { title: 'Authored', updated: '2026-03-01' });
+    // Same date as above: ties sort by slug.
+    add('guides/dated-new-also', { title: 'Also authored', updated: '2026-03-01' });
+    add('guides/generated', {
+      title: 'Generated feature',
+      kind: 'Specification',
+      generated: { by: 'doc-kitty-gherkin/0.4.0', at: '2026-05-01T10:00:00Z' },
+    });
+    // `updated` wins over the generator stamp.
+    add('guides/tagged', {
+      title: 'Tagged feature',
+      updated: '2026-02-01',
+      generated: { by: 'doc-kitty-gherkin/0.4.0', at: '2026-06-01T10:00:00Z' },
+    });
+    add('guides/undated', { title: 'Undated' });
+  });
+
+  afterAll(() => {
+    for (const id of added) entries.splice(entries.findIndex((e) => e.id === id), 1);
+  });
+
+  it('dates by updated else generated.at, orders newest first, and leaves out (and warns about) an undated page', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const xml = await renderText(rssRoute({ title: 'Docs' }));
+      const items = itemsOf(xml);
+      const mine = items.filter((i) => /guides\/(dated|generated|tagged)/.test(linkOf(i) ?? ''));
+      expect(mine.map(linkOf)).toEqual([
+        'https://docs.example/guides/generated/',
+        'https://docs.example/guides/dated-new/',
+        'https://docs.example/guides/dated-new-also/',
+        'https://docs.example/guides/tagged/',
+      ]);
+      expect(mine[0]).toContain(`<pubDate>${new Date('2026-05-01T10:00:00Z').toUTCString()}</pubDate>`);
+      expect(mine[3]).toContain(`<pubDate>${new Date('2026-02-01').toUTCString()}</pubDate>`);
+      expect(xml).not.toContain('https://docs.example/guides/undated/');
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0]![0]).toContain('guides/undated');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});

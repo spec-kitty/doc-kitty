@@ -293,7 +293,7 @@ export function updatedMillis(data: DocKittyFrontmatter): number {
 /**
  * The date a feed item carries (#190): `updated`, else the generator stamp's
  * `generated.at` (generated Gherkin and glossary pages carry no `updated`).
- * 0 when the page has neither; the RSS route leaves such a page out.
+ * 0 when the page has neither; {@link rankForFeed} leaves such a page out.
  */
 export function feedDateMillis(data: DocKittyFrontmatter): number {
   return updatedMillis(data) || (normaliseInstant(data.generated?.at)?.date.getTime() ?? 0);
@@ -481,36 +481,35 @@ export function sortBySlug(entries: DocEntry[]): DocEntry[] {
 }
 
 /**
- * Published entries for feeds. ORDER: `updated` descending (most recent first),
- * then slug ascending.
+ * Published, DATED entries for feeds: the one owner of feed ordering. ORDER:
+ * {@link feedDateMillis} descending (most recent first), then slug ascending.
+ * An entry with no feed date (no `updated`, no `generated.at`) is left out
+ * here, so every ranked entry can carry a `<pubDate>` (#190); callers that want
+ * to report the omission compare against their input.
  *
  * WHY the slug tiebreak (#85): the primary key alone is NOT a total comparator —
- * most pages share an `updated` date (22 of 26 feed items in the demonstrator),
- * and `Array#sort` is stable, so tied items kept their INPUT order. That input
+ * most pages share a date (22 of 26 feed items in the demonstrator), and
+ * `Array#sort` is stable, so tied items kept their INPUT order. That input
  * is `getCollection('docs')`, whose store Astro's glob loader fills in the
  * completion order of a concurrent read+render pool — i.e. build-timing noise.
  * Two clean builds of an unchanged tree therefore emitted different `rss.xml`
  * bytes. Breaking ties on the unique slug makes the comparator total, so the
  * feed order is a function of the content alone and byte-oracles on the built
- * corpus are trustworthy. Entries without `updated` sort last (millis 0) and
- * among themselves by slug.
+ * corpus are trustworthy. Only the RSS route calls this: sitemap, llms.txt and
+ * the agent API order by {@link sectionRank}/{@link rankForAgents} instead.
  */
 export function rankForFeed(entries: DocEntry[]): DocEntry[] {
   return entries
-    .filter((e) => isPublished(e.data))
-    .sort((a, b) => {
-      const byUpdated = updatedMillis(b.data) - updatedMillis(a.data);
-      if (byUpdated !== 0) return byUpdated;
-      return compareSlug(a.slug, b.slug);
-    });
+    .filter((e) => isPublished(e.data) && feedDateMillis(e.data) > 0)
+    .sort((a, b) => feedDateMillis(b.data) - feedDateMillis(a.data) || compareSlug(a.slug, b.slug));
 }
 
 /**
  * RSS-only inclusion predicate (FR-011): a `kind: Presentation` deck is
  * published on every surface (sitemap, llms.txt, agent API, Pagefind) EXCEPT
  * the RSS feed. This is a standalone predicate the `rss.ts` route body applies;
- * it deliberately does NOT touch {@link rankForFeed}, which must keep identical
- * behaviour for the other feed surfaces (RT-07). Keyed on the frontmatter
+ * it is deliberately separate from {@link rankForFeed}, so the other surfaces
+ * keep the deck (RT-07). Keyed on the frontmatter
  * `kind`, never the section path, so a deck filed anywhere is still excluded.
  *
  * A GENERATED hub (`kind: Hub` with a generator stamp: a Gherkin section or

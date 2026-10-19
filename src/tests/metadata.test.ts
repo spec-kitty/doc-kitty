@@ -151,17 +151,17 @@ describe('rankForFeed total order (#85)', () => {
     expect(ranked.slice(1).map((e) => e.slug)).toEqual(['alpha', 'middle', 'zebra']);
   });
 
-  it('orders undated entries last, among themselves by slug', () => {
+  it('leaves out an entry with no feed date, and dates a generated page by generated.at', () => {
     const withUndated: DocEntry[] = [
       { slug: 'y-undated', data: { title: 'Y', doc_status: 'active' } },
       ...tied,
       { slug: 'b-undated', data: { title: 'B', doc_status: 'active' } },
     ];
-    expect(rankForFeed(withUndated).map((e) => e.slug)).toEqual([
-      ...expected,
-      'b-undated',
-      'y-undated',
-    ]);
+    const generated: DocEntry = {
+      slug: 'gen',
+      data: { title: 'G', doc_status: 'active', generated: { by: 'x/1', at: '2026-08-01T00:00:00Z' } },
+    };
+    expect(rankForFeed([...withUndated, generated]).map((e) => e.slug)).toEqual(['gen', ...expected]);
   });
 });
 
