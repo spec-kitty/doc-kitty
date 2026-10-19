@@ -100,7 +100,7 @@ findings:
 | C-003 no fixture pages | Yes | T030 | WP06 |
 | C-004 maintainer merges | No | — | orchestrator, see E1 |
 
-**Charter Alignment Issues:** none. ADR immutability is respected (new ADR-0061 and ADR-0062; ADR-0045 is not edited). Living documentation is met inside the same PR (WP01, WP07). The WCAG 2.2 AA target gains an explicit guard. Path-scoped CI keeps one `ci-ok` aggregate.
+**Charter Alignment Issues:** none. ADR immutability is respected (new ADR-0063 and ADR-0064; ADR-0045 is not edited). Living documentation is met inside the same PR (WP01, WP07). The WCAG 2.2 AA target gains an explicit guard. Path-scoped CI keeps one `ci-ok` aggregate.
 
 **Unmapped Tasks:** none. All 45 subtasks belong to exactly one WP and trace to at least one requirement.
 

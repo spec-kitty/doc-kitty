@@ -25,13 +25,13 @@ history:
 agent_profile: architect-alphonso
 authoritative_surface: docs/adr/
 create_intent:
-- docs/adr/0061-sidebar-carrier.md
-- docs/adr/0062-default-frame-cap.md
+- docs/adr/0063-sidebar-carrier.md
+- docs/adr/0064-default-frame-cap.md
 execution_mode: planning_artifact
 model: ''
 owned_files:
-- docs/adr/0061-sidebar-carrier.md
-- docs/adr/0062-default-frame-cap.md
+- docs/adr/0063-sidebar-carrier.md
+- docs/adr/0064-default-frame-cap.md
 - docs/adr/README.md
 - docs/architecture/collapsible-toc-rail.md
 - docs/architecture/theming.md
@@ -86,9 +86,9 @@ Use language identifiers in code blocks: ````python`,````bash`
 Record each owner decision where the next maintainer will look, before the code
 that depends on it lands. When this WP is done:
 
-- ADR-0061 records that `Sidebar` is the sixth carrier (#203). It amends the carrier
+- ADR-0063 records that `Sidebar` is the sixth carrier (#203). It amends the carrier
   lock of ADR-0013, ADR-0015 and ADR-0044.
-- ADR-0062 records the 120rem default frame cap (#205) and supersedes ADR-0045
+- ADR-0064 records the 120rem default frame cap (#205) and supersedes ADR-0045
   decision 1. ADR-0045 itself is **not** edited (ADRs are immutable; see
   `.kittify/charter/charter.md`, "Amendment and exceptions").
 - The rail architecture page records the accepted rail/no-rail column shift (#204)
@@ -141,16 +141,16 @@ spec-kitty agent action implement WP01 --agent claude --mission layout-guards-de
 
 ## Subtasks & Detailed Guidance
 
-### Subtask T001 – Write ADR-0061: `Sidebar` is the sixth carrier
+### Subtask T001 – Write ADR-0063: `Sidebar` is the sixth carrier
 
 - **Purpose**: The owner chose to inline the reveal script right after the sidebar
   markup (#203). Only a `Sidebar` component override can place it there, and the
   carrier map is locked at five. The lock is an ADR decision, so changing it needs
   an ADR.
 - **Steps**:
-  1. Run `ls docs/adr` and confirm 0061 is free. If another ADR took it, use the next
-     free number and tell the orchestrator so ADR-0062's number moves too.
-  2. Create `docs/adr/0061-sidebar-carrier.md` with:
+  1. Run `ls docs/adr` and confirm 0063 is free. If another ADR took it, use the next
+     free number and tell the orchestrator so ADR-0064's number moves too.
+  2. Create `docs/adr/0063-sidebar-carrier.md` with:
      - **Context.** On a first visit the reveal ran on `DOMContentLoaded`, so the
        sidebar painted at the top and jumped later. Use the measured figures: about
        60 ms locally, about 2 s with a slow HTML tail, about 4 s with slow module
@@ -181,17 +181,17 @@ spec-kitty agent action implement WP01 --agent claude --mission layout-guards-de
        `architecture/collapsible-toc-rail`.
   3. Set `## Status` to `Accepted`. The owner decided on 2026-10-19; check the
      research note.
-- **Files**: `docs/adr/0061-sidebar-carrier.md` (new, about 60 to 90 lines)
+- **Files**: `docs/adr/0063-sidebar-carrier.md` (new, about 60 to 90 lines)
 - **Parallel?**: Yes, with T002.
 - **Notes**: Name the alternative that was declined and why the owner chose this one:
   exact placement and no timing assumption.
 
-### Subtask T002 – Write ADR-0062: the frame is capped at 120rem by default
+### Subtask T002 – Write ADR-0064: the frame is capped at 120rem by default
 
 - **Purpose**: ADR-0045 decision 1 made full width the default and the cap opt-in.
   The owner reversed that for 0.5.0 (#205).
 - **Steps**:
-  1. Create `docs/adr/0062-default-frame-cap.md`.
+  1. Create `docs/adr/0064-default-frame-cap.md`.
   2. **Context.** At 2560 px, uncapped, there are 512 px of empty space on each side
      of the column on a rail page and 656 px on a page without a rail. The cost is
      the eye and pointer travel from the navigation to the text. Include the
@@ -217,7 +217,7 @@ spec-kitty agent action implement WP01 --agent claude --mission layout-guards-de
      - ADR-0045 keeps its status; this ADR records the supersession.
   6. `related`: `adr/0045-frame-width-token`, `adr/0053-reading-width`,
      `architecture/collapsible-toc-rail`, `guides/consumer-setup`.
-- **Files**: `docs/adr/0062-default-frame-cap.md` (new, about 60 to 80 lines)
+- **Files**: `docs/adr/0064-default-frame-cap.md` (new, about 60 to 80 lines)
 - **Parallel?**: Yes, with T001.
 
 ### Subtask T003 – Regenerate and check the ADR index; cross-link related ADRs
@@ -249,7 +249,7 @@ spec-kitty agent action implement WP01 --agent claude --mission layout-guards-de
      - The header search now tracks the column (#216), so the column and the search
        move together.
   2. **Update the carrier list** (around lines 73 to 78 in the current file) from
-     five to six. Add `Sidebar` and link ADR-0061.
+     five to six. Add `Sidebar` and link ADR-0063.
   3. **Re-stamp the upgrade tripwire.** It currently says it was verified against
      `@astrojs/starlight@0.32.6` (around line 96). Change it to 0.42.6, and add
      `Sidebar` props and the persister element name to what an upgrade must
@@ -283,7 +283,7 @@ spec-kitty agent action implement WP01 --agent claude --mission layout-guards-de
      - List `--dk-width-frame`'s new default, 120rem, wherever the page lists width
        tokens.
   2. In `docs/architecture/starlight-integration.md`: wherever the five carriers are
-     listed, make it six (add `Sidebar`, link ADR-0061), and note that the reveal
+     listed, make it six (add `Sidebar`, link ADR-0063), and note that the reveal
      script now ships from the `Sidebar` carrier, not from `head`.
   3. Run `grep -rn "five carriers\|fifth carrier\|0\.32" docs/architecture` and fix
      each hit in the three owned pages. A hit in an unowned page goes in your
@@ -337,12 +337,12 @@ same way `ci.yml` installs it. Do not add it to the repository.
   exactly what the spec's FRs say, nothing more, so a reviewer can check each claim
   against the code later.
 - **Editing an accepted ADR by accident.** `git diff --stat docs/adr` must show only
-  0061, 0062 and README.md.
+  0063, 0064 and README.md.
 
 ## Review Guidance
 
 - **SC-005**: every row of "Decisions taken" in the research note has a citation in
-  ADR-0061, ADR-0062, `collapsible-toc-rail.md`, `theming.md` or the earlier
+  ADR-0063, ADR-0064, `collapsible-toc-rail.md`, `theming.md` or the earlier
   mission's records. Reviewers tick them off one by one.
 - ADR-0045, ADR-0044, ADR-0015 and ADR-0013 are byte-unchanged.
 - The figures quoted match the research note exactly.

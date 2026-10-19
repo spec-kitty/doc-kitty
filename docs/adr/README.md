@@ -74,7 +74,7 @@ kind: Hub
 | [0060](./0060-markdown-processor-unified-for-astro-7.md) | ADR-0060: Keep remark and rehype on Astro's unified() processor for Astro 7 | Accepted | 2026-10-18 |
 | [0061](./0061-gherkin-authoring-aids.md) | ADR-0061: Gherkin authoring aids: a folder default glossary context and an imperative-step lint | Accepted | 2026-10-19 |
 | [0062](./0062-specification-layout-and-draft-notice.md) | ADR-0062: A Specification layout with a header card, and a draft notice on every draft page | Accepted | 2026-10-19 |
-| [0061](./0061-sidebar-carrier.md) | ADR-0061: Sidebar is the sixth carrier; the sidebar reveal runs right after the sidebar markup | Accepted | 2026-10-19 |
-| [0062](./0062-default-frame-cap.md) | ADR-0062: The page frame is capped at 120rem by default | Accepted | 2026-10-19 |
+| [0063](./0063-sidebar-carrier.md) | ADR-0063: Sidebar is the sixth carrier; the sidebar reveal runs right after the sidebar markup | Accepted | 2026-10-19 |
+| [0064](./0064-default-frame-cap.md) | ADR-0064: The page frame is capped at 120rem by default | Accepted | 2026-10-19 |
 
 New ADRs copy [`template.md`](./template.md).

@@ -68,7 +68,7 @@
       "criterion_id": "FR-007",
       "description": "Verify FR-007 is satisfied",
       "proof_type": "automated_test",
-      "evidence": "theme.css 120rem default; frame-alignment C1/C2/N1 (2560 cap, 100% opt-out, NARROW_BASELINE); layout-css-contract.test.ts; ADR-0062; docs+changelog (WP07); WP05 approved",
+      "evidence": "theme.css 120rem default; frame-alignment C1/C2/N1 (2560 cap, 100% opt-out, NARROW_BASELINE); layout-css-contract.test.ts; ADR-0064; docs+changelog (WP07); WP05 approved",
       "pass_fail": "pass",
       "verified_by": "claude",
       "verified_at": "2026-10-19T09:17:26.710547+00:00",

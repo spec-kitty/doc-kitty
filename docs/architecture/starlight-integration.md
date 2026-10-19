@@ -10,7 +10,7 @@ related:
   - architecture/overview
   - adr/0001-build-on-astro-starlight
   - adr/0044-header-carrier
-  - adr/0061-sidebar-carrier
+  - adr/0063-sidebar-carrier
   - architecture/collapsible-toc-rail
 ---
 
@@ -31,7 +31,7 @@ the [overview](./overview.md) names as a component.
   `Head`, `PageTitle`, `MarkdownContent`, `Footer`, `Header` and `Sidebar`. The map
   is applied after a consumer's `starlight.components`, so it is the same on every
   site ([ADR-0044](../adr/0044-header-carrier.md),
-  [ADR-0061](../adr/0061-sidebar-carrier.md)).
+  [ADR-0063](../adr/0063-sidebar-carrier.md)).
 - **The sitemap preset** — how `@astrojs/sitemap` is configured and gated to
   published pages.
 - **`<head>` links** — the feed (`rss.xml`) and agent-API discovery links

@@ -15,8 +15,8 @@ related:
   - adr/0015-m2-slot-resolution-and-components-map-seam
   - adr/0044-header-carrier
   - adr/0045-frame-width-token
-  - adr/0061-sidebar-carrier
-  - adr/0062-default-frame-cap
+  - adr/0063-sidebar-carrier
+  - adr/0064-default-frame-cap
   - architecture/research/layout-guards-and-decisions
 ---
 
@@ -89,7 +89,7 @@ two structural reasons:
   ([ADR-0013](../adr/0013-m1-chrome-substrate-single-layer.md),
   [ADR-0015](../adr/0015-m2-slot-resolution-and-components-map-seam.md),
   [ADR-0044](../adr/0044-header-carrier.md),
-  [ADR-0061](../adr/0061-sidebar-carrier.md)). The sixth carrier, `Sidebar`,
+  [ADR-0063](../adr/0063-sidebar-carrier.md)). The sixth carrier, `Sidebar`,
   renders Starlight's own sidebar unchanged and then the script that reveals the
   current entry, so the reveal runs before the sidebar is first painted (#203).
   It does not touch the rail.
@@ -120,7 +120,7 @@ pixels, with the rail expanded:
 | 2560 | 800 | 944 | 144 |
 
 They were measured with a full-width frame. The 120rem default frame
-([ADR-0062](../adr/0062-default-frame-cap.md)) leaves them unchanged: the frame
+([ADR-0064](../adr/0064-default-frame-cap.md)) leaves them unchanged: the frame
 is the viewport up to 1920px, and at 2560px the frame and the column are both
 centred, so the column starts at the same place.
 
@@ -193,7 +193,7 @@ for the expanded geometry):
   Starlight's by layer order. Specificity decides only between toolkit rules.
 - **The `Sidebar` component's props.** The `Sidebar` carrier passes Starlight's
   props through to Starlight's own `Sidebar`
-  ([ADR-0061](../adr/0061-sidebar-carrier.md)). A bump that changes those props
+  ([ADR-0063](../adr/0063-sidebar-carrier.md)). A bump that changes those props
   must be checked against the carrier.
 - **`sl-sidebar-state-persist`**, the element in which Starlight's
   `SidebarPersister` wraps the sidebar tree. Its closing script restores the

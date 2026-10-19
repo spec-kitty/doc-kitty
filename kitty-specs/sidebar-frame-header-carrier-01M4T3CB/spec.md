@@ -233,4 +233,4 @@ The requirement text above is as written at planning time. Where it differs from
 
 ## Amendments (2026-10-19, after delivery)
 
-- **NFR-005.** Its reveal half ("revealing the current sidebar entry") is replaced by `layout-guards-decisions-01M59CGE#NFR-005`: the reveal is measured at first paint, not through layout shift, because a scroll inside the sidebar is not a layout shift. The toggle half stands. See [ADR-0061](../../docs/adr/0061-sidebar-carrier.md) (issue #203).
+- **NFR-005.** Its reveal half ("revealing the current sidebar entry") is replaced by `layout-guards-decisions-01M59CGE#NFR-005`: the reveal is measured at first paint, not through layout shift, because a scroll inside the sidebar is not a layout shift. The toggle half stands. See [ADR-0063](../../docs/adr/0063-sidebar-carrier.md) (issue #203).

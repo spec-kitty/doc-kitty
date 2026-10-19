@@ -29,8 +29,8 @@
         "WP01"
       ],
       "write_scope": [
-        "docs/adr/0061-sidebar-carrier.md",
-        "docs/adr/0062-default-frame-cap.md",
+        "docs/adr/0063-sidebar-carrier.md",
+        "docs/adr/0064-default-frame-cap.md",
         "docs/adr/README.md",
         "docs/architecture/collapsible-toc-rail.md",
         "docs/architecture/starlight-integration.md",

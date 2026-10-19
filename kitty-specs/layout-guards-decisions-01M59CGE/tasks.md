@@ -12,8 +12,8 @@ Subtask rows below are references, not checkboxes. Completion is recorded with
 
 | ID | Description | WP | Parallel |
 | --- | --- | --- | --- |
-| T001 | Write ADR-0061: `Sidebar` is the sixth carrier | WP01 | [P] |
-| T002 | Write ADR-0062: the frame is capped at 120rem by default | WP01 | [P] |
+| T001 | Write ADR-0063: `Sidebar` is the sixth carrier | WP01 | [P] |
+| T002 | Write ADR-0064: the frame is capped at 120rem by default | WP01 | [P] |
 | T003 | Regenerate and check the ADR index; cross-link related ADRs | WP01 | |
 | T004 | Update the rail architecture page (#204 accepted shift, six carriers, tripwire) | WP01 | [P] |
 | T005 | Update the theming and Starlight integration pages | WP01 | [P] |
@@ -69,8 +69,8 @@ Subtask rows below are references, not checkboxes. Completion is recorded with
 - **Independent test**: `pnpm validate:docs`, `pnpm validate:adr-index`,
   `pnpm validate:links` and Vale pass, and every row of "Decisions taken" is cited.
 - **Subtasks**:
-  - T001 Write ADR-0061: `Sidebar` is the sixth carrier (WP01)
-  - T002 Write ADR-0062: the frame is capped at 120rem by default (WP01)
+  - T001 Write ADR-0063: `Sidebar` is the sixth carrier (WP01)
+  - T002 Write ADR-0064: the frame is capped at 120rem by default (WP01)
   - T003 Regenerate and check the ADR index; cross-link related ADRs (WP01)
   - T004 Update the rail architecture page (#204 accepted shift, six carriers, tripwire) (WP01)
   - T005 Update the theming and Starlight integration pages (WP01)

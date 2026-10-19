@@ -450,7 +450,7 @@ text block centred in it, at most 960px (60rem, see
 [ADR-0053](../adr/0053-reading-width.md)).
 
 Since 0.5.0 the frame is capped at 120rem by default
-([ADR-0062](../adr/0062-default-frame-cap.md)). On a viewport wider than 1920px
+([ADR-0064](../adr/0064-default-frame-cap.md)). On a viewport wider than 1920px
 the frame is 1920px wide and centred. At 1920px and narrower the frame is the
 full viewport, so those layouts are unchanged.
 
@@ -519,7 +519,7 @@ Five things to know:
   [Collapsible TOC rail](../architecture/collapsible-toc-rail.md#rail-and-no-rail-pages-the-column-shift-is-accepted).
 
 The token is described in [ADR-0045](../adr/0045-frame-width-token.md), and the
-120rem default in [ADR-0062](../adr/0062-default-frame-cap.md).
+120rem default in [ADR-0064](../adr/0064-default-frame-cap.md).
 
 ### Replace the site header
 
@@ -533,7 +533,7 @@ still wants (site title, search, theme select). See
 
 The toolkit renders Starlight's sidebar through its own `Sidebar` carrier, which
 adds the script that scrolls the current entry into view before first paint
-([ADR-0061](../adr/0061-sidebar-carrier.md)). A `Sidebar` override passed
+([ADR-0063](../adr/0063-sidebar-carrier.md)). A `Sidebar` override passed
 through `starlight.components` is discarded. A Starlight plugin in
 `starlight.plugins` that overrides `Sidebar` does win, because plugins run after
 the user config, and the reveal is then lost. If you use such a plugin, have its

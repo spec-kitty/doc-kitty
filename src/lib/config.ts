@@ -13,7 +13,7 @@
  * integration), and layers brand/consumer `customCss` AFTER it (seam 2). With NO
  * theme the call is byte-compatible with M1 — the single static `theme.css`
  * `customCss` entry and no generated sheet (NFR-002). The `components` map stays
- * the six carriers in both cases (seam 3, ADR-0061); theme `assets` ride Starlight-native
+ * the six carriers in both cases (seam 3, ADR-0063); theme `assets` ride Starlight-native
  * `logo`/`favicon`/`title`, never a components override (ADR-0015 decision 4/5).
  */
 import { readdirSync, statSync } from 'node:fs';
@@ -172,7 +172,7 @@ export interface DocKittyOptions {
    * `theme.css`, no generated sheet). Providing a theme emits the merged token
    * sheet + bridge and layers brand/consumer `customCss` after it (seam 2). Note
    * the `components` map is FIXED at the six carriers regardless of theme (seam
-   * 3, ADR-0061); the `starlight` escape hatch cannot add a seventh carrier
+   * 3, ADR-0063); the `starlight` escape hatch cannot add a seventh carrier
    * override.
    */
   theme?: DocKittyTheme;
@@ -283,7 +283,7 @@ function discoveryHead(basePrefix: string): NonNullable<StarlightUserConfig['hea
 
 /**
  * The six chrome carriers doc-kitty registers with Starlight (ADR-0013, as
- * amended by ADR-0044, which adds `Header`, and ADR-0061, which adds `Sidebar`).
+ * amended by ADR-0044, which adds `Header`, and ADR-0063, which adds `Sidebar`).
  * A theme targets the carriers' `dk:` slot names, never Starlight's `components`
  * map. `Header` hosts the single `dk:site-header` slot and renders Starlight's
  * stock header when no theme fills it, with no wrapper, so a site without a theme
@@ -576,7 +576,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
       { tag: 'script', content: PRE_PAINT_SCRIPT },
       // The current-sidebar-entry reveal (FR-022) is not a head entry: the
       // `Sidebar` carrier ships it right after Starlight's sidebar, so it runs
-      // before the sidebar is first painted (FR-004, ADR-0061).
+      // before the sidebar is first painted (FR-004, ADR-0063).
     ],
     customCss,
     ...overrides,
@@ -611,7 +611,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     plugins: [DOC_KITTY_I18N_PLUGIN, ...(overrides?.plugins ?? [])],
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
     // six carriers, in EVERY case (with or without a theme; ADR-0044 added
-    // `Header` to the original four, ADR-0061 added `Sidebar`). The exactly-six
+    // `Header` to the original four, ADR-0063 added `Sidebar`). The exactly-six
     // invariant is established HERE by config ordering — `components` is
     // applied AFTER `...overrides`, so a consumer's escape hatch cannot silently
     // add a seventh carrier override (a theme addresses the carriers' `dk:`

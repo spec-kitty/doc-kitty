@@ -565,7 +565,7 @@ describe('REVEAL_CURRENT_SCRIPT (T023, FR-022; inline since FR-004)', () => {
 
   /**
    * Run the inline script against a stub document. It ships right after
-   * Starlight's sidebar (the `Sidebar` carrier, ADR-0061), where the document is
+   * Starlight's sidebar (the `Sidebar` carrier, ADR-0063), where the document is
    * still `'loading'`, so it must act at once and never wait for an event.
    */
   function run(opts: { pane?: Rect; current?: Rect | null; readyState?: string; scrollTop?: number }) {
@@ -799,7 +799,7 @@ describe('integration wiring (T022, C-004)', () => {
     expect(head.some((entry) => entry.content === REVEAL_CURRENT_SCRIPT)).toBe(false);
   });
 
-  it('registers the Sidebar carrier that ships it (ADR-0061)', () => {
+  it('registers the Sidebar carrier that ships it (ADR-0063)', () => {
     const components = starlightOf(defineDocKittyIntegrations({ title: 'Docs' })).components ?? {};
     expect(components.Sidebar).toBe('@spec-kitty/doc-toolkit/components/Sidebar.astro');
     const carrier = readFileSync(new URL('../components/Sidebar.astro', import.meta.url), 'utf8');

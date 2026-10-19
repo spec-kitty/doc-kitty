@@ -156,7 +156,7 @@ function main() {
   check(registration !== '', 'frame: --dk-width-frame is a registered property');
   check(
     /initial-value:1920px/.test(registration) && /syntax:["']<length-percentage>["']/.test(registration),
-    'frame: the registration is a <length-percentage> with initial value 1920px (ADR-0062)',
+    'frame: the registration is a <length-percentage> with initial value 1920px (ADR-0064)',
     registration,
   );
   check(
@@ -166,7 +166,7 @@ function main() {
   check(/--dk-width-frame:90rem/.test(css), "frame: the consumer's 90rem cap is in the loaded CSS");
   // Both must be present: `lastIndexOf` is -1 for a missing default, and the
   // comparison below would then pass with nothing to come after.
-  check(/--dk-width-frame:120rem/.test(css), "frame: the toolkit's 120rem default is in the loaded CSS (ADR-0062)");
+  check(/--dk-width-frame:120rem/.test(css), "frame: the toolkit's 120rem default is in the loaded CSS (ADR-0064)");
   check(
     css.lastIndexOf('--dk-width-frame:90rem') > css.lastIndexOf('--dk-width-frame:120rem'),
     "frame: the consumer's value comes after the toolkit default",

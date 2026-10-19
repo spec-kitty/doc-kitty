@@ -1,6 +1,6 @@
 // Frame geometry decisions (layout-guards-decisions-01M59CGE, WP05 T022..T024 —
 // FR-005, FR-006, FR-007, NFR-006, SC-001, SC-004; issues #216, #217, #205;
-// ADR-0062).
+// ADR-0064).
 //
 //   S1  #216  the header search starts where the reading column starts (±1px):
 //             rail page expanded and collapsed, no-rail page; 1440, 1920, 2560;
@@ -43,7 +43,7 @@ const HEIGHT = 900;
 const TOLERANCE = 1;
 const REM = 16;
 const COLLAPSED_KEY = 'dk-toc-collapsed';
-/** ADR-0062: the default frame cap. */
+/** ADR-0064: the default frame cap. */
 const DEFAULT_FRAME = 120 * REM;
 /** WP05 T023: the collapsed column box ends at least this far before the toggle. */
 const TOGGLE_CLEARANCE = 4;
@@ -267,7 +267,7 @@ const NARROW_EXCEPTIONS: Partial<Record<keyof typeof NARROW_BASELINE, Record<num
   },
 };
 
-test.describe('frame alignment — the 120rem default frame (#205, ADR-0062)', () => {
+test.describe('frame alignment — the 120rem default frame (#205, ADR-0064)', () => {
   test('C1 2560px: the frame is 120rem wide and centred, with 192px beside the column on a rail page', async ({
     page,
   }) => {

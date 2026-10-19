@@ -89,7 +89,7 @@
      length to override it. */
   --dk-width-passport: var(--dk-width-band);
   /* Caps the page frame (sidebar + reading column + rail) and centres it.
-     The default is 120rem (ADR-0062), which leaves every viewport up to
+     The default is 120rem (ADR-0064), which leaves every viewport up to
      1920px full width; `100%` restores a full-width frame at every width. */
   --dk-width-frame: 120rem;
 

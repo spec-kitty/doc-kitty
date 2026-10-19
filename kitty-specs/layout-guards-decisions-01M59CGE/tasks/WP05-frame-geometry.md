@@ -273,7 +273,7 @@ pattern from `layout-geometry.spec.ts`.
   3. In `dk-components.css`, set `@property --dk-width-frame { initial-value: 120rem; }`,
      so an invalid value still gives the default (FR-003 of the earlier mission). Fix
      the comment block at lines 560 to 583: the frame is capped at 120rem by default
-     (ADR-0062); a site restores full width with `100%`; the example cap is 120rem,
+     (ADR-0064); a site restores full width with `100%`; the example cap is 120rem,
      not 90rem.
   4. Check that the gutter formula stays non-negative and is 0 at ≤ 1920 px.
   5. In `layout-css-contract.test.ts`, change the expected default and the initial

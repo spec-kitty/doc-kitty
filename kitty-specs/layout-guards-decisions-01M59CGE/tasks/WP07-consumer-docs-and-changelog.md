@@ -99,7 +99,7 @@ Requirements: FR-007 (docs part), FR-015 (stale figures), FR-016.
 
 ## Context & Constraints
 
-- **Decision records**: ADR-0062 (default frame cap) and ADR-0061 (`Sidebar`
+- **Decision records**: ADR-0064 (default frame cap) and ADR-0063 (`Sidebar`
   carrier), both written in WP01.
 - **Research figures** (`docs/architecture/research/layout-guards-and-decisions.md`,
   #205):
@@ -157,7 +157,7 @@ spec-kitty agent action implement WP07 --agent claude --mission layout-guards-de
   1. Find the "Cap the page width" section (anchor `#cap-the-page-width`; keep the
      anchor, since the research note and issues link to it).
   2. Rewrite it to say:
-     - The frame is capped at 120rem by default (since 0.5.0, ADR-0062).
+     - The frame is capped at 120rem by default (since 0.5.0, ADR-0064).
      - To keep the frame full width: `:root { --dk-width-frame: 100%; }` in your
        theme's token sheet, or wherever the guide already says tokens go. Check the
        rest of the guide.
@@ -189,10 +189,10 @@ spec-kitty agent action implement WP07 --agent claude --mission layout-guards-de
 
 - **Steps**: under `## [Unreleased]`, add:
   - `### 💥 Breaking`: the page frame is capped at 120rem by default (#205,
-    ADR-0062). Sites wider than 1920 px see a centred frame. To keep full width, set
+    ADR-0064). Sites wider than 1920 px see a centred frame. To keep full width, set
     `:root { --dk-width-frame: 100%; }`.
   - `### Added`, one bullet each:
-    - the `Sidebar` carrier (sixth carrier, ADR-0061);
+    - the `Sidebar` carrier (sixth carrier, ADR-0063);
     - the published-sidebar a11y lane (#200);
     - the machine-surface determinism check (#201);
     - the explicit target-size check (#202);
@@ -213,7 +213,7 @@ spec-kitty agent action implement WP07 --agent claude --mission layout-guards-de
 ### Recorded out-of-map edit (assigned by the orchestrator)
 
 - `docs/architecture/markua.md` line 88 still says the carriers are "five since
-  ADR-0044". Change it to six, citing ADR-0061. WP01 found this hit outside its
+  ADR-0044". Change it to six, citing ADR-0063. WP01 found this hit outside its
   files. Record the edit in your history note as an out-of-map change with this
   rationale.
 
