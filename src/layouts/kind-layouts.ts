@@ -12,10 +12,10 @@
  * a `Default` fallback — so the layout-resolution call site in
  * `MarkdownContent.astro` is unchanged from M1.
  *
- * No-theme parity: with no theme the manifest equals the M1 static module — `Hub`
- * registered, every other kind → `Default` — so the Hub pages still render their
- * bespoke in-frame layout and unknown/absent kinds still fall back (never throw;
- * the standalone validator only warns on unknown kinds — ADR-0009).
+ * No-theme case: with no theme the manifest registers the base kinds — `Hub` and
+ * `Specification` (ADR-0062) — and maps every other kind to `Default`, so those
+ * pages render their in-frame layout and unknown/absent kinds still fall back
+ * (never throw; the standalone validator only warns on unknown kinds — ADR-0009).
  */
 import type { LayoutComponent, ResolveLayout } from '../lib/manifest.js';
 

@@ -64,14 +64,17 @@ export type SlotComponents = Partial<Record<string, LayoutComponent>>;
 /**
  * Doc-kitty's own base layout registrations — package export specifiers resolved
  * from the toolkit workspace dependency, exactly like the carriers in `config.ts`.
- * `Default` is the fallback for every unknown/absent kind; `Hub` is the single
- * base kind (parity with M1 WP04). A theme's `layouts` map merges OVER these
- * per-kind; the `Default` FALLBACK is always doc-kitty's own because `Default`
+ * `Default` is the fallback for every unknown/absent kind; `Hub` (parity with M1
+ * WP04) and `Specification` (gherkin-authoring-aids WP06) are the base kinds.
+ * A theme's `layouts` map merges OVER these per-kind; the `Default` FALLBACK is always doc-kitty's own because `Default`
  * is not a `kind` (ADR-0009 vocabulary), so no theme can displace the fallback.
  */
 const DEFAULT_LAYOUT_PATH = '@spec-kitty/doc-toolkit/layouts/Default.astro';
 const BASE_KIND_LAYOUTS: Readonly<Record<string, string>> = {
   Hub: '@spec-kitty/doc-toolkit/layouts/Hub.astro',
+  // gherkin-authoring-aids WP06 (FR-017): on by default for `kind: Specification`;
+  // a theme maps it to Default.astro to opt out.
+  Specification: '@spec-kitty/doc-toolkit/layouts/Specification.astro',
 };
 
 /** Render an object literal body from prepared `key: value,` lines. */
@@ -89,8 +92,8 @@ function objectLiteral(entries: string[]): string {
  * static import synchronously on the pinned toolchain).
  *
  * No-theme (degenerate) case: `resolved.layouts`/`resolved.slots` are empty, so
- * the manifest equals the M1 static module — `Hub` registered, every other kind
- * → `Default`, no slot overrides.
+ * the manifest holds only the base kinds — `Hub` and `Specification` registered,
+ * every other kind → `Default`, no slot overrides.
  */
 export function generateManifestSource(resolved: ResolvedTheme): string {
   // Theme `layouts` merge OVER the base kind registrations (per-key last-wins).
