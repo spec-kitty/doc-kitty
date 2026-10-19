@@ -69,7 +69,9 @@ const imperative = (line: number, step: string, match: string) =>
 const selector = (line: number, step: string, arg: string) =>
   `[dk-gherkin] f.feature:${line} step "${step}" quotes a CSS selector ("${arg}") — describe the behaviour instead; silence with @dk:allow=imperative`;
 const badAllow = (line: number, value: string) =>
-  `[dk-gherkin] f.feature:${line} unknown @dk:allow value "${value}" (expected imperative); ignored`;
+  value === ''
+    ? `[dk-gherkin] f.feature:${line} metadata tag @dk:allow= has no value (expected @dk:allow=<value>); ignored`
+    : `[dk-gherkin] f.feature:${line} unknown @dk:allow value "${value}" (expected imperative); ignored`;
 
 describe('compilePhrase: a plain word or phrase, never a raw regex (R-04)', () => {
   it('matches the inflections of the first word, whole words only, any case', () => {
@@ -410,10 +412,10 @@ describe('compileRules: configuration (FR-010; US2 #9)', () => {
 });
 
 describe('the lint core is pure', () => {
-  it('imports only ./text.mjs and ./view.mjs: no fs, no console, no globals', () => {
+  it('imports only ./feature-core.mjs (fs-free), ./text.mjs and ./view.mjs: no fs, no console, no globals', () => {
     const src = readFileSync(path.join(SRC_ROOT, 'lib/gherkin/imperative.mjs'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     const specs = [...src.matchAll(/^\s*import\s+(?:[^'"]*?\s+from\s+)?['"]([^'"]+)['"]/gm)].map((m) => m[1]);
-    expect(specs).toEqual(['./text.mjs', './view.mjs']);
+    expect(specs).toEqual(['./feature-core.mjs', './text.mjs', './view.mjs']);
     expect(src).not.toMatch(/\bconsole\b|\bprocess\b|\bglobalThis\b/);
   });
 });

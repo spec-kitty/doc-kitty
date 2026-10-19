@@ -76,7 +76,26 @@ const METADATA_KEYS = /** @type {const} */ ([
 ]);
 
 /** The values `@dk:allow` accepts (#196): each names a lint the tag suppresses. */
-const ALLOW_VALUES = /** @type {const} */ (['imperative']);
+export const ALLOW_VALUES = /** @type {const} */ (['imperative']);
+
+/**
+ * The one warning for a `@dk:allow` value outside {@link ALLOW_VALUES}; shared
+ * by the frontmatter parse and the imperative-step lint so the wording cannot
+ * drift. An empty value reads "has no value", not `unknown ""`.
+ *
+ * @param {string} loc `file:line[:col]`
+ * @param {string} value
+ * @returns {string}
+ */
+export function unknownAllowWarning(loc, value) {
+  if (value === '') {
+    return `${PREFIX} ${loc} metadata tag @dk:allow= has no value (expected @dk:allow=<value>); ignored`;
+  }
+  return (
+    `${PREFIX} ${loc} unknown @dk:allow value ${JSON.stringify(value)} ` +
+    `(expected ${ALLOW_VALUES.join(' or ')}); ignored`
+  );
+}
 
 /** Keys that may appear at most once; a repeat warns and the first wins. */
 const SINGLE_VALUED = new Set(['context', 'status', 'updated', 'autolink', 'priority']);
@@ -370,10 +389,7 @@ export function parseMetadataTags(tags, { file } = {}) {
     else if (key === 'related') related.push(value);
     else if (key === 'allow') {
       if (!(/** @type {readonly string[]} */ (ALLOW_VALUES)).includes(value)) {
-        warnings.push(
-          `${PREFIX} ${loc} unknown @dk:allow value ${JSON.stringify(value)} ` +
-            `(expected ${ALLOW_VALUES.join(' or ')}); ignored`,
-        );
+        warnings.push(unknownAllowWarning(loc, value));
       } else if (!allow.includes(value)) allow.push(value);
     }
   }
