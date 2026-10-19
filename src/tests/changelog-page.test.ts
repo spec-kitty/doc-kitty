@@ -11,6 +11,8 @@ import {
   h2Texts,
   missingReleases,
   missingBodies,
+  unparsableHeadings,
+  unprobeableBodies,
   releaseSections,
   run,
 } from '../scripts/assert-changelog-page.mjs';
@@ -98,6 +100,39 @@ describe('changelog page gate (#192)', () => {
   it('fails the CLI when the bodies were dropped', () => {
     const { dist, changelog } = fixture('<h2>[0.4.0] — x</h2><h2>0.3.0</h2><h2>0.1.0</h2>');
     expect(run(['node', 'gate', dist, '--changelog', changelog])).toBe(1);
+  });
+
+  it('lists "## " headings that are neither [Unreleased] nor a release version', () => {
+    expect(unparsableHeadings(CHANGELOG)).toEqual([]);
+    const odd = CHANGELOG + '\n## [0.4]\n- x y z\n## v0.5.0\n```\n## in a fence\n```\n';
+    expect(unparsableHeadings(odd)).toEqual(['## [0.4]', '## v0.5.0']);
+  });
+
+  it('fails the CLI on an unparsable release heading instead of skipping it', () => {
+    const { dist, changelog } = fixture(FULL_PAGE);
+    writeFileSync(changelog, CHANGELOG + '\n## 0.5\n- something here today\n');
+    expect(run(['node', 'gate', dist, '--changelog', changelog])).toBe(1);
+  });
+
+  it('skips lines of fewer than three words when choosing the body sample', () => {
+    const text = '## [1.0.0]\n- Fixed\n- Fixed the login redirect loop\n';
+    expect(releaseSections(text)).toEqual([{ version: '1.0.0', sample: 'Fixed the login redirect loop' }]);
+  });
+
+  it('fails clearly when a release has no probeable body', () => {
+    const text = '## [1.0.0]\n- Fixed\n';
+    expect(unprobeableBodies(text)).toEqual(['1.0.0']);
+    const { dist, changelog } = fixture('<h2>1.0.0</h2>');
+    writeFileSync(changelog, text);
+    expect(run(['node', 'gate', dist, '--changelog', changelog])).toBe(1);
+  });
+
+  it("searches a release's body only within its own page section", () => {
+    const onlyUnderOther =
+      '<h2>[0.4.0] — x</h2><p>nothing</p>' +
+      '<h2>0.3.0</h2><p>Shared links show a full card on Slack (#180).</p>' +
+      '<h2>0.1.0</h2><ul><li>First tagged release.</li></ul>';
+    expect(missingBodies(CHANGELOG, onlyUnderOther)).toEqual(['0.4.0', '0.3.0']);
   });
 
   it('fails when the page was not built', () => {
