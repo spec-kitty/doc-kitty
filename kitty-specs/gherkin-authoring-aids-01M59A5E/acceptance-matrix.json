@@ -1,0 +1,199 @@
+{
+  "mission_slug": "gherkin-authoring-aids-01M59A5E",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-options.test.ts (defaultGlossaryContext validation); src/tests/gherkin-generate.test.ts (mapped folder sets glossary_context); src/tests/gherkin-integration.test.ts (integration hook) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:18:46.022594+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-generate.test.ts (nested shipping/eu longest prefix; ship vs shipments whole-segment) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:18:54.537565+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-feature-core.test.ts (tag beats folder; empty @dk:context falls through, warns) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:02.876136+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-generate.test.ts (unmapped billing/ page byte-identical on/off, with mapped-page positive control) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:10.797568+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-check-cli.test.ts (--default-glossary-context parsing); src/tests/gherkin-example.test.ts (FR-004a parity); pnpm validate:features exit 0 | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:18.599756+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-generate.test.ts (unknown context warns, tag and map origins; no warning without knownContexts); src/tests/gherkin-integration.test.ts (logger.warn via loadGlossary) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:26.966367+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-generate.test.ts (unused key warns once, sorted; key with feature beneath counts as used) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:35.088833+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-imperative.test.ts (flagged/clean/selector, research false-positive table); src/tests/gherkin-options.test.ts (lint option) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:43.056379+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-render.test.ts + src/tests/gherkin-lint-wiring.test.ts (warnings on, bytes/HTML identical on vs off, exit 0) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:51.203525+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-imperative.test.ts (verbs replace, extend append, keywords scope); src/tests/gherkin-options.test.ts (validation) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:19:58.766349+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-fence.test.ts + src/tests/gherkin-lint-wiring.test.ts (pages and fences warn; include and gherkin raw silent; CLI silent) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:20:06.770155+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-imperative.test.ts (Feature/Rule/Scenario @dk:allow scopes, bad value warns); src/tests/gherkin-feature-core.test.ts (allow key); src/tests/gherkin-view.test.ts (hasMetadataTag ignores @dk:allow) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:20:15.151433+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/gherkin-imperative.test.ts (nl/en pair skipped); src/tests/gherkin-render.test.ts (French feature skipped) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:20:22.971749+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Verify FR-014 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/spec-card.test.ts (tags, http(s)-only source link); src/scripts/assert-specification-artifacts.mjs (card on book-consignment) \u2014 pnpm build + assert:artifacts exit 0 | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:20:31.006116+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Verify FR-015 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/scripts/assert-specification-artifacts.mjs (exactly one starlight-toc, no nav in card, results summary at most once) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:20:39.379253+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Verify FR-016 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/draft-notice.test.ts; src/scripts/assert-chrome-artifacts.mjs check 1b (exactly one notice on each docs-frame draft page, none elsewhere; drafts-off build passes). Out-of-frame decks excluded per ADR-0062 | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:20:46.928636+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Verify FR-017 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/manifest-plugin.test.ts (Specification registered by default; theme maps it to Default to opt out) | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:20:54.809811+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Verify FR-018 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/routes.ts + tests/a11y/layout-geometry.spec.ts (feature + draft-feature routes); axe and no-horizontal-scroll specs passed on both routes in WP06 review | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:21:02.450125+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Verify FR-019 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "docs/adr/0061-gherkin-authoring-aids.md, docs/adr/0062-specification-layout-and-draft-notice.md, guides, gherkin-pages.md, theming.md, CHANGELOG.md, docs/changelog entry; validate:docs/links/adr-index exit 0 | lane-h acceptance run 2026-10-19: pnpm test 2634/2634",
+      "pass_fail": "pass",
+      "verified_by": "claude (orchestrator)",
+      "verified_at": "2026-10-19T10:21:10.224107+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
