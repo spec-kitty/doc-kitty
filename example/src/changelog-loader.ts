@@ -8,13 +8,15 @@
  *  - the leading `# Changelog` heading goes (the page has its own title);
  *  - repo-relative links (`docs/…`, `./…`) become GitHub URLs, because they
  *    name files of the repository, not pages of this site.
- * The page digest also covers CHANGELOG.md, so an incremental build or
- * `astro dev` re-renders the page when only CHANGELOG.md changes.
+ * The page digest also covers CHANGELOG.md, so an incremental build
+ * re-renders the page when only CHANGELOG.md changes; in `astro dev` the loader
+ * watches CHANGELOG.md and re-renders the page on every edit.
  *
  * `pnpm assert:changelog` (src/scripts/assert-changelog-page.mjs) fails the
  * build gate when a `## [x.y.z]` release of CHANGELOG.md is missing from it.
  */
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import type { Loader, LoaderContext } from 'astro/loaders';
 
 export const CHANGELOG_MARKER = '<!-- dk:repo-changelog -->';
@@ -70,14 +72,16 @@ export function withRepoChangelog(loader: Loader, options: RepoChangelogOptions)
   return {
     ...loader,
     load: async (context: LoaderContext): Promise<void> => {
-      const raw = readFileSync(options.changelogPath, 'utf8');
-      const body = changelogBody(raw, options.repoBlobBase);
-      const { store, generateDigest } = context;
-      const pending: Parameters<typeof store.set>[0][] = [];
+      const { store, generateDigest, renderMarkdown, watcher } = context;
+      const resolvedPath = path.resolve(options.changelogPath);
+      // The page is rendered BEFORE the wrapped loader runs, so `set` (which is
+      // synchronous) can store the finished entry at any time: during the load,
+      // and later from a file watcher in `astro dev`, long after load() returned.
+      let current = await renderChangelog(options, renderMarkdown);
       await loader.load({
         ...context,
         generateDigest: (data) =>
-          generateDigest(typeof data === 'string' && data.includes(CHANGELOG_MARKER) ? `${data}\n${raw}` : data),
+          generateDigest(typeof data === 'string' && data.includes(CHANGELOG_MARKER) ? `${data}\n${current.raw}` : data),
         store: {
           ...store,
           set: (entry) => {
@@ -87,17 +91,36 @@ export function withRepoChangelog(loader: Loader, options: RepoChangelogOptions)
                 `[changelog] ${options.entryId} must carry ${CHANGELOG_MARKER}; it is replaced by CHANGELOG.md.`,
               );
             }
-            // `set` is synchronous; the page is rendered and stored after the load.
-            pending.push({ ...entry, body });
-            return true;
+            store.delete(entry.id);
+            return store.set({ ...entry, body: current.body, rendered: current.rendered });
           },
         },
       });
-      for (const entry of pending.splice(0)) {
-        const rendered = await context.renderMarkdown(body);
-        store.delete(entry.id);
-        store.set({ ...entry, rendered });
-      }
+      // CHANGELOG.md is outside the docs glob, so watch it ourselves: an edit
+      // re-renders the page in `astro dev` without restarting the server.
+      watcher?.add(resolvedPath);
+      watcher?.on('change', async (changed: string) => {
+        if (path.resolve(changed) !== resolvedPath) return;
+        current = await renderChangelog(options, renderMarkdown);
+        const existing = store.get(options.entryId);
+        if (!existing) return;
+        store.delete(options.entryId);
+        store.set({
+          ...existing,
+          body: current.body,
+          rendered: current.rendered,
+          digest: generateDigest(`${CHANGELOG_MARKER}\n${current.raw}`),
+        });
+      });
     },
   };
+}
+
+async function renderChangelog(
+  options: RepoChangelogOptions,
+  renderMarkdown: LoaderContext['renderMarkdown'],
+): Promise<{ raw: string; body: string; rendered: Awaited<ReturnType<LoaderContext['renderMarkdown']>> }> {
+  const raw = readFileSync(options.changelogPath, 'utf8');
+  const body = changelogBody(raw, options.repoBlobBase);
+  return { raw, body, rendered: await renderMarkdown(body) };
 }
