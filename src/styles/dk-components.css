@@ -559,16 +559,20 @@
  * frame centred, leaving a dead gutter of 432px at 1920px.
  *
  * The earlier constraint that layout below 100rem stays unchanged from `main`
- * is withdrawn (FR-030; recorded in ADR-0045). The frame is now full-width by
- * default and a consumer opts into a cap with one token:
+ * is withdrawn (FR-030; recorded in ADR-0045). The frame is capped at 120rem
+ * by default (ADR-0062, which supersedes ADR-0045's full-width default). That
+ * leaves every viewport up to 1920px full width. A consumer sets another cap,
+ * or restores a full-width frame, with one token:
  *
- *   :root { --dk-width-frame: 90rem; }
+ *   :root { --dk-width-frame: 100%; }    full width at every viewport
+ *   :root { --dk-width-frame: 100rem; }  a narrower cap
  *
  * These rules live in this base GLOBAL component sheet, not in `theme.css`:
  * a brand swap replaces the token sheet outright, and layout geometry must
- * survive it. Starlight 0.32 has no cascade layers and scopes its component
- * rules with zero-specificity `:where()`, so each override below states which
- * Starlight rule it outranks.
+ * survive it. Starlight 0.42 wraps its own CSS in `@layer starlight.core`, and
+ * the rules here are unlayered, so they win by layer order whatever their
+ * specificity. The specificity notes below are kept for the order among the
+ * toolkit's own rules (this sheet and `toc-rail.css`).
  *
  * Every offset uses logical properties, so a right-to-left page is the mirror
  * image without a second set of rules (FR-012).
@@ -578,14 +582,21 @@
  * Registering the token is what makes an invalid value harmless (FR-003). An
  * unregistered custom property holding `banana` would make every declaration
  * that reads it invalid at computed-value time; a registered one computes to
- * its initial value, so the layout is the full-width default. A browser
- * without `@property` support still gets full width for a valid value and
- * for a missing one, because `max-width` falls back to `none`.
+ * its initial value, so the layout is the default frame (ADR-0062). A
+ * browser without `@property` support still honours a valid value; for an
+ * invalid one `max-width` falls back to `none`, a full-width frame.
+ *
+ * The initial value is `1920px`, which is 120rem at the 16px root size, and
+ * not `120rem` itself: an `@property` initial value must be computationally
+ * independent, and a browser drops the whole registration when it is not
+ * (`rem` depends on the root font size). The token's own default in
+ * `theme.css` stays `120rem`, so it scales with the reader's font size; only
+ * an invalid value falls back to the pixel length.
  */
 @property --dk-width-frame {
   syntax: '<length-percentage>';
   inherits: true;
-  initial-value: 100%;
+  initial-value: 1920px;
 }
 
 /*
@@ -611,8 +622,10 @@
    *
    * With this base the three kinds of value a consumer can supply agree with
    * the frame: `100%` gives (100% - 100%) / 2 = 0; `80%` gives 10% of the
-   * container; `90rem` and `1440px` give half the remaining width. Use the
-   * gutter only where a percentage resolves against the viewport width.
+   * container; `90rem` and `1440px` give half the remaining width. The
+   * default 120rem gives 0 up to a 1920px viewport and 320px at 2560px; the
+   * outer `max()` keeps it from going negative below the cap. Use the gutter
+   * only where a percentage resolves against the viewport width.
    */
   :root {
     --dk-frame-gutter: max(0px, (100% - var(--dk-width-frame)) / 2);
@@ -710,6 +723,85 @@
   html[data-has-toc]:not([data-toc-collapsed]) .main-pane {
     width: calc(100% - var(--sl-sidebar-width));
     --sl-content-margin-inline: auto;
+  }
+
+  /*
+   * The reading pane's end padding, as one length the header can read too:
+   * the content panel's own `--sl-content-pad-x` plus whatever the pane adds.
+   * It is `--sl-content-pad-x` here, so the pane adds nothing; `toc-rail.css`
+   * widens it in the collapsed state below 84rem so the column clears the
+   * toggle (#217).
+   *
+   * The extra goes on `.main-pane`, not on `.content-panel`: the pane takes
+   * the page frame's direction from `<html>`, which is the side the toggle is
+   * on, while Starlight gives `<main>` (between the two) the content's own
+   * `dir`, which differs on a fallback page of another locale.
+   */
+  html {
+    --dk-pane-pad-end: var(--sl-content-pad-x);
+  }
+
+  .main-pane {
+    padding-inline-end: calc(var(--dk-pane-pad-end) - var(--sl-content-pad-x));
+  }
+
+  /*
+   * Where the reading column starts (#216), as one toolkit-owned length:
+   * `--dk-column-inline-start`, the column's start edge measured from the
+   * start of the header's content box. It is built from the same lengths that
+   * place the column: the sidebar (`--sl-content-inline-start`), the rail
+   * (`--dk-rail-inline-size`: the pinned rail width, 1px when `toc-rail.css`
+   * collapses it, 0 without a rail), the pane's inline padding and
+   * `--sl-content-width`. The column is centred in what is left of the pane.
+   *
+   * `100%` is left unresolved on purpose: a custom property is substituted
+   * as written, and the only reader is the header grid below, where `100%`
+   * is the header's content box, the frame width minus twice
+   * `--sl-nav-pad-x`. The header's inline padding follows the frame gutter,
+   * so the length holds for a full-width and a capped frame alike. The
+   * collapsed state and pages without a rail change the inputs, not the
+   * formula, so the header and the pane cannot disagree.
+   */
+  html {
+    --dk-rail-inline-size: 0px;
+    --dk-column-inline-start: calc(
+      var(--sl-content-inline-start, 0rem) + var(--sl-content-pad-x) - var(--sl-nav-pad-x) +
+        max(
+          0px,
+          (
+              100% + 2 * var(--sl-nav-pad-x) - var(--sl-content-inline-start, 0rem) -
+                var(--dk-rail-inline-size) - var(--sl-content-pad-x) - var(--dk-pane-pad-end) -
+                var(--sl-content-width)
+            ) / 2
+        )
+    );
+  }
+
+  html[data-has-toc] {
+    --dk-rail-inline-size: var(--sl-sidebar-width);
+  }
+
+  /*
+   * The header search starts where the column starts (#216). Starlight's
+   * header grid sizes its first track from its own private lengths, which
+   * assume the stock pane and rail geometry the toolkit replaces above, so on
+   * a rail page the search sat 24px before the column, and 168px off with
+   * the rail collapsed. This rule owns the first track instead: it ends one
+   * `--sl-nav-gap` before the column, as Starlight's own track does, so the
+   * search box in the second track starts on the column's start edge.
+   * `minmax(..., auto)` keeps Starlight's floor: a site title wider than that
+   * space still pushes the search along instead of running under it.
+   *
+   * The selector is the stock header's root element only (`Header.astro`
+   * renders `div.header` inside the bar). A theme that fills
+   * `dk:site-header` replaces that element and lays out its own header.
+   * Grid tracks follow the inline axis, so a right-to-left page mirrors it.
+   */
+  header.header > .header {
+    grid-template-columns:
+      minmax(max(0px, var(--dk-column-inline-start) - var(--sl-nav-gap)), auto)
+      1fr
+      auto;
   }
 }
 

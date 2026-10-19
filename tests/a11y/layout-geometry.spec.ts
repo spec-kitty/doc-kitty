@@ -13,7 +13,8 @@
 // a failing assertion here is a layout finding.
 //
 // Assertion ids (used in the messages and in the evidence below):
-//   A1  frame fills the viewport (or is exactly the cap, centred)
+//   A1  frame fills the viewport up to the 120rem default cap (ADR-0062), or is
+//       exactly the cap a test sets; a capped frame is centred
 //   A2  sidebar start edge = frame start edge
 //   A2b reading pane starts where the sidebar ends (SC-001: no dead gutter)
 //   A3  rail start edge = rail-container start edge (the fixed rail sits in the
@@ -26,7 +27,8 @@
 //   A7  header: first item at frame start + nav padding, last at frame end - nav padding
 //   A8  collapsed rail container is 1px wide at the frame end edge
 //   A9  collapsed toggle's end edge = frame end edge (SC-003)
-//   A10 collapsed reading column is centred between sidebar and frame end
+//   A10 collapsed reading column is centred in the reading pane's padded area
+//       (between the sidebar and the frame end, less the pane's inline padding)
 //   A11 reading column never shrinks as the viewport grows (FR-006)
 //
 // FAIL-FIRST EVIDENCE (T016, SC-007). Verified red against the pre-mission layout,
@@ -88,16 +90,35 @@
 // That move is recorded at the table; this evidence block describes the frame
 // mission's fail-first run and is otherwise unchanged.
 //
+// LATER MOVE. ADR-0062 (issue #205, layout-guards-decisions WP05) caps the frame
+// at 120rem by default. Per width, with the default frame now:
+//
+//   width  frame       frame start  default-frame cases that moved
+//   1152   1152        0            A10: the collapsed pane's end padding is 36px
+//   1280   1280        0            A10: as at 1152 (#217)
+//   1600   1600        0            none
+//   1920   1920        0            none (120rem = 1920px: the cap is the viewport)
+//   2560   1920        320          A1 takes the cap; A2, A3, A7, A8, A9 follow the
+//                                   frame, not the viewport
+//
+// A10 now centres the collapsed column within the pane's padded area. Below 84rem
+// the pane's end padding is the toggle width + 4px (#217), so centring between the
+// raw sidebar and frame edges would read the padding difference as an offset; the
+// 1px tolerance is unchanged. The full-width geometry at 2560px stays covered by
+// the `100%` cases in the capped-frame describe.
+//
 // Geometry does not depend on the colour scheme (the two modes differ in colour
 // tokens only), so this spec runs in the `light` project and skips in `dark`.
 import { test, expect, type Browser, type Page } from '@playwright/test';
-import { ROUTES, TOC_RAIL_ROUTE, TOC_RAIL_TOGGLE } from './routes';
+import { ROUTES, TOC_RAIL_ROUTE, TOC_RAIL_TOGGLE, isLightProject } from './routes';
 import { measure, settle, inline, type Box, type Geometry } from './helpers/geometry';
 
 const WIDTHS = [1152, 1280, 1600, 1920, 2560] as const;
 const HEIGHT = 900;
 /** NFR-001. */
 const TOLERANCE = 1;
+/** ADR-0062: the default frame cap, 120rem at 16px. */
+const DEFAULT_FRAME = 120 * 16;
 /** NFR-002: the floor from 1600px up. */
 const COLUMN_FLOOR = 720;
 const COLUMN_FLOOR_FROM = 1600;
@@ -111,8 +132,19 @@ const ROUTE = TOC_RAIL_ROUTE;
 const COLLAPSED_KEY = 'dk-toc-collapsed';
 
 test.beforeEach(({}, testInfo) => {
-  test.skip(testInfo.project.name !== 'light', 'geometry is identical in both colour schemes');
+  test.skip(!isLightProject(testInfo), 'geometry is identical in both colour schemes');
 });
+
+/** The reading pane's inline padding, in the frame's inline direction (A10). */
+interface Pads {
+  /** `.main-pane` end padding (the #217 toggle clearance beyond the panel's own). */
+  paneEnd: number;
+  /** The article `.content-panel`'s start and end padding. */
+  panelStart: number;
+  panelEnd: number;
+}
+
+type Measured = Geometry & { pads: Pads };
 
 interface LoadOptions {
   width: number;
@@ -122,7 +154,7 @@ interface LoadOptions {
   dir?: 'rtl';
 }
 
-async function load(page: Page, opts: LoadOptions): Promise<Geometry> {
+async function load(page: Page, opts: LoadOptions): Promise<Measured> {
   await page.setViewportSize({ width: opts.width, height: HEIGHT });
   if (opts.collapsed) {
     await page.addInitScript((key) => {
@@ -146,7 +178,22 @@ async function load(page: Page, opts: LoadOptions): Promise<Geometry> {
   if (opts.css) await page.addStyleTag({ content: opts.css });
   if (opts.dir) await page.evaluate((d) => document.documentElement.setAttribute('dir', d), opts.dir);
   await settle(page);
-  return measure(page);
+  const g = await measure(page);
+  const pads = await page.evaluate(() => {
+    const rtl = getComputedStyle(document.documentElement).direction === 'rtl';
+    const side = (el: Element | null) => {
+      if (!el) return { start: 0, end: 0 };
+      const cs = getComputedStyle(el);
+      const left = parseFloat(cs.paddingLeft);
+      const right = parseFloat(cs.paddingRight);
+      return rtl ? { start: right, end: left } : { start: left, end: right };
+    };
+    const panel = document.querySelector('.sl-markdown-content')?.closest('.content-panel') ?? null;
+    const pane = side(document.querySelector('.main-pane'));
+    const p = side(panel);
+    return { paneEnd: pane.end, panelStart: p.start, panelEnd: p.end };
+  });
+  return { ...g, pads };
 }
 
 function need(box: Box | null, name: string): Box {
@@ -163,10 +210,13 @@ function near(actual: number, expected: number, label: string): void {
     .toBeLessThanOrEqual(TOLERANCE);
 }
 
-/** A1. `cap` is the expected frame width in pixels when the frame is capped. */
+/**
+ * A1. `cap` is the expected frame width in pixels when a test sets the token;
+ * without one the frame is the 120rem default (ADR-0062), full width up to 1920px.
+ */
 function assertFrame(g: Geometry, cap?: number): void {
   const frame = inline(need(g.frame, 'frame'), g);
-  const width = cap ?? g.viewportWidth;
+  const width = cap ?? Math.min(g.viewportWidth, DEFAULT_FRAME);
   near(frame.width, width, 'A1 frame width');
   near(frame.start, (g.viewportWidth - width) / 2, 'A1 frame start edge (centred)');
 }
@@ -220,10 +270,10 @@ function assertExpanded(g: Geometry): void {
 }
 
 /** A8, A9, A10. */
-function assertCollapsed(g: Geometry): void {
+function assertCollapsed(g: Measured): void {
   assertChrome(g);
   const frame = inline(need(g.frame, 'frame'), g);
-  const sidebar = inline(need(g.sidebar, 'sidebar'), g);
+  const pane = inline(need(g.pane, 'pane'), g);
   const column = inline(need(g.column, 'column'), g);
   const container = inline(need(g.railContainer, 'railContainer'), g);
   const toggle = inline(need(g.toggle, 'toggle'), g);
@@ -233,12 +283,16 @@ function assertCollapsed(g: Geometry): void {
   near(container.end, frame.end, 'A8 collapsed rail container end edge vs frame end edge');
   near(toggle.end, frame.end, 'A9 collapsed toggle end edge vs frame end edge');
 
-  const startGap = column.start - sidebar.end;
-  const endGap = frame.end - column.end;
+  // A10 (#217): centred within the pane's padded area. The pane starts at the
+  // sidebar's end (A2b) and ends at the hairline; below 84rem its end padding
+  // is wider than its start padding, so the raw edges are not the reference.
+  const startGap = column.start - (pane.start + g.pads.panelStart);
+  const endGap = pane.end - g.pads.paneEnd - g.pads.panelEnd - column.end;
   expect
     .soft(
       Math.abs(startGap - endGap),
-      `A10 collapsed column centring: ${startGap}px before, ${endGap}px after`,
+      `A10 collapsed column centring in the padded pane: ${startGap}px before, ${endGap}px after ` +
+        `(pane end padding ${g.pads.paneEnd}px + ${g.pads.panelEnd}px)`,
     )
     .toBeLessThanOrEqual(TOLERANCE);
 
@@ -332,6 +386,8 @@ test.describe('layout geometry — capped frame', () => {
   const CAPS = [
     { label: '90rem', css: ':root { --dk-width-frame: 90rem }', px: () => 90 * REM, widths: [1920, 2560] },
     { label: '80%', css: ':root { --dk-width-frame: 80% }', px: (w: number) => w * 0.8, widths: [1920] },
+    // The opt-out (ADR-0062): full width where the default would cap.
+    { label: '100%', css: ':root { --dk-width-frame: 100% }', px: (w: number) => w, widths: [2560] },
   ];
   for (const cap of CAPS) {
     for (const width of cap.widths) {
@@ -352,26 +408,34 @@ test.describe('layout geometry — capped frame', () => {
         const g = await load(page, { width, collapsed: true, css: cap.css });
         assertFrame(g, cap.px(g.viewportWidth));
         assertCollapsed(g);
-        // Non-vacuity for "relative to the frame": the frame edge is well inside the viewport.
-        expect(g.viewportWidth - need(g.frame, 'frame').right).toBeGreaterThan(100);
+        // Non-vacuity for "relative to the frame": the frame edge is well inside the
+        // viewport. The `100%` opt-out is the full-width case and has no such edge.
+        if (cap.px(g.viewportWidth) < g.viewportWidth) {
+          expect(g.viewportWidth - need(g.frame, 'frame').right).toBeGreaterThan(100);
+        }
       });
     }
   }
 
-  test('an invalid frame token at 1920px gives exactly the default layout (FR-003)', async ({
-    page,
-    browser,
-  }) => {
-    const invalid = await load(page, { width: 1920, css: ':root { --dk-width-frame: banana }' });
-    const other = await browser.newPage();
-    try {
-      const fallback = await load(other, { width: 1920 });
-      expect(invalid).toEqual(fallback);
-    } finally {
-      await other.close();
-    }
-    assertFrame(invalid);
-  });
+  // At 1920px the 120rem default and a full-width frame agree, so that case only
+  // proves the invalid value is harmless. At 2560px they differ (1920 against
+  // 2560px), so it proves the fallback is the registered 120rem initial value.
+  for (const width of [1920, 2560]) {
+    test(`an invalid frame token at ${width}px gives exactly the default layout (FR-003)`, async ({
+      page,
+      browser,
+    }) => {
+      const invalid = await load(page, { width, css: ':root { --dk-width-frame: banana }' });
+      const other = await browser.newPage();
+      try {
+        const fallback = await load(other, { width });
+        expect(invalid).toEqual(fallback);
+      } finally {
+        await other.close();
+      }
+      assertFrame(invalid);
+    });
+  }
 });
 
 // ---------------------------------------------------------------------------
