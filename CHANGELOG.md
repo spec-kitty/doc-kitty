@@ -6,8 +6,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-10-18
+
+This release moves the toolkit to Astro 7.4 and Starlight 0.42.6, and needs
+Node 22.22.0 or later. Pages render as they did on 0.3.0: heading anchor links
+stay off and the HTML keeps its whitespace. It also removes what 0.3.0
+deprecated: the scenarios API's `generated_from` and the unversioned generator
+stamps, so committed generated pages must be regenerated once. The agent API is
+now version 3. **Upgrading from 0.3.0: read the Breaking section and the
+[0.3 to 0.4 migration guide](docs/migrations/0.3-to-0.4.md) first.**
+
 ### 💥 Breaking
 
+- **Install Astro 7, Starlight 0.42 and `@astrojs/markdown-remark` 7, on Node
+  22.22.0 or later (#119, #144, #145, #146).** Before, the toolkit needed
+  Astro 5 and Starlight 0.32. Now its peer ranges are `astro >=7.2.10 <8`,
+  `@astrojs/starlight >=0.42.0 <0.43.0` and `@astrojs/markdown-remark >=7.3.0
+  <8`, and `engines.node` is `>=22.22.0`. Run
+  `pnpm add astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3`
+  and use Node 22.22 or later locally and in CI. The toolkit sets Astro's
+  Markdown processor to `unified()` itself (ADR-0060), so remark and rehype
+  plugins you add through `markdown.remarkPlugins` / `rehypePlugins` keep
+  working; do not set `markdown.processor` yourself. Astro 7 and Starlight 0.42
+  bring their own breaking changes for code you wrote outside the toolkit, such
+  as your own components or pages; see their upgrade guides.
+- **Read the producer from `generated_by`: `api/scenarios.json` no longer has
+  `generated_from`, and its `version` is `"2"` (#183).** Before, every record
+  carried `generated_from: "doc-kitty/gherkin"` next to `generated_by`, with
+  `version: "1"`. Now `generated_from` is gone and `version` is `"2"`; nothing
+  else in the record moved. Clients that read `generated_from` or pin version
+  `"1"` need updating.
+- **Regenerate committed Gherkin and glossary pages once: the 0.3.0 stamps now
+  fail the frontmatter check (#210).** Before, a page stamped with the
+  unversioned `generated.by: doc-kitty/gherkin` or `doc-kitty/glossary`, or
+  with a `sha256:` hash in `generated.at`, was still treated as generated. Now
+  such a stamp is retired: the page is no longer exempt as a generated page,
+  and `dockitty-validate-frontmatter` fails it with a message that names the
+  regeneration step. Run `dockitty-generate-feature-pages` for Gherkin pages,
+  and `astro build` (or `astro dev`) for glossary pages; both still own and
+  overwrite pages with a retired stamp, and write the versioned
+  `<producer>/<version>` stamp with `content_hash`. Commit the result.
 - **Read `updated` as a full UTC timestamp in the agent API, now version 3
   (#177).** Before, `api/index.json` reported `version: "2"` and each page's
   `updated` as a date such as `2026-10-18`. Now it reports `version: "3"` and
@@ -99,14 +137,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **Read the scenarios API's producer from `generated_by`; `generated_from` is
-  deprecated (#182).** Before, `api/scenarios.json` named its producer only as
+- **The scenarios API names its producer in `generated_by` (#182).** Before,
+  `api/scenarios.json` named its producer only as
   `generated_from: "doc-kitty/gherkin"`, while the generated feature pages'
-  stamp says `doc-kitty-gherkin/<version>`. Now it also carries
+  stamp says `doc-kitty-gherkin/<version>`. Now it carries
   `generated_by: "doc-kitty-gherkin/<version>"`, an OKF tool actor matching
-  that stamp. `generated_from` keeps its exact value, so nothing breaks, and the
-  API `version` stays `"1"` because the change is additive. Switch to
-  `generated_by`: `generated_from` is removed in the next breaking release.
+  that stamp. `generated_from` is removed in this same release (#183, see
+  Breaking).
 
 - **Metadata follows OKF v0.2 (#177).** Before, `updated` was a date,
   `okf_version` sat only on the root index, and authors were email addresses.
@@ -133,6 +170,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `dockitty-check-redirect-coverage` without `--docs` stop when the config
   mentions `envDir` unless you pass `--env-dir <dir|false>`. Sites with neither
   setting are unchanged.
+- **Heading anchor links stay off, as on 0.3.0 (#144).** Starlight 0.34 and
+  later add a link icon to every heading by default. The toolkit sets
+  Starlight's `markdown.headingLinks: false`, so headings, decks and the
+  accessibility baselines look as they did. To turn the anchors on, pass
+  `starlight: { markdown: { headingLinks: true } }` to
+  `defineDocKittyIntegrations`.
+- **The toolkit sets `compressHTML: true`, overriding your own setting
+  (#145).** Astro 7 defaults to `compressHTML: 'jsx'`, which drops the
+  whitespace between inline elements, so copied text and search excerpts read
+  "status:activeUpdated". The toolkit's integration pins `compressHTML: true`,
+  the pre-Astro-7 output, and it runs after your `astro.config.mjs`, so a
+  `compressHTML` you set there has no effect. A configurable option may follow.
+- **A build with broken docs pages stops at the first one (#119).** Before, the
+  build listed every docs page with invalid frontmatter in one run. Astro 7's
+  content sync stops at the first invalid entry, so you now see one page per
+  run. Run `dockitty-validate-frontmatter docs` first to see them all at once.
+  Render errors, such as a broken Gherkin fence, also stop the build at the
+  first page, and the frontmatter check does not find them; the old
+  "N Gherkin error(s) on M pages" summary is no longer printed.
 - `RouteShapingOptions` no longer has `unpublishedDirs` or `unpublishedPaths`;
   the withheld drafts now travel in a per-config build state. The type is an
   internal seam, not supported API.
@@ -184,6 +240,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the config that decides the site root. `--astro-config` picks the config;
   `--env-dir <dir|false>` skips evaluation. An `envDir` set in an integration's
   `updateConfig` hook, and configs that vary by build mode, are still not seen.
+- **A retired generator stamp names the right regeneration step (#210).** The
+  frontmatter error for a retired glossary stamp pointed at the Gherkin
+  generator. Now it names `dockitty-generate-feature-pages` for Gherkin pages
+  and a site build for glossary pages.
+
+### Known limitations
+
+- Every build logs `The collection "i18n" does not exist or is empty` and one
+  `Could not render /presentations/<deck> from route /[...slug]` warning per
+  deck page (#144, spike B17). Both are harmless: Starlight 0.42 looks up an
+  optional `i18n` collection that a site without translation files does not
+  have, and Starlight's catch-all route yields to the higher-priority
+  `/presentations/[...slug]` deck route, which is the intended page. Defining
+  an empty `i18n` collection only replaces the warning with another, and
+  keeping deck pages out of Starlight's route needs a change to how decks are
+  collected, so both are left for a later release.
 
 ## [0.3.0] — 2026-10-14
 
@@ -944,7 +1016,8 @@ the feature-by-feature status and the decision records under
 - Build-time PlantUML rendering requires a PlantUML service (provided in CI); a
   local build without it skips PlantUML figures.
 
-[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.0...v0.1.1
