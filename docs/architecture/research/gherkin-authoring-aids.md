@@ -1,7 +1,7 @@
 ---
 title: Gherkin authoring aids and the Specification layout (research)
 description: "Pre-spec research for #196, #197 and #198: imperative-step lint, per-folder glossary context and a Specification layout, with options and open decisions."
-doc_status: draft
+doc_status: active
 updated: 2026-10-19T00:00:00Z
 type: Architecture
 kind: Explanation
@@ -469,7 +469,12 @@ baselines dominate.
 
 ## Decisions for the operator
 
-| # | Issue | Question | Options | Recommendation |
+The operator decided all thirteen on 2026-10-19 and took the recommendation
+each time. The table below keeps the options as they were put. The operator
+also asked for all three side findings to be handled in the same run: fix the
+stale pointer, and file issues for the other two.
+
+| # | Issue | Question | Options | Recommendation, decided |
 |---|---|---|---|---|
 | D1 | #196 | Which surfaces are linted? | (a) generated pages only; (b) generated pages and in-page fences, includes silent; (c) also a `validate:features` report | (b). Optionally a CLI flag later |
 | D2 | #196 | How broad is the default list? | (a) narrow, phrase-anchored, plus selector signal; (b) broad, including enter, select and submit; (c) actor-anchored regex | (a). Ambiguous verbs documented for `extend` |
