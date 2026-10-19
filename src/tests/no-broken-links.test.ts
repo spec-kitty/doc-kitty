@@ -24,6 +24,7 @@ import {
   findBrokenLinks,
   findBaselessFeedUrls,
   findExternalImages,
+  extractImageSources,
 } from '../scripts/assert-no-broken-links.mjs';
 
 const gatePath = fileURLToPath(new URL('../scripts/assert-no-broken-links.mjs', import.meta.url));
@@ -553,5 +554,36 @@ describe('findExternalImages (#194)', () => {
     expect(green.status).toBe(0);
     const optOut = spawnSync(process.execPath, [gatePath, dist, '--base', '', '--site', SITE], { encoding: 'utf8' });
     expect(optOut.status).toBe(0);
+  });
+
+  it('scans <source srcset>, unquoted values and trims src', () => {
+    expect(
+      extractImageSources(
+        '<picture><source srcset="https://cdn.example.net/a.webp 1x, /b.webp 2x"><img src=https://x.example.org/c.png></picture><img src=" /d.png ">',
+      ),
+    ).toEqual(['https://cdn.example.net/a.webp', '/b.webp', 'https://x.example.org/c.png', '/d.png']);
+  });
+
+  it('decodes a percent-encoded same-site image path before checking dist', () => {
+    const dist = makeTmpDir();
+    writeDistFile(dist, 'my pic.svg', '<svg/>');
+    writeDistFile(dist, 'index.html', '<img src="https://spec-kitty.github.io/doc-kitty/my%20pic.svg">');
+    expect(findExternalImages(dist, SITE, [], '/doc-kitty')).toEqual([]);
+  });
+
+  it('warns when --no-external-images has no --site', () => {
+    const dist = makeTmpDir();
+    writeDistFile(dist, 'index.html', '<p>x</p>');
+    const r = spawnSync(process.execPath, [gatePath, dist, '--no-external-images'], { encoding: 'utf8' });
+    expect(r.status).toBe(0);
+    expect(r.stderr).toContain('--no-external-images without --site');
+  });
+
+  it('exits 2 with usage for --allow-image-host without --no-external-images', () => {
+    const dist = makeTmpDir();
+    writeDistFile(dist, 'index.html', '<p>x</p>');
+    const r = spawnSync(process.execPath, [gatePath, dist, '--allow-image-host', 'example.com'], { encoding: 'utf8' });
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain('Usage:');
   });
 });
