@@ -36,7 +36,7 @@ leaves that ADR as written:
   render code**". Decision 1 below adds a layout for `kind: Specification`, so
   feature pages now have render code of their own.
 
-It adds a structural-kind layout under the per-kind layout model of
+It adds a base-kind layout under the per-kind layout model of
 [ADR-0011](./0011-theme-slot-surface-and-per-kind-layouts.md), registered in
 the manifest of [ADR-0013](./0013-m1-chrome-substrate-single-layer.md) and
 resolved at the single layout site of
@@ -68,8 +68,10 @@ same mission.
    The layout wraps the content slot, inside the Starlight frame, and never
    re-renders the body, so the ADR-0055 results overlay still applies.
 2. **A header card.** Before the content slot the layout renders
-   `<section class="dk-spec-card" aria-labelledby="dk-spec-card-h">` with a
-   visually hidden heading, "Specification details". It holds:
+   `<section class="dk-spec-card" aria-label="Specification details">`. The
+   region is named by `aria-label`, not by a heading: once the single-h1 pass
+   drops the body's `# Title`, a heading here would file the page's lead prose
+   under it in screen-reader heading navigation. It holds:
    - **Tags:** the frontmatter `tags` as a `<ul aria-label="Tags">` of text
      chips, omitted when empty;
    - **Source:** from `sources[0].resource`. An absolute `http:` or `https:`
@@ -89,19 +91,21 @@ same mission.
    `01M59CQM76Q0NJ3F3GM1S8BYAN`, plan phase).
 5. **A draft notice on every draft page in the docs frame.** The `PageTitle`
    carrier renders `<DraftNotice />` once, after the metadata band position,
-   for every page whose `doc_status` is exactly `draft`, of any kind:
+   for every draft page of any kind, as decided by the shared `isDraftEntry`
+   predicate:
 
    ```html
-   <p class="dk-draft-notice"><span class="sr-only">Document status: </span>Draft. This page is work in progress and may change.</p>
+   <p class="dk-draft-notice"><span class="sr-only">Document status: </span>Draft. This page is a work in progress and may change.</p>
    ```
 
    - It has no landmark role and no `role="alert"`. It is page metadata.
    - It sits outside the `dk:metadata-band` slot host, so a theme that replaces
      the band cannot drop it. It sits outside the Persona branch, so a Persona
      draft shows it too.
-   - The test is the explicit `draft` value, not `isDraftEntry`. That helper
-     also counts a missing status and would put the notice on Starlight's 404
-     page.
+   - The test is `isDraftEntry`, the predicate the docs loader and the `noindex`
+     marking use, so the site root is never shown as a draft. The schema gives
+     every collection entry a `doc_status`, so a missing one only reaches the
+     carrier on Starlight's unparsed 404 fallback, which is excluded.
    - It does not render for `active` or `deprecated` pages, or when drafts are
      not built (`DK_PUBLISH_DRAFTS=off`).
    - **Out-of-frame slide decks are excluded.** A deck renders through

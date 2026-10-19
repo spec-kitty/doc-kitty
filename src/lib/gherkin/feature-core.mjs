@@ -105,7 +105,8 @@ const SINGLE_VALUED = new Set(['context', 'status', 'updated', 'autolink', 'prio
  * @property {number} [priority] `@dk:priority`, a number in `0..1`.
  * @property {string[]} [allow] `@dk:allow` values (#196), de-duplicated, source
  *   order; present only when one is given. Repeatable, never written to
- *   frontmatter: the imperative-step lint reads it to stay silent.
+ *   frontmatter. Parsed here so a bad value warns once on a generated page; the
+ *   lint itself reads the raw tags at every level (view.mjs `allowTagValue`).
  */
 
 /**

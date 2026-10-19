@@ -1,9 +1,10 @@
 /**
  * Glossary loader — the thin file-I/O + presence-gating shell over the pure core
- * ({@link ./load.internal.ts}). This is the **single** parse site (INV-G1): the
- * generator (WP03) and the config integration (WP08) call {@link loadGlossary}
- * once; the resolver, `:term`, and the block all read the one
- * {@link SharedTermIndex} it returns.
+ * ({@link ./load.internal.ts}). This is the **single** parse site (INV-G1): every
+ * reader goes through {@link loadGlossary} — the glossary integration (pages and
+ * the auto-linker), the gherkin integration (context names for the
+ * unknown-context warning, #197) and `OnThisPage.astro` — and the resolver,
+ * `:term`, and the block all read the {@link SharedTermIndex} it returns.
  *
  * Presence-gated (FR-001, INV-G4): with no `.contextive/definitions.yaml` the
  * loader returns `{ present: false }` and every downstream seam early-returns — no

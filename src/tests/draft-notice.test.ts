@@ -25,7 +25,7 @@ const NOTICE = read('../components/slots/DraftNotice.astro');
 const PAGE_TITLE = read('../components/PageTitle.astro');
 
 const CONTRACT_MARKUP =
-  '<p class="dk-draft-notice"><span class="sr-only">Document status: </span>Draft. This page is work in progress and may change.</p>';
+  '<p class="dk-draft-notice"><span class="sr-only">Document status: </span>Draft. This page is a work in progress and may change.</p>';
 
 /** Bodies of every top-level rule whose selector list names `.dk-draft-notice`. */
 function draftNoticeBodies(css: string): string[] {
@@ -88,10 +88,12 @@ describe('PageTitle.astro placement', () => {
   it('renders <DraftNotice /> exactly once, gated on the draft predicate', () => {
     expect(template.match(/<DraftNotice\b/g)).toHaveLength(1);
     expect(template).toMatch(/\{\s*isDraft\s*&&\s*<DraftNotice\s*\/>\s*\}/);
-    // An explicit `draft`, as the contract says. Not `isDraftEntry` (the Head
-    // carrier's noindex test): that also treats a missing status as draft, which
-    // would put the notice on Starlight's 404 page.
-    expect(frontmatter).toMatch(/const isDraft = data\.doc_status === 'draft';/);
+    // The shared draft predicate (`isDraftEntry`, the one the loader and the Head
+    // carrier's noindex use), so the site root is never shown as a draft. A
+    // missing `doc_status` only reaches here on Starlight's unparsed 404 fallback
+    // (the schema defaults every collection entry), which must not show it.
+    expect(frontmatter).toMatch(/import \{[^}]*\bisDraftEntry\b[^}]*\} from '\.\.\/lib\/metadata\.js';/);
+    expect(frontmatter).toMatch(/const isDraft = data\.doc_status !== undefined && isDraftEntry\(/);
   });
 
   it('sits after the band host and outside the dk:metadata-band slot', () => {

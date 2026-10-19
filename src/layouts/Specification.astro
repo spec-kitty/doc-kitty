@@ -38,8 +38,7 @@ const card = specCard(route.entry.data as unknown as SpecCardInput);
 
 {
   card && (
-    <section class="dk-spec-card" aria-labelledby="dk-spec-card-h">
-      <h2 id="dk-spec-card-h" class="sr-only" data-pagefind-ignore>Specification details</h2>
+    <section class="dk-spec-card" aria-label="Specification details">
       {card.tags.length > 0 && (
         <ul class="dk-spec-card__tags" aria-label="Tags">
           {card.tags.map((tag) => <li>{tag}</li>)}

@@ -237,10 +237,10 @@ Starlight-native `logo`/`title` config and brand CSS (see §"Wiring").
 | `dk:external-references` | external/citation block | `entry.data.external_references[]` + catalog | `MarkdownContent`, after `dk:related` |
 
 The `PageTitle` carrier also renders a **draft notice**, which is not a slot. On
-every page whose `doc_status` is exactly `draft`, of any kind, it adds a static
-`p.dk-draft-notice` after the metadata band position: a visually hidden
-"Document status:" lead, then "Draft. This page is work in progress and may
-change." It has no landmark role and no live region. It sits outside the
+every draft page of any kind (the shared `isDraftEntry` predicate, so the site
+root never counts), it adds a static `p.dk-draft-notice` after the metadata band
+position: a visually hidden "Document status:" lead, then "Draft. This page is
+a work in progress and may change." It has no landmark role and no live region. It sits outside the
 `dk:metadata-band` slot host, so a theme that replaces the band keeps it, and it
 is styled with `--dk-*` tokens only. Out-of-frame slide decks render without
 `PageTitle`, so a draft deck shows no notice
@@ -293,8 +293,8 @@ Component-level structure and token usage, all specified to WCAG 2.2 AA.
   `--dk-color-text-muted`, optional kind tag). Card-wide links, ≥24px targets.
 - **`Specification` — header card** (in-frame, base kind,
   [ADR-0062](../adr/0062-specification-layout-and-draft-notice.md)). Before the
-  content slot, a labelled `<section>` (a region, not a nav) with a visually
-  hidden heading shows the page's `tags` as text chips and its source file, a
+  content slot, a `<section>` named by `aria-label` (a region, not a nav, and
+  no heading) shows the page's `tags` as text chips and its source file, a
   link only for an `http(s)` URL. The "On this page" list stays the scenario
   list, and the results summary stays in the body. Tokens only, in
   `specification.css`. A theme opts out by mapping `layouts.Specification` to

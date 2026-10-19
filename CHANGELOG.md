@@ -18,8 +18,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `--default-glossary-context <dir>=<context>` flags. A key that matches no
   feature folder warns, and the site build warns about a context the glossary
   does not define (ADR-0061).
-- **Turn on a warning for steps that script the UI with
-  `gherkin.lint.imperativeSteps` (#196).** Before, nothing checked for steps
+- **Turn on the imperative-step lint with `gherkin.lint.imperativeSteps`
+  (#196).** Before, nothing checked for steps
   such as `When I click "#book-button"`. Now, when the option is on, the build
   warns about each Given or When step that names a UI action (click, tap, fill
   in, …) or quotes a CSS selector, on generated feature pages and in-page
@@ -27,32 +27,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a page. `verbs`, `extend` and `keywords` adjust the phrase list and scope.
   Includes, `gherkin raw` fences and non-English features are not checked
   (ADR-0061).
-- **Silence the step warning with `@dk:allow=imperative`.** The tag works on a
+- **Silence the imperative-step lint with `@dk:allow=imperative` (#196).** The
+  tag works on a
   Feature, a Rule or a Scenario, and is the first `@dk:` tag read below
   Feature level. Any other value warns (ADR-0061).
 - **Feature pages show their tags and source in a header card (#198).** The
-  new base `Specification` layout renders a labelled card above the scenarios.
+  new base-kind `Specification` layout renders a labelled card above the
+  scenarios.
   The source is a link when the site sets `sourceUrlPrefix`. The "On this page"
   list stays the scenario list, and the results summary stays in the body. A
   theme opts out by mapping `layouts.Specification` to `Default.astro`
   (ADR-0062).
-- **Every draft page shows a draft notice (#198).** A page with
-  `doc_status: draft`, of any kind, shows "Draft. This page is work in progress
-  and may change." under its title when drafts are built. Out-of-frame slide
-  decks are not covered (ADR-0062).
+- **Every draft page shows a draft notice (#198).** Before, a draft page looked
+  exactly like an active one. Now a draft page of any kind shows "Draft. This
+  page is a work in progress and may change." under its title when drafts are
+  built. The site root is never shown as a draft, and out-of-frame slide decks
+  are not covered (ADR-0062).
 
 ### Changed
 
-- **Draft pages now render a notice.** Before, a draft page looked exactly like
-  an active one. Now its HTML gains one `p.dk-draft-notice`. Pages that are not
-  drafts are unchanged.
+- **Draft pages gain one `p.dk-draft-notice` in their HTML (#198).** Pages that
+  are not drafts are unchanged.
+- **Existing `@dk:context` tags are now checked against the glossary (#197).**
+  Before, a tag naming a context the glossary does not define was silently
+  ignored for disambiguation. Now the site build warns about it, even on a site
+  that does not set `defaultGlossaryContext`. The warning never fails the build
+  or changes a page.
 - **Feature pages use the `Specification` layout by default.** Before,
   `kind: Specification` fell back to the `Default` layout. Now it uses the new
   layout, so pages with tags or a source gain the card.
 - **The example site maps its shipping and HR folders to glossary contexts.**
   The three shipping features no longer carry `@dk:context=shipping`, and the
   HR page now resolves `policy` to the HR definition. The example also turns on
-  the imperative-step check, with zero warnings.
+  the imperative-step lint, with zero warnings.
 
 ### Documentation
 

@@ -276,7 +276,7 @@ Feature: Book a consignment
 | `@dk:updated=<YYYY-MM-DD>` | `updated` | Optional. Without it the page is exempt from `updated`. |
 | `@dk:autolink=false` | `glossary_autolink: false` | Turns off glossary auto-linking for the page. |
 | `@dk:priority=<0..1>` | `agent.priority` | Optional agent hint. |
-| `@dk:allow=imperative` | *(nothing)* | Silences the imperative-step check for the whole feature. Also accepted on a Rule or Scenario. See [Write declarative scenarios](#write-declarative-scenarios). |
+| `@dk:allow=imperative` | *(nothing)* | Silences the imperative-step lint for the whole feature. Also accepted on a Rule or Scenario. See [Write declarative scenarios](#write-declarative-scenarios). |
 | any other tag | `tags` | Passed through without the `@`, such as `@smoke` or `@FR-003`. |
 
 `@dk:` values run to the end of the tag, after the first `=`. A misspelt key, a
@@ -328,8 +328,8 @@ And I fill in "size" with "12"
 ```
 
 Click paths and CSS selectors publish as they are written. The site can turn on
-a warn-only check for them, `gherkin.lint.imperativeSteps`
-([consumer setup](./consumer-setup.md#gherkin-the-imperative-step-check)). The
+a warn-only lint for them, `gherkin.lint.imperativeSteps`
+([consumer setup](./consumer-setup.md#gherkin-the-imperative-step-lint)). The
 example above is a `gherkin raw` fence, so it stays code and is never checked.
 
 With the check on, each Given or When step that matches warns once, with the file
@@ -357,7 +357,7 @@ The built-in phrases name user-interface mechanics only:
 Each phrase also matches its inflections (`clicks`, `clicked`, `clicking`), as
 whole words only. A quoted argument shaped like a CSS selector, such as
 `"#book-button"`, `".primary"` or `"[data-id=7]"`, is flagged too. Only the step's
-own words are read: the text inside quotes, placeholders, doc strings and tables is
+own words are read: the text inside quotes, placeholders, doc strings and tables are
 never matched against the phrases.
 
 Some verbs are left out because they are often domain language: `enter` ("enters a

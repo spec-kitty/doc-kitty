@@ -33,6 +33,12 @@ decisions that must be made before a mission can be specified. It is research,
 not a decision. Each choice it recommends still needs the operator's call, and
 the choices that change a contract need an ADR.
 
+Names below are as the issues filed them. Decision D8 renamed the option, and it
+shipped as `gherkin.defaultGlossaryContext` with the CLI flag
+`--default-glossary-context`. The decisions are recorded in
+[ADR-0061](../../adr/0061-gherkin-authoring-aids.md) and
+[ADR-0062](../../adr/0062-specification-layout-and-draft-notice.md).
+
 ## Method and evidence limits
 
 A five-lens pre-spec squad ran in parallel, following the
