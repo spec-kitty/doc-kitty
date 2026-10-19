@@ -6,13 +6,21 @@
 // they resolve exactly as GitHub Pages serves them.
 export const BASE = '/doc-kitty';
 
-// Draft pages (sidebar-frame-header-carrier WP05): none of the routes below is a
-// draft, so every one exists whatever DK_PUBLISH_DRAFTS says. The lane still
-// runs against a dist built with DK_PUBLISH_DRAFTS=on (ci.yml's build-example
-// job; also the default), because the sidebar on every page lists the example's
-// draft pages and the visual baselines were taken with them present. A draft
-// route added here would need that same build; a drafts-off build does not
-// emit it.
+// Draft pages (sidebar-frame-header-carrier WP05; two lanes since
+// layout-guards-decisions WP08): none of the routes below is a draft, so every
+// one exists whatever DK_PUBLISH_DRAFTS says. The lane serves BOTH builds:
+//   - `light` and `dark` serve `example/dist`, built with DK_PUBLISH_DRAFTS=on
+//     (ci.yml's build-example job; also the default), so every sidebar lists the
+//     example's draft pages. Every spec runs here.
+//   - `published-light` and `published-dark` serve `example/dist-nodrafts`, built
+//     with DK_PUBLISH_DRAFTS=off: the sidebar readers see. Only the sidebar specs
+//     run here (`PUBLISHED_SPECS` below), and of axe only `PUBLISHED_AXE_PAGES`:
+//     layout-geometry, target-size and sidebar-membership in `published-light`,
+//     visual and axe in both. The FR-022 reveal on this build is covered by
+//     layout-geometry's FR-022 describe (sidebar-reveal stays drafts-on only).
+// Each server refuses to start on a dist of the wrong draft mode (serve-dist.mjs
+// exits 1), so a project cannot measure the wrong dist. A draft route added here
+// exists only in the drafts-on build; keep it out of the published lane.
 
 export const ROUTES = {
   // Brand home — the visual-regression baseline target (T041).
@@ -464,3 +472,74 @@ export const TOC_RAIL_ROUTE = {
 // `mcr.microsoft.com/playwright` container). Do NOT regenerate them locally — an
 // off-container baseline is non-deterministic against the CI image (the
 // determinism-hardening lesson) and would poison the gate for everyone else.
+
+// ---------------------------------------------------------------------------
+// The two lanes (layout-guards-decisions WP08, FR-012..FR-014). Contract:
+// kitty-specs/layout-guards-decisions-01M59CGE/contracts/a11y-server-env.md.
+// playwright.config.ts reads these, so the ports, the spec list and the axe
+// subset have one definition.
+// ---------------------------------------------------------------------------
+
+/** The ports of the two a11y servers: drafts-on on A11Y_PORT, published on +1. */
+export function a11yPorts(env: Record<string, string | undefined> = process.env): {
+  draftsOn: number;
+  published: number;
+} {
+  const draftsOn = Number(env.A11Y_PORT ?? 4321);
+  return { draftsOn, published: draftsOn + 1 };
+}
+
+/** The projects that serve the drafts-off (published) dist. */
+export const PUBLISHED_PROJECTS = ['published-light', 'published-dark'] as const;
+
+interface ProjectInfo {
+  project: { name: string };
+}
+
+/** True in `published-light` and `published-dark`. */
+export function isPublishedProject(testInfo: ProjectInfo): boolean {
+  return (PUBLISHED_PROJECTS as readonly string[]).includes(testInfo.project.name);
+}
+
+/**
+ * True in `light` and `published-light`: the rule for a spec that runs once per
+ * dist rather than once per colour mode (layout-geometry, target-size,
+ * sidebar-membership). Specs that keep a literal `testInfo.project.name !== 'light'`
+ * skip (sidebar-reveal, reading-width) are drafts-on only and are not in
+ * `PUBLISHED_SPECS`.
+ */
+export function isLightProject(testInfo: ProjectInfo): boolean {
+  return testInfo.project.name === 'light' || testInfo.project.name === 'published-light';
+}
+
+/**
+ * The specs the published projects run (`testMatch`). Every spec listed here
+ * executes in the published lane; a spec that would only skip there is left out,
+ * so `--list --project published-light` matches what runs.
+ *   - `published-light`: layout-geometry and target-size (the sidebar's geometry
+ *     and targets, including the FR-022 reveal describe), sidebar-membership,
+ *     visual (home + chrome-1920) and axe over `PUBLISHED_AXE_PAGES`.
+ *   - `published-dark`: visual and axe (the others skip per test on
+ *     `isLightProject`, since geometry does not depend on the colour scheme).
+ * Left out: sidebar-reveal (its throttled server hard-codes `example/dist`, so it
+ * cannot measure this build; layout-geometry's FR-022 describe covers the reveal
+ * here), reading-width (column/pane geometry does not depend on sidebar
+ * membership), and the deck, Markua, Gherkin, glossary and diagram specs, which do
+ * not depend on the sidebar.
+ */
+export const PUBLISHED_SPECS = [
+  'layout-geometry.spec.ts',
+  'visual.spec.ts',
+  'axe.spec.ts',
+  'target-size.spec.ts',
+  'sidebar-membership.spec.ts',
+] as const;
+
+/**
+ * The axe pages the published projects scan: the plain in-frame chrome pages,
+ * whose whole surface is header, main, sidebar and footer. The diagram, glossary,
+ * Markua, Gherkin and deck entries are left out, as their specs are.
+ */
+export const PUBLISHED_AXE_PAGES: ReadonlyArray<AxePage> = AXE_PAGES.filter(
+  (p) => p.shell === 'starlight' && p.guardRoots === STARLIGHT_GUARD_ROOTS,
+);

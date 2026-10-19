@@ -25,6 +25,12 @@
 # opened by hand also triggers CI, which one opened by `GITHUB_TOKEN` does not
 # (GitHub's recursion guard). If the setting is ever enabled the step opens the
 # PR itself; re-run the a11y lane on the target branch after merge for the tick.
+#
+# Both draft modes in one run (layout-guards-decisions WP08, C-001). The job
+# builds the drafts-on dist (example/dist) and the drafts-off dist
+# (example/dist-nodrafts), so one dispatch regenerates the drafts-on baselines
+# (`*-light`/`*-dark`) and the published baselines (`*-published-light`/
+# `*-published-dark`) together.
 name: Update a11y baselines
 
 on:
@@ -75,8 +81,9 @@ jobs:
       # against the dist ci.yml's `build-example` job builds, and that job sets
       # DK_PUBLISH_DRAFTS to `on`. `on` is also the default; it is written out
       # so the two workflows visibly agree (`regen-workflow-render-setup.test.ts`
-      # compares them). A baseline taken with `off` would show a sidebar without
-      # the draft pages, which the lane never screenshots.
+      # compares them). This job-level `on` builds example/dist for the `light`
+      # and `dark` baselines; the drafts-off build step overrides it to `off`
+      # (example/dist-nodrafts) for the `published-*` baselines.
       DK_PUBLISH_DRAFTS: 'on'
     steps:
       - name: Checkout target branch
@@ -126,6 +133,15 @@ jobs:
       # Produce example/dist — the a11y webServer (tests/a11y/serve-dist.mjs) serves
       # this exact artifact; the snapshots are taken against it.
       - name: Build example site
+        run: pnpm build
+
+      # Produce example/dist-nodrafts exactly as ci.yml's build-example job does
+      # (WP08): the `published-light`/`published-dark` projects serve it, so this
+      # one run regenerates their baselines next to the drafts-on ones.
+      - name: Build example site with drafts off
+        env:
+          DK_PUBLISH_DRAFTS: 'off'
+          DK_OUTDIR: dist-nodrafts
         run: pnpm build
 
       # A near no-op in the pinned image (browsers are baked in), kept for parity
