@@ -47,6 +47,7 @@ import { diagramsIntegration } from './integrations/diagrams.js';
 import { compressHtmlIntegration } from './integrations/compress-html.js';
 import {
   deckSplitIntegration,
+  singleH1Integration,
   baseAbsoluteLinksIntegration,
   directiveIntegration,
   markdownProcessorIntegration,
@@ -694,6 +695,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.
     deckSplitIntegration,
+    // One <h1> per page (#191): drops a leading body H1 that repeats the title and
+    // demotes any other body H1, so Starlight's title stays the only <h1>.
+    singleH1Integration,
     // Always-on authored-content base-prefix seam (review-cycle-1, FR-004/
     // SC-002): base-prefixes every root-absolute internal `<a href>` a rendered
     // markdown page emits. No-ops when no `base` is configured.

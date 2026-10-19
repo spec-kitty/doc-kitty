@@ -19,6 +19,7 @@ import { publishDraftsInForce, unpublishedDraftPaths } from '../draft-publicatio
 import deckSplit from '../remark/deck-split.js';
 import relativeMdLinks from '../remark/relative-md-links.js';
 import baseAbsoluteLinks from '../rehype/base-absolute-links.js';
+import singleH1 from '../rehype/single-h1.js';
 import { normalizeBasePrefix } from './shared.js';
 
 /**
@@ -35,6 +36,22 @@ export const deckSplitIntegration: AstroIntegration = {
   hooks: {
     'astro:config:setup': ({ updateConfig }) => {
       updateConfig({ markdown: { remarkPlugins: [deckSplit] } });
+    },
+  },
+};
+
+/**
+ * One `<h1>` per page (#191): an always-on rehype pass that drops a leading body
+ * `# Title` repeating the frontmatter title and demotes any other body H1 to H2,
+ * so Starlight's title `<h1 id="_top">` stays the page's only one. User rehype
+ * plugins run before Astro's `rehypeHeadingIds`, so a demoted heading is
+ * collected as an `<h2>`. A no-op on a deck and on a body with no H1.
+ */
+export const singleH1Integration: AstroIntegration = {
+  name: 'doc-kitty:single-h1',
+  hooks: {
+    'astro:config:setup': ({ updateConfig }) => {
+      updateConfig({ markdown: { rehypePlugins: [singleH1] } });
     },
   },
 };

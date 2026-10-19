@@ -2631,6 +2631,26 @@ async function main() {
   }
   ok(`known page: ${KNOWN_PAGE_RELPATH} rendered to HTML`);
 
+  // 6-h1) Exactly one <h1> per published page (#191): the page title. A leading
+  // body `# Title` that repeats it must not render a second one. Redirect stubs
+  // (meta refresh, no layout) carry no heading and are skipped.
+  const h1Offenders = [];
+  let h1Pages = 0;
+  for (const abs of await htmlFilesUnder(distDir)) {
+    const html = await readFile(abs, 'utf8');
+    if (/<meta http-equiv="refresh"/i.test(html)) continue;
+    h1Pages += 1;
+    const count = (html.match(/<h1[\s>]/gi) ?? []).length;
+    if (count !== 1) h1Offenders.push(`${path.relative(distDir, abs).split(path.sep).join('/')} (${count})`);
+  }
+  if (h1Offenders.length) {
+    fail(
+      `one <h1> per page: ${h1Offenders.length} page(s) do not have exactly one <h1> (#191): ` +
+        `${h1Offenders.slice(0, 10).join(', ')}${h1Offenders.length > 10 ? ', …' : ''}`,
+    );
+  }
+  ok(`one <h1> per page: all ${h1Pages} published HTML page(s) have exactly one <h1> (#191)`);
+
   // 6a) diagrams — the published diagram demonstrator, asserted for the ACTIVE
   // render MODE (#13, C-005). The mode is detected once from the demonstrator's
   // own figure shape (inline <svg> ⇒ build; <pre class="mermaid"> ⇒ client) and
