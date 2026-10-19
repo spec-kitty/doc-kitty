@@ -7,8 +7,10 @@
  *  - STOCK: `example/astro.config.mjs` as shipped. No theme layer fills
  *    `dk:site-header`, so the carrier must fall through to Starlight's header
  *    and add nothing. The header block of every page is compared with
- *    `fixtures/header-theme/stock-header.html`, which was captured from a build
- *    of the commit BEFORE the carrier existed (2ffe856).
+ *    `fixtures/header-theme/stock-header.html`: Starlight's own header block,
+ *    captured from the example built with the `Header` carrier switched off
+ *    (`pnpm fixture:stock-header`), so the carrier is compared with stock
+ *    Starlight and not with an earlier capture of itself (#207).
  *  - THEMED: `fixtures/header-theme/astro.config.mjs`, the same options plus a
  *    consumer theme layer that fills `dk:site-header` with a fixture header.
  *
@@ -29,12 +31,17 @@
  * every path) are compared as built. A wrapper element, an extra attribute, a
  * second header or a missing one still changes the block and fails the test.
  *
- * Regenerating the fixture: it is expected to change only when Starlight, the
- * example's title or the brand logo changes. Build the example
- * (`DK_PUBLISH_DRAFTS=off pnpm build`), take the `<header …>…</header>` block of
- * `example/dist/index.html`, replace each `astro-xxxxxxxx` class with
- * `astro-HASH`, and write it over the fixture in a commit that says why.
- * `fixtures/header-theme/README.txt` repeats this next to the file.
+ * Regenerating the fixture: it is expected to change only when Starlight, Astro,
+ * the toolkit's `compressHTML` pin, the example's title or the brand logo
+ * changes. Run `pnpm fixture:stock-header` (`src/scripts/capture-stock-header.mjs`):
+ * it builds the example with `DK_INTERNAL_STOCK_HEADER=on`, which drops the
+ * `Header` carrier, takes the `<header …>…</header>` block of `index.html`,
+ * replaces each `astro-xxxxxxxx` class with `astro-HASH`, and writes the fixture
+ * together with its stamp, `stock-header.meta.json` (Starlight and Astro
+ * versions, `compressHTML`, `carrier: "disabled"`). The fast
+ * `stock-header-stamp.test.ts` fails when the stamp no longer matches what is
+ * installed. Review the printed diff and commit both files with a message that
+ * says why. `fixtures/header-theme/README.txt` repeats this next to the file.
  *
  * Both builds run once, each into its own `DK_OUTDIR`, and the file is listed in
  * `vitest.workspace.ts`'s serialized `build` project (shared `example/.astro`).
@@ -62,7 +69,9 @@ const SCOPE_TOKEN = 'astro-HASH';
 const normaliseScopeHashes = (html: string): string => html.replace(SCOPE_HASH, SCOPE_TOKEN);
 
 /**
- * Captured from the pre-carrier build; one block, because every page shares it.
+ * Captured by `pnpm fixture:stock-header` from the example built without the
+ * `Header` carrier, and stamped by `stock-header.meta.json`; one block, because
+ * every page shares it.
  * Stored normalised; passing it through the function again is a no-op that
  * keeps both sides of each comparison visibly on the same footing.
  */
@@ -99,7 +108,8 @@ function runBuild(outName: string, args: string[]): Build {
   // them is not a production build: Starlight's search renders its dev-mode
   // notice instead of the search container, and BASE_URL overrides the site
   // base. They are removed so the child builds exactly as `pnpm build` does,
-  // which is the build the fixture was captured from.
+  // which is how `capture-stock-header.mjs` builds the fixture (there with the
+  // `Header` carrier switched off).
   const env: Record<string, string | undefined> = {
     ...process.env,
     DK_OUTDIR: outName,

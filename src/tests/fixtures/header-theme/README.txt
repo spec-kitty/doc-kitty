@@ -1,19 +1,22 @@
 Fixtures for src/tests/header-carrier.test.ts (the Header carrier).
 
-stock-header.html
-  The <header ...>...</header> block of example/dist/index.html. First captured
-  from a build of commit 2ffe856, the commit before the Header carrier existed;
-  recaptured for Starlight 0.42.6 / Astro 7.4 (#144), whose stock header drops
-  `sl-flex` from its root, minifies its inline script differently and is
-  emitted under Astro 7's `compressHTML` default; recaptured again under the
-  toolkit's `compressHTML: true` pin (#145, operator decision 2026-10-18).
-  Every framed page of the
-  example shares this block. A change to `compressHTML` changes the whitespace
-  in this block and needs a recapture.
+stock-header.html, stock-header.meta.json
+  stock-header.html is the <header ...>...</header> block of the example's
+  index.html, built with the Header carrier switched off
+  (DK_INTERNAL_STOCK_HEADER=on), so it is Starlight's own header and the test
+  compares the carrier with stock Starlight, not with an earlier capture of
+  itself (#207). Every framed page of the example shares this block.
 
-  One thing in it is normalised: each Astro scoped-class name ("astro-" followed
-  by eight characters of [a-z0-9]) has been replaced with the fixed token
-  "astro-HASH". Astro derives that hash from the component's file path,
+  stock-header.meta.json is its stamp: the @astrojs/starlight and astro
+  versions example/ resolves, the toolkit's compressHTML pin, carrier
+  "disabled" and the captured page. All of them change the block (a
+  compressHTML change changes its whitespace; an Astro change can change the
+  asset hash in it). src/tests/stock-header-stamp.test.ts fails fast, without a
+  build, when one of them no longer matches what is installed or configured.
+
+  One thing in stock-header.html is normalised: each Astro scoped-class name
+  ("astro-" followed by eight characters of [a-z0-9]) has been replaced with the
+  fixed token "astro-HASH". Astro derives that hash from the component's file path,
   including the absolute path of the checkout, so the same commit built in
   another directory (the repository root, another worktree, CI) produces
   different hashes. The hash therefore says where the build ran, not what the
@@ -24,10 +27,14 @@ stock-header.html
   text, whitespace and asset file names (content-hashed, so the same at every
   path) are the bytes the build produced.
 
-  To regenerate (expected only when Starlight, the example's title or the brand
-  logo changes): run "DK_PUBLISH_DRAFTS=off pnpm build", take the header block of
-  example/dist/index.html, replace each astro-xxxxxxxx class with astro-HASH,
-  and write it over the file without a trailing newline.
+  To regenerate (expected only when Starlight, Astro, compressHTML, the
+  example's title or the brand logo changes): run "pnpm fixture:stock-header"
+  (src/scripts/capture-stock-header.mjs). It builds the example without the
+  Header carrier into its own output folder, takes the header block, applies the
+  normalisation above, and writes stock-header.html (no trailing newline) and the stamp
+  together. It prints "fixture unchanged" or the changed tags; review them and
+  commit both files with a message that says why. Do not edit either file by
+  hand.
 
 astro.config.mjs, SiteHeader.astro
   The example site's configuration plus a theme layer that fills the
