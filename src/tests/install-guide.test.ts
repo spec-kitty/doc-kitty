@@ -93,3 +93,29 @@ describe('install guide (#193)', () => {
     expect(readFileSync(GETTING_STARTED, 'utf8')).toContain('](/guides/install/)');
   });
 });
+
+describe('repository consumer setup guide agrees with the install guide (#193)', () => {
+  const SETUP = path.join(REPO_ROOT, 'docs/guides/consumer-setup.md');
+  const setup = readFileSync(SETUP, 'utf8');
+
+  it('installs the current release and the peers at the fixture versions in every pnpm add', () => {
+    const lines = setup.split('\n').filter((l) => l.trim().startsWith('pnpm add '));
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) {
+      const specs = pnpmAdd(line);
+      expect(specs.get(toolkit.name), line).toBe(toolkit.version);
+      for (const peer of PEERS) expect(specs.get(peer), `${peer} in ${line}`).toBe(fixtureDeps[peer]);
+    }
+  });
+
+  it('states the Node floor and names no other toolkit release to pin', () => {
+    expect(setup).toContain(`\`${toolkit.engines!.node}\``);
+    for (const [, version] of setup.matchAll(/@spec-kitty\/doc-toolkit@(\d+\.\d+\.\d+)/g)) {
+      expect(version).toBe(toolkit.version);
+    }
+  });
+
+  it('points to the on-site install guide', () => {
+    expect(setup).toContain('https://spec-kitty.github.io/doc-kitty/guides/install/');
+  });
+});
