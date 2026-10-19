@@ -62,6 +62,11 @@ wrapper components, "and it takes its own record then".
    `MarkdownContent`, `Footer` and `Header`. The invariant keeps its shape: a
    fixed set, owned by the toolkit, identical with or without a theme, applied
    after the consumer's escape hatch.
+
+   > **Superseded in part by [ADR-0061](./0061-sidebar-carrier.md) (six
+   > carriers).** The map is still fixed, toolkit-owned and the same with or
+   > without a theme; `Sidebar` joined it as the sixth carrier. Read "five
+   > carriers" in this record as the state when it was accepted.
 2. **`Header` hosts one slot, `dk:site-header`, and replaces instead of
    composing.** When a theme supplies a component for the slot, the carrier
    renders that component and not Starlight's header. When no theme supplies
