@@ -28,6 +28,8 @@
  * @module okf-export/links
  */
 
+import { URL_SCHEME } from '../vocabulary-core.mjs';
+
 /** Markdown inline link or image destination. */
 const INLINE = /(\]\()(<?)([^)\s>]+)(>?)/g;
 /** Reference definition destination. */
@@ -36,7 +38,6 @@ const REFDEF = /^(\s{0,3}\[(?!\^)[^\]]+\]:\s*)(<?)(\S+?)(>?)(?=\s|$)/gm;
 const ANCHOR = /(<a\s[^>]*?\bhref=)(["'])(.*?)\2/gi;
 const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const CODE_SPAN = /(`+)[\s\S]*?\1/g;
-const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 
 /**
  * Apply `fn` to every part of a Markdown body that is not fenced code or an
@@ -137,7 +138,7 @@ export function idIndex(nodes) {
  * @returns {string}
  */
 export function rewriteUrl(url, ctx) {
-  if (url === '' || url.startsWith('#') || url.startsWith('//') || SCHEME.test(url)) return url;
+  if (url === '' || url.startsWith('#') || url.startsWith('//') || URL_SCHEME.test(url)) return url;
   const { path, tail } = splitUrl(url);
   if (/\.mdx?$/i.test(path)) return resolveSourceLink(path, tail, ctx) ?? url;
   const abs = path.startsWith('/') ? path : new URL(path, `http://x${ctx.pageHref.endsWith('/') ? ctx.pageHref : `${ctx.pageHref}/`}`).pathname;
@@ -256,5 +257,5 @@ export function rootLinks(body) {
  * @returns {string[]}
  */
 export function relativeLinks(body) {
-  return linksWhere(body, (d) => d !== '' && !/^[/#?]/.test(d) && !SCHEME.test(d) && /\.mdx?$/i.test(d.replace(/[?#].*$/, '')));
+  return linksWhere(body, (d) => d !== '' && !/^[/#?]/.test(d) && !URL_SCHEME.test(d) && /\.mdx?$/i.test(d.replace(/[?#].*$/, '')));
 }
