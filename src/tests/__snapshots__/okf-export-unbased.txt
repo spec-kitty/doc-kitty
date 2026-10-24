@@ -1,0 +1,46 @@
+=== architecture/deep/dive.md ===
+---
+type: "Architecture"
+title: "architecture/deep/dive"
+generated:
+  by: "process:dockitty-export"
+---
+
+
+
+=== architecture/overview.md ===
+---
+type: "Architecture"
+title: "architecture/overview"
+generated:
+  by: "process:dockitty-export"
+---
+
+Route [a](/architecture/overview.md) and base [b](https://docs.example.org/docs/architecture/overview).
+Relative [c](/architecture/deep/dive.md) and fragment [d](/architecture/overview.md#why).
+Non-page [e](https://docs.example.org/api/content-graph.json), external [f](https://example.org/x/), mail [g](mailto:a@b.c), anchor [h](#top).
+Ref [r][1] and <a href="/guides/start.md">raw</a>, code `[x](/architecture/overview/)`.
+
+[1]: /guides/start.md "title"
+[^^0_1]: A footnote definition is text, not a link target.
+
+```md
+[fenced](/architecture/overview/)
+```
+
+=== guides/start.md ===
+---
+type: "Guide"
+title: "guides/start"
+generated:
+  by: "process:dockitty-export"
+---
+
+Back to [overview](/architecture/overview.md), [home](/index.md), [asset](https://docs.example.org/api/x.json), [rel](https://docs.example.org/guides/architecture/deep/dive/).
+
+=== index.md ===
+---
+okf_version: "0.2"
+---
+
+# README

@@ -23,6 +23,7 @@ export function okfExportIntegration(
     hooks: {
       'astro:config:done': ({ config }) => {
         base = config.base ?? '';
+        // origin only; exportOkfBundle composes origin + base (#237)
         siteUrl = config.site ?? '';
       },
       'astro:build:done': ({ dir, logger }) => {
