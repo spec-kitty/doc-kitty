@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-24T08:16:29.796495Z",
+      "decision_id": "01M5PFQ5K4HE8BWNCC6STVVC70",
+      "final_answer": "Confirm",
+      "input_key": "intent_confirmation",
+      "mission_id": "01M5PFPEYGQRHPPVFVVN7WV111",
+      "mission_slug": "base-aware-generated-links-01M5PFPE",
+      "opened_by": "cli",
+      "options": [
+        "Confirm",
+        "Amend",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Confirm the extracted intent summary and requirement set for #236+#237?",
+      "rationale": null,
+      "resolved_at": "2026-10-24T14:12:00.251460Z",
+      "resolved_by": null,
+      "slot_key": "specify.intent.confirm",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M5PFPEYGQRHPPVFVVN7WV111",
+  "version": 1
+}

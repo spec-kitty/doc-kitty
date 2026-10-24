@@ -1,0 +1,70 @@
+{
+  "event_count": 30,
+  "last_event_id": "01M5Q5ZKM3Q5NGN6W4J3VWW2B2",
+  "materialized_at": "2026-10-24T14:45:34.979711+00:00",
+  "mission_number": "",
+  "mission_slug": "base-aware-generated-links-01M5PFPE",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 3,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5Q5Z6ZJKV7J7GGWZM6MBW7C",
+      "last_transition_at": "2026-10-24T14:45:22.034816+00:00",
+      "review_result": {
+        "reference": "review-cycle://base-aware-generated-links-01M5PFPE/WP01-agent-page-absolute-source/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 2431280,
+      "shell_pid_created_at": "1792851574.29"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5Q5ZD6XYTGMNX1CK6TVEN86",
+      "last_transition_at": "2026-10-24T14:45:28.413770+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/base-aware-generated-links-01M5PFPE-coord/kitty-specs/base-aware-generated-links-01M5PFPE/tasks/WP02-okf-base-and-md-links/review-cycle-2.md",
+        "reference": "review-cycle://base-aware-generated-links-01M5PFPE/WP02-okf-base-and-md-links/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 2431280,
+      "shell_pid_created_at": "1792851574.29"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5Q5ZKM3Q5NGN6W4J3VWW2B2",
+      "last_transition_at": "2026-10-24T14:45:34.979711+00:00",
+      "review_result": {
+        "reference": "review-cycle://base-aware-generated-links-01M5PFPE/WP03-docs-and-changelog/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "shell_pid": 2466890,
+      "shell_pid_created_at": "1792852360.01"
+    }
+  }
+}

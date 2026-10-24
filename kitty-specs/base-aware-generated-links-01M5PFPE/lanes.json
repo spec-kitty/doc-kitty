@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "mission_slug": "base-aware-generated-links-01M5PFPE",
+  "mission_id": "01M5PFPEYGQRHPPVFVVN7WV111",
+  "mission_branch": "kitty/mission-base-aware-generated-links-01M5PFPE",
+  "target_branch": "fix/base-aware-generated-links",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/routes/agent-page.ts",
+        "src/tests/agent-page-includes.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/okf-export/conformance.mjs",
+        "src/lib/okf-export/core.mjs",
+        "src/lib/okf-export/integration.ts",
+        "src/lib/okf-export/links.mjs",
+        "src/scripts/export-okf.mjs",
+        "src/tests/okf-export-links.test.ts",
+        "src/tests/okf-export.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0059-content-graph-and-okf-alignment.md",
+        "docs/guides/export-okf-bundle.md"
+      ],
+      "predicted_surfaces": [],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-10-24T14:18:53.045419+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "76ad6755ff51125de94e13b06a0b00bf3cad2bb6"
+}

@@ -1,0 +1,37 @@
+{
+  "accept_commit": "12fddd557ab255bc9718094244f8690869a53645",
+  "acceptance_history": [
+    {
+      "accept_commit": "12fddd557ab255bc9718094244f8690869a53645",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-24T14:44:41.528787+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "6a8a172f14d74bb88d60b1b40056a2e4ab50ca8b"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-24T14:44:41.528787+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "6a8a172f14d74bb88d60b1b40056a2e4ab50ca8b",
+  "baseline_merge_commit": "cca451208e0b3da526ce6aaedbcae5c52be9f769",
+  "contracts": "none",
+  "contracts_rationale": "Bug fix to existing generated-output fields; no new interface. The changed contract (absolute source, OKF link form) is recorded in ADR-0037/ADR-0059 addendum.",
+  "created_at": "2026-10-24T08:16:09.522474+00:00",
+  "flattened": true,
+  "friendly_name": "Base-aware links in generated outputs",
+  "merged_at": "2026-10-24T14:45:41.824785+00:00",
+  "merged_commit": "a8e89b6b1b447d84b73461685bd41af996a5e6ed",
+  "mid8": "01M5PFPE",
+  "mission_id": "01M5PFPEYGQRHPPVFVVN7WV111",
+  "mission_number": 14,
+  "mission_slug": "base-aware-generated-links-01M5PFPE",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Consumer sites deployed under a base path (e.g. GitHub Pages project sites) get 404ing links from two generated outputs: the per-page agent JSON source field (#236) and links between pages in the OKF export bundle (#237). This mission fixes both so generated outputs agree with the HTML site and with each other.",
+  "purpose_tldr": "Make the agent-API page record and the OKF export emit links that work on sites served under a base path.",
+  "slug": "base-aware-generated-links-01M5PFPE",
+  "status_phase": "1",
+  "target_branch": "fix/base-aware-generated-links",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-24T14:19:41.476081+00:00"
+}
