@@ -17,7 +17,7 @@
  * The real-build proof is `gherkin-fence-build.test.ts` (it mounts the route on
  * a fixture site); the import-scan below proves the route stays parser-free.
  */
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -32,6 +32,7 @@ const { entries } = vi.hoisted(() => ({ entries: [] as Entry[] }));
 vi.mock('astro:content', () => ({ getCollection: async () => entries }));
 
 const { agentPageRoute } = await import('../lib/routes/agent-page.js');
+const { agentIndexRoute } = await import('../lib/routes/agent-index.js');
 
 // Astro's Markdown content-entry type, from its own file (not in astro's exports map).
 const req = createRequire(import.meta.url);
@@ -297,5 +298,65 @@ describe('agent-page.ts module graph', () => {
     expect(rel).not.toContain('../remark/gherkin-fence.ts');
     expect(rel.filter((f) => f.startsWith('../gherkin/'))).toEqual(['../gherkin/agent-includes.mjs']);
     expect([...packages].filter((p) => p.startsWith('@cucumber/'))).toEqual([]);
+  });
+});
+
+describe('the per-page `source` is absolute and base-aware (#236)', () => {
+  const CONTENTS = ['---', 'title: Booking', '---', '', '# Booking', ''].join('\n');
+  type Links = { _links: { self: { href: string } } };
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('carries the base and equals _links.self.href', async () => {
+    vi.stubEnv('BASE_URL', '/sub/');
+    const { payload } = await load('guides/booking', CONTENTS);
+    const source = payload.source as string;
+    expect(source).toBe('https://docs.example/sub/api/pages/guides/booking.json');
+    expect(source.startsWith('https://docs.example/sub/api/pages/')).toBe(true);
+    expect(source).toBe((payload as unknown as Links)._links.self.href);
+  });
+
+  it('equals the `source` the index route gives for the same page', async () => {
+    vi.stubEnv('BASE_URL', '/sub/');
+    const { payload } = await load('guides/booking', CONTENTS);
+    const res = await (agentIndexRoute({ title: 'T' }) as unknown as (c: { site: URL }) => Promise<Response>)({ site: SITE });
+    const index = JSON.parse(await res.text()) as { pages: { slug: string; source: string }[] };
+    expect(index.pages.find((p) => p.slug === 'guides/booking')?.source).toBe(payload.source);
+  });
+
+  it('without a base is the plain absolute URL, other keys unchanged', async () => {
+    const { payload } = await load('guides/booking', CONTENTS);
+    expect(payload.source).toBe('https://docs.example/api/pages/guides/booking.json');
+    // Everything but `source` is byte-identical to the pre-fix payload (captured from HEAD~1).
+    const rest: Record<string, unknown> = { ...payload };
+    delete rest.source;
+    expect(rest).toEqual({
+      slug: 'guides/booking',
+      route: '/guides/booking/',
+      section: 'guides',
+      title: 'Booking',
+      description: '',
+      type: null,
+      doc_status: 'active',
+      kind: '',
+      tags: [],
+      related: [],
+      priority: 0.5,
+      updated: null,
+      audience: [],
+      url: 'https://docs.example/guides/booking/',
+      authors: [],
+      keywords: [],
+      markdown: '# Booking',
+      _links: {
+        self: { href: 'https://docs.example/api/pages/guides/booking.json' },
+        up: { href: 'https://docs.example/api/index.json' },
+        html: { href: 'https://docs.example/guides/booking/' },
+        related: [],
+      },
+    });
+    expect(payload.source).toBe((payload as unknown as Links)._links.self.href);
   });
 });

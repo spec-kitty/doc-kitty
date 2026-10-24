@@ -84,8 +84,12 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
     const rendered = (entry as { rendered?: { metadata?: { frontmatter?: unknown } } }).rendered;
     const expanded = spliceAgentIncludes(body, readAgentIncludes(rendered?.metadata?.frontmatter));
     const url = absolute(site, record.route);
+    // `record.source` is base-less (toAgentRecord stays pure, ADR-0037); the
+    // absolute, base-aware form is built here, after the spread, so it overrides it.
+    const source = absolute(site, record.source);
     const payload = {
       ...record,
+      source,
       related,
       audience,
       url,
@@ -102,9 +106,9 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
       markdown: expanded.markdown,
       // Navigation links (#103). Built here, never in `toAgentRecord`, which
       // other consumers share. hrefs go through `absolute` like `url`/`source`.
-      // No `source` relation: the record's `source` IS the per-page JSON, i.e. `self`.
+      // No `source` relation: the payload's `source` IS the per-page JSON, i.e. `self`.
       _links: {
-        self: { href: absolute(site, record.source) },
+        self: { href: source },
         ...(linkIndex ? { up: { href: absolute(site, indexPath) } } : {}),
         html: { href: url },
         related: related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title })),
