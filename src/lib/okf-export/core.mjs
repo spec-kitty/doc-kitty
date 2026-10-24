@@ -23,7 +23,7 @@ import {
   normalizeIndexBasenames,
   toActor,
 } from '../vocabulary-core.mjs';
-import { rewriteBodyLinks, routeIndex } from './links.mjs';
+import { idIndex, rewriteBodyLinks, routeIndex } from './links.mjs';
 import { okfGenerated } from '../generator-stamp.mjs';
 
 /** `generated.by` of a page that has neither a stamp nor an author (FR-025). */
@@ -50,7 +50,7 @@ const RELATION_SECTIONS = /** @type {const} */ ([
  * @typedef {object} ExportOptions
  * @property {string | string[]} [indexBasename] the site's index file name(s), default `README`
  * @property {string} [base] site base path (e.g. `/docs`) that graph `href`s and body links may carry
- * @property {string} [siteUrl] absolute site URL; internal links that are not bundle pages become absolute against it
+ * @property {string} [siteUrl] absolute site origin (e.g. `https://docs.example.org`); the `base` is added to it, and a URL that already ends in the base is accepted as is. Internal links that are not bundle pages become absolute against it
  */
 
 // --- paths ------------------------------------------------------------------
@@ -291,12 +291,12 @@ function sourceOf(sourceFiles, id) {
  * @param {Array<{target: string, rel: string, note?: string}>} edges
  * @param {Map<string, Record<string, any>>} nodes
  * @param {string[]} indexNames
- * @param {Omit<import('./links.mjs').LinkContext, 'pageHref'>} links
+ * @param {Omit<import('./links.mjs').LinkContext, 'pageHref' | 'pageId'>} links
  * @returns {string}
  */
 function conceptDocument(node, source, edges, nodes, indexNames, links) {
   const raw = matter(source).content.replace(/^\s*\n/, '').trimEnd();
-  const body = rewriteBodyLinks(raw, { ...links, pageHref: node.href ?? '/' });
+  const body = rewriteBodyLinks(raw, { ...links, pageHref: node.href ?? '/', pageId: node.id });
   const { markdown, extraSources } = relationSections(edges, nodes, indexNames);
   const parts = [body, markdown.trimEnd()].filter((p) => p !== '');
   return `${fence(toYaml(conceptFrontmatter(node, extraSources)))}\n${parts.join('\n\n')}\n`;
@@ -371,6 +371,50 @@ function copyLogs(sourceFiles, out) {
 }
 
 /**
+ * The path part of a site URL, trailing slash trimmed; a scheme-less URL
+ * (`docs.example.org/docs`) is read as if it had `http://`.
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+function pathOfSiteUrl(url) {
+  for (const candidate of [url, `http://${url}`]) {
+    try {
+      return new URL(candidate).pathname.replace(/\/+$/, '');
+    } catch {
+      // try the next form
+    }
+  }
+  return '';
+}
+
+/**
+ * Origin + base, composed once for every caller (integration and CLI). Idempotent:
+ * a site URL that already ends in the base is not given the base twice.
+ *
+ * @param {string | undefined} siteUrl
+ * @param {string} base
+ * @returns {string}
+ */
+function composeSiteUrl(siteUrl, base) {
+  const origin = (siteUrl ?? '').replace(/\/+$/, '');
+  if (origin === '' || base === '') return origin;
+  const sitePath = pathOfSiteUrl(origin);
+  return sitePath === base || sitePath.endsWith(base) ? origin : origin + base;
+}
+
+/**
+ * The site base as a leading-slash path without trailing slash ('' for none).
+ *
+ * @param {string | undefined} base
+ * @returns {string}
+ */
+function normalizeBase(base) {
+  const trimmed = (base ?? '').trim().replace(/\/+$/, '');
+  return trimmed === '' || trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+
+/**
  * Build the OKF v0.2 bundle.
  *
  * @param {ExportGraph} graph the built `content-graph.json`
@@ -383,10 +427,12 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
   const exported = graph.nodes.filter((n) => n.kind === 'page' || n.kind === 'persona');
   const nodes = new Map(graph.nodes.map((n) => [n.id, n]));
   const { children, outgoing } = indexEdges(graph, nodes);
+  const base = normalizeBase(options.base);
   const links = {
     routes: routeIndex(graph.nodes),
-    base: (options.base ?? '').replace(/\/+$/, ''),
-    siteUrl: (options.siteUrl ?? '').replace(/\/+$/, ''),
+    ids: idIndex(graph.nodes),
+    base,
+    siteUrl: composeSiteUrl(options.siteUrl, base),
     bundlePath: (/** @type {string} */ id) => bundlePathOf(id, indexNames),
   };
   /** @type {Map<string, string>} */
