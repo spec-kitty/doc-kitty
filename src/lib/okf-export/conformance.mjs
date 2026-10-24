@@ -23,7 +23,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 import { OKF_VERSION, compareCodeUnit } from '../vocabulary-core.mjs';
-import { relativeLinks, rootLinks } from './links.mjs';
+import { climb, relativeLinks, rootLinks } from './links.mjs';
 
 /**
  * @typedef {object} Violation
@@ -146,20 +146,21 @@ const toFiles = (bundle) =>
 
 /**
  * @param {Map<string, string | Uint8Array>} files
- * @param {string} target bundle-root-relative path, no leading or trailing slash
+ * @param {string | undefined} target bundle-root-relative path, no leading or trailing slash; `undefined` never resolves
  */
-const inBundle = (files, target) => files.has(target) || files.has(`${target}/index.md`) || (target === '' && files.has('index.md'));
+const inBundle = (files, target) => target !== undefined && (files.has(target) || files.has(`${target}/index.md`) || (target === '' && files.has('index.md')));
 
 /**
  * The bundle path a relative link names, resolved against the linking file's directory.
  *
  * @param {string} file bundle path of the linking file
  * @param {string} link destination as written
- * @returns {string}
+ * @returns {string | undefined} `undefined` when the link climbs above the bundle root
  */
 function relativeTarget(file, link) {
   const dir = file.includes('/') ? file.slice(0, file.lastIndexOf('/') + 1) : '';
-  const raw = new URL(link.replace(/[?#].*$/, ''), `http://x/${dir}`).pathname;
+  const raw = climb(dir, link.replace(/[?#].*$/, ''));
+  if (raw === undefined) return undefined;
   let decoded = raw;
   try {
     decoded = decodeURIComponent(raw);
@@ -170,10 +171,11 @@ function relativeTarget(file, link) {
 }
 
 /**
- * Advisory link check: every root-relative (`/...`) and relative body link outside
- * code must name a file in the bundle (`/x.md`, or a directory with `index.md`);
- * relative ones resolve against the linking file's directory. External links, `//`
- * links and `#anchors` are not checked.
+ * Advisory link check: every root-relative (`/...`) and relative `.md`/`.mdx` body link
+ * outside code must name a file in the bundle (`/x.md`, or a directory with `index.md`);
+ * relative ones resolve against the linking file's directory, and one that climbs above
+ * the bundle root is unresolved. Relative asset links (`./img.png`), external links,
+ * `//` links and `#anchors` are not checked.
  *
  * @param {Map<string, string | Uint8Array> | Record<string, string | Uint8Array> | string} bundle
  * @returns {Warning[]} sorted by path, then message; `[]` when every link resolves
@@ -186,10 +188,10 @@ export function checkOkfLinks(bundle) {
     if (!file.endsWith('.md') || file.endsWith('/log.md') || file === 'log.md') continue;
     const text = typeof raw === 'string' ? raw : Buffer.from(raw).toString('utf8');
     const content = parse(text)?.content ?? text;
-    /** @type {Array<[string, string]>} */
+    /** @type {Array<[string, string | undefined]>} */
     const pairs = [
       ...rootLinks(content).map((l) => /** @type {[string, string]} */ ([l, l.replace(/[?#].*$/, '').replace(/^\//, '').replace(/\/$/, '')])),
-      ...relativeLinks(content).map((l) => /** @type {[string, string]} */ ([l, relativeTarget(file, l)])),
+      ...relativeLinks(content).map((l) => /** @type {[string, string | undefined]} */ ([l, relativeTarget(file, l)])),
     ];
     for (const [link, target] of new Map(pairs)) {
       if (!inBundle(files, target)) warnings.push({ path: file, severity: 'warning', rule: 'unresolved-link', message: `link target is not in the bundle: ${link}`, target: link });

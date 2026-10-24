@@ -95,6 +95,19 @@ describe('advisory link check', () => {
     ]);
   });
 
+  it('checks only .md/.mdx relative links, not assets', () => {
+    const files = new Map([['sub/a.md', concept('![i](./img.png) [f](./file.pdf) [d](./dir/) [m](./gone.md)')]]);
+    expect(checkOkfLinks(files).map((w) => w.message)).toEqual(['link target is not in the bundle: ./gone.md']);
+  });
+
+  it('reports a relative link that climbs above the bundle root, even if a root file matches', () => {
+    const files = new Map([
+      ['sub/a.md', concept('[up](../../x.md)')],
+      ['x.md', concept('hi')],
+    ]);
+    expect(checkOkfLinks(files).map((w) => w.message)).toEqual(['link target is not in the bundle: ../../x.md']);
+  });
+
   it('warns on a dangling /x.md link without making it an error', () => {
     const files = new Map([['a.md', '---\ntype: Concept\n---\nSee [x](/x.md#frag) and [ok](/b.md).\n'], ['b.md', '---\ntype: Concept\n---\nhi\n']]);
     const report = checkOkfBundleReport(files);

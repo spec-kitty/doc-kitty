@@ -172,7 +172,7 @@ function safeDecode(p) {
  * @param {string} path relative link path
  * @returns {string | undefined} root-absolute path, or undefined when it escapes the root
  */
-function climb(dir, path) {
+export function climb(dir, path) {
   const stack = dir.split('/').filter(Boolean);
   for (const seg of path.split('/')) {
     if (seg === '..') {
@@ -248,12 +248,13 @@ export function rootLinks(body) {
 }
 
 /**
- * Every relative file link destination outside code, as written: not a scheme, `//`,
- * root-absolute, or a pure `#anchor`/`?query`.
+ * Every relative `.md`/`.mdx` link destination outside code, as written: not a scheme,
+ * `//`, root-absolute, or a pure `#anchor`/`?query`. Other relative links (assets such
+ * as `./img.png`) are left unchanged by the export, so they are not bundle links.
  *
  * @param {string} body
  * @returns {string[]}
  */
 export function relativeLinks(body) {
-  return linksWhere(body, (d) => d !== '' && !/^[/#?]/.test(d) && !SCHEME.test(d));
+  return linksWhere(body, (d) => d !== '' && !/^[/#?]/.test(d) && !SCHEME.test(d) && /\.mdx?$/i.test(d.replace(/[?#].*$/, '')));
 }
