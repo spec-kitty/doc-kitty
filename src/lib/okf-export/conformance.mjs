@@ -23,7 +23,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 import { OKF_VERSION, compareCodeUnit } from '../vocabulary-core.mjs';
-import { rootLinks } from './links.mjs';
+import { relativeLinks, rootLinks } from './links.mjs';
 
 /**
  * @typedef {object} Violation
@@ -145,8 +145,34 @@ const toFiles = (bundle) =>
   typeof bundle === 'string' ? readBundleDir(bundle) : bundle instanceof Map ? bundle : new Map(Object.entries(bundle));
 
 /**
- * Advisory link check: every root-relative (`/...`) body link outside code must
- * name a file in the bundle (`/x.md`, or a directory with `index.md`). External
+ * @param {Map<string, string | Uint8Array>} files
+ * @param {string} target bundle-root-relative path, no leading or trailing slash
+ */
+const inBundle = (files, target) => files.has(target) || files.has(`${target}/index.md`) || (target === '' && files.has('index.md'));
+
+/**
+ * The bundle path a relative link names, resolved against the linking file's directory.
+ *
+ * @param {string} file bundle path of the linking file
+ * @param {string} link destination as written
+ * @returns {string}
+ */
+function relativeTarget(file, link) {
+  const dir = file.includes('/') ? file.slice(0, file.lastIndexOf('/') + 1) : '';
+  const raw = new URL(link.replace(/[?#].*$/, ''), `http://x/${dir}`).pathname;
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    // keep the encoded form
+  }
+  return decoded.replace(/^\//, '').replace(/\/$/, '');
+}
+
+/**
+ * Advisory link check: every root-relative (`/...`) and relative body link outside
+ * code must name a file in the bundle (`/x.md`, or a directory with `index.md`);
+ * relative ones resolve against the linking file's directory. External links, `//`
  * links and `#anchors` are not checked.
  *
  * @param {Map<string, string | Uint8Array> | Record<string, string | Uint8Array> | string} bundle
@@ -159,10 +185,14 @@ export function checkOkfLinks(bundle) {
   for (const [file, raw] of files) {
     if (!file.endsWith('.md') || file.endsWith('/log.md') || file === 'log.md') continue;
     const text = typeof raw === 'string' ? raw : Buffer.from(raw).toString('utf8');
-    for (const link of new Set(rootLinks(parse(text)?.content ?? text))) {
-      const target = link.replace(/[?#].*$/, '').replace(/^\//, '').replace(/\/$/, '');
-      const hit = files.has(target) || files.has(`${target}/index.md`) || (target === '' && files.has('index.md'));
-      if (!hit) warnings.push({ path: file, severity: 'warning', rule: 'unresolved-link', message: `link target is not in the bundle: ${link}`, target: link });
+    const content = parse(text)?.content ?? text;
+    /** @type {Array<[string, string]>} */
+    const pairs = [
+      ...rootLinks(content).map((l) => /** @type {[string, string]} */ ([l, l.replace(/[?#].*$/, '').replace(/^\//, '').replace(/\/$/, '')])),
+      ...relativeLinks(content).map((l) => /** @type {[string, string]} */ ([l, relativeTarget(file, l)])),
+    ];
+    for (const [link, target] of new Map(pairs)) {
+      if (!inBundle(files, target)) warnings.push({ path: file, severity: 'warning', rule: 'unresolved-link', message: `link target is not in the bundle: ${link}`, target: link });
     }
   }
   return warnings.sort((a, b) => compareCodeUnit(a.path, b.path) || compareCodeUnit(a.message, b.message));
