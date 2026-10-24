@@ -223,3 +223,10 @@ few-seconds-added budget the existing sanity-gate shape already meets.
 - `src/lib/rehype/base-absolute-links.ts`, `src/lib/with-base.ts`,
   `src/lib/routes/shared.ts` (`absolute()`), `src/scripts/check-links.mjs`,
   `src/scripts/assert-no-broken-links.mjs`.
+
+## Addendum (2026-10-24): the per-page `source` is absolute
+
+The decisions above are unchanged, with one correction. The per-page agent-API
+payload's `source` field is the absolute, base-including URL of the page source
+(#236), not a base-less path. The base-less form exists only inside
+`toAgentRecord`, where it is turned into the URL before the payload is written.
