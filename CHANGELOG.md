@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Agent page records now give an absolute `source` (#236).** Before, on a
+  site with a base, `source` was a site-relative path that returned a 404.
+  Now it is absolute, includes the base, and equals `_links.self.href` and the
+  `source` in the agent index.
+- **OKF export links work on sites with a base (#237).** Before, links between
+  pages and links to site files lost the base or pointed one folder too deep.
+  Now `.md` links resolve against the linking page and become bundle paths, and
+  other site links carry `<site><base>`. `--site-url` takes the origin and the
+  export adds the base. The advisory link check also reports unresolved relative
+  links. Section-index page bodies are still not exported.
+
 ## [0.4.0] — 2026-10-19
 
 This release moves the toolkit to Astro 7.4 and Starlight 0.42.6, and needs

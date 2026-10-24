@@ -255,3 +255,24 @@ Numbers and strings such as `"1"`, `"2024"`, `"1/2"`, `"abc 2024"` and `"2024.5"
 A retired `sha256:` stamp keeps its regenerate message in the gate, and the
 build now rejects it too. A YAML-number `updated` built on 0.4.0, so the fix
 is breaking.
+
+## Addendum (2026-10-24): source-relative .md links and base-aware site URL
+
+The decisions above are unchanged. This addendum records how the export treats
+links in page bodies, following #237.
+
+1. **`.md` links resolve by page id.** A link to a `.md` or `.mdx` file is
+   resolved against the source directory of the page that holds it, whether it
+   is relative, root-absolute, already carries the base, or is %-encoded. The
+   export matches the result to a page id and writes that page's bundle path.
+   A `README` maps to its folder's `index.md`.
+2. **Unresolved links stay as authored.** A link that climbs above the docs
+   root, or names no page in the bundle, is left unchanged. The advisory bundle
+   check reports unresolved relative links as well as unresolved absolute ones.
+3. **Other links keep route resolution.** A link that is not a `.md` link
+   resolves as a site route and becomes an absolute URL under `<site><base>`.
+4. **The site URL is the origin plus the base.** `--site-url` takes the origin.
+   The export adds the base, with a leading `/` if it was missing. It adds the
+   base only when the URL path does not already end with it on a segment
+   boundary. A URL without a scheme is accepted.
+5. **Known limit.** Section-index page bodies are not exported.
