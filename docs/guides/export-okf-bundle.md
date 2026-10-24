@@ -60,7 +60,9 @@ Exit codes:
 Unresolved internal links print as `warning:` lines on stderr. They are
 advisory and do not change the exit code. A common one is a link to an
 `/api/*.json` file, which is a site route and not a bundle page. The advisory
-check on a finished bundle also reports relative links that name no bundle page.
+check on a finished bundle also reports relative `.md` links that name no bundle page,
+including ones that climb above the bundle root. Relative links to other files, such as
+images, are not checked.
 
 ### Site URL and base
 
