@@ -2,7 +2,7 @@
 title: Exporting an OKF bundle
 description: Produce an Open Knowledge Format v0.2 bundle from your built site with dockitty-export-okf, check it, and know what the conversion changes.
 doc_status: active
-updated: 2026-10-19T13:00:00Z
+updated: 2026-10-24T00:00:00Z
 type: Guide
 kind: How-To
 authors:
@@ -45,8 +45,8 @@ The CLI writes the same bundle as the build, byte for byte.
 | `--docs <dir>` | `./docs` | Source docs tree |
 | `--out <dir>` | `./okf-export` | Output directory. It is emptied first |
 | `--index-basename <names>` | from site config | Index file names, such as `README,index`. Used when no site config is found next to the docs folder |
-| `--base <path>` | empty | The site's `base`, stripped from links. Not inferred: the graph's hrefs carry no base. Without it, if every unresolved link starts with the same segment, the export prints `hint: ... pass --base /<segment>` |
-| `--site-url <url>` | empty | The site's `site`; internal links that are not bundle pages become absolute against it |
+| `--base <path>` | empty | The site's `base`, stripped from links and added to site URLs. A missing leading `/` is added. Not inferred: the graph's hrefs carry no base. Without it, if every unresolved link starts with the same segment, the export prints `hint: ... pass --base /<segment>` |
+| `--site-url <url>` | empty | The site's `site`, which is its origin, such as `https://example.org`. The export adds `--base` itself. Internal links that are not bundle pages become absolute against `<site><base>` |
 | `--check` | off | Validate the bundle already in `--out` (OKF §11) and write nothing |
 
 Exit codes:
@@ -59,13 +59,30 @@ Exit codes:
 
 Unresolved internal links print as `warning:` lines on stderr. They are
 advisory and do not change the exit code. A common one is a link to an
-`/api/*.json` file, which is a site route and not a bundle page.
+`/api/*.json` file, which is a site route and not a bundle page. The advisory
+check on a finished bundle also reports relative links that name no bundle page.
+
+### Site URL and base
+
+The export composes the site URL as the origin plus the base, for example
+`https://example.org` plus `/docs` gives `https://example.org/docs`. Pass the
+origin to `--site-url` and the base to `--base`. A URL that already ends with
+the base on a path-segment boundary is accepted as given, so the base is not
+added twice. A URL without a scheme is handled the same way.
 
 ## What the conversion does
 
 The export reads relations from the [content graph](../architecture/content-graph.md)
 and the pages from the source tree. Draft pages are not exported.
 
+- **Links in page bodies are rewritten.** A link to a `.md` or `.mdx` file
+  resolves against the folder of the page that holds it. It then becomes the
+  bundle path of the page with that id, and a `README` becomes its folder's
+  `index.md`. Relative links, root-absolute links, links that already carry the
+  base and %-encoded links all resolve this way. A link that climbs above the
+  docs root, or names no page in the bundle, stays as you wrote it and is
+  reported as advisory. Any other internal link resolves as a site route and
+  becomes an absolute URL under `<site><base>`.
 - **Relations become body links.** Each page gains `Related`, `Audience`,
   `References` and `Derived from` sections of `/`-prefixed bundle links, as
   OKF §6.1 recommends. A citation links to its catalog URL; one with no URL is
@@ -87,6 +104,11 @@ and the pages from the source tree. Draft pages are not exported.
   ignored. Then `by` is the page's first author, who leaves `authors`, else
   `process:dockitty-export`, and `at` is `updated`, else that stamp's `at`.
 - **`log.md`** is reserved. If your docs have one it is copied unchanged.
+
+## Known limit
+
+The export does not include the bodies of section-index pages, so links written
+in those bodies are not rewritten.
 
 ## The OKF reference viewer skips these links
 
