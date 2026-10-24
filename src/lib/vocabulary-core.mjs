@@ -380,6 +380,9 @@ export function formatInstant(date) {
 /** The only `okf_version` this toolkit writes and accepts without a warning. */
 export const OKF_VERSION = '0.2';
 
+/** A URL scheme prefix (`https:`, `mailto:`), as opposed to a path. */
+export const URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+
 /**
  * Advisory check of an `okf_version` value: `"0.2"` (a string) is clean. An
  * unquoted `0.2` (YAML yields the number) or any other value is a warning

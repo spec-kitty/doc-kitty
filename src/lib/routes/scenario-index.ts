@@ -49,7 +49,7 @@ import { getCollection, render } from 'astro:content';
 import type { GherkinDocument, Scenario, Tag } from '@cucumber/messages';
 import type { DocKittyFrontmatter } from '../metadata.js';
 import { sectionOf, slugFromEntryId } from '../metadata.js';
-import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
+import { compareCodeUnit, routeOfSlug, URL_SCHEME } from '../vocabulary-core.mjs';
 import { feedsSurface, resolveSectionRegistry, sectionFeeds } from '../sections.js';
 import { GHERKIN_LOG_PREFIX, loadFeatures, type FeatureFile } from '../gherkin/load.mjs';
 import { headingKey } from '../gherkin/text.mjs';
@@ -163,9 +163,6 @@ export interface RenderedHeading {
 }
 
 export { isScenarioIndexed } from './scenario-index-filter.js';
-
-/** A resource carrying a URL scheme (`https://…`), as opposed to a path. */
-const URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 
 /**
  * Resolve a page's `sources[0].resource` to the absolute `.feature` path, the
