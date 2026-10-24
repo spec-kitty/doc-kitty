@@ -1,0 +1,29 @@
+{
+  "rows": {
+    "#236": {
+      "evidence_ref": "1c6120bd",
+      "fr": "FR-001",
+      "nfr": "NFR-001",
+      "repo": null,
+      "sc": "SC-001",
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Agent page record: 'source' ignores the site base",
+      "verdict": "fixed",
+      "wp": "WP01"
+    },
+    "#237": {
+      "evidence_ref": "6386309a, cb001cd2, c7ae0704, 85e937da, f8ddf964, 93a9857a",
+      "fr": "FR-002..FR-006",
+      "nfr": "NFR-001, NFR-002",
+      "repo": null,
+      "sc": "SC-002..SC-004",
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "OKF export: links miss the base and resolve against the route",
+      "verdict": "fixed",
+      "wp": "WP02"
+    }
+  },
+  "schema_version": 1
+}
