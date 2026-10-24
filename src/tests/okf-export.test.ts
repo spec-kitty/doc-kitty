@@ -303,3 +303,26 @@ describe('dockitty-export-okf CLI', () => {
     }
   });
 });
+
+describe('dockitty-export-okf CLI site URL (#237)', () => {
+  it('composes the origin passed as --site-url with --base once', () => {
+    const bin = path.join(import.meta.dirname, '..', 'scripts', 'export-okf.mjs');
+    const dir = mkdtempSync(path.join(tmpdir(), 'okf-site-'));
+    try {
+      mkdirSync(path.join(dir, 'docs'));
+      writeFileSync(path.join(dir, 'docs', 'README.md'), '---\ntitle: Home\n---\nHi.\n');
+      writeFileSync(path.join(dir, 'docs', 'page.md'), '---\ntitle: P\n---\nSee [data](/docs/api/x.json).\n');
+      const page = (id: string, href: string) => ({ id, kind: 'page', type: 'Context', title: id, href });
+      const nodes = [page('README', '/docs/'), page('page', '/docs/page/')];
+      writeFileSync(path.join(dir, 'graph.json'), JSON.stringify({ schema: 'dockitty.content-graph/1', okf_version: '0.2', nodes, edges: [] }));
+      const args = ['--graph', path.join(dir, 'graph.json'), '--docs', path.join(dir, 'docs'), '--index-basename', 'README', '--out', path.join(dir, 'out'), '--base', '/docs'];
+      for (const site of ['https://s.example', 'https://s.example/docs/']) {
+        const run1 = spawnSync(process.execPath, [bin, ...args, '--site-url', site], { encoding: 'utf8' });
+        expect(run1.status, run1.stderr).toBe(0);
+        expect(readFileSync(path.join(dir, 'out', 'page.md'), 'utf8')).toContain('[data](https://s.example/docs/api/x.json)');
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
