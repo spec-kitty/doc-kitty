@@ -400,7 +400,12 @@ function composeSiteUrl(siteUrl, base) {
   const origin = (siteUrl ?? '').replace(/\/+$/, '');
   if (origin === '' || base === '') return origin;
   const sitePath = pathOfSiteUrl(origin);
-  return sitePath === base || sitePath.endsWith(base) ? origin : origin + base;
+  // `base` always starts with '/' (normalizeBase), so `endsWith(base)` can only match
+  // at a path-segment boundary: base '/docs' matches '/x/docs' but never '/x/mydocs'.
+  // Parallel base authority for the HTML/agent-API side: src/lib/with-base.ts withBase
+  // (TypeScript, so this .mjs cannot import it).
+  const alreadyBased = sitePath === base || sitePath.endsWith(base);
+  return alreadyBased ? origin : origin + base;
 }
 
 /**
