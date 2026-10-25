@@ -767,60 +767,28 @@
     --dk-pane-pad-end: var(--sl-content-pad-x);
   }
 
-  .main-pane {
-    padding-inline-end: calc(var(--dk-pane-pad-end) - var(--sl-content-pad-x));
-  }
-
   /*
-   * The width of the row the reading pane and the rail share (the frame less
-   * the sidebar), as `--dk-row-inline-size`, for lengths that depend on it:
-   * the column's start below, and the collapsed pane's end padding in
-   * `toc-rail.css` (#220). A custom property is substituted as written and
-   * `100%` resolves where it lands, so the row is written for each element
-   * that reads it, and the lengths built on it are declared on that element
-   * too (declared on `html`, they would be substituted there instead). In the
-   * pane's padding `100%` is the row itself, the pane's containing block. In
-   * the header grid it is the header's content box, the frame less twice
-   * `--sl-nav-pad-x`; the header's inline padding follows the frame gutter,
-   * so this holds for a full-width and a capped frame alike.
+   * The pane also names the width of the row it shares with the rail (the
+   * frame less the sidebar), as `--dk-row-inline-size`, for lengths that
+   * depend on it: the collapsed pane's end padding in `toc-rail.css` (#220)
+   * and the column start below. A custom property is substituted as written
+   * and `100%` resolves where it lands, so the row is written for each
+   * element that reads it, and the lengths built on it are declared on that
+   * element too (declared on `html`, they would be substituted there). Here
+   * `100%` is the row itself: the pane's containing block, which is what its
+   * padding resolves against.
    */
   .main-pane {
+    padding-inline-end: calc(var(--dk-pane-pad-end) - var(--sl-content-pad-x));
     --dk-row-inline-size: 100%;
   }
 
-  header.header > .header {
-    --dk-row-inline-size: calc(
-      100% + 2 * var(--sl-nav-pad-x) - var(--sl-content-inline-start, 0rem)
-    );
-  }
-
   /*
-   * Where the reading column starts (#216), as one toolkit-owned length:
-   * `--dk-column-inline-start`, the column's start edge measured from the
-   * start of the header's content box. It is built from the same lengths that
-   * place the column: the sidebar (`--sl-content-inline-start`), the rail
-   * (`--dk-rail-inline-size`: the pinned rail width, 1px when `toc-rail.css`
-   * collapses it, 0 without a rail), the pane's inline padding and
-   * `--sl-content-width`. The column is centred in what is left of the row.
-   * The collapsed state and pages without a rail change the inputs, not the
-   * formula, so the header and the pane cannot disagree. Its only reader is
-   * the header grid below, so it is declared there, next to the row it reads.
+   * The rail's inline size as the column start below reads it: the pinned
+   * rail width, 1px when `toc-rail.css` collapses it, 0 without a rail.
    */
   html {
     --dk-rail-inline-size: 0px;
-  }
-
-  header.header > .header {
-    --dk-column-inline-start: calc(
-      var(--sl-content-inline-start, 0rem) + var(--sl-content-pad-x) - var(--sl-nav-pad-x) +
-        max(
-          0px,
-          (
-              var(--dk-row-inline-size) - var(--dk-rail-inline-size) - var(--sl-content-pad-x) -
-                var(--dk-pane-pad-end) - var(--sl-content-width)
-            ) / 2
-        )
-    );
   }
 
   html[data-has-toc] {
@@ -838,12 +806,37 @@
    * `minmax(..., auto)` keeps Starlight's floor: a site title wider than that
    * space still pushes the search along instead of running under it.
    *
+   * Where the column starts is one toolkit-owned length,
+   * `--dk-column-inline-start`, measured from the start of the header's
+   * content box. It is built from the same lengths that place the column: the
+   * sidebar (`--sl-content-inline-start`), the rail (`--dk-rail-inline-size`),
+   * the pane's inline padding and `--sl-content-width`; the column is centred
+   * in what is left of the row. The collapsed state and pages without a rail
+   * change the inputs, not the formula, so the header and the pane cannot
+   * disagree. The row is written for this element (see `.main-pane` above):
+   * here `100%` is the header's content box, the frame less twice
+   * `--sl-nav-pad-x`, and the header's inline padding follows the frame
+   * gutter, so it holds for a full-width and a capped frame alike.
+   *
    * The selector is the stock header's root element only (`Header.astro`
    * renders `div.header` inside the bar). A theme that fills
    * `dk:site-header` replaces that element and lays out its own header.
    * Grid tracks follow the inline axis, so a right-to-left page mirrors it.
    */
   header.header > .header {
+    --dk-row-inline-size: calc(
+      100% + 2 * var(--sl-nav-pad-x) - var(--sl-content-inline-start, 0rem)
+    );
+    --dk-column-inline-start: calc(
+      var(--sl-content-inline-start, 0rem) + var(--sl-content-pad-x) - var(--sl-nav-pad-x) +
+        max(
+          0px,
+          (
+              var(--dk-row-inline-size) - var(--dk-rail-inline-size) - var(--sl-content-pad-x) -
+                var(--dk-pane-pad-end) - var(--sl-content-width)
+            ) / 2
+        )
+    );
     grid-template-columns:
       minmax(max(0px, var(--dk-column-inline-start) - var(--sl-nav-gap)), auto)
       1fr
