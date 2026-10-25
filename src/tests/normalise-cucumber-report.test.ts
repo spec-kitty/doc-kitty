@@ -31,8 +31,22 @@ function asAnotherRun(text: string, root: string): string {
     if (!ids.has(id)) ids.set(id, randomUUID());
     return ids.get(id) as string;
   };
-  return text
-    .replace(new RegExp(UUID.source, 'gi'), (id) => fresh(id))
+  // Every id (`id`, `…Id`, `…Ids`) gets a random UUID, as cucumber-js writes it.
+  const isIdKey = (key: string): boolean => key === 'id' || /[a-z]Ids?$/.test(key);
+  const reid = (value: unknown, key: string): unknown => {
+    if (typeof value === 'string') return isIdKey(key) ? fresh(value) : value;
+    if (Array.isArray(value)) return value.map((v) => reid(v, /[a-z]Ids$/.test(key) ? key : ''));
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, reid(v, k)]));
+    }
+    return value;
+  };
+  const rerun = text
+    .split('\n')
+    .map((line) => (line ? JSON.stringify(reid(JSON.parse(line), '')) : line))
+    .join('\n');
+  expect(rerun).toMatch(UUID);
+  return rerun
     .replace(/"seconds":\d+/g, (m) => `"seconds":${Number(m.slice(10)) + 86_400 * 37}`)
     .replace(/"nanos":\d+/g, '"nanos":123456789')
     .replace(/"os":\{[^}]*\}/, '"os":{"name":"darwin","version":"24.1.0"}')
