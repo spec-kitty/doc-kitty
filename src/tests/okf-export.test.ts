@@ -292,6 +292,27 @@ describe('dockitty-export-okf CLI base hint', () => {
   });
 });
 
+describe('dockitty-export-okf CLI README body links (#238)', () => {
+  it('exports a README body link and reports it when the target is not in the bundle', () => {
+    const bin = path.join(import.meta.dirname, '..', 'scripts', 'export-okf.mjs');
+    const dir = mkdtempSync(path.join(tmpdir(), 'okf-readme-'));
+    try {
+      mkdirSync(path.join(dir, 'docs'));
+      writeFileSync(path.join(dir, 'docs', 'README.md'), '---\ntitle: Home\n---\nSee [the missing page](./ghost-page.md).\n');
+      const graph = { schema: 'dockitty.content-graph/1', okf_version: '0.2', nodes: [{ id: 'README', kind: 'page', type: 'Context', title: 'Home', href: '/' }], edges: [] };
+      writeFileSync(path.join(dir, 'graph.json'), JSON.stringify(graph));
+      const args = ['--graph', path.join(dir, 'graph.json'), '--docs', path.join(dir, 'docs'), '--index-basename', 'README', '--out', path.join(dir, 'out')];
+      const res = spawnSync(process.execPath, [bin, ...args], { encoding: 'utf8' });
+      expect(res.status, res.stderr).toBe(0);
+      expect(readFileSync(path.join(dir, 'out', 'README.md'), 'utf8')).toContain('ghost-page');
+      expect(res.stderr).toContain('not in the bundle');
+      expect(res.stderr).toContain('ghost-page');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('dockitty-export-okf CLI', () => {
   it('exports to a conformant bundle (0), --check flags a violation (1), no graph is a usage error (2)', () => {
     const bin = path.join(import.meta.dirname, '..', 'scripts', 'export-okf.mjs');
