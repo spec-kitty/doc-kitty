@@ -710,6 +710,23 @@
    */
 
   /*
+   * That static position must not depend on how much of the page has been
+   * parsed (#223). Starlight renders the rail container BEFORE `.main-pane`
+   * and moves it to the end of the row with `order: 2`. A first paint that
+   * lands before the parser reaches the pane sees the container as the row's
+   * only item, at its start: the rail was drawn beside the sidebar (x=288 at
+   * 1280px) and jumped to its column (x=992) once the pane arrived, a layout
+   * shift of about 0.25. An auto start margin takes the row's free space, so
+   * the container sits at the row's end whatever has been parsed. Once the
+   * pane is in, the two fill the row (expanded and collapsed), the margin
+   * resolves to 0 and the layout is unchanged. The collapsed 1px hairline is
+   * the same container, so it holds still too. Starlight sets no margin here.
+   */
+  .right-sidebar-container {
+    margin-inline-start: auto;
+  }
+
+  /*
    * The reading pane takes the rest of the frame and centres its column, so
    * the column widens with the viewport up to Starlight's content width and
    * then stays there (FR-006, NFR-002). Both selectors are (0,3,1): the
