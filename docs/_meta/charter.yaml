@@ -12,7 +12,7 @@
 #   • statuses   — no additions; the legal set stays the canonical STATUSES
 #     (draft, active, deprecated, superseded, durable).
 #   • required_fields — nothing relaxed; the canonical required set applies
-#     (title, description, doc_status, updated), with `title` as the immovable floor.
+#     (title, description, doc_status, updated, kind), with `title` as the immovable floor.
 #
 # WHY THE SECTIONS AXIS IS OMITTED HERE
 # -------------------------------------

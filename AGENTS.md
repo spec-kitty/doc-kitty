@@ -50,14 +50,15 @@ now and will be recast as Spec Kitty charter/doctrine later.
   is `example/`.
 - Follow the convention when editing any `docs/` tree: `README.md` is the
   section index and carries frontmatter. The required frontmatter fields are
-  `title`, `description`, `doc_status`, and `updated`. Two further fields are
-  **optional**: `type` names the section and, when omitted, is derived from the
+  `title`, `description`, `doc_status`, `updated`, and `kind`. `type` is
+  **optional**: it names the section and, when omitted, is derived from the
   section registry (`docs/_meta/sections.yaml`) — an authored value wins, and a
   mismatch with the derived value is an advisory warning, never a hard failure;
   a root or orphan page with no derivable type is accepted as untyped. `kind`
-  names how to read the page and is accepted when absent (no derivation source
-  exists for it). Both `type` and `kind` are open-vocabulary and consumer-
-  overridable via `docs/_meta/vocabulary.yaml`. See
-  [ADR-0004](./docs/adr/0004-amend-common-docs-as-extensible-variation.md),
-  [ADR-0009](./docs/adr/0009-finalize-metadata-contract.md), and
-  [ADR-0031](./docs/adr/0031-vocabulary-override.md) for the landed contract.
+  names how to read the page and has no derivation source; a consumer's charter
+  may relax it with `required_fields.optional: [kind]`. Both `type` and `kind`
+  are open-vocabulary and consumer-overridable via `docs/_meta/vocabulary.yaml`.
+  See [ADR-0004](./docs/adr/0004-amend-common-docs-as-extensible-variation.md),
+  [ADR-0009](./docs/adr/0009-finalize-metadata-contract.md),
+  [ADR-0031](./docs/adr/0031-vocabulary-override.md), and
+  [ADR-0065](./docs/adr/0065-kind-required-again.md) for the landed contract.

@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-19T00:00:00Z
+updated: 2026-10-25T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -752,6 +752,10 @@ The governable dimensions:
   required_fields:
     optional: [ updated ]
   ```
+
+  The canonical required set is `title`, `description`, `doc_status`, `updated`
+  and `kind`. A corpus that does not carry `kind` on every page yet can list
+  `kind` here until it does ([ADR-0065](/adr/0065-kind-required-again/)).
 
 A malformed charter fails the build naming the file and offending key; an unknown
 *top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`
