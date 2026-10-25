@@ -9,7 +9,7 @@ import {
   SECTION_TYPE,
   isGeneratedPage,
 } from '../scripts/validate-frontmatter.mjs';
-import { parseActor, isActor, normaliseInstant } from '../lib/vocabulary-core.mjs';
+import { parseActor, isActor, normaliseInstant, parseRequiredFields } from '../lib/vocabulary-core.mjs';
 import { GHERKIN_PRODUCER, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
@@ -78,14 +78,9 @@ const SHAPE_PARITY: { file: string; relPath: string; reject: boolean }[] = [
   // the build schema treats role/goals/responsibilities as optional and the
   // validator's kind-aware requiredness is satisfied.
   { file: 'persona/valid-persona.md', relPath: 'valid-persona.md', reject: false },
-  // RETARGETED (#38 / NFR-001): `kind` is now OPTIONAL in the standalone gate,
-  // matching the already-lenient build schema, so a page that omits `kind` is
-  // ACCEPTED on BOTH arms. This case was formerly in PRESENCE_LENIENT (gate
-  // rejects). It was MOVED here — not deleted — so a positive assertion pins the
-  // new contract: this row reds the moment `kind` becomes required again on
-  // either side. (`type: Context` is present and canonical; the unregistered
-  // `missing-kind.md` path derives nothing, so no mismatch warning fires.)
-  { file: 'err/missing-kind.md', relPath: 'missing-kind.md', reject: false },
+  // NOTE: `err/missing-kind.md` lived here while #38 made `kind` optional in the
+  // gate. #219 makes it required again (ADR-0065), so it moved BACK to
+  // PRESENCE_LENIENT below: the build accepts it, the gate rejects it.
 ];
 
 describe('schema/validator parity — shared shape contract (NFR-005)', () => {
@@ -239,9 +234,9 @@ describe('schema/validator parity — required-field policy is charter-tunable (
 // rejecting them, the assertion flips red.
 const PRESENCE_LENIENT: { file: string; relPath: string }[] = [
   { file: 'err/missing-doc-status.md', relPath: 'missing-doc-status.md' },
-  // NOTE: `err/missing-kind.md` used to live here (gate-only strict rejection).
-  // #38 made `kind` optional in the gate, so it was RETARGETED to the SHAPE_PARITY
-  // accept path above (reject: false) — not deleted. See the comment there.
+  // `kind` is required by the gate (#219, ADR-0065) and lenient in the build, like
+  // `doc_status`. (It was optional in the gate from #38 until #219.)
+  { file: 'err/missing-kind.md', relPath: 'missing-kind.md' },
   // A persona missing a required attribute field (ADR-0019): the build schema
   // is lenient (role/goals/responsibilities are optional there — schema.ts keeps
   // no per-kind discriminated union), while the standalone validator enforces
@@ -312,15 +307,24 @@ describe('advisory warnings — pass (exit 0) on both arms but observably printe
 // mismatch through the STRUCTURED `warnings[]` — never a hard problem, never
 // console text. The absent-derivation (orphan) case is deterministic "untyped".
 describe('optional/derived frontmatter contract (#38)', () => {
-  it('AS-1: a registered-section page with no type and no kind passes; effective type is the section-derived type', () => {
+  it('AS-1: a registered-section page with no type derives the section type; with no kind it fails only on `kind` (#219)', () => {
     const data = parse('optional/registered-no-type-no-kind.md');
     // Under a registered section (frozen fallback: architecture → Architecture),
-    // the absent `type` is derived and the absent `kind` is accepted.
+    // the absent `type` is derived; the absent `kind` is required (#219, ADR-0065).
     const { problems, warnings, effective } = validate('architecture/registered.md', data);
-    expect(problems).toEqual([]);
+    expect(problems).toEqual(['`kind`: required']);
     expect(effective).toBe('Architecture');
     // No mismatch warning: nothing was authored to disagree with the derivation.
     expect(warnings.some((w) => /path suggests/.test(w))).toBe(false);
+  });
+
+  it('a charter that lists `kind` under required_fields.optional accepts a page without it (#219)', () => {
+    const data = parse('optional/registered-no-type-no-kind.md');
+    const { problems, effective } = validate('architecture/registered.md', data, undefined, undefined, {
+      requiredFields: parseRequiredFields({ optional: ['kind'] }, 'charter.yaml').required,
+    });
+    expect(problems).toEqual([]);
+    expect(effective).toBe('Architecture');
   });
 
   it('AS-2: an authored type that conflicts with the derived type passes with a STRUCTURED mismatch warning (authored wins)', () => {

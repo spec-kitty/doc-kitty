@@ -194,10 +194,9 @@ export const frontmatterSchema = z
     // schema error — matching the site schema's graceful-degradation posture
     // (ADR-0004, metadata-model.md).
     type: z.string().optional(),
-    // `kind` is OPTIONAL (#38 / FR-002): an adopter is not forced to add a second
-    // required field corpus-wide, matching the already-lenient site schema. When
-    // present it must still be a non-empty string; when absent it is accepted (no
-    // derivation source exists for `kind`).
+    // `kind` is REQUIRED (#219, ADR-0065): its presence is enforced below through
+    // the charter-tunable `requiredFields` set, like `doc_status` and `updated`,
+    // so a charter may relax it. When present it must be a non-empty string.
     kind: z.string().min(1, 'must be a non-empty string').optional(),
     okf_version: z.union([z.string(), z.number()]).optional(),
     authors: z.array(z.string()).optional(),
@@ -575,7 +574,7 @@ export function validate(
     // "missing required `type`" problem (the #38 relaxation).
   }
 
-  // `kind` is required (enforced by the schema above); an unknown value is a
+  // `kind` is required (enforced by `requiredFields` above); an unknown value is a
   // non-fatal, observably-printed warning (open vocabulary, ADR-0009).
   if (typeof data.kind === 'string' && data.kind.length > 0 && !KINDS.includes(data.kind)) {
     warnings.push(`\`kind: ${data.kind}\` is not in the canonical set (${KINDS.join(', ')})`);

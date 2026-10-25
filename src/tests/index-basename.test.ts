@@ -195,7 +195,7 @@ describe('E-05/FR-004 collision, bare-Node twin (detectIndexCollisions)', () => 
 
 describe('FR-004 route collision in the standalone validator', () => {
   const validatorPath = fileURLToPath(new URL('../scripts/validate-frontmatter.mjs', import.meta.url));
-  const page = '---\ntitle: T\ndescription: D\nupdated: 2026-01-01\ndoc_status: active\ntype: Guide\n---\n\nBody.\n';
+  const page = '---\ntitle: T\ndescription: D\nupdated: 2026-01-01\ndoc_status: active\ntype: Guide\nkind: How-To\n---\n\nBody.\n';
   const validate = (files: string[]) => {
     const dir = mkdtempSync(path.join(tmpdir(), 'dk-validator-collision-'));
     try {

@@ -317,14 +317,14 @@ describe('parseStatusesAxis — extend-only statuses (D-03/C-004)', () => {
 describe('parseRequiredFields — required-field policy with title floor (D-04/C-005)', () => {
   it('relaxing a non-floor field drops it from the required set', () => {
     const policy = parseRequiredFields({ optional: ['updated'] }, 'charter.yaml');
-    expect(policy.required).toEqual(['title', 'description', 'doc_status']);
+    expect(policy.required).toEqual(['title', 'description', 'doc_status', 'kind']);
     expect(policy.floor).toEqual(['title']);
   });
 
   it('with no policy the canonical required set applies unchanged', () => {
     const policy = parseRequiredFields(undefined, 'charter.yaml');
     expect(policy.required).toEqual([...CANONICAL_REQUIRED]);
-    expect(policy.required).toEqual(['title', 'description', 'doc_status', 'updated']);
+    expect(policy.required).toEqual(['title', 'description', 'doc_status', 'updated', 'kind']);
   });
 
   it('rejects relaxing the title floor (fail-closed)', () => {
@@ -348,7 +348,7 @@ describe('parseCharter — unified ResolvedCharter resolver (WP01/T003)', () => 
     expect(charter.resolveStatus('active')).toBe('active');
     expect(charter.legalStatuses).toEqual(['draft', 'active', 'deprecated', 'superseded', 'durable']);
     expect(charter.requiredFields).toEqual({
-      required: ['title', 'description', 'doc_status', 'updated'],
+      required: ['title', 'description', 'doc_status', 'updated', 'kind'],
       floor: ['title'],
     });
     expect(charter.sections).toBeNull();
@@ -373,7 +373,7 @@ describe('parseCharter — unified ResolvedCharter resolver (WP01/T003)', () => 
     );
     expect(charter.resolveStatus('reviewed')).toBe('reviewed');
     expect(charter.legalStatuses).toContain('reviewed');
-    expect(charter.requiredFields.required).toEqual(['title', 'description', 'doc_status']);
+    expect(charter.requiredFields.required).toEqual(['title', 'description', 'doc_status', 'kind']);
     expect(charter.sourceMeta.fromCharter).toBe(true);
   });
 
