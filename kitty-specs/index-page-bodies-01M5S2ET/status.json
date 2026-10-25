@@ -1,0 +1,55 @@
+{
+  "event_count": 14,
+  "last_event_id": "01M5S57SHF874PS3KH716YGC6C",
+  "materialized_at": "2026-10-25T09:11:03.471763+00:00",
+  "mission_number": "",
+  "mission_slug": "index-page-bodies-01M5S2ET",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 2,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5S57K97QV4JZSW2ZSPECFAJ",
+      "last_transition_at": "2026-10-25T09:10:57.063104+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/index-page-bodies-01M5S2ET-coord/kitty-specs/index-page-bodies-01M5S2ET/tasks/WP01-overview-page-emission/review-cycle-1.md",
+        "reference": "review-cycle://index-page-bodies-01M5S2ET/WP01-overview-page-emission/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2818855,
+      "shell_pid_created_at": "1792918753.6"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M5S57SHF874PS3KH716YGC6C",
+      "last_transition_at": "2026-10-25T09:11:03.471763+00:00",
+      "review_result": {
+        "feedback_path": ".worktrees/index-page-bodies-01M5S2ET-coord/kitty-specs/index-page-bodies-01M5S2ET/tasks/WP02-docs-and-changelog/review-cycle-1.md",
+        "reference": "review-cycle://index-page-bodies-01M5S2ET/WP02-docs-and-changelog/review-cycle-1.md",
+        "reviewer": "claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 2848706,
+      "shell_pid_created_at": "1792919171.26"
+    }
+  }
+}

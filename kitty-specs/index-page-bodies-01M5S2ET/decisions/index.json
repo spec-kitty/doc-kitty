@@ -1,0 +1,81 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-25T08:22:50.462287Z",
+      "decision_id": "01M5S2FGAY1DGG6WSGYKPQ4AG7",
+      "final_answer": "Relax rule 4: prose allowed before a strictly-formed entry list",
+      "input_key": "rule4_policy",
+      "mission_id": "01M5S2ETXA34079FXAVNDYB8E3",
+      "mission_slug": "index-page-bodies-01M5S2ET",
+      "opened_by": "cli",
+      "options": [
+        "Relax rule 4",
+        "Keep index.md strict",
+        "Park #238",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Conformance rule 4 forbids prose in index.md; how to handle exported README bodies?",
+      "rationale": null,
+      "resolved_at": "2026-10-25T08:22:51.922487Z",
+      "resolved_by": null,
+      "slot_key": "specify.conformance.rule4",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-25T08:22:53.412208Z",
+      "decision_id": "01M5S2FK74STAHJC6762PPY5NZ",
+      "final_answer": "Body h1 replaces generated title; else title, body, entries",
+      "input_key": "body_placement",
+      "mission_id": "01M5S2ETXA34079FXAVNDYB8E3",
+      "mission_slug": "index-page-bodies-01M5S2ET",
+      "opened_by": "cli",
+      "options": [
+        "Body h1 replaces title",
+        "Title, body, entries",
+        "Body above title",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Where does the README body go in index.md?",
+      "rationale": null,
+      "resolved_at": "2026-10-25T08:22:54.898159Z",
+      "resolved_by": null,
+      "slot_key": "specify.layout.body-placement",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-25T08:42:22.674313Z",
+      "decision_id": "01M5S3K92JHE9P6B427E8WH4VC",
+      "final_answer": "Body to sibling file: index.md stays strict \u00a78; README body becomes a sibling concept page listed first in the index",
+      "input_key": "okf_section8_policy",
+      "mission_id": "01M5S2ETXA34079FXAVNDYB8E3",
+      "mission_slug": "index-page-bodies-01M5S2ET",
+      "opened_by": "cli",
+      "options": [
+        "Documented departure",
+        "Body to sibling file",
+        "Park #238",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "OKF \u00a78 is silent on prose in index.md; documented departure, body to sibling file, or park?",
+      "rationale": null,
+      "resolved_at": "2026-10-25T08:42:24.145892Z",
+      "resolved_by": null,
+      "slot_key": "specify.conformance.okf-section8",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M5S2ETXA34079FXAVNDYB8E3",
+  "version": 1
+}

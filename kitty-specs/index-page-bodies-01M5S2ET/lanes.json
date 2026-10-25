@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "mission_slug": "index-page-bodies-01M5S2ET",
+  "mission_id": "01M5S2ETXA34079FXAVNDYB8E3",
+  "mission_branch": "kitty/mission-index-page-bodies-01M5S2ET",
+  "target_branch": "fix/index-page-bodies",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/okf-export/core.mjs",
+        "src/tests/okf-export-links.test.ts",
+        "src/tests/okf-export.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/adr/0059-content-graph-and-okf-alignment.md",
+        "docs/guides/export-okf-bundle.md"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-10-25T08:58:31.812255+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "b94a9439913488ebaea58be0aa3c510c19fd325e"
+}
