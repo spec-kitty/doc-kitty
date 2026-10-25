@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-10-25
+
 ### 💥 Breaking
 
 - **`validate-frontmatter` requires `kind` on every page again (#219).**
@@ -16,7 +18,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   still only warns. To keep the old behaviour, list `kind` under
   `required_fields.optional` in `docs/_meta/charter.yaml`. See
   [ADR-0065](docs/adr/0065-kind-required-again.md) and
-  [Upgrading from 0.4.0 to 0.4.1](docs/migrations/0.4-to-0.4.1.md).
+  [Upgrading from 0.4.0 to 0.5.0](docs/migrations/0.4-to-0.5.md).
 
 ### Changed
 

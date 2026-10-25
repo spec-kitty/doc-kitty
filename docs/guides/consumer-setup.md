@@ -449,7 +449,7 @@ The reading pane is the area between sidebar and rail. The reading column is the
 text block centred in it, at most 960px (60rem, see
 [ADR-0053](../adr/0053-reading-width.md)).
 
-Since 0.5.0 the frame is capped at 120rem by default
+Since 0.4.0 the frame is capped at 120rem by default
 ([ADR-0064](../adr/0064-default-frame-cap.md)). On a viewport wider than 1920px
 the frame is 1920px wide and centred. At 1920px and narrower the frame is the
 full viewport, so those layouts are unchanged.
