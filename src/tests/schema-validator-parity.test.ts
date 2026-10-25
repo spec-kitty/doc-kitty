@@ -725,7 +725,11 @@ describe('schema/validator parity — non-ISO instants read as UTC under any TZ 
     ['May 1, 2024 (GMT)', '2024-05-01T00:00:00.000Z'],
     // Inside the DST gap of America/Los_Angeles and Pacific/Auckland: still the written wall clock.
     ['Mar 10, 2024 2:30', '2024-03-10T02:30:00.000Z'],
+    // `Date` ignores a zone word before the first digit, so it names no zone.
+    ['UTC May 1 2024 10:00', '2024-05-01T10:00:00.000Z'],
+    ['Est. 1/2/24', '2024-01-02T00:00:00.000Z'],
     // A value that names its zone keeps it.
+    ['May 1 UTC 2024', '2024-05-01T00:00:00.000Z'],
     ['Wed, 01 May 2024 10:00:00 GMT', '2024-05-01T10:00:00.000Z'],
     ['May 1, 2024 UTC', '2024-05-01T00:00:00.000Z'],
     ['May 1 2024 10:00:00 Z', '2024-05-01T10:00:00.000Z'],
