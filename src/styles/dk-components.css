@@ -647,11 +647,20 @@
 
   /*
    * The left sidebar is `position: fixed; inset-inline-start: 0`, so it
-   * ignores the frame's centring. Move it in by the gutter (FR-004). (0,2,1)
-   * outranks Starlight's `.sidebar-pane` (0,1,0).
+   * ignores the frame's centring. Its navigation moves in by the gutter
+   * (FR-004), but the panel itself stays at the viewport's start edge and
+   * grows by the gutter, which becomes its start padding: the tint bleeds out
+   * to the viewport edge as the header bar's does, so on a screen wider than
+   * the frame the navigation column does not float as a tinted block 320px in
+   * under an edge-to-edge header (#224; the operator chose this over a
+   * start-edge hairline or leaving it). With the gutter at 0, up to the 120rem
+   * default cap, this is Starlight's own geometry. Starlight's sheet makes
+   * the pane `border-box`, so its content box is the sidebar width as before.
+   * (0,2,1) outranks Starlight's `.sidebar-pane` (0,1,0).
    */
   html[data-has-sidebar] .sidebar-pane {
-    inset-inline-start: var(--dk-frame-gutter);
+    width: calc(var(--sl-sidebar-width) + var(--dk-frame-gutter));
+    padding-inline-start: var(--dk-frame-gutter);
   }
 
   /*
