@@ -36,10 +36,10 @@ first.
 ## Frontmatter
 
 Required: `title`, `description` (one sentence, at most 180 characters),
-`doc_status` (`draft` unless told otherwise), `updated` (today, `YYYY-MM-DD`).
-Also write `type` (the section type; derived from the section registry when
-omitted) and `kind` (how to read the page: `How-To`, `Reference`,
-`Explanation`, `Hub`, `ADR`, `Changelog`, …). Always stamp:
+`doc_status` (`draft` unless told otherwise), `updated` (today, `YYYY-MM-DD`),
+and `kind` (how to read the page: `How-To`, `Reference`, `Explanation`, `Hub`,
+`ADR`, `Changelog`, …). Also write `type` (the section type; derived from the
+section registry when omitted). Always stamp:
 
 ```yaml
 generated:

@@ -46,7 +46,7 @@ toolkit can work out.
 Since #38, the charter can relax a required field for one consumer
 (`required_fields.optional`, [ADR-0042](./0042-native-documentation-charter.md)).
 This is the escape hatch #38 did not have. Both of doc-kitty's own trees already
-carry `kind` on every page (176 and 74 pages).
+carry `kind` on every page.
 
 ## Decision
 
