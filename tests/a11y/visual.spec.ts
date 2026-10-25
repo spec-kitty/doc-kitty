@@ -91,3 +91,30 @@ test.describe('wide-viewport chrome', () => {
     });
   });
 });
+
+// Above the 120rem default cap (ADR-0064) the frame is centred with a 320px
+// gutter each side at 2560px. The sidebar panel's tint runs out to the viewport's
+// start edge, like the header bar, with its navigation on the frame (#224,
+// ADR-0066). Only this width shows it: up to 1920px the gutter is 0. The
+// numeric guard is A2c in layout-geometry.spec.ts; this is its visual complement.
+// Its baseline comes from the "Update a11y baselines" workflow, as above.
+test.describe('wide-viewport chrome above the frame cap', () => {
+  test.use({ viewport: { width: 2560, height: 800 } });
+
+  test('header, sidebar tint, rail and toggle at 2560px', async ({ page }, testInfo) => {
+    const mode = modeOf(testInfo.project.name);
+    await gotoInMode(page, TOC_RAIL_ROUTE.path, mode);
+    for (const root of TOC_RAIL_ROUTE.guardRoots) {
+      await expect(page.locator(root), `non-vacuity: "${root}" must exist`).toHaveCount(1);
+    }
+    await expect(page.locator('nav.sidebar'), 'non-vacuity: the page has a left sidebar').toHaveCount(1);
+    await page.locator(TOC_RAIL_TOGGLE).waitFor({ state: 'visible', timeout: 15_000 });
+    await page.evaluate(() => document.fonts.ready);
+    await page.addStyleTag({ content: '.main-pane { visibility: hidden !important; }' });
+
+    await expect(page).toHaveScreenshot('chrome-2560.png', {
+      fullPage: false,
+      animations: 'disabled',
+    });
+  });
+});
