@@ -65,6 +65,12 @@ is Starlight's own. Offsets are logical, so a right-to-left page mirrors it.
 
 - The page background shows only in the gutter on the frame's end side. The
   layout is no longer symmetric outside the frame.
+- The tinted strip is part of the sidebar pane, which scrolls. When the
+  navigation is taller than the window, a wheel or trackpad scroll over the
+  strip scrolls the navigation, not the article; over the gutter on the other
+  side it still scrolls the article. Painting the tint with a separate fixed
+  element that ignores the pointer would keep the old behaviour, at the cost
+  of a second painted element per page.
 
 ### Risks
 
@@ -90,4 +96,5 @@ frame. Rejected now that the default cap shows it to every reader above 1920px.
 - Issue #224, with the 2560px comparison of the three options.
 - Guards: `tests/a11y/layout-geometry.spec.ts` A2c (the panel starts at the
   viewport's start edge, its navigation on the frame), and the 2560px
-  `wide-viewport chrome` visual baseline in `tests/a11y/visual.spec.ts`.
+  `wide-viewport chrome above the frame cap` visual baseline (`chrome-2560.png`)
+  in `tests/a11y/visual.spec.ts`.
