@@ -2,7 +2,7 @@
 title: Collapsible TOC rail
 description: The desktop-only collapsible on-this-page TOC rail — what it does, why it is a client augmentation rather than a PageSidebar override, and the Starlight internals it depends on.
 doc_status: active
-updated: 2026-10-19T00:00:00Z
+updated: 2026-10-25T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
@@ -59,9 +59,17 @@ an opt-in `DocKittyOptions` flag.
   match a real `StarlightPage` with `hasSidebar: false` at all ten measured points
   (#199).
 - **Clear of the toggle.** Collapsed, the reading column ends at least 4px before
-  the toggle at every width from 72rem (#217). From 1152px to 1296px the centred
-  column box used to run 7px under the toggle, so below 84rem the collapsed pane
-  is padded past it. The clearance holds whatever font the page falls back to.
+  the toggle at every width from 72rem (#217), under any frame cap (#220). From
+  1152px to 1296px the centred column box used to run 7px under the toggle, and
+  so did a wide viewport under a consumer's cap between 72rem and 84rem. The
+  collapsed pane's end padding is now worked out from the width of the row the
+  pane and rail share, not from the viewport, so it widens past the toggle
+  wherever the column would otherwise reach it. The clearance holds whatever
+  font the page falls back to.
+- **Steady first paint.** The browser can paint before the whole page has been
+  parsed. The rail is in its final place in that first paint too, expanded and
+  collapsed (#223): it used to be drawn beside the sidebar and then jump across
+  the page once the reading pane arrived.
 - **No rail for a near-empty outline.** A page whose outline would hold only
   the page-title "Overview" entry (no `h2` or `h3`) renders with no rail and no
   toggle, and the reading column uses the space. The toolkit's route middleware
@@ -153,7 +161,11 @@ There are two gates. `tests/a11y/toc-rail.interaction.spec.ts` covers the
 behaviour (collapse, restore, persistence, focus order, the toggle's name and
 state). `tests/a11y/layout-geometry.spec.ts` measures where the rail, the toggle
 and the reading column are at 1152, 1280, 1600, 1920 and 2560px, in both states,
-under a capped frame and right-to-left, to 1px. Beside them,
+under a capped frame and right-to-left, to 1px. It also checks the rail's place
+on a page cut off before the reading pane (what a first paint during parsing
+sees, #223), and that mounting the enhancement on a fully painted page shifts
+nothing, with a positive control that proves a real shift is caught (NFR-005,
+#222). Beside them,
 `tests/a11y/target-size.spec.ts` checks that every target in the header,
 sidebar, rail and footer is at least 24 by 24px or meets the WCAG 2.5.8 spacing
 exception (#202). The sidebar checks also run against the published, drafts-off
@@ -165,6 +177,11 @@ for the expanded geometry):
 
 - `.right-sidebar-container` — the reserved rail column. Expanded, it is pinned
   to the sidebar width (`--sl-sidebar-width`); collapsed, it is a 1px hairline.
+  Starlight renders it **before** `.main-pane` and moves it to the end of the row
+  with flex `order: 2`; the toolkit gives it an auto start margin so it sits at
+  the row's end before the pane has been parsed (#223). If Starlight changes that
+  source order or the flex row, re-check the #223 describe in
+  `layout-geometry.spec.ts`.
   It is also the **toggle's mount point**: the script prepends the button to it.
   If Starlight renames or restructures this element the toggle is not mounted.
 - `.right-sidebar` — the fixed rail element, a sibling of the button. Expanded,
