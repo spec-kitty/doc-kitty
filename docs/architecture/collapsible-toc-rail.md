@@ -164,9 +164,8 @@ and the reading column are at 1152, 1280, 1600, 1920 and 2560px, in both states,
 under a capped frame and right-to-left, to 1px. It also checks the rail's place
 on a page cut off before the reading pane (what a first paint during parsing
 sees, #223), and that mounting the enhancement on a fully painted page shifts
-nothing, with a positive control that proves a real shift is caught (NFR-005,
-#222). Beside them,
-`tests/a11y/target-size.spec.ts` checks that every target in the header,
+nothing, with a positive control that proves a real shift is caught
+(NFR-005, #222). Beside them, `tests/a11y/target-size.spec.ts` checks that every target in the header,
 sidebar, rail and footer is at least 24 by 24px or meets the WCAG 2.5.8 spacing
 exception (#202). The sidebar checks also run against the published, drafts-off
 build in the same job (#200).
