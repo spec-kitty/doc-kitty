@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -694,6 +694,72 @@ describe('vocabulary-core metadata rules (#177, C-009)', () => {
     expect(normaliseInstant('2026-02-30')?.date.toISOString()).toBe('2026-03-02T00:00:00.000Z');
     expect(normaliseInstant('2026-02-28')).toMatchObject({ rolledOver: false });
   });
+});
+
+describe('schema/validator parity — non-ISO instants read as UTC under any TZ (#234)', () => {
+  const page = (updated: string): Record<string, unknown> => ({
+    title: 'A non-ISO date',
+    description: 'x'.repeat(60),
+    updated,
+    doc_status: 'active',
+    type: 'Context',
+    kind: 'Reference',
+  });
+
+  // [value, instant both twins must read it as]
+  const ROWS: [string, string][] = [
+    ['May 1, 2024', '2024-05-01T00:00:00.000Z'],
+    ['1/2/24', '2024-01-02T00:00:00.000Z'],
+    ['May 2024', '2024-05-01T00:00:00.000Z'],
+    ['1 May 2024', '2024-05-01T00:00:00.000Z'],
+    ['2024-10', '2024-10-01T00:00:00.000Z'],
+    ['2024/05/01', '2024-05-01T00:00:00.000Z'],
+    ['May 1, 2024 10:30', '2024-05-01T10:30:00.000Z'],
+    ['May 1, 2024 10:00 pm', '2024-05-01T22:00:00.000Z'],
+    ['5/1/2024 10:00', '2024-05-01T10:00:00.000Z'],
+    // A comment in parentheses names no zone for `Date`, so it does not count as one.
+    ['May 1, 2024 (GMT)', '2024-05-01T00:00:00.000Z'],
+    // Inside the DST gap of America/Los_Angeles and Pacific/Auckland: still the written wall clock.
+    ['Mar 10, 2024 2:30', '2024-03-10T02:30:00.000Z'],
+    // A value that names its zone keeps it.
+    ['Wed, 01 May 2024 10:00:00 GMT', '2024-05-01T10:00:00.000Z'],
+    ['May 1, 2024 UTC', '2024-05-01T00:00:00.000Z'],
+    ['May 1 2024 10:00:00 Z', '2024-05-01T10:00:00.000Z'],
+    ['May 1, 2024 10:00 GMT+0200', '2024-05-01T08:00:00.000Z'],
+    ['May 1, 2024 10:00 +0200', '2024-05-01T08:00:00.000Z'],
+    ['2024-05-01 10:00 +02:00', '2024-05-01T08:00:00.000Z'],
+    ['01 May 2024 10:00 EST', '2024-05-01T15:00:00.000Z'],
+    ['May 1, 2024 10:00 PST', '2024-05-01T18:00:00.000Z'],
+  ];
+
+  for (const tz of ['Pacific/Auckland', 'America/Los_Angeles']) {
+    describe(`TZ=${tz}`, () => {
+      let saved: string | undefined;
+      beforeAll(() => {
+        saved = process.env.TZ;
+        process.env.TZ = tz;
+      });
+      afterAll(() => {
+        if (saved === undefined) delete process.env.TZ;
+        else process.env.TZ = saved;
+      });
+
+      it('the zone took effect (a bare `Date` reads "May 1, 2024" off midnight UTC)', () => {
+        expect(new Date('May 1, 2024').toISOString()).not.toBe('2024-05-01T00:00:00.000Z');
+      });
+
+      for (const [value, expected] of ROWS) {
+        it(`${JSON.stringify(value)} is ${expected} on both twins`, () => {
+          expect(normaliseInstant(value)?.date.toISOString()).toBe(expected);
+          const built = buildSchema.safeParse(page(value));
+          expect(built.success).toBe(true);
+          expect((built.data?.updated as Date).toISOString()).toBe(expected);
+          expect(validatorRejects('context/x.md', page(value))).toBe(false);
+          expect(validate('context/x.md', page(value)).warnings.join('\n')).toContain('not ISO');
+        });
+      }
+    });
+  }
 });
 
 describe('generator-stamp (#177, FR-008, C-004)', () => {

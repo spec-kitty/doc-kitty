@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-10-19T17:00:00Z
+updated: 2026-10-25T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -343,6 +343,12 @@ read it:
 The shape is not enough. `18/10/2026` has the shape, but `Date` reads the first
 group as the month, so it is rejected. `10/18/2026` is accepted. Write an
 ISO-8601 instant to avoid the ambiguity.
+
+A non-ISO value with no zone, such as `May 1, 2024` or `1/2/24 10:00`, is read
+as UTC, the same as a zone-less ISO value. So every build gives the same
+instant, whatever the build machine's time zone (#234). A non-ISO value that
+names its zone (`GMT`, `UTC`, `Z`, `EST`, `PST`, or an offset after the time such
+as `10:00 +0200`) keeps it.
 
 A value is rejected when it is a number (`1`, `20241001`) or a string without a
 date shape (`"1"`, `"2024"`, `"1/2"`, `"abc 2024"`, `"2024.5"`). The message

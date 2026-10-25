@@ -319,16 +319,36 @@ function componentsValid(m) {
   );
 }
 
+// The zones `Date` reads in a non-ISO string: a name (UT, UTC, GMT, Z, the US
+// zones) or a signed offset after a time. A parenthesised comment names none.
+const NAMED_ZONE = /(?:^|[^a-z])(?:z|ut|utc|gmt|[ecmp][sd]t)(?![a-z])/i;
+const OFFSET_AFTER_TIME = /\d:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:[ap]m)?\s*[+-]\d/i;
+
 /**
+ * @param {string} text
+ * @returns {boolean}
+ */
+function namesZone(text) {
+  const bare = text.replace(/\([^)]*\)/g, ' ');
+  return NAMED_ZONE.test(bare) || OFFSET_AFTER_TIME.test(bare);
+}
+
+/**
+ * `Date` reads a non-ISO value with no zone in the build machine's zone; read
+ * it as UTC instead, so every build gives the same instant (#234). An appended
+ * zone overrides none the value names, and keeps the written wall clock even
+ * inside a local DST gap.
+ *
  * @param {string} v
  * @returns {{date: Date, dateOnly: boolean, nonUtc: boolean, noZone: boolean, nonIso: boolean, rolledOver: boolean} | null}
  */
 function legacyInstant(v) {
   if (v === '') return null;
-  const date = new Date(v);
-  return Number.isNaN(date.getTime())
-    ? null
-    : { date, dateOnly: false, nonUtc: false, noZone: false, nonIso: true, rolledOver: false };
+  const local = new Date(v);
+  if (Number.isNaN(local.getTime())) return null;
+  const utc = namesZone(v) ? local : new Date(`${v} UTC`);
+  const date = Number.isNaN(utc.getTime()) ? local : utc;
+  return { date, dateOnly: false, nonUtc: false, noZone: false, nonIso: true, rolledOver: false };
 }
 
 /**
