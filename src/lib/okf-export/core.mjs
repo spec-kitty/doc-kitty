@@ -303,12 +303,17 @@ function conceptDocument(node, source, edges, nodes, indexNames, links) {
 }
 
 /**
- * Whether an index file's source has prose once its frontmatter is stripped (#238).
+ * Whether an index file's source has prose once its frontmatter, MDX
+ * `import`/`export` lines and HTML comments are stripped (#238).
  *
  * @param {string} source raw source text ('' when absent)
  * @returns {boolean}
  */
-const hasBody = (source) => matter(source).content.trim() !== '';
+const hasBody = (source) =>
+  matter(source)
+    .content.replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/^[ \t]*(?:import|export)\s.*$/gm, '')
+    .trim() !== '';
 
 /**
  * The §8 entry for one node: `- [title](/path) - description`.

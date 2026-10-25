@@ -398,11 +398,20 @@ describe('section README bodies become overview pages (#238)', () => {
     ['frontmatter only', '---\ntitle: t\n---\n'],
     ['whitespace only', '---\ntitle: t\n---\n  \n\n'],
     ['no frontmatter, empty', ''],
+    ['MDX imports only', "---\ntitle: t\n---\nimport Card from '../Card.astro';\nexport const meta = { a: 1 };\n"],
+    ['HTML comments only', '---\ntitle: t\n---\n<!-- note -->\n<!--\n multi\n line\n-->\n'],
   ])('a body-less README (%s) writes no sibling and the index is unchanged', (_n, source) => {
     const g = { nodes: [page('README'), page('guides/README', { title: 'Guides' }), page('guides/a', { title: 'A' })], edges: [inSection('guides/README', 'README'), inSection('guides/a', 'guides/README')] };
     const files = exportIt(g, new Map([['guides/README.md', source]]));
     expect(files.has('guides/README.md')).toBe(false);
     expect(files.get('guides/index.md')).toBe('# Guides\n\n- [A](/guides/a.md)\n');
+  });
+
+  it('a README with a comment plus prose still gets a sibling', () => {
+    const g = { nodes: [page('README'), page('guides/README', { title: 'Guides' })], edges: [inSection('guides/README', 'README')] };
+    const files = exportIt(g, new Map([['guides/README.md', src('<!-- todo -->\nReal prose.\n')]]));
+    expect(files.get('guides/README.md')).toContain('Real prose.');
+    expect(files.get('guides/index.md')).toBe('# Guides\n\n- [Guides](/guides/README.md)\n');
   });
 
   it('collision guard: with the default basename `index` no sibling is written over the index', () => {
