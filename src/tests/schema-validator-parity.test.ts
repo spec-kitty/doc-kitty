@@ -710,8 +710,8 @@ describe('schema/validator parity — non-ISO instants read as UTC under any TZ 
     kind: 'Reference',
   });
 
-  // [value, instant both twins must read it as]
-  const ROWS: [string, string][] = [
+  // [value, instant both twins must read it as, advisory the gate prints]
+  const ROWS: [string, string, string?][] = [
     ['May 1, 2024', '2024-05-01T00:00:00.000Z'],
     ['1/2/24', '2024-01-02T00:00:00.000Z'],
     ['May 2024', '2024-05-01T00:00:00.000Z'],
@@ -734,6 +734,9 @@ describe('schema/validator parity — non-ISO instants read as UTC under any TZ 
     ['2024-05-01 10:00 +02:00', '2024-05-01T08:00:00.000Z'],
     ['01 May 2024 10:00 EST', '2024-05-01T15:00:00.000Z'],
     ['May 1, 2024 10:00 PST', '2024-05-01T18:00:00.000Z'],
+    // An ISO-shaped value with no zone that `Date` rolls over is read as UTC too.
+    ['2024-04-31T10:00', '2024-05-01T10:00:00.000Z', 'not a real calendar date'],
+    ['2024-05-01T24:00', '2024-05-02T00:00:00.000Z', 'not a real calendar date'],
   ];
 
   for (const tz of ['Pacific/Auckland', 'America/Los_Angeles']) {
@@ -752,14 +755,14 @@ describe('schema/validator parity — non-ISO instants read as UTC under any TZ 
         expect(new Date('May 1, 2024').toISOString()).not.toBe('2024-05-01T00:00:00.000Z');
       });
 
-      for (const [value, expected] of ROWS) {
+      for (const [value, expected, advisory = 'not ISO'] of ROWS) {
         it(`${JSON.stringify(value)} is ${expected} on both twins`, () => {
           expect(normaliseInstant(value)?.date.toISOString()).toBe(expected);
           const built = buildSchema.safeParse(page(value));
           expect(built.success).toBe(true);
           expect((built.data?.updated as Date).toISOString()).toBe(expected);
           expect(validatorRejects('context/x.md', page(value))).toBe(false);
-          expect(validate('context/x.md', page(value)).warnings.join('\n')).toContain('not ISO');
+          expect(validate('context/x.md', page(value)).warnings.join('\n')).toContain(advisory);
         });
       }
     });

@@ -346,8 +346,10 @@ function legacyInstant(v) {
   if (v === '') return null;
   const local = new Date(v);
   if (Number.isNaN(local.getTime())) return null;
-  const utc = namesZone(v) ? local : new Date(`${v} UTC`);
-  const date = Number.isNaN(utc.getTime()) ? local : utc;
+  // `Date` refuses " UTC" after an ISO-shaped "T" time (a rolled-over
+  // `2024-04-31T10:00`), but takes a `Z` there.
+  const utc = namesZone(v) ? [local] : [new Date(`${v} UTC`), new Date(`${v}Z`)];
+  const date = utc.find((d) => !Number.isNaN(d.getTime())) ?? local;
   return { date, dateOnly: false, nonUtc: false, noZone: false, nonIso: true, rolledOver: false };
 }
 
