@@ -1,6 +1,6 @@
 ---
 title: Layout stability on load and on wide screens
-description: "The rail holds still on a slow first paint, the collapsed column clears the toggle under any frame cap, the sidebar tint reaches the screen edge above the frame cap, and the load-shift test measures the enhancement only."
+description: "The rail holds still on a slow first paint, the collapsed column clears the toggle under any cap, and the sidebar tint reaches the screen edge."
 doc_status: active
 updated: 2026-10-25T00:00:00Z
 type: Changelog
