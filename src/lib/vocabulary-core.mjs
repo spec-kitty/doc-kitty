@@ -320,7 +320,8 @@ function componentsValid(m) {
 }
 
 // The zones `Date` reads in a non-ISO string: a name (UT, UTC, GMT, Z, the US
-// zones) or a signed offset after a time. A parenthesised comment names none.
+// zones) after the first digit, or a signed offset after a time. A
+// parenthesised comment, and a zone word before the first digit, name none.
 const NAMED_ZONE = /(?:^|[^a-z])(?:z|ut|utc|gmt|[ecmp][sd]t)(?![a-z])/i;
 const OFFSET_AFTER_TIME = /\d:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:[ap]m)?\s*[+-]\d/i;
 
@@ -330,7 +331,7 @@ const OFFSET_AFTER_TIME = /\d:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:[ap]m)?\s*[+-]\d/i
  */
 function namesZone(text) {
   const bare = text.replace(/\([^)]*\)/g, ' ');
-  return NAMED_ZONE.test(bare) || OFFSET_AFTER_TIME.test(bare);
+  return NAMED_ZONE.test(bare.slice(Math.max(bare.search(/\d/), 0))) || OFFSET_AFTER_TIME.test(bare);
 }
 
 /**
