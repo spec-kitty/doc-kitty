@@ -7,6 +7,7 @@
 //             default frame, `100%` and a 90rem cap
 //   T1  #217  with the rail collapsed, the column box ends >= 4px before the
 //             toggle at every width from 72rem; right-to-left mirrors it
+//       #220  and under a frame cap narrower than 84rem at a wide viewport
 //   C1  #205  the frame defaults to 120rem: at 2560px it is 1920px wide and
 //             centred, with 192px beside the column on each side of a rail page
 //   C2  #205  `:root { --dk-width-frame: 100% }` restores the full-width frame
@@ -31,6 +32,9 @@
 //      624 at 1920 and 776 vs 944 at 2560 (168 off); rail expanded: 456 vs 480
 //      at 1920 and 776 vs 800 at 2560 (24 off), under each frame.
 //   T1 -7 at 1152, 1200, 1280 and 1295 (and 1296), right-to-left -7 at 1280.
+//   T1 #220, on `origin/main` at 21f8702 (#217 fixed by viewport only): -7 under a
+//      70rem, 75rem and 80rem cap at 1920 and 2560, 8.5 under 83rem (passes),
+//      right-to-left -7 under 80rem at 1920. 1280px under each cap was green.
 //   C1 the frame was 2560px wide at 2560.
 //
 // Geometry does not depend on the colour scheme, so this spec runs in the
@@ -136,6 +140,8 @@ test.describe('frame alignment — header search starts at the column (#216)', (
     { label: 'default frame', css: undefined },
     { label: 'frame 100%', css: ':root { --dk-width-frame: 100% }' },
     { label: 'frame 90rem', css: ':root { --dk-width-frame: 90rem }' },
+    // #220: under 84rem the collapsed pane's end padding depends on the frame.
+    { label: 'frame 80rem', css: ':root { --dk-width-frame: 80rem }' },
   ];
   const STATES = [
     { label: 'rail page expanded', key: 'rail' as const, collapsed: false },
@@ -200,6 +206,43 @@ test.describe('frame alignment — collapsed column clears the toggle (#217)', (
       const gap = inline(f.g.toggle, f.g).start - inline(f.column, f.g).end;
       expect.soft(gap, `T1 ${width}px: toggle start - column end = ${gap}px`).toBeGreaterThanOrEqual(TOGGLE_CLEARANCE);
     }
+  });
+
+  // #220: the clearance is a property of the frame, not of the viewport. A cap
+  // under 84rem at a wide viewport gives the same narrow frame as a narrow
+  // viewport, and the column must clear the toggle there too.
+  const CAPS = ['70rem', '75rem', '80rem', '83rem'] as const;
+  const CAP_WIDTHS = [1280, 1920, 2560] as const;
+  for (const cap of CAPS) {
+    test(`T1 collapsed rail page under a ${cap} cap: column end + ${TOGGLE_CLEARANCE}px <= toggle start at ${CAP_WIDTHS.join(', ')}px`, async ({
+      page,
+    }) => {
+      for (const width of CAP_WIDTHS) {
+        const f = await load(page, 'rail', { width, collapsed: true, css: `:root { --dk-width-frame: ${cap} }` });
+        if (!f.g.toggle) throw new Error(`T1 ${cap}: no toggle at ${width}px`);
+        const frame = inline(f.g.frame!, f.g);
+        expect(frame.width, `non-vacuity: the ${cap} cap is applied at ${width}px`).toBeLessThanOrEqual(84 * REM);
+        const gap = inline(f.g.toggle, f.g).start - inline(f.column, f.g).end;
+        expect
+          .soft(gap, `T1 ${cap} ${width}px: toggle start - column end = ${gap}px`)
+          .toBeGreaterThanOrEqual(TOGGLE_CLEARANCE);
+      }
+    });
+  }
+
+  test(`T1 right-to-left under an 80rem cap at 1920px: column start >= toggle end + ${TOGGLE_CLEARANCE}px`, async ({
+    page,
+  }) => {
+    const f = await load(page, 'rail', {
+      width: 1920,
+      collapsed: true,
+      dir: 'rtl',
+      css: ':root { --dk-width-frame: 80rem }',
+    });
+    expect(f.g.dir).toBe('rtl');
+    if (!f.g.toggle) throw new Error('T1 rtl 80rem: no toggle');
+    const gap = f.column.x - f.g.toggle.right;
+    expect.soft(gap, `T1 rtl 80rem 1920px: column start - toggle end = ${gap}px`).toBeGreaterThanOrEqual(TOGGLE_CLEARANCE);
   });
 
   test(`T1 right-to-left at 1280px: column start >= toggle end + ${TOGGLE_CLEARANCE}px`, async ({ page }) => {
