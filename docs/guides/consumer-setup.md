@@ -63,7 +63,7 @@ the **GitHub Packages** registry, so you need a GitHub token with `read:packages
 
 ```sh
 export GITHUB_TOKEN=<your read:packages token>
-pnpm add @spec-kitty/doc-toolkit@0.4.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3 @astrojs/sitemap
+pnpm add @spec-kitty/doc-toolkit@0.5.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3 @astrojs/sitemap
 ```
 
 Getting `401 Unauthorized` from `pnpm add`? The usual causes: the `_authToken`
@@ -141,7 +141,7 @@ it explicit, as the consumption-test fixture does. Pin the version you want to
 track:
 
 ```sh
-pnpm add @spec-kitty/doc-toolkit@0.4.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3 @astrojs/sitemap
+pnpm add @spec-kitty/doc-toolkit@0.5.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3 @astrojs/sitemap
 ```
 
 Pin a real release (as above, 0.4.0) rather than a floating range so your build

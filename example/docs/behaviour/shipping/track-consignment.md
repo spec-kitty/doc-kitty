@@ -8,7 +8,7 @@ sources:
   - resource: "features/shipping/track-consignment.feature"
     title: "Gherkin source"
 generated:
-  by: "doc-kitty-gherkin/0.4.0"
+  by: "doc-kitty-gherkin/0.5.0"
   at: "2026-10-19T08:58:27Z"
   content_hash: "sha256:89bc5addda4b"
 ---
