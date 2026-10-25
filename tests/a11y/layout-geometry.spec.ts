@@ -660,38 +660,141 @@ test.describe('layout geometry — no layout shift from enhancement', () => {
     expect(on.boxes).toEqual(off.boxes);
   });
 
-  // Runs in `light` only, not `published-light`. Under parallel page loads the
-  // count can pick up a shift in Starlight's own markup during a partial paint
-  // (the 1px `.sidebar-content::after` spacer, 0.000208; once in a while the
-  // right sidebar moving into place, about 0.25), on main as on this branch.
-  // That has nothing to do with which pages the sidebar lists, so a second run
-  // against the published build only doubles the exposure. Follow-up: #222.
-  test('cumulative layout shift for the load is 0', async ({ page }, testInfo) => {
-    test.skip(isPublishedProject(testInfo), 'load shift does not depend on sidebar membership');
+  // What NFR-005 measures (#222). A reader sees two things move on load: the
+  // page while it is still parsing in, and whatever the enhancement does to the
+  // page once it is in. Only the second is the enhancement's. The first is a race
+  // between the network, the parser and the first paint: on a partial paint the
+  // 1px `.sidebar-content::after` spacer in Starlight's sidebar, its header's
+  // `.right-group` or a band's status chip can still be growing, and under
+  // parallel page loads a plain count of every shift picked one up in up to half
+  // the runs (0.000208, the spacer; 25 of 100 runs at 4 workers on this branch
+  // before the rework). The rail's own jump during a partial paint was a product
+  // defect, fixed and guarded deterministically by the #223 describe above.
+  //
+  // So the load is staged the way a slow network stages it, without the race:
+  //   1. first paint is render-blocked until the whole document is parsed (a
+  //      `<link rel="expect" blocking="render">` on a marker at the end of
+  //      `<body>`), so the first frame shows the complete server-rendered page;
+  //   2. the enhancement bundle (`_astro/page.*.js`, which mounts the toggle and
+  //      the other islands) is held until that frame has been produced, so the
+  //      enhancement can only act on a painted page and every move it makes is
+  //      a layout shift;
+  //   3. every shift from then on counts, with its sources in the message.
+  // The test asserts each stage happened (non-vacuity) and a positive control
+  // below proves a 20px move by the enhancement is caught by the same harness.
+  // No threshold is loosened: the total must still be exactly 0.
+  interface ShiftRun {
+    supported: boolean;
+    total: number;
+    entries: string[];
+    /** At the first frame: was the parse-end marker in, and the toggle not yet? */
+    firstFrame: { parsed: boolean; toggle: boolean } | null;
+    /** How many enhancement-bundle requests were held until the first frame. */
+    held: number;
+  }
+
+  async function stagedLoad(page: Page, opts: { collapsed?: boolean; enhancement?: string } = {}): Promise<ShiftRun> {
     await page.setViewportSize({ width: SHIFT_WIDTH, height: HEIGHT });
+    if (opts.collapsed) {
+      await page.addInitScript((key) => window.localStorage.setItem(key, '1'), COLLAPSED_KEY);
+    }
+    let painted!: () => void;
+    const firstFrame = new Promise<void>((resolve) => (painted = resolve));
+    await page.exposeFunction('__dkFirstFrame', () => painted());
     await page.addInitScript(() => {
-      const w = window as unknown as { __dkShift: { supported: boolean; total: number; count: number } };
-      w.__dkShift = {
+      type Log = { supported: boolean; total: number; entries: string[]; firstFrame: ShiftRun['firstFrame'] };
+      const w = window as unknown as { __dkShift: Log; __dkFirstFrame: () => void };
+      const log: Log = {
         supported: PerformanceObserver.supportedEntryTypes.includes('layout-shift'),
         total: 0,
-        count: 0,
+        entries: [],
+        firstFrame: null,
       };
+      w.__dkShift = log;
+      const name = (n: Node | null) =>
+        !n ? 'pseudo-element' : n instanceof Element ? `${n.localName}.${[...n.classList].join('.')}` : n.nodeName;
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          w.__dkShift.total += (entry as unknown as { value: number }).value;
-          w.__dkShift.count += 1;
+          const e = entry as unknown as {
+            value: number;
+            sources: Array<{ node: Node | null; previousRect: DOMRectReadOnly; currentRect: DOMRectReadOnly }>;
+          };
+          log.total += e.value;
+          const moved = e.sources.map(
+            (s) => `${name(s.node)} ${s.previousRect.x},${s.previousRect.y} -> ${s.currentRect.x},${s.currentRect.y}`,
+          );
+          log.entries.push(`${e.value.toFixed(6)}: ${moved.join('; ')}`);
         }
       }).observe({ type: 'layout-shift', buffered: true });
+      // rAF does not run while the document is render-blocked. The second callback
+      // runs in the frame after the first one, so the first frame has been produced.
+      requestAnimationFrame(() => {
+        log.firstFrame = {
+          parsed: document.getElementById('dk-parse-end') !== null,
+          toggle: document.getElementById('dk-toc-toggle') !== null,
+        };
+        requestAnimationFrame(() => w.__dkFirstFrame());
+      });
+    });
+    let held = 0;
+    await page.route('**/_astro/page.*.js', async (route) => {
+      held += 1;
+      const response = await route.fetch();
+      const body = (await response.text()) + (opts.enhancement ? `\n${opts.enhancement}\n` : '');
+      await firstFrame;
+      await route.fulfill({ response, body });
+    });
+    await page.route(`**${ROUTE.path}`, async (route) => {
+      const response = await route.fetch();
+      const html = await response.text();
+      if (!html.includes('<head>') || !html.includes('</body>')) throw new Error('NFR-005: unexpected page shape');
+      const body = html
+        .replace('<head>', '<head><link rel="expect" href="#dk-parse-end" blocking="render">')
+        .replace('</body>', '<span id="dk-parse-end"></span></body>');
+      await route.fulfill({ response, body });
     });
     await page.goto(ROUTE.path, { waitUntil: 'load' });
     await page.locator(TOC_RAIL_TOGGLE).waitFor({ state: 'visible', timeout: 15_000 });
     await settle(page);
     await settle(page);
-    const shift = await page.evaluate(
-      () => (window as unknown as { __dkShift: { supported: boolean; total: number; count: number } }).__dkShift,
+    const log = await page.evaluate(
+      () => (window as unknown as { __dkShift: Omit<ShiftRun, 'held'> }).__dkShift,
     );
-    expect(shift.supported, 'non-vacuity: this browser reports layout-shift entries').toBe(true);
-    expect(shift.total, `layout-shift entries: ${shift.count}`).toBe(0);
+    return { ...log, held };
+  }
+
+  function assertStaged(run: ShiftRun): void {
+    expect(run.supported, 'non-vacuity: this browser reports layout-shift entries').toBe(true);
+    expect(run.held, 'non-vacuity: the enhancement bundle was held until the first frame').toBeGreaterThan(0);
+    expect(run.firstFrame?.parsed, 'non-vacuity: the first frame showed the whole parsed page').toBe(true);
+    expect(run.firstFrame?.toggle, 'non-vacuity: the toggle was not mounted before the first frame').toBe(false);
+  }
+
+  for (const collapsed of [false, true]) {
+    const state = collapsed ? 'collapsed' : 'expanded';
+    test(`${state}: the enhancement shifts nothing on a painted page (cumulative layout shift 0)`, async ({
+      page,
+    }) => {
+      const run = await stagedLoad(page, { collapsed });
+      assertStaged(run);
+      expect(
+        await page.evaluate(() => document.documentElement.hasAttribute('data-toc-collapsed')),
+        'non-vacuity: the collapse state',
+      ).toBe(collapsed);
+      expect(run.total, `layout-shift entries:\n${run.entries.join('\n')}`).toBe(0);
+    });
+  }
+
+  // Positive control: the same harness catches a real enhancement shift. The
+  // bundle moves the reading pane down 20px when it runs, as an enhancement that
+  // inserted something in flow would. If this ever passes with a total of 0, the
+  // harness has stopped observing the enhancement and the test above is vacuous.
+  test('positive control: a 20px move made by the enhancement bundle is counted', async ({ page }) => {
+    const run = await stagedLoad(page, {
+      enhancement: "document.querySelector('.main-pane').style.marginBlockStart = '20px';",
+    });
+    assertStaged(run);
+    expect(run.total, `layout-shift entries:\n${run.entries.join('\n')}`).toBeGreaterThan(0);
   });
 });
 
