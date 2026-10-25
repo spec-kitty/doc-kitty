@@ -12,10 +12,21 @@ Made from a copy of example/ with:
     --tags "not @wip" --format message:reports/cucumber.ndjson
 
 and the step definitions below, which pass every step except a few, so the
-pages show each kind of result. The only edit: the run's scratch directory in
-stack traces was rewritten to /home/runner/work/doc-kitty/doc-kitty/example.
+pages show each kind of result. Then, from the same copy, normalised with:
+
+  node <doc-kitty>/src/scripts/normalise-cucumber-report.mjs reports/cucumber.ndjson \
+    --at 2026-10-19T00:00:00Z
+
+which fixes what a run records about its machine and moment (#231): meta.os,
+meta.cpu and meta.runtime, every timestamp (to --at) and duration (to 0), the
+generated ids (renumbered in order), and the copy's directory in stack traces.
+So the same .feature files give the same bytes on any machine. Keep --at as it
+is unless the results change; it is the "as of" day the pages show.
+
 Regenerate it the same way after editing a feature, or its pages show
 "Results not shown" (the report holds each file's text and is checked against it).
+A test (src/tests/normalise-cucumber-report.test.ts) fails while the committed
+report is not normalised.
 
 ---- steps/steps.js ----
 // Step definitions for the doc-kitty example site's report (ADR-0055 demo).
