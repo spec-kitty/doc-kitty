@@ -2,7 +2,7 @@
 title: DocKitty
 description: The documentation convention DocKitty implements — base convention, Kitty twists, and enhancements.
 doc_status: active
-updated: 2026-08-21T00:00:00Z
+updated: 2026-10-25T00:00:00Z
 type: Context
 kind: Reference
 tags: [convention, spec, metadata, okf]
@@ -212,9 +212,12 @@ Section `README.md` files take their section's `type` (e.g. `context/README.md`
 
 `type` says where a page lives (its section); `kind` says what kind of page it
 is and how to read it. `kind` is **required on every page** — including the
-bundle-root `README.md` — and drives per-kind layout ([ADR-0009](../adr/0009-finalize-metadata-contract.md)).
-The vocabulary is open: the validator checks the canonical set and warns on an
-unknown value rather than failing.
+bundle-root `README.md` — and drives per-kind layout ([ADR-0009](../adr/0009-finalize-metadata-contract.md),
+[ADR-0065](../adr/0065-kind-required-again.md)). The frontmatter gate fails a
+page without it; the build still renders one, so a stub builds. A consumer that
+cannot add `kind` yet can relax it with `required_fields.optional: [kind]` in its
+charter. The vocabulary is open: the validator checks the canonical set and
+warns on an unknown value rather than failing.
 
 - **Content quadrants** (Divio): `Tutorial`, `How-To`, `Reference`,
   `Explanation`.

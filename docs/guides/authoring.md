@@ -2,7 +2,7 @@
 title: Authoring a document
 description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, show scenarios in any page, and show their test results.
 doc_status: active
-updated: 2026-10-19T00:00:00Z
+updated: 2026-10-25T00:00:00Z
 type: Guide
 kind: How-To
 tags: [authoring, workflow, gherkin, bdd]
@@ -33,8 +33,9 @@ related:
    `type` is inferred from the path; override with `--type`. Use `--section` for
    a section `README.md`.
 
-3. **Fill in metadata.** Required: `title`, `description`, `status`, `updated`,
-   `type`. Write `updated` as a UTC instant (`2026-10-18T09:30:00Z`); a date-only
+3. **Fill in metadata.** Required: `title`, `description`, `doc_status`,
+   `updated` and `kind`. `type` may be left out: it is derived from the section.
+   Write `updated` as a UTC instant (`2026-10-18T09:30:00Z`); a date-only
    value is still read, with a warning. Write `authors` as actors such as
    `human:stijn`, not email addresses. Add optional fields (`tags`, `related`,
    `agent`, …) only when there's a real value. See
