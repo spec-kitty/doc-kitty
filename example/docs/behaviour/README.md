@@ -5,7 +5,7 @@ kind: Hub
 doc_status: active
 okf_version: "0.2"
 generated:
-  by: "doc-kitty-gherkin/0.4.0"
+  by: "doc-kitty-gherkin/0.5.0"
   at: "2026-10-18T05:55:21Z"
   content_hash: "sha256:16468cd02ce6"
 ---

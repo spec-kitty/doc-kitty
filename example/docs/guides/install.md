@@ -62,7 +62,7 @@ workflow token as `NODE_AUTH_TOKEN`, and grant `permissions: packages: read`.
 ## 2. Install the toolkit and its peers
 
 ```sh
-pnpm add @spec-kitty/doc-toolkit@0.4.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3
+pnpm add @spec-kitty/doc-toolkit@0.5.0 astro@^7.4.0 @astrojs/starlight@^0.42.6 @astrojs/markdown-remark@^7.3.3
 ```
 
 `@astrojs/sitemap` comes with the toolkit as a regular dependency, so you do
