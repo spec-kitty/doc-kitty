@@ -67,7 +67,7 @@ carry `kind` on every page.
 
 - An adopter page without `kind` now fails the frontmatter gate. The adopter
   either adds `kind` (the scaffolders already write it) or relaxes the field in
-  the charter. The migration guide for 0.4.1 says how.
+  the charter. The migration guide for 0.5.0 says how.
 - The convention, the charter and the code give one statement of the contract.
 - The parity suite pins the contract: the build accepts a page without `kind`,
   the gate rejects it, and a charter that relaxes `kind` accepts it.
