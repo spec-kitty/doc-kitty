@@ -39,7 +39,9 @@ describe('exportOkfBundle: layout and exclusions', () => {
     const keys = [...bundle.keys()];
     expect(keys).toEqual([...keys].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
     expect(keys).toEqual([
+      'README.md',
       'context/audience/maintainer.md',
+      'guides/README.md',
       'guides/_index.meta.yaml',
       'guides/bare.md',
       'guides/deploy.md',
@@ -65,10 +67,14 @@ describe('indexes', () => {
   it('root index frontmatter is exactly okf_version "0.2" and the body is an entry list', () => {
     expect(frontmatter('index.md')).toBe('okf_version: "0.2"');
     expect(text('index.md')).toContain('- [Guides](/guides/index.md) - How-to guides.');
+    expect(text('index.md')).toContain('\n- [Home](/README.md) - The bundle root.\n- [Guides](/guides/index.md)'); // #238: the README body is listed first
+    expect(text('README.md')).toContain('\nWelcome.\n');
   });
 
   it('non-root index has no frontmatter and lists its children with descriptions', () => {
     expect(text('guides/index.md').startsWith('# Guides\n')).toBe(true);
+    expect(text('guides/index.md')).toContain('# Guides\n\n- [Guides](/guides/README.md) - How-to guides.\n'); // #238
+    expect(text('guides/README.md')).toContain('\nOriginal index prose.\n');
     expect(text('guides/index.md')).toContain('- [Deploy](/guides/deploy.md) - Ship it.');
     expect(text('guides/index.md')).toContain('- [Setup](/guides/setup.md) - Set it up.');
   });
@@ -262,7 +268,7 @@ describe('dockitty-export-okf CLI base hint', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'okf-base-'));
     try {
       mkdirSync(path.join(dir, 'docs'));
-      writeFileSync(path.join(dir, 'docs', 'README.md'), '---\ntitle: Home\n---\nSee [setup](/docs/setup/).\n');
+      writeFileSync(path.join(dir, 'docs', 'README.md'), '---\ntitle: Home\n---\nWelcome home.\n');
       writeFileSync(path.join(dir, 'docs', 'setup.md'), '---\ntitle: Setup\n---\nBack [home](/docs/) or [top](/docs/#top).\n');
       const page = (id: string, href: string) => ({ id, kind: 'page', type: 'Context', title: id, href });
       const graph = { schema: 'dockitty.content-graph/1', okf_version: '0.2', nodes: [page('README', '/'), page('setup', '/setup/')], edges: [] };
@@ -321,6 +327,119 @@ describe('dockitty-export-okf CLI site URL (#237)', () => {
         expect(run1.status, run1.stderr).toBe(0);
         expect(readFileSync(path.join(dir, 'out', 'page.md'), 'utf8')).toContain('[data](https://s.example/docs/api/x.json)');
       }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('section README bodies become overview pages (#238)', () => {
+  const page = (id: string, extra: Record<string, unknown> = {}) => ({ id, kind: 'page', title: id, ...extra });
+  const inSection = (source: string, target: string) => ({ id: `${source}|in-section|${target}`, source, target, rel: 'in-section' });
+  const src = (body: string) => `---\ntitle: t\nzeta: 1\n---\n${body}`;
+  const BODY = 'Read [add](./add-a-session-note.md) and [other](../other/README.md).\n';
+  const guidesGraph = {
+    nodes: [
+      page('README', { title: 'Home', description: 'The root.' }),
+      page('guides/README', { title: 'Guides', description: 'About guides.' }),
+      page('guides/Aaa', { title: 'Aaa', description: 'First child.' }),
+      page('guides/add-a-session-note', { title: 'Add', description: 'Adds.' }),
+      page('other/README', { title: 'Other' }),
+    ],
+    edges: [inSection('guides/README', 'README'), inSection('guides/Aaa', 'guides/README'), inSection('guides/add-a-session-note', 'guides/README'), inSection('other/README', 'README')],
+  };
+  const guidesSources = new Map([
+    ['README.md', src('Home body.\n')],
+    ['guides/README.md', src(BODY)],
+    ['guides/Aaa.md', src('a\n')],
+    ['guides/add-a-session-note.md', src('b\n')],
+    ['other/README.md', src('')],
+  ]);
+  const exportIt = (g: unknown, s: Map<string, string>, options: Record<string, unknown> = {}) => exportOkfBundle(g as never, s, options as never) as Map<string, string>;
+
+  it('writes guides/README.md with concept frontmatter and the rewritten body, byte for byte', () => {
+    const files = exportIt(guidesGraph, guidesSources);
+    expect(files.get('guides/README.md')).toBe(
+      '---\ntype: "Concept"\ntitle: "Guides"\ndescription: "About guides."\ngenerated:\n  by: "process:dockitty-export"\n---\n\n' +
+        'Read [add](/guides/add-a-session-note.md) and [other](/other/index.md).\n',
+    );
+  });
+
+  it('lists the overview first in guides/index.md as a strict entry, then the children; the sidecar is unchanged', () => {
+    const files = exportIt(guidesGraph, guidesSources);
+    expect(files.get('guides/index.md')).toBe(
+      '# Guides\n\n- [Guides](/guides/README.md) - About guides.\n- [Aaa](/guides/Aaa.md) - First child.\n- [Add](/guides/add-a-session-note.md) - Adds.\n',
+    );
+    expect(files.get('guides/_index.meta.yaml')).toBe('title: "t"\nzeta: 1\n');
+  });
+
+  it('a root README body gives README.md, lists it first, and keeps okf_version the only frontmatter', () => {
+    const files = exportIt(guidesGraph, guidesSources);
+    expect(files.get('README.md')).toContain('\nHome body.\n');
+    const root = files.get('index.md') as string;
+    expect(root.startsWith('---\nokf_version: "0.2"\n---\n\n# Home\n\n- [Home](/README.md) - The root.\n')).toBe(true);
+  });
+
+  it('a persona README gets the same treatment', () => {
+    const g = { nodes: [page('README'), { id: 'context/audience/README', kind: 'persona', title: 'Audiences' }], edges: [inSection('context/audience/README', 'README')] };
+    const files = exportIt(g, new Map([['context/audience/README.md', src('Who reads this.\n')]]));
+    expect(files.get('context/audience/README.md')).toContain('\nWho reads this.\n');
+    expect(files.get('context/audience/index.md')).toBe('# Audiences\n\n- [Audiences](/context/audience/README.md)\n');
+  });
+
+  it('honours a configured indexBasename: the sibling is <dir>/_index.md', () => {
+    const g = { nodes: [page('README'), page('guides/_index', { title: 'Guides' })], edges: [inSection('guides/_index', 'README')] };
+    const files = exportIt(g, new Map([['guides/_index.md', src('Body.\n')]]), { indexBasename: '_index' });
+    expect(files.get('guides/_index.md')).toContain('\nBody.\n');
+    expect(files.get('guides/index.md')).toBe('# Guides\n\n- [Guides](/guides/_index.md)\n');
+  });
+
+  it.each([
+    ['frontmatter only', '---\ntitle: t\n---\n'],
+    ['whitespace only', '---\ntitle: t\n---\n  \n\n'],
+    ['no frontmatter, empty', ''],
+  ])('a body-less README (%s) writes no sibling and the index is unchanged', (_n, source) => {
+    const g = { nodes: [page('README'), page('guides/README', { title: 'Guides' }), page('guides/a', { title: 'A' })], edges: [inSection('guides/README', 'README'), inSection('guides/a', 'guides/README')] };
+    const files = exportIt(g, new Map([['guides/README.md', source]]));
+    expect(files.has('guides/README.md')).toBe(false);
+    expect(files.get('guides/index.md')).toBe('# Guides\n\n- [A](/guides/a.md)\n');
+  });
+
+  it('collision guard: with the default basename `index` no sibling is written over the index', () => {
+    const g = { nodes: [page('index', { title: 'Home' }), page('guides/index', { title: 'Guides' }), page('guides/a', { title: 'A' })], edges: [inSection('guides/index', 'index'), inSection('guides/a', 'guides/index')] };
+    const files = exportIt(g, new Map([['guides/index.md', src('Body.\n')]]), { indexBasename: 'index' });
+    expect(files.get('guides/index.md')).toBe('# Guides\n\n- [A](/guides/a.md)\n');
+    expect([...files.keys()].sort()).toEqual(['guides/_index.meta.yaml', 'guides/a.md', 'guides/index.md', 'index.md']);
+  });
+
+  it('puts the relation sections on the overview page, with no self-link', () => {
+    const g = {
+      nodes: [page('README'), page('guides/README', { title: 'Guides' }), page('guides/a', { title: 'A' })],
+      edges: [inSection('guides/README', 'README'), { id: 'r', source: 'guides/README', target: 'guides/a', rel: 'related' }],
+    };
+    const doc = exportIt(g, new Map([['guides/README.md', src('Body.\n')]])).get('guides/README.md') as string;
+    expect(doc).toContain('\nBody.\n\n## Related\n\n- [A](/guides/a.md)\n');
+    expect(doc).not.toContain('](/guides/README.md)');
+  });
+
+  it('the overview bundle is conformant (checkOkfBundle returns [])', () => {
+    const files = exportIt(guidesGraph, guidesSources);
+    expect(files.has('guides/README.md')).toBe(true);
+    expect(checkOkfBundle(files)).toEqual([]);
+  });
+
+  it('CLI: a README with a body exports an overview page and --check exits 0', () => {
+    const bin = path.join(import.meta.dirname, '..', 'scripts', 'export-okf.mjs');
+    const dir = mkdtempSync(path.join(tmpdir(), 'okf-overview-'));
+    try {
+      mkdirSync(path.join(dir, 'docs'));
+      writeFileSync(path.join(dir, 'docs', 'README.md'), '---\ntitle: Home\n---\nWelcome.\n');
+      writeFileSync(path.join(dir, 'graph.json'), JSON.stringify({ schema: 'dockitty.content-graph/1', okf_version: '0.2', nodes: [page('README', { type: 'Context' })], edges: [] }));
+      const out = path.join(dir, 'out');
+      const exported = spawnSync(process.execPath, [bin, '--graph', path.join(dir, 'graph.json'), '--docs', path.join(dir, 'docs'), '--index-basename', 'README', '--out', out], { encoding: 'utf8' });
+      expect(exported.status, exported.stderr).toBe(0);
+      expect(readFileSync(path.join(out, 'README.md'), 'utf8')).toContain('\nWelcome.\n');
+      expect(spawnSync(process.execPath, [bin, '--check', '--out', out], { encoding: 'utf8' }).status).toBe(0);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
