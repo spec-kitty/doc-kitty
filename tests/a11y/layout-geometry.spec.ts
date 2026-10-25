@@ -565,9 +565,16 @@ test.describe('layout geometry — the rail is in place before the reading pane 
     { width: 1280, dir: 'rtl' as const },
   ];
 
-  /** The served page, optionally right-to-left, optionally cut before `.main-pane`. */
+  /**
+   * The served page, optionally right-to-left, optionally cut before `.main-pane`.
+   * Both pages always reserve a vertical scrollbar: the cut page is shorter than
+   * the viewport and the full one is not, so with classic scrollbars (a headed
+   * run) the two viewports would otherwise differ by the scrollbar's width.
+   */
   function shape(html: string, cut: boolean, dir?: 'rtl'): string {
     let out = dir ? html.replace(/(<html\b[^>]*\bdir=")ltr"/, `$1${dir}"`) : html;
+    if (!out.includes('</head>')) throw new Error('#223: no `</head>` in the served page');
+    out = out.replace('</head>', '<style>html { overflow-y: scroll; }</style></head>');
     if (cut) {
       const at = out.search(/<div class="main-pane[ "]/);
       if (at === -1) throw new Error('#223: no `.main-pane` in the served page');
