@@ -22,6 +22,9 @@ meta.cpu and meta.runtime, every timestamp (to --at) and duration (to 0), the
 generated ids (renumbered in order), and the copy's directory in stack traces.
 So the same .feature files give the same bytes on any machine. Keep --at as it
 is unless the results change; it is the "as of" day the pages show.
+Regenerate outside CI: on CI, cucumber-js also writes meta.ci (build URL,
+number, branch, commit), which the normaliser keeps because the pages show
+that commit.
 
 Regenerate it the same way after editing a feature, or its pages show
 "Results not shown" (the report holds each file's text and is checked against it).

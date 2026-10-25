@@ -21,6 +21,10 @@
  *     the Gherkin text (`source`, `gherkinDocument`, `pickle`) is left as written,
  *     since the overlay compares it with the `.feature` file.
  *
+ * `meta.ci` (and the commit the overlay shows from it) is only written by a run
+ * on CI, so a report regenerated on CI differs from a local one; regenerate the
+ * example's report outside CI.
+ *
  * `--at` falls back to `SOURCE_DATE_EPOCH` (seconds). Without either it fails:
  * a default instant would be a date nobody chose.
  */
