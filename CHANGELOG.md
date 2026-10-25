@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 💥 Breaking
+
+- **`validate-frontmatter` requires `kind` on every page again (#219).**
+  Before, the gate accepted a page without `kind` (since #38), while the
+  convention, ADR-0009 and the charter said it was required. Now a page without
+  `kind` fails with `` `kind`: required ``, the bundle-root `README.md`
+  included. The build still renders such a page, and an unknown `kind` value
+  still only warns. To keep the old behaviour, list `kind` under
+  `required_fields.optional` in `docs/_meta/charter.yaml`. See
+  [ADR-0065](docs/adr/0065-kind-required-again.md) and
+  [Upgrading from 0.4.0 to 0.4.1](docs/migrations/0.4-to-0.4.1.md).
+
 ### Fixed
 
 - **Agent page records now give an absolute `source` (#236).** Before, on a
@@ -24,6 +36,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `<id>.md`, such as `guides/README.md`, with its links rewritten. The section
   `index.md` stays a strict OKF entry list and lists that page first. A
   `README` with no body exports as before.
+- **Written-out and numeric dates read the same on every build machine
+  (#234).** Before, a non-ISO value with no zone, such as `updated: May 1,
+  2024` or `1/2/24`, was read in the build machine's time zone, so the same
+  source gave different instants, feed order and agent-API dates. In
+  Pacific/Auckland, `May 1, 2024` became `2024-04-30T12:00:00Z`. Now it is read
+  as UTC, like an ISO value with no zone, and so is a rolled-over one such as
+  `2024-04-31T10:00`. A value that names its zone (`GMT`, `UTC`, `Z`, `EST`, or
+  `+0200` after the time) keeps it. The gate still recommends
+  `YYYY-MM-DDTHH:MM:SSZ`.
+- **The example's Cucumber report regenerates byte-identically (#231).**
+  Before, every regeneration of `example/reports/cucumber.ndjson` was a diff of
+  hundreds of lines, from machine details, timestamps and random ids. Now
+  `src/scripts/normalise-cucumber-report.mjs` fixes them: meta, timestamps (to
+  a named `--at` instant), durations, ids, and the run directory in stack
+  traces. `PROVENANCE.txt` ends the procedure with it, and a test fails if the
+  committed report is not normalised.
+- **Decision-index lock files are no longer tracked (#232).** Seven older
+  missions still tracked a transient `kitty-specs/**/decisions/index.json.lock`.
+  They are removed from the index; the `.gitignore` rule keeps them out.
 
 ## [0.4.0] — 2026-10-19
 

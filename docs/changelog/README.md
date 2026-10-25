@@ -3,7 +3,7 @@ okf_version: "0.2"
 title: Changelog
 description: Dated record of notable changes to the doc-kitty toolkit and its documentation.
 doc_status: active
-updated: 2026-10-19T00:00:00Z
+updated: 2026-10-25T00:00:00Z
 type: Changelog
 kind: Hub
 agent:
@@ -15,6 +15,7 @@ agent:
 Notable changes to doc-kitty, newest first. The reasoning behind decisions lives in
 the [decision records](../adr/); this log records what changed and when.
 
+- [2026-10-25 — `kind` required again, UTC dates and a stable Cucumber report](./2026-10-25-fix-batch-0-4-1.md)
 - [2026-10-19 — Gherkin authoring aids and the Specification layout](./2026-10-19-gherkin-authoring-aids.md)
 - [2026-10-19 — Site release history and install guide](./2026-10-19-site-release-history-and-install-guide.md)
 - [2026-10-18 — OKF alignment and content graph](./2026-10-18-okf-alignment-and-content-graph.md)
