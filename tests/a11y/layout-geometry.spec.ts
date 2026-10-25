@@ -17,6 +17,9 @@
 //       exactly the cap a test sets; a capped frame is centred
 //   A2  sidebar start edge = frame start edge
 //   A2b reading pane starts where the sidebar ends (SC-001: no dead gutter)
+//   A2c the sidebar panel's tint starts at the viewport's start edge and ends at
+//       the sidebar's end edge (#224: it bleeds out past a capped frame, like the
+//       header bar); `sidebar` itself is the navigation column on the frame
 //   A3  rail start edge = rail-container start edge (the fixed rail sits in the
 //       column reserved for it); rail-container end edge = frame end edge (ratchet)
 //   A4  rail and rail-container width = `--sl-sidebar-width`
@@ -221,13 +224,18 @@ function assertFrame(g: Geometry, cap?: number): void {
   near(frame.start, (g.viewportWidth - width) / 2, 'A1 frame start edge (centred)');
 }
 
-/** A2, A2b, A7 — hold in both rail states, relative to the frame. */
+/** A2, A2b, A2c, A7 — hold in both rail states, relative to the frame. */
 function assertChrome(g: Geometry): void {
   const frame = inline(need(g.frame, 'frame'), g);
   const sidebar = inline(need(g.sidebar, 'sidebar'), g);
+  const panel = inline(need(g.sidebarPanel, 'sidebarPanel'), g);
   const pane = inline(need(g.pane, 'pane'), g);
   near(sidebar.start, frame.start, 'A2 sidebar start edge vs frame start edge');
   near(pane.start, sidebar.end, 'A2b reading pane start vs sidebar end (dead gutter)');
+  // #224: the panel's tint runs out to the viewport's start edge, as the header
+  // bar does, while its links stay on the frame (A2).
+  near(panel.start, 0, 'A2c sidebar panel start edge vs viewport start edge (#224)');
+  near(panel.end, sidebar.end, 'A2c sidebar panel end edge vs sidebar end edge (#224)');
   near(
     inline(need(g.headerFirst, 'headerFirst'), g).start,
     frame.start + g.navPad,
