@@ -532,6 +532,94 @@ test.describe('layout geometry — no horizontal page scroll', () => {
 });
 
 // ---------------------------------------------------------------------------
+// #223 — the rail is in its final place before the reading pane is parsed.
+//
+// Starlight renders `.right-sidebar-container` BEFORE `.main-pane` in source
+// order and moves it to the end of the row with flex `order`. Chromium can paint
+// before the parser reaches `.main-pane`, and at that moment the container is
+// the row's only item, so the rail was drawn beside the left sidebar and jumped
+// to its place once the pane arrived (a layout shift of about 0.25 at 1280px).
+//
+// A real partial paint is a race, so this reproduces its DOM instead: the page
+// is served cut off just before `.main-pane`, which is exactly what the browser
+// lays out at that moment, and the rail's box must equal the full page's. The
+// collapsed 1px hairline is the same in-flow container, so it is checked too.
+//
+// FAIL-FIRST on `origin/main` at 21f8702: rail container at x=288 on the cut
+// page and 992 on the full page at 1280px (608 vs 1952 at 2560px), expanded and
+// collapsed alike.
+// ---------------------------------------------------------------------------
+test.describe('layout geometry — the rail is in place before the reading pane is parsed (#223)', () => {
+  const CASES = [
+    { width: 1152, dir: undefined },
+    { width: 1280, dir: undefined },
+    { width: 2560, dir: undefined },
+    { width: 1280, dir: 'rtl' as const },
+  ];
+
+  /** The served page, optionally right-to-left, optionally cut before `.main-pane`. */
+  function shape(html: string, cut: boolean, dir?: 'rtl'): string {
+    let out = dir ? html.replace(/(<html\b[^>]*\bdir=")ltr"/, `$1${dir}"`) : html;
+    if (cut) {
+      const at = out.search(/<div class="main-pane[ "]/);
+      if (at === -1) throw new Error('#223: no `.main-pane` in the served page');
+      out = out.slice(0, at);
+    }
+    return out;
+  }
+
+  async function railBoxes(page: Page, html: string, cut: boolean, dir?: 'rtl') {
+    await page.route(`**${ROUTE.path}`, (route) =>
+      route.fulfill({ contentType: 'text/html; charset=utf-8', body: shape(html, cut, dir) }),
+    );
+    try {
+      await page.goto(ROUTE.path, { waitUntil: 'load' });
+      // Non-vacuity: the cut page really has no pane yet, and both have the rail.
+      await expect(page.locator('.main-pane'), cut ? 'cut page: not parsed yet' : 'full page').toHaveCount(cut ? 0 : 1);
+      await expect(page.locator('.right-sidebar-container')).toHaveCount(1);
+      return await measure(page);
+    } finally {
+      await page.unroute(`**${ROUTE.path}`);
+    }
+  }
+
+  for (const { width, dir } of CASES) {
+    for (const collapsed of [false, true]) {
+      const label = `${width}px${dir ? ` ${dir}` : ''} ${collapsed ? 'collapsed' : 'expanded'}`;
+      test(`${label}: the rail's box is the same before and after the pane is parsed`, async ({ page }, testInfo) => {
+        test.skip(isPublishedProject(testInfo), 'the rail position does not depend on sidebar membership');
+        await page.setViewportSize({ width, height: HEIGHT });
+        if (collapsed) {
+          await page.addInitScript((key) => window.localStorage.setItem(key, '1'), COLLAPSED_KEY);
+        }
+        const response = await page.request.get(ROUTE.path);
+        expect(response.ok(), `GET ${ROUTE.path}`).toBe(true);
+        const html = await response.text();
+
+        const partial = await railBoxes(page, html, true, dir);
+        const full = await railBoxes(page, html, false, dir);
+        expect(full.dir).toBe(dir ?? 'ltr');
+        expect(
+          await page.evaluate(() => document.documentElement.hasAttribute('data-toc-collapsed')),
+          'non-vacuity: the collapse state',
+        ).toBe(collapsed);
+
+        const before = inline(need(partial.railContainer, 'railContainer (cut page)'), partial);
+        const after = inline(need(full.railContainer, 'railContainer'), full);
+        near(before.start, after.start, '#223 rail container inline start before vs after the pane is parsed');
+        near(before.width, after.width, '#223 rail container width before vs after the pane is parsed');
+        // The fixed rail takes its static position from the container.
+        near(
+          inline(need(partial.rail, 'rail (cut page)'), partial).start,
+          inline(need(full.rail, 'rail'), full).start,
+          '#223 fixed rail inline start before vs after the pane is parsed',
+        );
+      });
+    }
+  }
+});
+
+// ---------------------------------------------------------------------------
 // NFR-005 — the enhancement (mounting the toggle, revealing the current sidebar
 // entry) moves nothing. RATCHET where noted in the evidence block.
 // ---------------------------------------------------------------------------
