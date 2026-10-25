@@ -35,8 +35,8 @@
 // from the pinned image and the result fails in CI.
 //
 // WARNING — local runs write files you must not commit. A local `pnpm test:a11y`
-// has no baseline for the wide-viewport test, so Playwright WRITES
-// `__screenshots__/visual.spec.ts/chrome-1920-{light,dark}.png` from the
+// has no baseline for a wide-viewport test, so Playwright WRITES
+// `__screenshots__/visual.spec.ts/chrome-1920-*.png` or `chrome-2560-*.png` from the
 // workstation's own rendering and reports the test as failed ("a snapshot doesn't
 // exist ... writing actual"). Those files are untracked "actual" images, not
 // baselines. Delete them after the run and never `git add` them: a
