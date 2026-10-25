@@ -303,22 +303,42 @@ function conceptDocument(node, source, edges, nodes, indexNames, links) {
 }
 
 /**
+ * Whether an index file's source has prose once its frontmatter is stripped (#238).
+ *
+ * @param {string} source raw source text ('' when absent)
+ * @returns {boolean}
+ */
+const hasBody = (source) => matter(source).content.trim() !== '';
+
+/**
+ * The §8 entry for one node: `- [title](/path) - description`.
+ *
+ * @param {Record<string, any>} node
+ * @param {string} path bundle path the entry links to
+ * @returns {string}
+ */
+function entryLine(node, path) {
+  const desc = node.description ? ` - ${node.description}` : '';
+  return `- [${escapeLabel(node.title ?? node.id)}](/${path})${desc}`;
+}
+
+/**
  * A §8 entry list: the children of `indexId` by `in-section` edges, grouped
- * under one heading (the index title).
+ * under one heading (the index title). An index whose README has a body (#238)
+ * lists that overview page first.
  *
  * @param {Record<string, any>} index the index node
  * @param {Array<Record<string, any>>} children
  * @param {string[]} indexNames
+ * @param {string} [overviewPath] bundle path of the index's overview page, when it has one
  * @returns {string}
  */
-function indexDocument(index, children, indexNames) {
+function indexDocument(index, children, indexNames, overviewPath) {
   const entries = children
     .map((child) => ({ path: bundlePathOf(child.id, indexNames), child }))
     .sort((a, b) => compareCodeUnit(a.path, b.path))
-    .map(({ path, child }) => {
-      const desc = child.description ? ` - ${child.description}` : '';
-      return `- [${escapeLabel(child.title ?? child.id)}](/${path})${desc}`;
-    });
+    .map(({ path, child }) => entryLine(child, path));
+  if (overviewPath !== undefined) entries.unshift(entryLine(index, overviewPath));
   const heading = `# ${index.title ?? 'Index'}\n`;
   return entries.length > 0 ? `${heading}\n${entries.join('\n')}\n` : heading;
 }
@@ -445,15 +465,22 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
   for (const node of exported) {
     const source = sourceOf(sourceFiles, node.id) ?? '';
     const path = bundlePathOf(node.id, indexNames);
+    const concept = () => conceptDocument(node, source, outgoing.get(node.id) ?? [], nodes, indexNames, links);
     if (!isIndexId(node.id, indexNames)) {
-      out.set(path, conceptDocument(node, source, outgoing.get(node.id) ?? [], nodes, indexNames, links));
+      out.set(path, concept());
       continue;
     }
+    // #238: a README body is not lost; it is exported as a sibling `<id>.md` the index lists first.
+    // `bundlePathOf` stays as is (links to a README resolve to the index, #237). When the sibling
+    // would be the index file itself (basename `index`), nothing is written.
+    const overview = hasBody(source) && `${node.id}.md` !== path ? `${node.id}.md` : undefined;
+    if (overview !== undefined) out.set(overview, concept());
+    const listing = indexDocument(node, children.get(node.id) ?? [], indexNames, overview);
     if (path === 'index.md') {
-      out.set(path, `${fence(`okf_version: ${scalar(OKF_VERSION)}`)}\n${indexDocument(node, children.get(node.id) ?? [], indexNames)}`);
+      out.set(path, `${fence(`okf_version: ${scalar(OKF_VERSION)}`)}\n${listing}`);
       continue;
     }
-    out.set(path, indexDocument(node, children.get(node.id) ?? [], indexNames));
+    out.set(path, listing);
     const sidecar = sidecarOf(source);
     if (sidecar !== null) out.set(path.replace(/index\.md$/, '_index.meta.yaml'), sidecar);
   }

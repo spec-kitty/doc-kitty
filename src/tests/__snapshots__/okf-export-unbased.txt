@@ -1,3 +1,13 @@
+=== README.md ===
+---
+type: "Concept"
+title: "README"
+generated:
+  by: "process:dockitty-export"
+---
+
+Home body.
+
 === architecture/deep/dive.md ===
 ---
 type: "Architecture"
@@ -44,3 +54,5 @@ okf_version: "0.2"
 ---
 
 # README
+
+- [README](/README.md)
