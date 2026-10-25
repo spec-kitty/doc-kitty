@@ -6,7 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **On screens wider than the frame, the sidebar tint now reaches the screen edge
+  (#224).** Before, above the 120rem default cap the sidebar panel's tint started
+  at the frame edge, so it looked like a block floating 320px in under a header
+  that runs edge to edge. Now the panel's tint runs out to the viewport's start
+  edge, as the header bar does, and its links stay on the frame. Nothing changes
+  at or below 1920px, or on a full-width frame. Recorded in
+  [ADR-0065](docs/adr/0065-sidebar-tint-bleeds-past-the-frame.md).
+
 ### Fixed
+
+- **The table of contents rail no longer jumps across the page on a slow first
+  paint (#223).** Before, if the browser painted before the reading pane was
+  parsed, the rail (or, collapsed, its 1px line) was drawn next to the left
+  sidebar and then jumped to its place, a layout shift of about 0.25. Now it is
+  in its final place in every paint. Nothing moves once the page has loaded.
+- **The collapsed reading column clears the rail toggle under any frame cap
+  (#220).** Before, a site that capped the frame between 72rem and 84rem and was
+  viewed on a wider screen had the collapsed column run 7px under the toggle.
+  The column's end padding is now worked out from the width of the row the pane
+  and rail share, not from the viewport. The default frame is unchanged.
+- **The load-shift layout test no longer flakes (#222).** It counted shifts
+  from Starlight's own markup still parsing in, and failed in about a quarter of
+  runs under parallel load. It now paints the whole page first, then runs the
+  enhancement and counts every shift, still requiring exactly 0, with a
+  positive control that proves a real shift is caught. It runs against the
+  published build again.
 
 - **Agent page records now give an absolute `source` (#236).** Before, on a
   site with a base, `source` was a site-relative path that returned a 404.
