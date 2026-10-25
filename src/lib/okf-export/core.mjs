@@ -77,6 +77,22 @@ export function bundlePathOf(id, indexBasename) {
   return slash < 0 ? 'index.md' : `${id.slice(0, slash)}/index.md`;
 }
 
+/**
+ * The bundle path of an index node's overview page (#238): `<id>.md`, the
+ * sibling that carries the README body. `undefined` when `id` is not an index
+ * id, or when `<id>.md` would be the index file itself (basename `index`).
+ *
+ * @param {string} id
+ * @param {string | string[]} [indexBasename]
+ * @returns {string | undefined}
+ */
+export function overviewPathOf(id, indexBasename) {
+  const names = normalizeIndexBasenames(indexBasename);
+  if (!isIndexId(id, names)) return undefined;
+  const overview = `${id}.md`;
+  return overview === bundlePathOf(id, names) ? undefined : overview;
+}
+
 // --- YAML (deterministic subset: scalars, lists, mappings) -------------------
 
 /** @param {unknown} v */
@@ -216,6 +232,16 @@ function conceptFrontmatter(node, extraSources) {
 const escapeLabel = (text) => text.replace(/([[\]])/g, '\\$1');
 
 /**
+ * One list line, `- [label](href)suffix`; the single place a label is escaped.
+ *
+ * @param {string} label raw (unescaped) link text
+ * @param {string} href
+ * @param {string} suffix already formatted (` - note`) or ''
+ * @returns {string}
+ */
+const linkLine = (label, href, suffix) => `- [${escapeLabel(label)}](${href})${suffix}`;
+
+/**
  * Render one edge as a list line, or `null` when it has no linkable form.
  * Pages and personas link as bundle paths; a catalog or inline citation links to
  * its external URL; a non-URL `derived-from` resource is plain text.
@@ -227,14 +253,14 @@ const escapeLabel = (text) => text.replace(/([[\]])/g, '\\$1');
  */
 function relationLine(edge, target, indexNames) {
   if (!target) return null;
-  const label = escapeLabel(target.title ?? target.id);
+  const label = target.title ?? target.id;
   const note = edge.note ? ` - ${edge.note}` : '';
   if (target.kind === 'page' || target.kind === 'persona') {
-    return `- [${label}](/${bundlePathOf(target.id, indexNames)})${note}`;
+    return linkLine(label, `/${bundlePathOf(target.id, indexNames)}`, note);
   }
   const external = [target.url, target.resource].find((u) => typeof u === 'string' && /^https?:\/\//.test(u));
-  if (external) return `- [${label}](${external})${note}`;
-  if (edge.rel === 'derived-from' && target.resource) return `- ${label} (\`${target.resource}\`)${note}`;
+  if (external) return linkLine(label, external, note);
+  if (edge.rel === 'derived-from' && target.resource) return `- ${escapeLabel(label)} (\`${target.resource}\`)${note}`;
   return null;
 }
 
@@ -324,7 +350,7 @@ const hasBody = (source) =>
  */
 function entryLine(node, path) {
   const desc = node.description ? ` - ${node.description}` : '';
-  return `- [${escapeLabel(node.title ?? node.id)}](/${path})${desc}`;
+  return linkLine(node.title ?? node.id, `/${path}`, desc);
 }
 
 /**
@@ -478,7 +504,7 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
     // #238: a README body is not lost; it is exported as a sibling `<id>.md` the index lists first.
     // `bundlePathOf` stays as is (links to a README resolve to the index, #237). When the sibling
     // would be the index file itself (basename `index`), nothing is written.
-    const overview = hasBody(source) && `${node.id}.md` !== path ? `${node.id}.md` : undefined;
+    const overview = hasBody(source) ? overviewPathOf(node.id, indexNames) : undefined;
     if (overview !== undefined) out.set(overview, concept());
     const listing = indexDocument(node, children.get(node.id) ?? [], indexNames, overview);
     if (path === 'index.md') {
