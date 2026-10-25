@@ -289,9 +289,9 @@ limit") of the 2026-10-24 addendum, following #238.
    blank is exported as a concept page at `<id>.md`, for example
    `guides/README.md`. It gets the same link rewriting and relation sections as
    any concept page. The section index lists it first.
-3. **`<id>.md` is the path.** It cannot collide with another page id, and it
-   follows `indexBasename`. When `indexBasename` is `index`, the path would
-   equal the index path, so the export writes no overview page.
+3. **`<id>.md` is the path.** It is unique because node ids are unique, and it
+   follows `indexBasename`. Only the basename `index` makes it equal the index
+   path, so then the export writes no overview page.
 4. **Links to a README still resolve to the index.** Item 1 of the 2026-10-24
    addendum is unchanged. The overview page is reached through the index entry.
 5. **A README without a body is unchanged.** It gets no overview page, and the
