@@ -692,9 +692,15 @@ test.describe('layout geometry — no layout shift from enhancement', () => {
   //      `<body>`), so the first frame shows the complete server-rendered page;
   //   2. the enhancement bundle (`_astro/page.*.js`, which mounts the toggle and
   //      the other islands) is held until that frame has been produced, so the
-  //      enhancement can only act on a painted page and every move it makes is
-  //      a layout shift;
+  //      bundle can only act on a painted page and every move it makes is a
+  //      layout shift;
   //   3. every shift from then on counts, with its sources in the message.
+  // The inline scripts that run before the first paint on purpose are not in
+  // this window: the pre-paint collapse state (measured by the `collapsed` case
+  // below as the state the first frame shows) and the sidebar reveal, which only
+  // sets a scroll offset and is measured at first paint by the FR-022 describe
+  // and `sidebar-reveal.spec.ts`. The JavaScript off/on test above compares the
+  // final boxes with all of them.
   // The test asserts each stage happened (non-vacuity) and a positive control
   // below proves a 20px move by the enhancement is caught by the same harness.
   // No threshold is loosened: the total must still be exactly 0.
