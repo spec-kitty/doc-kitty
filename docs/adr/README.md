@@ -76,5 +76,6 @@ kind: Hub
 | [0062](./0062-specification-layout-and-draft-notice.md) | ADR-0062: A Specification layout with a header card, and a draft notice on every draft page | Accepted | 2026-10-19 |
 | [0063](./0063-sidebar-carrier.md) | ADR-0063: Sidebar is the sixth carrier; the sidebar reveal runs right after the sidebar markup | Accepted | 2026-10-19 |
 | [0064](./0064-default-frame-cap.md) | ADR-0064: The page frame is capped at 120rem by default | Accepted | 2026-10-19 |
+| [0065](./0065-sidebar-tint-bleeds-past-the-frame.md) | ADR-0065: The sidebar tint bleeds out to the viewport edge | Accepted | 2026-10-25 |
 
 New ADRs copy [`template.md`](./template.md).
