@@ -91,6 +91,21 @@ describe('normalise-cucumber-report (#231)', () => {
     expect(na).toBe(committed);
   });
 
+  it('removes the run directory from results, never from the Gherkin text the overlay compares', () => {
+    const feature = 'Feature: Paths\n  Scenario: A step names /w/data\n    Given the file /w/data exists\n';
+    const report = [
+      { source: { data: feature, uri: 'features/paths.feature', mediaType: 'text/x.cucumber.gherkin+plain' } },
+      { gherkinDocument: { uri: 'features/paths.feature', feature: { name: 'Paths', description: 'see /w/data', children: [] } } },
+      { pickle: { id: 'p', uri: 'features/paths.feature', name: 'A step names /w/data', steps: [{ id: 's', text: 'the file /w/data exists' }] } },
+      { testStepFinished: { testStepResult: { status: 'FAILED', message: 'Error\n    at (/w/steps/steps.js:1:1)' } } },
+    ].map((e) => JSON.stringify(e)).join('\n');
+    const out = envelopes(normaliseCucumberReport(report, { at: AT, root: '/w' }));
+    expect(out[0].source.data).toBe(feature);
+    expect(out[1].gherkinDocument.feature).toMatchObject({ description: 'see /w/data' });
+    expect(out[2].pickle).toMatchObject({ name: 'A step names /w/data', steps: [{ text: 'the file /w/data exists' }] });
+    expect(out[3].testStepFinished).toMatchObject({ testStepResult: { message: 'Error\n    at (steps/steps.js:1:1)' } });
+  });
+
   it('is idempotent', () => {
     const once = normaliseCucumberReport(asAnotherRun(committed, '/w'), { at: AT, root: '/w' });
     expect(normaliseCucumberReport(once, { at: AT, root: '/w' })).toBe(once);

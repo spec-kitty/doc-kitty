@@ -17,7 +17,9 @@
  *     appearance; Cucumber writes its envelopes in a fixed order, so the same
  *     features give the same ids;
  *   - `--root` (default: the working directory), the directory Cucumber ran in,
- *     is removed from every string, so stack traces name `steps/steps.js:21:38`.
+ *     is removed from every string, so stack traces name `steps/steps.js:21:38`;
+ *     the Gherkin text (`source`, `gherkinDocument`, `pickle`) is left as written,
+ *     since the overlay compares it with the `.feature` file.
  *
  * `--at` falls back to `SOURCE_DATE_EPOCH` (seconds). Without either it fails:
  * a default instant would be a date nobody chose.
@@ -26,6 +28,8 @@ import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
+/** Envelopes that carry Gherkin text the overlay compares against the `.feature` file. */
+const GHERKIN_ENVELOPES = ['source', 'gherkinDocument', 'pickle'];
 const UNSPECIFIED = Object.freeze({ name: 'unspecified' });
 
 /**
@@ -77,21 +81,22 @@ export function normaliseCucumberReport(text, { at, root, env = process.env } = 
   /**
    * @param {unknown} value
    * @param {string} key
+   * @param {boolean} unroot Remove the run directory from strings (not in Gherkin text).
    * @returns {unknown}
    */
-  const visit = (value, key) => {
-    if (typeof value === 'string') return isIdKey(key) ? idOf(value) : unrooted(value);
+  const visit = (value, key, unroot) => {
+    if (typeof value === 'string') return isIdKey(key) ? idOf(value) : unroot ? unrooted(value) : value;
     if (Array.isArray(value)) {
       return isIdsKey(key)
-        ? value.map((v) => (typeof v === 'string' ? idOf(v) : visit(v, '')))
-        : value.map((v) => visit(v, ''));
+        ? value.map((v) => (typeof v === 'string' ? idOf(v) : visit(v, '', unroot)))
+        : value.map((v) => visit(v, '', unroot));
     }
     if (value === null || typeof value !== 'object') return value;
     if (key === 'timestamp') return { seconds, nanos: 0 };
     if (key === 'duration') return { seconds: 0, nanos: 0 };
     /** @type {Record<string, unknown>} */
     const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = visit(v, k);
+    for (const [k, v] of Object.entries(value)) out[k] = visit(v, k, unroot && !(key === '' && GHERKIN_ENVELOPES.includes(k)));
     return out;
   };
 
@@ -99,7 +104,7 @@ export function normaliseCucumberReport(text, { at, root, env = process.env } = 
   const body = lines
     .filter((line) => line.trim() !== '')
     .map((line) => {
-      const envelope = /** @type {Record<string, any>} */ (visit(JSON.parse(line), ''));
+      const envelope = /** @type {Record<string, any>} */ (visit(JSON.parse(line), '', true));
       if (envelope.meta && typeof envelope.meta === 'object') {
         for (const field of ['os', 'cpu', 'runtime']) {
           if (field in envelope.meta) envelope.meta[field] = { ...UNSPECIFIED };
