@@ -10,7 +10,11 @@
 // Which element is which:
 //   frame         `.main-frame`              Starlight's page frame, capped by `--dk-width-frame`.
 //   sidebar       `.sidebar-pane`            the left sidebar's FIXED element (not `nav.sidebar`,
-//                                            which is the static wrapper around it).
+//                 less its start padding     which is the static wrapper around it), less its
+//                                            inline-start padding: the navigation column on the
+//                                            frame. The panel's tint bleeds past it to the
+//                                            viewport's start edge in a capped frame (#224).
+//   sidebarPanel  `.sidebar-pane`            the whole painted panel, tint included.
 //   pane          `.main-pane`               the flex item the article lives in.
 //   column        `.sl-container` holding    the reading column. This is the element Starlight caps
 //                 `.sl-markdown-content`     at `--sl-content-width`, so its width IS the text measure;
@@ -45,7 +49,10 @@ export interface Geometry {
   /** `--sl-nav-pad-x` resolved to pixels. */
   navPad: number;
   frame: Box | null;
+  /** The navigation column: the sidebar pane less its inline-start padding. */
   sidebar: Box | null;
+  /** The whole sidebar pane, as painted (#224). */
+  sidebarPanel: Box | null;
   pane: Box | null;
   column: Box | null;
   railContainer: Box | null;
@@ -144,14 +151,27 @@ export async function measure(page: Page): Promise<Geometry> {
 
     const content = document.querySelector('.sl-markdown-content');
     const root = document.documentElement;
+    const rtl = getComputedStyle(root).direction === 'rtl';
+
+    // The navigation column: the pane less its inline-start padding, which is
+    // where its tint bleeds out past the frame (#224).
+    const sidebarPanel = q(sel.sidebar);
+    let sidebar = sidebarPanel;
+    if (sidebarPanel) {
+      const pad = parseFloat(getComputedStyle(document.querySelector(sel.sidebar)!).paddingInlineStart);
+      const width = round(sidebarPanel.width - pad);
+      const x = rtl ? sidebarPanel.x : round(sidebarPanel.x + pad);
+      sidebar = { ...sidebarPanel, x, width, right: round(x + width) };
+    }
     return {
-      dir: getComputedStyle(root).direction === 'rtl' ? ('rtl' as const) : ('ltr' as const),
+      dir: rtl ? ('rtl' as const) : ('ltr' as const),
       viewportWidth: root.clientWidth,
       scrollWidth: root.scrollWidth,
       sidebarWidthToken: px('--sl-sidebar-width'),
       navPad: px('--sl-nav-pad-x'),
       frame: q(sel.frame),
-      sidebar: q(sel.sidebar),
+      sidebar,
+      sidebarPanel,
       pane: q(sel.pane),
       column: box(content ? content.closest('.sl-container') : null),
       railContainer: q(sel.railContainer),
