@@ -114,11 +114,11 @@ html[dir='rtl'][data-toc-collapsed] .dk-toc-toggle svg {
   /*
    * Collapsed, the rail is a 1px hairline at the frame's end edge. The button
    * moves wholly inside the frame with its end edge on that hairline: centring it
-   * would push half of it off-screen when the frame is full width. From 84rem the
-   * collapsed column is narrower than its pane and centred, which leaves more than
-   * the button's width beside it. Below 84rem the column fills the pane, so the
-   * pane's end padding is widened past the button (#217, the rule after this
-   * block).
+   * would push half of it off-screen when the frame is full width. In a wide frame
+   * the collapsed column is narrower than its pane and centred, which leaves more
+   * than the button's width beside it. In a narrow one (below 84rem, whether the
+   * viewport or a consumer's cap makes it so) the pane's end padding is widened
+   * past the button (#217, #220, the rule after this block).
    */
   html[data-toc-collapsed] .dk-toc-toggle {
     inset-inline-end: var(--dk-frame-gutter, 0px);
@@ -217,16 +217,58 @@ html[dir='rtl'][data-toc-collapsed] .dk-toc-toggle svg {
 }
 
 /*
- * #217: below 84rem the collapsed column fills its pane, and the pane's 1.5rem end
- * padding put the column box 7px under the toggle (1152 to 1296px). The end padding
- * grows to the toggle's width plus 4px there. `dk-components.css` reads the same
- * `--dk-pane-pad-end` for the pane's padding and for the header's column start, so
- * the column stays centred in the space left and the search still meets it. From
- * 84rem the column is narrower than its pane and the padding is unchanged.
- * (0,2,1) outranks that sheet's `html` (0,0,1).
+ * The collapsed column must end at least 4px before the toggle (#217, #220).
+ * The toggle's end edge is on the row's end edge, so it covers the last
+ * `--dk-toc-toggle-size` of the row. The column is centred in the pane's
+ * padded area, so it ends half the pane's free space before the end padding;
+ * when it fills the pane there is no free space and it ends at the padding.
+ * Solving for the end padding that keeps 4px clear gives, with T the toggle,
+ * C the content width and W the row (`--dk-row-inline-size`):
+ *
+ *   max(pad, min(T + 4px, 2 * (T + 4px) + pad + C - W))
+ *
+ * `T + 4px` covers a column that fills its pane (the clearance is then this
+ * padding plus the 1px hairline, less T: 5px). The second term is the
+ * padding a centred column needs, twice the clearance because the free space
+ * splits between its two sides; it goes to 0 once the row is wide enough.
+ *
+ * #217 keyed this padding to an 84rem VIEWPORT, the width where a full-width
+ * frame with a sidebar stops filling the pane. A consumer's frame cap under
+ * 84rem gives the same narrow row at a wider viewport, where that query never
+ * matched and the column ran 7px under the toggle (#220). Keyed to the row,
+ * it holds under any frame. The viewport rule is kept after this one, so the
+ * layout #217 shipped below 84rem is unchanged.
+ *
+ * Declared on the two elements that read it, each with its own row
+ * (`dk-components.css`): the pane's padding and the header's column start, so
+ * the column stays centred in the space left and the search still meets it.
+ * (0,3,1) and (0,3,2) outrank nothing; the default lives on `html`.
+ */
+@media (min-width: 72rem) {
+  html[data-toc-collapsed][data-has-toc] .main-pane,
+  html[data-toc-collapsed][data-has-toc] header.header > .header {
+    --dk-pane-pad-end: max(
+      var(--sl-content-pad-x),
+      min(
+        var(--dk-toc-toggle-size) + 4px,
+        2 * (var(--dk-toc-toggle-size) + 4px) + var(--sl-content-pad-x) + var(--sl-content-width) -
+          var(--dk-row-inline-size)
+      )
+    );
+  }
+}
+
+/*
+ * Below an 84rem viewport the padding stays the toggle plus 4px, as #217
+ * shipped it. The row rule above already gives that wherever the column fills
+ * its pane; this keeps it on a page without a left sidebar too, whose wider
+ * row leaves the column narrower than its pane there, so the measured layout
+ * of those pages does not move (`no-sidebar-recentre.spec.ts` R5). Same
+ * selectors, later in the sheet: it wins inside its range.
  */
 @media (min-width: 72rem) and (width < 84rem) {
-  html[data-toc-collapsed][data-has-toc] {
+  html[data-toc-collapsed][data-has-toc] .main-pane,
+  html[data-toc-collapsed][data-has-toc] header.header > .header {
     --dk-pane-pad-end: max(var(--sl-content-pad-x), calc(var(--dk-toc-toggle-size) + 4px));
   }
 }
