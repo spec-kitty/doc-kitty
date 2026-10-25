@@ -501,9 +501,11 @@ Five things to know:
   `--dk-width-frame: banana` behaves as its registered initial value, `1920px`.
   That equals the 120rem default at the default 16px root font size. A browser
   without `@property` support gives a full-width frame instead.
-- **Outside the frame the page background shows.** On a viewport wider than the
-  cap, the space on each side of the frame is the page background; the header
-  bar and its bottom border still span the full viewport.
+- **Outside the frame the chrome bleeds out.** On a viewport wider than the
+  cap, the header bar and its bottom border still span the full viewport, and
+  the sidebar panel's tint runs out to the viewport's start edge, while its
+  navigation stays on the frame ([ADR-0066](../adr/0066-sidebar-tint-bleeds-past-the-frame.md)).
+  The space after the frame's end edge is the page background.
 - **The rail keeps one width.** From a 72rem (1152px) viewport the rail is as
   wide as the sidebar (18rem, 288px). The reading pane takes the rest of the
   frame, and the column is the pane less 24px of padding on each side, up to
