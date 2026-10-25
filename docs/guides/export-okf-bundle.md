@@ -90,7 +90,9 @@ and the pages from the source tree. Draft pages are not exported.
   OKF §6.1 recommends. A citation links to its catalog URL; one with no URL is
   kept in `sources` and not linked. Personas are ordinary pages.
 - **Indexes take the OKF form.** Each `index.md` lists its entries as
-  `- [Title](/path.md) - description`. Only the root index carries
+  `- [Title](/path.md) - description`. The index stays an entry list, as OKF §8
+  defines it, and holds no prose. When the section's `README` has body text, the
+  overview page described below is the first entry. Only the root index carries
   frontmatter, and only `okf_version`. Index files follow your configured
   `indexBasename`.
 - **Index metadata moves to a sidecar.** The original frontmatter of every
@@ -107,10 +109,25 @@ and the pages from the source tree. Draft pages are not exported.
   `process:dockitty-export`, and `at` is `updated`, else that stamp's `at`.
 - **`log.md`** is reserved. If your docs have one it is copied unchanged.
 
-## Known limit
+## Section overviews
 
-The export does not include the bodies of section-index pages, so links written
-in those bodies are not rewritten.
+OKF §8 defines an index as a list of entries and says nothing about prose. The
+export therefore keeps `index.md` as a plain entry list and writes the prose of
+a section `README` as a page of its own.
+
+A `README` with body text is exported at `<id>.md`, for example
+`guides/README.md` for the guides section and `README.md` for the docs root. The
+page gets the same link rewriting and relation sections as any other page, and
+the section index lists it first:
+
+```md
+- [Guides](/guides/README.md) - How to use the toolkit
+```
+
+A `README` with no body gets no overview page, and its index is unchanged. If
+your `indexBasename` is `index`, the overview path would equal the index path,
+so the export writes no overview page. Links to a `README` still resolve to the
+section's `index.md`.
 
 ## The OKF reference viewer skips these links
 
