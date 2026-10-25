@@ -742,15 +742,17 @@ export function identityVocabulary() {
  * The canonical required frontmatter fields the standalone gate enforces —
  * traced from the strict-presence `frontmatterSchema` in
  * `src/scripts/validate-frontmatter.mjs` (`title`/`description`/`doc_status`/
- * `updated` are `z`-required; everything else is optional there). A charter may
- * relax a NON-floor field via `required_fields.optional` (D-04); `title` is a
- * hard floor and can never be relaxed (C-005).
+ * `updated`/`kind`; everything else is optional there). `kind` is required on
+ * every page (ADR-0009; reinstated by ADR-0065, #219, after #38 relaxed it). A
+ * charter may relax a NON-floor field via `required_fields.optional` (D-04);
+ * `title` is a hard floor and can never be relaxed (C-005).
  */
 export const CANONICAL_REQUIRED = /** @type {const} */ ([
   'title',
   'description',
   'doc_status',
   'updated',
+  'kind',
 ]);
 
 /** The required-field floor — always required regardless of charter (C-005). */

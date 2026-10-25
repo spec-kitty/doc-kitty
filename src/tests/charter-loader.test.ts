@@ -120,7 +120,7 @@ describe('resolveGovernance — charter-only (T007)', () => {
     expect(g.resolveType('Feature').forbidden).toBe(true);
     expect(g.resolveKind('Ref').effective).toBe('Reference');
     expect(g.legalStatuses).toContain('archived');
-    expect(g.requiredFields.required).toEqual(['title', 'description', 'doc_status']);
+    expect(g.requiredFields.required).toEqual(['title', 'description', 'doc_status', 'kind']);
 
     expect(g.sources).toEqual({
       types: 'charter',
@@ -284,7 +284,7 @@ describe('computeEffectiveCharter — projection (T009/FR-015)', () => {
     expect(eff.types.aliases).toEqual({ Feature: 'Capability' });
     expect(eff.kinds.aliases).toEqual({ Ref: 'Reference' });
     expect(eff.statuses).toContain('archived');
-    expect(eff.requiredFields.required).toEqual(['title', 'description', 'doc_status']);
+    expect(eff.requiredFields.required).toEqual(['title', 'description', 'doc_status', 'kind']);
     expect(eff.requiredFields.floor).toEqual(['title']);
     expect(eff.sourceMeta).toEqual({ fromCharter: true, legacyPresent: false });
 
