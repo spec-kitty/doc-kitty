@@ -15,6 +15,7 @@ agent:
 Notable changes to doc-kitty, newest first. The reasoning behind decisions lives in
 the [decision records](../adr/); this log records what changed and when.
 
+- [2026-10-25 — Layout stability on load and on wide screens](./2026-10-25-layout-stability.md)
 - [2026-10-25 — `kind` required again, UTC dates and a stable Cucumber report](./2026-10-25-fix-batch-0-4-1.md)
 - [2026-10-19 — Gherkin authoring aids and the Specification layout](./2026-10-19-gherkin-authoring-aids.md)
 - [2026-10-19 — Site release history and install guide](./2026-10-19-site-release-history-and-install-guide.md)
