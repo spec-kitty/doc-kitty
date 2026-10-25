@@ -221,7 +221,10 @@ test.describe('frame alignment — collapsed column clears the toggle (#217)', (
         const f = await load(page, 'rail', { width, collapsed: true, css: `:root { --dk-width-frame: ${cap} }` });
         if (!f.g.toggle) throw new Error(`T1 ${cap}: no toggle at ${width}px`);
         const frame = inline(f.g.frame!, f.g);
-        expect(frame.width, `non-vacuity: the ${cap} cap is applied at ${width}px`).toBeLessThanOrEqual(84 * REM);
+        const expected = Math.min(parseFloat(cap) * REM, f.g.viewportWidth);
+        expect
+          .soft(Math.abs(frame.width - expected), `non-vacuity: the ${cap} cap is applied at ${width}px (frame ${frame.width}px)`)
+          .toBeLessThanOrEqual(TOLERANCE);
         const gap = inline(f.g.toggle, f.g).start - inline(f.column, f.g).end;
         expect
           .soft(gap, `T1 ${cap} ${width}px: toggle start - column end = ${gap}px`)
