@@ -1,0 +1,29 @@
+{
+  "rows": {
+    "#237": {
+      "evidence_ref": "Context only: #238 is a follow-up to #237 (merged in PR #239)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "OKF export: links miss the base and resolve against the route",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#238": {
+      "evidence_ref": "96e1a4b3, 243c8d2b",
+      "fr": "FR-001..FR-006",
+      "nfr": "NFR-001, NFR-002, NFR-003",
+      "repo": null,
+      "sc": "SC-001..SC-003",
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "OKF export: section-index page bodies are not exported",
+      "verdict": "fixed",
+      "wp": "WP01"
+    }
+  },
+  "schema_version": 1
+}
