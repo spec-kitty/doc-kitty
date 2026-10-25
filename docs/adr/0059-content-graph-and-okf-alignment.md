@@ -276,3 +276,23 @@ links in page bodies, following #237.
    base only when the URL path does not already end with it on a segment
    boundary. A URL without a scheme is accepted.
 5. **Known limit.** Section-index page bodies are not exported.
+
+## Addendum (2026-10-25): section README bodies as overview pages
+
+The decisions above are unchanged. This addendum supersedes item 5 ("Known
+limit") of the 2026-10-24 addendum, following #238.
+
+1. **The index stays strict.** OKF §8 defines an index as an entry list and is
+   silent on prose. `index.md` therefore stays a §8 entry list, and conformance
+   rule 4 is unchanged.
+2. **The body becomes a concept page.** A section `README` whose body is not
+   blank is exported as a concept page at `<id>.md`, for example
+   `guides/README.md`. It gets the same link rewriting and relation sections as
+   any concept page. The section index lists it first.
+3. **`<id>.md` is the path.** It cannot collide with another page id, and it
+   follows `indexBasename`. When `indexBasename` is `index`, the path would
+   equal the index path, so the export writes no overview page.
+4. **Links to a README still resolve to the index.** Item 1 of the 2026-10-24
+   addendum is unchanged. The overview page is reached through the index entry.
+5. **A README without a body is unchanged.** It gets no overview page, and the
+   sidecar `_index.meta.yaml` is unchanged.

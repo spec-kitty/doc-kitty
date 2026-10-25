@@ -17,7 +17,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Now `.md` links resolve against the linking page and become bundle paths, and
   other site links carry `<site><base>`. `--site-url` takes the origin and the
   export adds the base. The advisory link check also reports unresolved relative
-  links. Section-index page bodies are still not exported.
+  links.
+- **OKF export keeps the prose of section `README` files (#238).** Before, the
+  export dropped the body of a section `README`, so its text and links were
+  missing from the bundle. Now a `README` with body text is written as a page at
+  `<id>.md`, such as `guides/README.md`, with its links rewritten. The section
+  `index.md` stays a strict OKF entry list and lists that page first. A
+  `README` with no body exports as before.
 
 ## [0.4.0] — 2026-10-19
 
