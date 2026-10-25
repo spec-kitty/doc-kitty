@@ -130,12 +130,13 @@ describe('frame-width token registration (FR-002, FR-003)', () => {
 });
 
 describe('placement and direction', () => {
-  it('finds all ten geometry rules', () => {
+  it('finds all eleven geometry rules', () => {
     // Guards the two sweeps below against passing on an empty set. WP05 of
     // layout-guards-decisions added two: the pane's end padding
     // (`.main-pane`, #217) and the header's first track
-    // (`header.header > .header`, #216).
-    expect(geometryRules).toHaveLength(10);
+    // (`header.header > .header`, #216). #223 added the rail container's
+    // auto start margin (`.right-sidebar-container`).
+    expect(geometryRules).toHaveLength(11);
   });
 
   it('keeps geometry out of the token sheet, which a brand swap replaces', () => {
