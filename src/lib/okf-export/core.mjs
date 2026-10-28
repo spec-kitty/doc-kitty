@@ -24,7 +24,8 @@ import {
   toActor,
 } from '../vocabulary-core.mjs';
 import { idIndex, rewriteBodyLinks, routeIndex } from './links.mjs';
-import { okfGenerated } from '../generator-stamp.mjs';
+import { JSON_SCHEMA_PRODUCER, okfGenerated } from '../generator-stamp.mjs';
+import { EXTRA_END, EXTRA_START, JSON_PUBLIC_DIR } from '../json-schema/generate.mjs';
 
 /** `generated.by` of a page that has neither a stamp nor an author (FR-025). */
 export const EXPORT_PROCESS_ACTOR = 'process:dockitty-export';
@@ -206,20 +207,21 @@ const typeOf = (node) => node.type || SECTION_TYPE[node.section] || 'Concept';
 /**
  * @param {Record<string, any>} node
  * @param {Array<Record<string, string>>} extraSources sources the body cannot link (catalog entries without a URL)
+ * @param {{ resource?: string } | null} [schematic] packaged JSON for a JSON Schema or JSON Content page
  * @returns {Record<string, unknown>} frontmatter in its fixed key order
  */
-function conceptFrontmatter(node, extraSources) {
+function conceptFrontmatter(node, extraSources, schematic = null) {
   const { generated, authors } = generatedFor(node);
   const sources = [...(node.sources ?? []), ...extraSources];
   return {
-    type: typeOf(node),
+    type: schematic ? 'Schematic' : typeOf(node),
     title: node.title,
     description: node.description,
     status: node.status,
     generated,
     authors: authors.length > 0 ? authors : undefined,
     tags: node.tags,
-    resource: node.resource,
+    resource: schematic?.resource ?? node.resource,
     verified: node.verified,
     stale_after: node.stale_after,
     sources: sources.length > 0 ? sources : undefined,
@@ -312,20 +314,157 @@ function sourceOf(sourceFiles, id) {
 }
 
 /**
+ * A JSON Schema or JSON Content page's packaged JSON, read from the source line and the
+ * JSON fence. Hubs share the generator stamp and are left as ordinary pages.
+ *
+ * @param {string} body
+ * @param {Record<string, any>} node
+ * @returns {{ reference: string, resource: string, json: string } | null}
+ */
+function schematicOf(body, node) {
+  const by = node.generated?.by;
+  if (typeof by !== 'string' || !by.startsWith(`${JSON_SCHEMA_PRODUCER}/`)) return null;
+  if (node.doc_kind === 'Hub') return null;
+  const packaged = packagedJson(body);
+  if (packaged === null) {
+    console.warn(`[dk-okf] ${node.id} is stamped ${by} but has no packaged JSON; exported as an ordinary page`);
+  }
+  return packaged;
+}
+
+/**
+ * The JSON link and fence a stamped artifact page carries, or null when either is missing.
+ *
+ * @param {string} body
+ * @returns {{ reference: string, resource: string, json: string } | null}
+ */
+function packagedJson(body) {
+  const href = body.match(new RegExp(`\\]\\(/${JSON_PUBLIC_DIR}/([^)\\s]+)\\)`));
+  if (!href) return null;
+  let reference = href[1];
+  try {
+    reference = decodeURIComponent(href[1]);
+  } catch {
+    return null;
+  }
+  if (reference.split('/').some((part) => part === '' || part === '.' || part === '..')) return null;
+  const fence = body.match(/(?:^|\n)## (?:Schema|Artifact)\n\n(`{3,}|~{3,})json\n([\s\S]*?)\n\1(?:\n|$)/);
+  if (!fence) return null;
+  const json = fence[2].endsWith('\n') ? fence[2] : `${fence[2]}\n`;
+  return { reference, resource: `/${JSON_PUBLIC_DIR}/${reference}`, json };
+}
+
+/** Headings whose body is a copy of the packaged JSON, or a drawing of it. */
+const JSON_DUMP_HEADINGS = new Set(['Properties', 'Diagram', 'Schema', 'Artifact']);
+
+/**
+ * A one-line restatement of fields the packaged JSON already carries.
+ *
+ * @param {string} line
+ * @returns {boolean}
+ */
+function jsonRestatement(line) {
+  return /^Required: .+\.$/.test(line);
+}
+
+/**
+ * The JSON `description`, when the fence is a document that has one.
+ *
+ * @param {string | undefined} jsonText
+ * @returns {string}
+ */
+function jsonDescription(jsonText) {
+  if (typeof jsonText !== 'string' || jsonText.trim() === '') return '';
+  try {
+    const data = JSON.parse(jsonText);
+    return data !== null && typeof data === 'object' && typeof data.description === 'string' ? data.description.trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Drop what the packaged JSON already contains: the diagram, the raw JSON
+ * block, the Properties list, the Required line, and the schema description.
+ * The source line, links to other concepts, and Extra Information stay.
+ * Text between the extra markers stays even when it uses a dump heading.
+ *
+ * @param {string} body
+ * @param {string} [jsonText] the packaged document, used to drop its description paragraph
+ * @returns {string}
+ */
+function omitJsonPayload(body, jsonText) {
+  const description = jsonDescription(jsonText);
+  const lines = body.split('\n');
+  /** @type {string[]} */
+  const kept = [];
+  /** @type {string[]} */
+  let paragraph = [];
+  let droppedDescription = false;
+  let inExtra = false;
+  const flush = () => {
+    if (paragraph.length === 0) return;
+    if (inExtra) {
+      kept.push(...paragraph);
+      paragraph = [];
+      return;
+    }
+    const block = paragraph.join('\n');
+    const copied = description !== '' && block.trim() === description;
+    if (copied && !droppedDescription) droppedDescription = true;
+    else if (!(paragraph.length === 1 && jsonRestatement(paragraph[0]))) kept.push(...paragraph);
+    paragraph = [];
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (trimmed === EXTRA_START) {
+      flush();
+      inExtra = true;
+      continue;
+    }
+    if (trimmed === EXTRA_END) {
+      flush();
+      inExtra = false;
+      continue;
+    }
+    const heading = /^## (.+)$/.exec(lines[i]);
+    if (!inExtra && heading && JSON_DUMP_HEADINGS.has(heading[1])) {
+      flush();
+      i += 1;
+      while (i < lines.length && !/^## /.test(lines[i]) && lines[i].trim() !== EXTRA_START) i += 1;
+      i -= 1;
+      continue;
+    }
+    if (lines[i].trim() === '') {
+      flush();
+      kept.push(lines[i]);
+      continue;
+    }
+    paragraph.push(lines[i]);
+  }
+  flush();
+  return kept.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/**
  * @param {Record<string, any>} node
  * @param {string} source raw source text ('' when absent)
  * @param {Array<{target: string, rel: string, note?: string}>} edges
  * @param {Map<string, Record<string, any>>} nodes
  * @param {string[]} indexNames
  * @param {Omit<import('./links.mjs').LinkContext, 'pageHref' | 'pageId'>} links
+ * @param {Map<string, string>} assets packaged JSON added to the bundle
  * @returns {string}
  */
-function conceptDocument(node, source, edges, nodes, indexNames, links) {
-  const raw = matter(source).content.replace(/^\s*\n/, '').trimEnd();
+function conceptDocument(node, source, edges, nodes, indexNames, links, assets) {
+  const content = matter(source).content.replace(/^\s*\n/, '').trimEnd();
+  const schematic = schematicOf(content, node);
+  const raw = schematic ? omitJsonPayload(content, schematic.json) : content;
+  if (schematic) assets.set(`${JSON_PUBLIC_DIR}/${schematic.reference}`, schematic.json);
   const body = rewriteBodyLinks(raw, { ...links, pageHref: node.href ?? '/', pageId: node.id });
   const { markdown, extraSources } = relationSections(edges, nodes, indexNames);
   const parts = [body, markdown.trimEnd()].filter((p) => p !== '');
-  return `${fence(toYaml(conceptFrontmatter(node, extraSources)))}\n${parts.join('\n\n')}\n`;
+  return `${fence(toYaml(conceptFrontmatter(node, extraSources, schematic)))}\n${parts.join('\n\n')}\n`;
 }
 
 /**
@@ -493,10 +632,12 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
   };
   /** @type {Map<string, string>} */
   const out = new Map();
+  /** @type {Map<string, string>} */
+  const assets = new Map();
   for (const node of exported) {
     const source = sourceOf(sourceFiles, node.id) ?? '';
     const path = bundlePathOf(node.id, indexNames);
-    const concept = () => conceptDocument(node, source, outgoing.get(node.id) ?? [], nodes, indexNames, links);
+    const concept = () => conceptDocument(node, source, outgoing.get(node.id) ?? [], nodes, indexNames, links, assets);
     if (!isIndexId(node.id, indexNames)) {
       out.set(path, concept());
       continue;
@@ -516,5 +657,6 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
     if (sidecar !== null) out.set(path.replace(/index\.md$/, '_index.meta.yaml'), sidecar);
   }
   copyLogs(sourceFiles, out);
+  for (const [filePath, json] of assets) out.set(filePath, json);
   return new Map([...out].sort(([a], [b]) => compareCodeUnit(a, b)));
 }

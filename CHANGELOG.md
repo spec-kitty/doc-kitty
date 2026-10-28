@@ -6,6 +6,40 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- JSON Schema pages compile from JSON. `jsonSchema.source` defaults to
+  `json-files` at the project root. The output folder (default
+  `docs/json-files-output/`) is a generated section: unstamped files, reserved
+  section names, and a source that overlaps the output are refused. Schema
+  files are `type: JSON Schema`. Any other JSON object that fits one of those
+  schemas is `type: JSON Content`; a document that fits none, or that fits two
+  schemas equally, stops the run. A property or list item prints its JSON
+  `description` beside the name. Each artifact page includes a PlantUML diagram
+  when diagrams are on (`jsonSchema.graph` is `json` or `uml`, default `json`),
+  rendered on the site's own PlantUML server during dev and build, including
+  client mode. A Markdown file beside a JSON file (`x.md` next to `x.json`) is
+  copied onto the generated page as Extra Information. Each JSON file is
+  published at `/json-files/<path>` and the source line links it. The OKF
+  export of an artifact is `type: Schematic` with `resource` set to that path.
+  Setting `jsonSchema` turns `diagrams` on unless `diagrams` is explicitly
+  `false`, in which case the fence is omitted. Generated pages are stamped
+  `doc-kitty-json-schema/<version>`. See
+  [ADR-0067](docs/adr/0067-json-schema-pages-from-json.md).
+
+### Changed
+
+- A large JSON diagram stays at the size PlantUML drew it. Strings longer than
+  48 characters wrap in that drawing, on a space or an underscore. A drawing
+  that is still wide scrolls horizontally, and selecting it opens the same
+  drawing centered at full size.
+- PlantUML requests wait up to 1 minute, including time spent queued.
+  `DK_PLANTUML_TIMEOUT_MS` raises that ceiling.
+- The OKF export of a JSON artifact omits the PlantUML diagram, the raw JSON
+  block, and the lists that repeat the file. Extra Information and links to
+  other concepts stay. A stamped page with no packaged JSON is exported as an
+  ordinary page and the export warns.
+
 ## [0.5.0] — 2026-10-25
 
 ### 💥 Breaking

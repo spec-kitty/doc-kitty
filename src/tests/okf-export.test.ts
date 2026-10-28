@@ -9,10 +9,11 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { okfExportIntegration } from '../lib/okf-export/integration.js';
 import { bundlePathOf, exportOkfBundle, generatedFor } from '../lib/okf-export/core.mjs';
-import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
+import { checkOkfBundle, checkOkfLinks } from '../lib/okf-export/conformance.mjs';
+import { EXTRA_END, EXTRA_START } from '../lib/json-schema/generate.mjs';
 import { feedDateMillis } from '../lib/metadata.js';
 
 const FIX = path.join(import.meta.dirname, 'fixtures', 'okf-export');
@@ -475,3 +476,211 @@ describe('section README bodies become overview pages (#238)', () => {
     }
   });
 });
+
+describe('JSON Schema and JSON Content export', () => {
+  const graph = {
+    nodes: [
+      { id: 'README', kind: 'page', type: 'Context', title: 'Home', description: 'Root.', status: 'stable' },
+      {
+        id: 'json-files-output/contract/widget',
+        kind: 'page',
+        type: 'JSON Schema',
+        title: 'Widget',
+        description: 'A widget schema.',
+        status: 'stable',
+        generated: { by: 'doc-kitty-json-schema/0.1.7', at: '2026-10-28T00:00:00Z', content_hash: 'sha256:aaaaaaaaaaaa' },
+      },
+      {
+        id: 'json-files-output/content/widget/other',
+        kind: 'page',
+        type: 'JSON Content',
+        title: 'Other',
+        description: 'Another widget.',
+        status: 'stable',
+      },
+      {
+        id: 'json-files-output/content/widget/acme',
+        kind: 'page',
+        type: 'JSON Content',
+        title: 'Acme',
+        description: 'A widget.',
+        status: 'stable',
+        generated: { by: 'doc-kitty-json-schema/0.1.7', at: '2026-10-28T00:00:00Z', content_hash: 'sha256:bbbbbbbbbbbb' },
+      },
+      { id: 'guides/picture', kind: 'page', type: 'Guide', title: 'Picture', description: 'An authored diagram.', status: 'stable' },
+    ],
+    edges: [],
+  };
+  const sources = new Map<string, string>([
+    [
+      'json-files-output/contract/widget.md',
+      [
+        '---',
+        'title: Widget',
+        '---',
+        '',
+        'Source file: [schema/widget.schema.json](/json-files/schema/widget.schema.json).',
+        '',
+        'A widget record.',
+        '',
+        'Required: `name`.',
+        '',
+        '## Extra Information',
+        '',
+        'This file explains how a widget is formatted.',
+        '',
+        '## Properties',
+        '',
+        '- `name`: Display name.',
+        '- `tags`',
+        '',
+        '## Diagram',
+        '',
+        '~~~~plantuml',
+        "' title: Widget",
+        'json "Artifact" as J { "name": "Acme", "note": "```tick```" }',
+        '~~~~',
+        '',
+        '## Schema',
+        '',
+        '```json',
+        '{ "description": "A widget record.", "required": ["name"] }',
+        '```',
+        '',
+      ].join('\n'),
+    ],
+    [
+      'json-files-output/content/widget/acme.md',
+      [
+        '---',
+        'title: Acme',
+        '---',
+        '',
+        'Schema: [Widget](../../contract/widget.md).',
+        '',
+        'Source file: [records/acme.json](/json-files/records/acme.json).',
+        '',
+        '## Extra Information',
+        '',
+        EXTRA_START,
+        'The display name is assigned by the source system.',
+        '',
+        '## Properties',
+        '',
+        'The note uses this heading on purpose.',
+        EXTRA_END,
+        '',
+        'See also: [Other](./other.md).',
+        '',
+        '## Properties',
+        '',
+        '- `name`: `Acme` — Display name.',
+        '',
+        '## Diagram',
+        '',
+        '```plantuml',
+        'rectangle X',
+        '```',
+        '',
+        '## Artifact',
+        '',
+        '```json',
+        '{ "name": "Acme" }',
+        '```',
+        '',
+      ].join('\n'),
+    ],
+    [
+      'guides/picture.md',
+      ['---', 'title: Picture', '---', '', '## Diagram', '', '```plantuml', 'rectangle X', '```', ''].join('\n'),
+    ],
+  ]);
+
+  it('packages the JSON, types the concept Schematic, and keeps an authored diagram', () => {
+    const bundle = exportOkfBundle(graph, sources) as Map<string, string>;
+    const widget = bundle.get('json-files-output/contract/widget.md') ?? '';
+    expect(widget).toContain('type: "Schematic"');
+    expect(widget).not.toContain('reference:');
+    expect(widget).toContain('resource: "/json-files/schema/widget.schema.json"');
+    expect(widget).not.toContain('## Diagram');
+    expect(widget).not.toContain('plantuml');
+    expect(widget).not.toContain('## Schema');
+    expect(widget).toContain('Source file: [schema/widget.schema.json](../../json-files/schema/widget.schema.json).');
+    expect(widget).not.toContain('https://');
+    const withSite = exportOkfBundle(graph, sources, { siteUrl: 'https://example.invalid' }) as Map<string, string>;
+    const hosted = withSite.get('json-files-output/contract/widget.md') ?? '';
+    expect(hosted).toContain('](../../json-files/schema/widget.schema.json)');
+    expect(hosted).not.toContain('example.invalid');
+    expect(widget).toContain('## Extra Information');
+    expect(widget).toContain('This file explains how a widget is formatted.');
+    expect(widget).not.toContain('A widget record.');
+    expect(widget).not.toContain('Required:');
+    expect(widget).not.toContain('## Properties');
+    expect(widget).not.toContain('`tags`');
+    expect(bundle.get('json-files/schema/widget.schema.json')).toBe(
+      '{ "description": "A widget record.", "required": ["name"] }\n',
+    );
+    const acme = bundle.get('json-files-output/content/widget/acme.md') ?? '';
+    expect(acme).toContain('Schema: [Widget](/json-files-output/contract/widget.md).');
+    expect(acme).toContain('Source file: [records/acme.json](../../../json-files/records/acme.json).');
+    expect(acme).toContain('## Extra Information');
+    expect(acme).toContain('The display name is assigned by the source system.');
+    expect(acme).toContain('## Properties');
+    expect(acme).toContain('The note uses this heading on purpose.');
+    expect(acme).not.toContain(EXTRA_START);
+    expect(acme).not.toContain(EXTRA_END);
+    expect(acme).toContain('See also: [Other](/json-files-output/content/widget/other.md).');
+    expect(acme).not.toContain('## Artifact');
+    expect(acme).not.toContain('plantuml');
+    expect(acme).not.toContain('`Acme` — Display name.');
+    expect(bundle.get('json-files/records/acme.json')).toBe('{ "name": "Acme" }\n');
+    expect(checkOkfBundle(bundle)).toEqual([]);
+    expect(checkOkfLinks(bundle)).toEqual([]);
+    const picture = bundle.get('guides/picture.md') ?? '';
+    expect(picture).toContain('type: "Guide"');
+    expect(picture).toContain('## Diagram');
+    expect(picture).toContain('rectangle X');
+  });
+
+  it('warns when a stamped page has no packaged JSON and stays quiet for a hub', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const stamped = {
+      id: 'json-files-output/contract/bare',
+      kind: 'page',
+      type: 'JSON Schema',
+      title: 'Bare',
+      description: 'A stamped page with no JSON fence.',
+      status: 'stable',
+      doc_kind: 'Schematic',
+      generated: { by: 'doc-kitty-json-schema/0.1.7', at: '2026-10-28T00:00:00Z', content_hash: 'sha256:cccccccccccc' },
+    };
+    const hub = {
+      id: 'json-files-output/overview',
+      kind: 'page',
+      type: 'JSON Schema',
+      title: 'JSON files',
+      description: 'Generated index.',
+      status: 'stable',
+      doc_kind: 'Hub',
+      generated: { by: 'doc-kitty-json-schema/0.1.7', at: '2026-10-28T00:00:00Z', content_hash: 'sha256:dddddddddddd' },
+    };
+    try {
+      const bundle = exportOkfBundle(
+        { nodes: [stamped, hub], edges: [] },
+        new Map([
+          ['json-files-output/contract/bare.md', '---\ntitle: Bare\n---\n\nNo fence here.\n'],
+          ['json-files-output/overview.md', '---\ntitle: JSON files\n---\n\nIndex prose.\n'],
+        ]),
+      ) as Map<string, string>;
+      const bare = bundle.get('json-files-output/contract/bare.md') ?? '';
+      expect(bare).toContain('type: "JSON Schema"');
+      expect(bare).not.toContain('Schematic');
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('no packaged JSON'));
+      expect(warn.mock.calls.some((call) => String(call[0]).includes('json-files-output/overview'))).toBe(false);
+      expect(bundle.get('json-files-output/overview.md')).toContain('Index prose.');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
+

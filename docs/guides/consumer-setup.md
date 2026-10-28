@@ -854,11 +854,40 @@ astro build
 
 When the variable is unset, the build uses `http://localhost:8091/svg/`. A
 `plantuml.com` URL stops the build, because the public server would receive
-your diagram source.
+your diagram source. Each request waits up to 1 minute, including time queued
+behind other diagrams. Set `DK_PLANTUML_TIMEOUT_MS` to a larger number of
+milliseconds when the last diagram waits longer than that.
 
 How the two modes are built, and why, is in
 [Diagrams](../architecture/diagrams.md) and
 [ADR-0040](../adr/0040-build-time-diagram-render-dual-mode.md).
+
+## Optional: JSON Schema pages
+
+`jsonSchema` compiles a directory of JSON into Markdown. `source` is that
+directory, relative to the project root (default `json-files`). `out` is a
+folder inside the docs tree (default `json-files-output`). It cannot be a
+reserved section such as `guides` or `glossary`, and it cannot overlap
+`source`. Dev and build rewrite pages stamped by the generator and refuse any
+other file in that folder. A `*.schema.json` file, or a document that points
+at the JSON Schema meta-schema, becomes a `type: JSON Schema` page. Any other
+JSON object becomes a `type: JSON Content` page when it fits one of those
+schemas, under `content/<schema>/<file>.md`. A document that fits none, or
+that fits two schemas equally, stops the run. A Markdown file beside a JSON
+file (`x.md` next to `x.json`) is copied onto that page as Extra Information.
+The source line links
+the JSON file published at `/json-files/<path>` (`public/json-files/`). The OKF
+export of an artifact is `type: Schematic`, with `resource` set to that path.
+The bundle includes the JSON file and omits the diagram, the raw JSON block,
+and the lists that repeat that file. Setting `jsonSchema` turns `diagrams` on,
+unless `diagrams` is explicitly `false` (the fence is then omitted). Add a
+`json-files-output` entry to `sections.yaml` so the sidebar group exists before
+the folder is on disk. See
+[ADR-0067](../adr/0067-json-schema-pages-from-json.md).
+
+```js
+jsonSchema: {},
+```
 
 ## Optional: Gherkin feature pages
 

@@ -44,6 +44,7 @@ import {
 import { glossaryIntegration } from './integrations/glossary.js';
 import { markuaIntegration } from './integrations/markua.js';
 import { diagramsIntegration } from './integrations/diagrams.js';
+import { jsonSchemaIntegration, resolveJsonSchemaOptions } from './json-schema/integration.js';
 import { compressHtmlIntegration } from './integrations/compress-html.js';
 import {
   deckSplitIntegration,
@@ -192,6 +193,10 @@ export interface DocKittyOptions {
    * (build: Mermaid and PlantUML to inline SVG, no client script) OR the single
    * client render owner (`diagram-render.client`) injected page-wide (client:
    * Mermaid only; a ```plantuml fence stays code).
+   * Setting `jsonSchema` turns this on unless it is explicitly `false`, because
+   * each generated artifact page includes a PlantUML diagram. That also renders
+   * PlantUML in client mode (ADR-0040 amended by ADR-0067): PlantUML has no
+   * client renderer, and a Mermaid-only client build stays on the client path.
    */
   diagrams?: boolean;
   /**
@@ -242,6 +247,17 @@ export interface DocKittyOptions {
    * malformed `.feature` fails `config:setup` with `file:line:col`.
    */
   gherkin?: DocKittyGherkinOption;
+  /**
+   * Opt-in JSON Schema pages (ADR-0067). JSON in `source` (default `json-files` at the
+   * project root) is compiled to Markdown under `out` (default `json-files-output/`,
+   * inside `docsDir`). The generator writes a page it stamps when the JSON
+   * changes, leaves an unstamped file in place, and deletes a page only when
+   * it owns that page and the JSON is gone. Turns {@link DocKittyOptions.diagrams}
+   * on unless `diagrams` is explicitly `false`, and omits the PlantUML fence
+   * when diagrams stay off. `graph` chooses the PlantUML drawing: `json`
+   * (default, the `@startjson` tree) or `uml` (the class-diagram box).
+   */
+  jsonSchema?: { source?: string; out?: string; graph?: 'json' | 'uml' };
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
    * `"README"` only — byte-identical to today's behaviour (NFR-003). This is
@@ -423,7 +439,9 @@ export {
   BUILD_SVGO_CONFIG,
   BUILD_MERMAID_OPTS,
   DEFAULT_PLANTUML_SERVER_URL,
+  DEFAULT_PLANTUML_TIMEOUT_MS,
   resolvePlantumlServerUrl,
+  resolvePlantumlTimeout,
   sentinelThemeRewrite,
   type DiagramMode,
 } from './integrations/diagrams.js';
@@ -440,10 +458,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     docsDir = 'docs',
     base = '/',
     theme,
-    diagrams = false,
+    diagrams,
     markua = false,
     indexBasename,
     gherkin,
+    jsonSchema,
     starlight: overrides,
   } = options;
   const { starlightSidebar: sidebar, indexLabel } = splitSidebarOption(sidebarOption);
@@ -453,6 +472,14 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // `undefined` when the option is absent — every gherkin branch below then
   // contributes nothing (byte-identical array, sidebar call and corpus).
   const gherkinOpts = gherkin === undefined ? undefined : resolveGherkinOptions(gherkin);
+  const jsonSchemaOpts = jsonSchema === undefined ? undefined : resolveJsonSchemaOptions(jsonSchema);
+  // JSON Schema pages carry a PlantUML diagram (ADR-0067, amending ADR-0040's
+  // client-mode PlantUML fence). Computed here, outside the `diagramsActive`
+  // branch: once that flag is true, `diagrams` is `true | undefined` and a
+  // further `!== false` comparison does not type-check. C-001 still holds:
+  // the server URL refuses plantuml.com.
+  const renderJsonSchemaPlantuml = jsonSchemaOpts !== undefined && diagrams !== false;
+  const diagramsActive = diagrams === true || renderJsonSchemaPlantuml;
   // Always validated (FR-007): the list is now published to the loader and the
   // CLIs, so a bad entry must fail here whether or not `gherkin` is on.
   validateIndexBasenames(indexBasename, 'indexBasename');
@@ -650,7 +677,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // `diagrams: true`, so the diagram machinery sits ahead of `starlight()` in
     // the integrations array (ordering contract). Omitted entirely when off —
     // the spread below is then byte-identical to the pre-M5 array (zero cost).
-    ...(diagrams ? [diagramsIntegration] : []),
+    ...(diagramsActive ? [diagramsIntegration(renderJsonSchemaPlantuml)] : []),
     // SINGLE `remark-directive` owner (ADR-0030 D-07): registered EXACTLY ONCE,
     // gated on (glossary OR markua), and PREPENDED before BOTH the markua and
     // glossary integrations. `updateConfig` APPENDS to `markdown.remarkPlugins`,
@@ -675,6 +702,18 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // glossary-free array + corpus is byte-identical to pre-M4 (NFR-002). WP09 lands
     // the example definitions file; until then this is inert on the example.
     ...(glossaryActive ? [glossaryIntegration(docsDir, base, indexBasename)] : []),
+    ...(jsonSchemaOpts
+      ? [
+          jsonSchemaIntegration(
+            jsonSchemaOpts.source,
+            docsDir,
+            jsonSchemaOpts.out,
+            renderJsonSchemaPlantuml,
+            jsonSchemaOpts.graph,
+            normalizeBasePrefix(base),
+          ),
+        ]
+      : []),
     // Opt-in gherkin seam (ADR-0046): PREPENDED before Starlight, immediately AFTER
     // the glossary, ONLY when `gherkin.sources` is set. Every `config:setup` hook runs
     // before the content-layer sync, so its array position relative to the

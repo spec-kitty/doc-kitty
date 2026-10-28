@@ -349,6 +349,36 @@ export function resolvePlantumlServerUrl(env: NodeJS.ProcessEnv = process.env): 
 }
 
 /**
+ * Per-request ceiling for a PlantUML render, in milliseconds. `astro-plantuml`
+ * defaults to 10 seconds, and that clock starts when the request is sent. A
+ * single-threaded server queues the whole set, so a diagram it will render is
+ * reported as a failure once the wait exceeds 10 seconds. One minute is the
+ * default. A larger set sets `DK_PLANTUML_TIMEOUT_MS`.
+ */
+export const DEFAULT_PLANTUML_TIMEOUT_MS = 60_000;
+
+/**
+ * Resolve the PlantUML request timeout. Blank uses {@link DEFAULT_PLANTUML_TIMEOUT_MS}.
+ * Any other value must be a positive whole number of milliseconds.
+ */
+export function resolvePlantumlTimeout(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = (env.DK_PLANTUML_TIMEOUT_MS ?? '').trim();
+  if (raw === '') return DEFAULT_PLANTUML_TIMEOUT_MS;
+  if (!/^[1-9]\d*$/.test(raw)) {
+    throw new Error(
+      `[doc-kitty] DK_PLANTUML_TIMEOUT_MS must be a positive whole number of milliseconds, got "${raw}"`,
+    );
+  }
+  const timeout = Number(raw);
+  if (!Number.isSafeInteger(timeout)) {
+    throw new Error(
+      `[doc-kitty] DK_PLANTUML_TIMEOUT_MS must be a positive whole number of milliseconds, got "${raw}"`,
+    );
+  }
+  return timeout;
+}
+
+/**
  * Resolve the `astro-plantuml` ESM entry to an absolute `file://` URL. The
  * package ships an `exports`-only manifest (no CJS main), so `require.resolve`
  * cannot reach it — instead walk up `node_modules` from this module, read the
@@ -374,6 +404,27 @@ function resolvePlantumlEntry(baseUrl: string): string {
     dir = parent;
   }
   throw new Error('[doc-kitty] astro-plantuml is not resolvable — is it installed?');
+}
+
+/**
+ * Build `astro-plantuml`'s remark plugin against the self-hosted server.
+ * A diagrams-off build never calls this. A client-mode build calls it only when
+ * JSON Schema pages asked for the diagram, so a Mermaid-only client build stays
+ * free of the package.
+ */
+async function loadPlantumlRemark(): Promise<typeof diagramMeta> {
+  const plantumlUrl = resolvePlantumlEntry(import.meta.url);
+  const { createRemarkPlugin } = (await loadBeoe(plantumlUrl)) as {
+    createRemarkPlugin: (opts: unknown) => typeof diagramMeta;
+  };
+  return createRemarkPlugin({
+    serverUrl: resolvePlantumlServerUrl(),
+    format: 'svg',
+    language: 'plantuml',
+    addWrapperClasses: true,
+    // Includes queue wait. A site raises this with DK_PLANTUML_TIMEOUT_MS.
+    timeout: resolvePlantumlTimeout(),
+  });
 }
 
 /** sentinel hex (lowercase) → `var(--dk-diagram-*)`. */
@@ -447,8 +498,8 @@ export function sentinelThemeRewrite() {
 }
 
 /**
- * The opt-in diagrams seam, registered ONLY when `defineDocKittyIntegrations({
- * diagrams: true })` (FR-001). It wires the markdown pipeline —
+ * The opt-in diagrams seam, registered when `diagrams: true` or when `jsonSchema`
+ * is set and `diagrams` is not `false` (ADR-0067). It wires the markdown pipeline —
  * `remarkPlugins: [diagramMeta, mermaidFenceTransform]` (metadata parse BEFORE
  * the fence transform) and `rehypePlugins: [diagramFigure]` (figure wrap AFTER)
  * — and injects the single client render owner page-wide.
@@ -471,7 +522,13 @@ export function sentinelThemeRewrite() {
  * The guard keys on `main.reveal`, which exists only on the out-of-frame deck
  * document; every in-frame doc page has no such element and renders as before.
  */
-export const diagramsIntegration: AstroIntegration = {
+/**
+ * @param renderPlantuml Render ```plantuml fences even when Mermaid stays on the
+ * client renderer. JSON Schema pages set this so their JSON diagrams become SVG
+ * during dev and build. A missing PlantUML server fails that build.
+ */
+export function diagramsIntegration(renderPlantuml = false): AstroIntegration {
+  return {
   name: 'doc-kitty:diagrams',
   hooks: {
     // Async so the BUILD branch can `await import('@beoe/rehype-mermaid')` HERE, at
@@ -527,30 +584,10 @@ export const diagramsIntegration: AstroIntegration = {
           }),
         );
 
-        // PlantUML (build-only, #13 WP02): resolve `astro-plantuml` (exports-only
-        // package) and build its remark plugin against the SELF-HOSTED server
-        // (NEVER plantuml.com — `resolvePlantumlServerUrl` throws on a public
-        // endpoint, C-001). It renders ```plantuml → a raw `<figure><svg>` HTML
-        // node; `plantumlMeta` (remark, BEFORE it) parses the `'`-metadata and
-        // injects the skinparam sentinel preamble, and the SAME
-        // `sentinelThemeRewrite` + `diagramFigure` rehype passes below theme and
-        // wrap its SVG (the rehype array is unchanged — both now handle the
-        // PlantUML raw node too). Loaded via `loadBeoe`, so a client / diagrams-
-        // off build never pulls `astro-plantuml` (or its `axios` dep) — C-004.
-        const plantumlUrl = resolvePlantumlEntry(import.meta.url);
-        // `createRemarkPlugin` returns a unified remark plugin (a `Plugin<[],
-        // Root>` factory); type its result as our own `diagramMeta` factory so it
-        // slots into `remarkPlugins` without a bare `unknown` (which the markdown
-        // config's plugin-tuple union rejects).
-        const { createRemarkPlugin } = (await loadBeoe(plantumlUrl)) as {
-          createRemarkPlugin: (opts: unknown) => typeof diagramMeta;
-        };
-        const plantumlRemark = createRemarkPlugin({
-          serverUrl: resolvePlantumlServerUrl(),
-          format: 'svg',
-          language: 'plantuml',
-          addWrapperClasses: true,
-        });
+        // PlantUML renders ```plantuml against the self-hosted server. `plantumlMeta`
+        // parses the `'`-metadata and injects the skinparam preamble first. The same
+        // `sentinelThemeRewrite` + `diagramFigure` passes theme and wrap the SVG.
+        const plantumlRemark = await loadPlantumlRemark();
 
         updateConfig({
           markdown: {
@@ -565,13 +602,21 @@ export const diagramsIntegration: AstroIntegration = {
         return;
       }
 
-      // CLIENT mode (FR-004, NFR-002): the pre-#13 path, byte-identical — the
+      // CLIENT mode (FR-004, NFR-002): the pre-#13 path — the
       // `diagramMeta` + `mermaidFenceTransform` remark stage, `diagramFigure`
       // rehype wrap, and the single client render owner injected page-wide.
+      // JSON Schema pages also render their PlantUML fences here, because that
+      // engine has no client renderer. A Mermaid-only client build does not.
+      const remarkPlugins = renderPlantuml
+        ? [diagramMeta, mermaidFenceTransform, plantumlMeta, await loadPlantumlRemark()]
+        : [diagramMeta, mermaidFenceTransform];
+      const rehypePlugins = renderPlantuml
+        ? [sentinelThemeRewrite, diagramFigure]
+        : [diagramFigure];
       updateConfig({
         markdown: {
-          remarkPlugins: [diagramMeta, mermaidFenceTransform],
-          rehypePlugins: [diagramFigure],
+          remarkPlugins,
+          rehypePlugins,
         },
       });
       const renderOwner = fileURLToPath(
@@ -592,3 +637,4 @@ export const diagramsIntegration: AstroIntegration = {
     },
   },
 };
+}

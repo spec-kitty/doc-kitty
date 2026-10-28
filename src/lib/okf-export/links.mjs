@@ -21,6 +21,9 @@
  *    maps to `index.md`);
  *  - a `.md`/`.mdx` target with no node (draft, excluded page, repo file outside the
  *    docs root) -> left unchanged, never turned into a URL that would 404;
+ *  - a link under `/json-files/` (packaged JSON) -> a path relative to the concept
+ *    file. The catalogue reads that without a site URL. `resource` keeps the
+ *    bundle-root path;
  *  - other internal links, no node (assets, `/api/...`) -> absolute URL when `siteUrl`
  *    is set, else unchanged;
  *  - external, `mailto:`, pure `#anchor` -> unchanged.
@@ -28,6 +31,8 @@
  * @module okf-export/links
  */
 
+import path from 'node:path';
+import { JSON_PUBLIC_DIR } from '../json-schema/generate.mjs';
 import { URL_SCHEME } from '../vocabulary-core.mjs';
 
 /** Markdown inline link or image destination. */
@@ -145,7 +150,26 @@ export function rewriteUrl(url, ctx) {
   const unbased = stripBase(abs, ctx.base);
   const id = ctx.routes.get(trimRoute(unbased));
   if (id !== undefined) return `/${ctx.bundlePath(id)}${tail}`;
+  if (unbased === `/${JSON_PUBLIC_DIR}` || unbased.startsWith(`/${JSON_PUBLIC_DIR}/`)) {
+    return `${relativeBundleLink(ctx.bundlePath(ctx.pageId), unbased.slice(1))}${tail}`;
+  }
   return ctx.siteUrl === '' ? url : `${ctx.siteUrl}${unbased}${tail}`;
+}
+
+/**
+ * A markdown link from an exported concept file to another bundle file.
+ *
+ * @param {string} fromFile bundle path of the linking file, including `.md`
+ * @param {string} target bundle path of the target, no leading slash
+ * @returns {string}
+ */
+function relativeBundleLink(fromFile, target) {
+  const slash = fromFile.lastIndexOf('/');
+  const fromDir = slash < 0 ? '' : fromFile.slice(0, slash);
+  let rel = path.posix.relative(fromDir, target);
+  if (rel === '') rel = '.';
+  if (!rel.startsWith('.')) rel = `./${rel}`;
+  return rel;
 }
 
 /**
