@@ -78,5 +78,6 @@ kind: Hub
 | [0064](./0064-default-frame-cap.md) | ADR-0064: The page frame is capped at 120rem by default | Accepted | 2026-10-19 |
 | [0065](./0065-kind-required-again.md) | ADR-0065: `kind` is required on every page again | Accepted | 2026-10-25 |
 | [0066](./0066-sidebar-tint-bleeds-past-the-frame.md) | ADR-0066: The sidebar tint bleeds out to the viewport edge | Accepted | 2026-10-25 |
+| [0067](./0067-json-schema-pages-from-json.md) | ADR-0067: JSON Schema pages compile from JSON files | Accepted | 2026-10-28 |
 
 New ADRs copy [`template.md`](./template.md).

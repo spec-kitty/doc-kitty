@@ -436,9 +436,10 @@ export function okfStatusOf(docStatus) {
 }
 
 /**
- * OKF `type` vocabulary — one value per Common Docs section (18 items).
+ * Canonical `type` vocabulary. A value outside this set warns; it does not fail the build.
  * `Specification` is APPENDED (ADR-0046) for the opt-in, registry-declared
  * Gherkin `behaviour` section; it has no frozen {@link SECTION_TYPE} fallback.
+ * `JSON Schema` and `JSON Content` are APPENDED (ADR-0067).
  */
 export const DOC_TYPES = /** @type {const} */ ([
   'Context',
@@ -459,12 +460,15 @@ export const DOC_TYPES = /** @type {const} */ ([
   'Changelog',
   'Presentation',
   'Specification',
+  'JSON Schema',
+  'JSON Content',
 ]);
 
 /**
  * The canonical `kind` vocabulary (ADR-0009): the four Divio content quadrants
- * plus the structural kinds (14 items). `Specification` is APPENDED (ADR-0046):
- * a page generated from a Gherkin `.feature` file. Open vocabulary — the site schema
+ * plus the structural kinds. `Specification` is APPENDED (ADR-0046):
+ * a page generated from a Gherkin `.feature` file. `Schematic` is APPENDED
+ * (ADR-0067) for a generated JSON artifact. Open vocabulary — the site schema
  * accepts any string; the standalone gate warns on a value outside this set.
  */
 export const KINDS = /** @type {const} */ ([
@@ -482,6 +486,7 @@ export const KINDS = /** @type {const} */ ([
   'Feature',
   'User-Journey',
   'Specification',
+  'Schematic',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -513,6 +518,7 @@ export const SECTION_TYPE = Object.freeze({
   migrations: 'Migration',
   changelog: 'Changelog',
   presentations: 'Presentation',
+  'json-files-output': 'JSON Schema',
 });
 
 /**
@@ -540,7 +546,8 @@ export const SECTION_TYPE = Object.freeze({
  *      (`subtypesBySection`) — the data-driven rename path (FR-005);
  *   2. a short, stable BUILT-IN table of sub-path subtypes kept in code (an
  *      ADR `template.md` → `Template`; `plans/epics/*` → `Epic`,
- *      `plans/features/*` → `Feature`; `operations/runbooks/*` → `Runbook`) —
+ *      `plans/features/*` → `Feature`; `operations/runbooks/*` → `Runbook`;
+ *      `json-files-output/content/*` → `JSON Content`) —
  *      the fallback, unaffected when a registry has no `subtypes` (C-001/NFR-003);
  *   3. the section (first path segment) default from `typesBySection`.
  * An unknown section yields `null` (no section default, no override) — the
@@ -578,6 +585,8 @@ export function expectedDocType(
       return sectionDefault;
     case 'operations':
       return parts[1] === 'runbooks' ? 'Runbook' : sectionDefault;
+    case 'json-files-output':
+      return parts[1] === 'content' ? 'JSON Content' : sectionDefault;
     default:
       return sectionDefault;
   }

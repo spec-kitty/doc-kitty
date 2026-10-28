@@ -305,6 +305,31 @@
   text-align: center;
 }
 
+/*
+ * JSON trees are drawn at their real pixel size. Starlight's content rule
+ * (`svg { max-width: 100%; height: auto }`) scales that drawing down to the
+ * column, which makes a large tree unreadable. A wide tree scrolls sideways.
+ * Height stays on the page. overflow-y stays hidden so the visible/auto
+ * pairing does not turn the other axis into a second bar.
+ * The diagram lightbox opens the same drawing at full size.
+ */
+.sl-markdown-content .dk-diagram:has(> svg[data-diagram-type='JSON']) {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block-end: 0.75rem;
+  text-align: start;
+}
+
+.sl-markdown-content .dk-diagram > svg[data-diagram-type='JSON'] {
+  max-width: none;
+  cursor: zoom-in;
+}
+
+.sl-markdown-content .dk-diagram > svg[data-diagram-type='JSON']:focus-visible {
+  outline: 3px solid var(--dk-color-accent, var(--sl-color-accent));
+  outline-offset: 4px;
+}
+
 .dk-diagram__caption {
   margin-top: var(--dk-space-xs);
   font-family: var(--dk-font-sans);
@@ -914,6 +939,55 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+/*
+ * Full-size JSON diagram. The drawing keeps PlantUML's pixel size (the page
+ * column must not scale it) and sits on white: the JSON palette is dark text
+ * on a light node, which disappears on the dark scrim.
+ */
+.dk-lightbox--native {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dk-lightbox--native::backdrop {
+  background: rgb(0 0 0 / 0.88);
+}
+
+.dk-lightbox__scroller {
+  display: flex;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+  padding: 3.5rem 1.5rem 1.5rem;
+}
+
+.dk-lightbox__sheet {
+  display: block;
+  flex: none;
+  width: max-content;
+  height: max-content;
+  margin: auto;
+  padding: 1rem;
+  background: #fff;
+}
+
+.sl-markdown-content .dk-lightbox__sheet > svg,
+.dk-lightbox__sheet > svg {
+  max-width: none;
 }
 
 .dk-lightbox__close {

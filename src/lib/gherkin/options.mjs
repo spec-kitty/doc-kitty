@@ -28,12 +28,13 @@ export const DEFAULT_GHERKIN_SECTION = 'behaviour';
 
 /**
  * Section ids the Gherkin generator may never own: `_meta` (the registry's home)
- * and every OTHER generator's section — today the glossary's `glossary`. It MUST
- * equal `['_meta', ...BUILD_GENERATED_SECTION_IDS]` (`../sections.ts`); `config.ts`
+ * and every OTHER generator's section — the glossary's `glossary` and the
+ * JSON schema generator's `json-files-output`. It MUST equal
+ * `['_meta', ...BUILD_GENERATED_SECTION_IDS]` (`../sections.ts`); `config.ts`
  * passes exactly that list, and a parity test pins this bare-Node default to it
  * (the CLI cannot import the TypeScript constant).
  */
-export const RESERVED_GHERKIN_SECTIONS = Object.freeze(['_meta', 'glossary']);
+export const RESERVED_GHERKIN_SECTIONS = Object.freeze(['_meta', 'glossary', 'json-files-output']);
 
 /**
 /**

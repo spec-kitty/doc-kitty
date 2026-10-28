@@ -79,6 +79,23 @@ function figureDrawing(figure: Element): Element | null {
   return figure.querySelector('svg, img');
 }
 
+/** The JSON drawing, which must stay at the pixel size PlantUML drew. */
+function jsonDrawing(source: Element): SVGSVGElement | null {
+  if (source instanceof SVGSVGElement && source.getAttribute('data-diagram-type') === 'JSON') return source;
+  return source.querySelector('svg[data-diagram-type="JSON"]');
+}
+
+/** A copy of a JSON drawing at its own size, hidden from assistive tech. */
+function nativeJsonClone(source: SVGSVGElement): SVGSVGElement {
+  const clone = source.cloneNode(true) as SVGSVGElement;
+  clone.setAttribute('aria-hidden', 'true');
+  clone.removeAttribute('tabindex');
+  clone.removeAttribute('role');
+  clone.removeAttribute('aria-label');
+  clone.removeAttribute('aria-haspopup');
+  return clone;
+}
+
 /** A copy of `source` that fills the dialog and is hidden from assistive tech. */
 function scaledClone(source: Element): Element {
   const clone = source.cloneNode(true) as Element;
@@ -113,7 +130,17 @@ function createDialog(doc: Document): HTMLDialogElement {
   // A click on the dialog box itself (outside the drawing and the button) is a
   // click on the backdrop: `::backdrop` events target the dialog element.
   dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) dialog.close();
+    if (event.target === dialog) {
+      dialog.close();
+      return;
+    }
+    const scroller = dialog.querySelector<HTMLElement>('.dk-lightbox__scroller');
+    if (!scroller || event.target !== scroller || !(event instanceof MouseEvent)) return;
+    const bounds = scroller.getBoundingClientRect();
+    const onScrollbar =
+      event.clientX >= bounds.left + scroller.clientWidth ||
+      event.clientY >= bounds.top + scroller.clientHeight;
+    if (!onScrollbar) dialog.close();
   });
   doc.body.append(dialog);
   return dialog;
@@ -141,18 +168,43 @@ export function initLightbox(doc: Document = document): number {
     dialog ??= createDialog(doc);
     const current = dialog;
     current.querySelector('.dk-lightbox__content')?.remove();
-    current.append(scaledClone(source));
+    current.querySelector('.dk-lightbox__scroller')?.remove();
+    const json = jsonDrawing(source);
+    current.classList.toggle('dk-lightbox--native', json !== null);
+    if (json) {
+      const scroller = doc.createElement('div');
+      scroller.className = 'dk-lightbox__scroller';
+      const sheet = doc.createElement('div');
+      sheet.className = 'dk-lightbox__sheet';
+      sheet.append(nativeJsonClone(json));
+      scroller.append(sheet);
+      current.append(scroller);
+    } else {
+      current.append(scaledClone(source));
+    }
     current.setAttribute('aria-label', lightboxLabel(source));
     returnFocus = trigger;
     current.addEventListener(
       'close',
       () => {
         current.querySelector('.dk-lightbox__content')?.remove();
+        current.querySelector('.dk-lightbox__scroller')?.remove();
+        current.classList.remove('dk-lightbox--native');
         returnFocus?.focus();
       },
       { once: true },
     );
     current.showModal();
+    if (json) {
+      const scroller = current.querySelector<HTMLElement>('.dk-lightbox__scroller');
+      const centerDrawing = () => {
+        if (!scroller) return;
+        scroller.scrollLeft = Math.max(0, (scroller.scrollWidth - scroller.clientWidth) / 2);
+        scroller.scrollTop = Math.max(0, (scroller.scrollHeight - scroller.clientHeight) / 2);
+      };
+      centerDrawing();
+      requestAnimationFrame(centerDrawing);
+    }
   };
 
   for (const target of targets) {

@@ -22,6 +22,7 @@
  * same wrap-in-fences trick, `validate-catalog.mjs` uses for its registry files.
  */
 import { existsSync, readFileSync } from 'node:fs';
+import { DEFAULT_JSON_SCHEMA_OUT } from './json-schema/generate.mjs';
 import { GLOSSARY_OUTPUT_DIRNAME } from './glossary/generate.js';
 import path from 'node:path';
 import process from 'node:process';
@@ -467,10 +468,12 @@ export interface SidebarAutogenGroup {
  *
  * Seeding the build-generated ids here lets `registryToSidebar` emit their groups
  * even when the folder is not yet on disk. The id is the generator's own exported
- * `GLOSSARY_OUTPUT_DIRNAME` (the single source of the folder name — review F4), so
- * a rename of the generator's output folder updates this seed automatically.
+ * `GLOSSARY_OUTPUT_DIRNAME` and `DEFAULT_JSON_SCHEMA_OUT` (the single source of each
+ * folder name — review F4), so a rename of a generator's output folder updates
+ * this seed automatically. Gherkin refuses these ids so the generators cannot
+ * own each other's folders.
  */
-export const BUILD_GENERATED_SECTION_IDS: readonly string[] = [GLOSSARY_OUTPUT_DIRNAME];
+export const BUILD_GENERATED_SECTION_IDS: readonly string[] = [GLOSSARY_OUTPUT_DIRNAME, DEFAULT_JSON_SCHEMA_OUT];
 
 /** Options for {@link registryToSidebar}. */
 export interface RegistryToSidebarOptions {

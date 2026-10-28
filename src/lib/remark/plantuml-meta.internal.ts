@@ -158,16 +158,46 @@ export const SKINPARAM_PREAMBLE = [
   '}',
 ].join('\n');
 
+/**
+ * Sentinel colours for an `@startjson` tree. Inserted after `@startjson` so the
+ * SVG uses the same hexes the UML `skinparam` preamble uses. `document`
+ * background stays transparent; node fill, border, and text plus the arrow
+ * take four of the six tokens. JSON diagrams have no cluster, so the other
+ * two tokens are not drawn.
+ */
+export const JSON_DIAGRAM_STYLE = [
+  '<style>',
+  'document {',
+  '  BackGroundColor transparent',
+  '}',
+  'jsonDiagram {',
+  '  node {',
+  `    BackGroundColor ${PLANTUML_SENTINELS['node-fill']}`,
+  `    LineColor ${PLANTUML_SENTINELS['node-border']}`,
+  `    FontColor ${PLANTUML_SENTINELS['node-text']}`,
+  '  }',
+  '  arrow {',
+  `    LineColor ${PLANTUML_SENTINELS.edge}`,
+  '  }',
+  '}',
+  '</style>',
+].join('\n');
+
 /** True when a line opens the PlantUML document (`@startuml …`). */
 const isStartUml = (line: string): boolean => line.trimStart().startsWith('@startuml');
+
+/** True when a line opens a JSON diagram (`@startjson`). */
+const isStartJson = (line: string): boolean => line.trimStart().startsWith('@startjson');
 
 /**
  * Inject the {@link SKINPARAM_PREAMBLE} into the (metadata-stripped) source so
  * the rendered SVG is themed by the six sentinels. When the body already opens
  * with an explicit `@startuml` line the preamble is inserted immediately AFTER
- * it (skinparams must live inside the document); otherwise it is prepended (and
- * `astro-plantuml` wraps the whole thing in `@startuml`/`@enduml` at encode
- * time, so the preamble still lands inside the document).
+ * it (skinparams must live inside the document). An `@startjson` document gets
+ * {@link JSON_DIAGRAM_STYLE} after that opening line instead: UML skinparams
+ * sit outside the JSON diagram and do not colour it. Otherwise the preamble is
+ * prepended (and `astro-plantuml` wraps the whole thing in `@startuml`/`@enduml`
+ * at encode time, so the preamble still lands inside the document).
  */
 export function injectSkinparam(code: string): string {
   const lines = code.split('\n');
@@ -175,6 +205,10 @@ export function injectSkinparam(code: string): string {
   while (i < lines.length && lines[i].trim() === '') i++;
   if (i < lines.length && isStartUml(lines[i])) {
     lines.splice(i + 1, 0, SKINPARAM_PREAMBLE);
+    return lines.join('\n');
+  }
+  if (i < lines.length && isStartJson(lines[i])) {
+    lines.splice(i + 1, 0, JSON_DIAGRAM_STYLE);
     return lines.join('\n');
   }
   return `${SKINPARAM_PREAMBLE}\n${code}`;
