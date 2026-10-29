@@ -78,8 +78,9 @@ export function publishedJsonFile(url: string, publicDir: string, base: string):
   } catch {
     return undefined;
   }
-  const prefixed = `${base}/${JSON_PUBLIC_DIR}/`.replace(/\/{2,}/g, '/');
-  const bare = `/${JSON_PUBLIC_DIR}/`;
+  // Concatenated, not `/${…}/`: that shape is reserved for page routes (issue 134).
+  const bare = '/' + JSON_PUBLIC_DIR + '/';
+  const prefixed = (base + bare).replace(/\/{2,}/g, '/');
   const rel = pathname.startsWith(prefixed)
     ? pathname.slice(prefixed.length)
     : base !== '' && pathname.startsWith(bare)
