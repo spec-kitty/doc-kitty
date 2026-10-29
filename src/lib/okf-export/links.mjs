@@ -150,7 +150,9 @@ export function rewriteUrl(url, ctx) {
   const unbased = stripBase(abs, ctx.base);
   const id = ctx.routes.get(trimRoute(unbased));
   if (id !== undefined) return `/${ctx.bundlePath(id)}${tail}`;
-  if (unbased === `/${JSON_PUBLIC_DIR}` || unbased.startsWith(`/${JSON_PUBLIC_DIR}/`)) {
+  // Concatenated, not `/${…}/`: that shape is reserved for page routes (issue 134).
+  const jsonPublicRoot = '/' + JSON_PUBLIC_DIR;
+  if (unbased === jsonPublicRoot || unbased.startsWith(jsonPublicRoot + '/')) {
     return `${relativeBundleLink(ctx.bundlePath(ctx.pageId), unbased.slice(1))}${tail}`;
   }
   return ctx.siteUrl === '' ? url : `${ctx.siteUrl}${unbased}${tail}`;
