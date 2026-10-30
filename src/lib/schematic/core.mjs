@@ -66,10 +66,11 @@ function fail(ctx, where, message) {
  */
 function resolveInside(ctx, rel, fromDir) {
   if (path.isAbsolute(rel)) fail(ctx, rel, 'must be relative to the project root');
-  const abs = path.resolve(fromDir, rel);
   const root = realpathSync(ctx.root);
+  // `fromDir` sits under the root as spelled; compare against its real path so a symlinked project root does not fail.
+  const abs = path.resolve(existsSync(fromDir) ? realpathSync(fromDir) : fromDir, rel);
   const inside = (/** @type {string} */ p) => p === root || p.startsWith(root + path.sep);
-  if (!inside(path.resolve(abs))) fail(ctx, rel, 'is outside the project root');
+  if (!inside(abs)) fail(ctx, rel, 'is outside the project root');
   if (!existsSync(abs)) fail(ctx, rel, 'does not exist');
   const real = realpathSync(abs);
   if (!inside(real)) fail(ctx, rel, 'is outside the project root');

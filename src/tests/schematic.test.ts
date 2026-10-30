@@ -6,14 +6,14 @@
  * Fixtures: a real Spec Kitty doctrine schema (YAML, `definitions` + `$ref`) and a real
  * spec-kitty-events payload schema (JSON, pydantic `$defs` + `$ref`, `anyOf` with null).
  */
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import schematic from '../lib/remark/schematic.js';
-import { SCHEMATIC_MIME, schematicPublishedPath } from '../lib/schematic/core.mjs';
+import { SCHEMATIC_MIME, loadSchematic, schematicPublishedPath } from '../lib/schematic/core.mjs';
 import { schematicIntegration } from '../lib/integrations/schematic.js';
 
 const FIXTURES = path.join(import.meta.dirname, 'fixtures', 'schematic');
@@ -205,6 +205,16 @@ describe('fail closed', () => {
   it('refuses a relative-file $ref that climbs out of the root', () => {
     writeFileSync(path.join(root, 'schemas/escape.json'), '{"type":"object","properties":{"x":{"$ref":"../../outside.json"}}}');
     expect(err('schemas/escape.json')).toThrow(/is outside the project root/);
+  });
+  it('accepts a project root reached through a symlink, and still refuses an escape from it', () => {
+    const viaLink = `${root}-link`;
+    symlinkSync(root, viaLink);
+    try {
+      expect(loadSchematic('p.md', 'schemas/order.schema.json', viaLink).rel).toBe('schemas/order.schema.json');
+      expect(() => loadSchematic('p.md', 'schemas/link.json', viaLink)).toThrow(/is outside the project root/);
+    } finally {
+      unlinkSync(viaLink);
+    }
   });
   it('a missing schematic_path is an error, not a silent page', () => {
     expect(() => render('x.md', { kind: 'Schematic' })).toThrow(/schematic_path must name a file/);
