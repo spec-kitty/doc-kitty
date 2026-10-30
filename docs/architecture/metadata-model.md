@@ -43,6 +43,7 @@ put in frontmatter.
 | `agent` | no | `{ discoverable, priority, keywords }` | agent-API visibility/ordering |
 | `moscow` | no | `{ level: Must\|Should\|Could\|Won't, rationale }` | MVP/extended split and MoSCoW board on planning pages |
 | `tags` | no | `[string]` | agent-API, filtering |
+| `schematic_path` | only on `kind: Schematic` | schema file, relative to the project root | schema description, properties and published file |
 | `authors`, `resource`, `generated`, `verified`, `sources`, `stale_after` | no | as Common Docs | metadata, freshness |
 | `okf_version` | every index file | `"0.2"` | OKF conformance marker |
 
@@ -87,7 +88,9 @@ declares its kind rather than being exempt:
   description), the planning kinds `Planning`, `Feature`, and `User-Journey`
   (see [ADR-0010](../adr/0010-planning-kinds-and-moscow.md)), and `Specification`
   (a page generated from a Gherkin `.feature` file, see
-  [ADR-0046](../adr/0046-gherkin-feature-pages.md)).
+  [ADR-0046](../adr/0046-gherkin-feature-pages.md)), and `Schematic` (a page
+  that documents a JSON or YAML schema named by `schematic_path`, see
+  [ADR-0067](../adr/0067-schematic-pages-reference-a-schema.md)).
 
 The vocabulary is open, like `type`: the validator checks the canonical set above
 and warns on an unknown value rather than failing.
