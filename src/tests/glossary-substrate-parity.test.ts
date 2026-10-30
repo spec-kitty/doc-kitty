@@ -61,6 +61,7 @@ import markuaCallouts from '../lib/remark/markua-callouts.js';
 import glossaryTerm from '../lib/remark/glossary-term.js';
 import glossaryAutolink from '../lib/remark/glossary-autolink.js';
 import deckSplit from '../lib/remark/deck-split.js';
+import schematic from '../lib/remark/schematic.js';
 import relativeMdLinks from '../lib/remark/relative-md-links.js';
 import gherkinFence from '../lib/remark/gherkin-fence.js';
 import type { SharedTermIndex } from '../lib/glossary/types.js';
@@ -190,6 +191,14 @@ const CONSCIOUS_EXCLUSIONS: Exclusion[] = [
     plugin: deckSplit,
     kind: 'boundary',
     why: 'deck-route only: splits `kind: Presentation` pages into slides; never part of a docs-page re-derive.',
+  },
+  {
+    plugin: schematic,
+    kind: 'inert',
+    why:
+      'always-on `kind: Schematic` stage (ADR-0067): adds generated sections to a page that references a schema file, and returns at once on ' +
+      'every other page. The re-derive corpus has no such page, so it is a no-op in the golden tree. Revisit (mirror it) if a Schematic ' +
+      "page's generated text must feed the glossary's links-used.",
   },
   {
     plugin: relativeMdLinks,
