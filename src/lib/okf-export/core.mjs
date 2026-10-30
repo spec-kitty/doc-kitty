@@ -25,7 +25,7 @@ import {
 } from '../vocabulary-core.mjs';
 import { idIndex, rewriteBodyLinks, routeIndex } from './links.mjs';
 import { okfGenerated } from '../generator-stamp.mjs';
-import { SCHEMATIC_KIND, schematicPublishedPath } from '../schematic/core.mjs';
+import { SCHEMATIC_KIND, schematicHref } from '../schematic/core.mjs';
 
 /** `generated.by` of a page that has neither a stamp nor an author (FR-025). */
 export const EXPORT_PROCESS_ACTOR = 'process:dockitty-export';
@@ -325,8 +325,7 @@ function sourceOf(sourceFiles, id) {
  */
 function resourceOf(node, data, links) {
   if (node.doc_kind !== SCHEMATIC_KIND || typeof data.schematic_path !== 'string') return node.resource;
-  const ext = /\.[^./]+$/.exec(data.schematic_path)?.[0] ?? '';
-  return `${links.siteUrl || links.base}${schematicPublishedPath(node.href ?? '/', ext)}`;
+  return `${links.siteUrl || links.base}${schematicHref(node.href ?? '/', data.schematic_path)}`;
 }
 
 /**

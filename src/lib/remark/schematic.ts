@@ -25,7 +25,7 @@ import {
   buildModel,
   diagramSource,
   loadSchematic,
-  schematicPublishedPath,
+  schematicHref,
   type Property,
   type Segment,
 } from '../schematic/core.mjs';
@@ -115,7 +115,7 @@ export default function schematic(options: SchematicOptions) {
       }
     }
     if (wants('Source')) {
-      const href = schematicPublishedPath(route, loaded.ext);
+      const href = schematicHref(route, String(frontmatter.schematic_path));
       tail.push(heading(2, 'Source'), para(text('Schema file: '), { type: 'link', url: href, children: [text(loaded.rel)] }));
     }
     tree.children = [...lead, ...body, ...tail];
