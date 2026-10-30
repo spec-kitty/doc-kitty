@@ -47,11 +47,13 @@ must stay authored.
 4. **Diagram.** The parsed schema is drawn as a PlantUML `@startjson` fence and
    goes through the ADR-0040 pipeline. PlantUML has no client renderer, so the
    section is added only when `diagrams` is on and the render mode is `build`;
-   otherwise it is omitted (a raw fence would show as code). ADR-0040 is
+   with client-mode diagrams it is omitted (a raw fence would show as code). ADR-0040 is
    unchanged: no client-mode PlantUML, no timeout change.
 5. **Properties.** Name, type, required, description, rendered from the schema.
    Each `$ref`'d object type gets a `###` sub-section, and a property links to
    it. A type met twice, including a cycle, is rendered once and linked.
+   Descriptions render as plain text, not Markdown: a schema author's `*` or
+   backticks appear literally.
 6. **Formats.** `.json` uses `JSON.parse`. `.yaml` and `.yml` use `yaml` (v2)
    with the core schema and no merge keys; a multi-document file is refused.
    `yaml` is an exact-pinned direct dependency.
@@ -67,7 +69,11 @@ must stay authored.
 9. **Publishing.** At `astro:build:done` the file is copied byte for byte next
    to the page route, keeping its extension (`/reference/lane/` gets
    `/reference/lane.yaml`), so the `Source` link works. Pages withheld as drafts
-   publish nothing. The dev server serves the same path with
+   publish nothing. A localized copy of a page is its own page, so it publishes
+   its own copy of the schema under its own route. Publishing never overwrites:
+   the build stops with `[dk-schematic]` when the target already exists in the
+   output (a `public/` file, `/index.yaml`, `/api/*.json`, OpenAPI output) or when
+   two pages map to the same file. The dev server serves the same path with
    `X-Content-Type-Options: nosniff` and a MIME type by extension
    (`application/json`, `application/yaml`).
 10. **OKF.** The page exports as a concept whose `resource` is the published
@@ -83,7 +89,8 @@ must stay authored.
   nothing on a site with no Schematic page apart from a directory walk at the
   end of the build.
 - A `$ref` inside an `allOf`, `oneOf` or `anyOf` member is followed; other
-  keywords (`if`, `not`, `patternProperties`) are not rendered.
+  keywords (`if`, `not`) are not rendered. `additionalProperties` and
+  `patternProperties` schemas show as `map of <type>`.
 - No validation of instances against the schema. A validator is out of scope.
 
 ### Relation to the OpenAPI work (#244)
