@@ -290,13 +290,17 @@ export function buildModel(loaded) {
       const t = deref(sub, subFile);
       const own = isMap(sub) && typeof sub.description === 'string' ? sub.description : '';
       const target = 'schema' in t ? t.schema : {};
-      const inline = isMap(sub) && !sub.$ref && isMap(sub.properties);
+      // An inline object (or the one non-null inline alternative of an anyOf/oneOf) lists its own fields.
+      const inlineObject = (/** @type {any} */ n) => (isMap(n) && !n.$ref && isObject(n) ? n : undefined);
+      const alts = isMap(sub) ? ['anyOf', 'oneOf'].map((k) => sub[k]).find(Array.isArray) : undefined;
+      const present = alts?.filter((/** @type {any} */ a) => !(isMap(a) && a.type === 'null'));
+      const inline = inlineObject(sub) ?? (present?.length === 1 ? inlineObject(present[0]) : undefined);
       return {
         name,
         required: required.has(name),
         type: typeOf(sub, subFile),
         description: own || (typeof target.description === 'string' ? target.description : ''),
-        children: inline ? propertiesOf(sub, subFile) : [],
+        children: inline ? propertiesOf(inline, subFile) : [],
       };
     });
   };

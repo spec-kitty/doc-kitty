@@ -38,6 +38,8 @@ beforeAll(() => {
       billing: { $ref: './address.schema.yaml#/$defs/Country' },
       docs: { $ref: 'https://example.com/other.schema.json' },
       labels: { type: 'object', additionalProperties: { $ref: './address.schema.yaml' } },
+      extra: { anyOf: [{ type: 'object', properties: { note: { type: 'string' } } }, { type: 'null' }] },
+      mixed: { allOf: [{ $ref: './address.schema.yaml' }, { properties: { vat: { type: 'string' } } }] },
       flags: { type: 'object', patternProperties: { '^x-': { type: 'boolean' } }, additionalProperties: false },
     },
   }));
@@ -149,6 +151,11 @@ describe('$ref resolution', () => {
     const out = render('order.md', page('schemas/order.schema.json'));
     expect(out).toContain('- `labels` (map of [address](#address))');
     expect(out).toContain('- `flags` (map of boolean)');
+  });
+  it('lists the fields of an inline object alternative and of an inline allOf', () => {
+    const out = render('order.md', page('schemas/order.schema.json'));
+    expect(out).toContain('- `extra` (object | null)\n  - `note` (string)');
+    expect(out).toMatch(/- `mixed` \(object\).*\n  - `street` \(string\)\n  - `country`.*\n  - `vat` \(string\)/);
   });
   it('renders a cycle as a link, once, instead of recursing', () => {
     const out = render('tree.md', page('schemas/tree.schema.json'));
