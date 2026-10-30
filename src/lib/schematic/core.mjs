@@ -275,6 +275,10 @@ export function buildModel(loaded) {
     if ('const' in sch) return [`const: ${JSON.stringify(sch.const)}`];
     const alts = ['oneOf', 'anyOf'].map((k) => sch[k]).find(Array.isArray);
     if (alts) return alts.flatMap((/** @type {any} */ a, /** @type {number} */ i) => [...(i ? [' | '] : []), ...typeOf(a, t.file)]);
+    if (!isMap(sch.properties)) {
+      const values = isMap(sch.additionalProperties) ? sch.additionalProperties : isMap(sch.patternProperties) ? Object.values(sch.patternProperties).find(isMap) : undefined;
+      if (values) return ['map of ', ...typeOf(values, t.file)];
+    }
     const kind = Array.isArray(sch.type) ? sch.type.join(' | ') : typeof sch.type === 'string' ? sch.type : isObject(sch) ? 'object' : 'any';
     return kind === 'array' && isMap(sch.items) ? ['array of ', ...typeOf(sch.items, t.file)] : [kind];
   };
