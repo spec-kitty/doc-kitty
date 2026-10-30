@@ -51,7 +51,7 @@ kind: Hub
 | [0037](./0037-base-aware-link-fail-closed-gate.md) | ADR-0037: Base-aware internal links and a fail-closed, built-output link gate | Accepted | 2026-09-04 |
 | [0038](./0038-decks-markua-capable.md) | ADR-0038: Decks are Markua-capable | Accepted | 2026-09-06 |
 | [0039](./0039-glossary-link-node-aria-label.md) | ADR-0039: One shared glossary link-node builder + aria-label term affordance | Accepted | 2026-09-06 |
-| [0040](./0040-build-time-diagram-render-dual-mode.md) | ADR-0040: Build-time diagram render (Mermaid + PlantUML), dual-mode | Accepted | 2026-10-28 |
+| [0040](./0040-build-time-diagram-render-dual-mode.md) | ADR-0040: Build-time diagram render (Mermaid + PlantUML), dual-mode | Accepted | 2026-10-30 |
 | [0041](./0041-markua-footnotes.md) | ADR-0041: Markua footnotes via remark-gfm identifier normalisation | Accepted | 2026-09-08 |
 | [0042](./0042-native-documentation-charter.md) | ADR-0042: A native documentation charter — borrow the shape, not the engine | Accepted | 2026-09-14 |
 | [0043](./0043-toolkit-package-scope-and-self-reference.md) | ADR-0043: DocKitty ships under the @spec-kitty scope; NFR-001 forbids runtime coupling, not self-reference | Accepted | 2026-09-28 |
@@ -78,6 +78,6 @@ kind: Hub
 | [0064](./0064-default-frame-cap.md) | ADR-0064: The page frame is capped at 120rem by default | Accepted | 2026-10-19 |
 | [0065](./0065-kind-required-again.md) | ADR-0065: `kind` is required on every page again | Accepted | 2026-10-25 |
 | [0066](./0066-sidebar-tint-bleeds-past-the-frame.md) | ADR-0066: The sidebar tint bleeds out to the viewport edge | Accepted | 2026-10-25 |
-| [0067](./0067-json-schema-pages-from-json.md) | ADR-0067: JSON Schema pages compile from JSON files | Accepted | 2026-10-28 |
+| [0067](./0067-schematic-pages-reference-a-schema.md) | ADR-0067: Schematic pages reference a schema file | Accepted | 2026-10-30 |
 
 New ADRs copy [`template.md`](./template.md).

@@ -2,7 +2,7 @@
 title: "ADR-0040: Build-time diagram render (Mermaid + PlantUML), dual-mode"
 description: Pre-render Mermaid and PlantUML to static, themed, accessible SVG at build, with a client-render fallback and a CSS-variable theming rewrite.
 doc_status: active
-updated: 2026-09-07T00:00:00Z
+updated: 2026-10-30T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -79,6 +79,9 @@ invariant (browser-free HTML, a Mermaid runtime chunk that ships).
 - Build mode needs a headless browser (Mermaid) and a PlantUML server; CI/deploy
   gained that infra. Adopters without them get the client fallback (Mermaid) and
   a plain code fence (PlantUML, which is build-only).
+- Amended by [ADR-0067](./0067-schematic-pages-reference-a-schema.md): a `kind: Schematic`
+  page adds a ```plantuml `@startjson` fence only when `diagrams` is on and the
+  mode is `build`. Client mode still has no PlantUML renderer and is unchanged.
 - Three pinned render dependencies were added.
 
 ### Risks
