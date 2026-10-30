@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import schematic from '../lib/remark/schematic.js';
-import { SCHEMATIC_MIME, loadSchematic, schematicPublishedPath } from '../lib/schematic/core.mjs';
+import { loadSchematic, schematicHref } from '../lib/schematic/core.mjs';
 import { schematicIntegration } from '../lib/integrations/schematic.js';
 
 const FIXTURES = path.join(import.meta.dirname, 'fixtures', 'schematic');
@@ -229,9 +229,8 @@ describe('a page that is not kind: Schematic', () => {
 
 describe('publishing', () => {
   it('maps a page route to a file next to it, keeping the extension', () => {
-    expect(schematicPublishedPath('/reference/events/answered/', '.json')).toBe('/reference/events/answered.json');
-    expect(schematicPublishedPath('/', '.YAML')).toBe('/index.yaml');
-    expect(SCHEMATIC_MIME['.yml']).toBe('application/yaml');
+    expect(schematicHref('/reference/events/answered/', 'schemas/a.schema.json')).toBe('/reference/events/answered.json');
+    expect(schematicHref('/', 'schemas/A.YAML')).toBe('/index.yaml');
   });
   it('build:done copies the schema file byte for byte', () => {
     mkdirSync(path.join(docs, 'reference'), { recursive: true });

@@ -27,16 +27,18 @@ export const SCHEMATIC_MIME = Object.freeze({
 export const GENERATED_HEADINGS = Object.freeze(['Diagram', 'Properties', 'Source']);
 
 /**
- * Where the referenced file is published: next to the page route, keeping its extension.
- * `/reference/events/lane/` -> `/reference/events/lane.yaml`.
+ * Where the referenced file is published: next to the page route, keeping the extension
+ * of the declared `schematic_path`. The one place this is computed (page link, build
+ * publisher and OKF `resource` all call it).
+ * `/reference/events/lane/` + `schemas/lane.yaml` -> `/reference/events/lane.yaml`.
  *
  * @param {string} route the page route, without base
- * @param {string} ext `.json`, `.yaml` or `.yml`
+ * @param {string} schematicPath the page's `schematic_path`
  * @returns {string}
  */
-export function schematicPublishedPath(route, ext) {
+export function schematicHref(route, schematicPath) {
   const stem = route.replace(/\/+$/, '');
-  return `${stem === '' ? '/index' : stem}${ext.toLowerCase()}`;
+  return `${stem === '' ? '/index' : stem}${path.extname(schematicPath.trim()).toLowerCase()}`;
 }
 
 /**
@@ -119,8 +121,6 @@ const isSchemaDocument = (/** @type {any} */ d) =>
  * @typedef {object} Loaded
  * @property {string} abs absolute path of the schema file
  * @property {string} rel project-relative POSIX path (the `Source` text)
- * @property {string} ext
- * @property {string} text the file's bytes as text
  * @property {any} doc
  * @property {Ctx} ctx
  */
@@ -148,8 +148,6 @@ export function loadSchematic(page, schematicPath, root) {
   return {
     abs,
     rel: path.relative(realpathSync(root), abs).split(path.sep).join('/'),
-    ext: path.extname(abs).toLowerCase(),
-    text: readFileSync(abs, 'utf8'),
     doc,
     ctx,
   };

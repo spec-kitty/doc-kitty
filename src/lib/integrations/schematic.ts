@@ -15,7 +15,7 @@ import { walkMarkdownPaths } from '../docs-walk.mjs';
 import { publishDraftsInForce, unpublishedDraftPaths } from '../draft-publication.mjs';
 import { readmeToIndexId, routeOfSlug } from '../vocabulary-core.mjs';
 import schematic from '../remark/schematic.js';
-import { SCHEMATIC_KIND, SCHEMATIC_MIME, loadSchematic, schematicPublishedPath } from '../schematic/core.mjs';
+import { SCHEMATIC_KIND, SCHEMATIC_MIME, loadSchematic, schematicHref } from '../schematic/core.mjs';
 import { normalizeBasePrefix } from './shared.js';
 
 interface Published {
@@ -38,7 +38,7 @@ function publishedSchemas(docsRoot: string, root: string, indexBasename?: IndexB
     if (data.kind !== SCHEMATIC_KIND) continue;
     const loaded = loadSchematic(rel, data.schematic_path, root);
     const route = routeOfSlug(readmeToIndexId(rel, { indexBasename }));
-    out.push({ href: schematicPublishedPath(route, loaded.ext), file: loaded.abs, page: rel });
+    out.push({ href: schematicHref(route, data.schematic_path), file: loaded.abs, page: rel });
   }
   return out;
 }
