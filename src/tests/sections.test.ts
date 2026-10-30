@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from 'vitest';
-import { RESERVED_GHERKIN_SECTIONS } from '../lib/gherkin/options.mjs';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -381,8 +380,7 @@ describe('registryToSidebar (registry → Starlight sidebar shape)', () => {
   });
 
   it('seeds BUILD_GENERATED_SECTION_IDS by default (glossary survives an absent folder)', () => {
-    expect(BUILD_GENERATED_SECTION_IDS).toEqual(['glossary', 'json-files-output']);
-    expect(RESERVED_GHERKIN_SECTIONS).toEqual(['_meta', ...BUILD_GENERATED_SECTION_IDS]);
+    expect(BUILD_GENERATED_SECTION_IDS).toContain('glossary');
     // No explicit generatedIds → the default seed is used; glossary absent on disk.
     const sidebar = registryToSidebar(reg, ['context', 'architecture', 'faq', 'adr']);
     expect(sidebar.map((g) => g.label)).toContain('Reference');

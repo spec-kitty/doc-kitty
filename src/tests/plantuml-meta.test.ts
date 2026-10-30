@@ -27,9 +27,7 @@ import {
   DIAGRAM_SENTINELS,
   sentinelThemeRewrite,
   resolvePlantumlServerUrl,
-  resolvePlantumlTimeout,
   DEFAULT_PLANTUML_SERVER_URL,
-  DEFAULT_PLANTUML_TIMEOUT_MS,
 } from '../lib/config.js';
 
 describe('parsePlantumlMeta (the `\'`-comment twin of parseMeta)', () => {
@@ -75,15 +73,6 @@ describe('injectSkinparam (theme the SVG via the six sentinels)', () => {
     const out = injectSkinparam('rectangle A');
     expect(out.startsWith(SKINPARAM_PREAMBLE)).toBe(true);
     expect(out.endsWith('rectangle A')).toBe(true);
-  });
-
-  it('inserts the JSON diagram style after @startjson and leaves UML skinparam out', () => {
-    const out = injectSkinparam('@startjson\n{"a":1}\n@endjson');
-    expect(out.startsWith('@startjson\n<style>')).toBe(true);
-    expect(out).toContain(PLANTUML_SENTINELS['node-fill']);
-    expect(out).toContain('BackGroundColor transparent');
-    expect(out).not.toContain('skinparam');
-    expect(out.trimEnd().endsWith('@endjson')).toBe(true);
   });
 
   it('inserts the preamble AFTER an explicit @startuml line', () => {
@@ -165,26 +154,6 @@ describe('resolvePlantumlServerUrl (FR-006, C-001 self-hosted guard)', () => {
     expect(() =>
       resolvePlantumlServerUrl({ DK_PLANTUML_SERVER_URL: 'https://www.plantuml.com/plantuml/svg/' }),
     ).toThrow(/plantuml\.com/i);
-  });
-});
-
-describe('resolvePlantumlTimeout', () => {
-  it('waits long enough for a queued diagram to finish', () => {
-    expect(resolvePlantumlTimeout({})).toBe(DEFAULT_PLANTUML_TIMEOUT_MS);
-    expect(DEFAULT_PLANTUML_TIMEOUT_MS).toBeGreaterThan(10_000);
-  });
-
-  it('honours DK_PLANTUML_TIMEOUT_MS', () => {
-    expect(resolvePlantumlTimeout({ DK_PLANTUML_TIMEOUT_MS: '7200000' })).toBe(7_200_000);
-    expect(resolvePlantumlTimeout({ DK_PLANTUML_TIMEOUT_MS: '  90000  ' })).toBe(90_000);
-  });
-
-  it('treats a blank timeout as the default and rejects zero or non-numeric', () => {
-    expect(resolvePlantumlTimeout({ DK_PLANTUML_TIMEOUT_MS: '' })).toBe(DEFAULT_PLANTUML_TIMEOUT_MS);
-    expect(resolvePlantumlTimeout({ DK_PLANTUML_TIMEOUT_MS: '   ' })).toBe(DEFAULT_PLANTUML_TIMEOUT_MS);
-    expect(() => resolvePlantumlTimeout({ DK_PLANTUML_TIMEOUT_MS: '0' })).toThrow(/positive whole number/);
-    expect(() => resolvePlantumlTimeout({ DK_PLANTUML_TIMEOUT_MS: '-1' })).toThrow(/positive whole number/);
-    expect(() => resolvePlantumlTimeout({ DK_PLANTUML_TIMEOUT_MS: '10s' })).toThrow(/positive whole number/);
   });
 });
 

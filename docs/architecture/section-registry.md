@@ -2,7 +2,7 @@
 title: Section registry
 description: "The docs/_meta/sections.yaml schema: how sections are labelled, ordered, typed, and filtered into the generated surfaces."
 doc_status: draft
-updated: 2026-10-28T00:00:00Z
+updated: 2026-08-28T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -112,8 +112,6 @@ A page's expected `type` is derived in two steps, most specific last:
    | `plans/epics/*` | `Epic` |
    | `plans/features/*` | `Feature` |
    | `operations/runbooks/*` | `Runbook` |
-   | `json-files-output/content/*` | `JSON Content` |
-   | other `json-files-output/*` | `JSON Schema` |
 
    Everything else — including a plain `adr/*` record — takes its section default.
 

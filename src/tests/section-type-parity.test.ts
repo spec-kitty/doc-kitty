@@ -80,9 +80,6 @@ describe('section-type derivation — single-sourced core (metadata.ts ⇔ gate 
     ['migrations/v2.md', 'Migration'],
     ['changelog/2026-08-28-x.md', 'Changelog'],
     ['presentations/deck.md', 'Presentation'],
-    ['json-files-output/index.md', 'JSON Schema'],
-    ['json-files-output/contract/widget.md', 'JSON Schema'],
-    ['json-files-output/content/widget/loan.md', 'JSON Content'],
     ['unregistered-section/page.md', null], // no default → null
     ['glossary/shipping/index.md', null], // registry-only section, no frozen default → null
   ];

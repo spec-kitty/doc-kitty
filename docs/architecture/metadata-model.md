@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-10-28T00:00:00Z
+updated: 2026-10-25T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -84,9 +84,7 @@ declares its kind rather than being exempt:
 - Content quadrants: `Tutorial`, `How-To`, `Reference`, `Explanation`.
 - Structural kinds: `Hub` (a section index or list page: minimal prose, many
   links), `ADR`, `Changelog`, `Glossary`, `Presentation`, `Persona` (an audience
-  description), `Schematic` (a generated JSON Schema or JSON Content artifact,
-  see [ADR-0067](../adr/0067-json-schema-pages-from-json.md)), the planning kinds
-  `Planning`, `Feature`, and `User-Journey`
+  description), the planning kinds `Planning`, `Feature`, and `User-Journey`
   (see [ADR-0010](../adr/0010-planning-kinds-and-moscow.md)), and `Specification`
   (a page generated from a Gherkin `.feature` file, see
   [ADR-0046](../adr/0046-gherkin-feature-pages.md)).
@@ -283,11 +281,8 @@ feeds), so section identity, labels, and ordering are data, not code
 `type` names the kind of page and maps to its section (for example
 `architecture/*` is `Architecture`). The canonical set is the Common Docs `type`
 values (one per section, plus the ADR `Template` and the `plans/` and
-`operations/` sub-kinds) plus `Presentation`, `Specification` (the opt-in
-Gherkin section, [ADR-0046](../adr/0046-gherkin-feature-pages.md)), `JSON Schema`,
-and `JSON Content`. A page under `json-files-output/content/` is `JSON Content`;
-every other `json-files-output/` page is `JSON Schema`
-([ADR-0067](../adr/0067-json-schema-pages-from-json.md)). The value set is open: the validator
+`operations/` sub-kinds) plus `Presentation` and `Specification` (the opt-in
+Gherkin section, [ADR-0046](../adr/0046-gherkin-feature-pages.md)). The value set is open: the validator
 checks the canonical set strictly and warns on an unknown value rather than
 failing, so a project's own sections degrade gracefully.
 

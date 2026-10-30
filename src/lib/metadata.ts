@@ -179,7 +179,6 @@ export const SECTION_ORDER = [
   'migrations',
   'changelog',
   'presentations',
-  'json-files-output',
 ] as const;
 
 export const SECTION_LABEL: Record<string, string> = {
@@ -197,7 +196,6 @@ export const SECTION_LABEL: Record<string, string> = {
   migrations: 'Migrations',
   changelog: 'Changelog',
   presentations: 'Presentations',
-  'json-files-output': 'JSON files',
 };
 
 // `SECTION_TYPE` (the frozen fallback `section → type` map) and `expectedDocType`

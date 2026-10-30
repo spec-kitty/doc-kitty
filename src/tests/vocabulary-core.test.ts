@@ -39,7 +39,7 @@ describe('vocabulary sets (single-sourced enums)', () => {
     expect(STATUSES).toEqual(['draft', 'active', 'deprecated', 'superseded', 'durable']);
   });
 
-  it('DOC_TYPES is the 20-item type vocabulary in canonical order', () => {
+  it('DOC_TYPES is the 18-item OKF type vocabulary in canonical order', () => {
     expect(DOC_TYPES).toEqual([
       'Context',
       'Architecture',
@@ -59,13 +59,11 @@ describe('vocabulary sets (single-sourced enums)', () => {
       'Changelog',
       'Presentation',
       'Specification', // appended (ADR-0046)
-      'JSON Schema',
-      'JSON Content',
     ]);
-    expect(DOC_TYPES).toHaveLength(20);
+    expect(DOC_TYPES).toHaveLength(18);
   });
 
-  it('KINDS is the 15-item kind vocabulary in canonical order', () => {
+  it('KINDS is the 14-item kind vocabulary in canonical order', () => {
     expect(KINDS).toEqual([
       'Tutorial',
       'How-To',
@@ -81,9 +79,8 @@ describe('vocabulary sets (single-sourced enums)', () => {
       'Feature',
       'User-Journey',
       'Specification', // appended (ADR-0046)
-      'Schematic',
     ]);
-    expect(KINDS).toHaveLength(15);
+    expect(KINDS).toHaveLength(14);
   });
 
   it('SECTION_TYPE is the frozen section→type fallback map', () => {
@@ -101,7 +98,6 @@ describe('vocabulary sets (single-sourced enums)', () => {
       migrations: 'Migration',
       changelog: 'Changelog',
       presentations: 'Presentation',
-      'json-files-output': 'JSON Schema',
     });
     expect(Object.isFrozen(SECTION_TYPE)).toBe(true);
   });

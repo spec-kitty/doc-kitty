@@ -2,7 +2,7 @@
 title: Diagrams
 description: "How the diagrams surface fits together: the metadata transform, the single client render owner and its token map, the opt-in seam, and the two shells."
 doc_status: active
-updated: 2026-10-28T00:00:00Z
+updated: 2026-09-07T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
@@ -142,9 +142,6 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
 - **Engines.** Mermaid renders via `@beoe/rehype-mermaid` (Playwright/Chromium);
   PlantUML via `astro-plantuml` against a **self-hosted** server — never
   `plantuml.com` (the resolver throws on any such URL). Both exact-pinned.
-  Each PlantUML request waits up to 1 minute, including queue time, so a
-  diagram the server does render is not reported as a failure.
-  `DK_PLANTUML_TIMEOUT_MS` raises that ceiling for a larger set.
 - **Theme without JavaScript.** Each engine is handed the six `--dk-diagram-*`
   colours as distinct sentinels (Mermaid `themeVariables`, PlantUML `skinparam`);
   a rehype pass rewrites every sentinel in the SVG to `var(--dk-diagram-*)`, so a
@@ -156,15 +153,4 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
 - **CI + deploy** build-render both engines (Chromium in the build composite; a
   self-hosted PlantUML `services:` container) with a disk cache so an unchanged
   diagram never relaunches the engines. PlantUML has no client renderer, so in
-  client mode a ```plantuml block is a plain code fence. JSON Schema pages are
-  the exception ([ADR-0067](../adr/0067-json-schema-pages-from-json.md)):
-  setting `jsonSchema` renders those fences in client mode as well, unless
-  `diagrams` is `false`, in which case the generator does not emit them.
-  `jsonSchema.graph` is `json` (an `@startjson` tree; the default) or `uml`
-  (a class-diagram box). A string longer than 48 characters wraps in that
-  drawing. The drawing stays at the size PlantUML then drew. A drawing that is
-  still wider than the column scrolls horizontally. Selecting it opens the same
-  drawing centered across the window. The OKF export of that page is
-  `type: Schematic` and stores the JSON file. The body keeps Extra Information
-  and links to other concepts, and omits the diagram, the raw JSON block, and
-  the lists that repeat the file.
+  client mode a ```plantuml block is a plain code fence.
