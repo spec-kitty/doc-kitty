@@ -16,6 +16,9 @@ import { parseAllDocuments } from 'yaml';
 
 export const SCHEMATIC_KIND = 'Schematic';
 
+/** How many `$ref` / `allOf` hops are followed before a chain is called a loop. */
+const MAX_DEPTH = 32;
+
 /** Accepted extensions and the MIME type each is published with. */
 export const SCHEMATIC_MIME = Object.freeze({
   '.json': 'application/json',
@@ -213,13 +216,15 @@ export function buildModel(loaded) {
   const defs = new Map();
   /** @type {Array<Def & { target: Target }>} */
   const queue = [];
+  /** Heading text already taken by a def. */
+  const labels = new Set();
 
   /** Follow a `$ref` chain to a concrete schema (a loop of bare refs is an error). */
   const deref = (/** @type {any} */ s, /** @type {string} */ file) => {
     /** @type {Target | External | null} */
     let hit = null;
     for (let hops = 0; isMap(s) && typeof s.$ref === 'string'; hops++) {
-      if (hops > 32) fail(ctx, s.$ref, 'is a $ref loop');
+      if (hops > MAX_DEPTH) fail(ctx, s.$ref, 'is a $ref loop');
       hit = resolveRef(ctx, s.$ref, file);
       if ('external' in hit) return hit;
       ({ schema: s, file } = hit);
@@ -234,7 +239,7 @@ export function buildModel(loaded) {
     /** @type {Array<[string, any, string]>} */
     const out = [];
     const required = new Set(Array.isArray(s.required) ? s.required : []);
-    for (const part of depth < 8 && Array.isArray(s.allOf) ? s.allOf : []) {
+    for (const part of depth < MAX_DEPTH && Array.isArray(s.allOf) ? s.allOf : []) {
       const t = deref(part, file);
       if ('external' in t) continue;
       const inner = members(t.schema, t.file, depth + 1);
@@ -252,7 +257,8 @@ export function buildModel(loaded) {
       def = { label, anchor: '', description: typeof t.schema.description === 'string' ? t.schema.description : '', properties: [], target: t };
       // Unique heading text, so its anchor is the slug of exactly that text.
       let text = label;
-      for (let n = 2; [...defs.values()].some((d) => d.label === text) || GENERATED_HEADINGS.includes(text); n++) text = `${label} ${n}`;
+      for (let n = 2; labels.has(text) || GENERATED_HEADINGS.includes(text); n++) text = `${label} ${n}`;
+      labels.add(text);
       def.label = text;
       def.anchor = slugger.slug(text);
       defs.set(t.key, def);
