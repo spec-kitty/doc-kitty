@@ -178,14 +178,15 @@ export function resolveRef(ctx, ref, file) {
   let node = loadDoc(ctx, abs, filePart || ref);
   if (pointer !== '' && !pointer.startsWith('/')) fail(ctx, ref, 'is not a JSON pointer ($ref "#/…")');
   const segments = pointer === '' ? [] : pointer.slice(1).split('/');
+  const decode = (/** @type {string} */ raw) => decodeURIComponent(raw).replace(/~1/g, '/').replace(/~0/g, '~');
   for (const raw of segments) {
-    const seg = decodeURIComponent(raw).replace(/~1/g, '/').replace(/~0/g, '~');
+    const seg = decode(raw);
     if (!isMap(node) && !Array.isArray(node)) fail(ctx, ref, 'does not resolve');
     if (!Object.hasOwn(node, seg)) fail(ctx, ref, 'does not resolve');
     node = node[seg];
   }
   if (!isMap(node)) fail(ctx, ref, 'does not resolve to a schema');
-  const name = segments.at(-1)?.replace(/~1/g, '/') ?? path.basename(abs).replace(/\.(schema\.)?(json|ya?ml)$/i, '');
+  const name = (segments.length > 0 ? decode(segments.at(-1) ?? '') : '') || path.basename(abs).replace(/\.(schema\.)?(json|ya?ml)$/i, '');
   return { schema: node, file: abs, key: `${abs}#${pointer}`, name };
 }
 
