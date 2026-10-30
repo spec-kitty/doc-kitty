@@ -163,7 +163,7 @@ describe('$ref resolution', () => {
   it('lists the fields of an inline object alternative and of an inline allOf', () => {
     const out = render('order.md', page('schemas/order.schema.json'));
     expect(out).toContain('- `extra` (object | null)\n  - `note` (string)');
-    expect(out).toMatch(/- `mixed` \(object\).*\n  - `street` \(string\)\n  - `country`.*\n  - `vat` \(string\)/);
+    expect(out).toMatch(/- `mixed` \(object\).*\n {2}- `street` \(string\)\n {2}- `country`.*\n {2}- `vat` \(string\)/);
   });
   it('renders a cycle as a link, once, instead of recursing', () => {
     const out = render('tree.md', page('schemas/tree.schema.json'));
