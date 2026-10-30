@@ -125,7 +125,6 @@ Added deliberately via ADR (see the amendment log in
 | Section | `type` | Purpose |
 |---|---|---|
 | `presentations/` | `Presentation` | Markdown-authored reveal.js slide decks. |
-| `json-files-output/` | `JSON Schema` | Optional generated pages compiled from JSON. Not a required folder. The generator owns only the pages it stamps. See [ADR-0067](../adr/0067-json-schema-pages-from-json.md). |
 
 ### Section identity: index basename and renaming a section
 

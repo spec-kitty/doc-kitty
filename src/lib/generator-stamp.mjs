@@ -20,14 +20,11 @@ export const GHERKIN_PRODUCER = 'doc-kitty-gherkin';
 /** The producer id of the glossary codegen's stamp (`doc-kitty-glossary/<version>`). */
 export const GLOSSARY_PRODUCER = 'doc-kitty-glossary';
 
-/** The producer id of the JSON Schema page generator (`doc-kitty-json-schema/<version>`). */
-export const JSON_SCHEMA_PRODUCER = 'doc-kitty-json-schema';
-
 /**
  * The OWNERSHIP producers: they generate (and so own) the pages they stamp
  * (each stamps `<producer>/<version>`). Only these make a page "generated".
  */
-export const PRODUCERS = Object.freeze([GHERKIN_PRODUCER, GLOSSARY_PRODUCER, JSON_SCHEMA_PRODUCER]);
+export const PRODUCERS = Object.freeze([GHERKIN_PRODUCER, GLOSSARY_PRODUCER]);
 
 /**
  * The PROVENANCE-ONLY producer: the scaffold stamps the starting point of a page
@@ -103,7 +100,6 @@ export function retiredStampProblem(generated) {
 const REGENERATE_HINT = Object.freeze({
   [GHERKIN_PRODUCER]: 'run `dockitty-generate-feature-pages`',
   [GLOSSARY_PRODUCER]: 'run `astro build` or `astro dev`, which rewrites the glossary pages',
-  [JSON_SCHEMA_PRODUCER]: 'run `astro build` or `astro dev`, which rewrites the JSON Schema pages',
 });
 
 /**
@@ -125,7 +121,7 @@ function stampProducer(by) {
  */
 function regenerateHint(producer) {
   if (producer !== undefined) return REGENERATE_HINT[producer];
-  return `Gherkin pages: ${REGENERATE_HINT[GHERKIN_PRODUCER]}; glossary pages: ${REGENERATE_HINT[GLOSSARY_PRODUCER]}; JSON Schema pages: ${REGENERATE_HINT[JSON_SCHEMA_PRODUCER]}`;
+  return `Gherkin pages: ${REGENERATE_HINT[GHERKIN_PRODUCER]}; glossary pages: ${REGENERATE_HINT[GLOSSARY_PRODUCER]}`;
 }
 
 /**
