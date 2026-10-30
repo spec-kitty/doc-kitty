@@ -65,6 +65,12 @@ export function schematicIntegration(
                 configureServer(server) {
                   // Dev only: serve the file the way the build publishes it. Only paths
                   // computed from a Schematic page are served, so nothing else is reachable.
+                  // The page walk is memoized per server and dropped when a page changes.
+                  let routes: Published[] | null = null;
+                  const forget = (file: string) => {
+                    if (/\.mdx?$/i.test(file)) routes = null;
+                  };
+                  for (const event of ['add', 'change', 'unlink'] as const) server.watcher.on(event, forget);
                   server.middlewares.use(
                     (req, res, next) => {
                       const pathname = (req.url ?? '').split(/[?#]/)[0];
@@ -72,12 +78,15 @@ export function schematicIntegration(
                       if (!Object.hasOwn(SCHEMATIC_MIME, ext)) return next();
                       try {
                         const href = prefix && pathname.startsWith(prefix + '/') ? pathname.slice(prefix.length) : pathname;
-                        const hit = publishedSchemas(docsRoot, root, indexBasename).find((p) => p.href === href);
+                        routes ??= publishedSchemas(docsRoot, root, indexBasename);
+                        const hit = routes.find((p) => p.href === href);
                         if (!hit) return next();
                         res.setHeader('Content-Type', `${SCHEMATIC_MIME[ext as keyof typeof SCHEMATIC_MIME]}; charset=utf-8`);
                         res.setHeader('X-Content-Type-Options', 'nosniff');
                         res.end(readFileSync(hit.file));
-                      } catch {
+                      } catch (error) {
+                        routes = null;
+                        server.config.logger.error(error instanceof Error ? error.message : String(error));
                         next();
                       }
                     },
