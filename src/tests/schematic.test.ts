@@ -37,6 +37,8 @@ beforeAll(() => {
       ship_to: { $ref: './address.schema.yaml' },
       billing: { $ref: './address.schema.yaml#/$defs/Country' },
       docs: { $ref: 'https://example.com/other.schema.json' },
+      labels: { type: 'object', additionalProperties: { $ref: './address.schema.yaml' } },
+      flags: { type: 'object', patternProperties: { '^x-': { type: 'boolean' } }, additionalProperties: false },
     },
   }));
   put('schemas/address.schema.yaml', 'type: object\ndescription: A postal address.\nproperties:\n  street: {type: string}\n  country: {$ref: "#/$defs/Country"}\n$defs:\n  Country: {type: string, enum: [BE, NL]}\n');
@@ -142,6 +144,11 @@ describe('$ref resolution', () => {
     expect(out).toContain('- `billing` (enum: BE, NL)');
     expect(out).toContain('- `docs` ([https://example.com/other.schema.json](https://example.com/other.schema.json))');
     expect(out).toContain('- `country` (enum: BE, NL)');
+  });
+  it('renders a dictionary-shaped property as a map of its value type', () => {
+    const out = render('order.md', page('schemas/order.schema.json'));
+    expect(out).toContain('- `labels` (map of [address](#address))');
+    expect(out).toContain('- `flags` (map of boolean)');
   });
   it('renders a cycle as a link, once, instead of recursing', () => {
     const out = render('tree.md', page('schemas/tree.schema.json'));
