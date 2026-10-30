@@ -219,4 +219,28 @@ describe('publishing', () => {
     expect(readFileSync(path.join(dist, 'reference/tactic.yaml'))).toEqual(readFileSync(path.join(FIXTURES, 'schemas/tactic.schema.yaml')));
     expect(existsSync(path.join(dist, 'reference/plain.yaml'))).toBe(false);
   });
+  it('build:done refuses to overwrite an existing output file, or to publish one href twice', () => {
+    const dist = path.join(root, 'dist-clash');
+    mkdirSync(path.join(dist, 'reference'), { recursive: true });
+    writeFileSync(path.join(dist, 'reference/tactic.yaml'), 'site-owned\n');
+    const run = () => {
+      const cwd = process.cwd();
+      process.chdir(root);
+      try {
+        (schematicIntegration('docs', undefined, false, '/').hooks['astro:build:done'] as (a: unknown) => void)({ dir: new URL(`file://${dist}/`) });
+      } finally {
+        process.chdir(cwd);
+      }
+    };
+    expect(run).toThrow(/\[dk-schematic\] reference\/tactic\.md: cannot publish \/reference\/tactic\.yaml, .*already exists/);
+    expect(readFileSync(path.join(dist, 'reference/tactic.yaml'), 'utf8')).toBe('site-owned\n');
+    rmSync(path.join(dist, 'reference/tactic.yaml'));
+    mkdirSync(path.join(docs, 'reference/tactic'), { recursive: true });
+    writeFileSync(path.join(docs, 'reference/tactic/index.md'), '---\nkind: Schematic\nschematic_path: schemas/tactic.schema.yaml\n---\nBody\n');
+    try {
+      expect(run).toThrow(/already publishes it/);
+    } finally {
+      rmSync(path.join(docs, 'reference/tactic'), { recursive: true });
+    }
+  });
 });

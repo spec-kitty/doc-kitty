@@ -4,7 +4,7 @@
  * `Source` link works. Always on, but a site with no Schematic page pays only a
  * directory walk at the end of the build.
  */
-import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +23,8 @@ interface Published {
   href: string;
   /** Absolute path of the schema file. */
   file: string;
+  /** Docs-relative path of the page, for error messages. */
+  page: string;
 }
 
 /** The schema file of every published Schematic page. A bad reference throws `[dk-schematic]`. */
@@ -36,7 +38,7 @@ function publishedSchemas(docsRoot: string, root: string, indexBasename?: IndexB
     if (data.kind !== SCHEMATIC_KIND) continue;
     const loaded = loadSchematic(rel, data.schematic_path, root);
     const route = routeOfSlug(readmeToIndexId(rel, { indexBasename }));
-    out.push({ href: schematicPublishedPath(route, loaded.ext), file: loaded.abs });
+    out.push({ href: schematicPublishedPath(route, loaded.ext), file: loaded.abs, page: rel });
   }
   return out;
 }
@@ -88,8 +90,15 @@ export function schematicIntegration(
       },
       'astro:build:done': ({ dir }) => {
         const dist = fileURLToPath(dir);
-        for (const { href, file } of publishedSchemas(docsRoot, root, indexBasename)) {
+        const written = new Map<string, string>();
+        for (const { href, file, page } of publishedSchemas(docsRoot, root, indexBasename)) {
           const target = path.join(dist, ...href.split('/'));
+          // Never overwrite: the output already holds the site's own files (public/,
+          // /api/*.json, /index.yaml, OpenAPI output) and an earlier Schematic page.
+          const clash = written.get(href);
+          if (clash) throw new Error(`[dk-schematic] ${page}: cannot publish ${href}, ${clash} already publishes it`);
+          if (existsSync(target)) throw new Error(`[dk-schematic] ${page}: cannot publish ${href}, ${target} already exists in the build output`);
+          written.set(href, page);
           mkdirSync(path.dirname(target), { recursive: true });
           copyFileSync(file, target);
         }
