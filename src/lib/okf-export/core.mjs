@@ -25,6 +25,7 @@ import {
 } from '../vocabulary-core.mjs';
 import { idIndex, rewriteBodyLinks, routeIndex } from './links.mjs';
 import { okfGenerated } from '../generator-stamp.mjs';
+import { SCHEMATIC_KIND, schematicPublishedPath } from '../schematic/core.mjs';
 
 /** `generated.by` of a page that has neither a stamp nor an author (FR-025). */
 export const EXPORT_PROCESS_ACTOR = 'process:dockitty-export';
@@ -206,9 +207,10 @@ const typeOf = (node) => node.type || SECTION_TYPE[node.section] || 'Concept';
 /**
  * @param {Record<string, any>} node
  * @param {Array<Record<string, string>>} extraSources sources the body cannot link (catalog entries without a URL)
+ * @param {string | undefined} resource the concept's `resource`
  * @returns {Record<string, unknown>} frontmatter in its fixed key order
  */
-function conceptFrontmatter(node, extraSources) {
+function conceptFrontmatter(node, extraSources, resource) {
   const { generated, authors } = generatedFor(node);
   const sources = [...(node.sources ?? []), ...extraSources];
   return {
@@ -219,7 +221,7 @@ function conceptFrontmatter(node, extraSources) {
     generated,
     authors: authors.length > 0 ? authors : undefined,
     tags: node.tags,
-    resource: node.resource,
+    resource,
     verified: node.verified,
     stale_after: node.stale_after,
     sources: sources.length > 0 ? sources : undefined,
@@ -312,6 +314,22 @@ function sourceOf(sourceFiles, id) {
 }
 
 /**
+ * A `kind: Schematic` page's `resource` is the published schema file (ADR-0067), on the
+ * site (`siteUrl` + base) when the origin is known, else a base-prefixed path. Any other
+ * page keeps the `resource` it declares.
+ *
+ * @param {Record<string, any>} node
+ * @param {Record<string, any>} data the page's frontmatter
+ * @param {Omit<import('./links.mjs').LinkContext, 'pageHref' | 'pageId'>} links
+ * @returns {string | undefined}
+ */
+function resourceOf(node, data, links) {
+  if (node.doc_kind !== SCHEMATIC_KIND || typeof data.schematic_path !== 'string') return node.resource;
+  const ext = /\.[^./]+$/.exec(data.schematic_path)?.[0] ?? '';
+  return `${links.siteUrl || links.base}${schematicPublishedPath(node.href ?? '/', ext)}`;
+}
+
+/**
  * @param {Record<string, any>} node
  * @param {string} source raw source text ('' when absent)
  * @param {Array<{target: string, rel: string, note?: string}>} edges
@@ -321,11 +339,12 @@ function sourceOf(sourceFiles, id) {
  * @returns {string}
  */
 function conceptDocument(node, source, edges, nodes, indexNames, links) {
-  const raw = matter(source).content.replace(/^\s*\n/, '').trimEnd();
+  const parsed = matter(source);
+  const raw = parsed.content.replace(/^\s*\n/, '').trimEnd();
   const body = rewriteBodyLinks(raw, { ...links, pageHref: node.href ?? '/', pageId: node.id });
   const { markdown, extraSources } = relationSections(edges, nodes, indexNames);
   const parts = [body, markdown.trimEnd()].filter((p) => p !== '');
-  return `${fence(toYaml(conceptFrontmatter(node, extraSources)))}\n${parts.join('\n\n')}\n`;
+  return `${fence(toYaml(conceptFrontmatter(node, extraSources, resourceOf(node, parsed.data, links))))}\n${parts.join('\n\n')}\n`;
 }
 
 /**
