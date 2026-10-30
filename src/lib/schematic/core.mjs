@@ -271,7 +271,8 @@ export function buildModel(loaded) {
       const def = register(t);
       return [{ def: def.anchor, label: def.label }];
     }
-    if (Array.isArray(sch.enum)) return [`enum: ${sch.enum.map(String).join(', ')}`];
+    // Bare words stay bare; everything else (numbers, null, objects, text with commas) is JSON.
+    if (Array.isArray(sch.enum)) return [`enum: ${sch.enum.map((/** @type {unknown} */ v) => (typeof v === 'string' && /^[A-Za-z_][\w.-]*$/.test(v) ? v : JSON.stringify(v))).join(', ')}`];
     if ('const' in sch) return [`const: ${JSON.stringify(sch.const)}`];
     const alts = ['oneOf', 'anyOf'].map((k) => sch[k]).find(Array.isArray);
     if (alts) return alts.flatMap((/** @type {any} */ a, /** @type {number} */ i) => [...(i ? [' | '] : []), ...typeOf(a, t.file)]);
