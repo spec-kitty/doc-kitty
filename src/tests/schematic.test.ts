@@ -33,6 +33,7 @@ beforeAll(() => {
   put('schemas/order.schema.json', JSON.stringify({
     type: 'object',
     required: ['ship_to'],
+    $defs: { 'a/b~c': { type: 'object', properties: { n: { type: 'string' } } } },
     properties: {
       ship_to: { $ref: './address.schema.yaml' },
       billing: { $ref: './address.schema.yaml#/$defs/Country' },
@@ -41,6 +42,7 @@ beforeAll(() => {
       extra: { anyOf: [{ type: 'object', properties: { note: { type: 'string' } } }, { type: 'null' }] },
       mixed: { allOf: [{ $ref: './address.schema.yaml' }, { properties: { vat: { type: 'string' } } }] },
       mode: { enum: ['fast', 'a, b', 1, null, { k: 1 }] },
+      odd: { $ref: '#/$defs/a~1b~0c' },
       flags: { type: 'object', patternProperties: { '^x-': { type: 'boolean' } }, additionalProperties: false },
     },
   }));
@@ -152,6 +154,8 @@ describe('$ref resolution', () => {
     const out = render('order.md', page('schemas/order.schema.json'));
     expect(out).toContain('- `labels` (map of [address](#address))');
     expect(out).toContain('- `flags` (map of boolean)');
+    expect(out).toContain('- `odd` ([a/b~c](#abc))');
+    expect(out).toContain('### a/b~c');
     expect(out).toContain('- `mode` (enum: fast, "a, b", 1, null, {"k":1})');
   });
   it('lists the fields of an inline object alternative and of an inline allOf', () => {
