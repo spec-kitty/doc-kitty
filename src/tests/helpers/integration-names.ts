@@ -13,6 +13,8 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:markdown-processor',
   // Always on (#145, B11): `compressHTML: true`, operator decision 2026-10-18.
   'doc-kitty:compress-html',
+  // Always on (ADR-0067): before diagrams, so the fence it adds reaches the diagram plugins.
+  'doc-kitty:schematic',
   'doc-kitty:diagrams',
   'doc-kitty:remark-directive',
   'doc-kitty:markua',

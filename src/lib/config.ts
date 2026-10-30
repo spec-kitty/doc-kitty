@@ -43,7 +43,8 @@ import {
 } from './integrations/gherkin.js';
 import { glossaryIntegration } from './integrations/glossary.js';
 import { markuaIntegration } from './integrations/markua.js';
-import { diagramsIntegration } from './integrations/diagrams.js';
+import { diagramsIntegration, resolveDiagramMode } from './integrations/diagrams.js';
+import { schematicIntegration } from './integrations/schematic.js';
 import { compressHtmlIntegration } from './integrations/compress-html.js';
 import {
   deckSplitIntegration,
@@ -646,6 +647,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // HTML whitespace parity (#145, B11): `compressHTML: true`, operator
     // decision 2026-10-18. Registers no plugin, so no order pin moves.
     compressHtmlIntegration,
+    // Always-on `kind: Schematic` seam (ADR-0067). BEFORE the diagrams seam: its remark
+    // plugin adds the ```plantuml fence that the diagram plugins then render. The
+    // fence is added only when build-mode diagrams will render it (PlantUML has no
+    // client renderer). A page without `kind: Schematic` is untouched.
+    schematicIntegration(docsDir, indexBasename, diagrams === true && resolveDiagramMode() === 'build', base),
     // Opt-in diagrams seam (FR-001): PREPENDED before Starlight when
     // `diagrams: true`, so the diagram machinery sits ahead of `starlight()` in
     // the integrations array (ordering contract). Omitted entirely when off —

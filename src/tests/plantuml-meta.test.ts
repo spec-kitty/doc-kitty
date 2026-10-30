@@ -75,6 +75,14 @@ describe('injectSkinparam (theme the SVG via the six sentinels)', () => {
     expect(out.endsWith('rectangle A')).toBe(true);
   });
 
+  it('inserts the JSON diagram style after @startjson and leaves UML skinparam out', () => {
+    const out = injectSkinparam('@startjson\n{"a":1}\n@endjson');
+    expect(out.startsWith('@startjson\n<style>')).toBe(true);
+    expect(out).toContain(PLANTUML_SENTINELS['node-fill']);
+    expect(out).not.toContain('skinparam');
+    expect(out.trimEnd().endsWith('@endjson')).toBe(true);
+  });
+
   it('inserts the preamble AFTER an explicit @startuml line', () => {
     const out = injectSkinparam('@startuml\nrectangle A\n@enduml');
     // The whole (multi-line) preamble block sits between @startuml and the body.

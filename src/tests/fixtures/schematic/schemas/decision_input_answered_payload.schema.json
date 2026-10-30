@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "RuntimeActorIdentity": {
+      "additionalProperties": false,
+      "description": "Identity of a runtime actor (human, LLM, or service).",
+      "properties": {
+        "actor_id": {
+          "description": "Unique actor identifier",
+          "minLength": 1,
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "description": "Actor category",
+          "pattern": "^(human|llm|service)$",
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "display_name": {
+          "default": "",
+          "description": "Human-readable display name",
+          "title": "Display Name",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Model identifier (e.g., 'claude-opus-4-6')",
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Provider (e.g., 'anthropic', 'openai')",
+          "title": "Provider"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tool identifier",
+          "title": "Tool"
+        }
+      },
+      "required": [
+        "actor_id",
+        "actor_type"
+      ],
+      "title": "RuntimeActorIdentity",
+      "type": "object"
+    }
+  },
+  "$id": "spec-kitty-events/decision_input_answered_payload",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Payload for DecisionInputAnswered event.",
+  "properties": {
+    "actor": {
+      "$ref": "#/$defs/RuntimeActorIdentity",
+      "description": "Actor who answered the decision"
+    },
+    "answer": {
+      "description": "The answer provided",
+      "minLength": 1,
+      "title": "Answer",
+      "type": "string"
+    },
+    "decision_id": {
+      "description": "Decision being answered",
+      "minLength": 1,
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "mission_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Canonical machine-facing mission identity (ULID) the run belongs to",
+      "title": "Mission Id"
+    },
+    "mission_slug": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Canonical mission slug (display; mission_id is the identity)",
+      "title": "Mission Slug"
+    },
+    "run_id": {
+      "description": "Run identifier",
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "decision_id",
+    "answer",
+    "actor"
+  ],
+  "title": "DecisionInputAnsweredPayload",
+  "type": "object"
+}

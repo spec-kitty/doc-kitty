@@ -63,7 +63,7 @@ describe('vocabulary sets (single-sourced enums)', () => {
     expect(DOC_TYPES).toHaveLength(18);
   });
 
-  it('KINDS is the 14-item kind vocabulary in canonical order', () => {
+  it('KINDS is the 15-item kind vocabulary in canonical order', () => {
     expect(KINDS).toEqual([
       'Tutorial',
       'How-To',
@@ -79,8 +79,9 @@ describe('vocabulary sets (single-sourced enums)', () => {
       'Feature',
       'User-Journey',
       'Specification', // appended (ADR-0046)
+      'Schematic', // appended (ADR-0067)
     ]);
-    expect(KINDS).toHaveLength(14);
+    expect(KINDS).toHaveLength(15);
   });
 
   it('SECTION_TYPE is the frozen section→type fallback map', () => {

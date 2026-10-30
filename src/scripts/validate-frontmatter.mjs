@@ -230,6 +230,7 @@ export const frontmatterSchema = z
     // and additive: a page with neither validates exactly as before (NFR-002).
     glossary_context: z.string().optional(),
     glossary_autolink: z.boolean().optional(),
+    schematic_path: z.string().optional(),
     agent: z
       .object({
         discoverable: z.boolean().optional(),

@@ -283,6 +283,9 @@ export const docKittyFields = {
   //    build warning in the plugin layer, not a schema error.
   glossary_context: z.string().optional(),
   glossary_autolink: z.boolean().optional(),
+  // `kind: Schematic` pages (ADR-0067): the JSON Schema file the page documents,
+  // relative to the project root. Read by the remark plugin and the OKF export.
+  schematic_path: z.string().optional(),
   // Kitty extension.
   agent: agentHints,
 };

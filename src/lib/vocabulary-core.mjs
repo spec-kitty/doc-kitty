@@ -463,8 +463,9 @@ export const DOC_TYPES = /** @type {const} */ ([
 
 /**
  * The canonical `kind` vocabulary (ADR-0009): the four Divio content quadrants
- * plus the structural kinds (14 items). `Specification` is APPENDED (ADR-0046):
- * a page generated from a Gherkin `.feature` file. Open vocabulary — the site schema
+ * plus the structural kinds. `Specification` is APPENDED (ADR-0046):
+ * a page generated from a Gherkin `.feature` file. `Schematic` is APPENDED
+ * (ADR-0067): an authored page that references a JSON Schema file. Open vocabulary — the site schema
  * accepts any string; the standalone gate warns on a value outside this set.
  */
 export const KINDS = /** @type {const} */ ([
@@ -482,6 +483,7 @@ export const KINDS = /** @type {const} */ ([
   'Feature',
   'User-Journey',
   'Specification',
+  'Schematic',
 ]);
 
 // ---------------------------------------------------------------------------
