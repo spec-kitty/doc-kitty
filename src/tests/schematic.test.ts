@@ -40,6 +40,7 @@ beforeAll(() => {
       labels: { type: 'object', additionalProperties: { $ref: './address.schema.yaml' } },
       extra: { anyOf: [{ type: 'object', properties: { note: { type: 'string' } } }, { type: 'null' }] },
       mixed: { allOf: [{ $ref: './address.schema.yaml' }, { properties: { vat: { type: 'string' } } }] },
+      mode: { enum: ['fast', 'a, b', 1, null, { k: 1 }] },
       flags: { type: 'object', patternProperties: { '^x-': { type: 'boolean' } }, additionalProperties: false },
     },
   }));
@@ -151,6 +152,7 @@ describe('$ref resolution', () => {
     const out = render('order.md', page('schemas/order.schema.json'));
     expect(out).toContain('- `labels` (map of [address](#address))');
     expect(out).toContain('- `flags` (map of boolean)');
+    expect(out).toContain('- `mode` (enum: fast, "a, b", 1, null, {"k":1})');
   });
   it('lists the fields of an inline object alternative and of an inline allOf', () => {
     const out = render('order.md', page('schemas/order.schema.json'));
