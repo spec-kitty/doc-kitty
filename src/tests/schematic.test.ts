@@ -60,6 +60,8 @@ beforeAll(() => {
   put('schemas/plain.json', '{"hello": "world"}');
   put('schemas/dangling.json', '{"type":"object","properties":{"x":{"$ref":"#/$defs/Nope"}}}');
   put('schemas/badfile.json', '{"type":"object","properties":{"x":{"$ref":"./missing.json"}}}');
+  put('schemas/note.txt', '{"type":"object"}');
+  put('schemas/viasym.json', '{"type":"object","properties":{"x":{"$ref":"./link.json"}}}');
   put('schemas/alias.yaml', 'base: &b {type: string}\ntype: object\nproperties:\n  x:\n    <<: *b\n');
   writeFileSync(path.join(tmpdir(), 'dk-schematic-outside.json'), '{"type":"object"}');
   symlinkSync(path.join(tmpdir(), 'dk-schematic-outside.json'), path.join(root, 'schemas/link.json'));
@@ -196,6 +198,8 @@ describe('fail closed', () => {
     ['../outside.json', /is outside the project root/],
     ['/etc/passwd', /must be relative to the project root/],
     ['schemas/link.json', /is outside the project root/],
+    ['schemas/viasym.json', /"\.\/link\.json" is outside the project root/],
+    ['schemas/note.txt', /must be a \.json, \.yaml or \.yml file/],
     ['schemas/dangling.json', /"#\/\$defs\/Nope" does not resolve/],
     ['schemas/badfile.json', /"\.\/missing\.json" does not exist/],
     ['', /schematic_path must name a file/],
