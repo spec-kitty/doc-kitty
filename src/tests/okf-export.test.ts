@@ -475,3 +475,37 @@ describe('section README bodies become overview pages (#238)', () => {
     }
   });
 });
+
+describe('Schematic pages export by resource (ADR-0067)', () => {
+  const schematicGraph = {
+    nodes: [
+      { id: 'README', kind: 'page', type: 'Context', title: 'Home', description: 'Root.', status: 'stable' },
+      {
+        id: 'reference/events/answered',
+        kind: 'page',
+        type: 'Reference',
+        doc_kind: 'Schematic',
+        title: 'Answered',
+        description: 'The payload.',
+        status: 'stable',
+        href: '/reference/events/answered/',
+      },
+    ],
+    edges: [],
+  };
+  const files = new Map([
+    ['reference/events/answered.md', '---\ntitle: Answered\nkind: Schematic\nschematic_path: schemas/answered.schema.yaml\n---\n\nAuthored body.\n'],
+  ]);
+  const resourceOf = (options = {}) =>
+    /resource: "([^"]*)"/.exec(
+      (exportOkfBundle(schematicGraph, files, options) as Map<string, string>).get('reference/events/answered.md') ?? '',
+    )?.[1];
+
+  it('points resource at the published file, with the site base, and keeps only the authored body', () => {
+    expect(resourceOf()).toBe('/reference/events/answered.yaml');
+    expect(resourceOf({ base: '/docs' })).toBe('/docs/reference/events/answered.yaml');
+    expect(resourceOf({ base: '/docs', siteUrl: 'https://example.invalid' })).toBe('https://example.invalid/docs/reference/events/answered.yaml');
+    const page = (exportOkfBundle(schematicGraph, files) as Map<string, string>).get('reference/events/answered.md') ?? '';
+    expect(page).toContain('Authored body.');
+  });
+});
