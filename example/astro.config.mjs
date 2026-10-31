@@ -70,6 +70,14 @@ const REDIRECTS = Object.fromEntries(
   ).map(([from, to]) => [from, `${BASE}${to}`]),
 );
 
+// Legacy `.html` URLs (#249, ADR-0068): old URLs as an `.html`-URL generator
+// (DocFX) published them, mapped to their directory URLs, without the base.
+// The toolkit writes each as a flat `dist/<path>.html` stub after the build;
+// `example/url-baseline.txt` baselines them for the redirect-coverage gate.
+const LEGACY_HTML_REDIRECTS = JSON.parse(
+  readFileSync(new URL('./legacy-redirects.json', import.meta.url), 'utf8'),
+);
+
 export default defineConfig({
   site: SITE,
   base: BASE,
@@ -99,6 +107,7 @@ export default defineConfig({
     // README-based sections. WP02 owns this line; WP04 supplies the `index.md`
     // content only (data-model.md E-08 ownership split).
     indexBasename: ['README', 'index'],
+    legacyHtmlRedirects: LEGACY_HTML_REDIRECTS,
     // Opt-in Gherkin feature pages (ADR-0046, gherkin-feature-pages WP08 on-switch):
     // every `*.feature` under `example/features/` is codegen'd in
     // `astro:config:setup` into one `kind: Specification` page (plus directory

@@ -8,6 +8,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Old `.html` URLs keep working after a move from DocFX (#249).** Before,
+  an Astro redirect keyed on `/a/b.html` was written as the folder
+  `dist/a/b.html/index.html`, which a static host does not serve at
+  `/a/b.html`. A key `/a/b/index.html` replaced the live page `/a/b/` with a
+  folder, and the redirect-coverage gate could not check `.html` URLs at all.
+  Now the `legacyHtmlRedirects` option of `defineDocKittyIntegrations`
+  (`{ '/a/b.html': '/a/b/' }`, without the base) writes a flat
+  `dist/a/b.html` stub after the build. The stub is `noindex`, has a canonical
+  link to the target, and is not in the sitemap, `llms.txt` or the agent API.
+  It works at the domain root and under a base path, and chains in the map are
+  shortened to one step. The gate looks up a baselined `.html` URL as that
+  file, follows chains, and fails on a missing stub or a dead target.
+  `--declared-redirects` may now be repeated. The new
+  `dockitty-generate-legacy-redirects` command writes the mechanical map
+  (`x.html -> x/`, `x/index.html -> x/`) from a committed list of old URLs. See
+  [ADR-0068](docs/adr/0068-legacy-html-redirects-as-flat-stubs.md) and
+  [Keeping .html URLs](docs/migrations/legacy-html-urls.md).
+
 - **A `kind: Schematic` page documents a JSON or YAML schema (#245).** Before,
   a schema stayed a file that readers opened in a repository. Now a page with
   `kind: Schematic` and `schematic_path: <file>` (relative to the project root,
@@ -25,6 +43,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **An Astro `redirects` key that ends in `.html` fails the build (#249).**
+  Before, it built a folder that a static host does not serve at that URL, or
+  replaced a live page. Now the build stops and names each key. Move those
+  entries to `legacyHtmlRedirects`, without the base on the target.
 - A large JSON diagram stays at the size PlantUML drew it, and selecting it
   opens the same drawing centered at full size.
 

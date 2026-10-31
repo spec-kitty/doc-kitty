@@ -609,7 +609,9 @@ all print the same `index names:` line and accept `--astro-config`.
 not set it by hand. See [Internal environment names](#internal-environment-names).
 
 The other binaries are `dockitty-check-redirect-coverage`,
-`dockitty-validate-catalog`, `dockitty-new-doc`, `dockitty-scaffold`, and
+`dockitty-validate-catalog`, `dockitty-new-doc`, `dockitty-scaffold`,
+`dockitty-generate-legacy-redirects` (see
+[Keeping .html URLs](../migrations/legacy-html-urls.md)), and
 `dockitty-generate-feature-pages` (see
 [Gherkin feature pages](#optional-gherkin-feature-pages) below). The same files are
 also importable as `@spec-kitty/doc-toolkit/scripts/<name>.mjs`.

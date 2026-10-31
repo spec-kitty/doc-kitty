@@ -36,6 +36,7 @@ import {
   type RouteShapingOptions,
 } from './integrations/route-shaping.js';
 import { draftPublicationIntegration } from './integrations/draft-publication.js';
+import { legacyHtmlRedirectsIntegration } from './integrations/legacy-html-redirects.js';
 import {
   gherkinIntegration,
   gherkinFenceIntegration,
@@ -251,6 +252,21 @@ export interface DocKittyOptions {
    * of its own, and one that disagrees is a build error.
    */
   indexBasename?: IndexBasenameOption;
+  /**
+   * Old `.html` URLs to keep working after a move from an `.html`-URL generator
+   * such as DocFX (issue #249, ADR-0068): `{ '/guides/a.html': '/guides/a/' }`.
+   * Sources and targets are site paths WITHOUT the base; a target may also be an
+   * absolute URL. Each entry is written after the build as a flat meta-refresh
+   * page at `<dist>/<source>` (`noindex`, canonical to the target, absent from
+   * the sitemap, `llms.txt` and the agent API), the file a static host such as
+   * GitHub Pages serves for that exact URL. Chains inside the map are flattened.
+   * `/x/index.html -> /x/` is accepted and needs no file while `/x/` is a page.
+   *
+   * Astro's own `redirects` must not carry `.html` keys: the build refuses them
+   * and names this option. `generate-legacy-redirects.mjs` builds the mechanical
+   * map from a committed list of the old site's URLs.
+   */
+  legacyHtmlRedirects?: Record<string, string>;
 }
 
 /** `<head>` links advertising the feeds and agent-API on every page. */
@@ -445,6 +461,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     markua = false,
     indexBasename,
     gherkin,
+    legacyHtmlRedirects,
     starlight: overrides,
   } = options;
   const { starlightSidebar: sidebar, indexLabel } = splitSidebarOption(sidebarOption);
@@ -705,6 +722,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // DK_PUBLISH_DRAFTS for this build and hands the draft slugs to the
     // build state below, so it sits BEFORE that integration.
     draftPublicationIntegration(routeShaping, buildState),
+    // Always-on legacy `.html` redirects seam (ADR-0068): refuses Astro
+    // `redirects` keys ending in `.html` and, after the build, writes the
+    // `legacyHtmlRedirects` map as flat stubs. AFTER the draft-publication
+    // seam, whose setup hook records DK_PUBLISH_DRAFTS for this build.
+    legacyHtmlRedirectsIntegration(legacyHtmlRedirects, docsDir, indexBasename),
     // Always-on route-shaping seam (FR-011, FR-019..FR-023): serves the data the
     // toolkit's route middleware (registered in `starlightConfig` above) reads,
     // and prints the shaping warnings once when the build is done.
