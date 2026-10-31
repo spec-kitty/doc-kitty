@@ -66,7 +66,17 @@ jobs:
     # is unreachable from inside this job's container. NEVER plantuml.com (C-001).
     services:
       plantuml:
-        image: plantuml/plantuml-server:jetty
+        # Pinned by digest (#251): a re-tag of `:jetty` cannot swap the renderer.
+        # This is the multi-arch index digest of `jetty-v1.2026.9` (= `jetty` on
+        # 2026-10-18). Bump the tag and the digest together, in every workflow and
+        # in docs/guides/consumer-setup.md; plantuml-service-hardening.test.ts
+        # keeps them equal.
+        image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+        # SANDBOX (#251): PlantUML refuses every URL read, so `!include`/`!includeurl`
+        # of a URL (or a remote image) in a diagram cannot reach the network. The
+        # server's own default is INTERNET, which fetches over http(s).
+        env:
+          PLANTUML_SECURITY_PROFILE: SANDBOX
     env:
       # Force BUILD mode deterministically (don't rely on Chromium auto-detect),
       # and point PlantUML at the service BY NAME — `plantuml:8080`, not the
