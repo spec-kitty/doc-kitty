@@ -43,6 +43,7 @@ import {
 } from './integrations/gherkin.js';
 import { glossaryIntegration } from './integrations/glossary.js';
 import { markuaIntegration } from './integrations/markua.js';
+import { githubAlertsIntegration } from './integrations/github-alerts.js';
 import { diagramsIntegration, resolveDiagramMode } from './integrations/diagrams.js';
 import { schematicIntegration } from './integrations/schematic.js';
 import { compressHtmlIntegration } from './integrations/compress-html.js';
@@ -205,6 +206,16 @@ export interface DocKittyOptions {
    * on for the example.
    */
   markua?: boolean;
+  /**
+   * Opt-in GitHub alert blockquotes (#250, ADR-0068). **Default off**, so a site
+   * that leaves it unset renders byte-identically. Set `true` to render a
+   * top-level blockquote that opens with `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`,
+   * `[!WARNING]` or `[!CAUTION]` as the matching native Starlight aside (note,
+   * tip, note titled "Important", caution titled "Warning", danger titled
+   * "Caution"). Plain blockquotes and unknown `[!X]` markers are untouched, and
+   * the pass is a no-op on `kind: Presentation` pages.
+   */
+  githubAlerts?: boolean;
   /**
    * Opt-in Gherkin (ADR-0046, widened by ADR-0051). **Default off**, the
    * byte-identical twin of `diagrams: false`. With it absent the integrations
@@ -443,6 +454,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     theme,
     diagrams = false,
     markua = false,
+    githubAlerts = false,
     indexBasename,
     gherkin,
     starlight: overrides,
@@ -700,6 +712,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // with `fences: false` and no `results`, so such a site's plugin lists are
     // byte-identical.
     ...(gherkinOpts?.fences || gherkinOpts?.results ? [gherkinFenceIntegration(gherkinOpts)] : []),
+    // Opt-in GitHub alerts (#250, ADR-0068): immediately before Starlight, so its
+    // remark pass runs AFTER the glossary passes (they see the same blockquote the
+    // re-derive does) and BEFORE Starlight's `remarkAsides`, which turns the
+    // directives it emits into native asides. Omitted when off: byte-identical.
+    ...(githubAlerts === true ? [githubAlertsIntegration] : []),
     starlight(starlightConfig),
     // Always-on draft-publication seam (FR-013..FR-018): resolves
     // DK_PUBLISH_DRAFTS for this build and hands the draft slugs to the
