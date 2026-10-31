@@ -44,7 +44,7 @@ import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
-import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
+import { isExcludedPath, walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { z } from 'astro/zod';
 // Generator stamps (#177): prefix-based detection, with the legacy unversioned
 // Gherkin stamp (single-sourced from its pure core) still recognised.
@@ -673,11 +673,11 @@ export function run(argv) {
       console.error(`✖ cannot read docs dir "${root}": ${err.message}`);
       process.exit(2);
     }
-    total += files.length;
 
     // Index names for THIS root: the site config's (FR-007); the flag must agree
     // with it (FR-008). A site with no config gets the flag, else `README`.
     let indexBasename;
+    let excluded;
     try {
       const resolved = resolveSiteIndexBasenames(root, {
         flag: flagIndexBasename,
@@ -686,10 +686,17 @@ export function run(argv) {
       });
       announceIndexNames(resolved);
       indexBasename = resolved.names;
+      excluded = resolved.exclude;
     } catch (err) {
       console.error(`✖ ${err.message}`);
       process.exit(2);
     }
+    // Folders the site leaves out of the build (ADR-0068) are not published, so
+    // they are not validated either.
+    if (excluded.length) {
+      files = files.filter((f) => !isExcludedPath(relative(root, f).split('\\').join('/'), excluded));
+    }
+    total += files.length;
 
     // Charter-resolved enforcement policy for THIS root (WP03/IC-03): the legal
     // `doc_status` set (canonical ∪ charter-added) and the required-field policy

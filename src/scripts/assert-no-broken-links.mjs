@@ -63,6 +63,15 @@
  * never flagged. `pnpm assert:no-broken-links` always passes `--site`, so CI
  * never runs this gate un-opted-in.
  *
+ * ## Excluded folders (ADR-0068)
+ *
+ * `--docs <dir>` names the site's docs folder. The gate then reads the
+ * `exclude` list from the site's `astro.config.*` (as the other gates do; or the
+ * config given with `--astro-config`), and a link to a page inside an excluded
+ * folder is reported as "target is excluded from the site" instead of the
+ * generic "no matching page". Without `--docs` such a link still fails, with the
+ * generic reason; the config is not evaluated.
+ *
  * Bare Node, dependency-free (Node stdlib only) — mirrors
  * `check-redirect-coverage.mjs`'s shape (positional `distDir`, sync fs, exit
  * non-zero with one line per failure).
@@ -201,12 +210,33 @@ export function distFileExists(distDir, route) {
   return distCandidatesFor(route).some((candidate) => existsSync(path.join(distDir, candidate)));
 }
 
+/** A route as a key: with a leading and a trailing slash. */
+function routeKey(route) {
+  const trimmed = route.replace(/^\/+|\/+$/g, '');
+  return trimmed === '' ? '/' : `/${trimmed}/`;
+}
+
+/**
+ * The reason for a link to a page of an excluded folder (ADR-0068).
+ * @param {string} folder
+ */
+export function excludedLinkReason(folder) {
+  return `target is excluded from the site (the folder "${folder}" is in exclude, in defineDocKittyIntegrations) — link to a published page, or drop the link`;
+}
+
 /**
  * Walk every `.html` file in `distDir` and return every internal-href
  * failure. Pure given a built dist dir — no network, no build.
+ *
+ * @param {string} distDir
+ * @param {string} base
+ * @param {{ excludedRoutes?: Map<string, string> }} [options] route (no base,
+ *   leading and trailing slash) -> the excluded folder it belongs to; a missing
+ *   target on one of these routes gets {@link excludedLinkReason}.
  * @returns {{ page: string, href: string, resolved: string | null, reason: string }[]}
  */
-export function findBrokenLinks(distDir, base) {
+export function findBrokenLinks(distDir, base, options = {}) {
+  const excludedRoutes = options.excludedRoutes ?? new Map();
   const failures = [];
   for (const relHtmlPath of walkHtmlFiles(distDir).sort()) {
     if (TEMPLATE_PAGE_RE.test(relHtmlPath)) continue;
@@ -240,11 +270,12 @@ export function findBrokenLinks(distDir, base) {
       }
 
       if (!distFileExists(distDir, route)) {
+        const folder = excludedRoutes.get(routeKey(route));
         failures.push({
           page: relHtmlPath,
           href: rawHref,
           resolved: pathname,
-          reason: 'no matching page or file in dist',
+          reason: folder === undefined ? 'no matching page or file in dist' : excludedLinkReason(folder),
         });
       }
     }
@@ -412,6 +443,8 @@ function parseArgs(argv) {
   let base = '';
   let site = '';
   let noExternalImages = false;
+  let docs;
+  let astroConfig;
   const allowImageHosts = [];
   const positional = [];
   for (let i = 0; i < argv.length; i += 1) {
@@ -426,6 +459,12 @@ function parseArgs(argv) {
     } else if (argv[i] === '--site') {
       site = argv[i + 1] ?? '';
       i += 1;
+    } else if (argv[i] === '--docs') {
+      docs = argv[i + 1] ?? '';
+      i += 1;
+    } else if (argv[i] === '--astro-config') {
+      astroConfig = argv[i + 1] ?? '';
+      i += 1;
     } else {
       positional.push(argv[i]);
     }
@@ -436,15 +475,40 @@ function parseArgs(argv) {
     site: site.replace(/\/+$/, ''),
     noExternalImages,
     allowImageHosts: allowImageHosts.filter(Boolean),
+    docs,
+    astroConfig,
   };
+}
+
+/**
+ * The routes of the pages in the site's excluded folders (ADR-0068), read from
+ * the site config for the docs folder `docs`: route -> folder. Empty when the
+ * site excludes nothing. Loaded lazily, so a run without `--docs` stays stdlib-only.
+ *
+ * @param {string} docs
+ * @param {string | undefined} astroConfig
+ * @returns {Promise<{ routes: Map<string, string>, lines: string[] }>}
+ */
+async function excludedRoutesOf(docs, astroConfig) {
+  const { resolveSiteIndexBasenames } = await import('./site-index-names.mjs');
+  const { excludedMarkdownPaths, excludingFolder } = await import('../lib/docs-walk.mjs');
+  const { buildRouteTable } = await import('../lib/vocabulary-core.mjs');
+  const resolved = resolveSiteIndexBasenames(docs, { configPath: astroConfig, tool: 'assert-no-broken-links' });
+  /** @type {Map<string, string>} */
+  const routes = new Map();
+  const hidden = excludedMarkdownPaths(path.resolve(docs), resolved.exclude);
+  const table = buildRouteTable(hidden, { indexBasename: resolved.names }).routes;
+  for (const rel of hidden) routes.set(routeKey(table[rel]), excludingFolder(rel, resolved.exclude));
+  for (const folder of resolved.exclude) routes.set(routeKey(folder), folder);
+  return { routes, lines: resolved.excludeSource ? [resolved.excludeSource] : [] };
 }
 
 const USAGE =
   'Usage: assert-no-broken-links.mjs <distDir> [--base <prefix>] [--site <origin>] ' +
-  '[--no-external-images [--allow-image-host <host>]...]';
+  '[--no-external-images [--allow-image-host <host>]...] [--docs <dir> [--astro-config <path>]]';
 
-export function run(argv) {
-  const { distDir, base, site, noExternalImages, allowImageHosts } = parseArgs(argv.slice(2));
+export async function run(argv) {
+  const { distDir, base, site, noExternalImages, allowImageHosts, docs, astroConfig } = parseArgs(argv.slice(2));
   if (!distDir) {
     console.error(USAGE);
     process.exit(2);
@@ -470,7 +534,26 @@ export function run(argv) {
     );
   }
 
-  const linkFailures = findBrokenLinks(distDir, base);
+  if (docs === '' || astroConfig === '' || (astroConfig !== undefined && docs === undefined)) {
+    console.error('assert-no-broken-links: --docs needs a folder, and --astro-config needs a path and --docs.');
+    console.error(USAGE);
+    process.exit(2);
+    return;
+  }
+  let excludedRoutes;
+  if (docs !== undefined) {
+    try {
+      const found = await excludedRoutesOf(docs, astroConfig);
+      excludedRoutes = found.routes;
+      for (const line of found.lines) console.log(`assert-no-broken-links: ${line}`);
+    } catch (err) {
+      console.error(`assert-no-broken-links: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(2);
+      return;
+    }
+  }
+
+  const linkFailures = findBrokenLinks(distDir, base, { excludedRoutes });
   const feedFailures = findBaselessFeedUrls(distDir, base, site);
   const imageFailures = noExternalImages ? findExternalImages(distDir, site, allowImageHosts, base) : [];
 
@@ -513,5 +596,5 @@ function invokedDirectly() {
 }
 
 if (invokedDirectly()) {
-  run(process.argv);
+  await run(process.argv);
 }

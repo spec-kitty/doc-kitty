@@ -3,7 +3,7 @@
  *
  * `defineDocKittyIntegrations` (the astro.config surface) and the docs loader,
  * routes and CLIs (other surfaces, sometimes other module graphs) cannot share
- * module state, so they talk through these six variables. Every name is defined
+ * module state, so they talk through these seven variables. Every name is defined
  * here once, every write goes through {@link setInternalEnv} /
  * {@link deleteInternalEnv}, and a config definition starts by calling
  * {@link clearInternalEnv}, so a later config never inherits an earlier one's values.
@@ -14,6 +14,7 @@
  * | DK_GHERKIN_RESULTS            | define     | defineDocKittyIntegrations               | docs loader (schema.ts), scenario route   |
  * | DK_DOCS_ROOT                  | define     | defineDocKittyIntegrations               | standalone routes (routes/shared.ts)      |
  * | DK_MARKUA                     | define     | defineDocKittyIntegrations               | glossary re-derive (OnThisPage.astro)     |
+ * | DK_EXCLUDE                    | define     | defineDocKittyIntegrations               | shared docs walk (docs-walk.mjs), CLIs    |
  * | DK_GHERKIN_ROUTE              | setup      | doc-kitty:gherkin-fence config:setup     | scenario-index route                      |
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
  *
@@ -37,6 +38,12 @@ export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
 /** `on` when the site opted into Markua: the render-time glossary re-derive replays the Markua passes. */
 export const DK_MARKUA_ENV = 'DK_MARKUA';
 
+/**
+ * JSON `string[]` of the docs folders the site leaves out of the build (ADR-0068),
+ * relative to {@link DK_DOCS_ROOT_ENV}. Absent when the site excludes nothing.
+ */
+export const DK_EXCLUDE_ENV = 'DK_EXCLUDE';
+
 /** Every internal handoff name. */
 export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_INDEX_BASENAME_ENV,
@@ -45,6 +52,7 @@ export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_PUBLISH_DRAFTS_RESOLVED_ENV,
   DK_DOCS_ROOT_ENV,
   DK_MARKUA_ENV,
+  DK_EXCLUDE_ENV,
 ]);
 
 /**
