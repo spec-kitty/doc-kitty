@@ -21,6 +21,8 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:glossary',
   'doc-kitty:gherkin',
   'doc-kitty:gherkin-fence',
+  // Opt-in (#250, ADR-0068): last before Starlight, so `remarkAsides` sees its directives.
+  'doc-kitty:github-alerts',
   '@astrojs/starlight',
   'doc-kitty:draft-publication',
   'doc-kitty:route-shaping',
@@ -45,6 +47,7 @@ const OPT_IN_SEAMS: readonly string[] = [
   'doc-kitty:glossary',
   'doc-kitty:gherkin',
   'doc-kitty:gherkin-fence',
+  'doc-kitty:github-alerts',
 ];
 
 /**
