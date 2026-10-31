@@ -51,7 +51,8 @@
     "dockitty-new-doc": "./scripts/new-doc.mjs",
     "dockitty-scaffold": "./scripts/scaffold.mjs",
     "dockitty-generate-feature-pages": "./scripts/generate-feature-pages.mjs",
-    "dockitty-export-okf": "./scripts/export-okf.mjs"
+    "dockitty-export-okf": "./scripts/export-okf.mjs",
+    "dockitty-assert-plantuml-no-remote-include": "./scripts/assert-plantuml-no-remote-include.mjs"
   },
   "files": [
     "index.ts",
