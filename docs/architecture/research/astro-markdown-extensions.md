@@ -2,7 +2,7 @@
 title: Astro Markdown extensions
 description: How Astro and Starlight support custom Markdown syntax — callouts, rich images, and components.
 doc_status: active
-updated: 2026-08-22T00:00:00Z
+updated: 2026-10-31T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [markdown, mdx, remark, rehype, starlight, images]
@@ -104,6 +104,10 @@ and metadata contract, best specified with the component system (M2).
 Astro and Starlight move quickly. Confirm version-sensitive specifics against the
 pinned versions when M2 builds this: GitHub alert syntax (`> [!NOTE]`) support, the
 current Starlight component list, and the `astro:assets` API.
+
+> **Update (2026-10-31).** GitHub alert syntax is now supported behind the
+> `githubAlerts` option: the five alert types render as native Starlight asides
+> ([ADR-0068](../../adr/0068-github-alerts-as-starlight-asides.md)).
 
 ## References
 
