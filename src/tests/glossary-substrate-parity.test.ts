@@ -64,6 +64,7 @@ import deckSplit from '../lib/remark/deck-split.js';
 import schematic from '../lib/remark/schematic.js';
 import relativeMdLinks from '../lib/remark/relative-md-links.js';
 import gherkinFence from '../lib/remark/gherkin-fence.js';
+import githubAlerts from '../lib/remark/github-alerts.js';
 import type { SharedTermIndex } from '../lib/glossary/types.js';
 import { PINNED_FULL_INTEGRATION_ORDER } from './helpers/integration-names.js';
 
@@ -124,7 +125,7 @@ function withClientMode<T>(build: () => T): T {
 // `gherkin: true` turns the in-page Gherkin stage on (ADR-0051) WITHOUT `sources`,
 // so the filesystem-reading codegen integration is not registered.
 const buildArray = () =>
-  defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true, gherkin: true });
+  defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true, gherkin: true, githubAlerts: true });
 
 function buildStack() {
   return withClientMode(() => enumerateDocKittyRemarkStack(buildArray()));
@@ -199,6 +200,14 @@ const CONSCIOUS_EXCLUSIONS: Exclusion[] = [
       'always-on `kind: Schematic` stage (ADR-0067): adds generated sections to a page that references a schema file, and returns at once on ' +
       'every other page. The re-derive corpus has no such page, so it is a no-op in the golden tree. Revisit (mirror it) if a Schematic ' +
       "page's generated text must feed the glossary's links-used.",
+  },
+  {
+    plugin: githubAlerts,
+    kind: 'inert',
+    why:
+      'opt-in GitHub alerts (#250, ADR-0068): rewrites a top-level `> [!NOTE]`-style blockquote into an aside directive; a no-op ' +
+      'on a page without one. It is registered AFTER the glossary passes, so the term/auto-link passes see the blockquote in the ' +
+      'build exactly as the re-derive does. Revisit (mirror it) if the stage ever moves before the glossary.',
   },
   {
     plugin: relativeMdLinks,
