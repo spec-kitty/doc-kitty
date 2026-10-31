@@ -86,10 +86,13 @@ export function selectHubChildren(entries, currentSlug, order) {
  * @param {readonly { slug: string, data: { kind?: string }, body: string }[]} publishedChildren
  *   Children already filtered to this hub (`selectHubChildren`'s output, or an
  *   equivalent published+parent-scoped set in a test).
+ * @param {Parameters<typeof buildAdrHubCards>[1]} [options] The tree's ADR id
+ *   rule (`{ idRule }`, from `loadAdrIdRule`), passed through unchanged (#248).
+ *   Omitted, the `NNNN-` default applies.
  * @returns {ReturnType<typeof buildAdrHubCards>} The composed ADR `HubCard[]`,
- *   number-ordered, byte-identical to what `Hub.astro` builds today (C-001).
+ *   id-ordered, byte-identical to what `Hub.astro` builds today (C-001).
  */
-export function selectAdrHubCards(publishedChildren) {
+export function selectAdrHubCards(publishedChildren, options) {
   return buildAdrHubCards(
     publishedChildren
       .filter((entry) => entry.data.kind === 'ADR')
@@ -98,5 +101,6 @@ export function selectAdrHubCards(publishedChildren) {
         data: entry.data,
         body: entry.body,
       })),
+    options,
   );
 }

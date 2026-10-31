@@ -29,6 +29,7 @@ import { isPublished } from '../lib/metadata.js';
 const HUB = fileURLToPath(new URL('../layouts/Hub.astro', import.meta.url));
 const GENERATOR = fileURLToPath(new URL('../scripts/generate-adr-index.mjs', import.meta.url));
 const HUB_CHILDREN = fileURLToPath(new URL('../lib/hub-children.mjs', import.meta.url));
+const ADR_ID = fileURLToPath(new URL('../lib/adr-id.mjs', import.meta.url));
 
 interface AdrSpec {
   file: string;
@@ -351,6 +352,7 @@ describe('single-source enforcement gate (T023, NFR-001 for #50; #57 composition
   const hubSrc = readFileSync(HUB, 'utf8');
   const genSrc = readFileSync(GENERATOR, 'utf8');
   const hubChildrenSrc = readFileSync(HUB_CHILDREN, 'utf8');
+  const adrIdSrc = readFileSync(ADR_ID, 'utf8');
 
   /** Strip block, line, and JSX comments so prose that mentions ADR shapes
    *  (e.g. a comment saying the extractor reads `## Status`) is not mistaken for
@@ -392,8 +394,10 @@ describe('single-source enforcement gate (T023, NFR-001 for #50; #57 composition
     // Neither caller re-derives status/date itself (single source of truth).
     expect(discoverFn).not.toContain('extractStatusToken(');
     expect(buildFn).not.toContain('extractStatusToken(');
-    // Exactly one extractor definition; one ADR-number regex.
+    // Exactly one extractor definition; the generator parses no ADR number
+    // itself — the id rule (default `NNNN-` included) lives in adr-id.mjs (#248).
     expect(genSrc.match(/export function extractAdrMeta/g)).toHaveLength(1);
-    expect(genSrc.match(/const ADR_NUMBER =/g)).toHaveLength(1);
+    expect(genSrc).not.toMatch(/\\d\{4\}\)-/);
+    expect(adrIdSrc.match(/nnnn: \/\^\(\\d\{4\}\)-\//g)).toHaveLength(1);
   });
 });

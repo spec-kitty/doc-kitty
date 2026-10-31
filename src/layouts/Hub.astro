@@ -49,6 +49,7 @@ import {
 } from '../lib/metadata.js';
 import { hrefOfSlug } from '../lib/with-base.js';
 import { selectHubChildren, selectAdrHubCards } from '../lib/hub-children.mjs';
+import { loadAdrIdRule } from '../scripts/generate-adr-index.mjs';
 import { resolveSectionRegistry, sectionOrder } from '../lib/sections.js';
 import '../styles/hub.css';
 
@@ -62,7 +63,8 @@ const hrefFor = hrefOfSlug;
 // surfaces read, so the root Hub grid never diverges from them (DIRECTIVE_044:
 // one source of truth). Falls back to the frozen SECTION_ORDER when no
 // registry is present, exactly like the routes.
-const registry = resolveSectionRegistry(path.join(process.cwd(), 'docs'));
+const docsRoot = path.join(process.cwd(), 'docs');
+const registry = resolveSectionRegistry(docsRoot);
 const order = registry ? sectionOrder(registry) : undefined;
 
 // A rendered card. ADR cards additionally carry the lifecycle `status` badge and
@@ -100,8 +102,12 @@ const isAdrKind = (data: DocKittyFrontmatter): boolean => data.kind === 'ADR';
 // published+numbered set (NFR-004). The ADR-kind gate + `buildAdrHubCards` call
 // is the single importable composition `selectAdrHubCards` (#57) — the same unit
 // the guard test (hub-adr-card.test.ts) now exercises, so a regression in this
-// wiring reds the test instead of a hand-kept replica.
-const adrCards: HubCard[] = selectAdrHubCards(publishedChildren);
+// wiring reds the test instead of a hand-kept replica. The id rule comes from
+// the SAME docs root's charter (`adr.id`, #248) the generator reads, so a
+// date-named tree gets the same ids and order on both sides.
+const adrCards: HubCard[] = selectAdrHubCards(publishedChildren, {
+  idRule: loadAdrIdRule(docsRoot),
+});
 
 // Non-ADR children keep the section-rank → title order established by
 // `selectHubChildren`. In a non-ADR hub (no ADR-kind children) this IS the whole
