@@ -60,6 +60,16 @@
  *   - The declared map never makes a URL count as covered. Only the built
  *     output does.
  *
+ * ## Legacy `.html` URLs (issue #249, ADR-0068)
+ *
+ * A baselined URL that ends in `.html` (`/a/b.html`, `/a/index.html`) is looked
+ * up as the FILE a static host serves for it, `<dist>/a/b.html`, never as a
+ * folder. The toolkit's `legacyHtmlRedirects` option writes a flat stub there;
+ * Astro's own directory-form output (`<dist>/a/b.html/index.html`) does not
+ * count, and the verdict says so. Flat stubs are found by the dead-stub walk
+ * too, and their chains are followed like any other. `--declared-redirects` may
+ * be given more than once (the directory map and the legacy map).
+ *
  * In every mode the gate also walks the built output: a redirect stub that
  * leads to a missing page fails the gate, baselined or not. So a stub into an
  * unbuilt draft is a failure, never an accepted case.
@@ -68,10 +78,11 @@
  * build spawned (NFR-002) — this reads an already-built `<dist-dir>`.
  * Deterministic: pure filesystem reads, no network, same verdict on every run.
  */
-import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import { isHtmlSource } from '../lib/legacy-html-redirects.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, assertEvaluatedConfigDecides, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import {
@@ -121,8 +132,12 @@ const FROM_CODE_RE = /Redirecting from <code>([^<]*)<\/code>/i;
  */
 export function stripKnownBase(fromPath, lookupKey, rawTarget) {
   if (!fromPath) return rawTarget;
-  const from = normalizeUrlPath(fromPath);
-  const key = normalizeUrlPath(lookupKey);
+  // `/x/index.html` and `/x/` name the same file, so compare them without a
+  // trailing `index.html` (a legacy stub records `/base/x/index.html`, the
+  // stub walk finds it as `/x/`; ADR-0068).
+  const dropIndex = (p) => p.replace(/\/index\.html$/i, '/');
+  const from = dropIndex(normalizeUrlPath(fromPath));
+  const key = dropIndex(normalizeUrlPath(lookupKey));
   if (from.length <= key.length || !from.endsWith(key)) return rawTarget;
   const base = from.slice(0, from.length - key.length);
   if (!base || !rawTarget.startsWith(base)) return rawTarget;
@@ -137,6 +152,8 @@ export function stripKnownBase(fromPath, lookupKey, rawTarget) {
 export function normalizeUrlPath(url) {
   let p = String(url).trim();
   p = p.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+/i, '');
+  // A fragment or query never changes which file serves the URL.
+  p = p.replace(/[?#].*$/, '');
   if (!p.startsWith('/')) p = `/${p}`;
   return p;
 }
@@ -146,11 +163,29 @@ export function normalizeUrlPath(url) {
  * Astro's default directory build format (`/a/b/` → `<dist>/a/b/index.html`;
  * `/` → `<dist>/index.html`). Mirrors the convention `assert-build-artifacts.mjs`
  * already uses for every other route.
+ *
+ * A URL that ends in `.html` (a legacy URL, issue #249 / ADR-0068) names a
+ * FILE: `/a/b.html` → `<dist>/a/b.html`, the file a static host such as GitHub
+ * Pages serves for exactly that URL. `/a/index.html` → `<dist>/a/index.html`,
+ * the same file as `/a/`.
  */
 export function urlToDistFile(distDir, urlPath) {
+  if (isHtmlSource(urlPath)) return path.join(distDir, urlPath.replace(/^\/+/, ''));
   const trimmed = urlPath.replace(/^\/+|\/+$/g, '');
   const rel = trimmed === '' ? 'index.html' : path.join(trimmed, 'index.html');
   return path.join(distDir, rel);
+}
+
+/**
+ * For an `.html` URL with no flat file: the Astro directory-form stub
+ * (`<dist>/a/b.html/index.html`) that stands where the file should be, as a
+ * path relative to `distDir`, or `null`. That folder is not the file GitHub
+ * Pages serves for `/a/b.html`, so it never covers the URL (ADR-0068).
+ */
+function directoryFormStubOf(distDir, urlPath) {
+  if (!isHtmlSource(urlPath)) return null;
+  const rel = path.join(urlPath.replace(/^\/+/, ''), 'index.html');
+  return existsSync(path.join(distDir, rel)) ? rel.split(path.sep).join('/') : null;
 }
 
 /**
@@ -193,7 +228,10 @@ export function inspectDistUrl(distDir, urlPath, redirectMap) {
     return { kind: 'redirect', target: normalizeUrlPath(redirectMap[urlPath]) };
   }
   const file = urlToDistFile(distDir, urlPath);
-  if (!existsSync(file)) return { kind: 'missing' };
+  if (!existsSync(file) || statSync(file).isDirectory()) {
+    const directoryStub = directoryFormStubOf(distDir, urlPath);
+    return directoryStub ? { kind: 'missing', directoryStub } : { kind: 'missing' };
+  }
   const html = readFileSync(file, 'utf8');
   const m = html.match(REDIRECT_STUB_RE);
   if (m) {
@@ -226,7 +264,12 @@ export function resolveVerdict(distDir, startUrl, redirectMap) {
       return { url, covered: true, chain };
     }
     if (info.kind === 'missing') {
-      const reason = chain.length === 0 ? 'no page and no redirect' : 'redirect target is dead';
+      let reason = chain.length === 0 ? 'no page and no redirect' : 'redirect target is dead';
+      if (info.directoryStub) {
+        reason +=
+          ` (only an Astro directory-form stub at ${info.directoryStub}, which is not the file served at ` +
+          `${current}; declare it in legacyHtmlRedirects instead of Astro's redirects)`;
+      }
       return { url, covered: false, reason, chain, failingTarget: current };
     }
     // info.kind === 'redirect' — record the hop and follow it.
@@ -274,7 +317,11 @@ export function unpublishedDraftFor(distDir, verdict, draftRoutes, declared) {
   return null;
 }
 
-/** Every redirect stub in the built output, as site-absolute URL paths (sorted). */
+/**
+ * Every redirect stub in the built output, as site-absolute URL paths (sorted):
+ * `<dir>/index.html` as `/<dir>/`, and a flat legacy stub `<dir>/<name>.html`
+ * as `/<dir>/<name>.html` (ADR-0068).
+ */
 export function redirectStubUrls(distDir) {
   const urls = [];
   // Not the docs-page walk: this reads the BUILT output (dist), every folder of it.
@@ -285,6 +332,8 @@ export function redirectStubUrls(distDir) {
       else if (entry.name === 'index.html' && REDIRECT_STUB_RE.test(readFileSync(abs, 'utf8'))) {
         const rel = path.relative(distDir, dir).split(path.sep).join('/');
         urls.push(rel === '' ? '/' : `/${rel}/`);
+      } else if (isHtmlSource(entry.name) && REDIRECT_STUB_RE.test(readFileSync(abs, 'utf8'))) {
+        urls.push(`/${path.relative(distDir, abs).split(path.sep).join('/')}`);
       }
     }
   };
@@ -337,11 +386,15 @@ function parseArgs(argv) {
     '--docs': 'docsDir',
     '--index-basename': 'indexBasename',
     '--astro-config': 'astroConfig',
-    '--declared-redirects': 'declaredFile',
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (Object.prototype.hasOwnProperty.call(names, arg)) {
+    if (arg === '--declared-redirects') {
+      // Repeatable: a site's directory redirects and its legacy `.html` map
+      // are usually two files (ADR-0068).
+      (flags.declaredFiles ??= []).push(argv[i + 1]);
+      i += 1;
+    } else if (Object.prototype.hasOwnProperty.call(names, arg)) {
       flags[names[arg]] = argv[i + 1];
       i += 1;
     } else {
@@ -360,9 +413,10 @@ export function run(argv) {
     process.exit(2);
     return;
   }
-  const { baselineFile, distDir, redirectsFile, docsDir, indexBasename, astroConfig, declaredFile } = parseArgs(
+  const { baselineFile, distDir, redirectsFile, docsDir, indexBasename, astroConfig, declaredFiles = [] } = parseArgs(
     site.rest,
   );
+  const declaredFile = declaredFiles.length > 0 ? declaredFiles.join(', ') : undefined;
   if (!baselineFile || !distDir) {
     console.error(
       'Usage: check-redirect-coverage.mjs <baseline-file> <dist-dir> [--redirects <map-file>] ' +
@@ -385,7 +439,7 @@ export function run(argv) {
     return;
   }
 
-  for (const [flag, value] of [['--docs', docsDir], ['--declared-redirects', declaredFile]]) {
+  for (const [flag, value] of [['--docs', docsDir], ...declaredFiles.map((f) => ['--declared-redirects', f])]) {
     if (value && !existsSync(value)) {
       console.error(`redirect-coverage: ${flag} path not found: ${value}`);
       process.exit(2);
@@ -459,8 +513,8 @@ export function run(argv) {
   const baselineUrls = parseBaseline(readFileSync(baselineFile, 'utf8'));
   const redirectMap = redirectsFile ? loadRedirectMap(redirectsFile) : undefined;
   const declaredRedirects = {};
-  if (declaredFile) {
-    for (const [from, to] of Object.entries(loadRedirectMap(declaredFile))) {
+  for (const file of declaredFiles) {
+    for (const [from, to] of Object.entries(loadRedirectMap(file))) {
       if (typeof to === 'string') declaredRedirects[normalizeUrlPath(from)] = to;
     }
   }

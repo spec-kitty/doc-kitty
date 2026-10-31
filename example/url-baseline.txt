@@ -75,3 +75,13 @@
 /reference/api/main/operations/createparcel/
 /reference/api/main/operations/getparcel/
 /reference/api/main/operations/listparcels/
+
+# #249 / ADR-0068: legacy `.html` URLs, as a site moving off DocFX publishes
+# them. `example/legacy-redirects.json` maps them through the toolkit's
+# `legacyHtmlRedirects` option, which writes a flat `dist/<path>.html` stub (or,
+# for `guides/index.html`, leaves the live section page to serve it). The last
+# entry is a chain through another legacy URL, flattened at build time.
+/guides/getting-started.html
+/guides/index.html
+/guides/old-install.html
+/guides/install.html
