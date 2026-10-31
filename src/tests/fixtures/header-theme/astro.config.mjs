@@ -54,5 +54,6 @@ export default defineConfig({
         { path: 'openapi/main.yaml', label: 'main', released: false },
       ],
     },
+    legacyHtmlRedirects: JSON.parse(readFileSync(new URL('legacy-redirects.json', EXAMPLE), 'utf8')),
   }),
 });
