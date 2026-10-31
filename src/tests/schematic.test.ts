@@ -5,6 +5,7 @@
  *
  * Fixtures: a real Spec Kitty doctrine schema (YAML, `definitions` + `$ref`) and a real
  * spec-kitty-events payload schema (JSON, pydantic `$defs` + `$ref`, `anyOf` with null).
+ * decision_input_answered_payload.schema.json is a verbatim upstream copy from spec-kitty-events.
  */
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -67,7 +68,10 @@ beforeAll(() => {
   symlinkSync(path.join(tmpdir(), 'dk-schematic-outside.json'), path.join(root, 'schemas/link.json'));
 });
 
-afterAll(() => rmSync(root, { recursive: true, force: true }));
+afterAll(() => {
+  rmSync(root, { recursive: true, force: true });
+  rmSync(path.join(tmpdir(), 'dk-schematic-outside.json'), { force: true });
+});
 
 interface Node {
   type: string;
@@ -134,6 +138,7 @@ describe('Schematic page, YAML doctrine schema', () => {
 describe('Schematic page, JSON events payload schema', () => {
   let out = '';
   beforeAll(() => {
+    // Verbatim upstream copy from spec-kitty-events, kept full-size on purpose.
     out = render('reference/events/answered.md', page('schemas/decision_input_answered_payload.schema.json'));
   });
   it('renders $defs types, anyOf with null, and the schema description', () => {
@@ -145,15 +150,17 @@ describe('Schematic page, JSON events payload schema', () => {
 });
 
 describe('$ref resolution', () => {
+  let out = '';
+  beforeAll(() => {
+    out = render('order.md', page('schemas/order.schema.json'));
+  });
   it('follows relative-file refs (with and without a pointer) and renders URL refs as links', () => {
-    const out = render('order.md', page('schemas/order.schema.json'));
     expect(out).toContain('- `ship_to` ([address](#address), required): A postal address.');
     expect(out).toContain('- `billing` (enum: BE, NL)');
     expect(out).toContain('- `docs` ([https://example.com/other.schema.json](https://example.com/other.schema.json))');
     expect(out).toContain('- `country` (enum: BE, NL)');
   });
   it('renders a dictionary-shaped property as a map of its value type', () => {
-    const out = render('order.md', page('schemas/order.schema.json'));
     expect(out).toContain('- `labels` (map of [address](#address))');
     expect(out).toContain('- `flags` (map of boolean)');
     expect(out).toContain('- `odd` ([a/b~c](#abc))');
@@ -161,7 +168,6 @@ describe('$ref resolution', () => {
     expect(out).toContain('- `mode` (enum: fast, "a, b", 1, null, {"k":1})');
   });
   it('lists the fields of an inline object alternative and of an inline allOf', () => {
-    const out = render('order.md', page('schemas/order.schema.json'));
     expect(out).toContain('- `extra` (object | null)\n  - `note` (string)');
     expect(out).toMatch(/- `mixed` \(object\).*\n {2}- `street` \(string\)\n {2}- `country`.*\n {2}- `vat` \(string\)/);
   });
@@ -189,7 +195,7 @@ describe('authored headings and diagrams off', () => {
 });
 
 describe('fail closed', () => {
-  const err = (sp: unknown) => () => render('reference/x.md', page(sp as string));
+  const err = (sp: unknown) => () => render('reference/x.md', page(sp as string)); // undefined = key absent
   it.each([
     ['schemas/nope.json', /\[dk-schematic\] reference\/x\.md: "schemas\/nope\.json" does not exist/],
     ['schemas/broken.json', /"schemas\/broken\.json" cannot be parsed/],
@@ -203,6 +209,7 @@ describe('fail closed', () => {
     ['schemas/dangling.json', /"#\/\$defs\/Nope" does not resolve/],
     ['schemas/badfile.json', /"\.\/missing\.json" does not exist/],
     ['', /schematic_path must name a file/],
+    [undefined, /schematic_path must name a file/],
   ])('%s', (sp, message) => {
     expect(err(sp)).toThrow(message);
   });
@@ -219,9 +226,6 @@ describe('fail closed', () => {
     } finally {
       unlinkSync(viaLink);
     }
-  });
-  it('a missing schematic_path is an error, not a silent page', () => {
-    expect(() => render('x.md', { kind: 'Schematic' })).toThrow(/schematic_path must name a file/);
   });
 });
 
@@ -253,6 +257,8 @@ describe('publishing', () => {
     expect(existsSync(path.join(dist, 'reference/plain.yaml'))).toBe(false);
   });
   it('build:done refuses to overwrite an existing output file, or to publish one href twice', () => {
+    mkdirSync(path.join(docs, 'reference'), { recursive: true });
+    writeFileSync(path.join(docs, 'reference/tactic.md'), '---\nkind: Schematic\nschematic_path: schemas/tactic.schema.yaml\n---\nBody\n');
     const dist = path.join(root, 'dist-clash');
     mkdirSync(path.join(dist, 'reference'), { recursive: true });
     writeFileSync(path.join(dist, 'reference/tactic.yaml'), 'site-owned\n');
