@@ -1,0 +1,6 @@
+@startuml
+' #251 fixture: the PlantUML render service must REFUSE this remote include.
+' {{CANARY_URL}} is replaced by a local canary server that records every hit.
+!includeurl {{CANARY_URL}}
+Alice -> Bob : local
+@enduml
