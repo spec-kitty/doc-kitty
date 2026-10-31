@@ -146,7 +146,9 @@ import {
 //   - #192 replaces changelog/2026-08-21-v0.1.0.md with changelog/releases.md
 //     (both published, +0), and #193 adds the install guide guides/install.md
 //     (doc_status:active, +1) -> 69.
-const EXPECTED_INDEX_ENTRY_COUNT = 69;
+//   - #250 adds the GitHub alert fixture guides/github-alerts.md
+//     (doc_status:active, +1) -> 70.
+const EXPECTED_INDEX_ENTRY_COUNT = 70;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -167,7 +169,8 @@ const EXPECTED_INDEX_ENTRY_COUNT = 69;
 // +1), 67 -> 68.
 // #193 adds guides/install.md (published, +1; #192's changelog swap is +0),
 // 68 -> 69.
-const EXPECTED_SITEMAP_URL_COUNT = 69;
+// #250 adds guides/github-alerts.md (published, +1), 69 -> 70.
+const EXPECTED_SITEMAP_URL_COUNT = 70;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
