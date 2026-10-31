@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-25T00:00:00Z
+updated: 2026-10-31T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -10,6 +10,7 @@ authors:
   - human:stijn
 related:
   - guides/adopting
+  - adr/0068-github-alerts-as-starlight-asides
   - guides/draft-publication
   - guides/theme-header
   - context/convention
@@ -896,6 +897,46 @@ The schema file is published byte for byte next to the page: the page at
 `/reference/lane/` links `/reference/lane.yaml`. A draft page publishes
 nothing, and the OKF export sets `resource` to the published file. See
 [ADR-0067](../adr/0067-schematic-pages-reference-a-schema.md).
+
+## Optional: GitHub alerts
+
+Docs read both on GitHub and on the site often use GitHub's alert syntax. Set
+`githubAlerts: true` to render it as Starlight asides:
+
+```js
+defineDocKittyIntegrations({
+  // …
+  githubAlerts: true,
+});
+```
+
+```md
+> [!WARNING]
+> Back up the database first.
+```
+
+| GitHub alert | Renders as |
+|---|---|
+| `[!NOTE]` | note aside |
+| `[!TIP]` | tip aside |
+| `[!IMPORTANT]` | note aside titled "Important" |
+| `[!WARNING]` | caution aside titled "Warning" |
+| `[!CAUTION]` | danger aside titled "Caution" |
+
+These are the same native asides `:::note` and the Markua callouts produce, so
+they share the theme and the accessible name. NOTE and TIP keep Starlight's
+own title, which follows the page language. The other three take GitHub's
+label, in English, so the reader sees the word the author wrote.
+
+The rules follow GitHub. The marker must be the first line of the blockquote
+and stand alone on it; the case does not matter. Only a blockquote at the top
+level of the page counts. Everything else stays a blockquote: a plain quote, an
+unknown marker such as `[!DANGER]`, a marker with text after it on the same
+line, a marker with no body, and a quote inside a list or another quote. The
+option does nothing on a `kind: Presentation` page, because a deck does not load
+the aside styles. With the option off, which is the default, every blockquote
+renders as before. See
+[ADR-0068](../adr/0068-github-alerts-as-starlight-asides.md).
 
 ## Optional: Gherkin feature pages
 
