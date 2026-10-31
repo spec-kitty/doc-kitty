@@ -145,6 +145,10 @@ export interface DocKittyFrontmatter {
   verified?: VerifiedStamp[];
   sources?: SourceRef[];
   stale_after?: string | Date;
+  /** ADR decision status, read when the body has no `## Status` section (#248). */
+  status?: unknown;
+  /** ADR date, read when `updated` is absent (#248). */
+  date?: unknown;
   /** Kitty extension. */
   agent?: AgentHints;
 }
