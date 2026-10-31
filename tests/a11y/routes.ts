@@ -94,6 +94,9 @@ export const ROUTES = {
   // the degraded output (icon-less tip, literal `{aside}`, ignored `{fullbleed:}`)
   // clears WCAG too.
   markuaMalformed: `${BASE}/guides/markua-malformed/`,
+  // GitHub alerts (#250, ADR-0068): the five `> [!TYPE]` alerts rendered as native
+  // asides, plus the blockquotes that must stay blockquotes. Scanned in BOTH modes.
+  githubAlerts: `${BASE}/guides/github-alerts/`,
   // Ars Rhetorica showcase — the rhetoric hub (WP02/T003), the Hub-layout landing
   // for the ported corpus. Scanned in BOTH modes as a real long-form content hub.
   rhetoricHub: `${BASE}/rhetoric/`,
@@ -256,6 +259,12 @@ const STARLIGHT_MARKUA_GUARD_ROOTS = [
 // The malformed page has no native tip (its tip carries an unknown icon → theme
 // `dk-callout--tip`) and a `dk-figure`; pin those two so its scan is non-vacuous.
 export const MARKUA_MALFORMED_TIP_ROOT = 'aside.dk-callout--tip';
+// GitHub alerts (#250): the CAUTION alert renders as a danger aside titled
+// "Caution" — only the alert transform produces that pairing, so a page whose
+// alerts fell back to blockquotes cannot satisfy the guard.
+export const GITHUB_ALERT_DANGER_ROOT = 'aside.starlight-aside--danger[aria-label="Caution"]';
+const STARLIGHT_GITHUB_ALERTS_GUARD_ROOTS = [...STARLIGHT_GUARD_ROOTS, GITHUB_ALERT_DANGER_ROOT] as const;
+
 const STARLIGHT_MARKUA_MALFORMED_GUARD_ROOTS = [
   ...STARLIGHT_GUARD_ROOTS,
   MARKUA_MALFORMED_TIP_ROOT,
@@ -399,6 +408,14 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.markuaMalformed,
     shell: 'starlight',
     guardRoots: STARLIGHT_MARKUA_MALFORMED_GUARD_ROOTS,
+  },
+  // #250 — the GitHub alert fixture: five native asides and three plain
+  // blockquotes must clear WCAG in both colour modes.
+  {
+    name: 'GitHub alerts (/guides/github-alerts/)',
+    path: ROUTES.githubAlerts,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GITHUB_ALERTS_GUARD_ROOTS,
   },
   // markua-decks (#47, WP04) — the Markua-capable OUT-OF-FRAME deck. No
   // `renderWait`: the callouts/wrapper/attribute/figure constructs are build-time
