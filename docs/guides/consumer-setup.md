@@ -759,6 +759,27 @@ The governable dimensions:
   and `kind`. A corpus that does not carry `kind` on every page yet can list
   `kind` here until it does ([ADR-0065](/adr/0065-kind-required-again/)).
 
+- **ADR id — `adr.id`** (*overridable*). How an ADR's id is read from its file
+  name, for the generated ADR index and the ADR cards of a `kind: Hub` page. By
+  default it is the `NNNN-` prefix (`0032-slug.md` → `0032`). A corpus of
+  date-named ADRs uses the `date-seq` preset: `2026-03-09-1-slug.md` →
+  `2026-03-09-1`, ordered by date, then by the sequence number (`-2` before
+  `-10`). For any other scheme, give a `pattern` with a named `id` group; optional
+  `date` and `seq` groups set the order. The pattern is matched against the
+  lowercased file name, so write it in lowercase.
+
+  ```yaml
+  adr:
+    id:
+      preset: date-seq      # or: pattern: '^(?<id>adr-\d+)-'
+  ```
+
+  When an ADR has no body `## Status` section, its frontmatter `status` is shown,
+  and when it has no `updated`, its frontmatter `date`. The generator reads the
+  charter next to its `--dir` (`docs/adr` → `docs/_meta/charter.yaml`); pass
+  `--docs-root` when it lives elsewhere. See
+  [ADR-0068](/adr/0068-configurable-adr-id-and-frontmatter-status/).
+
 A malformed charter fails the build naming the file and offending key; an unknown
 *top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`
 or `_meta/sections.yaml`, both keep working (you will see one deprecation notice)

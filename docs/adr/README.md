@@ -79,5 +79,6 @@ kind: Hub
 | [0065](./0065-kind-required-again.md) | ADR-0065: `kind` is required on every page again | Accepted | 2026-10-25 |
 | [0066](./0066-sidebar-tint-bleeds-past-the-frame.md) | ADR-0066: The sidebar tint bleeds out to the viewport edge | Accepted | 2026-10-25 |
 | [0067](./0067-schematic-pages-reference-a-schema.md) | ADR-0067: Schematic pages reference a schema file | Accepted | 2026-10-30 |
+| [0068](./0068-configurable-adr-id-and-frontmatter-status.md) | ADR-0068: A configurable ADR id, and a frontmatter status fallback | Accepted | 2026-10-31 |
 
 New ADRs copy [`template.md`](./template.md).
