@@ -1,0 +1,5 @@
+# Fixture for #248: a consumer whose ADRs are date-named (YYYY-MM-DD-N-slug.md).
+version: 1
+adr:
+  id:
+    preset: date-seq
