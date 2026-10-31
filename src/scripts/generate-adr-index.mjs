@@ -6,6 +6,11 @@
  *   node src/scripts/generate-adr-index.mjs                 # rewrite in place
  *   node src/scripts/generate-adr-index.mjs --check         # lockfile check (CI)
  *   node src/scripts/generate-adr-index.mjs --dir <adrDir> --readme <path>
+ *   node src/scripts/generate-adr-index.mjs --docs <docsDir> --dir <adrDir>
+ *
+ * `--docs` names the site's docs folder: the site config's `exclude` list
+ * (ADR-0068) is read for it, and ADRs inside an excluded folder are left out of
+ * the table, as the built Hub leaves them out. Without it no config is read.
  *
  * WHY a generator (not a Hub layout) for the OWN tree:
  *   Only `example/` is Astro-built; doc-kitty's own `docs/` tree is validated
@@ -245,19 +250,30 @@ export function check({ dir, readme }) {
 }
 
 function parseArgs(argv) {
-  const args = { check: false, dir: 'docs/adr', readme: null };
+  const args = { check: false, dir: 'docs/adr', readme: null, docs: undefined };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--check') args.check = true;
     else if (a === '--dir') args.dir = argv[++i];
     else if (a === '--readme') args.readme = argv[++i];
+    else if (a === '--docs') args.docs = argv[++i];
   }
   if (!args.readme) args.readme = join(args.dir, 'README.md');
   return args;
 }
 
-function main(argv) {
-  const { check: isCheck, dir, readme } = parseArgs(argv);
+async function main(argv) {
+  const { check: isCheck, dir, readme, docs } = parseArgs(argv);
+  if (docs !== undefined) {
+    // Registers the site's excluded folders with the shared walk (ADR-0068).
+    const { announceIndexNames, resolveSiteIndexBasenames } = await import('./site-index-names.mjs');
+    try {
+      announceIndexNames(resolveSiteIndexBasenames(docs, { tool: 'generate-adr-index' }));
+    } catch (err) {
+      console.error(`✖ ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(2);
+    }
+  }
   if (isCheck) {
     const { clean } = check({ dir, readme });
     if (!clean) {
@@ -293,5 +309,5 @@ function invokedDirectly() {
 }
 
 if (invokedDirectly()) {
-  main(process.argv);
+  await main(process.argv);
 }

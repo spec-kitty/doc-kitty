@@ -129,3 +129,4 @@ A shared route rule already existed: `routeOfSlug`, `buildRouteTable` and
   every surface shares.
 
 - See [ADR-0057](./0057-internal-env-handoff-seam.md) for the one module that now owns the internal environment names this ADR relies on.
+- See [ADR-0068](./0068-excluded-folders.md): a site can name more folders that the shared walk skips, next to `_meta`.

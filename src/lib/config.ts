@@ -70,8 +70,10 @@ import { PRE_PAINT_SCRIPT } from './toc-rail/pre-paint.js';
 import { normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { isGlossaryActive } from './glossary/load.js';
 import { validateIndexBasenames } from './gherkin/options.mjs';
+import { assertExcludedFoldersExist, excludedFoldersFor, normalizeExcludedFolders } from './docs-walk.mjs';
 import {
   DK_DOCS_ROOT_ENV,
+  DK_EXCLUDE_ENV,
   DK_GHERKIN_RESULTS_ENV,
   DK_INDEX_BASENAME_ENV,
   DK_MARKUA_ENV,
@@ -251,6 +253,17 @@ export interface DocKittyOptions {
    * of its own, and one that disagrees is a build error.
    */
   indexBasename?: IndexBasenameOption;
+  /**
+   * Docs folders to leave out of the site (ADR-0068): paths relative to
+   * `docsDir`, such as `['archive', 'plans/engineering-notes']`. Nothing under
+   * them is loaded, routed, listed in the sidebar, the sitemap, the feeds,
+   * `llms.txt`, the agent API or search, or checked by the `dockitty-*` gates,
+   * and a link into one is reported as "excluded from the site". Each entry must
+   * name an existing folder with its exact letter case; glob patterns are not
+   * accepted. Absent or `[]` changes nothing. Set it here only: the loader and
+   * the CLIs read it from here.
+   */
+  exclude?: string[];
 }
 
 /** `<head>` links advertising the feeds and agent-API on every page. */
@@ -336,8 +349,10 @@ function topLevelContentDirs(docsRoot: string): string[] {
   } catch {
     return [];
   }
+  // An excluded top-level folder (ADR-0068) has no pages, so it is not a section on disk.
+  const excluded = excludedFoldersFor(docsRoot);
   return entries.filter((name) => {
-    if (name.startsWith('.') || name === '_meta') return false;
+    if (name.startsWith('.') || name === '_meta' || excluded.includes(name)) return false;
     try {
       return statSync(path.join(docsRoot, name)).isDirectory();
     } catch {
@@ -444,6 +459,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     diagrams = false,
     markua = false,
     indexBasename,
+    exclude,
     gherkin,
     starlight: overrides,
   } = options;
@@ -481,6 +497,16 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // should win). Absent this call (standalone route render, route unit tests) the
   // env stays unset and `docsRoot()` keeps #22's content-layer fallback verbatim.
   setInternalEnv(DK_DOCS_ROOT_ENV, path.resolve(process.cwd(), docsDir));
+
+  // Excluded folders (ADR-0068): validated eagerly, checked against the tree, and
+  // published next to DK_DOCS_ROOT, which the shared walk keys them on. Absent
+  // (cleared above) when the site excludes nothing, so a site without the option
+  // builds exactly as before.
+  const excludedFolders = normalizeExcludedFolders(exclude);
+  if (excludedFolders.length) {
+    assertExcludedFoldersExist(path.resolve(process.cwd(), docsDir), excludedFolders, docsDir);
+    setInternalEnv(DK_EXCLUDE_ENV, JSON.stringify(excludedFolders));
+  }
 
   // Resolve the default → brand → consumer merge (WP01). `undefined` yields the
   // M1-degenerate path: `generated === false`, `customCss` the Default layer's

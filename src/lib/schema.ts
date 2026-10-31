@@ -50,7 +50,7 @@ import {
 import { compareCodeUnit, DOC_TYPES, KINDS, normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { retiredStampProblem } from './generator-stamp.mjs';
 import { publishDraftsInForce } from './draft-publication.mjs';
-import { walkMarkdownPaths } from './docs-walk.mjs';
+import { excludedFoldersFor, walkMarkdownPaths } from './docs-walk.mjs';
 import {
   DK_GHERKIN_RESULTS_ENV,
   gherkinIncludeSources,
@@ -311,7 +311,9 @@ export interface DocKittyLoaderOptions {
    * Glob patterns to include. Only the default is supported: the route table,
    * the draft sweep and the link gates walk the tree with `walkMarkdownPaths`,
    * which cannot see a narrowed pattern, so the loader rejects any other value
-   * rather than let the table list pages the loader never loads.
+   * rather than let the table list pages the loader never loads. To leave
+   * folders out of the site, set `exclude` on `defineDocKittyIntegrations`
+   * (ADR-0068): the walk and this loader both honour it.
    */
   pattern?: string | string[];
   /**
@@ -656,7 +658,8 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     throw new Error(
       `[dk-loader] a custom "pattern" is not supported (got ${JSON.stringify(pattern)}): the route ` +
         `table is built from the same walk as the default pattern, so a narrowed pattern would ` +
-        `rewrite .md links to pages that are never loaded. Omit "pattern".`,
+        `rewrite .md links to pages that are never loaded. Omit "pattern"; to leave folders out ` +
+        `of the site, set "exclude" on defineDocKittyIntegrations.`,
     );
   }
 
@@ -673,15 +676,32 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     return ids;
   };
 
-  const inner = glob({
-    base,
-    pattern,
-    // Astro rejects empty ids; the bundle root ("") is stored as ROOT_ENTRY_ID.
-    generateId: ({ entry }) => {
-      const id = resolveIds().get(entry) ?? readmeToIndexId(entry, { indexBasename });
-      return id || ROOT_ENTRY_ID;
-    },
-  });
+  // Astro rejects empty ids; the bundle root ("") is stored as ROOT_ENTRY_ID.
+  const generateId = ({ entry }: { entry: string }) => {
+    const id = resolveIds().get(entry) ?? readmeToIndexId(entry, { indexBasename });
+    return id || ROOT_ENTRY_ID;
+  };
+  const inner = glob({ base, pattern, generateId });
+
+  // Excluded folders (ADR-0068). The list is published by the integration, which
+  // Astro may evaluate after this module built the loader, so it is read at load
+  // time, from the same place the shared walk reads it. With folders excluded the
+  // glob gets one negated pattern per folder, so their files are never read or
+  // schema-checked, and its watcher ignores them too. With none, `inner` is used
+  // unchanged.
+  let excludingGlob: { key: string; loader: ReturnType<typeof glob> } | null = null;
+  const globFor = () => {
+    const excluded = excludedFoldersFor(path.resolve(process.cwd(), base));
+    if (excluded.length === 0) return inner;
+    const key = JSON.stringify(excluded);
+    if (excludingGlob?.key !== key) {
+      excludingGlob = {
+        key,
+        loader: glob({ base, pattern: [...DEFAULT_DOCS_PATTERN, ...excluded.map((folder) => `!${folder}/**`)], generateId }),
+      };
+    }
+    return excludingGlob.loader;
+  };
 
   // Pages that `::gherkin`-include a file re-render when it changes (see
   // `createGherkinTracker`). The state lives here, across this loader's syncs.
@@ -703,7 +723,7 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
     load: async (context: LoaderContext): Promise<void> => {
       const publishDrafts = publishDraftsInForce();
       const { store } = context;
-      await inner.load({
+      await globFor().load({
         ...gherkin.wrap(context),
         store: {
           ...store,
