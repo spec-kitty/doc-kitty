@@ -93,6 +93,10 @@ export default defineConfig({
     // until this flip. `DK_MARKUA=off` builds the same corpus preset-off for the
     // SC-003 literal-text portability gate.
     markua: MARKUA_ON,
+    // Opt-in GitHub alerts (#250, ADR-0068): a top-level `> [!NOTE]`-style
+    // blockquote renders as the matching native aside. guides/github-alerts is
+    // the fixture.
+    githubAlerts: true,
     // WP01 flexible-section-identity (adopter-loader-migration #42, anti-laziness
     // M3): both basenames collapse to their section slug in the SAME build, so
     // WP04's `index.md`-based rename target coexists with the existing
