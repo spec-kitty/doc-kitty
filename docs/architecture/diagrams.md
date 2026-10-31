@@ -2,7 +2,7 @@
 title: Diagrams
 description: "How the diagrams surface fits together: the metadata transform, the single client render owner and its token map, the opt-in seam, and the two shells."
 doc_status: active
-updated: 2026-09-07T00:00:00Z
+updated: 2026-10-31T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
@@ -154,3 +154,16 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
   self-hosted PlantUML `services:` container) with a disk cache so an unchanged
   diagram never relaunches the engines. PlantUML has no client renderer, so in
   client mode a ```plantuml block is a plain code fence.
+- **The PlantUML service is pinned and sandboxed (#251).** Every workflow runs
+  `plantuml/plantuml-server` pinned by digest, with
+  `PLANTUML_SECURITY_PROFILE=SANDBOX`. The server's default profile,
+  `INTERNET`, would fetch an `!include`/`!includeurl` of a URL while the site
+  builds. `SANDBOX` refuses every URL read, so such a diagram renders as an
+  error and fails the build. CI proves the refusal against the live service
+  before it builds: `dockitty-assert-plantuml-no-remote-include` serves a
+  canary on the runner, proves the canary is reachable from inside the service
+  container, and then requires the two include fixtures to come back as errors
+  with zero canary requests. The no-`plantuml.com` guard keeps diagram source
+  from leaving the build. This setting keeps the renderer from reaching out.
+  The recommended block is in the
+  [consumer guide](../guides/consumer-setup.md#run-the-plantuml-service-hardened).
