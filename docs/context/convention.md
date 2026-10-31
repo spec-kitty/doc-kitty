@@ -50,6 +50,7 @@ optional). An absent or empty charter resolves to the canonical defaults below.
 | `type` / `kind` vocabulary | `vocabulary.types`, `vocabulary.kinds` | **consumer-overridable** | Alias, forbid, or pass through terms over the canonical sets ([ADR-0031](../adr/0031-vocabulary-override.md)). A forbidden authored `type` hard-fails; an unknown-but-not-forbidden value warns. |
 | Sections / IA | `sections` | **consumer-overridable** | Order, labels, entries, `index_basename`, and sub-path `subtypes` — the authored section registry (twist 6 below; [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md)). |
 | `doc_status` set | `statuses.add` | **consumer-overridable, extend-only** | You may *add* statuses; the canonical set (`draft`, `active`, `deprecated`, `superseded`, `durable`) is reserved. Removing/forbidding/aliasing-away a canonical status fails closed. |
+| ADR id | `adr.id` | **consumer-overridable** | How an ADR's id is read from its file name: a `preset` (`nnnn`, the default `NNNN-` prefix, or `date-seq` for `YYYY-MM-DD-N`) or a `pattern` with a named `id` group. Ids order by date, then sequence, then id ([ADR-0068](../adr/0068-configurable-adr-id-and-frontmatter-status.md)). A malformed axis fails closed. |
 | Required-field set | `required_fields.optional` | **partly overridable, with a floor** | You may relax listed required fields for your consumer — **except `title`**, which is **fixed-doctrine** and always required. Listing `title` fails closed. |
 | `title` on every page | — | **fixed-doctrine** | Always required; cannot be relaxed. |
 | OKF `type` on every non-reserved page | — | **fixed-doctrine** | OKF v0.2's one hard requirement; every non-orphan page resolves to a non-empty `type`. |
@@ -268,12 +269,19 @@ Common Docs' ADR template uses an ADR-specific `status` (`proposed | accepted |
 …`). DocKitty keeps every file on the one convention-wide
 `doc_status` enum: frontmatter `doc_status` records the *document* lifecycle
 (`active`), while the *decision* status lives in the ADR body's `## Status`
-section.
+section. A corpus that records the decision status in frontmatter instead
+(`status: Accepted`) still shows it: when the body has **no** `## Status`
+section, the frontmatter `status` is used. The body section, when present, always
+wins ([ADR-0068](../adr/0068-configurable-adr-id-and-frontmatter-status.md)).
 
 The `adr/README.md` index table is **generated, not hand-maintained**: the ADR
 files are the source of truth, and `src/scripts/generate-adr-index.mjs` derives
 the `ID | Title | Status | Date` table from each ADR's frontmatter (`title`,
-`updated`) and body `## Status`. A lockfile-style sync-check
+`updated`, else `date`) and body `## Status` (else frontmatter `status`). The ID
+is read from the file name by the tree's ADR id rule: the `NNNN-` prefix by
+default, or the charter's `adr.id` (for example `preset: date-seq` for
+`2026-03-09-1-slug.md`). The generator and the `kind: Hub` ADR cards share this
+extractor, so they always agree. A lockfile-style sync-check
 (`generate-adr-index.mjs --check`, wired into CI as `validate:adr-index`) reds
 if the committed table drifts from the ADR sources — re-run the generator and
 commit. The example tree instead drops its table and lets the `kind: Hub` layout
