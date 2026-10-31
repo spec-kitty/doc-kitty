@@ -314,7 +314,8 @@ async function loadBeoe(beoeUrl: string): Promise<unknown> {
 
 /**
  * The default self-hosted PlantUML server for the EXAMPLE build (the D8 spike's
- * `plantuml/plantuml-server:jetty` on :8091, SVG endpoint). NEVER plantuml.com
+ * `plantuml/plantuml-server` on :8091, SVG endpoint; the workflows pin it by digest
+ * and run it with `PLANTUML_SECURITY_PROFILE=SANDBOX`, #251). NEVER plantuml.com
  * (C-001, privacy — the public endpoint uploads the source off-site). CI/deploy
  * (WP03) overrides it via `DK_PLANTUML_SERVER_URL` to point at its own service
  * container. The trailing `/svg/` is required: `astro-plantuml` builds the

@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-25T00:00:00Z
+updated: 2026-10-31T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -855,6 +855,61 @@ astro build
 When the variable is unset, the build uses `http://localhost:8091/svg/`. A
 `plantuml.com` URL stops the build, because the public server would receive
 your diagram source.
+
+#### Run the PlantUML service hardened
+
+Run the service in the form below. doc-kitty's own CI and deploy use exactly
+this form:
+
+```yaml
+# GitHub Actions: a job-level service
+services:
+  plantuml:
+    image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+    ports:
+      - 8091:8080
+    env:
+      PLANTUML_SECURITY_PROFILE: SANDBOX
+```
+
+```sh
+# Anywhere else
+docker run -d --name plantuml -p 127.0.0.1:8091:8080 \
+  -e PLANTUML_SECURITY_PROFILE=SANDBOX \
+  plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+```
+
+- **Pinned by digest.** A tag such as `:jetty` moves when a new release is
+  pushed, which silently changes your renderer. The digest fixes the exact
+  image. To upgrade, take the new `jetty-v…` tag and its digest together.
+- **`PLANTUML_SECURITY_PROFILE=SANDBOX`.** The server defaults to `INTERNET`,
+  which lets a diagram fetch over http and https. A diagram with
+  `!includeurl https://…`, or an `!include` of a URL, is then fetched while
+  your site builds. `SANDBOX` makes PlantUML refuse every URL read and every
+  local file read. Such a diagram renders as an error, and the build stops on
+  it. Diagrams that include nothing render as before. If you rely on `!include`
+  of local files, `SANDBOX` refuses those as well.
+
+To check that your running service refuses remote includes, run:
+
+```sh
+pnpm exec dockitty-assert-plantuml-no-remote-include --server http://localhost:8091/svg/
+```
+
+It starts a canary HTTP server on your machine and renders two fixture
+diagrams that include it, one with `!includeurl` and one with `!include` of a
+URL. It passes when both render as PlantUML errors and the canary receives no
+request. First it checks that a plain diagram renders, so a server that is down
+cannot pass. A refused include proves nothing if the service cannot reach the
+canary anyway. To rule that out, pass `--canary-host` (the address the service
+uses to reach your machine, such as the Docker network gateway) and
+`--service-container <id>`. The check then runs `curl` inside the container
+against the canary first, and fails if the canary is unreachable from there.
+
+A stricter setup also takes the network away from the container. For
+example, put it on a Docker network created with `--internal`, and run the
+build in a container on the same network. The security profile is the
+control this guide relies on, and the check above proves it.
 
 How the two modes are built, and why, is in
 [Diagrams](../architecture/diagrams.md) and
