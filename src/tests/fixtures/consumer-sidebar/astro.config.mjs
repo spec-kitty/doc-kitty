@@ -64,5 +64,6 @@ export default defineConfig({
     diagrams: true,
     markua: true,
     indexBasename: ['README', 'index'],
+    legacyHtmlRedirects: JSON.parse(readFileSync(new URL('legacy-redirects.json', EXAMPLE), 'utf8')),
   }),
 });
