@@ -157,9 +157,19 @@ jobs:
     # service port is a localhost port). NEVER plantuml.com (C-001).
     services:
       plantuml:
-        image: plantuml/plantuml-server:jetty
+        # Pinned by digest (#251): a re-tag of `:jetty` cannot swap the renderer.
+        # This is the multi-arch index digest of `jetty-v1.2026.9` (= `jetty` on
+        # 2026-10-18). Bump the tag and the digest together, in every workflow and
+        # in docs/guides/consumer-setup.md; plantuml-service-hardening.test.ts
+        # keeps them equal.
+        image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
         ports:
           - 8091:8080
+        # SANDBOX (#251): PlantUML refuses every URL read, so `!include`/`!includeurl`
+        # of a URL (or a remote image) in a diagram cannot reach the network. The
+        # server's own default is INTERNET, which fetches over http(s).
+        env:
+          PLANTUML_SECURITY_PROFILE: SANDBOX
     env:
       # Force BUILD mode deterministically (don't rely on Chromium auto-detect), and
       # point PlantUML at the job service (SVG endpoint — the trailing /svg/ matters).
@@ -204,6 +214,20 @@ jobs:
             echo "waiting for PlantUML ($i/30)…"; sleep 2
           done
           echo "PlantUML did not become ready on :8091" >&2; exit 1
+      # #251: prove the running service REFUSES a remote include instead of
+      # fetching it. A canary HTTP server on the runner counts requests; the
+      # service reaches the runner at its Docker network gateway. `curl` inside
+      # the service container first proves the canary is reachable from there,
+      # so a refusal cannot be a network that simply cannot reach it. Then the
+      # `!includeurl` / `!include <url>` fixtures must render as PlantUML errors
+      # with zero canary requests. Node built-ins only, so it runs before install.
+      - name: Assert PlantUML refuses remote includes
+        run: |
+          GATEWAY=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}' "${{ job.services.plantuml.id }}")
+          node src/scripts/assert-plantuml-no-remote-include.mjs \
+            --server http://localhost:8091/svg/ \
+            --canary-host "$GATEWAY" \
+            --service-container "${{ job.services.plantuml.id }}"
       # Shared build definition (WP03 composite; also reused by WP05 deploy).
       - name: Build example site
         uses: ./.github/actions/build-example

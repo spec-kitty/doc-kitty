@@ -39,7 +39,7 @@ beforeAll(() => {
 describe('regenerate job render setup (#106, FR-001..FR-003, NFR-001/NFR-002)', () => {
   it('declares a plantuml service using the self-hosted jetty image (C-001, FR-001)', () => {
     expect(workflow).toMatch(/^\s*plantuml:\s*$/m);
-    expect(workflow).toContain('image: plantuml/plantuml-server:jetty');
+    expect(workflow).toMatch(/image: plantuml\/plantuml-server:jetty-v[\d.]+@sha256:[0-9a-f]{64}$/m);
   });
 
   it('forces deterministic BUILD render mode (FR-002)', () => {

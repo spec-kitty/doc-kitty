@@ -1,0 +1,6 @@
+@startuml
+' #251 fixture: `!include` of a URL takes the same path as `!includeurl`,
+' and must be refused too.
+!include {{CANARY_URL}}
+Alice -> Bob : local
+@enduml
