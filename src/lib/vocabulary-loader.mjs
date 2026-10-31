@@ -32,6 +32,7 @@ import {
   parseVocabulary,
   parseVocabularyAxis,
 } from './vocabulary-core.mjs';
+import { resolveAdrIdRule } from './adr-id.mjs';
 
 /**
  * @typedef {import('./vocabulary-core.mjs').VocabularyResolver} VocabularyResolver
@@ -212,7 +213,7 @@ const CANONICAL_DEFAULTS = parseCharter('');
  * key — never a swallowed default.
  *
  * @param {string} docsRoot
- * @returns {{ resolved: ResolvedCharter, data: Record<string, unknown>, source: string } | null}
+ * @returns {{ resolved: ResolvedCharter & { adrId: import('./adr-id.mjs').AdrIdRule }, data: Record<string, unknown>, source: string } | null}
  */
 function parseCharterFile(docsRoot) {
   const file = path.join(docsRoot, CHARTER_REGISTRY_RELPATH);
@@ -226,7 +227,10 @@ function parseCharterFile(docsRoot) {
       parsed != null && typeof parsed === 'object' && !Array.isArray(parsed)
         ? /** @type {Record<string, unknown>} */ (parsed)
         : {};
-    return { resolved, data, source };
+    // The `adr` axis (#248, ADR-0068) is resolved here, not in the pure core,
+    // because its rule module orders ids with the core's `compareCodeUnit`.
+    const adrId = resolveAdrIdRule(data.adr, source);
+    return { resolved: { ...resolved, adrId }, data, source };
   } catch (/** @type {unknown} */ err) {
     const detail = err instanceof Error ? err.message : String(err);
     // The pure-core validators already prefix `${source}:` and name the offending
@@ -246,8 +250,10 @@ function parseCharterFile(docsRoot) {
  * mirroring `loadVocabulary`'s posture that an authored-but-broken file is a hard
  * error, never a silent skip.
  *
+ * The result also carries `adrId`, the resolved ADR id rule (#248, ADR-0068).
+ *
  * @param {string} docsRoot
- * @returns {ResolvedCharter | null}
+ * @returns {(ResolvedCharter & { adrId: import('./adr-id.mjs').AdrIdRule }) | null}
  */
 export function loadCharter(docsRoot) {
   const parsed = parseCharterFile(docsRoot);
