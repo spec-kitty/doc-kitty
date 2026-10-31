@@ -277,7 +277,7 @@ jobs:
       - name: Assert redirect coverage (drafts off)
         env:
           DK_PUBLISH_DRAFTS: 'off'
-        run: node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist-nodrafts --docs example/docs --declared-redirects example/redirects.json
+        run: node src/scripts/check-redirect-coverage.mjs example/url-baseline.txt example/dist-nodrafts --docs example/docs --declared-redirects example/redirects.json --declared-redirects example/legacy-redirects.json
       # Publish the drafts-off dist too (layout-guards-decisions WP08, FR-012): the
       # a11y lane's `published-*` projects measure the sidebar readers see on it.
       # Additive, like the upload above: no assertion, no change to this lane.

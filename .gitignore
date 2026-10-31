@@ -137,6 +137,10 @@ example/.dk-test-loader-includes/
 # src/tests/gherkin-results-build.test.ts builds it, then removes it.
 example/.dk-test-gherkin-results/
 
+# Legacy .html redirects fixture site (ADR-0068, transient) —
+# src/tests/legacy-html-redirects-build.test.ts builds it, then removes it.
+example/.dk-test-legacy-html/
+
 # @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.
 .beoe-cache/

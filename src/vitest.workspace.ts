@@ -58,6 +58,10 @@ const BUILD_SUITES = [
   // then another, to prove the pages that show results re-render when only the
   // report changes, and that an unreadable report fails the build.
   'tests/gherkin-results-build.test.ts',
+  // Legacy `.html` redirects (ADR-0068): builds a fixture site (in
+  // `example/.dk-test-legacy-html/`) at the domain root and under a base path,
+  // and once with a refused Astro `.html` redirect key. Real Astro runs.
+  'tests/legacy-html-redirects-build.test.ts',
 ];
 
 export default defineWorkspace([

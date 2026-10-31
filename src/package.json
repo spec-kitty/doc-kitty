@@ -47,6 +47,7 @@
     "dockitty-check-links": "./scripts/check-links.mjs",
     "dockitty-assert-no-broken-links": "./scripts/assert-no-broken-links.mjs",
     "dockitty-check-redirect-coverage": "./scripts/check-redirect-coverage.mjs",
+    "dockitty-generate-legacy-redirects": "./scripts/generate-legacy-redirects.mjs",
     "dockitty-validate-catalog": "./scripts/validate-catalog.mjs",
     "dockitty-new-doc": "./scripts/new-doc.mjs",
     "dockitty-scaffold": "./scripts/scaffold.mjs",
