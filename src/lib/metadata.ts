@@ -17,6 +17,8 @@
 import { isPresentationEntry } from './deck/is-presentation.js';
 import { feedInstant, isGeneratedStamp } from './generator-stamp.mjs';
 import { hrefOfSlug } from './with-base.js';
+import { excludingFolder, parsePublishedExclude } from './docs-walk.mjs';
+import { DK_EXCLUDE_ENV } from './internal-env.mjs';
 // The section vocabulary + type-derivation lives in ONE fs-free, Astro-free place
 // (#49 IC-01/IC-02): `vocabulary-core.mjs`. `metadata.ts` stays fs-free by
 // importing ONLY the pure core (never `sections.ts`/the loader). The `DocType`/
@@ -577,6 +579,13 @@ export function resolveRelated(ref: RelatedRef, index: DocsIndex): ResolvedRelat
   const entryNote = typeof ref === 'string' ? undefined : ref.note;
   const target = index[slug];
   if (!target) {
+    // A ref into a folder the site excludes (ADR-0068) gets its own message.
+    const folder = excludingFolder(slug.replace(/^\/+|\/+$/g, ''), parsePublishedExclude(process.env[DK_EXCLUDE_ENV]));
+    if (folder !== undefined) {
+      throw new Error(
+        `resolveRelated: related reference "${slug}" — target is excluded from the site (the folder "${folder}" is in exclude, in defineDocKittyIntegrations); link to a published page, or drop the reference (build-fatal, FR-004).`,
+      );
+    }
     throw new Error(
       `resolveRelated: dangling related reference "${slug}" — no page with that slug in the docs index (build-fatal, FR-004).`,
     );

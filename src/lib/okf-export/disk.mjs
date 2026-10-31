@@ -8,7 +8,7 @@
  */
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { walkMarkdownPaths } from '../docs-walk.mjs';
+import { excludedFoldersFor, isExcludedPath, isInsideExcludedFolder, walkMarkdownPaths } from '../docs-walk.mjs';
 import { exportOkfBundle } from './core.mjs';
 
 /**
@@ -23,7 +23,9 @@ export function readDocsSources(docsDir) {
   const logs = readdirSync(root, { recursive: true, withFileTypes: true })
     .filter((e) => e.isFile() && e.name === 'log.md')
     .map((e) => path.relative(root, path.join(e.parentPath, e.name)).split(path.sep).join('/'))
-    .filter((rel) => !rel.split('/').some((seg) => seg.startsWith('.') || seg === '_meta'));
+    .filter((rel) => !rel.split('/').some((seg) => seg.startsWith('.') || seg === '_meta'))
+    // A log in a folder the site excludes (ADR-0068) is no more exported than its pages.
+    .filter((rel) => !isInsideExcludedFolder(root) && !isExcludedPath(rel, excludedFoldersFor(root)));
   return new Map([...walkMarkdownPaths(root), ...logs].map((rel) => [rel, readFileSync(path.join(root, rel), 'utf8')]));
 }
 

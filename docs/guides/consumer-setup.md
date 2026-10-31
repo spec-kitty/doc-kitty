@@ -205,6 +205,49 @@ If you pass your own `sidebar` here, or through the `starlight` option, it is
 rendered exactly as you wrote it. A `starlight.routeMiddleware` of your own runs
 after the toolkit's, on the route data the toolkit has already shaped.
 
+### Leave folders out of the site
+
+A docs tree often holds folders you keep in git but do not publish: an archive,
+internal reports, working notes. List them once, in `exclude`, relative to your
+docs folder:
+
+```js
+defineDocKittyIntegrations({
+  title: 'My Docs',
+  exclude: ['archive', 'reports', 'plans/engineering-notes'],
+});
+```
+
+Nothing under a listed folder is part of the site. It gets no page, no sidebar
+entry, no search record, and no line in the sitemap, `rss.xml`, `llms.txt` or the
+agent API. The loader does not read the files, so their frontmatter is not
+checked, and `dockitty-validate-frontmatter` and `dockitty-check-links --strict`
+skip them too. You do not edit the files, and you do not mark them as drafts.
+
+- **Folders, not patterns.** Each entry is a folder path relative to `docsDir`,
+  with no glob syntax. `archive` leaves out `archive/` and everything under it,
+  but not `archived/`. To leave out several folders, list each one.
+- **Each folder must exist, with the same letter case.** A typo would otherwise
+  publish the folder, so the config fails with `[dk-config] exclude: "…" is not a
+  folder under docs`.
+- **A link into an excluded folder is a broken link.** `dockitty-check-links
+  --strict` reports it as `link target is excluded from the site (the folder
+  "archive" is in exclude …)`, and a `related:` ref into one fails the build with
+  the same words. `dockitty-assert-no-broken-links` reports a link to an
+  excluded page as `target is excluded from the site` when you pass `--docs
+  <your docs folder>`; without `--docs` it still fails the link, as `no matching
+  page or file in dist`.
+- `_meta/` stays reserved, as before; you do not list it.
+
+The gates read `exclude` from `astro.config.mjs`, like the index names, and print
+the list:
+
+```text
+excluded folders: archive, reports, plans/engineering-notes (from astro.config.mjs)
+```
+
+[ADR-0068](../adr/0068-excluded-folders.md) explains the design.
+
 ## 4. `src/content.config.ts` — register the collections
 
 Register the `docs` collection Starlight expects, plus the two citation-catalog
@@ -580,8 +623,12 @@ your package manager rather than by a path into `node_modules`:
 ```sh
 pnpm exec dockitty-validate-frontmatter docs
 pnpm exec dockitty-check-links docs --strict
-astro build && pnpm exec dockitty-assert-no-broken-links dist --base /docs --site https://you.example.com
+astro build && pnpm exec dockitty-assert-no-broken-links dist --base /docs --site https://you.example.com --docs docs
 ```
+
+`--docs docs` lets the built-link gate read the folders you
+[exclude](#leave-folders-out-of-the-site), so a link into one is named as such.
+Leave it out if you exclude nothing.
 
 The gates read your index names from the `indexBasename` in `astro.config.mjs`, so
 they agree with the build. `dockitty-check-links`, `dockitty-assert-build-artifacts`
@@ -1178,9 +1225,9 @@ gherkin: {
 
 ## Internal environment names
 
-DocKitty passes six settings between its own parts through environment
+DocKitty passes seven settings between its own parts through environment
 variables: `DK_INDEX_BASENAME`, `DK_GHERKIN_RESULTS`, `DK_GHERKIN_ROUTE`,
-`DK_PUBLISH_DRAFTS_RESOLVED`, `DK_DOCS_ROOT` and `DK_MARKUA`. DocKitty sets these for its own
+`DK_PUBLISH_DRAFTS_RESOLVED`, `DK_DOCS_ROOT`, `DK_MARKUA` and `DK_EXCLUDE`. DocKitty sets these for its own
 use; never set them by hand. DocKitty clears any value you set when the config loads.
 Set the matching option on `defineDocKittyIntegrations` instead.
 ([ADR-0057](../adr/0057-internal-env-handoff-seam.md) explains the design.)

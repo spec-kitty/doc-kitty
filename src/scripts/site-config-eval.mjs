@@ -20,6 +20,8 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { findAstroConfig, findSiteRoot, viteEnvDirOf } from '../lib/draft-publication.mjs';
 import { DK_INDEX_BASENAME_ENV as ENV_NAME, parsePublishedIndexBasenames } from '../lib/vocabulary-core.mjs';
+import { DK_DOCS_ROOT_ENV, DK_EXCLUDE_ENV } from '../lib/internal-env.mjs';
+import { parsePublishedExclude } from '../lib/docs-walk.mjs';
 
 /**
  * How long a site config may take to evaluate. A config that hangs (a network
@@ -28,7 +30,13 @@ import { DK_INDEX_BASENAME_ENV as ENV_NAME, parsePublishedIndexBasenames } from 
  */
 export const EVALUATE_TIMEOUT_MS = 30_000;
 
-/** @typedef {{ names: string[] | null, envDir: string | false | null }} EvaluatedConfig */
+/**
+ * @typedef {{ names: string[] | null, envDir: string | false | null,
+ *   exclude: string[], docsRoot: string | null }} EvaluatedConfig
+ * `exclude`: the folders the site leaves out (ADR-0068), relative to `docsRoot`,
+ * the absolute docs root the config named (null when it never called
+ * `defineDocKittyIntegrations`).
+ */
 
 /** Config path -> what evaluating it gave (names null: it never published; envDir null: it sets none). */
 const evaluated = new Map();
@@ -75,6 +83,8 @@ function evaluateConfigFile(configPath, siteDir, tool, timeoutMs) {
   if (cached) return cached;
   const env = { ...process.env };
   delete env[ENV_NAME];
+  delete env[DK_EXCLUDE_ENV];
+  delete env[DK_DOCS_ROOT_ENV];
   const res = spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--evaluate', configPath, siteDir], {
     cwd: siteDir,
     env,
@@ -92,7 +102,7 @@ function evaluateConfigFile(configPath, siteDir, tool, timeoutMs) {
   }
   if (!answer.ok) throw fail(answer.message);
   /** @type {EvaluatedConfig} */
-  const result = { names: answer.names, envDir: answer.envDir ?? null };
+  const result = { names: answer.names, envDir: answer.envDir ?? null, exclude: answer.exclude ?? [], docsRoot: answer.docsRoot ?? null };
   evaluated.set(configPath, result);
   return result;
 }
@@ -172,7 +182,7 @@ export function evalRefusal(err, label) {
 }
 
 /** Child-process side of {@link evaluateConfigFile}: print one JSON answer line,
- * `{ ok, names, envDir }`. */
+ * `{ ok, names, envDir, exclude, docsRoot }`. */
 async function evaluate(configPath, siteDir) {
   try {
     const astroPkg = createRequire(join(siteDir, 'package.json')).resolve('astro/package.json');
@@ -182,7 +192,9 @@ async function evaluate(configPath, siteDir) {
     const names = parsePublishedIndexBasenames(process.env[ENV_NAME]) ?? null;
     // Vite's raw `envDir` (`envFile: false` folded in): the build resolves it against the site root (FR-010a).
     const envDir = viteEnvDirOf(module?.default?.vite) ?? null;
-    console.log(JSON.stringify({ ok: true, names, envDir }));
+    const exclude = parsePublishedExclude(process.env[DK_EXCLUDE_ENV]);
+    const docsRoot = process.env[DK_DOCS_ROOT_ENV] ?? null;
+    console.log(JSON.stringify({ ok: true, names, envDir, exclude, docsRoot }));
   } catch (err) {
     console.log(JSON.stringify({ ok: false, message: err instanceof Error ? err.message : String(err) }));
   }
