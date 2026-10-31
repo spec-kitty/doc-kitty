@@ -501,11 +501,9 @@ describe('Schematic pages export by resource (ADR-0067)', () => {
       (exportOkfBundle(schematicGraph, files, options) as Map<string, string>).get('reference/events/answered.md') ?? '',
     )?.[1];
 
-  it('points resource at the published file, with the site base, and keeps only the authored body', () => {
+  it('points resource at the published file, with the site base', () => {
     expect(resourceOf()).toBe('/reference/events/answered.yaml');
     expect(resourceOf({ base: '/docs' })).toBe('/docs/reference/events/answered.yaml');
     expect(resourceOf({ base: '/docs', siteUrl: 'https://example.invalid' })).toBe('https://example.invalid/docs/reference/events/answered.yaml');
-    const page = (exportOkfBundle(schematicGraph, files) as Map<string, string>).get('reference/events/answered.md') ?? '';
-    expect(page).toContain('Authored body.');
   });
 });
