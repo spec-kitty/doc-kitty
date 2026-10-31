@@ -71,6 +71,12 @@
  * config found, `README` is assumed and a warning says so; `--astro-config <path>`
  * names a config elsewhere (it applies to every strict root). Footnote
  * definitions (`[^label]: text`) are not links.
+ *
+ * Excluded folders (ADR-0068). The same config's `exclude` list applies to a
+ * strict root that is the site's docs root: the files under those folders are
+ * not checked, and a relative link, folder link, root-absolute link or
+ * `related:` ref into one is reported as "excluded from the site". A non-strict
+ * root is read as files and does not read the list.
  */
 import { readdirSync, statSync, existsSync, readFileSync, realpathSync } from 'node:fs';
 import { join, relative, dirname, resolve, extname, sep } from 'node:path';
@@ -84,7 +90,7 @@ import {
   unpublishedDraftPaths,
 } from '../lib/draft-publication.mjs';
 import { buildRouteTable, formatRouteCollisions, isPlainIndexName, resolveIndexEntries, resolveRelativeDocLink } from '../lib/vocabulary-core.mjs';
-import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
+import { excludedFoldersFor, excludedMarkdownPaths, excludingFolder, walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { assertEvaluatedConfigDecides } from './site-config-eval.mjs';
 
@@ -263,7 +269,9 @@ Options:
                                 the docs root and comes back, a link to a file outside the docs
                                 tree, a malformed % escape, a folder link whose folder has no
                                 index page, a bare relative link with no extension, and (with
-                                DK_PUBLISH_DRAFTS=off) a link to a draft page.
+                                DK_PUBLISH_DRAFTS=off) a link to a draft page. Folders the site
+                                leaves out (exclude, in astro.config.*) are not checked, and a
+                                link into one is reported as excluded from the site.
   --index-basename <name[,…]>   Section-index file name(s) without extension. Read from the
                                 site's astro.config.* (indexBasename) when there is one; use
                                 this flag only for a site without one (default README). With a
@@ -332,7 +340,7 @@ function decodePath(target) {
  * itself a draft). `unpublished` is the set of draft files the build withholds,
  * used for the reason only.
  */
-function checkMarkdownLink({ file, absRoot, target, routes, unpublished }) {
+function checkMarkdownLink({ file, absRoot, target, routes, unpublished, excluded }) {
   const sourcePath = relative(absRoot, file).split(sep).join('/');
   if (resolveRelativeDocLink(routes, sourcePath, target) !== null) return null;
 
@@ -349,6 +357,8 @@ function checkMarkdownLink({ file, absRoot, target, routes, unpublished }) {
     return 'link leaves the docs tree, so on a built site it is a 404 — link to a page inside the docs tree, or use an absolute URL';
   }
   const targetPath = relative(absRoot, abs).split(sep).join('/');
+  const folder = excludingFolder(targetPath, excluded);
+  if (folder !== undefined) return excludedReason('link', folder);
   if (unpublished.has(targetPath)) return DRAFT_REASON_LINK;
   if (Object.hasOwn(routes, targetPath)) {
     return `link goes up out of the docs root and back in, so the build does not rewrite it — link to the page by its route, ${routes[targetPath]}, or by a relative path that stays inside the docs root`;
@@ -360,6 +370,20 @@ const DRAFT_REASON =
   'points at a draft page, which is not built with DK_PUBLISH_DRAFTS=off — ' +
   'publish the target, mark this page draft, or drop the link';
 const DRAFT_REASON_LINK = `link ${DRAFT_REASON}`;
+
+/**
+ * The report for a link or `related:` ref into an excluded folder (ADR-0068): the
+ * site never builds it, so on the site it is a broken link.
+ *
+ * @param {string} subject `link` or `related ref`
+ * @param {string} folder the excluded folder that holds the target
+ */
+function excludedReason(subject, folder) {
+  return (
+    `${subject} target is excluded from the site (the folder "${folder}" is in exclude, in defineDocKittyIntegrations), ` +
+    'so on the built site it is a broken link — link to a published page, or drop the link'
+  );
+}
 
 /** CLI entry point: scan every `.md`/`.mdx` under each root for dangling refs. */
 export function run(argv) {
@@ -505,10 +529,23 @@ export function run(argv) {
     }).routes;
     // A folder link is answered from routes: does a page have this route, and is
     // it an unpublished draft. A root-absolute link is asked only the second.
+    // Folders the site leaves out of the build (ADR-0068): read from the site
+    // config for a strict root (the shared walk above already skipped them). A
+    // link into one gets its own report, keyed by file path and by route.
+    const excluded = strict ? excludedFoldersFor(absRoot) : [];
+    /** @type {Map<string, string>} route -> excluded folder */
+    const excludedRoutes = new Map();
+    if (excluded.length) {
+      const hidden = excludedMarkdownPaths(absRoot, excluded);
+      const hiddenRoutes = buildRouteTable(hidden, { indexBasename: indexBasenames }).routes;
+      for (const rel of hidden) excludedRoutes.set(hiddenRoutes[rel], /** @type {string} */ (excludingFolder(rel, excluded)));
+      for (const folder of excluded) excludedRoutes.set(routeOfPath(folder), folder);
+    }
     const routeTables = {
       absRoot,
       pageRoutes: new Set(Object.values(allRoutes)),
       draftRoutes: strict && !publishDrafts ? draftRoutesOf(absRoot, indexBasenames) : new Set(),
+      excluded,
     };
     // `related:` refs are page ids, as the build reads them (`resolveRelated`
     // looks a ref up by slug, not by route). The ids come from the shared rule;
@@ -561,7 +598,12 @@ export function run(argv) {
           // A root-absolute route is not resolved here (see the module comment),
           // but whether it names a draft page is a fact about the route.
           const absolute = stripFragment(rawTarget.trim());
-          if (checkDrafts && /^\/(?!\/)/.test(absolute) && routeTables.draftRoutes.has(routeOfPath(decodePath(absolute)))) {
+          const isRootAbsolute = /^\/(?!\/)/.test(absolute);
+          const hiddenBy = isRootAbsolute && excludedRoutes.size ? excludedRoutes.get(routeOfPath(decodePath(absolute))) : undefined;
+          if (hiddenBy !== undefined) {
+            checked++;
+            report(rel, `${excludedReason('link', hiddenBy)} → ${rawTarget}`);
+          } else if (checkDrafts && isRootAbsolute && routeTables.draftRoutes.has(routeOfPath(decodePath(absolute)))) {
             checked++;
             report(rel, `link ${DRAFT_REASON} → ${rawTarget}`);
           }
@@ -585,6 +627,7 @@ export function run(argv) {
             target: classified.target,
             routes: sourceUnpublished ? allRoutes : visibleRoutes,
             unpublished,
+            excluded,
           });
           if (problem) {
             report(rel, `${problem} → ${rawTarget}`);
@@ -594,7 +637,7 @@ export function run(argv) {
         const candidate = resolve(dirname(file), decodePath(classified.target));
         const status = routeStatus(candidate, routeTables);
         const folder = relative(absRoot, candidate).split(sep).join('/');
-        const problem = problemOf(status, { subject: 'link', checkDrafts, indexBasenames, folder });
+        const problem = problemOf(status, { subject: 'link', checkDrafts, indexBasenames, folder, excluded });
         if (problem) {
           report(rel, `${problem} → ${rawTarget}`);
         }
@@ -611,10 +654,11 @@ export function run(argv) {
         }
         continue;
       }
-      for (const { ref } of refs) {
+      for (const { ref, id } of refs) {
         const published = slugPublished.get(ref);
-        const status = published === undefined ? 'missing' : published ? 'published' : 'draft';
-        const problem = problemOf(status, { subject: 'related ref', checkDrafts, indexBasenames });
+        let status = published === undefined ? 'missing' : published ? 'published' : 'draft';
+        if (status === 'missing' && excludingFolder(id.replace(/^\/+|\/+$/g, ''), excluded) !== undefined) status = 'excluded';
+        const problem = problemOf(status, { subject: 'related ref', checkDrafts, indexBasenames, folder: id, excluded });
         if (problem) {
           report(rel, `${problem} → ${ref}`);
         }
@@ -662,15 +706,17 @@ function routeOfPath(path) {
  *     when `DK_PUBLISH_DRAFTS` is off (the caller decides whether that counts);
  *   - `no-index`: the target is a folder in the docs tree but no page has its
  *     route;
+ *   - `excluded`: the target is inside a folder the site excludes (ADR-0068);
  *   - `missing`: nothing is there.
  *
  * @param {string} candidate absolute path the target names
- * @param {{ absRoot: string, pageRoutes: Set<string>, draftRoutes: Set<string> }} tables
- * @returns {'published' | 'draft' | 'no-index' | 'missing'}
+ * @param {{ absRoot: string, pageRoutes: Set<string>, draftRoutes: Set<string>, excluded: string[] }} tables
+ * @returns {'published' | 'draft' | 'no-index' | 'excluded' | 'missing'}
  */
-function routeStatus(candidate, { absRoot, pageRoutes, draftRoutes }) {
+function routeStatus(candidate, { absRoot, pageRoutes, draftRoutes, excluded }) {
   const rel = relative(absRoot, candidate).split(sep).join('/');
   if (rel.split('/')[0] === '..') return resolvesToDoc(candidate) ? 'published' : 'missing';
+  if (excludingFolder(rel, excluded) !== undefined && resolvesToDoc(candidate)) return 'excluded';
   const route = routeOfPath(rel);
   if (pageRoutes.has(route)) return draftRoutes.has(route) ? 'draft' : 'published';
   return existsSync(candidate) && statSync(candidate).isDirectory() ? 'no-index' : 'missing';
@@ -681,9 +727,10 @@ function routeStatus(candidate, { absRoot, pageRoutes, draftRoutes }) {
  * `subject` is `link` or `related ref`; a draft target is a problem only when
  * `checkDrafts` (drafts withheld, and the page holding the link is published).
  */
-function problemOf(status, { subject, checkDrafts, indexBasenames, folder }) {
+function problemOf(status, { subject, checkDrafts, indexBasenames, folder, excluded = [] }) {
   if (status === 'published' || (status === 'draft' && !checkDrafts)) return null;
   if (status === 'draft') return `${subject} ${DRAFT_REASON}`;
+  if (status === 'excluded') return excludedReason(subject, /** @type {string} */ (excludingFolder(folder.replace(/^\/+|\/+$/g, ''), excluded)));
   if (subject === 'related ref') return 'dangling related ref';
   if (status === 'missing') return 'dangling link';
   return `link names the folder "${folder}", which has no index page (${indexBasenames.join(', ')}), so the build has no page at its route — add one, or link to a file in the folder`;

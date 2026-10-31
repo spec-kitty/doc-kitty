@@ -58,6 +58,12 @@ per-config build state; see [ADR-0058](./0058-build-state-owner-and-config-split
    *Amended 2026-10-18 (#113): a sixth name, `DK_MARKUA` (written at define by
    `defineDocKittyIntegrations` when `markua: true`; read by the glossary
    re-derive in `OnThisPage.astro`), joins the table under the same rules.*
+
+   *Amended 2026-10-31 (#247): a seventh name, `DK_EXCLUDE` (written at define by
+   `defineDocKittyIntegrations` when `exclude` lists folders; read by the shared
+   docs walk and the config evaluator of the CLIs), joins the table under the same
+   rules and, like `DK_INDEX_BASENAME`, keeps a format check. See
+   [ADR-0068](./0068-excluded-folders.md).*
 3. **A config definition starts clean.** `defineDocKittyIntegrations` calls
    `clearInternalEnv` first, so a later config never inherits an earlier one's
    values.
