@@ -67,7 +67,6 @@ function parseDkTokens(block: string): Record<string, string> {
   const tokens: Record<string, string> = {};
   const declRe = /(--dk-[\w-]+)\s*:\s*([^;]+);/g;
   let match: RegExpExecArray | null;
-  // eslint-disable-next-line no-cond-assign
   while ((match = declRe.exec(block)) !== null) {
     tokens[match[1].trim()] = match[2].trim();
   }
