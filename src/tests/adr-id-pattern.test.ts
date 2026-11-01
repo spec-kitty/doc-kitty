@@ -165,6 +165,8 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     // would clash with `id` if lowercased.
     ['^(?<ID>ADR)-(?<id>\\d+)-\\k<ID>', 'ADR-5-ADR', '5'],
     ['^(?<ID>ADR)-(?<id>\\d+)-\\k<ID>', 'ADR-5-RFC', null],
+    // `i` covers the whole pattern: a negated upper-case class excludes `k` too.
+    ['^(?<id>adr-\\d+)-[^A-Z]', 'adr-1-k', null],
   ])('keeps the meaning of case-significant tokens in %j on %j', (pattern, leaf, id) => {
     const rule = resolveAdrIdRule({ id: { pattern } }, 'charter.yaml');
     expect(matchAdrId(leaf, rule)?.id ?? null).toBe(id);
