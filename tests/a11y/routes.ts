@@ -125,6 +125,13 @@ export const ROUTES = {
   // headings become `p[role=heading]`), and a `gherkin raw` fence that stays
   // code. Structure is asserted by gherkin.spec.ts; axe scans it below.
   scenariosInPages: `${BASE}/guides/scenarios-in-pages/`,
+  // OpenAPI reference pages (mission openapi-reference-pages, WP03), rendered at
+  // build time from example/openapi/*.yaml: `v1` released, `main` unreleased. The
+  // overview, and one operation page with a request body and a component schema.
+  // Structure and chrome are asserted by openapi.spec.ts; axe scans them below.
+  openApiV1: `${BASE}/reference/api/v1/`,
+  openApiMain: `${BASE}/reference/api/main/`,
+  openApiOperation: `${BASE}/reference/api/v1/operations/createparcel/`,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -320,6 +327,18 @@ const STARLIGHT_BEHAVIOUR_DRAFT_GUARD_ROOTS = [
 export const GHERKIN_STEP_ROOT = 'main .dk-gherkin ul li';
 const STARLIGHT_GHERKIN_GUARD_ROOTS = [...STARLIGHT_GUARD_ROOTS, GHERKIN_STEP_ROOT] as const;
 
+// OpenAPI reference-page non-vacuity (mission openapi-reference-pages, WP03): the
+// version nav `PageTitle` renders only on a reference page, and an operation page
+// carries the renderer's method badge, so a page that fell back to plain content or
+// lost the chrome fails the gate before axe could report a clean zero.
+export const OPENAPI_NAV_ROOT = 'main .dk-openapi-nav';
+export const OPENAPI_METHOD_ROOT = 'main .sl-openapi-operation-method-badge';
+const STARLIGHT_OPENAPI_GUARD_ROOTS = [...STARLIGHT_GUARD_ROOTS, OPENAPI_NAV_ROOT] as const;
+const STARLIGHT_OPENAPI_OPERATION_GUARD_ROOTS = [
+  ...STARLIGHT_OPENAPI_GUARD_ROOTS,
+  OPENAPI_METHOD_ROOT,
+] as const;
+
 // The axe coverage set: the four in-frame Starlight surfaces + the diagram
 // demonstrator (WP06 T020) + the out-of-frame showcase deck, each run in BOTH
 // colour modes. The diagram routes (demonstrator + deck) carry a `renderWait` gate
@@ -476,6 +495,27 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.scenariosInPages,
     shell: 'starlight',
     guardRoots: STARLIGHT_GHERKIN_GUARD_ROOTS,
+  },
+  // openapi-reference-pages (WP03, NFR-003) — the reference pages, scanned in BOTH
+  // colour modes: the released version's overview, the unreleased one (its badge),
+  // and an operation page. No `renderWait` (all build-time SSR).
+  {
+    name: 'API reference, released (/reference/api/v1/)',
+    path: ROUTES.openApiV1,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_OPENAPI_GUARD_ROOTS,
+  },
+  {
+    name: 'API reference, unreleased (/reference/api/main/)',
+    path: ROUTES.openApiMain,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_OPENAPI_GUARD_ROOTS,
+  },
+  {
+    name: 'API reference, operation (/reference/api/v1/operations/createparcel/)',
+    path: ROUTES.openApiOperation,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_OPENAPI_OPERATION_GUARD_ROOTS,
   },
 ];
 

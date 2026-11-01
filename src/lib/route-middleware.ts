@@ -20,7 +20,7 @@
  */
 import { defineRouteMiddleware } from '@astrojs/starlight/route-data';
 import { routeShaping } from 'virtual:doc-kitty/route-shaping';
-import { resolveIndexLabel, shapePagination, shapeSidebar, shapeToc, shapingWarningSink } from './route-shaping.js';
+import { relabelledLinks, resolveIndexLabel, shapePagination, shapeSidebar, shapeToc, shapingWarningSink } from './route-shaping.js';
 
 const directoryMeta = new Map(routeShaping.directoryMeta);
 
@@ -44,6 +44,9 @@ export const onRequest = defineRouteMiddleware((context) => {
       prev: routeShaping.pagination && prev === undefined,
       next: routeShaping.pagination && next === undefined,
     });
+    // Handed on for a later middleware that rebuilds prev/next from the shaped sidebar
+    // (the OpenAPI renderer's, which runs after this one on every page).
+    context.locals.dkRelabelled = relabelledLinks(route.sidebar, sidebar);
     route.sidebar = sidebar;
   }
 

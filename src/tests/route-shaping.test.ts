@@ -22,6 +22,8 @@ import {
   INDEX_LABEL_KEY,
   resolveIndexLabel,
   shapePagination,
+  relabelledLinks,
+  restorePaginationTitles,
   shapeSidebar,
   shapeToc,
   REVEAL_CURRENT_SCRIPT,
@@ -493,6 +495,30 @@ describe('shapeToc (T021, FR-011)', () => {
 
   it('passes through an already absent table of contents', () => {
     expect(shapeToc(undefined)).toBeUndefined();
+  });
+});
+
+describe('restorePaginationTitles (a later middleware rebuilds prev/next from the shaped sidebar)', () => {
+  type Link = NonNullable<RoutePagination['prev']>;
+  const link = (href: string, label: string): Link =>
+    ({ type: 'link', href, label, isCurrent: false, attrs: {}, badge: undefined }) as Link;
+  const group = (entries: Link[]): SidebarEntry[] => [{ type: 'group', label: 'Guides', collapsed: false, badge: undefined, entries }];
+  const original = group([link('/g/', 'Guides'), link('/g/a/', 'A')]);
+  const shaped = group([link('/g/', 'Overview'), link('/g/a/', 'A')]);
+
+  it('names the section index by its page title again, and leaves other links alone', () => {
+    const relabelled = relabelledLinks(original, shaped);
+    expect([...relabelled]).toEqual([['/g/', { shaped: 'Overview', original: 'Guides' }]]);
+    const rebuilt = restorePaginationTitles({ prev: link('/g/', 'Overview'), next: link('/g/a/', 'A') }, relabelled);
+    expect(rebuilt.prev?.label).toBe('Guides');
+    expect(rebuilt.next?.label).toBe('A');
+  });
+
+  it('keeps a label the author set, and returns the same object when there is nothing to restore', () => {
+    const relabelled = relabelledLinks(original, shaped);
+    const custom = { prev: link('/g/', 'Back to the start'), next: undefined };
+    expect(restorePaginationTitles(custom, relabelled)).toBe(custom);
+    expect(restorePaginationTitles(custom, new Map())).toBe(custom);
   });
 });
 

@@ -13,6 +13,7 @@ import { defineConfig } from 'astro/config';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
+import starlightOpenAPI from 'starlight-openapi';
 import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty/index.ts';
 
 const BASE = '/doc-kitty';
@@ -44,5 +45,14 @@ export default defineConfig({
     diagrams: true,
     markua: true,
     indexBasename: ['README', 'index'],
+    // The example's `openapi` option (paths resolve against the example root, the build's
+    // working directory): its reference pages are pages of the example (WP04).
+    openapi: {
+      renderer: starlightOpenAPI,
+      specs: [
+        { path: 'openapi/v1.yaml', label: 'v1', released: true },
+        { path: 'openapi/main.yaml', label: 'main', released: false },
+      ],
+    },
   }),
 });

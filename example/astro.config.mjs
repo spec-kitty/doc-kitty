@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import { readFileSync } from 'node:fs';
 import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
+import starlightOpenAPI from 'starlight-openapi';
 import { specKittyTheme } from '@spec-kitty/doc-toolkit/themes/spec-kitty/index.ts';
 
 // GitHub Pages: set these to your repo. For a project page the site is
@@ -137,6 +138,17 @@ export default defineConfig({
     // describing behaviour. The example's features and fences are written to
     // pass it with zero warnings; it never changes a generated page, so it has
     // no CLI flag. See docs/guides/consumer-setup.md and docs/guides/authoring.md.
+    // Opt-in OpenAPI reference pages (mission openapi-reference-pages): each spec is
+    // rendered at build time under /reference/api/<label>/ with the raw document
+    // beside it. `v1` is released; `main` is unreleased and carries the badge.
+    openapi: {
+      // The adopter imports the renderer; the toolkit never imports the peer.
+      renderer: starlightOpenAPI,
+      specs: [
+        { path: 'openapi/v1.yaml', label: 'v1', released: true },
+        { path: 'openapi/main.yaml', label: 'main', released: false },
+      ],
+    },
     gherkin: {
       sources: ['features'],
       section: 'behaviour',

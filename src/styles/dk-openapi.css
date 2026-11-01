@@ -1,0 +1,144 @@
+/* ==========================================================================
+ * OpenAPI reference pages (`.dk-openapi-*` and the renderer's `sl-openapi-*`
+ * hooks; mission openapi-reference-pages, WP03, FR-004/FR-005)
+ *
+ * The renderer's own stylesheet is never loaded (ADR-0049 section 1), so its
+ * `--sl-openapi-*` custom properties are defined here, from the `--dk-*` catalog.
+ * Every token flips by `[data-theme]` at its declaration site, so a branding
+ * override reaches the pages in both modes with no dark block. A method badge is
+ * a tinted surface (`-bg`) with a state-coloured border and strong body text, an
+ * AA pair in both modes. Tokens only, no literals: pinned by
+ * `tests/openapi-integration.test.ts`.
+ * ========================================================================== */
+:root {
+  --sl-openapi-method-bg-get: var(--dk-color-info-bg);
+  --sl-openapi-method-border-get: var(--dk-color-info);
+  --sl-openapi-method-bg-put: var(--dk-color-warning-bg);
+  --sl-openapi-method-border-put: var(--dk-color-warning);
+  --sl-openapi-method-bg-post: var(--dk-color-success-bg);
+  --sl-openapi-method-border-post: var(--dk-color-success);
+  --sl-openapi-method-bg-delete: var(--dk-color-danger-bg);
+  --sl-openapi-method-border-delete: var(--dk-color-danger);
+  --sl-openapi-method-bg-patch: var(--dk-color-accent-low);
+  --sl-openapi-method-border-patch: var(--dk-color-accent);
+  --sl-openapi-method-bg-options: var(--dk-color-neutral-bg);
+  --sl-openapi-method-border-options: var(--dk-color-neutral);
+  --sl-openapi-method-bg-head: var(--dk-color-neutral-bg);
+  --sl-openapi-method-border-head: var(--dk-color-neutral);
+  --sl-openapi-method-bg-trace: var(--dk-color-neutral-bg);
+  --sl-openapi-method-border-trace: var(--dk-color-neutral);
+}
+
+/* The renderer sets white text on its dark badge fills; ours are tints, so the
+   text is the strong body colour. The doubled class outranks the component's
+   scoped rule whichever sheet comes last. */
+.sl-markdown-content .sl-openapi-operation-method-badge.sl-openapi-operation-method-badge {
+  color: var(--dk-color-text-strong);
+}
+
+.sl-markdown-content .sl-openapi-deprecated.sl-openapi-deprecated {
+  background-color: var(--dk-color-warning-bg);
+  border-color: var(--dk-color-warning);
+  color: var(--dk-color-text-strong);
+}
+
+.sl-markdown-content .sl-openapi-key-deprecated.sl-openapi-key-deprecated {
+  color: var(--dk-color-warning);
+}
+
+/* The renderer shows the API version in a Starlight badge and picks the media type
+   in a select. Starlight's default badge is the accent with white text and the
+   select sits on a grey the bridge maps lighter than AA allows, so both take token
+   pairs that hold in either mode. The doubled class outranks the scoped rule. */
+.sl-markdown-content :is([class^='sl-openapi-'], [class*=' sl-openapi-']) .sl-badge {
+  --sl-color-bg-badge: var(--dk-color-accent-low);
+  --sl-color-border-badge: var(--dk-color-accent);
+  --sl-color-text-badge: var(--dk-color-text-strong);
+  color: var(--dk-color-text-strong);
+}
+
+.sl-markdown-content .sl-openapi-content-picker-select.sl-openapi-content-picker-select {
+  color: var(--dk-color-text);
+}
+
+.sl-markdown-content
+  .sl-openapi-content-picker-select
+  :is(select, .sl-openapi-content-picker-select-value):is(select, .sl-openapi-content-picker-select-value) {
+  background-color: var(--dk-color-surface-2);
+  border-color: var(--dk-color-border-strong);
+}
+
+/* Sidebar method badges (the renderer's `.sidebar-content` rules, restated). */
+.sidebar-content a:not([aria-current='page']) :is(.sl-openapi-method-get, .sl-openapi-method-put, .sl-openapi-method-post, .sl-openapi-method-delete, .sl-openapi-method-patch, .sl-openapi-method-options, .sl-openapi-method-head, .sl-openapi-method-trace) {
+  color: var(--dk-color-text-strong);
+}
+.sidebar-content a:not([aria-current='page']) .sl-openapi-method-get {
+  --sl-color-bg-badge: var(--sl-openapi-method-bg-get);
+  --sl-color-border-badge: var(--sl-openapi-method-border-get);
+}
+.sidebar-content a:not([aria-current='page']) .sl-openapi-method-put {
+  --sl-color-bg-badge: var(--sl-openapi-method-bg-put);
+  --sl-color-border-badge: var(--sl-openapi-method-border-put);
+}
+.sidebar-content a:not([aria-current='page']) .sl-openapi-method-post {
+  --sl-color-bg-badge: var(--sl-openapi-method-bg-post);
+  --sl-color-border-badge: var(--sl-openapi-method-border-post);
+}
+.sidebar-content a:not([aria-current='page']) .sl-openapi-method-delete {
+  --sl-color-bg-badge: var(--sl-openapi-method-bg-delete);
+  --sl-color-border-badge: var(--sl-openapi-method-border-delete);
+}
+.sidebar-content a:not([aria-current='page']) .sl-openapi-method-patch {
+  --sl-color-bg-badge: var(--sl-openapi-method-bg-patch);
+  --sl-color-border-badge: var(--sl-openapi-method-border-patch);
+}
+.sidebar-content a:not([aria-current='page']) :is(.sl-openapi-method-options, .sl-openapi-method-head, .sl-openapi-method-trace) {
+  --sl-color-bg-badge: var(--sl-openapi-method-bg-options);
+  --sl-color-border-badge: var(--sl-openapi-method-border-options);
+}
+
+/* Version links and the "unreleased" badge (`OpenApiVersionNav.astro`). */
+.dk-openapi-nav {
+  margin-block: var(--dk-space-xs) var(--dk-space-lg);
+  padding: var(--dk-space-xs) var(--dk-space-sm);
+  border: var(--dk-space-3xs) solid var(--dk-color-border);
+  border-radius: var(--dk-radius-md);
+  background: var(--dk-color-surface-1);
+  color: var(--dk-color-text);
+  font-size: var(--dk-text-sm);
+}
+
+.dk-openapi-nav p {
+  margin: 0;
+}
+
+.dk-openapi-nav__versions ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dk-space-xs) var(--dk-space-md);
+  margin: var(--dk-space-2xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dk-openapi-nav a {
+  color: var(--dk-color-text-accent);
+}
+
+.dk-openapi-nav [aria-current='true'] {
+  color: var(--dk-color-text-strong);
+  font-weight: var(--dk-weight-semibold);
+}
+
+.dk-openapi-badge {
+  display: inline-block;
+  margin-inline-start: var(--dk-space-2xs);
+  padding: 0 var(--dk-space-xs);
+  border: var(--dk-space-3xs) solid var(--dk-color-warning);
+  border-radius: var(--dk-radius-pill);
+  background: var(--dk-color-warning-bg);
+  color: var(--dk-color-text);
+  font-size: var(--dk-text-xs);
+  font-weight: var(--dk-weight-semibold);
+  letter-spacing: var(--dk-tracking-caps);
+}

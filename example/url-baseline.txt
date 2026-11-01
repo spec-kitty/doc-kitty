@@ -62,3 +62,16 @@
 # history rendered from CHANGELOG.md; its old URL redirects there.
 /changelog/2026-08-21-v0.1.0/
 /changelog/releases/
+
+# openapi-reference-pages WP04 (FR-008; ADR-0049): the `openapi` option's two-version
+# fixture. The reference pages of both versions, unreleased `main` included, so a
+# later change of the section or of a label must redirect them. The raw documents
+# and checksums beside them are files, not pages, and this gate resolves pages only:
+# `assert-openapi-artifacts.mjs` pins them byte for byte.
+/reference/api/v1/
+/reference/api/v1/operations/createparcel/
+/reference/api/v1/operations/listparcels/
+/reference/api/main/
+/reference/api/main/operations/createparcel/
+/reference/api/main/operations/getparcel/
+/reference/api/main/operations/listparcels/

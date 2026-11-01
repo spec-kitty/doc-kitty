@@ -53,6 +53,7 @@ import { isDraftEntry, isPublished } from '../lib/metadata.js';
 import PageHero from './slots/PageHero.astro';
 import MetadataBand from './slots/MetadataBand.astro';
 import DraftNotice from './DraftNotice.astro';
+import OpenApiVersionNav from './OpenApiVersionNav.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -79,6 +80,8 @@ const data = entry.data as unknown as {
 const filePath = (entry as unknown as { filePath?: string }).filePath;
 const showBand = isPublished(data as Parameters<typeof isPublished>[0]);
 const isPersona = data.kind === 'Persona';
+// Set by the OpenAPI reference route middleware, only on a reference page (openapi option).
+const openApiNav = Astro.locals.dkOpenApi;
 // Unlike the Head carrier (which may `noindex` the 404 fallback), the notice must not
 // show there: the shared predicate treats a missing `doc_status` as `draft`, and it is
 // missing only on Starlight's unparsed 404 fallback (the schema defaults every entry).
@@ -129,4 +132,4 @@ const isDraft = data.doc_status !== undefined && isDraftEntry(entry as unknown a
       </div>
     </>
   )
-}{isDraft && <DraftNotice />}
+}{isDraft && <DraftNotice />}{openApiNav && <OpenApiVersionNav nav={openApiNav} />}
