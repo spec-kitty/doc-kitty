@@ -12,6 +12,9 @@ const EXPECTED_PEERS = {
   '@astrojs/markdown-remark': '>=7.3.0 <8',
   '@astrojs/starlight': '>=0.42.0 <0.43.0',
   astro: '>=7.2.10 <8',
+  // Optional peers (peerDependenciesMeta), exact-pinned: only sites that set `openapi` install them.
+  '@astrojs/markdown-satteri': '0.4.4',
+  'starlight-openapi': '0.27.0',
 };
 
 const NODE_FLOOR = '>=22.22.0';
