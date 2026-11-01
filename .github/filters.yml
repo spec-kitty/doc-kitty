@@ -11,9 +11,13 @@
 # `.github/scripts/derive-change-groups.mjs`, which this job invokes over the raw
 # per-group booleans. Keep the globs here; keep the precedence there.
 
-# workflows — CI logic itself changed → force every lane.
+# workflows — CI logic itself changed → force every lane. The helpers, this
+# file and the composite actions are CI logic too (ADR-0072).
 workflows:
   - '.github/workflows/**'
+  - '.github/scripts/**'
+  - '.github/actions/**'
+  - '.github/filters.yml'
 
 # code — toolkit/site code or build config → code-quality + build-example + doc-sanity.
 code:
