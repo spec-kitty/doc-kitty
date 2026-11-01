@@ -12,7 +12,9 @@
  *  - no stub is in the sitemap, `llms.txt` or the agent index;
  *  - the redirect-coverage gate covers the old URLs, and fails on a baselined
  *    `.html` URL that has no stub.
- * A third build proves an Astro `redirects` key ending in `.html` is refused.
+ * A third build proves an Astro `redirects` key ending in `.html` is refused on
+ * a static build, and a fourth that it is left to Astro when `build.redirects`
+ * is off (#253 review).
  *
  * The site is written at test time into `example/.dk-test-legacy-html/` (so the
  * toolkit, Astro and Starlight resolve through `example/node_modules`) with its
@@ -41,7 +43,11 @@ const LEGACY = {
 
 const page = (title: string) => ['---', `title: ${title}`, `description: ${title} page.`, 'doc_status: active', 'updated: 2026-10-31', 'kind: Guide', '---', '', `# ${title}`, ''].join('\n');
 
-function files(base: string, astroRedirects: Record<string, string> = {}): Record<string, string> {
+function files(
+  base: string,
+  astroRedirects: Record<string, string> = {},
+  astroBuild: Record<string, unknown> = {},
+): Record<string, string> {
   return {
     'astro.config.mjs': [
       "import { defineConfig } from 'astro/config';",
@@ -52,6 +58,7 @@ function files(base: string, astroRedirects: Record<string, string> = {}): Recor
       "  site: 'https://docs.example.test',",
       `  base: ${JSON.stringify(base)},`,
       `  redirects: ${JSON.stringify(astroRedirects)},`,
+      `  build: ${JSON.stringify(astroBuild)},`,
       '  integrations: [',
       '    ...defineDocKittyIntegrations({',
       "      title: 'Legacy fixture',",
@@ -88,9 +95,9 @@ function files(base: string, astroRedirects: Record<string, string> = {}): Recor
   };
 }
 
-function freshSite(base: string, astroRedirects?: Record<string, string>) {
+function freshSite(base: string, astroRedirects?: Record<string, string>, astroBuild?: Record<string, unknown>) {
   rmSync(SITE, { recursive: true, force: true });
-  for (const [rel, text] of Object.entries(files(base, astroRedirects))) {
+  for (const [rel, text] of Object.entries(files(base, astroRedirects, astroBuild))) {
     const abs = path.join(SITE, rel);
     mkdirSync(path.dirname(abs), { recursive: true });
     writeFileSync(abs, text);
@@ -176,13 +183,31 @@ for (const base of ['/', '/proj']) {
 
 describe('an Astro `redirects` key ending in .html', () => {
   it(
-    'fails the build, naming the key and the legacyHtmlRedirects option',
+    'fails a static build, where Astro writes redirect files, naming the key and the legacyHtmlRedirects option',
     () => {
       freshSite('/', { '/guides/how-to/accept-and-merge/index.html': '/guides/' });
       const r = build();
       expect(r.status, r.output).not.toBe(0);
       expect(r.output).toContain('/guides/how-to/accept-and-merge/index.html');
       expect(r.output).toContain('legacyHtmlRedirects');
+    },
+    180_000,
+  );
+
+  // #253 review: an adapter that writes its own redirect config turns
+  // `build.redirects` off, so Astro writes no folder and no file for the key.
+  // (A server-output build needs an adapter, so that mode is covered at the
+  // hook in legacy-html-redirects.test.ts.)
+  it(
+    'passes a static build with build.redirects off, and the live page stays a page',
+    () => {
+      freshSite('/', { '/guides/how-to/accept-and-merge/index.html': '/guides/' }, { redirects: false });
+      const r = build();
+      expect(r.status, r.output).toBe(0);
+      expect(r.output).toContain('left to Astro');
+      const live = readFileSync(path.join(SITE, 'dist', 'guides', 'how-to', 'accept-and-merge', 'index.html'), 'utf8');
+      expect(live).toContain('Accept and merge');
+      expect(live).not.toMatch(/http-equiv="refresh"/i);
     },
     180_000,
   );

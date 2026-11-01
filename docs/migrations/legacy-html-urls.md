@@ -2,7 +2,7 @@
 title: Keeping .html URLs when moving from DocFX
 description: How a site that published .html URLs (DocFX, Sphinx, Jekyll) moves to DocKitty's directory URLs and keeps every old URL working, at the domain root or under a base path.
 doc_status: active
-updated: 2026-10-31T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: Migration
 kind: How-To
 authors:
@@ -95,9 +95,12 @@ export default defineConfig({
 Write sources and targets without the base. The toolkit adds the base to each
 target, so the same map works at the domain root and under `/<repo>`.
 
-Do not put `.html` keys in Astro's own `redirects`. Astro writes them as a
-folder (`dist/x.html/index.html`) and can replace a live page, so the build
-fails and names the keys. Move them to `legacyHtmlRedirects`.
+Do not put `.html` keys in Astro's own `redirects` on a static site. Astro
+writes them as a folder (`dist/x.html/index.html`) and can replace a live page,
+so the build fails and names the keys. Move them to `legacyHtmlRedirects`. On a
+server-output (adapter) site, or when your adapter sets `build.redirects:
+false`, Astro writes no such files and answers the redirect itself, so the keys
+are kept and the build log names them. A URL must not be in both maps.
 
 The build log says how many stubs it wrote:
 

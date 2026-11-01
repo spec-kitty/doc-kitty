@@ -1,9 +1,14 @@
 /**
  * The legacy `.html` redirects integration (issue #249, ADR-0071).
  *
- * - `astro:config:setup`: validates `legacyHtmlRedirects` and refuses Astro
- *   `redirects` keys ending in `.html` (Astro writes them as a folder, and a
- *   `/x/index.html` key replaces the live page `/x/`).
+ * - `astro:config:done`: refuses Astro `redirects` keys ending in `.html` where
+ *   Astro writes them as files, which is `output: 'static'` with
+ *   `build.redirects` on (Astro writes them as a folder, and a `/x/index.html`
+ *   key replaces the live page `/x/`). On a server-output (adapter) site, or
+ *   when the adapter turned `build.redirects` off, Astro answers them itself and
+ *   they are left alone, unless the same URL is also in `legacyHtmlRedirects`.
+ *   This runs at `config:done` so the adapter's own config changes are in.
+ *   (`legacyHtmlRedirects` itself is validated when the integration is made.)
  * - `astro:server:setup`: `astro dev` answers each legacy URL with a 302 to its
  *   target, so the map can be tried before a build.
  * - `astro:build:done`: writes each legacy redirect as a flat stub file at
@@ -22,6 +27,7 @@ import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
 import type { IndexBasenameOption } from '../metadata.js';
 import {
+  astroWritesRedirectFiles,
   flattenLegacyChains,
   normalizeLegacyHtmlRedirects,
   refuseAstroHtmlRedirects,
@@ -46,10 +52,17 @@ export function legacyHtmlRedirectsIntegration(
   return {
     name: 'doc-kitty:legacy-html-redirects',
     hooks: {
-      'astro:config:setup': ({ config }) => {
-        refuseAstroHtmlRedirects(config?.redirects as Record<string, unknown> | undefined);
-      },
-      'astro:config:done': ({ config }) => {
+      'astro:config:done': ({ config, logger }) => {
+        const leftToAstro = refuseAstroHtmlRedirects(config.redirects as Record<string, unknown> | undefined, {
+          writesFiles: astroWritesRedirectFiles(config),
+          legacySources: entries.map((e) => e.from),
+        });
+        if (leftToAstro.length > 0) {
+          logger.info(
+            `${leftToAstro.length} Astro \`redirects\` key(s) ending in .html are left to Astro, which answers ` +
+              `them at request time here (no redirect files are written): ${leftToAstro.join(', ')}`,
+          );
+        }
         base = config.base ?? '/';
         site = config.site;
       },
