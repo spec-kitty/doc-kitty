@@ -890,10 +890,15 @@ docker run -d --name plantuml -p 127.0.0.1:8091:8080 \
   it. Diagrams that include nothing render as before. If you rely on `!include`
   of local files, `SANDBOX` refuses those as well.
 
-To check that your running service refuses remote includes, run:
+To check that your running service refuses remote includes, run this
+against the `plantuml` container started above:
 
 ```sh
-pnpm exec dockitty-assert-plantuml-no-remote-include --server http://localhost:8091/svg/
+GATEWAY=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}' plantuml)
+pnpm exec dockitty-assert-plantuml-no-remote-include \
+  --server http://localhost:8091/svg/ \
+  --canary-host "$GATEWAY" \
+  --service-container plantuml
 ```
 
 It starts a canary HTTP server on your machine and renders two fixture
@@ -901,10 +906,14 @@ diagrams that include it, one with `!includeurl` and one with `!include` of a
 URL. It passes when both render as PlantUML errors and the canary receives no
 request. First it checks that a plain diagram renders, so a server that is down
 cannot pass. A refused include proves nothing if the service cannot reach the
-canary anyway. To rule that out, pass `--canary-host` (the address the service
-uses to reach your machine, such as the Docker network gateway) and
-`--service-container <id>`. The check then runs `curl` inside the container
-against the canary first, and fails if the canary is unreachable from there.
+canary anyway. `--canary-host` (the address the service uses to reach your
+machine, here the Docker network gateway) and `--service-container` rule that
+out: the check first runs `curl` inside the container against the canary, and
+fails if the canary is unreachable from there. Leave both flags out only if you
+accept a weaker result. Without them the canary sits at `127.0.0.1`, which
+inside the container is the container itself, so even a server that would
+fetch includes can pass. The check then prints a note that reachability was
+not proven.
 
 A stricter setup also takes the network away from the container. For
 example, put it on a Docker network created with `--internal`, and run the
