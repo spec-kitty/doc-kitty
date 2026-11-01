@@ -282,9 +282,12 @@ is read from the file name by the tree's ADR id rule: the `NNNN-` prefix by
 default, or the charter's `adr.id` (for example `preset: date-seq` for
 `2026-03-09-1-slug.md`). The generator and the `kind: Hub` ADR cards share this
 extractor, so they always agree. A lockfile-style sync-check
-(`generate-adr-index.mjs --check`, wired into CI as `validate:adr-index`) reds
-if the committed table drifts from the ADR sources — re-run the generator and
-commit. The example tree instead drops its table and lets the `kind: Hub` layout
+(`generate-adr-index.mjs --check`, `pnpm validate:adr-index`) reds if the
+committed table drifts from the ADR sources — re-run the generator and commit.
+This repository runs the regeneration after merge instead, so parallel PRs do
+not all edit the table: a bot PR proposes it, and CI checks per PR only that no
+two ADRs share a number (`--check-ids`, `pnpm validate:adr-ids`; see
+[ADR-0072](../adr/0072-parallel-landing-without-shared-files.md)). The example tree instead drops its table and lets the `kind: Hub` layout
 auto-list, because only the example tree is Astro-rendered (see
 [ADR-0032](../adr/0032-adr-index-generation.md)).
 

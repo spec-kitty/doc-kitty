@@ -70,3 +70,8 @@ now and will be recast as Spec Kitty charter/doctrine later.
   [`docs/changelog/unreleased/README.md`](./docs/changelog/unreleased/README.md); the reasoning is in
   [ADR-0072](./docs/adr/0072-parallel-landing-without-shared-files.md).
   `docs/changelog/` is separate: dated, themed write-ups of a body of work.
+- **ADRs: add the file, never the index row.** A new ADR takes the next free
+  number (check `main` and open PRs). Do not edit the table in
+  `docs/adr/README.md`: after merge, `.github/workflows/adr-index.yml`
+  regenerates it and proposes it as one bot PR on `ci/adr-index`. CI
+  (`pnpm validate:adr-ids`) fails two ADRs that share a number.

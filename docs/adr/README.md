@@ -3,7 +3,7 @@ okf_version: "0.2"
 title: Decision Records
 description: The immutable log of architectural decisions for the toolkit.
 doc_status: active
-updated: 2026-08-21T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: ADR
 kind: Hub
 ---
@@ -43,7 +43,7 @@ kind: Hub
 | [0029](./0029-sidebar-autogenerate-content-root-coupling.md) | ADR-0029: The registry sidebar prefixes autogenerate directories with docsDir | Accepted | 2026-08-28 |
 | [0030](./0030-markua-preprocess-to-directive.md) | ADR-0030: Render Markua by preprocessing to remark-directive | Accepted | 2026-08-30 |
 | [0031](./0031-vocabulary-override.md) | ADR-0031: Consumer-overridable type/kind vocabulary | Accepted | 2026-08-31 |
-| [0032](./0032-adr-index-generation.md) | ADR-0032: Generate the ADR index; two-tree mechanism with a lockfile sync-check | Accepted | 2026-08-31 |
+| [0032](./0032-adr-index-generation.md) | ADR-0032: Generate the ADR index; two-tree mechanism with a lockfile sync-check | Accepted | 2026-11-01 |
 | [0033](./0033-flexible-section-identity.md) | ADR-0033: Flexible section identity — configurable index basename and first-class section rename | Accepted | 2026-09-03 |
 | [0034](./0034-redirect-coverage-gate.md) | ADR-0034: Redirect-coverage primitive — committed baseline, native redirects, target-aware bare-Node gate | Accepted | 2026-09-03 |
 | [0035](./0035-vocabulary-core-consolidation.md) | ADR-0035: Single-sourced vocabulary/type-derivation core (two-layer pure-ESM) | Accepted | 2026-09-04 |
@@ -85,4 +85,7 @@ kind: Hub
 | [0071](./0071-legacy-html-redirects-as-flat-stubs.md) | ADR-0071: Legacy .html URLs redirect through flat stub files | Accepted | 2026-11-01 |
 | [0072](./0072-parallel-landing-without-shared-files.md) | ADR-0072: Land PRs in parallel without shared hand-edited files | Accepted | 2026-11-01 |
 
-New ADRs copy [`template.md`](./template.md).
+New ADRs copy [`template.md`](./template.md) and take the next free number. Do
+not edit the table above: after a merge, the ADR index workflow regenerates it
+and proposes it as one bot PR, and CI fails two ADRs that share a number
+([ADR-0072](./0072-parallel-landing-without-shared-files.md)).
