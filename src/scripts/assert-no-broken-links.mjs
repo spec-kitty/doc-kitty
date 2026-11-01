@@ -63,7 +63,7 @@
  * never flagged. `pnpm assert:no-broken-links` always passes `--site`, so CI
  * never runs this gate un-opted-in.
  *
- * ## Excluded folders (ADR-0068)
+ * ## Excluded folders (ADR-0070)
  *
  * `--docs <dir>` names the site's docs folder. The gate then reads the
  * `exclude` list from the site's `astro.config.*` (as the other gates do; or the
@@ -217,7 +217,7 @@ function routeKey(route) {
 }
 
 /**
- * The reason for a link to a page of an excluded folder (ADR-0068).
+ * The reason for a link to a page of an excluded folder (ADR-0070).
  * @param {string} folder
  */
 export function excludedLinkReason(folder) {
@@ -481,7 +481,7 @@ function parseArgs(argv) {
 }
 
 /**
- * The routes of the pages in the site's excluded folders (ADR-0068), read from
+ * The routes of the pages in the site's excluded folders (ADR-0070), read from
  * the site config for the docs folder `docs`: route -> folder. Empty when the
  * site excludes nothing. Loaded lazily, so a run without `--docs` stays stdlib-only.
  *

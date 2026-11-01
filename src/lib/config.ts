@@ -265,7 +265,7 @@ export interface DocKittyOptions {
    */
   indexBasename?: IndexBasenameOption;
   /**
-   * Docs folders to leave out of the site (ADR-0068): paths relative to
+   * Docs folders to leave out of the site (ADR-0070): paths relative to
    * `docsDir`, such as `['archive', 'plans/engineering-notes']`. Nothing under
    * them is loaded, routed, listed in the sidebar, the sitemap, the feeds,
    * `llms.txt`, the agent API or search, or checked by the `dockitty-*` gates,
@@ -360,7 +360,7 @@ function topLevelContentDirs(docsRoot: string): string[] {
   } catch {
     return [];
   }
-  // An excluded top-level folder (ADR-0068) has no pages, so it is not a section on disk.
+  // An excluded top-level folder (ADR-0070) has no pages, so it is not a section on disk.
   const excluded = excludedFoldersFor(docsRoot);
   return entries.filter((name) => {
     if (name.startsWith('.') || name === '_meta' || excluded.includes(name)) return false;
@@ -510,7 +510,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // env stays unset and `docsRoot()` keeps #22's content-layer fallback verbatim.
   setInternalEnv(DK_DOCS_ROOT_ENV, path.resolve(process.cwd(), docsDir));
 
-  // Excluded folders (ADR-0068): validated eagerly, checked against the tree, and
+  // Excluded folders (ADR-0070): validated eagerly, checked against the tree, and
   // published next to DK_DOCS_ROOT, which the shared walk keys them on. Absent
   // (cleared above) when the site excludes nothing, so a site without the option
   // builds exactly as before.

@@ -33,7 +33,7 @@ export const EVALUATE_TIMEOUT_MS = 30_000;
 /**
  * @typedef {{ names: string[] | null, envDir: string | false | null,
  *   exclude: string[], docsRoot: string | null }} EvaluatedConfig
- * `exclude`: the folders the site leaves out (ADR-0068), relative to `docsRoot`,
+ * `exclude`: the folders the site leaves out (ADR-0070), relative to `docsRoot`,
  * the absolute docs root the config named (null when it never called
  * `defineDocKittyIntegrations`).
  */

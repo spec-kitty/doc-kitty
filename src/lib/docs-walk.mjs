@@ -10,7 +10,7 @@
  * table, the link check or the sidebar. The registry YAML in `docs/_meta/` is read
  * by its catalog loaders directly, not through this walk.
  *
- * Excluded folders (ADR-0068): a site lists docs folders to leave out of the
+ * Excluded folders (ADR-0070): a site lists docs folders to leave out of the
  * build, once, in `defineDocKittyIntegrations({ exclude })`. This walk is where
  * the list takes effect, so every surface built from it (the loader's ids, the
  * route table, the draft sweep, the sidebar, the link gates, the ADR index and
@@ -30,7 +30,7 @@ import { DK_DOCS_ROOT_ENV, DK_EXCLUDE_ENV } from './internal-env.mjs';
 const GLOB_CHARS = /[*?[\]{}()!\\]/;
 
 /**
- * Validate and normalise the `exclude` option (ADR-0068): docs-root-relative
+ * Validate and normalise the `exclude` option (ADR-0070): docs-root-relative
  * folder paths, `/`-separated. A trailing slash and a leading `./` are dropped.
  * Rejected: a non-array, a non-string or empty entry, an absolute path, a `..`
  * or `.` segment, a dot-prefixed or `_meta` segment (never walked anyway), and
@@ -92,7 +92,7 @@ export function excludingFolder(rel, folders) {
 
 /**
  * Check that every excluded folder exists under `absRoot` as a folder, with the
- * exact letter case given (ADR-0068). A typo, or `Archive` for `archive` on a
+ * exact letter case given (ADR-0070). A typo, or `Archive` for `archive` on a
  * case-insensitive disk, would otherwise exclude nothing and publish the folder.
  *
  * @param {string} absRoot
@@ -234,7 +234,7 @@ export function isInsideExcludedFolder(absBase) {
  * (`/`-joined), except the reserved `log.md` and anything under a dot-prefixed
  * folder or named with a leading dot: Astro's glob loader does not load those,
  * so a route for them would be a route the site never emits. An absent base is
- * an empty tree. Nothing under an excluded folder is listed (ADR-0068).
+ * an empty tree. Nothing under an excluded folder is listed (ADR-0070).
  *
  * @param {string} absBase
  * @param {{ exclude?: readonly string[] }} [options] `exclude`: the folders to
@@ -293,7 +293,7 @@ export function walkMarkdownPaths(absBase, options = {}) {
 /**
  * The pages the shared walk would list under the excluded folders of `absBase`,
  * relative to `absBase`: the files a link may name but the site never builds.
- * Used by the link gates to say "excluded" instead of "missing" (ADR-0068).
+ * Used by the link gates to say "excluded" instead of "missing" (ADR-0070).
  *
  * @param {string} absBase
  * @param {readonly string[]} [exclude] default {@link excludedFoldersFor}`(absBase)`

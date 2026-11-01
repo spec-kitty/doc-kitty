@@ -249,7 +249,7 @@ the list:
 excluded folders: archive, reports, plans/engineering-notes (from astro.config.mjs)
 ```
 
-[ADR-0068](../adr/0068-excluded-folders.md) explains the design.
+[ADR-0070](../adr/0070-excluded-folders.md) explains the design.
 
 ## 4. `src/content.config.ts` — register the collections
 

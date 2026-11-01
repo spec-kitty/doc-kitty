@@ -72,7 +72,7 @@
  * names a config elsewhere (it applies to every strict root). Footnote
  * definitions (`[^label]: text`) are not links.
  *
- * Excluded folders (ADR-0068). The same config's `exclude` list applies to a
+ * Excluded folders (ADR-0070). The same config's `exclude` list applies to a
  * strict root that is the site's docs root: the files under those folders are
  * not checked, and a relative link, folder link, root-absolute link or
  * `related:` ref into one is reported as "excluded from the site". A non-strict
@@ -372,7 +372,7 @@ const DRAFT_REASON =
 const DRAFT_REASON_LINK = `link ${DRAFT_REASON}`;
 
 /**
- * The report for a link or `related:` ref into an excluded folder (ADR-0068): the
+ * The report for a link or `related:` ref into an excluded folder (ADR-0070): the
  * site never builds it, so on the site it is a broken link.
  *
  * @param {string} subject `link` or `related ref`
@@ -529,7 +529,7 @@ export function run(argv) {
     }).routes;
     // A folder link is answered from routes: does a page have this route, and is
     // it an unpublished draft. A root-absolute link is asked only the second.
-    // Folders the site leaves out of the build (ADR-0068): read from the site
+    // Folders the site leaves out of the build (ADR-0070): read from the site
     // config for a strict root (the shared walk above already skipped them). A
     // link into one gets its own report, keyed by file path and by route.
     const excluded = strict ? excludedFoldersFor(absRoot) : [];
@@ -706,7 +706,7 @@ function routeOfPath(path) {
  *     when `DK_PUBLISH_DRAFTS` is off (the caller decides whether that counts);
  *   - `no-index`: the target is a folder in the docs tree but no page has its
  *     route;
- *   - `excluded`: the target is inside a folder the site excludes (ADR-0068);
+ *   - `excluded`: the target is inside a folder the site excludes (ADR-0070);
  *   - `missing`: nothing is there.
  *
  * @param {string} candidate absolute path the target names

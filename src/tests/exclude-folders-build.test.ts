@@ -1,5 +1,5 @@
 /**
- * Excluded folders in a REAL BUILD (ADR-0068, #247). A fixture site sets
+ * Excluded folders in a REAL BUILD (ADR-0070, #247). A fixture site sets
  * `exclude: ['archive', 'reports', 'plans/engineering-notes', 'adr/archive']` in
  * `defineDocKittyIntegrations`. The excluded pages carry frontmatter that would
  * fail the schema and the frontmatter gate (no title, no description) and a
@@ -139,7 +139,7 @@ afterAll(() => {
   rmSync(SITE, { recursive: true, force: true });
 });
 
-describe('excluded folders in a real build (ADR-0068)', () => {
+describe('excluded folders in a real build (ADR-0070)', () => {
   it(
     'builds, and no output of any kind carries an excluded page; the gates skip the folders',
     () => {

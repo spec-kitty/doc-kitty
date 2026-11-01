@@ -1,5 +1,5 @@
 /**
- * Excluded folders (ADR-0068, #247): the unit-level contract. The real build,
+ * Excluded folders (ADR-0070, #247): the unit-level contract. The real build,
  * the validators and the link gates on a fixture site are in
  * `exclude-folders-build.test.ts`.
  *

@@ -137,7 +137,7 @@ example/.dk-test-loader-includes/
 # src/tests/gherkin-results-build.test.ts builds it, then removes it.
 example/.dk-test-gherkin-results/
 
-# Excluded-folders fixture site (ADR-0068, transient) —
+# Excluded-folders fixture site (ADR-0070, transient) —
 # src/tests/exclude-folders-build.test.ts builds it, then removes it.
 example/.dk-test-exclude-folders/
 
