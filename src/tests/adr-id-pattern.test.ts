@@ -313,8 +313,13 @@ describe('ordering with an optional `seq` group stays consistent (#248)', () => 
   it('reads a non-numeric `seq` capture as no sequence, never NaN', () => {
     const nonNumeric = resolveAdrIdRule({ id: { pattern: '^(?<id>(?<seq>[a-z]+))-' } }, 'charter.yaml');
     expect(matchAdrId('abc-x', nonNumeric)?.seq).toBeNull();
-    const a = { number: 'abc', sortKey: { date: '', seq: null } };
-    const b = { number: 'abd', sortKey: { date: '', seq: null } };
-    expect(compareAdrIds(a, b)).toBeLessThan(0);
+    const sorted = ['abd-x', 'abc-x']
+      .map((leaf) => {
+        const m = matchAdrId(leaf, nonNumeric)!;
+        return { number: m.id, sortKey: { date: m.date, seq: m.seq } };
+      })
+      .sort(compareAdrIds)
+      .map((a) => a.number);
+    expect(sorted).toEqual(['abc', 'abd']);
   });
 });
