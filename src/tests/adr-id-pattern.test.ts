@@ -132,6 +132,13 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     ['^(?<id>\\d+)-\\A', '12-Abc', '12'],
     // A lookbehind is not a group name: its letters are literals.
     ['^(?<id>\\d+)-(?<=-)ADR', '12-ADR-x', '12'],
+    // A legacy octal escape stands for its character: `\101` is `A`, in a class
+    // or beyond the group count.
+    ['^(?<id>\\d+)-\\101', '12-Abc', '12'],
+    ['^(?<id>\\d+)-[\\101]', '12-Abc', '12'],
+    ['^(?<id>\\d+)-\\1011', '12-A1', '12'],
+    // Inside a class, `(?<` is not a group name: its letters are literals.
+    ['^(?<id>\\d+)-[(?<A>]', '12-A', '12'],
   ])('normalises the upper-case pattern %j: %j reads as %j', (pattern, leaf, id) => {
     const rule = resolveAdrIdRule({ id: { pattern } }, 'docs/_meta/charter.yaml');
     expect(matchAdrId(leaf, rule)?.id).toBe(id);
@@ -177,6 +184,10 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     '^(?<id>\\d+)\\cJ?\\x6A?\\x2D?-',
     '^(?<id>adr-\\d+)-',
     '^(?<id>[^a-z]+)-',
+    // A back-reference, and octal escapes that stand for no upper-case letter.
+    '^(?<id>\\d+)-\\1-\\141\\0[\\55]',
+    // `\8` and `\9` are identity escapes of a digit.
+    '^(?<id>\\d+)\\8?\\9?-',
   ])('compiles the lower-case pattern %j exactly as written', (pattern) => {
     const rule = resolveAdrIdRule({ id: { pattern } }, 'charter.yaml');
     expect(rule.pattern.source).toBe(new RegExp(pattern).source);

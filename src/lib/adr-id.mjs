@@ -97,21 +97,20 @@ export function resolveAdrIdRule(raw, source = 'charter.yaml') {
   // #271: the rule runs against the lowercased leaf, so a pattern with an
   // upper-case literal is compiled case-insensitively to match it. A pattern
   // with none compiles exactly as written, as it always did.
-  const flags = findUpperCaseLiteral(pattern) === null ? '' : 'i';
-  let compiled;
   try {
-    compiled = new RegExp(pattern, flags);
+    new RegExp(pattern);
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
     throw new Error(`${source}: "adr.id.pattern" is not a valid regular expression — ${detail}`);
   }
-  // An alternation with the empty string always matches, so `groups` lists every
-  // named group the pattern declares.
-  const groups = new RegExp(`${pattern}|`).exec('')?.groups ?? {};
-  if (!Object.hasOwn(groups, 'id')) {
+  // An alternation with the empty string always matches, so the match lists
+  // every group the pattern declares: `groups` its named ones, `length` all.
+  const empty = /** @type {RegExpExecArray} */ (new RegExp(`${pattern}|`).exec(''));
+  if (!Object.hasOwn(empty.groups ?? {}, 'id')) {
     throw new Error(`${source}: "adr.id.pattern" must have a named group "id", e.g. ^(?<id>\\d+)-`);
   }
-  return Object.freeze({ pattern: compiled });
+  const flags = findUpperCaseLiteral(pattern, empty.length - 1) === null ? '' : 'i';
+  return Object.freeze({ pattern: new RegExp(pattern, flags) });
 }
 
 /** `ch` when it has a distinct lower-case form (an upper-case letter), else null. */
@@ -124,8 +123,9 @@ const upperOrNull = (ch) => (ch !== ch.toLowerCase() ? ch : null);
  * upper-case literal is compiled with the `i` flag to match it. Not literals,
  * and so skipped: the escapes `\D`, `\W`, `\S`, `\B` and `\cJ`, group names
  * (`(?<Name>`) and back-references (`\k<Name>`). A hex escape (`\x41`, `\u00C9`)
- * is a literal and is checked by the character it stands for, and so is an
- * identity escape such as `\A`.
+ * is a literal and is checked by the character it stands for, and so is a
+ * legacy octal escape (`\101`, in a class or beyond the group count) and an
+ * identity escape such as `\A`. Inside a character class, `(?<` is literal text.
  *
  * The `i` flag (never `u`) leaves every one of those tokens' meaning intact:
  * without `u`, case-insensitive matching does not change `\w`, `\W`, `\b` or
@@ -133,9 +133,12 @@ const upperOrNull = (ch) => (ch !== ch.toLowerCase() ? ch : null);
  * rewrite the source, so no escape can turn into another.
  *
  * @param {string} source
+ * @param {number} groupCount The pattern's capturing groups, which decide
+ *   whether `\N` is a back-reference or a legacy octal escape.
  * @returns {string | null}
  */
-function findUpperCaseLiteral(source) {
+function findUpperCaseLiteral(source, groupCount) {
+  let inClass = false;
   for (let i = 0; i < source.length; i += 1) {
     const ch = source[i];
     if (ch === '\\') {
@@ -149,8 +152,21 @@ function findUpperCaseLiteral(source) {
       } else if (next === 'k' && source[i + 2] === '<') {
         const end = source.indexOf('>', i + 3);
         i = end === -1 ? i + 1 : end;
-      } else if (next === 'c') {
+      } else if (next === 'c' && /[A-Za-z]/.test(source[i + 2] ?? '')) {
         i += 2; // `\cX`: a control character, never a letter.
+      } else if (next !== undefined && next >= '0' && next <= '9') {
+        const run = /^\d+/.exec(source.slice(i + 1))?.[0] ?? next;
+        if (!inClass && next !== '0' && Number(run) <= groupCount) {
+          i += run.length; // A back-reference: matched text, not a literal.
+        } else if (next === '8' || next === '9') {
+          i += 1; // An identity escape of a digit.
+        } else {
+          // A legacy octal escape (no `u` flag): up to three digits, at most \377.
+          const oct = /^(?:[0-3][0-7]{0,2}|[4-7][0-7]?)/.exec(source.slice(i + 1))?.[0] ?? next;
+          const hit = upperOrNull(String.fromCharCode(parseInt(oct, 8)));
+          if (hit) return hit;
+          i += oct.length;
+        }
       } else {
         // `\D`, `\W`, `\S`, `\B` are classes or assertions. Any other escaped
         // letter (`\A`) is an identity escape: the letter itself.
@@ -160,7 +176,9 @@ function findUpperCaseLiteral(source) {
       }
       continue;
     }
-    if (ch === '(' && source.startsWith('?<', i + 1) && !'=!'.includes(source[i + 3])) {
+    if (ch === '[' && !inClass) inClass = true;
+    else if (ch === ']' && inClass) inClass = false;
+    if (!inClass && ch === '(' && source.startsWith('?<', i + 1) && !'=!'.includes(source[i + 3])) {
       const end = source.indexOf('>', i + 3);
       if (end !== -1) {
         i = end;
