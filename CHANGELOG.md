@@ -96,6 +96,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **An `adr.id` pattern may be written in upper case (#271).** Before,
+  `pattern: '^(?<id>ADR-\d+)-'` matched no ADR, because the pattern runs
+  against the lowercased file name, and then (#269, never released) failed at
+  charter load. Now such a pattern is matched case-insensitively, so it reads
+  `ADR-12-Use-X.md` on the hub and in the generated index alike. The id shows
+  lowercased (`adr-12`), so it agrees with the page's URL. Escapes such as `\D`
+  and `\W`, group names and back-references keep their meaning. A lower-case
+  pattern compiles exactly as before. See the amendment note in
+  [ADR-0069](docs/adr/0069-configurable-adr-id-and-frontmatter-status.md).
+
 - **An Astro `redirects` key that ends in `.html` fails a static build
   (#249).** Before, it built a folder that a static host does not serve at that
   URL, or replaced a live page. Now a static build (`output: 'static'` with
@@ -151,14 +161,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [ADR-0066](docs/adr/0066-sidebar-tint-bleeds-past-the-frame.md).
 
 ### Fixed
-
-- **An `adr.id` pattern with an upper-case letter now fails at charter load
-  (#248).** Before, `pattern: '^(?<id>ADR-\d+)-'` loaded fine and then matched
-  no ADR at all, because the pattern runs against the lowercased file name. Now
-  the charter loader rejects it with a message that names the file, the letter
-  and the fix (write the pattern in lower case), so `validate:docs`, the ADR
-  index generator and the build all fail the same way. Escapes such as `\D` and
-  `\W`, group names and back-references may still use upper case.
 
 - **The table of contents rail no longer jumps across the page on a slow first
   paint (#223).** Before, if the browser painted before the reading pane was

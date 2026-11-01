@@ -23,6 +23,11 @@ ADR index and the ADR hub cards still share one extractor; that extractor now
 reads the id rule from the charter and falls back to frontmatter for the status
 and the date.
 
+**Amended 2026-11-01 (#271):** an `adr.id` pattern is case-insensitive and
+normalised, not "written in lowercase". See
+[Amendment: patterns are case-insensitive](#amendment-patterns-are-case-insensitive).
+The rest of the decision is unchanged.
+
 ## Context
 
 One extractor, `extractAdrMeta`, gives every ADR its number, status and date.
@@ -163,8 +168,34 @@ and the `NNNN-` default could no longer be pinned byte for byte.
 Rejected: the issue says the body section stays the primary source. An empty
 section is an authored section, and the old extractor showed it as blank.
 
+## Amendment: patterns are case-insensitive
+
+*2026-11-01, issue #271. This note amends the bullet in Decision 1 that says "a
+pattern is therefore written in lowercase". The decision text above is kept as
+it was accepted.*
+
+A pattern may be written in any case. The rule still runs against the
+lowercased file name, so a pattern with an upper-case literal, such as
+`'^(?<id>ADR-\d+)-'`, is compiled with the `i` flag and matches
+`ADR-12-Use-X.md` and its route slug `adr-12-use-x` alike. Before, such a
+pattern silently matched nothing, and then, briefly, the charter loader rejected
+it (#269). The operator ruled that authors should not have to care about case.
+
+- **Lower-case patterns are unchanged.** A pattern with no upper-case literal
+  compiles exactly as written, with no flags, so its ids and order are
+  byte-identical. The default and the presets are lower case.
+- **Case-significant tokens keep their meaning.** The pattern source is not
+  rewritten, so `\D`, `\W`, `\S`, `\B`, `\cX`, group names and `\k<name>` are
+  untouched. Without the `u` flag, `i` changes none of them. Lowercasing the
+  pattern's literals was the alternative, and it would have had to rewrite
+  around every escape (`\X` → `\x` would turn a literal into a hex escape).
+- **The id shows lowercased.** The id is read from the lowercased name, so a
+  hub card and the generated index show `adr-12`, never the `ADR-12` the file
+  is named. The id then agrees with the URL.
+
 ## References
 
 - Issue #248; consumer spec-kitty/spec-kitty#6100.
+- Issue #271 — the amendment: upper-case patterns are normalised.
 - [ADR-0032](./0032-adr-index-generation.md) — the generated ADR index.
 - [ADR-0042](./0042-native-documentation-charter.md) — the documentation charter.
