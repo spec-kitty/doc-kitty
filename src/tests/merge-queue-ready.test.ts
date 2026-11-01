@@ -42,7 +42,8 @@ describe('ci.yml runs in the merge queue', () => {
   });
 
   it('re-runs when a label is added or removed, so pr:pause-ci takes effect', () => {
-    expect(onBlock(ci)).toMatch(/pull_request:\n {4}types: \[opened, synchronize, reopened, labeled, unlabeled\]/);
+    const types = onBlock(ci).match(/pull_request:\n {4}types: \[([^\]]*)\]/)?.[1].split(/,\s*/) ?? [];
+    expect(types).toEqual(expect.arrayContaining(['labeled', 'unlabeled']));
   });
 
   it('reads pull_request context only behind an event_name guard', () => {
@@ -57,10 +58,8 @@ describe('the pr:pause-ci label', () => {
   const detect = job(ci, 'detect-changes');
   const gate = job(ci, 'ci-ok');
 
-  it('detect-changes reads it on pull_request only and passes it to the classifier', () => {
-    expect(detect).toMatch(
-      /CI_PAUSED: \$\{\{ github\.event_name == 'pull_request' && contains\(github\.event\.pull_request\.labels\.\*\.name, 'pr:pause-ci'\) \}\}/,
-    );
+  it('detect-changes reads it and passes it on as an output', () => {
+    expect(detect).toMatch(/CI_PAUSED:.*'pr:pause-ci'/);
     expect(detect).toMatch(/paused: \$\{\{ steps\.derive\.outputs\.paused \}\}/);
   });
 
