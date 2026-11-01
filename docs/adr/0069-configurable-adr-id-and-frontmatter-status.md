@@ -192,6 +192,8 @@ it (#269). The operator ruled that authors should not have to care about case.
 - **The id shows lowercased.** The id is read from the lowercased name, so a
   hub card and the generated index show `adr-12`, never the `ADR-12` the file
   is named. The id then agrees with the URL.
+- **The `i` flag covers the whole pattern.** A negated class such as `[^A-Z]`
+  excludes every letter, upper and lower case.
 
 ## References
 
