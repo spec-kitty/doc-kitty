@@ -188,16 +188,6 @@ glossary and metadata.
 - Issue #140: OpenAPI support, with the owner's decisions.
 - [ADR-0026](./0026-glossary-source-and-generation-seam.md), [ADR-0046](./0046-gherkin-feature-pages.md) and [ADR-0048](./0048-generated-page-names-and-empty-sources.md): the generated-page pattern.
 - `starlight-openapi` on npm and its README (version 0.27.0, read 2026-10-14).
-p='0049-openapi-reference-via-existing-integration.md';s=open(p).read()
-old="""**Proposed** — 2026-10-14. Records the direction the project owner set in
-issue #140. It becomes Accepted once a spike has evaluated at least one candidate
-integration against the conditions in Decision 1 and recorded the result."""
-new="""**Accepted** — 2026-10-29, on the spike result recorded in
-[Addendum 2026-10-29](#addendum-2026-10-29-spike-result-244). Proposed
-2026-10-14 from the direction the project owner set in issue #140."""
-assert old in s; s=s.replace(old,new).replace("updated: 2026-10-14T00:00:00Z","updated: 2026-10-29T00:00:00Z")
-s=s.rstrip('\n')+"\n"+open('/dev/stdin').read()
-open(p,'w').write(s)
 
 ## Addendum 2026-10-29: spike result (#244)
 
@@ -230,6 +220,10 @@ are off (`snippets.operation`, `snippets.requestBody` and `snippets.response`
 set to `false`), which leaves one script. A gate pins the hashes and fails on
 any other addition. The hashes change only when the pin changes, and the
 how-to publishes them.
+
+The description adapter, the stylesheet filter and these hashes depend on
+the internals of `starlight-openapi@0.27.0`. Bumping the pin means re-running
+the C-006 table above before the new version ships.
 
 Measured on the example build with snippets off, against the union of every
 ordinary page:
