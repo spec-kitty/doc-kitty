@@ -2,7 +2,7 @@
 title: "ADR-0069: A configurable ADR id, and a frontmatter status fallback"
 description: A charter axis chooses how an ADR id is read from its file name (a date-seq preset or a regex); status and date fall back to frontmatter. NNNN- stays the default.
 doc_status: active
-updated: 2026-10-31T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: ADR
 kind: ADR
 authors:
