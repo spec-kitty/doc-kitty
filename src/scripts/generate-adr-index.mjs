@@ -254,10 +254,9 @@ export function buildAdrHubCards(adrChildren, { idRule = DEFAULT_ADR_ID_RULE } =
 /**
  * Ids that more than one ADR took, each with its files in path order, in id
  * order. Two parallel PRs can pick the same next number by hand; the per-PR
- * gate (`--check-ids`) catches it on each PR's own tree. Today strict branch
- * protection ("require branches to be up to date") makes the second PR re-run
- * it on top of the first; once a merge queue with `merge_group` is in place,
- * the queue's combined commit is checked as well (ADR-0072).
+ * gate (`--check-ids`) catches it on each PR's own tree, and CI runs it on a
+ * merge queue's combined commit too (`merge_group`), so two queued PRs that
+ * took the same number are caught before either lands (ADR-0072).
  *
  * @param {Array<{ number: string, relpath: string }>} entries from {@link discoverAdrs}
  * @returns {Array<{ number: string, files: string[] }>}

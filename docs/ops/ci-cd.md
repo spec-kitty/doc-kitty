@@ -139,11 +139,11 @@ commit to it by hand.
 Until the bot PR merges, the table on `main` can lag a merged ADR. The ADR
 files are the source of truth, and this tree is not rendered, so the lag is
 harmless. Per PR, CI fails two ADRs that share a number
-(`pnpm validate:adr-ids`). Today strict branch protection ("require branches to
-be up to date") is what catches two PRs that took the same number in parallel:
-the second PR must update onto the first, which re-runs the check on the
-combined tree. Once a merge queue with a `merge_group` trigger is in place, the
-queue's combined commit is checked as well.
+(`pnpm validate:adr-ids`). With the merge queue on, CI runs on the queue's
+combined commit, so two queued PRs that took the same number are caught before
+either lands. Before the queue is on, strict branch protection ("require
+branches to be up to date") does this: the second PR must update onto the
+first, which re-runs the check.
 
 ### Nightly smoke and the deployed-since marker
 
