@@ -27,7 +27,7 @@
  *
  * Bare Node, offline; the one import is the shared code-unit comparator (`vocabulary-core.mjs`).
  */
-import { existsSync, readdirSync, readFileSync, realpathSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
@@ -237,11 +237,26 @@ export function releaseChangelog(changelog, fragments, { version, date }) {
   const link = [...changelog.matchAll(UNRELEASED_LINK_RE)].filter((m) => m.index >= refsAt).pop();
   if (!link) throw new Error('CHANGELOG.md needs an "[Unreleased]: <repo>/compare/<tag>...HEAD" link');
   const [line, base, previous] = link;
-  const links = `[Unreleased]: ${base}/compare/v${version}...HEAD\n[${version}]: ${base}/compare/${previous}...v${version}`;
+  // Inserted text follows the file's own line endings (CRLF in, CRLF out); history is untouched.
+  const eol = changelog.includes('\r\n') ? '\r\n' : '\n';
+  const inEol = (text) => (eol === '\n' ? text : text.replace(/\n/g, eol));
+  const links = inEol(`[Unreleased]: ${base}/compare/v${version}...HEAD\n[${version}]: ${base}/compare/${previous}...v${version}`);
   const withLinks = changelog.slice(0, link.index) + links + changelog.slice(link.index + line.length);
   const span = unreleasedSpan(withLinks);
   const section = `## [${version}] — ${date}\n\n${renderUnreleased(fragments)}\n\n`;
-  return withLinks.slice(0, span.start) + `\n\n${UNRELEASED_NOTE}\n\n` + section + withLinks.slice(span.end);
+  return withLinks.slice(0, span.start) + inEol(`\n\n${UNRELEASED_NOTE}\n\n${section}`) + withLinks.slice(span.end);
+}
+
+/** Write `text` to a temp file beside `file`, then rename it over `file`: a reader never sees half a changelog. */
+function writeAtomically(file, text) {
+  const temp = path.join(path.dirname(file), `.${path.basename(file)}.${process.pid}.tmp`);
+  try {
+    writeFileSync(temp, text);
+    renameSync(temp, file);
+  } catch (err) {
+    rmSync(temp, { force: true });
+    throw err;
+  }
 }
 
 /**
@@ -255,7 +270,7 @@ export function releaseChangelog(changelog, fragments, { version, date }) {
  */
 export function applyRelease({ changelogPath, dir, fragments, released }, fsOps = {}) {
   const unlink = fsOps.unlink ?? unlinkSync;
-  const write = fsOps.write ?? ((p, text) => writeFileSync(p, text));
+  const write = fsOps.write ?? writeAtomically;
   const saved = fragments.map((f) => ({ file: path.join(dir, f.name), text: readFileSync(path.join(dir, f.name)) }));
   const deleted = [];
   try {
