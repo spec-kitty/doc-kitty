@@ -286,7 +286,7 @@ export const docKittyFields = {
   // `kind: Schematic` pages (ADR-0067): the JSON Schema file the page documents,
   // relative to the project root. Read by the remark plugin and the OKF export.
   schematic_path: z.string().optional(),
-  // ADR fallbacks (#248, ADR-0068). The Hub's ADR cards read a frontmatter
+  // ADR fallbacks (#248, ADR-0069). The Hub's ADR cards read a frontmatter
   // `status` when the body has no `## Status` section, and `date` when `updated`
   // is absent. The schema drops undeclared keys, so they are declared here.
   // `unknown`, not a stricter type: a page that set either key built before

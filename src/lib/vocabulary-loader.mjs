@@ -227,7 +227,7 @@ function parseCharterFile(docsRoot) {
       parsed != null && typeof parsed === 'object' && !Array.isArray(parsed)
         ? /** @type {Record<string, unknown>} */ (parsed)
         : {};
-    // The `adr` axis (#248, ADR-0068) is resolved here, not in the pure core,
+    // The `adr` axis (#248, ADR-0069) is resolved here, not in the pure core,
     // because its rule module orders ids with the core's `compareCodeUnit`.
     const adrId = resolveAdrIdRule(data.adr, source);
     return { resolved: { ...resolved, adrId }, data, source };
@@ -250,7 +250,7 @@ function parseCharterFile(docsRoot) {
  * mirroring `loadVocabulary`'s posture that an authored-but-broken file is a hard
  * error, never a silent skip.
  *
- * The result also carries `adrId`, the resolved ADR id rule (#248, ADR-0068).
+ * The result also carries `adrId`, the resolved ADR id rule (#248, ADR-0069).
  *
  * @param {string} docsRoot
  * @returns {(ResolvedCharter & { adrId: import('./adr-id.mjs').AdrIdRule }) | null}
