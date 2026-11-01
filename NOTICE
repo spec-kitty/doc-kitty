@@ -40,3 +40,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+--------------------------------------------------------------------------------
+Optional third-party components
+--------------------------------------------------------------------------------
+
+DocKitty can render OpenAPI reference pages when the adopter installs these
+optional peer packages. DocKitty does not bundle or redistribute them. Each is
+distributed under the MIT License by its authors:
+
+- starlight-openapi (https://github.com/HiDeoo/starlight-openapi), MIT License,
+  Copyright (c) 2023-present, HiDeoo
+- @astrojs/markdown-satteri (https://github.com/withastro/astro), MIT License,
+  Copyright (c) 2021 Fred K. Schott and Astro contributors

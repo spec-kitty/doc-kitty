@@ -39,6 +39,12 @@ The toolkit declares these peers. Your project installs them:
 | `astro` | `>=7.2.10 <8` |
 | `@astrojs/starlight` | `>=0.42.0 <0.43.0` |
 | `@astrojs/markdown-remark` | `>=7.3.0 <8` |
+| `@astrojs/markdown-satteri` | `0.4.4` |
+| `starlight-openapi` | `0.27.0` |
+
+The last two are optional. Install them only to publish OpenAPI reference pages
+(see the [OpenAPI how-to](https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/openapi-reference.md)).
+The install command below leaves them out.
 
 ## 1. Point the `@spec-kitty` scope at GitHub Packages
 

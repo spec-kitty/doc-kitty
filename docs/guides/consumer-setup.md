@@ -1072,6 +1072,13 @@ the aside styles. With the option off, which is the default, every blockquote
 renders as before. See
 [ADR-0068](../adr/0068-github-alerts-as-starlight-asides.md).
 
+## Optional: OpenAPI reference pages
+
+Set the `openapi` option to build versioned API reference pages from OpenAPI 3.x
+files. It needs two optional peers, `starlight-openapi` and
+`@astrojs/markdown-satteri`, which you install and import yourself. See
+[Publish OpenAPI reference pages](./openapi-reference.md).
+
 ## Optional: Gherkin feature pages
 
 If your repository keeps behaviour specs in Gherkin `.feature` files, the
