@@ -82,6 +82,9 @@ const BASE = '/consumer-fixture';
 const EXPECTED_VERSION = JSON.parse(readFileSync(path.join(SRC_DIR, 'package.json'), 'utf8')).version;
 const TOOLKIT_MODULE = path.join(FIXTURE_DIR, 'node_modules', '@spec-kitty', 'doc-toolkit');
 
+// Optional peers of the toolkit that only the `openapi` option needs.
+const OPTIONAL_PEERS = ['starlight-openapi', '@astrojs/markdown-satteri'];
+
 const BOOTSTRAP = process.env.DK_CONSUMPTION_BOOTSTRAP === '1';
 
 function log(msg) {
@@ -322,6 +325,22 @@ function assertIsolation() {
     die(`grep failed (exit ${grep.status}): ${grep.stderr}`);
   }
   console.log('✓ grep: 0 `../src` toolkit-source imports in the fixture');
+
+  // (f) opt-in at no cost (FR-010 / SC-004): this fixture does not set the `openapi`
+  //     option, so neither optional peer may be installed. The byte-equality of its
+  //     build output against the merge-base lives in openapi-optin.test.ts.
+  //     `@astrojs/markdown-satteri` is checked at the top level only: Starlight's own
+  //     `@astrojs/mdx` depends on it, so it is in the pnpm store without being the adopter's.
+  for (const peer of OPTIONAL_PEERS) {
+    if (existsSync(path.join(FIXTURE_DIR, 'node_modules', peer))) {
+      die(`optional peer ${peer} is installed in the no-option fixture`);
+    }
+  }
+  const stored = readdirSync(path.join(FIXTURE_DIR, 'node_modules', '.pnpm')).filter((d) =>
+    d.startsWith('starlight-openapi@'),
+  );
+  if (stored.length > 0) die(`starlight-openapi is in the no-option fixture's install tree (${stored.join(', ')})`);
+  console.log(`✓ optional peers not installed: ${OPTIONAL_PEERS.join(', ')}`);
 }
 
 // ── Step 4: source-hidden build (SC-001 proof) ──────────────────────────────

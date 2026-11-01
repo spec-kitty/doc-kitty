@@ -44,30 +44,22 @@
  *    difference between green and red is the removed module.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
+import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { pinToolkitIntegrity } from './scripts/pin-toolkit-integrity.mjs';
+import {
+  FIXTURE_DIR,
+  SRC_DIR,
+  buildFixture,
+  craftFixtureCopy,
+  installFixture,
+  makeCraftRoot,
+  packToolkit,
+  useNoopImageService,
+} from './crafted-fixture';
 import { checkOkfBundle } from '../../src/lib/okf-export/conformance.mjs';
 
 // ── repository layout (derived from this file's location) ────────────────────
-const HERE = path.dirname(fileURLToPath(import.meta.url)); // tests/consumption
-const REPO_ROOT = path.resolve(HERE, '..', '..');
-const SRC_DIR = path.join(REPO_ROOT, 'src'); // the @spec-kitty/doc-toolkit package
-const FIXTURE_DIR = path.join(HERE, 'consumer-fixture');
 const TOOLKIT_PKG = JSON.parse(readFileSync(path.join(SRC_DIR, 'package.json'), 'utf8'));
 const TOOLKIT_NAME: string = TOOLKIT_PKG.name; // '@spec-kitty/doc-toolkit'
 
@@ -75,22 +67,6 @@ const TOOLKIT_NAME: string = TOOLKIT_PKG.name; // '@spec-kitty/doc-toolkit'
 const STATIC_KINDS = ['.ts', '.astro', '.css'];
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-/** Run a command, capturing combined stdout+stderr. */
-function capture(
-  cmd: string,
-  args: string[],
-  opts: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
-): { status: number; output: string } {
-  const res = spawnSync(cmd, args, {
-    cwd: opts.cwd,
-    env: opts.env ?? process.env,
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  if (res.error) return { status: 1, output: String(res.error.message) };
-  return { status: res.status ?? 1, output: `${res.stdout ?? ''}\n${res.stderr ?? ''}` };
-}
 
 /**
  * The REAL packed file list of the toolkit (paths relative to the package root),
@@ -215,112 +191,17 @@ function deriveGapCandidate(): { chosen: GapCandidate; all: GapCandidate[] } {
 
 // ── crafted-fixture lifecycle ────────────────────────────────────────────────
 
-/**
- * A base dir on the SAME filesystem as the pnpm store, so an offline/prefer-offline
- * frozen install reuses the content-addressable store (hardlinks, no network).
- * Falls back to the system temp dir if ~/.cache is unavailable.
- */
-function tempBase(): string {
-  const cache = path.join(homedir(), '.cache');
-  try {
-    mkdirSync(cache, { recursive: true });
-    return cache;
-  } catch {
-    return tmpdir();
-  }
-}
-
 let craftRoot = '';
 let craftFixture = '';
 let derived: { chosen: GapCandidate; all: GapCandidate[] };
-
-/** Copy the committed fixture into a temp dir, excluding install/build artifacts. */
-function craftFixtureCopy(): string {
-  craftRoot = mkdtempSync(path.join(tempBase(), 'dk-consumption-gap-'));
-  const dest = path.join(craftRoot, 'consumer-fixture');
-  cpSync(FIXTURE_DIR, dest, {
-    recursive: true,
-    filter: (src) => {
-      const b = path.basename(src);
-      if (b === 'node_modules' || b === 'dist' || b === '.astro' || b === '.git') return false;
-      if (b.endsWith('.tgz')) return false;
-      return true;
-    },
-  });
-  return dest;
-}
-
-/** Give the crafted copy Astro's passthrough image service (harness note above). */
-function useNoopImageService(fixtureDir: string): void {
-  const configPath = path.join(fixtureDir, 'astro.config.mjs');
-  let text = readFileSync(configPath, 'utf8');
-  const anchor = 'export default defineConfig({';
-  if (!text.includes(anchor)) throw new Error('crafted astro.config.mjs missing defineConfig anchor');
-  text = text.replace(
-    anchor,
-    `${anchor}\n  image: { service: { entrypoint: 'astro/assets/services/noop' } },`,
-  );
-  writeFileSync(configPath, text);
-}
-
-/** Pack the toolkit into the crafted fixture as the stable `toolkit.tgz`. */
-function packToolkit(fixtureDir: string): void {
-  const res = spawnSync('npm', ['pack', '--json', '--pack-destination', fixtureDir], {
-    cwd: SRC_DIR,
-    encoding: 'utf8',
-    maxBuffer: 32 * 1024 * 1024,
-  });
-  if (res.status !== 0) throw new Error(`npm pack failed:\n${res.stderr}`);
-  const packed = readdirSync(fixtureDir).find((f) => f.endsWith('.tgz') && f !== 'toolkit.tgz');
-  if (!packed) throw new Error('npm pack produced no tarball');
-  const target = path.join(fixtureDir, 'toolkit.tgz');
-  if (existsSync(target)) rmSync(target);
-  cpSync(path.join(fixtureDir, packed), target);
-  rmSync(path.join(fixtureDir, packed));
-  // Point the crafted copy's lock entry at THIS tarball: packed bytes are not
-  // reproducible across machines (see scripts/pin-toolkit-integrity.mjs). The
-  // copy is temporary, so there is nothing to restore.
-  pinToolkitIntegrity(fixtureDir);
-}
-
-/** Install the crafted fixture in isolation, reusing the store where possible. */
-function installFixture(fixtureDir: string): { status: number; output: string } {
-  return capture(
-    'pnpm',
-    [
-      'install',
-      '--frozen-lockfile',
-      '--prefer-offline',
-      '--ignore-workspace',
-      '--config.dangerouslyAllowAllBuilds=true',
-    ],
-    { cwd: fixtureDir },
-  );
-}
-
-/** Build the crafted fixture via its LOCAL astro binary (bypasses pnpm's deps-status recheck). */
-function buildFixture(fixtureDir: string): { status: number; output: string } {
-  const distDir = path.join(fixtureDir, 'dist');
-  if (existsSync(distDir)) rmSync(distDir, { recursive: true, force: true });
-  const astroBin = path.join(fixtureDir, 'node_modules', '.bin', 'astro');
-  if (!existsSync(astroBin)) return { status: 1, output: `astro binary missing at ${astroBin}` };
-  // Vitest's OWN process env carries a `BASE_URL` variable (it mirrors Vite's
-  // client `import.meta.env.BASE_URL` for Node-environment tests, defaulting to
-  // `/`). Inherited by this REAL `astro build`, it would silently override the
-  // fixture's configured `base` for every SSR-rendered `import.meta.env.BASE_URL`
-  // read. Strip it so the child computes its own base from the fixture's
-  // `astro.config.mjs` (mirrors `src/tests/example-adopter.test.ts`).
-  const childEnv = { ...process.env };
-  delete childEnv.BASE_URL;
-  return capture(astroBin, ['build'], { cwd: fixtureDir, env: childEnv });
-}
 
 // ── suite ─────────────────────────────────────────────────────────────────────
 
 describe('consumption packaging-gap self-test (C-2/C-4, INV-15) — two-arm', () => {
   beforeAll(() => {
     derived = deriveGapCandidate();
-    craftFixture = craftFixtureCopy();
+    craftRoot = makeCraftRoot('dk-consumption-gap-');
+    craftFixture = craftFixtureCopy(craftRoot);
     useNoopImageService(craftFixture);
     packToolkit(craftFixture);
     const install = installFixture(craftFixture);
