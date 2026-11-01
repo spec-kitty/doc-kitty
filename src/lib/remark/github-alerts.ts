@@ -44,13 +44,41 @@ interface GithubAlertsVFile {
 }
 
 /**
+ * The leading inlines of an alert paragraph with a glossary auto-link inside the
+ * marker undone. This pass runs after the glossary passes, and auto-link is
+ * case-insensitive and treats `!` and `]` as word boundaries, so a site with a
+ * term named "Note" (or Tip, Important, Warning, Caution) gets `[!NOTE]` split
+ * into text `[!`, a `dk-glossary-link`, and text `]…`. The three are joined back
+ * into one text node so the marker still parses. Anything else is returned as is.
+ */
+function rejoinGlossaryMarker(inlines: MdastLike[]): MdastLike[] {
+  const [open, link, close, ...tail] = inlines;
+  const linkData = link?.data as { hProperties?: { class?: unknown } } | undefined;
+  const word = link?.children?.length === 1 ? link.children[0] : undefined;
+  if (
+    open?.type !== 'text' ||
+    open.value !== '[!' ||
+    link?.type !== 'link' ||
+    linkData?.hProperties?.class !== 'dk-glossary-link' ||
+    word?.type !== 'text' ||
+    typeof word.value !== 'string' ||
+    close?.type !== 'text' ||
+    typeof close.value !== 'string' ||
+    !close.value.startsWith(']')
+  ) {
+    return inlines;
+  }
+  return [{ type: 'text', value: `[!${word.value}${close.value}` }, ...tail];
+}
+
+/**
  * The body of `blockquote` with its leading marker removed, plus the alert type;
  * `undefined` when the blockquote is not an alert. Pure: the input is not changed.
  */
 function stripMarker(blockquote: MdastLike): { type: keyof typeof ALERT_TO_ASIDE; body: MdastLike[] } | undefined {
   const [first, ...restBlocks] = blockquote.children ?? [];
   if (first?.type !== 'paragraph') return undefined;
-  const [lead, ...inlines] = first.children ?? [];
+  const [lead, ...inlines] = rejoinGlossaryMarker(first.children ?? []);
   if (lead?.type !== 'text' || typeof lead.value !== 'string') return undefined;
   const marker = parseAlertMarker(lead.value);
   if (!marker) return undefined;

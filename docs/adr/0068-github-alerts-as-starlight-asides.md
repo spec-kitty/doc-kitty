@@ -61,7 +61,9 @@ callouts leave a `containerDirective` named `note`, `tip`, `caution` or
 5. **Opt-in.** `defineDocKittyIntegrations({ githubAlerts: true })`. Off by
    default, so an existing site renders byte-identically. The integration sits
    immediately before Starlight, after the glossary passes, so the glossary and
-   its re-derive see the same blockquote.
+   its re-derive see the same blockquote. Auto-link can then link a term named
+   like an alert type (`Note`) inside the marker; the pass joins that split
+   back into the marker text before reading it.
 6. **No-op on decks.** A `kind: Presentation` page does not load Starlight's
    aside CSS (ADR-0038), so the pass leaves its blockquotes alone.
 7. **A fallback.** The directive carries `data.hName: 'blockquote'`. On a
