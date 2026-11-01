@@ -143,8 +143,15 @@ describe('generated-page rules (FR-012, ADR-0049 section 3)', () => {
     const stray = path.join(outDir, 'reference/api/main/openapi.txt');
     writeFileSync(stray, 'authored, no checksum beside it');
     // main is gone, v1 is now JSON.
-    publish.publishOpenApiDocuments(outDir, { section: 'reference/api', specs: [spec('v1', 'json', SPEC_MAIN)] });
+    const reported: string[] = [];
+    publish.publishOpenApiDocuments(outDir, { section: 'reference/api', specs: [spec('v1', 'json', SPEC_MAIN)] }, (f) =>
+      reported.push(f),
+    );
     publish.removeEmptyDirs(outDir, 'reference/api');
+    // Every removal is reported, so the build can warn about it; the stray file is not.
+    expect(reported.sort()).toEqual(
+      [path.join(outDir, 'reference/api/main/openapi.json'), path.join(outDir, 'reference/api/v1/openapi.yaml')].sort(),
+    );
     expect(existsSync(path.join(outDir, 'reference/api/main/openapi.json'))).toBe(false);
     expect(existsSync(path.join(outDir, 'reference/api/main/openapi.json.sha256'))).toBe(false);
     expect(existsSync(path.join(outDir, 'reference/api/v1/openapi.yaml'))).toBe(false);
