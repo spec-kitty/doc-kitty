@@ -29,6 +29,7 @@ import { walkMarkdownPaths } from '../docs-walk.mjs';
 import { formatRouteCollisions, resolveIndexEntries, routeOfSlug } from '../vocabulary-core.mjs';
 import type { NormalisedOpenApiOptions } from './options.mjs';
 import { openApiPublishHooks } from '../integrations/openapi-publish.js';
+import { PLACEHOLDER_GROUP_PREFIX } from '../route-shaping.js';
 
 /** The virtual module that serves the versions to the route middleware. */
 export const OPENAPI_MODULE_ID = 'virtual:doc-kitty/openapi';
@@ -72,7 +73,7 @@ export interface OpenApiModuleData {
 
 /** A placeholder sidebar group, replaced by the renderer with the version's tree. */
 export function openApiSidebarGroup(section: string, label: string) {
-  return { collapsed: false, items: [] as never[], label: `Symbol(dk-openapi:${section}/${label})` };
+  return { collapsed: false, items: [] as never[], label: `${PLACEHOLDER_GROUP_PREFIX}${section}/${label})` };
 }
 
 /** The renderer's config for the normalised option: one entry per version. */

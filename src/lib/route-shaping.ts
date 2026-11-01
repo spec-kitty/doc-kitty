@@ -95,6 +95,12 @@ export function buildDirectoryMeta(entries: readonly DirectoryMetaInput[]): Map<
   return meta;
 }
 
+/**
+ * The label prefix of a sidebar group another middleware fills after shaping
+ * (`openApiSidebarGroup` in `openapi/adapters.ts`). Such a group is never pruned.
+ */
+export const PLACEHOLDER_GROUP_PREFIX = 'Symbol(dk-openapi:';
+
 /** Options for {@link shapeSidebar}. */
 export interface ShapeSidebarOptions {
   /** The site `base` (`/doc-kitty`), stripped from hrefs before matching. Default: none. */
@@ -233,9 +239,13 @@ export function shapeSidebar(
   // were all drafts arrives here with no entries. An empty group is a label
   // that opens onto nothing, so it is dropped, and so is a parent it leaves
   // empty. Only done when some page is unpublished, so a build that publishes
-  // everything is shaped exactly as before.
+  // everything is shaped exactly as before. A generated placeholder group (the
+  // OpenAPI version groups) is empty here by design: a later middleware fills it.
   const keep = ({ entry }: Shaped): boolean =>
-    unpublished.size === 0 || entry.type !== 'group' || entry.entries.length > 0;
+    unpublished.size === 0 ||
+    entry.type !== 'group' ||
+    entry.entries.length > 0 ||
+    entry.label.startsWith(PLACEHOLDER_GROUP_PREFIX);
 
   const shapeEntry = (entry: SidebarEntry, depth: number): Shaped => {
     if (entry.type === 'link') {

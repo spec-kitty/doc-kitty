@@ -13,6 +13,7 @@
  */
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
+import { openApiSidebarGroup } from '../lib/openapi/adapters';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -212,6 +213,16 @@ describe('shapeSidebar (T020)', () => {
     });
     expect(warnings).toEqual([]);
     expect(labelsOf(childrenOf(sidebar[0]))).toContain('Notes');
+  });
+
+  it('with drafts unpublished, drops an empty group but keeps an empty OpenAPI placeholder', () => {
+    const placeholder = openApiSidebarGroup('reference/api', 'v1');
+    const { sidebar } = shapeSidebar(
+      [group('Gone', []), group(placeholder.label, []), group('Rhetoric', [link('rhetoric', 'Rhetoric')])],
+      meta,
+      { base: BASE, unpublishedDirs: ['rhetoric/notes'] },
+    );
+    expect(labelsOf(sidebar)).toEqual([placeholder.label, 'Rhetoric']);
   });
 
   it('leaves top-level labels and top-level order alone', () => {
