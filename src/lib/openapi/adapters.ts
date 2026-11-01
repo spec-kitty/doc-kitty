@@ -24,7 +24,7 @@
  * waiver does not cover.
  */
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
 import { formatRouteCollisions, resolveIndexEntries, routeOfSlug } from '../vocabulary-core.mjs';
 import type { NormalisedOpenApiOptions } from './options.mjs';
@@ -159,7 +159,7 @@ export function patchPageProps(code: string): string {
     // `draft`, which would give every reference page the draft notice and `noindex`.
     "frontmatter: { title, description: dkDescribeOpenApiPage(title, schema, pathItemOperation, tag), doc_status: 'active' }",
   );
-  return `import { describeOpenApiPage as dkDescribeOpenApiPage } from ${JSON.stringify(SELF)};\n${body}`;
+  return `import { describeOpenApiPage as dkDescribeOpenApiPage } from ${JSON.stringify(pathToFileURL(SELF).href)};\n${body}`;
 }
 
 /** Source of `virtual:doc-kitty/openapi`. */

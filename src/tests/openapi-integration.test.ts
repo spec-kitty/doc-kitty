@@ -281,6 +281,8 @@ describe('description adapter (FR-002 with the strict docs schema)', () => {
     const patched = plugin.transform(real, '/x/node_modules/starlight-openapi/libs/starlight.ts?v=1')!;
     expect(patched).toContain('description: dkDescribeOpenApiPage(title, schema, pathItemOperation, tag)');
     expect(patched).not.toContain('frontmatter: {\n      title,\n    }');
+    // A file URL, not a raw path: `C:\\...` is not a valid import specifier on Windows.
+    expect(patched).toContain(`from "${new URL('../lib/openapi/adapters.ts', import.meta.url).href}"`);
     expect(plugin.transform(real, '/x/src/other.ts')).toBeNull();
     expect(() => plugin.transform('export const x = 1', '/x/starlight-openapi/libs/starlight.ts')).toThrow(
       /no longer has the expected frontmatter/,
