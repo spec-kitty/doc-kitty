@@ -27,7 +27,9 @@ them.
 
 ## Activate the gate
 
-Two out-of-band settings turn the pipeline into an enforced gate. Apply both.
+Two out-of-band settings turn the pipeline into an enforced gate: the required
+check and GitHub Pages. The merge queue and the `pr:pause-ci` label keep it
+working while many PRs land at once.
 
 ### Require the `ci-ok` check on `main`
 
@@ -48,6 +50,45 @@ that behaves correctly as the required gate.
 
 Until this rule requires `ci-ok`, skipped lanes do not gate anything and the
 whole pipeline is **advisory** — red runs do not block a merge.
+
+### Require the merge queue on `main`
+
+CI runs on the `merge_group` event, so `main` can use a merge queue
+([ADR-0072](../adr/0072-parallel-landing-without-shared-files.md)). The queue
+tests each PR on top of the PRs ahead of it and merges only what passes, so
+parallel PRs no longer need rebasing one by one.
+
+1. In **Settings → General → Pull Requests**, keep **Allow rebase merging**
+   on; the queue can only use a method the repository allows.
+2. In the `main` rule (**Settings → Branches**, or the ruleset that covers
+   `main`), enable **Require merge queue**, and turn off **Require branches to
+   be up to date before merging**: the queue already tests each PR on the
+   latest `main`.
+3. Set **Merge method** to **Rebase and merge**. `main` keeps a linear history
+   of each PR's commits. Rebasing gives them new SHAs, so they are not the
+   author's signed commits; check this against **Require signed commits** if
+   that rule is on.
+4. Set **Build concurrency** to **3**, and the group size to **minimum 1,
+   maximum 3**. A full CI run takes 8 to 10 minutes, and a larger group means
+   one red PR sends more of its neighbours back to the queue.
+5. Enable **Only merge non-failing pull requests**.
+6. Set **Status check timeout** to **30 minutes**.
+7. Keep `ci-ok` as the one required check. The queue waits for it on its
+   `gh-readonly-queue/main/…` branch. In a ruleset, set its source to the
+   GitHub Actions app, so no other integration can post a `ci-ok`.
+
+### Create the `pr:pause-ci` label
+
+Create a label named exactly `pr:pause-ci`. A PR that carries it runs no CI lane,
+and its `ci-ok` is red, so it cannot merge or enter the queue. Use it to free
+runners while a PR is still being reworked; remove it to run CI again. The
+label is read on pull requests only, so it never pauses a queue run or `main`.
+
+Two manual actions get around the pause, so avoid them on a paused PR: **Re-run
+all jobs** on an older run replays that run's payload, which had no label, and a
+manual dispatch of CI on the PR's branch does not read labels. Either can post a
+green `ci-ok` while the label is on. The queue still tests the PR again before
+it merges.
 
 ### Enable GitHub Pages
 
