@@ -529,7 +529,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   const openapiOpts =
     openapi === undefined ? undefined : normaliseOpenApiOptions(openapi, { siteRoot: process.cwd() });
   if (openapiOpts) {
-    const collision = openApiCollisionMessage(openapiOpts, docsDir, indexBasename);
+    const collision = openApiCollisionMessage(openapiOpts, docsDir, indexBasename, gherkinOpts?.pages?.section);
     if (collision) throw new Error(collision);
     // The llms.txt route lists each version's raw document (FR-008).
     setInternalEnv(DK_OPENAPI_ENV, JSON.stringify(toPublication(openapiOpts)));
