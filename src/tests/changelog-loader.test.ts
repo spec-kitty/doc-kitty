@@ -4,7 +4,7 @@
  * file watcher), and an edit of CHANGELOG.md re-renders it.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import type { Loader, LoaderContext } from 'astro/loaders';
@@ -27,11 +27,16 @@ afterEach(() => {
   while (dirs.length) rmSync(dirs.pop()!, { recursive: true, force: true });
 });
 
-function setup(changelog: string) {
+function setup(changelog: string, fragments?: Record<string, string>) {
   const dir = mkdtempSync(path.join(tmpdir(), 'changelog-loader-'));
   dirs.push(dir);
   const changelogPath = path.join(dir, 'CHANGELOG.md');
   writeFileSync(changelogPath, changelog);
+  const fragmentsDir = path.join(dir, 'docs/changelog/unreleased');
+  if (fragments) {
+    mkdirSync(fragmentsDir, { recursive: true });
+    for (const [name, text] of Object.entries(fragments)) writeFileSync(path.join(fragmentsDir, name), text);
+  }
   const entries = new Map<string, Entry>();
   const store: FakeStore = {
     get: (id: string) => entries.get(id),
@@ -63,8 +68,9 @@ function setup(changelog: string) {
     changelogPath,
     entryId: 'changelog/releases',
     repoBlobBase: 'https://github.com/o/r/blob/main/',
+    ...(fragments ? { fragmentsDir } : {}),
   });
-  return { loader, context, entries, handlers, watcher, changelogPath, getStore: () => wrappedStore };
+  return { loader, context, entries, handlers, watcher, changelogPath, fragmentsDir, getStore: () => wrappedStore };
 }
 
 describe('withRepoChangelog (#192)', () => {
@@ -100,5 +106,51 @@ describe('withRepoChangelog (#192)', () => {
     expect(t.entries.get('changelog/releases')?.rendered?.html).toContain('- fresh');
     await t.handlers.change('/elsewhere/other.md');
     expect(t.entries.get('changelog/releases')?.rendered?.html).toContain('- fresh');
+  });
+
+  // ADR-0072: pending entries are fragments under docs/changelog/unreleased/, so the page
+  // shows them as [Unreleased], as CHANGELOG.md used to.
+  const NOTE = '<!-- Unreleased entries live in docs/changelog/unreleased/ -->';
+  const WITH_NOTE = `# Changelog\n\n## [Unreleased]\n\n${NOTE}\n\n## [0.1.0]\n\n- one\n`;
+  const frag = (section: string, body: string) => `---\nsection: ${section}\n---\n\n${body}\n`;
+
+  it('shows the docs/changelog/unreleased fragments as [Unreleased]', async () => {
+    const t = setup(WITH_NOTE, { '7-x.md': frag('Added', '- **New (#7).** See [ADR](docs/adr/0072-x.md).') });
+    await t.loader.load(t.context);
+    const html = t.entries.get('changelog/releases')?.rendered?.html ?? '';
+    expect(html).toContain('## [Unreleased]\n\n### Added\n\n- **New (#7).**');
+    expect(html).toContain('](https://github.com/o/r/blob/main/docs/adr/0072-x.md)');
+    expect(html).not.toContain(NOTE);
+    expect(html).toContain('## [0.1.0]\n\n- one');
+  });
+
+  it('fails the build on a bad fragment, naming it', async () => {
+    const t = setup(WITH_NOTE, { '7-x.md': frag('Nope', '- x') });
+    await expect(t.loader.load(t.context)).rejects.toThrow(/7-x\.md/);
+  });
+
+  it('watches docs/changelog/unreleased and re-renders when a fragment is added or changed', async () => {
+    const t = setup(WITH_NOTE, { '7-x.md': frag('Added', '- first') });
+    await t.loader.load(t.context);
+    expect(t.watcher.add).toHaveBeenCalledWith(path.resolve(t.fragmentsDir));
+    const added = path.join(t.fragmentsDir, '8-y.md');
+    writeFileSync(added, frag('Fixed', '- second'));
+    await t.handlers.add(added);
+    expect(t.entries.get('changelog/releases')?.rendered?.html).toContain('### Fixed\n\n- second');
+    writeFileSync(added, frag('Fixed', '- second, edited'));
+    await t.handlers.change(added);
+    expect(t.entries.get('changelog/releases')?.rendered?.html).toContain('- second, edited');
+  });
+
+  it('in dev, keeps the last good page when a fragment is saved half-written', async () => {
+    const t = setup(WITH_NOTE, { '7-x.md': frag('Added', '- first') });
+    await t.loader.load(t.context);
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const bad = path.join(t.fragmentsDir, '7-x.md');
+    writeFileSync(bad, '---\nsection: Add');
+    await expect(t.handlers.change(bad)).resolves.toBeUndefined();
+    expect(t.entries.get('changelog/releases')?.rendered?.html).toContain('- first');
+    expect(errors).toHaveBeenCalledWith(expect.stringMatching(/7-x\.md/));
+    errors.mockRestore();
   });
 });

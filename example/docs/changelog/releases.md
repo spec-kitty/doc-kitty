@@ -11,4 +11,5 @@ tags: [release]
 <!-- dk:repo-changelog -->
 
 The release history is rendered here from the repository's `CHANGELOG.md` when
-the site is built. Edit that file, never this page.
+the site is built, with the pending fragments under `docs/changelog/unreleased/` shown as
+Unreleased. Add a fragment, never edit this page.

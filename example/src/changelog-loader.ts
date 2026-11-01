@@ -14,10 +14,15 @@
  *
  * `pnpm assert:changelog` (src/scripts/assert-changelog-page.mjs) fails the
  * build gate when a `## [x.y.z]` release of CHANGELOG.md is missing from it.
+ *
+ * With `fragmentsDir` (ADR-0072), the pending entries are the fragment files
+ * under `docs/changelog/unreleased/`: they are shown as `## [Unreleased]`, a bad fragment
+ * fails the build, and in `astro dev` adding or editing one re-renders the page.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { Loader, LoaderContext } from 'astro/loaders';
+import { readFragments, withUnreleased } from '@spec-kitty/doc-toolkit/scripts/changelog.mjs';
 
 export const CHANGELOG_MARKER = '<!-- dk:repo-changelog -->';
 
@@ -30,6 +35,8 @@ export interface RepoChangelogOptions {
   repoBlobBase: string;
   /** Prefix for repo-relative images, e.g. `https://raw.githubusercontent.com/o/r/main/`; derived from `repoBlobBase` when omitted. */
   repoRawBase?: string;
+  /** Absolute path of the changelog fragments folder (`docs/changelog/unreleased/`), shown as `[Unreleased]`. */
+  fragmentsDir?: string;
 }
 
 // A code span (kept as is), or the `](target "title")` tail of an inline link
@@ -119,6 +126,11 @@ export function withRepoChangelog(loader: Loader, options: RepoChangelogOptions)
     load: async (context: LoaderContext): Promise<void> => {
       const { store, generateDigest, renderMarkdown, watcher } = context;
       const resolvedPath = path.resolve(options.changelogPath);
+      const fragmentsPath = options.fragmentsDir ? path.resolve(options.fragmentsDir) : null;
+      const isSource = (changed: string): boolean => {
+        const p = path.resolve(changed);
+        return p === resolvedPath || (fragmentsPath !== null && path.dirname(p) === fragmentsPath);
+      };
       // The page is rendered BEFORE the wrapped loader runs, so `set` (which is
       // synchronous) can store the finished entry at any time: during the load,
       // and later from a file watcher in `astro dev`, long after load() returned.
@@ -141,12 +153,20 @@ export function withRepoChangelog(loader: Loader, options: RepoChangelogOptions)
           },
         },
       });
-      // CHANGELOG.md is outside the docs glob, so watch it ourselves: an edit
-      // re-renders the page in `astro dev` without restarting the server.
+      // CHANGELOG.md and docs/changelog/unreleased/ are outside the docs glob, so watch them
+      // ourselves: an edit re-renders the page in `astro dev` without a restart.
       watcher?.add(resolvedPath);
-      watcher?.on('change', async (changed: string) => {
-        if (path.resolve(changed) !== resolvedPath) return;
-        current = await renderChangelog(options, renderMarkdown);
+      if (fragmentsPath) watcher?.add(fragmentsPath);
+      const rerender = async (changed: string): Promise<void> => {
+        if (!isSource(changed)) return;
+        try {
+          current = await renderChangelog(options, renderMarkdown);
+        } catch (err) {
+          // In `astro dev` a half-written fragment must not stop the server:
+          // keep the last good page and say why. `astro build` still fails.
+          console.error(`[changelog] ${err instanceof Error ? err.message : String(err)}`);
+          return;
+        }
         const existing = store.get(options.entryId);
         if (!existing) return;
         store.delete(options.entryId);
@@ -156,7 +176,8 @@ export function withRepoChangelog(loader: Loader, options: RepoChangelogOptions)
           rendered: current.rendered,
           digest: generateDigest(`${CHANGELOG_MARKER}\n${current.raw}`),
         });
-      });
+      };
+      for (const event of ['change', 'add', 'unlink'] as const) watcher?.on(event, rerender);
     },
   };
 }
@@ -165,7 +186,9 @@ async function renderChangelog(
   options: RepoChangelogOptions,
   renderMarkdown: LoaderContext['renderMarkdown'],
 ): Promise<{ raw: string; body: string; rendered: Awaited<ReturnType<LoaderContext['renderMarkdown']>> }> {
-  const raw = readFileSync(options.changelogPath, 'utf8');
+  const file = readFileSync(options.changelogPath, 'utf8');
+  // A bad fragment throws here, naming the file, and so fails the build.
+  const raw = options.fragmentsDir ? withUnreleased(file, readFragments(options.fragmentsDir)) : file;
   const body = changelogBody(raw, options.repoBlobBase, options.repoRawBase);
   return { raw, body, rendered: await renderMarkdown(body) };
 }
