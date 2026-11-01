@@ -114,6 +114,7 @@ describe('parseFragment — one fragment file', () => {
     ['an unknown section', frag('Improved', '- x'), /section "Improved" is not one of/],
     ['a missing section', '---\n---\n\n- x\n', /needs a "section"/],
     ['an unknown key', '---\nsection: Added\nissue: 4\n---\n\n- x\n', /unknown key "issue"/],
+    ['a repeated key', '---\nsection: Added\nsection: Fixed\n---\n\n- x\n', /"section" is given twice/],
     ['an empty body', frag('Added', ''), /empty/],
     ['a body that is not a bullet', frag('Added', 'Prose first.'), /must start with a "- " bullet/],
     ['a heading in the body', frag('Added', '- x\n\n## [0.6.0]'), /heading/],
