@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * generate-legacy-redirects.mjs — write the mechanical `.html` redirect map for
- * a site moving off an `.html`-URL generator (issue #249, ADR-0068).
+ * a site moving off an `.html`-URL generator (issue #249, ADR-0071).
  *
  * Usage:
  *   node src/scripts/generate-legacy-redirects.mjs <baseline-file>

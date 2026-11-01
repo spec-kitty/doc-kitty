@@ -9,7 +9,7 @@ authors:
   - process:doc-kitty
 tags: [migration, redirects, docfx, github-pages]
 related:
-  - adr/0068-legacy-html-redirects-as-flat-stubs
+  - adr/0071-legacy-html-redirects-as-flat-stubs
   - adr/0034-redirect-coverage-gate
   - guides/consumer-setup
 ---
@@ -26,7 +26,7 @@ The toolkit writes each old URL as a small file at the old path,
 the new page. It is marked `noindex`, carries a canonical link to the new page,
 and is not listed in the sitemap, `llms.txt` or the agent API. Any static host
 serves it, GitHub Pages included. The reasons are in
-[ADR-0068](../adr/0068-legacy-html-redirects-as-flat-stubs.md).
+[ADR-0071](../adr/0071-legacy-html-redirects-as-flat-stubs.md).
 
 ## 1. Capture the old site's URLs before you switch
 

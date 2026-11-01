@@ -141,7 +141,7 @@ example/.dk-test-gherkin-results/
 # src/tests/exclude-folders-build.test.ts builds it, then removes it.
 example/.dk-test-exclude-folders/
 
-# Legacy .html redirects fixture site (ADR-0068, transient) —
+# Legacy .html redirects fixture site (ADR-0071, transient) —
 # src/tests/legacy-html-redirects-build.test.ts builds it, then removes it.
 example/.dk-test-legacy-html/
 

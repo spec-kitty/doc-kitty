@@ -25,7 +25,7 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:github-alerts',
   '@astrojs/starlight',
   'doc-kitty:draft-publication',
-  // Always on (ADR-0068): after draft-publication, whose setup records DK_PUBLISH_DRAFTS.
+  // Always on (ADR-0071): after draft-publication, whose setup records DK_PUBLISH_DRAFTS.
   'doc-kitty:legacy-html-redirects',
   'doc-kitty:route-shaping',
   'doc-kitty:toc-rail',

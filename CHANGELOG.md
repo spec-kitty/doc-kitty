@@ -49,7 +49,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `--declared-redirects` may now be repeated. The new
   `dockitty-generate-legacy-redirects` command writes the mechanical map
   (`x.html -> x/`, `x/index.html -> x/`) from a committed list of old URLs. See
-  [ADR-0068](docs/adr/0068-legacy-html-redirects-as-flat-stubs.md) and
+  [ADR-0071](docs/adr/0071-legacy-html-redirects-as-flat-stubs.md) and
   [Keeping .html URLs](docs/migrations/legacy-html-urls.md).
 
 - **A `kind: Schematic` page documents a JSON or YAML schema (#245).** Before,
