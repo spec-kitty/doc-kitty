@@ -237,7 +237,9 @@ skip them too. You do not edit the files, and you do not mark them as drafts.
   the same words. `dockitty-assert-no-broken-links` reports a link to an
   excluded page as `target is excluded from the site` when you pass `--docs
   <your docs folder>`; without `--docs` it still fails the link, as `no matching
-  page or file in dist`.
+  page or file in dist`. A *relative* `.md` link into an excluded folder is not
+  rewritten by the build, so that gate always gives the generic reason for it;
+  run `dockitty-check-links --strict` to have it named as excluded.
 - `_meta/` stays reserved, as before; you do not list it.
 
 The gates read `exclude` from `astro.config.mjs`, like the index names, and print
