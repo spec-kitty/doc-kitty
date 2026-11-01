@@ -2,7 +2,7 @@
 title: "ADR-0049: OpenAPI reference pages through an existing integration"
 description: Build API reference pages from an OpenAPI definition with an existing Starlight integration that keeps DocKitty's frame, theming and gates intact.
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-10-29T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -19,9 +19,9 @@ related:
 
 ## Status
 
-**Proposed** — 2026-10-14. Records the direction the project owner set in
-issue #140. It becomes Accepted once a spike has evaluated at least one candidate
-integration against the conditions in Decision 1 and recorded the result.
+**Accepted** — 2026-10-29, on the spike result recorded in
+[Addendum 2026-10-29](#addendum-2026-10-29-spike-result-244). Proposed
+2026-10-14 from the direction the project owner set in issue #140.
 
 ## Context
 
@@ -188,3 +188,115 @@ glossary and metadata.
 - Issue #140: OpenAPI support, with the owner's decisions.
 - [ADR-0026](./0026-glossary-source-and-generation-seam.md), [ADR-0046](./0046-gherkin-feature-pages.md) and [ADR-0048](./0048-generated-page-names-and-empty-sources.md): the generated-page pattern.
 - `starlight-openapi` on npm and its README (version 0.27.0, read 2026-10-14).
+p='0049-openapi-reference-via-existing-integration.md';s=open(p).read()
+old="""**Proposed** — 2026-10-14. Records the direction the project owner set in
+issue #140. It becomes Accepted once a spike has evaluated at least one candidate
+integration against the conditions in Decision 1 and recorded the result."""
+new="""**Accepted** — 2026-10-29, on the spike result recorded in
+[Addendum 2026-10-29](#addendum-2026-10-29-spike-result-244). Proposed
+2026-10-14 from the direction the project owner set in issue #140."""
+assert old in s; s=s.replace(old,new).replace("updated: 2026-10-14T00:00:00Z","updated: 2026-10-29T00:00:00Z")
+s=s.rstrip('\n')+"\n"+open('/dev/stdin').read()
+open(p,'w').write(s)
+
+## Addendum 2026-10-29: spike result (#244)
+
+The spike evaluated `starlight-openapi@0.27.0` against the mission's exit
+criteria (C-006) on Astro 7.4, Starlight 0.42.6 and the `unified()` processor
+of ADR-0060. Two fixtures, `example/openapi/v1.yaml` and
+`example/openapi/main.yaml`, drove it. The candidate passes with two thin
+adapters and one narrow waiver, so this ADR is Accepted.
+
+### Verdicts
+
+| # | Criterion | Verdict |
+|---|---|---|
+| 1 | Builds on Astro 7.4 / Starlight 0.42.6 with `unified()` | Pass, with the description adapter (below). DocKitty's remark plugins still run on ordinary pages. |
+| 2 | Several specs, each with its own base and sidebar group | Pass, through `createOpenAPISidebarGroup()` placeholders. |
+| 3 | Pages render inside the DocKitty frame | Pass: header, sidebar, TOC rail and footer. |
+| 4 | No plugin stylesheet; `--dk-*` tokens style the markup | Pass, with the stylesheet filter (below). There is no config switch. |
+| 5 | Operation and schema text in the static HTML | Pass. |
+| 6 | No request console | Pass: code samples are `<pre>` text, with no form and no fetch. |
+| 7 | Byte-identical rebuilds | Pass (`diff -r` of two builds). |
+| 8 | NFR-002 as first worded (no inline additions) | Fail. Waived narrowly (below). |
+| 9 | Site surfaces | Sitemap and Pagefind: yes. `llms.txt`, agent API, content graph, glossary autolinker: no. Frontmatter gate: not applicable. |
+| 10 | Build cost, 2 fixtures | +0.78 s (median of 3: 5.26 s against 4.48 s). |
+
+### NFR-002 waiver
+
+The operator waived NFR-002 narrowly (decision `plan.security.nfr002-waiver`).
+API pages may add only the pinned plugin's known inline scripts. Code samples
+are off (`snippets.operation`, `snippets.requestBody` and `snippets.response`
+set to `false`), which leaves one script. A gate pins the hashes and fails on
+any other addition. The hashes change only when the pin changes, and the
+how-to publishes them.
+
+Measured on the example build with snippets off, against the union of every
+ordinary page:
+
+| Where | Addition | CSP hash |
+|---|---|---|
+| Every operation page | Inline module script defining `starlight-openapi-content-picker` | `sha256-28IjJBwKnS9sgb0aB8YXgnUhJmV3Az7aJiw6QBthXmo=` |
+| Each version's overview page | Style attribute `--sl-icon-size: 1.333em;` | `sha256-XlpZgcpFaLbPrgzm4PHCiD/OJXhR+DZxGuVpy2P4Cq0=` |
+
+A style attribute needs `'unsafe-hashes'` to match a hash in `style-src`.
+With snippets on, operation pages add two more scripts
+(`sl-openapi-snippet-picker` and `sl-openapi-snippets`) and Expressive Code
+style attributes. The waiver does not cover them. External origins: no
+additions.
+
+### Adapters
+
+- **Description adapter.** The plugin's page props carry only `title`, so the
+  DocKitty docs schema rejects them (`description: Required`). The adapter
+  supplies a description for the generated pages.
+- **Stylesheet filter.** A follow-on Starlight plugin removes
+  `starlight-openapi/styles` from `customCss`, so theming comes from `--dk-*`
+  only (Decision 1). The markup hooks are the `sl-openapi-*` classes and the
+  `--sl-openapi-*` custom properties. The options used are `base`,
+  `sidebar.{label,group,collapsed,operations,tags}` and `snippets.*`. The
+  plugin has no slots or component overrides, so version links and the badge
+  need route middleware or a wrapper.
+
+### Default section
+
+The default section is `reference/api`, so pages are at
+`/reference/api/<label>/` (decision `plan.routes.default-section`). The
+shorter `api/` collides with the agent API (`/api/index.json`,
+`/api/pages/*`). A configured section is checked against reserved and
+authored routes.
+
+### Surfaces
+
+The plugin injects routes. It does not add content entries (operator
+decision 01M631YA75R7DR57DS8MV0HGNV accepts this).
+
+- Sitemap and Pagefind: reached as-is.
+- `llms.txt`: DocKitty wires the lines.
+- Frontmatter gate: does not apply to the generated pages.
+- Agent API, content graph and glossary autolinker: follow-ups.
+
+### Known limit
+
+Markdown in descriptions is rendered by the plugin. It bypasses the glossary
+autolinker, the relative-link rewrite and the link checks.
+
+### Supply chain (DIRECTIVE_051)
+
+- Both packages are exact-pinned optional peers of `@spec-kitty/doc-toolkit`
+  (`peerDependenciesMeta.optional`), and exact devDependencies of the toolkit
+  and the example. Only opting-in sites carry them.
+- The pnpm 11 lockfile records integrity hashes, not tarball URLs. Both match
+  `dist.integrity` on registry.npmjs.org:
+  - `starlight-openapi@0.27.0`:
+    `sha512-M8oZ7CEgQ1d+lyyBHPin44HrBgpVLVzJhTQ+O7SCdUhMfgg6Zj2t6kgQb1BVs/e/HnZbKlWFZuOdKeHqh9jaYw==`
+  - `@astrojs/markdown-satteri@0.4.4`:
+    `sha512-Byhe9CAiGFJrhMACKpgN/FPf4lcwapqwFQAB7E1sPELTEJINfBIpgnEYOBTXzr//fvSSNhfp/X3AqN4mUV9p+A==`
+- The install adds 30 packages. None has a `preinstall`, `install` or
+  `postinstall` script; `@humanwhocodes/momoa` and `openapi-types` declare
+  `prepare` only, which does not run on install. No `onlyBuiltDependencies`
+  entry was added.
+- Sätteri (`@astrojs/markdown-satteri@0.4.4`) and its per-platform `@bruits/*`
+  binaries were already in the tree through Starlight. The pin is 0.4.4, not
+  0.4.6, which was less than 24 hours old at the time.
+- The transitive `event-stream` is 4.0.1, not the compromised 3.3.6.
