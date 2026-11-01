@@ -287,6 +287,10 @@ describe('description adapter (FR-002 with the strict docs schema)', () => {
     expect(() => plugin.transform('export const x = 1', '/x/starlight-openapi/libs/starlight.ts')).toThrow(
       /no longer has the expected frontmatter/,
     );
+    // Two matching sites: only the first would be spliced, so it is refused too.
+    expect(() => adapters.patchPageProps('a = { frontmatter: { title } }; b = { frontmatter: { title } }')).toThrow(
+      /no longer has the expected frontmatter/,
+    );
   });
 
   it('buildEnd fails closed when the renderer module was never seen, but not on an erroring build', () => {
