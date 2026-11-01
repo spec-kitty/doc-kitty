@@ -99,8 +99,9 @@ Do not put `.html` keys in Astro's own `redirects` on a static site. Astro
 writes them as a folder (`dist/x.html/index.html`) and can replace a live page,
 so the build fails and names the keys. Move them to `legacyHtmlRedirects`. On a
 server-output (adapter) site, or when your adapter sets `build.redirects:
-false`, Astro writes no such files and answers the redirect itself, so the keys
-are kept and the build log names them. A URL must not be in both maps.
+false`, Astro writes no such files, so the keys are kept and the build log
+names them. Your adapter (or Astro at request time) must answer them; with
+`build.redirects: false` and no adapter, nothing does. A URL must not be in both maps.
 
 The build log says how many stubs it wrote:
 

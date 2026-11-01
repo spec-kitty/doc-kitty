@@ -234,7 +234,7 @@ export function refuseAstroHtmlRedirects(redirects, { writesFiles = true, legacy
     throw new Error(
       `[dk-legacy-html] ${both.length} URL(s) are in both Astro \`redirects\` and \`legacyHtmlRedirects\`: ` +
         `${both.join(', ')}. Keep each URL in one map: \`legacyHtmlRedirects\` writes a flat stub file, ` +
-        "Astro's `redirects` answers it at request time.",
+        "Astro's `redirects` leaves it to Astro or your adapter.",
     );
   }
   return keys;

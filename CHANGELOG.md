@@ -102,8 +102,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `build.redirects` on) stops and names each key. Move those entries to
   `legacyHtmlRedirects`, without the base on the target. A server-output
   (adapter) site, or one whose adapter sets `build.redirects: false`, keeps its
-  `.html` keys, because Astro answers them at request time; a key that is also
-  a `legacyHtmlRedirects` source fails in every mode.
+  `.html` keys: Astro writes no files for them, and the adapter (or Astro at
+  request time) answers them. A key that is also a `legacyHtmlRedirects` source
+  fails in every mode.
 - A large JSON diagram stays at the size PlantUML drew it, and selecting it
   opens the same drawing centered at full size.
 
