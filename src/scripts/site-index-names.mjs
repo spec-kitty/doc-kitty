@@ -22,7 +22,7 @@ function real(p) {
 }
 
 /**
- * The excluded folders (ADR-0068) the evaluated config sets for the docs tree
+ * The excluded folders (ADR-0070) the evaluated config sets for the docs tree
  * `root`: its `exclude` list when `root` is the docs root the config names, else
  * none. Registered with the shared walk, so every walk of `root` in this process
  * leaves them out.
@@ -61,7 +61,7 @@ function sameNames(a, b) {
  *   `source` is the one-line account of where the names came from, for the CLI to
  *   print (see {@link announceIndexNames}); `fromConfig` is whether the site config
  *   set them; `warning` is set when no site config was found and `README` is assumed.
- *   `exclude` is the folders the site leaves out of `root` (ADR-0068), already
+ *   `exclude` is the folders the site leaves out of `root` (ADR-0070), already
  *   registered with the shared walk; `excludeSource` is the line that says so,
  *   set only when there are any.
  * @throws {Error} A config that cannot be loaded, or a flag that disagrees with it.

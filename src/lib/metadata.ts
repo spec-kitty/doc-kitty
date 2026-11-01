@@ -583,7 +583,7 @@ export function resolveRelated(ref: RelatedRef, index: DocsIndex): ResolvedRelat
   const entryNote = typeof ref === 'string' ? undefined : ref.note;
   const target = index[slug];
   if (!target) {
-    // A ref into a folder the site excludes (ADR-0068) gets its own message.
+    // A ref into a folder the site excludes (ADR-0070) gets its own message.
     const folder = excludingFolder(slug.replace(/^\/+|\/+$/g, ''), parsePublishedExclude(process.env[DK_EXCLUDE_ENV]));
     if (folder !== undefined) {
       throw new Error(

@@ -33,7 +33,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   excluded folder is reported as "target is excluded from the site";
   `assert-no-broken-links` and `generate-adr-index` take a new `--docs <dir>`
   option to read the list. Without `exclude` nothing changes. See
-  [ADR-0068](docs/adr/0068-excluded-folders.md).
+  [ADR-0070](docs/adr/0070-excluded-folders.md).
 
 - **A `kind: Schematic` page documents a JSON or YAML schema (#245).** Before,
   a schema stayed a file that readers opened in a repository. Now a page with

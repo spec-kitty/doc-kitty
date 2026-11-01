@@ -691,7 +691,7 @@ export function run(argv) {
       console.error(`✖ ${err.message}`);
       process.exit(2);
     }
-    // Folders the site leaves out of the build (ADR-0068) are not published, so
+    // Folders the site leaves out of the build (ADR-0070) are not published, so
     // they are not validated either.
     if (excluded.length) {
       files = files.filter((f) => !isExcludedPath(relative(root, f).split('\\').join('/'), excluded));

@@ -1,5 +1,5 @@
 ---
-title: "ADR-0068: A site can leave whole docs folders out of the build"
+title: "ADR-0070: A site can leave whole docs folders out of the build"
 description: One exclude option removes docs folders from the shared walk, so the loader, every output and the gates drop them, and a link into one is reported as excluded.
 doc_status: active
 updated: 2026-10-31T00:00:00Z
@@ -16,7 +16,7 @@ related:
   - guides/consumer-setup
 ---
 
-# ADR-0068: A site can leave whole docs folders out of the build
+# ADR-0070: A site can leave whole docs folders out of the build
 
 ## Status
 

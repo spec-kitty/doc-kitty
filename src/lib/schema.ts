@@ -321,7 +321,7 @@ export interface DocKittyLoaderOptions {
    * which cannot see a narrowed pattern, so the loader rejects any other value
    * rather than let the table list pages the loader never loads. To leave
    * folders out of the site, set `exclude` on `defineDocKittyIntegrations`
-   * (ADR-0068): the walk and this loader both honour it.
+   * (ADR-0070): the walk and this loader both honour it.
    */
   pattern?: string | string[];
   /**
@@ -691,7 +691,7 @@ export function docKittyDocsLoader(options: DocKittyLoaderOptions = {}) {
   };
   const inner = glob({ base, pattern, generateId });
 
-  // Excluded folders (ADR-0068). The list is published by the integration, which
+  // Excluded folders (ADR-0070). The list is published by the integration, which
   // Astro may evaluate after this module built the loader, so it is read at load
   // time, from the same place the shared walk reads it. With folders excluded the
   // glob gets one negated pattern per folder, so their files are never read or

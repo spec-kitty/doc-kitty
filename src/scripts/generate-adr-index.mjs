@@ -10,7 +10,7 @@
  *   node src/scripts/generate-adr-index.mjs --docs <docsDir> --dir <adrDir>
  *
  * `--docs` names the site's docs folder: the site config's `exclude` list
- * (ADR-0068) is read for it, and ADRs inside an excluded folder are left out of
+ * (ADR-0070) is read for it, and ADRs inside an excluded folder are left out of
  * the table, as the built Hub leaves them out. Without it no config is read.
  *
  * WHY a generator (not a Hub layout) for the OWN tree:
@@ -339,7 +339,7 @@ function parseArgs(argv) {
 async function main(argv) {
   const { check: isCheck, dir, readme, docsRoot, docs } = parseArgs(argv);
   if (docs !== undefined) {
-    // Registers the site's excluded folders with the shared walk (ADR-0068).
+    // Registers the site's excluded folders with the shared walk (ADR-0070).
     const { announceIndexNames, resolveSiteIndexBasenames } = await import('./site-index-names.mjs');
     try {
       announceIndexNames(resolveSiteIndexBasenames(docs, { tool: 'generate-adr-index' }));

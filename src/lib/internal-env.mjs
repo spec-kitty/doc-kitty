@@ -39,7 +39,7 @@ export const DK_DOCS_ROOT_ENV = 'DK_DOCS_ROOT';
 export const DK_MARKUA_ENV = 'DK_MARKUA';
 
 /**
- * JSON `string[]` of the docs folders the site leaves out of the build (ADR-0068),
+ * JSON `string[]` of the docs folders the site leaves out of the build (ADR-0070),
  * relative to {@link DK_DOCS_ROOT_ENV}. Absent when the site excludes nothing.
  */
 export const DK_EXCLUDE_ENV = 'DK_EXCLUDE';
