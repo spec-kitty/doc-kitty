@@ -1,9 +1,9 @@
 /**
  * ADR-0072, decision 2: the ADR index table in `docs/adr/README.md` is
  * regenerated after merge by a bot PR, not hand-edited in every PR. Per PR, CI
- * instead fails two ADRs that share a number (`--check-ids`); once CI runs in a
- * merge queue, that check runs on the combined commit, so two queued PRs that
- * took the same number are caught too.
+ * instead fails two ADRs that share a number (`--check-ids`). Strict branch
+ * protection re-runs it on top of the first PR today; a merge queue with
+ * `merge_group` would check the combined commit as well.
  *
  * The workflow is checked as text (no YAML parser), like the other workflow
  * tests (plantuml-service-hardening, regen-workflow-render-setup).
