@@ -5,8 +5,9 @@
  * protection re-runs it on top of the first PR today; a merge queue with
  * `merge_group` would check the combined commit as well.
  *
- * The workflow is checked as text (no YAML parser), like the other workflow
- * tests (plantuml-service-hardening, regen-workflow-render-setup).
+ * The workflow's shape (triggers, permissions, steps) is not pinned as text: CI
+ * and the first real run exercise it. Two things CI cannot see stay pinned:
+ * ci.yml is dispatchable, and the bot workflow pins its actions by SHA.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { spawnSync } from 'node:child_process';
@@ -97,71 +98,24 @@ describe('generate-adr-index --check-ids', () => {
     expect(r.out).toMatch(/era\/ADR-x\.md/);
     expect(r.out).not.toMatch(/template\.md|README\.md|notes\.md/);
   });
-
-  it("passes on this repository's own ADRs (pnpm validate:adr-ids)", () => {
-    expect(cli(['--check-ids']).code).toBe(0);
-  });
 });
 
-describe('CI: the per-PR gate checks ids, not the table', () => {
+// The bot's `gh workflow run ci.yml` fails only after merge if this is lost, and
+// no CI job exercises it, so it stays pinned.
+describe('CI: ci.yml stays dispatchable for the ADR index bot', () => {
   const ci = read('.github/workflows/ci.yml');
-  const pkg = JSON.parse(read('package.json')) as { scripts: Record<string, string> };
 
-  it('package.json has validate:adr-ids', () => {
-    expect(pkg.scripts['validate:adr-ids']).toBe('node src/scripts/generate-adr-index.mjs --check-ids');
-  });
-
-  it('doc-sanity runs validate:adr-ids and no longer runs the table lockfile check', () => {
-    expect(ci).toMatch(/run: pnpm validate:adr-ids/);
-    expect(ci).not.toMatch(/run: pnpm validate:adr-index/);
-  });
-
-  // The bot dispatches CI on its branch: a push or PR made with GITHUB_TOKEN
-  // starts no workflow, but a workflow_dispatch does, and its ci-ok check run
-  // lands on the branch head the bot PR shows.
+  // A push or PR made with GITHUB_TOKEN starts no workflow, but a
+  // workflow_dispatch does, and its ci-ok check run lands on the branch head the
+  // bot PR shows.
   it('ci.yml can be dispatched', () => {
     const on = ci.slice(ci.indexOf('\non:'), ci.indexOf('\npermissions:'));
     expect(on).toMatch(/^ {2}workflow_dispatch:/m);
   });
 });
 
-describe('adr-index.yml — regenerate the table after merge', () => {
+describe('adr-index.yml', () => {
   const wf = read('.github/workflows/adr-index.yml');
-
-  it('runs on a push to main that touches docs/adr, and on demand', () => {
-    expect(wf).toMatch(/push:\n\s+branches: \[main\]\n\s+paths:\n\s+- 'docs\/adr\/\*\*'/);
-    expect(wf).toMatch(/^ {2}workflow_dispatch:/m);
-  });
-
-  it('asks only for what it uses: push a branch, open a PR, dispatch CI', () => {
-    const perms = wf.slice(wf.indexOf('\npermissions:'), wf.indexOf('\nconcurrency:'));
-    expect(perms).toMatch(/contents: write/);
-    expect(perms).toMatch(/pull-requests: write/);
-    expect(perms).toMatch(/actions: write/);
-  });
-
-  it('keeps one run at a time, the newest winning', () => {
-    expect(wf).toMatch(/concurrency:\n\s+group: adr-index\n\s+cancel-in-progress: true/);
-  });
-
-  it('regenerates with the generator and force-updates the single ci/adr-index branch', () => {
-    expect(wf).toMatch(/node src\/scripts\/generate-adr-index\.mjs\n/);
-    expect(wf).toMatch(/BRANCH: ci\/adr-index/);
-    expect(wf).toMatch(/git push --force origin "HEAD:refs\/heads\/\$BRANCH"/);
-  });
-
-  it('dispatches CI on the branch so its PR gets the required ci-ok', () => {
-    expect(wf).toMatch(/gh workflow run ci\.yml --ref "\$BRANCH"/);
-  });
-
-  it('opens the PR when Actions may, and links it in the run summary when not', () => {
-    expect(wf).toMatch(/gh pr create/);
-    expect(wf).toMatch(/GITHUB_STEP_SUMMARY/);
-  });
-
-  it('deletes a stale branch (closing its PR) when the table is already current', () => {
-    expect(wf).toMatch(/git push origin --delete "\$BRANCH"/);
-  });
 
   it('pins every action by commit SHA', () => {
     const uses = [...wf.matchAll(/uses: (\S+)/g)].map((m) => m[1]);
