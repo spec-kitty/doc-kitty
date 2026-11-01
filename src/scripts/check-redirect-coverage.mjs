@@ -60,7 +60,7 @@
  *   - The declared map never makes a URL count as covered. Only the built
  *     output does.
  *
- * ## Legacy `.html` URLs (issue #249, ADR-0068)
+ * ## Legacy `.html` URLs (issue #249, ADR-0071)
  *
  * A baselined URL that ends in `.html` (`/a/b.html`, `/a/index.html`) is looked
  * up as the FILE a static host serves for it, `<dist>/a/b.html`, never as a
@@ -134,7 +134,7 @@ export function stripKnownBase(fromPath, lookupKey, rawTarget) {
   if (!fromPath) return rawTarget;
   // `/x/index.html` and `/x/` name the same file, so compare them without a
   // trailing `index.html` (a legacy stub records `/base/x/index.html`, the
-  // stub walk finds it as `/x/`; ADR-0068).
+  // stub walk finds it as `/x/`; ADR-0071).
   const dropIndex = (p) => p.replace(/\/index\.html$/i, '/');
   const from = dropIndex(normalizeUrlPath(fromPath));
   const key = dropIndex(normalizeUrlPath(lookupKey));
@@ -164,7 +164,7 @@ export function normalizeUrlPath(url) {
  * `/` → `<dist>/index.html`). Mirrors the convention `assert-build-artifacts.mjs`
  * already uses for every other route.
  *
- * A URL that ends in `.html` (a legacy URL, issue #249 / ADR-0068) names a
+ * A URL that ends in `.html` (a legacy URL, issue #249 / ADR-0071) names a
  * FILE: `/a/b.html` → `<dist>/a/b.html`, the file a static host such as GitHub
  * Pages serves for exactly that URL. `/a/index.html` → `<dist>/a/index.html`,
  * the same file as `/a/`.
@@ -180,7 +180,7 @@ export function urlToDistFile(distDir, urlPath) {
  * For an `.html` URL with no flat file: the Astro directory-form stub
  * (`<dist>/a/b.html/index.html`) that stands where the file should be, as a
  * path relative to `distDir`, or `null`. That folder is not the file GitHub
- * Pages serves for `/a/b.html`, so it never covers the URL (ADR-0068).
+ * Pages serves for `/a/b.html`, so it never covers the URL (ADR-0071).
  */
 function directoryFormStubOf(distDir, urlPath) {
   if (!isHtmlSource(urlPath)) return null;
@@ -320,7 +320,7 @@ export function unpublishedDraftFor(distDir, verdict, draftRoutes, declared) {
 /**
  * Every redirect stub in the built output, as site-absolute URL paths (sorted):
  * `<dir>/index.html` as `/<dir>/`, and a flat legacy stub `<dir>/<name>.html`
- * as `/<dir>/<name>.html` (ADR-0068).
+ * as `/<dir>/<name>.html` (ADR-0071).
  */
 export function redirectStubUrls(distDir) {
   const urls = [];
@@ -391,7 +391,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === '--declared-redirects') {
       // Repeatable: a site's directory redirects and its legacy `.html` map
-      // are usually two files (ADR-0068).
+      // are usually two files (ADR-0071).
       (flags.declaredFiles ??= []).push(argv[i + 1]);
       i += 1;
     } else if (Object.prototype.hasOwnProperty.call(names, arg)) {

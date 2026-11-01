@@ -311,7 +311,7 @@ export interface DocKittyOptions {
   openapi?: OpenApiOptions;
   /**
    * Old `.html` URLs to keep working after a move from an `.html`-URL generator
-   * such as DocFX (issue #249, ADR-0068): `{ '/guides/a.html': '/guides/a/' }`.
+   * such as DocFX (issue #249, ADR-0071): `{ '/guides/a.html': '/guides/a/' }`.
    * Sources and targets are site paths WITHOUT the base; a target may also be an
    * absolute URL. Each entry is written after the build as a flat meta-refresh
    * page at `<dist>/<source>` (`noindex`, canonical to the target, absent from
@@ -827,7 +827,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // DK_PUBLISH_DRAFTS for this build and hands the draft slugs to the
     // build state below, so it sits BEFORE that integration.
     draftPublicationIntegration(routeShaping, buildState),
-    // Always-on legacy `.html` redirects seam (ADR-0068): refuses Astro
+    // Always-on legacy `.html` redirects seam (ADR-0071): refuses Astro
     // `redirects` keys ending in `.html` and, after the build, writes the
     // `legacyHtmlRedirects` map as flat stubs. AFTER the draft-publication
     // seam, whose setup hook records DK_PUBLISH_DRAFTS for this build.

@@ -1,5 +1,5 @@
 /**
- * The legacy `.html` redirects integration (issue #249, ADR-0068).
+ * The legacy `.html` redirects integration (issue #249, ADR-0071).
  *
  * - `astro:config:setup`: validates `legacyHtmlRedirects` and refuses Astro
  *   `redirects` keys ending in `.html` (Astro writes them as a folder, and a

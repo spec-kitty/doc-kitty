@@ -1,5 +1,5 @@
 /**
- * Legacy `.html` redirects (issue #249, ADR-0068).
+ * Legacy `.html` redirects (issue #249, ADR-0071).
  *
  * A site that moves to DocKitty from a generator with `.html` URLs (DocFX,
  * Sphinx, Jekyll without permalinks) must keep every old `/a/b.html` URL
@@ -8,7 +8,7 @@
  * FOLDER `<dist>/a/b.html/index.html`, so `/a/b.html` only works if the host
  * answers a request for a folder with a redirect to `/a/b.html/`; and a key
  * `/a/b/index.html` replaces the live page `<dist>/a/b/index.html` with a
- * folder of the same name (both seen in the ADR-0068 spike).
+ * folder of the same name (both seen in the ADR-0071 spike).
  *
  * The toolkit therefore writes each legacy redirect itself, after the build,
  * as a FLAT file at `<dist>/a/b.html`: the one file a static host serves for

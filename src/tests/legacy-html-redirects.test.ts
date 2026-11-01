@@ -1,5 +1,5 @@
 /**
- * Legacy `.html` redirects (issue #249, ADR-0068).
+ * Legacy `.html` redirects (issue #249, ADR-0071).
  *
  * A site that moves off an `.html`-URL generator (DocFX) keeps every old
  * `/a/b.html` URL working with a FLAT meta-refresh stub at `<dist>/a/b.html`.

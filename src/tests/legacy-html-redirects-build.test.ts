@@ -1,5 +1,5 @@
 /**
- * Legacy `.html` redirects in a REAL build (issue #249, ADR-0068).
+ * Legacy `.html` redirects in a REAL build (issue #249, ADR-0071).
  *
  * A minimal toolkit site (sitemap, `llms.txt`, agent API) with a
  * `legacyHtmlRedirects` map is built at the domain root (`base: '/'`, the

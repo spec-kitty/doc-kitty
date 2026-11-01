@@ -71,7 +71,7 @@ const REDIRECTS = Object.fromEntries(
   ).map(([from, to]) => [from, `${BASE}${to}`]),
 );
 
-// Legacy `.html` URLs (#249, ADR-0068): old URLs as an `.html`-URL generator
+// Legacy `.html` URLs (#249, ADR-0071): old URLs as an `.html`-URL generator
 // (DocFX) published them, mapped to their directory URLs, without the base.
 // The toolkit writes each as a flat `dist/<path>.html` stub after the build;
 // `example/url-baseline.txt` baselines them for the redirect-coverage gate.

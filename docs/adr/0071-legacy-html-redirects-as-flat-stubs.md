@@ -1,5 +1,5 @@
 ---
-title: "ADR-0068: Legacy .html URLs redirect through flat stub files"
+title: "ADR-0071: Legacy .html URLs redirect through flat stub files"
 description: Old .html URLs keep working through a flat meta-refresh file at each old path, written after the build and checked by the redirect-coverage gate.
 doc_status: active
 updated: 2026-10-31T00:00:00Z
@@ -13,7 +13,7 @@ related:
   - migrations/legacy-html-urls
 ---
 
-# ADR-0068: Legacy .html URLs redirect through flat stub files
+# ADR-0071: Legacy .html URLs redirect through flat stub files
 
 ## Status
 
