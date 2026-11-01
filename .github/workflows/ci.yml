@@ -14,6 +14,11 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The ADR index bot (adr-index.yml) dispatches CI on ci/adr-index: a branch
+  # or PR it makes with GITHUB_TOKEN starts no workflow, but a dispatch does,
+  # and its ci-ok lands on the commit the bot PR shows (ADR-0072). On dispatch,
+  # detect-changes diffs the branch against main.
+  workflow_dispatch:
 
 # Least privilege: read the repo, nothing more. Fork PRs pass with no secrets.
 permissions:
@@ -115,8 +120,10 @@ jobs:
         env:
           DK_PUBLISH_DRAFTS: 'off'
         run: pnpm validate:links
-      - name: Assert the ADR index is regeneration-clean (lockfile check)
-        run: pnpm validate:adr-index
+      # The ADR index table is regenerated after merge by adr-index.yml, not in
+      # each PR (ADR-0072). Per PR, two ADRs may not share a number.
+      - name: Assert no two ADRs share a number
+        run: pnpm validate:adr-ids
       # Changelog fragments (ADR-0072): every docs/changelog/unreleased/ file parses, and no
       # entry is written straight under CHANGELOG.md's [Unreleased].
       - name: Validate changelog fragments
