@@ -94,12 +94,14 @@ export function parseFragment(name, text) {
 
 /**
  * What would break CHANGELOG.md if this body were written into it, or null:
- * a heading (it would end the section), an unclosed code fence or HTML comment
+ * a heading, ATX or setext (it would end the section), an unclosed code fence or HTML comment
  * (it would swallow the release history after it on the site), or a link that
  * climbs out with `../` (entries are read from the repository root).
  */
 function bodyProblem(body) {
   let fence = null;
+  // The previous line, when it is paragraph text that a setext underline would turn into a heading.
+  let paragraph = null;
   for (const line of body.split('\n')) {
     const marker = /^\s*(`{3,}|~{3,})/.exec(line);
     if (fence) {
@@ -110,9 +112,16 @@ function bodyProblem(body) {
     }
     if (marker) {
       fence = marker[1];
+      paragraph = null;
       continue;
     }
     if (/^ {0,3}#{1,6}(?:\s|$)/.test(line)) return `the entry may not contain a heading (${JSON.stringify(line.trim())})`;
+    if (paragraph !== null && /^ {0,3}(?:=+|-+)\s*$/.test(line)) {
+      return `the entry may not contain a heading (${JSON.stringify(paragraph.trim())} underlined by ${JSON.stringify(line.trim())})`;
+    }
+    // A blank line, a list item or an underline-like line cannot be the text of a setext heading.
+    const inert = line.trim() === '' || /^\s*(?:[-*+]|\d+[.)])(?:\s|$)/.test(line) || /^ {0,3}(?:=+|-+)\s*$/.test(line);
+    paragraph = inert ? null : line;
   }
   if (fence) return `the entry has an unclosed code fence (${fence})`;
   const withoutCode = body.replace(/(`+)[\s\S]*?\1/g, '');

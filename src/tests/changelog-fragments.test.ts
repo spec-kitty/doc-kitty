@@ -323,6 +323,8 @@ describe('review: fragment parsing edge cases', () => {
 
   it.each([
     ['an indented heading', '- x\n\n   ## y', /heading/],
+    ['a setext heading (---)', '- x\n\nTitle\n---', /heading/],
+    ['a setext heading (===)', '- x\n\nTitle\n===', /heading/],
     ['an unclosed code fence', '- x\n\n  ```js\n  const a = 1;', /unclosed code fence/],
     ['an unclosed HTML comment', '- x <!-- note', /unclosed HTML comment/],
     ['a link that climbs out with ../', '- x, see [ADR](../adr/0072-x.md).', /repository root/],
