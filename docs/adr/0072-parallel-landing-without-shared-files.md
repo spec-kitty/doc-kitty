@@ -86,7 +86,7 @@ Each decision ships as its own PR, in this order.
 - The one-time migration moved the ten `[Unreleased]` entries into fragments.
   A PR opened before it that edits `[Unreleased]` conflicts once; it moves its
   entry into a fragment.
-- Fragments in `[Unreleased]` are ordered by issue number, not by merge order.
+- Fragments in `[Unreleased]` are ordered by issue number, not by merge order: within each section, numbered fragments by number, then unnumbered ones by name.
 - `docs/adr/README.md` on `main` can lag a merged ADR until the bot PR lands. The
   ADR file itself is the source of truth.
 - The dated pages in `docs/changelog/` keep their role: themed write-ups of a
