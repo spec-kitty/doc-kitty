@@ -16,6 +16,7 @@ import remarkGfm from 'remark-gfm';
 import githubAlerts from '../lib/remark/github-alerts.js';
 import { ALERT_TO_ASIDE, parseAlertMarker } from '../lib/remark/github-alerts.internal.js';
 import type { MdastLike } from '../lib/remark/markua-callouts.internal.js';
+import { glossaryLinkNode } from '../lib/glossary/link-node.js';
 
 type Frontmatter = { kind?: string };
 
@@ -146,5 +147,41 @@ describe('githubAlerts — left untouched', () => {
     const tree = unified().use(remarkParse).use(remarkGfm).parse('> [!TIP]\n> x\n') as unknown as MdastLike;
     githubAlerts()(tree);
     expect((tree.children![0] as MdastLike & { name?: string }).name).toBe('tip');
+  });
+});
+
+describe('githubAlerts — a glossary term that names an alert type', () => {
+  // Auto-link runs first and is case-insensitive, so a term "Note" links the
+  // NOTE inside `[!NOTE]`. Rebuild that split with the real link-node builder.
+  function splitByGlossary(md: string, word: string): MdastLike {
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(md) as unknown as MdastLike;
+    const para = tree.children![0].children![0];
+    const lead = para.children![0];
+    const after = String(lead.value).slice(2 + word.length);
+    para.children = [
+      { type: 'text', value: '[!' },
+      glossaryLinkNode('default', 'default', word.toLowerCase(), word, [{ type: 'text', value: word }], '') as unknown as MdastLike,
+      { type: 'text', value: after },
+      ...para.children!.slice(1),
+    ];
+    return tree;
+  }
+
+  it('still renders the alert, with the marker removed', () => {
+    const tree = splitByGlossary('> [!WARNING]\n> Body.\n', 'WARNING');
+    githubAlerts()(tree, { data: { astro: { frontmatter: { kind: 'Reference' } } } });
+    const node = tree.children![0] as MdastLike & { name?: string };
+    expect(node.type).toBe('containerDirective');
+    expect(node.name).toBe('caution');
+    expect(labelOf(node)).toBe('Warning');
+    expect(bare(node.children!.at(-1))).toEqual({ type: 'paragraph', children: [{ type: 'text', value: 'Body.' }] });
+  });
+
+  it('leaves a non-glossary link inside the brackets alone', () => {
+    const tree = splitByGlossary('> [!NOTE]\n> Body.\n', 'NOTE');
+    const link = tree.children![0].children![0].children![1] as MdastLike & { data?: unknown };
+    link.data = {};
+    githubAlerts()(tree, { data: { astro: { frontmatter: { kind: 'Reference' } } } });
+    expect(tree.children![0].type).toBe('blockquote');
   });
 });
