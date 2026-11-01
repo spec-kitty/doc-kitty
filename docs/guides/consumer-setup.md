@@ -818,9 +818,11 @@ The governable dimensions:
   `2026-03-09-1`, ordered by date, then by the sequence number (`-2` before
   `-10`). For any other scheme, give a `pattern` with a named `id` group; optional
   `date` and `seq` groups set the order. The pattern is matched against the
-  lowercased file name, so write it in lowercase: a pattern with an upper-case
-  letter (`ADR-`) could never match, so the charter loader rejects it. Escapes
-  such as `\D` and group names may still use upper case.
+  lowercased file name, and case does not matter: `'^(?<id>ADR-\d+)-'` and
+  `'^(?<id>adr-\d+)-'` both read `ADR-12-Use-X.md`. The id always shows
+  lowercased (`adr-12`) on hub cards and in the generated index, so it agrees
+  with the page's URL. Escapes such as `\D` and `\W`, group names and
+  back-references keep their meaning.
 
   ```yaml
   adr:
