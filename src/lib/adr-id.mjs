@@ -107,7 +107,69 @@ export function resolveAdrIdRule(raw, source = 'charter.yaml') {
   if (!Object.hasOwn(groups, 'id')) {
     throw new Error(`${source}: "adr.id.pattern" must have a named group "id", e.g. ^(?<id>\\d+)-`);
   }
+  const upper = findUpperCaseLiteral(pattern);
+  if (upper !== null) {
+    throw new Error(
+      `${source}: "adr.id.pattern" has an upper-case "${upper}", which can never match: ` +
+        `the pattern runs against the lowercased file name, so write the pattern in lower case ` +
+        `(e.g. '^(?<id>adr-\\d+)-' for ADR-12-use-x.md)`,
+    );
+  }
   return Object.freeze({ pattern: compiled });
+}
+
+/** `ch` when it has a distinct lower-case form (an upper-case letter), else null. */
+const upperOrNull = (ch) => (ch !== ch.toLowerCase() ? ch : null);
+
+/**
+ * Find the first upper-case literal in a regex source, or `null` (#248).
+ *
+ * The rule is matched against the lowercased leaf, so an upper-case literal can
+ * never match and the pattern would silently find no ADRs. Not literals, and so
+ * skipped: the escapes `\D`, `\W`, `\S`, `\B` and `\cJ`, group names
+ * (`(?<Name>`) and back-references (`\k<Name>`). A hex escape (`\x41`, `É`)
+ * is a literal and is checked by the character it stands for, and so is an
+ * identity escape such as `\A`.
+ *
+ * @param {string} source
+ * @returns {string | null}
+ */
+function findUpperCaseLiteral(source) {
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '\\') {
+      const next = source[i + 1];
+      const hex = next === 'x' ? 2 : next === 'u' ? 4 : 0;
+      const digits = hex ? source.slice(i + 2, i + 2 + hex) : '';
+      if (hex && new RegExp(`^[0-9a-fA-F]{${hex}}$`).test(digits)) {
+        const hit = upperOrNull(String.fromCharCode(parseInt(digits, 16)));
+        if (hit) return hit;
+        i += 1 + hex;
+      } else if (next === 'k' && source[i + 2] === '<') {
+        const end = source.indexOf('>', i + 3);
+        i = end === -1 ? i + 1 : end;
+      } else if (next === 'c') {
+        i += 2; // `\cX`: a control character, never a letter.
+      } else {
+        // `\D`, `\W`, `\S`, `\B` are classes or assertions. Any other escaped
+        // letter (`\A`) is an identity escape: the letter itself.
+        const hit = next !== undefined && !'DWSB'.includes(next) ? upperOrNull(next) : null;
+        if (hit) return hit;
+        i += 1;
+      }
+      continue;
+    }
+    if (ch === '(' && source.startsWith('?<', i + 1) && !'=!'.includes(source[i + 3])) {
+      const end = source.indexOf('>', i + 3);
+      if (end !== -1) {
+        i = end;
+        continue;
+      }
+    }
+    const hit = upperOrNull(ch);
+    if (hit) return hit;
+  }
+  return null;
 }
 
 /**

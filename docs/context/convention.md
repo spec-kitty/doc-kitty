@@ -2,7 +2,7 @@
 title: DocKitty
 description: The documentation convention DocKitty implements — base convention, Kitty twists, and enhancements.
 doc_status: active
-updated: 2026-10-25T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: Context
 kind: Reference
 tags: [convention, spec, metadata, okf]
@@ -50,7 +50,7 @@ optional). An absent or empty charter resolves to the canonical defaults below.
 | `type` / `kind` vocabulary | `vocabulary.types`, `vocabulary.kinds` | **consumer-overridable** | Alias, forbid, or pass through terms over the canonical sets ([ADR-0031](../adr/0031-vocabulary-override.md)). A forbidden authored `type` hard-fails; an unknown-but-not-forbidden value warns. |
 | Sections / IA | `sections` | **consumer-overridable** | Order, labels, entries, `index_basename`, and sub-path `subtypes` — the authored section registry (twist 6 below; [ADR-0004](../adr/0004-amend-common-docs-as-extensible-variation.md)). |
 | `doc_status` set | `statuses.add` | **consumer-overridable, extend-only** | You may *add* statuses; the canonical set (`draft`, `active`, `deprecated`, `superseded`, `durable`) is reserved. Removing/forbidding/aliasing-away a canonical status fails closed. |
-| ADR id | `adr.id` | **consumer-overridable** | How an ADR's id is read from its file name: a `preset` (`nnnn`, the default `NNNN-` prefix, or `date-seq` for `YYYY-MM-DD-N`) or a `pattern` with a named `id` group. Ids order by date, then sequence, then id ([ADR-0069](../adr/0069-configurable-adr-id-and-frontmatter-status.md)). A malformed axis fails closed. |
+| ADR id | `adr.id` | **consumer-overridable** | How an ADR's id is read from its file name: a `preset` (`nnnn`, the default `NNNN-` prefix, or `date-seq` for `YYYY-MM-DD-N`) or a `pattern` with a named `id` group. Ids order by date, then sequence, then id ([ADR-0069](../adr/0069-configurable-adr-id-and-frontmatter-status.md)). The pattern runs against the lowercased file name. A malformed axis fails closed, and so does a pattern with an upper-case letter, which could never match. |
 | Required-field set | `required_fields.optional` | **partly overridable, with a floor** | You may relax listed required fields for your consumer — **except `title`**, which is **fixed-doctrine** and always required. Listing `title` fails closed. |
 | `title` on every page | — | **fixed-doctrine** | Always required; cannot be relaxed. |
 | OKF `type` on every non-reserved page | — | **fixed-doctrine** | OKF v0.2's one hard requirement; every non-orphan page resolves to a non-empty `type`. |

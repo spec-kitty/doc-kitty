@@ -152,6 +152,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **An `adr.id` pattern with an upper-case letter now fails at charter load
+  (#248).** Before, `pattern: '^(?<id>ADR-\d+)-'` loaded fine and then matched
+  no ADR at all, because the pattern runs against the lowercased file name. Now
+  the charter loader rejects it with a message that names the file, the letter
+  and the fix (write the pattern in lower case), so `validate:docs`, the ADR
+  index generator and the build all fail the same way. Escapes such as `\D` and
+  `\W`, group names and back-references may still use upper case.
+
 - **The table of contents rail no longer jumps across the page on a slow first
   paint (#223).** Before, if the browser painted before the reading pane was
   parsed, the rail (or, collapsed, its 1px line) was drawn next to the left
