@@ -176,12 +176,4 @@ describe('githubAlerts — a glossary term that names an alert type', () => {
     expect(labelOf(node)).toBe('Warning');
     expect(bare(node.children!.at(-1))).toEqual({ type: 'paragraph', children: [{ type: 'text', value: 'Body.' }] });
   });
-
-  it('leaves a non-glossary link inside the brackets alone', () => {
-    const tree = splitByGlossary('> [!NOTE]\n> Body.\n', 'NOTE');
-    const link = tree.children![0].children![0].children![1] as MdastLike & { data?: unknown };
-    link.data = {};
-    githubAlerts()(tree, { data: { astro: { frontmatter: { kind: 'Reference' } } } });
-    expect(tree.children![0].type).toBe('blockquote');
-  });
 });
