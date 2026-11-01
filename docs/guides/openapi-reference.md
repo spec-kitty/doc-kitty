@@ -174,7 +174,8 @@ records them and the follow-ups, and issue #244 tracks the work.
   use them. There is no heading for each schema.
 - **Raw files in `public/`.** An `openapi.<ext>` file in `public/` with a
   matching `.sha256` beside it counts as generated output. DocKitty may replace
-  or prune it. Do not author files at those names.
+  or prune it, and the build prints a `[dk-openapi] removed …` warning for each
+  file it prunes. Do not author files at those names.
 
 Planned follow-ups:
 

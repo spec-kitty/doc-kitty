@@ -163,10 +163,14 @@ function pruneStale(outDir: string, options: PublishOptions, planned: Planned[])
  * written. Throws before touching `outDir` when any input is unreadable or empty or
  * when an authored file is in the way.
  */
-export function publishOpenApiDocuments(outDir: string, options: PublishOptions): string[] {
+export function publishOpenApiDocuments(
+  outDir: string,
+  options: PublishOptions,
+  onPrune?: (rawPath: string) => void,
+): string[] {
   const planned = plan(outDir, options);
   assertNoAuthored(planned);
-  pruneStale(outDir, options, planned);
+  for (const rawPath of pruneStale(outDir, options, planned)) onPrune?.(rawPath);
   const written: string[] = [];
   for (const p of planned) {
     mkdirSync(p.dir, { recursive: true });
@@ -190,9 +194,17 @@ export function removeEmptyDirs(outDir: string, section: string): void {
 /** The Astro hook that publishes at the end of a build. */
 export function openApiPublishHooks(options: PublishOptions) {
   return {
-    'astro:build:done': ({ dir }: { dir: URL }) => {
+    'astro:build:done': ({ dir, logger }: { dir: URL; logger: { warn(message: string): void } }) => {
       const outDir = fileURLToPath(dir);
-      publishOpenApiDocuments(outDir, options);
+      // Astro empties the output folder before a build, so a stale raw document
+      // here was copied from public/. Removing it is right only for an old
+      // generated copy; say so, so a hand-published file is never lost silently.
+      publishOpenApiDocuments(outDir, options, (rawPath) =>
+        logger.warn(
+          `${PREFIX} removed ${rawPath} and its checksum: no configured version publishes it ` +
+            '(it was copied from public/). Remove it from public/, or add its version to openapi.specs.',
+        ),
+      );
       removeEmptyDirs(outDir, options.section);
     },
   };
