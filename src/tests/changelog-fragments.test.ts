@@ -237,19 +237,26 @@ describe('releaseChangelog — cutting a version', () => {
 });
 
 describe('changelogProblems — the per-PR gate on CHANGELOG.md', () => {
-  it('passes a CHANGELOG whose [Unreleased] holds only the note', () => {
-    expect(changelogProblems(CHANGELOG)).toEqual([]);
-  });
-
-  it('fails an entry written straight under [Unreleased]', () => {
-    const edited = CHANGELOG.replace(UNRELEASED_NOTE, `${UNRELEASED_NOTE}\n\n### Added\n\n- **Hand edit (#9).**`);
-    expect(changelogProblems(edited).join('\n')).toMatch(/\[Unreleased\].*docs\/changelog\/unreleased\//);
-  });
-
-  it('fails a CHANGELOG with no [Unreleased] section', () => {
-    expect(changelogProblems(CHANGELOG.replace('## [Unreleased]', '## Next')).join('\n')).toMatch(
-      /no "## \[Unreleased\]"/,
-    );
+  const ENTRIES = /entries under \[Unreleased\]/;
+  const bare = (between: string) =>
+    `# Changelog\n\n## [Unreleased]\n\n${UNRELEASED_NOTE}\n${between}\n[Unreleased]: ${URL_BASE}/compare/v0.5.0...HEAD\n`;
+  it.each([
+    ['passes a CHANGELOG whose [Unreleased] holds only the note', CHANGELOG, /^$/],
+    ['passes a first release-less CHANGELOG with only the compare link', bare(''), /^$/],
+    [
+      'fails an entry written straight under [Unreleased]',
+      CHANGELOG.replace(UNRELEASED_NOTE, `${UNRELEASED_NOTE}\n\n### Added\n\n- **Hand edit (#9).**`),
+      /\[Unreleased\].*docs\/changelog\/unreleased\//,
+    ],
+    ['fails a CHANGELOG with no [Unreleased] section', CHANGELOG.replace('## [Unreleased]', '## Next'), /no "## \[Unreleased\]"/],
+    [
+      'fails an entry hidden after a link reference inside [Unreleased]',
+      CHANGELOG.replace(UNRELEASED_NOTE, `${UNRELEASED_NOTE}\n\n[x]: https://x.example\n\n- sneaky entry`),
+      ENTRIES,
+    ],
+    ['fails a stray link reference above the closing compare link when no release follows', bare('\n[foo]: http://x'), ENTRIES],
+  ])('%s', (_label, changelog, message) => {
+    expect(changelogProblems(changelog).join('\n')).toMatch(message);
   });
 });
 

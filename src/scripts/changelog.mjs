@@ -190,8 +190,12 @@ function unreleasedSpan(changelog) {
   if (at === -1) return null;
   const start = at + UNRELEASED_HEADING.length;
   const next = changelog.slice(start).search(/^## /m);
-  const end = next === -1 ? Math.max(start, linkRefsStart(changelog)) : start + next;
-  return { start, end };
+  if (next !== -1) return { start, end: start + next };
+  // No later section: the span runs to the `[Unreleased]: …/compare/…` link that opens the
+  // closing block, so a stray reference (or an entry) before it still counts as content.
+  const refsAt = linkRefsStart(changelog);
+  const compare = [...changelog.matchAll(UNRELEASED_LINK_RE)].find((m) => m.index >= refsAt);
+  return { start, end: Math.max(start, compare ? compare.index : refsAt) };
 }
 
 /** Problems with the committed CHANGELOG.md: `[Unreleased]` must hold only the note. */
