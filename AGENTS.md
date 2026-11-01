@@ -75,8 +75,7 @@ now and will be recast as Spec Kitty charter/doctrine later.
   `docs/adr/README.md`: after merge, `.github/workflows/adr-index.yml`
   regenerates it and proposes it as one bot PR on `ci/adr-index`. CI
   (`pnpm validate:adr-ids`) fails two ADRs that share a number.
-- **CI under parallel load.** `main` uses a merge queue; `ci-ok` is the one
-  required check, and CI runs on `merge_group` too. Label a PR `pr:pause-ci`
+- **CI under parallel load.** `ci-ok` is the one required check, and CI runs
+  on `merge_group` too, so `main` can use a merge queue. Label a PR `pr:pause-ci`
   while you are still reworking it: its lanes skip and `ci-ok` stays red until
   you remove the label. See [Activating and operating CI/CD](./docs/ops/ci-cd.md).
-
