@@ -118,26 +118,53 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     expect(() => resolveAdrIdRule(raw, 'charter.yaml')).toThrow(message);
   });
 
-  // The rule runs against the LOWERCASED leaf, so an upper-case literal can never
-  // match. Such a pattern used to load fine and then silently match nothing.
+  // #271: the rule runs against the LOWERCASED leaf, and an upper-case literal is
+  // normalised to match it (it used to silently match nothing, then — #269 — to
+  // be rejected). The id shows lowercased, so it agrees with the route slug.
   it.each([
-    ['^(?<id>ADR-\\d+)-', 'A'],
-    ['^adr-(?<id>\\d+)-RFC', 'R'],
-    ['^(?<id>[A-Z]+-\\d+)-', 'A'],
-    ['^(?<id>\\d+)-\\x41', 'A'],
-    ['^(?<id>\\d+)-\\u00C9', 'É'],
-    ['^(?<id>\\d+)-É', 'É'],
-    ['^(?<id>\\d+)-\\A', 'A'],
+    ['^(?<id>ADR-\\d+)-', 'ADR-12-Use-X', 'adr-12'],
+    ['^adr-(?<id>\\d+)-RFC', 'ADR-7-RFC-x', '7'],
+    ['^(?<id>[A-Z]+-\\d+)-', 'RFC-3-Do-Y', 'rfc-3'],
+    ['^(?<id>\\d+)-\\x41', '12-Abc', '12'],
+    ['^(?<id>\\d+)-\\u00C9', '12-Ébc', '12'],
+    ['^(?<id>\\d+)-É', '12-Ébc', '12'],
+    // An identity escape stands for its letter.
+    ['^(?<id>\\d+)-\\A', '12-Abc', '12'],
     // A lookbehind is not a group name: its letters are literals.
-    ['^(?<id>\\d+)(?<=-)ADR>', 'A'],
-  ])('rejects the upper-case pattern %j, naming the letter and the fix', (pattern, letter) => {
-    const run = () => resolveAdrIdRule({ id: { pattern } }, 'docs/_meta/charter.yaml');
-    expect(run).toThrow(/^docs\/_meta\/charter\.yaml: "adr\.id\.pattern" /);
-    expect(run).toThrow(`upper-case "${letter}"`);
-    expect(run).toThrow(/lowercased file name/);
-    expect(run).toThrow(/write the pattern in lower case/);
+    ['^(?<id>\\d+)-(?<=-)ADR', '12-ADR-x', '12'],
+  ])('normalises the upper-case pattern %j: %j reads as %j', (pattern, leaf, id) => {
+    const rule = resolveAdrIdRule({ id: { pattern } }, 'docs/_meta/charter.yaml');
+    expect(matchAdrId(leaf, rule)?.id).toBe(id);
+    // The file name and its lowercased route slug read the same, lowercased id.
+    expect(matchAdrId(leaf.toLowerCase(), rule)?.id).toBe(id);
   });
 
+  // With an upper-case literal present (so normalisation is in play), the
+  // case-significant tokens keep their meaning. Each leaf is chosen so that the
+  // token's lower-case twin would give a different answer.
+  it.each([
+    // `\D` is a non-digit (`\d` would let `adr-123` read as `12`).
+    ['^ADR-(?<id>\\d+)\\D', 'ADR-123', null],
+    ['^ADR-(?<id>\\d+)\\D', 'ADR-123-x', '123'],
+    // `\W` is a non-word character (`\w` would read `a`).
+    ['^ADR-(?<id>\\w+)\\W', 'ADR-ab.x', 'ab'],
+    // `\S` is a non-space (`\s` would read `12`).
+    ['^ADR-(?<id>\\d+)\\S', 'ADR-12 x', '1'],
+    // `\B` is a non-boundary (`\b` would read `123`).
+    ['^ADR-(?<id>\\d+)\\B', 'ADR-123-x', '12'],
+    // `\cJ` is a line feed.
+    ['^ADR-(?<id>\\d+)\\cJ', 'ADR-4\nx', '4'],
+    // An upper-case group name and its back-reference keep their name; they
+    // would clash with `id` if lowercased.
+    ['^(?<ID>ADR)-(?<id>\\d+)-\\k<ID>', 'ADR-5-ADR', '5'],
+    ['^(?<ID>ADR)-(?<id>\\d+)-\\k<ID>', 'ADR-5-RFC', null],
+  ])('keeps the meaning of case-significant tokens in %j on %j', (pattern, leaf, id) => {
+    const rule = resolveAdrIdRule({ id: { pattern } }, 'charter.yaml');
+    expect(matchAdrId(leaf, rule)?.id ?? null).toBe(id);
+  });
+
+  // A pattern with no upper-case literal compiles exactly as written: same
+  // source, no flags, so its matches are byte-identical to before #271.
   it.each([
     // Upper-case escapes are classes, not literals.
     '^(?<id>\\d+)\\D',
@@ -149,16 +176,21 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     // A control escape, and a hex escape whose upper-case digit stands for no letter.
     '^(?<id>\\d+)\\cJ?\\x6A?\\x2D?-',
     '^(?<id>adr-\\d+)-',
-  ])('accepts %j, which has no upper-case literal', (pattern) => {
-    expect(() => resolveAdrIdRule({ id: { pattern } }, 'charter.yaml')).not.toThrow();
+    '^(?<id>[^a-z]+)-',
+  ])('compiles the lower-case pattern %j exactly as written', (pattern) => {
+    const rule = resolveAdrIdRule({ id: { pattern } }, 'charter.yaml');
+    expect(rule.pattern.source).toBe(new RegExp(pattern).source);
+    expect(rule.pattern.flags).toBe('');
   });
 
-  it('a rejected upper-case pattern fails the charter loader, so every gate and the build reject it', () => {
+  it('an upper-case pattern in the charter file loads, so every gate and the build accept it', () => {
     const root = mkdtempSync(path.join(tmpdir(), 'adr-upper-'));
     try {
       mkdirSync(path.join(root, '_meta'));
       writeFileSync(path.join(root, '_meta', 'charter.yaml'), "adr:\n  id:\n    pattern: '^(?<id>ADR-\\d+)-'\n");
-      expect(() => loadAdrIdRule(root)).toThrow(/charter\.yaml: "adr\.id\.pattern" .*upper-case "A"/);
+      const rule = loadAdrIdRule(root);
+      expect(extractAdrMeta('', { slug: 'ADR-12-Use-X.md', idRule: rule })?.number).toBe('adr-12');
+      expect(extractAdrMeta('', { slug: 'adr/adr-12-use-x', idRule: rule })?.number).toBe('adr-12');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -278,6 +310,78 @@ describe('date-named ADRs — the generated index matches the hub one to one (#2
       cpSync(ADR_DIR, dir, { recursive: true });
       execFileSync('node', [SCRIPT, '--dir', dir, '--docs-root', ROOT], { encoding: 'utf8' });
       expect(readFileSync(path.join(dir, 'README.md'), 'utf8')).toContain('| [2025-11-02-1](');
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+});
+
+/**
+ * #271 — an `adr.id` pattern with upper-case literals (`^(?<id>ADR-(?<seq>\d+))-`)
+ * over ADR files with upper-case names (`ADR-12-Use-X.md`). The fixture under
+ * `fixtures/adr-upper-case/docs` carries these traps:
+ *   - `ADR-10` must sort AFTER `ADR-2` (the `seq` group is numeric);
+ *   - one file is named in lower case (`adr-3-…`) and must read the same way;
+ *   - one ADR's body `## Status` disagrees with its frontmatter (the body wins);
+ *   - `NOTES-…` and the README match no id and stay out.
+ */
+describe('upper-case ADR id patterns are normalised — hub cards and index agree (#271)', () => {
+  const UPPER_ROOT = fileURLToPath(new URL('./fixtures/adr-upper-case/docs', import.meta.url));
+  const UPPER_ADR_DIR = path.join(UPPER_ROOT, 'adr');
+  const idRule = loadAdrIdRule(UPPER_ROOT);
+
+  // Ids show lowercased, so the id agrees with the route slug.
+  const UPPER_EXPECTED = [
+    { number: 'adr-1', status: 'Accepted', date: '2026-01-01' },
+    { number: 'adr-2', status: 'Accepted', date: '2026-01-02' }, // body beats frontmatter Proposed
+    { number: 'adr-3', status: 'Superseded', date: '2026-01-03' },
+    { number: 'adr-10', status: 'Proposed', date: '2026-01-10' },
+  ];
+
+  /** The fixture as `Hub.astro` sees it: lowercased route slugs, reverse path order. */
+  const upperHubChildren = () =>
+    walkMarkdownPaths(UPPER_ADR_DIR)
+      .sort()
+      .reverse()
+      .map((rel: string) => {
+        const parsed = matter(readFileSync(path.join(UPPER_ADR_DIR, rel), 'utf8'));
+        const slug = `adr/${rel.replace(/\.mdx?$/i, '').toLowerCase()}`;
+        return { slug, data: parsed.data as Record<string, unknown>, body: parsed.content };
+      })
+      .filter((c: { data: Record<string, unknown> }) => isPublished(c.data as never));
+
+  it('the charter loads the upper-case pattern', () => {
+    expect(idRule.pattern.test('adr-12-use-x')).toBe(true);
+  });
+
+  it('hub cards show the right id, status and date, in numeric sequence order', () => {
+    expect(pick(selectAdrHubCards(upperHubChildren(), { idRule }))).toEqual(UPPER_EXPECTED);
+  });
+
+  it('the generated index yields the same ids, statuses, dates and order as the hub cards', () => {
+    const generated = discoverAdrs(UPPER_ADR_DIR, { idRule });
+    expect(pick(generated)).toEqual(pick(selectAdrHubCards(upperHubChildren(), { idRule })));
+    expect(pick(generated)).toEqual(UPPER_EXPECTED);
+    expect(generated.map((e) => e.relpath)).toEqual([
+      'ADR-1-Start-Here.md',
+      'ADR-2-Body-Status-Wins.md',
+      'adr-3-lower-case-name.md',
+      'ADR-10-Numeric-Order.md',
+    ]);
+  });
+
+  it('the CLI writes the lowercased ids, linking the files as named', () => {
+    const tmp = mkdtempSync(path.join(tmpdir(), 'dk-adr-upper-'));
+    try {
+      cpSync(UPPER_ROOT, tmp, { recursive: true });
+      const dir = path.join(tmp, 'adr');
+      execFileSync('node', [SCRIPT, '--dir', dir], { encoding: 'utf8' });
+      const readme = readFileSync(path.join(dir, 'README.md'), 'utf8');
+      expect(readme).toContain('| [adr-2](./ADR-2-Body-Status-Wins.md) | Body status wins | Accepted | 2026-01-02 |');
+      expect(readme).toContain('| [adr-10](./ADR-10-Numeric-Order.md) | Numeric order | Proposed | 2026-01-10 |');
+      expect(readme.indexOf('[adr-2]')).toBeLessThan(readme.indexOf('[adr-10]'));
+      expect(readme).not.toMatch(/NOTES/i);
+      execFileSync('node', [SCRIPT, '--dir', dir, '--check'], { encoding: 'utf8' }); // exits 0
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }

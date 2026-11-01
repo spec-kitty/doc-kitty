@@ -1,0 +1,7 @@
+# Fixture for #271: an `adr.id` pattern written in upper case, for ADR files
+# whose names are upper case (ADR-12-Use-X.md). The processor normalises: the
+# pattern matches the lowercased file name, and the id shows lowercased.
+version: 1
+adr:
+  id:
+    pattern: '^(?<id>ADR-(?<seq>\d+))-'
