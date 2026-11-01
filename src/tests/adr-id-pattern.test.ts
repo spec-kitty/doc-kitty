@@ -379,13 +379,16 @@ describe('upper-case ADR id patterns are normalised — hub cards and index agre
 });
 
 describe('the `NNNN-` default is unchanged (#248 pin)', () => {
+  // Compared with each other, not with the committed README: the table on main
+  // may lag a merged ADR until the after-merge bot PR lands (ADR-0072), and a
+  // stale table must not fail every code PR.
   it("the own tree's generated README is byte-identical with no rule, the default rule, and the loaded rule", () => {
     const dir = path.join(OWN_DOCS, 'adr');
     const readme = path.join(dir, 'README.md');
-    const committed = readFileSync(readme, 'utf8');
-    expect(computeReadme(dir, readme).next).toBe(committed);
-    expect(computeReadme(dir, readme, { idRule: resolveAdrIdRule(undefined) }).next).toBe(committed);
-    expect(computeReadme(dir, readme, { idRule: loadAdrIdRule(OWN_DOCS) }).next).toBe(committed);
+    const noRule = computeReadme(dir, readme).next;
+    expect(noRule).toMatch(/\| \[0072\]\(\.\/0072-/);
+    expect(computeReadme(dir, readme, { idRule: resolveAdrIdRule(undefined) }).next).toBe(noRule);
+    expect(computeReadme(dir, readme, { idRule: loadAdrIdRule(OWN_DOCS) }).next).toBe(noRule);
   });
 
   it('the default still takes the leading four digits — a date-named file reads as its year', () => {
