@@ -39,6 +39,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          # openapi-optin.test.ts compares the build against the merge-base tarball,
+          # so it needs history (git merge-base HEAD origin/main).
+          fetch-depth: 0
       # Node/pnpm setup COPIED from ci.yml (SHA-pinned, node 22, pnpm cache).
       - name: Enable corepack
         run: corepack enable
