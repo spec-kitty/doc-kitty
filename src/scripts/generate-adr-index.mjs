@@ -4,7 +4,8 @@
  *
  * Usage:
  *   node src/scripts/generate-adr-index.mjs                 # rewrite in place
- *   node src/scripts/generate-adr-index.mjs --check         # lockfile check (CI)
+ *   node src/scripts/generate-adr-index.mjs --check         # lockfile check
+ *   node src/scripts/generate-adr-index.mjs --check-ids     # no two ADRs share a number (CI)
  *   node src/scripts/generate-adr-index.mjs --dir <adrDir> --readme <path>
  *   node src/scripts/generate-adr-index.mjs --dir <adrDir> --docs-root <docsRoot>
  *   node src/scripts/generate-adr-index.mjs --docs <docsDir> --dir <adrDir>
@@ -250,6 +251,25 @@ export function buildAdrHubCards(adrChildren, { idRule = DEFAULT_ADR_ID_RULE } =
   return cards;
 }
 
+/**
+ * Ids that more than one ADR took, each with its files in path order, in id
+ * order. Two parallel PRs can pick the same next number by hand; the per-PR
+ * gate (`--check-ids`) catches it on each PR's own tree. Once CI runs in a merge
+ * queue it also runs on the combined commit, so it catches two queued PRs too
+ * (ADR-0072).
+ *
+ * @param {Array<{ number: string, relpath: string }>} entries from {@link discoverAdrs}
+ * @returns {Array<{ number: string, files: string[] }>}
+ */
+export function duplicateAdrIds(entries) {
+  /** @type {Map<string, string[]>} */
+  const byId = new Map();
+  for (const e of entries) byId.set(e.number, [...(byId.get(e.number) ?? []), e.relpath]);
+  return [...byId]
+    .filter(([, files]) => files.length > 1)
+    .map(([number, files]) => ({ number, files: [...files].sort() }));
+}
+
 /** Render the `ID | Title | Status | Date` table (no trailing newline). */
 export function buildAdrTable(entries) {
   const rows = entries.map(
@@ -323,10 +343,11 @@ export function check({ dir, readme, docsRoot }) {
 }
 
 function parseArgs(argv) {
-  const args = { check: false, dir: 'docs/adr', readme: null, docsRoot: undefined, docs: undefined };
+  const args = { check: false, checkIds: false, dir: 'docs/adr', readme: null, docsRoot: undefined, docs: undefined };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--check') args.check = true;
+    else if (a === '--check-ids') args.checkIds = true;
     else if (a === '--dir') args.dir = argv[++i];
     else if (a === '--readme') args.readme = argv[++i];
     else if (a === '--docs-root') args.docsRoot = argv[++i];
@@ -337,7 +358,7 @@ function parseArgs(argv) {
 }
 
 async function main(argv) {
-  const { check: isCheck, dir, readme, docsRoot, docs } = parseArgs(argv);
+  const { check: isCheck, checkIds, dir, readme, docsRoot, docs } = parseArgs(argv);
   if (docs !== undefined) {
     // Registers the site's excluded folders with the shared walk (ADR-0070).
     const { announceIndexNames, resolveSiteIndexBasenames } = await import('./site-index-names.mjs');
@@ -347,6 +368,28 @@ async function main(argv) {
       console.error(`✖ ${err instanceof Error ? err.message : String(err)}`);
       process.exit(2);
     }
+  }
+  if (checkIds) {
+    const entries = discoverAdrs(dir, { idRule: ruleFor({ dir, docsRoot }) });
+    // A file the id rule cannot read is in neither the table nor this check:
+    // name it, so a mistyped number (72- for 0072-) is seen. Not a failure, as
+    // a folder may hold notes that are not ADRs.
+    const read = new Set(entries.map((e) => e.relpath));
+    const skipped = walk(dir)
+      .map((f) => relative(dir, f).split('\\').join('/'))
+      .filter((rel) => !read.has(rel) && !/(^|\/)(README|template)\.mdx?$/i.test(rel));
+    for (const rel of skipped) {
+      console.warn(`⚠ ${rel}: its name gives no ADR id under this tree's rule, so it is not in the index or this check.`);
+    }
+    const shared = duplicateAdrIds(entries);
+    if (shared.length > 0) {
+      console.error(`✖ ${shared.length} ADR id(s) in ${dir} are taken by more than one ADR:`);
+      for (const { number, files } of shared) console.error(`  ${number}: ${files.join(', ')}`);
+      console.error('  Keep the ADR that landed first and renumber the other to the next free number.');
+      process.exit(1);
+    }
+    console.log(`✓ ${entries.length} ADR id(s), all unique, in ${dir}.`);
+    return;
   }
   if (isCheck) {
     const { clean } = check({ dir, readme, docsRoot });

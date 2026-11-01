@@ -21,6 +21,8 @@
     "validate:example": "node src/scripts/validate-frontmatter.mjs example/docs",
     "validate:links": "node src/scripts/check-links.mjs docs example/docs --exclude docs/changelog/unreleased",
     "validate:adr-index": "node src/scripts/generate-adr-index.mjs --check",
+    "validate:adr-ids": "node src/scripts/generate-adr-index.mjs --check-ids",
+    "generate:adr-index": "node src/scripts/generate-adr-index.mjs",
     "validate:changelog": "node src/scripts/changelog.mjs --check",
     "changelog:preview": "node src/scripts/changelog.mjs --preview",
     "changelog:release": "node src/scripts/changelog.mjs --release",
