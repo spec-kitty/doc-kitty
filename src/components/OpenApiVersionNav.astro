@@ -1,0 +1,46 @@
+---
+/**
+ * The version links and the "unreleased" badge on an OpenAPI reference page
+ * (mission openapi-reference-pages, FR-003/FR-004). Rendered by the `PageTitle`
+ * carrier when the reference route middleware set `Astro.locals.dkOpenApi`.
+ *
+ * With more than one version it lists every version: the current one as text with
+ * `aria-current`, the others as links to their overview. With one version there is
+ * no list. An unreleased version shows the text "unreleased" (not colour alone).
+ * Every link goes through `withBase`. Styles: `.dk-openapi-*` in dk-components.css.
+ */
+import { withBase } from '../lib/with-base.js';
+import type { OpenApiNav } from '../lib/openapi/adapters.js';
+
+interface Props {
+  nav: OpenApiNav;
+}
+
+const { nav } = Astro.props;
+const { current, versions } = nav;
+---
+
+<div class="dk-openapi-nav" data-dk-openapi-nav>
+  <p class="dk-openapi-nav__current">
+    API version <strong>{current.label}</strong>
+    {!current.released && <span class="dk-openapi-badge">unreleased</span>}
+  </p>
+  {
+    versions.length > 1 && (
+      <nav class="dk-openapi-nav__versions" aria-label="API versions">
+        <ul>
+          {versions.map((version) => (
+            <li>
+              {version === current || version.label === current.label ? (
+                <span aria-current="true">{version.label}</span>
+              ) : (
+                <a href={withBase(version.route)}>{version.label}</a>
+              )}
+              {!version.released && <span class="dk-openapi-badge">unreleased</span>}
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+</div>

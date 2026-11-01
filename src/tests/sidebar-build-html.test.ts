@@ -132,7 +132,10 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
     expect(labels).toContain('Missions');
     // Every nested group, generated ones included: its first entry is its
     // directory's index, so that href names the directory.
-    for (const top of tree.filter((n) => n.children)) {
+    // The OpenAPI groups are the renderer's own tree (tag groups holding operations, no
+    // directory index), so the rule about a directory's index does not apply to them.
+    const isOpenApiGroup = (n: Node): boolean => n.label.startsWith('API ');
+    for (const top of tree.filter((n) => n.children && !isOpenApiGroup(n))) {
       for (const nested of groupsOf(top.children!)) {
         const dir = nested.children![0]!.href!.replace(/\/$/, '');
         const segment = dir.slice(dir.lastIndexOf('/') + 1);
@@ -186,6 +189,10 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
       'Reference',
       'Changelog',
       'Glossary Demo',
+      // The `openapi` option appends one group per version, after the shaped sections
+      // (WP04: the example sets the option). They are not registry sections.
+      'API v1',
+      'API main',
     ]);
   });
 
@@ -219,7 +226,10 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
     }
     // Every nested group, whatever its label: the first entry is the index of
     // the directory its links live in.
-    for (const top of tree.filter((n) => n.children)) {
+    // The OpenAPI groups are the renderer's own tree (tag groups holding operations, no
+    // directory index), so the rule about a directory's index does not apply to them.
+    const isOpenApiGroup = (n: Node): boolean => n.label.startsWith('API ');
+    for (const top of tree.filter((n) => n.children && !isOpenApiGroup(n))) {
       for (const nested of groupsOf(top.children!)) {
         const first = nested.children![0]!;
         const sibling = nested.children!.find((n) => n.href && n !== first);

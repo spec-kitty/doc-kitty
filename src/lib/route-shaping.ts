@@ -420,6 +420,49 @@ export function shapePagination(
   };
 }
 
+/** A link label that shaping changed: what the shaped sidebar shows, and the page title. */
+export interface Relabelled {
+  shaped: string;
+  original: string;
+}
+
+/**
+ * The links whose label shaping changed (a section index shown as "Overview"),
+ * keyed by href. Another route middleware that rebuilds prev/next from the shaped
+ * sidebar (the OpenAPI renderer's does) hands these back to
+ * {@link restorePaginationTitles}.
+ */
+export function relabelledLinks(
+  original: readonly SidebarEntry[],
+  shaped: readonly SidebarEntry[],
+): Map<string, Relabelled> {
+  const titles = new Map(flattenLinks(original).map((link) => [link.href, link.label]));
+  const out = new Map<string, Relabelled>();
+  for (const link of flattenLinks(shaped)) {
+    const title = titles.get(link.href);
+    if (title !== undefined && title !== link.label) out.set(link.href, { shaped: link.label, original: title });
+  }
+  return out;
+}
+
+/**
+ * Give prev/next the page title again where they carry the label shaping gave
+ * the sidebar. A label the author set (`prev: "…"`) differs from the shaped one
+ * and is kept. Unchanged (same reference) when nothing needs restoring.
+ */
+export function restorePaginationTitles(
+  pagination: RoutePagination,
+  relabelled: ReadonlyMap<string, Relabelled>,
+): RoutePagination {
+  const fix = (link: SidebarLink | undefined): SidebarLink | undefined => {
+    const hit = link && relabelled.get(link.href);
+    return link && hit && link.label === hit.shaped ? { ...link, label: hit.original } : link;
+  };
+  const prev = fix(pagination.prev);
+  const next = fix(pagination.next);
+  return prev === pagination.prev && next === pagination.next ? pagination : { prev, next };
+}
+
 // The warning sink lives in `build-state.ts`, the one `Symbol.for` channel; re-exported
 // so the middleware and existing importers keep their path (C-004).
 export { shapingWarningSink } from './build-state.js';
