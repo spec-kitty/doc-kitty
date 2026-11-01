@@ -30,12 +30,18 @@ export const REQUIRED_LANES = Object.freeze([
 ]);
 
 /**
- * @param {{detect_changes:string, code_quality:string, doc_sanity:string, build_example:string, a11y:string}} results
+ * @param {{detect_changes:string, code_quality:string, doc_sanity:string, build_example:string, a11y:string, paused?:string|boolean}} results
  *   Each value is a GitHub Actions job result: success | failure | cancelled | skipped.
  * @returns {{ok:boolean, reasons:string[]}} ok=true → gate GREEN.
  */
 export function evaluateCiOk(results) {
   const reasons = [];
+
+  // pr:pause-ci (ADR-0072): a paused PR skips every lane, which would read as
+  // an all-skip GREEN. The pause is RED, so a paused PR can never merge.
+  if (results.paused === 'true' || results.paused === true) {
+    reasons.push('CI is paused by the pr:pause-ci label; remove the label to run CI');
+  }
 
   const detect = results.detect_changes;
   if (detect !== 'success') {
@@ -72,6 +78,7 @@ if (isMain()) {
     doc_sanity: process.env.DOC_SANITY_RESULT,
     build_example: process.env.BUILD_EXAMPLE_RESULT,
     a11y: process.env.A11Y_RESULT,
+    paused: process.env.PAUSED,
   };
   const { ok, reasons } = evaluateCiOk(results);
   if (ok) {
