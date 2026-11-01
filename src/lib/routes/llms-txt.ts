@@ -9,6 +9,7 @@
  *   import { llmsTxtRoute } from '@spec-kitty/doc-toolkit/routes';
  *   export const GET = llmsTxtRoute({ title: 'My Docs', description: '…' });
  */
+import process from 'node:process';
 import type { APIRoute } from 'astro';
 import {
   rankForAgents,
@@ -31,6 +32,8 @@ import { DESCRIPTION_MAX } from '../schema.js';
 import { absolute, docsRoot } from './shared.js';
 import { collectDocEntries } from '../docs-index.js';
 import { isScenarioIndexed } from './scenario-index-filter.js';
+import { DK_OPENAPI_ENV } from '../internal-env.mjs';
+import { openApiLlmsLines, readPublication } from '../integrations/openapi-publish.js';
 
 export interface LlmsTxtRouteOptions {
   title: string;
@@ -150,6 +153,13 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
         lines.push(`- [${entry.data.title}](${url})${note}`);
       }
       lines.push('');
+    }
+
+    // The OpenAPI raw documents (FR-008): one line per version, and only when the
+    // `openapi` option published some, so a site without it keeps its llms.txt as is.
+    const openapi = readPublication(process.env[DK_OPENAPI_ENV]);
+    if (openapi) {
+      lines.push('## OpenAPI documents', '', ...openApiLlmsLines(openapi, (route) => absolute(site, route)), '');
     }
 
     return new Response(lines.join('\n'), {

@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 // `pnpm assert:artifacts` runs the full set. See kitty-specs/.../WP05-*.md.
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { assertSpecificationArtifacts } from './assert-specification-artifacts.mjs';
+import { assertOpenApiArtifacts } from './assert-openapi-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import { compareCodeUnit, parseActor } from '../lib/vocabulary-core.mjs';
@@ -170,7 +171,11 @@ const EXPECTED_INDEX_ENTRY_COUNT = 70;
 // #193 adds guides/install.md (published, +1; #192's changelog swap is +0),
 // 68 -> 69.
 // #250 adds guides/github-alerts.md (published, +1), 69 -> 70.
-const EXPECTED_SITEMAP_URL_COUNT = 70;
+// openapi-reference-pages WP04 (FR-008): the two-version fixture adds 7 generated
+// reference pages (2 overviews + 3 + 2 operation pages), unreleased version included:
+// they are not docs-collection entries, so the agent-index pin above does not move,
+// but the sitemap lists them. 70 -> 77.
+const EXPECTED_SITEMAP_URL_COUNT = 77;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -2245,7 +2250,7 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 22 example .md files − 3 drafts; if example content changed ` +
+        `(the published set — 22 example .md files − 3 drafts, plus the 7 generated OpenAPI reference pages; if example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }
@@ -2886,6 +2891,10 @@ async function main() {
 
   // 9) Specification layout (gherkin-authoring-aids WP06): the feature page's card.
   await assertSpecificationArtifacts(distDir);
+
+  // 10) OpenAPI reference pages (openapi-reference-pages WP04): pages, names, version
+  // links, raw documents and checksums, llms.txt, sitemap, search, no console, CSP.
+  await assertOpenApiArtifacts(distDir);
 
   process.stdout.write(`assert:artifacts: PASS — all build artifacts present and valid in ${distDir}\n`);
 }

@@ -3,7 +3,7 @@
  *
  * `defineDocKittyIntegrations` (the astro.config surface) and the docs loader,
  * routes and CLIs (other surfaces, sometimes other module graphs) cannot share
- * module state, so they talk through these seven variables. Every name is defined
+ * module state, so they talk through these variables. Every name is defined
  * here once, every write goes through {@link setInternalEnv} /
  * {@link deleteInternalEnv}, and a config definition starts by calling
  * {@link clearInternalEnv}, so a later config never inherits an earlier one's values.
@@ -15,6 +15,7 @@
  * | DK_DOCS_ROOT                  | define     | defineDocKittyIntegrations               | standalone routes (routes/shared.ts)      |
  * | DK_MARKUA                     | define     | defineDocKittyIntegrations               | glossary re-derive (OnThisPage.astro)     |
  * | DK_EXCLUDE                    | define     | defineDocKittyIntegrations               | shared docs walk (docs-walk.mjs), CLIs    |
+ * | DK_OPENAPI                    | define     | defineDocKittyIntegrations               | llms.txt route (routes/llms-txt.ts)       |
  * | DK_GHERKIN_ROUTE              | setup      | doc-kitty:gherkin-fence config:setup     | scenario-index route                      |
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
  *
@@ -44,6 +45,9 @@ export const DK_MARKUA_ENV = 'DK_MARKUA';
  */
 export const DK_EXCLUDE_ENV = 'DK_EXCLUDE';
 
+/** JSON `{ section, versions: [{ label, released, ext }] }` of the `openapi` option; absent without it. */
+export const DK_OPENAPI_ENV = 'DK_OPENAPI';
+
 /** Every internal handoff name. */
 export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_INDEX_BASENAME_ENV,
@@ -53,6 +57,7 @@ export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_DOCS_ROOT_ENV,
   DK_MARKUA_ENV,
   DK_EXCLUDE_ENV,
+  DK_OPENAPI_ENV,
 ]);
 
 /**
