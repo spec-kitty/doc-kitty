@@ -2,7 +2,7 @@
 title: Releasing the toolkit to GitHub Packages
 description: How a maintainer publishes @spec-kitty/doc-toolkit to the GitHub Packages npm registry by pushing a version tag, and why it needs no publish secret.
 doc_status: active
-updated: 2026-10-11T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: Operations
 kind: How-To
 authors:
@@ -67,9 +67,14 @@ a checkout cannot go to the public npm registry by mistake.
    `DK_CONSUMPTION_BOOTSTRAP=1 node tests/consumption/scripts/run-consumption-test.mjs`.
    Commit the resulting `tests/consumption/consumer-fixture/pnpm-lock.yaml` change,
    which should touch only the toolkit's `integrity` and `version` lines.
-3. **Update the CHANGELOG.** Move the `[Unreleased]` entries under a
-   `## [<version>] — <date>` heading and add the compare link at the bottom. The
-   workflow fails if the heading is missing.
+3. **Write the release into the CHANGELOG.** Run
+   `pnpm changelog:release <version>`. It writes every fragment under
+   `docs/changelog/unreleased/` into a `## [<version>] — <date>` section, moves the compare
+   links and deletes the released fragments (`--date YYYY-MM-DD` overrides
+   today's date). Review the diff and commit it. The workflow fails if the
+   heading is missing. Between releases, each PR adds a fragment and never edits
+   `[Unreleased]` (see [`docs/changelog/unreleased/README.md`](../../docs/changelog/unreleased/README.md)
+   and [ADR-0072](../adr/0072-parallel-landing-without-shared-files.md)).
 4. **Merge through a PR** with `ci-ok` and the consumption test green.
 5. **Rehearse (optional).** Run the *Release* workflow manually from the Actions
    tab. A manual run executes every gate plus `npm publish --dry-run` and never
