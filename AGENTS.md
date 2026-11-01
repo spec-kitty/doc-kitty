@@ -62,3 +62,11 @@ now and will be recast as Spec Kitty charter/doctrine later.
   [ADR-0009](./docs/adr/0009-finalize-metadata-contract.md),
   [ADR-0031](./docs/adr/0031-vocabulary-override.md), and
   [ADR-0065](./docs/adr/0065-kind-required-again.md) for the landed contract.
+- **Changelog: add a fragment, never edit `CHANGELOG.md`.** A user-visible
+  change adds one file, `docs/changelog/unreleased/<issue>-<slug>.md`, with a `section:`
+  frontmatter key and the entry as its body. Do not write under
+  `## [Unreleased]`: CI (`pnpm validate:changelog`) fails it. The release step
+  writes the fragments into a version section. The format is in
+  [`docs/changelog/unreleased/README.md`](./docs/changelog/unreleased/README.md); the reasoning is in
+  [ADR-0072](./docs/adr/0072-parallel-landing-without-shared-files.md).
+  `docs/changelog/` is separate: dated, themed write-ups of a body of work.
