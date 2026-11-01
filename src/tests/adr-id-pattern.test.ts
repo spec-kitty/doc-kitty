@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -116,6 +116,50 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     [['date-seq'], /"adr" must be a mapping/],
   ])('rejects %j', (raw, message) => {
     expect(() => resolveAdrIdRule(raw, 'charter.yaml')).toThrow(message);
+  });
+
+  // The rule runs against the LOWERCASED leaf, so an upper-case literal can never
+  // match. Such a pattern used to load fine and then silently match nothing.
+  it.each([
+    ['^(?<id>ADR-\\d+)-', 'A'],
+    ['^adr-(?<id>\\d+)-RFC', 'R'],
+    ['^(?<id>[A-Z]+-\\d+)-', 'A'],
+    ['^(?<id>\\d+)-\\x41', 'A'],
+    ['^(?<id>\\d+)-\\u00C9', 'É'],
+    ['^(?<id>\\d+)-É', 'É'],
+    ['^(?<id>\\d+)-\\A', 'A'],
+  ])('rejects the upper-case pattern %j, naming the letter and the fix', (pattern, letter) => {
+    const run = () => resolveAdrIdRule({ id: { pattern } }, 'docs/_meta/charter.yaml');
+    expect(run).toThrow(/^docs\/_meta\/charter\.yaml: "adr\.id\.pattern" /);
+    expect(run).toThrow(`upper-case "${letter}"`);
+    expect(run).toThrow(/lowercased file name/);
+    expect(run).toThrow(/write the pattern in lower case/);
+  });
+
+  it.each([
+    // Upper-case escapes are classes, not literals.
+    '^(?<id>\\d+)\\D',
+    '^(?<id>\\w+)\\W\\S\\s\\B',
+    // Group names and back-references may use any case.
+    '^(?<ID>\\d+)-(?<id>\\d+)-\\k<ID>',
+    // Lookbehind is not a group name.
+    '^(?<id>\\d+)(?<=\\d)-',
+    // A control escape and a lower-case hex escape.
+    '^(?<id>\\d+)\\cJ?\\x61?-',
+    '^(?<id>adr-\\d+)-',
+  ])('accepts %j, which has no upper-case literal', (pattern) => {
+    expect(() => resolveAdrIdRule({ id: { pattern } }, 'charter.yaml')).not.toThrow();
+  });
+
+  it('a rejected upper-case pattern fails the charter loader, so every gate and the build reject it', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'adr-upper-'));
+    try {
+      mkdirSync(path.join(root, '_meta'));
+      writeFileSync(path.join(root, '_meta', 'charter.yaml'), "adr:\n  id:\n    pattern: '^(?<id>ADR-\\d+)-'\n");
+      expect(() => loadAdrIdRule(root)).toThrow(/charter\.yaml: "adr\.id\.pattern" .*upper-case "A"/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('the error names the source file', () => {

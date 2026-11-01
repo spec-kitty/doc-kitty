@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-10-31T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -767,7 +767,9 @@ The governable dimensions:
   `2026-03-09-1`, ordered by date, then by the sequence number (`-2` before
   `-10`). For any other scheme, give a `pattern` with a named `id` group; optional
   `date` and `seq` groups set the order. The pattern is matched against the
-  lowercased file name, so write it in lowercase.
+  lowercased file name, so write it in lowercase: a pattern with an upper-case
+  letter (`ADR-`) could never match, so the charter loader rejects it. Escapes
+  such as `\D` and group names may still use upper case.
 
   ```yaml
   adr:
