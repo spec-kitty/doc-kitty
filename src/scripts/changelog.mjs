@@ -25,12 +25,13 @@
  * compare links and deletes the released fragments; released history is kept
  * byte for byte. On any refusal nothing is written.
  *
- * Bare Node, zero dependencies, offline.
+ * Bare Node, offline; the one import is the shared code-unit comparator (`vocabulary-core.mjs`).
  */
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import { compareCodeUnit } from '../lib/vocabulary-core.mjs';
 
 export const DEFAULT_CHANGELOG = 'CHANGELOG.md';
 export const DEFAULT_DIR = 'docs/changelog/unreleased';
@@ -151,7 +152,7 @@ export function readFragments(dir) {
   return fragments.sort((a, b) => {
     if (a.number !== null && b.number !== null && a.number !== b.number) return a.number - b.number;
     if ((a.number === null) !== (b.number === null)) return a.number === null ? 1 : -1;
-    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+    return compareCodeUnit(a.name, b.name);
   });
 }
 
