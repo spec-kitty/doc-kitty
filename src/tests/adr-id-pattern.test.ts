@@ -128,6 +128,8 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     ['^(?<id>\\d+)-\\u00C9', 'É'],
     ['^(?<id>\\d+)-É', 'É'],
     ['^(?<id>\\d+)-\\A', 'A'],
+    // A lookbehind is not a group name: its letters are literals.
+    ['^(?<id>\\d+)(?<=-)ADR>', 'A'],
   ])('rejects the upper-case pattern %j, naming the letter and the fix', (pattern, letter) => {
     const run = () => resolveAdrIdRule({ id: { pattern } }, 'docs/_meta/charter.yaml');
     expect(run).toThrow(/^docs\/_meta\/charter\.yaml: "adr\.id\.pattern" /);
@@ -144,8 +146,8 @@ describe('the `adr.id` charter axis — parsing (fail-closed)', () => {
     '^(?<ID>\\d+)-(?<id>\\d+)-\\k<ID>',
     // Lookbehind is not a group name.
     '^(?<id>\\d+)(?<=\\d)-',
-    // A control escape and a lower-case hex escape.
-    '^(?<id>\\d+)\\cJ?\\x61?-',
+    // A control escape, and a hex escape whose upper-case digit stands for no letter.
+    '^(?<id>\\d+)\\cJ?\\x6A?\\x2D?-',
     '^(?<id>adr-\\d+)-',
   ])('accepts %j, which has no upper-case literal', (pattern) => {
     expect(() => resolveAdrIdRule({ id: { pattern } }, 'charter.yaml')).not.toThrow();
