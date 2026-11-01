@@ -75,7 +75,17 @@
   "peerDependencies": {
     "@astrojs/markdown-remark": ">=7.3.0 <8",
     "@astrojs/starlight": ">=0.42.0 <0.43.0",
-    "astro": ">=7.2.10 <8"
+    "astro": ">=7.2.10 <8",
+    "@astrojs/markdown-satteri": "0.4.4",
+    "starlight-openapi": "0.27.0"
+  },
+  "peerDependenciesMeta": {
+    "@astrojs/markdown-satteri": {
+      "optional": true
+    },
+    "starlight-openapi": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -97,9 +107,11 @@
   },
   "devDependencies": {
     "@astrojs/markdown-remark": "^7.3.3",
+    "@astrojs/markdown-satteri": "0.4.4",
     "@astrojs/starlight": "^0.42.6",
     "astro": "^7.4.0",
     "mdast-util-to-hast": "13.2.1",
+    "starlight-openapi": "0.27.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
   },
