@@ -185,9 +185,14 @@ export function openApiVitePlugin(data: OpenApiModuleData) {
   const resolved = `\0${OPENAPI_MODULE_ID}`;
   let rendererSeen = false;
   let buildFailed = false;
+  let isBuild = true;
   return {
     name: 'doc-kitty:openapi',
     enforce: 'pre' as const,
+    // The dev server installs this plugin too, and Vite runs `buildEnd` when it closes.
+    configResolved(config: { command: string }): void {
+      isBuild = config.command === 'build';
+    },
     resolveId(id: string): string | null {
       return id === OPENAPI_MODULE_ID ? resolved : null;
     },
@@ -206,10 +211,10 @@ export function openApiVitePlugin(data: OpenApiModuleData) {
       buildFailed = false;
     },
     // Fail closed: a renderer module that moved leaves every page without a description.
-    // Only meaningful when this plugin ran for a build (not a dev server, not a failed build).
+    // Only meaningful for a build: not a dev server (which also runs buildEnd on close), not a failed build.
     buildEnd(error?: Error): void {
       if (error) buildFailed = true;
-      if (!buildFailed && !rendererSeen) {
+      if (isBuild && !buildFailed && !rendererSeen) {
         throw new Error(
           '[dk-openapi] the starlight-openapi page-props module (libs/starlight.ts) was never loaded, ' +
             'so the generated pages would have no description; the plugin layout has changed.',

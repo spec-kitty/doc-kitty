@@ -289,6 +289,11 @@ describe('description adapter (FR-002 with the strict docs schema)', () => {
 
   it('buildEnd fails closed when the renderer module was never seen, but not on an erroring build', () => {
     const plugin = adapters.openApiVitePlugin({ section: 's', versions: [] });
+    // `astro dev` installs the plugin too, and Vite runs buildEnd when the dev server
+    // closes: stopping it without visiting a reference page is not a failure.
+    plugin.configResolved({ command: 'serve' });
+    expect(() => plugin.buildEnd()).not.toThrow();
+    plugin.configResolved({ command: 'build' });
     plugin.buildStart();
     expect(() => plugin.buildEnd()).toThrow(/\[dk-openapi\].*never loaded/);
     expect(() => plugin.buildEnd(new Error('boom'))).not.toThrow();
