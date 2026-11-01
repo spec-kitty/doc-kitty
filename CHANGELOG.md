@@ -6,135 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
-
-- **GitHub alert blockquotes render as Starlight asides (#250).** Before, a
-  `> [!NOTE]` blockquote rendered as a plain quote that started with a literal
-  `[!NOTE]`, and converting it to `:::note` broke the page on GitHub. Now, with
-  the new `githubAlerts: true` option, a top-level blockquote that opens with
-  `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]` or `[!CAUTION]` renders as
-  the matching native aside: note, tip, note titled "Important", caution titled
-  "Warning" and danger titled "Caution". They share the theme and accessible
-  name of `:::note` and the Markua callouts. A plain quote, an unknown
-  `[!X]` marker and a deck page are unchanged. Off by default, so existing
-  sites render as before. See
-  [ADR-0068](docs/adr/0068-github-alerts-as-starlight-asides.md).
-
-- **A site can leave whole docs folders out of the build (#247).** Before, the
-  docs loader refused any pattern but the default, so a folder you keep in git
-  but do not publish (an archive, internal reports, working notes) was built,
-  schema-checked and link-checked like any other. Now
-  `defineDocKittyIntegrations({ exclude: ['archive', 'plans/engineering-notes'] })`
-  leaves those folders out of the loader, the routes, the sidebar, search, the
-  sitemap, `rss.xml`, `llms.txt`, the agent API and the ADR Hub, and
-  `validate-frontmatter` and `check-links --strict` skip them. Entries are
-  folder paths relative to `docsDir`, with no globs, and each must exist with the
-  same letter case. A link or `related:` ref from a published page into an
-  excluded folder is reported as "target is excluded from the site";
-  `assert-no-broken-links` and `generate-adr-index` take a new `--docs <dir>`
-  option to read the list. Without `exclude` nothing changes. See
-  [ADR-0070](docs/adr/0070-excluded-folders.md).
-- **Old `.html` URLs keep working after a move from DocFX (#249).** Before,
-  an Astro redirect keyed on `/a/b.html` was written as the folder
-  `dist/a/b.html/index.html`, which a static host does not serve at
-  `/a/b.html`. A key `/a/b/index.html` replaced the live page `/a/b/` with a
-  folder, and the redirect-coverage gate could not check `.html` URLs at all.
-  Now the `legacyHtmlRedirects` option of `defineDocKittyIntegrations`
-  (`{ '/a/b.html': '/a/b/' }`, without the base) writes a flat
-  `dist/a/b.html` stub after the build. The stub is `noindex`, has a canonical
-  link to the target, and is not in the sitemap, `llms.txt` or the agent API.
-  It works at the domain root and under a base path, and chains in the map are
-  shortened to one step. The gate looks up a baselined `.html` URL as that
-  file, follows chains, and fails on a missing stub or a dead target.
-  `--declared-redirects` may now be repeated. The new
-  `dockitty-generate-legacy-redirects` command writes the mechanical map
-  (`x.html -> x/`, `x/index.html -> x/`) from a committed list of old URLs. See
-  [ADR-0071](docs/adr/0071-legacy-html-redirects-as-flat-stubs.md) and
-  [Keeping .html URLs](docs/migrations/legacy-html-urls.md).
-
-- **A `kind: Schematic` page documents a JSON or YAML schema (#245).** Before,
-  a schema stayed a file that readers opened in a repository. Now a page with
-  `kind: Schematic` and `schematic_path: <file>` (relative to the project root,
-  inside it) keeps your own Markdown as the body. The toolkit adds the
-  schema description before it, then `## Diagram`, `## Properties` and
-  `## Source`; a `##` heading you write with one of those names replaces the
-  generated one. `$ref` within the file or to another file in the root is
-  followed, and a URL `$ref` renders as a link. A bad path, a parse error, a
-  non-schema file or an unresolvable `$ref` fails the build with a
-  `[dk-schematic]` error. The diagram needs build-mode diagrams and the
-  PlantUML service, so client mode leaves it out. The schema is published
-  unchanged beside the page, and the OKF export `resource` points at it. No new
-  option; `yaml` is a new dependency. See
-  [ADR-0067](docs/adr/0067-schematic-pages-reference-a-schema.md).
-- **Date-named ADRs get real ids, order and status (#248).** Before, an ADR's
-  id was always its leading four digits, so `2026-03-09-1-slug.md` read as
-  `2026`. Its status came only from a body `## Status` section, and its date only
-  from `updated`. Now a docs tree can set `adr.id` in `docs/_meta/charter.yaml`:
-  `preset: date-seq` reads `2026-03-09-1` and orders by date, then by sequence
-  number (`-2` before `-10`), and `pattern:` takes a regex with a named `id`
-  group. When an ADR has no body `## Status`, its frontmatter `status` is shown,
-  and when it has no `updated`, its frontmatter `date`. The generated ADR index
-  and the hub's ADR cards still share one extractor. Without the axis nothing
-  changes. `generate-adr-index.mjs` reads the charter next to `--dir`, or the
-  one under the new `--docs-root`. See
-  [ADR-0069](docs/adr/0069-configurable-adr-id-and-frontmatter-status.md).
-
-- **A site can publish versioned API reference pages from its OpenAPI files
-  (#244).** Before, DocKitty had no API reference: authors linked to a separate
-  Swagger site or pasted the spec into a page. Now an `openapi` option in
-  `defineDocKittyIntegrations` takes OpenAPI 3.0 or 3.1 files, each with a
-  `label` and `released` flag, and builds reference pages at
-  `/reference/api/<label>/` inside the normal frame, with version links and an
-  "unreleased" badge. Each version also publishes its raw file, byte for byte,
-  and an `openapi.<ext>.sha256` that `sha256sum -c` checks, and gets a line in
-  `llms.txt`. The option is off by default and needs two optional peers,
-  `starlight-openapi@0.27.0` and `@astrojs/markdown-satteri@0.4.4`. A bad
-  path, file or label fails the build with a `[dk-openapi]` error. A strict CSP
-  needs one script hash and one style-attribute hash (with `'unsafe-hashes'`). See
-  [Publish OpenAPI reference pages](docs/guides/openapi-reference.md) and
-  [ADR-0049](docs/adr/0049-openapi-reference-via-existing-integration.md).
-
-### Changed
-
-- **An `adr.id` pattern may be written in upper case (#271).** Before,
-  `pattern: '^(?<id>ADR-\d+)-'` matched no ADR, because the pattern runs
-  against the lowercased file name, and then (#269, never released) failed at
-  charter load. Now such a pattern is matched case-insensitively, so it reads
-  `ADR-12-Use-X.md` on the hub and in the generated index alike. The id shows
-  lowercased (`adr-12`), so it agrees with the page's URL. Escapes such as `\D`
-  and `\W`, group names and back-references keep their meaning. A lower-case
-  pattern compiles exactly as before. See the amendment note in
-  [ADR-0069](docs/adr/0069-configurable-adr-id-and-frontmatter-status.md).
-
-- **An Astro `redirects` key that ends in `.html` fails a static build
-  (#249).** Before, it built a folder that a static host does not serve at that
-  URL, or replaced a live page. Now a static build (`output: 'static'` with
-  `build.redirects` on) stops and names each key. Move those entries to
-  `legacyHtmlRedirects`, without the base on the target. A server-output
-  (adapter) site, or one whose adapter sets `build.redirects: false`, keeps its
-  `.html` keys: Astro writes no files for them, and the adapter (or Astro at
-  request time) answers them. A key that is also a `legacyHtmlRedirects` source
-  fails in every mode.
-- A large JSON diagram stays at the size PlantUML drew it, and selecting it
-  opens the same drawing centered at full size.
-
-### Security
-
-- **The PlantUML render service is pinned by digest and refuses remote
-  includes (#251).** Before, every workflow ran the floating
-  `plantuml/plantuml-server:jetty` tag, so a re-tag silently changed the renderer.
-  The server also ran with its default `INTERNET` profile, so a diagram with
-  `!includeurl` (or an `!include` of a URL) was fetched at build time. Now
-  `ci.yml`, `deploy.yml` and `update-a11y-baselines.yml` run
-  `jetty-v1.2026.9@sha256:065c66ad…` with `PLANTUML_SECURITY_PROFILE=SANDBOX`.
-  Such a diagram renders as an error and fails the build. A new bin,
-  `dockitty-assert-plantuml-no-remote-include`, proves this against a live
-  service, and CI runs it before building: it serves a canary, checks that the
-  canary is reachable from inside the service container, and requires the
-  `!includeurl` and `!include <url>` fixtures to be refused with zero canary
-  requests. The consumer guide now shows the hardened service block. To adopt
-  it, copy that block; a diagram that includes a URL or a local file will then
-  stop the build.
+<!-- Unreleased entries live in docs/changelog/unreleased/ as one file per change and are written here at release time. Do not add entries here. -->
 
 ## [0.5.0] — 2026-10-25
 
@@ -1430,7 +1302,8 @@ the feature-by-feature status and the decision records under
 - Build-time PlantUML rendering requires a PlantUML service (provided in CI); a
   local build without it skips PlantUML figures.
 
-[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.1.1...v0.2.0
