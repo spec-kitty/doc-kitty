@@ -1,0 +1,139 @@
+{
+  "mission_slug": "openapi-reference-pages-01M60GZ5",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-options.test.ts (normaliseOpenApiOptions valid options); lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:08.478270+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-integration.test.ts 'with the option (FR-002)'; openapi-raw-document.test.ts 'fails on a missing page'; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:14.969540+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-integration.test.ts 'version nav data (FR-003, FR-004)'; build assert 'missing link'; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:21.230484+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-integration.test.ts 'version nav data'; build assert 'missing badge'; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:27.625886+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-integration.test.ts 'theming uses tokens only (FR-005)', 'stylesheet filter (FR-005)'; tests/a11y/openapi.spec.ts light+dark; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:34.036422+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-raw-document.test.ts 'the raw document and its checksum (FR-006)'; consumption arm B; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:40.440798+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-options.test.ts refusals; openapi-integration.test.ts route collisions; consumption arm C; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:46.881461+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-raw-document.test.ts 'llms.txt (FR-008)' + build assert sitemap/search entries; openapi-integration sidebar groups; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:53.316928+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-raw-document.test.ts 'fails on a request console, a spec fetch'; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:06:59.591588+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/consumption/openapi-optin.test.ts arm A (byte-equal to merge-base, strict); openapi-options 'peers cost nothing'; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:07:05.990858+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "docs/guides/openapi-reference.md, NOTICE optional components, docs/adr/0049 addendum, CHANGELOG [Unreleased] (WP06 approved by reviewer-renata); lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:07:12.569737+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/openapi-raw-document.test.ts 'generated-page rules (FR-012, ADR-0049 section 3)'; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:07:18.911113+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "docs/adr/0049-openapi-reference-via-existing-integration.md \u00a7Surfaces + spike table row 9; follow-up #257; lane-f (84d3529c/225eae91), fast suite 2852/2852",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-01T05:07:25.346034+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

@@ -1,0 +1,161 @@
+schema_version: 1
+mission_id: 01M60GZ5XZPNW2AVCZ3Q2J4GWH
+mission_slug: openapi-reference-pages-01M60GZ5
+mission_number: 16
+friendly_name: OpenAPI reference pages
+mission_type: software-dev
+target_branch: feat/openapi-reference-pages
+created_at: '2026-11-01T05:09:02.573138+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-11-01T05:09:02.573138+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-004
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-005
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-011
+- id: h-006
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-011
+not_helpful:
+- id: n-004
+  category: doc
+  summary: analysis-report.md records 6 finding(s)
+  evidence_refs:
+  - e-015
+  details: The analysis-report.md artifact for this mission records 6 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-001
+  category: process
+  summary: WP01 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-012
+  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-002
+  category: process
+  summary: WP02 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-013
+  details: WP WP02 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-003
+  category: process
+  summary: WP03 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-014
+  details: WP WP03 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/tasks/WP01-spike-and-adr.md
+- id: e-006
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/tasks/WP02-option-and-validation.md
+- id: e-007
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/tasks/WP03-rendering-and-chrome.md
+- id: e-008
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/tasks/WP04-raw-document-and-asserts.md
+- id: e-009
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/tasks/WP05-consumption-test.md
+- id: e-010
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/tasks/WP06-docs-and-notice.md
+- id: e-011
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/status.events.jsonl
+- id: e-012
+  kind: event_range
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/status.events.jsonl
+  range: 01M6AQTRZQVVAYM2D0TCWVPWH3
+- id: e-013
+  kind: event_range
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/status.events.jsonl
+  range: 01M6AQVA85AE07HCPST9V49M03
+- id: e-014
+  kind: event_range
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/status.events.jsonl
+  range: 01M695EMTVMB4XAH6KE31W18SV..01M6APBW2721R6AZGY9F707FZJ
+- id: e-015
+  kind: file
+  path: kitty-specs/openapi-reference-pages-01M60GZ5/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

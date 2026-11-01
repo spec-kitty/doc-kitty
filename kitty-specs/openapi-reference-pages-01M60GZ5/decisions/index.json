@@ -1,0 +1,172 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-10-28T05:51:09.490671Z",
+      "decision_id": "01M60GZXNJ6PPNSM1C3JGMTHEX",
+      "final_answer": "starlight-openapi first, per ADR-0049. A WP01 spike checks OpenAPI 3.1, content entries, theme tokens and byte-stable rebuilds. If it doesn't fit, the fallback is our own build-time Markdown generator, recorded in a new ADR. Redoc is rejected: standalone page, JS-only content, loose CSP, its own dark-mode class, telemetry.",
+      "input_key": "renderer",
+      "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+      "mission_slug": "openapi-reference-pages-01M60GZ5",
+      "opened_by": "cli",
+      "options": [
+        "starlight-openapi first",
+        "Own generator",
+        "Pinned Redoc"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Which way should #244 render OpenAPI pages?",
+      "rationale": null,
+      "resolved_at": "2026-10-28T05:51:10.963972Z",
+      "resolved_by": null,
+      "slot_key": "specify.approach.renderer",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-28T05:51:12.417545Z",
+      "decision_id": "01M60H00H1PGJNJZHZVD0PE0GA",
+      "final_answer": "#244 is the first slice of #140 (linked as a sub-issue). #140 stays the umbrella and keeps Swagger 2 and later work.",
+      "input_key": "issue_relation",
+      "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+      "mission_slug": "openapi-reference-pages-01M60GZ5",
+      "opened_by": "cli",
+      "options": [
+        "#244 is a slice of #140",
+        "Close #140 as duplicate"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "How should #244 and #140 relate?",
+      "rationale": null,
+      "resolved_at": "2026-10-28T05:51:13.867845Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.issue-relation",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-28T05:51:15.350496Z",
+      "decision_id": "01M60H03CPCTWT2H1ZHFG84GTN",
+      "final_answer": "Yes. In: two or more versions, a list-of-links switcher, a text unreleased badge, the raw spec byte-identical plus sha256, fail-closed errors, how-to and CSP note, opt-in with no install cost. Out: per-operation search, llms.txt operation summary, dropdown switcher, tagged archive, multi-file $ref, and the 0.6.0 release (cut separately after merge).",
+      "input_key": "scope_boundary",
+      "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+      "mission_slug": "openapi-reference-pages-01M60GZ5",
+      "opened_by": "cli",
+      "options": [
+        "Yes, that boundary",
+        "Include 0.6.0 release"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Is the first-PR boundary right?",
+      "rationale": null,
+      "resolved_at": "2026-10-28T05:51:16.787473Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.boundary",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-29T05:25:51.461133Z",
+      "decision_id": "01M631YA75R7DR57DS8MV0HGNV",
+      "final_answer": "Accept injected routes. Wire the llms.txt version list (FR-008). Exempt generated API routes from the frontmatter gate. Record the agent API, the content graph and glossary autolinking as follow-ups in the ADR (FR-013). Routes alone do not trigger the fallback.",
+      "input_key": "injected_routes_policy",
+      "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+      "mission_slug": "openapi-reference-pages-01M60GZ5",
+      "opened_by": "cli",
+      "options": [
+        "Accept injected routes",
+        "Require content entries",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "If the spike finds starlight-openapi injects routes (no content entries), is that acceptable with gaps wired or listed, or does it trigger the own-generator fallback?",
+      "rationale": null,
+      "resolved_at": "2026-10-29T05:26:18.911319Z",
+      "resolved_by": null,
+      "slot_key": "plan.architecture.injected-routes",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-29T07:30:09.031493Z",
+      "decision_id": "01M6391X074F1Q5YPNPWY521JH",
+      "final_answer": "Waive narrowly and keep starlight-openapi. API pages may add only the pinned plugin's known inline scripts; a gate pins their hashes and fails on any new one. Code samples are off (1 script). The how-to documents the hashes. Add the description adapter and the stylesheet filter. The ADR-0049 addendum records the waiver and moves it to Accepted.",
+      "input_key": "nfr002_waiver",
+      "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+      "mission_slug": "openapi-reference-pages-01M60GZ5",
+      "opened_by": "cli",
+      "options": [
+        "Waive narrowly, keep plugin",
+        "Own generator fallback",
+        "Stop and rethink"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "The spike fails NFR-002 (the plugin adds inline scripts). Waive or fall back?",
+      "rationale": null,
+      "resolved_at": "2026-10-29T07:30:10.503235Z",
+      "resolved_by": null,
+      "slot_key": "plan.security.nfr002-waiver",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-29T07:30:11.949849Z",
+      "decision_id": "01M6391ZVD96K2FTWDTXBFRA2C",
+      "final_answer": "reference/api, so pages are at /reference/api/<label>/. A configured section is checked against reserved and authored routes.",
+      "input_key": "default_section",
+      "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+      "mission_slug": "openapi-reference-pages-01M60GZ5",
+      "opened_by": "cli",
+      "options": [
+        "reference/api",
+        "api-reference",
+        "openapi"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "The default section 'api' collides with the agent API. What should the default be?",
+      "rationale": null,
+      "resolved_at": "2026-10-29T07:30:13.445108Z",
+      "resolved_by": null,
+      "slot_key": "plan.routes.default-section",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-10-31T13:22:01.991138Z",
+      "decision_id": "01M691ZN47X2YAEC1K96XMB7QV",
+      "final_answer": "Inject the renderer: the adopter imports starlight-openapi in astro.config and passes it as openapi.renderer; the toolkit never imports the optional peers (contract commit bbb8c810).",
+      "input_key": "renderer_loading",
+      "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+      "mission_slug": "openapi-reference-pages-01M60GZ5",
+      "opened_by": "cli",
+      "options": [
+        "Inject the renderer",
+        "Private Vite server",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "How does the toolkit load the optional starlight-openapi renderer?",
+      "rationale": null,
+      "resolved_at": "2026-10-31T13:22:07.901935Z",
+      "resolved_by": null,
+      "slot_key": "plan.architecture.renderer-loading",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+  "version": 1
+}
