@@ -51,6 +51,10 @@ export function normalizeLegacyHtmlRedirects(map) {
     if (!from.startsWith('/')) problems.push(`"${from}": a source must start with / (a site path without the base)`);
     else if (/[?#]/.test(from)) problems.push(`"${from}": a source cannot carry a query or fragment`);
     else if (!isHtmlSource(from)) problems.push(`"${from}": a source must end in .html (use Astro's \`redirects\` for directory URLs)`);
+    // The source becomes a file path under dist: no `.`/`..` or empty segment, no
+    // backslash, so a stub can never be written outside the output folder.
+    else if (from.includes('\\') || from.slice(1).split('/').some((seg) => seg === '' || seg === '.' || seg === '..'))
+      problems.push(`"${from}": a source cannot hold an empty, "." or ".." segment or a backslash`);
     if (typeof to !== 'string' || to.trim() === '') problems.push(`"${from}": the target must be a non-empty string`);
     else if (!EXTERNAL_RE.test(to) && !to.startsWith('/')) problems.push(`"${from}": the target "${to}" must start with / or be an absolute URL`);
     if (problems.length === 0) entries.push({ from, to: /** @type {string} */ (to).trim() });
