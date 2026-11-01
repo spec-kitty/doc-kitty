@@ -27,6 +27,8 @@ export const collections = {
       entryId: 'changelog/releases',
       repoBlobBase: 'https://github.com/spec-kitty/doc-kitty/blob/main/',
       repoRawBase: 'https://raw.githubusercontent.com/spec-kitty/doc-kitty/main/',
+      // Pending entries are fragments (ADR-0072), shown as [Unreleased].
+      fragmentsDir: fileURLToPath(new URL('../../docs/changelog/unreleased', import.meta.url)),
     }),
     schema: docKittyDocsSchema(),
   }),
