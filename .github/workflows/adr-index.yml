@@ -34,10 +34,11 @@ permissions:
   pull-requests: write
   actions: write
 
-# One run at a time; a newer merge supersedes an older run.
+# One run at a time, queued rather than cancelled: a cancelled run can leave a
+# pushed branch head without the CI dispatch, so ci-ok never lands on it.
 concurrency:
   group: adr-index
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   regenerate:
@@ -102,6 +103,7 @@ jobs:
           BODY="Regenerates the ADR index table in docs/adr/README.md from the ADR files on main (ADR-0072). Produced by the ADR index workflow, run ${{ github.run_id }}. CI was dispatched on this branch, so ci-ok shows on its head."
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
           if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --body "$BODY"
             echo "Updated the open ADR index PR: $EXISTING" >> "$GITHUB_STEP_SUMMARY"
           elif URL=$(gh pr create --base "${{ github.event.repository.default_branch }}" --head "$BRANCH" --title "$TITLE" --body "$BODY" 2> "$RUNNER_TEMP/pr-create.err"); then
             echo "Opened the ADR index PR: $URL" >> "$GITHUB_STEP_SUMMARY"
