@@ -140,7 +140,7 @@ export function describeOpenApiPage(
 /** Absolute path of this module: the Vite transform imports the runtime half from it. */
 const SELF = fileURLToPath(import.meta.url);
 
-const PAGE_PROPS_FRONTMATTER = /frontmatter:\s*\{\s*title\s*,?\s*\}/;
+const PAGE_PROPS_FRONTMATTER = /frontmatter:\s*\{\s*title\s*,?\s*\}/g;
 
 /**
  * Splice a `description` into the renderer's `getPageProps` frontmatter. Throws when
@@ -148,7 +148,8 @@ const PAGE_PROPS_FRONTMATTER = /frontmatter:\s*\{\s*title\s*,?\s*\}/;
  * build instead of silently publishing pages the docs schema rejects.
  */
 export function patchPageProps(code: string): string {
-  if (!PAGE_PROPS_FRONTMATTER.test(code)) {
+  // Exactly one site: zero or several means the renderer changed shape.
+  if ((code.match(PAGE_PROPS_FRONTMATTER) ?? []).length !== 1) {
     throw new Error(
       '[dk-openapi] cannot add a description to the pages of starlight-openapi: its getPageProps no longer has the expected frontmatter. The adapter is pinned to the version in peerDependencies.',
     );
