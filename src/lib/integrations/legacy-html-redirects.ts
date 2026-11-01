@@ -5,8 +5,8 @@
  *   Astro writes them as files, which is `output: 'static'` with
  *   `build.redirects` on (Astro writes them as a folder, and a `/x/index.html`
  *   key replaces the live page `/x/`). On a server-output (adapter) site, or
- *   when the adapter turned `build.redirects` off, Astro answers them itself and
- *   they are left alone, unless the same URL is also in `legacyHtmlRedirects`.
+ *   when `build.redirects` is off, Astro writes no files for them: they are
+ *   left to Astro or the adapter (and 404 if neither answers them), unless the same URL is also in `legacyHtmlRedirects`.
  *   This runs at `config:done` so the adapter's own config changes are in.
  *   (`legacyHtmlRedirects` itself is validated when the integration is made.)
  * - `astro:server:setup`: `astro dev` answers each legacy URL with a 302 to its
@@ -59,8 +59,8 @@ export function legacyHtmlRedirectsIntegration(
         });
         if (leftToAstro.length > 0) {
           logger.info(
-            `${leftToAstro.length} Astro \`redirects\` key(s) ending in .html are left to Astro, which answers ` +
-              `them at request time here (no redirect files are written): ${leftToAstro.join(', ')}`,
+            `${leftToAstro.length} Astro \`redirects\` key(s) ending in .html are left to Astro or your adapter; ` +
+              `doc-kitty writes no stub for them: ${leftToAstro.join(', ')}`,
           );
         }
         base = config.base ?? '/';

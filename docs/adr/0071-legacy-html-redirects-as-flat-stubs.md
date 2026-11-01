@@ -82,7 +82,11 @@ supported either.
    'static'` (the default) with `build.redirects` on. On a server-output
    (adapter) site Astro answers the redirect at request time, and an adapter
    that writes its own redirect config turns `build.redirects` off; there the
-   key is left to Astro and the build log names it. A key that is also a
+   key is left to Astro or the adapter and the build log names it. With
+   `build.redirects: false` and no adapter, nothing answers such a key. Known
+   limit: on `output: 'server'`, Astro still prerenders a redirect whose
+   target route sets `prerender = true`, and writes it as a file; this check
+   does not catch that case. Starlight's own pages are not affected. A key that is also a
    `legacyHtmlRedirects` source fails in every mode, because two maps would
    claim one URL. The check runs at `astro:config:done`, after adapters have
    changed the config.
