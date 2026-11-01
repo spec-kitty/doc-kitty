@@ -64,11 +64,12 @@ const OUT_DIR = process.env.DK_OUTDIR ? `./${process.env.DK_OUTDIR}` : undefined
 // The map lives in `redirects.json` (old URL -> new route, without the base) so
 // the redirect-coverage gate can read the same declaration and report an old
 // URL that leads to a draft as unpublished instead of silently accepting or
-// missing it.
+// missing it. The base loses a trailing slash first, so a root `base: '/'`
+// gives `/x`, not `//x` (#261).
 const REDIRECTS = Object.fromEntries(
   Object.entries(
     JSON.parse(readFileSync(new URL('./redirects.json', import.meta.url), 'utf8')),
-  ).map(([from, to]) => [from, `${BASE}${to}`]),
+  ).map(([from, to]) => [from, `${BASE.replace(/\/$/, '')}${to}`]),
 );
 
 // Legacy `.html` URLs (#249, ADR-0071): old URLs as an `.html`-URL generator

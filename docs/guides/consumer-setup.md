@@ -189,6 +189,12 @@ Two invariants to hold from the start:
 - **`indexBasename` is set here, once.** The docs loader in step 4, the scripts and
   the link check all read this value. Do not repeat it anywhere else
   ([ADR-0050](../adr/0050-route-collisions-and-single-index-setting.md)).
+- **Astro `redirects` targets need the base, but only once.** Astro does not
+  add `base` to a redirect target, so a based site writes it in front:
+  `'/old/': '/docs/new/'`. If you build the targets from a variable, as in
+  `` `${BASE}${to}` ``, a site at the domain root must not use `'/'` there: that
+  gives `//new/`, which a browser reads as a link to the host `new`. Use `''` for
+  `BASE` at the root, or strip its trailing slash before you join.
 
 The generated glossary pages follow this setting. They are named `index.md` when
 your list contains `index`, and otherwise take your first index name (`README.md`
