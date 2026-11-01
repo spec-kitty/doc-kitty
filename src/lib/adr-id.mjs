@@ -94,9 +94,13 @@ export function resolveAdrIdRule(raw, source = 'charter.yaml') {
   if (typeof pattern !== 'string' || pattern === '') {
     throw new Error(`${source}: "adr.id.pattern" must be a non-empty string`);
   }
+  // #271: the rule runs against the lowercased leaf, so a pattern with an
+  // upper-case literal is compiled case-insensitively to match it. A pattern
+  // with none compiles exactly as written, as it always did.
+  const flags = findUpperCaseLiteral(pattern) === null ? '' : 'i';
   let compiled;
   try {
-    compiled = new RegExp(pattern);
+    compiled = new RegExp(pattern, flags);
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
     throw new Error(`${source}: "adr.id.pattern" is not a valid regular expression — ${detail}`);
@@ -107,14 +111,6 @@ export function resolveAdrIdRule(raw, source = 'charter.yaml') {
   if (!Object.hasOwn(groups, 'id')) {
     throw new Error(`${source}: "adr.id.pattern" must have a named group "id", e.g. ^(?<id>\\d+)-`);
   }
-  const upper = findUpperCaseLiteral(pattern);
-  if (upper !== null) {
-    throw new Error(
-      `${source}: "adr.id.pattern" has an upper-case "${upper}", which can never match: ` +
-        `the pattern runs against the lowercased file name, so write the pattern in lower case ` +
-        `(e.g. '^(?<id>adr-\\d+)-' for ADR-12-use-x.md)`,
-    );
-  }
   return Object.freeze({ pattern: compiled });
 }
 
@@ -122,14 +118,19 @@ export function resolveAdrIdRule(raw, source = 'charter.yaml') {
 const upperOrNull = (ch) => (ch !== ch.toLowerCase() ? ch : null);
 
 /**
- * Find the first upper-case literal in a regex source, or `null` (#248).
+ * Find the first upper-case literal in a regex source, or `null` (#248, #271).
  *
- * The rule is matched against the lowercased leaf, so an upper-case literal can
- * never match and the pattern would silently find no ADRs. Not literals, and so
- * skipped: the escapes `\D`, `\W`, `\S`, `\B` and `\cJ`, group names
+ * The rule is matched against the lowercased leaf, so a pattern with an
+ * upper-case literal is compiled with the `i` flag to match it. Not literals,
+ * and so skipped: the escapes `\D`, `\W`, `\S`, `\B` and `\cJ`, group names
  * (`(?<Name>`) and back-references (`\k<Name>`). A hex escape (`\x41`, `\u00C9`)
  * is a literal and is checked by the character it stands for, and so is an
  * identity escape such as `\A`.
+ *
+ * The `i` flag (never `u`) leaves every one of those tokens' meaning intact:
+ * without `u`, case-insensitive matching does not change `\w`, `\W`, `\b` or
+ * `\B`, and group names and control escapes are not matched text. It does not
+ * rewrite the source, so no escape can turn into another.
  *
  * @param {string} source
  * @returns {string | null}
@@ -179,6 +180,9 @@ function findUpperCaseLiteral(source) {
  * name (`ADR-12-Use-X`); the hub sees the route slug, which Starlight lowercases
  * (`adr-12-use-x`). Lowercasing both makes them read the same id. The default
  * `nnnn` pattern matches only digits and `-`, so it reads exactly what it did.
+ * The id is therefore always shown lowercased (`ADR-12-Use-X.md` → `adr-12`),
+ * so it agrees with the URL, even when the pattern is written in upper case
+ * (#271).
  *
  * @param {string} leaf
  * @param {AdrIdRule} rule
