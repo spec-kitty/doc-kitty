@@ -74,8 +74,9 @@ parallel PRs no longer need rebasing one by one.
 5. Enable **Only merge non-failing pull requests**.
 6. Set **Status check timeout** to **30 minutes**.
 7. Keep `ci-ok` as the one required check. The queue waits for it on its
-   `gh-readonly-queue/main/…` branch. In a ruleset, set its source to the
-   GitHub Actions app, so no other integration can post a `ci-ok`.
+   `gh-readonly-queue/main/…` branch. The classic branch rule already limits
+   its source to the GitHub Actions app; if you move to a ruleset, set that
+   source there too, so no other integration can post a `ci-ok`.
 
 ### Create the `pr:pause-ci` label
 

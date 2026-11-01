@@ -1,9 +1,9 @@
 /**
  * ADR-0072, decision 2: the ADR index table in `docs/adr/README.md` is
  * regenerated after merge by a bot PR, not hand-edited in every PR. Per PR, CI
- * instead fails two ADRs that share a number (`--check-ids`). CI also runs on
- * a merge queue's combined commit (`merge_group`), so two queued PRs that took
- * the same number are caught there.
+ * instead fails two ADRs that share a number (`--check-ids`). Once the merge
+ * queue is on, CI also runs on its combined commit (`merge_group`), so two
+ * queued PRs that took the same number are caught there.
  *
  * The workflow's shape (triggers, permissions, steps) is not pinned as text: CI
  * and the first real run exercise it. Two things CI cannot see stay pinned:
