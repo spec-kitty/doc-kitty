@@ -83,12 +83,19 @@ describe('generate-adr-index --check-ids', () => {
   // A file the id rule cannot read is in neither the table nor this check, so
   // a mistyped number (72- for 0072-) would slip past both. Say so, without
   // failing: a docs folder may hold notes that are not ADRs.
-  it('warns about a markdown file the id rule skips, and still passes', () => {
-    const dir = adrDir({ '0001-a.md': adr('A'), '72-typo.md': adr('Typo'), 'template.md': adr('Template') });
+  it('warns about a markdown file that looks like a mistyped ADR, and still passes', () => {
+    const dir = adrDir({
+      '0001-a.md': adr('A'),
+      '72-typo.md': adr('Typo'),
+      'era/ADR-x.md': adr('Misnamed'),
+      'template.md': adr('Template'),
+      'notes.md': 'Not an ADR.\n',
+    });
     const r = cli(['--check-ids', '--dir', dir]);
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/72-typo\.md/);
-    expect(r.out).not.toMatch(/template\.md|README\.md/);
+    expect(r.out).toMatch(/era\/ADR-x\.md/);
+    expect(r.out).not.toMatch(/template\.md|README\.md|notes\.md/);
   });
 
   it("passes on this repository's own ADRs (pnpm validate:adr-ids)", () => {

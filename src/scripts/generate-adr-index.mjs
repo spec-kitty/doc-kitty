@@ -374,11 +374,17 @@ async function main(argv) {
     const entries = discoverAdrs(dir, { idRule: ruleFor({ dir, docsRoot }) });
     // A file the id rule cannot read is in neither the table nor this check:
     // name it, so a mistyped number (72- for 0072-) is seen. Not a failure, as
-    // a folder may hold notes that are not ADRs.
+    // a folder may hold notes that are not ADRs, so warn only about a markdown
+    // name that looks like a mistyped ADR: it starts with a digit or with `adr`.
     const read = new Set(entries.map((e) => e.relpath));
     const skipped = walk(dir)
       .map((f) => relative(dir, f).split('\\').join('/'))
-      .filter((rel) => !read.has(rel) && !/(^|\/)(README|template)\.mdx?$/i.test(rel));
+      .filter(
+        (rel) =>
+          !read.has(rel) &&
+          !/(^|\/)(README|template)\.mdx?$/i.test(rel) &&
+          /^(\d|adr)[^/]*\.mdx?$/i.test(rel.slice(rel.lastIndexOf('/') + 1)),
+      );
     for (const rel of skipped) {
       console.warn(`⚠ ${rel}: its name gives no ADR id under this tree's rule, so it is not in the index or this check.`);
     }
