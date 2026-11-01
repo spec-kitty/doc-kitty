@@ -6,6 +6,7 @@
  * Usage:
  *   node src/scripts/check-links.mjs [<root> ...] [--strict] [--index-basename <name[,name…]>]
  *                                    [--astro-config <path>] [--site-root <dir>] [--mode <mode>]
+ *                                    [--exclude <folder> ...]
  *   # default roots: docs example/docs
  *
  * Resolves two classes of internal reference and FAILS on any that dangle
@@ -90,7 +91,14 @@ import {
   unpublishedDraftPaths,
 } from '../lib/draft-publication.mjs';
 import { buildRouteTable, formatRouteCollisions, isPlainIndexName, resolveIndexEntries, resolveRelativeDocLink } from '../lib/vocabulary-core.mjs';
-import { excludedFoldersFor, excludedMarkdownPaths, excludingFolder, walkMarkdownPaths } from '../lib/docs-walk.mjs';
+import {
+  excludedFoldersFor,
+  excludedMarkdownPaths,
+  excludingFolder,
+  isExcludedPath,
+  resolveCliExcludes,
+  walkMarkdownPaths,
+} from '../lib/docs-walk.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { assertEvaluatedConfigDecides } from './site-config-eval.mjs';
 
@@ -282,6 +290,10 @@ Options:
                                 applies to every strict root. A path that does not exist or
                                 cannot load stops the check with exit 2. Without a config (and
                                 without this option) the names are README, with a warning.
+  --exclude <folder>            A folder (relative to the working directory, inside a root) whose
+                                files are not checked, such as a folder of changelog fragments.
+                                Repeatable. A folder that does not exist stops the check with
+                                exit 2.
   --site-root <dir>             Astro project whose env files set DK_PUBLISH_DRAFTS.
   --mode <mode>                 Astro mode for those env files (default production).
   --help                        Show this text.
@@ -291,10 +303,17 @@ Options:
  * Take this gate's own flags out of `args`; the rest are roots.
  *
  * @param {string[]} args
- * @returns {{ strict: boolean, indexBasenames: string[] | undefined, astroConfig: string | undefined, help: boolean, rest: string[] }}
+ * @returns {{ strict: boolean, indexBasenames: string[] | undefined, astroConfig: string | undefined, help: boolean, exclude: string[], rest: string[] }}
  */
 export function takeCheckFlags(args) {
-  const out = { strict: false, indexBasenames: undefined, astroConfig: undefined, help: false, rest: /** @type {string[]} */ ([]) };
+  const out = {
+    strict: false,
+    indexBasenames: undefined,
+    astroConfig: undefined,
+    help: false,
+    exclude: /** @type {string[]} */ ([]),
+    rest: /** @type {string[]} */ ([]),
+  };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--strict') out.strict = true;
@@ -316,6 +335,11 @@ export function takeCheckFlags(args) {
       const value = args[i + 1];
       if (value === undefined || value.startsWith('--')) throw new Error('--astro-config needs a value: --astro-config <path>');
       out.astroConfig = value;
+      i += 1;
+    } else if (arg === '--exclude') {
+      const value = args[i + 1];
+      if (value === undefined || value.startsWith('--')) throw new Error('--exclude needs a value: --exclude <folder>');
+      out.exclude.push(value);
       i += 1;
     } else if (arg.startsWith('--')) {
       throw new Error(`unknown option "${arg}" (see --help; options that take a value are written "--name value")`);
@@ -402,6 +426,16 @@ export function run(argv) {
   }
   const roots = flags.rest;
   if (roots.length === 0) roots.push('docs', 'example/docs');
+  // `--exclude <folder>`: a folder of non-page files under a root (the
+  // changelog fragments, ADR-0072) whose files are not checked.
+  /** @type {Map<string, string[]>} */
+  let cliExcludes;
+  try {
+    cliExcludes = resolveCliExcludes(roots, flags.exclude);
+  } catch (err) {
+    console.error(`✖ ${err.message}`);
+    process.exit(2);
+  }
 
   // Index names per strict root, from that root's own site config (FR-007), each
   // announced on one line. Resolved before any check runs, so a flag that
@@ -500,6 +534,8 @@ export function run(argv) {
       // FR-010); a non-strict root reads it as GitHub does (see `walk`).
       readdirSync(root); // an unreadable root is an error either way (the shared walk would return [])
       files = strict ? walkMarkdownPaths(absRoot).map((rel) => join(root, rel)) : walk(root);
+      const skipped = cliExcludes.get(root) ?? [];
+      if (skipped.length) files = files.filter((f) => !isExcludedPath(relative(root, f).split(sep).join('/'), skipped));
     } catch (err) {
       console.error(`✖ cannot read docs dir "${root}": ${err.message}`);
       process.exit(2);
