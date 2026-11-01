@@ -124,3 +124,20 @@ test('a RED verdict names the offending lane', () => {
     `expected an a11y reason, got: ${reasons.join('; ')}`,
   );
 });
+
+// ---- pr:pause-ci (ADR-0072) -------------------------------------------------
+// A paused PR skips every lane, so it would otherwise read as an all-skip GREEN.
+// The pause must turn ci-ok RED, never green, so a paused PR cannot merge.
+test('paused → RED even when every lane skipped, and the reason names the label', () => {
+  const allSkipped = { detect_changes: 'success', code_quality: 'skipped', doc_sanity: 'skipped', build_example: 'skipped', a11y: 'skipped' };
+  const { ok, reasons } = evaluateCiOk({ ...allSkipped, paused: 'true' });
+  assert.equal(ok, false);
+  assert.match(reasons.join('\n'), /pr:pause-ci/);
+});
+
+test('not paused ("false" or absent) → the usual decision', () => {
+  const allSkipped = { detect_changes: 'success', code_quality: 'skipped', doc_sanity: 'skipped', build_example: 'skipped', a11y: 'skipped' };
+  assert.equal(evaluateCiOk({ ...allSkipped, paused: 'false' }).ok, true);
+  assert.equal(evaluateCiOk(allSkipped).ok, true);
+});
+

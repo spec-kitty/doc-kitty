@@ -4,7 +4,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyPath, deriveChangeGroups } from './derive-change-groups.mjs';
+import { classifyPath, deriveChangeGroups, formatOutputs } from './derive-change-groups.mjs';
 
 // ---- Per-file first-match precedence (overlap cases are the point) ----------
 const CLASSIFY_CASES = [
@@ -42,6 +42,11 @@ const CLASSIFY_CASES = [
   ['notes/diagram.excalidraw', 'ignored'],
   ['sketch.excalidraw', 'ignored'],
   ['whatever/nested/sketch.excalidraw', 'ignored'],
+  // CI logic outside workflows/ (ADR-0072): the helpers, the filter file and the
+  // composite actions change what CI does, so they run every lane.
+  ['.github/scripts/ci-ok-decision.mjs', 'workflows'],
+  ['.github/filters.yml', 'workflows'],
+  ['.github/actions/build-example/action.yml', 'workflows'],
   // unmatched → null (contributes to no lane; mirrors paths-filter).
   ['LICENSE', null],
 ];
@@ -170,3 +175,23 @@ test('workflows overlap: a .md workflow file forces all lanes, not doc-sanity-on
   assert.equal(r.run_code_quality, true);
   assert.equal(r.run_build_example, true);
 });
+
+// ---- pr:pause-ci (ADR-0072) -------------------------------------------------
+test('paused: every run_* is false and paused=true, whatever changed', () => {
+  const r = deriveChangeGroups(['src/scripts/check-links.mjs', '.github/workflows/ci.yml'], { paused: true });
+  assert.equal(r.paused, true);
+  assert.equal(r.run_code_quality, false);
+  assert.equal(r.run_doc_sanity, false);
+  assert.equal(r.run_build_example, false);
+});
+
+test('not paused: paused=false and the lanes run as usual', () => {
+  const r = deriveChangeGroups(['src/scripts/check-links.mjs']);
+  assert.equal(r.paused, false);
+  assert.equal(r.run_code_quality, true);
+});
+
+test('formatOutputs carries paused', () => {
+  assert.match(formatOutputs(deriveChangeGroups(['README.md'], { paused: true })), /^paused=true$/m);
+});
+

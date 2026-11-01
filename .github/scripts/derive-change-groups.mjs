@@ -23,7 +23,7 @@ export const GROUP_ORDER = ['workflows', 'code', 'example_content', 'repo_docs',
 // live paths-filter run; this table drives the offline path-mode classifier and
 // its tests. Keep the two in lockstep.
 export const GROUP_GLOBS = {
-  workflows: ['.github/workflows/**'],
+  workflows: ['.github/workflows/**', '.github/scripts/**', '.github/actions/**', '.github/filters.yml'],
   code: [
     'src/**',
     'example/src/**',
@@ -117,7 +117,10 @@ function isTrue(v) {
 
 // Core pure function. Returns the group booleans, the derived run_* signals, and
 // the single first-match `primary` group (or null when nothing CI-relevant changed).
-export function deriveChangeGroups(input) {
+//
+// `paused` (the PR carries the pr:pause-ci label, ADR-0072) turns every run_*
+// off; ci-ok then fails on `paused`, so a paused PR never reads as green.
+export function deriveChangeGroups(input, { paused = false } = {}) {
   const present = presentGroupsFromInput(input);
 
   const workflows = present.has('workflows');
@@ -126,9 +129,9 @@ export function deriveChangeGroups(input) {
   const repo_docs = present.has('repo_docs');
   const ignored = present.has('ignored');
 
-  const run_code_quality = code || workflows;
-  const run_doc_sanity = code || example_content || repo_docs || workflows;
-  const run_build_example = code || example_content || workflows;
+  const run_code_quality = !paused && (code || workflows);
+  const run_doc_sanity = !paused && (code || example_content || repo_docs || workflows);
+  const run_build_example = !paused && (code || example_content || workflows);
 
   const primary = GROUP_ORDER.find((g) => present.has(g)) ?? null;
 
@@ -141,6 +144,7 @@ export function deriveChangeGroups(input) {
     run_code_quality,
     run_doc_sanity,
     run_build_example,
+    paused: Boolean(paused),
     primary,
   };
 }
@@ -156,6 +160,7 @@ export function formatOutputs(result) {
     'run_code_quality',
     'run_doc_sanity',
     'run_build_example',
+    'paused',
   ];
   return keys.map((k) => `${k}=${result[k] === true ? 'true' : 'false'}`).join('\n');
 }
@@ -179,7 +184,7 @@ if (isMain()) {
     repo_docs: process.env.FILTER_REPO_DOCS,
     ignored: process.env.FILTER_IGNORED,
   };
-  const result = deriveChangeGroups(input);
+  const result = deriveChangeGroups(input, { paused: isTrue(process.env.CI_PAUSED) });
   const lines = formatOutputs(result);
   process.stdout.write(lines + '\n');
   if (process.env.GITHUB_OUTPUT) {
