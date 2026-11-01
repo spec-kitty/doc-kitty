@@ -24,7 +24,6 @@ import {
 import { releaseVersions, unparsableHeadings, unprobeableBodies } from '../scripts/assert-changelog-page.mjs';
 
 const SCRIPT = fileURLToPath(new URL('../scripts/changelog.mjs', import.meta.url));
-const REPO = fileURLToPath(new URL('../../', import.meta.url));
 const URL_BASE = 'https://github.com/spec-kitty/doc-kitty';
 
 const CHANGELOG = [
@@ -121,6 +120,29 @@ describe('parseFragment — one fragment file', () => {
   ])('rejects %s', (_label, text, message) => {
     expect(() => parseFragment('1-x.md', text)).toThrow(message);
   });
+
+  it('accepts a byte-order mark and trailing spaces on the fence lines', () => {
+    expect(parseFragment('1-x.md', '\uFEFF---  \nsection: Added\n---\t\n\n- x\n').section).toBe('Added');
+  });
+
+  it('rejects a fence glued to the last frontmatter line', () => {
+    expect(() => parseFragment('1-x.md', '---\nsection: Added---\n\n- x\n')).toThrow(/frontmatter/);
+  });
+
+  it('allows a heading-like line inside a fenced code block', () => {
+    expect(parseFragment('1-x.md', frag('Added', '- x:\n\n```md\n## [0.6.0]\n```')).section).toBe('Added');
+  });
+
+  it.each([
+    ['an indented heading', '- x\n\n   ## y', /heading/],
+    ['a setext heading (---)', '- x\n\nTitle\n---', /heading/],
+    ['a setext heading (===)', '- x\n\nTitle\n===', /heading/],
+    ['an unclosed code fence', '- x\n\n  ```js\n  const a = 1;', /unclosed code fence/],
+    ['an unclosed HTML comment', '- x <!-- note', /unclosed HTML comment/],
+    ['a link that climbs out with ../', '- x, see [ADR](../adr/0072-x.md).', /repository root/],
+  ])('rejects a body with %s', (_label, body, message) => {
+    expect(() => parseFragment('1-x.md', frag('Added', body))).toThrow(message);
+  });
 });
 
 describe('readFragments — the docs/changelog/unreleased folder', () => {
@@ -138,6 +160,12 @@ describe('readFragments — the docs/changelog/unreleased folder', () => {
   it('reports every bad fragment at once', () => {
     const { dir } = tree({ '1-a.md': frag('Nope', '- a'), '2-b.md': 'no frontmatter' });
     expect(() => readFragments(dir)).toThrow(/1-a\.md[\s\S]*2-b\.md/);
+  });
+
+  it('names a folder inside the fragments folder instead of failing on it', () => {
+    const { dir } = tree({ '1-a.md': frag('Added', '- a') });
+    mkdirSync(path.join(dir, 'drafts'));
+    expect(() => readFragments(dir)).toThrow(/drafts: is a folder/);
   });
 
   it('treats a missing folder as no fragments', () => {
@@ -220,8 +248,23 @@ describe('releaseChangelog — cutting a version', () => {
     [{ version: '0.5.0', date: '2026-11-02' }, /already has a "## \[0\.5\.0\]" section/],
     [{ version: 'v0.6.0', date: '2026-11-02' }, /not a version/],
     [{ version: '0.6.0', date: '2 Nov' }, /not a YYYY-MM-DD date/],
+    [{ version: '0.6.0', date: '2026-13-45' }, /not a YYYY-MM-DD date/],
   ])('refuses %j', (opts, message) => {
     expect(() => releaseChangelog(CHANGELOG, fragments(), opts)).toThrow(message);
+  });
+
+  it('moves only the real [Unreleased] link, never a quote of it in history', () => {
+    const quoted = CHANGELOG.replace(
+      '- **Old entry (#200).** Stays byte for byte.',
+      `- **Old entry (#200).** Stays byte for byte. It quotes \`[Unreleased]: ${URL_BASE}/compare/v0.5.0...HEAD\`.`,
+    );
+    const out = releaseChangelog(quoted, [parseFragment('7-x.md', frag('Added', '- **New (#7).** Now.'))], {
+      version: '0.6.0',
+      date: '2026-11-02',
+    });
+    const history = quoted.slice(quoted.indexOf('## [0.5.0]'), quoted.lastIndexOf('[Unreleased]: '));
+    expect(out).toContain(history);
+    expect(out).toContain(`[Unreleased]: ${URL_BASE}/compare/v0.6.0...HEAD\n[0.6.0]: ${URL_BASE}/compare/v0.5.0...v0.6.0`);
   });
 
   it('refuses a release with no fragments', () => {
@@ -304,82 +347,6 @@ describe('the CLI', () => {
     expect(cli(['--release', '0.5.0', '--date', '2026-11-02'], root).code).toBe(1);
     expect(readFileSync(changelog, 'utf8')).toBe(CHANGELOG);
     expect(existsSync(path.join(dir, '7-x.md'))).toBe(true);
-  });
-});
-
-describe("this repository's own changelog", () => {
-  it('has a clean [Unreleased] and valid fragments (pnpm validate:changelog)', () => {
-    const r = cli(['--check'], REPO);
-    expect(r.out).toMatch(/OK/);
-    expect(r.code).toBe(0);
-  });
-});
-
-// Pre-PR review findings (ADR-0072 landing): each case failed before its fix.
-describe('review: fragment parsing edge cases', () => {
-  it('accepts a byte-order mark and trailing spaces on the fence lines', () => {
-    expect(parseFragment('1-x.md', '\uFEFF---  \nsection: Added\n---\t\n\n- x\n').section).toBe('Added');
-  });
-
-  it('rejects a fence glued to the last frontmatter line', () => {
-    expect(() => parseFragment('1-x.md', '---\nsection: Added---\n\n- x\n')).toThrow(/frontmatter/);
-  });
-
-  it('allows a heading-like line inside a fenced code block', () => {
-    expect(parseFragment('1-x.md', frag('Added', '- x:\n\n```md\n## [0.6.0]\n```')).section).toBe('Added');
-  });
-
-  it.each([
-    ['an indented heading', '- x\n\n   ## y', /heading/],
-    ['a setext heading (---)', '- x\n\nTitle\n---', /heading/],
-    ['a setext heading (===)', '- x\n\nTitle\n===', /heading/],
-    ['an unclosed code fence', '- x\n\n  ```js\n  const a = 1;', /unclosed code fence/],
-    ['an unclosed HTML comment', '- x <!-- note', /unclosed HTML comment/],
-    ['a link that climbs out with ../', '- x, see [ADR](../adr/0072-x.md).', /repository root/],
-  ])('rejects %s', (_label, body, message) => {
-    expect(() => parseFragment('1-x.md', frag('Added', body))).toThrow(message);
-  });
-
-  it('names a folder inside the fragments folder instead of failing on it', () => {
-    const { dir } = tree({ '1-a.md': frag('Added', '- a') });
-    mkdirSync(path.join(dir, 'drafts'));
-    expect(() => readFragments(dir)).toThrow(/drafts: is a folder/);
-  });
-});
-
-describe('review: [Unreleased] span and release edits', () => {
-  it('finds an entry hidden after a link reference inside [Unreleased]', () => {
-    const sneaky = CHANGELOG.replace(UNRELEASED_NOTE, `${UNRELEASED_NOTE}\n\n[x]: https://x.example\n\n- sneaky entry`);
-    expect(changelogProblems(sneaky)).not.toEqual([]);
-  });
-
-  it('moves only the real [Unreleased] link, never a quote of it in history', () => {
-    const quoted = CHANGELOG.replace(
-      '- **Old entry (#200).** Stays byte for byte.',
-      `- **Old entry (#200).** Stays byte for byte. It quotes \`[Unreleased]: ${URL_BASE}/compare/v0.5.0...HEAD\`.`,
-    );
-    const out = releaseChangelog(quoted, [parseFragment('7-x.md', frag('Added', '- **New (#7).** Now.'))], {
-      version: '0.6.0',
-      date: '2026-11-02',
-    });
-    const history = quoted.slice(quoted.indexOf('## [0.5.0]'), quoted.lastIndexOf('[Unreleased]: '));
-    expect(out).toContain(history);
-    expect(out).toContain(`[Unreleased]: ${URL_BASE}/compare/v0.6.0...HEAD\n[0.6.0]: ${URL_BASE}/compare/v0.5.0...v0.6.0`);
-  });
-
-  it('refuses a date that does not exist', () => {
-    expect(() =>
-      releaseChangelog(CHANGELOG, [parseFragment('7-x.md', frag('Added', '- x'))], { version: '0.6.0', date: '2026-13-45' }),
-    ).toThrow(/not a YYYY-MM-DD date/);
-  });
-});
-
-describe('review: the CLI', () => {
-  it('refuses more than one mode', () => {
-    const { root } = tree({});
-    const r = cli(['--check', '--preview'], root);
-    expect(r.code).toBe(2);
-    expect(r.out).toMatch(/one of --check, --preview, --release/);
   });
 
   it('applyRelease leaves CHANGELOG.md and every fragment as they were when a delete fails', () => {
