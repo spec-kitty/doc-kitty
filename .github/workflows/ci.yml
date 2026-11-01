@@ -11,9 +11,19 @@
 name: CI
 
 on:
+  # labeled/unlabeled re-run CI when pr:pause-ci is added or removed. Any other
+  # label re-runs it too, on purpose: a job-level `if` on the label name would
+  # leave ci-ok skipped, and a skipped required check counts as passing, which
+  # could hide a red, paused ci-ok on the same commit.
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
+  # The merge queue (ADR-0072) waits for ci-ok on its gh-readonly-queue/main/…
+  # branch. paths-filter diffs merge_group.base_sha..head_sha there, so the
+  # lanes are scoped to everything the queued group changes.
+  merge_group:
+    types: [checks_requested]
   # The ADR index bot (adr-index.yml) dispatches CI on ci/adr-index: a branch
   # or PR it makes with GITHUB_TOKEN starts no workflow, but a dispatch does,
   # and its ci-ok lands on the commit the bot PR shows (ADR-0072). On dispatch,
@@ -43,6 +53,7 @@ jobs:
       run_code_quality: ${{ steps.derive.outputs.run_code_quality }}
       run_doc_sanity: ${{ steps.derive.outputs.run_doc_sanity }}
       run_build_example: ${{ steps.derive.outputs.run_build_example }}
+      paused: ${{ steps.derive.outputs.paused }}
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -64,6 +75,10 @@ jobs:
           FILTER_EXAMPLE_CONTENT: ${{ steps.filter.outputs.example_content }}
           FILTER_REPO_DOCS: ${{ steps.filter.outputs.repo_docs }}
           FILTER_IGNORED: ${{ steps.filter.outputs.ignored }}
+          # pr:pause-ci (ADR-0072): a session iterating on a PR can pause its
+          # lanes to free runners. Read on pull_request only: a merge_group or
+          # push payload has no labels, so the queue and main are never paused.
+          CI_PAUSED: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'pr:pause-ci') }}
         run: node .github/scripts/derive-change-groups.mjs
 
   # --- Lane: code-quality (code || workflows). --------------------------------
@@ -89,6 +104,9 @@ jobs:
         run: pnpm lint
       - name: Unit tests
         run: pnpm test
+      # The CI helpers (change classifier, ci-ok decision) carry node:test suites.
+      - name: CI helper tests
+        run: node --test .github/scripts/*.test.mjs
 
   # --- Lane: doc-sanity (code || example_content || repo_docs || workflows). ---
   # BUILD-FREE: static validators only, no `astro build` (NFR-002).
@@ -407,4 +425,5 @@ jobs:
           DOC_SANITY_RESULT: ${{ needs.doc-sanity.result }}
           BUILD_EXAMPLE_RESULT: ${{ needs.build-example.result }}
           A11Y_RESULT: ${{ needs.a11y.result }}
+          PAUSED: ${{ needs.detect-changes.outputs.paused }}
         run: node .github/scripts/ci-ok-decision.mjs
