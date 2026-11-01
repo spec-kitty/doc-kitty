@@ -5,6 +5,7 @@
  *
  * Usage:
  *   node src/scripts/validate-frontmatter.mjs [<root> ...] [--index-basename <a,b>] [--astro-config <path>]
+ *                                             [--exclude <folder> ...]
  *   # default root: docs
  *
  * The index names are read from the site's `astro.config.*` next to each root; with
@@ -40,11 +41,11 @@
  * CLI runner only executes when the file is invoked directly.
  */
 import { readdirSync, statSync, readFileSync, realpathSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
-import { isExcludedPath, walkMarkdownPaths } from '../lib/docs-walk.mjs';
+import { isExcludedPath, resolveCliExcludes, walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { z } from 'astro/zod';
 // Generator stamps (#177): prefix-based detection, with the legacy unversioned
 // Gherkin stamp (single-sourced from its pure core) still recognised.
@@ -653,13 +654,32 @@ function parseCliArgs(argv) {
     astroConfig = roots[configIdx + 1];
     roots = [...roots.slice(0, configIdx), ...roots.slice(configIdx + 2)];
   }
-  return { roots, indexBasename, astroConfig };
+  // `--exclude <folder>` (repeatable): a folder of non-page files under a root,
+  // such as the changelog fragments (ADR-0072), that is not validated.
+  const exclude = [];
+  for (let i = roots.indexOf('--exclude'); i !== -1; i = roots.indexOf('--exclude')) {
+    const value = roots[i + 1];
+    if (value === undefined || value.startsWith('--')) {
+      console.error('✖ --exclude needs a value: --exclude <folder>');
+      process.exit(2);
+    }
+    exclude.push(value);
+    roots = [...roots.slice(0, i), ...roots.slice(i + 2)];
+  }
+  return { roots, indexBasename, astroConfig, exclude };
 }
 
 /** CLI entry point: validate every `.md`/`.mdx` under each given root. */
 export function run(argv) {
-  const { roots: parsedRoots, indexBasename: flagIndexBasename, astroConfig } = parseCliArgs(argv);
+  const { roots: parsedRoots, indexBasename: flagIndexBasename, astroConfig, exclude } = parseCliArgs(argv);
   const roots = parsedRoots.length === 0 ? ['docs'] : parsedRoots;
+  let cliExcludes;
+  try {
+    cliExcludes = resolveCliExcludes(roots, exclude);
+  } catch (err) {
+    console.error(`✖ ${err.message}`);
+    process.exit(2);
+  }
 
   let failures = 0;
   let warned = 0;
@@ -695,6 +715,11 @@ export function run(argv) {
     // they are not validated either.
     if (excluded.length) {
       files = files.filter((f) => !isExcludedPath(relative(root, f).split('\\').join('/'), excluded));
+    }
+    // Folders named with --exclude hold files that are not pages.
+    const skipped = cliExcludes.get(root) ?? [];
+    if (skipped.length) {
+      files = files.filter((f) => !isExcludedPath(relative(root, f).split(sep).join('/'), skipped));
     }
     total += files.length;
 

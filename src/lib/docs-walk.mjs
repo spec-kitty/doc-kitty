@@ -22,7 +22,7 @@
  * Plain ESM with JSDoc types, like `vocabulary-core.mjs`; kept apart from it
  * because it reads the file system and the core must stay fs-free.
  */
-import { readdirSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { DK_DOCS_ROOT_ENV, DK_EXCLUDE_ENV } from './internal-env.mjs';
 
@@ -302,4 +302,39 @@ export function walkMarkdownPaths(absBase, options = {}) {
 export function excludedMarkdownPaths(absBase, exclude = excludedFoldersFor(absBase)) {
   if (exclude.length === 0) return [];
   return walkMarkdownPaths(absBase, { exclude: [] }).filter((rel) => isExcludedPath(rel, exclude));
+}
+
+/**
+ * Resolve a CLI's `--exclude <path>` values (validate-frontmatter, check-links)
+ * to excluded folders per root, relative to that root. For a docs tree with no
+ * site config, such as a repository's own `docs/`, this is how a folder of
+ * non-page files (the changelog fragments of ADR-0072) is left out of a gate.
+ * Each path is relative to `cwd`, must be an existing folder, and must be
+ * strictly inside one of `roots`; otherwise this throws, so a typo fails closed.
+ *
+ * @param {readonly string[]} roots the roots as passed on argv
+ * @param {readonly string[]} paths the `--exclude` values
+ * @param {string} [cwd]
+ * @returns {Map<string, string[]>} root (as passed) -> folders relative to it
+ */
+export function resolveCliExcludes(roots, paths, cwd = process.cwd()) {
+  const out = new Map(roots.map((r) => [r, /** @type {string[]} */ ([])]));
+  for (const p of paths) {
+    const abs = path.resolve(cwd, p);
+    if (!existsSync(abs)) throw new Error(`--exclude ${p}: the folder does not exist`);
+    if (!statSync(abs).isDirectory()) throw new Error(`--exclude ${p}: not a folder`);
+    let owner = null;
+    let rel = '';
+    for (const root of roots) {
+      const r = path.relative(path.resolve(cwd, root), abs);
+      if (r !== '' && !r.startsWith('..') && !path.isAbsolute(r)) {
+        owner = root;
+        rel = r.split(path.sep).join('/');
+        break;
+      }
+    }
+    if (owner === null) throw new Error(`--exclude ${p}: not inside any of the roots (${roots.join(', ')})`);
+    /** @type {string[]} */ (out.get(owner)).push(rel);
+  }
+  return out;
 }

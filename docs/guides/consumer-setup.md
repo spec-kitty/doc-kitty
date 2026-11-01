@@ -655,6 +655,13 @@ config takes about one second per run. The same holds for
 `dockitty-generate-feature-pages`, `dockitty-new-doc` and `dockitty-scaffold`, which
 all print the same `index names:` line and accept `--astro-config`.
 
+To leave a folder of files that are not pages out of `dockitty-check-links` and
+`dockitty-validate-frontmatter`, pass `--exclude <folder>`, once per folder. Use
+it for a tree with no site config, such as changelog fragments under your own
+`docs/`; a built site leaves folders out with its `exclude` option instead. The
+path is relative to the working directory and must be an existing folder inside
+one of the roots, or the command exits with status 2.
+
 `DK_INDEX_BASENAME` is internal: `defineDocKittyIntegrations` sets it, and you must
 not set it by hand. See [Internal environment names](#internal-environment-names).
 
