@@ -45,7 +45,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and the hub's ADR cards still share one extractor. Without the axis nothing
   changes. `generate-adr-index.mjs` reads the charter next to `--dir`, or the
   one under the new `--docs-root`. See
-  [ADR-0068](docs/adr/0068-configurable-adr-id-and-frontmatter-status.md).
+  [ADR-0069](docs/adr/0069-configurable-adr-id-and-frontmatter-status.md).
 
 ### Changed
 

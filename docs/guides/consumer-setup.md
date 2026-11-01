@@ -779,7 +779,7 @@ The governable dimensions:
   and when it has no `updated`, its frontmatter `date`. The generator reads the
   charter next to its `--dir` (`docs/adr` → `docs/_meta/charter.yaml`); pass
   `--docs-root` when it lives elsewhere. See
-  [ADR-0068](/adr/0068-configurable-adr-id-and-frontmatter-status/).
+  [ADR-0069](/adr/0069-configurable-adr-id-and-frontmatter-status/).
 
 A malformed charter fails the build naming the file and offending key; an unknown
 *top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`

@@ -21,7 +21,7 @@
  *               rule (recursive; era subfolders included) — the SOLE number
  *               source for BOTH this generator AND `Hub.astro` (squad F6: no
  *               second number parse). The rule is the charter's `adr.id` axis
- *               (#248, ADR-0068); without it, the `NNNN-` prefix as always.
+ *               (#248, ADR-0069); without it, the `NNNN-` prefix as always.
  *   - title   ← frontmatter `title` (generator-only; not part of the meta triple)
  *   - status  ← body `## Status` (first token, `**`-stripped); when the body has
  *               no `## Status` section, frontmatter `status` (same token rule)
@@ -121,7 +121,7 @@ export function formatUpdated(updated) {
  *
  * - `number` is the id the `idRule` reads from the leaf of `slug` (a filename on
  *   the generator side, a route slug on the Hub side — both carry the id). The
- *   default rule is the `NNNN-` prefix (#248, ADR-0068).
+ *   default rule is the `NNNN-` prefix (#248, ADR-0069).
  * - `status` is the first token of the body `## Status` section; when the body
  *   has no such section, the frontmatter `status` (#248).
  * - `date` is the frontmatter `updated`, else `date`, UTC-sliced to `YYYY-MM-DD`.

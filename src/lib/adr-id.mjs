@@ -1,6 +1,6 @@
 /**
  * The ADR id rule: how an ADR's id is read from its file name, and how ids are
- * ordered (#248, ADR-0068).
+ * ordered (#248, ADR-0069).
  *
  * A docs tree picks the rule in `_meta/charter.yaml`:
  *
