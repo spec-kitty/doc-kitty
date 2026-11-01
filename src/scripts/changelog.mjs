@@ -74,6 +74,7 @@ export function parseFragment(name, text) {
     if (line.trim() === '' || line.trimStart().startsWith('#')) continue;
     const kv = /^([A-Za-z_]+):\s*(.*?)\s*$/.exec(line);
     if (!kv) throw new Error(`${name}: frontmatter line ${JSON.stringify(line)} is not "key: value"`);
+    if (Object.hasOwn(fields, kv[1])) throw new Error(`${name}: frontmatter key "${kv[1]}" is given twice`);
     fields[kv[1]] = kv[2].replace(/^(['"])(.*)\1$/, '$2');
   }
   for (const key of Object.keys(fields)) {
