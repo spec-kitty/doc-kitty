@@ -2,7 +2,7 @@
 title: Activating and operating CI/CD
 description: How a repository admin turns the CI/CD pipeline into a required merge gate and operates its path-scoped lanes.
 doc_status: active
-updated: 2026-08-22T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: Operations
 kind: How-To
 authors:
@@ -75,6 +75,31 @@ skips.
 
 The [lane matrix](../architecture/ci-cd-pipeline.md#lane-matrix) in the design
 doc is authoritative, including the reasons each lane runs where it does.
+
+### The ADR index bot
+
+PRs do not edit the ADR table in `docs/adr/README.md`
+([ADR-0072](../adr/0072-parallel-landing-without-shared-files.md)). After a
+merge that touches `docs/adr/`, the **ADR index** workflow
+(`.github/workflows/adr-index.yml`) regenerates the table. When it changed, the
+workflow force-pushes it to the `ci/adr-index` branch, dispatches CI there so
+`ci-ok` shows on the branch head, and opens one PR. Later runs update the same
+branch and PR. When the table on `main` is current again, the workflow deletes
+the branch, which closes a leftover PR. It never pushes to `main`.
+
+Opening the PR needs **Settings → Actions → General → Workflow permissions →
+Allow GitHub Actions to create and approve pull requests**. Without it the
+workflow warns and links the compare page in its run summary; open the PR from
+there. Whoever opens it is its author and cannot approve it, so a second person
+reviews it. Review and merge the bot PR like any other. `ci/adr-index` is the
+bot's branch: each run rebuilds it from `main` and force-pushes it, so do not
+commit to it by hand.
+
+Until the bot PR merges, the table on `main` can lag a merged ADR. The ADR
+files are the source of truth, and this tree is not rendered, so the lag is
+harmless. Per PR, CI fails two ADRs that share a number
+(`pnpm validate:adr-ids`); with the merge queue it checks the queued PRs
+together as well.
 
 ### Nightly smoke and the deployed-since marker
 

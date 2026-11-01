@@ -2,7 +2,7 @@
 title: "ADR-0032: Generate the ADR index; two-tree mechanism with a lockfile sync-check"
 description: The own-tree ADR index becomes a generated artifact kept honest by a regeneration-clean CI check; the example tree drops its table and lets the Hub layout auto-list.
 doc_status: active
-updated: 2026-08-31T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -19,6 +19,13 @@ related:
 
 **Accepted** — 2026-08-31. Introduced by the QOL adoption-enabler mission
 (issue #44); resolves the ADR-index drift that ADR-0030 exposed.
+
+**Amended 2026-11-01 by
+[ADR-0072](./0072-parallel-landing-without-shared-files.md):** in this
+repository the `--check` sync-check no longer runs per PR. The table is
+regenerated after merge by a bot PR, and CI checks per PR only that no two ADRs
+share a number (`--check-ids`). The generator and the two-tree mechanism are
+unchanged.
 
 ## Context
 
