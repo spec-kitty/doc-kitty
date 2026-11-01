@@ -127,7 +127,7 @@ const upperOrNull = (ch) => (ch !== ch.toLowerCase() ? ch : null);
  * The rule is matched against the lowercased leaf, so an upper-case literal can
  * never match and the pattern would silently find no ADRs. Not literals, and so
  * skipped: the escapes `\D`, `\W`, `\S`, `\B` and `\cJ`, group names
- * (`(?<Name>`) and back-references (`\k<Name>`). A hex escape (`\x41`, `É`)
+ * (`(?<Name>`) and back-references (`\k<Name>`). A hex escape (`\x41`, `\u00C9`)
  * is a literal and is checked by the character it stands for, and so is an
  * identity escape such as `\A`.
  *
