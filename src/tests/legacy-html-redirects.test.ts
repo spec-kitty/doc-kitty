@@ -139,6 +139,9 @@ describe('normalizeLegacyHtmlRedirects', () => {
     expect(() => normalizeLegacyHtmlRedirects({ '/a/b/': '/a/' })).toThrow(/must end in \.html/);
     expect(() => normalizeLegacyHtmlRedirects({ 'a/b.html': '/a/' })).toThrow(/must start with \//);
     expect(() => normalizeLegacyHtmlRedirects({ '/a.html?x=1': '/a/' })).toThrow(/query or fragment/);
+    for (const bad of ['/../escaped.html', '/a/../../b.html', '/a/./b.html', '//b.html', '/a//b.html', '/a\\..\\b.html']) {
+      expect(() => normalizeLegacyHtmlRedirects({ [bad]: '/a/' })).toThrow(/segment or a backslash/);
+    }
   });
 
   it('refuses an empty or non-string target', () => {
