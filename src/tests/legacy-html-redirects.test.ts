@@ -27,10 +27,12 @@ import {
   flattenLegacyChains,
   mechanicalHtmlMap,
   normalizeLegacyHtmlRedirects,
+  astroWritesRedirectFiles,
   refuseAstroHtmlRedirects,
   renderLegacyStub,
   writeLegacyHtmlStubs,
 } from '../lib/legacy-html-redirects.mjs';
+import { legacyHtmlRedirectsIntegration } from '../lib/integrations/legacy-html-redirects.ts';
 import {
   checkCoverage,
   inspectDistUrl,
@@ -267,6 +269,60 @@ describe('refuseAstroHtmlRedirects', () => {
   it('accepts directory-URL keys and no redirects at all', () => {
     expect(() => refuseAstroHtmlRedirects({ '/old/': '/new/' })).not.toThrow();
     expect(() => refuseAstroHtmlRedirects(undefined)).not.toThrow();
+  });
+
+  // #253 review: on a server-output (adapter) site Astro answers a redirect at
+  // request time and writes no folder, so an `.html` key there can be correct.
+  it('leaves .html keys to Astro when Astro writes no redirect files, and returns them', () => {
+    const redirects = { '/a/b.html': '/a/b/', '/x/index.html': '/x/', '/ok/': '/a/' };
+    expect(refuseAstroHtmlRedirects(redirects, { writesFiles: false })).toEqual(['/a/b.html', '/x/index.html']);
+  });
+  it('still throws when Astro writes no files but a key is also a legacyHtmlRedirects source', () => {
+    expect(() =>
+      refuseAstroHtmlRedirects({ '/a/b.html': '/a/b/' }, { writesFiles: false, legacySources: ['/a/b.html'] }),
+    ).toThrow(/in both Astro `redirects` and `legacyHtmlRedirects`: \/a\/b\.html\b/);
+  });
+});
+
+describe('astroWritesRedirectFiles', () => {
+  it.each([
+    [{}, true],
+    [{ output: 'static' }, true],
+    [{ output: 'static', build: { redirects: true } }, true],
+    [{ output: 'static', build: { redirects: false } }, false],
+    [{ output: 'server' }, false],
+    [{ output: 'server', build: { redirects: true } }, false],
+  ])('%j -> %s', (config, expected) => {
+    expect(astroWritesRedirectFiles(config)).toBe(expected);
+  });
+});
+
+describe('the integration refuses .html redirect keys only where Astro writes them as files', () => {
+  const logged: string[] = [];
+  const logger = { info: (m: string) => logged.push(m), warn: (m: string) => logged.push(m) };
+  const configDone = (config: Record<string, unknown>, map?: Record<string, string>) => {
+    const hook = legacyHtmlRedirectsIntegration(map, '/nonexistent-docs').hooks['astro:config:done'] as (
+      o: unknown,
+    ) => void;
+    return () => hook({ config: { base: '/', ...config }, logger });
+  };
+  const redirects = { '/old/page.html': '/new/' };
+
+  it('fails a static build (the default output) with an .html key', () => {
+    expect(configDone({ output: 'static', build: { redirects: true }, redirects })).toThrow(/\/old\/page\.html/);
+  });
+  it('passes a server-output (adapter) build with the same key and logs that Astro keeps it', () => {
+    logged.length = 0;
+    expect(configDone({ output: 'server', build: { redirects: true }, redirects })).not.toThrow();
+    expect(logged.join('\n')).toContain('/old/page.html');
+  });
+  it('passes a static build whose adapter turned off redirect files (build.redirects: false)', () => {
+    expect(configDone({ output: 'static', build: { redirects: false }, redirects })).not.toThrow();
+  });
+  it('fails a server-output build when the key is also a legacyHtmlRedirects source', () => {
+    expect(
+      configDone({ output: 'server', build: { redirects: true }, redirects }, { '/old/page.html': '/new/' }),
+    ).toThrow(/both/);
   });
 });
 

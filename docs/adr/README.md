@@ -82,6 +82,6 @@ kind: Hub
 | [0068](./0068-github-alerts-as-starlight-asides.md) | ADR-0068: Render GitHub alert blockquotes as Starlight asides | Proposed | 2026-10-31 |
 | [0069](./0069-configurable-adr-id-and-frontmatter-status.md) | ADR-0069: A configurable ADR id, and a frontmatter status fallback | Accepted | 2026-10-31 |
 | [0070](./0070-excluded-folders.md) | ADR-0070: A site can leave whole docs folders out of the build | Accepted | 2026-10-31 |
-| [0071](./0071-legacy-html-redirects-as-flat-stubs.md) | ADR-0071: Legacy .html URLs redirect through flat stub files | Accepted | 2026-10-31 |
+| [0071](./0071-legacy-html-redirects-as-flat-stubs.md) | ADR-0071: Legacy .html URLs redirect through flat stub files | Accepted | 2026-11-01 |
 
 New ADRs copy [`template.md`](./template.md).

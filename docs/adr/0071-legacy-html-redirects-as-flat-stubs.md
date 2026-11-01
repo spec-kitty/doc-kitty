@@ -2,7 +2,7 @@
 title: "ADR-0071: Legacy .html URLs redirect through flat stub files"
 description: Old .html URLs keep working through a flat meta-refresh file at each old path, written after the build and checked by the redirect-coverage gate.
 doc_status: active
-updated: 2026-10-31T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -76,8 +76,16 @@ supported either.
 5. **Nothing is overwritten.** If a file or folder already exists at a source
    path, the build fails and names it. Examples are a page, an asset from
    `public/`, or an Astro stub.
-6. **Astro `redirects` keys that end in `.html` fail the build.** The error
-   names the keys and this option. This is because of the page the spike lost.
+6. **Astro `redirects` keys that end in `.html` fail a static build.** The
+   error names the keys and this option. This is because of the page the spike
+   lost. It applies where Astro writes its redirects as files: `output:
+   'static'` (the default) with `build.redirects` on. On a server-output
+   (adapter) site Astro answers the redirect at request time, and an adapter
+   that writes its own redirect config turns `build.redirects` off; there the
+   key is left to Astro and the build log names it. A key that is also a
+   `legacyHtmlRedirects` source fails in every mode, because two maps would
+   claim one URL. The check runs at `astro:config:done`, after adapters have
+   changed the config.
 7. **Drafts.** With `DK_PUBLISH_DRAFTS` off, an entry whose target is a draft
    page is left out and named in the build log, as for a directory redirect.
    The old URL returns 404 until the target is published.
@@ -103,8 +111,9 @@ supported either.
 - A meta refresh is not an HTTP 301. Search engines treat a 0-second refresh
   with a canonical link as a permanent move, but more slowly. GitHub Pages
   cannot send a 301 for a path, so this is the best a Pages site can do.
-- A site that had Astro `redirects` keyed on `.html` now fails to build until
-  it moves those keys to `legacyHtmlRedirects`. Before this change, that output
+- A static site that had Astro `redirects` keyed on `.html` now fails to build
+  until it moves those keys to `legacyHtmlRedirects`. A server-output site, or
+  one whose adapter turned `build.redirects` off, keeps them. Before this change, that output
   was either unproven or broke the page.
 - The URL baseline of ADR-0034 can now hold `.html` URLs. A migrating site
   commits the old site's URL list as its baseline before the move.

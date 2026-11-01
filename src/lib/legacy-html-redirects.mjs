@@ -184,22 +184,60 @@ export function writeLegacyHtmlStubs(outDir, entries, { base = '/', site } = {})
 }
 
 /**
- * Refuse Astro `redirects` keys that end in `.html`: Astro writes them as a
- * folder (`<dist>/a/b.html/index.html`) and, for `/a/b/index.html`, in place of
- * the live page. The message names the toolkit option that replaces them.
+ * Whether Astro writes its `redirects` as HTML files in `dist/`: only for
+ * `output: 'static'` (the default) with `build.redirects` not turned off. With
+ * `output: 'server'` (an adapter site) a redirect is answered at request time,
+ * and an adapter that writes its own redirect config (`_redirects`,
+ * `vercel.json`) turns `build.redirects` off, so Astro writes no folder for it.
+ *
+ * @param {{ output?: string, build?: { redirects?: boolean } } | undefined} config
+ *   Astro's resolved config.
+ * @returns {boolean}
+ */
+export function astroWritesRedirectFiles(config) {
+  return (config?.output ?? 'static') === 'static' && config?.build?.redirects !== false;
+}
+
+/**
+ * Refuse Astro `redirects` keys that end in `.html` where they break the site.
+ *
+ * - When Astro writes redirects as files (`writesFiles`, see
+ *   {@link astroWritesRedirectFiles}), every such key is refused: Astro writes
+ *   it as a folder (`<dist>/a/b.html/index.html`) and, for `/a/b/index.html`, in
+ *   place of the live page.
+ * - Otherwise Astro's redirect may be correct and is left alone, unless the same
+ *   URL is also a `legacyHtmlRedirects` source, for which doc-kitty writes a
+ *   flat stub: two maps would claim one URL.
+ *
+ * The message names the toolkit option that replaces them.
  *
  * @param {Record<string, unknown> | undefined} redirects Astro's `redirects` config
+ * @param {{ writesFiles?: boolean, legacySources?: Iterable<string> }} [options]
+ *   `writesFiles` defaults to `true` (a static build).
+ * @returns {string[]} The `.html` keys left to Astro (sorted), when none is refused.
  */
-export function refuseAstroHtmlRedirects(redirects) {
+export function refuseAstroHtmlRedirects(redirects, { writesFiles = true, legacySources = [] } = {}) {
   const keys = Object.keys(redirects ?? {}).filter(isHtmlSource).sort();
-  if (keys.length === 0) return;
-  throw new Error(
-    `[dk-legacy-html] Astro \`redirects\` has ${keys.length} key(s) ending in .html: ${keys.join(', ')}. ` +
-      'Astro writes these as a folder (<dist>/a/b.html/index.html), which a static host does not serve at ' +
-      '/a/b.html, and a key /a/b/index.html replaces the live page /a/b/. Move them to the ' +
-      '`legacyHtmlRedirects` option of defineDocKittyIntegrations (targets without the base), which writes ' +
-      'a flat <dist>/a/b.html stub. See docs/migrations/legacy-html-urls.md.',
-  );
+  if (keys.length === 0) return [];
+  if (writesFiles) {
+    throw new Error(
+      `[dk-legacy-html] Astro \`redirects\` has ${keys.length} key(s) ending in .html: ${keys.join(', ')}. ` +
+        'Astro writes these as a folder (<dist>/a/b.html/index.html), which a static host does not serve at ' +
+        '/a/b.html, and a key /a/b/index.html replaces the live page /a/b/. Move them to the ' +
+        '`legacyHtmlRedirects` option of defineDocKittyIntegrations (targets without the base), which writes ' +
+        'a flat <dist>/a/b.html stub. See docs/migrations/legacy-html-urls.md.',
+    );
+  }
+  const legacy = new Set(legacySources);
+  const both = keys.filter((k) => legacy.has(k));
+  if (both.length > 0) {
+    throw new Error(
+      `[dk-legacy-html] ${both.length} URL(s) are in both Astro \`redirects\` and \`legacyHtmlRedirects\`: ` +
+        `${both.join(', ')}. Keep each URL in one map: \`legacyHtmlRedirects\` writes a flat stub file, ` +
+        "Astro's `redirects` answers it at request time.",
+    );
+  }
+  return keys;
 }
 
 /**
