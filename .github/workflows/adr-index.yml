@@ -103,10 +103,14 @@ jobs:
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
           if [ -n "$EXISTING" ]; then
             echo "Updated the open ADR index PR: $EXISTING" >> "$GITHUB_STEP_SUMMARY"
-          elif URL=$(gh pr create --base "${{ github.event.repository.default_branch }}" --head "$BRANCH" --title "$TITLE" --body "$BODY"); then
+          elif URL=$(gh pr create --base "${{ github.event.repository.default_branch }}" --head "$BRANCH" --title "$TITLE" --body "$BODY" 2> "$RUNNER_TEMP/pr-create.err"); then
             echo "Opened the ADR index PR: $URL" >> "$GITHUB_STEP_SUMMARY"
-          else
+          elif grep -qi "not permitted to create or approve pull requests" "$RUNNER_TEMP/pr-create.err"; then
             COMPARE="${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.repository.default_branch }}...$BRANCH?expand=1"
             echo "::warning::GitHub Actions may not open pull requests here. The table is on $BRANCH; open the PR from the run summary."
             echo "The regenerated table is on \`$BRANCH\`. [Open the pull request]($COMPARE)." >> "$GITHUB_STEP_SUMMARY"
+          else
+            # Any other failure (auth, network, a bad base) is a real error: do not hide it behind the compare link.
+            cat "$RUNNER_TEMP/pr-create.err" >&2
+            exit 1
           fi
