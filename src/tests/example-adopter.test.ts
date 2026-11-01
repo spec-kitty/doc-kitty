@@ -392,7 +392,9 @@ describe('WP04 worked example — real build (T019-T021, T023)', () => {
   });
 
   it('T020 (B1/FR-006/NFR-004): check-links.mjs finds ZERO dangling links after the rename', () => {
-    const res = spawnSync('node', [CHECK_LINKS_SCRIPT, 'docs', 'example/docs'], {
+    // As `pnpm validate:links` runs it: the changelog fragments are entries,
+    // not pages, and every docs gate leaves them out (ADR-0072).
+    const res = spawnSync('node', [CHECK_LINKS_SCRIPT, 'docs', 'example/docs', '--exclude', 'docs/changelog/unreleased'], {
       cwd: REPO_ROOT,
       encoding: 'utf8',
     });
