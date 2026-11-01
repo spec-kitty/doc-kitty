@@ -35,6 +35,8 @@ const CLASSIFY_CASES = [
   ['docs/architecture/ci-cd-pipeline.md', 'repo_docs'],
   ['README.md', 'repo_docs'],
   ['agents/persona.md', 'repo_docs'],
+  // changelog fragments (ADR-0072) are repo docs → doc-sanity runs `validate:changelog`.
+  ['docs/changelog/unreleased/250-github-alerts.md', 'repo_docs'],
   // ignored.
   ['research/spike.md', 'ignored'],
   ['notes/diagram.excalidraw', 'ignored'],

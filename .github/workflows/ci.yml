@@ -117,6 +117,10 @@ jobs:
         run: pnpm validate:links
       - name: Assert the ADR index is regeneration-clean (lockfile check)
         run: pnpm validate:adr-index
+      # Changelog fragments (ADR-0072): every docs/changelog/unreleased/ file parses, and no
+      # entry is written straight under CHANGELOG.md's [Unreleased].
+      - name: Validate changelog fragments
+        run: pnpm validate:changelog
       # Gherkin feature pages (ADR-0046) are generated INTO example/docs/behaviour
       # by the build; this bare-Node twin plans them from example/features and
       # fails on any added/changed/stale/authored path, so committed pages can't
@@ -125,8 +129,10 @@ jobs:
         run: pnpm validate:features
       - name: Resolve citation catalog (external references)
         run: pnpm validate:catalog
+      # docs/changelog/unreleased/ holds changelog fragments (ADR-0072): entries,
+      # not pages, so every docs gate leaves the folder out.
       - name: Markdownlint (docs + example/docs)
-        run: pnpm exec markdownlint-cli2 "docs/**/*.md" "example/docs/**/*.md"
+        run: pnpm exec markdownlint-cli2 "docs/**/*.md" "example/docs/**/*.md" "#docs/changelog/unreleased/**"
       # Vale prose stylecheck. Install the pinned binary and run it directly so the
       # gate checks ALL files at error severity (per .vale.ini) on both push and PR.
       # (The reviewdog-based vale-action uses filter_mode: added, which needs a PR
@@ -139,7 +145,10 @@ jobs:
           sudo tar -xzf /tmp/vale.tgz -C /usr/local/bin vale
           vale --version
       - name: Vale prose stylecheck
-        run: vale --minAlertLevel=error docs example/docs
+        run: |
+          find docs example/docs -type f \( -name '*.md' -o -name '*.mdx' \) \
+            -not -path 'docs/changelog/unreleased/*' -print0 \
+            | xargs -0 vale --minAlertLevel=error
 
   # --- Lane: build-example (code || example_content || workflows). -------------
   # Build-renders BOTH diagram engines (#13 WP03 / FR-009): Chromium (installed by
