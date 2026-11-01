@@ -29,7 +29,11 @@ section: Added
   bullet that opens with a bold lead naming what a reader sees and the issue
   number. Write "Before, … Now, …". Link files relative to the repository
   root (`docs/adr/…`), never with `../`: the entry is read from `CHANGELOG.md`.
-- No headings in the body. One fragment can hold more than one bullet.
+- No headings in the body, neither `#` ones nor underlined ones. One fragment
+  can hold more than one bullet.
+- Within each section the entries run by issue number, lowest first (two
+  fragments with one number by name). Fragments without a number follow, by
+  name. Merge order never matters.
 
 `pnpm validate:changelog` checks every fragment (CI runs it), and
 `pnpm changelog:preview` prints `CHANGELOG.md` with the fragments in place. The
