@@ -16,6 +16,7 @@ import {
   resolveAdrIdRule,
 } from '../scripts/generate-adr-index.mjs';
 import { selectAdrHubCards } from '../lib/hub-children.mjs';
+import { compareAdrIds, matchAdrId } from '../lib/adr-id.mjs';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { isPublished } from '../lib/metadata.js';
 import { docKittyFields } from '../lib/schema.ts';
@@ -290,5 +291,30 @@ describe('the build schema keeps the ADR fallback fields (#248)', () => {
   it('they stay lenient: any value builds, as it did when the keys were dropped', () => {
     const schema = z.object(docKittyFields);
     expect(schema.safeParse({ description: 'x', status: 3, date: 'sometime' }).success).toBe(true);
+  });
+});
+
+describe('ordering with an optional `seq` group stays consistent (#248)', () => {
+  const rule = resolveAdrIdRule({ id: { pattern: '^(?<id>[a-z](?<seq>\\d+)?)-' } }, 'charter.yaml');
+  const adr = (leaf: string) => {
+    const m = matchAdrId(leaf, rule);
+    if (!m) throw new Error(`no match: ${leaf}`);
+    return { number: m.id, sortKey: { date: m.date, seq: m.seq } };
+  };
+
+  it('puts an ADR with no sequence before one with a sequence, in every input order', () => {
+    const items = ['a10-x', 'b-x', 'c2-x'].map(adr);
+    const orders = [
+      [0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0],
+    ].map((ix) => ix.map((i) => items[i]).sort(compareAdrIds).map((a) => a.number));
+    for (const order of orders) expect(order).toEqual(['b', 'c2', 'a10']);
+  });
+
+  it('reads a non-numeric `seq` capture as no sequence, never NaN', () => {
+    const nonNumeric = resolveAdrIdRule({ id: { pattern: '^(?<id>(?<seq>[a-z]+))-' } }, 'charter.yaml');
+    expect(matchAdrId('abc-x', nonNumeric)?.seq).toBeNull();
+    const a = { number: 'abc', sortKey: { date: '', seq: null } };
+    const b = { number: 'abd', sortKey: { date: '', seq: null } };
+    expect(compareAdrIds(a, b)).toBeLessThan(0);
   });
 });

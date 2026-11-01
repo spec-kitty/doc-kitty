@@ -129,13 +129,14 @@ export function matchAdrId(leaf, rule) {
   if (!m) return null;
   const id = m.groups?.id ?? m[1];
   if (id === undefined || id === '') return null;
+  // Only a digit run is a sequence; anything else would compare as NaN.
   const seq = m.groups?.seq;
-  return { id, date: m.groups?.date ?? '', seq: seq === undefined ? null : Number(seq) };
+  return { id, date: m.groups?.date ?? '', seq: seq !== undefined && /^\d+$/.test(seq) ? Number(seq) : null };
 }
 
 /**
- * Order two ADRs by id: `date` group (code unit), then `seq` group (numeric),
- * then the id itself (code unit). A rule without `date`/`seq` groups, the
+ * Order two ADRs by id: `date` group (code unit), then `seq` group (numeric,
+ * no sequence first), then the id itself (code unit). A rule without `date`/`seq` groups, the
  * default included, therefore orders by the id alone, as the index always did.
  *
  * @param {{ number: string, sortKey: { date: string, seq: number | null } }} a
@@ -145,7 +146,11 @@ export function matchAdrId(leaf, rule) {
 export function compareAdrIds(a, b) {
   const byDate = compareCodeUnit(a.sortKey.date, b.sortKey.date);
   if (byDate !== 0) return byDate;
-  if (a.sortKey.seq !== null && b.sortKey.seq !== null && a.sortKey.seq !== b.sortKey.seq) {
+  // An ADR without a sequence sorts before one with a sequence, so a pattern
+  // with an optional `seq` group still gives one consistent order.
+  if (a.sortKey.seq !== b.sortKey.seq) {
+    if (a.sortKey.seq === null) return -1;
+    if (b.sortKey.seq === null) return 1;
     return a.sortKey.seq - b.sortKey.seq;
   }
   return compareCodeUnit(a.number, b.number);
