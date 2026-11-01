@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "mission_slug": "openapi-reference-pages-01M60GZ5",
+  "mission_id": "01M60GZ5XZPNW2AVCZ3Q2J4GWH",
+  "mission_branch": "kitty/mission-openapi-reference-pages-01M60GZ5",
+  "target_branch": "feat/openapi-reference-pages",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/adr/0049-openapi-reference-via-existing-integration.md",
+        "example/openapi/**",
+        "example/package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "src/package.json"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/openapi/options.mjs",
+        "src/lib/openapi/peers.mjs",
+        "src/tests/openapi-options.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "example/astro.config.mjs",
+        "src/components/OpenApiVersionNav.astro",
+        "src/lib/config.ts",
+        "src/lib/integrations/openapi.ts",
+        "src/lib/openapi/adapters.ts",
+        "src/lib/schema.ts",
+        "src/styles/dk-components.css",
+        "src/tests/openapi-integration.test.ts",
+        "tests/a11y/axe.spec.ts",
+        "tests/a11y/openapi.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "example/url-baseline.txt",
+        "src/lib/integrations/openapi-publish.ts",
+        "src/lib/routes/llms-txt.ts",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/tests/agent-links.test.ts",
+        "src/tests/docs-root-cross-surface.test.ts",
+        "src/tests/openapi-raw-document.test.ts",
+        "src/tests/route-table.test.ts",
+        "src/tests/sitemap-feeds.test.ts",
+        "src/tests/sitemap-order.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "tests/consumption/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "NOTICE",
+        "docs/guides/consumer-setup.md",
+        "docs/guides/openapi-reference.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 5
+    }
+  ],
+  "computed_at": "2026-10-29T07:30:28.678824+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "d21c6e62a14d4b29fe36f93de5eb5b0b1a489c44"
+}
