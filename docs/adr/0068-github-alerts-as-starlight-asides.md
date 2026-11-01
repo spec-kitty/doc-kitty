@@ -2,7 +2,7 @@
 title: "ADR-0068: Render GitHub alert blockquotes as Starlight asides"
 description: An opt-in remark pass turns a top-level > [!NOTE]-style blockquote into the directive Starlight renders as a native aside, so one file reads correctly on GitHub and on the site.
 doc_status: active
-updated: 2026-10-31T00:00:00Z
+updated: 2026-11-01T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -18,7 +18,7 @@ related:
 
 ## Status
 
-Proposed — 2026-10-31. Introduced for issue #250.
+Accepted (2026-11-01). Introduced for issue #250; accepted when #254 merged.
 
 ## Context
 

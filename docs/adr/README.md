@@ -79,7 +79,7 @@ kind: Hub
 | [0065](./0065-kind-required-again.md) | ADR-0065: `kind` is required on every page again | Accepted | 2026-10-25 |
 | [0066](./0066-sidebar-tint-bleeds-past-the-frame.md) | ADR-0066: The sidebar tint bleeds out to the viewport edge | Accepted | 2026-10-25 |
 | [0067](./0067-schematic-pages-reference-a-schema.md) | ADR-0067: Schematic pages reference a schema file | Accepted | 2026-10-30 |
-| [0068](./0068-github-alerts-as-starlight-asides.md) | ADR-0068: Render GitHub alert blockquotes as Starlight asides | Proposed | 2026-10-31 |
+| [0068](./0068-github-alerts-as-starlight-asides.md) | ADR-0068: Render GitHub alert blockquotes as Starlight asides | Accepted | 2026-11-01 |
 | [0069](./0069-configurable-adr-id-and-frontmatter-status.md) | ADR-0069: A configurable ADR id, and a frontmatter status fallback | Accepted | 2026-10-31 |
 | [0070](./0070-excluded-folders.md) | ADR-0070: A site can leave whole docs folders out of the build | Accepted | 2026-10-31 |
 | [0071](./0071-legacy-html-redirects-as-flat-stubs.md) | ADR-0071: Legacy .html URLs redirect through flat stub files | Accepted | 2026-11-01 |
