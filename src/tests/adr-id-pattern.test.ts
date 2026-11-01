@@ -367,9 +367,18 @@ describe('upper-case ADR id patterns are normalised — hub cards and index agre
       const dir = path.join(tmp, 'adr');
       execFileSync('node', [SCRIPT, '--dir', dir], { encoding: 'utf8' });
       const readme = readFileSync(path.join(dir, 'README.md'), 'utf8');
-      expect(readme).toContain('| [adr-2](./ADR-2-Body-Status-Wins.md) | Body status wins | Accepted | 2026-01-02 |');
-      expect(readme).toContain('| [adr-10](./ADR-10-Numeric-Order.md) | Numeric order | Proposed | 2026-01-10 |');
-      expect(readme.indexOf('[adr-2]')).toBeLessThan(readme.indexOf('[adr-10]'));
+      // The whole generated table, pinned: a change to the header, the divider,
+      // the column order or the row shape fails here.
+      expect(readme).toContain(
+        [
+          '| ID | Title | Status | Date |',
+          '|----|-------|--------|------|',
+          '| [adr-1](./ADR-1-Start-Here.md) | Start here | Accepted | 2026-01-01 |',
+          '| [adr-2](./ADR-2-Body-Status-Wins.md) | Body status wins | Accepted | 2026-01-02 |',
+          '| [adr-3](./adr-3-lower-case-name.md) | Lower-case name | Superseded | 2026-01-03 |',
+          '| [adr-10](./ADR-10-Numeric-Order.md) | Numeric order | Proposed | 2026-01-10 |',
+        ].join('\n') + '\n',
+      );
       expect(readme).not.toMatch(/NOTES/i);
       execFileSync('node', [SCRIPT, '--dir', dir, '--check'], { encoding: 'utf8' }); // exits 0
     } finally {
@@ -387,6 +396,7 @@ describe('the `NNNN-` default is unchanged (#248 pin)', () => {
     const readme = path.join(dir, 'README.md');
     const noRule = computeReadme(dir, readme).next;
     expect(noRule).toMatch(/\| \[0072\]\(\.\/0072-/);
+    expect(noRule).toContain('| ID | Title | Status | Date |\n|----|-------|--------|------|\n| [0001](./0001-');
     expect(computeReadme(dir, readme, { idRule: resolveAdrIdRule(undefined) }).next).toBe(noRule);
     expect(computeReadme(dir, readme, { idRule: loadAdrIdRule(OWN_DOCS) }).next).toBe(noRule);
   });
