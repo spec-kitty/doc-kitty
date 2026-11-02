@@ -157,7 +157,10 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
         ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
         // FR-009: the opt-in MCP wiring pointer. `usage` names the installed
         // tarball bin (the C-002 ruling on registry publishing is pending, so
-        // no `npx -y @spec-kitty/…` form is advertised yet).
+        // no `npx -y @spec-kitty/…` form is advertised yet). `href` is a
+        // RESERVED NAME, not an installable package: `@spec-kitty/doc-kitty-mcp`
+        // is `private: true` until publishing is decided, so `npm install` of it
+        // fails today. Consumers must follow `usage`, not `href`.
         ...(declared.mcp
           ? {
               mcp: {

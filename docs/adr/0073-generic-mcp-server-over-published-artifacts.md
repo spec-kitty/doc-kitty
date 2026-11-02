@@ -121,6 +121,12 @@ form.
    opt-in wiring pointer (`_links.mcp` in `/api/index.json` plus one line in
    `llms.txt`, `links: { mcp: true }`, default off) advertises the tarball
    launch form only; no `npx -y @spec-kitty/...` form is advertised anywhere.
+   The pointer's `href` (`npm:@spec-kitty/doc-kitty-mcp`) is a reserved
+   identifier, not an installable package: the package stays private until
+   publishing is decided, so consumers follow `usage`, not `href`. The flag is
+   set separately on the two routes, `links.mcp` on `agentIndexRoute` for
+   `_links.mcp` and `links.mcp` on `llmsTxtRoute` for the `llms.txt` line,
+   because a route cannot see its sibling's options.
    Recorded for the later ruling: the GitHub Packages token wall (see Context)
    disqualifies it as the public channel; the recommendation is a public npmjs
    `@spec-kitty` scope with provenance, with GitHub Packages acceptable as a
