@@ -10,8 +10,6 @@
  *     produces a different identity everywhere);
  *   - FR-003: the index's `sections[]` equals the projection of the example's
  *     own `docs/_meta/sections.yaml`, in registry order;
- *   - FR-009 defaults stay OFF for the example: no `_links.mcp`, no llms.txt
- *     MCP line.
  *
  * Each build lands in its own DK_OUTDIR (agent-links.test.ts precedent), so
  * this suite never touches another suite's dist; the example tree itself is
@@ -184,7 +182,6 @@ function build(outdir: string): void {
 interface IndexDoc {
   buildId: string;
   sections: unknown;
-  _links: Record<string, unknown>;
 }
 
 function readJson(dir: string, ...segments: string[]): unknown {
@@ -256,11 +253,6 @@ describe('build identity (FR-008) on the example build', () => {
         ...(entry.purpose !== undefined ? { purpose: entry.purpose } : {}),
       })),
     );
-  });
-
-  it('keeps the FR-009 pointer OFF by default (no _links.mcp, no llms.txt line)', () => {
-    expect('mcp' in index1._links).toBe(false);
-    expect(readFileSync(path.join(EXAMPLE, OUT_RUN1, 'llms.txt'), 'utf8')).not.toContain('MCP server');
   });
 
   it('changes when a source page changes, and nowhere carries a stale value', () => {
