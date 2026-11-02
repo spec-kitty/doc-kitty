@@ -30,7 +30,7 @@ client, the two input modes, Windows notes) lives in the docs guide:
 - the guide is the single owner so the story cannot drift between surfaces.
 
 In short: `pnpm --filter @spec-kitty/doc-kitty-mcp build` then
-`pnpm --filter @spec-kitty/doc-kitty-mcp pack`, install the tarball, launch
+`pnpm pack --filter @spec-kitty/doc-kitty-mcp`, install the tarball, launch
 `doc-kitty-mcp --site <url>` or `--dir <path>`. The launch line is exactly the
 one the toolkit emits into `_links.mcp.usage` and `llms.txt` when a site opts
 in with `links.mcp`.
