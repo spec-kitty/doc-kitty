@@ -1,8 +1,8 @@
 ---
 title: Generators
-description: The four generated surfaces — sitemap-index.xml, rss.xml, llms.txt, and the JSON agent-API — and their route handlers.
+description: The generated discovery surfaces (sitemap-index.xml, rss.xml, llms.txt, and the JSON agent-API) plus the advisory MCP wiring pointer, and their route handlers.
 doc_status: draft
-updated: 2026-10-19T15:00:00Z
+updated: 2026-11-02T00:00:00Z
 type: Architecture
 kind: Reference
 tags: [generators, sitemap, rss, llms-txt, agent-api]
@@ -15,7 +15,8 @@ related:
 # Generators
 
 Beyond rendering pages, the toolkit generates four discovery surfaces from page
-metadata. Three serve standard clients (search engines, feed readers); the
+metadata, and can point agents at a fifth, consumer-side one. Three serve
+standard clients (search engines, feed readers); the
 fourth is the agent-API. Each is a route handler a consuming site mounts as a
 short endpoint file. This page expands the surfaces the
 [overview](./overview.md) summarizes.
@@ -52,6 +53,17 @@ short endpoint file. This page expands the surfaces the
     when such a page exists. See [Gherkin feature pages](./gherkin-pages.md).
   - Discovery, not RAG: an agent finds the whole corpus from one file and fetches
     clean source for exactly what it needs.
+- **The MCP wiring pointer** - the fifth discovery surface, and the only one
+  that is advisory rather than emitted content. A site that passes
+  `links: { mcp: true }` to `agentIndexRoute` (and `llmsTxtRoute` for the
+  one-line human-facing mention) advertises in `/api/index.json` (`_links.mcp`)
+  and `llms.txt` how to launch the generic `@spec-kitty/doc-kitty-mcp` server
+  over the agent-API artifacts above. The server is consumer-side: it runs
+  on the reader's machine over stdio against the already-published JSON, so a
+  static host never hosts anything, and it is a strict pass-through (projection
+  of published fields only; no derivation, no server-side index). Opt-in,
+  default off. See
+  [ADR-0073](../adr/0073-generic-mcp-server-over-published-artifacts.md).
 - **What every surface shares** — publication gating from the
   [metadata model](./metadata-model.md), section order from the
   [section registry](./section-registry.md)'s `order`, and the registry's `feeds`
