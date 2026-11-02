@@ -20,6 +20,11 @@
 import { MalformedCorpusError, UnreachableEndpointError } from '../errors.js';
 import type { CorpusSource, LoadEvent, LoadLogger, PageArtifactRef } from './source.js';
 
+/** Per-artifact response cap (bytes). */
+export const MAX_ARTIFACT_BYTES = 16 * 1024 * 1024;
+/** Total corpus cap (bytes) across index, pages and scenarios. */
+export const MAX_CORPUS_BYTES = 256 * 1024 * 1024;
+
 export interface HttpCorpusSourceOptions {
   /** Per-request timeout. Default 15_000 ms (T008). */
   timeoutMs?: number;
@@ -40,6 +45,7 @@ export class HttpCorpusSource implements CorpusSource {
   private readonly fetchFn: typeof fetch;
   private readonly siteOrigin: string;
   private readonly sitePathPrefix: string;
+  private totalBytes = 0;
 
   constructor(base: string, options: HttpCorpusSourceOptions = {}) {
     const parsed = new URL(base); // throws on a non-URL; args are validated by the CLI
@@ -142,11 +148,39 @@ export class HttpCorpusSource implements CorpusSource {
   }
 
   private async fetchOnce(url: string): Promise<string> {
-    const response = await this.fetchFn(url, { signal: AbortSignal.timeout(this.timeoutMs) });
+    // Redirects are refused: a 3xx could move the fetch off the configured site.
+    const response = await this.fetchFn(url, { signal: AbortSignal.timeout(this.timeoutMs), redirect: 'manual' });
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error(`HTTP ${response.status} redirect refused (artifacts are fetched only from the configured site)`);
+    }
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
     }
-    return response.text();
+    const declared = Number(response.headers.get('content-length'));
+    if (Number.isFinite(declared) && declared > MAX_ARTIFACT_BYTES) {
+      await response.body?.cancel();
+      throw new Error(`content-length ${declared} exceeds the ${MAX_ARTIFACT_BYTES}-byte artifact cap`);
+    }
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    const reader = response.body?.getReader();
+    if (reader !== undefined) {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += value.byteLength;
+        if (received > MAX_ARTIFACT_BYTES) {
+          await reader.cancel();
+          throw new Error(`response exceeds the ${MAX_ARTIFACT_BYTES}-byte artifact cap`);
+        }
+        chunks.push(value);
+      }
+    }
+    if (this.totalBytes + received > MAX_CORPUS_BYTES) {
+      throw new Error(`corpus exceeds the ${MAX_CORPUS_BYTES}-byte total cap`);
+    }
+    this.totalBytes += received;
+    return Buffer.concat(chunks).toString('utf8');
   }
 }
 

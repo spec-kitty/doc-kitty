@@ -199,4 +199,14 @@ describe('artifacts are fetched only from the configured site', () => {
     });
     expect(served.requests.has('/api/pages/home.json')).toBe(false);
   });
+
+  it('refuses a redirect on an artifact instead of following it off-site', async () => {
+    served.overrides.set('/api/pages/home.json', (res) => {
+      res.writeHead(302, { location: 'http://169.254.169.254/latest/meta-data' }).end();
+    });
+    await expect(loadSnapshot(new HttpCorpusSource(served.base))).rejects.toMatchObject({
+      code: 'UNREACHABLE_ENDPOINT',
+      message: expect.stringContaining('/api/pages/home.json'),
+    });
+  });
 });
