@@ -76,6 +76,10 @@ the human-facing line). Your `/api/index.json` then carries a machine-readable
 exact launch command for your site. It is opt-in and defaults to off; the
 advertised form is the tarball launch until the publishing ruling.
 
+The pointer's `href` (`npm:@spec-kitty/doc-kitty-mcp`) is a reserved name, not
+an installable package yet: the package is private until publishing is
+decided, so follow the `usage` string, not the `href`.
+
 ## What you get
 
 - Five read-only tools: `get_site_info`, `list_pages`, `get_page`,
