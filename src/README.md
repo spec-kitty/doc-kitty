@@ -48,6 +48,7 @@ src/
 | `defineDocKittyConfig(opts)`   | `./config`          | Starlight config preset.                  |
 | `docKittyDocsSchema`           | `./schema`          | zod schema for page frontmatter.          |
 | `docKittyDocsLoader(opts)`     | `./schema`          | Content loader with README-as-index.      |
+| `AgentIndex`, `AgentPagePayload`, `ScenarioIndex` and the other artifact types | `./contract` | Types only, import-free: the shapes of `/api/*.json` for out-of-process consumers such as the MCP server. |
 | `rssRoute`, `llmsTxtRoute`, `agentIndexRoute`, `agentPageRoute`, `bibliographyRoute`, `scenarioIndexRoute` | `./routes` | Astro endpoint handlers. |
 
 ## Tests
