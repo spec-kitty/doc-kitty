@@ -48,8 +48,8 @@ export function corpusSiteSlug(snapshot: CorpusSnapshot, config: LaunchConfigura
   const base = declaredBaseFromSnapshot(snapshot);
   if (base === undefined) {
     throw new MalformedCorpusError(
-      'launch config: site slug - cannot derive the index-declared origin of a pageless filesystem corpus ' +
-        `(source dir '${config.source.dir}'); never mint docs:// identities from a local directory path`,
+      'launch config: site slug - cannot derive the index-declared origin of a pageless filesystem corpus; ' +
+        'never mint docs:// identities from a local directory path',
     );
   }
   return siteSlug(base);
