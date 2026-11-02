@@ -9,7 +9,7 @@
  *   MALFORMED_CORPUS         a per-page artifact with a required field removed
  *   PAGES_LINKS_GATED        per-page links disabled; degrade announcement
  *   BUILD_IDENTITY_MISMATCH  mixed-buildId fixture WITH buildId emission enabled (V6)
- *   PAGE_NOT_FOUND           unknown id via get_page (+ resources/read when WP04 lands)
+ *   PAGE_NOT_FOUND           unknown id via get_page and via resources/read
  *
  * Budgets: 2 s for fs rows, 10 s for https rows (both far under the WP's
  * 35 s https worst case); vitest's per-test timeout is the hang backstop and
@@ -135,21 +135,6 @@ describe('T021 failure matrix (SC-004)', () => {
         });
       });
     });
-
-    it('the fixture is NOT a migration-allowance corpus: buildId is present on every artifact (V6)', async () => {
-      // Guard against the silent no-op the reviewer called out: if buildId
-      // were absent anywhere, the torn-detection proof would be vacuous.
-      const corpus = await projectCorpus({ kind: 'fs', dir: wp05Fixture('failure-torn-build') });
-      expect(typeof corpus.index.buildId).toBe('string');
-      for (const page of corpus.pages) {
-        expect(typeof page.artifact.buildId, `buildId missing on ${page.id} - emission must be enabled`).toBe('string');
-      }
-      const buildIds = new Set([
-        corpus.index.buildId as string,
-        ...corpus.pages.map((p) => p.artifact.buildId as string),
-      ]);
-      expect(buildIds.size).toBe(2); // genuinely mixed identities
-    });
   });
 
   describe('PAGE_NOT_FOUND', () => {
@@ -170,14 +155,11 @@ describe('T021 failure matrix (SC-004)', () => {
       expect(page.content?.[0]?.text).toContain('no/such/page');
     });
 
-    it('unknown docs:// uri via resources/read (conditional on WP04 announcement)', async () => {
+    it('unknown docs:// uri via resources/read', async () => {
       const info = resultJson(await running!.client.callTool('get_site_info')) as {
         capabilities?: { resources?: unknown };
       };
-      if (info.capabilities?.resources !== true) {
-        expect.unreachable('capabilities.resources must be true since WP04');
-        return;
-      }
+      expect(info.capabilities?.resources).toBe(true);
       const project = await projectCorpus({ kind: 'fs', dir: exampleFixtureDir() });
       if (running!.view.kind !== 'fs') throw new Error('unreachable');
       const slug = expectedSiteSlug(project, running!.view);

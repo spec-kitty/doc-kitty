@@ -13,9 +13,8 @@
  * nothing is captured from server output, and no vitest snapshot is taken
  * (reviewer pin V4). Field-level byte equality per output field (compare.ts).
  *
- * WP04 conditionality: resources assertions run only when get_site_info
- * announces capabilities.resources === true; this file stays green with or
- * without WP04 (a console line records which branch ran, for review evidence).
+ * Resources assertions run unconditionally (capabilities.resources is true
+ * since WP04).
  */
 import { readFile } from 'node:fs/promises';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
