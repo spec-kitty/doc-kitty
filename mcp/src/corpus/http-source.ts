@@ -17,7 +17,7 @@
  * (snapshot.ts calls the hand-rolled guards in source.ts); this adapter
  * returns raw text plus load events.
  */
-import { UnreachableEndpointError } from '../errors.js';
+import { MalformedCorpusError, UnreachableEndpointError } from '../errors.js';
 import type { CorpusSource, LoadEvent, LoadLogger, PageArtifactRef } from './source.js';
 
 export interface HttpCorpusSourceOptions {
@@ -38,6 +38,8 @@ export class HttpCorpusSource implements CorpusSource {
   private readonly timeoutMs: number;
   private readonly concurrency: number;
   private readonly fetchFn: typeof fetch;
+  private readonly siteOrigin: string;
+  private readonly sitePathPrefix: string;
 
   constructor(base: string, options: HttpCorpusSourceOptions = {}) {
     const parsed = new URL(base); // throws on a non-URL; args are validated by the CLI
@@ -45,6 +47,8 @@ export class HttpCorpusSource implements CorpusSource {
       throw new UnreachableEndpointError(`${base}: unsupported URL scheme '${parsed.protocol}' (http/https only)`);
     }
     this.base = base;
+    this.siteOrigin = parsed.origin;
+    this.sitePathPrefix = parsed.pathname.endsWith('/') ? parsed.pathname : `${parsed.pathname}/`;
     this.indexUrl = new URL('api/index.json', base.endsWith('/') ? base : `${base}/`).href;
     this.timeoutMs = options.timeoutMs ?? 15_000;
     this.concurrency = Math.max(1, options.concurrency ?? 8);
@@ -60,6 +64,7 @@ export class HttpCorpusSource implements CorpusSource {
   }
 
   async loadPages(refs: readonly PageArtifactRef[], log?: LoadLogger): Promise<ReadonlyMap<string, string>> {
+    for (const ref of refs) this.assertWithinSite(ref.href, `page '${ref.id}'`);
     log?.({ phase: 'pages', event: 'start', message: `${refs.length} page artifacts` });
     const started = Date.now();
     const result = new Map<string, string>();
@@ -84,11 +89,27 @@ export class HttpCorpusSource implements CorpusSource {
   }
 
   async loadScenarios(href: string, log?: LoadLogger): Promise<string> {
+    this.assertWithinSite(href, 'scenarios');
     log?.({ phase: 'scenarios', event: 'start', ref: href });
     const started = Date.now();
     const text = await this.fetchWithRetry(href, 'scenarios', log);
     log?.({ phase: 'scenarios', event: 'end', ref: href, ms: Date.now() - started });
     return text;
+  }
+
+  /** Artifacts are fetched only from the configured site: same origin, under its base path. */
+  private assertWithinSite(href: string, what: string): void {
+    let url: URL;
+    try {
+      url = new URL(href);
+    } catch {
+      throw new MalformedCorpusError(`api/index.json: ${what} artifact ref '${href}' is not an absolute URL`);
+    }
+    if (url.origin !== this.siteOrigin || !url.pathname.startsWith(this.sitePathPrefix)) {
+      throw new MalformedCorpusError(
+        `api/index.json: ${what} artifact ref '${href}' is outside the configured site '${this.base}'; refusing to fetch it`,
+      );
+    }
   }
 
   /**
