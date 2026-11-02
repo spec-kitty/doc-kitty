@@ -258,6 +258,23 @@ include or exclude it from `llms.txt` and the agent index, `priority` (0–1,
 default 0.5) to rank it, and `keywords` for retrieval terms beyond `tags`. Kitty
 extension, defined in [ADR-0003](../adr/0003-root-docs-and-agent-extension.md).
 
+### Fields the agent API adds
+
+Three fields in `/api/*.json` come from the build, not from page frontmatter:
+
+- `buildId` is a sha256 over the corpus' source inputs, stamped identically on
+  the index, every `pages/<id>.json` and `scenarios.json` of one build. A reader
+  that loads several artifacts compares the values to detect a torn read.
+- `sections[]` on `/api/index.json` lists the section registry
+  (`_meta/sections.yaml`) in registry order, as `{ id, label, order, purpose? }`;
+  a site without a registry emits `[]`.
+- `_links.mcp` on the index is opt-in (`links: { mcp: true }`) and points agents at
+  the generic MCP server. Its `href` is a reserved name, not an installable
+  package yet.
+
+The shapes are published as types in `@spec-kitty/doc-toolkit/contract`; see
+[ADR-0073](../adr/0073-generic-mcp-server-over-published-artifacts.md).
+
 ## Planning metadata
 
 Planning pages (`kind: Planning`, `Feature`, `User-Journey`) can carry a `moscow`
