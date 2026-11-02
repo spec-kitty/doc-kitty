@@ -90,4 +90,10 @@ writeFixture('malformed-title', ({ index }) => {
   delete index.pages[0].title;
 });
 
+// Shape-guard fixture: a page artifact without its required `markdown` field
+// -> MALFORMED_CORPUS naming the artifact path and the key.
+writeFixture('malformed-markdown', ({ pages }) => {
+  delete pages[1][1].markdown;
+});
+
 console.log('derived fixtures written under', HERE);

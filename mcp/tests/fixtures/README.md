@@ -15,8 +15,6 @@ otherwise.
 | Fixture | Purpose |
 |---|---|
 | `search-controls/` | A 7-page corpus owning the three SC-002 discriminating terms. `zephyrquill` appears ONLY in `controls/alpha`'s keywords (keyword-only hit). `morrowdust` appears ONLY in `controls/beta`'s markdown body (zero hits). `amberline` appears in exactly three searchable spots - `controls/gamma` title, `controls/delta` description, `controls/epsilon` keywords - plus a body-only distractor in `controls/zeta` (known-K: exactly those three, registry order, distractor excluded). Term isolation was verified programmatically at authoring time. |
-| `failure-unknown-major/` | Index `version` major `99` - outside the supported set. |
-| `failure-non-numeric-version/` | Index `version` `beta` - no numeric major. |
-| `failure-malformed-field/` | `controls/broken` page artifact with the required `markdown` field removed. |
-| `failure-gated-pages/` | Index records carry no `_links.self` (site ran with `links.pages: false`); scenarios surface stays live. |
-| `failure-torn-build/` | Mixed build identities with emission enabled: the index and `home` agree, `controls/torn` diverges (V6 - a no-buildId corpus would silently no-op the torn-detection proof). |
+
+The failure corpora (unknown major, non-numeric version, torn build, gated pages, malformed field) are
+derived from the example fixture by `mcp/tests/corpus/fixtures/derive.mjs`; there is no hand-authored copy.
