@@ -76,6 +76,7 @@ describe('corpusSiteSlug (launch-mode derivation)', () => {
     } catch (error) {
       expect((error as { code: string }).code).toBe('MALFORMED_CORPUS');
       expect((error as Error).message).toContain('never mint docs:// identities from a local directory path');
+      expect((error as Error).message).not.toContain('/tmp/nowhere'); // client-facing: no local path
     }
   });
 
