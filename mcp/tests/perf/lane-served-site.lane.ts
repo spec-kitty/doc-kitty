@@ -78,6 +78,19 @@ function resultJson(result: ToolResultWire): unknown {
   return JSON.parse(block!.text as string);
 }
 
+/** Recursive key paths of a JSON value (array elements merge under `[]`); values are ignored. */
+function keyPaths(value: unknown, prefix = '', out = new Set<string>()): Set<string> {
+  if (Array.isArray(value)) {
+    for (const element of value) keyPaths(element, `${prefix}[]`, out);
+  } else if (value !== null && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) {
+      out.add(`${prefix}.${key}`);
+      keyPaths(child, `${prefix}.${key}`, out);
+    }
+  }
+  return out;
+}
+
 /** The bytes exactly as the static server sends them for a dist-relative file. */
 function servedJson(relPath: string): unknown {
   let body = readFileSync(path.join(EXAMPLE_DIST, relPath), 'utf8');
@@ -141,6 +154,19 @@ describe('T022 serialized lane: freshly built example served statically, binary 
   it('completes the MCP initialize handshake with the doc-kitty-mcp identity', () => {
     expect(spawned.client.initializeResult.serverInfo.name).toBe('doc-kitty-mcp');
     expect(typeof spawned.client.initializeResult.protocolVersion).toBe('string');
+  });
+
+  it('the committed example fixture still has the fresh build\'s contract shape', () => {
+    // The fixture is a hand copy of example/dist/api; this is the only thing that notices it going stale.
+    const committed = path.join(REPO_ROOT, 'mcp', 'tests', 'corpus', 'fixtures', 'example', 'api');
+    const remint = 'Re-mint (see mcp/tests/corpus/fixtures/README.md): pnpm --filter example build, then ' +
+      'cp -r example/dist/api mcp/tests/corpus/fixtures/example/api && node mcp/tests/corpus/fixtures/derive.mjs';
+    for (const rel of ['index.json', 'pages/home.json']) {
+      const fresh = JSON.parse(readFileSync(path.join(EXAMPLE_DIST, 'api', rel), 'utf8')) as { version: string };
+      const fixture = JSON.parse(readFileSync(path.join(committed, rel), 'utf8')) as { version: string };
+      expect(fixture.version, `${rel}: contract version drifted. ${remint}`).toBe(fresh.version);
+      expect([...keyPaths(fixture)].sort(), `${rel}: key set drifted. ${remint}`).toEqual([...keyPaths(fresh)].sort());
+    }
   });
 
   it('lists exactly the five contract tools in registration order', async () => {
