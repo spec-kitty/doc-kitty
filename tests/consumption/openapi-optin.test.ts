@@ -55,17 +55,51 @@ const VERSION = JSON.parse(readFileSync(path.join(SRC_DIR, 'package.json'), 'utf
  * What the comparison tolerates, and nothing else (each item is a LISTED difference):
  *  - build-time stamps: this fixture's pages have no `updated` date, so feeds, the content
  *    graph and the OKF export carry the build clock (RFC 822 and ISO 8601 times);
- *  - the toolkit version string, in any text file.
+ *  - the toolkit version string, in any text file;
+ *  - the agent-API build identity (`buildId`, FR-008) and the section listing
+ *    (`sections`, FR-003) in /api/*.json: both are build-identity/compatibility
+ *    fields the merge-base tarball predates, not opt-in OpenAPI behavior.
+ *    A regression IN payload content must still fail: these two fields alone are masked.
  * Nothing else: the OpenAPI chrome styles live in their own sheet that is added only
  * when the option is set, so even the CSS bundles (and their content hashes) are equal.
  */
 const RFC822 = /\w{3}, \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} GMT/g;
 const ISO8601 = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g;
 
-function normalize(bytes: Buffer, versions: string[]): string {
+/**
+ * Structural mask for the two LISTED additive agent-API fields (FR-008 build
+ * identity, FR-003 section listing in index.json): parse the artifact, delete
+ * the listed keys, re-serialize canonically. Robust against nested content —
+ * unlike a regex over JSON. FR hard-fail preserved: any other payload byte
+ * still compares.
+ */
+function maskListedJsonFields(text: string, relpath: string): string {
+  try {
+    const value: unknown = JSON.parse(text);
+    const seen = new WeakSet<object>();
+    const strip = (node: unknown): void => {
+      if (node === null || typeof node !== 'object' || seen.has(node)) return;
+      seen.add(node);
+      const rec = node as Record<string, unknown>;
+      delete rec['buildId'];
+      for (const v of Object.values(rec)) strip(v);
+    };
+    strip(value);
+    if (relpath === 'api/index.json' && value !== null && typeof value === 'object') {
+      delete (value as Record<string, unknown>)['sections'];
+    }
+    return JSON.stringify(value);
+  } catch {
+    return text; // not JSON after all: fall through to raw text compare
+  }
+}
+
+function normalize(bytes: Buffer, versions: string[], relpath: string): string {
   let text = bytes.toString('utf8');
   for (const v of versions) text = text.split(v).join('<version>');
-  return text.replace(RFC822, '<time>').replace(ISO8601, '<time>');
+  text = text.replace(RFC822, '<time>').replace(ISO8601, '<time>');
+  if (relpath.startsWith('api/') && relpath.endsWith('.json')) text = maskListedJsonFields(text, relpath);
+  return text;
 }
 
 function listFiles(root: string): string[] {
@@ -90,8 +124,8 @@ function diffDist(a: string, b: string, versions: string[] = []): string[] {
   for (const k of right) if (!left.has(k)) problems.push(`only in B: ${k}`);
   for (const k of left) {
     if (!right.has(k)) continue;
-    const x = normalize(readFileSync(path.join(a, k)), versions);
-    const y = normalize(readFileSync(path.join(b, k)), versions);
+    const x = normalize(readFileSync(path.join(a, k)), versions, k);
+    const y = normalize(readFileSync(path.join(b, k)), versions, k);
     if (x !== y) {
       let at = 0;
       while (x[at] === y[at]) at++;

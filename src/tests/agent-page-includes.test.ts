@@ -329,7 +329,8 @@ describe('the per-page `source` is absolute and base-aware (#236)', () => {
   it('without a base is the plain absolute URL, other keys unchanged', async () => {
     const { payload } = await load('guides/booking', CONTENTS);
     expect(payload.source).toBe('https://docs.example/api/pages/guides/booking.json');
-    // Everything but `source` is byte-identical to the pre-fix payload (captured from HEAD~1).
+    // Everything but `source` is byte-identical to the pre-fix payload (captured from HEAD~1),
+    // plus the additive WP01 `buildId` (FR-008).
     const rest: Record<string, unknown> = { ...payload };
     delete rest.source;
     expect(rest).toEqual({
@@ -350,6 +351,7 @@ describe('the per-page `source` is absolute and base-aware (#236)', () => {
       authors: [],
       keywords: [],
       markdown: '# Booking',
+      buildId: expect.stringMatching(/^[0-9a-f]{64}$/),
       _links: {
         self: { href: 'https://docs.example/api/pages/guides/booking.json' },
         up: { href: 'https://docs.example/api/index.json' },

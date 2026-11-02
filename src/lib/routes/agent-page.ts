@@ -20,10 +20,11 @@
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
+import type { AgentPagePayload } from '../contract.js';
 import type { AudienceEntry, DocKittyFrontmatter, ResolvedRelated } from '../metadata.js';
 import { pageSourceId, resolveRelated, slugFromEntryId, toAgentRecord } from '../metadata.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { absolute } from './shared.js';
+import { absolute, memoizedBuildIdForEntries } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { readAgentIncludes, spliceAgentIncludes } from '../gherkin/agent-includes.mjs';
 
@@ -87,7 +88,12 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
     // `record.source` is base-less (toAgentRecord stays pure, ADR-0037); the
     // absolute, base-aware form is built here, after the spread, so it overrides it.
     const source = absolute(site, record.source);
-    const payload = {
+    // FR-008 (WP01/T004): the corpus-wide build identity, computed over EVERY
+    // entry — never only this page — so the value byte-equals the index and
+    // scenarios stamps of the same build and a torn read is detectable. The
+    // entry projection (slug via slugFromEntryId, body, validated frontmatter)
+    // is the SAME mapping agent-index/scenario-index apply.
+    const payload: AgentPagePayload = {
       ...record,
       source,
       related,
@@ -104,6 +110,7 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
        * every `::gherkin` include replaced by the scenarios it renders.
        */
       markdown: expanded.markdown,
+      buildId: memoizedBuildIdForEntries(entries),
       // Navigation links (#103). Built here, never in `toAgentRecord`, which
       // other consumers share. hrefs go through `absolute` like `url`/`source`.
       // No `source` relation: the payload's `source` IS the per-page JSON, i.e. `self`.

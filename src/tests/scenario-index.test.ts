@@ -298,6 +298,8 @@ describe('scenarioIndexRoute — selection and order', () => {
       version: '2',
       generated_by: `${GHERKIN_PRODUCER}/${toolkitVersion()}`,
       count: 0,
+      // WP01 (FR-008): the corpus build identity, stamped on every artifact kind.
+      buildId: expect.stringMatching(/^[0-9a-f]{64}$/),
       features: [],
     });
   });
