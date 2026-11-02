@@ -133,6 +133,8 @@ function configureOpenapi(fixtureDir: string, opts: { importLine?: string; optio
 let craftRoot = '';
 let headDir = '';
 let baseDir = '';
+/** The merge-base toolkit's version: a release PR bumps it, and the stamps differ only by it. */
+let baseVersion = '';
 let withDir = '';
 const headConfig = { original: '' };
 let withConfig = '';
@@ -167,6 +169,7 @@ function craftBaseFixture(root: string, sha: string): string {
   if (archive.status !== 0) throw new Error(`git archive failed: ${archive.stderr}`);
   const dir = craftFixtureCopy(root, 'base-fixture');
   useNoopImageService(dir);
+  baseVersion = JSON.parse(readFileSync(path.join(extractDir, 'src', 'package.json'), 'utf8')).version;
   packToolkit(dir, path.join(extractDir, 'src'));
   return dir;
 }
@@ -216,7 +219,7 @@ describe('opt-in openapi option — consumption proof (FR-010, SC-004, FR-007)',
       const headDist = path.join(headDir, 'dist');
       const baseDist = path.join(baseDir, 'dist');
       expect(listFiles(headDist).length).toBeGreaterThan(20);
-      expect(diffDist(baseDist, headDist, [VERSION])).toEqual([]);
+      expect(diffDist(baseDist, headDist, [VERSION, baseVersion])).toEqual([]);
       // No route of the new feature leaks into a site that does not use it.
       expect(listFiles(headDist).filter((f) => f.startsWith('reference/api/'))).toEqual([]);
     }, 600_000);
