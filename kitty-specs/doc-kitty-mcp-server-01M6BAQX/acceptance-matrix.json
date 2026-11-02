@@ -1,0 +1,119 @@
+{
+  "mission_slug": "doc-kitty-mcp-server-01M6BAQX",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 HTTPS adapter + WP08 lane server-from-URL runs green; NFR-001 timers asserted",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:08:43.724577+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 fs adapter; WP08 zero-sockets tripwire test green",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:08:50.117265+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 sections/buildId; WP03 five tools; WP05 golden suite green incl. sections listing",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:08:56.633489+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP03 search_pages registry-order cap-25; WP05 SC-002 controls green in both modes",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:02.952797+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 version handshake; WP05 UNKNOWN_CONTRACT_MAJOR both fixtures green",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:09.459242+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 snapshot loader; WP08 mid-process mutation pin test green",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:16.017242+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP02 fs re-origining; WP05 two-mode carve-out run green",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:22.283898+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 per-artifact buildId from source inputs; WP05 mixed-buildId refusal green; determinism test",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:28.751047+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP01 gated pointer emission; WP06 tarball-path e2e green",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:35.183185+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP05 in-test independent projection, field-level equality, seeded-fault red proof replicated by reviewer",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:41.535467+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "WP04 resources surface; size gate + template + URI outputs; reviewer-verified both branches",
+      "pass_fail": "pass",
+      "verified_by": "opencode",
+      "verified_at": "2026-11-02T07:09:48.191763+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

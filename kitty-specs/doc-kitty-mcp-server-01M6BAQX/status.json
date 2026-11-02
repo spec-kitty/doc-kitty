@@ -1,0 +1,156 @@
+{
+  "event_count": 100,
+  "last_event_id": "01M6DHN0J2A20J6F6CZ61Z7GZR",
+  "materialized_at": "2026-11-02T07:12:48.194316+00:00",
+  "mission_number": "",
+  "mission_slug": "doc-kitty-mcp-server-01M6BAQX",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 8,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 2,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHKM7NSF15C9CBTNEJ55RR",
+      "last_transition_at": "2026-11-02T07:12:02.805484+00:00",
+      "review_result": {
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP01-toolkit-contract-additions/review-cycle-1.md",
+        "reviewer": "opencode",
+        "verdict": "approved"
+      },
+      "shell_pid": 2264876,
+      "shell_pid_created_at": "1793548469.52"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 2,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHKTEWHVVMHZWVSY4P4Y15",
+      "last_transition_at": "2026-11-02T07:12:09.180739+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/doc-kitty-mcp-server-01M6BAQX-coord/kitty-specs/doc-kitty-mcp-server-01M6BAQX/tasks/WP02-corpus-io-and-cli/review-cycle-3.md",
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP02-corpus-io-and-cli/review-cycle-3.md",
+        "reviewer": "opencode",
+        "verdict": "approved"
+      },
+      "shell_pid": 3861956,
+      "shell_pid_created_at": "1793602586.87"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 2,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHM0T43J715FJQDRRSJ6V8",
+      "last_transition_at": "2026-11-02T07:12:15.684543+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/doc-kitty-mcp-server-01M6BAQX-coord/kitty-specs/doc-kitty-mcp-server-01M6BAQX/tasks/WP03-mcp-server-tools/review-cycle-3.md",
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP03-mcp-server-tools/review-cycle-3.md",
+        "reviewer": "opencode",
+        "verdict": "approved"
+      },
+      "shell_pid": 3865912,
+      "shell_pid_created_at": "1793602720.65"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 1,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHM78RKBG2FK7Q00A55307",
+      "last_transition_at": "2026-11-02T07:12:22.296489+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/doc-kitty-mcp-server-01M6BAQX-coord/kitty-specs/doc-kitty-mcp-server-01M6BAQX/tasks/WP04-resource-surface/review-cycle-2.md",
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP04-resource-surface/review-cycle-2.md",
+        "reviewer": "opencode",
+        "verdict": "approved"
+      },
+      "shell_pid": 2825117,
+      "shell_pid_created_at": "1793564092.77"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 4,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHMKWPF9HQG2PV5HEMKVBH",
+      "last_transition_at": "2026-11-02T07:12:35.222387+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/doc-kitty-mcp-server-01M6BAQX-coord/kitty-specs/doc-kitty-mcp-server-01M6BAQX/tasks/WP05-conformance-gates/review-cycle-3.md",
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP05-conformance-gates/review-cycle-3.md",
+        "reviewer": "opencode",
+        "verdict": "approved"
+      },
+      "shell_pid": 2927190,
+      "shell_pid_created_at": "1793565422.76"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 2,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHMT6YQ0EEXDX5RRG3KEXJ",
+      "last_transition_at": "2026-11-02T07:12:41.694923+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/doc-kitty-mcp-server-01M6BAQX-coord/kitty-specs/doc-kitty-mcp-server-01M6BAQX/tasks/WP06-packaging-consumption/review-cycle-3.md",
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP06-packaging-consumption/review-cycle-3.md",
+        "reviewer": "opencode",
+        "verdict": "approved"
+      },
+      "shell_pid": 2947247,
+      "shell_pid_created_at": "1793565970.75"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 0,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHN0J2A20J6F6CZ61Z7GZR",
+      "last_transition_at": "2026-11-02T07:12:48.194316+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/doc-kitty-mcp-server-01M6BAQX-coord/kitty-specs/doc-kitty-mcp-server-01M6BAQX/tasks/WP07-governance-artifacts/review-cycle-1.md",
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP07-governance-artifacts/review-cycle-1.md",
+        "reviewer": "opencode::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3397931,
+      "shell_pid_created_at": "1793576451.53"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "opencode",
+      "force_count": 2,
+      "implementer_of_record": "opencode",
+      "lane": "done",
+      "last_event_id": "01M6DHMDMNDXWTB3T8KGWYK262",
+      "last_transition_at": "2026-11-02T07:12:28.821711+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/_code/SDD/fork/doc-kitty/.worktrees/doc-kitty-mcp-server-01M6BAQX-coord/kitty-specs/doc-kitty-mcp-server-01M6BAQX/tasks/WP08-boundary-lane-nfr/review-cycle-3.md",
+        "reference": "review-cycle://doc-kitty-mcp-server-01M6BAQX/WP08-boundary-lane-nfr/review-cycle-3.md",
+        "reviewer": "opencode",
+        "verdict": "approved"
+      },
+      "shell_pid": 3874682,
+      "shell_pid_created_at": "1793602976.65"
+    }
+  }
+}
