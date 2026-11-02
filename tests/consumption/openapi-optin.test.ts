@@ -59,7 +59,8 @@ const VERSION = JSON.parse(readFileSync(path.join(SRC_DIR, 'package.json'), 'utf
  *  - the agent-API build identity (`buildId`, FR-008) and the section listing
  *    (`sections`, FR-003) in /api/*.json: both are build-identity/compatibility
  *    fields the merge-base tarball predates, not opt-in OpenAPI behavior.
- *    A regression IN payload content must still fail: these two fields alone are masked.
+ *    A regression IN payload content or formatting must still fail: only these two
+ *    fields, at the artifact top level, are masked (see maskListedJsonFields).
  * Nothing else: the OpenAPI chrome styles live in their own sheet that is added only
  * when the option is set, so even the CSS bundles (and their content hashes) are equal.
  */
@@ -68,30 +69,38 @@ const ISO8601 = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g;
 
 /**
  * Structural mask for the two LISTED additive agent-API fields (FR-008 build
- * identity, FR-003 section listing in index.json): parse the artifact, delete
- * the listed keys, re-serialize canonically. Robust against nested content —
- * unlike a regex over JSON. FR hard-fail preserved: any other payload byte
- * still compares.
+ * identity, FR-003 section listing in index.json).
+ *
+ * TODO: drop this tolerance after the next release, once the merge base also
+ * carries `buildId` and `sections` (then both builds emit them and nothing needs
+ * masking).
+ *
+ * Narrow on purpose:
+ *  - `buildId` is deleted at the artifact TOP LEVEL only (index.json, every
+ *    pages/<id>.json, scenarios.json carry it there; no nested record does), and
+ *    `sections` at the top level of api/index.json only. A stray nested `buildId`
+ *    or a `sections` anywhere else still compares.
+ *  - The unmasked text must first equal what the emitters write
+ *    (`JSON.stringify(value, null, 2)`, plus a trailing newline for the routes
+ *    that add one). A formatting regression (indent, key order, line endings)
+ *    therefore is NOT masked: the text comes back unchanged and fails the compare.
+ *  - The masked value is re-serialized with that same serializer, so masking
+ *    cannot normalize formatting away either.
  */
 function maskListedJsonFields(text: string, relpath: string): string {
+  let value: unknown;
   try {
-    const value: unknown = JSON.parse(text);
-    const seen = new WeakSet<object>();
-    const strip = (node: unknown): void => {
-      if (node === null || typeof node !== 'object' || seen.has(node)) return;
-      seen.add(node);
-      const rec = node as Record<string, unknown>;
-      delete rec['buildId'];
-      for (const v of Object.values(rec)) strip(v);
-    };
-    strip(value);
-    if (relpath === 'api/index.json' && value !== null && typeof value === 'object') {
-      delete (value as Record<string, unknown>)['sections'];
-    }
-    return JSON.stringify(value);
+    value = JSON.parse(text);
   } catch {
     return text; // not JSON after all: fall through to raw text compare
   }
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return text;
+  const trailer = text.endsWith('\n') ? '\n' : '';
+  if (text !== JSON.stringify(value, null, 2) + trailer) return text; // emitter format drifted: compare raw
+  const rec = value as Record<string, unknown>;
+  delete rec['buildId'];
+  if (relpath === 'api/index.json') delete rec['sections'];
+  return JSON.stringify(rec, null, 2) + trailer;
 }
 
 function normalize(bytes: Buffer, versions: string[], relpath: string): string {
