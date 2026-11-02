@@ -30,6 +30,31 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import type {
+  AgentIncludeRef,
+  AgentIndex,
+  AgentLink,
+  AgentPageLinks,
+  AgentPagePayload,
+  AgentRecordEntry,
+  AgentRecordLinks,
+  AgentTitledLink,
+  AudienceRecord,
+  FeatureRecord,
+  IndexLinks,
+  McpWiringPointer,
+  PageGeneratedStamp,
+  PageSourceRef,
+  PageVerifiedStamp,
+  ResolvedRelatedRecord,
+  ScenarioExamples,
+  ScenarioIndex,
+  ScenarioRecord,
+  ScenarioResult,
+  ScenarioRunInfo,
+  ScenarioStep,
+  SectionRecord,
+} from '../lib/contract.js';
 import { parseSectionRegistry } from '../lib/sections.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -45,6 +70,105 @@ afterAll(() => {
   for (const dir of cleanup) rmSync(dir, { recursive: true, force: true });
   rmSync(PROBE, { force: true });
 });
+
+// Exhaustive key tables, one per contract record. `satisfies Record<keyof T, true>`
+// makes tsc fail on a key the contract has but this table lacks AND on a key
+// the table has but the contract lacks, so the tables cannot rot. contract.ts
+// stays type-only (contract-module.test.ts), hence the tables live here. The
+// routes spread `toAgentRecord()` (a parallel type), which skips excess-property
+// checks, so the emitted JSON is checked against the tables at run time below.
+const KEYS = {
+  AgentLink: { href: true } satisfies Record<keyof AgentLink, true>,
+  AgentTitledLink: { href: true, title: true } satisfies Record<keyof AgentTitledLink, true>,
+  McpWiringPointer: { href: true, title: true, usage: true } satisfies Record<keyof McpWiringPointer, true>,
+  SectionRecord: { id: true, label: true, order: true, purpose: true } satisfies Record<keyof SectionRecord, true>,
+  ResolvedRelatedRecord: { ref: true, title: true, kind: true, doc_status: true } satisfies Record<
+    keyof ResolvedRelatedRecord,
+    true
+  >,
+  AudienceRecord: { profile: true, guidance_text: true } satisfies Record<keyof AudienceRecord, true>,
+  AgentRecordLinks: { self: true, html: true, related: true } satisfies Record<keyof AgentRecordLinks, true>,
+  AgentRecordEntry: {
+    slug: true, route: true, section: true, title: true, description: true, type: true, doc_status: true,
+    kind: true, tags: true, related: true, priority: true, updated: true, source: true, audience: true,
+    url: true, _links: true,
+  } satisfies Record<keyof AgentRecordEntry, true>,
+  IndexLinks: {
+    self: true, llms: true, sitemap: true, contentGraph: true, rss: true, bibliography: true,
+    scenarios: true, mcp: true,
+  } satisfies Record<keyof IndexLinks, true>,
+  AgentIndex: {
+    title: true, version: true, count: true, buildId: true, generatedFrom: true, sections: true,
+    pages: true, _links: true,
+  } satisfies Record<keyof AgentIndex, true>,
+  PageGeneratedStamp: { by: true, at: true, content_hash: true } satisfies Record<keyof PageGeneratedStamp, true>,
+  PageVerifiedStamp: { by: true, at: true } satisfies Record<keyof PageVerifiedStamp, true>,
+  PageSourceRef: { resource: true, title: true } satisfies Record<keyof PageSourceRef, true>,
+  AgentIncludeRef: { src: true, scenario: true, tags: true } satisfies Record<keyof AgentIncludeRef, true>,
+  AgentPageLinks: { self: true, up: true, html: true, related: true } satisfies Record<keyof AgentPageLinks, true>,
+  AgentPagePayload: {
+    slug: true, route: true, section: true, title: true, description: true, type: true, doc_status: true,
+    kind: true, tags: true, related: true, priority: true, updated: true, source: true, audience: true,
+    url: true, authors: true, keywords: true, generated: true, verified: true, sources: true, includes: true,
+    markdown: true, buildId: true, _links: true,
+  } satisfies Record<keyof AgentPagePayload, true>,
+  ScenarioResult: { status: true, retried: true, counts: true } satisfies Record<keyof ScenarioResult, true>,
+  ScenarioStep: { keyword: true, text: true } satisfies Record<keyof ScenarioStep, true>,
+  ScenarioExamples: { name: true, tags: true, header: true, rows: true, results: true } satisfies Record<
+    keyof ScenarioExamples,
+    true
+  >,
+  ScenarioRecord: {
+    name: true, rule: true, anchor: true, line: true, tags: true, outline: true, steps: true,
+    examples: true, result: true,
+  } satisfies Record<keyof ScenarioRecord, true>,
+  FeatureRecord: {
+    id: true, title: true, url: true, source: true, doc_status: true, glossary_context: true, tags: true,
+    related: true, scenarios: true, results: true,
+  } satisfies Record<keyof FeatureRecord, true>,
+  ScenarioRunInfo: { report: true, format: true, as_of: true, revision: true } satisfies Record<
+    keyof ScenarioRunInfo,
+    true
+  >,
+  ScenarioIndex: {
+    version: true, generated_by: true, count: true, buildId: true, results: true, features: true,
+  } satisfies Record<keyof ScenarioIndex, true>,
+};
+type RecordName = keyof typeof KEYS;
+
+/** Nested record-typed properties, by owning record, so the walk descends the contract's shape. */
+const CHILDREN: { [R in RecordName]?: Record<string, RecordName> } = {
+  AgentRecordEntry: { related: 'ResolvedRelatedRecord', audience: 'AudienceRecord', _links: 'AgentRecordLinks' },
+  AgentRecordLinks: { self: 'AgentLink', html: 'AgentLink', related: 'AgentTitledLink' },
+  IndexLinks: {
+    self: 'AgentLink', llms: 'AgentLink', sitemap: 'AgentLink', contentGraph: 'AgentLink', rss: 'AgentLink',
+    bibliography: 'AgentLink', scenarios: 'AgentLink', mcp: 'McpWiringPointer',
+  },
+  AgentIndex: { sections: 'SectionRecord', pages: 'AgentRecordEntry', _links: 'IndexLinks' },
+  AgentPageLinks: { self: 'AgentLink', up: 'AgentLink', html: 'AgentLink', related: 'AgentTitledLink' },
+  AgentPagePayload: {
+    related: 'ResolvedRelatedRecord', audience: 'AudienceRecord', generated: 'PageGeneratedStamp',
+    verified: 'PageVerifiedStamp', sources: 'PageSourceRef', includes: 'AgentIncludeRef', _links: 'AgentPageLinks',
+  },
+  ScenarioExamples: {},
+  ScenarioRecord: { steps: 'ScenarioStep', examples: 'ScenarioExamples', result: 'ScenarioResult' },
+  FeatureRecord: { scenarios: 'ScenarioRecord' },
+  ScenarioIndex: { results: 'ScenarioRunInfo', features: 'FeatureRecord' },
+};
+
+/** Every emitted key, at every record level, that the contract's table does not list. */
+function undeclaredKeys(value: unknown, record: RecordName, where: string): string[] {
+  if (Array.isArray(value)) return value.flatMap((item, i) => undeclaredKeys(item, record, `${where}[${i}]`));
+  if (value === null || typeof value !== 'object') return [];
+  const declared = KEYS[record] as Record<string, true>;
+  const out: string[] = [];
+  for (const [key, child] of Object.entries(value)) {
+    if (!(key in declared)) out.push(`${where}.${key}`);
+    const childRecord = CHILDREN[record]?.[key];
+    if (childRecord) out.push(...undeclaredKeys(child, childRecord, `${where}.${key}`));
+  }
+  return out;
+}
 
 function build(outdir: string): void {
   const env: NodeJS.ProcessEnv = { ...process.env, DK_OUTDIR: outdir };
@@ -102,6 +226,17 @@ describe('build identity (FR-008) on the example build', () => {
     expect(pages1.size).toBeGreaterThan(0);
     for (const [file, id] of pages1) expect(id, `buildId of ${file}`).toBe(index1.buildId);
     expect((readJson(OUT_RUN1, 'api', 'scenarios.json') as { buildId: string }).buildId).toBe(index1.buildId);
+  });
+
+  it('emits no key the published contract does not declare (index, every page, scenarios)', () => {
+    const undeclared = undeclaredKeys(index1, 'AgentIndex', 'index');
+    for (const file of pages1.keys()) {
+      undeclared.push(
+        ...undeclaredKeys(readJson(OUT_RUN1, 'api', 'pages', file), 'AgentPagePayload', `pages/${file}`),
+      );
+    }
+    undeclared.push(...undeclaredKeys(readJson(OUT_RUN1, 'api', 'scenarios.json'), 'ScenarioIndex', 'scenarios'));
+    expect(undeclared).toEqual([]);
   });
 
   it('is deterministic: an unchanged rebuild yields the same identity', () => {

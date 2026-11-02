@@ -84,8 +84,12 @@ form.
 5. **One canonical interpretation, coupled by types only (C-006).** The
    toolkit exports a dependency-free contract module
    (`@spec-kitty/doc-toolkit/contract`) and the three artifact routes are
-   retyped against it, so the emitted JSON and the published type cannot drift
-   without a build-time type error. The server imports those types only and
+   retyped against it, so a field the contract declares but a route stops
+   emitting is a build-time type error. The reverse direction is guarded by a
+   test, not by tsc: the page and index routes spread `toAgentRecord()`, whose
+   parallel `AgentRecord` type bypasses excess-property checks, so
+   `agent-api-build-identity.test.ts` walks the built example's index, pages
+   and scenarios and fails on any emitted key the contract does not declare. The server imports those types only and
    never reads documentation sources.
 6. **Corpus build identity detects torn reads (FR-008).** Every machine
    artifact (index, per-page payloads, scenarios) carries `buildId`, a sha256
