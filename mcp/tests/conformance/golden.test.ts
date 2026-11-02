@@ -18,6 +18,7 @@
  */
 import { readFile } from 'node:fs/promises';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { fixture } from '../corpus/helpers.js';
 import { resultJson } from '../surface/helpers.js';
 import { compareFields, formatComparisons } from './compare.js';
 import type { FieldComparison } from './compare.js';
@@ -311,7 +312,7 @@ describe('T020 golden byte-derivation conformance (SC-003 minimum matrix)', () =
   describe('run: pages-links-gated corpus (degrade announcements in the golden matrix)', () => {
     let ctx: ModeContext;
     beforeAll(async () => {
-      const dir = wp05Fixture('failure-gated-pages');
+      const dir = fixture('gated-pages');
       const running = await runFsServer(dir);
       const corpus = await projectCorpus({ kind: 'fs', dir });
       ctx = { running, corpus, view: running.view, sampleIds: [], searchQueries: [] };

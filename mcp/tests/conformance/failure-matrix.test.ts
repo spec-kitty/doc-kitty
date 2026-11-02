@@ -22,6 +22,7 @@ import { FsCorpusSource } from '../../src/corpus/fs-source.js';
 import { loadSnapshot } from '../../src/corpus/snapshot.js';
 import type { LoadEvent } from '../../src/corpus/source.js';
 import { resultJson } from '../surface/helpers.js';
+import { fixture } from '../corpus/helpers.js';
 import { exampleFixtureDir, runFsServer, wp05Fixture } from './harness.js';
 import type { RunningServer } from './harness.js';
 import { deadLoopbackBase, serveFixture } from './serve-fixture.js';
@@ -44,7 +45,7 @@ describe('T021 failure matrix (SC-004)', () => {
   describe('UNKNOWN_CONTRACT_MAJOR', () => {
     it('version "99" fixture: refused at handshake, named on first failure', async () => {
       await withinBudget('UNKNOWN_CONTRACT_MAJOR (version 99, fs)', FS_BUDGET_MS, async () => {
-        await expect(loadSnapshot(new FsCorpusSource(wp05Fixture('failure-unknown-major')))).rejects.toMatchObject({
+        await expect(loadSnapshot(new FsCorpusSource(fixture('unknown-major')))).rejects.toMatchObject({
           code: 'UNKNOWN_CONTRACT_MAJOR',
           message: expect.stringContaining("'99'"),
         });
@@ -53,7 +54,7 @@ describe('T021 failure matrix (SC-004)', () => {
 
     it('non-numeric version fixture: refused at handshake, named on first failure', async () => {
       await withinBudget('UNKNOWN_CONTRACT_MAJOR (version beta, fs)', FS_BUDGET_MS, async () => {
-        await expect(loadSnapshot(new FsCorpusSource(wp05Fixture('failure-non-numeric-version')))).rejects.toMatchObject({
+        await expect(loadSnapshot(new FsCorpusSource(fixture('non-numeric-version')))).rejects.toMatchObject({
           code: 'UNKNOWN_CONTRACT_MAJOR',
           message: expect.stringContaining('no numeric contract major'),
         });
@@ -93,9 +94,9 @@ describe('T021 failure matrix (SC-004)', () => {
   describe('MALFORMED_CORPUS', () => {
     it('required field removed from a page artifact: named with the artifact path and key', async () => {
       await withinBudget('MALFORMED_CORPUS (markdown removed, fs)', FS_BUDGET_MS, async () => {
-        await expect(loadSnapshot(new FsCorpusSource(wp05Fixture('failure-malformed-field')))).rejects.toMatchObject({
+        await expect(loadSnapshot(new FsCorpusSource(fixture('malformed-markdown')))).rejects.toMatchObject({
           code: 'MALFORMED_CORPUS',
-          message: expect.stringContaining('api/pages/controls/broken.json: markdown'),
+          message: expect.stringContaining('api/pages/context/audience.json: markdown'),
         });
       });
     });
@@ -106,7 +107,7 @@ describe('T021 failure matrix (SC-004)', () => {
       const events: LoadEvent[] = [];
       let running: RunningServer | undefined;
       await withinBudget('PAGES_LINKS_GATED (degrade announcement, fs)', FS_BUDGET_MS, async () => {
-        running = await runFsServer(wp05Fixture('failure-gated-pages'), { logger: (e) => events.push(e) });
+        running = await runFsServer(fixture('gated-pages'), { logger: (e) => events.push(e) });
       });
       try {
         // Announcement one: the load log names the degrade.
@@ -129,9 +130,9 @@ describe('T021 failure matrix (SC-004)', () => {
   describe('BUILD_IDENTITY_MISMATCH', () => {
     it('mixed-buildId fixture with identity emission enabled: named, naming the diverging artifact', async () => {
       await withinBudget('BUILD_IDENTITY_MISMATCH (torn build, fs)', FS_BUDGET_MS, async () => {
-        await expect(loadSnapshot(new FsCorpusSource(wp05Fixture('failure-torn-build')))).rejects.toMatchObject({
+        await expect(loadSnapshot(new FsCorpusSource(fixture('torn-build')))).rejects.toMatchObject({
           code: 'BUILD_IDENTITY_MISMATCH',
-          message: expect.stringContaining('api/pages/controls/torn.json'),
+          message: expect.stringContaining('api/pages/context/audience.json'),
         });
       });
     });

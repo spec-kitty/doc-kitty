@@ -23,6 +23,7 @@ context/audience + guides/getting-started) so tests stay small and fast:
   pre-FR-008 / pre-WP01 migration-allowance corpus).
 - `gated-pages/` - records carry no `_links.self` (site set `links.pages:false`).
 - `malformed-title/` - first record's `title` removed (guard message check).
+- `malformed-markdown/` - the `context/audience` page artifact loses its required `markdown`.
 
 Provenance of the minted example copy: the lane-b `example/dist` build of
 2026-11-01 (contract version "3", 70 agent-discoverable pages, `buildId`
