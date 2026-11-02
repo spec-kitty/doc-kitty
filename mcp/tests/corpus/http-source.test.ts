@@ -9,7 +9,7 @@
  * without touching the network.
  */
 import { createServer } from 'node:http';
-import type { Server } from 'node:http';
+import type { Server, ServerResponse } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import type { AddressInfo } from 'node:net';
@@ -34,6 +34,8 @@ interface ServedCorpus {
   delayMs: number;
   /** Serve nothing: every request gets a 404. */
   dead: boolean;
+  /** Custom responder per pathname (hostile-index and redirect cases). */
+  overrides: Map<string, (res: ServerResponse) => void>;
 }
 
 function startCorpusServer(overrides: Partial<Pick<ServedCorpus, 'delayMs' | 'dead'>> = {}): Promise<ServedCorpus> {
@@ -46,6 +48,7 @@ function startCorpusServer(overrides: Partial<Pick<ServedCorpus, 'delayMs' | 'de
     maxInFlight: 0,
     delayMs: overrides.delayMs ?? 0,
     dead: overrides.dead ?? false,
+    overrides: new Map(),
   };
   const server = createServer((req, res) => {
     state.inFlight += 1;
@@ -59,6 +62,11 @@ function startCorpusServer(overrides: Partial<Pick<ServedCorpus, 'delayMs' | 'de
       try {
         if (state.dead) {
           res.writeHead(404).end('not found');
+          return;
+        }
+        const custom = state.overrides.get(pathname);
+        if (custom !== undefined) {
+          custom(res);
           return;
         }
         const flakyAt = state.flakyAfter.get(pathname);
@@ -108,6 +116,7 @@ afterEach(() => {
   served.flakyAfter.clear();
   served.delayMs = 0;
   served.dead = false;
+  served.overrides.clear();
   served.maxInFlight = 0;
 });
 afterAll(() => stopCorpusServer(served));
@@ -173,5 +182,21 @@ describe('per-request timeout', () => {
       loadSnapshot(new HttpCorpusSource(served.base, { timeoutMs: 50 }), { logger: events.logger }),
     ).rejects.toMatchObject({ code: 'UNREACHABLE_ENDPOINT' });
     expect(ofKind(events.events, 'retry').length).toBe(1);
+  });
+});
+
+describe('artifacts are fetched only from the configured site', () => {
+  it('refuses an index ref pointing off-site (MALFORMED_CORPUS, names the ref, no request made)', async () => {
+    const index = JSON.parse(readFileSync(`${FIXTURE_DIR}/api/index.json`, 'utf8').replaceAll(BAKED, served.base));
+    const hostile = 'http://169.254.169.254/latest/api/pages/x.json';
+    index.pages[0]._links.self.href = hostile;
+    served.overrides.set('/api/index.json', (res) => {
+      res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(index));
+    });
+    await expect(loadSnapshot(new HttpCorpusSource(served.base))).rejects.toMatchObject({
+      code: 'MALFORMED_CORPUS',
+      message: expect.stringContaining(hostile),
+    });
+    expect(served.requests.has('/api/pages/home.json')).toBe(false);
   });
 });
