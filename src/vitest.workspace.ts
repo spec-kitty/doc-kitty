@@ -66,6 +66,19 @@ const BUILD_SUITES = [
   // `example/.dk-test-legacy-html/`) at the domain root and under a base path,
   // and once with a refused Astro `.html` redirect key. Real Astro runs.
   'tests/legacy-html-redirects-build.test.ts',
+  // MCP served-site conformance lane (doc-kitty-mcp-server WP08, FR-001
+  // anti-fake): builds example/ once into its own DK_OUTDIR
+  // (dist-wp08-mcp-lane), serves that fresh build statically over 127.0.0.1, spawns the freshly `tsc`-built
+  // mcp binary with --site at that server, and drives an MCP client over
+  // stdio through a smoke of the five-tool contract against the SERVED bytes
+  // (never the committed fixture corpus). Lives outside src/tests so the mcp
+  // package's own `vitest run` default include (*.test.ts) never double-runs
+  // this heavy lane; the one serialized registration is here. CI wiring: the
+  // code-quality lane's `pnpm test` step invokes this workspace, so no
+  // workflow-file change is needed - a parallel CI step would double-run it.
+  // Serialized here because the build shares the example/.astro cache with the
+  // other build suites.
+  '../mcp/tests/perf/lane-served-site.lane.ts',
 ];
 
 export default defineWorkspace([

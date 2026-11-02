@@ -1,0 +1,39 @@
+{
+  "slug": "context/audience/draft-persona",
+  "route": "/context/audience/draft-persona/",
+  "section": "context",
+  "title": "Pending the Placeholder",
+  "description": "A deliberately unpublished persona retained as the draft-exclusion demonstrator — it must stay out of the hub, sitemap, RSS, and agent index.",
+  "type": "Context",
+  "doc_status": "draft",
+  "kind": "Persona",
+  "tags": [
+    "persona",
+    "draft",
+    "fixture"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/draft-persona.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/context/audience/draft-persona/",
+  "authors": [
+    "human:stijn"
+  ],
+  "keywords": [],
+  "markdown": "The pending placeholder draft sentinel — this page exists only to prove that a\n`doc_status: draft` persona is excluded from the hub list, the sitemap, the RSS\nfeed, and the agent index while it remains unpublished (FR-022 / US5).\n\nOnce promoted to `active`, it would list on the Audiences hub like any other\npersona; until then it is listed in the sidebar of a build with drafts on, and is\nnot built with `DK_PUBLISH_DRAFTS=off`.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/draft-persona.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/context/audience/draft-persona/"
+    },
+    "related": []
+  }
+}

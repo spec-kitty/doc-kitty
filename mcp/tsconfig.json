@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    // Repo toolchain convention (mirror of src/tsconfig.json, minus the Astro
+    // preset this package does not depend on), adjusted for EMIT: this package
+    // is the first workspace member that must ship compiled output - a bin
+    // executable installed from a tarball cannot consume raw .ts sources.
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    // TS >= 6 stops auto-including @types/*; the SDK's .d.mts references
+    // Buffer, so Node types must be reachable explicitly either way.
+    "types": ["node"],
+    // Emit (declaration + js) from src/ to dist/.
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true
+  },
+  "include": ["src/**/*.ts"]
+}

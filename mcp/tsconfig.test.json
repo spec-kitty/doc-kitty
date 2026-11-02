@@ -1,0 +1,11 @@
+{
+  // Same compiler options as the emit config, but covering the tests too and
+  // emitting nothing - the typecheck/lint entry points (`pnpm typecheck`,
+  // `pnpm lint`) so test code is checked by tsc exactly like src/ is.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}

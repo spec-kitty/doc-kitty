@@ -1,0 +1,32 @@
+{
+  "slug": "context/audience",
+  "route": "/context/audience/",
+  "section": "context",
+  "title": "Audiences",
+  "description": "The reader personas this documentation serves — who they are, what they want, and what they are accountable for.",
+  "type": "Context",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.7,
+  "updated": "2026-08-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/context/audience/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Audiences\n\nThe personas below describe who this documentation is written for. Each persona\npage carries the reader's role, goals, and responsibilities, so an `audience`\nreference elsewhere in the tree resolves to a page that says something concrete\nabout the reader it points at.\n\nDraft personas are omitted from the list below (and from the sitemap, RSS feed,\nand agent index) until they are promoted to `active`.",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/context/audience/"
+    },
+    "related": []
+  }
+}

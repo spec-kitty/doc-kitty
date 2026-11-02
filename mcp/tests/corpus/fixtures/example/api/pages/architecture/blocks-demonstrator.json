@@ -1,0 +1,65 @@
+{
+  "slug": "architecture/blocks-demonstrator",
+  "route": "/architecture/blocks-demonstrator/",
+  "section": "architecture",
+  "title": "Content blocks demonstrator",
+  "description": "A single page that declares audience, related, and external references so all three doc-kitty content blocks render together for the accessibility lane.",
+  "type": "Architecture",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "architecture",
+    "blocks",
+    "demonstrator",
+    "fixture"
+  ],
+  "related": [
+    {
+      "ref": "architecture/superseded-note",
+      "title": "Superseded architecture note",
+      "kind": "Explanation",
+      "doc_status": "superseded"
+    },
+    {
+      "ref": "architecture/overview",
+      "title": "Overview",
+      "kind": "Explanation",
+      "doc_status": "active"
+    }
+  ],
+  "priority": 0.5,
+  "updated": "2026-08-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/blocks-demonstrator.json",
+  "audience": [
+    {
+      "profile": "example-persona",
+      "guidance_text": "Follow the three blocks below to see how audience, related, and citation metadata render."
+    }
+  ],
+  "url": "https://spec-kitty.github.io/doc-kitty/architecture/blocks-demonstrator/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Content blocks demonstrator\n\nThis page exists to render all three doc-kitty content blocks on one route so the\naccessibility lane can scan them together (post-spec R1). It declares:\n\n- an **audience** block linking the relocated\n  [example persona](/context/audience/example-persona/), so the audience\n  `<section>` renders a heading and a reader list;\n- a **related** block pointing at the\n  [superseded architecture note](/architecture/superseded-note/) — a real `superseded` page, so\n  its Related card carries the stale-target status marker — plus the\n  [architecture overview](/architecture/overview/) as a normal, current target;\n- an **external references** block with one inline reference (no catalog key) and\n  one catalog citation resolved from the bibliography, so a resolved title and a\n  mono citation key both appear.\n\nThe blocks self-resolve from this page's frontmatter (ADR-0017): nothing on this\npage is hand-authored HTML — the three regions below are rendered by the carrier\nbodies from the metadata above.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/blocks-demonstrator.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/architecture/blocks-demonstrator/"
+    },
+    "related": [
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/",
+        "title": "Superseded architecture note"
+      },
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
+        "title": "Overview"
+      }
+    ]
+  }
+}

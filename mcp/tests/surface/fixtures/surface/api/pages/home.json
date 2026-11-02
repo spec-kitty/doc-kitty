@@ -1,0 +1,17 @@
+{
+  "slug": "",
+  "section": "",
+  "title": "Surface Fixture Home",
+  "description": "A tiny synthetic corpus for surface-layer tests.",
+  "doc_status": "active",
+  "authors": [],
+  "keywords": ["landing"],
+  "markdown": "# Surface Fixture Home\n\nBody-only needle: flibbertygibbet appears in this markdown and nowhere else.\n",
+  "url": "https://docs.example.com/surface/",
+  "source": "https://docs.example.com/surface/api/pages/home.json",
+  "buildId": "surface-fixture-build",
+  "_links": {
+    "self": { "href": "https://docs.example.com/surface/api/pages/home.json" },
+    "html": { "href": "https://docs.example.com/surface/" }
+  }
+}

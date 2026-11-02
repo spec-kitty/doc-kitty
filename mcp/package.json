@@ -1,0 +1,32 @@
+{
+  "name": "@spec-kitty/doc-kitty-mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generic MCP server over a published DocKitty corpus (stdio transport, snapshot-at-start). The one runtime dependency is an exact pin (NFR-003); the toolkit contract import is type-only and erases at emit (C-006).",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "bin": {
+    "doc-kitty-mcp": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "lint": "tsc -p tsconfig.test.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0"
+  },
+  "devDependencies": {
+    "@spec-kitty/doc-toolkit": "workspace:*",
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.0"
+  }
+}

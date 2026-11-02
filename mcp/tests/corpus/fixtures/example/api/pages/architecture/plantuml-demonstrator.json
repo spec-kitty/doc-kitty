@@ -1,0 +1,51 @@
+{
+  "slug": "architecture/plantuml-demonstrator",
+  "route": "/architecture/plantuml-demonstrator/",
+  "section": "architecture",
+  "title": "PlantUML demonstrator",
+  "description": "A PlantUML diagram rendered to a static, themed, accessible SVG at build time — the build-only twin of the Mermaid demonstrator, named by a leading '-comment block.",
+  "type": "Architecture",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "architecture",
+    "diagrams",
+    "plantuml",
+    "demonstrator",
+    "fixture"
+  ],
+  "related": [
+    {
+      "ref": "architecture/diagram-demonstrator",
+      "title": "Diagram demonstrator",
+      "kind": "Explanation",
+      "doc_status": "active"
+    }
+  ],
+  "priority": 0.5,
+  "updated": "2026-09-07T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/plantuml-demonstrator.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/architecture/plantuml-demonstrator/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# PlantUML demonstrator\n\nA ` ```plantuml ` fenced code block is rendered to a **static SVG at build time**\nagainst a self-hosted PlantUML server — never `plantuml.com`. Like a Mermaid\ndiagram it becomes a themed, accessible `<figure>`; a small comment block at the\ntop gives it a caption, a credit line, and the accessible name and description a\nscreen reader announces.\n\n## What the metadata fields do\n\nPlantUML comments start with a single quote (`'`), so the metadata block uses\n`'` where Mermaid uses `%%` — the same plain-language keys, all optional:\n\n- **`title`** becomes the diagram's accessible **name**. When you omit it, the\n  **`description`** is used as the name instead.\n- **`description`** becomes the figure's **caption** and the diagram's accessible\n  **description**. Always provide at least this one.\n- **`attribution`** becomes a credit line; when **`source`** is present, the credit\n  links there.\n\nThe six `--dk-diagram-*` theme tokens are injected as PlantUML `skinparam` colours\nbefore the diagram is rendered, so the static SVG re-themes on a `[data-theme]`\ntoggle with **no JavaScript** — exactly like the Mermaid figure.\n\n```plantuml\n' title: Build-time PlantUML render\n' description: Markdown is parsed, the loader hands the themed source to a self-hosted PlantUML server, which renders the static SVG the reader is served with no client JavaScript.\n' attribution: DocKitty build-render seam (ADR-0023)\n' source: https://example.com/adr-0023-diagram-render-seam\npackage \"Build pipeline\" {\n  rectangle \"Markdown\\n(docs tree)\" as MD\n  rectangle \"Toolkit loader\" as LD\n  rectangle \"PlantUML server\\n(self-hosted)\" as PS\n}\nrectangle \"Static SVG\" as SVG\nrectangle \"Reader\" as R\nMD --> LD : parsed\nLD --> PS : themed source\nPS --> SVG : renders\nSVG --> R : served, no JS\n```\n\n## Build-only, by design\n\nThere is no client-side PlantUML renderer, so PlantUML is **build-only**: with\nbuild-render off (an adopter with no Chromium and no PlantUML server), a\n` ```plantuml ` block stays a plain code fence — no figure, no broken markup. The\nMermaid demonstrator, by contrast, keeps a client fallback because Mermaid ships a\nbrowser renderer.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/plantuml-demonstrator.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/architecture/plantuml-demonstrator/"
+    },
+    "related": [
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/architecture/diagram-demonstrator/",
+        "title": "Diagram demonstrator"
+      }
+    ]
+  }
+}

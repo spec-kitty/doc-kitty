@@ -1,0 +1,27 @@
+{
+  "slug": "controls/delta",
+  "route": "/controls/delta/",
+  "section": "controls",
+  "title": "Delta Ledger",
+  "description": "Notes on amberline accounting practice.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Reference",
+  "tags": [],
+  "authors": [],
+  "keywords": ["ledger"],
+  "priority": 0.4,
+  "updated": null,
+  "markdown": "# Delta Ledger\n\nColumns, totals and entries, kept in prose.\n",
+  "url": "https://conformance.example.net/library/controls/delta/",
+  "source": "https://conformance.example.net/library/src/content/docs/controls/delta.mdx",
+  "buildId": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091",
+  "_links": {
+    "self": {
+      "href": "https://conformance.example.net/library/api/pages/controls/delta.json"
+    },
+    "html": {
+      "href": "https://conformance.example.net/library/controls/delta/"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "slug": "plans/missions",
+  "route": "/plans/missions/",
+  "section": "plans",
+  "title": "Missions",
+  "description": "Short mission write-ups for the example docsite, one page per mission.",
+  "type": "Mission",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-10-13T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/plans/missions/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Missions\n\nEach page in this folder describes one mission planned for the example site:\nwhat it sets out to change and why. They are forward-looking write-ups, not a\nrecord of the current state (see [Architecture](/architecture/) for that).\n\nThis index page also gives the folder its name in the sidebar. A nested folder\nis labelled with the title of its index page, so without this page the group\nwould fall back to a readable form of the folder name and the build would\nreport the missing title.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/"
+    },
+    "related": []
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "slug": "architecture/superseded-note",
+  "route": "/architecture/superseded-note/",
+  "section": "architecture",
+  "title": "Superseded architecture note",
+  "description": "A published-but-superseded architecture note kept as the stale related-target so the demonstrator can render a real superseded status marker.",
+  "type": "Architecture",
+  "doc_status": "superseded",
+  "kind": "Explanation",
+  "tags": [
+    "architecture",
+    "superseded",
+    "fixture"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/superseded-note.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Superseded architecture note\n\nThis note describes an earlier approach that has since been replaced. It is kept\npublished — rather than deleted — so that a `related` reference pointing at it\nresolves to a real page whose `doc_status` is `superseded`.\n\nBecause `resolveRelated` fails the build on a dangling reference, the stale-target\nstatus marker (FR-005) needs an actual superseded page to point at. This is that\npage: the [blocks demonstrator](/architecture/blocks-demonstrator/) links here to show the\nsuperseded marker on a Related card.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/superseded-note.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/"
+    },
+    "related": []
+  }
+}

@@ -26,6 +26,10 @@ export const GROUP_GLOBS = {
   workflows: ['.github/workflows/**', '.github/scripts/**', '.github/actions/**', '.github/filters.yml'],
   code: [
     'src/**',
+    // doc-kitty-mcp-server WP02: the MCP server package and the tarball
+    // consumption harness are code surfaces; mirrors .github/filters.yml.
+    'mcp/**',
+    'tests/consumption/**',
     'example/src/**',
     'example/*.ts',
     'example/*.mjs',

@@ -1,0 +1,11 @@
+{
+  "name": "mcp-consumer-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.22.0",
+  "description": "Clean-room consumer of the PACKED @spec-kitty/doc-kitty-mcp tarball (never the workspace symlink) proving the tarball installs and its bin launches (doc-kitty-mcp-server WP06/T025). Test resource - excluded from the repo pnpm workspace by the sibling pnpm-workspace.yaml.",
+  "dependencies": {
+    "@spec-kitty/doc-kitty-mcp": "file:./doc-kitty-mcp.tgz"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "slug": "controls/alpha",
+  "route": "/controls/alpha/",
+  "section": "controls",
+  "title": "Alpha Topic",
+  "description": "The alpha page carries its control term in keywords alone.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Reference",
+  "tags": [],
+  "authors": [],
+  "keywords": ["zephyrquill", "cataloging"],
+  "priority": 0.4,
+  "updated": null,
+  "markdown": "# Alpha Topic\n\nThe alpha body speaks only of plain cataloging practice.\n",
+  "url": "https://conformance.example.net/library/controls/alpha/",
+  "source": "https://conformance.example.net/library/src/content/docs/controls/alpha.mdx",
+  "buildId": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091",
+  "_links": {
+    "self": {
+      "href": "https://conformance.example.net/library/api/pages/controls/alpha.json"
+    },
+    "html": {
+      "href": "https://conformance.example.net/library/controls/alpha/"
+    }
+  }
+}

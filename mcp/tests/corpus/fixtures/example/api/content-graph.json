@@ -1,0 +1,2010 @@
+{
+  "schema": "dockitty.content-graph/1",
+  "okf_version": "0.2",
+  "generatedFrom": "doc-kitty",
+  "nodes": [
+    {
+      "id": "README",
+      "kind": "page",
+      "title": "DocKitty Example",
+      "description": "Master entry point for the example docsite built with DocKitty.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "",
+      "href": "/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "adr/0001-use-astro-starlight",
+      "kind": "page",
+      "type": "ADR",
+      "title": "ADR-0001: Build on Astro + Starlight",
+      "description": "Why the toolkit renders Common Docs trees with Astro and Starlight.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "ADR",
+      "section": "adr",
+      "href": "/adr/0001-use-astro-starlight/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "adr/README",
+      "kind": "page",
+      "type": "ADR",
+      "title": "Decision Records",
+      "description": "The immutable log of architectural decisions for the example.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "adr",
+      "href": "/adr/",
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "architecture/README",
+      "kind": "page",
+      "type": "Architecture",
+      "title": "Architecture",
+      "description": "Current system design of the example docsite.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "architecture",
+      "href": "/architecture/",
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "architecture/blocks-demonstrator",
+      "kind": "page",
+      "type": "Architecture",
+      "title": "Content blocks demonstrator",
+      "description": "A single page that declares audience, related, and external references so all three doc-kitty content blocks render together for the accessibility lane.",
+      "tags": [
+        "architecture",
+        "blocks",
+        "demonstrator",
+        "fixture"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "architecture",
+      "href": "/architecture/blocks-demonstrator/",
+      "updated": "2026-08-24T00:00:00Z"
+    },
+    {
+      "id": "architecture/diagram-demonstrator",
+      "kind": "page",
+      "type": "Architecture",
+      "title": "Diagram demonstrator",
+      "description": "One page with two diagrams — a fully-annotated flowchart and a description-only sequence — showing the metadata surface across two guaranteed types.",
+      "tags": [
+        "architecture",
+        "diagrams",
+        "demonstrator",
+        "fixture"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "architecture",
+      "href": "/architecture/diagram-demonstrator/",
+      "updated": "2026-08-25T00:00:00Z"
+    },
+    {
+      "id": "architecture/overview",
+      "kind": "page",
+      "type": "Architecture",
+      "title": "Overview",
+      "description": "How the example turns a Common Docs tree into a site plus feeds and an agent-API.",
+      "tags": [
+        "astro",
+        "starlight",
+        "build"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "architecture",
+      "href": "/architecture/overview/",
+      "updated": "2026-10-14T00:00:00Z"
+    },
+    {
+      "id": "architecture/plantuml-demonstrator",
+      "kind": "page",
+      "type": "Architecture",
+      "title": "PlantUML demonstrator",
+      "description": "A PlantUML diagram rendered to a static, themed, accessible SVG at build time — the build-only twin of the Mermaid demonstrator, named by a leading '-comment block.",
+      "tags": [
+        "architecture",
+        "diagrams",
+        "plantuml",
+        "demonstrator",
+        "fixture"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "architecture",
+      "href": "/architecture/plantuml-demonstrator/",
+      "updated": "2026-09-07T00:00:00Z"
+    },
+    {
+      "id": "architecture/superseded-note",
+      "kind": "page",
+      "type": "Architecture",
+      "title": "Superseded architecture note",
+      "description": "A published-but-superseded architecture note kept as the stale related-target so the demonstrator can render a real superseded status marker.",
+      "tags": [
+        "architecture",
+        "superseded",
+        "fixture"
+      ],
+      "status": "deprecated",
+      "doc_status": "superseded",
+      "doc_kind": "Explanation",
+      "section": "architecture",
+      "href": "/architecture/superseded-note/",
+      "updated": "2026-08-24T00:00:00Z"
+    },
+    {
+      "id": "behaviour/README",
+      "kind": "page",
+      "title": "Behaviour",
+      "description": "Behaviour specifications generated from the repository's Gherkin feature files.",
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-gherkin/0.5.0",
+        "at": "2026-10-18T05:55:21Z",
+        "content_hash": "sha256:16468cd02ce6"
+      },
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "behaviour",
+      "href": "/behaviour/"
+    },
+    {
+      "id": "behaviour/hr/README",
+      "kind": "page",
+      "title": "HR",
+      "description": "Behaviour specifications for HR, generated from Gherkin feature files.",
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-gherkin/0.5.0",
+        "at": "2026-10-18T05:55:21Z",
+        "content_hash": "sha256:921b0185fc92"
+      },
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "behaviour",
+      "href": "/behaviour/hr/"
+    },
+    {
+      "id": "behaviour/hr/request-leave",
+      "kind": "page",
+      "title": "Request annual leave",
+      "description": "Leave requests are checked against the employee's remaining allowance.",
+      "tags": [
+        "FR-012"
+      ],
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-gherkin/0.5.0",
+        "at": "2026-10-18T05:55:21Z",
+        "content_hash": "sha256:2ba67bcafd1f"
+      },
+      "sources": [
+        {
+          "resource": "features/hr/request-leave.feature",
+          "title": "Gherkin source"
+        }
+      ],
+      "doc_status": "active",
+      "doc_kind": "Specification",
+      "section": "behaviour",
+      "href": "/behaviour/hr/request-leave/"
+    },
+    {
+      "id": "behaviour/shipping/README",
+      "kind": "page",
+      "title": "Shipping",
+      "description": "Behaviour specifications for Shipping, generated from Gherkin feature files.",
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-gherkin/0.5.0",
+        "at": "2026-10-18T05:55:21Z",
+        "content_hash": "sha256:07bf420aeb22"
+      },
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "behaviour",
+      "href": "/behaviour/shipping/"
+    },
+    {
+      "id": "behaviour/shipping/book-consignment",
+      "kind": "page",
+      "title": "Book a consignment",
+      "description": "A booking reserves space on one sailing for one consignment.",
+      "tags": [
+        "FR-003"
+      ],
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-gherkin/0.5.0",
+        "at": "2026-10-19T08:58:27Z",
+        "content_hash": "sha256:817e81f1d8da"
+      },
+      "sources": [
+        {
+          "resource": "features/shipping/book-consignment.feature",
+          "title": "Gherkin source"
+        }
+      ],
+      "doc_status": "active",
+      "doc_kind": "Specification",
+      "section": "behaviour",
+      "href": "/behaviour/shipping/book-consignment/"
+    },
+    {
+      "id": "behaviour/shipping/declare-customs",
+      "kind": "page",
+      "title": "Declare a consignment to customs",
+      "description": "Every consignment that crosses a customs border needs a declaration lodged before the sailing's cut-off.",
+      "tags": [
+        "FR-004"
+      ],
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-gherkin/0.5.0",
+        "at": "2026-10-19T08:58:27Z",
+        "content_hash": "sha256:2c4e57f9ba43"
+      },
+      "sources": [
+        {
+          "resource": "features/shipping/declare-customs.feature",
+          "title": "Gherkin source"
+        }
+      ],
+      "doc_status": "active",
+      "doc_kind": "Specification",
+      "section": "behaviour",
+      "href": "/behaviour/shipping/declare-customs/"
+    },
+    {
+      "id": "catalog:biblio:divio-2017",
+      "kind": "catalog",
+      "title": "The documentation system",
+      "url": "https://documentation.divio.com"
+    },
+    {
+      "id": "catalog:biblio:freese-rhetoric-1926",
+      "kind": "catalog",
+      "title": "Aristotle, Rhetoric",
+      "url": "http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0060"
+    },
+    {
+      "id": "catalog:biblio:perseus-project",
+      "kind": "catalog",
+      "title": "The Perseus Project",
+      "url": "http://www.perseus.tufts.edu/hopper"
+    },
+    {
+      "id": "changelog/README",
+      "kind": "page",
+      "type": "Changelog",
+      "title": "Changelog",
+      "description": "Release history of the DocKitty toolkit, rendered from the repository CHANGELOG.md.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "changelog",
+      "href": "/changelog/",
+      "updated": "2026-10-19T00:00:00Z"
+    },
+    {
+      "id": "changelog/releases",
+      "kind": "page",
+      "type": "Changelog",
+      "title": "Release history",
+      "description": "Every DocKitty toolkit release, rendered at build time from the repository's CHANGELOG.md.",
+      "tags": [
+        "release"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Changelog",
+      "section": "changelog",
+      "href": "/changelog/releases/",
+      "updated": "2026-10-19T00:00:00Z"
+    },
+    {
+      "id": "context/README",
+      "kind": "page",
+      "type": "Context",
+      "title": "Context",
+      "description": "Why this project exists, who it serves, and its domain vocabulary.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "context",
+      "href": "/context/",
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "context/audience/README",
+      "kind": "page",
+      "type": "Context",
+      "title": "Audiences",
+      "description": "The reader personas this documentation serves — who they are, what they want, and what they are accountable for.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "context",
+      "href": "/context/audience/",
+      "updated": "2026-08-24T00:00:00Z"
+    },
+    {
+      "id": "context/audience/example-persona",
+      "kind": "persona",
+      "type": "Context",
+      "title": "Marzipan the Mapmaker",
+      "description": "A worked Persona page exercising the passport per-kind layout with the role, goals, and responsibilities attribute fields.",
+      "tags": [
+        "persona",
+        "passport",
+        "fixture"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Persona",
+      "section": "context",
+      "href": "/context/audience/example-persona/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-08-24T00:00:00Z"
+    },
+    {
+      "id": "context/audience/rhetoric-practitioner",
+      "kind": "persona",
+      "type": "Context",
+      "title": "The Rhetoric Practitioner",
+      "description": "A working communicator mining Aristotle's Rhetoric for persuasion technique, wanting cross-referenced, footnoted primary text.",
+      "tags": [
+        "persona",
+        "audience",
+        "rhetoric"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Persona",
+      "section": "context",
+      "href": "/context/audience/rhetoric-practitioner/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "context/audience/rhetoric-student",
+      "kind": "persona",
+      "type": "Context",
+      "title": "The Rhetoric Student",
+      "description": "A student of communication and argument who wants Aristotle's classical text made navigable and glossed for a modern reader.",
+      "tags": [
+        "persona",
+        "audience",
+        "rhetoric"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Persona",
+      "section": "context",
+      "href": "/context/audience/rhetoric-student/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "context/domain",
+      "kind": "page",
+      "type": "Context",
+      "title": "Domain",
+      "description": "The ubiquitous language for DocKitty.",
+      "tags": [
+        "glossary",
+        "domain"
+      ],
+      "status": "stable",
+      "sources": [
+        {
+          "resource": "https://github.com/velvet-tiger/common-docs",
+          "title": "Common Docs specification"
+        },
+        {
+          "resource": "https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md",
+          "title": "Open Knowledge Format (OKF) v0.2"
+        }
+      ],
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "context",
+      "href": "/context/domain/",
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "context/product",
+      "kind": "page",
+      "type": "Context",
+      "title": "Product",
+      "description": "The problem this example solves and who it is for.",
+      "tags": [
+        "product",
+        "vision"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "context",
+      "href": "/context/product/",
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "glossary-demo/cargo-and-collisions",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Cargo, consignments, and a cross-context collision",
+      "description": "The context-free demonstrator — auto-linking, an unresolved collision left plain with one build warning, a forced :term link, and a suppressed one.",
+      "tags": [
+        "glossary",
+        "demonstrator",
+        "autolink",
+        "collision"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "glossary-demo",
+      "href": "/glossary-demo/cargo-and-collisions/",
+      "updated": "2026-08-26T00:00:00Z"
+    },
+    {
+      "id": "glossary-demo/no-autolink",
+      "kind": "page",
+      "type": "Guide",
+      "title": "A page that opts out of auto-linking",
+      "description": "Setting glossary_autolink to false turns off automatic links for the whole page, while an explicit :term directive still resolves and links.",
+      "tags": [
+        "glossary",
+        "demonstrator",
+        "opt-out"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "How-To",
+      "section": "glossary-demo",
+      "href": "/glossary-demo/no-autolink/",
+      "updated": "2026-08-26T00:00:00Z"
+    },
+    {
+      "id": "glossary-demo/shipping-guide",
+      "kind": "page",
+      "type": "Guide",
+      "title": "A page that lives in the shipping context",
+      "description": "Declaring glossary_context lets the auto-linker settle a collision by itself — here policy resolves to shipping with no directive and no warning.",
+      "tags": [
+        "glossary",
+        "demonstrator",
+        "context"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "How-To",
+      "section": "glossary-demo",
+      "href": "/glossary-demo/shipping-guide/",
+      "updated": "2026-08-26T00:00:00Z"
+    },
+    {
+      "id": "glossary/hr/index",
+      "kind": "page",
+      "title": "hr",
+      "description": "Glossary terms for the hr context.",
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-glossary/0.5.0",
+        "at": "2026-10-18T06:09:39Z",
+        "content_hash": "sha256:647872872f73"
+      },
+      "doc_status": "active",
+      "doc_kind": "Glossary",
+      "section": "glossary",
+      "href": "/glossary/hr/"
+    },
+    {
+      "id": "glossary/index",
+      "kind": "page",
+      "title": "Glossary",
+      "description": "Bounded-context vocabulary for this documentation.",
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-glossary/0.5.0",
+        "at": "2026-10-18T06:09:39Z",
+        "content_hash": "sha256:3c372a59ef6a"
+      },
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "glossary",
+      "href": "/glossary/"
+    },
+    {
+      "id": "glossary/rhetoric/index",
+      "kind": "page",
+      "title": "rhetoric",
+      "description": "Glossary terms for the rhetoric context.",
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-glossary/0.5.0",
+        "at": "2026-10-18T06:09:39Z",
+        "content_hash": "sha256:1d0bb7c2a0ee"
+      },
+      "doc_status": "active",
+      "doc_kind": "Glossary",
+      "section": "glossary",
+      "href": "/glossary/rhetoric/"
+    },
+    {
+      "id": "glossary/shipping/index",
+      "kind": "page",
+      "title": "shipping",
+      "description": "Glossary terms for the shipping context.",
+      "status": "stable",
+      "generated": {
+        "by": "doc-kitty-glossary/0.5.0",
+        "at": "2026-10-18T06:09:39Z",
+        "content_hash": "sha256:1fc1f255099a"
+      },
+      "doc_status": "active",
+      "doc_kind": "Glossary",
+      "section": "glossary",
+      "href": "/glossary/shipping/"
+    },
+    {
+      "id": "guides/README",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Guides",
+      "description": "How-to guides for humans and agents working on this project.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "guides",
+      "href": "/guides/",
+      "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "guides/getting-started",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Getting started",
+      "description": "Where to start, whether you build your own docsite with DocKitty or work on this example site.",
+      "tags": [
+        "setup",
+        "getting-started"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Tutorial",
+      "section": "guides",
+      "href": "/guides/getting-started/",
+      "updated": "2026-10-19T00:00:00Z"
+    },
+    {
+      "id": "guides/github-alerts",
+      "kind": "page",
+      "type": "Guide",
+      "title": "GitHub alerts",
+      "description": "GitHub alert blockquotes (> [!NOTE] and friends) rendered as Starlight asides, with the cases that stay plain blockquotes.",
+      "tags": [
+        "github-alerts",
+        "asides",
+        "fixture",
+        "showcase"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Reference",
+      "section": "guides",
+      "href": "/guides/github-alerts/",
+      "updated": "2026-10-31T00:00:00Z"
+    },
+    {
+      "id": "guides/install",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Install the toolkit",
+      "description": "Install @spec-kitty/doc-toolkit 0.4.0 from GitHub Packages with its Astro 7 and Starlight 0.42 peers, wire it into a new site, and build it.",
+      "tags": [
+        "setup",
+        "install",
+        "consumer",
+        "release"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "How-To",
+      "section": "guides",
+      "href": "/guides/install/",
+      "updated": "2026-10-19T00:00:00Z"
+    },
+    {
+      "id": "guides/markua-footnotes-showcase",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Markua footnotes showcase",
+      "description": "Markua double-caret footnotes rendered as real, back-linked GFM footnotes (FR-004).",
+      "tags": [
+        "markua",
+        "footnotes",
+        "fixture",
+        "showcase"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Reference",
+      "section": "guides",
+      "href": "/guides/markua-footnotes-showcase/",
+      "updated": "2026-10-13T00:00:00Z"
+    },
+    {
+      "id": "guides/markua-malformed",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Markua graceful degradation",
+      "description": "Deliberately malformed Markua that must never fail the build (NFR-002).",
+      "tags": [
+        "markua",
+        "fixture",
+        "degradation"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Reference",
+      "section": "guides",
+      "href": "/guides/markua-malformed/",
+      "updated": "2026-08-29T00:00:00Z"
+    },
+    {
+      "id": "guides/markua-showcase",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Markua showcase",
+      "description": "Every in-scope Markua construct on one page — the author reference and the coverage fixture.",
+      "tags": [
+        "markua",
+        "showcase",
+        "fixture",
+        "reference"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Reference",
+      "section": "guides",
+      "href": "/guides/markua-showcase/",
+      "updated": "2026-10-19T00:00:00Z"
+    },
+    {
+      "id": "guides/scenarios-in-pages",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Scenarios in pages",
+      "description": "Gherkin in an ordinary page — a gherkin code fence or an included .feature file renders as headings, step lists and tables instead of a code block.",
+      "tags": [
+        "gherkin",
+        "scenarios",
+        "showcase",
+        "fixture"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Reference",
+      "section": "guides",
+      "href": "/guides/scenarios-in-pages/",
+      "updated": "2026-10-14T00:00:00Z"
+    },
+    {
+      "id": "plans/index",
+      "kind": "page",
+      "type": "Plan",
+      "title": "Plans",
+      "description": "Forward-looking mission write-ups for the example docsite — not the current state (see architecture/).",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "plans",
+      "href": "/plans/",
+      "updated": "2026-10-13T00:00:00Z"
+    },
+    {
+      "id": "plans/missions/index",
+      "kind": "page",
+      "type": "Mission",
+      "title": "Missions",
+      "description": "Short mission write-ups for the example docsite, one page per mission.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "plans",
+      "href": "/plans/missions/",
+      "updated": "2026-10-13T00:00:00Z"
+    },
+    {
+      "id": "plans/missions/mission-alpha",
+      "kind": "page",
+      "type": "Mission",
+      "title": "Mission Alpha",
+      "description": "A short mission write-up used to demonstrate the registry subtypes rename (plans/features -> plans/missions).",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Planning",
+      "section": "plans",
+      "href": "/plans/missions/mission-alpha/",
+      "updated": "2026-10-13T00:00:00Z"
+    },
+    {
+      "id": "plans/missions/mission-beta",
+      "kind": "page",
+      "type": "Mission",
+      "title": "Mission Beta",
+      "description": "A second short mission write-up, cross-linking Mission Alpha to prove zero dangling links survive the rename.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Planning",
+      "section": "plans",
+      "href": "/plans/missions/mission-beta/",
+      "updated": "2026-10-13T00:00:00Z"
+    },
+    {
+      "id": "presentations/README",
+      "kind": "page",
+      "type": "Presentation",
+      "title": "Presentations",
+      "description": "The overview hub for published slide decks — the in-frame entry point that links each deck's out-of-frame reveal.js view and its print or PDF export.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "presentations",
+      "href": "/presentations/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-08-24T00:00:00Z"
+    },
+    {
+      "id": "presentations/feature-tour",
+      "kind": "page",
+      "type": "Presentation",
+      "title": "doc-kitty: your docs, already a site",
+      "description": "How a Common Docs tree becomes an on-brand, agent-readable, self-checking site, with no theme build.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Presentation",
+      "section": "presentations",
+      "href": "/presentations/feature-tour/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-09-05T00:00:00Z"
+    },
+    {
+      "id": "presentations/markua-deck",
+      "kind": "page",
+      "type": "Presentation",
+      "title": "Markua-Capable Deck",
+      "description": "A published reveal.js deck proving the Markua subset renders on slides — asides, an attributed paragraph, and a captioned figure — without swallowing a slide boundary.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Presentation",
+      "section": "presentations",
+      "href": "/presentations/markua-deck/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-09-06T00:00:00Z"
+    },
+    {
+      "id": "presentations/roadmap-deck",
+      "kind": "page",
+      "type": "Presentation",
+      "title": "Roadmap Deck",
+      "description": "A published, diagram-free slide deck used to prove a deck with no diagrams never pulls the Mermaid runtime onto its route (the NFR-002 footprint guard).",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Presentation",
+      "section": "presentations",
+      "href": "/presentations/roadmap-deck/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-08-28T00:00:00Z"
+    },
+    {
+      "id": "presentations/showcase-deck",
+      "kind": "page",
+      "type": "Presentation",
+      "title": "Showcase Deck",
+      "description": "A published reveal.js deck exercising the full out-of-frame pipeline — a title slide, horizontal slides, a vertical stack, a fragment, and speaker notes.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Presentation",
+      "section": "presentations",
+      "href": "/presentations/showcase-deck/",
+      "authors": [
+        "human:stijn"
+      ],
+      "updated": "2026-08-24T00:00:00Z"
+    },
+    {
+      "id": "resource:features/hr/request-leave.feature",
+      "kind": "resource",
+      "title": "Gherkin source",
+      "resource": "features/hr/request-leave.feature"
+    },
+    {
+      "id": "resource:features/shipping/book-consignment.feature",
+      "kind": "resource",
+      "title": "Gherkin source",
+      "resource": "features/shipping/book-consignment.feature"
+    },
+    {
+      "id": "resource:features/shipping/declare-customs.feature",
+      "kind": "resource",
+      "title": "Gherkin source",
+      "resource": "features/shipping/declare-customs.feature"
+    },
+    {
+      "id": "resource:https://diataxis.fr",
+      "kind": "resource",
+      "title": "The Diataxis documentation framework",
+      "url": "https://diataxis.fr"
+    },
+    {
+      "id": "resource:https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md",
+      "kind": "resource",
+      "title": "Open Knowledge Format (OKF) v0.2",
+      "resource": "https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md"
+    },
+    {
+      "id": "resource:https://github.com/velvet-tiger/common-docs",
+      "kind": "resource",
+      "title": "Common Docs specification",
+      "resource": "https://github.com/velvet-tiger/common-docs"
+    },
+    {
+      "id": "rhetoric/about-and-license",
+      "kind": "page",
+      "type": "Reference",
+      "title": "About and license",
+      "description": "Attribution and license (CC-BY-SA-4.0) for the Rhetoric showcase — the public-domain Freese/Perseus source and the Dejongh revamp.",
+      "tags": [
+        "rhetoric",
+        "attribution",
+        "license"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/about-and-license/",
+      "updated": "2026-10-14T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-01",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 1: What is the point of Rhetoric?",
+      "description": "Aristotle defines rhetoric as the counterpart of dialectic and argues that a systematic art of proof, not appeals to emotion, is its true business.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-01/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-02",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 2: Argumentation techniques",
+      "description": "Rhetoric as the faculty of finding the available means of persuasion: moral character, emotion, and the argument itself, via example and enthymeme.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-02/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-03",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 3: Types of Rhetoric",
+      "description": "The three kinds of rhetorical speech — deliberative, forensic, and epideictic — their proper times, and the distinct end each one argues toward.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-03/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-04",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 4: Topics of deliberative rhetoric",
+      "description": "The five subjects the deliberative orator must be ready to advise on: ways and means, war and peace, defence, food supply, and legislation.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-04/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-05",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 5: What people care about",
+      "description": "A working definition of happiness and its parts — birth, friends, wealth, honor, health, beauty, strength, and good fortune — for the deliberative orator.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-05/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-06",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 6: The greater good, and its components",
+      "description": "Aristotle defines the good as what all things aim at, catalogs the things generally recognized as good, and lists arguments for doubtful goods.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-06/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-07",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 7: The Impact of actions and trade-offs",
+      "description": "How to weigh one good against another: Aristotle's rules for comparing things by size, cause, scarcity, duration, and general opinion.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-07/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-08",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 8: Types of Governments",
+      "description": "The four forms of government — democracy, oligarchy, aristocracy, monarchy — their ends, and why an orator must know them.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-08/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-09",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 9: Epideictic Rhetoric, praise and blame, virtue and vice",
+      "description": "Aristotle defines virtue and the noble, then sets out the topics and amplification techniques used in epideictic praise and blame.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-09/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-10",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 10: Litigation: accusation and defense",
+      "description": "The motives behind wrongdoing — chance, nature, compulsion, habit, reason, anger, and desire — as material for accusation and defense.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-10/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-11",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 11: Motive",
+      "description": "Aristotle explains motive through what people find pleasant, laying the ground for why people commit wrongdoing.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-11/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-12",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 12: Intent",
+      "description": "The frame of mind of wrongdoers and the circumstances and victims that make wrongdoing seem safe to attempt.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-12/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-13",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 13: Justice and Legislation",
+      "description": "Aristotle classifies just and unjust acts under particular and general law, and defines equity.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-13/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-14",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 14: Severity of transgressions",
+      "description": "How to argue that a wrong act is greater or lesser in degree, with the rhetorical grounds for each.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-14/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-15",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Chapter 15: Trial Proceedings",
+      "description": "The five inartificial proofs of forensic oratory — laws, witnesses, contracts, torture, and oaths.",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/chapter-15/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-one/index",
+      "kind": "page",
+      "type": "Reference",
+      "title": "I: Purposes and Definitions of Rhetoric",
+      "description": "Book I of Aristotle's Rhetoric — its purposes, the three species of rhetoric, and the topics orators build arguments from, across 15 chapters.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-one/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-three/index",
+      "kind": "page",
+      "type": "Reference",
+      "title": "III: Stylistic Delivery and Arrangement Techniques",
+      "description": "Book III of Aristotle's Rhetoric covers style, word choice, and speech arrangement. Out of scope for this showcase.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-three/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/book-two/index",
+      "kind": "page",
+      "type": "Reference",
+      "title": "II: Persuasion techniques",
+      "description": "Book II of Aristotle's Rhetoric covers ethos, pathos, and logos — the three means of persuasion. Out of scope for this showcase.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "rhetoric",
+      "href": "/rhetoric/book-two/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/index",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Rhetoric",
+      "description": "A real Markua conversion of Aristotle's Rhetoric Book I, showcasing custom sections, footnotes, a native glossary, and personas.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "rhetoric",
+      "href": "/rhetoric/",
+      "updated": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/introduction",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Introduction",
+      "description": "What the three books of Aristotle's Rhetoric cover, who translated this text, and how this docsite conversion came together.",
+      "tags": [
+        "rhetoric",
+        "introduction"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/introduction/",
+      "updated": "2026-10-14T00:00:00Z"
+    },
+    {
+      "id": "rhetoric/preamble",
+      "kind": "page",
+      "type": "Reference",
+      "title": "Preamble",
+      "description": "Editorial preface to Book I — how to read this conversion, the editor's-note convention, and where the source Glossary of key rhetoric terms now lives.",
+      "tags": [
+        "rhetoric",
+        "preamble"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "rhetoric",
+      "href": "/rhetoric/preamble/",
+      "updated": "2026-10-14T00:00:00Z"
+    }
+  ],
+  "edges": [
+    {
+      "id": "adr/0001-use-astro-starlight|in-section|adr/README",
+      "source": "adr/0001-use-astro-starlight",
+      "target": "adr/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "adr/README|in-section|README",
+      "source": "adr/README",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "architecture/README|in-section|README",
+      "source": "architecture/README",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "architecture/blocks-demonstrator|audience|context/audience/example-persona",
+      "source": "architecture/blocks-demonstrator",
+      "target": "context/audience/example-persona",
+      "rel": "audience",
+      "note": "Follow the three blocks below to see how audience, related, and citation metadata render."
+    },
+    {
+      "id": "architecture/blocks-demonstrator|cites|catalog:biblio:divio-2017",
+      "source": "architecture/blocks-demonstrator",
+      "target": "catalog:biblio:divio-2017",
+      "rel": "cites"
+    },
+    {
+      "id": "architecture/blocks-demonstrator|cites|resource:https://diataxis.fr",
+      "source": "architecture/blocks-demonstrator",
+      "target": "resource:https://diataxis.fr",
+      "rel": "cites",
+      "note": "an inline reference — self-contained, carries no catalog citation key"
+    },
+    {
+      "id": "architecture/blocks-demonstrator|in-section|architecture/README",
+      "source": "architecture/blocks-demonstrator",
+      "target": "architecture/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "architecture/blocks-demonstrator|related|architecture/overview",
+      "source": "architecture/blocks-demonstrator",
+      "target": "architecture/overview",
+      "rel": "related"
+    },
+    {
+      "id": "architecture/blocks-demonstrator|related|architecture/superseded-note",
+      "source": "architecture/blocks-demonstrator",
+      "target": "architecture/superseded-note",
+      "rel": "related"
+    },
+    {
+      "id": "architecture/diagram-demonstrator|in-section|architecture/README",
+      "source": "architecture/diagram-demonstrator",
+      "target": "architecture/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "architecture/diagram-demonstrator|related|architecture/overview",
+      "source": "architecture/diagram-demonstrator",
+      "target": "architecture/overview",
+      "rel": "related"
+    },
+    {
+      "id": "architecture/overview|in-section|architecture/README",
+      "source": "architecture/overview",
+      "target": "architecture/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "architecture/overview|related|guides/getting-started",
+      "source": "architecture/overview",
+      "target": "guides/getting-started",
+      "rel": "related"
+    },
+    {
+      "id": "architecture/plantuml-demonstrator|in-section|architecture/README",
+      "source": "architecture/plantuml-demonstrator",
+      "target": "architecture/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "architecture/plantuml-demonstrator|related|architecture/diagram-demonstrator",
+      "source": "architecture/plantuml-demonstrator",
+      "target": "architecture/diagram-demonstrator",
+      "rel": "related"
+    },
+    {
+      "id": "architecture/superseded-note|in-section|architecture/README",
+      "source": "architecture/superseded-note",
+      "target": "architecture/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "behaviour/README|in-section|README",
+      "source": "behaviour/README",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "behaviour/hr/README|in-section|behaviour/README",
+      "source": "behaviour/hr/README",
+      "target": "behaviour/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "behaviour/hr/request-leave|derived-from|resource:features/hr/request-leave.feature",
+      "source": "behaviour/hr/request-leave",
+      "target": "resource:features/hr/request-leave.feature",
+      "rel": "derived-from"
+    },
+    {
+      "id": "behaviour/hr/request-leave|in-section|behaviour/hr/README",
+      "source": "behaviour/hr/request-leave",
+      "target": "behaviour/hr/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "behaviour/shipping/README|in-section|behaviour/README",
+      "source": "behaviour/shipping/README",
+      "target": "behaviour/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "behaviour/shipping/book-consignment|audience|context/audience/example-persona",
+      "source": "behaviour/shipping/book-consignment",
+      "target": "context/audience/example-persona",
+      "rel": "audience",
+      "note": "As a shipper, I want to book cargo onto a sailing, so that my goods travel on a confirmed slot."
+    },
+    {
+      "id": "behaviour/shipping/book-consignment|derived-from|resource:features/shipping/book-consignment.feature",
+      "source": "behaviour/shipping/book-consignment",
+      "target": "resource:features/shipping/book-consignment.feature",
+      "rel": "derived-from"
+    },
+    {
+      "id": "behaviour/shipping/book-consignment|in-section|behaviour/shipping/README",
+      "source": "behaviour/shipping/book-consignment",
+      "target": "behaviour/shipping/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "behaviour/shipping/book-consignment|related|adr/0001-use-astro-starlight",
+      "source": "behaviour/shipping/book-consignment",
+      "target": "adr/0001-use-astro-starlight",
+      "rel": "related"
+    },
+    {
+      "id": "behaviour/shipping/book-consignment|related|plans/missions/mission-alpha",
+      "source": "behaviour/shipping/book-consignment",
+      "target": "plans/missions/mission-alpha",
+      "rel": "related"
+    },
+    {
+      "id": "behaviour/shipping/declare-customs|audience|context/audience/example-persona",
+      "source": "behaviour/shipping/declare-customs",
+      "target": "context/audience/example-persona",
+      "rel": "audience",
+      "note": "As a shipper, I want to declare my cargo to customs before it sails, so that the consignment clears the border without being held."
+    },
+    {
+      "id": "behaviour/shipping/declare-customs|derived-from|resource:features/shipping/declare-customs.feature",
+      "source": "behaviour/shipping/declare-customs",
+      "target": "resource:features/shipping/declare-customs.feature",
+      "rel": "derived-from"
+    },
+    {
+      "id": "behaviour/shipping/declare-customs|in-section|behaviour/shipping/README",
+      "source": "behaviour/shipping/declare-customs",
+      "target": "behaviour/shipping/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "behaviour/shipping/declare-customs|related|adr/0001-use-astro-starlight",
+      "source": "behaviour/shipping/declare-customs",
+      "target": "adr/0001-use-astro-starlight",
+      "rel": "related"
+    },
+    {
+      "id": "changelog/README|in-section|README",
+      "source": "changelog/README",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "changelog/releases|in-section|changelog/README",
+      "source": "changelog/releases",
+      "target": "changelog/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "context/README|in-section|README",
+      "source": "context/README",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "context/audience/README|in-section|context/README",
+      "source": "context/audience/README",
+      "target": "context/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "context/audience/example-persona|in-section|context/audience/README",
+      "source": "context/audience/example-persona",
+      "target": "context/audience/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "context/audience/rhetoric-practitioner|in-section|context/audience/README",
+      "source": "context/audience/rhetoric-practitioner",
+      "target": "context/audience/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "context/audience/rhetoric-student|in-section|context/audience/README",
+      "source": "context/audience/rhetoric-student",
+      "target": "context/audience/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "context/domain|derived-from|resource:https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md",
+      "source": "context/domain",
+      "target": "resource:https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md",
+      "rel": "derived-from"
+    },
+    {
+      "id": "context/domain|derived-from|resource:https://github.com/velvet-tiger/common-docs",
+      "source": "context/domain",
+      "target": "resource:https://github.com/velvet-tiger/common-docs",
+      "rel": "derived-from"
+    },
+    {
+      "id": "context/domain|in-section|context/README",
+      "source": "context/domain",
+      "target": "context/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "context/product|in-section|context/README",
+      "source": "context/product",
+      "target": "context/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "glossary-demo/cargo-and-collisions|in-section|README",
+      "source": "glossary-demo/cargo-and-collisions",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "glossary-demo/no-autolink|in-section|README",
+      "source": "glossary-demo/no-autolink",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "glossary-demo/shipping-guide|in-section|README",
+      "source": "glossary-demo/shipping-guide",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "glossary/hr/index|in-section|glossary/index",
+      "source": "glossary/hr/index",
+      "target": "glossary/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "glossary/index|in-section|README",
+      "source": "glossary/index",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "glossary/rhetoric/index|in-section|glossary/index",
+      "source": "glossary/rhetoric/index",
+      "target": "glossary/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "glossary/shipping/index|in-section|glossary/index",
+      "source": "glossary/shipping/index",
+      "target": "glossary/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/README|in-section|README",
+      "source": "guides/README",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/getting-started|cites|catalog:biblio:divio-2017",
+      "source": "guides/getting-started",
+      "target": "catalog:biblio:divio-2017",
+      "rel": "cites"
+    },
+    {
+      "id": "guides/getting-started|in-section|guides/README",
+      "source": "guides/getting-started",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/getting-started|related|architecture/overview",
+      "source": "guides/getting-started",
+      "target": "architecture/overview",
+      "rel": "related"
+    },
+    {
+      "id": "guides/getting-started|related|guides/install",
+      "source": "guides/getting-started",
+      "target": "guides/install",
+      "rel": "related"
+    },
+    {
+      "id": "guides/github-alerts|in-section|guides/README",
+      "source": "guides/github-alerts",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/install|in-section|guides/README",
+      "source": "guides/install",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/install|related|changelog/releases",
+      "source": "guides/install",
+      "target": "changelog/releases",
+      "rel": "related"
+    },
+    {
+      "id": "guides/install|related|guides/getting-started",
+      "source": "guides/install",
+      "target": "guides/getting-started",
+      "rel": "related"
+    },
+    {
+      "id": "guides/markua-footnotes-showcase|in-section|guides/README",
+      "source": "guides/markua-footnotes-showcase",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/markua-malformed|in-section|guides/README",
+      "source": "guides/markua-malformed",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/markua-showcase|in-section|guides/README",
+      "source": "guides/markua-showcase",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/scenarios-in-pages|in-section|guides/README",
+      "source": "guides/scenarios-in-pages",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/scenarios-in-pages|related|behaviour/shipping/book-consignment",
+      "source": "guides/scenarios-in-pages",
+      "target": "behaviour/shipping/book-consignment",
+      "rel": "related"
+    },
+    {
+      "id": "plans/index|in-section|README",
+      "source": "plans/index",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "plans/missions/index|in-section|plans/index",
+      "source": "plans/missions/index",
+      "target": "plans/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "plans/missions/mission-alpha|in-section|plans/missions/index",
+      "source": "plans/missions/mission-alpha",
+      "target": "plans/missions/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "plans/missions/mission-alpha|related|plans/missions/mission-beta",
+      "source": "plans/missions/mission-alpha",
+      "target": "plans/missions/mission-beta",
+      "rel": "related"
+    },
+    {
+      "id": "plans/missions/mission-beta|in-section|plans/missions/index",
+      "source": "plans/missions/mission-beta",
+      "target": "plans/missions/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "plans/missions/mission-beta|related|plans/missions/mission-alpha",
+      "source": "plans/missions/mission-beta",
+      "target": "plans/missions/mission-alpha",
+      "rel": "related"
+    },
+    {
+      "id": "presentations/README|in-section|README",
+      "source": "presentations/README",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "presentations/feature-tour|in-section|presentations/README",
+      "source": "presentations/feature-tour",
+      "target": "presentations/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "presentations/markua-deck|in-section|presentations/README",
+      "source": "presentations/markua-deck",
+      "target": "presentations/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "presentations/roadmap-deck|in-section|presentations/README",
+      "source": "presentations/roadmap-deck",
+      "target": "presentations/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "presentations/showcase-deck|in-section|presentations/README",
+      "source": "presentations/showcase-deck",
+      "target": "presentations/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/about-and-license|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/about-and-license",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/about-and-license|cites|catalog:biblio:perseus-project",
+      "source": "rhetoric/about-and-license",
+      "target": "catalog:biblio:perseus-project",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/about-and-license|in-section|rhetoric/index",
+      "source": "rhetoric/about-and-license",
+      "target": "rhetoric/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-01|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-01",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-01|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-01",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-02|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-02",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-02|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-02",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-03|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-03",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-03|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-03",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-04|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-04",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-04|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-04",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-05|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-05",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-05|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-05",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-06|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-06",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Read this chapter to see how Aristotle catalogs the things people take to be good — the raw material deliberative speeches argue from."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-06|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-06",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-06|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-06",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-07|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-07",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Read this chapter for Aristotle's method of comparing two goods when both sides agree they are useful but disagree on which is more so."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-07|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-07",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-07|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-07",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-08|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-08",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Read this chapter to see why knowing your audience's form of government shapes what arguments will persuade them."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-08|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-08",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-08|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-08",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-09|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-09",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Read this chapter for the building blocks of praise and blame — the raw material of epideictic rhetoric."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-09|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-09",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-09|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-09",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-10|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-10",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Read this chapter for Aristotle's seven causes of human action, the foundation for arguing about motive in a case."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-10|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-10",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-10|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-10",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-11|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-11",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Ties the psychology of pleasure to motive, background for the wrongdoing chapters either side of it."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-11|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-11",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-11|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-11",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-12|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-12",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Read alongside Chapter 11 (Motive) for the full picture of why and when people commit wrong."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-12|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-12",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-12|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-12",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-13|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-13",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Introduces the equity concept this book leans on when arguing written law against natural justice."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-13|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-13",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-13|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-13",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-14|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-14",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "A short, practical chapter on aggravating and mitigating arguments for use in the law courts."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-14|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-14",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-14|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-14",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-15|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/chapter-15",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Closes Book I with the concrete evidentiary tools an orator argues from in court."
+    },
+    {
+      "id": "rhetoric/book-one/chapter-15|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/chapter-15",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/book-one/chapter-15|in-section|rhetoric/book-one/index",
+      "source": "rhetoric/book-one/chapter-15",
+      "target": "rhetoric/book-one/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/index|in-section|rhetoric/index",
+      "source": "rhetoric/book-one/index",
+      "target": "rhetoric/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-three/index|in-section|rhetoric/index",
+      "source": "rhetoric/book-three/index",
+      "target": "rhetoric/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-two/index|in-section|rhetoric/index",
+      "source": "rhetoric/book-two/index",
+      "target": "rhetoric/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/index|in-section|README",
+      "source": "rhetoric/index",
+      "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/introduction|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/introduction",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/introduction|in-section|rhetoric/index",
+      "source": "rhetoric/introduction",
+      "target": "rhetoric/index",
+      "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/preamble|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/preamble",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
+      "id": "rhetoric/preamble|in-section|rhetoric/index",
+      "source": "rhetoric/preamble",
+      "target": "rhetoric/index",
+      "rel": "in-section"
+    }
+  ]
+}

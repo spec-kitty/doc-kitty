@@ -1,0 +1,39 @@
+{
+  "slug": "context/audience/example-persona",
+  "route": "/context/audience/example-persona/",
+  "section": "context",
+  "title": "Marzipan the Mapmaker",
+  "description": "A worked Persona page exercising the passport per-kind layout with the role, goals, and responsibilities attribute fields.",
+  "type": "Context",
+  "doc_status": "active",
+  "kind": "Persona",
+  "tags": [
+    "persona",
+    "passport",
+    "fixture"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/example-persona.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/context/audience/example-persona/",
+  "authors": [
+    "human:stijn"
+  ],
+  "keywords": [],
+  "markdown": "The marzipan mapmaker passport sentinel — a distinctive phrase reserved for this\nfixture so a Pagefind assertion can bind to this page's own search fragment on the\nbranded build.\n\nMarzipan charts the uncharted hollows of a documentation tree and hands every\nreader a route through it. This body prose stays inside Starlight's searchable\ncontent region, so the passport layout keeps the page indexable while the card\nabove renders the identity strip, the name heading, and the generic-field grid.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/example-persona.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/context/audience/example-persona/"
+    },
+    "related": []
+  }
+}

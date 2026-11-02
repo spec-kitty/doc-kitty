@@ -1,0 +1,35 @@
+{
+  "slug": "presentations",
+  "route": "/presentations/",
+  "section": "presentations",
+  "title": "Presentations",
+  "description": "The overview hub for published slide decks — the in-frame entry point that links each deck's out-of-frame reveal.js view and its print or PDF export.",
+  "type": "Presentation",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/presentations/",
+  "authors": [
+    "human:stijn"
+  ],
+  "keywords": [],
+  "markdown": "Slide decks live outside the documentation frame: a `kind: Presentation` page\nrenders as a chrome-free reveal.js deck rather than a Starlight article. This\noverview is the in-frame entry point — it stays in the sidebar, while the decks\nthemselves are suppressed from the sidebar so a reader is never ejected\nout-of-frame without a signal.\n\nThe published decks are derived from the content collection at build time\n(no hand-kept manifest): every published `kind: Presentation` page is listed\nautomatically below, each with its `?print-pdf` export link, and drafts are\nomitted exactly as they are from the sitemap, RSS, and the agent index. Opening a\ndeck shows its slides; the `?print-pdf` export folds reveal's print rules into its\ncore stylesheet, so no separate export page is built.\n\n:::note[Using these slide decks]\nThese are web-hosted reveal.js decks. Open a deck to present it in your browser,\nnavigate the slides with the keyboard, and export it to PDF from the browser's\nprint dialog. The \"How to use\" steps below cover all three.\n:::\n\n## How to use\n\n### Navigate the slides\n\n- **Right / Left** (or **Space**) move between the top-level slides.\n- Some slides are **stacked vertically** — use **Down / Up** to move within a\n  stack, and **Right / Left** to jump to the next top-level slide.\n- Press **Esc** for the slide overview, then arrow to any slide and **Enter** to\n  open it.\n\n### Handy hotkeys\n\n- **Esc** — slide overview (a zoomed-out grid of every slide).\n- **S** — speaker-notes view: opens a separate window with your notes, a timer,\n  and the upcoming slide.\n- **F** — fullscreen.\n- **Arrows / Space** — navigate, as above.\n\n### Export a deck to PDF\n\n1. From a deck — or via the **Print / PDF export** link listed for it on this hub\n   — open the deck's `?print-pdf` view.\n2. Open your browser's **Print** dialog (Ctrl/Cmd + P) and choose **Save as PDF**\n   as the destination.\n3. Enable **Background graphics** so the deck's colours and styling are included\n   in the exported file; without it the slides print on a plain white background.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/presentations/"
+    },
+    "related": []
+  }
+}

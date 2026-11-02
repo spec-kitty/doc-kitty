@@ -1,0 +1,186 @@
+{
+  "title": "DocKitty Example",
+  "version": "3",
+  "generatedFrom": "doc-kitty",
+  "count": 3,
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "sections": [
+    {
+      "id": "context",
+      "label": "Context",
+      "order": 10
+    },
+    {
+      "id": "architecture",
+      "label": "Architecture",
+      "order": 20
+    },
+    {
+      "id": "adr",
+      "label": "Decision Records",
+      "order": 30
+    },
+    {
+      "id": "plans",
+      "label": "Plans",
+      "order": 35
+    },
+    {
+      "id": "behaviour",
+      "label": "Behaviour",
+      "order": 38
+    },
+    {
+      "id": "guides",
+      "label": "Guides",
+      "order": 40
+    },
+    {
+      "id": "rhetoric",
+      "label": "Rhetoric",
+      "order": 45
+    },
+    {
+      "id": "presentations",
+      "label": "Presentations",
+      "order": 50
+    },
+    {
+      "id": "glossary",
+      "label": "Reference",
+      "order": 60
+    },
+    {
+      "id": "changelog",
+      "label": "Changelog",
+      "order": 70
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "llms": {
+      "href": "https://spec-kitty.github.io/doc-kitty/llms.txt"
+    },
+    "sitemap": {
+      "href": "https://spec-kitty.github.io/doc-kitty/sitemap-index.xml"
+    },
+    "contentGraph": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/content-graph.json"
+    },
+    "rss": {
+      "href": "https://spec-kitty.github.io/doc-kitty/rss.xml"
+    },
+    "bibliography": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/bibliography.json"
+    },
+    "scenarios": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/scenarios.json"
+    }
+  },
+  "pages": [
+    {
+      "slug": "",
+      "route": "/",
+      "section": "",
+      "description": "Master entry point for the example docsite built with DocKitty.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/home.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/home.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context/audience",
+      "route": "/context/audience/",
+      "section": "context",
+      "title": "Audiences",
+      "description": "The reader personas this documentation serves — who they are, what they want, and what they are accountable for.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.7,
+      "updated": "2026-08-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/audience/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/audience/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/getting-started",
+      "route": "/guides/getting-started/",
+      "section": "guides",
+      "title": "Getting started",
+      "description": "Where to start, whether you build your own docsite with DocKitty or work on this example site.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Tutorial",
+      "tags": [
+        "setup",
+        "getting-started"
+      ],
+      "related": [
+        {
+          "ref": "guides/install",
+          "title": "Install the toolkit",
+          "kind": "How-To",
+          "doc_status": "active"
+        },
+        {
+          "ref": "architecture/overview",
+          "title": "Overview",
+          "kind": "Explanation",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-10-19T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/getting-started.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/getting-started/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/getting-started.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/getting-started/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/guides/install/",
+            "title": "Install the toolkit"
+          },
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
+            "title": "Overview"
+          }
+        ]
+      }
+    }
+  ]
+}

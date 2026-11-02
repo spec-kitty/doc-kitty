@@ -1,0 +1,37 @@
+{
+  "slug": "rhetoric/about-and-license",
+  "route": "/rhetoric/about-and-license/",
+  "section": "rhetoric",
+  "title": "About and license",
+  "description": "Attribution and license (CC-BY-SA-4.0) for the Rhetoric showcase — the public-domain Freese/Perseus source and the Dejongh revamp.",
+  "type": "Reference",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "rhetoric",
+    "attribution",
+    "license"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-10-14T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/about-and-license.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/about-and-license/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# About and license\n\nThe [Rhetoric section](/rhetoric/) is a real, worked example: a conversion of\nAristotle's *Rhetoric* into doc-kitty pages, used to show a full Markua-authored\nwork rendering natively. It is **not** a copy of the book itself — it is a\ndocsite conversion of one existing translation, restructured, lightly edited\nfor the modern reader, and annotated with editor's notes.\n\n## License\n\nThis section is licensed under **[Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA-4.0)](https://creativecommons.org/licenses/by-sa/4.0/)**.\n\nThis is **separate from doc-kitty's own MIT code license**. The MIT license\ncovers the doc-kitty toolkit (the templates, components, and build pipeline);\nCC-BY-SA-4.0 covers the *content* of this Rhetoric section specifically — the\nconverted text, editor's notes, and glossary on these pages. Reusing code from\nthis repository is governed by the project's MIT license; reusing the prose on\nthese pages is governed by CC-BY-SA-4.0 and requires attribution plus\nshare-alike redistribution of any derivative.\n\n## Attribution\n\nThis section is a derivative work with two layers of attribution:\n\n- **Source translation**: the underlying text is J.H. Freese's 1926 English\n  translation of Aristotle's *Rhetoric*, which is in the **public domain**.\n  Freese's translation was published by the [Perseus\n  Project](http://www.perseus.tufts.edu/hopper) — the Perseus Digital Library\n  maintained by the Department of Classical Studies at Tufts University — and\n  incorporates translation notes from E. M. Cope (1877) and W. D. Ross (1959).\n  Neither Freese's translation nor the Perseus Project take any credit for, or\n  claim any ownership of, this derivative conversion.\n- **This revamp**: the restructuring into a modern, navigable docsite —\n  chapter titles, editor's notes, the glossary, and cross-reference\n  conversion — is © Stijn Dejongh, 2024, licensed under CC-BY-SA-4.0 to keep\n  the spirit of the original Perseus publication (which was itself licensed\n  CC-BY-SA-3.0).\n\n## The Perseus Project\n\nThe [Perseus Project](http://www.perseus.tufts.edu/hopper) — also known as the\nPerseus Hopper — is a long-running online digital library curated by the\nDepartment of Classical Studies at Tufts University. As an open source\nproject, it has had many contributors since its founding in 1987. It is named\nafter the Greek hero Perseus, the mythical slayer of monsters and legendary\nfounder of Mycenae.\n\nTufts University aims to provide a comprehensive catalogue of texts from the\nancient world so modern audiences can access them freely, and licenses its own\nwork accordingly to enable that free sharing of knowledge.\n\nSee the [Introduction](/rhetoric/introduction/) for more on how this\nconversion came about, and the [bibliography record](/api/bibliography.json)\nfor the full source citation.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/about-and-license.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/about-and-license/"
+    },
+    "related": []
+  }
+}

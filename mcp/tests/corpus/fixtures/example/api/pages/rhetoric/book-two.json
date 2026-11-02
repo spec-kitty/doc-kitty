@@ -1,0 +1,33 @@
+{
+  "slug": "rhetoric/book-two",
+  "route": "/rhetoric/book-two/",
+  "section": "rhetoric",
+  "title": "II: Persuasion techniques",
+  "description": "Book II of Aristotle's Rhetoric covers ethos, pathos, and logos — the three means of persuasion. Out of scope for this showcase.",
+  "type": "Reference",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-09-08T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-two.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-two/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# II: Persuasion techniques\n\nBook II turns from Book I's definitions and contexts to the technical core of\npersuasion: the credibility of the speaker (`ethos`), the emotional state of\nthe audience (`pathos`), and the patterns of reasoning an orator relies on\n(`logos`). Aristotle works through each mode in turn, including a systematic\nsurvey of the emotions and a catalogue of common argument patterns and their\npitfalls.\n\nThis showcase converts [Book I](/rhetoric/book-one/) only — Book II's\nchapters are out of scope here. This page is a landing only, so the section\nstays navigable without dangling links.\n\nBack to the [Rhetoric hub](/rhetoric/).",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-two.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-two/"
+    },
+    "related": []
+  }
+}

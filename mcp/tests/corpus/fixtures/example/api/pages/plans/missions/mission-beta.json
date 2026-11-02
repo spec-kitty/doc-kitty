@@ -1,0 +1,45 @@
+{
+  "slug": "plans/missions/mission-beta",
+  "route": "/plans/missions/mission-beta/",
+  "section": "plans",
+  "title": "Mission Beta",
+  "description": "A second short mission write-up, cross-linking Mission Alpha to prove zero dangling links survive the rename.",
+  "type": "Mission",
+  "doc_status": "active",
+  "kind": "Planning",
+  "tags": [],
+  "related": [
+    {
+      "ref": "plans/missions/mission-alpha",
+      "title": "Mission Alpha",
+      "kind": "Planning",
+      "doc_status": "active"
+    }
+  ],
+  "priority": 0.5,
+  "updated": "2026-10-13T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-beta.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Mission Beta\n\nLike [Mission Alpha](/plans/missions/mission-alpha/), this page lived at\n`plans/features/mission-beta.md` before the section was renamed to\n`plans/missions/` (E-08). Both this page's inline link and its `related:`\nfrontmatter entry point at the post-rename path — `check-links.mjs` asserts\nneither dangles.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-beta.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/"
+    },
+    "related": [
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/",
+        "title": "Mission Alpha"
+      }
+    ]
+  }
+}

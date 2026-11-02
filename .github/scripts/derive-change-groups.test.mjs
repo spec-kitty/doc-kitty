@@ -24,6 +24,10 @@ const CLASSIFY_CASES = [
   ['pnpm-workspace.yaml', 'code'],
   ['tsconfig.base.json', 'code'],
   ['vitest.config.ts', 'code'],
+  // doc-kitty-mcp-server WP02: the mcp package and the consumption harness
+  // classify as code (mirrors .github/filters.yml).
+  ['mcp/src/corpus/snapshot.ts', 'code'],
+  ['tests/consumption/mcp-package.test.ts', 'code'],
   // deployed example content.
   ['example/docs/adr/0001.md', 'example_content'],
   ['example/public/logo.svg', 'example_content'],

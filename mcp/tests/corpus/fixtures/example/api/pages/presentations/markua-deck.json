@@ -1,0 +1,35 @@
+{
+  "slug": "presentations/markua-deck",
+  "route": "/presentations/markua-deck/",
+  "section": "presentations",
+  "title": "Markua-Capable Deck",
+  "description": "A published reveal.js deck proving the Markua subset renders on slides — asides, an attributed paragraph, and a captioned figure — without swallowing a slide boundary.",
+  "type": "Presentation",
+  "doc_status": "active",
+  "kind": "Presentation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-09-06T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/markua-deck.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/presentations/markua-deck/",
+  "authors": [
+    "human:stijn"
+  ],
+  "keywords": [],
+  "markdown": "## A slide aside that respects its boundary\n\nAn author can flag something to be careful about with a Markua line-prefix\naside, right inside a slide's own content.\n\nW> A caution aside authored with the `W>` line prefix, mid-slide — it renders\nW> as a callout here and must not swallow the stack boundary that follows.\n\n### The stack boundary still opens\n\nThis inner stack slide proves the `###` right after the aside still opens its\nown vertical slide — the aside above did not consume it.\n\n## A wrapped aside groups a longer note\n\nAn `{aside}…{/aside}` wrapper groups a longer, multi-line note into one\ncallout without leaving the slide it was authored in.\n\n{aside}\nThis whole block is wrapped as a Markua aside. It stays fully inside this\nslide — the wrapper opens and closes here, so no slide boundary is crossed.\n{/aside}\n\nThis closing paragraph sits after the wrapper, still on the same slide.\n\n## Attributes target a slide element precisely\n\nA `{…}` attribute line attaches to the block that follows it — never to a\nheading it merely sits near.\n\n{#attr-target}\n\nThis paragraph carries an id from the `{#attr-target}` attribute line placed\ndirectly above it.\n\n### The heading keeps its own identity\n\nThis inner stack slide's heading is unaffected by the attribute line two\nblocks above — the boundary it opens was not consumed.\n\n## A body figure renders as an accessible figure\n\nA Markua figure on this slide is distinct from the deck's title-slide hero\nimage, which stays a lone, caption-less `<img>`.\n\n{alt: \"Layered diagram illustrating the doc-kitty slide-deck pipeline\"}\n\n![The out-of-frame deck pipeline, captioned on a body slide](./assets/showcase-hero.png)",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/markua-deck.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/presentations/markua-deck/"
+    },
+    "related": []
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "slug": "architecture",
+  "route": "/architecture/",
+  "section": "architecture",
+  "title": "Architecture",
+  "description": "Current system design of the example docsite.",
+  "type": "Architecture",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.8,
+  "updated": "2026-08-21T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/architecture/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Architecture\n\nThis describes the **current state**, not intended future work (see `plans/`).\n\n- [Overview](/architecture/overview/) — how the site is built and rendered.\n\n_Last architecture review: 2026-08-21._",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/architecture/"
+    },
+    "related": []
+  }
+}

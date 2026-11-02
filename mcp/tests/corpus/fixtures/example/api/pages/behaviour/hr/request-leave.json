@@ -1,0 +1,46 @@
+{
+  "slug": "behaviour/hr/request-leave",
+  "route": "/behaviour/hr/request-leave/",
+  "section": "behaviour",
+  "title": "Request annual leave",
+  "description": "Leave requests are checked against the employee's remaining allowance.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Specification",
+  "tags": [
+    "FR-012"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": null,
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/hr/request-leave.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/",
+  "authors": [],
+  "keywords": [],
+  "generated": {
+    "by": "doc-kitty-gherkin/0.5.0",
+    "at": "2026-10-18T05:55:21Z",
+    "content_hash": "sha256:2ba67bcafd1f"
+  },
+  "sources": [
+    {
+      "resource": "features/hr/request-leave.feature",
+      "title": "Gherkin source"
+    }
+  ],
+  "markdown": "# Request annual leave\n\nAs an employee\\\nI want to request annual leave from the people team\\\nSo that my time off is agreed before I plan around it\n\nLeave requests are checked against the employee's remaining allowance. A\nrequest that overlaps a team blackout period needs the manager's sign-off.\n\n*4 scenarios*\n\n## Background\n\n- **Given** an employee with 12 days of annual leave remaining\n\n## Scenario: Approve a request within the allowance\n\n- **When** the employee requests 5 days of leave starting on 3 November\n- **Then** the request is approved under the leave policy\n- **And** the employee has 7 days of annual leave remaining\n\n## Scenario: Refuse a request that exceeds the allowance\n\n- **When** the employee requests 15 days of leave\n- **Then** the request is refused because it exceeds the remaining allowance\n- **And** the employee still has 12 days of annual leave remaining\n\n## Scenario: Hold a request that overlaps a blackout period\n\n- **Given** the team has a blackout period from 15 to 19 December\n- **When** the employee requests 2 days of leave starting on 18 December\n- **Then** the request waits for the manager's sign-off\n\n## Scenario: Pro-rate the allowance of a new starter\n\n- **Given** a new starter who joined on 1 October and is still in onboarding\n- **When** the people team calculates the new starter's allowance\n- **Then** the new starter has 6 days of annual leave for the rest of the year",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/hr/request-leave.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/"
+    },
+    "related": []
+  }
+}

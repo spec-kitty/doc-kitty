@@ -1,0 +1,73 @@
+{
+  "slug": "behaviour/shipping/book-consignment",
+  "route": "/behaviour/shipping/book-consignment/",
+  "section": "behaviour",
+  "title": "Book a consignment",
+  "description": "A booking reserves space on one sailing for one consignment.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Specification",
+  "tags": [
+    "FR-003"
+  ],
+  "related": [
+    {
+      "ref": "adr/0001-use-astro-starlight",
+      "title": "ADR-0001: Build on Astro + Starlight",
+      "kind": "ADR",
+      "doc_status": "active"
+    },
+    {
+      "ref": "plans/missions/mission-alpha",
+      "title": "Mission Alpha",
+      "kind": "Planning",
+      "doc_status": "active"
+    }
+  ],
+  "priority": 0.5,
+  "updated": null,
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/book-consignment.json",
+  "audience": [
+    {
+      "profile": "example-persona",
+      "guidance_text": "As a shipper, I want to book cargo onto a sailing, so that my goods travel on a confirmed slot."
+    }
+  ],
+  "url": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/",
+  "authors": [],
+  "keywords": [],
+  "generated": {
+    "by": "doc-kitty-gherkin/0.5.0",
+    "at": "2026-10-19T08:58:27Z",
+    "content_hash": "sha256:817e81f1d8da"
+  },
+  "sources": [
+    {
+      "resource": "features/shipping/book-consignment.feature",
+      "title": "Gherkin source"
+    }
+  ],
+  "markdown": "# Book a consignment\n\nAs a shipper\\\nI want to book cargo onto a sailing\\\nSo that my goods travel on a confirmed slot\n\nA booking reserves space on one sailing for one consignment. Bookings that\nexceed the sailing's remaining capacity are refused, and the shipper sees why.\n\n*2 rules · 4 scenarios · 2 example rows*\n\n## Background\n\n- **Given** a sailing from Rotterdam to Felixstowe with 40 TEU remaining\n\n## Rule: A booking within capacity is confirmed\n\n### Scenario: Book cargo that fits\n\n`@smoke`\n\n- **Given** a consignment of 12 TEU\n- **When** the shipper books the consignment onto the sailing\n- **Then** the booking is confirmed\n- **And** the sailing has 28 TEU remaining\n\n### Scenario: Attach a packing list to a confirmed booking\n\n- **Given** a confirmed booking for a consignment of 2 TEU\n- **When** the shipper attaches the packing list:\n\n  ```json\n  { \"lines\": [{ \"sku\": \"A-1\", \"qty\": 10 }, { \"sku\": \"B-2\", \"qty\": 4 }] }\n  ```\n\n- **Then** the booking shows 2 packing-list lines\n\n## Rule: A booking over capacity is refused\n\n### Scenario Outline: Refuse cargo that does not fit\n\n- **Given** a consignment of `<size>` TEU\n- **When** the shipper books the consignment onto the sailing\n- **Then** the booking is refused with reason `\"<reason>\"`\n\n**Examples: Over capacity** `@edge`\n\n| size | reason |\n| --- | --- |\n| 41 | insufficient space |\n| 120 | insufficient space |\n\n### Scenario: Refused bookings state the remaining capacity\n\n- **Given** these consignments are already booked:\n\n  | consignment | size |\n  | --- | --- |\n  | C-100 | 30 |\n  | C-101 | 8 |\n\n- **When** the shipper books a consignment of 5 TEU onto the sailing\n- **Then** the booking is refused with reason `\"insufficient space\"`\n- **And** the refusal states that 2 TEU remain",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/book-consignment.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/"
+    },
+    "related": [
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/",
+        "title": "ADR-0001: Build on Astro + Starlight"
+      },
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/",
+        "title": "Mission Alpha"
+      }
+    ]
+  }
+}

@@ -1,0 +1,2291 @@
+{
+  "title": "DocKitty Example",
+  "version": "3",
+  "generatedFrom": "doc-kitty",
+  "count": 70,
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "sections": [
+    {
+      "id": "context",
+      "label": "Context",
+      "order": 10
+    },
+    {
+      "id": "architecture",
+      "label": "Architecture",
+      "order": 20
+    },
+    {
+      "id": "adr",
+      "label": "Decision Records",
+      "order": 30
+    },
+    {
+      "id": "plans",
+      "label": "Plans",
+      "order": 35
+    },
+    {
+      "id": "behaviour",
+      "label": "Behaviour",
+      "order": 38
+    },
+    {
+      "id": "guides",
+      "label": "Guides",
+      "order": 40
+    },
+    {
+      "id": "rhetoric",
+      "label": "Rhetoric",
+      "order": 45
+    },
+    {
+      "id": "presentations",
+      "label": "Presentations",
+      "order": 50
+    },
+    {
+      "id": "glossary",
+      "label": "Reference",
+      "order": 60
+    },
+    {
+      "id": "changelog",
+      "label": "Changelog",
+      "order": 70
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "llms": {
+      "href": "https://spec-kitty.github.io/doc-kitty/llms.txt"
+    },
+    "sitemap": {
+      "href": "https://spec-kitty.github.io/doc-kitty/sitemap-index.xml"
+    },
+    "contentGraph": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/content-graph.json"
+    },
+    "rss": {
+      "href": "https://spec-kitty.github.io/doc-kitty/rss.xml"
+    },
+    "bibliography": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/bibliography.json"
+    },
+    "scenarios": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/scenarios.json"
+    }
+  },
+  "pages": [
+    {
+      "slug": "",
+      "route": "/",
+      "section": "",
+      "title": "DocKitty Example",
+      "description": "Master entry point for the example docsite built with DocKitty.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/home.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/home.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context",
+      "route": "/context/",
+      "section": "context",
+      "title": "Context",
+      "description": "Why this project exists, who it serves, and its domain vocabulary.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.8,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context/audience",
+      "route": "/context/audience/",
+      "section": "context",
+      "title": "Audiences",
+      "description": "The reader personas this documentation serves — who they are, what they want, and what they are accountable for.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.7,
+      "updated": "2026-08-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/audience/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/audience/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context/domain",
+      "route": "/context/domain/",
+      "section": "context",
+      "title": "Domain",
+      "description": "The ubiquitous language for DocKitty.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "glossary",
+        "domain"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/domain.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/domain/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/domain.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/domain/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context/audience/example-persona",
+      "route": "/context/audience/example-persona/",
+      "section": "context",
+      "title": "Marzipan the Mapmaker",
+      "description": "A worked Persona page exercising the passport per-kind layout with the role, goals, and responsibilities attribute fields.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Persona",
+      "tags": [
+        "persona",
+        "passport",
+        "fixture"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/example-persona.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/audience/example-persona/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/example-persona.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/audience/example-persona/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context/product",
+      "route": "/context/product/",
+      "section": "context",
+      "title": "Product",
+      "description": "The problem this example solves and who it is for.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "product",
+        "vision"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/product.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/product/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/product.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/product/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context/audience/rhetoric-practitioner",
+      "route": "/context/audience/rhetoric-practitioner/",
+      "section": "context",
+      "title": "The Rhetoric Practitioner",
+      "description": "A working communicator mining Aristotle's Rhetoric for persuasion technique, wanting cross-referenced, footnoted primary text.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Persona",
+      "tags": [
+        "persona",
+        "audience",
+        "rhetoric"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/rhetoric-practitioner.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/audience/rhetoric-practitioner/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/rhetoric-practitioner.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/audience/rhetoric-practitioner/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "context/audience/rhetoric-student",
+      "route": "/context/audience/rhetoric-student/",
+      "section": "context",
+      "title": "The Rhetoric Student",
+      "description": "A student of communication and argument who wants Aristotle's classical text made navigable and glossed for a modern reader.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Persona",
+      "tags": [
+        "persona",
+        "audience",
+        "rhetoric"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/rhetoric-student.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/audience/rhetoric-student/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/rhetoric-student.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/audience/rhetoric-student/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "architecture",
+      "route": "/architecture/",
+      "section": "architecture",
+      "title": "Architecture",
+      "description": "Current system design of the example docsite.",
+      "type": "Architecture",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.8,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/architecture/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/architecture/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "architecture/blocks-demonstrator",
+      "route": "/architecture/blocks-demonstrator/",
+      "section": "architecture",
+      "title": "Content blocks demonstrator",
+      "description": "A single page that declares audience, related, and external references so all three doc-kitty content blocks render together for the accessibility lane.",
+      "type": "Architecture",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "architecture",
+        "blocks",
+        "demonstrator",
+        "fixture"
+      ],
+      "related": [
+        {
+          "ref": "architecture/superseded-note",
+          "title": "Superseded architecture note",
+          "kind": "Explanation",
+          "doc_status": "superseded"
+        },
+        {
+          "ref": "architecture/overview",
+          "title": "Overview",
+          "kind": "Explanation",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-08-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/blocks-demonstrator.json",
+      "audience": [
+        {
+          "profile": "example-persona",
+          "guidance_text": "Follow the three blocks below to see how audience, related, and citation metadata render."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/architecture/blocks-demonstrator/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/blocks-demonstrator.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/architecture/blocks-demonstrator/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/",
+            "title": "Superseded architecture note"
+          },
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
+            "title": "Overview"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "architecture/diagram-demonstrator",
+      "route": "/architecture/diagram-demonstrator/",
+      "section": "architecture",
+      "title": "Diagram demonstrator",
+      "description": "One page with two diagrams — a fully-annotated flowchart and a description-only sequence — showing the metadata surface across two guaranteed types.",
+      "type": "Architecture",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "architecture",
+        "diagrams",
+        "demonstrator",
+        "fixture"
+      ],
+      "related": [
+        {
+          "ref": "architecture/overview",
+          "title": "Overview",
+          "kind": "Explanation",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-08-25T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/diagram-demonstrator.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/architecture/diagram-demonstrator/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/diagram-demonstrator.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/architecture/diagram-demonstrator/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
+            "title": "Overview"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "architecture/overview",
+      "route": "/architecture/overview/",
+      "section": "architecture",
+      "title": "Overview",
+      "description": "How the example turns a Common Docs tree into a site plus feeds and an agent-API.",
+      "type": "Architecture",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "astro",
+        "starlight",
+        "build"
+      ],
+      "related": [
+        {
+          "ref": "guides/getting-started",
+          "title": "Getting started",
+          "kind": "Tutorial",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-10-14T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/overview.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/overview.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/architecture/overview/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/guides/getting-started/",
+            "title": "Getting started"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "architecture/plantuml-demonstrator",
+      "route": "/architecture/plantuml-demonstrator/",
+      "section": "architecture",
+      "title": "PlantUML demonstrator",
+      "description": "A PlantUML diagram rendered to a static, themed, accessible SVG at build time — the build-only twin of the Mermaid demonstrator, named by a leading '-comment block.",
+      "type": "Architecture",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "architecture",
+        "diagrams",
+        "plantuml",
+        "demonstrator",
+        "fixture"
+      ],
+      "related": [
+        {
+          "ref": "architecture/diagram-demonstrator",
+          "title": "Diagram demonstrator",
+          "kind": "Explanation",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-09-07T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/plantuml-demonstrator.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/architecture/plantuml-demonstrator/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/plantuml-demonstrator.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/architecture/plantuml-demonstrator/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/architecture/diagram-demonstrator/",
+            "title": "Diagram demonstrator"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "architecture/superseded-note",
+      "route": "/architecture/superseded-note/",
+      "section": "architecture",
+      "title": "Superseded architecture note",
+      "description": "A published-but-superseded architecture note kept as the stale related-target so the demonstrator can render a real superseded status marker.",
+      "type": "Architecture",
+      "doc_status": "superseded",
+      "kind": "Explanation",
+      "tags": [
+        "architecture",
+        "superseded",
+        "fixture"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/superseded-note.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/superseded-note.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "adr/0001-use-astro-starlight",
+      "route": "/adr/0001-use-astro-starlight/",
+      "section": "adr",
+      "title": "ADR-0001: Build on Astro + Starlight",
+      "description": "Why the toolkit renders Common Docs trees with Astro and Starlight.",
+      "type": "ADR",
+      "doc_status": "active",
+      "kind": "ADR",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/adr/0001-use-astro-starlight.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/adr/0001-use-astro-starlight.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "adr",
+      "route": "/adr/",
+      "section": "adr",
+      "title": "Decision Records",
+      "description": "The immutable log of architectural decisions for the example.",
+      "type": "ADR",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/adr.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/adr/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/adr.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/adr/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "plans/missions/mission-alpha",
+      "route": "/plans/missions/mission-alpha/",
+      "section": "plans",
+      "title": "Mission Alpha",
+      "description": "A short mission write-up used to demonstrate the registry subtypes rename (plans/features -> plans/missions).",
+      "type": "Mission",
+      "doc_status": "active",
+      "kind": "Planning",
+      "tags": [],
+      "related": [
+        {
+          "ref": "plans/missions/mission-beta",
+          "title": "Mission Beta",
+          "kind": "Planning",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-10-13T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-alpha.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-alpha.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/",
+            "title": "Mission Beta"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "plans/missions/mission-beta",
+      "route": "/plans/missions/mission-beta/",
+      "section": "plans",
+      "title": "Mission Beta",
+      "description": "A second short mission write-up, cross-linking Mission Alpha to prove zero dangling links survive the rename.",
+      "type": "Mission",
+      "doc_status": "active",
+      "kind": "Planning",
+      "tags": [],
+      "related": [
+        {
+          "ref": "plans/missions/mission-alpha",
+          "title": "Mission Alpha",
+          "kind": "Planning",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-10-13T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-beta.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-beta.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/",
+            "title": "Mission Alpha"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "plans/missions",
+      "route": "/plans/missions/",
+      "section": "plans",
+      "title": "Missions",
+      "description": "Short mission write-ups for the example docsite, one page per mission.",
+      "type": "Mission",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-13T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/plans/missions/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "plans",
+      "route": "/plans/",
+      "section": "plans",
+      "title": "Plans",
+      "description": "Forward-looking mission write-ups for the example docsite — not the current state (see architecture/).",
+      "type": "Plan",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-13T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/plans/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/plans/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "behaviour",
+      "route": "/behaviour/",
+      "section": "behaviour",
+      "title": "Behaviour",
+      "description": "Behaviour specifications generated from the repository's Gherkin feature files.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/behaviour/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "behaviour/shipping/book-consignment",
+      "route": "/behaviour/shipping/book-consignment/",
+      "section": "behaviour",
+      "title": "Book a consignment",
+      "description": "A booking reserves space on one sailing for one consignment.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Specification",
+      "tags": [
+        "FR-003"
+      ],
+      "related": [
+        {
+          "ref": "adr/0001-use-astro-starlight",
+          "title": "ADR-0001: Build on Astro + Starlight",
+          "kind": "ADR",
+          "doc_status": "active"
+        },
+        {
+          "ref": "plans/missions/mission-alpha",
+          "title": "Mission Alpha",
+          "kind": "Planning",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/book-consignment.json",
+      "audience": [
+        {
+          "profile": "example-persona",
+          "guidance_text": "As a shipper, I want to book cargo onto a sailing, so that my goods travel on a confirmed slot."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/book-consignment.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/",
+            "title": "ADR-0001: Build on Astro + Starlight"
+          },
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/",
+            "title": "Mission Alpha"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "behaviour/shipping/declare-customs",
+      "route": "/behaviour/shipping/declare-customs/",
+      "section": "behaviour",
+      "title": "Declare a consignment to customs",
+      "description": "Every consignment that crosses a customs border needs a declaration lodged before the sailing's cut-off.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Specification",
+      "tags": [
+        "FR-004"
+      ],
+      "related": [
+        {
+          "ref": "adr/0001-use-astro-starlight",
+          "title": "ADR-0001: Build on Astro + Starlight",
+          "kind": "ADR",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/declare-customs.json",
+      "audience": [
+        {
+          "profile": "example-persona",
+          "guidance_text": "As a shipper, I want to declare my cargo to customs before it sails, so that the consignment clears the border without being held."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/declare-customs/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/declare-customs.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/declare-customs/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/",
+            "title": "ADR-0001: Build on Astro + Starlight"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "behaviour/hr",
+      "route": "/behaviour/hr/",
+      "section": "behaviour",
+      "title": "HR",
+      "description": "Behaviour specifications for HR, generated from Gherkin feature files.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/hr.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/hr/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/hr.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/behaviour/hr/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "behaviour/hr/request-leave",
+      "route": "/behaviour/hr/request-leave/",
+      "section": "behaviour",
+      "title": "Request annual leave",
+      "description": "Leave requests are checked against the employee's remaining allowance.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Specification",
+      "tags": [
+        "FR-012"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/hr/request-leave.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/hr/request-leave.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "behaviour/shipping",
+      "route": "/behaviour/shipping/",
+      "section": "behaviour",
+      "title": "Shipping",
+      "description": "Behaviour specifications for Shipping, generated from Gherkin feature files.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides",
+      "route": "/guides/",
+      "section": "guides",
+      "title": "Guides",
+      "description": "How-to guides for humans and agents working on this project.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.7,
+      "updated": "2026-08-21T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/getting-started",
+      "route": "/guides/getting-started/",
+      "section": "guides",
+      "title": "Getting started",
+      "description": "Where to start, whether you build your own docsite with DocKitty or work on this example site.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Tutorial",
+      "tags": [
+        "setup",
+        "getting-started"
+      ],
+      "related": [
+        {
+          "ref": "guides/install",
+          "title": "Install the toolkit",
+          "kind": "How-To",
+          "doc_status": "active"
+        },
+        {
+          "ref": "architecture/overview",
+          "title": "Overview",
+          "kind": "Explanation",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-10-19T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/getting-started.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/getting-started/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/getting-started.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/getting-started/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/guides/install/",
+            "title": "Install the toolkit"
+          },
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
+            "title": "Overview"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "guides/github-alerts",
+      "route": "/guides/github-alerts/",
+      "section": "guides",
+      "title": "GitHub alerts",
+      "description": "GitHub alert blockquotes (> [!NOTE] and friends) rendered as Starlight asides, with the cases that stay plain blockquotes.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [
+        "github-alerts",
+        "asides",
+        "fixture",
+        "showcase"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-31T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/github-alerts.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/github-alerts/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/github-alerts.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/github-alerts/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/install",
+      "route": "/guides/install/",
+      "section": "guides",
+      "title": "Install the toolkit",
+      "description": "Install @spec-kitty/doc-toolkit 0.4.0 from GitHub Packages with its Astro 7 and Starlight 0.42 peers, wire it into a new site, and build it.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "How-To",
+      "tags": [
+        "setup",
+        "install",
+        "consumer",
+        "release"
+      ],
+      "related": [
+        {
+          "ref": "guides/getting-started",
+          "title": "Getting started",
+          "kind": "Tutorial",
+          "doc_status": "active"
+        },
+        {
+          "ref": "changelog/releases",
+          "title": "Release history",
+          "kind": "Changelog",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-10-19T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/install.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/install/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/install.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/install/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/guides/getting-started/",
+            "title": "Getting started"
+          },
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/changelog/releases/",
+            "title": "Release history"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "guides/markua-footnotes-showcase",
+      "route": "/guides/markua-footnotes-showcase/",
+      "section": "guides",
+      "title": "Markua footnotes showcase",
+      "description": "Markua double-caret footnotes rendered as real, back-linked GFM footnotes (FR-004).",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [
+        "markua",
+        "footnotes",
+        "fixture",
+        "showcase"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-13T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-footnotes-showcase.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/markua-footnotes-showcase/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-footnotes-showcase.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/markua-footnotes-showcase/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/markua-malformed",
+      "route": "/guides/markua-malformed/",
+      "section": "guides",
+      "title": "Markua graceful degradation",
+      "description": "Deliberately malformed Markua that must never fail the build (NFR-002).",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [
+        "markua",
+        "fixture",
+        "degradation"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-29T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-malformed.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-malformed.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/markua-showcase",
+      "route": "/guides/markua-showcase/",
+      "section": "guides",
+      "title": "Markua showcase",
+      "description": "Every in-scope Markua construct on one page — the author reference and the coverage fixture.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [
+        "markua",
+        "showcase",
+        "fixture",
+        "reference"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-19T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-showcase.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/markua-showcase/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-showcase.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/markua-showcase/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/scenarios-in-pages",
+      "route": "/guides/scenarios-in-pages/",
+      "section": "guides",
+      "title": "Scenarios in pages",
+      "description": "Gherkin in an ordinary page — a gherkin code fence or an included .feature file renders as headings, step lists and tables instead of a code block.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [
+        "gherkin",
+        "scenarios",
+        "showcase",
+        "fixture"
+      ],
+      "related": [
+        {
+          "ref": "behaviour/shipping/book-consignment",
+          "title": "Book a consignment",
+          "kind": "Specification",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-10-14T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/scenarios-in-pages.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/scenarios-in-pages/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/scenarios-in-pages.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/scenarios-in-pages/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/",
+            "title": "Book a consignment"
+          }
+        ]
+      }
+    },
+    {
+      "slug": "rhetoric/about-and-license",
+      "route": "/rhetoric/about-and-license/",
+      "section": "rhetoric",
+      "title": "About and license",
+      "description": "Attribution and license (CC-BY-SA-4.0) for the Rhetoric showcase — the public-domain Freese/Perseus source and the Dejongh revamp.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "attribution",
+        "license"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-14T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/about-and-license.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/about-and-license/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/about-and-license.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/about-and-license/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-01",
+      "route": "/rhetoric/book-one/chapter-01/",
+      "section": "rhetoric",
+      "title": "Chapter 1: What is the point of Rhetoric?",
+      "description": "Aristotle defines rhetoric as the counterpart of dialectic and argues that a systematic art of proof, not appeals to emotion, is its true business.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-01.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-01/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-01.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-01/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-10",
+      "route": "/rhetoric/book-one/chapter-10/",
+      "section": "rhetoric",
+      "title": "Chapter 10: Litigation: accusation and defense",
+      "description": "The motives behind wrongdoing — chance, nature, compulsion, habit, reason, anger, and desire — as material for accusation and defense.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-10.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Read this chapter for Aristotle's seven causes of human action, the foundation for arguing about motive in a case."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-10/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-10.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-10/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-11",
+      "route": "/rhetoric/book-one/chapter-11/",
+      "section": "rhetoric",
+      "title": "Chapter 11: Motive",
+      "description": "Aristotle explains motive through what people find pleasant, laying the ground for why people commit wrongdoing.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-11.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Ties the psychology of pleasure to motive, background for the wrongdoing chapters either side of it."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-11/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-11.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-11/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-12",
+      "route": "/rhetoric/book-one/chapter-12/",
+      "section": "rhetoric",
+      "title": "Chapter 12: Intent",
+      "description": "The frame of mind of wrongdoers and the circumstances and victims that make wrongdoing seem safe to attempt.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-12.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Read alongside Chapter 11 (Motive) for the full picture of why and when people commit wrong."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-12/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-12.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-12/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-13",
+      "route": "/rhetoric/book-one/chapter-13/",
+      "section": "rhetoric",
+      "title": "Chapter 13: Justice and Legislation",
+      "description": "Aristotle classifies just and unjust acts under particular and general law, and defines equity.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-13.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Introduces the equity concept this book leans on when arguing written law against natural justice."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-13/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-13.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-13/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-14",
+      "route": "/rhetoric/book-one/chapter-14/",
+      "section": "rhetoric",
+      "title": "Chapter 14: Severity of transgressions",
+      "description": "How to argue that a wrong act is greater or lesser in degree, with the rhetorical grounds for each.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-14.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "A short, practical chapter on aggravating and mitigating arguments for use in the law courts."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-14/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-14.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-14/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-15",
+      "route": "/rhetoric/book-one/chapter-15/",
+      "section": "rhetoric",
+      "title": "Chapter 15: Trial Proceedings",
+      "description": "The five inartificial proofs of forensic oratory — laws, witnesses, contracts, torture, and oaths.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-15.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Closes Book I with the concrete evidentiary tools an orator argues from in court."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-15/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-15.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-15/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-02",
+      "route": "/rhetoric/book-one/chapter-02/",
+      "section": "rhetoric",
+      "title": "Chapter 2: Argumentation techniques",
+      "description": "Rhetoric as the faculty of finding the available means of persuasion: moral character, emotion, and the argument itself, via example and enthymeme.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-02.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-02/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-02.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-02/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-03",
+      "route": "/rhetoric/book-one/chapter-03/",
+      "section": "rhetoric",
+      "title": "Chapter 3: Types of Rhetoric",
+      "description": "The three kinds of rhetorical speech — deliberative, forensic, and epideictic — their proper times, and the distinct end each one argues toward.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-03.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-03/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-03.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-03/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-04",
+      "route": "/rhetoric/book-one/chapter-04/",
+      "section": "rhetoric",
+      "title": "Chapter 4: Topics of deliberative rhetoric",
+      "description": "The five subjects the deliberative orator must be ready to advise on: ways and means, war and peace, defence, food supply, and legislation.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-04.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-04/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-04.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-04/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-05",
+      "route": "/rhetoric/book-one/chapter-05/",
+      "section": "rhetoric",
+      "title": "Chapter 5: What people care about",
+      "description": "A working definition of happiness and its parts — birth, friends, wealth, honor, health, beauty, strength, and good fortune — for the deliberative orator.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-05.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-05/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-05.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-05/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-06",
+      "route": "/rhetoric/book-one/chapter-06/",
+      "section": "rhetoric",
+      "title": "Chapter 6: The greater good, and its components",
+      "description": "Aristotle defines the good as what all things aim at, catalogs the things generally recognized as good, and lists arguments for doubtful goods.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-06.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Read this chapter to see how Aristotle catalogs the things people take to be good — the raw material deliberative speeches argue from."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-06/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-06.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-06/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-07",
+      "route": "/rhetoric/book-one/chapter-07/",
+      "section": "rhetoric",
+      "title": "Chapter 7: The Impact of actions and trade-offs",
+      "description": "How to weigh one good against another: Aristotle's rules for comparing things by size, cause, scarcity, duration, and general opinion.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-07.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Read this chapter for Aristotle's method of comparing two goods when both sides agree they are useful but disagree on which is more so."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-07/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-07.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-07/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-08",
+      "route": "/rhetoric/book-one/chapter-08/",
+      "section": "rhetoric",
+      "title": "Chapter 8: Types of Governments",
+      "description": "The four forms of government — democracy, oligarchy, aristocracy, monarchy — their ends, and why an orator must know them.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-08.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Read this chapter to see why knowing your audience's form of government shapes what arguments will persuade them."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-08/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-08.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-08/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one/chapter-09",
+      "route": "/rhetoric/book-one/chapter-09/",
+      "section": "rhetoric",
+      "title": "Chapter 9: Epideictic Rhetoric, praise and blame, virtue and vice",
+      "description": "Aristotle defines virtue and the noble, then sets out the topics and amplification techniques used in epideictic praise and blame.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "book-one"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-09.json",
+      "audience": [
+        {
+          "profile": "rhetoric-student",
+          "guidance_text": "Read this chapter for the building blocks of praise and blame — the raw material of epideictic rhetoric."
+        }
+      ],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-09/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one/chapter-09.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/chapter-09/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-one",
+      "route": "/rhetoric/book-one/",
+      "section": "rhetoric",
+      "title": "I: Purposes and Definitions of Rhetoric",
+      "description": "Book I of Aristotle's Rhetoric — its purposes, the three species of rhetoric, and the topics orators build arguments from, across 15 chapters.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-one.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-one/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-two",
+      "route": "/rhetoric/book-two/",
+      "section": "rhetoric",
+      "title": "II: Persuasion techniques",
+      "description": "Book II of Aristotle's Rhetoric covers ethos, pathos, and logos — the three means of persuasion. Out of scope for this showcase.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-two.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-two/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-two.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-two/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/book-three",
+      "route": "/rhetoric/book-three/",
+      "section": "rhetoric",
+      "title": "III: Stylistic Delivery and Arrangement Techniques",
+      "description": "Book III of Aristotle's Rhetoric covers style, word choice, and speech arrangement. Out of scope for this showcase.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-three.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-three/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/book-three.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/book-three/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/introduction",
+      "route": "/rhetoric/introduction/",
+      "section": "rhetoric",
+      "title": "Introduction",
+      "description": "What the three books of Aristotle's Rhetoric cover, who translated this text, and how this docsite conversion came together.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "introduction"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-14T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/introduction.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/introduction/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/introduction.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/introduction/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric/preamble",
+      "route": "/rhetoric/preamble/",
+      "section": "rhetoric",
+      "title": "Preamble",
+      "description": "Editorial preface to Book I — how to read this conversion, the editor's-note convention, and where the source Glossary of key rhetoric terms now lives.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "rhetoric",
+        "preamble"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-14T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/preamble.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/preamble/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric/preamble.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/preamble/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "rhetoric",
+      "route": "/rhetoric/",
+      "section": "rhetoric",
+      "title": "Rhetoric",
+      "description": "A real Markua conversion of Aristotle's Rhetoric Book I, showcasing custom sections, footnotes, a native glossary, and personas.",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-08T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "presentations/feature-tour",
+      "route": "/presentations/feature-tour/",
+      "section": "presentations",
+      "title": "doc-kitty: your docs, already a site",
+      "description": "How a Common Docs tree becomes an on-brand, agent-readable, self-checking site, with no theme build.",
+      "type": "Presentation",
+      "doc_status": "active",
+      "kind": "Presentation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-05T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/feature-tour.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/presentations/feature-tour/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/feature-tour.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/presentations/feature-tour/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "presentations/markua-deck",
+      "route": "/presentations/markua-deck/",
+      "section": "presentations",
+      "title": "Markua-Capable Deck",
+      "description": "A published reveal.js deck proving the Markua subset renders on slides — asides, an attributed paragraph, and a captioned figure — without swallowing a slide boundary.",
+      "type": "Presentation",
+      "doc_status": "active",
+      "kind": "Presentation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-09-06T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/markua-deck.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/presentations/markua-deck/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/markua-deck.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/presentations/markua-deck/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "presentations",
+      "route": "/presentations/",
+      "section": "presentations",
+      "title": "Presentations",
+      "description": "The overview hub for published slide decks — the in-frame entry point that links each deck's out-of-frame reveal.js view and its print or PDF export.",
+      "type": "Presentation",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/presentations/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/presentations/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "presentations/roadmap-deck",
+      "route": "/presentations/roadmap-deck/",
+      "section": "presentations",
+      "title": "Roadmap Deck",
+      "description": "A published, diagram-free slide deck used to prove a deck with no diagrams never pulls the Mermaid runtime onto its route (the NFR-002 footprint guard).",
+      "type": "Presentation",
+      "doc_status": "active",
+      "kind": "Presentation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-28T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/roadmap-deck.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/presentations/roadmap-deck/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/roadmap-deck.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/presentations/roadmap-deck/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "presentations/showcase-deck",
+      "route": "/presentations/showcase-deck/",
+      "section": "presentations",
+      "title": "Showcase Deck",
+      "description": "A published reveal.js deck exercising the full out-of-frame pipeline — a title slide, horizontal slides, a vertical stack, a fragment, and speaker notes.",
+      "type": "Presentation",
+      "doc_status": "active",
+      "kind": "Presentation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/showcase-deck.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/presentations/showcase-deck/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/showcase-deck.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/presentations/showcase-deck/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "glossary",
+      "route": "/glossary/",
+      "section": "glossary",
+      "title": "Glossary",
+      "description": "Bounded-context vocabulary for this documentation.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/glossary/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/glossary/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "glossary/hr",
+      "route": "/glossary/hr/",
+      "section": "glossary",
+      "title": "hr",
+      "description": "Glossary terms for the hr context.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Glossary",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary/hr.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/glossary/hr/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary/hr.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/glossary/hr/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "glossary/rhetoric",
+      "route": "/glossary/rhetoric/",
+      "section": "glossary",
+      "title": "rhetoric",
+      "description": "Glossary terms for the rhetoric context.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Glossary",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary/rhetoric.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/glossary/rhetoric/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary/rhetoric.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/glossary/rhetoric/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "glossary/shipping",
+      "route": "/glossary/shipping/",
+      "section": "glossary",
+      "title": "shipping",
+      "description": "Glossary terms for the shipping context.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Glossary",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary/shipping.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/glossary/shipping/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary/shipping.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/glossary/shipping/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "changelog",
+      "route": "/changelog/",
+      "section": "changelog",
+      "title": "Changelog",
+      "description": "Release history of the DocKitty toolkit, rendered from the repository CHANGELOG.md.",
+      "type": "Changelog",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-19T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/changelog.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/changelog/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/changelog.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/changelog/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "changelog/releases",
+      "route": "/changelog/releases/",
+      "section": "changelog",
+      "title": "Release history",
+      "description": "Every DocKitty toolkit release, rendered at build time from the repository's CHANGELOG.md.",
+      "type": "Changelog",
+      "doc_status": "active",
+      "kind": "Changelog",
+      "tags": [
+        "release"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-10-19T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/changelog/releases.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/changelog/releases/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/changelog/releases.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/changelog/releases/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "glossary-demo/shipping-guide",
+      "route": "/glossary-demo/shipping-guide/",
+      "section": "glossary-demo",
+      "title": "A page that lives in the shipping context",
+      "description": "Declaring glossary_context lets the auto-linker settle a collision by itself — here policy resolves to shipping with no directive and no warning.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "How-To",
+      "tags": [
+        "glossary",
+        "demonstrator",
+        "context"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-26T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/shipping-guide.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/glossary-demo/shipping-guide/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/shipping-guide.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/glossary-demo/shipping-guide/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "glossary-demo/no-autolink",
+      "route": "/glossary-demo/no-autolink/",
+      "section": "glossary-demo",
+      "title": "A page that opts out of auto-linking",
+      "description": "Setting glossary_autolink to false turns off automatic links for the whole page, while an explicit :term directive still resolves and links.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "How-To",
+      "tags": [
+        "glossary",
+        "demonstrator",
+        "opt-out"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-26T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/no-autolink.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/glossary-demo/no-autolink/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/no-autolink.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/glossary-demo/no-autolink/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "glossary-demo/cargo-and-collisions",
+      "route": "/glossary-demo/cargo-and-collisions/",
+      "section": "glossary-demo",
+      "title": "Cargo, consignments, and a cross-context collision",
+      "description": "The context-free demonstrator — auto-linking, an unresolved collision left plain with one build warning, a forced :term link, and a suppressed one.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "glossary",
+        "demonstrator",
+        "autolink",
+        "collision"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-08-26T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/cargo-and-collisions.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/glossary-demo/cargo-and-collisions/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/cargo-and-collisions.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/glossary-demo/cargo-and-collisions/"
+        },
+        "related": []
+      }
+    }
+  ]
+}

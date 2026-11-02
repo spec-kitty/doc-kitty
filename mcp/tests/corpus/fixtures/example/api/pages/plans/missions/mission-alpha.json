@@ -1,0 +1,45 @@
+{
+  "slug": "plans/missions/mission-alpha",
+  "route": "/plans/missions/mission-alpha/",
+  "section": "plans",
+  "title": "Mission Alpha",
+  "description": "A short mission write-up used to demonstrate the registry subtypes rename (plans/features -> plans/missions).",
+  "type": "Mission",
+  "doc_status": "active",
+  "kind": "Planning",
+  "tags": [],
+  "related": [
+    {
+      "ref": "plans/missions/mission-beta",
+      "title": "Mission Beta",
+      "kind": "Planning",
+      "doc_status": "active"
+    }
+  ],
+  "priority": 0.5,
+  "updated": "2026-10-13T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-alpha.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Mission Alpha\n\nThe `type: Mission` above is not a code-derivation special case — it agrees\nwith what the section registry ALREADY derives for this path: the `plans`\nsection defaults to `Plan`, and the `missions` `subtypes` rule in\n`example/docs/_meta/sections.yaml` overrides it to `Mission` for every page\nunder `plans/missions/`. That registry rule is the only reason this path\nderives `Mission` instead of falling through to the built-in\n`plans/features` -> `Feature` table.\n\nSee also [Mission Beta](/plans/missions/mission-beta/).",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-alpha.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/"
+    },
+    "related": [
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/",
+        "title": "Mission Beta"
+      }
+    ]
+  }
+}
