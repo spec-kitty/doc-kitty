@@ -82,6 +82,11 @@ describe('agentIndexRoute — version and updated format', () => {
     // #176: the content graph is always linked (the integration always injects the route).
     expect(json._links.contentGraph).toEqual({ href: 'https://docs.example/api/content-graph.json' });
     expect(json.pages[0].updated).toBe('2026-10-18T09:30:00Z');
+    // WP01 (FR-003, FR-008): the run has no section registry beside it, so
+    // sections stays an empty list rather than failing the route; the corpus
+    // build identity is always stamped (64-hex sha256).
+    expect(json.sections).toEqual([]);
+    expect(json.buildId).toMatch(/^[0-9a-f]{64}$/);
     expect(toAgentRecord({ slug: 'd', data: { title: 'D', updated: '2026-10-18' } }).updated)
       .toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
   });

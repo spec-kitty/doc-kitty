@@ -28,6 +28,7 @@
   },
   "exports": {
     ".": "./index.ts",
+    "./contract": "./lib/contract.ts",
     "./config": "./lib/config.ts",
     "./schema": "./lib/schema.ts",
     "./routes": "./lib/routes/index.ts",

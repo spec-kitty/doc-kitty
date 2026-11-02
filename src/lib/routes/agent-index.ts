@@ -9,11 +9,12 @@
  *   export const GET = agentIndexRoute({ title: 'My Docs' });
  */
 import type { APIRoute } from 'astro';
+import type { AgentIndex, AgentRecordEntry, SectionRecord } from '../contract.js';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
 import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { absolute, docsRoot } from './shared.js';
+import { absolute, buildIdForBuild, docsRoot, mcpLaunchUsage } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 
 export interface AgentIndexRouteOptions {
@@ -43,13 +44,34 @@ export interface AgentIndexLinks {
   rss?: boolean;
   bibliography?: boolean;
   scenarios?: boolean;
+  /**
+   * The MCP wiring pointer (FR-009). Unlike the siblings here this defaults to
+   * OFF: it advertises `@spec-kitty/doc-kitty-mcp`, so it is opt-in until a
+   * site deliberately wires the server into its agent story. When true, the
+   * index carries `_links.mcp` — `{ href: 'npm:@spec-kitty/doc-kitty-mcp',
+   * title, usage }`, where `usage` is the packed-tarball launch command with
+   * this site's base URL substituted (registry publishing is deferred per
+   * C-002) — and `llms.txt` shows the matching one-liner when the site also
+   * passes `links: { mcp: true }` to `llmsTxtRoute`.
+   */
+  mcp?: boolean;
 }
 
 export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
   const indexPath = options.indexPath ?? '/api/index.json';
-  const declared = { pages: true, rss: true, bibliography: true, scenarios: true, ...options.links };
+  const declared = {
+    pages: true,
+    rss: true,
+    bibliography: true,
+    scenarios: true,
+    mcp: false,
+    ...options.links,
+  };
   return async ({ site }) => {
-    const all = await collectDocEntries();
+    // `withBody`: the build identity hashes every entry's body bytes
+    // (FR-008); downstream consumers of the entries ignore the field.
+    const all = await collectDocEntries({ withBody: true });
+    const buildId = buildIdForBuild(all);
     // Resolve against the full corpus, not just the discoverable subset, so a
     // `related` ref into a non-discoverable page still resolves (FR-004).
     const index = buildDocsIndex(all);
@@ -67,10 +89,19 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
     // non-agent-fed section still resolves (FR-004) — only the emitted `pages`
     // list is feeds-filtered.
     const feeds = registry ? sectionFeeds(registry) : undefined;
+    // FR-003: the section listing, projected from the registry in registry
+    // order (already `order`-sorted). A registry-free site emits `[]` rather
+    // than failing — the same absent-registry posture the feeds filter applies.
+    const sections: SectionRecord[] = (registry ?? []).map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+      order: entry.order,
+      ...(entry.purpose !== undefined ? { purpose: entry.purpose } : {}),
+    }));
     const ranked = rankForAgents(all, order).filter((entry) =>
       feedsSurface(feeds, sectionOf(entry.slug), 'agent'),
     );
-    const pages = ranked.map((entry) => {
+    const pages: AgentRecordEntry[] = ranked.map((entry) => {
       const record = toAgentRecord(entry);
       // Enrich in the route (composes WP01's resolveRelated); toAgentRecord
       // stays pure/single-entry. Typed against the exported ResolvedRelated so
@@ -101,16 +132,19 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       };
     });
 
-    const body = {
+    const body: AgentIndex = {
       title: options.title,
       // Bumped from '1': the `related` array changed shape (raw slugs →
       // resolved objects) and records now carry `audience`, a
       // published-contract change that consumers branch on (DIRECTIVE_018).
       // '2' -> '3': `updated` is now a full UTC instant (YYYY-MM-DDTHH:MM:SSZ),
-      // not a date-only slice (FR-024).
+      // not a date-only slice (FR-024). `buildId`/`sections`/`_links.mcp`
+      // (WP01) are additive, so the wire version stays '3'.
       version: options.version ?? '3',
       generatedFrom: 'doc-kitty',
       count: pages.length,
+      buildId,
+      sections,
       _links: {
         self: { href: absolute(site, indexPath) },
         llms: { href: absolute(site, '/llms.txt') },
@@ -121,6 +155,18 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
         ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
         ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
         ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
+        // FR-009: the opt-in MCP wiring pointer. `usage` names the installed
+        // tarball bin (the C-002 ruling on registry publishing is pending, so
+        // no `npx -y @spec-kitty/…` form is advertised yet).
+        ...(declared.mcp
+          ? {
+              mcp: {
+                href: 'npm:@spec-kitty/doc-kitty-mcp',
+                title: 'Doc-Kitty MCP server',
+                usage: mcpLaunchUsage(site),
+              },
+            }
+          : {}),
       },
       pages,
     };

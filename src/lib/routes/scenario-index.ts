@@ -47,6 +47,7 @@ import { statSync } from 'node:fs';
 import type { APIRoute } from 'astro';
 import { getCollection, render } from 'astro:content';
 import type { GherkinDocument, Scenario, Tag } from '@cucumber/messages';
+import type { FeatureRecord, ScenarioIndex, ScenarioRecord, ScenarioResult } from '../contract.js';
 import type { DocKittyFrontmatter } from '../metadata.js';
 import { sectionOf, slugFromEntryId } from '../metadata.js';
 import { compareCodeUnit, routeOfSlug, URL_SCHEME } from '../vocabulary-core.mjs';
@@ -60,7 +61,7 @@ import { loadReport } from '../gherkin/results-load.mjs';
 import { featureView } from '../gherkin/view.mjs';
 import { GHERKIN_PRODUCER, stampContentHash, toolkitVersion } from '../generator-stamp.mjs';
 import { isScenarioIndexed } from './scenario-index-filter.js';
-import { absolute, docsRoot } from './shared.js';
+import { absolute, buildIdForBuild, docsRoot, toBuildIdEntries } from './shared.js';
 
 /**
  * The emitted shape's version. `2` since 0.4.0 (#183): the deprecated
@@ -93,67 +94,11 @@ export interface ScenarioIndexRouteOptions {
   results?: string | { report: string; root?: string; required?: boolean };
 }
 
-/** A scenario's (or outline's) result (ADR-0055). */
-export interface ScenarioResult {
-  /** `passed`, `failed`, `ambiguous`, `undefined`, `pending`, `skipped` or `not-run`. */
-  status: string;
-  /** True when it passed after an earlier attempt that did not (Messages reports only). */
-  retried?: boolean;
-  /** An outline's rows by status. */
-  counts?: Record<string, number>;
-}
-
-/** One step, keyword trimmed, text as written (outline placeholders kept). */
-export interface ScenarioStep {
-  keyword: string;
-  text: string;
-}
-
-/** One Examples table of an outline; rows are NOT expanded into scenarios. */
-export interface ScenarioExamples {
-  name: string;
-  tags: string[];
-  header: string[];
-  rows: string[][];
-  /** With a results report: each row's status, in row order (ADR-0055). */
-  results?: string[];
-}
-
-export interface ScenarioRecord {
-  name: string;
-  /** The enclosing `Rule:` name, or `null` for a scenario outside any rule. */
-  rule: string | null;
-  /** The rendered heading id on the feature page (`#<anchor>`). */
-  anchor: string;
-  /** 1-based line of the `Scenario:` keyword in the source file. */
-  line: number;
-  /** The scenario's OWN tags, without `@`, de-duplicated, code-unit sorted. */
-  tags: string[];
-  /** True when the scenario has Examples (the pickle compiler's outline rule). */
-  outline: boolean;
-  steps: ScenarioStep[];
-  examples: ScenarioExamples[];
-  /** With a results report that covers the file (ADR-0055). */
-  result?: ScenarioResult;
-}
-
-export interface FeatureRecord {
-  id: string;
-  title: string;
-  url: string;
-  source: string;
-  doc_status: string;
-  glossary_context: string | null;
-  tags: string[];
-  related: string[];
-  scenarios: ScenarioRecord[];
-  /**
-   * With a results report that names the file: `current` (scenarios carry
-   * results) or `stale` (the report is for another version of the file, so
-   * none are given).
-   */
-  results?: 'current' | 'stale';
-}
+// The emitted-artifact record types are DEFINED once in `../contract.js`
+// (doc-kitty-mcp-server WP01): the emitted JSON and the published type cannot
+// diverge without a build-time type error. They are re-exported here so the
+// long-standing import locations keep working.
+export type { FeatureRecord, ScenarioExamples, ScenarioRecord, ScenarioResult, ScenarioStep } from '../contract.js';
 
 /** The `{ depth, slug, text }` shape of Astro's `render(entry).headings`. */
 export interface RenderedHeading {
@@ -310,6 +255,8 @@ type FeaturePageData = DocKittyFrontmatter & { glossary_context?: string };
 /** The structural slice of a `CollectionEntry<'docs'>` this route reads. */
 interface ContentEntry {
   id: string;
+  /** Raw Markdown body bytes; read by the FR-008 build-identity stamp. */
+  body?: string;
   data: unknown;
 }
 
@@ -387,6 +334,11 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
     const registry = resolveSectionRegistry(await docsRoot());
     const feeds = registry ? sectionFeeds(registry) : undefined;
     const entries = (await getCollection('docs')) as unknown as ContentEntry[];
+    // FR-008 (WP01/T004): the corpus-wide build identity over EVERY entry
+    // (pre-filter, pre-projection — the same full-corpus mapping agent-index
+    // and agent-page apply), stamped into the emitted body below so a torn
+    // corpus read across artifact kinds is detectable.
+    const buildId = buildIdForBuild(toBuildIdEntries(entries));
     const pages = entries
       .map((entry) => ({
         entry,
@@ -455,11 +407,12 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
       if (report?.ok) attachResults(features[features.length - 1], file, report);
     }
 
-    const body = {
+    const body: ScenarioIndex = {
       version: options.version ?? SCENARIO_INDEX_VERSION,
       // The producer as an OKF tool actor, the same name the feature pages' stamp carries.
       generated_by: `${GHERKIN_PRODUCER}/${toolkitVersion()}`,
       count: features.length,
+      buildId,
       ...(report?.ok && resultsOption
         ? {
             results: {

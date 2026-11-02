@@ -29,15 +29,27 @@ import {
   feedsSurface,
 } from '../sections.js';
 import { DESCRIPTION_MAX } from '../schema.js';
-import { absolute, docsRoot } from './shared.js';
+import { absolute, docsRoot, mcpLaunchUsage } from './shared.js';
 import { collectDocEntries } from '../docs-index.js';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
 import { openApiLlmsLines, readPublication } from '../integrations/openapi-publish.js';
 
+export interface LlmsTxtLinks {
+  /**
+   * The MCP wiring mention (FR-009): when true, llms.txt gains one line naming
+   * the DocKitty MCP server launch command and the machine index. Default
+   * false — a route cannot see the agent index's own `links.mcp`, so a site
+   * opts the two surfaces in separately (WP01/T005).
+   */
+  mcp?: boolean;
+}
+
 export interface LlmsTxtRouteOptions {
   title: string;
   description?: string;
+  /** Which optional machine-facing mentions to emit. */
+  links?: LlmsTxtLinks;
   /**
    * The section-index basename(s) (FR-003): forwarded to `docsRoot()` so the
    * registry (order/labels/purposes) resolves from the SAME root the content
@@ -93,6 +105,18 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     const lines: string[] = [`# ${options.title}`, ''];
     if (options.description) lines.push(`> ${options.description}`, '');
     lines.push(`Full machine index: ${absolute(site, '/api/index.json')}`, '');
+    // FR-009 (WP01/T005): the opt-in MCP wiring mention — one line naming the
+    // capability and pointing at the machine index it serves. The `usage`
+    // names the installed packed-tarball bin (registry publishing is deferred
+    // per C-002, so no npmjs `npx` form is advertised yet).
+    if (options.links?.mcp) {
+      lines.push(
+        `MCP server: ${mcpLaunchUsage(site)} ` +
+          `serves the machine index (${absolute(site, '/api/index.json')}) to MCP clients ` +
+          '(npm:@spec-kitty/doc-kitty-mcp)',
+        '',
+      );
+    }
     // The scenario index (`scenarioIndexRoute`, ADR-0046) is advertised ONLY when
     // it has something to list: at least one generated feature page that the
     // index itself would emit (`isScenarioIndexed` + the section `agent` feeds
