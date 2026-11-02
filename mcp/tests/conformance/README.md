@@ -13,8 +13,8 @@ a dishonest implementation cannot pass.
 | `sweep.ts` | One full sweep over all five tools (`get_site_info`, `list_pages`, `get_page`, `search_pages`, `list_scenarios`) comparing every output field against the projection. |
 | `serve-fixture.ts` | Local static server for the https input mode (rebases the fixture's baked origin onto loopback, can pin a 500 status for chosen paths, and mints a guaranteed-dead loopback port for the UNREACHABLE rows). |
 | `harness.ts` | Per-mode server/client wiring through the REAL adapters + `createServer`. |
-| `golden.test.ts` | T020: SC-003 minimum matrix - all 5 tools, >=10 example pages including the empty-slug home, BOTH input modes plus the fs `--link-base` carve-out run, a pages-links-gated run, and the three SC-002 discriminating controls (own fixture terms). Resources assertions are conditional on `capabilities.resources` (WP04 may land in parallel; this suite stays green either way and logs which branch ran). |
-| `seeded-fault.test.ts` | T020 auto-vacuity control: re-runs the SAME sweep against `createServer(snapshot, { ...config, faults: { uppercaseTitles: true } })` and asserts the comparisons GO RED (plus a no-fault control proving the identical sweep stays green). |
+| `golden.test.ts` | T020: SC-003 minimum matrix - all 5 tools, >=10 example pages including the empty-slug home, BOTH input modes plus the fs `--link-base` carve-out run, a pages-links-gated run, and the three SC-002 discriminating controls (own fixture terms). Resources assertions run unconditionally (the resources surface is part of the server since WP04). |
+| `seeded-fault.test.ts` | T020 auto-vacuity control: re-runs the SAME sweep against `createServer(snapshot, { ...config, faults: { uppercaseTitles: true } })` and asserts the comparisons GO RED. |
 | `failure-matrix.test.ts` | T021: SC-004 - one fixture+assertion per named error, each inside a hard time budget, measured numbers printed to the test output. |
 
 ## Seeded-fault mechanism

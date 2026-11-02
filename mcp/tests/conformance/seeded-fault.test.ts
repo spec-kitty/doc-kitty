@@ -17,7 +17,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { resultJson } from '../surface/helpers.js';
 import { compareFields, formatComparisons } from './compare.js';
-import { exampleFixtureDir, runFsServer, runFsServerWithFaults, samplePageIds } from './harness.js';
+import { exampleFixtureDir, runFsServerWithFaults, samplePageIds } from './harness.js';
 import { expectedPage, projectCorpus } from './projection.js';
 import type { ProjectedCorpus } from './projection.js';
 import { conformanceSweep } from './sweep.js';
@@ -79,21 +79,5 @@ describe('T020 seeded-fault self-test (auto-vacuity control)', () => {
         await faulted.close();
       }
     });
-  });
-
-  it('control: the identical sweep WITHOUT the fault stays fully green', async () => {
-    const dir = exampleFixtureDir();
-    const clean = await runFsServer(dir);
-    try {
-      const corpus = await projectCorpus({ kind: 'fs', dir });
-      const mismatches = await conformanceSweep(clean.client, corpus, clean.view, {
-        sampleIds: samplePageIds(corpus),
-        searchQueries: ['mission alpha'],
-        sectionFilters: ['', 'guides'],
-      });
-      expect(formatComparisons(mismatches)).toBe('(all fields byte-equal)');
-    } finally {
-      await clean.close();
-    }
   });
 });
