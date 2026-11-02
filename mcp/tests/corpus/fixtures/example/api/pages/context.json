@@ -1,0 +1,33 @@
+{
+  "slug": "context",
+  "route": "/context/",
+  "section": "context",
+  "title": "Context",
+  "description": "Why this project exists, who it serves, and its domain vocabulary.",
+  "type": "Context",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.8,
+  "updated": "2026-08-21T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/context/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Context\n\nDomain and product context for the example project. The pages below map the\n\"why\" and the \"what\": the product problem this example solves, and the domain\nvocabulary it uses.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/context/"
+    },
+    "related": []
+  }
+}

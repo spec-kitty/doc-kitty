@@ -1,0 +1,17 @@
+{
+  "slug": "guides/alpha",
+  "section": "guides",
+  "title": "Alpha Guide",
+  "description": "Guide with shared-topic coverage.",
+  "doc_status": "active",
+  "authors": [],
+  "keywords": ["QuickStart", "shared-key"],
+  "markdown": "# Alpha Guide\n\nAlpha body text.\n",
+  "url": "https://docs.example.com/surface/guides/alpha/",
+  "source": "https://docs.example.com/surface/api/pages/guides/alpha.json",
+  "buildId": "surface-fixture-build",
+  "_links": {
+    "self": { "href": "https://docs.example.com/surface/api/pages/guides/alpha.json" },
+    "html": { "href": "https://docs.example.com/surface/guides/alpha/" }
+  }
+}

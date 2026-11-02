@@ -1,0 +1,27 @@
+{
+  "slug": "controls/beta",
+  "route": "/controls/beta/",
+  "section": "controls",
+  "title": "Beta Notes",
+  "description": "The beta page keeps its control term inside the prose body only.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Reference",
+  "tags": [],
+  "authors": [],
+  "keywords": ["indexing"],
+  "priority": 0.4,
+  "updated": null,
+  "markdown": "# Beta Notes\n\nThis body narrates morrowdust handling, and that word appears nowhere searchable.\n",
+  "url": "https://conformance.example.net/library/controls/beta/",
+  "source": "https://conformance.example.net/library/src/content/docs/controls/beta.mdx",
+  "buildId": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091",
+  "_links": {
+    "self": {
+      "href": "https://conformance.example.net/library/api/pages/controls/beta.json"
+    },
+    "html": {
+      "href": "https://conformance.example.net/library/controls/beta/"
+    }
+  }
+}

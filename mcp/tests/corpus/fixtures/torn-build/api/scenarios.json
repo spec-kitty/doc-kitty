@@ -1,0 +1,455 @@
+{
+  "version": "2",
+  "generated_by": "doc-kitty-gherkin/0.5.0",
+  "count": 3,
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "results": {
+    "report": "reports/cucumber.ndjson",
+    "format": "messages",
+    "as_of": "2026-10-19T00:00:00.000Z"
+  },
+  "features": [
+    {
+      "id": "behaviour/hr/request-leave",
+      "title": "Request annual leave",
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/",
+      "source": "features/hr/request-leave.feature",
+      "doc_status": "active",
+      "glossary_context": "hr",
+      "tags": [
+        "FR-012"
+      ],
+      "related": [],
+      "scenarios": [
+        {
+          "name": "Approve a request within the allowance",
+          "rule": null,
+          "anchor": "scenario-approve-a-request-within-the-allowance",
+          "line": 14,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "When",
+              "text": "the employee requests 5 days of leave starting on 3 November"
+            },
+            {
+              "keyword": "Then",
+              "text": "the request is approved under the leave policy"
+            },
+            {
+              "keyword": "And",
+              "text": "the employee has 7 days of annual leave remaining"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "passed"
+          }
+        },
+        {
+          "name": "Refuse a request that exceeds the allowance",
+          "rule": null,
+          "anchor": "scenario-refuse-a-request-that-exceeds-the-allowance",
+          "line": 19,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "When",
+              "text": "the employee requests 15 days of leave"
+            },
+            {
+              "keyword": "Then",
+              "text": "the request is refused because it exceeds the remaining allowance"
+            },
+            {
+              "keyword": "And",
+              "text": "the employee still has 12 days of annual leave remaining"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "passed"
+          }
+        },
+        {
+          "name": "Hold a request that overlaps a blackout period",
+          "rule": null,
+          "anchor": "scenario-hold-a-request-that-overlaps-a-blackout-period",
+          "line": 24,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "the team has a blackout period from 15 to 19 December"
+            },
+            {
+              "keyword": "When",
+              "text": "the employee requests 2 days of leave starting on 18 December"
+            },
+            {
+              "keyword": "Then",
+              "text": "the request waits for the manager's sign-off"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "passed"
+          }
+        },
+        {
+          "name": "Pro-rate the allowance of a new starter",
+          "rule": null,
+          "anchor": "scenario-pro-rate-the-allowance-of-a-new-starter",
+          "line": 29,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "a new starter who joined on 1 October and is still in onboarding"
+            },
+            {
+              "keyword": "When",
+              "text": "the people team calculates the new starter's allowance"
+            },
+            {
+              "keyword": "Then",
+              "text": "the new starter has 6 days of annual leave for the rest of the year"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "passed",
+            "retried": true
+          }
+        }
+      ],
+      "results": "current"
+    },
+    {
+      "id": "behaviour/shipping/book-consignment",
+      "title": "Book a consignment",
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/",
+      "source": "features/shipping/book-consignment.feature",
+      "doc_status": "active",
+      "glossary_context": "shipping",
+      "tags": [
+        "FR-003"
+      ],
+      "related": [
+        "adr/0001-use-astro-starlight",
+        "plans/missions/mission-alpha"
+      ],
+      "scenarios": [
+        {
+          "name": "Book cargo that fits",
+          "rule": "A booking within capacity is confirmed",
+          "anchor": "scenario-book-cargo-that-fits",
+          "line": 17,
+          "tags": [
+            "smoke"
+          ],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "a consignment of 12 TEU"
+            },
+            {
+              "keyword": "When",
+              "text": "the shipper books the consignment onto the sailing"
+            },
+            {
+              "keyword": "Then",
+              "text": "the booking is confirmed"
+            },
+            {
+              "keyword": "And",
+              "text": "the sailing has 28 TEU remaining"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "passed"
+          }
+        },
+        {
+          "name": "Attach a packing list to a confirmed booking",
+          "rule": "A booking within capacity is confirmed",
+          "anchor": "scenario-attach-a-packing-list-to-a-confirmed-booking",
+          "line": 23,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "a confirmed booking for a consignment of 2 TEU"
+            },
+            {
+              "keyword": "When",
+              "text": "the shipper attaches the packing list:"
+            },
+            {
+              "keyword": "Then",
+              "text": "the booking shows 2 packing-list lines"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "passed"
+          }
+        },
+        {
+          "name": "Refuse cargo that does not fit",
+          "rule": "A booking over capacity is refused",
+          "anchor": "scenario-outline-refuse-cargo-that-does-not-fit",
+          "line": 33,
+          "tags": [],
+          "outline": true,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "a consignment of <size> TEU"
+            },
+            {
+              "keyword": "When",
+              "text": "the shipper books the consignment onto the sailing"
+            },
+            {
+              "keyword": "Then",
+              "text": "the booking is refused with reason \"<reason>\""
+            }
+          ],
+          "examples": [
+            {
+              "name": "Over capacity",
+              "tags": [
+                "edge"
+              ],
+              "header": [
+                "size",
+                "reason"
+              ],
+              "rows": [
+                [
+                  "41",
+                  "insufficient space"
+                ],
+                [
+                  "120",
+                  "insufficient space"
+                ]
+              ],
+              "results": [
+                "passed",
+                "failed"
+              ]
+            }
+          ],
+          "result": {
+            "status": "failed",
+            "counts": {
+              "passed": 1,
+              "failed": 1
+            }
+          }
+        },
+        {
+          "name": "Refused bookings state the remaining capacity",
+          "rule": "A booking over capacity is refused",
+          "anchor": "scenario-refused-bookings-state-the-remaining-capacity",
+          "line": 44,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "these consignments are already booked:"
+            },
+            {
+              "keyword": "When",
+              "text": "the shipper books a consignment of 5 TEU onto the sailing"
+            },
+            {
+              "keyword": "Then",
+              "text": "the booking is refused with reason \"insufficient space\""
+            },
+            {
+              "keyword": "And",
+              "text": "the refusal states that 2 TEU remain"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "pending"
+          }
+        }
+      ],
+      "results": "current"
+    },
+    {
+      "id": "behaviour/shipping/declare-customs",
+      "title": "Declare a consignment to customs",
+      "url": "https://spec-kitty.github.io/doc-kitty/behaviour/shipping/declare-customs/",
+      "source": "features/shipping/declare-customs.feature",
+      "doc_status": "active",
+      "glossary_context": "shipping",
+      "tags": [
+        "FR-004"
+      ],
+      "related": [
+        "adr/0001-use-astro-starlight"
+      ],
+      "scenarios": [
+        {
+          "name": "Calculate the duty owed on a declaration",
+          "rule": "Duty follows the declared value and the commodity's duty rate",
+          "anchor": "scenario-outline-calculate-the-duty-owed-on-a-declaration",
+          "line": 19,
+          "tags": [],
+          "outline": true,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "the cargo is declared under a commodity code with a duty rate of <rate>%"
+            },
+            {
+              "keyword": "And",
+              "text": "its declared value is <value> EUR"
+            },
+            {
+              "keyword": "When",
+              "text": "the shipper lodges the declaration before the cut-off"
+            },
+            {
+              "keyword": "Then",
+              "text": "the declaration is accepted"
+            },
+            {
+              "keyword": "And",
+              "text": "the duty owed is <duty> EUR"
+            }
+          ],
+          "examples": [
+            {
+              "name": "Dutiable goods",
+              "tags": [],
+              "header": [
+                "rate",
+                "value",
+                "duty"
+              ],
+              "rows": [
+                [
+                  "6",
+                  "10000",
+                  "600"
+                ],
+                [
+                  "0",
+                  "25000",
+                  "0"
+                ]
+              ],
+              "results": [
+                "passed",
+                "passed"
+              ]
+            },
+            {
+              "name": "Below the relief threshold",
+              "tags": [
+                "edge"
+              ],
+              "header": [
+                "rate",
+                "value",
+                "duty"
+              ],
+              "rows": [
+                [
+                  "6",
+                  "120",
+                  "0"
+                ]
+              ],
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "result": {
+            "status": "passed",
+            "counts": {
+              "passed": 3
+            }
+          }
+        },
+        {
+          "name": "Lodge a declaration for an insured consignment",
+          "rule": "A declaration carries the evidence customs asks for",
+          "anchor": "scenario-lodge-a-declaration-for-an-insured-consignment",
+          "line": 38,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "the consignment is insured under a marine cargo policy"
+            },
+            {
+              "keyword": "When",
+              "text": "the shipper lodges this declaration:"
+            },
+            {
+              "keyword": "Then",
+              "text": "the declaration is accepted"
+            },
+            {
+              "keyword": "And",
+              "text": "the declaration records the policy reference \"MC-2026-0412\""
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "passed"
+          }
+        },
+        {
+          "name": "Hold a declaration lodged after the cut-off",
+          "rule": "A declaration carries the evidence customs asks for",
+          "anchor": "scenario-hold-a-declaration-lodged-after-the-cut-off",
+          "line": 50,
+          "tags": [],
+          "outline": false,
+          "steps": [
+            {
+              "keyword": "Given",
+              "text": "the customs cut-off has passed"
+            },
+            {
+              "keyword": "When",
+              "text": "the shipper lodges the declaration"
+            },
+            {
+              "keyword": "Then",
+              "text": "the declaration is held for manual review"
+            },
+            {
+              "keyword": "And",
+              "text": "the freight invoice carries a late-lodgement surcharge"
+            }
+          ],
+          "examples": [],
+          "result": {
+            "status": "undefined"
+          }
+        }
+      ],
+      "results": "current"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "slug": "adr",
+  "route": "/adr/",
+  "section": "adr",
+  "title": "Decision Records",
+  "description": "The immutable log of architectural decisions for the example.",
+  "type": "ADR",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-21T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/adr.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/adr/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Decision Records\n\nADRs are never edited once accepted — a new ADR supersedes an old one.\n\nThis page is a `kind: Hub` index: the ADRs below are listed automatically by the\nHub layout on build, so there is no hand-maintained table to keep in sync.\n\nTo add one, copy `template.md` from this folder to `NNNN-short-title.md`. The\ntemplate is a draft page, so it is only built when drafts are published.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/adr.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/adr/"
+    },
+    "related": []
+  }
+}

@@ -1,6 +1,7 @@
 packages:
   - "src"
   - "example"
+  - "mcp"
 allowBuilds:
   esbuild: true
   sharp: true

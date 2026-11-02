@@ -20,8 +20,15 @@ workflows:
   - '.github/filters.yml'
 
 # code — toolkit/site code or build config → code-quality + build-example + doc-sanity.
+# `mcp/**` and `tests/consumption/**` classify as code too (doc-kitty-mcp-server
+# WP02): the MCP server package and the packed-tarball consumption harness are
+# code surfaces; leaving them unclassified would let an mcp-only PR merge with
+# no lane evidence behind ci-ok (fail-closed = GREEN only when lanes that DID
+# run are green).
 code:
   - 'src/**'
+  - 'mcp/**'
+  - 'tests/consumption/**'
   - 'example/src/**'
   - 'example/*.ts'
   - 'example/*.mjs'

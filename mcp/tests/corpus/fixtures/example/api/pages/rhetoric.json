@@ -1,0 +1,33 @@
+{
+  "slug": "rhetoric",
+  "route": "/rhetoric/",
+  "section": "rhetoric",
+  "title": "Rhetoric",
+  "description": "A real Markua conversion of Aristotle's Rhetoric Book I, showcasing custom sections, footnotes, a native glossary, and personas.",
+  "type": "Reference",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-09-08T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/rhetoric/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Rhetoric\n\nThis section is a real Markua-authored conversion of Aristotle's *Rhetoric*,\nBook I — not a demo fixture. It shows how a full converted work reads as\nnative doc-kitty pages: a custom top-level section registered in\n`sections.yaml` rather than baked into a template, Markua footnotes and\neditor's-note callouts, a native glossary built from the source's own term\nlist, and constructed reader personas wired to the audience surface.\n\n- [Book I: Purposes and Definitions of Rhetoric](/rhetoric/book-one/) — the\n  complete converted text: 15 chapters covering what rhetoric is for, its\n  three species, and the topics orators argue from.\n- [Book II: Persuasion techniques](/rhetoric/book-two/) — landing only.\n- [Book III: Stylistic Delivery and Arrangement Techniques](/rhetoric/book-three/) —\n  landing only.\n\nThis content is a CC-BY-SA-4.0 derivative of a public-domain translation. See\n[About and license](/rhetoric/about-and-license/) for full attribution.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/rhetoric/"
+    },
+    "related": []
+  }
+}

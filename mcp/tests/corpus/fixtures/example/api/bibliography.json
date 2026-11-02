@@ -1,0 +1,52 @@
+{
+  "version": "1",
+  "count": 4,
+  "records": [
+    {
+      "id": "divio-2017",
+      "type": "webpage",
+      "title": "The documentation system",
+      "authors": [
+        "Daniele Procida"
+      ],
+      "container": "Divio",
+      "url": "https://documentation.divio.com",
+      "issued": "2017",
+      "accessed": "2026-08-24",
+      "note": "origin of the four-quadrant model"
+    },
+    {
+      "id": "freese-rhetoric-1926",
+      "type": "book",
+      "title": "Aristotle, Rhetoric",
+      "authors": [
+        "Aristotle",
+        "trans. J.H. Freese"
+      ],
+      "container": "Perseus Project",
+      "url": "http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0060",
+      "issued": "1926",
+      "note": "public-domain translation; the source this showcase's Rhetoric conversion is derived from"
+    },
+    {
+      "id": "llms-txt-2024",
+      "type": "webpage",
+      "title": "The /llms.txt file",
+      "url": "https://llmstxt.org",
+      "issued": "2024",
+      "note": "the agent-facing discovery index this docsite emits"
+    },
+    {
+      "id": "perseus-project",
+      "type": "webpage",
+      "title": "The Perseus Project",
+      "authors": [
+        "Tufts University"
+      ],
+      "container": "Perseus Digital Library",
+      "url": "http://www.perseus.tufts.edu/hopper",
+      "issued": "1987",
+      "note": "hosts the Freese translation this showcase converts; curated by Tufts University's department of classical studies"
+    }
+  ]
+}

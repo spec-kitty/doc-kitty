@@ -1,0 +1,50 @@
+{
+  "slug": "architecture/diagram-demonstrator",
+  "route": "/architecture/diagram-demonstrator/",
+  "section": "architecture",
+  "title": "Diagram demonstrator",
+  "description": "One page with two diagrams — a fully-annotated flowchart and a description-only sequence — showing the metadata surface across two guaranteed types.",
+  "type": "Architecture",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "architecture",
+    "diagrams",
+    "demonstrator",
+    "fixture"
+  ],
+  "related": [
+    {
+      "ref": "architecture/overview",
+      "title": "Overview",
+      "kind": "Explanation",
+      "doc_status": "active"
+    }
+  ],
+  "priority": 0.5,
+  "updated": "2026-08-25T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/diagram-demonstrator.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/architecture/diagram-demonstrator/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Diagram demonstrator\n\nA diagram is just a ` ```mermaid ` fenced code block. doc-kitty renders it in the\nbrowser as a themed, accessible figure and — with a small comment block at the top —\ngives it a caption, a credit line, and the accessible name and description a screen\nreader announces. This page shows the full surface twice, on two different diagram\ntypes, so you can copy whichever shape fits your page.\n\n## What the metadata fields do\n\nPut a short block of Mermaid `%%` comments at the very top of the diagram, using\nplain-language keys — all optional:\n\n- **`title`** becomes the diagram's accessible **name** (what a screen reader\n  announces first). When you omit it, the **`description`** is used as the name\n  instead, so any metadata at all names the diagram.\n- **`description`** becomes the figure's **caption** and the diagram's accessible\n  **description**. Always provide at least this one.\n- **`attribution`** becomes a credit line; when **`source`** is present, the credit\n  links there.\n\nA typo in a key (`%% descriptn:`) is harmless — it stays an ordinary comment and the\ndiagram still renders. One caveat: do **not** use the `%%{ … }%%` form for metadata.\nThat is Mermaid's reserved init directive, and doc-kitty deliberately never reads it\nas a field (the metadata parser requires whitespace after `%%`, so `%%{` can never be\nmistaken for a `%% key:` line).\n\n## A fully-annotated flowchart\n\nAll four fields are present here, so the figure gets a caption, a linked credit line,\nand a distinct accessible name (`title`) separate from its description.\n\n```mermaid\n%% title: Build-and-publish pipeline\n%% description: The docs tree is loaded once, fanned out to the site and the feeds, then Starlight emits the static HTML.\n%% attribution: Adapted from ADR-0023\n%% source: https://example.com/adr-0023-diagram-render-seam\nflowchart LR\n  Docs[Docs tree] --> Loader[Toolkit loader]\n  Loader --> Starlight[Starlight site]\n  Loader --> Feeds[Sitemap and feeds]\n  Starlight --> Html[Static HTML]\n```\n\n## A description-only sequence\n\nThis one omits `title` on purpose, and uses a **sequence** diagram rather than a\nflowchart. Because there is no `title`, the `description` becomes *both* the caption\nand the accessible name — the name fallback, proven end-to-end on a non-flowchart\ntype.\n\n```mermaid\n%% description: A reader requests a page and the static host returns pre-rendered HTML, with no server in the loop.\nsequenceDiagram\n  participant Reader\n  participant Host as Static host\n  Reader->>Host: Request a page\n  Host-->>Reader: Pre-rendered HTML\n```\n\n## With JavaScript off\n\nRendering happens in the browser, so if a reader has JavaScript disabled the diagram\ndoes not draw. What survives is the part that carries the meaning: the **raw diagram\nsource** stays in the page, and the **caption** (the `description`) is right below it.\nNothing is lost silently — the reader sees the source and its plain-language summary\ninstead of a picture. The diagram JavaScript also loads **only** on pages that\nactually contain a diagram, so a diagram-free page pays no cost.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/diagram-demonstrator.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/architecture/diagram-demonstrator/"
+    },
+    "related": [
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
+        "title": "Overview"
+      }
+    ]
+  }
+}

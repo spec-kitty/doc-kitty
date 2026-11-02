@@ -1,0 +1,33 @@
+{
+  "slug": "changelog",
+  "route": "/changelog/",
+  "section": "changelog",
+  "title": "Changelog",
+  "description": "Release history of the DocKitty toolkit, rendered from the repository CHANGELOG.md.",
+  "type": "Changelog",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-10-19T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/changelog.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/changelog/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Changelog\n\n- [Release history](/changelog/releases/) — every release of\n  `@spec-kitty/doc-toolkit`, rendered from the repository's `CHANGELOG.md`.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/changelog.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/changelog/"
+    },
+    "related": []
+  }
+}

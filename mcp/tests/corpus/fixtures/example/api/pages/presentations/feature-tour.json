@@ -1,0 +1,35 @@
+{
+  "slug": "presentations/feature-tour",
+  "route": "/presentations/feature-tour/",
+  "section": "presentations",
+  "title": "doc-kitty: your docs, already a site",
+  "description": "How a Common Docs tree becomes an on-brand, agent-readable, self-checking site, with no theme build.",
+  "type": "Presentation",
+  "doc_status": "active",
+  "kind": "Presentation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-09-05T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/feature-tour.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/presentations/feature-tour/",
+  "authors": [
+    "human:stijn"
+  ],
+  "keywords": [],
+  "markdown": "## Already structured — now it's a site\n\n**Your `docs/` tree already has structure. doc-kitty turns it into a site — on brand, agent-readable, self-maintaining — without a redesign.**\n\nNote: three legs carry every slide that follows: zero theme work, built for agents not just humans, and self-checking rather than self-trusting.\n\n## The gap Common Docs leaves open\n\n- Common Docs gives you structure — not a publish path.\n- No agent-aware way to expose that structure.\n- No generated discovery surface: no site, no agent-API, no feeds.\n- Closing that gap, without a theme build, is why doc-kitty exists.\n\n## A page's kind is its layout\n\n- `Default`, `Hub`, `Persona`, `Presentation` — a page's `kind` selects its layout automatically.\n- No per-page template authoring, ever.\n- Section order, labels, and typing come from `docs/_meta/sections.yaml`.\n- Relabel or reorder a section: one data edit, not a deploy.\n\n## Write once, render correctly\n\n- Mermaid diagrams become accessible, themed, self-captioning figures.\n- The Markua subset (asides, callouts, figures, crosslinks) renders imported content as its author intended.\n- Pages that use none of it: nothing changes.\n\n## The glossary that keeps itself honest\n\n- One shared vocabulary file (Contextive) drives the whole site.\n- First-mention auto-linking, scoped per section.\n- A hover preview on every linked term.\n- An on-page \"terms used\" list that can never drift from what's linked.\n\n## Every page knows who it's for\n\nA page's metadata says who it's for and what to read next — no hand-built \"see also\" list.\n\n### Audience\n\n- An audience block links a page to its intended persona.\n\n### Related pages\n\n- Card-style cross-links, with a visible marker when a target has gone stale.\n\n### External references\n\n- A citation catalog for sourced claims, right where the claim is made.\n\n## The same metadata, twice\n\n- `llms.txt` and a JSON agent-API (`/api/index.json`, `/api/pages/*.json`) — a crawlable map, not a RAG index.\n- `sitemap-index.xml` and `rss.xml`, generated from the same source.\n- An agent discovers the whole corpus from one file.\n\nNote: the differentiator slide for this audience — the same metadata that drives human navigation also drives machine discovery. Let it breathe; don't crowd it with more bullets.\n\n## One theme contract, three layers\n\n```mermaid\n%% title: One theme contract, three layers\n%% description: The theming contract layers three sources — a Default theme, an optional Brand theme, and consumer config — each overriding the layer before it through the shared --dk-* token catalog.\nflowchart LR\n  D[Default theme] --> B[Brand theme] --> C[Consumer config]\n```\n\nNote: only the Default layer is required to be complete — an unthemed site is still fully styled.\n\n## Correctness the site checks itself\n\n- A fail-closed link-integrity gate: a broken internal link fails the build, not the review.\n- WCAG 2.2 AA across every layout, including a mandatory no-JS deck fallback.\n- Metadata and vocabulary drift degrade to a warning — never a silent break.\n\n## This deck could have been one of these\n\n- A page with `kind: Presentation` under `presentations/` renders out-of-frame as a static reveal.js deck.\n- `##` opens a horizontal slide, `###` opens a vertical stack — no slide DSL.\n- Speaker notes and per-slide directives are plain Markdown and HTML comments.\n- Live example: `example/docs/presentations/showcase-deck.md`.\n\n## Dark by default, yellow with intent\n\n- Dark mode is the canonical surface; light mode is a derived, AA-checked companion.\n- Yellow (`#F5C518`) marks CTAs, active nav, focus rings, and the passport strip — never body text.\n- A defined copy voice: sentence case, no exclamation marks, canonical nouns capitalised.\n- One flow notation, everywhere: `spec -> plan -> tasks -> implement -> review -> merge`.\n\n## Point it at your docs\n\nYour `docs/` tree already has the structure. doc-kitty turns it into a site — on brand, agent-readable, self-maintaining.\n\n- Try it against the example site, or one section of your own tree.\n- Pilot a single section before committing the whole tree.\n\nNote: ask for the decision here — a pilot, a spike, or a named follow-up demo — not just admiration.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/feature-tour.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/presentations/feature-tour/"
+    },
+    "related": []
+  }
+}

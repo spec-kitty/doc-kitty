@@ -1,0 +1,82 @@
+{
+  "title": "Surface Fixture",
+  "version": "3",
+  "generatedFrom": "doc-kitty",
+  "count": 3,
+  "buildId": "surface-fixture-build",
+  "sections": [
+    { "id": "guides", "label": "Guides", "order": 40 },
+    { "id": "reference", "label": "Reference", "order": 60 }
+  ],
+  "_links": {
+    "self": { "href": "https://docs.example.com/surface/api/index.json" }
+  },
+  "pages": [
+    {
+      "slug": "",
+      "route": "/",
+      "section": "",
+      "title": "Surface Fixture Home",
+      "description": "A tiny synthetic corpus for surface-layer tests.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.5,
+      "updated": "2026-10-01T00:00:00Z",
+      "source": "https://docs.example.com/surface/api/pages/home.json",
+      "url": "https://docs.example.com/surface/",
+      "_links": {
+        "self": { "href": "https://docs.example.com/surface/api/pages/home.json" },
+        "html": { "href": "https://docs.example.com/surface/" },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/alpha",
+      "route": "/guides/alpha/",
+      "section": "guides",
+      "title": "Alpha Guide",
+      "description": "Guide with shared-topic coverage.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "HowTo",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.4,
+      "updated": "2026-10-02T00:00:00Z",
+      "source": "https://docs.example.com/surface/api/pages/guides/alpha.json",
+      "url": "https://docs.example.com/surface/guides/alpha/",
+      "_links": {
+        "self": { "href": "https://docs.example.com/surface/api/pages/guides/alpha.json" },
+        "html": { "href": "https://docs.example.com/surface/guides/alpha/" },
+        "related": []
+      }
+    },
+    {
+      "slug": "reference/beta",
+      "route": "/reference/beta/",
+      "section": "reference",
+      "title": "Beta Reference",
+      "description": "Reference notes on shared-topic.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.3,
+      "updated": "2026-10-03T00:00:00Z",
+      "source": "https://docs.example.com/surface/api/pages/reference/beta.json",
+      "url": "https://docs.example.com/surface/reference/beta/",
+      "_links": {
+        "self": { "href": "https://docs.example.com/surface/api/pages/reference/beta.json" },
+        "html": { "href": "https://docs.example.com/surface/reference/beta/" },
+        "related": []
+      }
+    }
+  ]
+}

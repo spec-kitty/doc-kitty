@@ -1,0 +1,33 @@
+{
+  "slug": "plans",
+  "route": "/plans/",
+  "section": "plans",
+  "title": "Plans",
+  "description": "Forward-looking mission write-ups for the example docsite — not the current state (see architecture/).",
+  "type": "Plan",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-10-13T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/plans.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/plans/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Plans\n\nForward-looking work for the example site: short mission write-ups live under\n`plans/missions/`. Unlike every other section in this example, this section\nhas **no** `README.md` — `plans/index.md` is its section index instead\n(FR-012/SC-001). It resolves to `/plans/`, exactly like a `README.md`-indexed\nsection resolves to its own root, and the two conventions coexist in the same\nbuild (this is the mixed-corpus proof: every other section here still uses\n`README.md`, unchanged).\n\n- [Mission Alpha](./missions/mission-alpha/) — this folder was renamed from\n  `plans/features/` to `plans/missions/` as a **registry-data-only** change\n  (SC-002): a `git mv` plus one `subtypes` rule in\n  `example/docs/_meta/sections.yaml`, no derivation code touched.\n- [Mission Beta](./missions/mission-beta/)",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/plans/"
+    },
+    "related": []
+  }
+}

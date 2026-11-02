@@ -1,0 +1,24 @@
+{
+  "version": "1",
+  "generated_by": "doc-kitty/gherkin",
+  "count": 1,
+  "buildId": "5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5",
+  "features": [
+    {
+      "id": "controls/gated-sanity",
+      "title": "Gated sanity",
+      "url": "https://conformance.example.net/library/behaviour/gated-sanity/",
+      "source": "https://conformance.example.net/library/sources/gated.feature",
+      "scenarios": [
+        {
+          "anchor": "gated-corpus-still-lists-scenarios",
+          "line": 4,
+          "name": "Gated corpus still lists scenarios",
+          "outline": false,
+          "steps": [],
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

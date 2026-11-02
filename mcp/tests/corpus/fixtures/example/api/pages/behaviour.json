@@ -1,0 +1,38 @@
+{
+  "slug": "behaviour",
+  "route": "/behaviour/",
+  "section": "behaviour",
+  "title": "Behaviour",
+  "description": "Behaviour specifications generated from the repository's Gherkin feature files.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": null,
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/behaviour/",
+  "authors": [],
+  "keywords": [],
+  "generated": {
+    "by": "doc-kitty-gherkin/0.5.0",
+    "at": "2026-10-18T05:55:21Z",
+    "content_hash": "sha256:16468cd02ce6"
+  },
+  "markdown": "# Behaviour\n\nBehaviour specifications generated from the repository's Gherkin feature files.\n\n- [HR](./hr/) — Behaviour specifications for HR, generated from Gherkin feature files.\n- [Shipping](./shipping/) — Behaviour specifications for Shipping, generated from Gherkin feature files.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/behaviour/"
+    },
+    "related": []
+  }
+}

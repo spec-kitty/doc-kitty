@@ -1,0 +1,38 @@
+{
+  "slug": "glossary-demo/cargo-and-collisions",
+  "route": "/glossary-demo/cargo-and-collisions/",
+  "section": "glossary-demo",
+  "title": "Cargo, consignments, and a cross-context collision",
+  "description": "The context-free demonstrator — auto-linking, an unresolved collision left plain with one build warning, a forced :term link, and a suppressed one.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "glossary",
+    "demonstrator",
+    "autolink",
+    "collision"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-26T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/cargo-and-collisions.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/glossary-demo/cargo-and-collisions/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Cargo, consignments, and a cross-context collision\n\nThis page declares **no** `glossary_context`, so it is the honest test of what the\nauto-linker does when a term is ambiguous. It sits deliberately outside any single\nbounded context, which is exactly the situation the collision rules exist for.\n\n## Auto-linking a single-context term\n\nThe first time a context-free term appears in a section, doc-kitty links it to its\ndefinition. Here the word cargo becomes a link, and its alias consignment links the\nsame way — both point at the shipping definition. A second mention of cargo in this\nsame section stays plain text, because only the first occurrence per section is\nlinked.\n\n## An unresolved collision stays plain\n\nThe word policy is defined in **both** the shipping and the hr contexts. On a\ncontext-free page the auto-linker refuses to guess which one you mean, so it leaves\npolicy as plain text and prints one build warning naming the competing contexts. That\nwarning is the pinned, greppable signal the build asserts on.\n\n## Forcing a link with the :term directive\n\nWhen you do know which context you mean, name it. The directive\n:term[policy]{context=hr} resolves policy to the hr definition even though this page\ndeclares no context of its own — the one sanctioned way to link across a collision.\n\n## Suppressing a link\n\nSometimes a word that happens to be a term should stay plain — a label you are\nquoting, for instance. Write :term[cargo]{link=false} and it renders as ordinary text\nwith no link, even though cargo is a real term.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/cargo-and-collisions.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/glossary-demo/cargo-and-collisions/"
+    },
+    "related": []
+  }
+}

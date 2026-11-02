@@ -1,0 +1,34 @@
+{
+  "slug": "",
+  "route": "/",
+  "section": "",
+  "title": "DocKitty Example",
+  "description": "Master entry point for the example docsite built with DocKitty.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-21T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/home.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/",
+  "authors": [
+    "human:stijn"
+  ],
+  "keywords": [],
+  "markdown": "# DocKitty Example\n\nA minimal, deployable docsite that renders a **DocKitty**\n`docs/` tree with [`@spec-kitty/doc-toolkit`](https://github.com/spec-kitty/doc-kitty).\nIt exists to show the convention in practice and to prove the generated\nartifacts:\n\n<!--\n  The hrefs below are RELATIVE on purpose. This page renders at the site root, so\n  `./rss.xml` resolves under the site `base` — a root-absolute `/rss.xml` drops\n  the base and 404s on any based deployment (this docsite publishes under\n  `/doc-kitty/`, where the nightly link smoke caught exactly that). The visible\n  label keeps the leading slash: it names the site-root artifact, not the href.\n-->\n\n- [`/sitemap-index.xml`](./sitemap-index.xml) — search-engine discovery\n- [`/rss.xml`](./rss.xml) — subscribe to documentation changes\n- [`/llms.txt`](./llms.txt) — the agent-facing index\n- [`/api/index.json`](./api/index.json) — the machine-readable corpus map\n\n## Sections\n\nOrdered for progressive disclosure (context → operations):\n\n- [Context](./context/) — why this exists and its domain vocabulary.\n- [Architecture](./architecture/) — current system design.\n- [Decision Records](./adr/) — the immutable ADR log.\n- [Guides](./guides/) — how-to for humans and agents.\n- [Changelog](./changelog/) — release history.\n\n> Only a subset of the twelve Common Docs sections is populated here; the rest\n> (`plans`, `api`, `configuration`, `integrations`, `security`, `operations`,\n> `migrations`) are scaffolded the same way with `scaffold.mjs`.\n\n## Quick reference\n\n- Run locally: `pnpm --filter example dev`\n- Build: `pnpm --filter example build`\n- See also: the repo [`README.md`](https://github.com/spec-kitty/doc-kitty) and its\n  `AGENTS.md`.",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/home.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/"
+    },
+    "related": []
+  }
+}

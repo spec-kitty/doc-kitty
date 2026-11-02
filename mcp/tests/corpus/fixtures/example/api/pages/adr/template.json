@@ -1,0 +1,35 @@
+{
+  "slug": "adr/template",
+  "route": "/adr/template/",
+  "section": "adr",
+  "title": "ADR-NNNN: Title",
+  "description": "Blank ADR to copy for a new decision record.",
+  "type": "Template",
+  "doc_status": "draft",
+  "kind": "ADR",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-21T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/adr/template.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/adr/template/",
+  "authors": [
+    "Name"
+  ],
+  "keywords": [],
+  "markdown": "# ADR-NNNN: Title\n\n## Status\n\nProposed | Accepted | Deprecated | Superseded by [ADR-XXXX](XXXX-title.md)\n\n## Context\n\nWhat situation, problem, or constraint requires a decision? What forces are at\nplay?\n\n## Decision\n\nWhat did we decide to do? State it clearly and directly.\n\n## Consequences\n\n### Positive\n\n-\n\n### Negative\n\n-\n\n### Risks\n\n-\n\n## Alternatives Considered\n\n### Option A: Name\n\nWhy this was not chosen.\n\n## References\n\n-",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/adr/template.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/adr/template/"
+    },
+    "related": []
+  }
+}

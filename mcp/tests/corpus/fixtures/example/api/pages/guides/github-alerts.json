@@ -1,0 +1,38 @@
+{
+  "slug": "guides/github-alerts",
+  "route": "/guides/github-alerts/",
+  "section": "guides",
+  "title": "GitHub alerts",
+  "description": "GitHub alert blockquotes (> [!NOTE] and friends) rendered as Starlight asides, with the cases that stay plain blockquotes.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Reference",
+  "tags": [
+    "github-alerts",
+    "asides",
+    "fixture",
+    "showcase"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-10-31T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/github-alerts.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/github-alerts/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "<!-- markdownlint-disable MD028 -->\n<!-- Adjacent alerts are separate blockquotes split by a blank line, as on GitHub;\n     MD028 flags that blank line. -->\n\n# GitHub alerts\n\nThis site sets `githubAlerts: true`, so a blockquote that opens with one of\nGitHub's five alert markers renders as the matching Starlight aside. The same\nfile reads correctly on GitHub, which renders the markers itself. This page is\nalso the fixture the accessibility lane scans in light and dark mode.\n\n## The five alert types\n\n> [!NOTE]\n> Useful information that readers should know, even when skimming.\n\n> [!TIP]\n> Helpful advice for doing things better or more easily.\n\n> [!IMPORTANT]\n> Key information readers need to achieve their goal.\n\n> [!WARNING]\n> Urgent info that needs immediate attention to avoid problems.\n\n> [!CAUTION]\n> Advises about risks or negative outcomes of certain actions.\n\n## An alert with several blocks\n\n> [!TIP]\n> An alert body can hold more than one paragraph.\n>\n> - a list item\n> - and [a link](/guides/getting-started/)\n\n## Left as blockquotes\n\nA plain blockquote is unchanged:\n\n> A plain quotation, with no marker.\n\nAn unknown marker is not a GitHub alert type, so it stays a blockquote:\n\n> [!DANGER]\n> GitHub has no DANGER alert, so neither does this site.\n\nA marker followed by text on the same line is not an alert on GitHub either:\n\n> [!NOTE] This line keeps its literal marker.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/github-alerts.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/github-alerts/"
+    },
+    "related": []
+  }
+}

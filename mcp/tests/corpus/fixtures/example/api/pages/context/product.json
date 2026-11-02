@@ -1,0 +1,36 @@
+{
+  "slug": "context/product",
+  "route": "/context/product/",
+  "section": "context",
+  "title": "Product",
+  "description": "The problem this example solves and who it is for.",
+  "type": "Context",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "product",
+    "vision"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-21T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/product.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/context/product/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Product\n\n## Problem statement\n\nTeams that adopt the Common Docs convention have a well-structured `docs/` tree\nbut no polished, agent-aware way to publish it.\n\n## Target users\n\n- **Maintainers** who want a docsite without hand-rolling an Astro theme.\n- **Agents** that need to discover and read documentation reliably.\n\n## Value proposition\n\nPoint the toolkit at a DocKitty `docs/` tree and get a Starlight\nsite plus `sitemap-index.xml`, `rss.xml`, and an agent-API, with no bespoke wiring.\n\n## Out of scope\n\n- Authoring the documentation content itself.\n- Hosting a retrieval/embedding index (the agent-API is a map, not a RAG).",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/product.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/context/product/"
+    },
+    "related": []
+  }
+}

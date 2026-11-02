@@ -1,0 +1,35 @@
+{
+  "slug": "presentations/roadmap-deck",
+  "route": "/presentations/roadmap-deck/",
+  "section": "presentations",
+  "title": "Roadmap Deck",
+  "description": "A published, diagram-free slide deck used to prove a deck with no diagrams never pulls the Mermaid runtime onto its route (the NFR-002 footprint guard).",
+  "type": "Presentation",
+  "doc_status": "active",
+  "kind": "Presentation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-28T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/roadmap-deck.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/presentations/roadmap-deck/",
+  "authors": [
+    "human:stijn"
+  ],
+  "keywords": [],
+  "markdown": "This deck deliberately contains no diagrams, so its route must resolve zero Mermaid\nruntime chunks — the footprint guard short-circuits before importing Mermaid.\n\n## Where we are\n\nA short text-only slide.\n\n## Where we are going\n\nAnother text-only slide, so the deck has more than one slide boundary for reveal to\nenhance.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/roadmap-deck.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/presentations/roadmap-deck/"
+    },
+    "related": []
+  }
+}

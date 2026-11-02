@@ -1,0 +1,11 @@
+# Fixture workspace ISOLATION (same C-0 pattern as tests/consumption/consumer-fixture).
+#
+# This fixture lives under the repo tree but must NEVER join the repo's pnpm
+# workspace: a bare `pnpm install` here would otherwise walk UP to the repo
+# root, render this fixture's committed lockfile inert, and could resolve
+# `@spec-kitty/doc-kitty-mcp` against the workspace source tree - a false-green
+# "consumption" proof. The EMPTY `packages` list makes this fixture its own
+# workspace root, so pnpm STOPS walking here. The test additionally installs
+# with `--ignore-workspace` (belt and suspenders, mirroring installFixture in
+# tests/consumption/crafted-fixture.ts).
+packages: []

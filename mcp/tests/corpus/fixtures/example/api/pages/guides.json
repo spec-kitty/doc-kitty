@@ -1,0 +1,33 @@
+{
+  "slug": "guides",
+  "route": "/guides/",
+  "section": "guides",
+  "title": "Guides",
+  "description": "How-to guides for humans and agents working on this project.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.7,
+  "updated": "2026-08-21T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Guides\n\n- [Getting started](/guides/getting-started/) — first-time setup from zero.\n- [Install the toolkit](/guides/install/) — install `@spec-kitty/doc-toolkit` from\n  GitHub Packages and build your own docsite.\n- [GitHub alerts](/guides/github-alerts/) — `> [!NOTE]`-style blockquotes\n  rendered as asides.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/"
+    },
+    "related": []
+  }
+}

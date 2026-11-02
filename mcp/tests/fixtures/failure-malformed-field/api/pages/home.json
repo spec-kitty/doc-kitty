@@ -1,0 +1,27 @@
+{
+  "slug": "",
+  "route": "/",
+  "section": "",
+  "title": "Malformed Field Home",
+  "description": "Home page of the corpus whose second page artifact is missing a required field.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "authors": [],
+  "keywords": [],
+  "priority": 0.5,
+  "updated": null,
+  "markdown": "# Malformed Field Home\n\nThe home artifact is intact; the broken neighbor is not.\n",
+  "url": "https://conformance.example.net/library/",
+  "source": "https://conformance.example.net/library/src/content/docs/index.mdx",
+  "buildId": "4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4",
+  "_links": {
+    "self": {
+      "href": "https://conformance.example.net/library/api/pages/home.json"
+    },
+    "html": {
+      "href": "https://conformance.example.net/library/"
+    }
+  }
+}

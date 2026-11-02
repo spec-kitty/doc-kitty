@@ -1,0 +1,27 @@
+{
+  "slug": "controls/zeta",
+  "route": "/controls/zeta/",
+  "section": "controls",
+  "title": "Zeta Appendix",
+  "description": "Zeta mentions the known-K term in its body alone, as a distractor.",
+  "type": null,
+  "doc_status": "active",
+  "kind": "Reference",
+  "tags": [],
+  "authors": [],
+  "keywords": ["filler"],
+  "priority": 0.4,
+  "updated": null,
+  "markdown": "# Zeta Appendix\n\nSeveral amberline remarks live only inside this body text and must never surface in search.\n",
+  "url": "https://conformance.example.net/library/controls/zeta/",
+  "source": "https://conformance.example.net/library/src/content/docs/controls/zeta.mdx",
+  "buildId": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091",
+  "_links": {
+    "self": {
+      "href": "https://conformance.example.net/library/api/pages/controls/zeta.json"
+    },
+    "html": {
+      "href": "https://conformance.example.net/library/controls/zeta/"
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "title": "Search Controls Corpus",
+  "version": "3",
+  "generatedFrom": "doc-kitty",
+  "count": 7,
+  "buildId": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091",
+  "sections": [
+    {
+      "id": "controls",
+      "label": "Controls",
+      "order": 10,
+      "purpose": "Hand-authored search discrimination controls"
+    }
+  ],
+  "pages": [
+    {
+      "slug": "",
+      "route": "/",
+      "section": "",
+      "title": "Search Controls Home",
+      "description": "Landing page for the search-controls conformance corpus.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.5,
+      "updated": null,
+      "source": "https://conformance.example.net/library/src/content/docs/index.mdx",
+      "url": "https://conformance.example.net/library/",
+      "_links": {
+        "self": {
+          "href": "https://conformance.example.net/library/api/pages/home.json"
+        },
+        "html": {
+          "href": "https://conformance.example.net/library/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "controls/alpha",
+      "route": "/controls/alpha/",
+      "section": "controls",
+      "title": "Alpha Topic",
+      "description": "The alpha page carries its control term in keywords alone.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.4,
+      "updated": null,
+      "source": "https://conformance.example.net/library/src/content/docs/controls/alpha.mdx",
+      "url": "https://conformance.example.net/library/controls/alpha/",
+      "_links": {
+        "self": {
+          "href": "https://conformance.example.net/library/api/pages/controls/alpha.json"
+        },
+        "html": {
+          "href": "https://conformance.example.net/library/controls/alpha/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "controls/beta",
+      "route": "/controls/beta/",
+      "section": "controls",
+      "title": "Beta Notes",
+      "description": "The beta page keeps its control term inside the prose body only.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.4,
+      "updated": null,
+      "source": "https://conformance.example.net/library/src/content/docs/controls/beta.mdx",
+      "url": "https://conformance.example.net/library/controls/beta/",
+      "_links": {
+        "self": {
+          "href": "https://conformance.example.net/library/api/pages/controls/beta.json"
+        },
+        "html": {
+          "href": "https://conformance.example.net/library/controls/beta/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "controls/gamma",
+      "route": "/controls/gamma/",
+      "section": "controls",
+      "title": "The Amberline Garden",
+      "description": "Gamma carries the known-K term in its title.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.4,
+      "updated": null,
+      "source": "https://conformance.example.net/library/src/content/docs/controls/gamma.mdx",
+      "url": "https://conformance.example.net/library/controls/gamma/",
+      "_links": {
+        "self": {
+          "href": "https://conformance.example.net/library/api/pages/controls/gamma.json"
+        },
+        "html": {
+          "href": "https://conformance.example.net/library/controls/gamma/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "controls/delta",
+      "route": "/controls/delta/",
+      "section": "controls",
+      "title": "Delta Ledger",
+      "description": "Notes on amberline accounting practice.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.4,
+      "updated": null,
+      "source": "https://conformance.example.net/library/src/content/docs/controls/delta.mdx",
+      "url": "https://conformance.example.net/library/controls/delta/",
+      "_links": {
+        "self": {
+          "href": "https://conformance.example.net/library/api/pages/controls/delta.json"
+        },
+        "html": {
+          "href": "https://conformance.example.net/library/controls/delta/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "controls/epsilon",
+      "route": "/controls/epsilon/",
+      "section": "controls",
+      "title": "Epsilon Chart",
+      "description": "Epsilon carries the known-K term in its keywords.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.4,
+      "updated": null,
+      "source": "https://conformance.example.net/library/src/content/docs/controls/epsilon.mdx",
+      "url": "https://conformance.example.net/library/controls/epsilon/",
+      "_links": {
+        "self": {
+          "href": "https://conformance.example.net/library/api/pages/controls/epsilon.json"
+        },
+        "html": {
+          "href": "https://conformance.example.net/library/controls/epsilon/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "controls/zeta",
+      "route": "/controls/zeta/",
+      "section": "controls",
+      "title": "Zeta Appendix",
+      "description": "Zeta mentions the known-K term in its body alone, as a distractor.",
+      "type": null,
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [],
+      "related": [],
+      "audience": [],
+      "priority": 0.4,
+      "updated": null,
+      "source": "https://conformance.example.net/library/src/content/docs/controls/zeta.mdx",
+      "url": "https://conformance.example.net/library/controls/zeta/",
+      "_links": {
+        "self": {
+          "href": "https://conformance.example.net/library/api/pages/controls/zeta.json"
+        },
+        "html": {
+          "href": "https://conformance.example.net/library/controls/zeta/"
+        },
+        "related": []
+      }
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://conformance.example.net/library/api/index.json"
+    },
+    "scenarios": {
+      "href": "https://conformance.example.net/library/api/scenarios.json"
+    }
+  }
+}

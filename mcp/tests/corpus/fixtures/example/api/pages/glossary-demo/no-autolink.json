@@ -1,0 +1,37 @@
+{
+  "slug": "glossary-demo/no-autolink",
+  "route": "/glossary-demo/no-autolink/",
+  "section": "glossary-demo",
+  "title": "A page that opts out of auto-linking",
+  "description": "Setting glossary_autolink to false turns off automatic links for the whole page, while an explicit :term directive still resolves and links.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "How-To",
+  "tags": [
+    "glossary",
+    "demonstrator",
+    "opt-out"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-08-26T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/no-autolink.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/glossary-demo/no-autolink/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# A page that opts out of auto-linking\n\nThis page sets `glossary_autolink: false`. Automatic linking is off for the whole page,\nso terms that would normally link are left exactly as written — useful for a reference\npage, a changelog, or any text where inline links would be noise.\n\n## Nothing here is auto-linked\n\nThe words cargo, freight, and policy all appear in this paragraph and every one of them\nstays plain text. With the auto-linker off the page emits no glossary links and no\ncollision warning, whatever terms the prose happens to mention.\n\n## An explicit directive still works\n\nOpting out of auto-linking does not disable the escape hatch. The directive\n:term[cargo]{context=shipping} still resolves and links, because `:term` is an\nauthor's deliberate choice rather than an automatic one.",
+  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/no-autolink.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/glossary-demo/no-autolink/"
+    },
+    "related": []
+  }
+}

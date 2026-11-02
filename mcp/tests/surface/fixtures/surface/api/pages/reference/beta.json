@@ -1,0 +1,17 @@
+{
+  "slug": "reference/beta",
+  "section": "reference",
+  "title": "Beta Reference",
+  "description": "Reference notes on shared-topic.",
+  "doc_status": "active",
+  "authors": [],
+  "keywords": ["shared-key", "BETATOKEN"],
+  "markdown": "# Beta Reference\n\nquickstart quickstart quickstart - the word lives in this body only and must never match a search.\n",
+  "url": "https://docs.example.com/surface/reference/beta/",
+  "source": "https://docs.example.com/surface/api/pages/reference/beta.json",
+  "buildId": "surface-fixture-build",
+  "_links": {
+    "self": { "href": "https://docs.example.com/surface/api/pages/reference/beta.json" },
+    "html": { "href": "https://docs.example.com/surface/reference/beta/" }
+  }
+}
