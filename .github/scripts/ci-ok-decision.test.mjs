@@ -57,6 +57,16 @@ const CASES = [
     ok: false,
   },
   {
+    name: 'plantuml-allowlist skipped by path (docs-only PR), others passing → GREEN, like build-example',
+    in: { detect_changes: 'success', code_quality: 'skipped', doc_sanity: 'success', build_example: 'skipped', a11y: 'skipped', plantuml_allowlist: 'skipped' },
+    ok: true,
+  },
+  {
+    name: 'plantuml-allowlist failure with others skipped → RED, like build-example',
+    in: { detect_changes: 'success', code_quality: 'skipped', doc_sanity: 'skipped', build_example: 'skipped', a11y: 'skipped', plantuml_allowlist: 'failure' },
+    ok: false,
+  },
+  {
     name: 'unexpected lane result value → RED (fail closed)',
     in: { detect_changes: 'success', code_quality: 'success', doc_sanity: 'weird', build_example: 'success', a11y: 'success', plantuml_allowlist: 'success' },
     ok: false,
@@ -158,7 +168,7 @@ test('plantuml-allowlist failure or cancelled → RED, naming the lane', () => {
   }
 });
 
-test('plantuml-allowlist skipped (paused PR) → the pause is what turns ci-ok RED', () => {
+test('plantuml-allowlist skipped (by path or by pause) → green alone; the pause is what turns ci-ok RED', () => {
   const skipped = { ...ALL_GREEN, plantuml_allowlist: 'skipped' };
   assert.equal(evaluateCiOk(skipped).ok, true);
   const paused = evaluateCiOk({ ...skipped, paused: 'true' });

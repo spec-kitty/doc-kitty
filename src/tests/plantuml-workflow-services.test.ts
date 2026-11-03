@@ -150,12 +150,12 @@ describe('plantuml-allowlist lane is not vacuous', () => {
   const stepStart = lane.indexOf('name: Include check in declared allowlist mode');
   const step = stepStart === -1 ? '' : lane.slice(stepStart);
 
-  it('exists, runs unless paused, depends only on detect-changes, 5-minute bound', () => {
+  it('exists, runs on code or workflow changes (not paused), depends only on detect-changes, 5-minute bound', () => {
     expect(lane).not.toBe('');
-    expect(lane).toMatch(/^ {4}if: needs\.detect-changes\.outputs\.paused != 'true'$/m);
+    // Path-scoped: run_code_quality is code || workflows and is off when paused.
+    expect(lane).toMatch(/^ {4}if: needs\.detect-changes\.outputs\.run_code_quality == 'true'$/m);
     expect(lane).toMatch(/^ {4}needs: detect-changes$/m);
     expect(lane).toMatch(/^ {4}timeout-minutes: 5$/m);
-    // Not path-filtered (SC-004).
     expect(lane).not.toContain('run_build_example');
   });
 
