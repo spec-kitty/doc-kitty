@@ -10,6 +10,7 @@ authors:
 related:
   - adr/0007-ci-cd-path-scoped-lanes
   - adr/0040-build-time-diagram-render-dual-mode
+  - adr/0057-internal-env-handoff-seam
   - adr/0072-parallel-landing-without-shared-files
   - guides/consumer-setup
 ---
@@ -73,12 +74,12 @@ exactly three values:
 
 ### What the check proves in each mode
 
-- **Unset:** the output is byte-identical to before (committed goldens). With
-  `--service-container` the check now also reads the service's profile and
-  requires `SANDBOX`: a service with any other profile, or none (the image
-  default is `INTERNET`), fails. This is the one behaviour change for
-  existing users: a service named by `--service-container` whose profile is
-  not `SANDBOX` used to pass.
+- **Unset:** for a local `--server` with a SANDBOX container, the output is
+  byte-identical to before (committed goldens). A non-local `--server` now
+  prints one extra note that service identity was not verified. With
+  `--service-container` the check also reads the service and fails closed on
+  the conditions under Consequences, Negative. A service named by
+  `--service-container` that used to pass can now fail.
 - **Allowlist:** the allowed canary path is fetched, the denied path is
   reachable and refused, a redirect from the allowed path to the denied one is
   not followed, and the container's `PLANTUML_SECURITY_PROFILE` is `ALLOWLIST`
@@ -120,14 +121,26 @@ exactly three values:
   `plantuml.*`, a non-empty `PLANTUML_PROPERTY_FILE` (the pinned server loads it
   after the profile, so it can override the profile and the allowlist), and
   `-D`/`plantuml.*` words on the command line (entrypoint, command or args). It
-  trusts the image, its entrypoint script, mounted files (for example Jetty
-  `start.d`) and `@argfile` contents: configuration hidden there is not seen.
+  trusts the image, its entrypoint script and mounted files (for example
+  Jetty `start.d`): configuration hidden there is not seen. A Java `@argfile`
+  word in a Java-options value or on the command line fails closed instead,
+  because the check cannot read the file. Only the security-relevant `-D`
+  names fail (`plantuml.security.profile`, `plantuml.allowlist.url`,
+  `plantuml.property.file`, `plantuml.include.path`, case-insensitive, `.` or
+  `_`); tuning such as `-DPLANTUML_LIMIT_SIZE=8192` passes.
+- **The environment controls what the check expects:**
+  `DK_PLANTUML_ALLOW_EXTERNAL` can only widen what the check expects. The
+  environment wins over the site setting and there is no `sandbox` keyword, so
+  whoever sets the variable sets the expectation. The check proves the service
+  matches the declaration, not that the declaration is wise.
 - **Container identity:** the check reads one container and renders through
   `--server`. When the `--server` host is local (`localhost`, `127.0.0.0/8`,
-  `[::1]`), it requires the container to publish that port, so a decoy
-  container cannot vouch for another service. With a non-local host, such as a
-  Docker network name, it cannot tie the two and prints a note that service
-  identity was not verified.
+  `[::1]`, `0.0.0.0`, `::ffff:127.0.0.1`), it requires the container to publish
+  that port on a wildcard address or the literal `--server` address
+  (`localhost` accepts any loopback), so a decoy container cannot vouch for
+  another service. With a non-local host, such as a Docker network name, or a
+  host-networked container, it cannot tie the two and passes with a note that
+  service identity was not verified.
 
 The spike against the pinned image shaped these rules. Raw entry comparison is
 deliberately stricter than PlantUML's own normalisation (it trims, lowercases
@@ -148,13 +161,18 @@ to a denied URL is not followed under allowlist mode.
 ### Negative
 
 - A new CI lane, `plantuml-allowlist`, runs the real service in allowlist mode.
-  It is **unconditional**, not path-scoped: the success criterion asks for the
-  real-service proof on every run, which is a recorded exception to the
-  path-scoped design of [ADR-0007](./0007-ci-cd-path-scoped-lanes.md). It is
-  cheap, and it feeds `ci-ok`.
-- Unset mode with `--service-container` now requires `SANDBOX` (decision
-  `01M6F4XFDPJ6XFBYM5HM65G1AM`). A consumer who names the container and runs a
-  different profile sees a new failure.
+  It is path-scoped like the other lanes of
+  [ADR-0007](./0007-ci-cd-path-scoped-lanes.md): it runs when code or workflow
+  paths change (signal `run_code_quality`), and it feeds `ci-ok`. A docs-only
+  change skips it, which `ci-ok` treats as green.
+- Unset mode with `--service-container` now fails a service the check used to
+  pass (decision `01M6F4XFDPJ6XFBYM5HM65G1AM`). It fails on: a profile that is
+  missing or not `SANDBOX`; a security-relevant `-D` property, `plantuml.*`
+  env key or `PLANTUML_PROPERTY_FILE`; a Java `@argfile`; a local `--server`
+  port the container does not publish on a matching address; and an empty
+  value for any flag that takes one (exit 2). Allowlist entries with a default
+  port (`:80/`, `:443/`) are rejected. The changelog lists this as Breaking
+  and [the migration guide](../migrations/0.6-to-0.7.md) gives the fixes.
 - A docs test ties the consumer guide's allowlist block to the lane's block, so
   the two change together.
 
@@ -163,9 +181,9 @@ to a denied URL is not followed under allowlist mode.
 - An operator who only sets the environment variable and never opens the
   service gets a declared mode with no service behind it. The check is what
   catches that, and it needs the container.
-- The unconditional `plantuml-allowlist` lane pulls the pinned image from
-  Docker Hub on every run. An outage or rate limit there turns `ci-ok` red for
-  changes unrelated to PlantUML; the digest pin keeps the pull reproducible,
+- The `plantuml-allowlist` lane pulls the pinned image from
+  Docker Hub whenever it runs. An outage or rate limit there turns `ci-ok` red for
+  code changes unrelated to PlantUML; the digest pin keeps the pull reproducible,
   not available.
 
 ## Alternatives considered

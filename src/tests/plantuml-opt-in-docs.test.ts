@@ -165,7 +165,7 @@ describe('ADR-0074 (FR-009)', () => {
       'docker inspect',
       'cannot prove',
       '--service-allowlist-url',
-      'unconditional',
+      'path-scoped',
       'SANDBOX',
       'ADR-0007',
     ];
