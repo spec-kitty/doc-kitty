@@ -184,9 +184,9 @@ describe('changelog fragments (FR-010, C-002)', () => {
     expect(f.length).toBeLessThan(1200);
   });
 
-  it('the Changed fragment states the stricter check, impact first, and the fix', () => {
+  it('the Breaking fragment states the stricter check, impact first, and the fix', () => {
     const f = read(CHANGED_FRAGMENT);
-    expect(f).toMatch(/^---\nsection: Changed\n---\n/);
+    expect(f).toMatch(/^---\nsection: Breaking\n---\n/);
     for (const s of ['--service-container', 'SANDBOX', '(#268)', 'PLANTUML_SECURITY_PROFILE=SANDBOX', 'To fix', '-D', 'PLANTUML_PROPERTY_FILE', '--server'])
       expect(f).toContain(s);
     expect(f.length).toBeLessThan(1200);
