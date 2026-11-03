@@ -2,7 +2,7 @@
 title: "ADR-0057: One owner for DocKitty's internal environment handoffs"
 description: DocKitty passes five settings between its own parts through process.env; one module now names, writes and clears them.
 doc_status: active
-updated: 2026-10-15T00:00:00Z
+updated: 2026-11-03T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -64,6 +64,13 @@ per-config build state; see [ADR-0058](./0058-build-state-owner-and-config-split
    docs walk and the config evaluator of the CLIs), joins the table under the same
    rules and, like `DK_INDEX_BASENAME`, keeps a format check. See
    [ADR-0070](./0070-excluded-folders.md).*
+
+   *Amended 2026-11-03 (#268): a ninth name, `DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED`
+   (written at define by `defineDocKittyIntegrations` as the resolved PlantUML
+   external-include mode; read by the site-config evaluator of the include check),
+   joins the table under the same rules. The eighth name, `DK_OPENAPI` (read by
+   the `llms.txt` route), was added without an amendment and is recorded here. See
+   [ADR-0074](./0074-plantuml-external-include-opt-in.md).*
 3. **A config definition starts clean.** `defineDocKittyIntegrations` calls
    `clearInternalEnv` first, so a later config never inherits an earlier one's
    values.
