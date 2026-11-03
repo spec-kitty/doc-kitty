@@ -71,6 +71,12 @@ function validateEntry(entry, source) {
     fail(source, `"${entry}" contains "@"; PlantUML never matches an allowlist entry containing "@"`);
   }
   if (entry.includes('?') || entry.includes('#')) return notUrl();
+  if (/:(?:80|443)\//.test(entry)) {
+    fail(
+      source,
+      `"${entry}": drop the default port: PlantUML strips ':80/' and ':443/' including the slash, which turns the entry into a bare-host prefix`,
+    );
+  }
   /** @type {URL} */
   let url;
   try {
