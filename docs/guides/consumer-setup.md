@@ -1047,7 +1047,7 @@ confirms the running service matches what you declared.
 In `astro.config.mjs`:
 
 ```js
-docKitty({
+defineDocKittyIntegrations({
   // ...
   diagrams: true,
   plantumlAllowExternal: ['https://styles.example.org/plantuml/'],
