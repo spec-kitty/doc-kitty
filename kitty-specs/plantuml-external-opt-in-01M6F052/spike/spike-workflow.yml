@@ -1,0 +1,108 @@
+# #268 WP01 CI feasibility spike. THROWAWAY: lives only on spike/268-allowlist-lane,
+# never merged, deleted after the run. push trigger only (workflow_dispatch runs
+# only workflows on the default branch). Every allowlist entry points at dk-canary
+# (NFR-001): the spike makes no real outbound include.
+name: spike-268
+
+on:
+  push:
+    branches: [spike/268-allowlist-lane]
+
+permissions:
+  contents: read
+
+jobs:
+  # Q1, Q2, Q3, Q4 (ALLOWLIST), Q6, Q7: the exact service block R5 proposes.
+  allowlist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      plantuml:
+        image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+        ports:
+          - 8091:8080
+        options: --add-host dk-canary:host-gateway
+        env:
+          PLANTUML_SECURITY_PROFILE: ALLOWLIST
+          PLANTUML_ALLOWLIST_URL: "http://dk-canary:18091/dk-declared/;http://dk-canary:18091/dk-canary/allowed/"
+    steps:
+      - name: Job start
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"; date -u +%FT%TZ
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Wait for the PlantUML server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:8091/; then echo "PlantUML ready after $(( $(date +%s) - JOB_START ))s from first step"; date -u +%FT%TZ; exit 0; fi
+            echo "waiting for PlantUML ($i/30)…"; sleep 2
+          done
+          echo "PlantUML did not become ready on :8091" >&2; exit 1
+      - name: Spike (allowlist)
+        run: node spike-268/spike.mjs --leg allowlist --container "${{ job.services.plantuml.id }}"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: spike-allowlist
+          path: |
+            inspect-capture.json
+            results-*.json
+      - name: Job end
+        if: always()
+        run: echo "elapsed from first step $(( $(date +%s) - JOB_START ))s"; date -u +%FT%TZ
+
+  # Q3/Q4 comparison under INTERNET, and Q5 (trimming, trailing ;).
+  variants:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Run 1 showed INTERNET refusing the canary's non-allowlisted path on
+          # :18091. Run 2 separates "port not 80/443" from "not in the allowlist":
+          # an allowlist that matches nothing, canary on :18091 and on :80.
+          - leg: internet-18091
+            profile: INTERNET
+            allowlist: "http://dk-canary:18091/dk-nothing/"
+            port: "18091"
+          - leg: internet-80
+            profile: INTERNET
+            allowlist: "http://dk-canary:18091/dk-nothing/"
+            port: "80"
+          - leg: allowlist-80
+            profile: ALLOWLIST
+            allowlist: "http://dk-canary:80/dk-canary/allowed/"
+            port: "80"
+          - leg: leading-space
+            profile: ALLOWLIST
+            allowlist: " http://dk-canary:18091/dk-canary/allowed/"
+            port: "18091"
+          - leg: trailing-semicolon
+            profile: ALLOWLIST
+            allowlist: "http://dk-canary:18091/dk-canary/allowed/;"
+            port: "18091"
+    services:
+      plantuml:
+        image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+        ports:
+          - 8091:8080
+        options: --add-host dk-canary:host-gateway
+        env:
+          PLANTUML_SECURITY_PROFILE: ${{ matrix.profile }}
+          PLANTUML_ALLOWLIST_URL: ${{ matrix.allowlist }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Wait for the PlantUML server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:8091/; then echo "PlantUML ready"; exit 0; fi
+            echo "waiting for PlantUML ($i/30)…"; sleep 2
+          done
+          echo "PlantUML did not become ready on :8091" >&2; exit 1
+      - name: Spike (${{ matrix.leg }})
+        run: |
+          docker inspect -f '{{json .Config.Env}}' "${{ job.services.plantuml.id }}"
+          # Port 80 needs root on the runner (passwordless sudo).
+          sudo -E env "PATH=$PATH" node spike-268/spike.mjs --leg "${{ matrix.leg }}" --port "${{ matrix.port }}" --container "${{ job.services.plantuml.id }}"

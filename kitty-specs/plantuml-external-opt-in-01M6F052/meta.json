@@ -1,0 +1,35 @@
+{
+  "accept_commit": "5f72023d6c790b2ca748a6d463bbec8c3f537895",
+  "acceptance_history": [
+    {
+      "accept_commit": "5f72023d6c790b2ca748a6d463bbec8c3f537895",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-02T23:46:47.034502+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "5957e7349b701eb62a2f0c5a90c0f5f81d807757"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-02T23:46:47.034502+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "5957e7349b701eb62a2f0c5a90c0f5f81d807757",
+  "baseline_merge_commit": "d0b81c6101365f0ccbed9cdda5903d444eda4661",
+  "created_at": "2026-11-02T20:45:29.217816+00:00",
+  "flattened": true,
+  "friendly_name": "PlantUML external-connection opt-in",
+  "merged_at": "2026-11-02T23:47:35.731741+00:00",
+  "merged_commit": "8af2e9d88cf066690ba4bfc9c2a002794bc51cea",
+  "mid8": "01M6F052",
+  "mission_id": "01M6F052QMCJRWN4RMW03YBA8W",
+  "mission_number": 18,
+  "mission_slug": "plantuml-external-opt-in-01M6F052",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Since #256 every DocKitty PlantUML render runs sandboxed and remote includes fail the build. Some sites legitimately need a shared remote stdlib or style include and today can only get it by silently hand-editing the documented service setup. This mission adds one explicit, loud, verifiable operator opt-in (narrow allowlist first, full internet only as a second explicit value) without changing anything for sites that do not opt in. Consumer: spec-kitty/spec-kitty#6100 and #6916.",
+  "purpose_tldr": "Let a site operator deliberately allow PlantUML diagrams to fetch named remote includes, while the hardened sandbox stays the default.",
+  "slug": "plantuml-external-opt-in-01M6F052",
+  "status_phase": "1",
+  "target_branch": "feat/268-plantuml-external-opt-in",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-02T22:17:28.327350+00:00"
+}

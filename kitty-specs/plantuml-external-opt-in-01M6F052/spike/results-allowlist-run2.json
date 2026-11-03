@@ -1,0 +1,113 @@
+{
+  "leg": "allowlist",
+  "probes": {
+    "allowed": {
+      "url": "http://dk-canary:18091/dk-canary/allowed/probe",
+      "ok": true,
+      "code": 0,
+      "out": ""
+    },
+    "denied": {
+      "url": "http://dk-canary:18091/dk-canary/denied/probe",
+      "ok": true,
+      "code": 0,
+      "out": ""
+    }
+  },
+  "renders": {
+    "control": {
+      "status": 200,
+      "diagramError": null,
+      "allowedMarker": false,
+      "deniedMarker": false,
+      "canaryHits": [],
+      "ms": 250,
+      "text": "Alice Bob Alice Bob Alice Bob CONTROL"
+    },
+    "include-allowed": {
+      "status": 200,
+      "diagramError": null,
+      "allowedMarker": true,
+      "deniedMarker": false,
+      "canaryHits": [
+        "/dk-canary/allowed/include/x",
+        "/dk-canary/allowed/include/x"
+      ],
+      "ms": 31,
+      "text": "Alice Bob Alice Bob Alice Bob DK-CANARY-FETCHED"
+    },
+    "include-denied": {
+      "status": 400,
+      "diagramError": "Cannot open URL",
+      "allowedMarker": false,
+      "deniedMarker": false,
+      "canaryHits": [],
+      "ms": 41,
+      "text": "Welcome to PlantUML! You can start with a simple UML Diagram like: Bob->Alice: Hello Or class Example You will find more information about PlantUML syntax on https://plantuml.com (Details by typing license keyword) PlantUML version 1.2026.9 / 18d0aae [2026-10-17 08:34:41 UTC] [From string (line 2) ] @startuml !include http://dk-canary:18091/dk-canary/denied/include/x Cannot open URL"
+    },
+    "includeurl-allowed": {
+      "status": 200,
+      "diagramError": null,
+      "allowedMarker": true,
+      "deniedMarker": false,
+      "canaryHits": [
+        "/dk-canary/allowed/include/y",
+        "/dk-canary/allowed/include/y"
+      ],
+      "ms": 15,
+      "text": "Alice Bob Alice Bob Alice Bob DK-CANARY-FETCHED"
+    },
+    "includeurl-denied": {
+      "status": 400,
+      "diagramError": "Cannot open URL",
+      "allowedMarker": false,
+      "deniedMarker": false,
+      "canaryHits": [],
+      "ms": 14,
+      "text": "Welcome to PlantUML! You can start with a simple UML Diagram like: Bob->Alice: Hello Or class Example You will find more information about PlantUML syntax on https://plantuml.com (Details by typing license keyword) PlantUML version 1.2026.9 / 18d0aae [2026-10-17 08:34:41 UTC] [From string (line 2) ] @startuml !includeurl http://dk-canary:18091/dk-canary/denied/include/y Cannot open URL"
+    },
+    "redirect-include": {
+      "status": 200,
+      "diagramError": null,
+      "allowedMarker": false,
+      "deniedMarker": false,
+      "canaryHits": [
+        "/dk-canary/allowed/redirect/x",
+        "/dk-canary/allowed/redirect/x"
+      ],
+      "ms": 10,
+      "text": "Welcome to PlantUML! You can start with a simple UML Diagram like: Bob->Alice: Hello Or class Example You will find more information about PlantUML syntax on https://plantuml.com (Details by typing license keyword)"
+    },
+    "redirect-includeurl": {
+      "status": 200,
+      "diagramError": null,
+      "allowedMarker": false,
+      "deniedMarker": false,
+      "canaryHits": [
+        "/dk-canary/allowed/redirect/y",
+        "/dk-canary/allowed/redirect/y"
+      ],
+      "ms": 8,
+      "text": "Welcome to PlantUML! You can start with a simple UML Diagram like: Bob->Alice: Hello Or class Example You will find more information about PlantUML syntax on https://plantuml.com (Details by typing license keyword)"
+    },
+    "import-allowed": {
+      "status": 400,
+      "diagramError": "Cannot import",
+      "allowedMarker": false,
+      "deniedMarker": false,
+      "canaryHits": [],
+      "ms": 10,
+      "text": "Welcome to PlantUML! You can start with a simple UML Diagram like: Bob->Alice: Hello Or class Example You will find more information about PlantUML syntax on https://plantuml.com (Details by typing license keyword) PlantUML version 1.2026.9 / 18d0aae [2026-10-17 08:34:41 UTC] [From string (line 2) ] @startuml !import http://dk-canary:18091/dk-canary/allowed/include/x.zip Cannot import"
+    },
+    "includesub-allowed": {
+      "status": 400,
+      "diagramError": "Fatal parsing error",
+      "allowedMarker": false,
+      "deniedMarker": false,
+      "canaryHits": [],
+      "ms": 12,
+      "text": "Welcome to PlantUML! You can start with a simple UML Diagram like: Bob->Alice: Hello Or class Example You will find more information about PlantUML syntax on https://plantuml.com (Details by typing license keyword) PlantUML version 1.2026.9 / 18d0aae [2026-10-17 08:34:41 UTC] [From string (line 2) ] @startuml !includesub http://dk-canary:18091/dk-canary/allowed/include/sub.puml!PART Fatal parsing "
+    }
+  },
+  "etcHosts": "127.0.0.1\tlocalhost\n::1\tlocalhost ip6-localhost ip6-loopback\nfe00::\tip6-localnet\nff00::\tip6-mcastprefix\nff02::1\tip6-allnodes\nff02::2\tip6-allrouters\n172.17.0.1\tdk-canary\n172.18.0.2\tf789f0b2327d"
+}

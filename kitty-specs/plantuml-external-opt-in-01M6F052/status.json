@@ -1,0 +1,225 @@
+{
+  "event_count": 143,
+  "last_event_id": "01M6FAJEDNNFM1GHKZNHPG86Q5",
+  "materialized_at": "2026-11-02T23:47:32.917486+00:00",
+  "mission_number": "",
+  "mission_slug": "plantuml-external-opt-in-01M6F052",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 12,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJ94KBNDED13FHDZE2FCF",
+      "last_transition_at": "2026-11-02T23:47:27.507720+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP01-ci-feasibility-spike/review-cycle-1.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP01-ci-feasibility-spike/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3276855,
+      "shell_pid_created_at": "1793657839.99"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJ7X4FHGW6V1PWMJF4XAP",
+      "last_transition_at": "2026-11-02T23:47:26.245005+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP02-unset-mode-goldens/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP02-unset-mode-goldens/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3346249,
+      "shell_pid_created_at": "1793658414.92"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJ8H4YYS2N5KAZGHET7PE",
+      "last_transition_at": "2026-11-02T23:47:26.884109+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP03-shared-resolver/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP03-shared-resolver/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3342097,
+      "shell_pid_created_at": "1793658334.05"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJ9R3H440P7HQ961TG8DK",
+      "last_transition_at": "2026-11-02T23:47:28.131330+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP04-build-integration/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP04-build-integration/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3428016,
+      "shell_pid_created_at": "1793659078.87"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJAB3A61B67RT7DDH39SV",
+      "last_transition_at": "2026-11-02T23:47:28.739136+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP05-canary-redesign/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP05-canary-redesign/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3421345,
+      "shell_pid_created_at": "1793658905.42"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJAY025GB795K88F3SMA1",
+      "last_transition_at": "2026-11-02T23:47:29.344705+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP06-declared-mode-verifier/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP06-declared-mode-verifier/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3474990,
+      "shell_pid_created_at": "1793659669.24"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJC3VZ62QXGFJC1J55XEQ",
+      "last_transition_at": "2026-11-02T23:47:30.555770+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP07-command-matrix-tests/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP07-command-matrix-tests/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3972302,
+      "shell_pid_created_at": "1793662447.24"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJCP59GEKQT2V5W8Q8SS6",
+      "last_transition_at": "2026-11-02T23:47:31.141813+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP08-allowlist-ci-lane/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP08-allowlist-ci-lane/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3805092,
+      "shell_pid_created_at": "1793661677.22"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJD8Q4K2NKVYZMA7DZ48S",
+      "last_transition_at": "2026-11-02T23:47:31.735876+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP09-resolution-parity/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP09-resolution-parity/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3796002,
+      "shell_pid_created_at": "1793661637.7"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJEDNNFM1GHKZNHPG86Q5",
+      "last_transition_at": "2026-11-02T23:47:32.917486+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP10-docs-and-records/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP10-docs-and-records/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3964429,
+      "shell_pid_created_at": "1793662397.68"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJBGSDER2GJ85RW27P912",
+      "last_transition_at": "2026-11-02T23:47:29.945803+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP11-include-check-cli/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP11-include-check-cli/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3593942,
+      "shell_pid_created_at": "1793660772.18"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6FAJDTWJ4YKA8ETFT34DGKN",
+      "last_transition_at": "2026-11-02T23:47:32.316974+00:00",
+      "review_result": {
+        "feedback_path": "/home/stijn/Documents/code/kitty/doc-kitty/.worktrees/plantuml-external-opt-in-01M6F052-coord/kitty-specs/plantuml-external-opt-in-01M6F052/tasks/WP12-half-removal-and-edge-cases/review-cycle-2.md",
+        "reference": "review-cycle://plantuml-external-opt-in-01M6F052/WP12-half-removal-and-edge-cases/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 4071484,
+      "shell_pid_created_at": "1793663112.46"
+    }
+  }
+}

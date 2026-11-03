@@ -1,0 +1,312 @@
+# #268 WP01 spike: local evidence (operator machine, Docker 29.9.2, 2026-11-02).
+# Image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+# Jar: WEB-INF/lib/plantuml-1.2026.9.jar, copied out of the running container.
+#
+# Note: on this machine a container cannot reach a host listener on :18091
+# (host firewall; the runner has no such block, see ci-log-excerpts.txt), so the
+# local tests put the canary in a second container (python:3.12-slim http.server
+# on :80 and :8000, name dk-canary) on a user-defined network dk-spike-net.
+
+## L1. INTERNET profile, no allowlist, canary container on a private network
+$ docker run -d --name dk-pu-internet --network dk-spike-net -p 8093:8080 -e PLANTUML_SECURITY_PROFILE=INTERNET <image>
+== INTERNET http://dk-canary/dk-canary/allowed/include/x
+HTTP/1.1 400 Bad Request
+X-PlantUML-Diagram-Error: Cannot open URL
+marker absent
+== INTERNET http://dk-canary:80/dk-canary/allowed/include/x
+HTTP/1.1 400 Bad Request
+X-PlantUML-Diagram-Error: Cannot open URL
+marker absent
+== INTERNET http://dk-canary:8000/dk-canary/allowed/include/x
+HTTP/1.1 400 Bad Request
+X-PlantUML-Diagram-Error: Cannot open URL
+marker absent
+== canary log: (empty: no request reached the canary)
+Control: the canary IS reachable from that container:
+$ docker exec dk-pu-internet curl -s -o /dev/null -w '%{http_code}\n' http://dk-canary/dk-canary/allowed/include/x
+200
+172.30.4.3 - - [02/Nov/2026 21:54:59] "GET /dk-canary/allowed/include/x HTTP/1.1" 200 -
+
+## L2. ALLOWLIST with a leading empty entry (';<allowed>') vs control ('<allowed>')
+$ ... -e PLANTUML_SECURITY_PROFILE=ALLOWLIST -e 'PLANTUML_ALLOWLIST_URL=;http://dk-canary:8000/dk-canary/allowed/'   (:8094)
+$ ... -e PLANTUML_SECURITY_PROFILE=ALLOWLIST -e 'PLANTUML_ALLOWLIST_URL=http://dk-canary:8000/dk-canary/allowed/'    (:8095)
+server :8095 ('<allowed>') allowed -> HTTP 200 marker=DK-CANARY-FETCHED
+server :8095 ('<allowed>') denied -> HTTP 400 marker=none
+server :8094 (';<allowed>') allowed -> HTTP 200 marker=DK-CANARY-FETCHED
+server :8094 (';<allowed>') denied -> HTTP 200 marker=DK-CANARY-DENIED-FETCHED
+canary log:
+172.30.4.4 - - [02/Nov/2026 21:55:49] "GET /dk-canary/denied/include/x HTTP/1.1" 200 -
+172.30.4.4 - - [02/Nov/2026 21:55:49] "GET /dk-canary/denied/include/x HTTP/1.1" 200 -
+
+## L3. Bytecode of the URL checks (javap -c -p, run with the image's own JDK)
+### net.sourceforge.plantuml.security.SURL
+  public boolean isUrlOk();
+    Code:
+       0: invokestatic  #63                 // Method net/sourceforge/plantuml/teavm/TeaVM.isTeaVM:()Z
+       3: ifeq          8
+       6: iconst_1
+       7: ireturn
+       8: invokestatic  #107                // Method net/sourceforge/plantuml/security/SecurityUtils.getSecurityProfile:()Lnet/sourceforge/plantuml/security/SecurityProfile;
+      11: getstatic     #111                // Field net/sourceforge/plantuml/security/SecurityProfile.SANDBOX:Lnet/sourceforge/plantuml/security/SecurityProfile;
+      14: if_acmpne     19
+      17: iconst_0
+      18: ireturn
+      19: aload_0
+      20: invokevirtual #117                // Method isInUrlAllowList:()Z
+      23: ifeq          28
+      26: iconst_1
+      27: ireturn
+      28: invokestatic  #107                // Method net/sourceforge/plantuml/security/SecurityUtils.getSecurityProfile:()Lnet/sourceforge/plantuml/security/SecurityProfile;
+      31: getstatic     #120                // Field net/sourceforge/plantuml/security/SecurityProfile.LEGACY:Lnet/sourceforge/plantuml/security/SecurityProfile;
+      34: if_acmpne     58
+      37: aload_0
+      38: aload_0
+      39: getfield      #17                 // Field internal:Ljava/net/URL;
+      42: invokevirtual #123                // Method java/net/URL.toString:()Ljava/lang/String;
+      45: invokevirtual #126                // Method cleanPath:(Ljava/lang/String;)Ljava/lang/String;
+      48: invokestatic  #130                // Method net/sourceforge/plantuml/security/URLCheck.isURLforbidden:(Ljava/lang/String;)Z
+      51: ifeq          56
+      54: iconst_0
+      55: ireturn
+      56: iconst_1
+      57: ireturn
+      58: invokestatic  #107                // Method net/sourceforge/plantuml/security/SecurityUtils.getSecurityProfile:()Lnet/sourceforge/plantuml/security/SecurityProfile;
+      61: getstatic     #135                // Field net/sourceforge/plantuml/security/SecurityProfile.INSECURE:Lnet/sourceforge/plantuml/security/SecurityProfile;
+      64: if_acmpne     69
+      67: iconst_1
+      68: ireturn
+      69: invokestatic  #107                // Method net/sourceforge/plantuml/security/SecurityUtils.getSecurityProfile:()Lnet/sourceforge/plantuml/security/SecurityProfile;
+      72: getstatic     #138                // Field net/sourceforge/plantuml/security/SecurityProfile.INTERNET:Lnet/sourceforge/plantuml/security/SecurityProfile;
+      75: if_acmpeq     87
+      78: invokestatic  #107                // Method net/sourceforge/plantuml/security/SecurityUtils.getSecurityProfile:()Lnet/sourceforge/plantuml/security/SecurityProfile;
+      81: getstatic     #141                // Field net/sourceforge/plantuml/security/SecurityProfile.INTERNET_WITH_DOTSVG:Lnet/sourceforge/plantuml/security/SecurityProfile;
+      84: if_acmpne     138
+      87: aload_0
+      88: aload_0
+      89: getfield      #17                 // Field internal:Ljava/net/URL;
+      92: invokevirtual #123                // Method java/net/URL.toString:()Ljava/lang/String;
+      95: invokevirtual #126                // Method cleanPath:(Ljava/lang/String;)Ljava/lang/String;
+      98: invokestatic  #130                // Method net/sourceforge/plantuml/security/URLCheck.isURLforbidden:(Ljava/lang/String;)Z
+     101: ifeq          106
+     104: iconst_0
+     105: ireturn
+     106: aload_0
+     107: getfield      #17                 // Field internal:Ljava/net/URL;
+     110: invokevirtual #144                // Method java/net/URL.getPort:()I
+     113: istore_1
+     114: iload_1
+     115: bipush        80
+     117: if_icmpeq     132
+     120: iload_1
+     121: sipush        443
+     124: if_icmpeq     132
+     127: iload_1
+     128: iconst_m1
+     129: if_icmpne     136
+     132: iconst_1
+     133: goto          137
+     136: iconst_0
+     137: ireturn
+     138: iconst_0
+     139: ireturn
+
+  private boolean isInUrlAllowList();
+    Code:
+       0: aload_0
+       1: aload_0
+       2: getfield      #17                 // Field internal:Ljava/net/URL;
+       5: invokevirtual #123                // Method java/net/URL.toString:()Ljava/lang/String;
+       8: invokevirtual #126                // Method cleanPath:(Ljava/lang/String;)Ljava/lang/String;
+      11: astore_1
+      12: aload_1
+      13: ldc           #157                // String @
+      15: invokevirtual #159                // Method java/lang/String.contains:(Ljava/lang/CharSequence;)Z
+      18: ifeq          23
+      21: iconst_0
+      22: ireturn
+      23: aload_0
+      24: invokevirtual #163                // Method getUrlAllowList:()Ljava/util/List;
+      27: invokeinterface #167,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      32: astore_2
+      33: aload_2
+      34: invokeinterface #173,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      39: ifeq          69
+      42: aload_2
+      43: invokeinterface #178,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      48: checkcast     #23                 // class java/lang/String
+      51: astore_3
+      52: aload_1
+      53: aload_0
+      54: aload_3
+      55: invokevirtual #126                // Method cleanPath:(Ljava/lang/String;)Ljava/lang/String;
+      58: invokevirtual #31                 // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+      61: ifeq          66
+      64: iconst_1
+      65: ireturn
+      66: goto          33
+      69: iconst_0
+      70: ireturn
+
+  private java.lang.String cleanPath(java.lang.String);
+    Code:
+       0: aload_1
+       1: invokestatic  #182                // Method removeUserInfoFromUrlPath:(Ljava/lang/String;)Ljava/lang/String;
+       4: astore_1
+       5: aload_1
+       6: invokevirtual #185                // Method java/lang/String.trim:()Ljava/lang/String;
+       9: getstatic     #188                // Field java/util/Locale.US:Ljava/util/Locale;
+      12: invokevirtual #194                // Method java/lang/String.toLowerCase:(Ljava/util/Locale;)Ljava/lang/String;
+      15: astore_1
+      16: aload_1
+      17: ldc           #198                // String :80/
+      19: ldc           #200                // String
+      21: invokevirtual #202                // Method java/lang/String.replace:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+      24: astore_1
+      25: aload_1
+      26: ldc           #206                // String :443/
+      28: ldc           #200                // String
+      30: invokevirtual #202                // Method java/lang/String.replace:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+      33: astore_1
+      34: aload_1
+      35: areturn
+
+  private java.util.List<java.lang.String> getUrlAllowList();
+    Code:
+       0: ldc           #208                // String plantuml.allowlist.url
+       2: invokestatic  #210                // Method net/sourceforge/plantuml/security/SecurityUtils.getenv:(Ljava/lang/String;)Ljava/lang/String;
+       5: astore_1
+       6: aload_1
+       7: ifnonnull     14
+      10: invokestatic  #213                // Method java/util/Collections.emptyList:()Ljava/util/List;
+      13: areturn
+      14: aload_1
+      15: invokestatic  #218                // Method net/sourceforge/plantuml/StringUtils.eventuallyRemoveStartingAndEndingDoubleQuote:(Ljava/lang/String;)Ljava/lang/String;
+      18: ldc           #223                // String ;
+      20: invokevirtual #225                // Method java/lang/String.split:(Ljava/lang/String;)[Ljava/lang/String;
+      23: invokestatic  #229                // Method java/util/Arrays.asList:([Ljava/lang/Object;)Ljava/util/List;
+      26: areturn
+
+### net.sourceforge.plantuml.security.URLCheck
+  public static boolean isURLforbidden(java.lang.String);
+    Code:
+       0: aload_0
+       1: ldc           #7                  // String @
+       3: invokevirtual #9                  // Method java/lang/String.contains:(Ljava/lang/CharSequence;)Z
+       6: ifeq          11
+       9: iconst_1
+      10: ireturn
+      11: aload_0
+      12: ldc           #15                 // String https://
+      14: invokevirtual #17                 // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+      17: ifne          31
+      20: aload_0
+      21: ldc           #21                 // String http://
+      23: invokevirtual #17                 // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+      26: ifne          31
+      29: iconst_1
+      30: ireturn
+      31: aload_0
+      32: ldc           #23                 // String ^https?://[-#.0-9:\\[\\]+]+/.*
+      34: invokevirtual #25                 // Method java/lang/String.matches:(Ljava/lang/String;)Z
+      37: ifeq          42
+      40: iconst_1
+      41: ireturn
+      42: aload_0
+      43: ldc           #28                 // String ^https?://[^.]+/.*
+      45: invokevirtual #25                 // Method java/lang/String.matches:(Ljava/lang/String;)Z
+      48: ifeq          53
+      51: iconst_1
+      52: ireturn
+      53: aload_0
+      54: ldc           #30                 // String ^https?://[^.]+$
+      56: invokevirtual #25                 // Method java/lang/String.matches:(Ljava/lang/String;)Z
+      59: ifeq          64
+      62: iconst_1
+      63: ireturn
+      64: new           #32                 // class java/net/URL
+      67: dup
+      68: aload_0
+      69: invokespecial #34                 // Method java/net/URL."<init>":(Ljava/lang/String;)V
+      72: invokestatic  #37                 // Method isURLforbidden:(Ljava/net/URL;)Z
+      75: ifeq          80
+      78: iconst_1
+      79: ireturn
+      80: goto          86
+      83: astore_1
+      84: iconst_1
+      85: ireturn
+      86: iconst_0
+      87: ireturn
+    Exception table:
+       from    to  target type
+          64    79    83   Class java/lang/Exception
+
+  public static boolean isURLforbidden(java.net.URL) throws java.io.UnsupportedEncodingException, java.net.UnknownHostException;
+    Code:
+       0: aload_0
+       1: invokevirtual #45                 // Method java/net/URL.getUserInfo:()Ljava/lang/String;
+       4: astore_1
+       5: aload_1
+       6: ifnull        18
+       9: aload_1
+      10: invokevirtual #49                 // Method java/lang/String.isEmpty:()Z
+      13: ifne          18
+      16: iconst_1
+      17: ireturn
+      18: aload_0
+      19: invokevirtual #53                 // Method java/net/URL.getProtocol:()Ljava/lang/String;
+      22: astore_2
+      23: aload_2
+      24: ldc           #56                 // String http
+      26: invokevirtual #58                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      29: ifne          43
+      32: aload_2
+      33: ldc           #62                 // String https
+      35: invokevirtual #58                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      38: ifne          43
+      41: iconst_1
+      42: ireturn
+      43: aload_0
+      44: invokevirtual #64                 // Method java/net/URL.getHost:()Ljava/lang/String;
+      47: astore_3
+      48: aload_3
+      49: ifnull        68
+      52: aload_3
+      53: invokevirtual #49                 // Method java/lang/String.isEmpty:()Z
+      56: ifne          68
+      59: aload_3
+      60: ldc           #67                 // String .
+      62: invokevirtual #9                  // Method java/lang/String.contains:(Ljava/lang/CharSequence;)Z
+      65: ifne          70
+      68: iconst_1
+      69: ireturn
+      70: invokestatic  #69                 // Method net/sourceforge/plantuml/security/SecurityUtils.getSecurityProfile:()Lnet/sourceforge/plantuml/security/SecurityProfile;
+      73: getstatic     #75                 // Field net/sourceforge/plantuml/security/SecurityProfile.INSECURE:Lnet/sourceforge/plantuml/security/SecurityProfile;
+      76: if_acmpeq     106
+      79: aload_3
+      80: ldc           #81                 // String ^[-#.0-9:\\[\\]+]+$
+      82: invokevirtual #25                 // Method java/lang/String.matches:(Ljava/lang/String;)Z
+      85: ifeq          90
+      88: iconst_1
+      89: ireturn
+      90: aload_3
+      91: invokestatic  #83                 // Method java/net/InetAddress.getByName:(Ljava/lang/String;)Ljava/net/InetAddress;
+      94: astore        4
+      96: aload         4
+      98: invokestatic  #89                 // Method isInnerAddress:(Ljava/net/InetAddress;)Z
+     101: ifeq          106
+     104: iconst_1
+     105: ireturn
+     106: aload_3
+     107: ldc           #93                 // String UTF-8
+     109: invokestatic  #95                 // Method java/net/URLDecoder.decode:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+     112: astore        4
+     114: aload_3
+     115: aload         4
+     117: invokevirtual #58                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     120: ifne          125
+     123: iconst_1
+     124: ireturn
+     125: iconst_0
+     126: ireturn
+
