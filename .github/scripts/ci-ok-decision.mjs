@@ -27,10 +27,11 @@ export const REQUIRED_LANES = Object.freeze([
   'doc-sanity',
   'build-example',
   'a11y',
+  'plantuml-allowlist',
 ]);
 
 /**
- * @param {{detect_changes:string, code_quality:string, doc_sanity:string, build_example:string, a11y:string, paused?:string|boolean}} results
+ * @param {{detect_changes:string, code_quality:string, doc_sanity:string, build_example:string, a11y:string, plantuml_allowlist:string, paused?:string|boolean}} results
  *   Each value is a GitHub Actions job result: success | failure | cancelled | skipped.
  * @returns {{ok:boolean, reasons:string[]}} ok=true → gate GREEN.
  */
@@ -78,6 +79,7 @@ if (isMain()) {
     doc_sanity: process.env.DOC_SANITY_RESULT,
     build_example: process.env.BUILD_EXAMPLE_RESULT,
     a11y: process.env.A11Y_RESULT,
+    plantuml_allowlist: process.env.PLANTUML_ALLOWLIST_RESULT,
     paused: process.env.PAUSED,
   };
   const { ok, reasons } = evaluateCiOk(results);
