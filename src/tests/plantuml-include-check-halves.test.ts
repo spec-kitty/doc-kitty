@@ -667,6 +667,14 @@ describe('container identity: --server must be served by --service-container', (
     expect(out.stderr).toContain('(published: none)');
   });
 
+  it('unset: a host-networked container publishing no ports passes with the host-networking note', async () => {
+    const file = path.join(mkdtempSync(path.join(tmpdir(), 'dk-ports-')), 'ports.json');
+    writeFileSync(file, '{"8080/tcp":null}\n');
+    const out = await runUnset({ DK_FAKE_DOCKER_PORTS_FILE: file, DK_FAKE_DOCKER_NETWORK_MODE: 'host' });
+    expect(out.exit).toBe(0);
+    expect(out.stdout + out.stderr).toContain('the service container uses host networking and publishes no ports');
+  });
+
   it('unset positive control: the container publishing the --server port reproduces the golden', async () => {
     const out = await runUnset();
     const golden = (ext: string) => readFileSync(path.join(GOLDEN_DIR, `golden-unset-refuse-container.${ext}`), 'utf8');

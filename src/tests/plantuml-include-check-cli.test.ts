@@ -321,6 +321,13 @@ describe('FR-007: --canary-port leaves the unset goldens byte-identical', () => 
     expect(`${out.exit}\n`).toBe(g('exit'));
   });
 
+  it('an empty --service-container exits 2: it must not silently weaken the unset mode', async () => {
+    // An empty `${{ job.services.plantuml.id }}` reaches the CLI as "".
+    const out = await runCheck(['--server', 'http://127.0.0.1:1/svg/', '--service-container', ''], { pathMode: 'node-only' });
+    expect(out.exit).toBe(2);
+    expect(out.stderr).toContain('empty value for --service-container');
+  });
+
   it('a busy --canary-port exits 2 with one fixed line (positive control: a free port passes)', async () => {
     const port = await canaryPort();
     const blocker = trackServer(createServer());

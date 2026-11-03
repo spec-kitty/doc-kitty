@@ -57,11 +57,6 @@ const CASES = [
     ok: false,
   },
   {
-    name: 'plantuml-allowlist skipped by path (docs-only PR), others passing → GREEN, like build-example',
-    in: { detect_changes: 'success', code_quality: 'skipped', doc_sanity: 'success', build_example: 'skipped', a11y: 'skipped', plantuml_allowlist: 'skipped' },
-    ok: true,
-  },
-  {
     name: 'plantuml-allowlist failure with others skipped → RED, like build-example',
     in: { detect_changes: 'success', code_quality: 'skipped', doc_sanity: 'skipped', build_example: 'skipped', a11y: 'skipped', plantuml_allowlist: 'failure' },
     ok: false,

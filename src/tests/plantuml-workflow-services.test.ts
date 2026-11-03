@@ -13,7 +13,7 @@
  * pinned here: a missing lane result is RED at runtime, see
  * .github/scripts/ci-ok-decision.test.mjs.)
  *
- * Text parsing only (no YAML dependency), as in plantuml-service-hardening.test.ts.
+ * Text parsing only (no YAML dependency).
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';

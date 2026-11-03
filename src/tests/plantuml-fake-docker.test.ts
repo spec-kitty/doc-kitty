@@ -57,8 +57,6 @@ describe('fake docker', () => {
 describe('runCheck', () => {
   it.each([
     [['--bogus'], 'unknown or incomplete argument'],
-    // An empty `${{ job.services.plantuml.id }}` must not silently weaken the unset mode.
-    [['--server', 'http://127.0.0.1:1/svg/', '--service-container', ''], 'empty value for --service-container'],
   ])('pathMode node-only still starts the CLI; usage error %j exits 2 (docker missing)', async (args, message) => {
     const r = await runCheck(args, { pathMode: 'node-only' });
     expect(r.exit).toBe(2);

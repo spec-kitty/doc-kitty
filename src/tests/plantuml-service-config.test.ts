@@ -26,6 +26,7 @@ const SWITCHES = [
   'DK_FAKE_DOCKER_ARGS_FILE',
   'DK_FAKE_DOCKER_PORTS_FILE',
   'DK_FAKE_DOCKER_PUBLISHED_PORT',
+  'DK_FAKE_DOCKER_NETWORK_MODE',
   'DK_FAKE_DOCKER_LOG',
 ];
 
@@ -108,7 +109,7 @@ describe('readServiceEnv', () => {
     await expect(readServiceEnv('c')).rejects.toBeInstanceOf(ServiceConfigError);
   });
 
-  it('runs exactly `docker inspect -f {{json .Config.Env}} <container>`', async () => {
+  it('runs exactly `docker inspect --type container -f {{json .Config.Env}} <container>`', async () => {
     const log = path.join(tmp, 'docker.log');
     process.env.DK_FAKE_DOCKER_LOG = log;
     await readServiceEnv('c');
@@ -140,7 +141,7 @@ describe('readServiceArgs', () => {
     await expect(readServiceArgs('c')).rejects.toBeInstanceOf(ServiceConfigError);
   });
 
-  it('runs exactly `docker inspect -f [{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}] <container>`', async () => {
+  it('runs exactly `docker inspect --type container -f [{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}] <container>`', async () => {
     const log = path.join(tmp, 'docker.log');
     process.env.DK_FAKE_DOCKER_LOG = log;
     await readServiceArgs('c');
@@ -150,7 +151,7 @@ describe('readServiceArgs', () => {
 });
 
 describe('readServicePorts', () => {
-  it('reads the real capture and runs exactly `docker inspect -f {{json .NetworkSettings.Ports}} <container>`', async () => {
+  it('reads the real capture and runs exactly `docker inspect --type container -f {{json .NetworkSettings.Ports}} <container>`', async () => {
     const log = path.join(tmp, 'docker.log');
     process.env.DK_FAKE_DOCKER_LOG = log;
     expect(await readServicePorts('c')).toEqual([
