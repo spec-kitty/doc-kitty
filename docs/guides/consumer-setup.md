@@ -1205,6 +1205,7 @@ planned follow-up ([#287](https://github.com/spec-kitty/doc-kitty/issues/287)).
 
 With `--service-container`, the check reads the container with
 `docker inspect --type container` and fails closed on anything it cannot read.
+This is a behaviour change: a service the check used to pass can now fail.
 In every mode it fails when:
 
 - **The profile is wrong.** In sandbox mode the container's
