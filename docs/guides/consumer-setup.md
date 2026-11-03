@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-01T00:00:00Z
+updated: 2026-11-03T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -1005,6 +1005,19 @@ inside the container is the container itself, so even a server that would
 fetch includes can pass. The check then prints a note that reachability was
 not proven.
 
+**Upgrading: the check now verifies the profile.** With `--service-container`,
+the check also reads the container's `PLANTUML_SECURITY_PROFILE`, which must be
+`SANDBOX`. A service that relied on the image default (`INTERNET`) used to pass
+and now fails:
+
+```text
+assert-plantuml-no-remote-include: FAIL — opt-in unset (sandbox), but the service's PLANTUML_SECURITY_PROFILE is not set (the image default is INTERNET)
+```
+
+To fix it, set `PLANTUML_SECURITY_PROFILE=SANDBOX` on the service, as in the
+blocks above. If the service really should fetch includes, declare that as
+described in [Allowing external includes](#allowing-external-includes).
+
 A stricter setup also takes the network away from the container. For
 example, put it on a Docker network created with `--internal`, and run the
 build in a container on the same network. The security profile is the
@@ -1013,6 +1026,233 @@ control this guide relies on, and the check above proves it.
 How the two modes are built, and why, is in
 [Diagrams](../architecture/diagrams.md) and
 [ADR-0040](../adr/0040-build-time-diagram-render-dual-mode.md).
+
+#### Allowing external includes
+
+**You need this only if a diagram uses `!include` or `!includeurl` with an
+`http://` or `https://` address.** Bundled `<C4/...>` libraries, such as
+`!include <C4/C4_Container>`, already render under `SANDBOX` and need no
+opt-in.
+
+By default the hardened service refuses every URL include. Turn that off only
+when a diagram must fetch a remote include, such as an organisation-hosted
+style or a shared macro library served over HTTP.
+
+The toolkit never configures the service. You declare the intended mode in
+your site, run the service in that mode yourself, and the include check
+confirms the running service matches what you declared.
+
+##### 1. Declare the entries
+
+In `astro.config.mjs`:
+
+```js
+docKitty({
+  // ...
+  diagrams: true,
+  plantumlAllowExternal: ['https://styles.example.org/plantuml/'],
+});
+```
+
+Or, for one environment only:
+
+```sh
+export DK_PLANTUML_ALLOW_EXTERNAL='https://styles.example.org/plantuml/'
+```
+
+The setting takes exactly three values:
+
+- **Unset** (the default): sandbox, unchanged. Nothing new is printed.
+- **A list of URL prefixes**: allowlist mode. In the environment, join the
+  entries with `;`.
+- **`internet`**: any URL. Lowercase only; `INTERNET` is rejected.
+
+The environment wins over the site setting.
+
+Rules for an entry:
+
+- **End with `/`.** PlantUML matches an entry as a raw string prefix, so
+  `http://host` would also allow `http://host.evil.com`. A bare host, a host with a port, or a
+  path without a trailing slash is refused with that example.
+- **No `;` inside an entry.** `;` separates entries in the environment value
+  and in the service's `PLANTUML_ALLOWLIST_URL`.
+- **No `@`.** PlantUML never matches an entry that contains `@`, so it could
+  not allow anything.
+- **Write the entries exactly as declared.** Use the same text in the site
+  setting and in the service's `PLANTUML_ALLOWLIST_URL`. PlantUML trims,
+  lowercases and drops `:80` and `:443`, but the include check compares the
+  raw strings, so a differently written entry shows up as a mismatch.
+- **No empty item in `PLANTUML_ALLOWLIST_URL`.** An empty item (for example
+  `;https://…`) allows every URL, and the check fails it. One trailing `;` is
+  fine.
+
+##### 2. Run the service in allowlist mode
+
+The service needs your entries and the canary entry. The canary is the check's
+local test server: the check starts it on the machine where it runs and asks
+the service to fetch from it. The canary entry,
+`http://dk-canary:18091/dk-canary/allowed/`, is only needed on a service the
+check runs against (such as CI); a service that only renders can leave it out.
+The `--add-host` option lets the service reach the canary as `dk-canary`; its
+`host-gateway` value needs Docker 20.10 or later.
+
+```yaml
+# GitHub Actions: a job-level service
+services:
+  plantuml:
+    image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+    ports:
+      - 8091:8080
+    options: --add-host dk-canary:host-gateway
+    env:
+      PLANTUML_SECURITY_PROFILE: ALLOWLIST
+      PLANTUML_ALLOWLIST_URL: "https://styles.example.org/plantuml/;http://dk-canary:18091/dk-canary/allowed/"
+```
+
+This is the block the toolkit's own `plantuml-allowlist` CI lane runs, with
+your entry in place of the lane's.
+
+```sh
+# Anywhere else
+docker run -d --name plantuml -p 127.0.0.1:8091:8080 \
+  --add-host dk-canary:host-gateway \
+  -e PLANTUML_SECURITY_PROFILE=ALLOWLIST \
+  -e 'PLANTUML_ALLOWLIST_URL=https://styles.example.org/plantuml/;http://dk-canary:18091/dk-canary/allowed/' \
+  plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+```
+
+`PLANTUML_ALLOWLIST_URL` holds the entries separated by `;`. Set the profile
+and the list as environment variables. Do not pass them as Java system
+properties (`-DPLANTUML_SECURITY_PROFILE` and similar in `JAVA_OPTS`, or as
+arguments after the image name) or in a property file named by
+`PLANTUML_PROPERTY_FILE`: they can override the environment, the check cannot
+read them, and it fails closed.
+
+##### 3. Verify the service
+
+Use this command, not the sandbox one above. Each mode needs its own:
+
+- **Unset (sandbox):** the command under
+  [Run the PlantUML service hardened](#run-the-plantuml-service-hardened).
+- **Allowlist:** the command below.
+- **Internet:** the command below too; see [Internet mode](#internet-mode).
+
+`--service-container` is mandatory for allowlist and internet modes: without it
+the check fails. After `pnpm install`, run:
+
+```sh
+pnpm exec dockitty-assert-plantuml-no-remote-include \
+  --astro-config astro.config.mjs \
+  --server http://localhost:8091/svg/ \
+  --canary-host dk-canary --canary-port 18091 \
+  --service-container plantuml
+```
+
+The check prints `declared: allowlist (from site configuration): …`, fetches
+the canary's allowed path, shows that the denied path is reachable and
+refused, and reads the container's `PLANTUML_SECURITY_PROFILE` and
+`PLANTUML_ALLOWLIST_URL` with `docker inspect`. It passes when the list equals
+your entries plus the canary entry. The last line before `OK` is the verdict:
+
+```text
+assert-plantuml-no-remote-include: verdict: declared allowlist, observed allowlist
+```
+
+It never requests your own entries, so whether those hosts are up is outside
+the check. To see what will be verified without touching the service, add
+`--print-declared`. It prints the declared mode and entries as one JSON line.
+
+Always pass `--astro-config`. It evaluates your site config to read
+`plantumlAllowExternal`, so it needs the site's dependencies installed. Without
+it the check reads only `DK_PLANTUML_ALLOW_EXTERNAL`, and a value set only in
+`astro.config.mjs` goes unseen: the check then runs as if the opt-in were
+unset and can pass.
+
+The build prints which entries you declared and the verify command (fill in the
+placeholders), so you can copy it. The build cannot see the service.
+
+##### Inspectable services only
+
+If your service is not an inspectable Docker container, you cannot use these
+modes yet: stay on `SANDBOX`. Allowlist and internet modes need
+`--service-container`, because the check reads the service's configuration
+with `docker inspect`. A service on Kubernetes, a plain jar or a remote server
+cannot pass either mode. Letting an operator assert the allowlist instead is a
+planned follow-up ([#287](https://github.com/spec-kitty/doc-kitty/issues/287)).
+
+The check also ties `--server` to the container. When the `--server` host is
+`localhost`, `127.x.x.x` or `[::1]`, the named container must publish that port
+(`-p 8091:8080`), or the check fails: it would otherwise read one container's
+configuration and test another service. With any other host, such as a Docker
+network name, it cannot tie the two together and prints a note that the service
+identity was not verified.
+
+##### What you accept
+
+- **Requests reach those URLs.** The service fetches the declared includes
+  while your site builds, so the build depends on those hosts being up.
+- **Local-file reads are relaxed.** Allowlist and internet modes also loosen
+  PlantUML's local-file reads, which `SANDBOX` refuses. PlantUML describes its
+  allowlist profile only as "some local resource may be accessible"; which
+  files a diagram can then read depends on the PlantUML version and its
+  settings, so treat the service's file system as readable by diagrams.
+- **Redirects.** In the pinned image, a redirect from an allowed entry to a
+  URL outside the list was not followed. The check still fails if the service
+  follows one.
+
+##### Internet mode
+
+Set `plantumlAllowExternal: 'internet'` (or
+`DK_PLANTUML_ALLOW_EXTERNAL=internet`) and run the service with
+`PLANTUML_SECURITY_PROFILE: INTERNET`. The build warns on every run, and the
+check warns on a passing run: the service may fetch any URL, including
+internal networks and cloud metadata endpoints. Use an allowlist instead unless
+you need that.
+
+```yaml
+# GitHub Actions: a job-level service, internet mode
+services:
+  plantuml:
+    image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+    ports:
+      - 8091:8080
+    env:
+      PLANTUML_SECURITY_PROFILE: INTERNET
+```
+
+Verify with the command above, `--service-container` included. The check reads
+the container's `PLANTUML_SECURITY_PROFILE` and requires `INTERNET`. A real
+internet-mode service refuses the check's private canary, so the canary lines
+are information only, and the check does not prove the service reaches the
+internet.
+
+##### Turn it off
+
+Remove `plantumlAllowExternal` from the site configuration, unset
+`DK_PLANTUML_ALLOW_EXTERNAL`, and return the service to
+`PLANTUML_SECURITY_PROFILE: SANDBOX` with no allowlist variable. There is no
+environment off-switch: `DK_PLANTUML_ALLOW_EXTERNAL=""` counts as unset, so a
+site allowlist still applies. Remove the site option.
+
+Then verify with the sandbox command under
+[Run the PlantUML service hardened](#run-the-plantuml-service-hardened),
+`--service-container` included. It passes only when the service refuses remote
+includes and its profile is `SANDBOX`.
+
+With the opt-in unset, and `--service-container` given, the check now also
+requires the service's `PLANTUML_SECURITY_PROFILE` to be `SANDBOX`. It fails
+otherwise, and a missing variable counts as the image default, `INTERNET`:
+
+```text
+assert-plantuml-no-remote-include: FAIL — opt-in unset (sandbox), but the service's PLANTUML_SECURITY_PROFILE is "ALLOWLIST"
+```
+
+This is a behaviour change: a service named by `--service-container` whose
+profile is not `SANDBOX` used to pass. Without `--service-container`, a service
+left in allowlist mode is caught only when you pass
+`--canary-host dk-canary --canary-port 18091`. A real internet-mode service, or
+one that allowlists only other entries, then looks sandboxed and passes. Always
+pass `--service-container`.
 
 ## Optional: Schematic pages
 
