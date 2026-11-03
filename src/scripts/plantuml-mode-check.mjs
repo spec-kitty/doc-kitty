@@ -85,10 +85,12 @@ export const SYSTEM_PROPERTY_VARS = Object.freeze([
 // PlantUML's SecurityUtils.getenv(name) prefers System.getProperty(name). On the pinned
 // server image `-Dplantuml.allowlist.url=…` reaching the JVM overrides PLANTUML_ALLOWLIST_URL,
 // while the servlet re-sets the PLANTUML_SECURITY_PROFILE property from the env at start-up
-// (verified 2026-11-03, see plantuml-include-check-halves.test.ts). Other images or versions
-// may differ, so any `-D` property named plantuml + `.` or `_` + anything, in any case, fails closed.
-const SYSTEM_PROPERTY_RE =
-  /-D\s*["']?plantuml[._]|plantuml[._]security[._]profile|plantuml[._]allowlist[._]url|plantuml[._]property[._]file/i;
+// (verified 2026-11-03, see plantuml-include-check-halves.test.ts). Only names that change what
+// the service may fetch or load fail closed, in any case, with `.` or `_`: the security
+// profile, the allowlist, a property file (it can override both) and the include path.
+// Harmless tuning (`-DPLANTUML_LIMIT_SIZE=8192`) passes. The name alone is enough, so the
+// `-D` prefix, quoting and `sh -c` wrapping do not matter.
+const SYSTEM_PROPERTY_RE = /plantuml[._](?:security[._]profile|allowlist[._]url|property[._]file|include[._]path)/i;
 
 // A bare `plantuml.*=…` argument (a Jetty start property, not a `-D`) could still reach PlantUML
 // through the server's configuration; the check cannot read it, so it fails closed too.
@@ -218,9 +220,9 @@ export function parseContainerEnv(text) {
 /**
  * True when PlantUML could be configured behind the two variables the check reads: any env
  * value (not only the usual Java option variables: `_JAVA_OPTIONS`, `JETTY_OPTS` and others
- * reach the JVM too) carries a `-D` property named `plantuml` + `.`/`_` + anything (any case,
- * e.g. `-DPLANTUML_SECURITY_PROFILE`, `-Dplantuml.allowlist.url`) or names the profile,
- * allowlist or property-file setting, or an env variable is named `plantuml.*` (any case).
+ * reach the JVM too) names a security-relevant PlantUML setting (any case, `.` or `_`:
+ * profile, allowlist url, property file, include path; e.g. `-DPLANTUML_SECURITY_PROFILE`,
+ * `-Dplantuml.allowlist.url`), or an env variable is named `plantuml.*` (any case).
  * Such services fail closed.
  *
  * @param {Record<string, string> | undefined} env
@@ -372,8 +374,8 @@ export function parseContainerArgs(text) {
 }
 
 /**
- * True when the container's entrypoint, command or args carry a `-D` property named
- * `plantuml` + `.`/`_` + anything (any case, also inside a `sh -c` string), or a bare
+ * True when the container's entrypoint, command or args name a security-relevant PlantUML
+ * setting (see {@link systemPropertyConfig}; any case, also inside a `sh -c` string), or a bare
  * `plantuml.*` argument. Such services fail closed in every mode: the check cannot tell
  * whether the words reach the JVM (on the pinned image they do not, but an image or
  * entrypoint that passes them through would let `-Dplantuml.allowlist.url` override the env).
