@@ -225,10 +225,12 @@ describe('systemPropertyConfig: the property PlantUML really reads (review cycle
   it.each(VARS)('%s with -DPLANTUML_SECURITY_PROFILE=INTERNET → true; -Dfoo=bar → false', (name) => {
     expect(systemPropertyConfig({ [name]: '-DPLANTUML_SECURITY_PROFILE=INTERNET' })).toBe(true);
     expect(systemPropertyConfig({ [name]: '-Xmx1g -DPLANTUML_ALLOWLIST_URL=http://x/' })).toBe(true);
-    expect(systemPropertyConfig({ [name]: '-D"plantuml_anything=1"' })).toBe(true);
+    expect(systemPropertyConfig({ [name]: '-D"plantuml_property_file=/p"' })).toBe(true);
     expect(systemPropertyConfig({ [name]: '-DPlantUml.Security.Profile=INTERNET' })).toBe(true);
     // Negative control on the same variable: an unrelated property passes.
     expect(systemPropertyConfig({ [name]: '-Dfoo=bar -Xmx1g' })).toBe(false);
+    // Harmless PlantUML tuning is not a security setting: it must not fail the check.
+    expect(systemPropertyConfig({ [name]: '-DPLANTUML_LIMIT_SIZE=8192 -Dplantuml.dot.timeout=30' })).toBe(false);
   });
   it('an env variable named plantuml.* fails closed; PLANTUML_ALLOWLIST_URL alone does not', () => {
     expect(systemPropertyConfig({ 'plantuml.allowlist.url': 'http://evil/' })).toBe(true);
@@ -266,7 +268,7 @@ describe('commandLineProperties', () => {
     ['-DPLANTUML_SECURITY_PROFILE=INTERNET'],
     ['-Dplantuml.security.profile=INTERNET'],
     ['-Dplantuml.allowlist.url=http://x/'],
-    ['-DPlantUml_Anything=1'],
+    ['-DPlantUml_Include_Path=/x'],
     ['eval "$(tail -1 jetty.start | sed "s#java #java -Dplantuml.allowlist.url=http://x/ #")"'],
     ['plantuml.allowlist.url=http://x/'],
   ])('%s → true', (word) => {
@@ -276,6 +278,7 @@ describe('commandLineProperties', () => {
     expect(commandLineProperties(['/entrypoint.sh', '-Dfoo.bar=1', '-Xmx1g', '--module=http', '/plantuml.war'])).toBe(false);
     expect(commandLineProperties(parseContainerArgs(ARGS_CLEAN))).toBe(false);
     expect(commandLineProperties([])).toBe(false);
+    expect(commandLineProperties(['/entrypoint.sh', '-DPLANTUML_LIMIT_SIZE=8192'])).toBe(false);
   });
   it('the real capture with -D words → true', () => {
     expect(commandLineProperties(parseContainerArgs(ARGS_PROPERTIES))).toBe(true);
