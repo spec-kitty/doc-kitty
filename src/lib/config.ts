@@ -75,6 +75,7 @@ import { validateIndexBasenames } from './gherkin/options.mjs';
 import { assertExcludedFoldersExist, excludedFoldersFor, normalizeExcludedFolders } from './docs-walk.mjs';
 import {
   PLANTUML_ALLOW_EXTERNAL_ENV,
+  PLANTUML_CANARY_PORT,
   describeDeclared,
   resolvePlantumlAllowExternal,
 } from './plantuml-external.mjs';
@@ -528,9 +529,8 @@ function plantumlExternalNotice(
   diagramsOn: boolean,
 ): string | null {
   if (resolution.mode === 'sandbox') return null;
-  const declared = describeDeclared(resolution).replace(/^(\w+) \(from/, 'declared PlantUML $1 mode (from');
-  const verify =
-    'dockitty-assert-plantuml-no-remote-include --astro-config <path> --server <url> --canary-host <host> --canary-port 18091 --service-container <container>';
+  const declared = describeDeclared(resolution, { notice: true });
+  const verify = `dockitty-assert-plantuml-no-remote-include --astro-config <path> --server <url> --canary-host <host> --canary-port ${PLANTUML_CANARY_PORT} --service-container <container>`;
   const text =
     resolution.mode === 'internet'
       ? `[dk-plantuml] WARNING: ${declared}: the service may fetch any URL, including internal networks and cloud metadata endpoints. Verify it with: ${verify}`

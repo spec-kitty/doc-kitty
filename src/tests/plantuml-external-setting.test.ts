@@ -208,6 +208,7 @@ describe('module contract', () => {
     const mod = await import('../lib/plantuml-external.mjs');
     expect(Object.keys(mod).sort()).toEqual(
       [
+        'PLANTUML_CANARY_PORT',
         'PLANTUML_ALLOW_EXTERNAL_ENV',
         'PlantumlAllowExternalError',
         'describeDeclared',

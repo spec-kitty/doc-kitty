@@ -170,17 +170,23 @@ export function resolvePlantumlAllowExternal({ env, siteValue } = {}) {
   return Object.freeze({ mode: 'sandbox', entries: [], source: 'default' });
 }
 
+/** The fixed port the include check's canary listens on, which a service's allowlist must name. */
+export const PLANTUML_CANARY_PORT = 18091;
+
 /**
  * One-line description, reused by the build notice and the check's `declared:` line.
  * @param {Readonly<Resolution>} resolution
+ * @param {{ notice?: boolean }} [options] `notice`: phrase it for the build notice,
+ *   `declared PlantUML <mode> mode (from …)`, instead of `<mode> (from …)`.
  * @returns {string}
  */
-export function describeDeclared(resolution) {
+export function describeDeclared(resolution, { notice = false } = {}) {
   if (resolution.mode === 'sandbox') return 'sandbox (default)';
+  const lead = notice ? `declared PlantUML ${resolution.mode} mode` : resolution.mode;
   const where =
     resolution.source === 'environment'
       ? `environment ${PLANTUML_ALLOW_EXTERNAL_ENV}`
       : resolution.source;
-  if (resolution.mode === 'internet') return `internet (from ${where})`;
-  return `allowlist (from ${where}): ${resolution.entries.join(', ')}`;
+  if (resolution.mode === 'internet') return `${lead} (from ${where})`;
+  return `${lead} (from ${where}): ${resolution.entries.join(', ')}`;
 }
