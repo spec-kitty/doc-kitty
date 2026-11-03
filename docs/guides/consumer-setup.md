@@ -1016,7 +1016,13 @@ assert-plantuml-no-remote-include: FAIL — opt-in unset (sandbox), but the serv
 
 To fix it, set `PLANTUML_SECURITY_PROFILE=SANDBOX` on the service, as in the
 blocks above. If the service really should fetch includes, declare that as
-described in [Allowing external includes](#allowing-external-includes).
+described in [Allowing external includes](#allowing-external-includes). A
+missing variable counts as the image default, `INTERNET`. The check also fails
+other settings it cannot read; see
+[What the check verifies](#what-the-check-verifies-and-how-it-fails). Without
+`--service-container`, a service left in allowlist mode is caught only when you
+pass `--canary-host dk-canary --canary-port 18091`, and a real internet-mode
+service looks sandboxed and passes. Always pass `--service-container`.
 
 A stricter setup also takes the network away from the container. For
 example, put it on a Docker network created with `--internal`, and run the
@@ -1078,10 +1084,16 @@ Rules for an entry:
   and in the service's `PLANTUML_ALLOWLIST_URL`.
 - **No `@`.** PlantUML never matches an entry that contains `@`, so it could
   not allow anything.
+- **No default port (`:80` or `:443`) followed by `/`.** The build refuses
+  such an entry. PlantUML strips `:80/` and `:443/` from an entry, slash
+  included, so `https://docs.example.com:443/` becomes the bare prefix
+  `https://docs.example.com`. That prefix also matches
+  `https://docs.example.com.attacker.net/`. Write `https://docs.example.com/`
+  instead.
 - **Write the entries exactly as declared.** Use the same text in the site
-  setting and in the service's `PLANTUML_ALLOWLIST_URL`. PlantUML trims,
-  lowercases and drops `:80` and `:443`, but the include check compares the
-  raw strings, so a differently written entry shows up as a mismatch.
+  setting and in the service's `PLANTUML_ALLOWLIST_URL`. PlantUML trims and
+  lowercases entries, but the include check compares the raw strings, so a
+  differently written entry shows up as a mismatch.
 - **No empty item in `PLANTUML_ALLOWLIST_URL`.** An empty item (for example
   `;https://…`) allows every URL, and the check fails it. One trailing `;` is
   fine.
@@ -1090,9 +1102,16 @@ Rules for an entry:
 
 The service needs your entries and the canary entry. The canary is the check's
 local test server: the check starts it on the machine where it runs and asks
-the service to fetch from it. The canary entry,
-`http://dk-canary:18091/dk-canary/allowed/`, is only needed on a service the
-check runs against (such as CI); a service that only renders can leave it out.
+the service to fetch from it. The canary entry is
+`http://dk-canary:18091/dk-canary/allowed/`.
+
+**The trade-off.** Verification needs the canary entry in the service's
+allowlist, and `dk-canary` is the host the check runs on. So either the
+service that renders your site keeps that entry permanently, or you verify a
+twin: a second service with the same image and entries that you run only for
+the check. A service that leaves the entry out cannot be verified: the check
+fails it as `missing`.
+
 The `--add-host` option lets the service reach the canary as `dk-canary`; its
 `host-gateway` value needs Docker 20.10 or later.
 
@@ -1126,7 +1145,9 @@ and the list as environment variables. Do not pass them as Java system
 properties (`-DPLANTUML_SECURITY_PROFILE` and similar in `JAVA_OPTS`, or as
 arguments after the image name) or in a property file named by
 `PLANTUML_PROPERTY_FILE`: they can override the environment, the check cannot
-read them, and it fails closed.
+read them, and it fails closed. See
+[What the check verifies](#what-the-check-verifies-and-how-it-fails) for the
+exact names.
 
 ##### 3. Verify the service
 
@@ -1180,12 +1201,48 @@ with `docker inspect`. A service on Kubernetes, a plain jar or a remote server
 cannot pass either mode. Letting an operator assert the allowlist instead is a
 planned follow-up ([#287](https://github.com/spec-kitty/doc-kitty/issues/287)).
 
-The check also ties `--server` to the container. When the `--server` host is
-`localhost`, `127.x.x.x` or `[::1]`, the named container must publish that port
-(`-p 8091:8080`), or the check fails: it would otherwise read one container's
-configuration and test another service. With any other host, such as a Docker
-network name, it cannot tie the two together and prints a note that the service
-identity was not verified.
+##### What the check verifies and how it fails
+
+With `--service-container`, the check reads the container with
+`docker inspect --type container` and fails closed on anything it cannot read.
+In every mode it fails when:
+
+- **The profile is wrong.** In sandbox mode the container's
+  `PLANTUML_SECURITY_PROFILE` must be exactly `SANDBOX`. It is missing or
+  not `SANDBOX`: set it, or declare the opt-in. Allowlist and internet modes
+  need `ALLOWLIST` and `INTERNET`.
+- **A security setting hides in Java options.** The names that fail are
+  `plantuml.security.profile`, `plantuml.allowlist.url`,
+  `plantuml.property.file` and `plantuml.include.path`. The check matches them
+  case-insensitively, with `.` or `_` between the words, as `-D` properties
+  anywhere in a Java-options environment value or on the container's command
+  line, and as environment keys named `plantuml.*`. Move the setting into
+  `PLANTUML_SECURITY_PROFILE` or `PLANTUML_ALLOWLIST_URL`. Tuning does not
+  fail: `-DPLANTUML_LIMIT_SIZE=8192` is fine.
+- **A property file is set.** A non-empty `PLANTUML_PROPERTY_FILE` fails,
+  because the server loads it after the profile and it can override the
+  profile and the allowlist.
+- **A Java `@argfile` is present.** A word such as `@args.txt` in a
+  Java-options value or on the command line fails, because the file can hold
+  any `-D` property and the check cannot read it. Put the options in the two
+  environment variables.
+- **`--server` points at a port the container does not publish.** When the
+  `--server` host is local, the container must publish that port on a
+  matching address: all addresses (`0.0.0.0` or `::`, which is what
+  `-p 8091:8080` does) or the literal address in `--server`. With
+  `localhost`, any loopback address matches. `0.0.0.0` and `::ffff:127.0.0.1`
+  count as local. Without this, the check would read one container and test
+  another service. `-p 127.0.0.1:8091:8080` works with
+  `--server http://127.0.0.1:8091/svg/`, and with `localhost`.
+- **A flag has an empty value.** `--service-container ""` exits with code 2
+  instead of being ignored. The same holds for every flag that takes a value.
+
+Two cases pass with a note that the service identity was not verified: a
+`--server` host that is not local (such as a Docker network name), and a
+container on host networking (`--network host`), which publishes no ports.
+
+The check does not read mounted files (for example Jetty `start.d`) or the
+image's own entrypoint script. It trusts them.
 
 ##### What you accept
 
@@ -1238,21 +1295,6 @@ Then verify with the sandbox command under
 [Run the PlantUML service hardened](#run-the-plantuml-service-hardened),
 `--service-container` included. It passes only when the service refuses remote
 includes and its profile is `SANDBOX`.
-
-With the opt-in unset, and `--service-container` given, the check now also
-requires the service's `PLANTUML_SECURITY_PROFILE` to be `SANDBOX`. It fails
-otherwise, and a missing variable counts as the image default, `INTERNET`:
-
-```text
-assert-plantuml-no-remote-include: FAIL — opt-in unset (sandbox), but the service's PLANTUML_SECURITY_PROFILE is "ALLOWLIST"
-```
-
-This is a behaviour change: a service named by `--service-container` whose
-profile is not `SANDBOX` used to pass. Without `--service-container`, a service
-left in allowlist mode is caught only when you pass
-`--canary-host dk-canary --canary-port 18091`. A real internet-mode service, or
-one that allowlists only other entries, then looks sandboxed and passes. Always
-pass `--service-container`.
 
 ## Optional: Schematic pages
 
@@ -1619,9 +1661,10 @@ gherkin: {
 
 ## Internal environment names
 
-DocKitty passes seven settings between its own parts through environment
+DocKitty passes nine settings between its own parts through environment
 variables: `DK_INDEX_BASENAME`, `DK_GHERKIN_RESULTS`, `DK_GHERKIN_ROUTE`,
-`DK_PUBLISH_DRAFTS_RESOLVED`, `DK_DOCS_ROOT`, `DK_MARKUA` and `DK_EXCLUDE`. DocKitty sets these for its own
+`DK_PUBLISH_DRAFTS_RESOLVED`, `DK_DOCS_ROOT`, `DK_MARKUA`, `DK_EXCLUDE`,
+`DK_OPENAPI` and `DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED`. DocKitty sets these for its own
 use; never set them by hand. DocKitty clears any value you set when the config loads.
 Set the matching option on `defineDocKittyIntegrations` instead.
 ([ADR-0057](../adr/0057-internal-env-handoff-seam.md) explains the design.)
