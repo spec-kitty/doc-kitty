@@ -25,11 +25,11 @@ function docker(args: string[], env: Record<string, string> = {}) {
   });
 }
 
-const INSPECT = ['inspect', '-f', '{{json .Config.Env}}', 'c'];
-const INSPECT_ARGS = ['inspect', '-f', '[{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}]', 'c'];
+const INSPECT = ['inspect', '--type', 'container', '-f', '{{json .Config.Env}}', 'c'];
+const INSPECT_ARGS = ['inspect', '--type', 'container', '-f', '[{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}]', 'c'];
 const ARGS_CAPTURE = path.join(FAKE_DOCKER_DIR, 'inspect-args-capture.json');
 const ARGS_PROPERTIES = path.join(FAKE_DOCKER_DIR, 'inspect-args-capture-properties.json');
-const INSPECT_PORTS = ['inspect', '-f', '{{json .NetworkSettings.Ports}}', 'c'];
+const INSPECT_PORTS = ['inspect', '--type', 'container', '-f', '{{json .NetworkSettings.Ports}}', 'c'];
 const PORTS_CAPTURE = path.join(FAKE_DOCKER_DIR, 'inspect-ports-capture.json');
 const execArgs = (url: string) => ['exec', 'c', 'curl', '-sf', '--max-time', '5', '-o', '/dev/null', url];
 
@@ -72,6 +72,12 @@ describe('fake docker', () => {
     expect(moved.stdout).toBe('{"8080/tcp":[{"HostIp":"0.0.0.0","HostPort":"8091"},{"HostIp":"::","HostPort":"8091"}]}\n');
     expect((await docker(INSPECT_PORTS, { DK_FAKE_DOCKER_PORTS_FILE: ARGS_CAPTURE })).stdout).toBe(readFileSync(ARGS_CAPTURE, 'utf8'));
     expect((await docker(INSPECT_PORTS, { DK_FAKE_DOCKER_INSPECT_FAIL: '1' })).exit).toBe(1);
+  });
+
+  it('the network-mode inspect prints bridge by default, or DK_FAKE_DOCKER_NETWORK_MODE', async () => {
+    const args = ['inspect', '--type', 'container', '-f', '{{json .HostConfig.NetworkMode}}', 'c'];
+    expect((await docker(args)).stdout).toBe('"bridge"\n');
+    expect((await docker(args, { DK_FAKE_DOCKER_NETWORK_MODE: 'host' })).stdout).toBe('"host"\n');
   });
 
   it('inspect without the file variable exits 1', async () => {
@@ -120,12 +126,14 @@ describe('fake docker', () => {
   it.each([
     ['docker ps', ['ps']],
     ['inspect without -f', ['inspect', 'c']],
-    ['inspect with an extra arg', ['inspect', '-f', '{{json .Config.Env}}', 'c', 'extra']],
+    ['inspect without --type container', ['inspect', '-f', '{{json .Config.Env}}', 'c']],
+    ['network-mode inspect without json', ['inspect', '--type', 'container', '-f', '{{.HostConfig.NetworkMode}}', 'c']],
+    ['inspect with an extra arg', ['inspect', '--type', 'container', '-f', '{{json .Config.Env}}', 'c', 'extra']],
     ['exec with the wrong curl flag', ['exec', 'c', 'curl', '-s', '--max-time', '5', '-o', '/dev/null', 'http://x/']],
-    ['inspect with the wrong format', ['inspect', '-f', '{{.Config.Env}}', 'c']],
-    ['command-line inspect without the brackets', ['inspect', '-f', '{{json .Config.Entrypoint}} {{json .Config.Cmd}} {{json .Args}}', 'c']],
+    ['inspect with the wrong format', ['inspect', '--type', 'container', '-f', '{{.Config.Env}}', 'c']],
+    ['command-line inspect without the brackets', ['inspect', '--type', 'container', '-f', '{{json .Config.Entrypoint}} {{json .Config.Cmd}} {{json .Args}}', 'c']],
     ['command-line inspect with an extra arg', [...INSPECT_ARGS, 'extra']],
-    ['ports inspect without json', ['inspect', '-f', '{{.NetworkSettings.Ports}}', 'c']],
+    ['ports inspect without json', ['inspect', '--type', 'container', '-f', '{{.NetworkSettings.Ports}}', 'c']],
   ])('rejects %s with 125', async (_name, args) => {
     const r = await docker(args);
     expect(r.exit).toBe(125);

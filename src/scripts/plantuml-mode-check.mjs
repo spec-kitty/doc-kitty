@@ -304,18 +304,40 @@ export function parseContainerPorts(text) {
 }
 
 /**
+ * Parse `docker inspect -f '{{json .HostConfig.NetworkMode}}'` output (one JSON string).
+ * Anything else fails closed.
+ *
+ * @param {string} text
+ * @returns {string}
+ * @throws {ServiceConfigError}
+ */
+export function parseNetworkMode(text) {
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    throw new ServiceConfigError(`not JSON: ${err?.message ?? err}`);
+  }
+  if (typeof parsed !== 'string') throw new ServiceConfigError('not a JSON string network mode');
+  return parsed;
+}
+
+/**
  * Tie `--server` to `--service-container`. With a local `--server` host the container must
  * publish that host port on a wildcard address or on the literal `--server` address; otherwise the check would read one
  * container and test another service (a decoy). A non-local host (a docker-network name, a
- * remote server) cannot be tied this way: it passes with a note.
+ * remote server) cannot be tied this way: it passes with a note. So does a container on
+ * host networking, which publishes no ports at all.
  *
  * @param {string} serverUrl
  * @param {{ hostIp: string, hostPort: number }[]} ports
+ * @param {string} [networkMode] the container's `HostConfig.NetworkMode`
  * @returns {{ ok: true, note?: string } | { ok: false, message: string }}
  */
-export function checkServiceIdentity(serverUrl, ports) {
+export function checkServiceIdentity(serverUrl, ports, networkMode) {
   const url = new URL(serverUrl);
   const host = canonicalHost(url.hostname);
+  if (networkMode === 'host') return { ok: true, note: MESSAGES.identityNotVerifiedHostNetwork() };
   if (!isLocalHost(host)) return { ok: true, note: MESSAGES.identityNotVerified(url.hostname) };
   const port = Number(url.port || (url.protocol === 'https:' ? 443 : 80));
   if (ports.some((b) => b.hostPort === port && bindingServes(b.hostIp, host))) return { ok: true };
@@ -421,6 +443,8 @@ export const MESSAGES = Object.freeze({
     }), so the check would read one container and test another service`,
   identityNotVerified: (host) =>
     `note — the --server host ${host} is not local, so the check cannot tie it to --service-container: service identity was not verified`,
+  identityNotVerifiedHostNetwork: () =>
+    'note — the service container uses host networking and publishes no ports, so the check cannot tie --server to --service-container: service identity was not verified',
   propertyFile: () =>
     'configured through a PlantUML property file (PLANTUML_PROPERTY_FILE); the check reads only PLANTUML_SECURITY_PROFILE and PLANTUML_ALLOWLIST_URL',
   commandLineProperties: () =>
@@ -509,6 +533,8 @@ export function checkUnsetProfile(env, args) {
  *   the container's env map; throws {@link ServiceConfigError} when it cannot be read
  * @param {(container: string) => Promise<{ containerPort: string, hostIp: string, hostPort: number }[]>} [opts.readPorts]
  *   the container's published ports; throws {@link ServiceConfigError} when they cannot be read
+ * @param {(container: string) => Promise<string>} [opts.readNetworkMode]
+ *   the container's network mode; optional (absent means not host networking)
  * @param {(container: string) => Promise<string[]> | string[]} [opts.readArgs]
  *   the container's entrypoint, command and args as one list; throws {@link ServiceConfigError}
  *   when they cannot be read
@@ -528,6 +554,7 @@ export async function checkDeclaredMode({
   readEnv,
   readArgs,
   readPorts,
+  readNetworkMode,
   fixtures = loadFixtures(),
   extraFixtures = [],
   fetchImpl = fetch,
@@ -703,16 +730,18 @@ export async function checkDeclaredMode({
     let env;
     let args;
     let ports;
+    let networkMode;
     try {
       env = await readEnv(container);
       args = await readArgs(container);
       ports = await readPorts(container);
+      networkMode = readNetworkMode ? await readNetworkMode(container) : undefined;
     } catch (err) {
       const reason = err instanceof ServiceConfigError ? err.reason : (err?.message ?? String(err));
       fail('config-unreadable', (o) => MESSAGES.inMode(mode, o, MESSAGES.configUnreadable(reason)));
       return finish(1);
     }
-    const identity = checkServiceIdentity(serverUrl, ports);
+    const identity = checkServiceIdentity(serverUrl, ports, networkMode);
     if (!identity.ok) fail('service-identity', (o) => MESSAGES.inMode(mode, o, identity.message));
     else if (identity.note) lines.push(identity.note);
     if (systemPropertyConfig(env)) {

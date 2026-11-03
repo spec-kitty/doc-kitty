@@ -11,7 +11,7 @@ import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { CLI_PATH, FAKE_DOCKER_DIR, closeAll, trackServer } from './helpers/plantuml-check-harness';
-import { ARGS_TEMPLATE, PORTS_TEMPLATE, dockerProbe, readServiceArgs, readServiceEnv, readServicePorts } from '../scripts/plantuml-service-config.mjs';
+import { ARGS_TEMPLATE, PORTS_TEMPLATE, dockerProbe, readServiceArgs, readServiceEnv, readServiceNetworkMode, readServicePorts } from '../scripts/plantuml-service-config.mjs';
 import { ServiceConfigError } from '../scripts/plantuml-mode-check.mjs';
 
 const CAPTURE = path.join(FAKE_DOCKER_DIR, 'inspect-capture.json');
@@ -112,7 +112,7 @@ describe('readServiceEnv', () => {
     const log = path.join(tmp, 'docker.log');
     process.env.DK_FAKE_DOCKER_LOG = log;
     await readServiceEnv('c');
-    expect(loggedArgv(log)).toEqual([['inspect', '-f', '{{json .Config.Env}}', 'c']]);
+    expect(loggedArgv(log)).toEqual([['inspect', '--type', 'container', '-f', '{{json .Config.Env}}', 'c']]);
   });
 });
 
@@ -145,7 +145,7 @@ describe('readServiceArgs', () => {
     process.env.DK_FAKE_DOCKER_LOG = log;
     await readServiceArgs('c');
     expect(ARGS_TEMPLATE).toBe('[{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}]');
-    expect(loggedArgv(log)).toEqual([['inspect', '-f', ARGS_TEMPLATE, 'c']]);
+    expect(loggedArgv(log)).toEqual([['inspect', '--type', 'container', '-f', ARGS_TEMPLATE, 'c']]);
   });
 });
 
@@ -158,7 +158,7 @@ describe('readServicePorts', () => {
       { containerPort: '8080/tcp', hostIp: '::', hostPort: 18602 },
     ]);
     expect(PORTS_TEMPLATE).toBe('{{json .NetworkSettings.Ports}}');
-    expect(loggedArgv(log)).toEqual([['inspect', '-f', PORTS_TEMPLATE, 'c']]);
+    expect(loggedArgv(log)).toEqual([['inspect', '--type', 'container', '-f', PORTS_TEMPLATE, 'c']]);
   });
 
   it('maps a docker failure and unparsable output to ServiceConfigError', async () => {
@@ -169,6 +169,17 @@ describe('readServicePorts', () => {
     writeFileSync(bad, '[]');
     process.env.DK_FAKE_DOCKER_PORTS_FILE = bad;
     await expect(readServicePorts('c')).rejects.toBeInstanceOf(ServiceConfigError);
+  });
+});
+
+describe('readServiceNetworkMode', () => {
+  it('reads the mode and runs exactly `docker inspect --type container -f {{json .HostConfig.NetworkMode}} <container>`', async () => {
+    const log = path.join(tmp, 'docker.log');
+    process.env.DK_FAKE_DOCKER_LOG = log;
+    expect(await readServiceNetworkMode('c')).toBe('bridge');
+    process.env.DK_FAKE_DOCKER_NETWORK_MODE = 'host';
+    expect(await readServiceNetworkMode('c')).toBe('host');
+    expect(loggedArgv(log)[0]).toEqual(['inspect', '--type', 'container', '-f', '{{json .HostConfig.NetworkMode}}', 'c']);
   });
 });
 

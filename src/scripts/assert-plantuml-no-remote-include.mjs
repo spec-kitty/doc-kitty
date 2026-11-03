@@ -53,7 +53,7 @@ import {
   formatVerdictLine,
   isPortBusy,
 } from './plantuml-mode-check.mjs';
-import { dockerProbe, readServiceArgs, readServiceEnv, readServicePorts } from './plantuml-service-config.mjs';
+import { dockerProbe, readServiceArgs, readServiceEnv, readServiceNetworkMode, readServicePorts } from './plantuml-service-config.mjs';
 
 const VALUE_FLAGS = ['--server', '--canary-host', '--service-container', '--canary-port', '--astro-config'];
 const BOOLEAN_FLAGS = ['--print-declared'];
@@ -192,7 +192,11 @@ async function checkUnset() {
     // also needs the service's profile to be SANDBOX. A SANDBOX profile prints nothing new.
     let message;
     try {
-      const identity = checkServiceIdentity(serverUrl, await readServicePorts(container));
+      const identity = checkServiceIdentity(
+        serverUrl,
+        await readServicePorts(container),
+        await readServiceNetworkMode(container),
+      );
       const profile = checkUnsetProfile(await readServiceEnv(container), await readServiceArgs(container));
       if (!identity.ok) message = identity.message;
       else if (!profile.ok) message = profile.message;
@@ -231,6 +235,7 @@ async function checkDeclared() {
     readEnv: readServiceEnv,
     readArgs: readServiceArgs,
     readPorts: readServicePorts,
+    readNetworkMode: readServiceNetworkMode,
   });
   for (const line of lines) console.log(`${NAME}: ${line}`);
   console.log(formatVerdictLine(verdict));

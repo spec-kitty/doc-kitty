@@ -446,6 +446,13 @@ describe('checkServiceIdentity', () => {
       'note — the --server host plantuml is not local, so the check cannot tie it to --service-container: service identity was not verified',
     ]);
   });
+  it('a host-networked container publishes no ports: passes with a note naming host networking', () => {
+    expect(checkServiceIdentity('http://127.0.0.1:8091/svg/', [], 'host')).toEqual({
+      ok: true,
+      note: 'note — the service container uses host networking and publishes no ports, so the check cannot tie --server to --service-container: service identity was not verified',
+    });
+    expect(checkServiceIdentity('http://127.0.0.1:8091/svg/', [], 'bridge')).toMatchObject({ ok: false });
+  });
   it('a non-local host passes with a note that identity was not verified', () => {
     expect(checkServiceIdentity('http://plantuml:8080/svg/', [])).toEqual({
       ok: true,
