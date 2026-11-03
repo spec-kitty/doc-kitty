@@ -2,7 +2,7 @@
 title: Diagrams
 description: "How the diagrams surface fits together: the metadata transform, the single client render owner and its token map, the opt-in seam, and the two shells."
 doc_status: active
-updated: 2026-10-31T00:00:00Z
+updated: 2026-11-03T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
@@ -167,3 +167,8 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
   from leaving the build. This setting keeps the renderer from reaching out.
   The recommended block is in the
   [consumer guide](../guides/consumer-setup.md#run-the-plantuml-service-hardened).
+  The sandbox stays the default. An operator may opt into allowlist or internet
+  mode, and the include check then verifies the running service against that
+  declaration: see
+  [ADR-0074](../adr/0074-plantuml-external-include-opt-in.md) and
+  [Allowing external includes](../guides/consumer-setup.md#allowing-external-includes).

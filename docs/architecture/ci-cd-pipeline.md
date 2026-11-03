@@ -2,7 +2,7 @@
 title: CI/CD Pipeline
 description: "Efficient, path-scoped CI/CD for doc-kitty: tests, doc sanity checks, and example deployment."
 doc_status: draft
-updated: 2026-08-21T00:00:00Z
+updated: 2026-11-03T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -71,12 +71,18 @@ groups):
 | **doc-sanity** (frontmatter, links, md-lint) | yes¹ | yes | yes | yes |
 | **build-example** (integration: build + assert artifacts) | yes | yes² | no | yes |
 | **deploy** (Pages, `main` only) | yes | yes | no³ | yes |
+| **plantuml-allowlist** (real service in allowlist mode) | always⁴ | always⁴ | always⁴ | always⁴ |
 
 ¹ Code changes run doc-sanity because a schema or validator change can invalidate
 existing docs. It is build-free and cheap.
 ² Deployed content must prove it still builds, to catch invalid frontmatter or
 broken links that would break the live site.
 ³ A change to non-deployed `repo_docs` does not redeploy the example.
+⁴ `plantuml-allowlist` is the one unconditional lane: it is not path-scoped, so
+it runs on every CI run except a paused PR. It starts a digest-pinned PlantUML
+service in allowlist mode and runs the include check against it, which proves
+the documented opt-in works against the real service
+([ADR-0074](../adr/0074-plantuml-external-include-opt-in.md)).
 
 This satisfies the requirement directly:
 
@@ -98,13 +104,14 @@ flowchart TD
   CQ --> OK[ci-ok<br/>required check]
   DS --> OK
   BE --> OK
+  PA[plantuml-allowlist<br/>real service · every run] --> OK
   OK -.->|push to main, if code/content| DEP[deploy-pages]
 ```
 
 - **`detect-changes`** uses a path-filter action (e.g. `dorny/paths-filter`) to
   emit the group booleans once.
 - Each lane is gated by `if:` on those booleans.
-- **`ci-ok`** `needs: [code-quality, doc-sanity, build-example]` with
+- **`ci-ok`** `needs: [detect-changes, code-quality, doc-sanity, build-example, a11y, plantuml-allowlist]` with
   `if: always()`, and fails only if any need's result is `failure`/`cancelled`
   (a `skipped` need is fine). This is the **single required check** in branch
   protection — skips never block.

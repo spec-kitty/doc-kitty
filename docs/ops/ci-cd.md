@@ -2,7 +2,7 @@
 title: Activating and operating CI/CD
 description: How a repository admin turns the CI/CD pipeline into a required merge gate and operates its path-scoped lanes.
 doc_status: active
-updated: 2026-11-01T00:00:00Z
+updated: 2026-11-03T00:00:00Z
 type: Operations
 kind: How-To
 authors:
@@ -114,6 +114,11 @@ skips.
 | `repo_docs` | doc-sanity |
 | `workflows` | everything (CI logic itself changed) |
 | `ignored` | none |
+
+The `plantuml-allowlist` lane is the exception to this table. It runs for every
+change group, whatever the paths, on every run unless the PR is paused. It
+proves the PlantUML allowlist opt-in against the real service, and `ci-ok`
+needs it.
 
 The [lane matrix](../architecture/ci-cd-pipeline.md#lane-matrix) in the design
 doc is authoritative, including the reasons each lane runs where it does.
