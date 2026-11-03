@@ -71,17 +71,18 @@ groups):
 | **doc-sanity** (frontmatter, links, md-lint) | yes¹ | yes | yes | yes |
 | **build-example** (integration: build + assert artifacts) | yes | yes² | no | yes |
 | **deploy** (Pages, `main` only) | yes | yes | no³ | yes |
-| **plantuml-allowlist** (real service in allowlist mode) | always⁴ | always⁴ | always⁴ | always⁴ |
+| **plantuml-allowlist** (real service in allowlist mode) | yes⁴ | no | no | yes⁴ |
 
 ¹ Code changes run doc-sanity because a schema or validator change can invalidate
 existing docs. It is build-free and cheap.
 ² Deployed content must prove it still builds, to catch invalid frontmatter or
 broken links that would break the live site.
 ³ A change to non-deployed `repo_docs` does not redeploy the example.
-⁴ `plantuml-allowlist` is the one unconditional lane: it is not path-scoped, so
-it runs on every CI run except a paused PR. It starts a digest-pinned PlantUML
-service in allowlist mode and runs the include check against it, which proves
-the documented opt-in works against the real service
+⁴ `plantuml-allowlist` is path-scoped like `code-quality`: it runs when code or
+workflow paths change (the `run_code_quality` signal) and skips otherwise, so a
+docs-only PR does not pull the PlantUML image. It starts a digest-pinned
+PlantUML service in allowlist mode and runs the include check against it, which
+proves the documented opt-in works against the real service
 ([ADR-0074](../adr/0074-plantuml-external-include-opt-in.md)).
 
 This satisfies the requirement directly:
@@ -104,7 +105,10 @@ flowchart TD
   CQ --> OK[ci-ok<br/>required check]
   DS --> OK
   BE --> OK
-  PA[plantuml-allowlist<br/>real service · every run] --> OK
+  DC -->|code or workflows| PA[plantuml-allowlist<br/>real service · allowlist mode]
+  BE --> A11[a11y<br/>axe + diagram e2e on the built site]
+  A11 --> OK
+  PA --> OK
   OK -.->|push to main, if code/content| DEP[deploy-pages]
 ```
 

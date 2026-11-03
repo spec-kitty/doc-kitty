@@ -115,10 +115,10 @@ skips.
 | `workflows` | everything (CI logic itself changed) |
 | `ignored` | none |
 
-The `plantuml-allowlist` lane is the exception to this table. It runs for every
-change group, whatever the paths, on every run unless the PR is paused. It
-proves the PlantUML allowlist opt-in against the real service, and `ci-ok`
-needs it.
+The `plantuml-allowlist` lane follows the same rule as `code-quality`: it runs
+for the `code` and `workflows` groups and skips for the others. It proves the
+PlantUML allowlist opt-in against the real service, and `ci-ok` needs it. A
+skip by path is green. A skip because the PR is paused is red.
 
 The [lane matrix](../architecture/ci-cd-pipeline.md#lane-matrix) in the design
 doc is authoritative, including the reasons each lane runs where it does.
