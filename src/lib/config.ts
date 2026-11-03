@@ -73,6 +73,11 @@ import { normalizeIndexBasenames } from './vocabulary-core.mjs';
 import { isGlossaryActive } from './glossary/load.js';
 import { validateIndexBasenames } from './gherkin/options.mjs';
 import { assertExcludedFoldersExist, excludedFoldersFor, normalizeExcludedFolders } from './docs-walk.mjs';
+import {
+  PLANTUML_ALLOW_EXTERNAL_ENV,
+  describeDeclared,
+  resolvePlantumlAllowExternal,
+} from './plantuml-external.mjs';
 import { toPublication } from './integrations/openapi-publish.js';
 import { normaliseOpenApiOptions, type OpenApiOptions } from './openapi/options.mjs';
 import {
@@ -88,6 +93,7 @@ import {
   DK_INDEX_BASENAME_ENV,
   DK_MARKUA_ENV,
   DK_OPENAPI_ENV,
+  DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV,
   clearInternalEnv,
   setInternalEnv,
 } from './internal-env.mjs';
@@ -208,6 +214,14 @@ export interface DocKittyOptions {
    * Mermaid only; a ```plantuml fence stays code).
    */
   diagrams?: boolean;
+  /**
+   * Declares whether the PlantUML service may make external connections for
+   * URL includes (#268, ADR-0074). Unset: sandbox (the default). A non-empty
+   * list of http(s) URL prefixes ending in "/": allowlist mode. 'internet':
+   * internet mode. DK_PLANTUML_ALLOW_EXTERNAL overrides it. The toolkit never
+   * configures the service; it declares and the include check verifies.
+   */
+  plantumlAllowExternal?: readonly string[] | 'internet';
   /**
    * Opt-in Markua syntax support (ADR-0030; FR-005/006/007/011). **Default off** —
    * the byte-identical twin of `diagrams: false`. With it absent or `false` the
@@ -504,6 +518,26 @@ export {
   type DiagramMode,
 } from './integrations/diagrams.js';
 
+/**
+ * The FR-003 build notice for a non-sandbox PlantUML opt-in, or null for sandbox
+ * (nothing is printed when unset). The one place the text lives. The config file's
+ * path is not known at definition time, so `<path>` stays a literal placeholder.
+ */
+function plantumlExternalNotice(
+  resolution: ReturnType<typeof resolvePlantumlAllowExternal>,
+  diagramsOn: boolean,
+): string | null {
+  if (resolution.mode === 'sandbox') return null;
+  const declared = describeDeclared(resolution).replace(/^(\w+) \(from/, 'declared PlantUML $1 mode (from');
+  const verify =
+    'dockitty-assert-plantuml-no-remote-include --astro-config <path> --server <url> --canary-host <host> --canary-port 18091 --service-container <container>';
+  const text =
+    resolution.mode === 'internet'
+      ? `[dk-plantuml] WARNING: ${declared}: the service may fetch any URL, including internal networks and cloud metadata endpoints. Verify it with: ${verify}`
+      : `[dk-plantuml] ${declared}. The build cannot see the service; verify it with: ${verify}`;
+  return diagramsOn ? text : `${text} (diagrams are off, so nothing is rendered)`;
+}
+
 export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // First, before anything can throw: a config starts from no internal handoffs,
   // so nothing an earlier config in this process wrote leaks into this one.
@@ -517,6 +551,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     base = '/',
     theme,
     diagrams = false,
+    plantumlAllowExternal,
     markua = false,
     githubAlerts = false,
     indexBasename,
@@ -527,6 +562,20 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     starlight: overrides,
   } = options;
   const { starlightSidebar: sidebar, indexLabel } = splitSidebarOption(sidebarOption);
+
+  // PlantUML external-include opt-in (#268): resolved EAGERLY so an invalid value
+  // throws at config time. The resolution is always published (sandbox included) so
+  // site-config-eval can tell "sandbox" from "never defined"; the build never reads
+  // it back. The notice prints once per call, so it can appear more than once per
+  // session (dev-server reloads, the site-config-eval child): intended, every
+  // evaluation that declares an opening says so. Unset prints nothing (FR-007).
+  const plantumlExternal = resolvePlantumlAllowExternal({
+    env: process.env[PLANTUML_ALLOW_EXTERNAL_ENV],
+    siteValue: plantumlAllowExternal,
+  });
+  setInternalEnv(DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV, JSON.stringify(plantumlExternal));
+  const plantumlNotice = plantumlExternalNotice(plantumlExternal, diagrams === true);
+  if (plantumlNotice) console.warn(plantumlNotice);
 
   // Opt-in gherkin seam (ADR-0046/0051): normalised + validated EAGERLY here, so a
   // bad option throws a `[dk-gherkin]` Error at config time, before any hook runs.

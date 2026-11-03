@@ -17,6 +17,7 @@
  * | DK_EXCLUDE                    | define     | defineDocKittyIntegrations               | shared docs walk (docs-walk.mjs), CLIs    |
  * | DK_OPENAPI                    | define     | defineDocKittyIntegrations               | llms.txt route (routes/llms-txt.ts)       |
  * | DK_GHERKIN_ROUTE              | setup      | doc-kitty:gherkin-fence config:setup     | scenario-index route                      |
+ * | DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED | define | defineDocKittyIntegrations           | site-config-eval (the include check)      |
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
  *
  * Readers read `process.env` at call time. Vite SSR evaluates the content config
@@ -48,6 +49,14 @@ export const DK_EXCLUDE_ENV = 'DK_EXCLUDE';
 /** JSON `{ section, versions: [{ label, released, ext }] }` of the `openapi` option; absent without it. */
 export const DK_OPENAPI_ENV = 'DK_OPENAPI';
 
+/**
+ * JSON `{ mode, entries, source }`: the PlantUML external-include setting this
+ * config resolved (#268). Published always, sandbox included, so a config
+ * evaluation can tell "resolved to sandbox" from "never defined". Outbound only:
+ * the build never reads it back.
+ */
+export const DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV = 'DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED';
+
 /** Every internal handoff name. */
 export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_INDEX_BASENAME_ENV,
@@ -58,6 +67,7 @@ export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_MARKUA_ENV,
   DK_EXCLUDE_ENV,
   DK_OPENAPI_ENV,
+  DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV,
 ]);
 
 /**

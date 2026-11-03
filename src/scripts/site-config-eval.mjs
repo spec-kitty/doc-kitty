@@ -20,7 +20,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { findAstroConfig, findSiteRoot, viteEnvDirOf } from '../lib/draft-publication.mjs';
 import { DK_INDEX_BASENAME_ENV as ENV_NAME, parsePublishedIndexBasenames } from '../lib/vocabulary-core.mjs';
-import { DK_DOCS_ROOT_ENV, DK_EXCLUDE_ENV } from '../lib/internal-env.mjs';
+import { DK_DOCS_ROOT_ENV, DK_EXCLUDE_ENV, DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV } from '../lib/internal-env.mjs';
 import { parsePublishedExclude } from '../lib/docs-walk.mjs';
 
 /**
@@ -32,7 +32,10 @@ export const EVALUATE_TIMEOUT_MS = 30_000;
 
 /**
  * @typedef {{ names: string[] | null, envDir: string | false | null,
- *   exclude: string[], docsRoot: string | null }} EvaluatedConfig
+ *   exclude: string[], docsRoot: string | null,
+ *   plantumlAllowExternal: { mode: string, entries: string[], source: string } | null }} EvaluatedConfig
+ * `plantumlAllowExternal`: the PlantUML opt-in the config resolved (#268), sandbox
+ * included; null when it never called `defineDocKittyIntegrations`.
  * `exclude`: the folders the site leaves out (ADR-0070), relative to `docsRoot`,
  * the absolute docs root the config named (null when it never called
  * `defineDocKittyIntegrations`).
@@ -85,6 +88,7 @@ function evaluateConfigFile(configPath, siteDir, tool, timeoutMs) {
   delete env[ENV_NAME];
   delete env[DK_EXCLUDE_ENV];
   delete env[DK_DOCS_ROOT_ENV];
+  delete env[DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV];
   const res = spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--evaluate', configPath, siteDir], {
     cwd: siteDir,
     env,
@@ -102,7 +106,13 @@ function evaluateConfigFile(configPath, siteDir, tool, timeoutMs) {
   }
   if (!answer.ok) throw fail(answer.message);
   /** @type {EvaluatedConfig} */
-  const result = { names: answer.names, envDir: answer.envDir ?? null, exclude: answer.exclude ?? [], docsRoot: answer.docsRoot ?? null };
+  const result = {
+    names: answer.names,
+    envDir: answer.envDir ?? null,
+    exclude: answer.exclude ?? [],
+    docsRoot: answer.docsRoot ?? null,
+    plantumlAllowExternal: answer.plantumlAllowExternal ?? null,
+  };
   evaluated.set(configPath, result);
   return result;
 }
@@ -182,7 +192,7 @@ export function evalRefusal(err, label) {
 }
 
 /** Child-process side of {@link evaluateConfigFile}: print one JSON answer line,
- * `{ ok, names, envDir, exclude, docsRoot }`. */
+ * `{ ok, names, envDir, exclude, docsRoot, plantumlAllowExternal }`. */
 async function evaluate(configPath, siteDir) {
   try {
     const astroPkg = createRequire(join(siteDir, 'package.json')).resolve('astro/package.json');
@@ -194,7 +204,9 @@ async function evaluate(configPath, siteDir) {
     const envDir = viteEnvDirOf(module?.default?.vite) ?? null;
     const exclude = parsePublishedExclude(process.env[DK_EXCLUDE_ENV]);
     const docsRoot = process.env[DK_DOCS_ROOT_ENV] ?? null;
-    console.log(JSON.stringify({ ok: true, names, envDir, exclude, docsRoot }));
+    const published = process.env[DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV];
+    const plantumlAllowExternal = published ? JSON.parse(published) : null;
+    console.log(JSON.stringify({ ok: true, names, envDir, exclude, docsRoot, plantumlAllowExternal }));
   } catch (err) {
     console.log(JSON.stringify({ ok: false, message: err instanceof Error ? err.message : String(err) }));
   }
