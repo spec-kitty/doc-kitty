@@ -148,10 +148,14 @@ describe('fake docker', () => {
 });
 
 describe('runCheck', () => {
-  it('pathMode node-only still starts the CLI (docker missing, so the probe fails)', async () => {
-    const r = await runCheck(['--bogus'], { pathMode: 'node-only' });
+  it.each([
+    [['--bogus'], 'unknown or incomplete argument'],
+    // An empty `${{ job.services.plantuml.id }}` must not silently weaken the unset mode.
+    [['--server', 'http://127.0.0.1:1/svg/', '--service-container', ''], 'empty value for --service-container'],
+  ])('pathMode node-only still starts the CLI; usage error %j exits 2 (docker missing)', async (args, message) => {
+    const r = await runCheck(args, { pathMode: 'node-only' });
     expect(r.exit).toBe(2);
-    expect(r.stderr).toContain('unknown or incomplete argument');
+    expect(r.stderr).toContain(message);
   });
 
   it('canaryPort never hands out the same port twice in one process, and below the ephemeral range', async () => {

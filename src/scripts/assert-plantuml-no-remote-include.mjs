@@ -71,6 +71,9 @@ function parseArgs(argv) {
     if (!VALUE_FLAGS.includes(flag) || value === undefined) {
       throw new Error(`unknown or incomplete argument: ${flag}`);
     }
+    // An empty value is a usage error: `--service-container ""` (an empty CI expression)
+    // would otherwise read as "no container" and weaken the unset mode silently.
+    if (value === '') throw new Error(`empty value for ${flag}`);
     opts[flag.slice(2)] = value;
     i += 1;
   }
