@@ -40,6 +40,7 @@
 import { checkRemoteIncludesRefused } from './plantuml-include-guard.mjs';
 import {
   PLANTUML_ALLOW_EXTERNAL_ENV,
+  PLANTUML_CANARY_PORT,
   PlantumlAllowExternalError,
   describeDeclared,
   resolvePlantumlAllowExternal,
@@ -57,7 +58,7 @@ import { dockerProbe, readServiceArgs, readServiceEnv, readServiceNetworkMode, r
 
 const VALUE_FLAGS = ['--server', '--canary-host', '--service-container', '--canary-port', '--astro-config'];
 const BOOLEAN_FLAGS = ['--print-declared'];
-const DECLARED_CANARY_PORT = 18091;
+const DECLARED_CANARY_PORT = PLANTUML_CANARY_PORT;
 
 function parseArgs(argv) {
   const opts = {};
