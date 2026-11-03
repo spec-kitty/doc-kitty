@@ -1,4 +1,4 @@
-# Path-scoped CI — detect-changes → 4 conditional lanes + the unconditional plantuml-allowlist lane → ci-ok gate.
+# Path-scoped CI — detect-changes → 5 path-scoped lanes (incl. plantuml-allowlist) → ci-ok gate.
 #
 # Design: docs/architecture/ci-cd-pipeline.md; contracts under
 # kitty-specs/ci-cd-pipeline-01M0N1DZ/contracts/. The single required status check
@@ -350,8 +350,11 @@ jobs:
   # --- Lane: plantuml-allowlist — the real service in ALLOWLIST mode (#268). ---
   # Proves the documented opt-in (ADR-0074, FR-012): a digest-pinned PlantUML
   # service configured with the allowlist block, canary-host entries ONLY, and the
-  # include check in declared allowlist mode against it. Runs on every CI run
-  # unless paused (never path-filtered, SC-004) and feeds `ci-ok` (REQUIRED_LANES).
+  # include check in declared allowlist mode against it. Path-scoped like
+  # build-example: it runs when the code or workflows groups change, which is
+  # exactly `run_code_quality` (code || workflows, off when paused). A skip by path
+  # is green in `ci-ok`; a failure, or a skip from a pause, is red. Feeds `ci-ok`
+  # (REQUIRED_LANES).
   # The service block below MUST equal the allowlist block in the consumer guide
   # (docs/guides/consumer-setup.md); the guide test asserts it. The canary listens
   # on 0.0.0.0:18091 and the service reaches it as `dk-canary` via host-gateway.
@@ -359,7 +362,7 @@ jobs:
   plantuml-allowlist:
     name: PlantUML allowlist opt-in (real service)
     needs: detect-changes
-    if: needs.detect-changes.outputs.paused != 'true'
+    if: needs.detect-changes.outputs.run_code_quality == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     services:
