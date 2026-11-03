@@ -36,7 +36,7 @@ const notices = () => warn.mock.calls.map((c) => String(c[0])).filter((m) => m.s
 const handoff = () => JSON.parse(process.env[HANDOFF] ?? 'null');
 
 describe('plantumlAllowExternal: eager validation', () => {
-  it.each([[[]], [['http://host']]])('refuses invalid site value %j at definition time', (value) => {
+  it.each([[['http://host']]])('refuses invalid site value %j at definition time (the resolver table owns every shape)', (value) => {
     // positive control: the same call with a valid value does not throw
     expect(() => defineDocKittyIntegrations({ title: 'Docs', plantumlAllowExternal: ALLOW })).not.toThrow();
     const attempt = () => defineDocKittyIntegrations({ title: 'Docs', plantumlAllowExternal: value as string[] });

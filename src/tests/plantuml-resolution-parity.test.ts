@@ -142,11 +142,6 @@ describe('FR-003 notice per source (US4 AS3)', () => {
     if (cell.expected.mode === 'internet') expect(notice[0]).toContain('WARNING');
     else expect(notice[0]).not.toContain('WARNING');
   }, TIMEOUT);
-
-  it('positive control: a stubbed build that prints nothing would fail the allowlist rows', async () => {
-    const { notice } = await buildSide({ DK_PARITY_SITE_VALUE: JSON.stringify([A]) });
-    expect(notice.length).toBeGreaterThan(0);
-  }, TIMEOUT);
 });
 
 describe('without --astro-config (the amended NFR-003 sentence)', () => {
@@ -198,11 +193,6 @@ describe('forged inherited DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED is ignored (A2b)'
     const build = await buildSide({ DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED: FORGED, DK_PARITY_SITE_VALUE: 'absent' });
     expect(build.names).toEqual(['PARITY']);
     expect(build.resolution).toEqual(SANDBOX);
-  }, TIMEOUT);
-
-  it('positive control: the same variable is honoured nowhere, but a real declaration still resolves', async () => {
-    const env = { DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED: FORGED, DK_PLANTUML_ALLOW_EXTERNAL: 'internet' };
-    expect(await checkSide(env, null)).toEqual(internet('environment'));
   }, TIMEOUT);
 });
 

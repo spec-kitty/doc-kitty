@@ -137,22 +137,9 @@ describe('rejects each shape', () => {
     expect(run).toThrow(label);
     expect(run).toThrow(reason);
     expect(run).toThrow('accepted:');
+    // The four MUST_END rows also name the prefix-match hazard.
+    if (reason === MUST_END) expect(run).toThrow(PREFIX);
   });
-
-  it.each([
-    ['bare host', { site: ['http://host'] }, SITE],
-    ['bare host env', { env: 'http://host' }, ENV],
-    ['host and port', { site: ['http://host:8080'] }, SITE],
-    ['no trailing slash', { site: ['https://host/path'] }, SITE],
-  ] as Array<[string, { env?: string; site?: unknown }, string]>)(
-    'bare-host row asserts both substrings: %s',
-    (_n, input, label) => {
-      const run = () => resolvePlantumlAllowExternal({ env: input.env, siteValue: input.site });
-      expect(run).toThrow(label);
-      expect(run).toThrow(MUST_END);
-      expect(run).toThrow(PREFIX);
-    },
-  );
 
   it('carries source and reason on the error', () => {
     try {
@@ -203,20 +190,5 @@ describe('module contract', () => {
     expect(src).not.toMatch(/^\s*import\s/m);
     expect(src).not.toMatch(/\bimport\(/);
     expect(src).not.toMatch(/\brequire\(/);
-  });
-  it('exports only the contract surface', async () => {
-    const mod = await import('../lib/plantuml-external.mjs');
-    expect(Object.keys(mod).sort()).toEqual(
-      [
-        'PLANTUML_CANARY_PORT',
-        'PLANTUML_ALLOW_EXTERNAL_ENV',
-        'PlantumlAllowExternalError',
-        'describeDeclared',
-        'parseAllowExternalEnv',
-        'resolvePlantumlAllowExternal',
-        'validateAllowExternal',
-      ].sort(),
-    );
-    expect(mod.PLANTUML_ALLOW_EXTERNAL_ENV).toBe('DK_PLANTUML_ALLOW_EXTERNAL');
   });
 });

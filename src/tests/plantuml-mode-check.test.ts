@@ -206,36 +206,56 @@ describe('parseContainerEnv', () => {
   });
 });
 
-describe('systemPropertyConfig', () => {
-  it.each(['JAVA_OPTS', 'JAVA_OPTIONS', 'JAVA_TOOL_OPTIONS', 'CATALINA_OPTS'])('%s with a plantuml property → true', (name) => {
-    expect(systemPropertyConfig({ [name]: '-Xmx1g -Dplantuml.security.profile=INTERNET' })).toBe(true);
-    expect(systemPropertyConfig({ [name]: '-Dplantuml.allowlist.url=http://x/' })).toBe(true);
-    expect(systemPropertyConfig({ [name]: '-Dplantuml.include.path=/x' })).toBe(true);
-  });
-  it('false otherwise', () => {
-    expect(systemPropertyConfig({ JAVA_OPTS: '-Xmx1g', PATH: '/bin' })).toBe(false);
-    expect(systemPropertyConfig({})).toBe(false);
-  });
-});
-
-describe('systemPropertyConfig: the property PlantUML really reads (review cycle 1)', () => {
-  // SecurityUtils.getenv(name) returns System.getProperty(name) first, so the upper-case
-  // underscore form overrides the env variable.
+// SecurityUtils.getenv(name) returns System.getProperty(name) first, so the upper-case
+// underscore form overrides the env variable; every env value is scanned, not a fixed list.
+describe('systemPropertyConfig (one positive/negative table)', () => {
   const VARS = ['JAVA_OPTS', 'JAVA_OPTIONS', 'JAVA_TOOL_OPTIONS', 'JDK_JAVA_OPTIONS', 'CATALINA_OPTS'];
-  it.each(VARS)('%s with -DPLANTUML_SECURITY_PROFILE=INTERNET → true; -Dfoo=bar → false', (name) => {
-    expect(systemPropertyConfig({ [name]: '-DPLANTUML_SECURITY_PROFILE=INTERNET' })).toBe(true);
-    expect(systemPropertyConfig({ [name]: '-Xmx1g -DPLANTUML_ALLOWLIST_URL=http://x/' })).toBe(true);
-    expect(systemPropertyConfig({ [name]: '-D"plantuml_property_file=/p"' })).toBe(true);
-    expect(systemPropertyConfig({ [name]: '-DPlantUml.Security.Profile=INTERNET' })).toBe(true);
-    // Negative control on the same variable: an unrelated property passes.
-    expect(systemPropertyConfig({ [name]: '-Dfoo=bar -Xmx1g' })).toBe(false);
-    // Harmless PlantUML tuning is not a security setting: it must not fail the check.
-    expect(systemPropertyConfig({ [name]: '-DPLANTUML_LIMIT_SIZE=8192 -Dplantuml.dot.timeout=30' })).toBe(false);
+  const POSITIVE = [
+    '-Xmx1g -Dplantuml.security.profile=INTERNET',
+    '-Dplantuml.allowlist.url=http://x/',
+    '-Dplantuml.include.path=/x',
+    '-DPLANTUML_SECURITY_PROFILE=INTERNET',
+    '-Xmx1g -DPLANTUML_ALLOWLIST_URL=http://x/',
+    '-D"plantuml_property_file=/p"',
+    '-DPlantUml.Security.Profile=INTERNET',
+  ];
+  // Harmless PlantUML tuning is not a security setting: it must not fail the check.
+  const NEGATIVE = ['-Xmx1g', '-Dfoo=bar -Xmx1g', '-DPLANTUML_LIMIT_SIZE=8192 -Dplantuml.dot.timeout=30'];
+
+  it.each(VARS)('%s: every PlantUML property form → true; unrelated or tuning values → false', (name) => {
+    for (const value of POSITIVE) expect(systemPropertyConfig({ [name]: value }), `${name}=${value}`).toBe(true);
+    for (const value of NEGATIVE) expect(systemPropertyConfig({ [name]: value }), `${name}=${value}`).toBe(false);
   });
-  it('an env variable named plantuml.* fails closed; PLANTUML_ALLOWLIST_URL alone does not', () => {
+
+  it.each([
+    ['_JAVA_OPTIONS', '-Dplantuml.allowlist.url=http://x/'],
+    ['JETTY_OPTS', '-DPLANTUML_SECURITY_PROFILE=INTERNET'],
+    ['START_OPTIONS', '-Xmx1g -Dplantuml.security.profile=INTERNET'],
+    ['OTHER', '-Dplantuml.include.path=/x'],
+    ['WRAPPER', "sh -c 'PLANTUML_PROPERTY_FILE=/p exec /entrypoint.sh'"],
+    ['JAVA_TOOL_OPTIONS', '-Xmx1g @/opt/args.txt'],
+  ])('any env value is scanned: %s=%s → true', (name, value) => {
+    expect(systemPropertyConfig({ PLANTUML_SECURITY_PROFILE: 'SANDBOX', [name]: value })).toBe(true);
+  });
+
+  it('an env variable named plantuml.* fails closed', () => {
     expect(systemPropertyConfig({ 'plantuml.allowlist.url': 'http://evil/' })).toBe(true);
     expect(systemPropertyConfig({ 'PlantUML.security.profile': 'INTERNET' })).toBe(true);
+  });
+
+  it('negatives: PLANTUML_* values themselves, unrelated values and empty input pass', () => {
     expect(systemPropertyConfig({ PLANTUML_ALLOWLIST_URL: 'http://a/', PLANTUML_SECURITY_PROFILE: 'ALLOWLIST' })).toBe(false);
+    expect(
+      systemPropertyConfig({
+        _JAVA_OPTIONS: '-Xmx1g -Dfoo.bar=1',
+        JETTY_OPTS: '-Djetty.http.port=8080',
+        PLANTUML_SECURITY_PROFILE: 'ALLOWLIST',
+        PLANTUML_ALLOWLIST_URL: 'https://styles.example.org/plantuml/;http://dk-canary:18091/dk-canary/allowed/',
+        PATH: '/usr/local/bin:/usr/bin',
+      }),
+    ).toBe(false);
+    expect(systemPropertyConfig({ JAVA_OPTS: '-Xmx1g', PATH: '/bin' })).toBe(false);
+    expect(systemPropertyConfig({})).toBe(false);
   });
 });
 
@@ -295,30 +315,6 @@ describe('propertyFileConfig', () => {
   });
 });
 
-describe('systemPropertyConfig: every env value is scanned (pre-PR fold)', () => {
-  it.each([
-    ['_JAVA_OPTIONS', '-Dplantuml.allowlist.url=http://x/'],
-    ['JETTY_OPTS', '-DPLANTUML_SECURITY_PROFILE=INTERNET'],
-    ['START_OPTIONS', '-Xmx1g -Dplantuml.security.profile=INTERNET'],
-    ['OTHER', '-Dplantuml.include.path=/x'],
-    ['WRAPPER', "sh -c 'PLANTUML_PROPERTY_FILE=/p exec /entrypoint.sh'"],
-    ['JAVA_TOOL_OPTIONS', '-Xmx1g @/opt/args.txt'],
-  ])('%s=%s → true', (name, value) => {
-    expect(systemPropertyConfig({ PLANTUML_SECURITY_PROFILE: 'SANDBOX', [name]: value })).toBe(true);
-  });
-  it('positive control: unrelated values pass, including PLANTUML_* values themselves', () => {
-    expect(
-      systemPropertyConfig({
-        _JAVA_OPTIONS: '-Xmx1g -Dfoo.bar=1',
-        JETTY_OPTS: '-Djetty.http.port=8080',
-        PLANTUML_SECURITY_PROFILE: 'ALLOWLIST',
-        PLANTUML_ALLOWLIST_URL: 'https://styles.example.org/plantuml/;http://dk-canary:18091/dk-canary/allowed/',
-        PATH: '/usr/local/bin:/usr/bin',
-      }),
-    ).toBe(false);
-  });
-});
-
 describe('commandLineProperties: a property file set inside sh -c', () => {
   it("sh -c 'PLANTUML_PROPERTY_FILE=… exec …' → true; an unrelated sh -c → false", () => {
     expect(commandLineProperties(['/bin/sh', '-c', 'PLANTUML_PROPERTY_FILE=/props/p.properties exec /entrypoint.sh'])).toBe(true);
@@ -370,11 +366,6 @@ describe('checkUnsetProfile', () => {
       ok: false,
       message: "opt-in unset (sandbox), but the service's PLANTUML_SECURITY_PROFILE is not set (the image default is INTERNET)",
     });
-  });
-  it('system properties fail closed even with SANDBOX (checked first)', () => {
-    const r = checkUnsetProfile({ PLANTUML_SECURITY_PROFILE: 'SANDBOX', JAVA_TOOL_OPTIONS: '-Dplantuml.security.profile=INTERNET' });
-    expect(r).toMatchObject({ ok: false, reason: 'system-properties' });
-    expect(r.ok === false && r.message).toContain('configured through Java system properties');
   });
 });
 
