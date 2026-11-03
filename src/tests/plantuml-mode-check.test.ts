@@ -785,6 +785,26 @@ describe('checkDeclaredMode', () => {
     expect(good.verdict).toMatchObject({ ok: true, exitCode: 0, messages: [] });
   });
 
+  it.each([
+    ['property-file', { PLANTUML_PROPERTY_FILE: '/props/p.properties' }, [] as string[]],
+    ['command-line-properties', {}, ['-Dplantuml.allowlist.url=http://x/']],
+  ])('internet fails closed on the %s channel too', async (reason, extra, args) => {
+    const port = await canaryPort();
+    const fake = await startFakePlantuml('fetch', { refusePrivateHosts: true, fetchCount: 2 });
+    const { verdict } = await checkDeclaredMode({
+      declared: internet,
+      serverUrl: fake.url,
+      canaryPort: port,
+      container: 'svc',
+      probe: fetchProbe,
+      readPorts: async () => publishes(fake.url),
+      readArgs: async () => args,
+      readEnv: async () => ({ PLANTUML_SECURITY_PROFILE: 'INTERNET', ...extra }),
+    });
+    expect(verdict).toMatchObject({ ok: false, exitCode: 1 });
+    expect(verdict.reasons).toContain(reason);
+  });
+
   it('matches include paths exactly: a fixture whose name prefixes another does not borrow its fetches', async () => {
     const source = '@startuml\n!include {{CANARY_URL}}\nAlice -> Bob : local\n@enduml\n';
     // a.puml2 renders first, so a prefix match would credit its fetch to a.puml.
