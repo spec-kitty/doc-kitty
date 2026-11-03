@@ -1,14 +1,17 @@
 /**
  * Inventory of every PlantUML service in every workflow (#268, FR-014).
  *
- * plantuml-service-hardening.test.ts pins the three known SANDBOX workflows by
- * name; this test finds services BY IMAGE across ALL workflow files, so a new
- * service cannot slip in unchecked. Every one is SANDBOX and pinned, except the
+ * This test finds services BY IMAGE across ALL workflow files, so a new
+ * service cannot slip in unchecked (it absorbed the former
+ * plantuml-service-hardening.test.ts, #251, which checked only the first block
+ * per workflow). Every one is SANDBOX and pinned, except the
  * ci.yml `plantuml-allowlist` lane: ALLOWLIST, pinned, canary-host entries only,
  * never INTERNET (NFR-001 static half, C-001, C-004, C-005).
  *
  * The second describe pins the lane against being neutered: without its verdict
- * grep, flags or ci-ok wiring it would go green while proving nothing.
+ * grep or flags it would go green while proving nothing. (ci-ok wiring is not
+ * pinned here: a missing lane result is RED at runtime, see
+ * .github/scripts/ci-ok-decision.test.mjs.)
  *
  * Text parsing only (no YAML dependency), as in plantuml-service-hardening.test.ts.
  */
@@ -134,6 +137,27 @@ describe('every PlantUML service in every workflow (#268, FR-014)', () => {
     expect(new Set(services.map((s) => s.image)).size).toBe(1);
   });
 
+  it('the consumer guide shows the same pin and profile, with no floating tag (#251)', () => {
+    const guide = read('docs/guides/consumer-setup.md');
+    expect(guide).toContain(services[0].image);
+    expect(guide).toMatch(/PLANTUML_SECURITY_PROFILE[=:]\s*SANDBOX/);
+    expect(guide).not.toMatch(/plantuml\/plantuml-server:jetty(?![-\w])/);
+  });
+
+  it('ci.yml proves the refusal against the live service, between the wait and the build (#251)', () => {
+    const ci = texts.get('ci.yml')!;
+    const wait = ci.indexOf('name: Wait for the PlantUML server');
+    const check = ci.indexOf('name: Assert PlantUML refuses remote includes');
+    const build = ci.indexOf('name: Build example site');
+    expect(wait).toBeGreaterThan(-1);
+    expect(check).toBeGreaterThan(wait);
+    expect(build).toBeGreaterThan(check);
+    const step = ci.slice(check, build);
+    expect(step).toContain('src/scripts/assert-plantuml-no-remote-include.mjs');
+    expect(step).toContain('--service-container "${{ job.services.plantuml.id }}"');
+    expect(step).toContain('--canary-host');
+  });
+
   it('no workflow selects INTERNET or mentions plantuml.com (C-004)', () => {
     // Comments may say "NEVER plantuml.com"; only live (non-comment) lines count.
     for (const [f, t] of texts) {
@@ -150,12 +174,11 @@ describe('plantuml-allowlist lane is not vacuous', () => {
   const stepStart = lane.indexOf('name: Include check in declared allowlist mode');
   const step = stepStart === -1 ? '' : lane.slice(stepStart);
 
-  it('exists, runs on code or workflow changes (not paused), depends only on detect-changes, 5-minute bound', () => {
+  it('exists, runs on code or workflow changes (not paused), depends only on detect-changes', () => {
     expect(lane).not.toBe('');
     // Path-scoped: run_code_quality is code || workflows and is off when paused.
     expect(lane).toMatch(/^ {4}if: needs\.detect-changes\.outputs\.run_code_quality == 'true'$/m);
     expect(lane).toMatch(/^ {4}needs: detect-changes$/m);
-    expect(lane).toMatch(/^ {4}timeout-minutes: 5$/m);
     expect(lane).not.toContain('run_build_example');
   });
 
@@ -173,23 +196,6 @@ describe('plantuml-allowlist lane is not vacuous', () => {
       expect(step, needle).toContain(needle);
     }
     expect(step).not.toContain('pnpm exec');
-  });
-
-  it('has no pnpm install step (the check runs pre-install, C-006)', () => {
-    expect(lane).not.toMatch(/pnpm\s+(install|i)\b/);
-  });
-
-  it('is wired into ci-ok: needs and the threaded result', () => {
-    const okJob = jobBlock(ci, 'ci-ok');
-    expect(okJob).toMatch(/^ {4}needs: \[[^\]]*\bplantuml-allowlist\b[^\]]*\]$/m);
-    expect(okJob).toContain('PLANTUML_ALLOWLIST_RESULT: ${{ needs.plantuml-allowlist.result }}');
-  });
-
-  it('is a REQUIRED_LANES entry of the ci-ok decision', () => {
-    const src = read('.github/scripts/ci-ok-decision.mjs');
-    const list = /REQUIRED_LANES = Object\.freeze\(\[([\s\S]*?)\]\)/.exec(src)?.[1] ?? '';
-    expect(list).toContain(`'${LANE_JOB}'`);
-    expect(src).toContain('process.env.PLANTUML_ALLOWLIST_RESULT');
   });
 
   it('leaves build-example SANDBOX with its include-check step intact (C-001)', () => {

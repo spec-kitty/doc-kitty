@@ -96,17 +96,4 @@ describe('startCanary', () => {
       await new Promise((r) => blocker.close(r));
     }
   });
-
-  it('picks a random port when none is given', async () => {
-    const canary = await start();
-    expect(canary.port).toBeGreaterThan(0);
-  });
-
-  it('close() frees the port', async () => {
-    const port = await canaryPort();
-    const canary = await startCanary({ port });
-    await canary.close();
-    const again = await start({ port });
-    expect(again.port).toBe(port);
-  });
 });

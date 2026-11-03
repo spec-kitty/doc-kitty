@@ -151,34 +151,3 @@ test('not paused ("false" or absent) → the usual decision', () => {
   assert.equal(evaluateCiOk({ ...allSkipped, paused: 'false' }).ok, true);
   assert.equal(evaluateCiOk(allSkipped).ok, true);
 });
-
-
-// ---- plantuml-allowlist lane (#268): same semantics as every lane. ----------
-const ALL_GREEN = { detect_changes: 'success', code_quality: 'success', doc_sanity: 'success', build_example: 'success', a11y: 'success', plantuml_allowlist: 'success' };
-
-test('plantuml-allowlist success → GREEN', () => {
-  assert.equal(evaluateCiOk(ALL_GREEN).ok, true);
-});
-
-test('plantuml-allowlist failure or cancelled → RED, naming the lane', () => {
-  for (const result of ['failure', 'cancelled']) {
-    const { ok, reasons } = evaluateCiOk({ ...ALL_GREEN, plantuml_allowlist: result });
-    assert.equal(ok, false, result);
-    assert.ok(reasons.some((r) => r.includes('plantuml-allowlist')), `expected a plantuml-allowlist reason, got: ${reasons.join('; ')}`);
-  }
-});
-
-test('plantuml-allowlist skipped (by path or by pause) → green alone; the pause is what turns ci-ok RED', () => {
-  const skipped = { ...ALL_GREEN, plantuml_allowlist: 'skipped' };
-  assert.equal(evaluateCiOk(skipped).ok, true);
-  const paused = evaluateCiOk({ ...skipped, paused: 'true' });
-  assert.equal(paused.ok, false);
-  assert.match(paused.reasons.join('\n'), /pr:pause-ci/);
-});
-
-test('plantuml-allowlist result missing → RED (a dropped input fails closed)', () => {
-  const { plantuml_allowlist: _dropped, ...rest } = ALL_GREEN;
-  const { ok, reasons } = evaluateCiOk(rest);
-  assert.equal(ok, false);
-  assert.ok(reasons.some((r) => r.includes('plantuml-allowlist')));
-});

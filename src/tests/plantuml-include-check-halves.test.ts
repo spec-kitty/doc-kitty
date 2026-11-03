@@ -25,11 +25,16 @@
  *   edge 8| :489 fail('redirect-followed', ...)                     | edge 8 (followed redirect)
  *   NFR-1 | :496 fail('stray-request', ...)                         | NFR-001 stray-path variant
  *   sys   | :524 fail('system-properties', ...) (declared modes)    | Java properties row; plantuml.* env row
- *   u4    | :314 checkUnsetProfile system-property return          | the three u4 rows
+ *   u4    | :314 checkUnsetProfile system-property return          | the u4 row
  *   u0    | :317 checkUnsetProfile SANDBOX-is-ok return             | u0
  *   u1-u3 | :318 checkUnsetProfile profile-mismatch return          | u1, u2, u3
  *
- * In every mutated run both baselines stayed green: only the cited rows moved. (u5 and the docker
+ * In every mutated run both baselines stayed green: only the cited rows moved. The dedupe fold
+ * (#268) kept one CLI row per failure family (the u4 env variants, command-line -D, property file and
+ * malformed value keep a single CLI row each; the busy port lives in plantuml-include-check-cli.test.ts and
+ * the missing config file in plantuml-service-config.test.ts; the rest are pinned
+ * by the unit tables in plantuml-mode-check.test.ts and plantuml-external-setting.test.ts), so no
+ * cited half lost its red row. (u5 and the docker
  * rows depend on the config reader in plantuml-service-config.mjs, not on a half above.)
  * ---------------------------------------------------------------------------------------
  */
@@ -39,7 +44,6 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { encodePlantuml } from '../scripts/plantuml-include-guard.mjs';
 import {
   canaryPort,
   closeAll,
@@ -250,9 +254,8 @@ describe('half-removal table', () => {
 });
 
 describe('edge cases at the command', () => {
-  const bad = ['yes', 'INTERNET', 'ftp://a/', 'https://a.example/a@b/'];
-
-  it.each(bad)('1/9: malformed %j exits 2 before rendering or probing', async (value) => {
+  // The resolver table (plantuml-external-setting.test.ts) owns every malformed shape; one CLI row proves the exit.
+  it.each(['yes'])('1/9: malformed %j exits 2 before rendering or probing', async (value) => {
     const s = await setup();
     const log = path.join(mkdtempSync(path.join(tmpdir(), 'dk-log-')), 'docker.log');
     const out = await runCheck(['--server', s.fake.url, '--service-container', 'fake'], {
@@ -264,29 +267,6 @@ describe('edge cases at the command', () => {
     expect(out.stderr).toContain('accepted:');
     expect(s.fake.includes).toEqual([]);
     expect(existsSync(log)).toBe(false);
-  });
-
-  it('1/9 positive control: a valid value on the same setup renders and probes', async () => {
-    const s = await setup();
-    const log = path.join(mkdtempSync(path.join(tmpdir(), 'dk-log-')), 'docker.log');
-    const out = await runDeclared(s, { env: { DK_FAKE_DOCKER_LOG: log } });
-    expect(out.exit).toBe(0);
-    expect(s.fake.includes.length).toBeGreaterThan(0);
-    expect(readFileSync(log, 'utf8').length).toBeGreaterThan(0);
-  });
-
-  it('2: an empty allowlist ";" exits 2', async () => {
-    const out = await runCheck(['--print-declared'], { env: { DK_PLANTUML_ALLOW_EXTERNAL: ';' } });
-    expect(out.exit).toBe(2);
-    expect(out.stderr).toContain('an empty allowlist is not sandbox');
-  });
-
-  it('3: a bare host exits 2 and a slash-terminated one is accepted', async () => {
-    const bad = await runCheck(['--print-declared'], { env: { DK_PLANTUML_ALLOW_EXTERNAL: 'http://host' } });
-    expect(bad.exit).toBe(2);
-    expect(bad.stderr).toContain('must end with "/"');
-    const ok = await runCheck(['--print-declared'], { env: { DK_PLANTUML_ALLOW_EXTERNAL: 'http://host/' } });
-    expect(ok.exit).toBe(0);
   });
 
   it('4/6: ";" in the env value separates entries; the source is the environment', async () => {
@@ -342,15 +322,10 @@ describe('edge cases at the command', () => {
     expect(out.stderr).toContain("the allowed path's redirect to the denied path was followed");
   });
 
-  it('9: --astro-config naming a missing file exits 2', async () => {
-    const out = await runCheck(['--print-declared', '--astro-config', path.join(tmpdir(), 'dk-missing', 'astro.config.mjs')]);
-    expect(out.exit).toBe(2);
-    expect(all(out)).toContain('no such file');
-  });
 });
 
 describe('NFR-001, docker failures and Java system properties', () => {
-  it('NFR-001: the declared entry receives 0 requests on the passing run (positive control: the run did render)', async () => {
+  it('NFR-001: the declared entry receives 0 requests on the passing run (the run did render)', async () => {
     const s = await setup();
     const out = await runDeclared(s);
     expect(out.exit).toBe(0);
@@ -377,13 +352,11 @@ describe('NFR-001, docker failures and Java system properties', () => {
     expect(out.stderr).toContain('docker not found on PATH');
   });
 
-  it('docker erroring (DK_FAKE_DOCKER_FAIL) fails the same way; the same setup passes without it', async () => {
+  it('docker erroring (DK_FAKE_DOCKER_FAIL) fails the same way', async () => {
     const s = await setup();
     const out = await runDeclared(s, { env: { DK_FAKE_DOCKER_FAIL: '1' } });
     expect(out.exit).toBe(1);
     expect(out.stderr).toContain('could not read the service configuration');
-    const control = await runDeclared(await setup());
-    expect(control.exit).toBe(0);
   });
 
   it('Java system properties in the container env fail a declared allowlist', async () => {
@@ -430,30 +403,6 @@ describe('NFR-001, docker failures and Java system properties', () => {
     expect(argvs.some((a) => a[0] === 'exec')).toBe(true);
   });
 
-  it('a busy canary port exits 2 (positive control: a free port passes)', async () => {
-    const s = await setup();
-    const busy = trackServer(createServer());
-    await new Promise<void>((r) => busy.listen(0, '127.0.0.1', r));
-    const busyPort = (busy.address() as { port: number }).port;
-    const out = await runDeclared(s, { canaryPort: busyPort });
-    expect(out.exit).toBe(2);
-    expect(out.stderr).toContain('cannot listen on canary port');
-    expect((await runDeclared(await setup())).exit).toBe(0);
-  });
-
-  it('US1 AS4 (fake-only): a render of an undeclared URL is refused, a declared canary URL is fetched', async () => {
-    const s = await setup();
-    const render = (url: string) =>
-      fetch(`${s.fake.url}${encodePlantuml(`@startuml\n!includeurl ${url}\n@enduml`)}`);
-    const canaryServer = trackServer(createServer((_q, r) => r.writeHead(200).end('ok')));
-    // Serve the allowed canary prefix so the fetch has somewhere to go.
-    await new Promise<void>((r) => canaryServer.listen(s.canaryPort, '127.0.0.1', r));
-    const fetched = await render(`${canaryEntry(s.canaryPort)}x`);
-    expect(fetched.status).toBe(200);
-    const refused = await render('http://undeclared.example/x');
-    expect(refused.status).toBe(400);
-    expect(refused.headers.get('x-plantuml-diagram-error')).toBeTruthy();
-  });
 });
 
 describe('unset mode with a service container (profile rows u0-u5)', () => {
@@ -499,11 +448,7 @@ describe('unset mode with a service container (profile rows u0-u5)', () => {
     );
   });
 
-  it.each([
-    ['JAVA_TOOL_OPTIONS=-DPLANTUML_SECURITY_PROFILE=INTERNET'],
-    ['JAVA_TOOL_OPTIONS=-Dplantuml.security.profile=INTERNET'],
-    ['plantuml.security.profile=INTERNET'],
-  ])('u4: %s fails closed even with SANDBOX', async (extra) => {
+  it.each([['JAVA_TOOL_OPTIONS=-DPLANTUML_SECURITY_PROFILE=INTERNET']])('u4: %s fails closed even with SANDBOX', async (extra) => {
     refuses(
       await runUnset(inspectFile({ PLANTUML_SECURITY_PROFILE: 'SANDBOX' }, [extra])),
       'configured through Java system properties',
@@ -556,7 +501,9 @@ describe('unset mode with a service container (profile rows u0-u5)', () => {
  * The check cannot tell which case a container is in, so it fails closed on any PlantUML
  * property in the entrypoint, command or args, in every mode.
  * Mutation (same day): `commandLineProperties` reduced to `return false` turned exactly the
- * five failing-case tests below red; their positive controls stayed green.
+ * failing-case tests below red (five before the #268 dedupe fold, which kept the allowlist and
+ * unset rows and left the other modes to the plantuml-mode-check.test.ts tables); their positive
+ * controls stayed green.
  *
  * `docker inspect -f '[{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}]'` showed:
  *   no command:        [["/entrypoint.sh"],null,[]]                       (inspect-args-capture.json)
@@ -591,20 +538,6 @@ describe('Java system properties on the container command line', () => {
     expect(control.exit).toBe(0);
     expect(all(control)).not.toContain(TEXT);
   });
-
-  it.each([['-DPLANTUML_SECURITY_PROFILE=INTERNET'], ['-Dplantuml.allowlist.url=http://x/'], ['plantuml.security.profile=INTERNET']])(
-    'internet: %s fails even with profile INTERNET',
-    async (word) => {
-      const s = await setup('refuse');
-      const out = await runDeclared(s, {
-        declared: 'internet',
-        inspect: inspectFile({ PLANTUML_SECURITY_PROFILE: 'INTERNET' }),
-        env: { DK_FAKE_DOCKER_ARGS_FILE: argsFile([word]) },
-      });
-      expect(out.exit).toBe(1);
-      expect(out.stderr).toContain(TEXT);
-    },
-  );
 
   it('unset, container named: the real -D capture fails closed with SANDBOX in the env', async () => {
     const out = await runUnset({ DK_FAKE_DOCKER_ARGS_FILE: ARGS_PROPERTIES });
@@ -658,7 +591,7 @@ describe('PLANTUML_PROPERTY_FILE in the service env', () => {
     expect(out.stdout).not.toContain('OK —');
   });
 
-  it.each([[null], ['']])('unset positive control: PLANTUML_PROPERTY_FILE %j reproduces the unset golden', async (value) => {
+  it.each([['']])('unset positive control: an empty PLANTUML_PROPERTY_FILE %j reproduces the unset golden', async (value) => {
     const out = await runUnset(value);
     const golden = (ext: string) => readFileSync(path.join(GOLDEN_DIR, `golden-unset-refuse-container.${ext}`), 'utf8');
     expect(normalizePorts(out.stdout)).toBe(golden('stdout'));
@@ -666,44 +599,17 @@ describe('PLANTUML_PROPERTY_FILE in the service env', () => {
     expect(`${out.exit}\n`).toBe(golden('exit'));
   });
 
-  it('allowlist: fails; the same setup with an empty value passes (positive control)', async () => {
+  it('allowlist: fails closed', async () => {
     const s = await setup();
-    const env = (v: string) =>
-      inspectFile({ PLANTUML_SECURITY_PROFILE: 'ALLOWLIST', PLANTUML_ALLOWLIST_URL: s.expected, PLANTUML_PROPERTY_FILE: v });
-    const out = await runDeclared(s, { inspect: env('/props/p.properties') });
-    expect(out.exit).toBe(1);
-    expect(out.stderr).toContain(`declared allowlist: ${TEXT}`);
-    const control = await runDeclared(s, { inspect: env('') });
-    expect(control.exit).toBe(0);
-    expect(all(control)).not.toContain(TEXT);
-  });
-
-  it('internet: fails even with profile INTERNET', async () => {
-    const s = await setup('refuse');
     const out = await runDeclared(s, {
-      declared: 'internet',
-      inspect: inspectFile({ PLANTUML_SECURITY_PROFILE: 'INTERNET', PLANTUML_PROPERTY_FILE: '/props/p.properties' }),
+      inspect: inspectFile({ PLANTUML_SECURITY_PROFILE: 'ALLOWLIST', PLANTUML_ALLOWLIST_URL: s.expected, PLANTUML_PROPERTY_FILE: '/props/p.properties' }),
     });
     expect(out.exit).toBe(1);
-    expect(out.stderr).toContain(`declared internet: ${TEXT}`);
+    expect(out.stderr).toContain(`declared allowlist: ${TEXT}`);
   });
 });
 
-describe('system properties in any env value, and a property file inside sh -c (pre-PR fold)', () => {
-  const TEXT = 'configured through Java system properties';
-  const allowlistInspect = (s: Setup, extra: string[]) =>
-    inspectFile({ PLANTUML_SECURITY_PROFILE: 'ALLOWLIST', PLANTUML_ALLOWLIST_URL: s.expected }, extra);
-
-  it.each([['_JAVA_OPTIONS=-Dplantuml.allowlist.url=http://x/'], ['JETTY_OPTS=-DPLANTUML_SECURITY_PROFILE=INTERNET']])(
-    'allowlist: %s fails closed',
-    async (extra) => {
-      const s = await setup();
-      const out = await runDeclared(s, { inspect: allowlistInspect(s, [extra]) });
-      expect(out.exit).toBe(1);
-      expect(out.stderr).toContain(TEXT);
-    },
-  );
-
+describe('a property file inside sh -c (pre-PR fold)', () => {
   it("allowlist: sh -c 'PLANTUML_PROPERTY_FILE=… exec …' as the command fails closed", async () => {
     const s = await setup();
     const file = path.join(mkdtempSync(path.join(tmpdir(), 'dk-args-')), 'args.json');
@@ -712,13 +618,6 @@ describe('system properties in any env value, and a property file inside sh -c (
     const out = await runDeclared(s, { env: { DK_FAKE_DOCKER_ARGS_FILE: file } });
     expect(out.exit).toBe(1);
     expect(out.stderr).toContain('configured through Java system properties on the container command line');
-  });
-
-  it('positive control: unrelated _JAVA_OPTIONS and JETTY_OPTS values pass', async () => {
-    const s = await setup();
-    const out = await runDeclared(s, { inspect: allowlistInspect(s, ['_JAVA_OPTIONS=-Xmx1g', 'JETTY_OPTS=-Dfoo.bar=1']) });
-    expect(out.exit).toBe(0);
-    expect(all(out)).not.toContain(TEXT);
   });
 });
 

@@ -225,14 +225,6 @@ describe('matrix (9 cells)', () => {
     }
     expect(declared.requests).toEqual([]); // NFR-001: the declared entry is never requested
   });
-
-  it('the M2c and M2d rows differ only by the canary entry (which half fails)', async () => {
-    const m2c = await runRow(ROWS.find((r) => r.id.startsWith('M2c'))!);
-    const m2d = await runRow(ROWS.find((r) => r.id.startsWith('M2d'))!);
-    expect(m2c.res.stderr).toContain('FETCHED');
-    expect(m2d.res.stderr).not.toContain('FETCHED');
-    expect(m2d.res.stderr).toContain('ALLOWLIST');
-  });
 });
 
 describe('output shape', () => {
