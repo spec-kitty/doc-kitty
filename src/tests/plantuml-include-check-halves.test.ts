@@ -413,9 +413,10 @@ describe('NFR-001, docker failures and Java system properties', () => {
     expect(argvs.length).toBeGreaterThan(2);
     for (const argv of argvs) {
       const isInspect =
-        JSON.stringify(argv) === JSON.stringify(['inspect', '-f', '{{json .Config.Env}}', 'fake']) ||
-        JSON.stringify(argv) === JSON.stringify(['inspect', '-f', ARGS_TEMPLATE, 'fake']) ||
-        JSON.stringify(argv) === JSON.stringify(['inspect', '-f', '{{json .NetworkSettings.Ports}}', 'fake']);
+        JSON.stringify(argv) === JSON.stringify(['inspect', '--type', 'container', '-f', '{{json .Config.Env}}', 'fake']) ||
+        JSON.stringify(argv) === JSON.stringify(['inspect', '--type', 'container', '-f', ARGS_TEMPLATE, 'fake']) ||
+        JSON.stringify(argv) === JSON.stringify(['inspect', '--type', 'container', '-f', '{{json .NetworkSettings.Ports}}', 'fake']) ||
+        JSON.stringify(argv) === JSON.stringify(['inspect', '--type', 'container', '-f', '{{json .HostConfig.NetworkMode}}', 'fake']);
       const isExec =
         argv.length === 9 &&
         JSON.stringify(argv.slice(0, 8)) ===
@@ -423,9 +424,9 @@ describe('NFR-001, docker failures and Java system properties', () => {
         argv[8].startsWith(`http://127.0.0.1:${s.canaryPort}/dk-canary/`);
       expect(isInspect || isExec, JSON.stringify(argv)).toBe(true);
     }
-    expect(argvs.some((a) => a[0] === 'inspect' && a[2] === ARGS_TEMPLATE)).toBe(true);
-    expect(argvs.some((a) => a[0] === 'inspect' && a[2] === '{{json .Config.Env}}')).toBe(true);
-    expect(argvs.some((a) => a[0] === 'inspect' && a[2] === '{{json .NetworkSettings.Ports}}')).toBe(true);
+    expect(argvs.some((a) => a[0] === 'inspect' && a[4] === ARGS_TEMPLATE)).toBe(true);
+    expect(argvs.some((a) => a[0] === 'inspect' && a[4] === '{{json .Config.Env}}')).toBe(true);
+    expect(argvs.some((a) => a[0] === 'inspect' && a[4] === '{{json .NetworkSettings.Ports}}')).toBe(true);
     expect(argvs.some((a) => a[0] === 'exec')).toBe(true);
   });
 

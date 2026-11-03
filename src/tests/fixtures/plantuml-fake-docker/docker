@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// Strict fake `docker` for the PlantUML include-check tests. It accepts exactly four
+// Strict fake `docker` for the PlantUML include-check tests. It accepts exactly five
 // argv shapes and rejects everything else with exit 125, so a wrong argv cannot pass.
 //   exec <container> curl -sf --max-time 5 -o /dev/null <url>
-//   inspect -f {{json .Config.Env}} <container>
-//   inspect -f [{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}] <container>
-//   inspect -f {{json .NetworkSettings.Ports}} <container>
+//   inspect --type container -f {{json .Config.Env}} <container>
+//   inspect --type container -f [{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}] <container>
+//   inspect --type container -f {{json .NetworkSettings.Ports}} <container>
+//   inspect --type container -f {{json .HostConfig.NetworkMode}} <container>
 // The env read prints DK_FAKE_DOCKER_INSPECT_FILE. The command-line read prints
 // DK_FAKE_DOCKER_ARGS_FILE, or by default inspect-args-capture.json beside this script: a
 // recorded real capture of the pinned image run with no command (2026-11-03). The ports
@@ -13,7 +14,7 @@
 // DK_FAKE_DOCKER_PUBLISHED_PORT when that is set (runCheck sets it to the --server port).
 // Switches (env): DK_FAKE_DOCKER_FAIL, DK_FAKE_DOCKER_EXEC_FAIL, DK_FAKE_DOCKER_EXEC_FAIL_MATCH,
 // DK_FAKE_DOCKER_INSPECT_FAIL (both inspect shapes), DK_FAKE_DOCKER_INSPECT_FILE,
-// DK_FAKE_DOCKER_ARGS_FILE, DK_FAKE_DOCKER_PORTS_FILE, DK_FAKE_DOCKER_PUBLISHED_PORT, DK_FAKE_DOCKER_LOG.
+// DK_FAKE_DOCKER_ARGS_FILE, DK_FAKE_DOCKER_PORTS_FILE, DK_FAKE_DOCKER_NETWORK_MODE (default bridge), DK_FAKE_DOCKER_PUBLISHED_PORT, DK_FAKE_DOCKER_LOG.
 // Every message is a fixed string ending in one newline (deterministic output).
 import { appendFileSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 const ARGS_TEMPLATE = '[{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}]';
 const DEFAULT_ARGS_FILE = fileURLToPath(new URL('./inspect-args-capture.json', import.meta.url));
 const PORTS_TEMPLATE = '{{json .NetworkSettings.Ports}}';
+const NETWORK_MODE_TEMPLATE = '{{json .HostConfig.NetworkMode}}';
 const DEFAULT_PORTS_FILE = fileURLToPath(new URL('./inspect-ports-capture.json', import.meta.url));
 
 const argv = process.argv.slice(2);
@@ -42,14 +44,28 @@ const isExec =
   argv[5] === '5' &&
   argv[6] === '-o' &&
   argv[7] === '/dev/null';
-const isInspect = argv.length === 4 && argv[0] === 'inspect' && argv[1] === '-f' && argv[2] === '{{json .Config.Env}}';
-const isInspectArgs = argv.length === 4 && argv[0] === 'inspect' && argv[1] === '-f' && argv[2] === ARGS_TEMPLATE;
-const isInspectPorts = argv.length === 4 && argv[0] === 'inspect' && argv[1] === '-f' && argv[2] === PORTS_TEMPLATE;
+const isInspectOf = (template) =>
+  argv.length === 6 &&
+  argv[0] === 'inspect' &&
+  argv[1] === '--type' &&
+  argv[2] === 'container' &&
+  argv[3] === '-f' &&
+  argv[4] === template;
+const isInspect = isInspectOf('{{json .Config.Env}}');
+const isInspectArgs = isInspectOf(ARGS_TEMPLATE);
+const isInspectPorts = isInspectOf(PORTS_TEMPLATE);
+const isInspectNetworkMode = isInspectOf(NETWORK_MODE_TEMPLATE);
 
-if (!isExec && !isInspect && !isInspectArgs && !isInspectPorts) {
+if (!isExec && !isInspect && !isInspectArgs && !isInspectPorts && !isInspectNetworkMode) {
   finish(125, `fake docker: unexpected argv: ${JSON.stringify(argv)}`);
 } else if (env.DK_FAKE_DOCKER_FAIL === '1') {
   finish(1, 'fake docker: forced failure');
+} else if (isInspectNetworkMode) {
+  if (env.DK_FAKE_DOCKER_INSPECT_FAIL === '1') {
+    finish(1, 'fake docker: forced inspect failure');
+  } else {
+    process.stdout.write(`${JSON.stringify(env.DK_FAKE_DOCKER_NETWORK_MODE || 'bridge')}\n`);
+  }
 } else if (isInspectPorts) {
   if (env.DK_FAKE_DOCKER_INSPECT_FAIL === '1') {
     finish(1, 'fake docker: forced inspect failure');
