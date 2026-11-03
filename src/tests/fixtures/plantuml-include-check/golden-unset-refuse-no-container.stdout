@@ -1,0 +1,3 @@
+assert-plantuml-no-remote-include: include-url.puml: HTTP 400, error "Cannot open URL", canary requests 0
+assert-plantuml-no-remote-include: includeurl.puml: HTTP 400, error "Cannot open URL", canary requests 0
+assert-plantuml-no-remote-include: OK — 2 remote include(s) refused by http://127.0.0.1:<PORT>/svg/

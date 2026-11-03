@@ -1,0 +1,1 @@
+assert-plantuml-no-remote-include: note — no --service-container given, so canary reachability from the server was not proven.

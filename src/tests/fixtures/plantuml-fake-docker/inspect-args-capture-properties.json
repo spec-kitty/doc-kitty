@@ -1,0 +1,1 @@
+[["/entrypoint.sh"],["-Dplantuml.allowlist.url=http://dk-inc:8000/","-DPLANTUML_SECURITY_PROFILE=INTERNET"],["-Dplantuml.allowlist.url=http://dk-inc:8000/","-DPLANTUML_SECURITY_PROFILE=INTERNET"]]

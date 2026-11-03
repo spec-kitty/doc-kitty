@@ -1,0 +1,4 @@
+assert-plantuml-no-remote-include: FAIL — probe failed: Command failed: docker exec fake curl -sf --max-time 5 -o /dev/null http://127.0.0.1:<PORT>/reachability
+curl: (7) Failed to connect
+
+assert-plantuml-no-remote-include: FAIL — control: the canary at http://127.0.0.1:<PORT> is not reachable from the PlantUML server's side, so a refused include would prove nothing. Check --canary-host.

@@ -6,7 +6,9 @@
  * make the build reach the network.
  *
  * How it proves it, against a LIVE PlantUML server:
- *   1. A canary HTTP server starts on this machine and counts every request.
+ *   1. A canary HTTP server starts on this machine and logs every request. It serves
+ *      two path prefixes: allowed (`/dk-canary/allowed/`) and denied
+ *      (`/dk-canary/denied/`), plus a 302 from the allowed to the denied prefix.
  *   2. Control: a plain diagram must render (HTTP 200). Otherwise the server is
  *      down, and a refusal would prove nothing.
  *   3. Control (when a `probe` is given): the canary must be reachable FROM the
@@ -82,19 +84,59 @@ export function loadFixtures(dir = FIXTURE_DIR) {
     .map((name) => ({ name, source: readFileSync(path.join(dir, name), 'utf8') }));
 }
 
-/** Start the canary on all interfaces; resolves once it listens. */
-function startCanary() {
-  const hits = [];
+export const CANARY_ALLOWED_PREFIX = '/dk-canary/allowed/';
+export const CANARY_DENIED_PREFIX = '/dk-canary/denied/';
+/** Served under the denied prefix; deliberately not containing {@link CANARY_MARKER}. */
+export const CANARY_DENIED_MARKER = 'DK-CANARY-DENIED-FETCHED';
+
+const canaryBody = (marker) => `@startuml\nAlice -> Bob : ${marker}\n@enduml\n`;
+
+/**
+ * Start the canary on all interfaces; resolves once it listens. It serves the allowed
+ * prefix (`/dk-canary/allowed/`, marker {@link CANARY_MARKER}), the denied prefix
+ * (`/dk-canary/denied/`, marker {@link CANARY_DENIED_MARKER}), a 302 from
+ * `<allowed>redirect/<rest>` to `<denied>redirected/<rest>`, and `/reachability`.
+ * Anything else is a 404. Every request path is appended to `log` (the real image
+ * requests each include twice, so consumers must classify on "at least one hit").
+ *
+ * @param {{ port?: number, redirectBase?: string }} [opts] `redirectBase` is the canary's
+ *   base URL as the PlantUML service sees it (default `http://127.0.0.1:<port>`)
+ * @returns {Promise<{ port: number, log: string[], hits: string[], close: () => Promise<void> }>}
+ */
+export function startCanary({ port = 0, redirectBase } = {}) {
+  const log = [];
+  let boundPort = port;
   const server = createServer((req, res) => {
-    hits.push(req.url ?? '');
-    res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
-    res.end(`@startuml\nAlice -> Bob : ${CANARY_MARKER}\n@enduml\n`);
+    const url = req.url ?? '';
+    log.push(url);
+    const plain = { 'content-type': 'text/plain; charset=utf-8' };
+    if (url.startsWith(`${CANARY_ALLOWED_PREFIX}redirect/`)) {
+      const rest = url.slice(`${CANARY_ALLOWED_PREFIX}redirect/`.length);
+      const base = redirectBase ?? `http://127.0.0.1:${boundPort}`;
+      res.writeHead(302, { location: `${base}${CANARY_DENIED_PREFIX}redirected/${rest}` });
+      res.end();
+    } else if (url.startsWith(CANARY_ALLOWED_PREFIX) || url.startsWith('/reachability')) {
+      res.writeHead(200, plain);
+      res.end(canaryBody(CANARY_MARKER));
+    } else if (url.startsWith(CANARY_DENIED_PREFIX)) {
+      res.writeHead(200, plain);
+      res.end(canaryBody(CANARY_DENIED_MARKER));
+    } else {
+      res.writeHead(404, plain);
+      res.end('not found\n');
+    }
   });
   return new Promise((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(0, '0.0.0.0', () => {
-      const { port } = /** @type {import('node:net').AddressInfo} */ (server.address());
-      resolve({ hits, port, close: () => new Promise((r) => server.close(() => r(undefined))) });
+    server.once('error', (err) => {
+      reject(
+        err?.code === 'EADDRINUSE'
+          ? Object.assign(new Error(`cannot listen on canary port ${port}: in use`), { code: 'EADDRINUSE', port })
+          : err,
+      );
+    });
+    server.listen(port, '0.0.0.0', () => {
+      boundPort = /** @type {import('node:net').AddressInfo} */ (server.address()).port;
+      resolve({ log, hits: log, port: boundPort, close: () => new Promise((r) => server.close(() => r(undefined))) });
     });
   });
 }
@@ -107,6 +149,7 @@ function startCanary() {
  * @param {{ name: string, source: string }[]} [opts.fixtures]
  * @param {typeof fetch} [opts.fetchImpl]
  * @param {number} [opts.timeoutMs]
+ * @param {number} [opts.canaryPort] fixed canary port (default 0: random)
  * @returns {Promise<{ ok: boolean, messages: string[], reachable: boolean | null, results: object[] }>}
  */
 export async function checkRemoteIncludesRefused({
@@ -116,11 +159,12 @@ export async function checkRemoteIncludesRefused({
   fixtures = loadFixtures(),
   fetchImpl = fetch,
   timeoutMs = 20_000,
+  canaryPort = 0,
 }) {
   const messages = [];
   const results = [];
   let reachable = null;
-  const canary = await startCanary();
+  const canary = await startCanary({ port: canaryPort });
   const base = `http://${canaryHost}:${canary.port}`;
   const render = async (source) => {
     const res = await fetchImpl(`${serverUrl}${encodePlantuml(source)}`, { signal: AbortSignal.timeout(timeoutMs) });
@@ -164,7 +208,7 @@ export async function checkRemoteIncludesRefused({
     }
 
     for (const fixture of fixtures) {
-      const includePath = `/include/${encodeURIComponent(fixture.name)}`;
+      const includePath = `${CANARY_ALLOWED_PREFIX}include/${encodeURIComponent(fixture.name)}`;
       const source = fixture.source.replaceAll('{{CANARY_URL}}', `${base}${includePath}`);
       if (source === fixture.source) {
         messages.push(`${fixture.name}: has no {{CANARY_URL}} placeholder`);

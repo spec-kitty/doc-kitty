@@ -1,0 +1,2 @@
+assert-plantuml-no-remote-include: include-url.puml: HTTP 200, error null, canary requests 1
+assert-plantuml-no-remote-include: includeurl.puml: HTTP 200, error null, canary requests 1
