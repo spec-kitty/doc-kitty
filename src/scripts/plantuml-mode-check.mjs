@@ -246,13 +246,29 @@ export function propertyFileConfig(env) {
   return typeof value === 'string' && value !== '';
 }
 
-/** True when a `--server` host names this machine (localhost, 127.0.0.0/8, ::1; a trailing dot is ignored). */
-const isLocalHost = (hostname) => {
-  const host = hostname.replace(/\.$/, '').toLowerCase();
-  return host === 'localhost' || host === '[::1]' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host);
+/** Canonical form of an IP or host: lowercase, no trailing dot, IPv6 unbracketed and compressed (`::ffff:127.0.0.1` → `::ffff:7f00:1`). */
+const canonicalHost = (host) => {
+  const bare = host.replace(/\.$/, '').toLowerCase().replace(/^\[|\]$/g, '');
+  if (!bare.includes(':')) return bare;
+  try {
+    return new URL(`http://[${bare}]`).hostname.slice(1, -1);
+  } catch {
+    return bare;
+  }
 };
-/** Host addresses a published port can listen on and still answer `--server` on loopback. */
-const LOOPBACK_REACHABLE_IPS = new Set(['', '0.0.0.0', '::', '127.0.0.1', '::1']);
+const isLoopbackIp = (host) =>
+  host === '::1' || host === '::ffff:7f00:1' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host);
+const WILDCARD_IPS = new Set(['', '0.0.0.0', '::']);
+/** True when a `--server` host names this machine (localhost, 0.0.0.0, 127.0.0.0/8, ::1, ::ffff:127.0.0.1; a trailing dot is ignored). */
+const isLocalHost = (host) => host === 'localhost' || host === '0.0.0.0' || host === '::' || isLoopbackIp(host);
+/**
+ * A published binding serves `--server` when it listens on every address, or on exactly the
+ * literal `--server` address. `localhost` accepts any loopback binding. A binding on another
+ * loopback address (127.0.0.1 for a `--server` of 127.0.0.5) is a decoy.
+ */
+const bindingServes = (hostIp, serverHost) =>
+  WILDCARD_IPS.has(hostIp) ||
+  (serverHost === 'localhost' ? isLoopbackIp(canonicalHost(hostIp)) : canonicalHost(hostIp) === serverHost);
 
 /**
  * Parse `docker inspect -f '{{json .NetworkSettings.Ports}}'` output (an object mapping
@@ -289,7 +305,7 @@ export function parseContainerPorts(text) {
 
 /**
  * Tie `--server` to `--service-container`. With a local `--server` host the container must
- * publish that host port on an address loopback reaches; otherwise the check would read one
+ * publish that host port on a wildcard address or on the literal `--server` address; otherwise the check would read one
  * container and test another service (a decoy). A non-local host (a docker-network name, a
  * remote server) cannot be tied this way: it passes with a note.
  *
@@ -299,9 +315,10 @@ export function parseContainerPorts(text) {
  */
 export function checkServiceIdentity(serverUrl, ports) {
   const url = new URL(serverUrl);
-  if (!isLocalHost(url.hostname)) return { ok: true, note: MESSAGES.identityNotVerified(url.hostname) };
+  const host = canonicalHost(url.hostname);
+  if (!isLocalHost(host)) return { ok: true, note: MESSAGES.identityNotVerified(url.hostname) };
   const port = Number(url.port || (url.protocol === 'https:' ? 443 : 80));
-  if (ports.some((b) => b.hostPort === port && LOOPBACK_REACHABLE_IPS.has(b.hostIp))) return { ok: true };
+  if (ports.some((b) => b.hostPort === port && bindingServes(b.hostIp, host))) return { ok: true };
   return { ok: false, message: MESSAGES.identityMismatch(port, ports) };
 }
 

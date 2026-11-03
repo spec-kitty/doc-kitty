@@ -380,6 +380,7 @@ const publishes = (url: string) => [{ containerPort: '8080/tcp', hostIp: '0.0.0.
 // (2026-11-03): `-p 127.0.0.1:18601:8080`, `-p 18602:8080`, and no -p.
 const PORTS_LOOPBACK = '{"8080/tcp":[{"HostIp":"127.0.0.1","HostPort":"18601"}]}\n';
 const PORTS_ALL = '{"8080/tcp":[{"HostIp":"0.0.0.0","HostPort":"18602"},{"HostIp":"::","HostPort":"18602"}]}\n';
+const PORTS_V6_LOOPBACK = '{"8080/tcp":[{"HostIp":"::1","HostPort":"18603"}]}\n';
 const PORTS_NONE = '{"8080/tcp":null}\n';
 
 describe('parseContainerPorts', () => {
@@ -405,6 +406,9 @@ describe('checkServiceIdentity', () => {
     ['http://[::1]:18602/svg/', PORTS_ALL],
     ['http://127.0.0.1:18601/svg/', PORTS_LOOPBACK],
     ['http://localhost.:18602/svg/', PORTS_ALL],
+    ['http://localhost:18601/svg/', PORTS_LOOPBACK],
+    ['http://[::1]:18603/svg/', PORTS_V6_LOOPBACK],
+    ['http://[::ffff:127.0.0.1]:18602/svg/', PORTS_ALL],
   ])('%s is served by the container → ok (positive control)', (url, ports) => {
     expect(checkServiceIdentity(url, parseContainerPorts(ports))).toEqual({ ok: true });
   });
@@ -412,11 +416,13 @@ describe('checkServiceIdentity', () => {
     ['http://localhost:8091/svg/', PORTS_ALL, 'published: 0.0.0.0:18602->8080/tcp, :::18602->8080/tcp'],
     ['http://localhost:8091/svg/', PORTS_NONE, 'published: none'],
     ['http://127.0.0.2:8091/svg/', PORTS_NONE, 'published: none'],
+    ['http://127.0.0.5:18601/svg/', PORTS_LOOPBACK, 'published: 127.0.0.1:18601->8080/tcp'],
+    ['http://127.0.0.1:18603/svg/', PORTS_V6_LOOPBACK, 'published: ::1:18603->8080/tcp'],
   ])('%s with another published port → decoy, fails', (url, ports, published) => {
     const r = checkServiceIdentity(url, parseContainerPorts(ports));
     expect(r.ok).toBe(false);
     expect(r.ok === false && r.message).toBe(
-      `the service container does not publish the --server port 8091 (${published}), so the check would read one container and test another service`,
+      `the service container does not publish the --server port ${new URL(url).port} (${published}), so the check would read one container and test another service`,
     );
   });
   it('checkDeclaredMode prints the note once for a non-local --server and still passes', async () => {
