@@ -40,6 +40,15 @@ function failureReason(err) {
   return stderr ? `${exit}: ${stderr}` : exit;
 }
 
+/** `docker inspect -f <template>` on the container; a failed call is a {@link ServiceConfigError}. */
+async function inspect(container, template) {
+  try {
+    return (await run('docker', ['inspect', ...INSPECT_TYPE, '-f', template, container])).stdout;
+  } catch (err) {
+    throw new ServiceConfigError(failureReason(err));
+  }
+}
+
 /**
  * The service container's environment as a map (keys by name; order irrelevant).
  *
@@ -48,13 +57,7 @@ function failureReason(err) {
  * @throws {ServiceConfigError} docker missing, erroring, or output that is not a JSON array of `KEY=VALUE`
  */
 export async function readServiceEnv(container) {
-  let stdout;
-  try {
-    ({ stdout } = await run('docker', ['inspect', ...INSPECT_TYPE, '-f', '{{json .Config.Env}}', container]));
-  } catch (err) {
-    throw new ServiceConfigError(failureReason(err));
-  }
-  return parseContainerEnv(stdout);
+  return parseContainerEnv(await inspect(container, '{{json .Config.Env}}'));
 }
 
 /**
@@ -65,13 +68,7 @@ export async function readServiceEnv(container) {
  * @throws {ServiceConfigError} docker missing, erroring, or output not of the template's shape
  */
 export async function readServiceArgs(container) {
-  let stdout;
-  try {
-    ({ stdout } = await run('docker', ['inspect', ...INSPECT_TYPE, '-f', ARGS_TEMPLATE, container]));
-  } catch (err) {
-    throw new ServiceConfigError(failureReason(err));
-  }
-  return parseContainerArgs(stdout);
+  return parseContainerArgs(await inspect(container, ARGS_TEMPLATE));
 }
 
 /** The one template of the published-ports read. */
@@ -85,13 +82,7 @@ export const PORTS_TEMPLATE = '{{json .NetworkSettings.Ports}}';
  * @throws {ServiceConfigError} docker missing, erroring, or output not of the template's shape
  */
 export async function readServicePorts(container) {
-  let stdout;
-  try {
-    ({ stdout } = await run('docker', ['inspect', ...INSPECT_TYPE, '-f', PORTS_TEMPLATE, container]));
-  } catch (err) {
-    throw new ServiceConfigError(failureReason(err));
-  }
-  return parseContainerPorts(stdout);
+  return parseContainerPorts(await inspect(container, PORTS_TEMPLATE));
 }
 
 /** The one template of the network-mode read. */
@@ -106,13 +97,7 @@ export const NETWORK_MODE_TEMPLATE = '{{json .HostConfig.NetworkMode}}';
  * @throws {ServiceConfigError} docker missing, erroring, or output that is not a JSON string
  */
 export async function readServiceNetworkMode(container) {
-  let stdout;
-  try {
-    ({ stdout } = await run('docker', ['inspect', ...INSPECT_TYPE, '-f', NETWORK_MODE_TEMPLATE, container]));
-  } catch (err) {
-    throw new ServiceConfigError(failureReason(err));
-  }
-  return parseNetworkMode(stdout);
+  return parseNetworkMode(await inspect(container, NETWORK_MODE_TEMPLATE));
 }
 
 /**
