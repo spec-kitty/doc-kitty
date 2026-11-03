@@ -106,6 +106,12 @@ exactly three values:
   cannot observe it. Internet mode is verified by the container's profile
   (decision `01M6F4BRKQ4E9H9Z41BYZH37MC`), not by behaviour: the check does not
   prove the service reaches the internet.
+- **The canary trade-off:** verification needs the canary entry
+  `http://dk-canary:18091/dk-canary/allowed/` in the service's allowlist, and
+  `dk-canary` is the runner host. Either the render service keeps that entry
+  permanently, or the operator verifies a twin of the real renderer (same
+  image and entries, run for the check). A service that leaves the entry out
+  cannot be verified: it fails as `missing`.
 - **Reachability of declared entries:** whether the operator's hosts are up is
   outside the check.
 - **Configuration outside the two variables:** with `--service-container`, the
