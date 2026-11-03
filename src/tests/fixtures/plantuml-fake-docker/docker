@@ -1,0 +1,91 @@
+#!/usr/bin/env node
+// Strict fake `docker` for the PlantUML include-check tests. It accepts exactly four
+// argv shapes and rejects everything else with exit 125, so a wrong argv cannot pass.
+//   exec <container> curl -sf --max-time 5 -o /dev/null <url>
+//   inspect -f {{json .Config.Env}} <container>
+//   inspect -f [{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}] <container>
+//   inspect -f {{json .NetworkSettings.Ports}} <container>
+// The env read prints DK_FAKE_DOCKER_INSPECT_FILE. The command-line read prints
+// DK_FAKE_DOCKER_ARGS_FILE, or by default inspect-args-capture.json beside this script: a
+// recorded real capture of the pinned image run with no command (2026-11-03). The ports
+// read prints DK_FAKE_DOCKER_PORTS_FILE, or by default inspect-ports-capture.json (a real
+// capture of `docker run -p 18602:8080 <image>`) with its HostPort replaced by
+// DK_FAKE_DOCKER_PUBLISHED_PORT when that is set (runCheck sets it to the --server port).
+// Switches (env): DK_FAKE_DOCKER_FAIL, DK_FAKE_DOCKER_EXEC_FAIL, DK_FAKE_DOCKER_EXEC_FAIL_MATCH,
+// DK_FAKE_DOCKER_INSPECT_FAIL (both inspect shapes), DK_FAKE_DOCKER_INSPECT_FILE,
+// DK_FAKE_DOCKER_ARGS_FILE, DK_FAKE_DOCKER_PORTS_FILE, DK_FAKE_DOCKER_PUBLISHED_PORT, DK_FAKE_DOCKER_LOG.
+// Every message is a fixed string ending in one newline (deterministic output).
+import { appendFileSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const ARGS_TEMPLATE = '[{{json .Config.Entrypoint}},{{json .Config.Cmd}},{{json .Args}}]';
+const DEFAULT_ARGS_FILE = fileURLToPath(new URL('./inspect-args-capture.json', import.meta.url));
+const PORTS_TEMPLATE = '{{json .NetworkSettings.Ports}}';
+const DEFAULT_PORTS_FILE = fileURLToPath(new URL('./inspect-ports-capture.json', import.meta.url));
+
+const argv = process.argv.slice(2);
+const env = process.env;
+
+function finish(code, message) {
+  if (message) process.stderr.write(`${message}\n`);
+  process.exitCode = code;
+}
+
+if (env.DK_FAKE_DOCKER_LOG) appendFileSync(env.DK_FAKE_DOCKER_LOG, `${JSON.stringify(argv)}\n`);
+
+const isExec =
+  argv.length === 9 &&
+  argv[0] === 'exec' &&
+  argv[2] === 'curl' &&
+  argv[3] === '-sf' &&
+  argv[4] === '--max-time' &&
+  argv[5] === '5' &&
+  argv[6] === '-o' &&
+  argv[7] === '/dev/null';
+const isInspect = argv.length === 4 && argv[0] === 'inspect' && argv[1] === '-f' && argv[2] === '{{json .Config.Env}}';
+const isInspectArgs = argv.length === 4 && argv[0] === 'inspect' && argv[1] === '-f' && argv[2] === ARGS_TEMPLATE;
+const isInspectPorts = argv.length === 4 && argv[0] === 'inspect' && argv[1] === '-f' && argv[2] === PORTS_TEMPLATE;
+
+if (!isExec && !isInspect && !isInspectArgs && !isInspectPorts) {
+  finish(125, `fake docker: unexpected argv: ${JSON.stringify(argv)}`);
+} else if (env.DK_FAKE_DOCKER_FAIL === '1') {
+  finish(1, 'fake docker: forced failure');
+} else if (isInspectPorts) {
+  if (env.DK_FAKE_DOCKER_INSPECT_FAIL === '1') {
+    finish(1, 'fake docker: forced inspect failure');
+  } else if (env.DK_FAKE_DOCKER_PORTS_FILE) {
+    process.stdout.write(readFileSync(env.DK_FAKE_DOCKER_PORTS_FILE, 'utf8'));
+  } else {
+    const capture = readFileSync(DEFAULT_PORTS_FILE, 'utf8');
+    const port = env.DK_FAKE_DOCKER_PUBLISHED_PORT;
+    process.stdout.write(port ? capture.replaceAll('"HostPort":"18602"', `"HostPort":${JSON.stringify(port)}`) : capture);
+  }
+} else if (isInspectArgs) {
+  if (env.DK_FAKE_DOCKER_INSPECT_FAIL === '1') {
+    finish(1, 'fake docker: forced inspect failure');
+  } else {
+    process.stdout.write(readFileSync(env.DK_FAKE_DOCKER_ARGS_FILE || DEFAULT_ARGS_FILE, 'utf8'));
+  }
+} else if (isInspect) {
+  if (env.DK_FAKE_DOCKER_INSPECT_FAIL === '1') {
+    finish(1, 'fake docker: forced inspect failure');
+  } else if (!env.DK_FAKE_DOCKER_INSPECT_FILE) {
+    finish(1, 'fake docker: DK_FAKE_DOCKER_INSPECT_FILE not set');
+  } else {
+    process.stdout.write(readFileSync(env.DK_FAKE_DOCKER_INSPECT_FILE, 'utf8'));
+  }
+} else {
+  const url = argv[8];
+  const match = env.DK_FAKE_DOCKER_EXEC_FAIL_MATCH;
+  if (env.DK_FAKE_DOCKER_EXEC_FAIL === '1' || (match && url.includes(match))) {
+    finish(7, 'curl: (7) Failed to connect');
+  } else {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      if (res.ok) await res.arrayBuffer();
+      else finish(22, 'curl: (22) The requested URL returned error');
+    } catch {
+      finish(7, 'curl: (7) Failed to connect');
+    }
+  }
+}

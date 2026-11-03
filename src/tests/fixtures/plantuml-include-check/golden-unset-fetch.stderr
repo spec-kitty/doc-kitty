@@ -1,0 +1,6 @@
+assert-plantuml-no-remote-include: FAIL — include-url.puml: the server FETCHED the remote include (1 request(s))
+assert-plantuml-no-remote-include: FAIL — include-url.puml: the render contains the included content
+assert-plantuml-no-remote-include: FAIL — include-url.puml: the render was not an error (HTTP 200)
+assert-plantuml-no-remote-include: FAIL — includeurl.puml: the server FETCHED the remote include (1 request(s))
+assert-plantuml-no-remote-include: FAIL — includeurl.puml: the render contains the included content
+assert-plantuml-no-remote-include: FAIL — includeurl.puml: the render was not an error (HTTP 200)
