@@ -68,7 +68,7 @@ kind: Hub
 | [0054](./0054-gherkin-draft-hubs-titles-and-scenario-route.md) | ADR-0054: Draft hubs, hub titles, a near-miss status warning and a scenario route for Gherkin pages | Accepted | 2026-10-14 |
 | [0055](./0055-gherkin-scenario-results.md) | ADR-0055: Show each scenario's result from the site's Cucumber report | Accepted | 2026-10-14 |
 | [0056](./0056-gherkin-results-followups.md) | ADR-0056: Gherkin results in CI, and a translatable Overview label | Accepted | 2026-10-14 |
-| [0057](./0057-internal-env-handoff-seam.md) | ADR-0057: One owner for DocKitty's internal environment handoffs | Accepted | 2026-10-15 |
+| [0057](./0057-internal-env-handoff-seam.md) | ADR-0057: One owner for DocKitty's internal environment handoffs | Accepted | 2026-11-03 |
 | [0058](./0058-build-state-owner-and-config-split.md) | ADR-0058: One owner for build state, a split config, and the env reader | Accepted | 2026-10-17 |
 | [0059](./0059-content-graph-and-okf-alignment.md) | ADR-0059: A published content graph, and alignment with OKF v0.2 | Accepted | 2026-10-18 |
 | [0060](./0060-markdown-processor-unified-for-astro-7.md) | ADR-0060: Keep remark and rehype on Astro's unified() processor for Astro 7 | Accepted | 2026-10-18 |
@@ -84,6 +84,8 @@ kind: Hub
 | [0070](./0070-excluded-folders.md) | ADR-0070: A site can leave whole docs folders out of the build | Accepted | 2026-10-31 |
 | [0071](./0071-legacy-html-redirects-as-flat-stubs.md) | ADR-0071: Legacy .html URLs redirect through flat stub files | Accepted | 2026-11-01 |
 | [0072](./0072-parallel-landing-without-shared-files.md) | ADR-0072: Land PRs in parallel without shared hand-edited files | Accepted | 2026-11-01 |
+| [0073](./0073-generic-mcp-server-over-published-artifacts.md) | ADR-0073: One generic MCP server over published artifacts | Accepted | 2026-11-02 |
+| [0074](./0074-plantuml-external-include-opt-in.md) | ADR-0074: Let operators opt PlantUML into external includes | Accepted | 2026-11-03 |
 
 New ADRs copy [`template.md`](./template.md) and take the next free number. Do
 not edit the table above: after a merge, the ADR index workflow regenerates it
