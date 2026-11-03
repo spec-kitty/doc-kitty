@@ -46,6 +46,7 @@ import {
   resolvePlantumlAllowExternal,
 } from '../lib/plantuml-external.mjs';
 import {
+  CHECK_NAME as NAME,
   MESSAGES,
   ServiceConfigError,
   checkDeclaredMode,
@@ -89,7 +90,6 @@ function parseArgs(argv) {
   return opts;
 }
 
-const NAME = 'assert-plantuml-no-remote-include';
 let opts;
 try {
   opts = parseArgs(process.argv.slice(2));

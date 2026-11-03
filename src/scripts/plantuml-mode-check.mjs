@@ -34,14 +34,17 @@
  * fails closed on those instead of reading them); a service it cannot `docker inspect` (Kubernetes, a
  * plain jar, a remote service) cannot pass either declared mode.
  *
- * Node built-ins only; imports only from `./plantuml-include-guard.mjs` (C-006).
+ * Node built-ins only; imports only from `./plantuml-include-guard.mjs` and
+ * `../lib/plantuml-external.mjs` (C-006).
  */
+import { PLANTUML_CANARY_PORT } from '../lib/plantuml-external.mjs';
 import {
   CANARY_ALLOWED_PREFIX,
   CANARY_DENIED_PREFIX,
-  encodePlantuml,
+  PREFLIGHT_MESSAGES,
+  hasPlaceholder,
   loadFixtures,
-  startCanary,
+  withControlledCanary,
 } from './plantuml-include-guard.mjs';
 
 /**
@@ -64,8 +67,8 @@ import {
  * }} Verdict
  */
 
-/** The prefix every line of the include check carries. */
-export const CHECK_PREFIX = 'assert-plantuml-no-remote-include';
+/** The name every line of the include check carries (the CLI is `assert-plantuml-no-remote-include`). */
+export const CHECK_NAME = 'assert-plantuml-no-remote-include';
 
 /** Where a followed redirect lands (`<allowed>redirect/<f>` → `<denied>redirected/<f>`). */
 export const CANARY_REDIRECTED_PREFIX = `${CANARY_DENIED_PREFIX}redirected/`;
@@ -74,7 +77,7 @@ export const CANARY_REDIRECTED_PREFIX = `${CANARY_DENIED_PREFIX}redirected/`;
  * The usual Java option variables. They are watched for duplicate keys; the system-property
  * scan itself runs over every env value, so `_JAVA_OPTIONS`, `JETTY_OPTS` and the like count too.
  */
-export const SYSTEM_PROPERTY_VARS = Object.freeze([
+const SYSTEM_PROPERTY_VARS = Object.freeze([
   'JAVA_OPTS',
   'JAVA_OPTIONS',
   'JAVA_TOOL_OPTIONS',
@@ -459,11 +462,7 @@ export const MESSAGES = Object.freeze({
     'configured through Java system properties on the container command line (entrypoint, command or args); the check reads only PLANTUML_SECURITY_PROFILE and PLANTUML_ALLOWLIST_URL',
   configUnreadable: (reason) => new ServiceConfigError(reason).message,
   portBusy: (port) => `cannot listen on canary port ${port}: in use`,
-  controlNoAnswer: (serverUrl, reason) => `control: the PlantUML server at ${serverUrl} did not answer (${reason})`,
-  controlNotRendered: (status) =>
-    `control: a plain diagram did not render (HTTP ${status}): the check would prove nothing`,
-  noFixtures: () => 'no fixtures found: the check would prove nothing',
-  noPlaceholder: (fixture) => `${fixture}: has no {{CANARY_URL}} placeholder`,
+  ...PREFLIGHT_MESSAGES,
   renderFailed: (fixture, path, reason) => `${fixture} → ${path}: the render did not answer (${reason})`,
   // Wraps a mode-neutral message so it still names the declared mode and observed class.
   inMode: (mode, observed, text) => `declared ${mode}: ${text} ${observedText(observed)}`,
@@ -474,7 +473,7 @@ export const MESSAGES = Object.freeze({
   internetWarning: () =>
     'warning — declared internet: the service may fetch any URL, including internal networks and cloud metadata endpoints',
   // Line formats.
-  failLine: (message) => `${CHECK_PREFIX}: FAIL — ${message}`,
+  failLine: (message) => `${CHECK_NAME}: FAIL — ${message}`,
   pathLine: (fixture, path, status, requests) => `${fixture} → ${path}: HTTP ${status}, canary requests ${requests}`,
   probeLine: (which, reachable) =>
     `probe → ${which}: ${reachable ? 'reachable' : 'not reachable'} from the service`,
@@ -499,7 +498,24 @@ export function isPortBusy(err, port) {
  */
 export function formatVerdictLine({ declared, observed }) {
   const mode = typeof declared === 'string' ? declared : declared.mode;
-  return `${CHECK_PREFIX}: verdict: declared ${mode}, observed ${observed ?? 'no class'}`;
+  return `${CHECK_NAME}: verdict: declared ${mode}, observed ${observed ?? 'no class'}`;
+}
+
+/**
+ * The fail-closed config channels the check cannot read (Java system properties in the env,
+ * a PlantUML property file, the container command line), every one that applies, in
+ * the order they are judged.
+ *
+ * @param {Record<string, string> | undefined} env
+ * @param {string[] | undefined} args
+ * @returns {{ reason: string, message: string }[]}
+ */
+export function configChannelFailures(env, args) {
+  return [
+    systemPropertyConfig(env) && { reason: 'system-properties', message: MESSAGES.systemProperties() },
+    propertyFileConfig(env) && { reason: 'property-file', message: MESSAGES.propertyFile() },
+    commandLineProperties(args) && { reason: 'command-line-properties', message: MESSAGES.commandLineProperties() },
+  ].filter(Boolean);
 }
 
 /**
@@ -512,15 +528,8 @@ export function formatVerdictLine({ declared, observed }) {
  * @returns {{ ok: true } | { ok: false, reason: string, message: string }}
  */
 export function checkUnsetProfile(env, args) {
-  if (systemPropertyConfig(env)) {
-    return { ok: false, reason: 'system-properties', message: MESSAGES.systemProperties() };
-  }
-  if (propertyFileConfig(env)) {
-    return { ok: false, reason: 'property-file', message: MESSAGES.propertyFile() };
-  }
-  if (commandLineProperties(args)) {
-    return { ok: false, reason: 'command-line-properties', message: MESSAGES.commandLineProperties() };
-  }
+  const [channel] = configChannelFailures(env, args);
+  if (channel) return { ok: false, ...channel };
   const value = env?.PLANTUML_SECURITY_PROFILE;
   if (value === 'SANDBOX') return { ok: true };
   return { ok: false, reason: 'profile-mismatch', message: MESSAGES.unsetProfile(value) };
@@ -547,7 +556,6 @@ export function checkUnsetProfile(env, args) {
  *   the container's entrypoint, command and args as one list; throws {@link ServiceConfigError}
  *   when they cannot be read
  * @param {{ name: string, source: string }[]} [opts.fixtures]
- * @param {{ name: string, source: string }[]} [opts.extraFixtures]
  * @param {typeof fetch} [opts.fetchImpl]
  * @param {number} [opts.timeoutMs]
  * @returns {Promise<{ verdict: Verdict, lines: string[] }>}
@@ -556,7 +564,7 @@ export async function checkDeclaredMode({
   declared,
   serverUrl,
   canaryHost = '127.0.0.1',
-  canaryPort = 18091,
+  canaryPort = PLANTUML_CANARY_PORT,
   container,
   probe,
   readEnv,
@@ -564,7 +572,6 @@ export async function checkDeclaredMode({
   readPorts,
   readNetworkMode,
   fixtures = loadFixtures(),
-  extraFixtures = [],
   fetchImpl = fetch,
   timeoutMs = 20_000,
 }) {
@@ -614,46 +621,31 @@ export async function checkDeclaredMode({
     throw new TypeError('checkDeclaredMode: a container needs probe, readEnv, readArgs and readPorts');
   }
 
-  let canary;
-  try {
-    canary = await startCanary({ port: canaryPort, redirectBase: `http://${canaryHost}:${canaryPort}` });
-  } catch (err) {
-    if (isPortBusy(err, canaryPort)) {
-      fail('port-busy', (o) => MESSAGES.inMode(mode, o, MESSAGES.portBusy(canaryPort)));
-      return finish(2);
-    }
-    throw err;
+  const checked = await runControlled();
+  if ('refusal' in checked) {
+    fail(checked.refusal.reason, (o) => MESSAGES.inMode(mode, o, checked.refusal.message));
+    return finish(checked.refusal.exitCode);
   }
-  const base = `http://${canaryHost}:${canary.port}`;
-  const log = canary.log;
-  // Exact path (optionally with a query): a fixture whose name prefixes another's must not
-  // count the other's fetches.
-  const hit = (exactPath) => log.some((entry) => entry === exactPath || entry.startsWith(`${exactPath}?`));
-  const render = async (source) => {
-    const res = await fetchImpl(`${serverUrl}${encodePlantuml(source)}`, { signal: AbortSignal.timeout(timeoutMs) });
-    return { status: res.status, body: await res.text() };
-  };
+  return checked.value;
 
-  try {
-    const allFixtures = [...fixtures, ...extraFixtures];
-    if (allFixtures.length === 0) {
-      fail('no-fixtures', (o) => MESSAGES.inMode(mode, o, MESSAGES.noFixtures()));
-      return finish(1);
-    }
-
-    // Control: the server renders a plain diagram.
-    let control;
+  async function runControlled() {
     try {
-      control = await render('@startuml\nAlice -> Bob : dk-control\n@enduml');
+      const outcome = await withControlledCanary(
+        { serverUrl, canaryHost, canaryPort, redirectBase: `http://${canaryHost}:${canaryPort}`, fixtures, fetchImpl, timeoutMs },
+        run,
+      );
+      return 'refusal' in outcome ? { refusal: { ...outcome.refusal, exitCode: 1 } } : outcome;
     } catch (err) {
-      fail('control-failed', (o) => MESSAGES.inMode(mode, o, MESSAGES.controlNoAnswer(serverUrl, err?.message ?? err)));
-      return finish(1);
+      if (isPortBusy(err, canaryPort)) return { refusal: { reason: 'port-busy', message: MESSAGES.portBusy(canaryPort), exitCode: 2 } };
+      throw err;
     }
-    if (control.status !== 200 || !control.body.includes('dk-control')) {
-      fail('control-failed', (o) => MESSAGES.inMode(mode, o, MESSAGES.controlNotRendered(control.status)));
-      return finish(1);
-    }
+  }
 
+  async function run({ canary, base, render }) {
+    const log = canary.log;
+    // Exact path (optionally with a query): a fixture whose name prefixes another's must not
+    // count the other's fetches.
+    const hit = (exactPath) => log.some((entry) => entry === exactPath || entry.startsWith(`${exactPath}?`));
     // Probes: both paths reachable from the service (edge case 7; informational in internet mode).
     for (const [which, prefix] of [
       ['allowed', CANARY_ALLOWED_PREFIX],
@@ -675,14 +667,14 @@ export async function checkDeclaredMode({
     // Renders: each fixture against the allowed, denied and redirect paths.
     const perFixture = [];
     let renderFailed = false;
-    for (const fixture of allFixtures) {
+    for (const fixture of fixtures) {
       const name = encodeURIComponent(fixture.name);
       const paths = {
         allowed: `${CANARY_ALLOWED_PREFIX}include/${name}`,
         denied: `${CANARY_DENIED_PREFIX}include/${name}`,
         redirect: `${CANARY_ALLOWED_PREFIX}redirect/${name}`,
       };
-      if (!fixture.source.includes('{{CANARY_URL}}')) {
+      if (!hasPlaceholder(fixture)) {
         fail('no-placeholder', (o) => MESSAGES.inMode(mode, o, MESSAGES.noPlaceholder(fixture.name)));
         continue;
       }
@@ -752,14 +744,8 @@ export async function checkDeclaredMode({
     const identity = checkServiceIdentity(serverUrl, ports, networkMode);
     if (!identity.ok) fail('service-identity', (o) => MESSAGES.inMode(mode, o, identity.message));
     else if (identity.note) lines.push(identity.note);
-    if (systemPropertyConfig(env)) {
-      fail('system-properties', (o) => MESSAGES.inMode(mode, o, MESSAGES.systemProperties()));
-    }
-    if (propertyFileConfig(env)) {
-      fail('property-file', (o) => MESSAGES.inMode(mode, o, MESSAGES.propertyFile()));
-    }
-    if (commandLineProperties(args)) {
-      fail('command-line-properties', (o) => MESSAGES.inMode(mode, o, MESSAGES.commandLineProperties()));
+    for (const channel of configChannelFailures(env, args)) {
+      fail(channel.reason, (o) => MESSAGES.inMode(mode, o, channel.message));
     }
     verdict.observed = inconsistent ? null : profileClass(env);
     const profile = env?.PLANTUML_SECURITY_PROFILE;
@@ -779,7 +765,5 @@ export async function checkDeclaredMode({
       fail('profile-mismatch', (o) => MESSAGES.profileMismatch(mode, profile, o));
     }
     return finish(0);
-  } finally {
-    await canary.close();
   }
 }

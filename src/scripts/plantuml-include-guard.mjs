@@ -141,6 +141,60 @@ export function startCanary({ port = 0, redirectBase } = {}) {
   });
 }
 
+/** The messages of the checks every include check shares (start-up controls and fixture sanity). */
+export const PREFLIGHT_MESSAGES = Object.freeze({
+  noFixtures: () => 'no fixtures found: the check would prove nothing',
+  controlNoAnswer: (serverUrl, reason) => `control: the PlantUML server at ${serverUrl} did not answer (${reason})`,
+  controlNotRendered: (status) => `control: a plain diagram did not render (HTTP ${status}): the check would prove nothing`,
+  noPlaceholder: (fixture) => `${fixture}: has no {{CANARY_URL}} placeholder`,
+});
+
+/** True when the fixture can be pointed at the canary. */
+export const hasPlaceholder = (fixture) => fixture.source.includes('{{CANARY_URL}}');
+
+/**
+ * The start-up every include check shares: start the canary, require fixtures, and require
+ * the server to render a plain diagram (control). Runs `run({ canary, base, render })` once
+ * those hold and always closes the canary. A failed control resolves to `{ refusal }`
+ * (`reason` is `no-fixtures` or `control-failed`) and `run` never starts; otherwise to
+ * `{ value }`. `startCanary` errors (a busy port) propagate.
+ *
+ * @param {object} opts
+ * @param {string} opts.serverUrl the PlantUML SVG endpoint, with its trailing `/svg/`
+ * @param {string} opts.canaryHost the canary's host as the PlantUML server sees it
+ * @param {number} opts.canaryPort fixed canary port (0: random)
+ * @param {string} [opts.redirectBase] the canary's base URL for its redirect (see {@link startCanary})
+ * @param {{ name: string, source: string }[]} opts.fixtures
+ * @param {typeof fetch} opts.fetchImpl
+ * @param {number} opts.timeoutMs
+ * @param {(ctx: { canary: Awaited<ReturnType<typeof startCanary>>, base: string, render: (source: string) => Promise<{ status: number, error: string | null, body: string }> }) => Promise<unknown>} run
+ * @returns {Promise<{ refusal: { reason: string, message: string } } | { value: unknown }>}
+ */
+export async function withControlledCanary({ serverUrl, canaryHost, canaryPort, redirectBase, fixtures, fetchImpl, timeoutMs }, run) {
+  const canary = await startCanary({ port: canaryPort, redirectBase });
+  const base = `http://${canaryHost}:${canary.port}`;
+  const render = async (source) => {
+    const res = await fetchImpl(`${serverUrl}${encodePlantuml(source)}`, { signal: AbortSignal.timeout(timeoutMs) });
+    return { status: res.status, error: res.headers.get('x-plantuml-diagram-error'), body: await res.text() };
+  };
+  const refuse = (reason, message) => ({ refusal: { reason, message } });
+  try {
+    if (fixtures.length === 0) return refuse('no-fixtures', PREFLIGHT_MESSAGES.noFixtures());
+    let control;
+    try {
+      control = await render('@startuml\nAlice -> Bob : dk-control\n@enduml');
+    } catch (err) {
+      return refuse('control-failed', PREFLIGHT_MESSAGES.controlNoAnswer(serverUrl, err?.message ?? err));
+    }
+    if (control.status !== 200 || !control.body.includes('dk-control')) {
+      return refuse('control-failed', PREFLIGHT_MESSAGES.controlNotRendered(control.status));
+    }
+    return { value: await run({ canary, base, render }) };
+  } finally {
+    await canary.close();
+  }
+}
+
 /**
  * @param {object} opts
  * @param {string} opts.serverUrl the PlantUML SVG endpoint, with its trailing `/svg/`
@@ -164,68 +218,43 @@ export async function checkRemoteIncludesRefused({
   const messages = [];
   const results = [];
   let reachable = null;
-  const canary = await startCanary({ port: canaryPort });
-  const base = `http://${canaryHost}:${canary.port}`;
-  const render = async (source) => {
-    const res = await fetchImpl(`${serverUrl}${encodePlantuml(source)}`, { signal: AbortSignal.timeout(timeoutMs) });
-    return { status: res.status, error: res.headers.get('x-plantuml-diagram-error'), body: await res.text() };
-  };
-
-  try {
-    if (fixtures.length === 0) {
-      messages.push('no fixtures found: the check would prove nothing');
-      return { ok: false, messages, reachable, results };
-    }
-
-    // Control 1: the server renders a plain diagram.
-    let control;
-    try {
-      control = await render('@startuml\nAlice -> Bob : dk-control\n@enduml');
-    } catch (err) {
-      messages.push(`control: the PlantUML server at ${serverUrl} did not answer (${err?.message ?? err})`);
-      return { ok: false, messages, reachable, results };
-    }
-    if (control.status !== 200 || !control.body.includes('dk-control')) {
-      messages.push(`control: a plain diagram did not render (HTTP ${control.status}): the check would prove nothing`);
-      return { ok: false, messages, reachable, results };
-    }
-
-    // Control 2: the canary is reachable from the server's side.
-    if (probe) {
-      try {
-        await probe(`${base}/reachability`);
-      } catch (err) {
-        messages.push(`probe failed: ${err?.message ?? err}`);
+  const outcome = await withControlledCanary(
+    { serverUrl, canaryHost, canaryPort, fixtures, fetchImpl, timeoutMs },
+    async ({ canary, base, render }) => {
+      // Control 2: the canary is reachable from the server's side.
+      if (probe) {
+        try {
+          await probe(`${base}/reachability`);
+        } catch (err) {
+          messages.push(`probe failed: ${err?.message ?? err}`);
+        }
+        reachable = canary.hits.some((h) => h.startsWith('/reachability'));
+        if (!reachable) {
+          messages.push(
+            `control: the canary at ${base} is not reachable from the PlantUML server's side, ` +
+              'so a refused include would prove nothing. Check --canary-host.',
+          );
+          return;
+        }
       }
-      reachable = canary.hits.some((h) => h.startsWith('/reachability'));
-      if (!reachable) {
-        messages.push(
-          `control: the canary at ${base} is not reachable from the PlantUML server's side, ` +
-            'so a refused include would prove nothing. Check --canary-host.',
-        );
-        return { ok: false, messages, reachable, results };
-      }
-    }
 
-    for (const fixture of fixtures) {
-      const includePath = `${CANARY_ALLOWED_PREFIX}include/${encodeURIComponent(fixture.name)}`;
-      const source = fixture.source.replaceAll('{{CANARY_URL}}', `${base}${includePath}`);
-      if (source === fixture.source) {
-        messages.push(`${fixture.name}: has no {{CANARY_URL}} placeholder`);
-        continue;
+      for (const fixture of fixtures) {
+        const includePath = `${CANARY_ALLOWED_PREFIX}include/${encodeURIComponent(fixture.name)}`;
+        if (!hasPlaceholder(fixture)) {
+          messages.push(PREFLIGHT_MESSAGES.noPlaceholder(fixture.name));
+          continue;
+        }
+        const res = await render(fixture.source.replaceAll('{{CANARY_URL}}', `${base}${includePath}`));
+        const fetched = canary.hits.filter((h) => h.startsWith(includePath)).length;
+        const refused = res.status === 400 || (res.error !== null && res.error !== '');
+        const leaked = res.body.includes(CANARY_MARKER);
+        results.push({ fixture: fixture.name, status: res.status, error: res.error, fetched, refused, leaked });
+        if (fetched > 0) messages.push(`${fixture.name}: the server FETCHED the remote include (${fetched} request(s))`);
+        if (leaked) messages.push(`${fixture.name}: the render contains the included content`);
+        if (!refused) messages.push(`${fixture.name}: the render was not an error (HTTP ${res.status})`);
       }
-      const res = await render(source);
-      const fetched = canary.hits.filter((h) => h.startsWith(includePath)).length;
-      const refused = res.status === 400 || (res.error !== null && res.error !== '');
-      const leaked = res.body.includes(CANARY_MARKER);
-      results.push({ fixture: fixture.name, status: res.status, error: res.error, fetched, refused, leaked });
-      if (fetched > 0) messages.push(`${fixture.name}: the server FETCHED the remote include (${fetched} request(s))`);
-      if (leaked) messages.push(`${fixture.name}: the render contains the included content`);
-      if (!refused) messages.push(`${fixture.name}: the render was not an error (HTTP ${res.status})`);
-    }
-  } finally {
-    await canary.close();
-  }
-
+    },
+  );
+  if ('refusal' in outcome) messages.push(outcome.refusal.message);
   return { ok: messages.length === 0, messages, reachable, results };
 }
