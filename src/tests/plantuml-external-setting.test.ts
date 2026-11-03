@@ -87,6 +87,7 @@ const MUST_END = 'must end with "/"';
 const PREFIX = 'also allows "http://host.evil.com"';
 
 describe('rejects each shape', () => {
+  const DEFAULT_PORT = 'drop the default port';
   const rows: Row[] = [
     ['env sandbox', { env: 'sandbox' }, ENV, 'unknown value "sandbox"'],
     ['env yes', { env: 'yes' }, ENV, 'unknown value "yes"'],
@@ -125,6 +126,9 @@ describe('rejects each shape', () => {
     ['@ segment', { site: ['https://a.example/@/'] }, SITE, 'contains "@"'],
     ['userinfo (site)', { site: ['https://user@a.example/x/'] }, SITE, 'contains "@"'],
     ['userinfo (env)', { env: 'https://user@a.example/x/' }, ENV, 'contains "@"'],
+    ['default port 443', { site: ['https://a.example:443/'] }, SITE, DEFAULT_PORT],
+    ['default port 80', { env: 'http://a.example:80/' }, ENV, DEFAULT_PORT],
+    ['default port in path', { site: ['https://a.example/x:443/'] }, SITE, DEFAULT_PORT],
   ];
 
   it.each(rows)('%s', (_n, input, label, reason) => {
