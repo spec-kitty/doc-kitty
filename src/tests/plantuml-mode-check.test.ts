@@ -271,6 +271,7 @@ describe('commandLineProperties', () => {
     ['-DPlantUml_Include_Path=/x'],
     ['eval "$(tail -1 jetty.start | sed "s#java #java -Dplantuml.allowlist.url=http://x/ #")"'],
     ['plantuml.allowlist.url=http://x/'],
+    ['@/opt/args.txt'],
   ])('%s → true', (word) => {
     expect(commandLineProperties(['/entrypoint.sh', word])).toBe(true);
   });
@@ -301,6 +302,7 @@ describe('systemPropertyConfig: every env value is scanned (pre-PR fold)', () =>
     ['START_OPTIONS', '-Xmx1g -Dplantuml.security.profile=INTERNET'],
     ['OTHER', '-Dplantuml.include.path=/x'],
     ['WRAPPER', "sh -c 'PLANTUML_PROPERTY_FILE=/p exec /entrypoint.sh'"],
+    ['JAVA_TOOL_OPTIONS', '-Xmx1g @/opt/args.txt'],
   ])('%s=%s → true', (name, value) => {
     expect(systemPropertyConfig({ PLANTUML_SECURITY_PROFILE: 'SANDBOX', [name]: value })).toBe(true);
   });
