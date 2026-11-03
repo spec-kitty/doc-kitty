@@ -1,4 +1,4 @@
-# Path-scoped CI — detect-changes → 4 conditional lanes → ci-ok gate.
+# Path-scoped CI — detect-changes → 4 conditional lanes + the unconditional plantuml-allowlist lane → ci-ok gate.
 #
 # Design: docs/architecture/ci-cd-pipeline.md; contracts under
 # kitty-specs/ci-cd-pipeline-01M0N1DZ/contracts/. The single required status check
@@ -347,6 +347,56 @@ jobs:
           retention-days: 1
           include-hidden-files: true
 
+  # --- Lane: plantuml-allowlist — the real service in ALLOWLIST mode (#268). ---
+  # Proves the documented opt-in (ADR-0074, FR-012): a digest-pinned PlantUML
+  # service configured with the allowlist block, canary-host entries ONLY, and the
+  # include check in declared allowlist mode against it. Runs on every CI run
+  # unless paused (never path-filtered, SC-004) and feeds `ci-ok` (REQUIRED_LANES).
+  # The service block below MUST equal the allowlist block in the consumer guide
+  # (docs/guides/consumer-setup.md); the guide test asserts it. The canary listens
+  # on 0.0.0.0:18091 and the service reaches it as `dk-canary` via host-gateway.
+  # No `pnpm install`: the check uses Node built-ins only, so it runs pre-install.
+  plantuml-allowlist:
+    name: PlantUML allowlist opt-in (real service)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.paused != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      plantuml:
+        image: plantuml/plantuml-server:jetty-v1.2026.9@sha256:065c66adc6728ba6dd353a29d4ada73f8358b68549a0f710c4bf46b43c103618
+        ports:
+          - 8091:8080
+        options: --add-host dk-canary:host-gateway
+        env:
+          PLANTUML_SECURITY_PROFILE: ALLOWLIST
+          PLANTUML_ALLOWLIST_URL: "http://dk-canary:18091/dk-declared/;http://dk-canary:18091/dk-canary/allowed/"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Wait for the PlantUML server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:8091/; then echo "PlantUML ready"; exit 0; fi
+            echo "waiting for PlantUML ($i/30)…"; sleep 2
+          done
+          echo "PlantUML did not become ready on :8091" >&2; exit 1
+      # The grep makes a silent run (unset opt-in path, no verdict) fail the lane.
+      - name: Include check in declared allowlist mode
+        shell: bash
+        run: |
+          set -o pipefail
+          DK_PLANTUML_ALLOW_EXTERNAL=http://dk-canary:18091/dk-declared/ \
+            node src/scripts/assert-plantuml-no-remote-include.mjs \
+              --server http://localhost:8091/svg/ \
+              --canary-host dk-canary --canary-port 18091 \
+              --service-container "${{ job.services.plantuml.id }}" | tee check.log
+          grep -F 'verdict: declared allowlist, observed allowlist' check.log
+
   # --- Lane: a11y (WP09) — axe-core + visual, both modes, on the built dists. ---
   # Four projects (WP08): `light`/`dark` on the drafts-on dist, and
   # `published-light`/`published-dark` on the drafts-off dist (sidebar specs only).
@@ -403,13 +453,13 @@ jobs:
 
   # --- Gate: ci-ok — the single required status check (FR-012, C-005). --------
   # Job id MUST stay exactly `ci-ok` (branch protection references this string).
-  # All FOUR lanes (code-quality, doc-sanity, build-example, a11y) are gated by the
+  # All FIVE lanes (code-quality, doc-sanity, build-example, a11y, plantuml-allowlist) are gated by the
   # ONE decision helper — issue #7. There is deliberately no second inline gate here:
   # `REQUIRED_LANES` in .github/scripts/ci-ok-decision.mjs is the single source of
   # truth for what ci-ok enforces, and a lane whose `*_RESULT` is not threaded in
   # below reads as `undefined` and fails the gate closed.
   ci-ok:
-    needs: [detect-changes, code-quality, doc-sanity, build-example, a11y]
+    needs: [detect-changes, code-quality, doc-sanity, build-example, a11y, plantuml-allowlist]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -425,5 +475,6 @@ jobs:
           DOC_SANITY_RESULT: ${{ needs.doc-sanity.result }}
           BUILD_EXAMPLE_RESULT: ${{ needs.build-example.result }}
           A11Y_RESULT: ${{ needs.a11y.result }}
+          PLANTUML_ALLOWLIST_RESULT: ${{ needs.plantuml-allowlist.result }}
           PAUSED: ${{ needs.detect-changes.outputs.paused }}
         run: node .github/scripts/ci-ok-decision.mjs
