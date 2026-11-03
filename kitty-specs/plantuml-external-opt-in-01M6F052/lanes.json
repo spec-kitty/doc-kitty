@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "mission_slug": "plantuml-external-opt-in-01M6F052",
+  "mission_id": "01M6F052QMCJRWN4RMW03YBA8W",
+  "mission_branch": "kitty/mission-plantuml-external-opt-in-01M6F052",
+  "target_branch": "feat/268-plantuml-external-opt-in",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/tests/fixtures/plantuml-fake-docker/docker",
+        "src/tests/fixtures/plantuml-include-check/**",
+        "src/tests/helpers/plantuml-check-harness.ts",
+        "src/tests/plantuml-fake-docker.test.ts",
+        "src/tests/plantuml-include-check-golden.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/plantuml-external.mjs",
+        "src/tests/plantuml-external-setting.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "kitty-specs/plantuml-external-opt-in-01M6F052/research.md",
+        "kitty-specs/plantuml-external-opt-in-01M6F052/spike/**"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/internal-env.mjs",
+        "src/scripts/site-config-eval.mjs",
+        "src/tests/plantuml-allow-external-config.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/scripts/plantuml-include-guard.mjs",
+        "src/tests/plantuml-canary.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/scripts/plantuml-mode-check.mjs",
+        "src/tests/plantuml-mode-check.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-d"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "src/scripts/assert-plantuml-no-remote-include.mjs",
+        "src/scripts/fixtures/plantuml-remote-include-modes/**",
+        "src/scripts/plantuml-service-config.mjs",
+        "src/tests/fixtures/plantuml-fake-docker/inspect-capture.json",
+        "src/tests/plantuml-service-config.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-e",
+        "lane-planning"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "src/tests/plantuml-include-check-cli.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-j",
+        "lane-planning"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        ".github/scripts/ci-ok-decision.mjs",
+        ".github/scripts/ci-ok-decision.test.mjs",
+        ".github/workflows/ci.yml",
+        "src/tests/plantuml-workflow-services.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tests",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "src/tests/fixtures/plantuml-opt-in-site/**",
+        "src/tests/plantuml-resolution-parity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-j"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "src/tests/plantuml-include-check-halves.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "docs/adr/0074-plantuml-external-include-opt-in.md",
+        "docs/architecture/ci-cd-pipeline.md",
+        "docs/architecture/diagrams.md",
+        "docs/changelog/unreleased/268-plantuml-external-include-opt-in.md",
+        "docs/guides/consumer-setup.md",
+        "docs/ops/ci-cd.md",
+        "src/tests/fixtures/plantuml-opt-in-docs/**",
+        "src/tests/plantuml-opt-in-docs.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-g",
+        "lane-j",
+        "lane-planning"
+      ],
+      "parallel_group": 5
+    }
+  ],
+  "computed_at": "2026-11-02T22:12:04.050533+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP01"
+  ],
+  "planning_commit_sha": "ee7abebe4459c4fa34da159e87ef14f0e75c837f"
+}

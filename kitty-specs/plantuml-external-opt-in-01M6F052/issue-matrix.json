@@ -1,0 +1,89 @@
+{
+ "rows": {
+  "#13": {
+   "evidence_ref": "Context only: the no-plantuml.com render-server ban (#13 C-001) is cited as constraint C-004; no work owed.",
+   "fr": null,
+   "nfr": null,
+   "repo": null,
+   "sc": null,
+   "scope": null,
+   "source_file": "spec.md",
+   "title": "Self-hosted PlantUML render server; no plantuml.com (C-001)",
+   "verdict": "not-applicable",
+   "wp": null
+  },
+  "#251": {
+   "evidence_ref": "Context only: the closed hardening issue the opt-in builds on; no work owed.",
+   "fr": null,
+   "nfr": null,
+   "repo": null,
+   "sc": null,
+   "scope": null,
+   "source_file": "spec.md",
+   "title": "Harden the PlantUML render service (SANDBOX)",
+   "verdict": "not-applicable",
+   "wp": null
+  },
+  "#256": {
+   "evidence_ref": "Context only: the merged hardening PR/issue the opt-in builds on; no work owed.",
+   "fr": null,
+   "nfr": null,
+   "repo": null,
+   "sc": null,
+   "scope": null,
+   "source_file": "spec.md",
+   "title": "PlantUML service hardening: SANDBOX profile and remote-include check",
+   "verdict": "not-applicable",
+   "wp": null
+  },
+  "#268": {
+   "evidence_ref": "Mission plantuml-external-opt-in-01M6F052 merged into feat/268-plantuml-external-opt-in (squash 8af2e9d): opt-in setting, verified include check, real allowlist CI lane, guide, ADR-0074, changelog fragment.",
+   "fr": null,
+   "nfr": null,
+   "repo": null,
+   "sc": null,
+   "scope": null,
+   "source_file": null,
+   "title": "Operator opt-in to let PlantUML diagrams make external connections (default stays SANDBOX)",
+   "verdict": "fixed",
+   "wp": "WP10"
+  },
+  "#287": {
+   "evidence_ref": "Follow-up: #287 operator-asserted service allowlist for non-container services (decision 01M6F21EKGBG5HF8XA2YFC517K).",
+   "fr": null,
+   "nfr": null,
+   "repo": null,
+   "sc": null,
+   "scope": null,
+   "source_file": null,
+   "title": "PlantUML opt-in: operator-asserted service allowlist for non-container services",
+   "verdict": "deferred-with-followup",
+   "wp": null
+  },
+  "#6100": {
+   "evidence_ref": "Context only: downstream spec-kitty DocFX-to-DocKitty migration that consumes this opt-in; no work owed in this repo.",
+   "fr": null,
+   "nfr": null,
+   "repo": null,
+   "sc": null,
+   "scope": null,
+   "source_file": null,
+   "title": "spec-kitty/spec-kitty: move the spec-kitty docs from DocFX to DocKitty",
+   "verdict": "not-applicable",
+   "wp": null
+  },
+  "#6916": {
+   "evidence_ref": "Context only: downstream spec-kitty consumer issue; this mission delivers the opt-in it needs, no work owed in this repo.",
+   "fr": null,
+   "nfr": null,
+   "repo": null,
+   "sc": null,
+   "scope": null,
+   "source_file": "spec.md",
+   "title": "spec-kitty/spec-kitty: PlantUML remote includes in the spec-kitty docsite",
+   "verdict": "not-applicable",
+   "wp": null
+  }
+ },
+ "schema_version": 1
+}
