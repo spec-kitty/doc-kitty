@@ -92,6 +92,10 @@ export const SYSTEM_PROPERTY_VARS = Object.freeze([
 // `-D` prefix, quoting and `sh -c` wrapping do not matter.
 const SYSTEM_PROPERTY_RE = /plantuml[._](?:security[._]profile|allowlist[._]url|property[._]file|include[._]path)/i;
 
+// A word starting with `@` is a JVM argfile (`java @args.txt`): its content can hold any
+// `-D` property and the check cannot read it, so it fails closed wherever Java options can sit.
+const ARGFILE_RE = /(?:^|\s)["']?@\S/;
+
 // A bare `plantuml.*=…` argument (a Jetty start property, not a `-D`) could still reach PlantUML
 // through the server's configuration; the check cannot read it, so it fails closed too.
 const COMMAND_LINE_PROPERTY_RE = /^["']?plantuml\./i;
@@ -222,7 +226,7 @@ export function parseContainerEnv(text) {
  * value (not only the usual Java option variables: `_JAVA_OPTIONS`, `JETTY_OPTS` and others
  * reach the JVM too) names a security-relevant PlantUML setting (any case, `.` or `_`:
  * profile, allowlist url, property file, include path; e.g. `-DPLANTUML_SECURITY_PROFILE`,
- * `-Dplantuml.allowlist.url`), or an env variable is named `plantuml.*` (any case).
+ * `-Dplantuml.allowlist.url`), carries a `@argfile` word (unreadable, so unprovable), or an env variable is named `plantuml.*` (any case).
  * Such services fail closed.
  *
  * @param {Record<string, string> | undefined} env
@@ -230,7 +234,9 @@ export function parseContainerEnv(text) {
 export function systemPropertyConfig(env) {
   if (!env) return false;
   return (
-    Object.values(env).some((value) => typeof value === 'string' && SYSTEM_PROPERTY_RE.test(value)) ||
+    Object.values(env).some(
+      (value) => typeof value === 'string' && (SYSTEM_PROPERTY_RE.test(value) || ARGFILE_RE.test(value)),
+    ) ||
     Object.keys(env).some((key) => DOTTED_ENV_KEY_RE.test(key))
   );
 }
@@ -384,7 +390,7 @@ export function parseContainerArgs(text) {
  */
 export function commandLineProperties(args) {
   if (!Array.isArray(args)) return false;
-  return args.some((word) => SYSTEM_PROPERTY_RE.test(word) || COMMAND_LINE_PROPERTY_RE.test(word));
+  return args.some((word) => SYSTEM_PROPERTY_RE.test(word) || ARGFILE_RE.test(word) || COMMAND_LINE_PROPERTY_RE.test(word));
 }
 
 const observedText = (observed) => `(observed: ${observed ?? 'no class'})`;
