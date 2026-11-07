@@ -31,6 +31,9 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:toc-rail',
   'doc-kitty:lightbox',
   'doc-kitty:content-graph',
+  // Always on unless `pageFormats.atom` is false (page-chrome FR-020); before served-surfaces.
+  'doc-kitty:page-atom',
+  'doc-kitty:served-surfaces',
   'doc-kitty:deck-split',
   'doc-kitty:single-h1',
   'doc-kitty:base-absolute-links',
@@ -39,6 +42,7 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:okf-export',
   'doc-kitty:manifest',
   'doc-kitty:favicon',
+  'doc-kitty:sidebar-icons',
 ];
 
 /** The opt-in seams registered BEFORE Starlight, each absent on the plain path. */

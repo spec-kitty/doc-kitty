@@ -84,8 +84,8 @@ pnpm dev        # runs the example docsite
 pnpm build      # builds example/ -> static site + sitemap + rss + agent-API
 pnpm test       # toolkit unit tests
 pnpm validate   # check docs frontmatter against the convention
-pnpm build:a11y # the same build with DK_PUBLISH_DRAFTS=on stated, for the Playwright lane
-pnpm test:a11y  # Playwright + axe against the built example/dist
+pnpm build:test-dists # every dist the Playwright lane serves (drafts on, drafts off, chrome fixtures)
+pnpm test:a11y        # Playwright + axe against those dists
 pnpm clean      # clear ALL build caches before a from-scratch build (see note below)
 ```
 

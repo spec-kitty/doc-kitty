@@ -1,0 +1,7 @@
+# One term, so the page that uses it renders the glossary block.
+contexts:
+  - name: fixture
+    domainVisionStatement: The vocabulary of the chrome fixture.
+    terms:
+      - name: cargo
+        definition: Goods carried under a single transport arrangement.

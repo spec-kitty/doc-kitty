@@ -25,13 +25,31 @@
 // each emulate `prefers-color-scheme` AND (via tests/a11y/mode.ts) seed Starlight's
 // `localStorage['starlight-theme']`, then assert the resolved mode before any check
 // runs. Nothing here runs light twice.
+//
+// Two more dists serve the frozen chrome fixture, not the example (page-chrome WP11),
+// for specs that need options the example does not set. `pnpm build:chrome-dists`
+// builds them (`CHROME_DISTS` in src/tests/fixtures/chrome/harness.mjs):
+//   - `title-as-index-light` serves `example/dist-chrome-title-as-index`, and runs
+//     sidebar-title-as-index.spec.ts.
+//   - `unthemed-light` and `unthemed-dark` serve `example/dist-chrome-unthemed`, and
+//     run the Axe cells of metadata-blocks.spec.ts and footer-links.spec.ts: the tests
+//     with "axe" in their title.
+// chrome-fixture-dists.spec.ts runs in all three and proves each serves the right site.
+// `pnpm build:test-dists` builds every dist; all four servers start whichever
+// projects you select.
 import { defineConfig, devices } from '@playwright/test';
 import { AXE_PAGES, PUBLISHED_AXE_PAGES, PUBLISHED_SPECS, a11yPorts } from './tests/a11y/routes';
+import { chromeDistPath } from './src/tests/fixtures/chrome/harness.mjs';
 
 // Drafts-on on A11Y_PORT, published (drafts-off) on A11Y_PORT + 1.
 const PORTS = a11yPorts();
 const BASE_URL = `http://localhost:${PORTS.draftsOn}`;
 const PUBLISHED_URL = `http://localhost:${PORTS.published}`;
+// The chrome fixture dists, on the next two ports.
+const TITLE_AS_INDEX_PORT = PORTS.draftsOn + 2;
+const UNTHEMED_PORT = PORTS.draftsOn + 3;
+const TITLE_AS_INDEX_URL = `http://localhost:${TITLE_AS_INDEX_PORT}`;
+const UNTHEMED_URL = `http://localhost:${UNTHEMED_PORT}`;
 
 // The published projects scan only PUBLISHED_AXE_PAGES: every other axe page's
 // tests are left out by title (axe.spec.ts names each describe after its page).
@@ -44,6 +62,16 @@ const UNPUBLISHED_AXE_TITLES = new RegExp(
 const PUBLISHED_LANE = {
   testMatch: [...PUBLISHED_SPECS],
   grepInvert: UNPUBLISHED_AXE_TITLES,
+};
+
+// The specs that need a chrome fixture dist: the example's projects leave out what
+// only makes sense there.
+const FIXTURE_SMOKE_SPEC = 'chrome-fixture-dists.spec.ts';
+const TITLE_AS_INDEX_SPEC = 'sidebar-title-as-index.spec.ts';
+const EXAMPLE_LANE = { testIgnore: [FIXTURE_SMOKE_SPEC, TITLE_AS_INDEX_SPEC] };
+const UNTHEMED_LANE = {
+  testMatch: [FIXTURE_SMOKE_SPEC, 'metadata-blocks.spec.ts', 'footer-links.spec.ts'],
+  grep: /axe|fixture dist/i,
 };
 
 export default defineConfig({
@@ -87,10 +115,12 @@ export default defineConfig({
   projects: [
     {
       name: 'light',
+      ...EXAMPLE_LANE,
       use: { ...devices['Desktop Chrome'], colorScheme: 'light' },
     },
     {
       name: 'dark',
+      ...EXAMPLE_LANE,
       use: { ...devices['Desktop Chrome'], colorScheme: 'dark' },
     },
     {
@@ -102,6 +132,21 @@ export default defineConfig({
       name: 'published-dark',
       ...PUBLISHED_LANE,
       use: { ...devices['Desktop Chrome'], colorScheme: 'dark', baseURL: PUBLISHED_URL },
+    },
+    {
+      name: 'title-as-index-light',
+      testMatch: [FIXTURE_SMOKE_SPEC, TITLE_AS_INDEX_SPEC],
+      use: { ...devices['Desktop Chrome'], colorScheme: 'light', baseURL: TITLE_AS_INDEX_URL },
+    },
+    {
+      name: 'unthemed-light',
+      ...UNTHEMED_LANE,
+      use: { ...devices['Desktop Chrome'], colorScheme: 'light', baseURL: UNTHEMED_URL },
+    },
+    {
+      name: 'unthemed-dark',
+      ...UNTHEMED_LANE,
+      use: { ...devices['Desktop Chrome'], colorScheme: 'dark', baseURL: UNTHEMED_URL },
     },
   ],
 
@@ -131,6 +176,28 @@ export default defineConfig({
         A11Y_PORT: String(PORTS.published),
         DK_A11Y_DIST: 'example/dist-nodrafts',
         DK_A11Y_EXPECT_DRAFTS: 'off',
+      },
+    },
+    {
+      command: 'node tests/a11y/serve-dist.mjs',
+      url: `${TITLE_AS_INDEX_URL}/doc-kitty/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+      env: {
+        A11Y_PORT: String(TITLE_AS_INDEX_PORT),
+        DK_A11Y_DIST: chromeDistPath('title-as-index'),
+        DK_A11Y_EXPECT_DRAFTS: 'on',
+      },
+    },
+    {
+      command: 'node tests/a11y/serve-dist.mjs',
+      url: `${UNTHEMED_URL}/doc-kitty/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+      env: {
+        A11Y_PORT: String(UNTHEMED_PORT),
+        DK_A11Y_DIST: chromeDistPath('unthemed'),
+        DK_A11Y_EXPECT_DRAFTS: 'on',
       },
     },
   ],

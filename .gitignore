@@ -90,6 +90,8 @@ example/dist-wp04-adopter-example-test/
 # dedicated DK_OUTDIR so it never races the shared example/dist or the other build
 # suites' outputs (same isolation pattern as the adopter test dir above).
 example/dist-wp04-tocrail-noflash-test/
+# Hub block order build assertion (page-chrome WP02), own DK_OUTDIR.
+example/dist-wp02-hub-order-test/
 
 # sidebar/TOC shaping built-HTML test build (sidebar-frame-header-carrier-01M4T3CB
 # WP04, transient) — src/tests/sidebar-build-html.test.ts builds into its own
@@ -144,6 +146,14 @@ example/.dk-test-exclude-folders/
 # Legacy .html redirects fixture site (ADR-0071, transient) —
 # src/tests/legacy-html-redirects-build.test.ts builds it, then removes it.
 example/.dk-test-legacy-html/
+
+# Chrome fixture builds (page-chrome WP11, transient): src/tests/fixtures/chrome/harness.mjs
+# keeps one site and dist per option set here, reused across suites and runs, and
+# `pnpm build:chrome-dists` copies the ones Playwright serves to dist-chrome-*.
+example/.dk-test-chrome/
+example/dist-chrome-*/
+# served-surfaces-build.test.ts builds the example here (page-chrome WP01).
+example/dist-wp01-served-surfaces-test/
 
 # @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.

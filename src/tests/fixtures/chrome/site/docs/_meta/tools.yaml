@@ -1,0 +1,4 @@
+- id: fixture-tool
+  name: Fixture tool
+  url: https://example.test/tool
+  note: a catalog entry the loader can read

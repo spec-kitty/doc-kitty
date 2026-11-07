@@ -1,0 +1,6 @@
+- id: fixture-source
+  type: webpage
+  title: A fixture citation
+  authors: [Fixture Author]
+  url: https://example.test/source
+  issued: "2026"

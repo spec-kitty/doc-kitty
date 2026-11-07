@@ -1,0 +1,14 @@
+{
+  "toolkitCommit": "ff738ffe0373526e503720cd150b63db5527198e",
+  "starlight": "0.42.6",
+  "astro": "7.4.0",
+  "pages": {
+    "sidebar": "guides/authoring/advanced/deep-page/index.html",
+    "page": "guides/getting-started/index.html"
+  },
+  "sha256": {
+    "sidebar.html": "584cbe383e47e67ae3743c4e17fd3a52f3dcbc909a40b760470f2c116adacc2d",
+    "page.html": "01f7056f10eea1ab3eebcf2238aa3e83601d514b7f921cc4fe6a2d7645938f70",
+    "css.txt": "0c33c75112574e3e4c4c7311cc290e3918b103acbd608edf443626582376b5b5"
+  }
+}
