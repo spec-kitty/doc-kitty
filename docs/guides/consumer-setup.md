@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-03T00:00:00Z
+updated: 2026-11-06T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -325,21 +325,27 @@ import { agentIndexRoute } from '@spec-kitty/doc-toolkit/routes';
 export const GET = agentIndexRoute({ title: 'My Docs' });
 ```
 
-The index and each page record carry `_links` to the surfaces below. The links
-to the feed, the bibliography and the scenarios index, and the per-page record,
-are on by default because the worked example mounts them. If your site does not
-mount one, turn its link off or it points at a 404:
+The index and each page record carry `_links` to the surfaces below. The toolkit
+detects which of them your site mounts, from its routes at their standard paths,
+and links only those: `llms.txt`, the sitemap (which also needs `site` set), the
+feed, the bibliography, the scenarios index and the per-page record. A surface you
+do not mount is not linked, so there is nothing to turn off. `links` is the
+override, for a route you mount at a non-standard path that detection cannot see:
 
 ```ts
 export const GET = agentIndexRoute({
   title: 'My Docs',
-  links: { rss: false, bibliography: false, scenarios: false },
+  links: { rss: true }, // rss.xml is mounted at a custom path
 });
 ```
 
+`links` takes `pages`, `rss`, `bibliography` and `scenarios`, and the opt-in
+`mcp`, which is off unless you set it. `llms` and `sitemap` follow detection
+alone.
+
 On the page route, `agentPageRoute({ links: { index: false } })` drops the `up`
 link when you do not mount the index route. A site that mounts the index but not
-the per-page route must pass `links: { pages: false }` to `agentIndexRoute`. If you mount the index somewhere
+the per-page route needs no option: the index leaves out the per-page `self` link. If you mount the index somewhere
 other than `/api/index.json`, pass the same `indexPath` to both routes. The index
 uses it for its own `self` link and each page uses it for `up`:
 
@@ -372,8 +378,9 @@ link that points nowhere fails the build:
 assert:artifacts: FAIL — agent _links: api/index.json links to https://docs.example/docs/rss.xml, but rss.xml was not built
 ```
 
-The usual fix is to turn off the link for a surface you do not mount (see
-above). The check reads your base from the index's own `self` link, which must
+Detection leaves out the link for a surface you do not mount, so this fails only
+when a `links` override forces a link on for a route that is not there. Remove
+the override or fix the path (see above). The check reads your base from the index's own `self` link, which must
 end in the path of the file it reads (`api/index.json`, or your `--index-path`).
 If it does not, the check fails and says it cannot derive the base. [ADR-0058](../adr/0058-build-state-owner-and-config-split.md#5-the-agent-api-gains-_links)
 lists every relation.
@@ -853,6 +860,200 @@ A malformed charter fails the build naming the file and offending key; an unknow
 *top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`
 or `_meta/sections.yaml`, both keep working (you will see one deprecation notice)
 — consolidate them with [Migrating to the charter](/guides/migrating-to-charter/).
+
+## Page chrome
+
+The page chrome is what surrounds a page's content: the sidebar, the metadata
+blocks, the footer and the links to a page's other formats. Every option below
+is optional, and a site that sets none gets the defaults. Moving from an
+earlier release changes some of them; see
+[the upgrade note](../migrations/page-chrome-defaults.md).
+
+| Option | Default | What it does |
+|--------|---------|--------------|
+| `sidebar.collapsed` | `true` | Generated sidebar groups start closed. |
+| `sidebar.titleIsIndex` | `false` | A group's label links to the group's index page. |
+| `metadataBlocks.collapsed` | `true` | Related, external references and similar blocks start closed. |
+| `footer.machineEntryPoints` | `{ label: 'Machine-readable' }` | The footer group of links to the surfaces the site serves. |
+| `pageFormats.atom` | `true` | Each published, dated page gets an Atom entry and a link to it. |
+| `repository` | unset | Adds a source link on each page. |
+
+A wrong type or an unknown key throws at config time. The message starts with
+`[dk-config]` and names the key.
+
+### Sidebar groups
+
+The generated sidebar starts every group closed, except the groups on the path
+to the current page. Starlight opens those itself. To keep every group open:
+
+```ts
+sidebar: { collapsed: false },
+```
+
+`titleIsIndex` makes a group's label the link to the group's index page, drops
+the separate index entry below it, and adds a chevron that opens and closes the
+group. A group with no index page keeps the plain toggle. You can't set it with
+`indexLabel`, because a group whose title is its index has no index entry to
+label.
+
+```ts
+sidebar: { titleIsIndex: true },
+```
+
+`collapsed` and `titleIsIndex` shape the sidebar the toolkit generates. A
+sidebar you write yourself, through `sidebar: [...]` or `starlight.sidebar`, is
+not reshaped. With `titleIsIndex` on, its groups render with the plain
+toggle. Starlight keeps its own group behaviour there.
+
+### Sidebar icons
+
+A page or a section can show an icon in the sidebar. On a page, set
+`sidebar.icon` in the frontmatter. On a section, set `icon` on its entry in
+`docs/_meta/sections.yaml` or in the charter's `sections.entries`.
+
+```yaml
+# a page
+sidebar:
+  icon: fa-book
+
+# docs/_meta/sections.yaml
+- id: guides
+  label: Guides
+  icon: rocket
+```
+
+A name is `fa-<name>` for a Font Awesome solid icon, or a bare name for a
+Starlight built-in icon. Use the icon's own name. The toolkit doesn't resolve
+`fa-<name>` aliases, so an alias name fails the build.
+
+The icon of a group comes from its section, or else from its index page. The
+section's icon wins when both are set. A group's own index link doesn't repeat
+the icon the group already shows.
+
+An unknown name fails the build and `validate-frontmatter`, and the message
+names the page or section. Only the icons you use reach the output, as inline
+SVG hidden from assistive technology. There is no font file and no external
+request.
+
+A page that shows a Font Awesome icon carries one comment with the icon set's
+CC BY 4.0 licence. The toolkit does this so the attribution travels with the
+output. It isn't legal advice, so check the licence against your own use.
+
+A sidebar you write yourself takes no icons. The build warns once if you author
+any.
+
+### Metadata blocks
+
+The blocks under a page's content (Who is this for, Related, External
+references and Glossary links used) start closed behind a control that shows
+the label and a count, such as "Related (3)". They open by mouse or keyboard,
+and also with scripts off. They start closed again on the next page, print open
+and stay in search. To keep them open:
+
+```ts
+metadataBlocks: { collapsed: false },
+```
+
+On a hub page, the child cards come before the blocks. This order isn't an
+option.
+
+### Machine-readable links
+
+The footer lists the surfaces the site serves, in this order: the LLM index,
+the agent API, the content graph, RSS, the sitemap, the bibliography, the
+scenarios and the OKF bundle. The toolkit detects what you mount from the
+site's routes and never links a surface you don't serve. The sitemap also needs
+`site` to be set, because `@astrojs/sitemap` writes nothing without it.
+
+Rename the group, or remove it:
+
+```ts
+footer: { machineEntryPoints: { label: 'For machines' } },
+// or
+footer: { machineEntryPoints: false },
+```
+
+`false` removes the group only. A page's own format links stay.
+
+Detection knows only the standard route paths. A route at a custom path, such
+as an agent index mounted with another `indexPath`, isn't detected, so it isn't
+linked.
+
+The `<head>` carries the same feed links as the footer.
+`<link rel="alternate">` tags for RSS and `llms.txt` follow what the site
+serves. A site that sets `starlight.head` gets these links as well, because the
+toolkit no longer puts them in the config's `head`. If that site added its own
+RSS alternate, the page now has two. Setting `starlight.head` also replaces the
+toolkit's own head entries, including the table-of-contents no-flash script and
+the theme's font links, so copy those over or leave `head` alone.
+
+A feed served as a static file, such as `public/rss.xml` or `public/llms.txt`,
+isn't a route, so it gets no footer or head link and no `_links` entry. Serve it
+from a route to get them.
+
+The `agentIndexRoute` option `links` takes `pages`, `rss`, `bibliography`,
+`scenarios` and the opt-in `mcp`. `mcp` is off by default. Detection decides
+`llms` and `sitemap`.
+
+### Page formats and the source link
+
+Each published page links its JSON, OKF and Atom versions, in the footer and
+the `<head>`. The links are pills under the spec-kitty theme and plain links
+without it. Every published page has them, apart from the cases below. The JSON link
+appears only when the site serves the per-page agent JSON route
+(`/api/pages/[...slug].json`); without it, the page has no JSON link.
+
+- Decks are the one exception. A deck has no footer links, because the deck
+  layout renders no Starlight footer or head. Reach a deck through the OKF
+  bundle at `okf/index.md`.
+- A page with `agent: { discoverable: false }` has no JSON, OKF or Atom link.
+  The files are still served. Only the links go.
+- A draft, and a page outside the docs collection, has no format links.
+- A published page with no date gets no Atom entry. The date is `updated` or
+  `generated.at`.
+
+Turn the Atom entries off with `pageFormats: { atom: false }`. The Atom link
+carries `type=entry`. A static host picks the response `Content-Type` from the
+`.xml` extension, so what the header says depends on the host.
+
+What an Atom entry does and does not carry:
+
+- **A site with no `site` has no Atom entries and no Atom links.** An Atom `id`
+  must be a stable absolute IRI, and without `site` the only absolute URL is a
+  localhost one, which is false. The build prints one warning naming `site`.
+  Set `site` in `astro.config` to turn them on.
+  The toolkit reads `site` when Astro sets up its integrations, so a `site` that
+  another integration sets later is missed. Set it in `astro.config` itself.
+- **An `.mdx` page has no `<content>`.** Its HTML isn't available to the route, so
+  the entry holds the `title`, `summary` (the description) and the `alternate`
+  link to the page. That is still a valid entry.
+- **A local image becomes its alt text.** Astro leaves an image placeholder with no
+  `src` in the rendered HTML, and a feed reader can't show it. The entry carries the
+  image's `alt` text, or nothing when it has none. An `<img src>` is kept.
+- **Characters XML 1.0 forbids are removed.** A form feed or an ANSI escape pasted
+  into a page would make the document unparseable, so they are dropped from every
+  Atom and RSS field.
+- **The `id` is the page's absolute URL.** It changes when the domain, `base` or the
+  page's slug changes, and a reader then treats the entry as a new one.
+
+Set `repository` to add a `source` link to each page's file:
+
+```ts
+repository: {
+  provider: 'github',          // 'github' | 'gitlab' | 'bitbucket'
+  repo: 'my-org/my-site',      // owner/name
+  branch: 'main',
+  siteDir: 'website',          // optional: the site's folder in the repo
+},
+```
+
+All of `provider`, `repo` and `branch` are required. `siteDir` is for a site
+that isn't at the repository root. Only the three hosted services work. A
+self-hosted GitHub or GitLab uses another origin, so it has no source link.
+
+A generated page shows no source link, because its file isn't what an author
+edits. The edit link for generated pages is tracked in
+[#150](https://github.com/spec-kitty/doc-kitty/issues/150).
 
 ## Optional: Diagrams
 
@@ -1662,10 +1863,11 @@ gherkin: {
 
 ## Internal environment names
 
-DocKitty passes nine settings between its own parts through environment
+DocKitty passes eleven settings between its own parts through environment
 variables: `DK_INDEX_BASENAME`, `DK_GHERKIN_RESULTS`, `DK_GHERKIN_ROUTE`,
 `DK_PUBLISH_DRAFTS_RESOLVED`, `DK_DOCS_ROOT`, `DK_MARKUA`, `DK_EXCLUDE`,
-`DK_OPENAPI` and `DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED`. DocKitty sets these for its own
+`DK_OPENAPI`, `DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED`, `DK_CHROME_OPTIONS` and
+`DK_SERVED_SURFACES`. DocKitty sets these for its own
 use; never set them by hand. DocKitty clears any value you set when the config loads.
 Set the matching option on `defineDocKittyIntegrations` instead.
 ([ADR-0057](../adr/0057-internal-env-handoff-seam.md) explains the design.)

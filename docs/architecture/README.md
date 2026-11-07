@@ -47,6 +47,9 @@ page:
 - [Starlight integration](./starlight-integration.md) —
   `defineDocKittyIntegrations`: the Starlight and sitemap preset, the feed and
   agent-API `<head>` links, and theming.
+- [Page chrome](./page-chrome.md) — served-surface detection, the opt-in sidebar
+  renderer, hub placement of the metadata blocks, and the shared disclosure
+  control.
 - [Builder scripts](./builder-scripts.md) — `scaffold.mjs`, `new-doc.mjs`, and
   `validate-frontmatter.mjs`.
 - [Theming and chrome](./theming.md) — how a consumer rebrands the site without
