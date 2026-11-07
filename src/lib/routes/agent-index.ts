@@ -16,16 +16,20 @@ import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from
 import { routeOfSlug } from '../vocabulary-core.mjs';
 import { absolute, buildIdForBuild, docsRoot, mcpLaunchUsage } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
+import { servedSurfaces } from '../served-surfaces.js';
 
 export interface AgentIndexRouteOptions {
   title: string;
   /** Bump when the emitted shape changes so consumers can branch on it. */
   version?: string;
   /**
-   * Which optional site-owned surfaces to link from `_links` (#103). `llms` and
-   * `sitemap` are always linked. The defaults match the worked example, which
-   * mounts all four; pass `false` for a surface your site does not build, or
-   * the link would dangle. (A route cannot see another route's existence.)
+   * Which optional site-owned surfaces to link from `_links` (#103). `pages`,
+   * `rss`, `bibliography` and `scenarios` default to what the site serves,
+   * detected from its routes at their standard paths (FR-002), so a surface the
+   * site does not mount is not named. A value here wins: pass `true` for a
+   * surface at a non-standard path. `llms` and `sitemap` have no option: they
+   * follow detection alone (`sitemap` also needs `site`). Outside the
+   * integration, where detection has not run, every link defaults to on.
    */
   links?: AgentIndexLinks;
   /**
@@ -59,15 +63,20 @@ export interface AgentIndexLinks {
 
 export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
   const indexPath = options.indexPath ?? '/api/index.json';
-  const declared = {
-    pages: true,
-    rss: true,
-    bibliography: true,
-    scenarios: true,
-    mcp: false,
-    ...options.links,
-  };
   return async ({ site }) => {
+    // Read per request, not in the factory: dev re-detects when routes change, and
+    // a value taken in the factory would keep naming the old set.
+    const surfaces = servedSurfaces();
+    const declared = {
+      pages: surfaces?.agentPages ?? true,
+      llms: surfaces?.llms ?? true,
+      sitemap: surfaces?.sitemap ?? true,
+      rss: surfaces?.rss ?? true,
+      bibliography: surfaces?.bibliography ?? true,
+      scenarios: surfaces?.scenarios ?? true,
+      mcp: false,
+      ...options.links,
+    };
     // `withBody`: the build identity hashes every entry's body bytes
     // (FR-008); downstream consumers of the entries ignore the field.
     const all = await collectDocEntries({ withBody: true });
@@ -147,8 +156,8 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       sections,
       _links: {
         self: { href: absolute(site, indexPath) },
-        llms: { href: absolute(site, '/llms.txt') },
-        sitemap: { href: absolute(site, '/sitemap-index.xml') },
+        ...(declared.llms ? { llms: { href: absolute(site, '/llms.txt') } } : {}),
+        ...(declared.sitemap ? { sitemap: { href: absolute(site, '/sitemap-index.xml') } } : {}),
         // Always declared: the `doc-kitty:content-graph` integration injects the route
         // on every site (#176), so unlike the site-owned surfaces below it cannot dangle.
         contentGraph: { href: absolute(site, '/api/content-graph.json') },

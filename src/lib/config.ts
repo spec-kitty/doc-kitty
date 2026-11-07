@@ -58,11 +58,12 @@ import {
 import { tocRailIntegration } from './integrations/toc-rail.js';
 import { lightboxIntegration } from './integrations/lightbox.js';
 import { contentGraphIntegration } from './integrations/content-graph.js';
+import { pageAtomIntegration } from './integrations/page-atom.js';
+import { servedSurfacesIntegration } from './integrations/served-surfaces.js';
+import { sidebarIconsIntegration } from './integrations/sidebar-icons.js';
+import { validateChromeOptions, type ChromeOptionsInput, type ChromeSidebarInput } from './chrome-options.js';
 import { createBuildState } from './build-state.js';
-import {
-  normalizeBasePrefix,
-  type DocKittyGherkinOption,
-} from './integrations/shared.js';
+import type { DocKittyGherkinOption } from './integrations/shared.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
 import { docKittyFavicon, faviconHref } from './favicon.js';
 import sitemapOrderIntegration from './sitemap-order.js';
@@ -88,6 +89,7 @@ import {
   starlightDefaultSidebar,
 } from './openapi/adapters.js';
 import {
+  DK_CHROME_OPTIONS_ENV,
   DK_DOCS_ROOT_ENV,
   DK_EXCLUDE_ENV,
   DK_GHERKIN_RESULTS_ENV,
@@ -124,6 +126,10 @@ export { DK_INDEX_BASENAME_ENV };
 export interface DocKittySidebarOptions {
   /** Label of a group's index entry that repeats the group label; a non-empty string. */
   indexLabel?: string;
+  /** Whether generated groups start collapsed. Default `true`. */
+  collapsed?: boolean;
+  /** Make a group's label the link to its index page. Default `false`; refused together with `indexLabel`. */
+  titleIsIndex?: boolean;
 }
 
 /**
@@ -133,20 +139,40 @@ export interface DocKittySidebarOptions {
 function splitSidebarOption(sidebar: DocKittyOptions['sidebar']): {
   starlightSidebar: StarlightUserConfig['sidebar'];
   indexLabel: string | undefined;
+  chrome: ChromeSidebarInput;
 } {
   if (sidebar === undefined || Array.isArray(sidebar)) {
-    return { starlightSidebar: sidebar as StarlightUserConfig['sidebar'], indexLabel: undefined };
+    return { starlightSidebar: sidebar as StarlightUserConfig['sidebar'], indexLabel: undefined, chrome: {} };
   }
   if (typeof sidebar !== 'object' || sidebar === null) {
-    throw new Error('[dk-config] sidebar must be a Starlight sidebar array or an object with indexLabel');
+    throw new Error('[dk-config] sidebar must be a Starlight sidebar array or an object with indexLabel, collapsed or titleIsIndex');
   }
-  const { indexLabel, ...unknown } = sidebar as DocKittySidebarOptions & Record<string, unknown>;
+  const { indexLabel, collapsed, titleIsIndex, ...unknown } = sidebar as DocKittySidebarOptions & Record<string, unknown>;
   const [extra] = Object.keys(unknown);
-  if (extra !== undefined) throw new Error(`[dk-config] unknown key "${extra}" under sidebar; expected indexLabel`);
+  if (extra !== undefined) {
+    throw new Error(`[dk-config] unknown key "${extra}" under sidebar; expected indexLabel, collapsed or titleIsIndex`);
+  }
   if (indexLabel !== undefined && (typeof indexLabel !== 'string' || indexLabel.trim() === '')) {
     throw new Error('[dk-config] sidebar.indexLabel must be a non-empty string');
   }
-  return { starlightSidebar: undefined, indexLabel };
+  if (collapsed !== undefined && typeof collapsed !== 'boolean') {
+    throw new Error('[dk-config] sidebar.collapsed must be a boolean');
+  }
+  if (titleIsIndex !== undefined && typeof titleIsIndex !== 'boolean') {
+    throw new Error('[dk-config] sidebar.titleIsIndex must be a boolean');
+  }
+  // FR-009: with the group label as the index link there is no index entry to label.
+  if (titleIsIndex === true && indexLabel !== undefined) {
+    throw new Error('[dk-config] sidebar.titleIsIndex and sidebar.indexLabel cannot be set together: a group whose title is its index has no index entry to label');
+  }
+  return {
+    starlightSidebar: undefined,
+    indexLabel,
+    chrome: {
+      ...(collapsed !== undefined ? { collapsed } : {}),
+      ...(titleIsIndex !== undefined ? { titleIsIndex } : {}),
+    },
+  };
 }
 
 export interface DocKittyOptions {
@@ -159,10 +185,12 @@ export interface DocKittyOptions {
   /**
    * Sidebar config. An ARRAY is a Starlight sidebar written by the consumer and
    * is used as written (never reshaped). Omit it to let Starlight autogenerate
-   * from the tree. An OBJECT configures the generated sidebar instead; its one
-   * key, `indexLabel`, sets the label of a group's index entry that repeats the
-   * group label (#161) and wins over the `dockitty.sidebar.indexLabel` UI
-   * string (default "Overview").
+   * from the tree. An OBJECT configures the generated sidebar instead:
+   * `indexLabel` sets the label of a group's index entry that repeats the group
+   * label (#161) and wins over the `dockitty.sidebar.indexLabel` UI string
+   * (default "Overview"); `collapsed` sets whether groups start collapsed
+   * (default `true`); `titleIsIndex` makes a group's label the link to its index
+   * page (default `false`), and setting it with `indexLabel` throws.
    */
   sidebar?: StarlightUserConfig['sidebar'] | DocKittySidebarOptions;
   /**
@@ -339,35 +367,21 @@ export interface DocKittyOptions {
    * map from a committed list of the old site's URLs.
    */
   legacyHtmlRedirects?: Record<string, string>;
-}
-
-/** `<head>` links advertising the feeds and agent-API on every page. */
-// These hrefs MUST carry the site `base`: they are emitted verbatim into
-// `<head>` (Starlight does not rewrite `head` entries the way it does `favicon`),
-// so a hardcoded `/rss.xml` 404s on every based deployment — which is exactly
-// what the nightly link smoke caught on the published `/doc-kitty/` site.
-function discoveryHead(basePrefix: string): NonNullable<StarlightUserConfig['head']> {
-  return [
-    {
-      tag: 'link',
-      attrs: {
-        rel: 'alternate',
-        type: 'application/rss+xml',
-        title: 'RSS',
-        href: `${basePrefix}/rss.xml`,
-      },
-    },
-    // Advertise the agent index so crawlers/agents can find it from any page.
-    {
-      tag: 'link',
-      attrs: {
-        rel: 'alternate',
-        type: 'text/plain',
-        title: 'llms.txt',
-        href: `${basePrefix}/llms.txt`,
-      },
-    },
-  ];
+  /** Whether a page's metadata blocks start collapsed. Default `true`. */
+  metadataBlocks?: ChromeOptionsInput['metadataBlocks'];
+  /**
+   * The footer's group of links to the site's machine-readable surfaces. On by
+   * default, labelled "Machine-readable". `{ label }` renames it; `false` removes it.
+   */
+  footer?: ChromeOptionsInput['footer'];
+  /** The per-page formats. `atom` is the per-page Atom entry, default `true`. */
+  pageFormats?: ChromeOptionsInput['pageFormats'];
+  /**
+   * Where the site's sources are hosted, for a page's source link. Unset means no
+   * source link. `provider`, `repo` (owner/name) and `branch` are all required;
+   * `siteDir` is the repo-relative folder of the site, when it is not the repo root.
+   */
+  repository?: ChromeOptionsInput['repository'];
 }
 
 /**
@@ -559,9 +573,19 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     gherkin,
     openapi,
     legacyHtmlRedirects,
+    metadataBlocks,
+    footer,
+    pageFormats,
+    repository,
     starlight: overrides,
   } = options;
-  const { starlightSidebar: sidebar, indexLabel } = splitSidebarOption(sidebarOption);
+  const { starlightSidebar: sidebar, indexLabel, chrome: sidebarChrome } = splitSidebarOption(sidebarOption);
+
+  // The page-chrome options: validated EAGERLY, so a bad value throws before any hook
+  // runs, and published for the carriers and routes, which must not import this
+  // module. `chromeOptions()` is the one reader, and it owns the defaults.
+  const chromeInput = validateChromeOptions({ sidebar: sidebarChrome, metadataBlocks, footer, pageFormats, repository });
+  setInternalEnv(DK_CHROME_OPTIONS_ENV, JSON.stringify(chromeInput));
 
   // PlantUML external-include opt-in (#268): resolved EAGERLY so an invalid value
   // throws at config time. The resolution is always published (sandbox included) so
@@ -725,7 +749,6 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // `docKittyFavicon` emits below (Starlight applies `base` itself).
     ...(faviconPath ? { favicon: faviconPath } : {}),
     head: [
-      ...discoveryHead(normalizeBasePrefix(base)),
       ...fontHead,
       // No-flash pre-paint (FR-005/NFR-001, contract C-1/C-5): a Starlight
       // `head[]` entry with `content` renders as a SYNCHRONOUS CLASSIC inline
@@ -898,6 +921,13 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // agent index's `_links.contentGraph` never dangles. Registers no remark/rehype
     // plugin, so no plugin-order pin moves.
     contentGraphIntegration(docsDir, indexBasename),
+    // Per-page Atom entries (FR-020): on unless `pageFormats.atom` is false. Before
+    // served-surface detection, which reads the injected route.
+    ...(pageFormats?.atom === false ? [] : [pageAtomIntegration(title)]),
+    // Always-on served-surface detection (FR-002): publishes what this site serves,
+    // read from its resolved routes, for the agent index and the page chrome.
+    // Registers no remark/rehype plugin, so no plugin-order pin moves.
+    servedSurfacesIntegration(),
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.
     deckSplitIntegration,
@@ -924,10 +954,14 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // carriers as `virtual:doc-kitty/manifest` (synchronous `resolveLayout`, no
     // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports
     // the manifest even on the no-theme path (Hub registered, else Default).
-    docKittyManifest(resolved),
+    docKittyManifest(resolved, buildState),
     // Make the theme's package-asset favicon actually servable at the path
     // handed to Starlight above (no-op with no theme favicon, or when the theme
     // points at a `public/` path the consumer already ships).
     docKittyFavicon(assets.favicon, {}, base),
+    // Always-on sidebar icons (FR-026): its check runs in `astro:config:done`, after
+    // every generator, and it is off the page unless an icon is authored. Registers no
+    // remark/rehype plugin, so no plugin-order pin moves.
+    sidebarIconsIntegration(routeShaping, buildState),
   ];
 }

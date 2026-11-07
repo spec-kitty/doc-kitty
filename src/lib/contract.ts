@@ -121,8 +121,10 @@ export interface AgentRecordEntry {
 /** Top-level navigation links of the machine index. */
 export interface IndexLinks {
   self: AgentLink;
-  llms: AgentLink;
-  sitemap: AgentLink;
+  /** Present only when the site serves `llms.txt` (FR-002). */
+  llms?: AgentLink;
+  /** Present only when the site serves a sitemap, which needs `site` (FR-002). */
+  sitemap?: AgentLink;
   /** Always emitted: the integration injects the content-graph route (#176). */
   contentGraph: AgentLink;
   rss?: AgentLink;

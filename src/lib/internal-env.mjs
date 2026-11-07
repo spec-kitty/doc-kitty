@@ -19,6 +19,8 @@
  * | DK_GHERKIN_ROUTE              | setup      | doc-kitty:gherkin-fence config:setup     | scenario-index route                      |
  * | DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED | define | defineDocKittyIntegrations           | site-config-eval (the include check)      |
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
+ * | DK_CHROME_OPTIONS             | define     | defineDocKittyIntegrations               | chromeOptions() (chrome-options.ts)       |
+ * | DK_SERVED_SURFACES            | routes     | doc-kitty:served-surfaces routes:resolved | servedSurfaces() (served-surfaces.ts)    |
  *
  * Readers read `process.env` at call time. Vite SSR evaluates the content config
  * and routes in a separate module graph, so module state would arrive empty.
@@ -57,6 +59,15 @@ export const DK_OPENAPI_ENV = 'DK_OPENAPI';
  */
 export const DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV = 'DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED';
 
+/** JSON of the page-chrome options the site set; `chromeOptions()` applies the defaults. */
+export const DK_CHROME_OPTIONS_ENV = 'DK_CHROME_OPTIONS';
+
+/**
+ * JSON `ServedSurfaces`: what the site serves, detected from its resolved routes.
+ * Absent until `astro:routes:resolved` fires, so "absent" means detection has not run.
+ */
+export const DK_SERVED_SURFACES_ENV = 'DK_SERVED_SURFACES';
+
 /** Every internal handoff name. */
 export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_INDEX_BASENAME_ENV,
@@ -68,6 +79,8 @@ export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_EXCLUDE_ENV,
   DK_OPENAPI_ENV,
   DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV,
+  DK_CHROME_OPTIONS_ENV,
+  DK_SERVED_SURFACES_ENV,
 ]);
 
 /**
