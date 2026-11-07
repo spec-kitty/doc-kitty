@@ -19,6 +19,7 @@ import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { slotComponents, themeSocialImage } from 'virtual:doc-kitty/manifest';
 import HeadShare from './slots/HeadShare.astro';
 import { isDraftEntry } from '../lib/metadata.js';
+import { currentPageLinks } from '../lib/page-formats-route.js';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -51,12 +52,17 @@ const filePath = (entry as unknown as { filePath?: string }).filePath;
 // the loader's own rule (`isDraftEntry`): a home page with no `doc_status` is
 // never filtered, so it must never be `noindex` either.
 const isDraft = isDraftEntry(entry as unknown as { id: string; data: { doc_status?: unknown } });
+
+// The site's feeds and this page's formats (page-chrome FR-019, FR-021), from the same
+// helpers as the footer. They render outside the `dk:head` branch below.
+const { head: alternates } = await currentPageLinks(entry);
 ---
 
 <Default {...route} />
 {/* Proof-of-carrier marker (greppable in dist HTML), always emitted. */}
 <meta name="dk-chrome" content="doc-kitty-carriers" />
 {isDraft && <meta name="robots" content="noindex" />}
+{alternates.map(({ type, title, href }) => <link rel="alternate" type={type} title={title} href={href} />)}
 {/*
   dk:head slot: a theme override wins; otherwise the doc-kitty default — the
   og:image / twitter:image share metadata + fallback chain (unchanged from M1,

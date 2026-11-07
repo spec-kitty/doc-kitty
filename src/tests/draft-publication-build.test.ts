@@ -28,7 +28,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { clearInternalEnv } from '../lib/internal-env.mjs';
 import { spawnSync } from 'node:child_process';
 import { stripVTControlCharacters } from 'node:util';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
@@ -81,6 +81,7 @@ export const MACHINE_SURFACE_GLOBS = [
   'rss.xml',
   'llms*.txt',
   'api/**/*.json',
+  'api/**/*.atom.xml',
   'okf/**',
   'pagefind/**',
 ] as const;
@@ -467,7 +468,39 @@ describe('WP05 — draft publication in the built example', () => {
     expect(diffSurfaces(abs('off', ''), abs('offRepeat', ''))).toEqual([]);
   });
 
+  it('two drafts-off builds produce byte-identical page HTML (NFR-001)', () => {
+    // Non-vacuity: the comparison walks many pages (the control below shows it detects a difference).
+    expect(htmlFiles('off').length).toBeGreaterThan(40);
+    expect(diffSurfaces(abs('off', ''), abs('offRepeat', ''), [], ['**/*.html'])).toEqual([]);
+  });
+
   describe('the machine-surface comparison fails when it should (positive controls)', () => {
+    it('reports an injected difference in page HTML, naming exactly that page', () => {
+      const tmp = mkdtempSync(path.join(tmpdir(), 'dk-html-diff-'));
+      try {
+        const rel = 'guides/getting-started/index.html';
+        mkdirSync(path.dirname(path.join(tmp, rel)), { recursive: true });
+        writeFileSync(path.join(tmp, rel), `${read('off', rel)}<!-- injected -->`);
+        expect(diffSurfaces(tmp, abs('off', ''), [], [rel])).toEqual([`differs: ${rel}`]);
+      } finally {
+        rmSync(tmp, { recursive: true, force: true });
+      }
+    });
+
+    it('lists the Atom entries in the manifest and detects a changed one', () => {
+      expect(globRegExp('api/**/*.atom.xml').test('api/pages/guides/getting-started.atom.xml')).toBe(true);
+      expect(MACHINE_SURFACE_GLOBS).toContain('api/**/*.atom.xml');
+      const tmp = mkdtempSync(path.join(tmpdir(), 'dk-atom-diff-'));
+      try {
+        const rel = 'api/pages/guides/getting-started.atom.xml';
+        mkdirSync(path.dirname(path.join(tmp, rel)), { recursive: true });
+        writeFileSync(path.join(tmp, rel), `${read('off', rel)} `);
+        expect(diffSurfaces(tmp, abs('off', ''), [], ['api/**/*.atom.xml'])).toContain(`differs: ${rel}`);
+      } finally {
+        rmSync(tmp, { recursive: true, force: true });
+      }
+    });
+
     it('reports a one-byte difference, naming exactly that file', () => {
       const tmp = mkdtempSync(path.join(tmpdir(), 'dk-surface-diff-'));
       try {

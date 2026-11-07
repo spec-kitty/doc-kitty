@@ -95,6 +95,9 @@ export default defineConfig({
     // Starlight 0.33+ takes `social` as an array of link items (#119).
     social: [{ icon: 'github', label: 'GitHub', href: `https://github.com/${OWNER}/${REPO}` }],
     theme: specKittyTheme,
+    // The "source" link in each authored page's footer. `siteDir` because this site
+    // is not at the repository root.
+    repository: { provider: 'github', repo: `${OWNER}/${REPO}`, branch: 'main', siteDir: 'example' },
     // Opt-in Mermaid diagrams (M5): renders the `%%`-annotated ```mermaid fence
     // on the Overview page as an accessible, token-themed `<figure>`.
     diagrams: true,

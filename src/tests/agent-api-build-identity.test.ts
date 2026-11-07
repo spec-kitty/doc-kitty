@@ -196,7 +196,8 @@ function pageBuildIds(dir: string): Map<string, string> {
       const full = path.join(d, name);
       if (statSync(full).isDirectory()) {
         walk(full);
-      } else {
+      } else if (name.endsWith('.json')) {
+        // Only the JSON records: `*.atom.xml` sits beside them (page-chrome WP08).
         const payload = readJson(dir, 'api', 'pages', path.relative(root, full)) as { buildId: string };
         out.set(path.relative(root, full), payload.buildId);
       }

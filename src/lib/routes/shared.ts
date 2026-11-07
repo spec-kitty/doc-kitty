@@ -128,7 +128,7 @@ export async function docsRoot(indexBasename?: IndexBasenameOption): Promise<str
  * with the base to its consumer). Without
  * this step, every emitted feed/index absolute URL 404'd on a based
  * deployment even though the on-page `<a href>`s (`withBase`, #61/C-002) and
- * the `<head>` feed-discovery links (`discoveryHead`, config.ts) were already
+ * the `<head>` feed-discovery links (the `Head` carrier) were already
  * base-prefixed.
  *
  * Routes through `withBase` — the SAME single base-prefix helper every
@@ -147,9 +147,18 @@ export function absolute(site: URL | undefined, path: string): string {
   return new URL(withBase(path), base).href;
 }
 
-/** Minimal XML text escaping for feed content. */
+/**
+ * Characters XML 1.0 forbids even as references: most C0 controls (all but tab, LF,
+ * CR), U+FFFE and U+FFFF, and an unpaired surrogate. A parser rejects the whole
+ * document on one, and escaping cannot help, so they are removed.
+ */
+// eslint-disable-next-line no-control-regex -- the point is to match control characters
+const XML_INVALID = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
+/** Minimal XML text escaping for feed content; also drops what XML 1.0 forbids. */
 export function xmlEscape(value: string): string {
   return value
+    .replace(XML_INVALID, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

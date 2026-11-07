@@ -17,7 +17,7 @@
  * Zero runtime dependencies (NFR-006): HTML/CSS are string-searched; the gzip
  * Pagefind fragments are decompressed with the Node built-in `node:zlib`.
  */
-import { realpathSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readFile, readdir } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
@@ -1281,31 +1281,50 @@ export async function assertChromeArtifacts(distDir) {
   // page's OWN url-scoped Pagefind fragment coverage (NFR-003 / R6).
   const demoHtml = await readHtml(dir, DEMO_PAGE);
 
-  // 14a) Audience block — a labelled <section> (region, NOT a nav) with a heading
-  // and a reader list; the profile resolves to the relocated persona page.
-  const audienceSection = demoHtml.match(
-    /<section\b[^>]*aria-labelledby="dk-audience-heading"[^>]*>([\s\S]*?)<\/section>/i,
+  // 14a) Audience block — a MetadataBlock (page-chrome WP04): a closed `details`, named
+  // by its summary, holding a reader list; the profile resolves to the relocated
+  // persona page. Not a landmark: it is page guidance.
+  const audienceBlock = demoHtml.match(
+    /<div\b[^>]*\bdk-panel--audience\b[^>]*\bdata-dk-disclosure\b[^>]*>\s*(<details\b[^>]*>)([\s\S]*?)<\/details>/i,
   );
-  if (!audienceSection) {
+  if (!audienceBlock) {
     fail(
-      `demonstrator: the audience <section> (aria-labelledby="dk-audience-heading") is absent on ` +
+      `demonstrator: the audience block (.dk-panel--audience with a details) is absent on ` +
         `${DEMO_PAGE} — the dk:audience block did not render (FR-001)`,
     );
   }
-  if (!/id="dk-audience-heading"[^>]*>\s*Who is this for/i.test(demoHtml)) {
-    fail(`demonstrator: the audience heading "Who is this for" is absent on ${DEMO_PAGE}`);
+  if (!/<summary>\s*<span class="dk-eyebrow"[^>]*>\s*Who is this for\s*<\/span>/i.test(audienceBlock[2])) {
+    fail(`demonstrator: the audience block's summary does not name it "Who is this for" on ${DEMO_PAGE}`);
   }
-  if (!audienceSection[1].includes('dk-audience__list')) {
+  if (!audienceBlock[2].includes('dk-audience__list')) {
     fail(`demonstrator: the audience block has no dk-audience__list on ${DEMO_PAGE}`);
   }
-  const audienceLink = anchorContaining(audienceSection[1], DEMO_AUDIENCE_HREF);
+  const audienceLink = anchorContaining(audienceBlock[2], DEMO_AUDIENCE_HREF);
   if (!audienceLink || !/\bclass="[^"]*\bdk-audience__profile\b/i.test(audienceLink)) {
     fail(
       `demonstrator: the audience profile did not resolve to the persona page ${DEMO_AUDIENCE_HREF} ` +
         `on ${DEMO_PAGE} — resolveProfile did not link the relocated persona (FR-001)`,
     );
   }
-  ok(`demonstrator: audience <section> renders a heading + reader list linking ${DEMO_AUDIENCE_HREF}`);
+  ok(`demonstrator: audience block is named by its summary, with a reader list linking ${DEMO_AUDIENCE_HREF}`);
+
+  // Every block on the demonstrator starts closed, and its count is its row count
+  // (page-chrome FR-014). The example sets no `metadataBlocks`, so this is the default.
+  for (const [id, row] of [
+    ['dk-block-audience', 'dk-audience__item'],
+    ['dk-block-related', 'dk-related__item'],
+    ['dk-block-external-references', 'dk-references__item'],
+  ]) {
+    const block = demoHtml.match(new RegExp(`<details id="${id}"( open)?[^>]*>([\\s\\S]*?)</details>`));
+    if (!block) fail(`demonstrator: no <details id="${id}"> on ${DEMO_PAGE} (FR-014)`);
+    if (block[1]) fail(`demonstrator: ${id} starts open on ${DEMO_PAGE}; blocks start collapsed by default (FR-014)`);
+    const count = block[2].match(/<\/span> \((\d+)\)<\/summary>/)?.[1];
+    const rows = block[2].split(`class="${row}`).length - 1;
+    if (Number(count) !== rows || rows === 0) {
+      fail(`demonstrator: ${id} says (${count}) over ${rows} row(s) on ${DEMO_PAGE} (FR-014)`);
+    }
+  }
+  ok('demonstrator: its three blocks start closed, each counting its rows');
 
   // 14b) Related block — a `role="navigation"` landmark labelled "Related pages",
   // title-named cards, a kind tag, and the stale-target status marker on the REAL
@@ -1608,6 +1627,75 @@ export async function assertChromeArtifacts(distDir) {
   ok(
     `sidebar: registry autogenerate groups resolve their child pages (not empty) on ${SIDEBAR_SAMPLE_PAGE} (BA-11)`,
   );
+
+  await assertFooterGroups(dir);
+}
+
+// --- page-chrome WP09: footer groups and head links ---------------------------
+// Appended in its own region: each check names one artifact of the footer's groups,
+// so removing a group, or one of its links, fails the gate.
+
+const WP09_BASE = '/doc-kitty';
+const WP09_PAGE = 'guides/getting-started/index.html';
+const WP09_NESTED_INDEX = 'guides/index.html';
+const WP09_DRAFT = 'adr/template/index.html';
+const WP09_GENERATED = 'glossary/index.html';
+const WP09_NOT_A_DOC = '404.html';
+const WP09_MACHINE_LINKS = [
+  '/llms.txt',
+  '/api/index.json',
+  '/api/content-graph.json',
+  '/rss.xml',
+  '/sitemap-index.xml',
+  '/api/bibliography.json',
+  '/api/scenarios.json',
+  '/okf/index.md',
+];
+
+const wp09Group = (html, name) => new RegExp(`<nav class="dk-${name}[ "][\\s\\S]*?</nav>`).exec(html)?.[0];
+const wp09Hrefs = (fragment) => [...fragment.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1]);
+const wp09HeadHrefs = (html) =>
+  [...html.slice(0, html.indexOf('</head>')).matchAll(/<link rel="alternate" [^>]*href="([^"]*)"/g)].map((m) => m[1]);
+
+async function assertFooterGroups(dir) {
+  const page = await readHtml(dir, WP09_PAGE);
+  const machine = wp09Group(page, 'machine-links');
+  if (!machine) fail(`footer: no machine links group on ${WP09_PAGE} (FR-001)`);
+  const hrefs = wp09Hrefs(machine);
+  for (const surface of WP09_MACHINE_LINKS) {
+    const href = `${WP09_BASE}${surface}`;
+    if (!hrefs.includes(href)) fail(`footer: the machine links group on ${WP09_PAGE} has no ${href} (FR-001)`);
+    if (!existsSync(path.join(dir, surface))) fail(`footer: ${surface} is linked but was not built (FR-003)`);
+  }
+  ok(`footer: the machine links group links ${WP09_MACHINE_LINKS.length} built surfaces (FR-001)`);
+
+  for (const rel of [WP09_PAGE, WP09_NESTED_INDEX]) {
+    const html = await readHtml(dir, rel);
+    const group = wp09Group(html, 'page-formats');
+    if (!group) fail(`footer: no page formats group on ${rel} (FR-019)`);
+    const formats = [...group.matchAll(/<a [^>]*rel="alternate"[^>]*href="([^"]*)"/g)].map((m) => m[1]);
+    if (formats.length !== 3) fail(`footer: ${rel} has ${formats.length} page formats, not JSON, OKF and Atom (FR-019)`);
+    const head = wp09HeadHrefs(html);
+    for (const href of formats) {
+      if (!existsSync(path.join(dir, href.slice(WP09_BASE.length)))) fail(`footer: ${rel} links ${href}, which was not built (FR-019)`);
+      if (!head.includes(href)) fail(`head: ${rel} has no alternate for ${href} (FR-019)`);
+    }
+    if (!/>\s*source\s*<\/a>/.test(group)) fail(`footer: ${rel} has no source link (FR-023)`);
+  }
+  ok(`footer: page formats on ${WP09_PAGE} and ${WP09_NESTED_INDEX} are built, and match the head (FR-019)`);
+
+  for (const [rel, why] of [[WP09_DRAFT, 'a draft (FR-022)'], [WP09_NOT_A_DOC, 'not a docs page']]) {
+    if (rel === WP09_DRAFT && !existsSync(path.join(dir, rel))) continue; // not built (drafts off)
+    const html = await readHtml(dir, rel);
+    if (wp09Group(html, 'page-formats')) fail(`footer: ${rel} is ${why} and has a page formats group`);
+    if (wp09HeadHrefs(html).some((href) => href.includes('/api/pages/') || href.includes('/okf/'))) {
+      fail(`head: ${rel} is ${why} and has a page format alternate`);
+    }
+  }
+  const generated = wp09Group(await readHtml(dir, WP09_GENERATED), 'page-formats');
+  if (!generated) fail(`footer: no page formats group on ${WP09_GENERATED} (FR-019)`);
+  if (/>\s*source\s*<\/a>/.test(generated)) fail(`footer: the generated page ${WP09_GENERATED} has a source link (FR-024)`);
+  ok('footer: no formats on a draft or a 404, and no source link on a generated page (FR-022, FR-024)');
 }
 
 // Standalone entry point: `node src/scripts/assert-chrome-artifacts.mjs <distDir>`.
