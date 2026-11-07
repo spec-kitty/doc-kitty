@@ -1,0 +1,35 @@
+{
+  "accept_commit": "e63d069ab6d23b0255e6a682cd3b2a90f1ca1c5b",
+  "acceptance_history": [
+    {
+      "accept_commit": "e63d069ab6d23b0255e6a682cd3b2a90f1ca1c5b",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-06T13:28:38.692217+00:00",
+      "accepted_by": "stijn",
+      "accepted_from_commit": "d1879780ced045370b2c0ba9e11c506213422fca"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-06T13:28:38.692217+00:00",
+  "accepted_by": "stijn",
+  "accepted_from_commit": "d1879780ced045370b2c0ba9e11c506213422fca",
+  "baseline_merge_commit": "0e9c96876e610a5242e9d9b56786d4d85d9047a4",
+  "created_at": "2026-11-05T17:22:51.976157+00:00",
+  "flattened": true,
+  "friendly_name": "Page chrome: footer entry points, sidebar, metadata blocks, hub order, page formats and nav icons",
+  "merged_at": "2026-11-06T13:37:39.878882+00:00",
+  "merged_commit": "a00ba44f2784f41db4700fd96c6569fa0bc00bdd",
+  "mid8": "01M6PBR7",
+  "mission_id": "01M6PBR7DP6X6EG3VVXT1CB589",
+  "mission_number": 19,
+  "mission_slug": "page-chrome-01M6PBR7",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Readers lose time to fully expanded sidebars, long metadata blocks and hub pages whose child cards come last. Agents and tool authors cannot find a site's or a page's machine-readable versions from the page itself. End users also asked for sidebar icons. This mission delivers tickets 290, 292 and 293 as one page chrome change. The references work in ticket 289 follows as a separate mission.",
+  "purpose_tldr": "Make the docsite page chrome less obstructive and show readers and agents what each site and page offers.",
+  "slug": "page-chrome-01M6PBR7",
+  "status_phase": "1",
+  "target_branch": "feat/page-chrome",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-05T18:24:44.269299+00:00"
+}

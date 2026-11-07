@@ -1,0 +1,240 @@
+schema_version: 1
+mission_id: 01M6PBR7DP6X6EG3VVXT1CB589
+mission_slug: page-chrome-01M6PBR7
+mission_number: 19
+friendly_name: 'Page chrome: footer entry points, sidebar, metadata blocks, hub order, page formats and nav icons'
+mission_type: software-dev
+target_branch: feat/page-chrome
+created_at: '2026-11-06T13:38:37.249428+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-11-06T13:38:37.249428+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-016
+- id: h-002
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-016
+- id: h-003
+  category: implementation
+  summary: WP10 completed without rejection cycles
+  evidence_refs:
+  - e-016
+not_helpful:
+- id: n-012
+  category: doc
+  summary: analysis-report.md records 6 finding(s)
+  evidence_refs:
+  - e-028
+  details: The analysis-report.md artifact for this mission records 6 finding(s) in its structured frontmatter. Review
+    them to understand documented issues and decisions.
+- id: n-010
+  category: process
+  summary: WP02 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-026
+  details: WP WP02 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-009
+  category: process
+  summary: WP09 had 1 lane bounce(s) before approval
+  evidence_refs:
+  - e-025
+  details: WP WP09 moved backward across workflow lanes 1 time(s) outside the documented reviewer-feedback flow.
+- id: n-011
+  category: process
+  summary: WP09 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-027
+  details: WP WP09 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP01 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-017
+  details: WP WP01 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP02 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-018
+  details: WP WP02 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP03 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-019
+  details: WP WP03 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP04 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-020
+  details: WP WP04 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-005
+  category: review_loop
+  summary: WP06 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-021
+  details: WP WP06 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-006
+  category: review_loop
+  summary: WP08 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-022
+  details: WP WP08 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-007
+  category: review_loop
+  summary: WP09 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-023
+  details: WP WP09 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-008
+  category: review_loop
+  summary: WP11 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-024
+  details: WP WP11 was sent back to an earlier lane with documented review feedback 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP01-config-and-served-surfaces.md
+- id: e-006
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP02-hub-block-placement.md
+- id: e-007
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP03-disclosure-extraction.md
+- id: e-008
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP04-metadata-blocks.md
+- id: e-009
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP05-sidebar-shaping.md
+- id: e-010
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP06-sidebar-renderer-title-as-index.md
+- id: e-011
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP07-sidebar-icons.md
+- id: e-012
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP08-page-atom-route.md
+- id: e-013
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP09-footer-head-page-formats.md
+- id: e-014
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP10-docs-and-upgrade-note.md
+- id: e-015
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/tasks/WP11-test-harness-and-baselines.md
+- id: e-016
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+- id: e-017
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6PK8DP72Q9HQW3S3WCQ5NMR..01M6R30ERNZMX2F7A987SD54VG
+- id: e-018
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6PK7CV7Y331P5B2FZEBT46P
+- id: e-019
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6PK4SHFST0F0ETET4JZP7VK
+- id: e-020
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6R71H21YB1XKZ328YP4D2SG..01M6R8N9F2ZR36C653WJH1DRDY
+- id: e-021
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6R9DP4PSNJE3XA73SXA6M99
+- id: e-022
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6R5VN8AHVWPB820F8PDYE56
+- id: e-023
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6RC0RC79GTNBFBC5CBBXAR8
+- id: e-024
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6PGZB11TE0R7CZ7YK52TP82
+- id: e-025
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6RGSYWJNYBZ6225RHKNE9Y1
+- id: e-026
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6PK67BKBTWATQYK721FYMP8
+- id: e-027
+  kind: event_range
+  path: kitty-specs/page-chrome-01M6PBR7/status.events.jsonl
+  range: 01M6RGSYWJNYBZ6225RHKNE9Y1
+- id: e-028
+  kind: file
+  path: kitty-specs/page-chrome-01M6PBR7/analysis-report.md
+generator_version: '1.0'
+provenance_history: []
