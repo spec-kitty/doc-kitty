@@ -86,6 +86,9 @@ kind: Hub
 | [0072](./0072-parallel-landing-without-shared-files.md) | ADR-0072: Land PRs in parallel without shared hand-edited files | Accepted | 2026-11-01 |
 | [0073](./0073-generic-mcp-server-over-published-artifacts.md) | ADR-0073: One generic MCP server over published artifacts | Accepted | 2026-11-02 |
 | [0074](./0074-plantuml-external-include-opt-in.md) | ADR-0074: Let operators opt PlantUML into external includes | Accepted | 2026-11-03 |
+| [0075](./0075-sidebar-carrier-renders-own-sublist-on-opt-in.md) | ADR-0075: The Sidebar carrier renders its own sublist on opt-in | Accepted | 2026-11-06 |
+| [0076](./0076-carrier-places-hub-blocks-after-layout.md) | ADR-0076: Place a hub's metadata blocks after its layout | Accepted | 2026-11-05 |
+| [0077](./0077-shared-disclosure-control.md) | ADR-0077: One disclosure control over a native details baseline | Accepted | 2026-11-06 |
 
 New ADRs copy [`template.md`](./template.md) and take the next free number. Do
 not edit the table above: after a merge, the ADR index workflow regenerates it
