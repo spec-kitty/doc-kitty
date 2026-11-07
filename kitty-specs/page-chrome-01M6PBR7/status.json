@@ -1,0 +1,207 @@
+{
+  "event_count": 132,
+  "last_event_id": "01M6RH8FSK36NWQN85Q3H7257V",
+  "materialized_at": "2026-11-06T13:37:36.563367+00:00",
+  "mission_number": "",
+  "mission_slug": "page-chrome-01M6PBR7",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 11,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:node-norris",
+      "force_count": 2,
+      "implementer_of_record": "claude:claude-sonnet-5-5:node-norris",
+      "lane": "done",
+      "last_event_id": "01M6RH89VDW6AZE4CRYKVVQR28",
+      "last_transition_at": "2026-11-06T13:37:30.477403+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP01-config-and-served-surfaces/review-cycle-3.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP01-config-and-served-surfaces/review-cycle-3.md",
+        "reviewer": "claude:claude-opus-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3150654,
+      "shell_pid_created_at": "1793957624.05"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:frontend-freddy",
+      "force_count": 2,
+      "implementer_of_record": "claude:claude-sonnet-5-5:frontend-freddy",
+      "lane": "done",
+      "last_event_id": "01M6RH8AJ19SC8V9DJJBYJVR38",
+      "last_transition_at": "2026-11-06T13:37:31.201145+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP02-hub-block-placement/review-cycle-2.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP02-hub-block-placement/review-cycle-2.md",
+        "reviewer": "claude:claude-sonnet-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 2147650,
+      "shell_pid_created_at": "1793907207.1"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude:claude-opus-5-5:frontend-freddy",
+      "force_count": 1,
+      "implementer_of_record": "claude:claude-opus-5-5:frontend-freddy",
+      "lane": "done",
+      "last_event_id": "01M6RH8B5CEGZX3G95465Q624N",
+      "last_transition_at": "2026-11-06T13:37:31.820400+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP03-disclosure-extraction/review-cycle-2.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP03-disclosure-extraction/review-cycle-2.md",
+        "reviewer": "claude:claude-opus-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 2149112,
+      "shell_pid_created_at": "1793907240.73"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:frontend-freddy",
+      "force_count": 2,
+      "implementer_of_record": "claude:claude-sonnet-5-5:frontend-freddy",
+      "lane": "done",
+      "last_event_id": "01M6RH8BRE3R9DXEF620YKG3J4",
+      "last_transition_at": "2026-11-06T13:37:32.430179+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP04-metadata-blocks/review-cycle-3.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP04-metadata-blocks/review-cycle-3.md",
+        "reviewer": "claude:claude-opus-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 105399,
+      "shell_pid_created_at": "1793964081.11"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:frontend-freddy",
+      "force_count": 0,
+      "implementer_of_record": "claude:claude-sonnet-5-5:frontend-freddy",
+      "lane": "done",
+      "last_event_id": "01M6RH8CFFWVMKW9JES66MX9F6",
+      "last_transition_at": "2026-11-06T13:37:33.167399+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP05-sidebar-shaping/review-cycle-1.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP05-sidebar-shaping/review-cycle-1.md",
+        "reviewer": "claude:claude-opus-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3203554,
+      "shell_pid_created_at": "1793958726.19"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:frontend-freddy",
+      "force_count": 1,
+      "implementer_of_record": "claude:claude-sonnet-5-5:frontend-freddy",
+      "lane": "done",
+      "last_event_id": "01M6RH8DRP2M4Z9E462AME4356",
+      "last_transition_at": "2026-11-06T13:37:34.486440+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP06-sidebar-renderer-title-as-index/review-cycle-2.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP06-sidebar-renderer-title-as-index/review-cycle-2.md",
+        "reviewer": "claude:claude-opus-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 105399,
+      "shell_pid_created_at": "1793964081.11"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude:claude-opus-5-5:frontend-freddy",
+      "force_count": 0,
+      "implementer_of_record": "claude:claude-opus-5-5:frontend-freddy",
+      "lane": "done",
+      "last_event_id": "01M6RH8F372MDWZPEHRSX8V9XG",
+      "last_transition_at": "2026-11-06T13:37:35.847631+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP07-sidebar-icons/review-cycle-1.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP07-sidebar-icons/review-cycle-1.md",
+        "reviewer": "claude:claude-sonnet-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 524290,
+      "shell_pid_created_at": "1793966796.79"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:node-norris",
+      "force_count": 1,
+      "implementer_of_record": "claude:claude-sonnet-5-5:node-norris",
+      "lane": "done",
+      "last_event_id": "01M6RH8D29R1BS0HZXJTB86YFZ",
+      "last_transition_at": "2026-11-06T13:37:33.769553+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP08-page-atom-route/review-cycle-2.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP08-page-atom-route/review-cycle-2.md",
+        "reviewer": "claude:claude-opus-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3834223,
+      "shell_pid_created_at": "1793961646.05"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:frontend-freddy",
+      "force_count": 2,
+      "implementer_of_record": "claude:claude-sonnet-5-5:frontend-freddy",
+      "lane": "done",
+      "last_event_id": "01M6RH8EDMGAHPZ0WFAGWVBZ6C",
+      "last_transition_at": "2026-11-06T13:37:35.156345+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP09:20261106",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 524290,
+      "shell_pid_created_at": "1793966796.79"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "claude:claude-sonnet-5-5:curator-carla",
+      "force_count": 0,
+      "implementer_of_record": "claude:claude-sonnet-5-5:curator-carla",
+      "lane": "done",
+      "last_event_id": "01M6RH8FSK36NWQN85Q3H7257V",
+      "last_transition_at": "2026-11-06T13:37:36.563367+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP10-docs-and-upgrade-note/review-cycle-1.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP10-docs-and-upgrade-note/review-cycle-1.md",
+        "reviewer": "claude:claude-sonnet-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 1376016,
+      "shell_pid_created_at": "1793971118.42"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M6RH893A8M2S658ZDHMF0VCF",
+      "last_transition_at": "2026-11-06T13:37:29.706314+00:00",
+      "review_result": {
+        "feedback_path": "kitty-specs/page-chrome-01M6PBR7/tasks/WP11-test-harness-and-baselines/review-cycle-2.md",
+        "reference": "review-cycle://page-chrome-01M6PBR7/WP11-test-harness-and-baselines/review-cycle-2.md",
+        "reviewer": "claude:claude-sonnet-5-5:reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 1822308,
+      "shell_pid_created_at": "1793904887.66"
+    }
+  }
+}

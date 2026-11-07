@@ -1,0 +1,89 @@
+{
+  "rows": {
+    "#150": {
+      "evidence_ref": "Context only: the edit-link work stays out of scope (C-006), and the source link only reuses its host list; no work owed.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Add an Edit this page link",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#264": {
+      "evidence_ref": "Context only: it edits the same hub layout; this mission adds no layout contract; no work owed.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Card-grid hub",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#279": {
+      "evidence_ref": "Context only: it can reuse the disclosure control later; no work owed.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Render sources and verified on the page",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#289": {
+      "evidence_ref": "Context only: the references work is a separate, later mission (C-005); no work owed here.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Bibliography and reference pages",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#290": {
+      "evidence_ref": "WP01-WP06 and WP09 approved; trial integration green; amendments noted in research.md.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Page chrome: machine entry points, sidebar toggles, collapsible metadata blocks, hub cards first",
+      "verdict": "fixed",
+      "wp": "WP01,WP02,WP03,WP04,WP05,WP06,WP09"
+    },
+    "#292": {
+      "evidence_ref": "WP08 and WP09 approved; trial integration green.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Per-page alternate formats in the footer",
+      "verdict": "fixed",
+      "wp": "WP08,WP09"
+    },
+    "#293": {
+      "evidence_ref": "WP06 and WP07 approved; icons proven on a fixture, not the example, as the spec records.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Sidebar nav icons as build-time inline SVG",
+      "verdict": "fixed",
+      "wp": "WP06,WP07"
+    }
+  },
+  "schema_version": 1
+}
