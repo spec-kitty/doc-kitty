@@ -69,6 +69,12 @@ export interface SectionRegistryEntry {
    * `plans/missions`) a data edit, not a derivation-code edit (SC-002).
    */
   subtypes?: SectionSubtypeRule[];
+  /**
+   * The section's sidebar icon: `fa-<name>` for Font Awesome solid, or a Starlight
+   * built-in's name. It wins over the section index page's `sidebar.icon`. The name is
+   * checked with the page icons, by the sidebar-icons integration and the frontmatter gate.
+   */
+  icon?: string;
 }
 
 /** The resolved registry: entries sorted by `order`, tie-broken by `id`. */
@@ -140,7 +146,7 @@ function normalizeSectionEntries(
     if (rec == null || typeof rec !== 'object') {
       throw new Error(`${src}: a section entry is not a mapping (${JSON.stringify(rec)})`);
     }
-    const { id, label, order, type, purpose, feeds, subtypes } = rec as Record<string, unknown>;
+    const { id, label, order, type, purpose, feeds, subtypes, icon } = rec as Record<string, unknown>;
 
     if (typeof id !== 'string' || id === '') {
       throw new Error(`${src}: a section entry is missing a string "id"`);
@@ -170,6 +176,12 @@ function normalizeSectionEntries(
     if (typeof purpose === 'string') entry.purpose = purpose;
     if (Array.isArray(feeds)) {
       entry.feeds = feeds.filter((f): f is string => typeof f === 'string');
+    }
+    if (icon !== undefined) {
+      if (typeof icon !== 'string') {
+        throw new Error(`${src}: section "${id}" "icon" must be a string`);
+      }
+      entry.icon = icon;
     }
     if (subtypes !== undefined) {
       if (!Array.isArray(subtypes)) {

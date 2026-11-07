@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 import { REVEAL_CURRENT_SCRIPT } from '../lib/route-shaping.js';
+import { buildChromeFixture, DEEP_PAGE, GOLDEN_DIR, emittedCss, normaliseBuildIds, normaliseFooterCss, sidebarFragment } from './fixtures/chrome/harness.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const OUT_DIR_NAME = 'dist-wp04-sidebar-shaping-test';
@@ -85,6 +86,16 @@ function sidebarTree(doc: string): Node[] {
     }
   }
   return root.children!;
+}
+
+/** Each sidebar group of a page, in document order, with whether its `<details>` is open in the static HTML. */
+function groupStates(doc: string): Array<{ label: string; open: boolean }> {
+  const out: Array<{ label: string; open: boolean }> = [];
+  const re = /<details\b([^>]*)>[\s\S]*?<span class="large[^"]*"[^>]*>([^<]*)<\/span>/g;
+  let m: RegExpExecArray | null;
+  const html = sidebarHtml(doc);
+  while ((m = re.exec(html)) !== null) out.push({ label: m[2]!.trim(), open: /\bopen\b/.test(m[1]!) });
+  return out;
 }
 
 const groupsOf = (nodes: Node[]): Node[] =>
@@ -295,6 +306,19 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
     expect(/<html[^>]*data-has-toc/.test(chapter)).toBe(true);
   });
 
+  it('opens only the groups on the path to the page; every other group is closed (FR-005, SC-001)', () => {
+    const deep = readOut('rhetoric/book-one/chapter-02/index.html');
+    const states = groupStates(deep);
+    const open = states.filter((g) => g.open).map((g) => g.label);
+    // Ancestors of the page: the Rhetoric section and Book I's group.
+    expect(open).toEqual(['Rhetoric', 'I: Purposes and Definitions of Rhetoric']);
+    // Control: the page has many groups, so "only two open" is not "few groups".
+    expect(states.length).toBeGreaterThan(10);
+    expect(states.filter((g) => !g.open).length).toBe(states.length - 2);
+    // The home page has no ancestors: every group is closed.
+    expect(groupStates(home).filter((g) => g.open)).toEqual([]);
+  });
+
   it('ships the reveal-current-entry script once, after the sidebar tree, not in <head> (FR-022, FR-004)', () => {
     const head = home.slice(0, home.search(/<body[\s>]/i));
     expect(head).not.toContain(REVEAL_CURRENT_SCRIPT);
@@ -390,4 +414,43 @@ describe('WP07 — a consumer-supplied sidebar is not reshaped (C-004)', () => {
     expect(/<html[^>]*data-has-toc/.test(page('context/audience/index.html'))).toBe(false);
     expect(/<html[^>]*data-has-toc/.test(page('rhetoric/book-one/chapter-02/index.html'))).toBe(true);
   });
+});
+
+describe('FR-010 / FR-006 — the opt-outs (page-chrome WP05)', () => {
+  const CHROME_BUILD_TIMEOUT = 240_000;
+  const golden = (name: string) => readFileSync(path.join(GOLDEN_DIR, name), 'utf8');
+
+  it(
+    'a consumer-written array sidebar is built as written: no group is collapsed for them (FR-010)',
+    () => {
+      const consumer = path.join(CONSUMER_OUT_DIR, 'index.html');
+      expect(existsSync(consumer), 'the consumer build ran in the suite above').toBe(true);
+      const states = groupStates(readFileSync(consumer, 'utf8'));
+      expect(states.map((g) => g.label)).toEqual(expect.arrayContaining(['Hand-written', 'nested-group']));
+      // Written without `collapsed`, so Starlight opens them. The toolkit must not have added it.
+      expect(states.every((g) => g.open)).toBe(true);
+      // Control (same suite as FR-005): a generated sidebar on the same pages closes its groups.
+      expect(groupStates(readOut('index.html')).find((g) => g.label === 'Guides')).toEqual({ label: 'Guides', open: false });
+    },
+    CHROME_BUILD_TIMEOUT,
+  );
+
+  it(
+    '`sidebar: { collapsed: false }` reproduces the pre-mission sidebar fragment and CSS exactly (FR-006)',
+    () => {
+      const optOut = buildChromeFixture({ options: { sidebar: { collapsed: false } } });
+      expect(optOut.status, optOut.output).toBe(0);
+      const read = (dist: string) => readFileSync(path.join(dist, DEEP_PAGE), 'utf8');
+      const fragment = `${normaliseBuildIds(sidebarFragment(read(optOut.dist)))}\n`;
+      // data-hash is inside the fragment.
+      expect(fragment).toMatch(/^<sl-sidebar-state-persist data-hash="[^"]+"/);
+      expect(fragment).toBe(golden('sidebar.html'));
+      expect(normaliseFooterCss(emittedCss(optOut.dist))).toBe(golden('css.txt'));
+      // Control: the default build is not the golden, so the equality above is not a no-op.
+      const standard = buildChromeFixture({});
+      expect(standard.status, standard.output).toBe(0);
+      expect(`${normaliseBuildIds(sidebarFragment(read(standard.dist)))}\n`).not.toBe(golden('sidebar.html'));
+    },
+    CHROME_BUILD_TIMEOUT,
+  );
 });

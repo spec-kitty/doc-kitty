@@ -2,10 +2,17 @@
 /*
  * DocKitty carrier: Sidebar (the sixth carrier, ADR-0063; FR-004, NFR-005, #203).
  *
- * COMPOSE: renders Starlight's own Sidebar unchanged, then the reveal script
- * (`REVEAL_CURRENT_SCRIPT`, `lib/route-shaping.ts`) that scrolls the sidebar pane
- * so the current page's entry is in view. Nothing wraps the default and nothing
- * is added inside it, so the sidebar markup stays exactly Starlight's.
+ * COMPOSE: renders the sidebar, then the reveal script (`REVEAL_CURRENT_SCRIPT`,
+ * `lib/route-shaping.ts`) that scrolls the sidebar pane so the current page's entry
+ * is in view. On a site with no opt-in the sidebar is Starlight's own, unchanged:
+ * nothing wraps it and nothing is added inside it. A site that opted in gets
+ * `CustomSidebarBody`, which renders a DocKitty sublist in Starlight's persister
+ * (ADR-0075, superseding ADR-0063 decision 1 in part).
+ *
+ * The manifest decides, and exports `CustomSidebarBody` only for such a site. A static
+ * import here would put the body's scoped CSS in every site's module graph, opted in or
+ * not. `Body` is rebound rather than branched on, so the whitespace Astro emits around
+ * this element, and with it a stock site's bytes, stays what it was.
  *
  * Why here and not in `<head>`: a head script cannot reach the pane until the
  * document is parsed, so it had to wait for `DOMContentLoaded`, and on a slow
@@ -24,12 +31,15 @@
  * marks it for `assert-chrome-artifacts.mjs`.
  *
  * Starlight renders this override as `<Sidebar />` with no props and no
- * children; the default reads `Astro.locals.starlightRoute`. `Astro.props` and
+ * children; both bodies read `Astro.locals.starlightRoute`. `Astro.props` and
  * the slot are still forwarded, so a later Starlight that passes either reaches
  * the default unchanged.
  */
 import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { CustomSidebarBody } from 'virtual:doc-kitty/manifest';
 import { REVEAL_CURRENT_SCRIPT } from '../lib/route-shaping.js';
+
+const Body = CustomSidebarBody ?? Default;
 ---
-<Default {...Astro.props}><slot /></Default>
+<Body {...Astro.props}><slot /></Body>
 <script is:inline aria-hidden="true" data-dk-sidebar-reveal set:html={REVEAL_CURRENT_SCRIPT} />

@@ -10,9 +10,10 @@ import matter from 'gray-matter';
 import type { AstroIntegration } from 'astro';
 import { resolveIndexEntries, sectionOf, type IndexBasenameOption } from '../metadata.js';
 import { resolveSectionRegistry, sectionFeeds, feedsSurface } from '../sections.js';
-import { buildDirectoryMeta, type DirectoryMetaInput } from '../route-shaping.js';
+import { buildDirectoryMeta, pageRouteSlug, type DirectoryMetaInput } from '../route-shaping.js';
+import { chromeOptions } from '../chrome-options.js';
 import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
-import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
+import { compareCodeUnit } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
 import { normalizeBasePrefix, siteDraftRoutes } from './shared.js';
 
@@ -64,9 +65,6 @@ export interface RouteShapingOptions {
   indexLabel?: string;
 }
 
-/** The slug of the folder holding a docs-relative path (`''` for the docs root). */
-const folderSlug = (rel: string): string => (rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '');
-
 /**
  * Read the slice of every docs page that sidebar shaping needs: slug, title,
  * the Starlight `sidebar` front-matter block, and whether the file is a
@@ -99,11 +97,7 @@ function directoryMetaInputs(
   const inputs: DirectoryMetaInput[] = pages
     .filter(({ rel }) => !unpublishedPaths.has(rel))
     .map(({ rel, data }) => {
-      const pageSlug = ids.get(rel) as string;
-      // An index page serves its containing folder's route (`x/index` is served at
-      // `/x/`), so the group is keyed by the folder; any other page keeps its own id.
-      const isIndex = routeOfSlug(pageSlug) === routeOfSlug(folderSlug(rel));
-      const slug = isIndex ? folderSlug(rel) : pageSlug;
+      const { slug, isIndex } = pageRouteSlug(rel, ids.get(rel) as string);
       const label = data.sidebar?.label;
       const order = data.sidebar?.order;
       return {
@@ -145,12 +139,16 @@ export function routeShapingSource(
         ),
       )
     : new Map();
+  const { sidebar: chromeSidebar } = chromeOptions();
   const data = {
     base: normalizeBasePrefix(options.base),
     shapeSidebar: options.shapeSidebar,
     pagination: options.pagination,
     directoryMeta: [...meta.entries()],
     unpublishedDirs: unpublished,
+    collapse: chromeSidebar.collapsed,
+    // The renderer's markers, on whenever that renderer runs (`usesCustomSidebar` in manifest.ts).
+    annotate: chromeSidebar.titleIsIndex || state.iconsAuthored,
     ...(options.indexLabel ? { indexLabel: options.indexLabel } : {}),
   };
   return (

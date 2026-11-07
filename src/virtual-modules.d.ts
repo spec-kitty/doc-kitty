@@ -26,4 +26,6 @@ declare module 'virtual:doc-kitty/manifest' {
    * resolves at runtime to a component with those metadata fields assigned.
    */
   export const themeSocialImage: import('astro').ImageMetadata | undefined;
+  /** The Sidebar carrier's body on a site that opted in (ADR-0075); otherwise `undefined`. */
+  export const CustomSidebarBody: import('./lib/manifest.js').LayoutComponent | undefined;
 }

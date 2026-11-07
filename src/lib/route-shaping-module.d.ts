@@ -19,5 +19,9 @@ declare module 'virtual:doc-kitty/route-shaping' {
     unpublishedDirs: string[];
     /** The `sidebar.indexLabel` option; absent = use the locale's translation (#161). */
     indexLabel?: string;
+    /** Start generated groups closed (`sidebar.collapsed`). */
+    collapse: boolean;
+    /** Emit the custom renderer's markers; true whenever a site uses the renderer. */
+    annotate: boolean;
   };
 }

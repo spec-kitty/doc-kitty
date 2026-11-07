@@ -1,0 +1,60 @@
+---
+/*
+ * What only a title-as-index sidebar needs: the disclosure upgrade for its chevrons,
+ * and the layout that puts a chevron on its label's row (ADR-0075).
+ *
+ * `CustomSidebarBody` renders this outside `<sl-sidebar-state-persist>`: a script in
+ * there would break the parity test, and could hit the Safari/VoiceOver bug
+ * `SidebarPersister.astro` documents for a `display: contents` container.
+ *
+ * ## The layout
+ * `summary` has to stay in `details`, and the upgrade's button sits just before it, so
+ * neither can share a row with the label in normal flow. Both are placed on that row
+ * from the `li` instead, in the same box (NFR-006), and the label stops short of it, so
+ * the current page's highlight never runs under a chevron. A closed `details` then has
+ * no height, and an open one has only its list.
+ *
+ * ## Why not scoped, and why not layered
+ * The button a script creates has no scope attribute. `disclosure.css` is unlayered, so
+ * a rule in `starlight.core` would lose to it; the doubled class wins over it whatever
+ * the order the sheets load in. `display` is not set here, so its
+ * `.dk-disclosure--upgraded > details > summary { display: none }` still applies.
+ */
+---
+
+<script>
+	import '../../lib/disclosure/disclosure.client.js';
+</script>
+
+<style is:global>
+	.dk-group {
+		position: relative;
+	}
+
+	.dk-group.dk-disclosure > .dk-group__label {
+		margin-inline-end: 2.25rem;
+	}
+
+	.dk-group.dk-disclosure > details > summary,
+	.dk-group.dk-disclosure > .dk-disclosure__toggle {
+		position: absolute;
+		inset-block-start: 0;
+		inset-inline-end: 0;
+		inline-size: 2.25rem; /* centres a 1.25rem caret where a plain group's sits */
+		block-size: 2.25rem; /* the label row on a phone */
+		justify-content: center;
+	}
+
+	@media (min-width: 50rem) {
+		.dk-group.dk-disclosure > details > summary,
+		.dk-group.dk-disclosure > .dk-disclosure__toggle {
+			block-size: 2rem; /* the label row from 50rem up */
+		}
+	}
+
+	.dk-group.dk-disclosure > details > summary > svg,
+	.dk-group.dk-disclosure > .dk-disclosure__toggle > svg {
+		inline-size: 1.25rem;
+		block-size: 1.25rem;
+	}
+</style>
