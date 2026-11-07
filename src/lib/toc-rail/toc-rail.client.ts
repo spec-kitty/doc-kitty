@@ -15,11 +15,13 @@
  * attribute.
  *
  * ## Accessibility (C-3 / WCAG 2.1 AA)
- * A native `<button type="button">` gives Enter/Space activation for free. The
+ * The button comes from the shared `../disclosure/toggle` (ADR-0077). A native
+ * `<button type="button">` gives Enter/Space activation for free. The
  * button carries `aria-expanded` (state of the outline region), `aria-controls`
  * naming the outline panel, a non-empty `aria-label` + matching `title` that swap
  * per state, and a `:focus-visible` accent ring (in the sheet). The chevron `<svg>`
- * is `aria-hidden` (decorative); the accessible name comes from `aria-label`.
+ * is `aria-hidden` (decorative), and the sheet rotates it 180° under
+ * `html[data-toc-collapsed]`; the accessible name comes from `aria-label`.
  *
  * ## Mount point (FR-008)
  * The button is the FIRST CHILD of `.right-sidebar-container`, ahead of
@@ -40,6 +42,7 @@
  * column when it is injected (NFR-005).
  */
 
+import { createDisclosureButton } from '../disclosure/toggle.js';
 import { isCollapsed, setCollapsed } from './preference.js';
 
 /** Stable unique id — the idempotency sentinel AND the CSS anchor hook. */
@@ -53,27 +56,9 @@ const PANEL_ID = 'dk-toc-panel';
 const LABEL_WHEN_EXPANDED = 'Hide the table of contents';
 const LABEL_WHEN_COLLAPSED = 'Show the table of contents';
 
-/** Decorative chevron. `aria-hidden` so the name comes only from `aria-label`;
- * the sheet rotates it 180° under `html[data-toc-collapsed]` so it flips between
- * the collapse (points at the rail) and expand (points back at the article) cues. */
-const CHEVRON_SVG =
-  '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">' +
-  '<path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" ' +
-  'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
-/** Reflect the collapse state onto the button: `aria-expanded` mirrors whether the
- * outline region is expanded (= `!collapsed`), and the label/title describe the
- * ACTION the next click performs. */
-function reflectState(button: HTMLButtonElement, collapsed: boolean): void {
-  button.setAttribute('aria-expanded', String(!collapsed));
-  const label = collapsed ? LABEL_WHEN_COLLAPSED : LABEL_WHEN_EXPANDED;
-  button.setAttribute('aria-label', label);
-  button.title = label;
-}
-
-/** Apply a collapse state: drive the `<html>` attribute (the layout driver),
- * persist it (blocked-storage-safe), and reflect it onto the button. */
-function applyCollapsed(button: HTMLButtonElement, collapsed: boolean): void {
+/** Drive the `<html>` attribute (the layout driver) and persist the state
+ * (blocked-storage-safe): the rail's state adapter for the shared toggle. */
+function applyCollapsed(collapsed: boolean): void {
   const root = document.documentElement;
   if (collapsed) {
     root.setAttribute('data-toc-collapsed', '');
@@ -81,7 +66,6 @@ function applyCollapsed(button: HTMLButtonElement, collapsed: boolean): void {
     root.removeAttribute('data-toc-collapsed');
   }
   setCollapsed(collapsed);
-  reflectState(button, collapsed);
 }
 
 /**
@@ -97,24 +81,20 @@ export function initTocRail(): void {
   if (!container) return; // no TOC rail here
   if (document.getElementById(TOGGLE_ID)) return; // already injected (idempotent)
 
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.id = TOGGLE_ID;
-  button.className = 'dk-toc-toggle';
-  button.innerHTML = CHEVRON_SVG; // constant markup only — no user data (safe)
-
   // Name the region the button controls (FR-008). An id already on the panel is
   // kept; otherwise the island assigns its own.
   const panel = container.querySelector('.right-sidebar-panel');
-  if (panel) {
-    if (!panel.id) panel.id = PANEL_ID;
-    button.setAttribute('aria-controls', panel.id);
-  }
+  if (panel && !panel.id) panel.id = PANEL_ID;
 
-  reflectState(button, isCollapsed());
-  button.addEventListener('click', () => {
-    applyCollapsed(button, !isCollapsed());
+  const button = createDisclosureButton({
+    id: TOGGLE_ID,
+    controls: panel?.id ?? '',
+    labelWhenExpanded: LABEL_WHEN_EXPANDED,
+    labelWhenCollapsed: LABEL_WHEN_COLLAPSED,
+    isCollapsed,
+    setCollapsed: applyCollapsed,
   });
+  button.className = 'dk-toc-toggle';
 
   // First child of the container, ahead of `.right-sidebar`: next to the outline in
   // focus order and outside the two subtrees the collapsed sheet disables. See the

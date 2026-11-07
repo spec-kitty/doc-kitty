@@ -36,8 +36,7 @@ import { normalizeBasePrefix } from './shared.js';
  *   (b) registers the remark plugins in the PINNED order (`updateConfig` APPENDS
  *       after Astro's built-in remark-gfm): `glossary-term → glossary-autolink`,
  *       threading the ONE shared index + `DEFAULT_IGNORE_LIST` + the site's
- *       already-normalized base prefix (#61, C-001 — the same `normalizeBasePrefix`
- *       pattern `discoveryHead` uses for `/rss.xml`/`/llms.txt`) into both factories
+ *       already-normalized base prefix (#61, C-001 — `normalizeBasePrefix`) into both factories
  *       (FR-008), plus the `glossaryDefinitions` rehype plugin that emits the
  *       hover-preview payload `<script>` (the WP06 island contract). `remarkDirective`
  *       is registered ONCE by the shared `directiveIntegration` owner (ADR-0030),

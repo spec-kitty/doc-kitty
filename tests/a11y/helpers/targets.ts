@@ -10,7 +10,7 @@
 // SC 2.5.8 exempts); the chrome has no inline-text exemption here.
 import type { Page } from '@playwright/test';
 
-export type Region = 'header' | 'sidebar' | 'rail' | 'footer';
+export type Region = 'header' | 'sidebar' | 'rail' | 'footer' | 'blocks';
 
 /**
  * Region roots, as found in the built markup (Starlight 0.42 plus the toolkit):
@@ -23,13 +23,17 @@ export type Region = 'header' | 'sidebar' | 'rail' | 'footer';
  *            top"). Starlight renders `.meta` and `.pagination-links` empty on a
  *            page with no edit link and no neighbours (the example's case), so
  *            the site footer keeps the region non-empty there; `.meta` is not
- *            required to exist.
+ *            required to exist;
+ *   blocks   the page's metadata blocks, which are content but hold no running
+ *            text, so the same check applies. Closed content is not rendered, so
+ *            measure them open as well as closed.
  */
 export const REGIONS: Readonly<Record<Region, readonly string[]>> = {
   header: ['header.header'],
   sidebar: ['#starlight__sidebar'],
   rail: ['.right-sidebar-container'],
-  footer: ['footer:has(> .pagination-links)', '.dk-site-footer'],
+  footer: ['footer:has(> .pagination-links)', '.dk-machine-links', '.dk-page-formats', '.dk-site-footer'],
+  blocks: ['.dk-panel.dk-disclosure'],
 };
 
 export const TARGET_SELECTOR = 'a[href], button, input:not([type=hidden]), select, summary, [role=button]';

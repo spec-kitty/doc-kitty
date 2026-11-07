@@ -34,6 +34,9 @@
  * OMIT-WHEN-EMPTY (FR-010): the whole block is omitted when all three sub-lists
  * are empty, and any individual empty sub-list is omitted.
  *
+ * Each sub-list is a `MetadataBlock` (page-chrome WP04), with the same ids as the
+ * standalone blocks: the carrier renders one form or the other, never both.
+ *
  * The MOUNT is owned + presence-gated by the ADR-0013 carrier
  * `MarkdownContent.astro` (WP07 T036): this block replaces the standalone
  * `<Related/>`/`<ExternalReferences/>` only when the glossary is active, so a
@@ -47,6 +50,7 @@ import { buildDocsIndex, collectDocEntries } from '../../lib/docs-index.js';
 
 import ReferenceItem from '../../themes/spec-kitty/components/molecules/ReferenceItem.astro';
 import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
+import MetadataBlock from './MetadataBlock.astro';
 import { buildCatalog } from '../../lib/catalog.js';
 import {
   resolveCitation,
@@ -235,12 +239,13 @@ const LIST_RESET =
   hasAnything && (
     <div class="dk-on-this-page">
       {hasRelated && (
-        <div
-          class="dk-panel dk-panel--related dk-related"
-          role="navigation"
-          aria-label="Related pages"
+        <MetadataBlock
+          id="dk-block-related"
+          panelClass="dk-panel--related dk-related"
+          label="Related"
+          count={relatedCards.length}
+          navLabel="Related pages"
         >
-          <p class="dk-eyebrow">Related</p>
           <ul class="dk-related__list" style={LIST_RESET}>
             {relatedCards.map((card) => (
               <li class="dk-related__item">
@@ -254,16 +259,17 @@ const LIST_RESET =
               </li>
             ))}
           </ul>
-        </div>
+        </MetadataBlock>
       )}
 
       {hasReferences && (
-        <div
-          class="dk-panel dk-panel--external-references dk-references"
-          role="navigation"
-          aria-label="External references"
+        <MetadataBlock
+          id="dk-block-external-references"
+          panelClass="dk-panel--external-references dk-references"
+          label="External references"
+          count={referenceRows.length}
+          navLabel="External references"
         >
-          <p class="dk-eyebrow">External references</p>
           <ul class="dk-references__list" style={LIST_RESET}>
             {referenceRows.map((row) => (
               <li class="dk-references__item">
@@ -276,16 +282,17 @@ const LIST_RESET =
               </li>
             ))}
           </ul>
-        </div>
+        </MetadataBlock>
       )}
 
       {hasGlossary && (
-        <div
-          class="dk-panel dk-panel--glossary dk-glossary-links"
-          role="navigation"
-          aria-label="Glossary links used"
+        <MetadataBlock
+          id="dk-block-glossary"
+          panelClass="dk-panel--glossary dk-glossary-links"
+          label="Glossary links used"
+          count={glossaryLinks.length}
+          navLabel="Glossary links used"
         >
-          <p class="dk-eyebrow">Glossary links used</p>
           <ul class="dk-glossary-links__list" style={LIST_RESET}>
             {glossaryLinks.map((link) => (
               <li class="dk-glossary-links__item">
@@ -298,7 +305,7 @@ const LIST_RESET =
               </li>
             ))}
           </ul>
-        </div>
+        </MetadataBlock>
       )}
     </div>
   )

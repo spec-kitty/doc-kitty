@@ -1,0 +1,144 @@
+/*
+ * disclosure.css — the shared disclosure control (FR-017, ADR-0077). Global, not
+ * scoped: Astro's scoped CSS does not reach a script-created button, which has no
+ * `data-astro-cid`. `disclosure.client.ts` imports it, so Astro attaches it by the
+ * route's module graph, not by what renders: once a component every docs page loads
+ * (the content carrier) imports that module, the sheet is inline in the `<head>` of
+ * all docs pages, with or without a disclosure. Only the script is per page, and a
+ * route that does not load the module (the deck route) gets neither.
+ *
+ * ## One box (NFR-006)
+ * The native summary and the button that replaces it share every rule here, so an
+ * upgrade moves nothing. The summary's CSS chevron takes the same 1rem as the
+ * button's SVG, and shows the state with scripts off. Inside `.sl-markdown-content`
+ * Starlight pads and borders `details` and draws its own masked chevron on `summary`;
+ * the rules below reset those, so the promise holds there too.
+ *
+ * ## Tokens only
+ * `color: inherit` and `currentColor` follow the surrounding text, and `outline`
+ * survives forced colours where a box-shadow ring would not.
+ */
+.dk-disclosure > details > summary,
+.dk-disclosure__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 1.5rem; /* 24×24 minimum, WCAG 2.2 SC 2.5.8 */
+  min-block-size: 1.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.dk-disclosure > details > summary:focus-visible,
+.dk-disclosure__toggle:focus-visible {
+  outline: 2px solid var(--sl-color-text-accent);
+  outline-offset: 2px;
+}
+
+/* Starlight's content styles put a 2px inline-start border and 1rem padding on `details`.
+   Either would shift the control and its label on upgrade. */
+.dk-disclosure > details {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+/* Starlight's content flow adds a top margin to each sibling after the first. A
+   closed `details` is empty once upgraded, so that margin would be the only change. */
+.dk-disclosure > .dk-disclosure__toggle + details {
+  margin-block-start: 0;
+}
+
+/* Child selectors: a nested wrapper, or a plain `details` in the content, keeps its
+   own summary until its own upgrade. */
+.dk-disclosure--upgraded > details > summary {
+  display: none;
+}
+
+.dk-disclosure > details > summary {
+  list-style: none;
+}
+
+.dk-disclosure > details > summary::-webkit-details-marker {
+  display: none;
+}
+
+/*
+ * The chevrons. Both point at the inline end collapsed and down expanded. The CSS
+ * one is the corner of a 0.5rem square centred in 1rem; a summary with its own icon
+ * (a chevron-only group) does not need it.
+ * `:dir()`, not `[dir]`: Starlight's fallback content has `<html dir="rtl">` and
+ * `<main dir="ltr">`, and reads left to right.
+ */
+.dk-disclosure > details > summary:not(:has(> svg))::before {
+  content: '';
+  flex: none;
+  box-sizing: border-box;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  margin: 0.25rem;
+  border-block-end: 2px solid currentColor;
+  border-inline-end: 2px solid currentColor;
+  transform: rotate(-45deg);
+  /* Starlight's own marker is a masked, filled box; without these the mask clips
+     the border chevron down to a dot. */
+  background: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+  transition: none;
+}
+
+.dk-disclosure > details[open] > summary:not(:has(> svg))::before {
+  transform: rotate(45deg);
+}
+
+/* Its own rule: a browser without `:dir()` drops it, and keeps the rule above. */
+.dk-disclosure:dir(rtl) > details > summary:not(:has(> svg))::before {
+  transform: rotate(45deg);
+}
+
+.dk-disclosure:dir(rtl) > details[open] > summary:not(:has(> svg))::before {
+  transform: rotate(-45deg);
+}
+
+.dk-disclosure__toggle > svg {
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.dk-disclosure__toggle:dir(rtl)[aria-expanded='false'] > svg {
+  transform: rotate(180deg);
+}
+
+.dk-disclosure__toggle[aria-expanded='true'] > svg {
+  transform: rotate(90deg);
+}
+
+/* A metadata block's panel. `.dk-panel > .dk-eyebrow` sets this gap on an open panel,
+   and the eyebrow is no longer a direct child here. */
+.dk-panel.dk-disclosure > details > summary + * {
+  margin-block-start: var(--dk-space-xs);
+}
+
+/* A closed `details` does not print, and collapsing must hide nothing for good
+   (FR-018). The chevrons would only misreport what the page shows. */
+@media print {
+  .dk-panel.dk-disclosure > details::details-content {
+    display: block;
+    block-size: auto;
+    content-visibility: visible;
+  }
+
+  .dk-panel.dk-disclosure > details > summary::before,
+  .dk-panel.dk-disclosure > .dk-disclosure__toggle > svg {
+    display: none;
+  }
+}

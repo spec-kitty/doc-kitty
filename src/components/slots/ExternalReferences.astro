@@ -16,13 +16,14 @@
  *
  * Each row's accessible name leads with the human TITLE (FR-009); the mono citation
  * key is a secondary affordance. External links get `rel="noopener noreferrer"` +
- * a hidden "(opens in a new tab)" via `ReferenceItem`. A landmark via
- * `role="navigation"` (not a literal `<nav>`) keeps the titles in the citing page's
+ * a hidden "(opens in a new tab)" via `ReferenceItem`. A `MetadataBlock` whose content
+ * is a landmark via `role="navigation"` (not a literal `<nav>`) keeps the titles in the citing page's
  * Pagefind fragment (NFR-003).
  */
 import { getCollection } from 'astro:content';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import ReferenceItem from '../../themes/spec-kitty/components/molecules/ReferenceItem.astro';
+import MetadataBlock from './MetadataBlock.astro';
 import { buildCatalog } from '../../lib/catalog.js';
 import {
   resolveCitation,
@@ -85,12 +86,13 @@ if (refs.length > 0) {
 
 {
   refs.length > 0 && (
-    <div
-      class="dk-panel dk-panel--external-references dk-references"
-      role="navigation"
-      aria-label="External references"
+    <MetadataBlock
+      id="dk-block-external-references"
+      panelClass="dk-panel--external-references dk-references"
+      label="External references"
+      count={rows.length}
+      navLabel="External references"
     >
-      <p class="dk-eyebrow">External references</p>
       <ul class="dk-references__list">
         {rows.map((row) => (
           <li class="dk-references__item">
@@ -103,7 +105,7 @@ if (refs.length > 0) {
           </li>
         ))}
       </ul>
-    </div>
+    </MetadataBlock>
   )
 }
 
