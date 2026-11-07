@@ -4,8 +4,8 @@
  * URLs via `absolute(site, path)` (`routes/shared.ts`). Pre-fix, `absolute`
  * built the URL from the base-LESS `path` verbatim, so every emitted feed/
  * index URL 404'd on a based deployment (`https://…/guides/x/` instead of
- * `https://…/doc-kitty/guides/x/`) even though `discoveryHead` (config.ts)
- * correctly base-prefixed the <head> ADVERTISEMENT of /rss.xml + /llms.txt.
+ * `https://…/doc-kitty/guides/x/`) even though the `<head>` discovery links
+ * correctly base-prefixed their ADVERTISEMENT of /rss.xml + /llms.txt.
  *
  * Fix: `absolute()` now routes its `path` argument through `withBase` (the
  * ONE component base-prefix helper, #61/C-002) before resolving it against

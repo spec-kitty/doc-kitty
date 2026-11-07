@@ -193,19 +193,10 @@ describe('defineDocKittyIntegrations favicon + discovery head', () => {
     expect(integrations.map((i) => i.name)).toContain('doc-kitty:favicon');
   });
 
-  it('base-prefixes the rss.xml and llms.txt discovery links', () => {
-    const config = starlightConfigOf(
-      defineDocKittyIntegrations({ title: 'Docs', base: '/doc-kitty' }),
-    );
-    const hrefs = (config.head ?? []).map((h) => h.attrs?.href);
-    expect(hrefs).toContain('/doc-kitty/rss.xml');
-    expect(hrefs).toContain('/doc-kitty/llms.txt');
-  });
-
-  it('emits root-relative discovery links when there is no base', () => {
-    const config = starlightConfigOf(defineDocKittyIntegrations({ title: 'Docs' }));
-    const hrefs = (config.head ?? []).map((h) => h.attrs?.href);
-    expect(hrefs).toContain('/rss.xml');
-    expect(hrefs).toContain('/llms.txt');
+  it('leaves the discovery links to the Head carrier, which knows what the site serves (page-chrome FR-021)', () => {
+    const config = starlightConfigOf(defineDocKittyIntegrations({ title: 'Docs', base: '/doc-kitty' }));
+    const rels = (config.head ?? []).map((h) => h.attrs?.rel);
+    expect(rels).not.toContain('alternate');
+    expect(config.head?.length, 'control: the config still has head entries').toBeGreaterThan(0);
   });
 });

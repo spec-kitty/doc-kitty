@@ -11,10 +11,19 @@
  * This mirrors the sibling carriers (Head/PageTitle both render `<Default>` and
  * then host their own slots around it). Reads `Astro.locals.starlightRoute`
  * (Starlight ≥0.30), never through component props (the pre-0.30 pattern) — C-004.
+ *
+ * The machine entry points and page formats (page-chrome WP09) sit between the two,
+ * outside the slot host, so they render with and without a theme and read before the
+ * brand band.
  */
+// Aliased (#145, B6): Astro 7's Rust compiler declares `Fragment` itself.
+import { Fragment as EmptyFragment } from 'astro/runtime/server/index.js';
 import Default from '@astrojs/starlight/components/Footer.astro';
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { slotComponents } from 'virtual:doc-kitty/manifest';
+import { chromeOptions } from '../lib/chrome-options.js';
+import MachineEntryPoints from './slots/MachineEntryPoints.astro';
+import PageFormats from './slots/PageFormats.astro';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -27,6 +36,8 @@ const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
 // never emits; that class in the branded build is WP08's (T047) non-fakeable
 // proof that `slotComponents` actually resolved THROUGH this carrier.
 const SiteFooter = slotComponents['dk:site-footer'];
+// Rebound rather than wrapped in a conditional, as MarkdownContent.astro explains.
+const MachineLinks = chromeOptions().footer.machineEntryPoints === false ? EmptyFragment : MachineEntryPoints;
 ---
 
 {/*
@@ -35,6 +46,8 @@ const SiteFooter = slotComponents['dk:site-footer'];
   chrome (the F1 regression this composition fixes).
 */}
 <Default {...route} />
+<MachineLinks />
+<PageFormats />
 {/*
   dk:site-footer marker: a build-visible attestation the Footer carrier is the one
   rendering (WP08). Emitted on BOTH paths, so it alone does not prove resolution —

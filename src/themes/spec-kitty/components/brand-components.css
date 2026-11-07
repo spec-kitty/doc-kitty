@@ -84,6 +84,22 @@
   color: var(--dk-color-neutral);
   background: var(--dk-color-neutral-bg);
 }
+/* A pill that is a link (the footer's page formats, page-chrome FR-025). */
+a.dk-pill {
+  text-decoration: none;
+}
+a.dk-pill:hover {
+  text-decoration: underline;
+}
+a.dk-pill:focus-visible {
+  outline: none;
+  box-shadow: var(--dk-shadow-focus);
+}
+
+/* The footer's machine entry points: the theme's link colour, not the browser's blue. */
+.dk-machine-links a {
+  color: var(--sl-color-text-accent);
+}
 
 /* Kind tag — `--dk-radius-sm` chip, surface-inset bg, mono uppercase micro-label. */
 .dk-kind-tag {

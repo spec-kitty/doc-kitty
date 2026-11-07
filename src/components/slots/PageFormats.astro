@@ -1,0 +1,52 @@
+---
+/*
+ * The current page as data, and its source file (page-chrome FR-019, FR-022 to
+ * FR-025, contracts/page-formats.md). The `dk-pill` classes get their look from the
+ * spec-kitty theme alone, so without a theme these are plain links (C-004). The style
+ * below sets size and the fallback focus ring only, never a pill's look.
+ */
+import type { Props as StarlightRoute } from '@astrojs/starlight/props';
+import { currentPageLinks } from '../../lib/page-formats-route.js';
+
+const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute }).starlightRoute;
+const { formats, source } = await currentPageLinks(route.entry);
+---
+
+{
+  (formats.length > 0 || source) && (
+    <nav class="dk-page-formats" aria-label="This page as data">
+      {formats.map(({ label, href, type }) => (
+        <a class="dk-pill dk-pill--neutral" rel="alternate" type={type} href={href}>
+          {label}
+        </a>
+      ))}
+      {source && (
+        <a class="dk-pill dk-pill--neutral" href={source}>
+          source
+        </a>
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .dk-page-formats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dk-space-2xs) var(--dk-space-xs);
+    margin-block-start: var(--dk-space-xs);
+    font-size: var(--dk-text-sm);
+  }
+  /* NFR-003: the theme's pill computes to about 18px tall; this has to beat `.dk-pill`. */
+  .dk-page-formats a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 24px;
+    min-inline-size: 24px;
+  }
+  /* The fallback ring. `:where` leaves it below the theme's `a.dk-pill:focus-visible`. */
+  :global(:where(.dk-page-formats) a:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+</style>

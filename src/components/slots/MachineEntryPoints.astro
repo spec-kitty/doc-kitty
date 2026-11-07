@@ -1,0 +1,43 @@
+---
+/*
+ * The footer's links to the site's machine entry points (page-chrome FR-001, FR-003,
+ * FR-004). Only what the site serves, from `servedSurfaces()`, and nothing at all when
+ * that is nothing. `Footer.astro` does not mount this when the group is off.
+ */
+import { chromeOptions } from '../../lib/chrome-options.js';
+import { machineEntryPoints } from '../../lib/page-formats.js';
+import { servedSurfaces } from '../../lib/served-surfaces.js';
+import { withBase } from '../../lib/with-base.js';
+
+const setting = chromeOptions().footer.machineEntryPoints;
+const links = setting === false ? [] : machineEntryPoints(servedSurfaces());
+---
+
+{
+  setting !== false && links.length > 0 && (
+    <nav class="dk-machine-links" aria-label={setting.label}>
+      {links.map(({ label, path }) => <a href={withBase(path)}>{label}</a>)}
+    </nav>
+  )
+}
+
+<style>
+  .dk-machine-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dk-space-2xs) var(--dk-space-sm);
+    margin-block-start: var(--dk-space-md);
+    font-size: var(--dk-text-sm);
+  }
+  /* NFR-003: 24 x 24 at least, whatever the text's own size. */
+  .dk-machine-links a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 24px;
+    min-inline-size: 24px;
+  }
+  .dk-machine-links a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+</style>
