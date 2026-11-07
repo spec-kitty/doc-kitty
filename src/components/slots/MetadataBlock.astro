@@ -1,0 +1,46 @@
+---
+/*
+ * One collapsible metadata block (page-chrome WP04; FR-014..FR-016, FR-018, ADR-0077):
+ * a native `<details>` baseline, complete with scripts off, which `disclosure.client`
+ * upgrades to the shared button. Nothing stores its state, so a block starts as
+ * `metadataBlocks.collapsed` says on every page.
+ *
+ * `.dk-panel--*` stays on the outer element for theme CSS and the order checks, and the
+ * `id` names the block type, so a page's ids are deterministic. The caller renders
+ * nothing with no entries, so no `(0)` control appears.
+ *
+ * Mount this outside Starlight's `<Default>`: a `<script>` in there adds to the content
+ * flow's margins. Box, chevron, print and the gap above the content are in
+ * `disclosure.css`, because a scoped `<style>` here would enter the emitted CSS.
+ */
+import { chromeOptions } from '../../lib/chrome-options.ts';
+
+interface Props {
+  /** The `details` id, which the button's `aria-controls` names. */
+  id: string;
+  panelClass: string;
+  label: string;
+  count: number;
+  /** Names the content a navigation landmark. */
+  navLabel?: string;
+}
+
+const { id, panelClass, label, count, navLabel } = Astro.props;
+const open = !chromeOptions().metadataBlocks.collapsed;
+---
+
+<div
+  class:list={['dk-panel', panelClass, 'dk-disclosure']}
+  data-dk-disclosure
+  data-label-expanded={`Hide ${label} (${count})`}
+  data-label-collapsed={`Show ${label} (${count})`}
+>
+  <details id={id} open={open}>
+    <summary><span class="dk-eyebrow">{label}</span> ({count})</summary>
+    <div role={navLabel ? 'navigation' : undefined} aria-label={navLabel}><slot /></div>
+  </details>
+</div>
+
+<script>
+  import '../../lib/disclosure/disclosure.client.ts';
+</script>

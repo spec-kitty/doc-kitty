@@ -11,11 +11,12 @@
  * slug as plain text and warn on the build log (an observable channel), never
  * fail. This is deliberately asymmetric with the build-fatal `related` miss.
  *
- * This is a `<section>` (a labelled region), NOT a `<nav>`: the audience block is
- * page guidance, not a set of navigational links.
+ * A `MetadataBlock` with no landmark: the audience block is page guidance, not a set
+ * of navigational links. Its summary names it.
  */
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { buildDocsIndex, collectDocEntries } from '../../lib/docs-index.js';
+import MetadataBlock from './MetadataBlock.astro';
 import {
   resolveProfile,
   humanizeProfile,
@@ -52,11 +53,12 @@ const rows = audience.map((entry) => {
 
 {
   audience.length > 0 && (
-    <section
-      class="dk-panel dk-panel--audience dk-audience"
-      aria-labelledby="dk-audience-heading"
+    <MetadataBlock
+      id="dk-block-audience"
+      panelClass="dk-panel--audience dk-audience"
+      label="Who is this for"
+      count={rows.length}
     >
-      <p class="dk-eyebrow" id="dk-audience-heading">Who is this for</p>
       <ul class="dk-audience__list">
         {rows.map(({ entry, resolved }) => (
           <li class="dk-audience__item">
@@ -73,7 +75,7 @@ const rows = audience.map((entry) => {
           </li>
         ))}
       </ul>
-    </section>
+    </MetadataBlock>
   )
 }
 

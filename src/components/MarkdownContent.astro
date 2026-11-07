@@ -34,6 +34,14 @@
  *     references/related are never double-rendered.
  * The named `<slot name="dk:*">`s stay for authored MDX injection in both branches.
  *
+ * PLACEMENT RULE (ADR-0076). For every kind but `Hub` the after-content blocks sit
+ * inside the layout, after the content. A hub layout renders its child cards after
+ * the default slot, which would put the blocks before the cards, so for `kind: Hub`
+ * the carrier places `dk:related` and `dk:external-references` (or `OnThisPage`)
+ * directly after the layout: audience, body, child cards, then metadata blocks. No
+ * layout gains a contract, so a theme's own `Hub` layout is covered too. The named
+ * `<slot name="dk:*">`s stay inside the layout (Starlight fills only the default).
+ *
  * Reads `Astro.locals.starlightRoute` (Starlight ≥0.30), never through
  * component props (the pre-0.30 pattern) — C-004.
  */
@@ -74,6 +82,17 @@ const Layout = resolveLayout(kind);
 const glossaryActive = isGlossaryActive(process.cwd());
 const AfterRelated = glossaryActive ? OnThisPage : Related;
 const AfterExternalRefs = glossaryActive ? EmptyFragment : ExternalReferences;
+
+// Hub placement (ADR-0076): a hub layout renders its child cards after the default
+// slot, so blocks left inside `<Layout>` would sit BEFORE the cards. For `kind: Hub`
+// the two after-content positions therefore move to just after `</Layout>`, and the
+// inside positions become empty. Same rebinding technique as above: the template
+// keeps bare tags, so every non-hub page's bytes are unchanged (FR-013).
+const isHub = kind === 'Hub';
+const InsideRelated = isHub ? EmptyFragment : AfterRelated;
+const InsideRefs = isHub ? EmptyFragment : AfterExternalRefs;
+const OutsideRelated = isHub ? AfterRelated : EmptyFragment;
+const OutsideRefs = isHub ? AfterExternalRefs : EmptyFragment;
 ---
 
 <Layout {...route}>
@@ -84,8 +103,8 @@ const AfterExternalRefs = glossaryActive ? EmptyFragment : ExternalReferences;
   <Default {...route}><slot /></Default>
 
   {/* dk:related + dk:external-references — carrier-body blocks after the content. */}
-  <AfterRelated />
+  <InsideRelated />
   <slot name="dk:related" />
-  <AfterExternalRefs />
+  <InsideRefs />
   <slot name="dk:external-references" />
-</Layout>
+</Layout><OutsideRelated /><OutsideRefs />

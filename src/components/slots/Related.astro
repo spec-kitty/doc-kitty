@@ -13,13 +13,14 @@
  * `note`-else-`description` the resolver already produced. A stale target
  * (`doc_status ∈ {deprecated, superseded}`) carries a TEXT status marker (T023).
  *
- * A landmark: `role="navigation"` + `aria-label` rather than a literal `<nav>` so
- * the block's link text stays inside the citing page's Pagefind fragment (NFR-003);
+ * A `MetadataBlock` whose content is a landmark: `role="navigation"` + `aria-label`
+ * rather than a literal `<nav>` so the block's link text stays inside the citing page's Pagefind fragment (NFR-003);
  * `role="navigation"` is the exact a11y mapping of `<nav>`.
  */
 import type { Props as StarlightRoute } from '@astrojs/starlight/props';
 import { buildDocsIndex, collectDocEntries } from '../../lib/docs-index.js';
 import RelatedCard from '../../themes/spec-kitty/components/molecules/RelatedCard.astro';
+import MetadataBlock from './MetadataBlock.astro';
 import {
   resolveRelated,
   type DocKittyFrontmatter,
@@ -46,8 +47,13 @@ const STALE = new Set(['deprecated', 'superseded']);
 
 {
   related.length > 0 && (
-    <div class="dk-panel dk-panel--related dk-related" role="navigation" aria-label="Related pages">
-      <p class="dk-eyebrow">Related</p>
+    <MetadataBlock
+      id="dk-block-related"
+      panelClass="dk-panel--related dk-related"
+      label="Related"
+      count={cards.length}
+      navLabel="Related pages"
+    >
       <ul class="dk-related__list">
         {cards.map((card) => (
           <li class="dk-related__item">
@@ -61,7 +67,7 @@ const STALE = new Set(['deprecated', 'superseded']);
           </li>
         ))}
       </ul>
-    </div>
+    </MetadataBlock>
   )
 }
 
