@@ -31,11 +31,17 @@ export interface BuildState {
   unpublishedDirs: readonly string[];
   /** Docs-relative paths of the draft FILES withheld from this build. */
   unpublishedPaths: readonly string[];
+  /**
+   * True when this site shows an authored sidebar icon. The sidebar-icons integration
+   * sets it after every `astro:config:setup`; the manifest and route shaping read it
+   * when Vite loads their modules.
+   */
+  iconsAuthored: boolean;
 }
 
 /** A fresh, empty build state; one per `defineDocKittyIntegrations` call. */
 export function createBuildState(): BuildState {
-  return { unpublishedDirs: [], unpublishedPaths: [] };
+  return { unpublishedDirs: [], unpublishedPaths: [], iconsAuthored: false };
 }
 
 /**

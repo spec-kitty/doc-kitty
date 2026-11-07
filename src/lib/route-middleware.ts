@@ -9,6 +9,7 @@
  *   1. shapes the sidebar — group labels and order from index pages, each index
  *      first — and re-derives prev/next to match; skipped when the consumer
  *      supplied their own `sidebar`;
+ *      and sets each entry's authored icon on the shaped tree;
  *   2. drops a table of contents that would hold one entry or fewer, so no rail
  *      is reserved for it.
  *
@@ -20,9 +21,11 @@
  */
 import { defineRouteMiddleware } from '@astrojs/starlight/route-data';
 import { routeShaping } from 'virtual:doc-kitty/route-shaping';
-import { relabelledLinks, resolveIndexLabel, shapePagination, shapeSidebar, shapeToc, shapingWarningSink } from './route-shaping.js';
+import { sidebarIcons } from 'virtual:doc-kitty/sidebar-icons';
+import { decorateSidebarIcons, relabelledLinks, resolveIndexLabel, shapePagination, shapeSidebar, shapeToc, shapingWarningSink } from './route-shaping.js';
 
 const directoryMeta = new Map(routeShaping.directoryMeta);
+const iconMaps = { links: new Map(sidebarIcons.links), groups: new Map(sidebarIcons.groups) };
 
 export const onRequest = defineRouteMiddleware((context) => {
   const route = context.locals.starlightRoute;
@@ -31,6 +34,8 @@ export const onRequest = defineRouteMiddleware((context) => {
     const { sidebar, warnings } = shapeSidebar(route.sidebar, directoryMeta, {
       base: routeShaping.base,
       unpublishedDirs: routeShaping.unpublishedDirs,
+      collapse: routeShaping.collapse,
+      annotate: routeShaping.annotate,
       indexLabel: resolveIndexLabel(routeShaping.indexLabel, context.locals.t as (key: string) => unknown),
     });
     // Collected, not printed: every page shapes the same tree, and the
@@ -47,7 +52,7 @@ export const onRequest = defineRouteMiddleware((context) => {
     // Handed on for a later middleware that rebuilds prev/next from the shaped sidebar
     // (the OpenAPI renderer's, which runs after this one on every page).
     context.locals.dkRelabelled = relabelledLinks(route.sidebar, sidebar);
-    route.sidebar = sidebar;
+    route.sidebar = decorateSidebarIcons(sidebar, iconMaps, routeShaping.base);
   }
 
   route.toc = shapeToc(route.toc);

@@ -955,3 +955,102 @@ describe('sidebar index decision follows the route rule (FR-009, issue 138)', ()
     expect(Object.keys(meta).some((k) => k.includes('_meta'))).toBe(false);
   });
 });
+
+describe('collapse and annotate (page-chrome WP05: FR-005, FR-006, FR-008, FR-011)', () => {
+  const meta = buildDirectoryMeta(RHETORIC_ENTRIES);
+  const shape = (options: object = {}) => shapeSidebar(rhetoricSidebar(), meta, { base: BASE, ...options });
+  const allGroups = (entries: SidebarEntry[]): SidebarEntry[] =>
+    entries.flatMap((e) => (e.type === 'group' ? [e, ...allGroups(e.entries)] : []));
+  const link_ = (slug: string, label: string, extra: object = {}): SidebarEntry => ({ ...link(slug, label), ...extra }) as SidebarEntry;
+
+  // Today's output for a small tree, written out: a no-op `collapse` cannot pass it, and
+  // neither can a change to the default shape.
+  const todaysTree = (): SidebarEntry[] => [
+    group('Rhetoric', [
+      link_('rhetoric', 'Overview'),
+      link_('rhetoric/preamble', 'Preamble'),
+      group('Book I', [link_('rhetoric/book-one', 'Overview'), link_('rhetoric/book-one/chapter-01', 'Chapter 1')]),
+    ]),
+  ];
+  const smallInput = (): SidebarEntry[] => [
+    group('Rhetoric', [
+      group('book-one', [link('rhetoric/book-one/chapter-01', 'Chapter 1'), link('rhetoric/book-one', 'Book I')]),
+      link('rhetoric', 'Rhetoric'),
+      link('rhetoric/preamble', 'Preamble'),
+    ]),
+  ];
+  const smallMeta = buildDirectoryMeta([
+    index('rhetoric', 'Rhetoric'),
+    page('rhetoric/preamble', 'Preamble'),
+    index('rhetoric/book-one', 'Book I'),
+    page('rhetoric/book-one/chapter-01', 'Chapter 1'),
+  ]);
+
+  it('collapse: false (and unset) leaves today\'s tree exactly', () => {
+    expect(shapeSidebar(smallInput(), smallMeta, { base: BASE }).sidebar).toEqual(todaysTree());
+    expect(shapeSidebar(smallInput(), smallMeta, { base: BASE, collapse: false }).sidebar).toEqual(todaysTree());
+  });
+
+  it('collapse: true closes every group, nested ones too, and changes nothing else', () => {
+    const { sidebar } = shapeSidebar(smallInput(), smallMeta, { base: BASE, collapse: true });
+    const groups = allGroups(sidebar);
+    expect(groups.map((g) => g.label)).toEqual(['Rhetoric', 'Book I']);
+    expect(groups.every((g) => g.type === 'group' && g.collapsed === true)).toBe(true);
+    const reopened = JSON.parse(JSON.stringify(sidebar), (k, v) => (k === 'collapsed' ? false : v));
+    expect(reopened).toEqual(JSON.parse(JSON.stringify(todaysTree())));
+    // Control: the larger tree has more groups, all closed, and the default leaves them open.
+    expect(allGroups(shape({ collapse: true }).sidebar).every((g) => g.type === 'group' && g.collapsed)).toBe(true);
+    expect(allGroups(shape().sidebar).every((g) => g.type === 'group' && !g.collapsed)).toBe(true);
+  });
+
+  it('collapse keeps a placeholder group a later middleware fills, and marks it closed', () => {
+    const placeholder = group(openApiSidebarGroup('reference/api', 'v1').label, []);
+    const { sidebar } = shapeSidebar([placeholder], meta, { base: BASE, collapse: true, unpublishedDirs: ['x'] });
+    expect(sidebar).toHaveLength(1);
+    expect(sidebar[0]).toMatchObject({ label: placeholder.label, collapsed: true });
+    // Control: without collapse the same group keeps the flag it arrived with.
+    expect(shapeSidebar([placeholder], meta, { base: BASE }).sidebar[0]).toMatchObject({ collapsed: false });
+  });
+
+  it('is idempotent with collapse and annotate on', () => {
+    const options = { base: BASE, collapse: true, annotate: true };
+    const once = shape(options).sidebar;
+    expect(shapeSidebar(once, meta, options).sidebar).toEqual(once);
+  });
+
+  it.each([false, true])('puts each index first when the source order has it last (annotate: %s) (FR-008)', (annotate) => {
+    const top = childrenOf(shape({ annotate }).sidebar[0]);
+    const bookOne = childrenOf(top.find((e) => e.type === 'group' && e.label === 'Book I'));
+    expect(labelsOf(bookOne)).toEqual(['Overview', 'Chapter 1']);
+    expect(bookOne[0]).toMatchObject({ href: `${BASE}/rhetoric/book-one/` });
+    expect(top[0]).toMatchObject({ href: `${BASE}/rhetoric/` });
+  });
+
+  it('annotate: true marks each group\'s index link and the group directory; false adds nothing', () => {
+    const on = shape({ annotate: true }).sidebar;
+    const off = shape({ annotate: false }).sidebar;
+    const unset = shape().sidebar;
+    const bookOn = allGroups(on).find((g) => g.label === 'Book I')!;
+    expect(bookOn).toMatchObject({ dkDir: 'rhetoric/book-one' });
+    expect(childrenOf(bookOn)[0]).toMatchObject({ attrs: { 'data-dk-group-index': '' } });
+    expect(childrenOf(bookOn)[1]).not.toHaveProperty('attrs.data-dk-group-index');
+    expect(allGroups(on).every((g) => 'dkDir' in g)).toBe(true);
+    // Off: no marker, no dkDir, and the tree equals the unset one.
+    for (const tree of [off, unset]) {
+      expect(JSON.stringify(tree)).not.toContain('data-dk-group-index');
+      expect(allGroups(tree).some((g) => 'dkDir' in g)).toBe(false);
+    }
+    expect(off).toEqual(unset);
+  });
+
+  it('with annotate on, a relabelled index still gets its page title back in prev/next (FR-011)', () => {
+    const original = rhetoricSidebar();
+    const shaped = shapeSidebar(original, meta, { base: BASE, annotate: true }).sidebar;
+    const relabelled = relabelledLinks(original, shaped);
+    expect(relabelled.get(`${BASE}/rhetoric/book-one/`)).toEqual({ shaped: 'Overview', original: 'Book I' });
+    const restored = restorePaginationTitles({ prev: link('rhetoric/book-one', 'Overview') as never, next: undefined }, relabelled);
+    expect(restored.prev).toMatchObject({ label: 'Book I' });
+    // Control: the index is first and kept as an entry, so pagination can see it.
+    expect(shaped).not.toEqual(original);
+  });
+});

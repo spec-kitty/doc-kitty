@@ -46,6 +46,7 @@ import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { isExcludedPath, resolveCliExcludes, walkMarkdownPaths } from '../lib/docs-walk.mjs';
+import { resolveIcon, unknownIconMessage } from '../lib/sidebar-icons-core.mjs';
 import { z } from 'astro/zod';
 // Generator stamps (#177): prefix-based detection, with the legacy unversioned
 // Gherkin stamp (single-sourced from its pure core) still recognised.
@@ -85,6 +86,7 @@ import {
   sectionTypes,
   sectionSubtypes,
   resolveGovernance,
+  resolveSectionRegistryEntries,
 } from '../lib/vocabulary-loader.mjs';
 
 // Re-exported so existing importers keep their `validate-frontmatter.mjs` path
@@ -218,6 +220,8 @@ export const frontmatterSchema = z
       .optional(),
     tags: z.array(z.string()).optional(),
     resource: z.string().optional(),
+    // The rest of `sidebar` is Starlight's schema's, in the build. Mirrors `docKittyFields`.
+    sidebar: z.object({ icon: z.string().optional() }).passthrough().optional(),
     generated: stamp.extend({ content_hash: z.string().optional() }).optional(),
     verified: z
       .preprocess((v) => (v !== null && typeof v === 'object' && !Array.isArray(v) ? [v] : v), z.array(stamp))
@@ -617,6 +621,10 @@ export function validate(
     }
   }
 
+  // FR-027: an unknown sidebar icon fails, as it fails the build, through the same resolver.
+  const icon = data.sidebar?.icon;
+  if (typeof icon === 'string' && !resolveIcon(icon)) problems.push(unknownIconMessage(relPath, icon));
+
   // Soft lower bound on description length (non-fatal).
   if (typeof data.description === 'string') {
     const len = data.description.trim().length;
@@ -769,6 +777,14 @@ export function run(argv) {
     // required-field policy already resolve. The verdict routing in `validate()`
     // is unchanged — only the SOURCE of the resolver moves (legacy → charter-aware).
     const vocab = { resolveType: governance.resolveType, resolveKind: governance.resolveKind };
+
+    // FR-027: a section's icon, from whichever registry governs this root.
+    for (const { id, icon } of resolveSectionRegistryEntries(root) ?? []) {
+      if (icon !== undefined && !resolveIcon(icon)) {
+        console.error(`✖ ${root}: ${unknownIconMessage(`section "${id}"`, icon)}`);
+        failures++;
+      }
+    }
 
     const rels = files.map((f) => relative(root, f).split('\\').join('/'));
 

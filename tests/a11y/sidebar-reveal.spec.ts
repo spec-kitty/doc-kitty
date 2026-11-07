@@ -169,8 +169,16 @@ test.describe('the current sidebar entry is revealed before first paint (FR-004,
 
   test("1280x600: Starlight's in-session restore wins over the reveal", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 600 });
-    await load(page, 'none');
-    const target = 1881;
+    const { geo } = await load(page, 'none');
+    // Derived from the pane, not fixed: groups start closed, so the scroll height depends on
+    // the page's ancestors. The pane's maximum scroll is reachable; if the reveal is already
+    // there, the top is the other end. Either differs from the centred position.
+    const maxScroll = await page.evaluate(() => {
+      const pane = document.getElementById('starlight__sidebar');
+      return pane ? pane.scrollHeight - pane.clientHeight : 0;
+    });
+    const target = Math.abs(maxScroll - geo.revealed) > 50 ? maxScroll : 0;
+    expect(Math.abs(target - geo.revealed), 'the target is away from the centred position').toBeGreaterThan(50);
     await page.evaluate((top) => {
       const pane = document.getElementById('starlight__sidebar');
       if (pane) pane.scrollTop = top;

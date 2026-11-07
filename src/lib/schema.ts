@@ -255,6 +255,11 @@ export const docKittyFields = {
   // doc-sanity gate), so a non-URL `resource` does not pass validate but fail
   // the build. Parity test guards this alignment going forward.
   resource: z.string().optional(),
+  // Starlight deep-merges this into its own `sidebar` object, so `label`, `order`,
+  // `hidden`, `badge` and `attrs` stay. `prefault` matches its: a page with no `sidebar`
+  // still parses to the defaults Starlight reads. The name is checked by the
+  // sidebar-icons integration (FR-027), which reads the raw frontmatter.
+  sidebar: z.object({ icon: z.string().optional() }).prefault({}),
   generated: stamp.extend({ content_hash: z.string().optional() }).optional(),
   // A list of stamps, or one bare mapping (normalised to a list).
   verified: z

@@ -1,0 +1,207 @@
+---
+/*
+ * DocKitty's sidebar sublist (ADR-0075): Starlight 0.42.6's
+ * `dist/components/SidebarSublist.astro`, same markup and same `@layer starlight.core`
+ * styles, plus two extras that stay off unless the data is there: a title-as-index
+ * group, and an entry's `dkIcon`. `sidebar-renderer-parity.test.ts` fails when the plain
+ * path stops matching Starlight, which is what a Starlight upgrade has to reconcile. It
+ * does not compare the styles below.
+ *
+ * Each `{icon && ...}` shares a line with the next element on purpose: Astro keeps
+ * the whitespace around an expression, so a line break would add a space with no icon.
+ *
+ * The imports that differ from the original: the `sidebarGroupHasCurrent` helper is
+ * local, because Starlight's `utils/` is not exported. `Icon` and `Badge` come from the
+ * `components` barrel; on the fixture the barrel adds no user-component CSS or script.
+ */
+import { Badge, Icon } from '@astrojs/starlight/components';
+import SidebarRestorePoint from '@astrojs/starlight/components/SidebarRestorePoint.astro';
+import type { SidebarEntry } from '../../lib/route-shaping.js';
+import { chromeOptions } from '../../lib/chrome-options.js';
+import { asTitleIndexGroup, extrasOf, groupHasCurrent, outputAttrs } from './sidebar-data.js';
+
+interface Props {
+	sublist: SidebarEntry[];
+	nested?: boolean;
+}
+
+const { sublist, nested } = Astro.props;
+// Shaping also marks index links for a site that only has icons (WP07), so the
+// marker alone is not the opt-in.
+const { titleIsIndex } = chromeOptions().sidebar;
+---
+
+<ul class:list={{ 'top-level': !nested }}>
+	{
+		sublist.map((entry) => {
+			const indexed = titleIsIndex && entry.type === 'group' ? asTitleIndexGroup(entry) : null;
+			const icon = extrasOf(entry).dkIcon;
+			return indexed && entry.type === 'group' ? (
+				<li
+					class:list={['dk-group', { 'dk-disclosure': indexed.rest.length > 0 }]}
+					data-dk-disclosure={indexed.rest.length > 0 ? '' : undefined}
+					data-dk-toggle-via={indexed.rest.length > 0 ? 'summary' : undefined}
+					data-label-expanded={indexed.rest.length > 0 ? `Collapse ${entry.label}` : undefined}
+					data-label-collapsed={indexed.rest.length > 0 ? `Expand ${entry.label}` : undefined}
+				>
+					<a
+						href={indexed.index.href}
+						aria-current={indexed.index.isCurrent ? 'page' : undefined}
+						class:list={['dk-group__label', 'large', indexed.index.attrs.class]}
+						{...outputAttrs(indexed.index)}
+					>
+						{icon && <span class="dk-sidebar-icon" aria-hidden="true" set:html={icon} />}<span>{entry.label}</span>
+						{(entry.badge ?? indexed.index.badge) && (
+							<Badge
+								variant={(entry.badge ?? indexed.index.badge)!.variant}
+								class={(entry.badge ?? indexed.index.badge)!.class}
+								text={(entry.badge ?? indexed.index.badge)!.text}
+							/>
+						)}
+					</a>
+					{indexed.rest.length > 0 && (
+						<details id={indexed.id} open={groupHasCurrent(entry) || !entry.collapsed}>
+							<summary aria-label={`Toggle ${entry.label}`}>
+								<Icon name="right-caret" class="caret" size="1.25rem" />
+							</summary>
+							<SidebarRestorePoint />
+							<Astro.self sublist={indexed.rest} nested />
+						</details>
+					)}
+				</li>
+			) : (
+				<li>
+					{entry.type === 'link' ? (
+						<a
+							href={entry.href}
+							aria-current={entry.isCurrent ? 'page' : undefined}
+							class:list={[{ large: !nested }, entry.attrs.class]}
+							{...outputAttrs(entry)}
+						>
+							{icon && <span class="dk-sidebar-icon" aria-hidden="true" set:html={icon} />}<span>{entry.label}</span>
+							{entry.badge && (
+								<Badge
+									variant={entry.badge.variant}
+									class={entry.badge.class}
+									text={entry.badge.text}
+								/>
+							)}
+						</a>
+					) : (
+						<details open={groupHasCurrent(entry) || !entry.collapsed}>
+							<summary>
+								<span class="group-label">
+									{icon && <span class="dk-sidebar-icon" aria-hidden="true" set:html={icon} />}<span class="large">{entry.label}</span>
+									{entry.badge && (
+										<Badge
+											variant={entry.badge.variant}
+											class={entry.badge.class}
+											text={entry.badge.text}
+										/>
+									)}
+								</span>
+								<Icon name="right-caret" class="caret" size="1.25rem" />
+							</summary>
+							<SidebarRestorePoint />
+							<Astro.self sublist={entry.entries} nested />
+						</details>
+					)}
+				</li>
+			);
+		})
+	}
+</ul>
+
+<style>
+	@layer starlight.core {
+		ul {
+			--sl-sidebar-item-padding-inline: 0.5rem;
+			list-style: none;
+			padding: 0;
+		}
+
+		li {
+			overflow-wrap: anywhere;
+		}
+
+		ul ul li {
+			margin-inline-start: var(--sl-sidebar-item-padding-inline);
+			border-inline-start: 1px solid var(--sl-color-hairline-light);
+			padding-inline-start: var(--sl-sidebar-item-padding-inline);
+		}
+
+		.large {
+			font-size: var(--sl-text-lg);
+			font-weight: 600;
+			color: var(--sl-color-white);
+		}
+
+		.top-level > li + li {
+			margin-top: 0.75rem;
+		}
+
+		summary {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0.2em var(--sl-sidebar-item-padding-inline);
+			line-height: 1.4;
+			cursor: pointer;
+			user-select: none;
+		}
+		summary::marker,
+		summary::-webkit-details-marker {
+			display: none;
+		}
+
+		.caret {
+			transition: transform 0.2s ease-in-out;
+			flex-shrink: 0;
+		}
+		:global([dir='rtl']) .caret {
+			transform: rotateZ(180deg);
+		}
+		[open] > summary .caret {
+			transform: rotateZ(90deg);
+		}
+
+		a {
+			display: block;
+			border-radius: 0.25rem;
+			text-decoration: none;
+			color: var(--sl-color-gray-2);
+			padding: 0.3em var(--sl-sidebar-item-padding-inline);
+			line-height: 1.4;
+		}
+
+		a:hover,
+		a:focus {
+			color: var(--sl-color-white);
+		}
+
+		[aria-current='page'],
+		[aria-current='page']:hover,
+		[aria-current='page']:focus {
+			font-weight: 600;
+			color: var(--sl-color-text-invert);
+			background-color: var(--sl-color-text-accent);
+		}
+
+		a > *:not(:last-child),
+		.group-label > *:not(:last-child) {
+			margin-inline-end: 0.25em;
+		}
+
+		@media (min-width: 50rem) {
+			.top-level > li + li {
+				margin-top: 0.5rem;
+			}
+			.large {
+				font-size: var(--sl-text-base);
+			}
+			a {
+				font-size: var(--sl-text-sm);
+			}
+		}
+	}
+</style>

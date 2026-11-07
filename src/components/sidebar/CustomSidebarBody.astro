@@ -1,0 +1,45 @@
+---
+/*
+ * The Sidebar carrier's body on a site that opted in (ADR-0075): Starlight 0.42.6's
+ * `dist/components/Sidebar.astro` with DocKitty's sublist in it. A plain component the
+ * carrier renders, not a Starlight override, and reached only through
+ * `virtual:doc-kitty/manifest`, so its CSS stays off every other site. The expression
+ * shares a line with the `div`, as Astro keeps the whitespace around an expression.
+ *
+ * The licence comment goes through `set:html`, which Astro's HTML compression does not
+ * touch. It is here, once, and not in the sublist, which renders itself once per group.
+ * The icon styles are global because `set:html` content carries no scope attribute, and
+ * here because this body's CSS reaches only a site that opted in.
+ */
+import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter';
+import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro';
+import { chromeOptions } from '../../lib/chrome-options.js';
+import { FONT_AWESOME_LICENCE_COMMENT, hasFontAwesomeIcon } from './sidebar-data.js';
+import SidebarSublist from './SidebarSublist.astro';
+import TitleAsIndexEnhancement from './TitleAsIndexEnhancement.astro';
+
+const { sidebar } = Astro.locals.starlightRoute;
+const { titleIsIndex } = chromeOptions().sidebar;
+const licence = hasFontAwesomeIcon(sidebar);
+---
+
+<SidebarPersister>
+	<SidebarSublist sublist={sidebar} />
+</SidebarPersister>
+
+{titleIsIndex && <TitleAsIndexEnhancement />}{licence && <Fragment set:html={FONT_AWESOME_LICENCE_COMMENT} />}<div class="md:sl-hidden">
+	<MobileMenuFooter />
+</div>
+
+<style is:global>
+	@layer starlight.core {
+		.dk-sidebar-icon {
+			display: inline-block;
+			vertical-align: -0.125em;
+			line-height: 0;
+		}
+		.dk-sidebar-icon > svg {
+			display: block;
+		}
+	}
+</style>

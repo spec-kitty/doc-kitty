@@ -55,6 +55,19 @@ export interface DirectoryMetaInput {
   sidebar?: { label?: string; order?: number };
 }
 
+/** The slug of the folder holding a docs-relative path (`''` for the docs root). */
+const folderSlug = (rel: string): string => (rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '');
+
+/**
+ * A page's slug as a sidebar href carries it. An index page serves its containing
+ * folder's route (`x/index` is served at `/x/`), so it is keyed by the folder; any
+ * other page keeps its own id.
+ */
+export function pageRouteSlug(rel: string, pageSlug: string): { slug: string; isIndex: boolean } {
+  const isIndex = routeOfSlug(pageSlug) === routeOfSlug(folderSlug(rel));
+  return { slug: isIndex ? folderSlug(rel) : pageSlug, isIndex };
+}
+
 /** What a directory's index page says about its sidebar group. */
 export interface DirectoryMeta {
   /** The index page's `sidebar.label`, else its `title`. */
@@ -117,6 +130,17 @@ export interface ShapeSidebarOptions {
    * Default: {@link INDEX_ENTRY_LABEL}. Resolve it per page with {@link resolveIndexLabel}.
    */
   indexLabel?: string;
+  /**
+   * Start every generated group closed (`collapsed: true`), nested ones too. Starlight
+   * opens a group holding the current page by itself. Default: false (today's tree).
+   */
+  collapse?: boolean;
+  /**
+   * Mark what the custom sidebar renderer needs: a group's index link gets
+   * `attrs['data-dk-group-index']`, and a group gets `dkDir`, the directory it represents.
+   * Off by default, because `attrs` reach the HTML.
+   */
+  annotate?: boolean;
 }
 
 /** The result of {@link shapeSidebar}. */
@@ -226,6 +250,8 @@ export function shapeSidebar(
   const unpublished = new Set(options.unpublishedDirs ?? []);
   const warnings: string[] = [];
   const indexLabel = options.indexLabel ?? INDEX_ENTRY_LABEL;
+  const collapse = options.collapse === true;
+  const annotate = options.annotate === true;
 
   interface Shaped {
     entry: SidebarEntry;
@@ -278,7 +304,10 @@ export function shapeSidebar(
     const dir = commonDir(candidates);
     if (dir === undefined || dir === '') {
       // Not a directory (or the docs root itself): keep the author's order.
-      return { entry: { ...entry, entries: children.map((c) => c.entry) }, dir: undefined };
+      return {
+        entry: { ...entry, ...(collapse ? { collapsed: true } : {}), entries: children.map((c) => c.entry) },
+        dir: undefined,
+      };
     }
 
     // A link to a sub-folder's own index, sitting in this group, is a one-page
@@ -351,7 +380,23 @@ export function shapeSidebar(
       ordered[0] = { ...first, entry: { ...first.entry, label: indexLabel } };
     }
 
-    return { entry: { ...entry, label, entries: ordered.map((c) => c.entry) }, dir };
+    // The renderer finds a group's index link by this marker, and its icon by `dkDir`.
+    // The index link stays in `entries`: pagination flattens the sidebar (R7).
+    const entries = ordered.map((c) =>
+      annotate && isIndex(c) && c.entry.type === 'link'
+        ? { ...c.entry, attrs: { ...c.entry.attrs, 'data-dk-group-index': '' } }
+        : c.entry,
+    );
+    return {
+      entry: {
+        ...entry,
+        label,
+        ...(collapse ? { collapsed: true } : {}),
+        ...(annotate ? { dkDir: dir } : {}),
+        entries,
+      },
+      dir,
+    };
   };
 
   return {
@@ -361,6 +406,40 @@ export function shapeSidebar(
       .map(({ entry }) => entry),
     warnings,
   };
+}
+
+/** The used icons, in the shape of `virtual:doc-kitty/sidebar-icons`. */
+export interface SidebarIconMaps {
+  links: ReadonlyMap<string, { svg: string; fa: boolean }>;
+  groups: ReadonlyMap<string, { svg: string; fa: boolean }>;
+}
+
+/**
+ * Set `dkIcon` on a shaped sidebar (WP07, FR-026): a group by the directory it
+ * represents, any other link by its slug. A group's own index link takes none: the
+ * group shows that icon, and on the plain path "Overview" would repeat it right below.
+ * A one-page folder shown as a link is not marked as an index, so it keeps its icon.
+ * The input is not mutated, and with no icons it comes back as is.
+ */
+export function decorateSidebarIcons(
+  entries: SidebarEntry[],
+  { links, groups }: SidebarIconMaps,
+  basePath?: string,
+): SidebarEntry[] {
+  if (links.size === 0 && groups.size === 0) return entries;
+  const base = normaliseBase(basePath);
+  const withIcon = (entry: SidebarEntry, icon: { svg: string; fa: boolean } | undefined): SidebarEntry =>
+    icon ? ({ ...entry, dkIcon: icon.svg, ...(icon.fa ? { dkIconFa: true } : {}) } as unknown as SidebarEntry) : entry;
+  const decorate = (entry: SidebarEntry): SidebarEntry => {
+    if (entry.type === 'group') {
+      const { dkDir } = entry as SidebarEntry & { dkDir?: string };
+      return withIcon({ ...entry, entries: entry.entries.map(decorate) }, dkDir === undefined ? undefined : groups.get(dkDir));
+    }
+    if ('data-dk-group-index' in entry.attrs) return entry;
+    const slug = slugOfHref(entry.href, base);
+    return withIcon(entry, slug === undefined ? undefined : links.get(slug));
+  };
+  return entries.map(decorate);
 }
 
 /**

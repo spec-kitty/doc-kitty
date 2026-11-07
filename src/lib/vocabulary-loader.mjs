@@ -60,6 +60,7 @@ export const CHARTER_REGISTRY_RELPATH = path.join('_meta', 'charter.yaml');
  * @property {number} order Integer sort key; lower first.
  * @property {string} [type] The section-default frontmatter `type` (issue #24).
  * @property {SectionSubtypeRule[]} [subtypes] Sub-path → `type` rules (E-02/FR-005).
+ * @property {unknown} [icon] The sidebar icon as authored; the frontmatter gate checks it.
  */
 
 /** The resolved registry: entries sorted by `order`, tie-broken by `id`. */
@@ -124,13 +125,14 @@ function normalizeSectionRegistryEntries(rawSections) {
   const entries = [];
   for (const rec of rawSections) {
     if (rec == null || typeof rec !== 'object') continue;
-    const { id, label, order, type, subtypes } = /** @type {Record<string, unknown>} */ (rec);
+    const { id, label, order, type, subtypes, icon } = /** @type {Record<string, unknown>} */ (rec);
     if (typeof id !== 'string' || id === '') continue;
     if (typeof label !== 'string' || label === '') continue;
     if (typeof order !== 'number' || !Number.isFinite(order)) continue;
     /** @type {SectionRegistryEntry} */
     const entry = { id, label, order };
     if (typeof type === 'string') entry.type = type;
+    if (icon !== undefined) entry.icon = icon;
     if (Array.isArray(subtypes)) {
       entry.subtypes = subtypes.filter(
         /** @returns {r is SectionSubtypeRule} */
