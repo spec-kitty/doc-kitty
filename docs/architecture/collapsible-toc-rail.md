@@ -16,6 +16,8 @@ related:
   - adr/0044-header-carrier
   - adr/0045-frame-width-token
   - adr/0063-sidebar-carrier
+  - adr/0077-shared-disclosure-control
+  - architecture/page-chrome
   - adr/0064-default-frame-cap
   - architecture/research/layout-guards-and-decisions
 ---
@@ -49,6 +51,12 @@ an opt-in `DocKittyOptions` flag.
   script gives the outline panel that id), `aria-expanded` for the outline's
   state, and an `aria-label` with a matching `title` that change with the state.
   Its chevron is decorative.
+- **Where the button comes from.** `src/lib/disclosure/toggle.ts` builds the
+  button, its chevron and its ARIA state. The rail shares it with the metadata
+  blocks and the sidebar groups. It passes the control an adapter over its own
+  preference, so its `<html>` attribute, its stored key and its pre-paint script
+  are unchanged. See [Page chrome](./page-chrome.md#the-disclosure-upgrade) and
+  [ADR-0077](../adr/0077-shared-disclosure-control.md).
 - **Re-centre.** When collapsed, the reading pane takes the full width beside
   the sidebar and its column is centred in it; the reserved rail column shrinks
   to a 1px hairline (not zero) so the layout edge stays deterministic. This

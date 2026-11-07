@@ -8,6 +8,14 @@ type: Reference
 kind: Hub
 sidebar:
   order: 1
+audience:
+  - profile: rhetoric-student
+    guidance_text: Start here for Book I, then follow the chapter cards below.
+related:
+  - rhetoric/book-one/chapter-01
+external_references:
+  - type: biblio
+    id: freese-rhetoric-1926
 ---
 
 # I: Purposes and Definitions of Rhetoric
