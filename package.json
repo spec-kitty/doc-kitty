@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "pnpm --filter example dev",
     "build": "pnpm --filter example build",
-    "clean": "rm -rf example/.astro example/dist example/node_modules/.astro example/node_modules/.vite",
+    "clean": "rm -rf example/.astro example/dist example/node_modules/.astro example/node_modules/.vite example/.dk-test-chrome example/dist-chrome-*",
     "preview": "pnpm --filter example preview",
     "test": "pnpm --filter @spec-kitty/doc-toolkit --filter @spec-kitty/doc-kitty-mcp test",
     "typecheck": "pnpm --filter example typecheck && pnpm --filter @spec-kitty/doc-kitty-mcp typecheck",
@@ -23,6 +23,7 @@
     "validate:adr-index": "node src/scripts/generate-adr-index.mjs --check",
     "validate:adr-ids": "node src/scripts/generate-adr-index.mjs --check-ids",
     "generate:adr-index": "node src/scripts/generate-adr-index.mjs",
+    "generate:sidebar-icons": "node src/scripts/generate-sidebar-icons.mjs",
     "validate:changelog": "node src/scripts/changelog.mjs --check",
     "changelog:preview": "node src/scripts/changelog.mjs --preview",
     "changelog:release": "node src/scripts/changelog.mjs --release",
@@ -35,8 +36,11 @@
     "assert:plantuml-no-remote-include": "node src/scripts/assert-plantuml-no-remote-include.mjs",
     "assert:supply-chain": "node mcp/scripts/audit-closure.mjs",
     "fixture:stock-header": "node src/scripts/capture-stock-header.mjs",
+    "fixture:chrome-baseline": "node src/tests/fixtures/chrome/capture-baseline.mjs",
     "assert:changelog": "node src/scripts/assert-changelog-page.mjs example/dist --changelog CHANGELOG.md --page changelog/releases",
     "build:a11y": "DK_PUBLISH_DRAFTS=on pnpm --filter example build",
+    "build:chrome-dists": "node src/tests/fixtures/chrome/build-dists.mjs",
+    "build:test-dists": "pnpm build:a11y && DK_PUBLISH_DRAFTS=off DK_OUTDIR=dist-nodrafts pnpm build && pnpm build:chrome-dists",
     "test:a11y": "playwright test"
   },
   "keywords": [

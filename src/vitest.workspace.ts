@@ -66,6 +66,18 @@ const BUILD_SUITES = [
   // `example/.dk-test-legacy-html/`) at the domain root and under a base path,
   // and once with a refused Astro `.html` redirect key. Real Astro runs.
   'tests/legacy-html-redirects-build.test.ts',
+  // Page chrome mission (page-chrome WP11): the suites that build the chrome fixture
+  // (`tests/fixtures/chrome/`), registered together so lanes do not conflict here.
+  // A listed file that does not exist yet is simply not run: these are globs.
+  'tests/chrome-baseline.test.ts',
+  'tests/served-surfaces-build.test.ts',
+  'tests/hub-block-order-build.test.ts',
+  'tests/metadata-blocks-build.test.ts',
+  'tests/sidebar-renderer-parity.test.ts',
+  'tests/sidebar-title-as-index-build.test.ts',
+  'tests/sidebar-icons-build.test.ts',
+  'tests/page-atom-build.test.ts',
+  'tests/footer-links-build.test.ts',
   // MCP served-site conformance lane (doc-kitty-mcp-server WP08, FR-001
   // anti-fake): builds example/ once into its own DK_OUTDIR
   // (dist-wp08-mcp-lane), serves that fresh build statically over 127.0.0.1, spawns the freshly `tsc`-built

@@ -34,6 +34,7 @@
     "./routes": "./lib/routes/index.ts",
     "./routes/scenario-index-injected": "./lib/routes/scenario-index-injected.ts",
     "./routes/content-graph-injected": "./lib/routes/content-graph-injected.ts",
+    "./routes/page-atom-injected": "./lib/routes/page-atom-injected.ts",
     "./route-middleware": "./lib/route-middleware.ts",
     "./deck/*": "./lib/deck/*.ts",
     "./components/*": "./components/*",
@@ -94,6 +95,7 @@
     "@beoe/rehype-mermaid": "0.4.2",
     "@cucumber/gherkin": "42.0.1",
     "@cucumber/messages": "34.2.1",
+    "@iconify-json/fa6-solid": "1.2.4",
     "astro-plantuml": "1.0.0",
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
@@ -113,6 +115,7 @@
     "@astrojs/starlight": "^0.42.6",
     "astro": "^7.4.0",
     "mdast-util-to-hast": "13.2.1",
+    "sax": "1.6.1",
     "starlight-openapi": "0.27.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"

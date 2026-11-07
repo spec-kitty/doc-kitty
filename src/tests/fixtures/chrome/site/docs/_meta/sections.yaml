@@ -1,0 +1,22 @@
+version: 1
+sections:
+  - id: context
+    label: Context
+    order: 10
+    type: Context
+  - id: guides
+    label: Guides
+    order: 20
+    type: Guide
+  - id: reference
+    label: Reference notes
+    order: 30
+    type: Reference
+  - id: adr
+    label: Decision Records
+    order: 40
+    type: ADR
+  - id: glossary
+    label: Glossary
+    order: 50
+    type: Glossary

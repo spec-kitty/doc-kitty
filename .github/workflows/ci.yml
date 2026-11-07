@@ -346,6 +346,26 @@ jobs:
           path: example/dist-nodrafts
           retention-days: 1
           include-hidden-files: true
+      # --- Chrome fixture dists (page-chrome WP11) ---------------------------------
+      # The frozen fixture under the options the example does not set, for the a11y
+      # lane's `title-as-index-*` and `unthemed-*` projects. The harness sets its own
+      # build environment, so this job's values do not reach these builds.
+      - name: Build chrome fixture dists
+        run: pnpm build:chrome-dists
+      - name: Upload title-as-index dist for the a11y lane
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: example-dist-chrome-title-as-index
+          path: example/dist-chrome-title-as-index
+          retention-days: 1
+          include-hidden-files: true
+      - name: Upload unthemed dist for the a11y lane
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: example-dist-chrome-unthemed
+          path: example/dist-chrome-unthemed
+          retention-days: 1
+          include-hidden-files: true
 
   # --- Lane: plantuml-allowlist — the real service in ALLOWLIST mode (#268). ---
   # Proves the documented opt-in (ADR-0074, FR-012): a digest-pinned PlantUML
@@ -403,6 +423,8 @@ jobs:
   # --- Lane: a11y (WP09) — axe-core + visual, both modes, on the built dists. ---
   # Four projects (WP08): `light`/`dark` on the drafts-on dist, and
   # `published-light`/`published-dark` on the drafts-off dist (sidebar specs only).
+  # Three more serve the frozen chrome fixture (page-chrome WP11):
+  # `title-as-index-light` and `unthemed-light`/`unthemed-dark`.
   # Runs whenever build-example runs (same change surface: it consumes that lane's
   # dist artifact instead of rebuilding). Executes inside the PINNED Playwright
   # container so the visual baselines are reproducible bit-for-bit (T041). The only
@@ -438,6 +460,18 @@ jobs:
         with:
           name: example-dist-nodrafts
           path: example/dist-nodrafts
+      # The chrome fixture dists (page-chrome WP11): playwright.config.ts serves each
+      # on its own port for the `title-as-index-*` and `unthemed-*` projects.
+      - name: Download title-as-index dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: example-dist-chrome-title-as-index
+          path: example/dist-chrome-title-as-index
+      - name: Download unthemed dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: example-dist-chrome-unthemed
+          path: example/dist-chrome-unthemed
       # The ONE allowlisted browser download — Chromium only, explicit (never a
       # silent postinstall). A no-op verify in the pinned image, kept for discipline.
       - name: Install Chromium (explicit, allowlisted)

@@ -154,6 +154,11 @@ jobs:
           DK_OUTDIR: dist-nodrafts
         run: pnpm build
 
+      # Every Playwright server starts whichever projects run, so the chrome fixture
+      # dists (page-chrome WP11) must exist here too.
+      - name: Build chrome fixture dists
+        run: pnpm build:chrome-dists
+
       # A near no-op in the pinned image (browsers are baked in), kept for parity
       # with the a11y lane's explicit, allowlisted Chromium install.
       - name: Install Chromium (explicit, allowlisted)

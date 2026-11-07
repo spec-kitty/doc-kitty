@@ -114,6 +114,8 @@ const server = createServer(async (req, res) => {
 // is no warning fallback. `adr/template/` is a draft page of the example; if it is
 // ever published, pick another draft route here.
 const DRAFT_SENTINEL = 'adr/template/index.html';
+// The chrome fixture dists (page-chrome WP11) are built by one command, not by the example build.
+const BUILD_COMMAND_MISSING = /(^|\/)dist-chrome-/.test(process.env.DK_A11Y_DIST ?? '') ? 'pnpm build:chrome-dists' : null;
 const BUILD_COMMAND = {
   on: 'pnpm build:a11y',
   off: 'DK_PUBLISH_DRAFTS=off DK_OUTDIR=dist-nodrafts pnpm build',
@@ -137,7 +139,7 @@ if (EXPECT_DRAFTS !== 'on' && EXPECT_DRAFTS !== 'off') {
   fail(`DK_A11Y_EXPECT_DRAFTS must be 'on' or 'off', got '${EXPECT_DRAFTS}'.`);
 }
 if (!(await exists(join(DIST, 'index.html')))) {
-  fail(`${join(DIST, 'index.html')} is missing: there is no built dist to serve. Run \`${BUILD_COMMAND[EXPECT_DRAFTS]}\`, then retry.`);
+  fail(`${join(DIST, 'index.html')} is missing: there is no built dist to serve. Run \`${BUILD_COMMAND_MISSING ?? BUILD_COMMAND[EXPECT_DRAFTS]}\`, then retry.`);
 }
 const FOUND_DRAFTS = (await exists(join(DIST, DRAFT_SENTINEL))) ? 'on' : 'off';
 if (FOUND_DRAFTS !== EXPECT_DRAFTS) {
