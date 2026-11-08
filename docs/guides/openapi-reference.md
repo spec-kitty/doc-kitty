@@ -22,13 +22,15 @@ related:
 pages in the docsite, plus a stable link to the raw document.
 
 The `openapi` option builds one set of reference pages for each version of your
-API. It also publishes the document you gave it, byte for byte, with a checksum.
-The pages render inside the normal DocKitty frame: header, sidebar, table of
+API. It also publishes the raw document with a checksum: a single-file input
+byte for byte, a multi-file input as the bundle the build makes of it
+(§4a has the full list). The
+pages render inside the normal DocKitty frame: header, sidebar, table of
 contents and footer. They are static HTML. There is no request console and no
 browser fetch.
 
-A version's input is a local file, a local folder of files with relative
-`$ref`s, a matched file from an archive glob, or a pinned `https` URL. Swagger
+A version's input is a local root file plus the files its relative `$ref`s
+reach, a matched file from an archive glob, or a pinned `https` URL. Swagger
 2.0 documents are accepted; the original bytes are published and any
 conversion happens in memory only.
 
@@ -131,7 +133,7 @@ Treat these addresses as a contract: other tools can link to them.
 | Address | What it is |
 | --- | --- |
 | `<base>/<section>/<label>/` | The reference pages. |
-| `<base>/<section>/<label>/openapi.<ext>` | Your raw document, byte-identical to the input. |
+| `<base>/<section>/<label>/openapi.<ext>` | Your raw document: byte-identical to a single-file input, the bundle of a multi-file input. |
 | `<base>/<section>/<label>/openapi.<ext>.sha256` | Its checksum, in `sha256sum` format. |
 | One record in `<base>/api/index.json` and `<base>/api/pages/<section>/<label>.json` | The version's agent entry: `released`, `rawDocumentUrl` and `sha256`. |
 
