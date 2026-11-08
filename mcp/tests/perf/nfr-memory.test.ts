@@ -27,7 +27,8 @@ import { CORPUS_FIXTURES, PERF_DIR, ensureMcpDistBuilt, generateSyntheticCorpus 
 
 const MB = 1024 * 1024;
 const DRIVER = path.join(PERF_DIR, 'memory-driver.mjs');
-const EXAMPLE_PAGES = 70;
+/** 70 docs pages + the 3 synthetic OpenAPI version records (WP03). */
+const EXAMPLE_PAGES = 73;
 const NFR_TARGET_PAGES = 10_000;
 
 interface MemoryReport {
@@ -55,7 +56,7 @@ afterAll(() => {
 });
 
 describe('NFR-002 per-page snapshot cost at example scale', () => {
-  it('measures retained RSS delta over the 70-page example corpus, reproducibly', () => {
+  it('measures retained RSS delta over the 73-page example corpus, reproducibly', () => {
     const exampleDir = path.join(CORPUS_FIXTURES, 'example');
     const first = probe(exampleDir);
     const second = probe(exampleDir);

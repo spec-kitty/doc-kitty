@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/context/audience/">
+  <id>https://spec-kitty.github.io/doc-kitty/context/audience/</id>
+  <title>Audiences</title>
+  <updated>2026-08-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/context/audience/"/>
+  <summary>The reader personas this documentation serves — who they are, what they want, and what they are accountable for.</summary>
+  <content type="html">&lt;span id=&quot;audiences&quot;&gt;&lt;/span&gt;
+&lt;p&gt;The personas below describe who this documentation is written for. Each persona
+page carries the reader’s role, goals, and responsibilities, so an &lt;code dir=&quot;auto&quot;&gt;audience&lt;/code&gt;
+reference elsewhere in the tree resolves to a page that says something concrete
+about the reader it points at.&lt;/p&gt;
+&lt;p&gt;Draft personas are omitted from the list below (and from the sitemap, RSS feed,
+and agent index) until they are promoted to &lt;code dir=&quot;auto&quot;&gt;active&lt;/code&gt;.&lt;/p&gt;</content>
+</entry>

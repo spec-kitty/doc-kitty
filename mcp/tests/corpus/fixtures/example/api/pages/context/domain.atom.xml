@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/context/domain/">
+  <id>https://spec-kitty.github.io/doc-kitty/context/domain/</id>
+  <title>Domain</title>
+  <updated>2026-08-21T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/context/domain/"/>
+  <summary>The ubiquitous language for DocKitty.</summary>
+  <content type="html">&lt;span id=&quot;domain&quot;&gt;&lt;/span&gt;
+&lt;h2 id=&quot;glossary&quot;&gt;Glossary&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Bundle&lt;/strong&gt; — a &lt;code dir=&quot;auto&quot;&gt;docs/&lt;/code&gt; tree conforming to OKF v0.2. One repository, one bundle.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Section&lt;/strong&gt; — a top-level directory under &lt;code dir=&quot;auto&quot;&gt;docs/&lt;/code&gt; (e.g. &lt;code dir=&quot;auto&quot;&gt;architecture/&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Section index&lt;/strong&gt; — the &lt;code dir=&quot;auto&quot;&gt;README.md&lt;/code&gt; at a section root (the Kitty twist; vanilla
+Common Docs uses &lt;code dir=&quot;auto&quot;&gt;index.md&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Type&lt;/strong&gt; — the OKF-required frontmatter field identifying the kind of a page.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Agent-API&lt;/strong&gt; — the generated &lt;code dir=&quot;auto&quot;&gt;llms.txt&lt;/code&gt; + &lt;code dir=&quot;auto&quot;&gt;/api/*.json&lt;/code&gt; discovery surface.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;terms-that-sound-similar&quot;&gt;Terms that sound similar&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Plan vs ADR vs Architecture&lt;/strong&gt; — plans describe the &lt;em&gt;future&lt;/em&gt;, ADRs record
+&lt;em&gt;past&lt;/em&gt; decisions, architecture describes the &lt;em&gt;present&lt;/em&gt;. Never conflate them.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Discovery vs Retrieval&lt;/strong&gt; — this project does discovery (a browsable map),
+not retrieval (a vector index).&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

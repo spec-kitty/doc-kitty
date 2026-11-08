@@ -17,7 +17,7 @@
   "authors": [],
   "keywords": [],
   "generated": {
-    "by": "doc-kitty-gherkin/0.5.0",
+    "by": "doc-kitty-gherkin/0.6.0",
     "at": "2026-10-19T08:58:27Z",
     "content_hash": "sha256:89bc5addda4b"
   },
@@ -28,7 +28,7 @@
     }
   ],
   "markdown": "# Track a consignment in transit\n\nAs a shipper\\\nI want to see where my consignment is on its voyage\\\nSo that I can tell the consignee when to expect it\n\nTracking is still being designed: these scenarios record the milestones\nagreed so far, and the carrier event feed they depend on is not live yet.\n\n*2 scenarios*\n\n## Scenario: Report the latest milestone\n\n- **Given** a consignment loaded onto a sailing from Rotterdam to Felixstowe\n- **When** the vessel departs Rotterdam\n- **Then** the consignment is reported as in transit\n\n## Scenario: Report a delay against the planned arrival\n\n- **Given** a consignment in transit with a planned arrival on 14 November\n- **When** the carrier reports a revised arrival on 16 November\n- **Then** the consignment is reported as delayed by 2 days",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/track-consignment.json"

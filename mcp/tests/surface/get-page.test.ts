@@ -71,7 +71,8 @@ describe('get_page', () => {
       const text = result.content![0]!.text!;
       expect(text.startsWith('PAGE_NOT_FOUND: ')).toBe(true);
       expect(text).toContain('guides/no-such-page');
-      expect(text).toContain('70 pages');
+      // 70 docs pages + the 3 synthetic OpenAPI version records (WP03).
+      expect(text).toContain('73 pages');
     });
 
     it('MALFORMED_CORPUS for empty or blank ids (guard path, named error)', async () => {

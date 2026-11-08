@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/plans/missions/">
+  <id>https://spec-kitty.github.io/doc-kitty/plans/missions/</id>
+  <title>Missions</title>
+  <updated>2026-10-13T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/plans/missions/"/>
+  <summary>Short mission write-ups for the example docsite, one page per mission.</summary>
+  <content type="html">&lt;span id=&quot;missions&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Each page in this folder describes one mission planned for the example site:
+what it sets out to change and why. They are forward-looking write-ups, not a
+record of the current state (see &lt;a href=&quot;/doc-kitty/architecture/&quot;&gt;Architecture&lt;/a&gt; for that).&lt;/p&gt;
+&lt;p&gt;This index page also gives the folder its name in the sidebar. A nested folder
+is labelled with the title of its index page, so without this page the group
+would fall back to a readable form of the folder name and the build would
+report the missing title.&lt;/p&gt;</content>
+</entry>

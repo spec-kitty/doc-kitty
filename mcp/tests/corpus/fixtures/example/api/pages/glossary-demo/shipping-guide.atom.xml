@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/glossary-demo/shipping-guide/">
+  <id>https://spec-kitty.github.io/doc-kitty/glossary-demo/shipping-guide/</id>
+  <title>A page that lives in the shipping context</title>
+  <updated>2026-08-26T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/glossary-demo/shipping-guide/"/>
+  <summary>Declaring glossary_context lets the auto-linker settle a collision by itself — here policy resolves to shipping with no directive and no warning.</summary>
+  <content type="html">&lt;span id=&quot;a-page-that-lives-in-the-shipping-context&quot;&gt;&lt;/span&gt;
+&lt;p&gt;This page declares &lt;code dir=&quot;auto&quot;&gt;glossary_context: shipping&lt;/code&gt; in its frontmatter. That one field
+changes how the auto-linker treats an otherwise ambiguous term: the page’s own context
+is used to settle a collision the context-free page had to leave plain.&lt;/p&gt;
+&lt;h2 id=&quot;the-collision-resolves-itself-here&quot;&gt;The collision resolves itself here&lt;/h2&gt;
+&lt;p&gt;The word &lt;a href=&quot;/doc-kitty/glossary/shipping/#policy&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;policy&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;policy&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;policy, glossary term&quot;&gt;policy&lt;/a&gt; is defined in both shipping and hr, but because this page belongs to
+the shipping context the auto-linker links policy straight to the shipping definition —
+no &lt;code dir=&quot;auto&quot;&gt;:term&lt;/code&gt; directive, no build warning. Hovering the link shows the definition inline,
+and following it opens the full glossary entry in a new tab.&lt;/p&gt;
+&lt;h2 id=&quot;single-context-terms-link-as-usual&quot;&gt;Single-context terms link as usual&lt;/h2&gt;
+&lt;p&gt;Terms that live in only one context never needed the page context. The word &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; and
+the word &lt;a href=&quot;/doc-kitty/glossary/shipping/#freight&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;freight&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;freight&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;freight, glossary term&quot;&gt;freight&lt;/a&gt; both link to their shipping definitions on their first mention in this
+section, exactly as they would on any page.&lt;/p&gt;</content>
+</entry>

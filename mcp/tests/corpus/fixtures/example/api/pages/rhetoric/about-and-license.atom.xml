@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/rhetoric/about-and-license/">
+  <id>https://spec-kitty.github.io/doc-kitty/rhetoric/about-and-license/</id>
+  <title>About and license</title>
+  <updated>2026-10-14T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/rhetoric/about-and-license/"/>
+  <summary>Attribution and license (CC-BY-SA-4.0) for the Rhetoric showcase — the public-domain Freese/Perseus source and the Dejongh revamp.</summary>
+  <content type="html">&lt;span id=&quot;about-and-license&quot;&gt;&lt;/span&gt;
+&lt;p&gt;The &lt;a href=&quot;/doc-kitty/rhetoric/&quot;&gt;Rhetoric section&lt;/a&gt; is a real, worked example: a conversion of
+Aristotle’s &lt;em&gt;Rhetoric&lt;/em&gt; into doc-kitty pages, used to show a full Markua-authored
+work rendering natively. It is &lt;strong&gt;not&lt;/strong&gt; a copy of the book itself — it is a
+docsite conversion of one existing translation, restructured, lightly edited
+for the modern reader, and annotated with editor’s notes.&lt;/p&gt;
+&lt;h2 id=&quot;license&quot;&gt;License&lt;/h2&gt;
+&lt;p&gt;This section is licensed under &lt;strong&gt;&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/4.0/&quot;&gt;Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA-4.0)&lt;/a&gt;&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;This is &lt;strong&gt;separate from doc-kitty’s own MIT code license&lt;/strong&gt;. The MIT license
+covers the doc-kitty toolkit (the templates, components, and build pipeline);
+CC-BY-SA-4.0 covers the &lt;em&gt;content&lt;/em&gt; of this Rhetoric section specifically — the
+converted text, editor’s notes, and glossary on these pages. Reusing code from
+this repository is governed by the project’s MIT license; reusing the prose on
+these pages is governed by CC-BY-SA-4.0 and requires attribution plus
+share-alike redistribution of any derivative.&lt;/p&gt;
+&lt;h2 id=&quot;attribution&quot;&gt;Attribution&lt;/h2&gt;
+&lt;p&gt;This section is a derivative work with two layers of attribution:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Source translation&lt;/strong&gt;: the underlying text is J.H. Freese’s 1926 English
+translation of Aristotle’s &lt;em&gt;Rhetoric&lt;/em&gt;, which is in the &lt;strong&gt;public domain&lt;/strong&gt;.
+Freese’s translation was published by the &lt;a href=&quot;http://www.perseus.tufts.edu/hopper&quot;&gt;Perseus
+Project&lt;/a&gt; — the Perseus Digital Library
+maintained by the Department of Classical Studies at Tufts University — and
+incorporates translation notes from E. M. Cope (1877) and W. D. Ross (1959).
+Neither Freese’s translation nor the Perseus Project take any credit for, or
+claim any ownership of, this derivative conversion.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;This revamp&lt;/strong&gt;: the restructuring into a modern, navigable docsite —
+chapter titles, editor’s notes, the glossary, and cross-reference
+conversion — is © Stijn Dejongh, 2024, licensed under CC-BY-SA-4.0 to keep
+the spirit of the original Perseus publication (which was itself licensed
+CC-BY-SA-3.0).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;the-perseus-project&quot;&gt;The Perseus Project&lt;/h2&gt;
+&lt;p&gt;The &lt;a href=&quot;http://www.perseus.tufts.edu/hopper&quot;&gt;Perseus Project&lt;/a&gt; — also known as the
+Perseus Hopper — is a long-running online digital library curated by the
+Department of Classical Studies at Tufts University. As an open source
+project, it has had many contributors since its founding in 1987. It is named
+after the Greek hero Perseus, the mythical slayer of monsters and legendary
+founder of Mycenae.&lt;/p&gt;
+&lt;p&gt;Tufts University aims to provide a comprehensive catalogue of texts from the
+ancient world so modern audiences can access them freely, and licenses its own
+work accordingly to enable that free sharing of knowledge.&lt;/p&gt;
+&lt;p&gt;See the &lt;a href=&quot;/doc-kitty/rhetoric/introduction/&quot;&gt;Introduction&lt;/a&gt; for more on how this
+conversion came about, and the &lt;a href=&quot;/doc-kitty/api/bibliography.json&quot;&gt;bibliography record&lt;/a&gt;
+for the full source citation.&lt;/p&gt;</content>
+</entry>

@@ -17,7 +17,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Guides\n\n- [Getting started](/guides/getting-started/) — first-time setup from zero.\n- [Install the toolkit](/guides/install/) — install `@spec-kitty/doc-toolkit` from\n  GitHub Packages and build your own docsite.\n- [GitHub alerts](/guides/github-alerts/) — `> [!NOTE]`-style blockquotes\n  rendered as asides.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides.json"

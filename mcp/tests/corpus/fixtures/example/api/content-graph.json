@@ -161,7 +161,7 @@
       "description": "Behaviour specifications generated from the repository's Gherkin feature files.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.5.0",
+        "by": "doc-kitty-gherkin/0.6.0",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:16468cd02ce6"
       },
@@ -177,7 +177,7 @@
       "description": "Behaviour specifications for HR, generated from Gherkin feature files.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.5.0",
+        "by": "doc-kitty-gherkin/0.6.0",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:921b0185fc92"
       },
@@ -196,7 +196,7 @@
       ],
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.5.0",
+        "by": "doc-kitty-gherkin/0.6.0",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:2ba67bcafd1f"
       },
@@ -218,7 +218,7 @@
       "description": "Behaviour specifications for Shipping, generated from Gherkin feature files.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.5.0",
+        "by": "doc-kitty-gherkin/0.6.0",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:07bf420aeb22"
       },
@@ -237,7 +237,7 @@
       ],
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.5.0",
+        "by": "doc-kitty-gherkin/0.6.0",
         "at": "2026-10-19T08:58:27Z",
         "content_hash": "sha256:817e81f1d8da"
       },
@@ -262,7 +262,7 @@
       ],
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.5.0",
+        "by": "doc-kitty-gherkin/0.6.0",
         "at": "2026-10-19T08:58:27Z",
         "content_hash": "sha256:2c4e57f9ba43"
       },
@@ -519,7 +519,7 @@
       "description": "Glossary terms for the hr context.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.5.0",
+        "by": "doc-kitty-glossary/0.6.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:647872872f73"
       },
@@ -535,7 +535,7 @@
       "description": "Bounded-context vocabulary for this documentation.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.5.0",
+        "by": "doc-kitty-glossary/0.6.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:3c372a59ef6a"
       },
@@ -551,7 +551,7 @@
       "description": "Glossary terms for the rhetoric context.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.5.0",
+        "by": "doc-kitty-glossary/0.6.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:1d0bb7c2a0ee"
       },
@@ -567,7 +567,7 @@
       "description": "Glossary terms for the shipping context.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.5.0",
+        "by": "doc-kitty-glossary/0.6.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:1fc1f255099a"
       },
@@ -1959,10 +1959,29 @@
       "rel": "in-section"
     },
     {
+      "id": "rhetoric/book-one/index|audience|context/audience/rhetoric-student",
+      "source": "rhetoric/book-one/index",
+      "target": "context/audience/rhetoric-student",
+      "rel": "audience",
+      "note": "Start here for Book I, then follow the chapter cards below."
+    },
+    {
+      "id": "rhetoric/book-one/index|cites|catalog:biblio:freese-rhetoric-1926",
+      "source": "rhetoric/book-one/index",
+      "target": "catalog:biblio:freese-rhetoric-1926",
+      "rel": "cites"
+    },
+    {
       "id": "rhetoric/book-one/index|in-section|rhetoric/index",
       "source": "rhetoric/book-one/index",
       "target": "rhetoric/index",
       "rel": "in-section"
+    },
+    {
+      "id": "rhetoric/book-one/index|related|rhetoric/book-one/chapter-01",
+      "source": "rhetoric/book-one/index",
+      "target": "rhetoric/book-one/chapter-01",
+      "rel": "related"
     },
     {
       "id": "rhetoric/book-three/index|in-section|rhetoric/index",

@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/scenarios-in-pages/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/scenarios-in-pages/</id>
+  <title>Scenarios in pages</title>
+  <updated>2026-10-14T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/scenarios-in-pages/"/>
+  <summary>Gherkin in an ordinary page — a gherkin code fence or an included .feature file renders as headings, step lists and tables instead of a code block.</summary>
+  <content type="html">&lt;span id=&quot;scenarios-in-pages&quot;&gt;&lt;/span&gt;
+&lt;p&gt;A &lt;code dir=&quot;auto&quot;&gt;gherkin&lt;/code&gt; code fence on any docs page renders as a structured scenario: a
+heading for the feature and for each scenario, the steps as a list with each
+keyword in bold, data tables as real tables and doc strings as code blocks. It is
+the same rendering a generated behaviour page uses, so the
+&lt;a href=&quot;/doc-kitty/behaviour/&quot;&gt;behaviour section&lt;/a&gt; and a guide that quotes a scenario look alike.&lt;/p&gt;
+&lt;p&gt;A &lt;code dir=&quot;auto&quot;&gt;::gherkin&lt;/code&gt; directive does the same for a &lt;code dir=&quot;auto&quot;&gt;.feature&lt;/code&gt; file that already lives in
+the repository; see &lt;a href=&quot;#include-a-feature-file&quot;&gt;Include a feature file&lt;/a&gt;. An included
+file also shows each scenario’s last test result; see
+&lt;a href=&quot;#results-from-the-test-run&quot;&gt;Results from the test run&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The site turns it on with the &lt;code dir=&quot;auto&quot;&gt;gherkin&lt;/code&gt; option. This page is also the coverage
+fixture the accessibility lane scans in light and dark mode.&lt;/p&gt;
+&lt;h2 id=&quot;a-whole-feature&quot;&gt;A whole feature&lt;/h2&gt;
+&lt;p&gt;A fence that holds a complete feature renders its title, narrative and every
+scenario. The headings nest one level under the section the fence sits in.&lt;/p&gt;
+&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;h3 id=&quot;initialise-a-project&quot;&gt;Initialise a project&lt;/h3&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@init&lt;/code&gt;&lt;/p&gt;&lt;p&gt;As a developer starting a new repository&lt;br&gt;
+I want one command to set up the project’s governance files&lt;br&gt;
+So that every agent works from the same charter and templates&lt;/p&gt;&lt;p&gt;&lt;em&gt;2 scenarios&lt;/em&gt;&lt;/p&gt;&lt;h4 id=&quot;background&quot;&gt;Background&lt;/h4&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; an empty Git repository&lt;/li&gt;
+&lt;/ul&gt;&lt;h4 id=&quot;scenario-initialise-with-the-default-mission&quot;&gt;Scenario: Initialise with the default mission&lt;/h4&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the developer runs &lt;code dir=&quot;auto&quot;&gt;&quot;init&quot;&lt;/code&gt; in the repository&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; a &lt;code dir=&quot;auto&quot;&gt;&quot;.kittify&quot;&lt;/code&gt; directory is created&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the default mission templates are copied into it&lt;/li&gt;
+&lt;/ul&gt;&lt;h4 id=&quot;scenario-refuse-to-initialise-twice&quot;&gt;Scenario: Refuse to initialise twice&lt;/h4&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; the repository has already been initialised&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the developer runs &lt;code dir=&quot;auto&quot;&gt;&quot;init&quot;&lt;/code&gt; in the repository&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the command stops with &lt;code dir=&quot;auto&quot;&gt;&quot;already initialised&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; no file in &lt;code dir=&quot;auto&quot;&gt;&quot;.kittify&quot;&lt;/code&gt; is changed&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;h2 id=&quot;steps-on-their-own&quot;&gt;Steps on their own&lt;/h2&gt;
+&lt;p&gt;A fence may hold only steps. They render as a step list with no heading, for prose
+that walks through one flow.&lt;/p&gt;
+&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a sailing from Rotterdam to Felixstowe with 40 TEU remaining&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper books a consignment of 12 TEU onto the sailing&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the booking is confirmed&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the sailing has 28 TEU remaining&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;h2 id=&quot;rules-outlines-and-arguments&quot;&gt;Rules, outlines and arguments&lt;/h2&gt;
+&lt;p&gt;Rules, backgrounds, scenario outlines with their examples, data tables, doc
+strings and tags all render.&lt;/p&gt;
+&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;h3 id=&quot;declare-customs-for-a-consignment&quot;&gt;Declare customs for a consignment&lt;/h3&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@shipping&lt;/code&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;1 rule · 2 scenarios · 2 example rows&lt;/em&gt;&lt;/p&gt;&lt;h4 id=&quot;rule-a-declaration-lists-every-line-of-the-consignment&quot;&gt;Rule: A declaration lists every line of the consignment&lt;/h4&gt;&lt;h5 id=&quot;background-1&quot;&gt;Background&lt;/h5&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a confirmed booking for consignment C-100&lt;/li&gt;
+&lt;/ul&gt;&lt;h5 id=&quot;scenario-declare-a-consignment-with-two-lines&quot;&gt;Scenario: Declare a consignment with two lines&lt;/h5&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@smoke&lt;/code&gt;&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; the consignment holds these lines:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;sku&lt;/th&gt;&lt;th&gt;description&lt;/th&gt;&lt;th&gt;value&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;A-1&lt;/td&gt;&lt;td&gt;Garden chairs&lt;/td&gt;&lt;td&gt;400&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;B-2&lt;/td&gt;&lt;td&gt;Patio umbrella&lt;/td&gt;&lt;td&gt;150&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper submits the declaration&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the declaration is accepted with this summary:
+&lt;div class=&quot;expressive-code&quot;&gt;&lt;figure class=&quot;frame not-content&quot;&gt;&lt;figcaption class=&quot;header&quot;&gt;&lt;/figcaption&gt;&lt;pre data-language=&quot;json&quot;&gt;&lt;code&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;{ &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;lines&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: &lt;/span&gt;&lt;span style=&quot;--0:#F78C6C;--1:#AA0982&quot;&gt;2&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;total&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: &lt;/span&gt;&lt;span style=&quot;--0:#F78C6C;--1:#AA0982&quot;&gt;550&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;currency&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: &lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#C789D6;--1:#7C5686&quot;&gt;EUR&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt; }&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;&lt;h5 id=&quot;scenario-outline-hold-a-declaration-over-the-duty-threshold&quot;&gt;Scenario Outline: Hold a declaration over the duty threshold&lt;/h5&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a consignment declared at &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;value&gt;&lt;/code&gt; EUR&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper submits the declaration&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the declaration is &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;outcome&gt;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt; Around the threshold&lt;/p&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@edge&lt;/code&gt;&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;value&lt;/th&gt;&lt;th&gt;outcome&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;150&lt;/td&gt;&lt;td&gt;accepted&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;151&lt;/td&gt;&lt;td&gt;held for review&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+&lt;h2 id=&quot;inside-an-aside&quot;&gt;Inside an aside&lt;/h2&gt;
+&lt;p&gt;A fence inside an aside, a list item or a quote renders its headings as
+paragraphs with a heading role, so they keep the outline of the container and stay
+out of the “On this page” list.&lt;/p&gt;
+&lt;aside aria-label=&quot;A scenario in a note&quot; class=&quot;starlight-aside starlight-aside--note&quot;&gt;&lt;p class=&quot;starlight-aside__title&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; width=&quot;16&quot; height=&quot;16&quot; fill=&quot;currentColor&quot; class=&quot;starlight-aside__icon&quot;&gt;&lt;path d=&quot;M12 11a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1Zm.38-3.92a1 1 0 0 0-.76 0 1 1 0 0 0-.33.21 1.15 1.15 0 0 0-.21.33 1 1 0 0 0 .21 1.09c.097.088.209.16.33.21A1 1 0 0 0 13 8a1.05 1.05 0 0 0-.29-.71 1 1 0 0 0-.33-.21ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16.001A8 8 0 0 1 12 20Z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;A scenario in a note&lt;/p&gt;&lt;div class=&quot;starlight-aside__content&quot;&gt;&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;p role=&quot;heading&quot; aria-level=&quot;3&quot;&gt;Scenario: Track a consignment in transit&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a consignment loaded on the sailing to Felixstowe&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper opens the tracking page&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the consignment shows as &lt;code dir=&quot;auto&quot;&gt;&quot;in transit&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;/aside&gt;
+&lt;h2 id=&quot;gherkin-as-source&quot;&gt;Gherkin as source&lt;/h2&gt;
+&lt;p&gt;Add &lt;code dir=&quot;auto&quot;&gt;raw&lt;/code&gt; to the fence’s info string to show Gherkin as a code block, for example
+when the point is the syntax itself.&lt;/p&gt;
+&lt;div class=&quot;expressive-code&quot;&gt;&lt;figure class=&quot;frame not-content&quot;&gt;&lt;figcaption class=&quot;header&quot;&gt;&lt;/figcaption&gt;&lt;pre data-language=&quot;gherkin&quot;&gt;&lt;code&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--0:#919F9F;--1:#5F636F&quot;&gt;# A comment is kept in a raw fence.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--0:#C792EA;--1:#8844AE&quot;&gt;Scenario&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#3B61B0&quot;&gt; Show the source&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span class=&quot;indent&quot;&gt;  &lt;/span&gt;&lt;span style=&quot;--0:#C792EA;--1:#8844AE&quot;&gt;Given &lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;a fence with the info string &lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;&quot;gherkin raw&quot;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span class=&quot;indent&quot;&gt;  &lt;/span&gt;&lt;span style=&quot;--0:#C792EA;--1:#8844AE&quot;&gt;Then &lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;it renders as a code block&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
+&lt;h2 id=&quot;include-a-feature-file&quot;&gt;Include a feature file&lt;/h2&gt;
+&lt;p&gt;A &lt;code dir=&quot;auto&quot;&gt;::gherkin&lt;/code&gt; directive on a line of its own renders a &lt;code dir=&quot;auto&quot;&gt;.feature&lt;/code&gt; file from the
+repository in place, so the page shows the scenarios the test suite runs instead
+of a pasted copy. It renders like a fence, plus a line that names the source
+file. Comments in the file are not shown.&lt;/p&gt;
+&lt;div class=&quot;expressive-code&quot;&gt;&lt;figure class=&quot;frame not-content&quot;&gt;&lt;figcaption class=&quot;header&quot;&gt;&lt;/figcaption&gt;&lt;pre data-language=&quot;md&quot; class=&quot;wrap&quot; style=&quot;--ecMaxLine:113ch&quot;&gt;&lt;code&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;::gherkin{src=&quot;scenarios/init/init.feature&quot;}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;::gherkin{src=&quot;features/shipping/declare-customs.feature&quot; scenario=&quot;Hold a declaration lodged after the cut-off&quot;}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;::gherkin{src=&quot;features/shipping/book-consignment.feature&quot; tags=&quot;@smoke @edge&quot;}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code dir=&quot;auto&quot;&gt;src&lt;/code&gt; is relative to the project root and must sit inside one of the site’s
+&lt;code dir=&quot;auto&quot;&gt;includeRoots&lt;/code&gt;. &lt;code dir=&quot;auto&quot;&gt;scenario&lt;/code&gt; picks one scenario by its exact name, and &lt;code dir=&quot;auto&quot;&gt;tags&lt;/code&gt; keeps
+every scenario or example row that carries any of the listed tags. A path, name or
+tag that matches nothing stops the build.&lt;/p&gt;
+&lt;h3 id=&quot;a-whole-file&quot;&gt;A whole file&lt;/h3&gt;
+&lt;p&gt;This is Spec Kitty’s own specification of &lt;code dir=&quot;auto&quot;&gt;spec-kitty init&lt;/code&gt;, copied into this site
+with its source commit recorded in a comment.&lt;/p&gt;
+&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;h4 id=&quot;set-up-spec-kitty-in-a-repository&quot;&gt;Set up Spec Kitty in a repository&lt;/h4&gt;&lt;p&gt;As a developer adopting Spec Kitty&lt;br&gt;
+I want &lt;code dir=&quot;auto&quot;&gt;spec-kitty init&lt;/code&gt; to set up my project without touching my git history&lt;br&gt;
+So that I can add Spec Kitty to a new or existing repository, and re-run it to repair a damaged setup&lt;/p&gt;&lt;p&gt;&lt;em&gt;2 scenarios&lt;/em&gt;&lt;/p&gt;&lt;p class=&quot;dk-gherkin__results&quot;&gt;&lt;strong&gt;Results:&lt;/strong&gt; 2 passed · as of &lt;time datetime=&quot;2026-10-19T00:00:00.000Z&quot;&gt;2026-10-19&lt;/time&gt;&lt;/p&gt;&lt;h5 id=&quot;scenario-re-running-init-repairs-a-missing-agent-skill-folder-and-keeps-the-rest-of-the-project-as-it-was&quot;&gt;Scenario: Re-running init repairs a missing agent skill folder and keeps the rest of the project as it was&lt;/h5&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a project already set up with Spec Kitty for the agents &lt;code dir=&quot;auto&quot;&gt;&quot;claude,codex&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the folder &lt;code dir=&quot;auto&quot;&gt;&quot;.claude/skills&quot;&lt;/code&gt; has been deleted&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the folder &lt;code dir=&quot;auto&quot;&gt;&quot;.agents/skills&quot;&lt;/code&gt; is present&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the file &lt;code dir=&quot;auto&quot;&gt;&quot;.kittify/config.yaml&quot;&lt;/code&gt; is present&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; I run &lt;code dir=&quot;auto&quot;&gt;&quot;spec-kitty init --non-interactive --ai claude,codex&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the command succeeds&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the folder &lt;code dir=&quot;auto&quot;&gt;&quot;.claude/skills&quot;&lt;/code&gt; exists&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the folder &lt;code dir=&quot;auto&quot;&gt;&quot;.claude/skills&quot;&lt;/code&gt; is not empty&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the folder &lt;code dir=&quot;auto&quot;&gt;&quot;.agents/skills&quot;&lt;/code&gt; is unchanged&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the file &lt;code dir=&quot;auto&quot;&gt;&quot;.kittify/config.yaml&quot;&lt;/code&gt; is unchanged&lt;/li&gt;
+&lt;/ul&gt;&lt;h5 id=&quot;scenario-setting-up-a-new-project-inside-an-existing-repository-leaves-its-git-history-alone&quot;&gt;Scenario: Setting up a new project inside an existing repository leaves its git history alone&lt;/h5&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; an existing git repository with commit history&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the repository has at least one commit&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; I run &lt;code dir=&quot;auto&quot;&gt;&quot;spec-kitty init app --non-interactive --ai claude&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the command succeeds&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the folder &lt;code dir=&quot;auto&quot;&gt;&quot;app/.kittify&quot;&lt;/code&gt; exists&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the folder &lt;code dir=&quot;auto&quot;&gt;&quot;app/.claude&quot;&lt;/code&gt; exists&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; no &lt;code dir=&quot;auto&quot;&gt;&quot;.git&quot;&lt;/code&gt; folder exists in &lt;code dir=&quot;auto&quot;&gt;&quot;app&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the repository HEAD is unchanged&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the repository has no new commits&lt;/li&gt;
+&lt;/ul&gt;&lt;p class=&quot;dk-gherkin__source&quot;&gt;Source: &lt;code dir=&quot;auto&quot;&gt;scenarios/init/init.feature&lt;/code&gt;&lt;/p&gt;&lt;/div&gt;
+&lt;h3 id=&quot;one-scenario-by-name&quot;&gt;One scenario by name&lt;/h3&gt;
+&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;h4 id=&quot;background-2&quot;&gt;Background&lt;/h4&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a booked consignment from Rotterdam to Felixstowe&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the customs cut-off is 24 hours before the sailing departs&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; goods with a declared value under 150 EUR are relieved of duty&lt;/li&gt;
+&lt;/ul&gt;&lt;h4 id=&quot;rule-a-declaration-carries-the-evidence-customs-asks-for&quot;&gt;Rule: A declaration carries the evidence customs asks for&lt;/h4&gt;&lt;h5 id=&quot;scenario-hold-a-declaration-lodged-after-the-cut-off&quot;&gt;Scenario: Hold a declaration lodged after the cut-off&lt;/h5&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;undefined&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Undefined&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; the customs cut-off has passed&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper lodges the declaration&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the declaration is held for manual review&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the freight invoice carries a late-lodgement surcharge&lt;/li&gt;
+&lt;/ul&gt;&lt;p class=&quot;dk-gherkin__source&quot;&gt;From Declare a consignment to customs, &lt;code dir=&quot;auto&quot;&gt;features/shipping/declare-customs.feature&lt;/code&gt;&lt;/p&gt;&lt;/div&gt;
+&lt;h3 id=&quot;scenarios-by-tag&quot;&gt;Scenarios by tag&lt;/h3&gt;
+&lt;p&gt;&lt;code dir=&quot;auto&quot;&gt;@smoke @edge&lt;/code&gt; keeps the scenario tagged &lt;code dir=&quot;auto&quot;&gt;@smoke&lt;/code&gt; and, from the outline, only the
+&lt;code dir=&quot;auto&quot;&gt;@edge&lt;/code&gt; examples.&lt;/p&gt;
+&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;h4 id=&quot;background-3&quot;&gt;Background&lt;/h4&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a sailing from Rotterdam to Felixstowe with 40 TEU remaining&lt;/li&gt;
+&lt;/ul&gt;&lt;h4 id=&quot;rule-a-booking-within-capacity-is-confirmed&quot;&gt;Rule: A booking within capacity is confirmed&lt;/h4&gt;&lt;h5 id=&quot;scenario-book-cargo-that-fits&quot;&gt;Scenario: Book cargo that fits&lt;/h5&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@smoke&lt;/code&gt;&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a consignment of 12 TEU&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper books the consignment onto the sailing&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the booking is confirmed&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the sailing has 28 TEU remaining&lt;/li&gt;
+&lt;/ul&gt;&lt;h4 id=&quot;rule-a-booking-over-capacity-is-refused&quot;&gt;Rule: A booking over capacity is refused&lt;/h4&gt;&lt;h5 id=&quot;scenario-outline-refuse-cargo-that-does-not-fit&quot;&gt;Scenario Outline: Refuse cargo that does not fit&lt;/h5&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;failed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Failed&lt;/span&gt; (1 failed, 1 passed)&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a consignment of &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;size&gt;&lt;/code&gt; TEU&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper books the consignment onto the sailing&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the booking is refused with reason &lt;code dir=&quot;auto&quot;&gt;&quot;&amp;#x3C;reason&gt;&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt; Over capacity&lt;/p&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@edge&lt;/code&gt;&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;size&lt;/th&gt;&lt;th&gt;reason&lt;/th&gt;&lt;th&gt;Result&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;41&lt;/td&gt;&lt;td&gt;insufficient space&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;120&lt;/td&gt;&lt;td&gt;insufficient space&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;failed&quot;&gt;Failed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p class=&quot;dk-gherkin__source&quot;&gt;From Book a consignment, &lt;code dir=&quot;auto&quot;&gt;features/shipping/book-consignment.feature&lt;/code&gt;&lt;/p&gt;&lt;/div&gt;
+&lt;h2 id=&quot;results-from-the-test-run&quot;&gt;Results from the test run&lt;/h2&gt;
+&lt;p&gt;This site sets &lt;code dir=&quot;auto&quot;&gt;gherkin.results&lt;/code&gt; to the Cucumber report its tests write
+(&lt;code dir=&quot;auto&quot;&gt;reports/cucumber.ndjson&lt;/code&gt;). Every scenario included from a &lt;code dir=&quot;auto&quot;&gt;.feature&lt;/code&gt; file then
+shows its result after its heading, an outline’s Examples table gains a &lt;code dir=&quot;auto&quot;&gt;Result&lt;/code&gt;
+column, and a whole file gets a results line with the date of the run. The
+&lt;a href=&quot;/doc-kitty/behaviour/&quot;&gt;generated behaviour pages&lt;/a&gt; show the same results. A fence shows
+none: it has no file the report could name.&lt;/p&gt;
+&lt;p&gt;The result is the word on the badge; the colour and the symbol only repeat it.&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Badge&lt;/th&gt;&lt;th&gt;Meaning&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Passed&lt;/td&gt;&lt;td&gt;The scenario ran and every step passed&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Passed on retry&lt;/td&gt;&lt;td&gt;It failed, ran again and passed&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Failed&lt;/td&gt;&lt;td&gt;A step or hook failed&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Pending&lt;/td&gt;&lt;td&gt;A step is marked as not finished yet&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Undefined&lt;/td&gt;&lt;td&gt;A step has no automation yet&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Ambiguous&lt;/td&gt;&lt;td&gt;More than one step definition matches a step&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Skipped&lt;/td&gt;&lt;td&gt;Its steps were skipped&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Not run&lt;/td&gt;&lt;td&gt;The run did not include it&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;When the report was made from another version of a file, its scenarios show no
+result, and the file’s results line says so, rather than putting a result on the
+wrong scenario.&lt;/p&gt;
+&lt;h3 id=&quot;a-file-with-a-step-not-automated-yet&quot;&gt;A file with a step not automated yet&lt;/h3&gt;
+&lt;div class=&quot;dk-gherkin&quot;&gt;&lt;h4 id=&quot;declare-a-consignment-to-customs&quot;&gt;Declare a consignment to customs&lt;/h4&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@FR-004&lt;/code&gt;&lt;/p&gt;&lt;p&gt;As a shipper&lt;br&gt;
+I want to declare my cargo to customs before it sails&lt;br&gt;
+So that the consignment clears the border without being held&lt;/p&gt;&lt;p&gt;Every consignment that crosses a customs border needs a declaration lodged
+before the sailing’s cut-off. The declared value sets the duty owed, and an
+insured consignment names the marine policy that covers it.&lt;/p&gt;&lt;p&gt;&lt;em&gt;2 rules · 3 scenarios · 3 example rows&lt;/em&gt;&lt;/p&gt;&lt;p class=&quot;dk-gherkin__results&quot;&gt;&lt;strong&gt;Results:&lt;/strong&gt; 1 undefined, 4 passed · as of &lt;time datetime=&quot;2026-10-19T00:00:00.000Z&quot;&gt;2026-10-19&lt;/time&gt;&lt;/p&gt;&lt;h5 id=&quot;background-4&quot;&gt;Background&lt;/h5&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; a booked consignment from Rotterdam to Felixstowe&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the customs cut-off is 24 hours before the sailing departs&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; goods with a declared value under 150 EUR are relieved of duty&lt;/li&gt;
+&lt;/ul&gt;&lt;h5 id=&quot;rule-duty-follows-the-declared-value-and-the-commoditys-duty-rate&quot;&gt;Rule: Duty follows the declared value and the commodity’s duty rate&lt;/h5&gt;&lt;h6 id=&quot;scenario-outline-calculate-the-duty-owed-on-a-declaration&quot;&gt;Scenario Outline: Calculate the duty owed on a declaration&lt;/h6&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt; (3 passed)&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; the cargo is declared under a commodity code with a duty rate of &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;rate&gt;&lt;/code&gt;%&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; its declared value is &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;value&gt;&lt;/code&gt; EUR&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper lodges the declaration before the cut-off&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the declaration is accepted&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the duty owed is &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;duty&gt;&lt;/code&gt; EUR&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt; Dutiable goods&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;rate&lt;/th&gt;&lt;th&gt;value&lt;/th&gt;&lt;th&gt;duty&lt;/th&gt;&lt;th&gt;Result&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;6&lt;/td&gt;&lt;td&gt;10000&lt;/td&gt;&lt;td&gt;600&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;25000&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt; Below the relief threshold&lt;/p&gt;&lt;p class=&quot;dk-gherkin__tags&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@edge&lt;/code&gt;&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;rate&lt;/th&gt;&lt;th&gt;value&lt;/th&gt;&lt;th&gt;duty&lt;/th&gt;&lt;th&gt;Result&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;6&lt;/td&gt;&lt;td&gt;120&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;h5 id=&quot;rule-a-declaration-carries-the-evidence-customs-asks-for-1&quot;&gt;Rule: A declaration carries the evidence customs asks for&lt;/h5&gt;&lt;h6 id=&quot;scenario-lodge-a-declaration-for-an-insured-consignment&quot;&gt;Scenario: Lodge a declaration for an insured consignment&lt;/h6&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; the consignment is insured under a marine cargo policy&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper lodges this declaration:
+&lt;div class=&quot;expressive-code&quot;&gt;&lt;figure class=&quot;frame not-content&quot;&gt;&lt;figcaption class=&quot;header&quot;&gt;&lt;/figcaption&gt;&lt;pre data-language=&quot;xml&quot;&gt;&lt;code&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;declaration&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt; &lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;consignment&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;C-100&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span class=&quot;indent&quot;&gt;  &lt;/span&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;goods&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt; &lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;code&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;6912.00&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt; &lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;value&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;10000&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt; &lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;currency&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;EUR&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;/&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span class=&quot;indent&quot;&gt;  &lt;/span&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;insurance&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt; &lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;policy&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;MC-2026-0412&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;/&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;/&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;declaration&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the declaration is accepted&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the declaration records the policy reference &lt;code dir=&quot;auto&quot;&gt;&quot;MC-2026-0412&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;h6 id=&quot;scenario-hold-a-declaration-lodged-after-the-cut-off-1&quot;&gt;Scenario: Hold a declaration lodged after the cut-off&lt;/h6&gt;&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;undefined&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Undefined&lt;/span&gt;&lt;/p&gt;&lt;ul class=&quot;dk-gherkin__steps&quot;&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Given&lt;/strong&gt; the customs cut-off has passed&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;When&lt;/strong&gt; the shipper lodges the declaration&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;Then&lt;/strong&gt; the declaration is held for manual review&lt;/li&gt;
+&lt;li&gt;&lt;strong class=&quot;dk-gherkin__kw&quot;&gt;And&lt;/strong&gt; the freight invoice carries a late-lodgement surcharge&lt;/li&gt;
+&lt;/ul&gt;&lt;p class=&quot;dk-gherkin__source&quot;&gt;Source: &lt;code dir=&quot;auto&quot;&gt;features/shipping/declare-customs.feature&lt;/code&gt;&lt;/p&gt;&lt;/div&gt;</content>
+</entry>

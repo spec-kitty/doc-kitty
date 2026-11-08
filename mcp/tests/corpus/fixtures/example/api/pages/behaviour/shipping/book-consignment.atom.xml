@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/">
+  <id>https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/</id>
+  <title>Book a consignment</title>
+  <updated>2026-10-19T08:58:27.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/behaviour/shipping/book-consignment/"/>
+  <summary>A booking reserves space on one sailing for one consignment.</summary>
+  <content type="html">&lt;span id=&quot;book-a-consignment&quot;&gt;&lt;/span&gt;
+&lt;p&gt;As a shipper&lt;br&gt;
+I want to book &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; onto a sailing&lt;br&gt;
+So that my goods travel on a confirmed slot&lt;/p&gt;
+&lt;p&gt;A booking reserves space on one sailing for one &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt;. Bookings that
+exceed the sailing’s remaining capacity are refused, and the shipper sees why.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;2 rules · 4 scenarios · 2 example rows&lt;/em&gt;&lt;/p&gt;
+&lt;p class=&quot;dk-gherkin__results&quot;&gt;&lt;strong&gt;Results:&lt;/strong&gt; 1 failed, 1 pending, 3 passed · as of &lt;time datetime=&quot;2026-10-19T00:00:00.000Z&quot;&gt;2026-10-19&lt;/time&gt;&lt;/p&gt;
+&lt;h2 id=&quot;background&quot;&gt;Background&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; a sailing from Rotterdam to Felixstowe with 40 TEU remaining&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;rule-a-booking-within-capacity-is-confirmed&quot;&gt;Rule: A booking within capacity is confirmed&lt;/h2&gt;
+&lt;h3 id=&quot;scenario-book-cargo-that-fits&quot;&gt;Scenario: Book cargo that fits&lt;/h3&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code dir=&quot;auto&quot;&gt;@smoke&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; a &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt; of 12 TEU&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the shipper books the consignment onto the sailing&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the booking is confirmed&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; the sailing has 28 TEU remaining&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;scenario-attach-a-packing-list-to-a-confirmed-booking&quot;&gt;Scenario: Attach a packing list to a confirmed booking&lt;/h3&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Given&lt;/strong&gt; a confirmed booking for a consignment of 2 TEU&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;When&lt;/strong&gt; the shipper attaches the packing list:&lt;/p&gt;
+&lt;div class=&quot;expressive-code&quot;&gt;&lt;figure class=&quot;frame not-content&quot;&gt;&lt;figcaption class=&quot;header&quot;&gt;&lt;/figcaption&gt;&lt;pre data-language=&quot;json&quot;&gt;&lt;code&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;{ &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;lines&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: [{ &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;sku&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: &lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#C789D6;--1:#7C5686&quot;&gt;A-1&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;qty&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: &lt;/span&gt;&lt;span style=&quot;--0:#F78C6C;--1:#AA0982&quot;&gt;10&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt; }, { &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;sku&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: &lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#C789D6;--1:#7C5686&quot;&gt;B-2&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#096E72&quot;&gt;&quot;qty&quot;&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt;: &lt;/span&gt;&lt;span style=&quot;--0:#F78C6C;--1:#AA0982&quot;&gt;4&lt;/span&gt;&lt;span style=&quot;--0:#D6DEEB;--1:#403F53&quot;&gt; }] }&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Then&lt;/strong&gt; the booking shows 2 packing-list lines&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;rule-a-booking-over-capacity-is-refused&quot;&gt;Rule: A booking over capacity is refused&lt;/h2&gt;
+&lt;h3 id=&quot;scenario-outline-refuse-cargo-that-does-not-fit&quot;&gt;Scenario Outline: Refuse cargo that does not fit&lt;/h3&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;failed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Failed&lt;/span&gt; (1 failed, 1 passed)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; a &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt; of &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;size&gt;&lt;/code&gt; TEU&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the shipper books the consignment onto the sailing&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the booking is refused with reason &lt;code dir=&quot;auto&quot;&gt;&quot;&amp;#x3C;reason&gt;&quot;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Examples: Over capacity&lt;/strong&gt; &lt;code dir=&quot;auto&quot;&gt;@edge&lt;/code&gt;&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;size&lt;/th&gt;&lt;th&gt;reason&lt;/th&gt;&lt;th&gt;Result&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;41&lt;/td&gt;&lt;td&gt;insufficient space&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;120&lt;/td&gt;&lt;td&gt;insufficient space&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;failed&quot;&gt;Failed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;h3 id=&quot;scenario-refused-bookings-state-the-remaining-capacity&quot;&gt;Scenario: Refused bookings state the remaining capacity&lt;/h3&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;pending&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Pending&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Given&lt;/strong&gt; these consignments are already booked:&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;consignment&lt;/th&gt;&lt;th&gt;size&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;C-100&lt;/td&gt;&lt;td&gt;30&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;C-101&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;When&lt;/strong&gt; the shipper books a consignment of 5 TEU onto the sailing&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Then&lt;/strong&gt; the booking is refused with reason &lt;code dir=&quot;auto&quot;&gt;&quot;insufficient space&quot;&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;And&lt;/strong&gt; the refusal states that 2 TEU remain&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

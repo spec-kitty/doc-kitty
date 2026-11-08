@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/presentations/">
+  <id>https://spec-kitty.github.io/doc-kitty/presentations/</id>
+  <title>Presentations</title>
+  <updated>2026-08-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/presentations/"/>
+  <summary>The overview hub for published slide decks — the in-frame entry point that links each deck&apos;s out-of-frame reveal.js view and its print or PDF export.</summary>
+  <content type="html">&lt;p&gt;Slide decks live outside the documentation frame: a &lt;code dir=&quot;auto&quot;&gt;kind: Presentation&lt;/code&gt; page
+renders as a chrome-free reveal.js deck rather than a Starlight article. This
+overview is the in-frame entry point — it stays in the sidebar, while the decks
+themselves are suppressed from the sidebar so a reader is never ejected
+out-of-frame without a signal.&lt;/p&gt;
+&lt;p&gt;The published decks are derived from the content collection at build time
+(no hand-kept manifest): every published &lt;code dir=&quot;auto&quot;&gt;kind: Presentation&lt;/code&gt; page is listed
+automatically below, each with its &lt;code dir=&quot;auto&quot;&gt;?print-pdf&lt;/code&gt; export link, and drafts are
+omitted exactly as they are from the sitemap, RSS, and the agent index. Opening a
+deck shows its slides; the &lt;code dir=&quot;auto&quot;&gt;?print-pdf&lt;/code&gt; export folds reveal’s print rules into its
+core stylesheet, so no separate export page is built.&lt;/p&gt;
+&lt;aside aria-label=&quot;Using these slide decks&quot; class=&quot;starlight-aside starlight-aside--note&quot;&gt;&lt;p class=&quot;starlight-aside__title&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; width=&quot;16&quot; height=&quot;16&quot; fill=&quot;currentColor&quot; class=&quot;starlight-aside__icon&quot;&gt;&lt;path d=&quot;M12 11a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1Zm.38-3.92a1 1 0 0 0-.76 0 1 1 0 0 0-.33.21 1.15 1.15 0 0 0-.21.33 1 1 0 0 0 .21 1.09c.097.088.209.16.33.21A1 1 0 0 0 13 8a1.05 1.05 0 0 0-.29-.71 1 1 0 0 0-.33-.21ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16.001A8 8 0 0 1 12 20Z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;Using these slide decks&lt;/p&gt;&lt;div class=&quot;starlight-aside__content&quot;&gt;&lt;p&gt;These are web-hosted reveal.js decks. Open a deck to present it in your browser,
+navigate the slides with the keyboard, and export it to PDF from the browser’s
+print dialog. The “How to use” steps below cover all three.&lt;/p&gt;&lt;/div&gt;&lt;/aside&gt;
+&lt;h2 id=&quot;how-to-use&quot;&gt;How to use&lt;/h2&gt;
+&lt;h3 id=&quot;navigate-the-slides&quot;&gt;Navigate the slides&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Right / Left&lt;/strong&gt; (or &lt;strong&gt;Space&lt;/strong&gt;) move between the top-level slides.&lt;/li&gt;
+&lt;li&gt;Some slides are &lt;strong&gt;stacked vertically&lt;/strong&gt; — use &lt;strong&gt;Down / Up&lt;/strong&gt; to move within a
+stack, and &lt;strong&gt;Right / Left&lt;/strong&gt; to jump to the next top-level slide.&lt;/li&gt;
+&lt;li&gt;Press &lt;strong&gt;Esc&lt;/strong&gt; for the slide overview, then arrow to any slide and &lt;strong&gt;Enter&lt;/strong&gt; to
+open it.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;handy-hotkeys&quot;&gt;Handy hotkeys&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Esc&lt;/strong&gt; — slide overview (a zoomed-out grid of every slide).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;S&lt;/strong&gt; — speaker-notes view: opens a separate window with your notes, a timer,
+and the upcoming slide.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;F&lt;/strong&gt; — fullscreen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Arrows / Space&lt;/strong&gt; — navigate, as above.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;export-a-deck-to-pdf&quot;&gt;Export a deck to PDF&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;From a deck — or via the &lt;strong&gt;Print / PDF export&lt;/strong&gt; link listed for it on this hub
+— open the deck’s &lt;code dir=&quot;auto&quot;&gt;?print-pdf&lt;/code&gt; view.&lt;/li&gt;
+&lt;li&gt;Open your browser’s &lt;strong&gt;Print&lt;/strong&gt; dialog (Ctrl/Cmd + P) and choose &lt;strong&gt;Save as PDF&lt;/strong&gt;
+as the destination.&lt;/li&gt;
+&lt;li&gt;Enable &lt;strong&gt;Background graphics&lt;/strong&gt; so the deck’s colours and styling are included
+in the exported file; without it the slides print on a plain white background.&lt;/li&gt;
+&lt;/ol&gt;</content>
+</entry>

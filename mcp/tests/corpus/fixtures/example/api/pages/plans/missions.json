@@ -17,7 +17,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Missions\n\nEach page in this folder describes one mission planned for the example site:\nwhat it sets out to change and why. They are forward-looking write-ups, not a\nrecord of the current state (see [Architecture](/architecture/) for that).\n\nThis index page also gives the folder its name in the sidebar. A nested folder\nis labelled with the title of its index page, so without this page the group\nwould fall back to a readable form of the folder name and the build would\nreport the missing title.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions.json"

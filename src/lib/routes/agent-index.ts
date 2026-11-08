@@ -8,15 +8,22 @@
  *   import { agentIndexRoute } from '@spec-kitty/doc-toolkit/routes';
  *   export const GET = agentIndexRoute({ title: 'My Docs' });
  */
+import process from 'node:process';
 import type { APIRoute } from 'astro';
 import type { AgentIndex, AgentRecordEntry, SectionRecord } from '../contract.js';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
-import { rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
+import { DEFAULT_AGENT_PRIORITY, rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
 import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
 import { absolute, buildIdForBuild, docsRoot, mcpLaunchUsage } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { servedSurfaces } from '../served-surfaces.js';
+import { DK_OPENAPI_ENV } from '../internal-env.mjs';
+import { readPublication } from '../integrations/openapi-publish.js';
+import type { OpenApiPublication, OpenApiPublicationVersion } from '../integrations/openapi-publish.js';
+import type { Operation } from '../openapi/operations.mjs';
+import { escapeMdLink, flattenText } from '../openapi/summary.mjs';
+import { withBase } from '../with-base.js';
 
 export interface AgentIndexRouteOptions {
   title: string;
@@ -59,6 +66,87 @@ export interface AgentIndexLinks {
    * passes `links: { mcp: true }` to `llmsTxtRoute`.
    */
   mcp?: boolean;
+}
+
+/**
+ * The base record of one OpenAPI spec version, shared by the index record and
+ * the page payload (mission openapi-second-slice-01M6WXJ4, WP03;
+ * contracts/synthetic-entry.md, research R10): every `AgentRecordEntry` field
+ * the two projections share, plus the OpenAPI-only `released`, `rawDocumentUrl`
+ * and `sha256`. `slug` is `<section>/<label>`; the section/type/kind/status/tags
+ * vocabulary is R10's, chosen so the records satisfy the MCP corpus shape
+ * guards with values already in the vocabulary (a `draft` status would trip
+ * publication filters and drop the entry — unreleased is stated by `released`).
+ */
+export interface OpenApiVersionRecord {
+  slug: string;
+  route: string;
+  section: string;
+  title: string;
+  description: string;
+  type: 'reference';
+  doc_status: 'active';
+  kind: 'Reference';
+  tags: string[];
+  priority: number;
+  updated: null;
+  /** Whether the version is released (the option's `released` flag). */
+  released: boolean;
+  /** The raw document's site-absolute, base-aware PATH (`withBase(rawRoute)`). */
+  rawDocumentUrl: string;
+  /** sha256 of the published raw document bytes, 64 lowercase hex. */
+  sha256: string;
+}
+
+/**
+ * Project one publication version into the shared record. Spec-derived text
+ * (title, apiVersion) is flattened (FR-028: no field spans lines); the label,
+ * the section and the digest are toolkit-produced and stay raw. `title` is
+ * `<info.title> <label>` plus ` (unreleased)` when the version is not released.
+ */
+export function toOpenApiVersionRecord(
+  publication: OpenApiPublication,
+  version: OpenApiPublicationVersion,
+): OpenApiVersionRecord {
+  const slug = `${publication.section}/${version.label}`;
+  return {
+    slug,
+    route: routeOfSlug(slug),
+    section: sectionOf(slug),
+    title: `${flattenText(version.title)} ${version.label}${version.released ? '' : ' (unreleased)'}`,
+    description: `OpenAPI ${flattenText(version.apiVersion)} contract, ${version.operations.length} operations`,
+    type: 'reference',
+    doc_status: 'active',
+    kind: 'Reference',
+    tags: ['openapi'],
+    priority: DEFAULT_AGENT_PRIORITY,
+    updated: null,
+    released: version.released,
+    rawDocumentUrl: withBase(version.rawRoute),
+    sha256: version.sha256,
+  };
+}
+
+/**
+ * The page payload's `keywords` (R10): the operation summaries — falling back
+ * to the operationId — flattened and link-escaped (FR-028), empties skipped,
+ * unique, sorted. One keyword per operation, never per page.
+ */
+export function openApiKeywords(operations: readonly Operation[]): string[] {
+  const names = operations
+    .map((operation) => escapeMdLink(flattenText(operation.summary ?? operation.operationId ?? '')))
+    .filter((keyword) => keyword !== '');
+  return [...new Set(names)].sort();
+}
+
+/**
+ * The synthetic index record: an `AgentRecordEntry` plus the OpenAPI-only
+ * fields, appended after the docs records (never ranked among them).
+ */
+export interface OpenApiRecordEntry extends AgentRecordEntry {
+  released: boolean;
+  rawDocumentUrl: string;
+  sha256: string;
 }
 
 export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
@@ -140,6 +228,35 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
         },
       };
     });
+
+    // WP03 (mission openapi-second-slice-01M6WXJ4): one synthetic record per
+    // OpenAPI spec version, APPENDED after the docs records — never ranked
+    // among them (contracts/synthetic-entry.md). Only the `openapi` option
+    // publishes the handoff, so a site without it emits exactly what it did
+    // before. The records are not docs entries: the section `feeds` filter and
+    // `rankForAgents` never see them, and the buildId above stays docs-corpus
+    // only, so index, docs pages and synthetic pages keep agreeing on it.
+    const openapi = readPublication(process.env[DK_OPENAPI_ENV]);
+    if (openapi) {
+      for (const version of openapi.versions) {
+        const record = toOpenApiVersionRecord(openapi, version);
+        const url = absolute(site, record.route);
+        const source = absolute(site, `/api/pages/${record.slug}.json`);
+        const entry: OpenApiRecordEntry = {
+          ...record,
+          related: [],
+          audience: [],
+          url,
+          source,
+          _links: {
+            ...(declared.pages ? { self: { href: source } } : {}),
+            html: { href: url },
+            related: [],
+          },
+        };
+        pages.push(entry);
+      }
+    }
 
     const body: AgentIndex = {
       title: options.title,

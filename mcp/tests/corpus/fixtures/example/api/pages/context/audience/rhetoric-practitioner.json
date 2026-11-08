@@ -23,7 +23,7 @@
   ],
   "keywords": [],
   "markdown": "# The Rhetoric Practitioner\n\nThis reader already knows why persuasion matters; they come to Aristotle's\n*Rhetoric* looking for technique they can put to work, not a survey of classical\nphilosophy. They might be preparing a speech, coaching a debate team, or\nwriting professionally, and they treat the text as a working reference rather\nthan a cover-to-cover read.\n\nWhat they need most is a primary text they can navigate non-linearly: reliable\ncross-references between related passages, footnotes that connect a classical\nexample to its modern analogue, and enough structural clarity to jump straight\nto the chapter that covers the technique they are after. They are less\nconcerned with the text's historical context than with whether a given passage\nstill holds up as usable guidance.\n\nThey measure a converted showcase page as successful when they can find the\npassage that names a specific persuasive technique, understand it well enough\nto apply it, and trace it back to the original wording if they need to cite or\nquote it.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/rhetoric-practitioner.json"

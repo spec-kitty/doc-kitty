@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/glossary/">
+  <id>https://spec-kitty.github.io/doc-kitty/glossary/</id>
+  <title>Glossary</title>
+  <updated>2026-10-18T06:09:39.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/glossary/"/>
+  <summary>Bounded-context vocabulary for this documentation.</summary>
+  <content type="html">&lt;span id=&quot;glossary&quot;&gt;&lt;/span&gt;
+&lt;p&gt;The vocabulary of each bounded context. Terms are grouped by the context that owns them.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;./hr/&quot;&gt;hr&lt;/a&gt; — How the organisation hires, supports, and develops the people who work in it.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./rhetoric/&quot;&gt;rhetoric&lt;/a&gt; — The art of finding the available means of persuasion.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./shipping/&quot;&gt;shipping&lt;/a&gt; — How physical goods move from a seller to a buyer across carriers and borders.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

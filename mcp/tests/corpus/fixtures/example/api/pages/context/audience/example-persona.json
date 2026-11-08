@@ -23,7 +23,7 @@
   ],
   "keywords": [],
   "markdown": "The marzipan mapmaker passport sentinel — a distinctive phrase reserved for this\nfixture so a Pagefind assertion can bind to this page's own search fragment on the\nbranded build.\n\nMarzipan charts the uncharted hollows of a documentation tree and hands every\nreader a route through it. This body prose stays inside Starlight's searchable\ncontent region, so the passport layout keeps the page indexable while the card\nabove renders the identity strip, the name heading, and the generic-field grid.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/example-persona.json"

@@ -19,7 +19,7 @@
   ],
   "keywords": [],
   "markdown": "# ADR-0001: Build on Astro + Starlight\n\n## Status\n\nAccepted\n\n> Note (DocKitty): frontmatter `status` records the *document* lifecycle\n> (`active`); the *decision* status lives here and in the index table. This\n> keeps every file on the one convention-wide status enum.\n\n## Context\n\nWe need a static docsite generator that renders a Common Docs `docs/` tree,\nsupports Markdown/MDX, and lets us bolt on custom endpoints (RSS, agent-API).\n\n## Decision\n\nUse Astro with the Starlight docs theme. The toolkit supplies a config preset, a\ncontent loader (README-as-index), the frontmatter schema, and the RSS/llms.txt/\nagent-API route handlers.\n\n## Consequences\n\n### Positive\n\n- Batteries-included nav, search, and theming.\n- Astro endpoints make the feeds and agent-API trivial to emit at build time.\n\n### Negative\n\n- Starlight is opinionated; README-as-index and reading root `docs/` need custom\n  loader wiring.\n\n## Alternatives Considered\n\n### Option A: A bespoke content-collections build\n\nMore control, but we would reimplement nav/search/theme for no real gain.\n\n## References\n\n- [Starlight](https://starlight.astro.build)",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/adr/0001-use-astro-starlight.json"

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/">
+  <id>https://spec-kitty.github.io/doc-kitty/</id>
+  <title>DocKitty Example</title>
+  <updated>2026-08-21T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/"/>
+  <summary>Master entry point for the example docsite built with DocKitty.</summary>
+  <content type="html">&lt;span id=&quot;dockitty-example&quot;&gt;&lt;/span&gt;
+&lt;p&gt;A minimal, deployable docsite that renders a &lt;strong&gt;DocKitty&lt;/strong&gt;
+&lt;code dir=&quot;auto&quot;&gt;docs/&lt;/code&gt; tree with &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;@spec-kitty/doc-toolkit&lt;/code&gt;&lt;/a&gt;.
+It exists to show the convention in practice and to prove the generated
+artifacts:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;./sitemap-index.xml&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;/sitemap-index.xml&lt;/code&gt;&lt;/a&gt; — search-engine discovery&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./rss.xml&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;/rss.xml&lt;/code&gt;&lt;/a&gt; — subscribe to documentation changes&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./llms.txt&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;/llms.txt&lt;/code&gt;&lt;/a&gt; — the agent-facing index&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./api/index.json&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;/api/index.json&lt;/code&gt;&lt;/a&gt; — the machine-readable corpus map&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;sections&quot;&gt;Sections&lt;/h2&gt;
+&lt;p&gt;Ordered for progressive disclosure (context → operations):&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;./context/&quot;&gt;Context&lt;/a&gt; — why this exists and its domain vocabulary.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./architecture/&quot;&gt;Architecture&lt;/a&gt; — current system design.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./adr/&quot;&gt;Decision Records&lt;/a&gt; — the immutable ADR log.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./guides/&quot;&gt;Guides&lt;/a&gt; — how-to for humans and agents.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./changelog/&quot;&gt;Changelog&lt;/a&gt; — release history.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Only a subset of the twelve Common Docs sections is populated here; the rest
+(&lt;code dir=&quot;auto&quot;&gt;plans&lt;/code&gt;, &lt;code dir=&quot;auto&quot;&gt;api&lt;/code&gt;, &lt;code dir=&quot;auto&quot;&gt;configuration&lt;/code&gt;, &lt;code dir=&quot;auto&quot;&gt;integrations&lt;/code&gt;, &lt;code dir=&quot;auto&quot;&gt;security&lt;/code&gt;, &lt;code dir=&quot;auto&quot;&gt;operations&lt;/code&gt;,
+&lt;code dir=&quot;auto&quot;&gt;migrations&lt;/code&gt;) are scaffolded the same way with &lt;code dir=&quot;auto&quot;&gt;scaffold.mjs&lt;/code&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;quick-reference&quot;&gt;Quick reference&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Run locally: &lt;code dir=&quot;auto&quot;&gt;pnpm --filter example dev&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Build: &lt;code dir=&quot;auto&quot;&gt;pnpm --filter example build&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;See also: the repo &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty&quot;&gt;&lt;code dir=&quot;auto&quot;&gt;README.md&lt;/code&gt;&lt;/a&gt; and its
+&lt;code dir=&quot;auto&quot;&gt;AGENTS.md&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

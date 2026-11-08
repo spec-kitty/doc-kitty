@@ -26,6 +26,7 @@ import {
 import { idIndex, rewriteBodyLinks, routeIndex } from './links.mjs';
 import { okfGenerated } from '../generator-stamp.mjs';
 import { SCHEMATIC_KIND, schematicHref } from '../schematic/core.mjs';
+import { flattenText, openApiSummaryMarkdown } from '../openapi/summary.mjs';
 
 /** `generated.by` of a page that has neither a stamp nor an author (FR-025). */
 export const EXPORT_PROCESS_ACTOR = 'process:dockitty-export';
@@ -52,6 +53,7 @@ const RELATION_SECTIONS = /** @type {const} */ ([
  * @property {string | string[]} [indexBasename] the site's index file name(s), default `README`
  * @property {string} [base] site base path (e.g. `/docs`) that graph `href`s and body links may carry
  * @property {string} [siteUrl] absolute site origin (e.g. `https://docs.example.org`); the `base` is added to it, and a URL that already ends in the base is accepted as is. Internal links that are not bundle pages become absolute against it
+ * @property {import('../integrations/openapi-publish.js').OpenApiPublication} [openapi] published versions to export as generated summaries
  */
 
 // --- paths ------------------------------------------------------------------
@@ -380,11 +382,14 @@ function entryLine(node, path) {
  * @param {Array<Record<string, any>>} children
  * @param {string[]} indexNames
  * @param {string} [overviewPath] bundle path of the index's overview page, when it has one
+ * @param {Array<{node: Record<string, any>, path: string}>} [extraEntries] generated entries not related by `in-section`
  * @returns {string}
  */
-function indexDocument(index, children, indexNames, overviewPath) {
-  const entries = children
-    .map((child) => ({ path: bundlePathOf(child.id, indexNames), child }))
+function indexDocument(index, children, indexNames, overviewPath, extraEntries = []) {
+  const entries = [
+    ...children.map((child) => ({ path: bundlePathOf(child.id, indexNames), child })),
+    ...extraEntries.map(({ node, path }) => ({ path, child: node })),
+  ]
     .sort((a, b) => compareCodeUnit(a.path, b.path))
     .map(({ path, child }) => entryLine(child, path));
   if (overviewPath !== undefined) entries.unshift(entryLine(index, overviewPath));
@@ -489,6 +494,34 @@ function normalizeBase(base) {
 }
 
 /**
+ * Add the generated OpenAPI summaries and return their root-index entries.
+ * The body comes from the one summary function the agent page uses (FR-002/FR-004).
+ *
+ * @param {Map<string, string>} out
+ * @param {import('../integrations/openapi-publish.js').OpenApiPublication | undefined} publication
+ * @param {Omit<import('./links.mjs').LinkContext, 'pageHref' | 'pageId'>} links
+ * @returns {Array<{node: Record<string, any>, path: string}>}
+ */
+function addOpenApiDocuments(out, publication, links) {
+  if (!publication) return [];
+  return publication.versions.map((version) => {
+    const path = `${publication.section}/${version.label}.md`;
+    const rawDocumentUrl = `${links.siteUrl || links.base}${version.rawRoute}`;
+    const title = `${flattenText(version.title)} ${version.label}${version.released ? '' : ' (unreleased)'}`;
+    const node = {
+      id: `openapi:${version.label}`,
+      kind: 'resource',
+      type: 'Reference',
+      title,
+      description: `OpenAPI ${flattenText(version.apiVersion)} contract, ${version.operations.length} operations`,
+    };
+    const frontmatter = fence(toYaml(conceptFrontmatter(node, [], undefined)));
+    out.set(path, `${frontmatter}\n${openApiSummaryMarkdown(version, rawDocumentUrl)}`);
+    return { node, path };
+  });
+}
+
+/**
  * Build the OKF v0.2 bundle.
  *
  * @param {ExportGraph} graph the built `content-graph.json`
@@ -511,6 +544,7 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
   };
   /** @type {Map<string, string>} */
   const out = new Map();
+  const openApiEntries = addOpenApiDocuments(out, options.openapi, links);
   for (const node of exported) {
     const source = sourceOf(sourceFiles, node.id) ?? '';
     const path = bundlePathOf(node.id, indexNames);
@@ -524,7 +558,13 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
     // would be the index file itself (basename `index`), nothing is written.
     const overview = hasBody(source) ? overviewPathOf(node.id, indexNames) : undefined;
     if (overview !== undefined) out.set(overview, concept());
-    const listing = indexDocument(node, children.get(node.id) ?? [], indexNames, overview);
+    const listing = indexDocument(
+      node,
+      children.get(node.id) ?? [],
+      indexNames,
+      overview,
+      path === 'index.md' ? openApiEntries : [],
+    );
     if (path === 'index.md') {
       out.set(path, `${fence(`okf_version: ${scalar(OKF_VERSION)}`)}\n${listing}`);
       continue;

@@ -24,7 +24,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Mission Alpha\n\nThe `type: Mission` above is not a code-derivation special case — it agrees\nwith what the section registry ALREADY derives for this path: the `plans`\nsection defaults to `Plan`, and the `missions` `subtypes` rule in\n`example/docs/_meta/sections.yaml` overrides it to `Mission` for every page\nunder `plans/missions/`. That registry rule is the only reason this path\nderives `Mission` instead of falling through to the built-in\n`plans/features` -> `Feature` table.\n\nSee also [Mission Beta](/plans/missions/mission-beta/).",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/plans/missions/mission-alpha.json"

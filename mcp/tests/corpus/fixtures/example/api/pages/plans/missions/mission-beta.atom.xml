@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/">
+  <id>https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/</id>
+  <title>Mission Beta</title>
+  <updated>2026-10-13T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/plans/missions/mission-beta/"/>
+  <summary>A second short mission write-up, cross-linking Mission Alpha to prove zero dangling links survive the rename.</summary>
+  <content type="html">&lt;span id=&quot;mission-beta&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Like &lt;a href=&quot;/doc-kitty/plans/missions/mission-alpha/&quot;&gt;Mission Alpha&lt;/a&gt;, this page lived at
+&lt;code dir=&quot;auto&quot;&gt;plans/features/mission-beta.md&lt;/code&gt; before the section was renamed to
+&lt;code dir=&quot;auto&quot;&gt;plans/missions/&lt;/code&gt; (E-08). Both this page’s inline link and its &lt;code dir=&quot;auto&quot;&gt;related:&lt;/code&gt;
+frontmatter entry point at the post-rename path — &lt;code dir=&quot;auto&quot;&gt;check-links.mjs&lt;/code&gt; asserts
+neither dangles.&lt;/p&gt;</content>
+</entry>

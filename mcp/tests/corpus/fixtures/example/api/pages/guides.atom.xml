@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/</id>
+  <title>Guides</title>
+  <updated>2026-08-21T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/"/>
+  <summary>How-to guides for humans and agents working on this project.</summary>
+  <content type="html">&lt;span id=&quot;guides&quot;&gt;&lt;/span&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;/doc-kitty/guides/getting-started/&quot;&gt;Getting started&lt;/a&gt; — first-time setup from zero.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/doc-kitty/guides/install/&quot;&gt;Install the toolkit&lt;/a&gt; — install &lt;code dir=&quot;auto&quot;&gt;@spec-kitty/doc-toolkit&lt;/code&gt; from
+GitHub Packages and build your own docsite.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/doc-kitty/guides/github-alerts/&quot;&gt;GitHub alerts&lt;/a&gt; — &lt;code dir=&quot;auto&quot;&gt;&gt; [!NOTE]&lt;/code&gt;-style blockquotes
+rendered as asides.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

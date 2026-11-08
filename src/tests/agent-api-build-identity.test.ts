@@ -89,7 +89,7 @@ const KEYS = {
   AgentRecordEntry: {
     slug: true, route: true, section: true, title: true, description: true, type: true, doc_status: true,
     kind: true, tags: true, related: true, priority: true, updated: true, source: true, audience: true,
-    url: true, _links: true,
+    url: true, released: true, rawDocumentUrl: true, sha256: true, _links: true,
   } satisfies Record<keyof AgentRecordEntry, true>,
   IndexLinks: {
     self: true, llms: true, sitemap: true, contentGraph: true, rss: true, bibliography: true,
@@ -103,11 +103,12 @@ const KEYS = {
   PageVerifiedStamp: { by: true, at: true } satisfies Record<keyof PageVerifiedStamp, true>,
   PageSourceRef: { resource: true, title: true } satisfies Record<keyof PageSourceRef, true>,
   AgentIncludeRef: { src: true, scenario: true, tags: true } satisfies Record<keyof AgentIncludeRef, true>,
-  AgentPageLinks: { self: true, up: true, html: true, related: true } satisfies Record<keyof AgentPageLinks, true>,
+  AgentPageLinks: { self: true, up: true, html: true, related: true, describedby: true } satisfies Record<keyof AgentPageLinks, true>,
   AgentPagePayload: {
     slug: true, route: true, section: true, title: true, description: true, type: true, doc_status: true,
     kind: true, tags: true, related: true, priority: true, updated: true, source: true, audience: true,
     url: true, authors: true, keywords: true, generated: true, verified: true, sources: true, includes: true,
+    released: true, rawDocumentUrl: true, sha256: true,
     markdown: true, buildId: true, _links: true,
   } satisfies Record<keyof AgentPagePayload, true>,
   ScenarioResult: { status: true, retried: true, counts: true } satisfies Record<keyof ScenarioResult, true>,
@@ -143,7 +144,7 @@ const CHILDREN: { [R in RecordName]?: Record<string, RecordName> } = {
     bibliography: 'AgentLink', scenarios: 'AgentLink', mcp: 'McpWiringPointer',
   },
   AgentIndex: { sections: 'SectionRecord', pages: 'AgentRecordEntry', _links: 'IndexLinks' },
-  AgentPageLinks: { self: 'AgentLink', up: 'AgentLink', html: 'AgentLink', related: 'AgentTitledLink' },
+  AgentPageLinks: { self: 'AgentLink', up: 'AgentLink', html: 'AgentLink', related: 'AgentTitledLink', describedby: 'AgentLink' },
   AgentPagePayload: {
     related: 'ResolvedRelatedRecord', audience: 'AudienceRecord', generated: 'PageGeneratedStamp',
     verified: 'PageVerifiedStamp', sources: 'PageSourceRef', includes: 'AgentIncludeRef', _links: 'AgentPageLinks',

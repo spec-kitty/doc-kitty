@@ -33,7 +33,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Getting started\n\n## Build your own docsite\n\nTo use DocKitty in your own project, install the published toolkit from GitHub\nPackages: **[Install the toolkit](/guides/install/)** walks through the Node\nfloor, the Astro 7 and Starlight 0.42 peers, the registry setup and a first\nbuild. Upgrading from 0.3? That guide links the migration guide.\n\n## Work on this example site\n\nThis site is the worked example in the\n[doc-kitty repository](https://github.com/spec-kitty/doc-kitty). To run it from\na clone, at the repository root:\n\n1. Use Node 22.22 or later, enable pnpm and install:\n\n   ```sh\n   corepack enable\n   pnpm install\n   ```\n\n2. Run the dev server:\n\n   ```sh\n   pnpm dev\n   ```\n\n   You are looking at `example/docs/README.md`.\n\n3. Add a page with correct frontmatter:\n\n   ```sh\n   node src/scripts/new-doc.mjs guides/my-recipe --title \"My recipe\" --base example/docs\n   ```\n\n4. Visit `/rss.xml`, `/llms.txt`, and `/api/index.json` — the new page appears\n   in each, driven by its metadata.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/getting-started.json"

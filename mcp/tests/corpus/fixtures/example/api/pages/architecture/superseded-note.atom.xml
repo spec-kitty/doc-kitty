@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/">
+  <id>https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/</id>
+  <title>Superseded architecture note</title>
+  <updated>2026-08-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/architecture/superseded-note/"/>
+  <summary>A published-but-superseded architecture note kept as the stale related-target so the demonstrator can render a real superseded status marker.</summary>
+  <content type="html">&lt;span id=&quot;superseded-architecture-note&quot;&gt;&lt;/span&gt;
+&lt;p&gt;This note describes an earlier approach that has since been replaced. It is kept
+published — rather than deleted — so that a &lt;code dir=&quot;auto&quot;&gt;related&lt;/code&gt; reference pointing at it
+resolves to a real page whose &lt;code dir=&quot;auto&quot;&gt;doc_status&lt;/code&gt; is &lt;code dir=&quot;auto&quot;&gt;superseded&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Because &lt;code dir=&quot;auto&quot;&gt;resolveRelated&lt;/code&gt; fails the build on a dangling reference, the stale-target
+status marker (FR-005) needs an actual superseded page to point at. This is that
+page: the &lt;a href=&quot;/doc-kitty/architecture/blocks-demonstrator/&quot;&gt;blocks demonstrator&lt;/a&gt; links here to show the
+superseded marker on a Related card.&lt;/p&gt;</content>
+</entry>

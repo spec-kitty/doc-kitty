@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/plans/">
+  <id>https://spec-kitty.github.io/doc-kitty/plans/</id>
+  <title>Plans</title>
+  <updated>2026-10-13T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/plans/"/>
+  <summary>Forward-looking mission write-ups for the example docsite — not the current state (see architecture/).</summary>
+  <content type="html">&lt;span id=&quot;plans&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Forward-looking work for the example site: short mission write-ups live under
+&lt;code dir=&quot;auto&quot;&gt;plans/missions/&lt;/code&gt;. Unlike every other section in this example, this section
+has &lt;strong&gt;no&lt;/strong&gt; &lt;code dir=&quot;auto&quot;&gt;README.md&lt;/code&gt; — &lt;code dir=&quot;auto&quot;&gt;plans/index.md&lt;/code&gt; is its section index instead
+(FR-012/SC-001). It resolves to &lt;code dir=&quot;auto&quot;&gt;/plans/&lt;/code&gt;, exactly like a &lt;code dir=&quot;auto&quot;&gt;README.md&lt;/code&gt;-indexed
+section resolves to its own root, and the two conventions coexist in the same
+build (this is the mixed-corpus proof: every other section here still uses
+&lt;code dir=&quot;auto&quot;&gt;README.md&lt;/code&gt;, unchanged).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;./missions/mission-alpha/&quot;&gt;Mission Alpha&lt;/a&gt; — this folder was renamed from
+&lt;code dir=&quot;auto&quot;&gt;plans/features/&lt;/code&gt; to &lt;code dir=&quot;auto&quot;&gt;plans/missions/&lt;/code&gt; as a &lt;strong&gt;registry-data-only&lt;/strong&gt; change
+(SC-002): a &lt;code dir=&quot;auto&quot;&gt;git mv&lt;/code&gt; plus one &lt;code dir=&quot;auto&quot;&gt;subtypes&lt;/code&gt; rule in
+&lt;code dir=&quot;auto&quot;&gt;example/docs/_meta/sections.yaml&lt;/code&gt;, no derivation code touched.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./missions/mission-beta/&quot;&gt;Mission Beta&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

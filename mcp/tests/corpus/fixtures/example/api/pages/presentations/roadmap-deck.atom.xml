@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/presentations/roadmap-deck/">
+  <id>https://spec-kitty.github.io/doc-kitty/presentations/roadmap-deck/</id>
+  <title>Roadmap Deck</title>
+  <updated>2026-08-28T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/presentations/roadmap-deck/"/>
+  <summary>A published, diagram-free slide deck used to prove a deck with no diagrams never pulls the Mermaid runtime onto its route (the NFR-002 footprint guard).</summary>
+  <content type="html">&lt;section&gt;&lt;h1 id=&quot;roadmap-deck&quot;&gt;Roadmap Deck&lt;/h1&gt;&lt;p&gt;This deck deliberately contains no diagrams, so its route must resolve zero Mermaid
+runtime chunks — the footprint guard short-circuits before importing Mermaid.&lt;/p&gt;&lt;/section&gt;
+&lt;section&gt;&lt;h2 id=&quot;where-we-are&quot;&gt;Where we are&lt;/h2&gt;&lt;p&gt;A short text-only slide.&lt;/p&gt;&lt;/section&gt;
+&lt;section&gt;&lt;h2 id=&quot;where-we-are-going&quot;&gt;Where we are going&lt;/h2&gt;&lt;p&gt;Another text-only slide, so the deck has more than one slide boundary for reveal to
+enhance.&lt;/p&gt;&lt;/section&gt;</content>
+</entry>

@@ -1,0 +1,45 @@
+{
+  "slug": "reference/api/main",
+  "route": "/reference/api/main/",
+  "section": "reference",
+  "title": "Shipping API main (unreleased)",
+  "description": "OpenAPI 1.1.0-dev contract, 3 operations",
+  "type": "reference",
+  "doc_status": "active",
+  "kind": "Reference",
+  "tags": [
+    "openapi"
+  ],
+  "priority": 0.5,
+  "updated": null,
+  "released": false,
+  "rawDocumentUrl": "/doc-kitty/reference/api/main/openapi.yaml",
+  "sha256": "fff535ff63eb42972732b7919e7f34b5d58a053a614e1e97bb5618331deaa929",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/reference/api/main.json",
+  "related": [],
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/reference/api/main/",
+  "authors": [],
+  "keywords": [
+    "Create a parcel",
+    "Get a parcel",
+    "List parcels"
+  ],
+  "markdown": "# Shipping API main\n\n- Released: no\n- API version: 1.1.0-dev\n- Raw document: /doc-kitty/reference/api/main/openapi.yaml\n- sha256: fff535ff63eb42972732b7919e7f34b5d58a053a614e1e97bb5618331deaa929\n\n## Operations\n\n- GET /parcels: List parcels\n- POST /parcels: Create a parcel\n- GET /parcels/{parcelId}: Get a parcel\n",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/reference/api/main.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/reference/api/main/"
+    },
+    "related": [],
+    "describedby": {
+      "href": "/doc-kitty/reference/api/main/openapi.yaml"
+    }
+  }
+}

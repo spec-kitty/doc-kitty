@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/behaviour/hr/">
+  <id>https://spec-kitty.github.io/doc-kitty/behaviour/hr/</id>
+  <title>HR</title>
+  <updated>2026-10-18T05:55:21.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/behaviour/hr/"/>
+  <summary>Behaviour specifications for HR, generated from Gherkin feature files.</summary>
+  <content type="html">&lt;span id=&quot;hr&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Behaviour specifications generated from the repository’s Gherkin feature files.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;./request-leave/&quot;&gt;Request annual leave&lt;/a&gt; — Leave requests are checked against the employee’s remaining allowance.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

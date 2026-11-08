@@ -30,7 +30,7 @@
     }
   ],
   "markdown": "# Domain\n\n## Glossary\n\n- **Bundle** — a `docs/` tree conforming to OKF v0.2. One repository, one bundle.\n- **Section** — a top-level directory under `docs/` (e.g. `architecture/`).\n- **Section index** — the `README.md` at a section root (the Kitty twist; vanilla\n  Common Docs uses `index.md`).\n- **Type** — the OKF-required frontmatter field identifying the kind of a page.\n- **Agent-API** — the generated `llms.txt` + `/api/*.json` discovery surface.\n\n## Terms that sound similar\n\n- **Plan vs ADR vs Architecture** — plans describe the *future*, ADRs record\n  *past* decisions, architecture describes the *present*. Never conflate them.\n- **Discovery vs Retrieval** — this project does discovery (a browsable map),\n  not retrieval (a vector index).",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/domain.json"

@@ -17,7 +17,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Rhetoric\n\nThis section is a real Markua-authored conversion of Aristotle's *Rhetoric*,\nBook I — not a demo fixture. It shows how a full converted work reads as\nnative doc-kitty pages: a custom top-level section registered in\n`sections.yaml` rather than baked into a template, Markua footnotes and\neditor's-note callouts, a native glossary built from the source's own term\nlist, and constructed reader personas wired to the audience surface.\n\n- [Book I: Purposes and Definitions of Rhetoric](/rhetoric/book-one/) — the\n  complete converted text: 15 chapters covering what rhetoric is for, its\n  three species, and the topics orators argue from.\n- [Book II: Persuasion techniques](/rhetoric/book-two/) — landing only.\n- [Book III: Stylistic Delivery and Arrangement Techniques](/rhetoric/book-three/) —\n  landing only.\n\nThis content is a CC-BY-SA-4.0 derivative of a public-domain translation. See\n[About and license](/rhetoric/about-and-license/) for full attribution.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/rhetoric.json"

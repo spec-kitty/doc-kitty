@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/">
+  <id>https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/</id>
+  <title>ADR-0001: Build on Astro + Starlight</title>
+  <updated>2026-08-21T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/adr/0001-use-astro-starlight/"/>
+  <summary>Why the toolkit renders Common Docs trees with Astro and Starlight.</summary>
+  <content type="html">&lt;span id=&quot;adr-0001-build-on-astro--starlight&quot;&gt;&lt;/span&gt;
+&lt;h2 id=&quot;status&quot;&gt;Status&lt;/h2&gt;
+&lt;p&gt;Accepted&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note (DocKitty): frontmatter &lt;code dir=&quot;auto&quot;&gt;status&lt;/code&gt; records the &lt;em&gt;document&lt;/em&gt; lifecycle
+(&lt;code dir=&quot;auto&quot;&gt;active&lt;/code&gt;); the &lt;em&gt;decision&lt;/em&gt; status lives here and in the index table. This
+keeps every file on the one convention-wide status enum.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;context&quot;&gt;Context&lt;/h2&gt;
+&lt;p&gt;We need a static docsite generator that renders a Common Docs &lt;code dir=&quot;auto&quot;&gt;docs/&lt;/code&gt; tree,
+supports Markdown/MDX, and lets us bolt on custom endpoints (RSS, agent-API).&lt;/p&gt;
+&lt;h2 id=&quot;decision&quot;&gt;Decision&lt;/h2&gt;
+&lt;p&gt;Use Astro with the Starlight docs theme. The toolkit supplies a config preset, a
+content loader (README-as-index), the frontmatter schema, and the RSS/llms.txt/
+agent-API route handlers.&lt;/p&gt;
+&lt;h2 id=&quot;consequences&quot;&gt;Consequences&lt;/h2&gt;
+&lt;h3 id=&quot;positive&quot;&gt;Positive&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Batteries-included nav, search, and theming.&lt;/li&gt;
+&lt;li&gt;Astro endpoints make the feeds and agent-API trivial to emit at build time.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;negative&quot;&gt;Negative&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Starlight is opinionated; README-as-index and reading root &lt;code dir=&quot;auto&quot;&gt;docs/&lt;/code&gt; need custom
+loader wiring.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;alternatives-considered&quot;&gt;Alternatives Considered&lt;/h2&gt;
+&lt;h3 id=&quot;option-a-a-bespoke-content-collections-build&quot;&gt;Option A: A bespoke content-collections build&lt;/h3&gt;
+&lt;p&gt;More control, but we would reimplement nav/search/theme for no real gain.&lt;/p&gt;
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://starlight.astro.build&quot;&gt;Starlight&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>
