@@ -22,7 +22,7 @@ import { DK_OPENAPI_ENV } from '../internal-env.mjs';
 import { readPublication } from '../integrations/openapi-publish.js';
 import type { OpenApiPublication, OpenApiPublicationVersion } from '../integrations/openapi-publish.js';
 import type { Operation } from '../openapi/operations.mjs';
-import { escapeMdLink, flattenText } from '../openapi/summary.mjs';
+import { flattenText } from '../openapi/summary.mjs';
 import { withBase } from '../with-base.js';
 
 export interface AgentIndexRouteOptions {
@@ -129,12 +129,15 @@ export function toOpenApiVersionRecord(
 
 /**
  * The page payload's `keywords` (R10): the operation summaries — falling back
- * to the operationId — flattened and link-escaped (FR-028), empties skipped,
- * unique, sorted. One keyword per operation, never per page.
+ * to the operationId — flattened (FR-028), empties skipped, unique, sorted.
+ * One keyword per operation, never per page. No `escapeMdLink` here: this is
+ * a JSON string array a machine reads, not Markdown a renderer might turn
+ * into a link — the backslash escaping belongs to the Markdown surfaces
+ * (llms.txt) alone.
  */
 export function openApiKeywords(operations: readonly Operation[]): string[] {
   const names = operations
-    .map((operation) => escapeMdLink(flattenText(operation.summary ?? operation.operationId ?? '')))
+    .map((operation) => flattenText(operation.summary ?? operation.operationId ?? ''))
     .filter((keyword) => keyword !== '');
   return [...new Set(names)].sort();
 }
