@@ -827,7 +827,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     plugins: [
       DOC_KITTY_I18N_PLUGIN,
       ...(overrides?.plugins ?? []),
-      ...(openapiOpts && openApiSpecs ? openApiPlugins(openapiOpts, openApiSpecs) : []),
+      ...(openapiOpts && openApiSpecs ? openApiPlugins(openapiOpts, openApiSpecs, base) : []),
     ],
     // Seam 3 (ADR-0013/ADR-0015 decision 3): the components map is FIXED at the
     // six carriers, in EVERY case (with or without a theme; ADR-0044 added
