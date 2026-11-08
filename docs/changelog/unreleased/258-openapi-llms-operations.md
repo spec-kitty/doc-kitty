@@ -8,4 +8,6 @@ section: Added
   indented line per operation, `  - METHOD /path: summary`. The option is off
   by default, so an opting-out site's `llms.txt` is unchanged. Released
   operation pages are also individual search results now, findable by summary,
-  method and path.
+  method and path. The raw documents are served in `astro dev` too, so the
+  `llms.txt` lines and their checksums resolve while previewing, not only in a
+  built site.
