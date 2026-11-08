@@ -19,6 +19,7 @@
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DK_OPENAPI_ENV } from '../lib/internal-env.mjs';
+import { publicationFile } from './helpers/openapi-publication.js';
 import type { OpenApiNav, OpenApiNavVersion } from '../lib/openapi/adapters.js';
 import type { Operation } from '../lib/openapi/operations.mjs';
 import type { OpenApiPublication, OpenApiPublicationVersion } from '../lib/openapi/publication.js';
@@ -141,12 +142,12 @@ describe('openapi version switcher (mission openapi-second-slice-01M6WXJ4, WP07)
     });
 
     it('[WP07] throws [dk-openapi] when the handoff is malformed', () => {
-      process.env[DK_OPENAPI_ENV] = 'not json';
+      process.env[DK_OPENAPI_ENV] = '/nonexistent/publication.json';
       expect(() => switcherPublication()).toThrow(/\[dk-openapi\]/);
     });
 
     it('[WP07] returns the parsed publication when the handoff is present', () => {
-      process.env[DK_OPENAPI_ENV] = JSON.stringify(publicationOf([{ label: 'v1' }, { label: 'v2', released: false }]));
+      process.env[DK_OPENAPI_ENV] = publicationFile(publicationOf([{ label: 'v1' }, { label: 'v2', released: false }]));
       expect(switcherPublication().versions.map((version) => version.label)).toEqual(['v1', 'v2']);
     });
   });

@@ -30,6 +30,7 @@ const { readPublication } = await import('../lib/openapi/publication.js');
 const { llmsTxtRoute } = await import('../lib/routes/llms-txt.js');
 const assertions = await import('../scripts/assert-openapi-artifacts.mjs');
 const { DK_OPENAPI_ENV } = await import('../lib/internal-env.mjs');
+const { publicationFile } = await import('./helpers/openapi-publication.js');
 
 let dir: string;
 let outDir: string;
@@ -207,15 +208,15 @@ describe('llms.txt (FR-008)', () => {
     const render = async () =>
       (await (llmsTxtRoute({ title: 'Docs' }) as (c: { site: URL }) => Promise<Response>)({ site: new URL('https://d.example/') })).text();
     expect(await render()).not.toContain('openapi');
-    process.env[DK_OPENAPI_ENV] = JSON.stringify(publication);
+    process.env[DK_OPENAPI_ENV] = publicationFile(publication);
     const text = await render();
     expect(text).toContain('- [v1](https://d.example/reference/api/v1/openapi.yaml)\n');
     expect(text).toContain('- [main](https://d.example/reference/api/main/openapi.json) (unreleased)');
   });
 
   it('ignores a malformed handoff rather than failing the route', () => {
-    expect(readPublication('{nope')).toBeUndefined();
-    expect(readPublication('{"section":1}')).toBeUndefined();
+    process.env[DK_OPENAPI_ENV] = '/nonexistent/publication.json';
+    expect(readPublication(process.env[DK_OPENAPI_ENV])).toBeUndefined();
     expect(readPublication(undefined)).toBeUndefined();
   });
 });

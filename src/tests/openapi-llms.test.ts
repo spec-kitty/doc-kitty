@@ -23,6 +23,7 @@ const { openApiLlmsLines } = await import('../lib/integrations/openapi-publish.j
 const { readPublication } = await import('../lib/openapi/publication.js');
 const { llmsTxtRoute } = await import('../lib/routes/llms-txt.js');
 const { DK_OPENAPI_ENV } = await import('../lib/internal-env.mjs');
+const { publicationFile } = await import('./helpers/openapi-publication.js');
 
 restoreInternalEnv();
 
@@ -178,10 +179,10 @@ describe('llms.txt operation lines (WP04)', () => {
       ).text();
 
     expect(await render()).not.toContain('openapi');
-    process.env[DK_OPENAPI_ENV] = JSON.stringify(body);
+    process.env[DK_OPENAPI_ENV] = publicationFile(body);
     expect(await render()).toContain('  - GET /parcels: List parcels\n');
     expect(readPublication(process.env[DK_OPENAPI_ENV])?.llmsOperations).toBe(true);
-    process.env[DK_OPENAPI_ENV] = JSON.stringify({ ...body, llmsOperations: false });
+    process.env[DK_OPENAPI_ENV] = publicationFile({ ...body, llmsOperations: false });
     expect(await render()).not.toContain('  - GET /parcels');
     expect(await render()).toContain('- [v1](https://d.example/reference/api/v1/openapi.yaml)');
   });

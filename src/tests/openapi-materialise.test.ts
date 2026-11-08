@@ -52,6 +52,7 @@ const { bundleSource, swagger2Source } = await import('../lib/openapi/bundle.mjs
 const adapters = await import('../lib/openapi/adapters.js');
 const publish = await import('../lib/integrations/openapi-publish.js');
 const { readPublication } = await import('../lib/openapi/publication.js');
+const { publicationFile } = await import('./helpers/openapi-publication.js');
 
 const sha = (bytes: Buffer | string): string => createHash('sha256').update(bytes).digest('hex');
 
@@ -455,8 +456,8 @@ describe('the extended publication (FR-006 handoff)', () => {
       rawRoute: '/reference/api/v1/openapi.yaml',
     });
     expect(entry.operations).toEqual(specs[0]!.operations);
-    expect(readPublication(JSON.stringify(publication))).toEqual(publication);
-    expect(readPublication('{"section":"reference/api","llmsOperations":false,"versions":[]}')).toEqual({
+    expect(readPublication(publicationFile(publication))).toEqual(publication);
+    expect(readPublication(publicationFile({ section: 'reference/api', llmsOperations: false, versions: [] }))).toEqual({
       section: 'reference/api',
       llmsOperations: false,
       versions: [],
