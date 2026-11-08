@@ -10,9 +10,6 @@
  *      output equals the output of the same fixture built from the merge-base
  *      tarball. A URL list is not enough: every output file is compared by bytes.
  *      Positive control: the compare is made to FAIL on a mutated copy of the output.
- *      One self-expiring exception: fixtures/intentional-output-change.json names the
- *      one merge-base whose comparison is replaced by a narrower proof (see
- *      readOutputChangeAllowance).
  *   B. With the renderer: `starlight-openapi@0.27.0` and `@astrojs/markdown-satteri@0.4.4`
  *      are added to a copy and one spec is configured; the build publishes the
  *      reference pages, the raw document and its `.sha256` sidecar.
@@ -68,7 +65,7 @@ const VERSION = JSON.parse(readFileSync(path.join(SRC_DIR, 'package.json'), 'utf
  * Nothing else: the OpenAPI chrome styles live in their own sheet that is added only
  * when the option is set, so even the CSS bundles (and their content hashes) are equal.
  * Do not add a PR's intentional default-output change here: this list applies to every
- * future PR. That is what the allowance below is for.
+ * future PR.
  */
 const RFC822 = /\w{3}, \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} GMT/g;
 const ISO8601 = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g;
@@ -148,49 +145,6 @@ function diffDist(a: string, b: string, versions: string[] = []): string[] {
     }
   }
   return problems;
-}
-
-/**
- * The self-expiring allowance for a PR that intentionally changes every site's default
- * output, which no merge-base comparison can survive. It applies only while the computed
- * merge-base IS `baseSha`:
- *  - once the PR merges, the merge-base moves, the sha stops matching and the strict
- *    comparison resumes with no edit (the file may stay; removing it also means strict);
- *  - it applies only on the branch it names (`headRef`), so a branch stacked on that
- *    PR, or a stale local `main` still at `baseSha`, gets the strict comparison;
- *  - if main moves first, the sha stops matching too and arm A goes RED on its next run. That is on
- *    purpose: someone must check what the new main changed and consciously refresh
- *    `baseSha`. CI checks out a merge of the PR into main, so there the merge-base is
- *    main's tip: any move of main does this, even with no rebase of the PR.
- */
-const ALLOWANCE_FILE = path.join(REPO_ROOT, 'tests', 'consumption', 'fixtures', 'intentional-output-change.json');
-
-function readOutputChangeAllowance(): { baseSha: string; headRef: string; reason: string; issues: number[] } | null {
-  return existsSync(ALLOWANCE_FILE) ? JSON.parse(readFileSync(ALLOWANCE_FILE, 'utf8')) : null;
-}
-
-/**
- * The branch under test: the PR's head branch in CI (`GITHUB_HEAD_REF`), else the
- * checked-out branch. The allowance names its branch, so a branch stacked on it, or a
- * stale local `main` still at `baseSha`, gets the strict comparison.
- */
-function branchUnderTest(): string | null {
-  return process.env.GITHUB_HEAD_REF || gitOk(['rev-parse', '--abbrev-ref', 'HEAD']);
-}
-
-/** What an allowance lets differ, by path. Anything else still fails (api JSON, feeds, sitemap, llms.txt, okf). */
-const MAY_ADD_OR_REMOVE = [/^_astro\//, /^pagefind\//, /^api\/pages\/(?:.+\/)?[^/]+\.atom\.xml$/];
-const MAY_CHANGE_BYTES = [/\.html$/, /^_astro\//, /^pagefind\//];
-
-/** The `diffDist` entries outside the declared classes. An entry it cannot parse is outside them. */
-function undeclaredDifferences(differences: string[]): string[] {
-  return differences.filter((entry) => {
-    const onlyIn = /^only in [AB]: (.+)$/.exec(entry);
-    if (onlyIn) return !MAY_ADD_OR_REMOVE.some((allowed) => allowed.test(onlyIn[1]));
-    const bytes = /^bytes differ: (.+?) @\d+ /.exec(entry);
-    if (bytes) return !MAY_CHANGE_BYTES.some((allowed) => allowed.test(bytes[1]));
-    return true;
-  });
 }
 
 /**
@@ -340,7 +294,7 @@ describe('opt-in openapi option — consumption proof (FR-010, SC-004, FR-007)',
       expect(grep.stdout.trim().split('\n').filter(Boolean)).toEqual([]);
     });
 
-    it('builds, and its output equals the merge-base build byte for byte, or the allowance for this merge-base holds (SC-004)', () => {
+    it('builds, and its output equals the merge-base build byte for byte (SC-004)', () => {
       const head = buildFixture(headDir);
       expect(head.status, `head build must succeed:\n${head.output}`).toBe(0);
       const base = buildFixture(baseDir);
@@ -350,17 +304,7 @@ describe('opt-in openapi option — consumption proof (FR-010, SC-004, FR-007)',
       const baseDist = path.join(baseDir, 'dist');
       expect(listFiles(headDist).length).toBeGreaterThan(20);
       const differences = diffDist(baseDist, headDist, [VERSION, baseVersion]);
-      const allowance = readOutputChangeAllowance();
-      if (allowance?.baseSha === mergeBaseSha && allowance.headRef === branchUnderTest()) {
-        console.log(
-          `[SC-004] intentional-output-change allowance applied: merge-base ${mergeBaseSha}, branch ${allowance.headRef} (issues ${allowance.issues.join(', ')}); ` +
-            `${differences.length} differences, checked by class instead of the byte comparison`,
-        );
-        expect(findOpenApiMarkers(headDist)).toEqual([]);
-        expect(undeclaredDifferences(differences)).toEqual([]);
-      } else {
-        expect(differences).toEqual([]);
-      }
+      expect(differences).toEqual([]);
       // No route of the new feature leaks into a site that does not use it.
       expect(listFiles(headDist).filter((f) => f.startsWith('reference/api/'))).toEqual([]);
     }, 600_000);
@@ -376,41 +320,6 @@ describe('opt-in openapi option — consumption proof (FR-010, SC-004, FR-007)',
       expect(problems.some((p) => p.startsWith('bytes differ: index.html'))).toBe(true);
       expect(problems).toEqual(expect.arrayContaining(['only in A: 404.html', 'only in B: extra.txt']));
 
-    });
-
-    it('the allowance classifier passes only the declared classes', () => {
-      const declared = [
-        'only in A: _astro/common.CnmM98kq.css',
-        'only in B: _astro/toggle.DunfXOz8.js',
-        'only in A: pagefind/fragment/en_112ed12.pf_fragment',
-        'only in B: pagefind/index/en_80f3d45.pf_index',
-        'only in B: api/pages/home.atom.xml',
-        'only in B: api/pages/rhetoric/book-one/chapter-01.atom.xml',
-        'bytes differ: index.html @390 A="x" B="y"',
-        'bytes differ: rhetoric/book-one/index.html @431 A="x" B="y"',
-        'bytes differ: _astro/page.js @1 A="x" B="y"',
-        'bytes differ: pagefind/pagefind-entry.json @49 A="x" B="y"',
-      ];
-      expect(undeclaredDifferences(declared)).toEqual([]);
-
-      const undeclared = [
-        'bytes differ: api/index.json @1 A="x" B="y"',
-        'bytes differ: api/pages/home.json @1 A="x" B="y"',
-        'bytes differ: api/pages/home.atom.xml @1 A="x" B="y"', // new in this class, never rewritten
-        'bytes differ: rss.xml @1 A="x" B="y"',
-        'bytes differ: sitemap-0.xml @1 A="x" B="y"',
-        'bytes differ: llms.txt @1 A="x" B="y"',
-        'bytes differ: okf/index.json @1 A="x" B="y"',
-        'only in B: api/pages/home.json',
-        'only in B: api/home.atom.xml', // not under api/pages
-        'only in B: new-route/index.html', // a page may change, not appear
-        'only in A: 404.html',
-        'only in B: okf/extra.json',
-        'only in B: sitemap-1.xml',
-        'only in B: reference/api/main/openapi.yaml',
-        'something diffDist never writes',
-      ];
-      expect(undeclaredDifferences(undeclared)).toEqual(undeclared);
     });
 
     it('the marker check finds each marker, in a path, a body and a gzipped body', () => {
