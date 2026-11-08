@@ -17,7 +17,7 @@
  *    values and throws a MARKED error on an over-limit alias count;
  *  - the toolkit imports neither peer anywhere under `lib/`.
  */
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -251,6 +251,46 @@ describe('normaliseOpenApiOptions: the archive option (static checks)', () => {
 
   it('refuses a non-boolean released', () => {
     expect(() => archive({ released: 'yes' })).toThrow('"archive"."released" must be true or false');
+  });
+});
+
+describe('unknown option keys warn instead of vanishing', () => {
+  const warned = (fn: () => unknown): string[] => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      fn();
+      return warn.mock.calls.map((call) => String(call[0]));
+    } finally {
+      warn.mockRestore();
+    }
+  };
+
+  it('names an unknown spec key and the closest known one', () => {
+    const messages = warned(() => runSpec({ sha: 'a'.repeat(64) }));
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatch(/^\[dk-openapi\] specs\[0\] "v1": unknown option "sha".*did you mean "sha256"\?/);
+  });
+
+  it('names an unknown top-level key', () => {
+    const messages = warned(() => run({ specs: [spec()], offlin: true }));
+    expect(messages[0]).toMatch(/unknown option "offlin".*did you mean "offline"\?/);
+  });
+
+  it('names an unknown archive key', () => {
+    const messages = warned(() =>
+      run({ archive: { glob: 'openapi/*.yaml', labelPattern: 'api-(.+)', releasd: true } }),
+    );
+    expect(messages[0]).toMatch(/archive: unknown option "releasd".*did you mean "released"\?/);
+  });
+
+  it('offers no suggestion when nothing is within two edits, and never throws', () => {
+    const messages = warned(() => runSpec({ banana: 1 }));
+    expect(messages[0]).toContain('unknown option "banana"');
+    expect(messages[0]).not.toContain('did you mean');
+  });
+
+  it('is silent for known keys', () => {
+    expect(warned(() => runSpec({}))).toEqual([]);
   });
 });
 

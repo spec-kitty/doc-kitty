@@ -120,6 +120,57 @@ function isRecord(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+const SPEC_KEYS = ['path', 'url', 'sha256', 'label', 'released'];
+const ARCHIVE_KEYS = ['glob', 'labelPattern', 'released'];
+const TOP_LEVEL_KEYS = ['renderer', 'section', 'specs', 'archive', 'llmsOperations', 'offline'];
+
+/**
+ * Levenshtein distance, for the "did you mean" hint on an unknown key.
+ * @param {string} a @param {string} b @returns {number}
+ */
+function editDistance(a, b) {
+  let previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i += 1) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j += 1) {
+      row[j] = Math.min(
+        /** @type {number} */ (previous[j]) + 1,
+        /** @type {number} */ (row[j - 1]) + 1,
+        /** @type {number} */ (previous[j - 1]) + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+    }
+    previous = row;
+  }
+  return /** @type {number} */ (previous[b.length]);
+}
+
+/**
+ * Warn (never throw: the first slice shipped these options) about each key an
+ * option object carries that the contract does not know, so a dropped
+ * integrity pin such as `sha` for `sha256` does not vanish unnoticed.
+ * @param {Record<string, unknown>} object
+ * @param {string[]} known
+ * @param {string} where The ref the message starts with.
+ */
+function warnUnknownKeys(object, known, where) {
+  for (const key of Object.keys(object)) {
+    if (known.includes(key)) continue;
+    let closest;
+    let best = 3;
+    for (const candidate of known) {
+      // A truncated key (`sha` for `sha256`) is a prefix, however long the tail.
+      const prefix = key.length >= 3 && candidate.toLowerCase().startsWith(key.toLowerCase());
+      const distance = prefix ? 0 : editDistance(key.toLowerCase(), candidate.toLowerCase());
+      if (distance < best) {
+        best = distance;
+        closest = candidate;
+      }
+    }
+    const hint = closest === undefined ? '' : `; did you mean "${closest}"?`;
+    console.warn(`${OPENAPI_LOG_PREFIX} ${where}: unknown option "${key}" is ignored${hint}`);
+  }
+}
+
 /** A URL as quoted in a message: its query string redacted (`?…`). */
 const redactUrl = (/** @type {string} */ url) => (url.includes('?') ? `${url.slice(0, url.indexOf('?'))}?…` : url);
 
@@ -355,6 +406,7 @@ function normaliseSpec(spec, index, siteRoot) {
   if (!isRecord(spec)) throw new Error(`${OPENAPI_LOG_PREFIX} ${name}: must be an object`);
   const { path: specPath, url, sha256 } = spec;
   const { label, released, entry } = normaliseLabel(spec, name);
+  warnUnknownKeys(spec, SPEC_KEYS, entry);
   const hasPath = specPath !== undefined;
   const hasUrl = url !== undefined;
   if (hasPath === hasUrl) {
@@ -373,6 +425,7 @@ function normaliseSpec(spec, index, siteRoot) {
  */
 function normaliseArchive(raw) {
   if (!isRecord(raw)) throw new Error(`${OPENAPI_LOG_PREFIX} "archive" must be an object`);
+  warnUnknownKeys(raw, ARCHIVE_KEYS, 'archive');
   const { glob, labelPattern, released = true } = raw;
   if (typeof glob !== 'string' || glob === '') {
     throw new Error(`${OPENAPI_LOG_PREFIX} "archive".glob is required`);
@@ -418,6 +471,7 @@ function normaliseArchive(raw) {
  */
 export function normaliseOpenApiOptions(raw, { siteRoot }) {
   if (!isRecord(raw)) throw new Error(`${OPENAPI_LOG_PREFIX} the openapi option must be an object`);
+  warnUnknownKeys(raw, TOP_LEVEL_KEYS, 'openapi');
   const section = normaliseSection(raw.section);
   const { renderer, specs, archive } = raw;
   // At least one version must result from specs plus archive (contracts/config-options.md).
