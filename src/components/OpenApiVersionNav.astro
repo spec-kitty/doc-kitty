@@ -1,15 +1,26 @@
 ---
 /**
- * The version links and the "unreleased" badge on an OpenAPI reference page
- * (mission openapi-reference-pages, FR-003/FR-004). Rendered by the `PageTitle`
- * carrier when the reference route middleware set `Astro.locals.dkOpenApi`.
+ * The version switcher on an OpenAPI reference page (mission
+ * openapi-reference-pages WP03; openapi-second-slice WP07, FR-017/SC-003).
+ * Rendered by the `PageTitle` carrier when the reference route middleware set
+ * `Astro.locals.dkOpenApi`.
  *
- * With more than one version it lists every version: the current one as text with
- * `aria-current`, the others as links to their overview. With one version there is
- * no list. An unreleased version shows the text "unreleased" (not colour alone).
- * Every link goes through `withBase`. Styles: `.dk-openapi-*` in dk-components.css.
+ * A native `<details>` disclosure of plain links: with scripts off the summary
+ * toggles the list and every link is a plain anchor, so switching works either
+ * way. The wrapper carries the shared disclosure control's baseline contract
+ * (`src/lib/disclosure/`, ADR-0077): `[data-dk-disclosure]` plus both
+ * `data-label-*` names and a `<details id>` with a `<summary>`, so the control
+ * upgrades it wherever its client loads. The component adds no script of its
+ * own — the page's CSP hashes are unchanged.
+ *
+ * Each link goes to the same operation in the target version when it exists
+ * there, else that version's overview (`switcher.ts` maps it, reading the
+ * publication handoff); every href is base-aware through `withBase`. The current
+ * version is text with `aria-current`, never a link to itself; an unreleased
+ * version says "unreleased" in text, not colour alone. With one version there is
+ * no disclosure. Styles: `.dk-openapi-*` in dk-openapi.css.
  */
-import { withBase } from '../lib/with-base.js';
+import { switcherEntries, switcherPublication } from '../lib/openapi/switcher.js';
 import type { OpenApiNav } from '../lib/openapi/adapters.js';
 
 interface Props {
@@ -17,30 +28,41 @@ interface Props {
 }
 
 const { nav } = Astro.props;
-const { current, versions } = nav;
+const entries = switcherEntries(nav, switcherPublication());
+const current = entries.find((entry) => entry.current) ?? entries[0]!;
+const count = entries.length;
 ---
 
-<div class="dk-openapi-nav" data-dk-openapi-nav>
+<div
+  class="dk-openapi-nav"
+  data-dk-openapi-nav
+  data-dk-disclosure
+  data-label-expanded={`Hide API versions (${count})`}
+  data-label-collapsed={`Show API versions (${count})`}
+>
   <p class="dk-openapi-nav__current">
     API version <strong>{current.label}</strong>
     {!current.released && <span class="dk-openapi-badge">unreleased</span>}
   </p>
   {
-    versions.length > 1 && (
-      <nav class="dk-openapi-nav__versions" aria-label="API versions">
-        <ul>
-          {versions.map((version) => (
-            <li>
-              {version === current || version.label === current.label ? (
-                <span aria-current="true">{version.label}</span>
-              ) : (
-                <a href={withBase(version.route)}>{version.label}</a>
-              )}
-              {!version.released && <span class="dk-openapi-badge">unreleased</span>}
-            </li>
-          ))}
-        </ul>
-      </nav>
+    count > 1 && (
+      <details id="dk-openapi-versions" class="dk-openapi-nav__versions">
+        <summary>API versions ({count})</summary>
+        <nav aria-label="API versions">
+          <ul>
+            {entries.map((entry) => (
+              <li>
+                {entry.current ? (
+                  <span aria-current="true">{entry.label}</span>
+                ) : (
+                  <a href={entry.href}>{entry.label}</a>
+                )}
+                {!entry.released && <span class="dk-openapi-badge">unreleased</span>}
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </details>
     )
   }
 </div>

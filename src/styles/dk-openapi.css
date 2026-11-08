@@ -97,7 +97,11 @@
   --sl-color-border-badge: var(--sl-openapi-method-border-options);
 }
 
-/* Version links and the "unreleased" badge (`OpenApiVersionNav.astro`). */
+/* Version switcher and the "unreleased" badge (`OpenApiVersionNav.astro`).
+   The switcher is a native <details> disclosure (FR-017): the summary is the
+   control, the list inside is plain links. The shared disclosure control
+   (ADR-0077) upgrades the same markup wherever its client loads, so the
+   summary keeps its native affordance here rather than restyling it. */
 .dk-openapi-nav {
   margin-block: var(--dk-space-xs) var(--dk-space-lg);
   padding: var(--dk-space-xs) var(--dk-space-sm);
@@ -110,6 +114,13 @@
 
 .dk-openapi-nav p {
   margin: 0;
+}
+
+.dk-openapi-nav > details > summary {
+  cursor: pointer;
+  margin-block-start: var(--dk-space-2xs);
+  color: var(--dk-color-text-strong);
+  font-weight: var(--dk-weight-semibold);
 }
 
 .dk-openapi-nav__versions ul {
@@ -141,4 +152,16 @@
   font-size: var(--dk-text-xs);
   font-weight: var(--dk-weight-semibold);
   letter-spacing: var(--dk-tracking-caps);
+}
+
+/* A closed `details` does not print, and switching versions must hide nothing
+   for good: the list prints open (the shared disclosure control's own print
+   rule, restated for this wrapper; `::details-content` covers the browsers
+   that have it, the control's beforeprint fallback covers the rest). */
+@media print {
+  .dk-openapi-nav > details::details-content {
+    display: block;
+    block-size: auto;
+    content-visibility: visible;
+  }
 }

@@ -1,21 +1,32 @@
-// OpenAPI reference pages (mission openapi-reference-pages, WP03): chrome, theming and
-// static-only, in BOTH colour modes. Axe over the pages is in axe.spec.ts (the pages
-// are in AXE_PAGES); this file pins what axe cannot see.
+// OpenAPI reference pages (mission openapi-reference-pages, WP03; second slice
+// WP07): chrome, theming, the version switcher and static-only, in BOTH colour
+// modes. Axe over the pages is in axe.spec.ts (the pages are in AXE_PAGES);
+// this file pins what axe cannot see, plus the switcher's own axe pass (NFR-005).
 //
 //   FR-003  every page links to every other version, through the site base
 //   FR-004  the unreleased version says "unreleased" in text; the released one does not
 //   FR-005  a branding override of a `--dk-*` token reaches the badges in both modes,
 //           and the renderer's own stylesheet is not loaded
+//   FR-017  the switcher is a native disclosure of plain links: the same operation
+//           in the target version when it exists (SC-003, with and without scripts),
+//           else that version's overview
 //   FR-009  no request for the document, no request console, with scripts on or off
 //   NFR-002 no external origin; only the pinned renderer's inline scripts
+//   NFR-005 axe (WCAG 2.2 AA) on an overview, an operation and a switcher-fallback
+//           page, with the dropdown open, in light and dark
 import { test, expect } from '@playwright/test';
-import { BASE, ROUTES } from './routes';
+import AxeBuilder from '@axe-core/playwright';
+import { BASE, ROUTES, WCAG_TAGS } from './routes';
 import { gotoInMode, modeOf } from './mode';
 import { OPENAPI_INLINE_ALLOWLIST, cspAdditions } from '../../src/scripts/assert-openapi-artifacts.mjs';
 
 // The raw document is published next to the pages; a page must never fetch it.
 const DOCUMENT_REQUEST = /\/openapi\.(ya?ml|json)(\.sha256)?(\?|$)/;
 const FIXTURE_OPERATION_TEXT = 'Create a parcel';
+
+// The v1-only operation: switching from its page falls back to the target
+// version's overview (FR-017's fallback case, NFR-005's fallback page).
+const DELETE_PARCEL_ROUTE = `${BASE}/reference/api/v1/operations/deleteparcel/`;
 
 /**
  * Signs of a request console in the served HTML: a form, a "try" control, or the
@@ -31,37 +42,97 @@ export function consoleSignals(page: string): string[] {
   return signals;
 }
 
+/** Open the version switcher's native disclosure (no script involved). */
+async function openSwitcher(page: import('@playwright/test').Page): Promise<void> {
+  await page.locator('.dk-openapi-nav > details > summary').click();
+  await expect(page.locator('.dk-openapi-nav nav a').first()).toBeVisible();
+}
+
 test.describe('version links and badge (FR-003, FR-004)', () => {
   test('the released version links to main, says nothing is unreleased about itself', async ({ page }, testInfo) => {
     await gotoInMode(page, ROUTES.openApiV1, modeOf(testInfo.project.name));
     const nav = page.locator('.dk-openapi-nav');
     await expect(nav).toHaveCount(1);
     await expect(nav.locator('.dk-openapi-nav__current')).not.toContainText('unreleased');
-    const link = nav.getByRole('link', { name: 'main' });
+    await openSwitcher(page);
+    // exact: the v1 page also links "v1-1", which a substring match would catch.
+    const link = nav.getByRole('link', { name: 'main', exact: true });
     await expect(link).toHaveAttribute('href', `${BASE}/reference/api/main/`);
     // The other version's badge is next to its link, in text.
-    await expect(nav.locator('li').filter({ has: page.getByRole('link', { name: 'main' }) })).toContainText('unreleased');
+    await expect(nav.locator('li').filter({ has: page.getByRole('link', { name: 'main', exact: true }) })).toContainText('unreleased');
     // The current version is not a link to itself.
-    await expect(nav.getByRole('link', { name: 'v1' })).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'v1', exact: true })).toHaveCount(0);
   });
 
   test('the unreleased version carries the text badge and links to v1', async ({ page }, testInfo) => {
     await gotoInMode(page, ROUTES.openApiMain, modeOf(testInfo.project.name));
     const nav = page.locator('.dk-openapi-nav');
     await expect(nav.locator('.dk-openapi-nav__current .dk-openapi-badge')).toHaveText('unreleased');
-    await expect(nav.getByRole('link', { name: 'v1' })).toHaveAttribute('href', `${BASE}/reference/api/v1/`);
-    await expect(nav.getByRole('link', { name: 'v1' }).locator('..')).not.toContainText('unreleased');
+    await openSwitcher(page);
+    await expect(nav.getByRole('link', { name: 'v1', exact: true })).toHaveAttribute('href', `${BASE}/reference/api/v1/`);
+    await expect(nav.getByRole('link', { name: 'v1', exact: true }).locator('..')).not.toContainText('unreleased');
   });
 
   test('an operation page has the same nav', async ({ page }, testInfo) => {
     await gotoInMode(page, ROUTES.openApiOperation, modeOf(testInfo.project.name));
-    await expect(page.locator('.dk-openapi-nav a[href$="/reference/api/main/"]')).toHaveCount(1);
+    // CSS, not role: the dropdown is closed until opened, and the deep link is
+    // the point (see the switcher describe below).
+    await expect(page.locator('.dk-openapi-nav a[href$="/reference/api/main/operations/createparcel/"]')).toHaveCount(1);
   });
 
   test('an ordinary page has no version nav', async ({ page }, testInfo) => {
     await gotoInMode(page, ROUTES.prose, modeOf(testInfo.project.name));
     await expect(page.locator('.dk-openapi-nav')).toHaveCount(0);
   });
+});
+
+test.describe('version switcher (FR-017, SC-003)', () => {
+  test('switching from an operation page lands on the same operation in the target version', async ({ page }, testInfo) => {
+    await gotoInMode(page, ROUTES.openApiOperation, modeOf(testInfo.project.name));
+    await openSwitcher(page);
+    const link = page.locator('.dk-openapi-nav').getByRole('link', { name: 'v1-1', exact: true });
+    await expect(link).toHaveAttribute('href', `${BASE}/reference/api/v1-1/operations/createparcel/`);
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${BASE}/reference/api/v1-1/operations/createparcel/$`));
+    await expect(page.locator('main')).toContainText(FIXTURE_OPERATION_TEXT);
+  });
+
+  test('an operation missing in the target version links that version\'s overview', async ({ page }, testInfo) => {
+    await gotoInMode(page, DELETE_PARCEL_ROUTE, modeOf(testInfo.project.name));
+    await openSwitcher(page);
+    const nav = page.locator('.dk-openapi-nav');
+    await expect(nav.getByRole('link', { name: 'v1-1', exact: true })).toHaveAttribute('href', `${BASE}/reference/api/v1-1/`);
+    await expect(nav.getByRole('link', { name: 'main', exact: true })).toHaveAttribute('href', `${BASE}/reference/api/main/`);
+  });
+
+  test('the current version is text, not a link to itself, inside the open dropdown', async ({ page }, testInfo) => {
+    await gotoInMode(page, ROUTES.openApiOperation, modeOf(testInfo.project.name));
+    await openSwitcher(page);
+    const nav = page.locator('.dk-openapi-nav');
+    await expect(nav.locator('nav [aria-current="true"]')).toHaveText('v1');
+    await expect(nav.getByRole('link', { name: 'v1', exact: true })).toHaveCount(0);
+  });
+});
+
+test.describe('axe on the switcher pages (NFR-005)', () => {
+  const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
+  const SWITCHER_PAGES: Array<[name: string, route: string]> = [
+    ['overview', ROUTES.openApiV1],
+    ['operation', ROUTES.openApiOperation],
+    ['fallback', DELETE_PARCEL_ROUTE],
+  ];
+
+  for (const [name, route] of SWITCHER_PAGES) {
+    test(`no serious/critical WCAG 2.2 AA violations with the switcher open (${name} page)`, async ({ page }, testInfo) => {
+      await gotoInMode(page, route, modeOf(testInfo.project.name));
+      // The dropdown must really be open: a closed <details> hides its content
+      // from the accessibility tree, and axe would pass vacuously.
+      await openSwitcher(page);
+      const results = await new AxeBuilder({ page }).withTags([...WCAG_TAGS]).analyze();
+      const blocking = results.violations.filter((v) => v.impact && BLOCKING_IMPACTS.has(v.impact));
+      expect(blocking, `serious/critical WCAG violations on ${route} (${name} page)`).toEqual([]);
+    });
+  }
 });
 
 test.describe('theming (FR-005)', () => {
@@ -144,16 +215,22 @@ test.describe('static only (FR-009, NFR-002)', () => {
   });
 });
 
-test.describe('static only, scripts off (FR-009)', () => {
+test.describe('static only, scripts off (FR-009, SC-003)', () => {
   test.use({ javaScriptEnabled: false });
 
-  test('the operation text is in the served HTML and the document is never requested', async ({ page }) => {
+  test('the switcher is a native disclosure: the deep link is served and reachable without scripts', async ({ page }) => {
     const requests: string[] = [];
     page.on('request', (r) => requests.push(r.url()));
     await page.goto(ROUTES.openApiOperation, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('main')).toContainText(FIXTURE_OPERATION_TEXT);
     await expect(page.locator('main')).toContainText('recipient');
-    await expect(page.locator('.dk-openapi-nav a[href$="/reference/api/main/"]')).toHaveCount(1);
+    // The deep link is in the served HTML; the dropdown needs no script to open.
+    const link = page.locator('.dk-openapi-nav a[href$="/reference/api/main/operations/createparcel/"]');
+    await expect(link).toHaveCount(1);
+    await page.locator('.dk-openapi-nav > details > summary').click();
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${BASE}/reference/api/main/operations/createparcel/$`));
+    await expect(page.locator('main')).toContainText(FIXTURE_OPERATION_TEXT);
     expect(requests.filter((u) => DOCUMENT_REQUEST.test(u))).toEqual([]);
   });
 });
