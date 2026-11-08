@@ -81,6 +81,7 @@ import {
   resolvePlantumlAllowExternal,
 } from './plantuml-external.mjs';
 import { toPublication } from './integrations/openapi-publish.js';
+import { writePublication } from './openapi/publication.js';
 import { normaliseOpenApiOptions, type OpenApiOptions } from './openapi/options.mjs';
 import { materialiseOpenApiSpecs, composeSitemapPredicates, unregisterSitemapPredicate } from './openapi/materialise.mjs';
 // The sitemap seams of the plan's parallel-edit registry (`sitemapPredicates`
@@ -631,20 +632,22 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // once here (FR-007), the renderer's input paths and the operations with it. Runs
   // before any plugin is built, so a spec that cannot be read, parsed or dispatched
   // fails the build before the renderer is called.
+  const openApiCacheDir = path.join(process.cwd(), 'node_modules/.cache/doc-kitty/openapi');
   const openApiSpecs =
     openapiOpts === undefined
       ? undefined
       : materialiseOpenApiSpecs(openapiOpts, {
           siteRoot: process.cwd(),
           offline: openapiOpts.offline,
-          cacheDir: path.join(process.cwd(), 'node_modules/.cache/doc-kitty/openapi'),
+          cacheDir: openApiCacheDir,
         });
   if (openapiOpts && openApiSpecs) {
     const collision = openApiCollisionMessage(openapiOpts, openApiSpecs, docsDir, indexBasename, gherkinOpts?.pages?.section);
     if (collision) throw new Error(collision);
     // The llms.txt route lists each version's raw document (FR-008), from the
-    // materialised list: it never re-reads a file.
-    setInternalEnv(DK_OPENAPI_ENV, JSON.stringify(toPublication(openapiOpts, openApiSpecs)));
+    // materialised list: it never re-reads a spec. Handed off as a file path, not
+    // JSON: a big env string breaks every later child spawn (E2BIG).
+    setInternalEnv(DK_OPENAPI_ENV, writePublication(openApiCacheDir, toPublication(openapiOpts, openApiSpecs)));
   } else {
     // With the option absent no openApiPlugin runs to own the registry's
     // unreleased-versions sitemap predicate, so THIS evaluation drops any an

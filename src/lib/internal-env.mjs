@@ -15,7 +15,7 @@
  * | DK_DOCS_ROOT                  | define     | defineDocKittyIntegrations               | standalone routes (routes/shared.ts)      |
  * | DK_MARKUA                     | define     | defineDocKittyIntegrations               | glossary re-derive (OnThisPage.astro)     |
  * | DK_EXCLUDE                    | define     | defineDocKittyIntegrations               | shared docs walk (docs-walk.mjs), CLIs    |
- * | DK_OPENAPI                    | define     | defineDocKittyIntegrations               | llms.txt route (routes/llms-txt.ts)       |
+ * | DK_OPENAPI                    | define     | defineDocKittyIntegrations               | readPublication (openapi/publication.ts)  |
  * | DK_GHERKIN_ROUTE              | setup      | doc-kitty:gherkin-fence config:setup     | scenario-index route                      |
  * | DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED | define | defineDocKittyIntegrations           | site-config-eval (the include check)      |
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
@@ -49,10 +49,13 @@ export const DK_MARKUA_ENV = 'DK_MARKUA';
 export const DK_EXCLUDE_ENV = 'DK_EXCLUDE';
 
 /**
- * JSON `OpenApiPublication` (`{ section, llmsOperations, versions: [{ label,
- * released, ext, sha256, title, apiVersion, operations, rawRoute }] }`) of the
- * `openapi` option; absent without it. Written from the materialised list (WP02),
- * so the llms.txt route never re-reads a file.
+ * Absolute path of the JSON file holding the `OpenApiPublication` (`{ section,
+ * llmsOperations, versions: [{ label, released, ext, sha256, title, apiVersion,
+ * operations, rawRoute }] }`) of the `openapi` option; absent without it. The
+ * file is written from the materialised list (WP02) under the openapi cache,
+ * named by its digest, so the llms.txt route never re-reads a spec. It is a
+ * path, not the JSON: one env string over 128 KiB makes every later `execve`
+ * fail with E2BIG. Read it through `readPublication` (`openapi/publication.ts`).
  */
 export const DK_OPENAPI_ENV = 'DK_OPENAPI';
 

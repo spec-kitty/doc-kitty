@@ -23,6 +23,7 @@ import { gunzipSync } from 'node:zlib';
 import { buildOpenApiFixture, readAll, removeOpenApiFixtureBuilds } from './helpers/openapi-build';
 import { openApiPagefind, openApiSitemapPredicate } from '../lib/openapi/indexing.js';
 import { DK_OPENAPI_ENV } from '../lib/internal-env.mjs';
+import { publicationFile } from './helpers/openapi-publication.js';
 
 /** `v1` released, `v2` unreleased: the WP01 seam fixtures. */
 const TWO_VERSIONS = {
@@ -185,7 +186,7 @@ describe('openapi indexing (WP05: FR-013, FR-015)', () => {
 
     it('[WP05] the pagefind hook reads the released flag of the page\'s own version', () => {
       const previous = process.env[DK_OPENAPI_ENV];
-      process.env[DK_OPENAPI_ENV] = JSON.stringify({
+      process.env[DK_OPENAPI_ENV] = publicationFile({
         section: 'reference/api',
         llmsOperations: false,
         versions: [

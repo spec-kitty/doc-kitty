@@ -22,6 +22,7 @@ import path from 'node:path';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { buildOpenApiFixture, readAll, removeOpenApiFixtureBuilds, FIXTURES } from './helpers/openapi-build';
 import { DK_OPENAPI_ENV } from '../lib/internal-env.mjs';
+import { publicationFile } from './helpers/openapi-publication.js';
 import type { OpenApiPublication } from '../lib/openapi/publication.js';
 
 const { entries } = vi.hoisted(() => ({
@@ -385,7 +386,7 @@ describe('openapi agent entries (mission openapi-second-slice-01M6WXJ4, WP03)', 
     it('[WP03] with the option, the docs records are unchanged and the synthetic ones are appended', async () => {
       delete process.env[DK_OPENAPI_ENV];
       const docsRecords = (await indexDoc()).pages;
-      process.env[DK_OPENAPI_ENV] = JSON.stringify(publication);
+      process.env[DK_OPENAPI_ENV] = publicationFile(publication);
       const index = await indexDoc();
       expect(index.pages).toHaveLength(4);
       expect(index.pages.slice(0, 2)).toEqual(docsRecords);
@@ -393,7 +394,7 @@ describe('openapi agent entries (mission openapi-second-slice-01M6WXJ4, WP03)', 
     });
 
     it('[WP03] the index record is exactly the contract record', async () => {
-      process.env[DK_OPENAPI_ENV] = JSON.stringify(publication);
+      process.env[DK_OPENAPI_ENV] = publicationFile(publication);
       const index = await indexDoc();
       expect(index.pages[2]).toEqual({
         slug: 'reference/api/v1',
@@ -423,7 +424,7 @@ describe('openapi agent entries (mission openapi-second-slice-01M6WXJ4, WP03)', 
     });
 
     it('[WP03] the page payload is exactly the contract payload', async () => {
-      process.env[DK_OPENAPI_ENV] = JSON.stringify(publication);
+      process.env[DK_OPENAPI_ENV] = publicationFile(publication);
       const index = await indexDoc();
       const { GET } = agentPageRoute();
       const res = await (GET as unknown as (c: { props: unknown; site: URL }) => Promise<Response>)({
@@ -476,7 +477,7 @@ describe('openapi agent entries (mission openapi-second-slice-01M6WXJ4, WP03)', 
     });
 
     it('[WP03] getStaticPaths adds one path per version after the docs paths', async () => {
-      process.env[DK_OPENAPI_ENV] = JSON.stringify(publication);
+      process.env[DK_OPENAPI_ENV] = publicationFile(publication);
       const { getStaticPaths } = agentPageRoute();
       const getPaths = getStaticPaths as unknown as () => Promise<
         Array<{ params: { slug: string }; props: Record<string, unknown> }>
@@ -495,7 +496,7 @@ describe('openapi agent entries (mission openapi-second-slice-01M6WXJ4, WP03)', 
     });
 
     it('[WP03] an unknown label is a 404', async () => {
-      process.env[DK_OPENAPI_ENV] = JSON.stringify(publication);
+      process.env[DK_OPENAPI_ENV] = publicationFile(publication);
       const { GET } = agentPageRoute();
       const res = await (GET as unknown as (c: { props: unknown; site: URL }) => Promise<Response>)({
         props: { openApi: 'nope' },
