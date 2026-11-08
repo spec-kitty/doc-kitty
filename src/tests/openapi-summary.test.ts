@@ -193,3 +193,20 @@ describe('escaping survives a Markdown parse (FR-028)', () => {
     }
   });
 });
+
+describe('a blank operation summary (llms.txt parity)', () => {
+  it('[summary] falls back to the operationId, like llms.txt', () => {
+    const operations = [
+      { method: 'GET', path: '/a', summary: '   ', operationId: 'getA', slug: 'operations/geta' },
+      { method: 'GET', path: '/b', summary: '', slug: 'operations/getb' },
+    ];
+    const markdown = openApiSummaryMarkdown(version({ operations }), '/r');
+    expect(markdown).toContain('- GET /a: getA\n');
+    expect(markdown).toContain('- GET /b\n');
+    const lines = openApiLlmsLines(
+      { section: 's', llmsOperations: true, versions: [version({ operations: operations.slice(0, 1) })] },
+      () => 'u',
+    );
+    expect(lines[1]).toBe('  - GET /a: getA');
+  });
+});

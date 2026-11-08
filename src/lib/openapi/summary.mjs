@@ -83,7 +83,9 @@ export function openApiSummaryMarkdown(version, rawDocumentUrl) {
     lines.push('');
     for (const operation of version.operations) {
       const line = `- ${operation.method} ${safe(operation.path)}`;
-      const name = flattenText(operation.summary ?? operation.operationId ?? '');
+      // A blank summary falls back to the operationId, like `llms.txt`.
+      const summary = flattenText(operation.summary ?? '');
+      const name = summary !== '' ? summary : flattenText(operation.operationId ?? '');
       lines.push(name === '' ? line : `${line}: ${escapeMdLink(name)}`);
     }
   }
