@@ -247,7 +247,7 @@ describe('openapi seam (mission openapi-second-slice-01M6WXJ4, WP01)', () => {
       // expectation left the `alert(1)` parens raw, which contradict
       // contracts/ and openapi-summary.test.ts, so flipping it corrects them.
       expect(llms).toContain(
-        '  - GET /parcels: List <script>alert\\(1\\)</script> \\]\\(javascript:alert\\(1\\)\\) parcels',
+        '  - GET /parcels: List \\<script\\>alert\\(1\\)\\</script\\> \\]\\(javascript:alert\\(1\\)\\) parcels',
       );
       expect(llms).toContain('  - POST /parcels: Create a \\]\\(javascript:alert\\(2\\)\\) parcel');
     });
