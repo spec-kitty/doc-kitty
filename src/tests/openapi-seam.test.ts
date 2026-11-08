@@ -226,13 +226,18 @@ describe('openapi seam (mission openapi-second-slice-01M6WXJ4, WP01)', () => {
       hostile = readAll(built.dist);
     }, 300_000);
 
-    it('[WP03] one agent record, its spec strings flattened and link syntax escaped', () => {
+    it('[WP03] one agent record, its spec strings flattened and its keywords raw', () => {
       const index = json<AgentIndexDoc>(hostile, 'api/index.json');
       expect(openApiEntries(index).map((entry) => entry.title)).toEqual([
         'Hostile <script>alert(1)</script> ](javascript:alert(1)) API v1',
       ]);
       const page = json<AgentPageDoc>(hostile, 'api/pages/reference/api/v1.json');
-      expect(JSON.stringify(page.keywords)).not.toContain('](javascript:');
+      // `keywords` is a JSON string array, not Markdown: the summaries stay
+      // flattened but UNescaped. Backslash link-escaping belongs to the
+      // Markdown surfaces (llms.txt, above); a machine-readable field must
+      // carry the spec's own text.
+      expect(page.keywords).toContain('List <script>alert(1)</script> ](javascript:alert(1)) parcels');
+      expect(JSON.stringify(page.keywords)).not.toContain('\\]');
     });
 
     it('[WP04] the hostile operation line is flattened and its link syntax escaped', () => {
