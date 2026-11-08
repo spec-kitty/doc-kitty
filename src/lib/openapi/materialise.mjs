@@ -238,6 +238,38 @@ export function registerSitemapPredicate(key, predicate) {
 }
 
 /**
+ * Remove `list`'s entry registered under `key` (a no-op when absent). The
+ * mirror of {@link registerKeyed} for seams whose registration is conditional:
+ * `openApiPlugin` registers the unreleased-versions sitemap predicate only
+ * when some version is unreleased, so a re-evaluation of the config in the
+ * same process (a dev restart) whose versions are all released — or that has
+ * no openapi option at all — must DROP the predicate the earlier evaluation
+ * registered. The hook lists are module-level and survive the re-evaluation,
+ * so leaving it would keep filtering sitemap URLs for a config that no
+ * longer wants it.
+ * @template T
+ * @param {T[]} list One of the hook lists above.
+ * @param {string} key The registration's stable identity.
+ */
+function unregisterKeyed(list, key) {
+  for (let index = 0; index < list.length; index += 1) {
+    if (list[index]?.dkOpenApiSeamKey === key) {
+      list.splice(index, 1);
+      return;
+    }
+  }
+}
+
+/**
+ * Drop the `sitemapPredicates` entry registered under `key` (a no-op when
+ * absent) — see {@link unregisterKeyed}.
+ * @param {string} key
+ */
+export function unregisterSitemapPredicate(key) {
+  unregisterKeyed(sitemapPredicates, key);
+}
+
+/**
  * The sitemap filter: the draft filter, AND every registered predicate. With
  * none registered, the draft filter itself is returned, so a site without the
  * seams behaves byte-identically (NFR-001).
