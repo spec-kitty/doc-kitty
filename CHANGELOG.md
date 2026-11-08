@@ -8,6 +8,147 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- Unreleased entries live in docs/changelog/unreleased/ as one file per change and are written here at release time. Do not add entries here. -->
 
+## [0.7.0] — 2026-11-08
+
+### 💥 Breaking
+
+- **A version label containing a dot now fails the build (#259).** Before, the
+  `openapi` option accepted a label such as `v1.1`, but the renderer drops
+  dots from routes, so the label advertised an address the site never served
+  (`/v11/`). Now the build refuses it — for `specs[].label` and for labels
+  derived by `archive.labelPattern` alike — with a pointed `[dk-openapi]`
+  error. Rename it to a route-safe label such as `v1-1`. Every `section`
+  segment follows the same rule: a mount point such as `reference/v1.1` is
+  refused too; write `reference/v1-1`. A version labelled `index` (any case)
+  is refused as well, explicit or derived from an archive: the renderer serves
+  it at `<section>/index/`, but the agent index and content graph map that
+  address to the section page. Pick another label. See
+  [ADR-0078](docs/adr/0078-openapi-surface-matrix.md) and
+  [the migration note](docs/migrations/0.6-to-0.7.md).
+
+- **`dockitty-assert-plantuml-no-remote-include --service-container` now fails
+  service setups it used to pass (#268).** Before, the check passed any
+  service that refused its test include. Now, with the opt-in unset, it fails
+  when the named container has: a `PLANTUML_SECURITY_PROFILE` that is missing
+  or not `SANDBOX`; a security-relevant `-D` property, `plantuml.*` env key or
+  `PLANTUML_PROPERTY_FILE`; a Java `@argfile`; or a local `--server` port the
+  container does not publish on a matching address. An empty value for any
+  flag now exits 2. To fix: set `PLANTUML_SECURITY_PROFILE=SANDBOX` on the
+  service (or declare the opt-in), move PlantUML settings into the two
+  environment variables, and name the container that serves `--server`. See the
+  [0.6 to 0.7 migration guide](docs/migrations/0.6-to-0.7.md).
+
+### Added
+
+- **OpenAPI versions appear in the agent API (#257).** Before, the generated
+  reference pages were invisible to agents. Now every spec version has one
+  synthetic entry in `/api/index.json` (appended after the docs records, never
+  ranked) and a page payload at `/api/pages/<section>/<label>.json`, carrying
+  `released`, `rawDocumentUrl` and the raw document's `sha256`. Unreleased
+  versions are included and marked. The content graph and the OKF bundle carry
+  the versions too. See
+  [ADR-0078](docs/adr/0078-openapi-surface-matrix.md).
+
+- **`openapi.llmsOperations` lists operations in `llms.txt` (#258).** Before,
+  `llms.txt` carried only one line per version. Now, when you opt in with
+  `llmsOperations: true`, each version's raw document line is followed by one
+  indented line per operation, `  - METHOD /path: summary`. The option is off
+  by default, so an opting-out site's `llms.txt` is unchanged. Released
+  operation pages are also individual search results now, findable by summary,
+  method and path. The raw documents are served in `astro dev` too, so the
+  `llms.txt` lines and their checksums resolve while previewing, not only in a
+  built site.
+
+- **A version switcher on every OpenAPI page, and an archive input (#259).**
+  Before, the pages did not link to their siblings. Now every page carries a
+  dropdown of all versions, marking the current one and unreleased ones, as
+  plain links that work without scripts; from an operation page it targets the
+  same operation in the other version when it exists there. A new
+  `openapi.archive` option (`glob` + `labelPattern`) turns matched files, such
+  as tagged releases, into versions with labels derived from the file names.
+
+- **More OpenAPI input shapes, each published byte for byte (#260).** Before,
+  only a single self-contained OpenAPI 3.x file was accepted. Now a definition
+  with relative `$ref`s across local files is bundled and published as one
+  file (the published bytes are the bundle, so they match no single source
+  file), Swagger 2.0 documents are accepted with their original bytes
+  published, and a pinned `https` URL works via `specs[].url` + `sha256`,
+  fetched within bounded redirects, timeout and size, and cached under
+  `node_modules/.cache/doc-kitty/openapi/` for offline builds
+  (`openapi.offline` or `DOCKITTY_OFFLINE=1`). Every error starts with
+  `[dk-openapi]`, names the spec version and the cause, and redacts URL query
+  strings. Swagger 2.0 and remote documents must be self-contained: an
+  external `$ref` in either is refused, with the same ref-count bound as every
+  other input. See [ADR-0078](docs/adr/0078-openapi-surface-matrix.md) and
+  [the migration note](docs/migrations/0.6-to-0.7.md).
+
+- **Operators can let PlantUML fetch declared remote includes (#268).** Before,
+  every URL include failed the build under the hardened `SANDBOX` service. Now
+  `plantumlAllowExternal` (or `DK_PLANTUML_ALLOW_EXTERNAL`) accepts exactly
+  three values: unset (sandbox, the default, unchanged), a list of URL prefixes
+  (allowlist mode), or `internet`. The build prints the declared entries, and
+  `dockitty-assert-plantuml-no-remote-include` verifies that the running service
+  matches them. An entry must end in `/` and may not carry `:80/` or `:443/`.
+  Most sites need no change: bundled `<C4/...>` includes work in
+  the default sandbox. See [ADR-0074](docs/adr/0074-plantuml-external-include-opt-in.md)
+  and [Allowing external includes](docs/guides/consumer-setup.md#allowing-external-includes).
+
+- **Any MCP client can read a DocKitty site's published artifacts (#284).**
+  Before, an agent had to fetch and stitch `/api/index.json` and
+  `/api/pages/*.json` itself. Now the new `@spec-kitty/doc-kitty-mcp`
+  workspace package serves them over stdio: run `pnpm pack --filter
+  @spec-kitty/doc-kitty-mcp`, install the tarball, and launch
+  `doc-kitty-mcp --site <url>` or `--dir <dist>`. Registry publishing is
+  deferred, so the tarball is the supported form. Every site's `/api/*.json`
+  also gains `buildId` (to detect a torn read) and, on the index, `sections`.
+  A site that sets `links: { mcp: true }` advertises the wiring in
+  `_links.mcp` and `llms.txt`. See
+  [ADR-0073](docs/adr/0073-generic-mcp-server-over-published-artifacts.md) and
+  the [MCP server quickstart](docs/guides/mcp-server-quickstart.md).
+
+- **The footer links the site's machine entry points on every page.** Before, an agent had to know the paths of `llms.txt`, the agent API and the rest. Now a `Machine-readable` group lists each one the site serves, with or without a theme, and never one it doesn't. Set `footer: { machineEntryPoints: false }` to remove the group, or `{ label: '...' }` to rename it. The `<head>` RSS and `llms.txt` links follow what the site serves too, so a site with no `rss.xml` route no longer advertises one. A site that sets `starlight.head` now gets these links too, where its entries used to replace the toolkit's `head`; if it added its own RSS alternate, the page now has two.
+
+- **A group's title can be the link to its index page (#290).** Set `sidebar: { titleIsIndex: true }` and a generated sidebar group's label links to its index page, with no "Overview" entry below it, and a separate chevron opens and closes the group. A group with no index page keeps its plain toggle, and previous and next links are unchanged. The option is off by default, and with it off Starlight's own sidebar renders as before. It cannot be set together with `sidebar.indexLabel`. A sidebar you write yourself is not changed.
+
+- **Every published, dated page gets an Atom entry at `/api/pages/<id>.atom.xml`.** Before, a page had only a JSON record. Now the toolkit injects the route on every site, with nothing to mount, and builds a deterministic Atom entry document with the page's rendered HTML. A draft or a page with no `updated` or `generated.at` date gets none. Set `pageFormats: { atom: false }` to turn it off. A static host picks the response `Content-Type` from the `.xml` extension, so `type=entry` is guaranteed only in the link that points at the entry. A site with no `site` gets no entries and no Atom links, with one build warning, because an Atom `id` must be a stable absolute IRI. An `.mdx` page's entry has no `<content>`, a local image becomes its alt text, and characters XML 1.0 forbids are removed from Atom and RSS output. The `id` changes when the domain, `base` or slug changes.
+
+- **Each published page links its JSON, OKF and Atom versions, in the footer and the `<head>`.** A draft, a page outside the docs collection, or a page with `agent: { discoverable: false }` has none: that opt-out also hides the links (its `source` link stays, as that is for reading the file). Only the links go: the page's JSON, Atom and OKF files are still built and served. Set `repository: { provider, repo, branch, siteDir }` to add a `source` link to the page's file on GitHub, GitLab or Bitbucket; a generated page has none, and self-hosted instances are not supported. The links are pills under the spec-kitty theme and plain links without it.
+
+- **Pages and sections can show an icon in the sidebar (#293).** Set `sidebar.icon` on a page, or `icon` on a section in `sections.yaml` or a charter's `sections.entries`, to `fa-<name>` for Font Awesome's solid set or to the name of a Starlight built-in. A group takes its section's icon, or else its index page's. Only the icons you use reach the output, as inline SVG hidden from assistive technology, with no font file and no external request, and a page showing a Font Awesome icon carries one CC BY 4.0 licence comment. An unknown name fails the build and `validate-frontmatter`, naming the page or section. A site with no icons is unchanged. A sidebar you write yourself takes no icons, and the build warns once if any are authored.
+
+### Changed
+
+- **Unreleased OpenAPI versions leave the sitemap and search (#285).** Before,
+  the pages of every spec version were listed and indexed like any page. Now
+  the pages of a version with `released: false` are still built and served,
+  carry the "unreleased" badge and their agent entries, but are held back from
+  the sitemap and the search index: readers do not discover a contract that is
+  not out yet, agents still resolve it. A released version is unaffected.
+
+- **Metadata blocks start collapsed (#290).** Before, Who is this for, Related,
+  External references and Glossary links used always showed in full, and on a
+  page with several they pushed the content down. Now each starts closed behind a
+  control with its label and count, such as "Related (3)". They open by mouse or
+  keyboard, also with scripts off, start closed again on the next page, print
+  open, and stay in search. Set `metadataBlocks: { collapsed: false }` to keep them
+  open. See [ADR-0077](docs/adr/0077-shared-disclosure-control.md).
+
+- **Generated sidebar groups start closed (#290).** Before, the groups of the generated sidebar were open on every page, apart from any a site had set to collapse, such as the generated API groups. Now each starts closed, except the groups on the path to the current page, which Starlight opens by itself. Set `sidebar: { collapsed: false }` to keep the old sidebar exactly. A sidebar you write yourself is not changed.
+
+### Fixed
+
+- **The agent index no longer names a surface the site does not mount (#290).**
+  Before, `/api/index.json` linked `rss`, `bibliography`, `scenarios`, `llms` and
+  `sitemap`, and each record's `self`, unless the site turned the first four off
+  through `links`, so a site without one of those routes shipped a dangling link.
+  Now the toolkit detects the surfaces from the site's routes at their standard
+  paths, and `_links` follows that. `llms` follows the `llms.txt` route, and
+  `sitemap` needs both the sitemap and `site` to be set, so a build with no `site`
+  has no `sitemap` link. `IndexLinks.llms` and `IndexLinks.sitemap` are now
+  optional in the contract types. An explicit `links` value still wins for
+  `rss`, `bibliography`, `scenarios` and `pages`, which is how to link a route at
+  another path; `llms` and `sitemap` have no override.
+
 ## [0.6.0] — 2026-11-02
 
 ### Added
@@ -1476,7 +1617,8 @@ the feature-by-feature status and the decision records under
 - Build-time PlantUML rendering requires a PlantUML service (provided in CI); a
   local build without it skips PlantUML figures.
 
-[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.3.0...v0.4.0
