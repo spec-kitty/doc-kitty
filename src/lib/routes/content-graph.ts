@@ -33,19 +33,17 @@ function openApiGraphNodes(site: URL | undefined): GraphNode[] {
   const publication = readPublication(process.env[DK_OPENAPI_ENV]);
   if (!publication) return [];
   return publication.versions.map((version) => {
-    const node: GraphNode = {
+    return {
       id: `openapi:${version.label}`,
       kind: 'resource',
       title: flattenText(version.title),
       url: absolute(site, version.rawRoute),
-    };
-    return Object.assign(node, {
-      resource: {
+      openapi: {
         sha256: version.sha256,
         released: version.released,
         overview: absolute(site, routeOfSlug(`${publication.section}/${version.label}`)),
       },
-    });
+    };
   });
 }
 

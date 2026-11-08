@@ -133,6 +133,12 @@ export interface GraphNode {
   title?: string;
   description?: string;
   resource?: string;
+  /**
+   * An OpenAPI version node (`id` `openapi:<label>`, `kind` `resource`): the raw
+   * document's digest, whether the version is released, and the absolute URL of
+   * its overview page. Absent on every other node.
+   */
+  openapi?: { sha256: string; released: boolean; overview: string };
   tags?: string[];
   status?: 'draft' | 'stable' | 'deprecated';
   generated?: GraphStamp;
