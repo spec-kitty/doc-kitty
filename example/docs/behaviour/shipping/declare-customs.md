@@ -14,7 +14,7 @@ sources:
   - resource: "features/shipping/declare-customs.feature"
     title: "Gherkin source"
 generated:
-  by: "doc-kitty-gherkin/0.6.0"
+  by: "doc-kitty-gherkin/0.7.0"
   at: "2026-10-19T08:58:27Z"
   content_hash: "sha256:2c4e57f9ba43"
 ---
