@@ -152,6 +152,13 @@ export function twoBuilds(request: OpenApiFixtureRequest): {
 } {
   const first = buildOpenApiFixture(request, 'two-builds-1');
   const second = buildOpenApiFixture(request, 'two-builds-2');
+  // Check the status before reading `dist`: a failed build wrote none, and
+  // reading it would surface as ENOENT and hide the build's own output.
+  for (const [name, build] of [['first', first], ['second', second]] as const) {
+    if (build.status !== 0) {
+      throw new Error(`twoBuilds: the ${name} build failed (exit ${String(build.status)}):\n${build.output}`);
+    }
+  }
   return { first, second, a: readAll(first.dist), b: readAll(second.dist) };
 }
 
