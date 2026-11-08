@@ -56,6 +56,18 @@ const CHILD_MAX_BUFFER = 64 * 1024 * 1024;
 const REF_SCHEME = /^[A-Za-z][A-Za-z0-9+.-]*:/;
 
 /**
+ * Whether `target` lies outside `root`: segment-wise, so a sibling named
+ * `..shared.yaml` is inside while `../x.yaml` is not.
+ * @param {string} root
+ * @param {string} target
+ * @returns {boolean}
+ */
+function outside(root, target) {
+  const rel = path.relative(root, target);
+  return rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel);
+}
+
+/**
  * A path as shown in a message: relative to the site root when inside it.
  * @param {string} siteRoot
  * @param {string} absPath
@@ -192,7 +204,7 @@ function resolveTarget(ref, currentReal, root, entry) {
   }
   if (malformed) fail(`cannot resolve the $ref '${ref}' (malformed percent-encoding)`);
   const lexical = path.resolve(path.dirname(currentReal), decoded);
-  if (path.relative(root, lexical).startsWith('..')) {
+  if (outside(root, lexical)) {
     fail(`escapes the definition folder: the $ref '${ref}'`);
   }
   let real = '';
@@ -201,7 +213,7 @@ function resolveTarget(ref, currentReal, root, entry) {
   } catch {
     fail(`cannot resolve the $ref '${ref}'`);
   }
-  if (path.relative(root, real).startsWith('..')) {
+  if (outside(root, real)) {
     fail(`escapes the definition folder: the $ref '${ref}'`);
   }
   if (!isRegularFile(real)) fail(`cannot resolve the $ref '${ref}': not a regular file`);
@@ -485,7 +497,7 @@ function containedFileResolver(root) {
     read(file) {
       const target = file.url.startsWith('file:') ? fileURLToPath(file.url) : file.url;
       const real = realpathSync(target);
-      if (path.relative(root, real).startsWith('..')) {
+      if (outside(root, real)) {
         throw new Error(`${OPENAPI_LOG_PREFIX} the bundler child refused '${target}': it escapes the definition folder`);
       }
       if (!isRegularFile(real)) {

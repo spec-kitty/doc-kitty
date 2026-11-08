@@ -65,4 +65,14 @@ describe('bundle walk file handling', () => {
     expect(reads.filter((file) => file.endsWith('big.yaml'))).toEqual([]);
   });
 
+  it('accepts a sibling file whose name starts with two dots', () => {
+    writeFileSync(path.join(site, 'openapi', '..shared.yaml'), 'Pet:\n  type: object\n');
+    const [spec] = run('./..shared.yaml#/Pet');
+    expect(spec!.origin).toBe('bundle');
+  });
+
+  it('still rejects a ../ ref that leaves the definition folder', () => {
+    writeFileSync(path.join(site, 'x.yaml'), 'Pet:\n  type: object\n');
+    expect(() => run('../x.yaml#/Pet')).toThrow(/escapes the definition folder/);
+  });
 });
