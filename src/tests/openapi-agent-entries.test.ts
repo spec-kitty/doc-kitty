@@ -17,8 +17,10 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
-import { buildOpenApiFixture, readAll, removeOpenApiFixtureBuilds } from './helpers/openapi-build';
+import { buildOpenApiFixture, readAll, removeOpenApiFixtureBuilds, FIXTURES } from './helpers/openapi-build';
 import { DK_OPENAPI_ENV } from '../lib/internal-env.mjs';
 import type { OpenApiPublication } from '../lib/integrations/openapi-publish.js';
 
@@ -228,6 +230,49 @@ describe('openapi agent entries (mission openapi-second-slice-01M6WXJ4, WP03)', 
         expect(page.sha256).toBe(sidecar.slice(0, 64));
         expect(page.sha256).toBe(sha256(files.get(`reference/api/${label}/openapi.yaml`)!));
         expect(page.sha256).toMatch(/^[0-9a-f]{64}$/);
+      }
+    });
+  });
+
+  describe('the build identity folds the specs (#257)', () => {
+    let plain: Map<string, Buffer>;
+    let edited: Map<string, Buffer>;
+
+    beforeAll(() => {
+      const first = buildOpenApiFixture(TWO_VERSIONS, 'wp03-buildid');
+      expect(first.status, `astro build output:\n${first.output}`).toBe(0);
+      plain = readAll(first.dist);
+      // A spec-only change: the same site, the same docs corpus, one edited
+      // spec document (its info.version, so the sha256 of its bytes changes).
+      const changedSpec = readFileSync(path.join(FIXTURES, 'two-versions', 'v1.yaml'), 'utf8').replace(
+        'version: 1.0.0',
+        'version: 1.0.1',
+      );
+      const second = buildOpenApiFixture(
+        { ...TWO_VERSIONS, files: { 'openapi/v1.yaml': changedSpec } },
+        'wp03-buildid-edited',
+      );
+      expect(second.status, `astro build output:\n${second.output}`).toBe(0);
+      edited = readAll(second.dist);
+    }, 600_000);
+
+    const buildIdOf = (files: Map<string, Buffer>, key: string): string => json<{ buildId: string }>(files, key).buildId;
+
+    it('a spec-only change changes the buildId of the index and every page artifact', () => {
+      for (const key of ['api/index.json', 'api/pages/guides.json', 'api/pages/reference/api/v1.json']) {
+        expect(buildIdOf(plain, key), key).not.toBe(buildIdOf(edited, key));
+      }
+    });
+
+    it('within one build, the index, the docs pages and the synthetic pages agree on it', () => {
+      const index = buildIdOf(plain, 'api/index.json');
+      for (const key of [
+        'api/pages/home.json',
+        'api/pages/guides.json',
+        'api/pages/reference/api/v1.json',
+        'api/pages/reference/api/v2.json',
+      ]) {
+        expect(buildIdOf(plain, key), key).toBe(index);
       }
     });
   });

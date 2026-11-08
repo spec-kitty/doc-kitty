@@ -139,7 +139,8 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
     // entry — never only this page — so the value byte-equals the index and
     // scenarios stamps of the same build and a torn read is detectable. The
     // entry projection (slug via slugFromEntryId, body, validated frontmatter)
-    // is the SAME mapping agent-index/scenario-index apply.
+    // is the SAME mapping agent-index/scenario-index apply; the memoized helper
+    // folds the OpenAPI specs' identity through the shared seam (#257).
     const payload: AgentPagePayload = {
       ...record,
       source,
@@ -181,8 +182,9 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
  * The synthetic branch of {@link agentPageRoute}'s GET (WP03): the page
  * artifact of one OpenAPI spec version, built from the publication handoff
  * exactly as the index builds its record (the shared projection lives in
- * `agent-index.ts`, so the two cannot drift). The `buildId` is the
- * DOCS-corpus identity — the same value `agentIndexRoute` stamps — so the
+ * `agent-index.ts`, so the two cannot drift). The `buildId` is the same
+ * identity `agentIndexRoute` stamps — docs corpus plus the specs'
+ * (label, released, sha256) fold (`openApiStampConfig`, #257) — so the
  * index, the docs pages and the synthetic pages of one build all agree.
  */
 async function openApiResponse(

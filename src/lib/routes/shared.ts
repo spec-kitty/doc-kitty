@@ -8,11 +8,12 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 import { getCollection } from 'astro:content';
-import { DK_DOCS_ROOT_ENV } from '../internal-env.mjs';
+import { DK_DOCS_ROOT_ENV, DK_OPENAPI_ENV } from '../internal-env.mjs';
 import type { DocKittyFrontmatter, IndexBasenameOption } from '../metadata.js';
 import { isPublished, readmeToIndexId, slugFromEntryId } from '../metadata.js';
 import { toolkitVersion } from '../generator-stamp.mjs';
 import { withBase } from '../with-base.js';
+import { readPublication, type OpenApiPublication } from '../integrations/openapi-publish.js';
 
 /**
  * The minimal content-layer entry shape the docs-root resolver reads: the store
@@ -204,17 +205,28 @@ export function toBuildIdEntries(
  * same `getCollection('docs')` result repeatedly within one build (the
  * per-page route stamps every page artifact in one process). Keyed on the
  * SOURCE array identity (Astro's content layer returns one array instance per
- * build), projecting and hashing once per array. Never persists across
- * builds: a new collection result recomputes.
+ * build) AND the serialized OpenAPI stamp config, so a config re-evaluation
+ * that changes the specs (dev restart) recomputes instead of serving a stale
+ * identity. Never persists across builds: a new collection result recomputes.
  */
-const buildIdMemo = new WeakMap<ReadonlyArray<{ id: string; body?: string; data: unknown }>, string>();
+const buildIdMemo = new WeakMap<
+  ReadonlyArray<{ id: string; body?: string; data: unknown }>,
+  Map<string, string>
+>();
 export function memoizedBuildIdForEntries(
   entries: ReadonlyArray<{ id: string; body?: string; data: unknown }>,
 ): string {
-  const hit = buildIdMemo.get(entries);
+  const config = openApiStampConfig();
+  const configKey = config === undefined ? '' : stableSerialize(config);
+  let perArray = buildIdMemo.get(entries);
+  if (perArray === undefined) {
+    perArray = new Map();
+    buildIdMemo.set(entries, perArray);
+  }
+  const hit = perArray.get(configKey);
   if (hit !== undefined) return hit;
-  const value = buildIdForBuild(toBuildIdEntries(entries));
-  buildIdMemo.set(entries, value);
+  const value = buildIdForBuild(toBuildIdEntries(entries), config);
+  perArray.set(configKey, value);
   return value;
 }
 
@@ -246,6 +258,32 @@ export function stableSerialize(value: unknown): string {
 }
 
 /**
+ * The OpenAPI specs' identity fields, folded into the build identity when the
+ * `openapi` option is set (#257): each materialised version's `label`,
+ * `released` flag and `sha256`, in config order. The docs corpus alone cannot
+ * see a spec-only change, so without this fold two builds whose specs differ
+ * would stamp the same identity. `undefined` without the option (or with a
+ * malformed handoff), which leaves the stamp byte-identical to a site that
+ * never set it. Every stamp site goes through this ONE seam, so the index, the
+ * docs pages, the synthetic pages and the scenarios artifact keep agreeing on
+ * the value.
+ * @param publication The already-read publication, when the caller has it.
+ */
+export function openApiStampConfig(
+  publication?: OpenApiPublication,
+): Record<string, unknown> | undefined {
+  const resolved = publication ?? readPublication(process.env[DK_OPENAPI_ENV]);
+  if (!resolved) return undefined;
+  return {
+    openapi: resolved.versions.map((version) => ({
+      label: version.label,
+      released: version.released,
+      sha256: version.sha256,
+    })),
+  };
+}
+
+/**
  * The corpus build identity (FR-008): sha256 hex over a canonical
  * serialization of the build's SOURCE inputs — every entry's slug, body bytes
  * and serialized frontmatter — plus the generator-relevant `config` and the
@@ -263,12 +301,14 @@ export function stableSerialize(value: unknown): string {
  * contract (draft pages invisible apart from their own records/surfaces)
  * holds byte-exact for every artifact the stamp lands on.
  *
- * All three artifact routes call this over the SAME full-corpus projection and
- * stamp the ONE value, so a torn corpus read (index from build N, page from
- * build N+1) shows two different values. Route-local options (title, links
- * gating, ...) shape only that route's own emitted fields and are passed by
- * NO route today: folding one route's options into the stamp would tear the
- * three artifact kinds apart within a single build.
+ * All three artifact routes call this over the SAME full-corpus projection
+ * and stamp the ONE value, so a torn corpus read (index from build N, page
+ * from build N+1) shows two different values. Route-local options (title,
+ * links gating, ...) shape only that route's own emitted fields and are never
+ * passed here: folding one route's options into the stamp would tear the
+ * artifact kinds apart within a single build. The one config every stamp site
+ * DOES pass is the build-global OpenAPI stamp ({@link openApiStampConfig}):
+ * it names the materialised specs, not any route's own output shape.
  */
 export function buildIdForBuild(
   entries: readonly BuildIdEntry[],
