@@ -1,0 +1,489 @@
+{
+  "mission_slug": "openapi-second-slice-01M6WXJ4",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "FR-001: [WP03] one synthetic index entry per spec version",
+      "proof_type": "automated_test",
+      "evidence": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] one synthetic index entry per spec version -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] one synthetic index entry per spec version"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "FR-002: [WP03] page payload carries rawDocumentUrl, sha256, related, audience",
+      "proof_type": "automated_test",
+      "evidence": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] page payload carries rawDocumentUrl, sha256, related, audience -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] page payload carries rawDocumentUrl, sha256, related, audience"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "FR-003: [WP12] one resource node per version",
+      "proof_type": "automated_test",
+      "evidence": "WP12: tests/openapi-graph-okf.test.ts :: [WP12] one resource node per version -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP12: tests/openapi-graph-okf.test.ts :: [WP12] one resource node per version"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "FR-004: [WP12] one OKF file per version from the shared summary",
+      "proof_type": "automated_test",
+      "evidence": "WP12: tests/openapi-graph-okf.test.ts :: [WP12] one OKF file per version from the shared summary -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP12: tests/openapi-graph-okf.test.ts :: [WP12] one OKF file per version from the shared summary"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "FR-005: [WP03] corpus shape assertions pass on synthetic entries",
+      "proof_type": "automated_test",
+      "evidence": "WP03: mcp tests/corpus/openapi-entries.test.ts :: [WP03] corpus shape assertions pass on synthetic entries -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP03: mcp tests/corpus/openapi-entries.test.ts :: [WP03] corpus shape assertions pass on synthetic entries"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "FR-006: [WP02] every surface reads one materialised list",
+      "proof_type": "automated_test",
+      "evidence": "WP02: tests/openapi-materialise.test.ts :: [WP02] every surface reads one materialised list -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP02: tests/openapi-materialise.test.ts :: [WP02] every surface reads one materialised list"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "FR-007: [WP02] published bytes equal config-time bytes after source mutation",
+      "proof_type": "automated_test",
+      "evidence": "WP02: tests/openapi-raw-document.test.ts :: [WP02] published bytes equal config-time bytes after source mutation -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP02: tests/openapi-raw-document.test.ts :: [WP02] published bytes equal config-time bytes after source mutation"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "FR-008: [WP02] openapi flag false and absent from output without the option",
+      "proof_type": "automated_test",
+      "evidence": "WP02: tests/served-surfaces.test.ts :: [WP02] openapi flag false and absent from output without the option -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP02: tests/served-surfaces.test.ts :: [WP02] openapi flag false and absent from output without the option"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "FR-009: [WP06] broken link classes fail naming route and target",
+      "proof_type": "automated_test",
+      "evidence": "WP06: tests/openapi-link-check.test.ts :: [WP06] broken link classes fail naming route and target -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP06: tests/openapi-link-check.test.ts :: [WP06] broken link classes fail naming route and target"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "FR-010: [WP12] negative invariant: no glossary autolink markup in API pages",
+      "proof_type": "automated_test",
+      "evidence": "WP12: tests/openapi-exclusions.test.ts :: [WP12] negative invariant: no glossary autolink markup in API pages -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP12: tests/openapi-exclusions.test.ts :: [WP12] negative invariant: no glossary autolink markup in API pages"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "FR-011: [WP12] negative invariant: no RSS or Atom item for API pages or entries",
+      "proof_type": "automated_test",
+      "evidence": "WP12: tests/openapi-exclusions.test.ts :: [WP12] negative invariant: no RSS or Atom item for API pages or entries -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP12: tests/openapi-exclusions.test.ts :: [WP12] negative invariant: no RSS or Atom item for API pages or entries"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "FR-012: [WP12] negative invariant: frontmatter gate skips API routes; bad spec still fails",
+      "proof_type": "automated_test",
+      "evidence": "WP12: tests/openapi-exclusions.test.ts :: [WP12] negative invariant: frontmatter gate skips API routes; bad spec still fails -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP12: tests/openapi-exclusions.test.ts :: [WP12] negative invariant: frontmatter gate skips API routes; bad spec still fails"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "FR-013: [WP05] released operation searchable by summary, method, path",
+      "proof_type": "automated_test",
+      "evidence": "WP05: tests/openapi-indexing.test.ts :: [WP05] released operation searchable by summary, method, path -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP05: tests/openapi-indexing.test.ts :: [WP05] released operation searchable by summary, method, path"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "FR-014: [WP04] operation lines on; byte-identical off",
+      "proof_type": "automated_test",
+      "evidence": "WP04: tests/openapi-llms.test.ts :: [WP04] operation lines on; byte-identical off -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP04: tests/openapi-llms.test.ts :: [WP04] operation lines on; byte-identical off"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "FR-015: [WP05] unreleased pages absent from sitemap and pagefind",
+      "proof_type": "automated_test",
+      "evidence": "WP05: tests/openapi-indexing.test.ts :: [WP05] unreleased pages absent from sitemap and pagefind -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP05: tests/openapi-indexing.test.ts :: [WP05] unreleased pages absent from sitemap and pagefind"
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "FR-016: [WP04] dev serves build-identical raw documents",
+      "proof_type": "automated_test",
+      "evidence": "WP04: tests/openapi-dev.test.ts :: [WP04] dev serves build-identical raw documents -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP04: tests/openapi-dev.test.ts :: [WP04] dev serves build-identical raw documents"
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "FR-017: [WP07] switcher lands on same operation or overview",
+      "proof_type": "automated_test",
+      "evidence": "WP07: tests/openapi-switcher.test.ts :: [WP07] switcher lands on same operation or overview -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP07: tests/openapi-switcher.test.ts :: [WP07] switcher lands on same operation or overview"
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "FR-018: [WP08] three tagged files yield three versions",
+      "proof_type": "automated_test",
+      "evidence": "WP08: tests/openapi-archive.test.ts :: [WP08] three tagged files yield three versions -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP08: tests/openapi-archive.test.ts :: [WP08] three tagged files yield three versions"
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "FR-019: [WP09] multi-file bundled and published with sha256",
+      "proof_type": "automated_test",
+      "evidence": "WP09: tests/openapi-bundle.test.ts :: [WP09] multi-file bundled and published with sha256 -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP09: tests/openapi-bundle.test.ts :: [WP09] multi-file bundled and published with sha256"
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "FR-020: [WP09] Swagger 2 original bytes published",
+      "proof_type": "automated_test",
+      "evidence": "WP09: tests/openapi-bundle.test.ts :: [WP09] Swagger 2 original bytes published -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP09: tests/openapi-bundle.test.ts :: [WP09] Swagger 2 original bytes published"
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "FR-021: [WP10] pinned remote fetched, cached, offline",
+      "proof_type": "automated_test",
+      "evidence": "WP10: tests/openapi-remote.test.ts :: [WP10] pinned remote fetched, cached, offline -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP10: tests/openapi-remote.test.ts :: [WP10] pinned remote fetched, cached, offline"
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "FR-022: rejected-input matrix rows by owning WP",
+      "proof_type": "automated_test",
+      "evidence": "WP01: tests/openapi-seam.test.ts :: rejected-input matrix rows by owning WP -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP01: tests/openapi-seam.test.ts :: rejected-input matrix rows by owning WP"
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "FR-023: [WP02] explicit order and operation order; archive order in WP08 openapi-archive.test.ts",
+      "proof_type": "automated_test",
+      "evidence": "WP02: tests/openapi-materialise.test.ts :: [WP02] explicit order and operation order; archive order in WP08 openapi-archive.test.ts -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP02: tests/openapi-materialise.test.ts :: [WP02] explicit order and operation order; archive order in WP08 openapi-archive.test.ts"
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "FR-024: new ADR present; ADR-0049 unchanged",
+      "proof_type": "automated_test",
+      "evidence": "WP11: pnpm validate:adr-ids :: new ADR present; ADR-0049 unchanged -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP11: pnpm validate:adr-ids :: new ADR present; ADR-0049 unchanged"
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "FR-025: guide and architecture page",
+      "proof_type": "automated_test",
+      "evidence": "WP11: pnpm validate:docs :: guide and architecture page -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP11: pnpm validate:docs :: guide and architecture page"
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "FR-026: migration note and assert gate",
+      "proof_type": "automated_test",
+      "evidence": "WP11: pnpm assert:openapi :: migration note and assert gate -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP11: pnpm assert:openapi :: migration note and assert gate"
+    },
+    {
+      "criterion_id": "FR-027",
+      "description": "FR-027: five fragments",
+      "proof_type": "automated_test",
+      "evidence": "WP11: pnpm validate:changelog :: five fragments -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP11: pnpm validate:changelog :: five fragments"
+    },
+    {
+      "criterion_id": "FR-028",
+      "description": "FR-028: FR-028 rejected rows (WP08-WP10) and hostile-string escaping (WP03/04/07/12), dev traversal (WP04 openapi-dev.test.ts), dangerous schemes (WP06)",
+      "proof_type": "automated_test",
+      "evidence": "WP02: tests/openapi-seam.test.ts :: FR-028 rejected rows (WP08-WP10) and hostile-string escaping (WP03/04/07/12), dev traversal (WP04 openapi-dev.test.ts), dangerous schemes (WP06) -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP02: tests/openapi-seam.test.ts :: FR-028 rejected rows (WP08-WP10) and hostile-string escaping (WP03/04/07/12), dev traversal (WP04 openapi-dev.test.ts), dangerous schemes (WP06)"
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "NFR-001: two builds byte-identical",
+      "proof_type": "automated_test",
+      "evidence": "WP01: tests/openapi-seam.test.ts :: two builds byte-identical -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP01: tests/openapi-seam.test.ts :: two builds byte-identical"
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "NFR-002: negative invariant: arm A all-files compare, 0 changed files",
+      "proof_type": "automated_test",
+      "evidence": "WP01: consumption openapi-optin.test.ts :: negative invariant: arm A all-files compare, 0 changed files -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP01: consumption openapi-optin.test.ts :: negative invariant: arm A all-files compare, 0 changed files"
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "NFR-003: every rejected row starts [dk-openapi], no renderer frame",
+      "proof_type": "automated_test",
+      "evidence": "WP01: tests/openapi-seam.test.ts :: every rejected row starts [dk-openapi], no renderer frame -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP01: tests/openapi-seam.test.ts :: every rejected row starts [dk-openapi], no renderer frame"
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "NFR-004: [WP03] ops-1 and ops-200 add one entry each",
+      "proof_type": "automated_test",
+      "evidence": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] ops-1 and ops-200 add one entry each -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] ops-1 and ops-200 add one entry each"
+    },
+    {
+      "criterion_id": "NFR-005",
+      "description": "NFR-005: axe overview, operation, fallback, both themes",
+      "proof_type": "automated_test",
+      "evidence": "WP07: tests/a11y/openapi.spec.ts :: axe overview, operation, fallback, both themes -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP07: tests/a11y/openapi.spec.ts :: axe overview, operation, fallback, both themes"
+    },
+    {
+      "criterion_id": "NFR-006",
+      "description": "NFR-006: 0 broken links root and based",
+      "proof_type": "automated_test",
+      "evidence": "WP06: assert-no-broken-links.mjs :: 0 broken links root and based -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP06: assert-no-broken-links.mjs :: 0 broken links root and based"
+    },
+    {
+      "criterion_id": "NFR-007",
+      "description": "NFR-007: [WP03] sha256 equals served bytes; dev in WP04",
+      "proof_type": "automated_test",
+      "evidence": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] sha256 equals served bytes; dev in WP04 -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] sha256 equals served bytes; dev in WP04"
+    },
+    {
+      "criterion_id": "NFR-008",
+      "description": "NFR-008: [WP10] offline warm 0 requests, identical output",
+      "proof_type": "automated_test",
+      "evidence": "WP10: tests/openapi-remote.test.ts :: [WP10] offline warm 0 requests, identical output -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP10: tests/openapi-remote.test.ts :: [WP10] offline warm 0 requests, identical output"
+    },
+    {
+      "criterion_id": "SC-001",
+      "description": "SC-001: [WP03] contract verified in 2 GETs",
+      "proof_type": "automated_test",
+      "evidence": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] contract verified in 2 GETs -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] contract verified in 2 GETs"
+    },
+    {
+      "criterion_id": "SC-002",
+      "description": "SC-002: [WP12] same label and sha256 across surfaces",
+      "proof_type": "automated_test",
+      "evidence": "WP12: tests/openapi-graph-okf.test.ts :: [WP12] same label and sha256 across surfaces -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP12: tests/openapi-graph-okf.test.ts :: [WP12] same label and sha256 across surfaces"
+    },
+    {
+      "criterion_id": "SC-003",
+      "description": "SC-003: [WP07] same-operation mapping with and without scripts",
+      "proof_type": "automated_test",
+      "evidence": "WP07: tests/openapi-switcher.test.ts :: [WP07] same-operation mapping with and without scripts -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP07: tests/openapi-switcher.test.ts :: [WP07] same-operation mapping with and without scripts"
+    },
+    {
+      "criterion_id": "SC-004",
+      "description": "SC-004: negative invariant: arm A unchanged",
+      "proof_type": "automated_test",
+      "evidence": "WP01: consumption openapi-optin.test.ts :: negative invariant: arm A unchanged -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP01: consumption openapi-optin.test.ts :: negative invariant: arm A unchanged"
+    },
+    {
+      "criterion_id": "C-001",
+      "description": "C-001: [WP03] no per-operation entries",
+      "proof_type": "automated_test",
+      "evidence": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] no per-operation entries -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP03: tests/openapi-agent-entries.test.ts :: [WP03] no per-operation entries"
+    },
+    {
+      "criterion_id": "C-002",
+      "description": "C-002: ADR-0049 and index untouched",
+      "proof_type": "automated_test",
+      "evidence": "WP11: pnpm validate:adr-ids :: ADR-0049 and index untouched -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP11: pnpm validate:adr-ids :: ADR-0049 and index untouched"
+    },
+    {
+      "criterion_id": "C-003",
+      "description": "C-003: CHANGELOG.md untouched",
+      "proof_type": "automated_test",
+      "evidence": "WP11: pnpm validate:changelog :: CHANGELOG.md untouched -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP11: pnpm validate:changelog :: CHANGELOG.md untouched"
+    },
+    {
+      "criterion_id": "C-004",
+      "description": "C-004: out-of-scope issues untouched",
+      "proof_type": "manual_review",
+      "evidence": "approved WP review cycle; WP01: review :: out-of-scope issues untouched -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP01: review :: out-of-scope issues untouched"
+    },
+    {
+      "criterion_id": "C-005",
+      "description": "C-005: no API page fetches the spec",
+      "proof_type": "automated_test",
+      "evidence": "WP01: tests/openapi-static-output.test.ts :: no API page fetches the spec -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP01: tests/openapi-static-output.test.ts :: no API page fetches the spec"
+    },
+    {
+      "criterion_id": "C-006",
+      "description": "C-006: parser pinned 4.1.2",
+      "proof_type": "automated_test",
+      "evidence": "WP09: pnpm install --frozen-lockfile :: parser pinned 4.1.2 -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP09: pnpm install --frozen-lockfile :: parser pinned 4.1.2"
+    },
+    {
+      "criterion_id": "C-007",
+      "description": "C-007: [WP02] slugs match renderer 0.27.0 routes",
+      "proof_type": "automated_test",
+      "evidence": "WP02: tests/openapi-materialise.test.ts :: [WP02] slugs match renderer 0.27.0 routes -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP02: tests/openapi-materialise.test.ts :: [WP02] slugs match renderer 0.27.0 routes"
+    },
+    {
+      "criterion_id": "C-008",
+      "description": "C-008: trust model recorded in ADR",
+      "proof_type": "automated_test",
+      "evidence": "WP11: pnpm validate:docs :: trust model recorded in ADR -- green on tmp/openapi-integration@c5c85a6 full verification (toolkit 4179 tests, mcp, consumption, cold build+asserts, a11y, validators, typecheck, lint)",
+      "pass_fail": "pass",
+      "verified_by": "claude:claude-opus-5-5:orchestrator",
+      "verified_at": "2026-11-08T17:15:22.663241+00:00",
+      "notes": "WP11: pnpm validate:docs :: trust model recorded in ADR"
+    }
+  ],
+  "negative_invariants": []
+}

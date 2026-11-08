@@ -1,0 +1,124 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-08T06:29:43.839789Z",
+      "decision_id": "01M6WXJERZHEWA8G71WWM5PSTC",
+      "final_answer": "Publish bundled single file + sha256",
+      "input_key": "bundled_raw_contract",
+      "mission_id": "01M6WXJ4E2RKW9D2VDTS6BHYZN",
+      "mission_slug": "openapi-second-slice-01M6WXJ4",
+      "opened_by": "cli",
+      "options": [
+        "Publish bundled single file + sha256",
+        "Copy source tree + per-file sha256",
+        "Both"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "For a multi-file spec, what is the published raw document?",
+      "rationale": null,
+      "resolved_at": "2026-11-08T06:40:03.785752Z",
+      "resolved_by": null,
+      "slot_key": "specify.inputs.bundled-raw-contract",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-08T06:29:46.462913Z",
+      "decision_id": "01M6WXJHAYCWN84J37ZQZTZEF2",
+      "final_answer": "Pinned sha256 required, cache, offline uses cache else fail",
+      "input_key": "remote_fetch_policy",
+      "mission_id": "01M6WXJ4E2RKW9D2VDTS6BHYZN",
+      "mission_slug": "openapi-second-slice-01M6WXJ4",
+      "opened_by": "cli",
+      "options": [
+        "Pinned sha256 required, cache, offline uses cache else fail",
+        "Pinned sha256, no cache, always fetch",
+        "Defer remote URLs"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "How are remote spec URLs fetched, cached and handled offline?",
+      "rationale": null,
+      "resolved_at": "2026-11-08T06:40:05.043028Z",
+      "resolved_by": null,
+      "slot_key": "specify.inputs.remote-fetch-policy",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-08T06:29:48.980148Z",
+      "decision_id": "01M6WXJKSMH5CXDMP9X0V8P2E4",
+      "final_answer": "Glob pattern",
+      "input_key": "archive_input_shape",
+      "mission_id": "01M6WXJ4E2RKW9D2VDTS6BHYZN",
+      "mission_slug": "openapi-second-slice-01M6WXJ4",
+      "opened_by": "cli",
+      "options": [
+        "Glob pattern",
+        "Directory",
+        "Both"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "What input shape declares a tagged-release archive?",
+      "rationale": null,
+      "resolved_at": "2026-11-08T06:40:06.299931Z",
+      "resolved_by": null,
+      "slot_key": "specify.versions.archive-input",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-08T06:29:51.495331Z",
+      "decision_id": "01M6WXJP87X7QTK5SGMQ1F6PJS",
+      "final_answer": "Yes, marked unreleased",
+      "input_key": "unreleased_agent_entries",
+      "mission_id": "01M6WXJ4E2RKW9D2VDTS6BHYZN",
+      "mission_slug": "openapi-second-slice-01M6WXJ4",
+      "opened_by": "cli",
+      "options": [
+        "Yes, marked unreleased",
+        "No, excluded like sitemap"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Do unreleased versions get agent API entries?",
+      "rationale": null,
+      "resolved_at": "2026-11-08T06:40:07.564439Z",
+      "resolved_by": null,
+      "slot_key": "specify.agent.unreleased-entries",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-08T06:29:54.025929Z",
+      "decision_id": "01M6WXJRQ9QZA76NK8C775C413",
+      "final_answer": "Same operation if present else overview",
+      "input_key": "switch_target",
+      "mission_id": "01M6WXJ4E2RKW9D2VDTS6BHYZN",
+      "mission_slug": "openapi-second-slice-01M6WXJ4",
+      "opened_by": "cli",
+      "options": [
+        "Same operation if present else overview",
+        "Always overview"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Where does the version switcher land?",
+      "rationale": null,
+      "resolved_at": "2026-11-08T06:40:08.823028Z",
+      "resolved_by": null,
+      "slot_key": "specify.versions.switch-target",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M6WXJ4E2RKW9D2VDTS6BHYZN",
+  "version": 1
+}
