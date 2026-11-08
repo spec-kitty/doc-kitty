@@ -3,7 +3,7 @@ okf_version: "0.2"
 title: Architecture
 description: "How the toolkit turns a Common Docs tree into a site plus feeds and an agent-API: the current design."
 doc_status: active
-updated: 2026-10-13T00:00:00Z
+updated: 2026-11-08T00:00:00Z
 type: Architecture
 kind: Hub
 agent:
@@ -61,6 +61,10 @@ page:
 - [Gherkin feature pages](./gherkin-pages.md) — how the opt-in `gherkin` preset
   generates `Specification` pages from `.feature` files: the codegen seam,
   ownership and pruning, determinism, and the `--check` drift gate.
+- [OpenAPI pages](./openapi-pages.md) — how the opt-in `openapi` option
+  materialises spec versions once and projects them onto every surface: the
+  source registry, the raw-document publisher, the synthetic agent entries,
+  and the gates that pin them.
 
 ## Build and delivery
 

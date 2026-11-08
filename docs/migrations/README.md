@@ -3,7 +3,7 @@ okf_version: "0.2"
 title: Migrations
 description: Version-to-version migration guides for adopters of the DocKitty toolkit.
 doc_status: active
-updated: 2026-11-03T00:00:00Z
+updated: 2026-11-08T00:00:00Z
 type: Migration
 kind: Hub
 agent:
@@ -22,8 +22,10 @@ before and after for every entry.
 - [Keeping .html URLs when moving from DocFX](./legacy-html-urls.md): map
   every old `.html` URL to its new directory URL with `legacyHtmlRedirects`,
   and gate it in CI.
-- [0.6.0 to 0.7.0](./0.6-to-0.7.md): if you run the PlantUML include check with
-  `--service-container`, fix the service setups it now fails.
+- [0.6.0 to 0.7.0](./0.6-to-0.7.md): fix the PlantUML service setups the
+  include check now fails, and the OpenAPI changes — dotted labels refused,
+  unreleased versions leave the sitemap and search, new agent entries and
+  opt-in keys.
 - [0.4.0 to 0.5.0](./0.4-to-0.5.md): add `kind` to every page, or relax it
   in the charter.
 - [0.3 to 0.4](./0.3-to-0.4.md): move to Astro 7, Starlight 0.42 and Node
