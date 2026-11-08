@@ -1,22 +1,29 @@
 // @ts-check
 /**
- * The `openapi` option (mission openapi-reference-pages, FR-001/FR-007).
+ * The `openapi` option (mission openapi-reference-pages, FR-001/FR-007; second
+ * slice WP02: the full static shape of contracts/config-options.md).
  *
- * `normaliseOpenApiOptions` validates the option eagerly and returns the shape the
- * integration publishes from. It is pure apart from reading the spec files, and it
- * never imports `starlight-openapi`: the adopter imports it and passes it as
- * `renderer`, and only a structural check runs here (the version
- * marker, the top-level objects, no reference to another file). Deep schema
- * validation stays with the renderer.
+ * `normaliseOpenApiOptions` validates everything that needs no filesystem or
+ * network: types, the label rule, `https`-only remote URLs with their pinned
+ * sha256, the archive's glob and labelPattern, and the flags. It never reads a
+ * file — reading, parsing and the structural check moved to
+ * `materialise.mjs` (WP02), which runs it at config time and returns the one
+ * materialised list every surface reads. `normaliseOpenApiOptions` also never
+ * imports `starlight-openapi`: the adopter imports it and passes it as
+ * `renderer`, and the check that it is a function runs LAST, after the specs.
  *
- * Every error starts with `[dk-openapi]` and names the entry by index and label.
- * Errors about a file also name the file.
+ * `parseDocument` stays here (the build assertions import it): the `yaml`
+ * package's parse, with the FR-028 alias limit applied on demand. A marked
+ * error (`dkOpenApiAliasLimit`) reports an over-limit document so a caller can
+ * tell "too many aliases" from "cannot parse".
+ *
+ * Every error starts with `[dk-openapi]` and names the entry by index and
+ * label; a URL is echoed with its query string redacted.
  *
  * Pure ESM with JSDoc types and no `.d.ts`, like `gherkin/options.mjs`.
  */
-import { readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
-import matter from 'gray-matter';
+import { isAlias, isMap, isPair, isSeq, parseDocument as parseYamlDocument } from 'yaml';
 
 /** Prefix of every error this module throws. */
 export const OPENAPI_LOG_PREFIX = '[dk-openapi]';
@@ -30,14 +37,37 @@ export const RESERVED_OPENAPI_ROOT = 'api';
 /** The characters a label (or a section segment) may use, after lower-casing (research R6). */
 const SAFE_SEGMENT = /^[a-z0-9._-]+$/;
 
+/**
+ * The characters a version label may use: a segment rule without the dot.
+ * The pinned renderer slugifies page routes and drops dots (`v1.1` routes as
+ * `v11`), so a dotted label would advertise an address the site does not
+ * serve; the archive source enforces the same rule on derived labels
+ * (maintainer decision 2026-11-08; ADR-0078).
+ */
+const ROUTE_SAFE_LABEL = /^[a-z0-9_-]+$/;
+
 /** File extensions the raw document may have, as published in `openapi.<ext>`. */
 const EXTENSIONS = ['yaml', 'yml', 'json'];
 
+/** The shape of a pinned digest. */
+const SHA256 = /^[0-9a-f]{64}$/;
+
 /**
  * @typedef {object} ApiVersion
- * @property {string} path Path relative to the site root.
+ * @property {string} [path] Local file, `.yaml`/`.yml`/`.json`. Exactly one of
+ *   `path` and `url` is required.
+ * @property {string} [url] Remote document, `https://` only; requires `sha256`.
+ * @property {string} [sha256] 64 lowercase hex: required with `url`, an
+ *   optional pin with `path` (verified at materialisation).
  * @property {string} label Lower-cased label; names the version's address.
  * @property {boolean} released Required; an unreleased version carries a badge.
+ */
+
+/**
+ * @typedef {object} OpenApiArchiveOptions
+ * @property {string} glob Site-root-relative; no `..`, never absolute.
+ * @property {string} labelPattern Compiles, and has exactly one capturing group.
+ * @property {boolean} [released] Defaults to true.
  */
 
 /**
@@ -45,28 +75,107 @@ const EXTENSIONS = ['yaml', 'yml', 'json'];
  * @property {(config: any) => any} renderer Required: the `starlight-openapi` default
  *   export, imported by the adopter (`import starlightOpenAPI from 'starlight-openapi'`).
  * @property {string} [section] Mount point; defaults to {@link DEFAULT_OPENAPI_SECTION}.
- * @property {ApiVersion[]} specs At least one version.
+ * @property {ApiVersion[]} [specs] At least one version unless `archive` is set.
+ * @property {OpenApiArchiveOptions} [archive] Scans a folder for versions (WP08).
+ * @property {boolean} [llmsOperations] Default false (FR-014).
+ * @property {boolean} [offline] Default: `process.env.DOCKITTY_OFFLINE === '1'`.
  */
 
 /**
- * @typedef {object} NormalisedApiVersion
- * @property {string} path The path as given.
- * @property {string} absPath The path resolved against the site root.
+ * @typedef {object} NormalisedSpecInput
+ * @property {'file' | 'remote'} kind
  * @property {string} label The lower-cased label.
  * @property {boolean} released
- * @property {string} ext Extension of the file (`yaml`, `yml` or `json`), no dot.
+ * @property {string} ext Extension of the document (`yaml`, `yml` or `json`), no dot.
+ * @property {string} [path] The path as given (`file`).
+ * @property {string} [absPath] The path resolved against the site root (`file`).
+ * @property {string} [url] As given (`remote`).
+ * @property {string} [sha256] The optional pin (`file`) or the required digest (`remote`).
+ */
+
+/**
+ * @typedef {object} NormalisedArchiveOptions
+ * @property {string} glob
+ * @property {string} labelPattern
+ * @property {boolean} released
  */
 
 /**
  * @typedef {object} NormalisedOpenApiOptions
  * @property {(config: any) => any} renderer The adopter's renderer factory.
  * @property {string} section Validated, without leading or trailing slash.
- * @property {NormalisedApiVersion[]} specs In the order given.
+ * @property {NormalisedSpecInput[]} specs In the order given (FR-023).
+ * @property {NormalisedArchiveOptions | undefined} archive
+ * @property {boolean} llmsOperations
+ * @property {boolean} offline
  */
 
 /** @param {unknown} value @returns {value is Record<string, unknown>} */
 function isRecord(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** A URL as quoted in a message: its query string redacted (`?…`). */
+const redactUrl = (/** @type {string} */ url) => (url.includes('?') ? `${url.slice(0, url.indexOf('?'))}?…` : url);
+
+/**
+ * Count the alias nodes of a parsed document's tree. The `yaml` package's own
+ * alias guard catches only exponential bombs, so the FR-028 count is walked
+ * here; an alias node counts once and is not resolved.
+ * @param {unknown} node
+ * @returns {number}
+ */
+function countAliases(node) {
+  if (node === null || typeof node !== 'object') return 0;
+  if (isAlias(node)) return 1;
+  if (isMap(node)) {
+    let total = 0;
+    for (const pair of node.items) {
+      if (isPair(pair)) total += countAliases(pair.key) + countAliases(pair.value);
+    }
+    return total;
+  }
+  if (isSeq(node)) {
+    let total = 0;
+    for (const item of node.items) total += countAliases(item);
+    return total;
+  }
+  return 0;
+}
+
+/** An over-limit document, marked so a caller can tell it from a parse failure. */
+function aliasLimitError(/** @type {string} */ message) {
+  const error = new Error(message);
+  /** @type {Error & { dkOpenApiAliasLimit?: boolean }} */ (error).dkOpenApiAliasLimit = true;
+  return error;
+}
+
+/**
+ * Parse YAML or JSON text into a plain value (JSON is YAML). Throws the
+ * parser's first error on a bad document, or a marked alias error when the
+ * document carries more than `maxAliasCount` aliases (FR-028).
+ * @param {string} text
+ * @param {{ maxAliasCount?: number }} [options]
+ * @returns {unknown}
+ */
+export function parseDocument(text, options = {}) {
+  const doc = parseYamlDocument(text);
+  if (doc.errors.length > 0) {
+    const failure = doc.errors[0];
+    // The parser flags some alias abuse itself; report it under the alias limit,
+    // not as an unparsable document.
+    if (/alias/i.test(String(failure.message))) {
+      throw aliasLimitError(`the document's YAML aliases are too many: ${failure.message}`);
+    }
+    throw failure;
+  }
+  if (options.maxAliasCount !== undefined) {
+    const count = countAliases(doc.contents);
+    if (count > options.maxAliasCount) {
+      throw aliasLimitError(`the document carries ${count} YAML aliases, over the limit of ${options.maxAliasCount}`);
+    }
+  }
+  return doc.toJS();
 }
 
 /**
@@ -91,122 +200,99 @@ function normaliseSection(raw) {
 }
 
 /**
- * The first `$ref` that points at another file, as a JSON pointer-ish path.
- * @param {unknown} node
- * @param {string} where
- * @returns {string | undefined}
+ * Validate the fields every `specs` entry shares: `label` (non-empty, then the
+ * dot-free route-safe rule after lower-casing) and the required `released`
+ * flag.
+ * @param {Record<string, unknown>} spec
+ * @param {string} name The index ref (`specs[i]`), for the first message.
+ * @returns {{ label: string; released: boolean; entry: string }} The
+ *   lower-cased label, the flag, and the labelled ref the rest of the
+ *   entry's messages use.
  */
-function findExternalRef(node, where = '') {
-  if (Array.isArray(node)) {
-    for (const [i, child] of node.entries()) {
-      const hit = findExternalRef(child, `${where}/${i}`);
-      if (hit) return hit;
-    }
-  } else if (isRecord(node)) {
-    for (const [key, child] of Object.entries(node)) {
-      if (key === '$ref' && typeof child === 'string' && !child.startsWith('#')) {
-        return `${where}/$ref -> ${child}`;
-      }
-      const hit = findExternalRef(child, `${where}/${key}`);
-      if (hit) return hit;
-    }
-  }
-  return undefined;
-}
-
-/**
- * Parse YAML or JSON text. gray-matter (js-yaml) is already a dependency; wrapping
- * the text in a collision-proof frontmatter delimiter parses bare YAML (and JSON,
- * which YAML includes).
- * @param {string} text
- * @returns {unknown}
- */
-export function parseDocument(text) {
-  const delimiter = '~~~DK-OPENAPI-YAML~~~';
-  return matter(`${delimiter}\n${text}\n${delimiter}`, { delimiters: delimiter }).data;
-}
-
-/**
- * Structural check of a parsed document; throws a reason (no prefix) on failure.
- * @param {unknown} doc
- */
-function checkDocument(doc) {
-  if (!isRecord(doc)) throw new Error('the file is not an OpenAPI document (expected a mapping)');
-  if (typeof doc.swagger === 'string') {
-    throw new Error(`Swagger ${doc.swagger} is not supported: OpenAPI 3.x required (3.0 or 3.1)`);
-  }
-  const version = doc.openapi;
-  if (typeof version !== 'string' || !/^3\.[01](\.|$)/.test(version)) {
-    throw new Error(
-      `not OpenAPI 3.0 or 3.1 (found openapi: ${JSON.stringify(version)}); 3.x required`,
-    );
-  }
-  if (!isRecord(doc.info)) throw new Error('"info" must be an object');
-  if (!['paths', 'webhooks', 'components'].some((k) => isRecord(doc[k]))) {
-    throw new Error('one of "paths", "webhooks" or "components" must be an object');
-  }
-  const external = findExternalRef(doc);
-  if (external) {
-    throw new Error(
-      `references another file (${external}); a single self-contained document is required`,
-    );
-  }
-}
-
-/**
- * Read and check one spec file; returns nothing, throws `[dk-openapi]` errors.
- * @param {string} entry `specs[i] "label"`
- * @param {string} specPath As given, for messages.
- * @param {string} absPath
- */
-function checkSpecFile(entry, specPath, absPath) {
-  const fail = (/** @type {string} */ why) =>
-    new Error(`${OPENAPI_LOG_PREFIX} ${entry}: ${why} (${specPath})`);
-  let text;
-  try {
-    if (!statSync(absPath).isFile()) throw new Error('not a file');
-    text = readFileSync(absPath, 'utf8');
-  } catch {
-    throw fail('cannot read the file');
-  }
-  if (text.trim() === '') throw fail('the file is empty');
-  let doc;
-  try {
-    doc = parseDocument(text);
-  } catch (error) {
-    throw fail(`cannot parse as YAML or JSON: ${/** @type {Error} */ (error).message.split('\n')[0]}`);
-  }
-  try {
-    checkDocument(doc);
-  } catch (error) {
-    throw fail(/** @type {Error} */ (error).message);
-  }
-}
-
-/**
- * Validate one `specs` entry's own fields (not the file).
- * @param {unknown} spec
- * @param {number} index
- * @param {string} siteRoot
- * @returns {NormalisedApiVersion}
- */
-function normaliseSpec(spec, index, siteRoot) {
-  const name = `specs[${index}]`;
-  if (!isRecord(spec)) throw new Error(`${OPENAPI_LOG_PREFIX} ${name}: must be an object`);
-  const { path: specPath, label: rawLabel, released } = spec;
+function normaliseLabel(spec, name) {
+  const { label: rawLabel, released } = spec;
   if (typeof rawLabel !== 'string' || rawLabel === '') {
     throw new Error(`${OPENAPI_LOG_PREFIX} ${name}: "label" is required`);
   }
   const label = rawLabel.toLowerCase();
   const entry = `${name} "${rawLabel}"`;
-  if (!SAFE_SEGMENT.test(label) || label === '.' || label === '..') {
+  if (label.includes('.')) {
     throw new Error(
-      `${OPENAPI_LOG_PREFIX} ${entry}: label may use only a-z, 0-9, ".", "_" and "-" (after lower-casing)`,
+      `${OPENAPI_LOG_PREFIX} ${entry}: label may not contain "." (the renderer drops dots from routes); use a hyphen instead, for example "v1-1"`,
+    );
+  }
+  if (!ROUTE_SAFE_LABEL.test(label)) {
+    throw new Error(
+      `${OPENAPI_LOG_PREFIX} ${entry}: label may use only a-z, 0-9, "_" and "-" (after lower-casing)`,
     );
   }
   if (typeof released !== 'boolean') {
     throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: "released" is required and must be true or false`);
   }
+  return { label, released, entry };
+}
+
+/**
+ * Validate a digest's shape: 64 lowercase hex characters.
+ * @param {string} entry
+ * @param {unknown} sha256
+ * @param {string} suffix The message's trailing context (empty for a file pin).
+ */
+function normaliseSha256(entry, sha256, suffix) {
+  if (typeof sha256 !== 'string' || !SHA256.test(sha256)) {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: "sha256" must be 64 lowercase hex characters${suffix}`);
+  }
+}
+
+/**
+ * Validate a remote spec entry (static only: nothing is fetched). The url must
+ * be `https` without userinfo and end in a known extension, and carry a
+ * well-formed required sha256.
+ * @param {string} entry
+ * @param {unknown} url
+ * @param {unknown} sha256
+ * @param {{ label: string; released: boolean }} shared
+ * @returns {NormalisedSpecInput}
+ */
+function normaliseRemoteSpec(entry, url, sha256, { label, released }) {
+  if (typeof url !== 'string' || url === '') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: "url" must be a string`);
+  }
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: "url" must be a valid URL (${redactUrl(url)})`);
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: https is required for a remote spec (${redactUrl(url)})`);
+  }
+  if (parsed.username !== '' || parsed.password !== '') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: userinfo is not allowed in a remote spec url (${redactUrl(url)})`);
+  }
+  const ext = path.extname(parsed.pathname).slice(1).toLowerCase();
+  if (!EXTENSIONS.includes(ext)) {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: the url must end in .yaml, .yml or .json (${redactUrl(url)})`);
+  }
+  if (typeof sha256 !== 'string' || sha256 === '') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: sha256 is required for a remote spec (${redactUrl(url)})`);
+  }
+  normaliseSha256(entry, sha256, ` (${redactUrl(url)})`);
+  return { kind: 'remote', label, released, ext, url, sha256 };
+}
+
+/**
+ * Validate a local file spec entry (static only: no file is read). The path
+ * must end in a known extension and may carry an optional sha256 pin, checked
+ * at materialisation.
+ * @param {string} entry
+ * @param {unknown} specPath
+ * @param {unknown} sha256
+ * @param {string} siteRoot
+ * @param {{ label: string; released: boolean }} shared
+ * @returns {NormalisedSpecInput}
+ */
+function normaliseFileSpec(entry, specPath, sha256, siteRoot, { label, released }) {
   if (typeof specPath !== 'string' || specPath === '') {
     throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: "path" is required`);
   }
@@ -216,14 +302,91 @@ function normaliseSpec(spec, index, siteRoot) {
       `${OPENAPI_LOG_PREFIX} ${entry}: the file must end in .yaml, .yml or .json (${specPath})`,
     );
   }
-  const absPath = path.resolve(siteRoot, specPath);
-  checkSpecFile(entry, specPath, absPath);
-  return { path: specPath, absPath, label, released, ext };
+  if (sha256 !== undefined) {
+    normaliseSha256(entry, sha256, '');
+  }
+  return {
+    kind: 'file',
+    path: specPath,
+    absPath: path.resolve(siteRoot, specPath),
+    label,
+    released,
+    ext,
+    ...(sha256 === undefined ? {} : { sha256 }),
+  };
 }
 
 /**
- * Validate and normalise the `openapi` option. Throws `[dk-openapi] …` on the first
- * problem; returns the section and the checked versions otherwise.
+ * Validate one `specs` entry's own fields (static only: no file is read): the
+ * shared shape, then exactly one of the `path` and `url` forms, each validated
+ * by its own helper.
+ * @param {unknown} spec
+ * @param {number} index
+ * @param {string} siteRoot
+ * @returns {NormalisedSpecInput}
+ */
+function normaliseSpec(spec, index, siteRoot) {
+  const name = `specs[${index}]`;
+  if (!isRecord(spec)) throw new Error(`${OPENAPI_LOG_PREFIX} ${name}: must be an object`);
+  const { path: specPath, url, sha256 } = spec;
+  const { label, released, entry } = normaliseLabel(spec, name);
+  const hasPath = specPath !== undefined;
+  const hasUrl = url !== undefined;
+  if (hasPath === hasUrl) {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: exactly one of "path" and "url" is required`);
+  }
+  if (hasUrl) {
+    return normaliseRemoteSpec(entry, url, sha256, { label, released });
+  }
+  return normaliseFileSpec(entry, specPath, sha256, siteRoot, { label, released });
+}
+
+/**
+ * Validate the `archive` option's own fields (static only: no folder is scanned).
+ * @param {unknown} raw
+ * @returns {NormalisedArchiveOptions}
+ */
+function normaliseArchive(raw) {
+  if (!isRecord(raw)) throw new Error(`${OPENAPI_LOG_PREFIX} "archive" must be an object`);
+  const { glob, labelPattern, released = true } = raw;
+  if (typeof glob !== 'string' || glob === '') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} "archive".glob is required`);
+  }
+  const ref = `archive ${JSON.stringify(glob)}`;
+  if (path.isAbsolute(glob) || glob.split(/[\\/]/).includes('..')) {
+    throw new Error(
+      `${OPENAPI_LOG_PREFIX} ${ref}: archive glob must be relative to the site root and stay inside it (${glob})`,
+    );
+  }
+  if (typeof labelPattern !== 'string' || labelPattern === '') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${ref}: "archive".labelPattern is required`);
+  }
+  try {
+    new RegExp(labelPattern);
+  } catch {
+    throw new Error(
+      `${OPENAPI_LOG_PREFIX} ${ref}: labelPattern must compile as a regular expression (${labelPattern})`,
+    );
+  }
+  // `pattern|` also matches the empty string through the added empty branch, so
+  // a successful match's array length is 1 + the pattern's capturing-group count.
+  if (new RegExp(`${labelPattern}|`).exec('')?.length !== 2) {
+    throw new Error(
+      `${OPENAPI_LOG_PREFIX} ${ref}: labelPattern must have exactly one capturing group (${labelPattern})`,
+    );
+  }
+  if (typeof released !== 'boolean') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} ${ref}: "archive"."released" must be true or false`);
+  }
+  return { glob, labelPattern, released };
+}
+
+/**
+ * Validate and normalise the `openapi` option — every check that needs no
+ * filesystem or network. Throws `[dk-openapi] …` on the first problem; the
+ * renderer check runs last. Reading and checking the documents themselves is
+ * `materialiseOpenApiSpecs`'s (materialise.mjs), which config.ts runs right
+ * after this, before any plugin is built.
  * @param {unknown} raw The option as the adopter wrote it.
  * @param {{ siteRoot: string }} context `path` entries resolve against `siteRoot`.
  * @returns {NormalisedOpenApiOptions}
@@ -231,13 +394,18 @@ function normaliseSpec(spec, index, siteRoot) {
 export function normaliseOpenApiOptions(raw, { siteRoot }) {
   if (!isRecord(raw)) throw new Error(`${OPENAPI_LOG_PREFIX} the openapi option must be an object`);
   const section = normaliseSection(raw.section);
-  const { renderer } = raw;
-  if (!Array.isArray(raw.specs) || raw.specs.length === 0) {
-    throw new Error(`${OPENAPI_LOG_PREFIX} "specs" must list at least one version`);
+  const { renderer, specs, archive } = raw;
+  // At least one version must result from specs plus archive (contracts/config-options.md).
+  if (archive === undefined) {
+    if (!Array.isArray(specs) || specs.length === 0) {
+      throw new Error(`${OPENAPI_LOG_PREFIX} "specs" must list at least one version (or set "archive")`);
+    }
+  } else if (specs !== undefined && !Array.isArray(specs)) {
+    throw new Error(`${OPENAPI_LOG_PREFIX} "specs" must be an array`);
   }
   /** @type {Map<string, number>} */
   const seen = new Map();
-  const specs = raw.specs.map((spec, index) => {
+  const normalisedSpecs = (specs ?? []).map((spec, index) => {
     const normalised = normaliseSpec(spec, index, siteRoot);
     const first = seen.get(normalised.label);
     if (first !== undefined) {
@@ -248,10 +416,23 @@ export function normaliseOpenApiOptions(raw, { siteRoot }) {
     seen.set(normalised.label, index);
     return normalised;
   });
+  if (raw.llmsOperations !== undefined && typeof raw.llmsOperations !== 'boolean') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} "llmsOperations" must be true or false`);
+  }
+  if (raw.offline !== undefined && typeof raw.offline !== 'boolean') {
+    throw new Error(`${OPENAPI_LOG_PREFIX} "offline" must be true or false`);
+  }
   if (typeof renderer !== 'function') {
     throw new Error(
       `${OPENAPI_LOG_PREFIX} "renderer" is required: add import starlightOpenAPI from 'starlight-openapi' to astro.config and pass renderer: starlightOpenAPI`,
     );
   }
-  return { renderer: /** @type {(config: any) => any} */ (renderer), section, specs };
+  return {
+    renderer: /** @type {(config: any) => any} */ (renderer),
+    section,
+    specs: normalisedSpecs,
+    archive: archive === undefined ? undefined : normaliseArchive(archive),
+    llmsOperations: raw.llmsOperations === true,
+    offline: raw.offline === undefined ? process.env.DOCKITTY_OFFLINE === '1' : raw.offline,
+  };
 }

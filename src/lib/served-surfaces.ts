@@ -22,18 +22,22 @@ export type ServedSurfaces = Record<keyof typeof SURFACE_ROUTES, boolean> & {
   sitemap: boolean;
   /** Its integration is always added, and the bundle has an `okf/index.md`. */
   okf: true;
+  /** The `openapi` option is set: the reference pages are served (WP02). */
+  openapi: boolean;
 };
 
 /**
  * @param patterns the site's route patterns, without the base
  * @param siteConfigured whether `config.site` is set
+ * @param openapi whether the `openapi` option is set (route detection cannot
+ *   see the renderer's injected routes, so the option says it)
  */
-export function detectServedSurfaces(patterns: string[], siteConfigured: boolean): ServedSurfaces {
+export function detectServedSurfaces(patterns: string[], siteConfigured: boolean, openapi = false): ServedSurfaces {
   const routes = new Set(patterns);
   const detected = Object.fromEntries(
     Object.entries(SURFACE_ROUTES).map(([surface, pattern]) => [surface, routes.has(pattern)]),
   ) as Record<keyof typeof SURFACE_ROUTES, boolean>;
-  return { ...detected, sitemap: siteConfigured, okf: true };
+  return { ...detected, sitemap: siteConfigured, okf: true, openapi };
 }
 
 let cached: { raw: string; surfaces: ServedSurfaces } | undefined;

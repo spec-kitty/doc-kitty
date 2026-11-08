@@ -12,12 +12,16 @@ import { detectServedSurfaces } from '../served-surfaces.js';
  * routes change, and in a real build a second time from content sync's temporary
  * server (the logged order is routes:resolved, config:done, routes:resolved,
  * build:start): each overwrites the value rather than adding to it.
+ *
+ * @param openapi whether the `openapi` option is set (WP02): the renderer's
+ *   injected routes are invisible to route detection, so the option says it.
  */
-export function servedSurfacesIntegration(): AstroIntegration {
+export function servedSurfacesIntegration(openapi = false): AstroIntegration {
   let patterns: string[] | undefined;
   let siteConfigured = false;
   const publish = () => {
-    if (patterns) setInternalEnv(DK_SERVED_SURFACES_ENV, JSON.stringify(detectServedSurfaces(patterns, siteConfigured)));
+    if (patterns)
+      setInternalEnv(DK_SERVED_SURFACES_ENV, JSON.stringify(detectServedSurfaces(patterns, siteConfigured, openapi)));
   };
   return {
     name: 'doc-kitty:served-surfaces',

@@ -38,6 +38,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Parcel'
+  /parcels/{parcelId}:
+    delete:
+      operationId: deleteParcel
+      summary: Delete a parcel
+      tags: [parcels]
+      parameters:
+        - name: parcelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The parcel is deleted.
+        '404':
+          description: No parcel has this id.
 components:
   schemas:
     ParcelInput:

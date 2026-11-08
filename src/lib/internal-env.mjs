@@ -48,7 +48,12 @@ export const DK_MARKUA_ENV = 'DK_MARKUA';
  */
 export const DK_EXCLUDE_ENV = 'DK_EXCLUDE';
 
-/** JSON `{ section, versions: [{ label, released, ext }] }` of the `openapi` option; absent without it. */
+/**
+ * JSON `OpenApiPublication` (`{ section, llmsOperations, versions: [{ label,
+ * released, ext, sha256, title, apiVersion, operations, rawRoute }] }`) of the
+ * `openapi` option; absent without it. Written from the materialised list (WP02),
+ * so the llms.txt route never re-reads a file.
+ */
 export const DK_OPENAPI_ENV = 'DK_OPENAPI';
 
 /**
@@ -63,8 +68,10 @@ export const DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV = 'DK_PLANTUML_ALLOW_EXTERN
 export const DK_CHROME_OPTIONS_ENV = 'DK_CHROME_OPTIONS';
 
 /**
- * JSON `ServedSurfaces`: what the site serves, detected from its resolved routes.
- * Absent until `astro:routes:resolved` fires, so "absent" means detection has not run.
+ * JSON `ServedSurfaces`: what the site serves, detected from its resolved routes,
+ * with the `openapi` flag carried from the option (its routes are injected, not
+ * walked). Absent until `astro:routes:resolved` fires, so "absent" means detection
+ * has not run.
  */
 export const DK_SERVED_SURFACES_ENV = 'DK_SERVED_SURFACES';
 
