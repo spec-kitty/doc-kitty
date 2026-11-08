@@ -32,7 +32,7 @@ unchanged; its text and the ADR index are untouched.
 ## Context
 
 ADR-0049 accepted `starlight-openapi` for the reference pages and recorded
-which site surfaces saw them. The second OpenAPI slice (#285, sub-issues #257,
+which site surfaces saw them. The second OpenAPI slice (#285, sub-issues #257
 to #260) closed the gaps: synthetic agent entries, per-operation
 search, the version switcher, the tagged-release archive, multi-file and remote
 inputs, and the unreleased-version publication rules. Epic issue #257 originally
@@ -62,8 +62,10 @@ synthetic entry on the agent surfaces, projected once and shared:
   `/api/pages/<slug>.json` come from **one** projection function, so they
   cannot drift.
 - Entries are **appended after** the docs records, never ranked among them,
-  and the docs-only `buildId` is unchanged by them: index, docs pages and
-  synthetic pages keep agreeing on it.
+  and they leave the docs ranking alone. A site without `openapi` keeps a
+  byte-identical `buildId`. With `openapi`, each version's label, released
+  flag and `sha256` are folded into the stamp, so the `buildId` changes when
+  a spec changes; index, docs pages and synthetic pages keep agreeing on it.
 - An unreleased version gets an entry too, marked `released: false` (and
   "(unreleased)" in its title). It stays out of the sitemap and search
   (decision 4 below); the agent surfaces carry it because an agent resolving
@@ -184,7 +186,7 @@ it with a pointed message instead of silently serving the wrong address).
 ### Rank the synthetic entries among the docs records
 
 Rejected. A spec version is not a docs page: it has no author, no frontmatter
-and no section ordering. Appending keeps the docs ranking and `buildId`
+and no section ordering. Appending keeps the docs ranking
 untouched.
 
 ### Sanitise the renderer's HTML
