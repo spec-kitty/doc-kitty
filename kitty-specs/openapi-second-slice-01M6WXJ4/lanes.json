@@ -1,0 +1,277 @@
+{
+  "version": 1,
+  "mission_slug": "openapi-second-slice-01M6WXJ4",
+  "mission_id": "01M6WXJ4E2RKW9D2VDTS6BHYZN",
+  "mission_branch": "kitty/mission-openapi-second-slice-01M6WXJ4",
+  "target_branch": "feat/openapi-second-slice",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "example/astro.config.mjs",
+        "example/openapi/**",
+        "src/scripts/assert-openapi-artifacts.mjs",
+        "src/tests/fixtures/openapi/**",
+        "src/tests/helpers/openapi-build.ts",
+        "src/tests/openapi-seam.test.ts",
+        "src/tests/openapi-static-output.test.ts",
+        "tests/consumption/openapi-optin.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/integrations/openapi-publish.ts",
+        "src/lib/integrations/served-surfaces.ts",
+        "src/lib/internal-env.mjs",
+        "src/lib/openapi/adapters.ts",
+        "src/lib/openapi/cache.mjs",
+        "src/lib/openapi/limits.mjs",
+        "src/lib/openapi/materialise.mjs",
+        "src/lib/openapi/operations.mjs",
+        "src/lib/openapi/options.mjs",
+        "src/lib/openapi/route-middleware.ts",
+        "src/lib/openapi/summary.mjs",
+        "src/lib/served-surfaces.ts",
+        "src/tests/openapi-integration.test.ts",
+        "src/tests/openapi-materialise.test.ts",
+        "src/tests/openapi-options.test.ts",
+        "src/tests/openapi-raw-document.test.ts",
+        "src/tests/openapi-summary.test.ts",
+        "src/tests/served-surfaces.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "mcp/tests/corpus/openapi-entries.test.ts",
+        "src/lib/routes/agent-index.ts",
+        "src/lib/routes/agent-page.ts",
+        "src/tests/openapi-agent-entries.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/integrations/openapi-dev.ts",
+        "src/lib/openapi/llms.ts",
+        "src/lib/routes/llms-txt.ts",
+        "src/tests/openapi-dev.test.ts",
+        "src/tests/openapi-llms.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/openapi/indexing.ts",
+        "src/tests/openapi-indexing.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/lib/integrations/openapi-link-check.ts",
+        "src/tests/openapi-link-check.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "src/components/OpenApiVersionNav.astro",
+        "src/lib/openapi/switcher.ts",
+        "src/styles/dk-openapi.css",
+        "src/tests/openapi-switcher.test.ts",
+        "tests/a11y/openapi.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "src/lib/openapi/archive.mjs",
+        "src/tests/openapi-archive.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "pnpm-lock.yaml",
+        "src/lib/openapi/bundle.mjs",
+        "src/package.json",
+        "src/tests/openapi-bundle.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "src/lib/openapi/remote.mjs",
+        "src/tests/helpers/https-stub.ts",
+        "src/tests/openapi-remote.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "src/lib/okf-export/conformance.mjs",
+        "src/lib/okf-export/core.mjs",
+        "src/lib/okf-export/integration.ts",
+        "src/lib/routes/content-graph.ts",
+        "src/tests/openapi-exclusions.test.ts",
+        "src/tests/openapi-graph-okf.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "docs/adr/*-openapi-surface-matrix.md",
+        "docs/architecture/openapi-pages.md",
+        "docs/changelog/unreleased/257-openapi-agent-entries.md",
+        "docs/changelog/unreleased/258-openapi-llms-operations.md",
+        "docs/changelog/unreleased/259-openapi-version-switcher.md",
+        "docs/changelog/unreleased/260-openapi-inputs.md",
+        "docs/changelog/unreleased/285-openapi-unreleased-unindexed.md",
+        "docs/guides/openapi-reference.md",
+        "docs/migrations/0.6-to-0.7.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h",
+        "lane-i",
+        "lane-j",
+        "lane-k"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-11-08T07:41:12.369662+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP11"
+  ],
+  "planning_commit_sha": "c3fd6a2f02a4fa02ba77bfa0b09f8236a0751183"
+}

@@ -1,0 +1,213 @@
+{
+  "event_count": 121,
+  "last_event_id": "01M6Y35T8D0ZKVDXZAAJVNYJWK",
+  "materialized_at": "2026-11-08T17:26:55.501072+00:00",
+  "mission_number": "",
+  "mission_slug": "openapi-second-slice-01M6WXJ4",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 12,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/glm-5.3:implementer",
+      "force_count": 2,
+      "implementer_of_record": "opencode:tokenfactory/glm-5.3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35JADJW7Z8785MMSGD5XM",
+      "last_transition_at": "2026-11-08T17:26:47.373582+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP01:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 2540398,
+      "shell_pid_created_at": "1794125143.42"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/glm-5.3:implementer",
+      "force_count": 8,
+      "implementer_of_record": "opencode:tokenfactory/glm-5.3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35K1TENR1NFTFE452S5B6",
+      "last_transition_at": "2026-11-08T17:26:48.122685+00:00",
+      "review_result": {
+        "reference": "fec0dce",
+        "reviewer": "claude:claude-opus-5-5:reviewer",
+        "verdict": "approved"
+      },
+      "shell_pid": 1453047,
+      "shell_pid_created_at": "1794146362.89"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/glm-5.3:implementer",
+      "force_count": 4,
+      "implementer_of_record": "opencode:tokenfactory/glm-5.3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35KQR2MH4N6XW2EHACH39",
+      "last_transition_at": "2026-11-08T17:26:48.824488+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP03:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 1817295,
+      "shell_pid_created_at": "1794148501.3"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/deepseek-v4.1-flash-1017:implementer",
+      "force_count": 2,
+      "implementer_of_record": "opencode:tokenfactory/deepseek-v4.1-flash-1017:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35MEFD5H5X7SD0EM5JJME",
+      "last_transition_at": "2026-11-08T17:26:49.551446+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP04:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 1222215,
+      "shell_pid_created_at": "1794144053.83"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/deepseek-v4.1-flash-1017:implementer",
+      "force_count": 2,
+      "implementer_of_record": "opencode:tokenfactory/deepseek-v4.1-flash-1017:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35N5C0FBB6WY8M6CB971Z",
+      "last_transition_at": "2026-11-08T17:26:50.285017+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP05:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 1222215,
+      "shell_pid_created_at": "1794144053.83"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/kimi-k3:implementer",
+      "force_count": 2,
+      "implementer_of_record": "opencode:tokenfactory/kimi-k3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35NWG441BYWJRGXA0GGMW",
+      "last_transition_at": "2026-11-08T17:26:51.024128+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP06:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 1269653,
+      "shell_pid_created_at": "1794144707.31"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/glm-5.3:implementer",
+      "force_count": 4,
+      "implementer_of_record": "opencode:tokenfactory/glm-5.3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35PKAR2YMWYRSC3MBVCNY",
+      "last_transition_at": "2026-11-08T17:26:51.754818+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP07:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 2529453,
+      "shell_pid_created_at": "1794151288.27"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/deepseek-v4.1-flash-1017:implementer",
+      "force_count": 2,
+      "implementer_of_record": "opencode:tokenfactory/deepseek-v4.1-flash-1017:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35QB8TK2MVY45HAGWGCG0",
+      "last_transition_at": "2026-11-08T17:26:52.520225+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP08:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 1400201,
+      "shell_pid_created_at": "1794145893.94"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/glm-5.3:implementer",
+      "force_count": 4,
+      "implementer_of_record": "opencode:tokenfactory/glm-5.3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35R2E18MEY33TGF9YVJE9",
+      "last_transition_at": "2026-11-08T17:26:53.262174+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP09:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 2319297,
+      "shell_pid_created_at": "1794150660.27"
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/kimi-k3:implementer",
+      "force_count": 2,
+      "implementer_of_record": "opencode:tokenfactory/kimi-k3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35RSKMF4E40TD43KSZCBJ",
+      "last_transition_at": "2026-11-08T17:26:54.003406+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP10:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 1817295,
+      "shell_pid_created_at": "1794148501.3"
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/glm-5.3:implementer",
+      "force_count": 5,
+      "implementer_of_record": "opencode:tokenfactory/glm-5.3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35T8D0ZKVDXZAAJVNYJWK",
+      "last_transition_at": "2026-11-08T17:26:55.501072+00:00",
+      "review_result": {
+        "reference": "c5c85a6",
+        "reviewer": "claude:claude-opus-5-5:reviewer",
+        "verdict": "approved"
+      },
+      "shell_pid": 3896715,
+      "shell_pid_created_at": "1794157690.25"
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "opencode:tokenfactory/kimi-k3:implementer",
+      "force_count": 4,
+      "implementer_of_record": "opencode:tokenfactory/kimi-k3:implementer",
+      "lane": "done",
+      "last_event_id": "01M6Y35SGWWXF0YPQ2MTHJEGD0",
+      "last_transition_at": "2026-11-08T17:26:54.748840+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP12:20261108",
+        "reviewer": "spec-kitty auto-rebase",
+        "verdict": "approved"
+      },
+      "shell_pid": 2096725,
+      "shell_pid_created_at": "1794150056.24"
+    }
+  }
+}

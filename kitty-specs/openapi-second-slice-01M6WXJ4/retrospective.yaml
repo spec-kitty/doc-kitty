@@ -1,0 +1,404 @@
+schema_version: 1
+mission_id: 01M6WXJ4E2RKW9D2VDTS6BHYZN
+mission_slug: openapi-second-slice-01M6WXJ4
+mission_number: 20
+friendly_name: OpenAPI pages, second slice
+mission_type: software-dev
+target_branch: feat/openapi-second-slice
+created_at: '2026-11-08T17:26:58.619573+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-11-08T17:26:58.619573+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-007
+  category: doc
+  summary: analysis-report.md present with no recorded findings
+  evidence_refs:
+  - e-036
+  details: An analysis-report.md artifact is present and its frontmatter records zero findings with a resolved verdict —
+    the analysis raised nothing.
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-002
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-003
+  category: implementation
+  summary: WP05 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-004
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-005
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-006
+  category: implementation
+  summary: WP10 completed without rejection cycles
+  evidence_refs:
+  - e-017
+not_helpful:
+- id: n-007
+  category: process
+  summary: WP01 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-024
+  details: WP WP01 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-008
+  category: process
+  summary: WP02 required 6 --force override(s) during workflow
+  evidence_refs:
+  - e-025
+  details: WP WP02 required 6 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-009
+  category: process
+  summary: WP03 required 3 --force override(s) during workflow
+  evidence_refs:
+  - e-026
+  details: WP WP03 required 3 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-010
+  category: process
+  summary: WP04 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-027
+  details: WP WP04 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-011
+  category: process
+  summary: WP05 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-028
+  details: WP WP05 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-012
+  category: process
+  summary: WP06 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-029
+  details: WP WP06 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-013
+  category: process
+  summary: WP07 required 3 --force override(s) during workflow
+  evidence_refs:
+  - e-030
+  details: WP WP07 required 3 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-014
+  category: process
+  summary: WP08 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-031
+  details: WP WP08 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-015
+  category: process
+  summary: WP09 required 3 --force override(s) during workflow
+  evidence_refs:
+  - e-032
+  details: WP WP09 required 3 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-016
+  category: process
+  summary: WP10 required 2 --force override(s) during workflow
+  evidence_refs:
+  - e-033
+  details: WP WP10 required 2 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-017
+  category: process
+  summary: WP11 required 4 --force override(s) during workflow
+  evidence_refs:
+  - e-034
+  details: WP WP11 required 4 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-018
+  category: process
+  summary: WP12 required 3 --force override(s) during workflow
+  evidence_refs:
+  - e-035
+  details: WP WP12 required 3 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP02 required 2 rejection cycle(s) before approval
+  evidence_refs:
+  - e-018
+  details: WP WP02 was sent back to an earlier lane with documented review feedback 2 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP03 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-019
+  details: WP WP03 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP07 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-020
+  details: WP WP07 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP09 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-021
+  details: WP WP09 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-005
+  category: review_loop
+  summary: WP11 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-022
+  details: WP WP11 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-006
+  category: review_loop
+  summary: WP12 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-023
+  details: WP WP12 was sent back to an earlier lane with documented review feedback 1 time(s).
+- id: n-023
+  category: tooling
+  summary: 'Tracer: [2026-11-08][plan] Dev raw documents via Connect middleware.'
+  evidence_refs:
+  - e-038
+  details: '- **[2026-11-08][plan] Dev raw documents via Connect middleware.** Same materialised bytes as the build (research
+    R3).'
+- id: n-019
+  category: tooling
+  summary: 'Tracer: [2026-11-08][plan] Materialise once at config time.'
+  evidence_refs:
+  - e-037
+  details: '- **[2026-11-08][plan] Materialise once at config time.** Every OpenAPI surface reads one `MaterialisedSpec[]`
+    computed in `defineDocKittyIntegrations`; bytes stay in the integration closure and metadata goes through the `DK_OPENAPI`
+    env (plan.md, research R1).'
+- id: n-020
+  category: tooling
+  summary: 'Tracer: [2026-11-08][plan] Red-first test seam.'
+  evidence_refs:
+  - e-037
+  details: '- **[2026-11-08][plan] Red-first test seam.** WP01 lands failing fixtures and assertions that later WPs flip green,
+    following the page-chrome lesson on late goldens.'
+- id: n-024
+  category: tooling
+  summary: 'Tracer: [2026-11-08][plan] Synthetic entries use existing vocabulary.'
+  evidence_refs:
+  - e-038
+  details: '- **[2026-11-08][plan] Synthetic entries use existing vocabulary.** `type: reference`, `kind: Reference`, `doc_status:
+    active`, explicit `released`; graph node kind `resource` (research R10, R11).'
+- id: n-022
+  category: tooling
+  summary: 'Tracer: [2026-11-08][plan] Unreleased search exclusion via the getPageProps splice.'
+  evidence_refs:
+  - e-038
+  details: '- **[2026-11-08][plan] Unreleased search exclusion via the getPageProps splice.** `pagefind: false` in the spliced
+    frontmatter, so Starlight drops `data-pagefind-body` (research R2).'
+- id: n-025
+  category: tooling
+  summary: 'Tracer: [2026-11-08][plan] setup-plan commits only plan.md.'
+  evidence_refs:
+  - e-039
+  details: '- **[2026-11-08][plan] setup-plan commits only plan.md.** research.md, data-model.md, contracts/ and quickstart.md
+    needed a manual commit after the second `setup-plan` call. Workaround: committed them separately.'
+- id: n-026
+  category: tooling
+  summary: 'Tracer: [2026-11-08][plan] upgrade check could not detect the install method.'
+  evidence_refs:
+  - e-039
+  details: '- **[2026-11-08][plan] upgrade check could not detect the install method.** `spec-kitty upgrade --agent-check`
+    returned guidance only; no action taken.'
+- id: n-021
+  category: tooling
+  summary: 'Tracer: [2026-11-08][spec] Maintainer decisions 1-5 and rulings R1-R21.'
+  evidence_refs:
+  - e-038
+  details: '- **[2026-11-08][spec] Maintainer decisions 1-5 and rulings R1-R21.** Bundled raw document, pinned remote with
+    cache, archive glob with label pattern, unreleased entries kept on agent surfaces, same-operation switch target. Not reopened.'
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP01-red-first-test-seam.md
+- id: e-006
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP02-materialised-spec-list.md
+- id: e-007
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP03-agent-index-pages.md
+- id: e-008
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP04-llms-operations-dev-raw-docs.md
+- id: e-009
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP05-unreleased-unindexed.md
+- id: e-010
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP06-api-link-check.md
+- id: e-011
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP07-version-switcher.md
+- id: e-012
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP08-archive-glob.md
+- id: e-013
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP09-bundling-swagger2.md
+- id: e-014
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP10-remote-with-cache.md
+- id: e-015
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP11-adr-docs-changelog.md
+- id: e-016
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/tasks/WP12-graph-okf-exclusions.md
+- id: e-017
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+- id: e-018
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XMDWJTKZ14DWKMBBAY9E87..01M6XQ9WF967SP6F5B33NQ40J5
+- id: e-019
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XRMK2ANJH5R0CFFP2TWNCM
+- id: e-020
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XVZF475SWXVRGPJHEZD9S5
+- id: e-021
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XVCBBJXR2HBCJGSYM4EDAJ
+- id: e-022
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6Y22YK65EYAQ3CDQTP3QXAY
+- id: e-023
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XTSZA5XRJ27CES5223ABDS
+- id: e-024
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XBVNTPK6D4ZYKAY2KZBC0N..01M6XC4JZGMJP6KRFWNEKS7676
+- id: e-025
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XM7H616PVTHVT662QT7ZJ2..01M6Y2KHJPSWFCFVQKKR6HZQSD
+- id: e-026
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XR16BWGKA4X5GYDV5PXB0S..01M6XVE5VWPD3ZHFTWFKS49ZGA
+- id: e-027
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XNPRK0VQH1WHTZVXZARH0Y..01M6XNVT9GG4WW0RPJESKDRKFM
+- id: e-028
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XPTRF9PYK073H47NZPCBJY..01M6XQ8MZA9KP7TSWJ6M2ZHM16
+- id: e-029
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XVXX2KT5NVNGKNZ04EJ7FV..01M6XWDN75XZRM7J728CEKC3WV
+- id: e-030
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XVBHVP8XFTBP6YKR41HX3P..01M6XXX76M1H2N06HBJ7HJ6NVK
+- id: e-031
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XR4YCT2X50982SP7P471KJ..01M6XRJE1H4MT1RMDZYANRYZMR
+- id: e-032
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XTQHBS2YCKATCDXJKWNS2B..01M6XXCHHZFSQ6MYRMDZGJCR1R
+- id: e-033
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XWM0DQD0GKQHPE92DM2NQP..01M6XX71DK9RP161FX4J56Z5V8
+- id: e-034
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6Y1KX2HHX3GG04GY7X2VGE0..01M6Y2KP16TWMRNB90D7WTVN03
+- id: e-035
+  kind: event_range
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/status.events.jsonl
+  range: 01M6XT4FRPYDC8N735MCKJPXZ4..01M6XW5FZ0B5E8BN9FAZYHHSFA
+- id: e-036
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/analysis-report.md
+- id: e-037
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/traces/approach.md
+- id: e-038
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/traces/design-decisions.md
+- id: e-039
+  kind: file
+  path: kitty-specs/openapi-second-slice-01M6WXJ4/traces/tooling-friction.md
+generator_version: '1.0'
+provenance_history: []

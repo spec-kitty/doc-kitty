@@ -1,0 +1,161 @@
+{
+  "rows": {
+    "#150": {
+      "evidence_ref": "Context only: Adjacent, out of scope.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#150",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#244": {
+      "evidence_ref": "Context only: First slice; context only.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#244",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#257": {
+      "evidence_ref": "feat/openapi-second-slice@0be7411; full suite 4179 green; approved review cycles",
+      "fr": "FR-001,FR-002,FR-003,FR-004,FR-005,FR-009,FR-010,FR-011,FR-012",
+      "nfr": "NFR-004,NFR-007",
+      "repo": null,
+      "sc": "SC-001,SC-002",
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "OpenAPI pages: cover them in the agent API, content graph, OKF, MCP corpus, glossary, frontmatter gate and link checks",
+      "verdict": "fixed",
+      "wp": "WP03"
+    },
+    "#258": {
+      "evidence_ref": "feat/openapi-second-slice@0be7411; full suite 4179 green; approved review cycles",
+      "fr": "FR-013,FR-014",
+      "nfr": "NFR-001",
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "OpenAPI pages: per-operation search and an llms.txt operation summary",
+      "verdict": "fixed",
+      "wp": "WP04"
+    },
+    "#259": {
+      "evidence_ref": "feat/openapi-second-slice@0be7411; full suite 4179 green; approved review cycles",
+      "fr": "FR-017,FR-018",
+      "nfr": "NFR-005",
+      "repo": null,
+      "sc": "SC-003",
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "OpenAPI pages: version dropdown and a tagged-release archive",
+      "verdict": "fixed",
+      "wp": "WP07"
+    },
+    "#260": {
+      "evidence_ref": "feat/openapi-second-slice@0be7411; full suite 4179 green; approved review cycles",
+      "fr": "FR-019,FR-020,FR-021,FR-022",
+      "nfr": "NFR-003,NFR-008",
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "OpenAPI pages: accept multi-file $ref, Swagger 2 and remote spec URLs",
+      "verdict": "fixed",
+      "wp": "WP09"
+    },
+    "#265": {
+      "evidence_ref": "Context only: Adjacent; should land first.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#265",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#280": {
+      "evidence_ref": "Context only: Adjacent, out of scope (C-004).",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#280",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#281": {
+      "evidence_ref": "Context only: Adjacent, out of scope; entry shape keeps growth O(versions).",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#281",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#285": {
+      "evidence_ref": "feat/openapi-second-slice@0be7411; full suite 4179 green; approved review cycles",
+      "fr": "FR-006,FR-007,FR-008,FR-015,FR-016,FR-023,FR-024,FR-025,FR-026,FR-027",
+      "nfr": "NFR-002,NFR-006",
+      "repo": null,
+      "sc": "SC-004",
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Epic: OpenAPI pages, second slice",
+      "verdict": "fixed",
+      "wp": "WP11"
+    },
+    "#289": {
+      "evidence_ref": "Context only: Adjacent, out of scope.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#289",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#299": {
+      "evidence_ref": "Context only: Adjacent, out of scope.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#299",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#300": {
+      "evidence_ref": "Context only: Adjacent, out of scope.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "#300",
+      "verdict": "not-applicable",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}
