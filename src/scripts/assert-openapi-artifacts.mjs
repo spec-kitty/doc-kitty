@@ -193,6 +193,7 @@ function switcherHref(section, page, other, operationSlugsOf) {
 }
 
 const routeOf = (section, label, rest = '') => `${section}/${label}/${rest}`;
+const rawNameOf = (spec) => `openapi.${path.extname(spec.file).slice(1)}`;
 
 async function readOr(file) {
   try {
@@ -225,9 +226,326 @@ async function pagefindFragments(distDir) {
   return out;
 }
 
+/** Every `<loc>` URL of every `sitemap*.xml` in `dist`, in file then document order. */
+export async function readSitemapLocs(dist) {
+  const sitemapText = (await Promise.all(
+    (await readdir(dist)).filter((f) => /^sitemap.*\.xml$/i.test(f)).map((f) => readFile(path.join(dist, f), 'utf8')),
+  )).join('\n');
+  return [...sitemapText.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+}
+
+/**
+ * The synthetic agent records (openapi-second-slice WP03) from
+ * `api/index.json`: its `pages` array, or the problem that stopped the read.
+ * @param {string} dist
+ * @returns {Promise<{ records?: Array<Record<string, unknown>>, problems: string[] }>}
+ */
+export async function readAgentRecords(dist) {
+  const agentIndexText = await readOr(path.join(dist, 'api', 'index.json'));
+  if (agentIndexText === undefined) {
+    return { records: undefined, problems: ['agents: api/index.json is missing'] };
+  }
+  try {
+    const parsedIndex = JSON.parse(agentIndexText);
+    if (parsedIndex !== null && typeof parsedIndex === 'object' && Array.isArray(parsedIndex.pages)) {
+      return { records: parsedIndex.pages, problems: [] };
+    }
+    return { records: undefined, problems: ['agents: api/index.json has no pages array'] };
+  } catch {
+    return { records: undefined, problems: ['agents: api/index.json is not valid JSON'] };
+  }
+}
+
+/**
+ * The configured specs, each read, parsed and described: `{ spec, input,
+ * described }` with the spec's own bytes and its `describeDocument` view.
+ * @param {typeof EXAMPLE_OPENAPI} config
+ * @param {string} siteRoot
+ */
+export function parseSpecs(config, siteRoot) {
+  return config.specs.map((spec) => {
+    const input = readFileSync(path.join(siteRoot, spec.file));
+    return { spec, input, described: describeDocument(parseDocument(input.toString('utf8'))) };
+  });
+}
+
+/** Every page a version's renderer writes: the overview, then one per operation. */
+export function versionPages(section, spec, operations) {
+  const pages = [{ rel: routeOf(section, spec.label) }];
+  for (const op of operations) pages.push({ rel: routeOf(section, spec.label, `${op.slug}/`), op });
+  return pages;
+}
+
+/** The page's version navigation block, or '' when it has none. */
+function navOf(html) {
+  return /<[^>]*\bdk-openapi-nav\b[\s\S]*?<\/nav>/i.exec(html)?.[0] ?? '';
+}
+
+/** An operation page must show its operation summary and method+path label. */
+export function pageNameProblems(page, text) {
+  const problems = [];
+  if (page.op) {
+    if (!text.includes(page.op.summary)) problems.push(`names: ${page.rel} does not show the operation "${page.op.summary}"`);
+    if (!text.includes(page.op.label)) problems.push(`names: ${page.rel} does not show "${page.op.label}"`);
+  }
+  return problems;
+}
+
+/**
+ * The version navigation (FR-003, FR-004; WP07's mapping): present on every
+ * page, and linking every OTHER version — at the same operation when that
+ * version routes one, else at its overview.
+ */
+export function navProblems(section, specs, spec, page, html, operationSlugsOf) {
+  const problems = [];
+  const nav = navOf(html);
+  if (nav === '') problems.push(`nav: ${page.rel} has no version navigation`);
+  for (const other of specs.filter((s) => s.label !== spec.label)) {
+    const { href, sameOperation } = switcherHref(section, page, other, operationSlugsOf);
+    if (!new RegExp(`href="[^"]*${href}"`).test(nav)) {
+      problems.push(`nav: ${page.rel} does not link to version ${other.label}${sameOperation ? ' at the same operation' : ''}`);
+    }
+  }
+  return problems;
+}
+
+/** The released/unreleased badge (FR-004): on the current version only, unreleased versions only. */
+export function badgeProblems(spec, page, html) {
+  const problems = [];
+  const current = /dk-openapi-nav__current[\s\S]*?<\/(?:li|p|div|span)>\s*(?:<\/\w+>)?/i.exec(navOf(html))?.[0] ?? '';
+  const badged = /dk-openapi-badge/.test(current);
+  if (spec.released && badged) problems.push(`badge: the released version ${spec.label} carries the unreleased badge on ${page.rel}`);
+  if (!spec.released && !(badged && /unreleased/i.test(current))) {
+    problems.push(`badge: the unreleased version ${spec.label} shows no "unreleased" text on ${page.rel}`);
+  }
+  return problems;
+}
+
+/**
+ * A generated page is published, not a draft: no draft notice, not noindex (a
+ * missing doc_status defaults to draft in the docs schema).
+ */
+export function statusProblems(page, html) {
+  const problems = [];
+  if (/\bdk-draft-notice\b/.test(html)) problems.push(`status: ${page.rel} carries the draft notice`);
+  if (/<meta[^>]*name="robots"[^>]*noindex/i.test(html)) problems.push(`status: ${page.rel} is marked noindex`);
+  return problems;
+}
+
+/** No request console, no fetch of the spec (FR-009). */
+export function consoleProblems(page, html) {
+  return consoleSignals(html).map((signal) => `console: ${page.rel} shows ${signal}`);
+}
+
+/**
+ * Sitemap and search (FR-008, FR-015): a released version's pages are listed
+ * and indexed; an unreleased version's pages are built and served but held
+ * back from both, and carry no Pagefind marker (WP05).
+ */
+export function indexingProblems(spec, page, html, sitemapLocs, fragments) {
+  const problems = [];
+  const listed = sitemapLocs.some((loc) => loc.endsWith(`/${page.rel}`));
+  const indexed = fragments.some(
+    (f) => f.url.endsWith(`/${page.rel}`) || f.url.endsWith(`/${page.rel.replace(/\/$/, '')}`),
+  );
+  if (spec.released) {
+    if (!listed) problems.push(`sitemap: no entry for ${page.rel}`);
+    if (!indexed) problems.push(`search: ${page.rel} is not in the Pagefind index`);
+  } else {
+    if (listed) problems.push(`sitemap: unreleased ${page.rel} is listed (FR-015)`);
+    if (indexed) problems.push(`search: unreleased ${page.rel} is in the Pagefind index (FR-015)`);
+    if (/data-pagefind-body/i.test(html)) problems.push(`search: unreleased ${page.rel} carries data-pagefind-body (FR-015)`);
+  }
+  return problems;
+}
+
+/** A schema has no page of its own: "visible" means its property names are in the version's pages. */
+export function schemaProblems(name, schemas, texts) {
+  const problems = [];
+  const allText = texts.join(' ');
+  for (const schema of schemas) {
+    for (const property of schema.properties) {
+      if (!allText.includes(property)) problems.push(`names: property "${property}" of schema ${schema.name} is not shown in ${name}`);
+    }
+  }
+  return problems;
+}
+
+/** The raw document and its checksum: byte for byte (FR-006). */
+export async function rawDocumentProblems(dist, section, spec, input) {
+  const name = `${section}/${spec.label}`;
+  const rawName = rawNameOf(spec);
+  const problems = [];
+  const raw = existsSync(path.join(dist, name, rawName)) ? readFileSync(path.join(dist, name, rawName)) : undefined;
+  if (raw === undefined) problems.push(`raw: ${name}/${rawName} is missing`);
+  else if (Buffer.compare(raw, input) !== 0) problems.push(`raw: ${name}/${rawName} differs from ${spec.file}`);
+  const sum = await readOr(path.join(dist, name, `${rawName}.sha256`));
+  if (sum === undefined) problems.push(`raw: ${name}/${rawName}.sha256 is missing`);
+  else if (sum !== `${sha256Hex(input)}  ${rawName}\n`) problems.push(`raw: ${name}/${rawName}.sha256 is not "<sha256 of ${spec.file}>  ${rawName}\\n"`);
+  return problems;
+}
+
+/** The llms.txt version line (FR-008), released marker included. */
+export function llmsVersionProblems(llms, section, spec) {
+  const name = `${section}/${spec.label}`;
+  const rawName = rawNameOf(spec);
+  const line = new RegExp(`^- \\[${spec.label}\\]\\(https?://[^)\\s]*/${name}/${rawName.replace('.', '\\.')}\\)${spec.released ? '' : ' \\(unreleased\\)'}$`, 'm');
+  if (!line.test(llms)) return [`llms.txt: no line for ${spec.label}${spec.released ? '' : ' (unreleased)'}`];
+  return [];
+}
+
+/**
+ * The llms.txt operation lines (openapi-second-slice WP04, FR-014): one
+ * indented line per operation when the site opted in (`llmsOperations`),
+ * none when it did not — the opt-out keeps llms.txt byte-identical
+ * (NFR-002). Scoped to the version's own block (its line up to the next
+ * version line), so two versions sharing an operation summary cannot satisfy
+ * each other's check.
+ */
+export function llmsOperationsProblems(llms, config, spec, operations) {
+  const name = `${config.section}/${spec.label}`;
+  const versionLineMatch = new RegExp(`^- \\[${spec.label}\\]\\(https?://[^)\\s]*\\)[^\n]*$`, 'm').exec(llms);
+  const block = versionLineMatch === null ? '' : llms.slice(versionLineMatch.index + versionLineMatch[0].length).split(/^(?=- \[)/m)[0];
+  const problems = [];
+  for (const op of operations) {
+    const operationLine = op.summary === undefined ? `  - ${op.label}` : `  - ${op.label}: ${op.summary}`;
+    if (config.llmsOperations === true) {
+      if (!block.includes(operationLine)) {
+        problems.push(`llms.txt: no operation line "${operationLine.trim()}" for ${name}`);
+      }
+    } else if (block.includes(operationLine)) {
+      problems.push(`llms.txt: an operation line for ${name} is present without llmsOperations on`);
+    }
+  }
+  return problems;
+}
+
+/**
+ * The version's index record (WP03): it must name the raw document route and
+ * carry the input's digest, so a drifted projection fails the gate (FR-006's
+ * invariant, on the agent surfaces too). No check when the index itself
+ * could not be read (`agentRecords === undefined` — already reported).
+ */
+export function agentRecordProblems(agentRecords, section, spec, digest) {
+  if (agentRecords === undefined) return [];
+  const name = `${section}/${spec.label}`;
+  const rawRoute = `/${name}/${rawNameOf(spec)}`;
+  const record = agentRecords.find((entry) => entry?.slug === `${section}/${spec.label}`);
+  if (record === undefined) return [`agents: no api/index.json record for ${name}`];
+  const problems = [];
+  if (typeof record.rawDocumentUrl !== 'string' || !record.rawDocumentUrl.endsWith(rawRoute)) {
+    problems.push(`agents: the ${name} record's rawDocumentUrl does not name ${rawRoute}`);
+  }
+  if (record.sha256 !== digest) {
+    problems.push(`agents: the ${name} record's sha256 is not the digest of ${spec.file}`);
+  }
+  return problems;
+}
+
+/** The version's page payload (WP03): the same raw route and digest as its index record. */
+export async function agentPayloadProblems(dist, section, spec, digest) {
+  const name = `${section}/${spec.label}`;
+  const rawRoute = `/${name}/${rawNameOf(spec)}`;
+  const payloadText = await readOr(path.join(dist, 'api', 'pages', `${section}/${spec.label}.json`));
+  if (payloadText === undefined) {
+    return [`agents: api/pages/${section}/${spec.label}.json is missing`];
+  }
+  try {
+    const payload = JSON.parse(payloadText);
+    const problems = [];
+    if (payload?.sha256 !== digest) {
+      problems.push(`agents: the ${name} page payload's sha256 is not the digest of ${spec.file}`);
+    }
+    if (typeof payload?.rawDocumentUrl !== 'string' || !payload.rawDocumentUrl.endsWith(rawRoute)) {
+      problems.push(`agents: the ${name} page payload's rawDocumentUrl does not name ${rawRoute}`);
+    }
+    return problems;
+  } catch {
+    return [`agents: the ${name} page payload is not valid JSON`];
+  }
+}
+
+/**
+ * One agent record per configured version, no more (WP03): a missing or
+ * duplicated record in the section fails even when each spec's own lookups
+ * found theirs.
+ */
+export function agentCountProblems(agentRecords, config) {
+  if (agentRecords === undefined) return [];
+  const held = agentRecords.filter(
+    (entry) => typeof entry?.slug === 'string' && entry.slug.startsWith(`${config.section}/`),
+  );
+  if (held.length !== config.specs.length) {
+    return [`agents: api/index.json holds ${held.length} ${config.section} record, expected ${config.specs.length}`];
+  }
+  return [];
+}
+
+/**
+ * NFR-002, as waived: nothing beyond an ordinary page's, but the pinned
+ * allowlist (see `cspAdditions`).
+ */
+export async function cspProblems(dist, config, reference, allow) {
+  const ordinary = [];
+  const isReference = (rel) => rel.split(path.sep).join('/').startsWith(`${config.section}/`);
+  for (const file of await htmlFilesBelow(dist, isReference)) ordinary.push(await readFile(file, 'utf8'));
+  return cspAdditions(reference, ordinary, allow).problems.map((p) => `csp: ${p}`);
+}
+
+/**
+ * Every check of one spec version, in the gate's canonical order: its pages
+ * (existence, names, nav, badge, status, console, sitemap/search), its
+ * schemas' property names, its raw document and checksum, its llms.txt lines,
+ * and its agent record and page payload.
+ * @param {object} ctx Everything one version's checks need, gathered by the orchestrator.
+ * @param {string} ctx.dist The resolved dist dir.
+ * @param {typeof EXAMPLE_OPENAPI} ctx.config The site's openapi config.
+ * @param {(typeof EXAMPLE_OPENAPI)['specs'][number]} ctx.spec This version.
+ * @param {Buffer} ctx.input The spec's own bytes.
+ * @param {ReturnType<typeof describeDocument>} ctx.described Its operations and schemas.
+ * @param {string} ctx.llms The dist's llms.txt (or '').
+ * @param {string[]} ctx.sitemapLocs The sitemap's `<loc>` URLs.
+ * @param {Array<{ url: string, text: string }>} ctx.fragments The Pagefind fragments.
+ * @param {Array<Record<string, unknown>> | undefined} ctx.agentRecords The index's pages array, when readable.
+ * @param {Map<string, Set<string>>} ctx.operationSlugsOf Each version's operation slugs (WP07).
+ * @param {string[]} ctx.reference Collector: every reference page's HTML (for the CSP check).
+ * @returns {Promise<string[]>}
+ */
+async function checkOneSpec(ctx) {
+  const { config, spec, input, described } = ctx;
+  const texts = [];
+  const problems = [];
+  for (const page of versionPages(config.section, spec, described.operations)) {
+    const html = await readOr(path.join(ctx.dist, page.rel, 'index.html'));
+    if (html === undefined) {
+      problems.push(`pages: ${page.rel}index.html is missing (${config.section}/${spec.label})`);
+      continue;
+    }
+    ctx.reference.push(html);
+    const text = mainText(html);
+    texts.push(text);
+    problems.push(...pageNameProblems(page, text));
+    problems.push(...navProblems(config.section, config.specs, spec, page, html, ctx.operationSlugsOf));
+    problems.push(...badgeProblems(spec, page, html));
+    problems.push(...statusProblems(page, html));
+    problems.push(...consoleProblems(page, html));
+    problems.push(...indexingProblems(spec, page, html, ctx.sitemapLocs, ctx.fragments));
+  }
+  problems.push(...schemaProblems(`${config.section}/${spec.label}`, described.schemas, texts));
+  problems.push(...(await rawDocumentProblems(ctx.dist, config.section, spec, input)));
+  problems.push(...llmsVersionProblems(ctx.llms, config.section, spec));
+  problems.push(...llmsOperationsProblems(ctx.llms, config, spec, described.operations));
+  const digest = sha256Hex(input);
+  problems.push(...agentRecordProblems(ctx.agentRecords, config.section, spec, digest));
+  problems.push(...(await agentPayloadProblems(ctx.dist, config.section, spec, digest)));
+  return problems;
+}
+
 /**
  * Check the example's reference pages in `distDir`. Returns every problem found
- * (empty when all hold), each starting with the check's name.
+ * (empty when all hold), each starting with the check's name. One independent
+ * helper per check (read, parse, then per-version and per-page assertions);
+ * this orchestrator only composes them in the canonical order.
  * @param {string} distDir
  * @param {{ siteRoot?: string, config?: typeof EXAMPLE_OPENAPI, allow?: typeof OPENAPI_INLINE_ALLOWLIST }} [options]
  * @returns {Promise<string[]>}
@@ -239,38 +557,12 @@ export async function checkOpenApiArtifacts(distDir, options = {}) {
   const allow = options.allow ?? OPENAPI_INLINE_ALLOWLIST;
   const problems = [];
   const reference = [];
-  const sitemapText = (await Promise.all(
-    (await readdir(dist)).filter((f) => /^sitemap.*\.xml$/i.test(f)).map((f) => readFile(path.join(dist, f), 'utf8')),
-  )).join('\n');
-  const sitemapLocs = [...sitemapText.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const sitemapLocs = await readSitemapLocs(dist);
   const llms = (await readOr(path.join(dist, 'llms.txt'))) ?? '';
   const fragments = await pagefindFragments(dist);
-
-  // The synthetic agent records (openapi-second-slice WP03): one per version in
-  // api/index.json, each also projected at api/pages/<slug>.json. Read once;
-  // every spec's record is checked inside the loop below.
-  const agentIndexText = await readOr(path.join(dist, 'api', 'index.json'));
-  /** @type {Array<Record<string, unknown>> | undefined} */
-  let agentRecords;
-  if (agentIndexText === undefined) {
-    problems.push('agents: api/index.json is missing');
-  } else {
-    try {
-      const parsedIndex = JSON.parse(agentIndexText);
-      if (parsedIndex !== null && typeof parsedIndex === 'object' && Array.isArray(parsedIndex.pages)) {
-        agentRecords = parsedIndex.pages;
-      } else {
-        problems.push('agents: api/index.json has no pages array');
-      }
-    } catch {
-      problems.push('agents: api/index.json is not valid JSON');
-    }
-  }
-
-  const parsed = config.specs.map((spec) => {
-    const input = readFileSync(path.join(siteRoot, spec.file));
-    return { spec, input, described: describeDocument(parseDocument(input.toString('utf8'))) };
-  });
+  const { records: agentRecords, problems: agentIndexProblems } = await readAgentRecords(dist);
+  problems.push(...agentIndexProblems);
+  const parsed = parseSpecs(config, siteRoot);
   // The operation slugs of every version, precomputed for the version
   // switcher's same-operation mapping (WP07): a version link on an operation
   // page targets the other version's page for the SAME operation when that
@@ -278,163 +570,13 @@ export async function checkOpenApiArtifacts(distDir, options = {}) {
   const operationSlugsOf = new Map(
     parsed.map(({ spec, described }) => [spec.label, new Set(described.operations.map((op) => op.slug))]),
   );
-
   for (const { spec, input, described } of parsed) {
-    const name = `${config.section}/${spec.label}`;
-    const ext = path.extname(spec.file).slice(1);
-    const { operations, schemas } = described;
-
-    // Pages: the overview and one per operation, each with its text.
-    const pages = [{ rel: routeOf(config.section, spec.label) }];
-    for (const op of operations) pages.push({ rel: routeOf(config.section, spec.label, `${op.slug}/`), op });
-    const texts = [];
-    for (const page of pages) {
-      const html = await readOr(path.join(dist, page.rel, 'index.html'));
-      if (html === undefined) {
-        problems.push(`pages: ${page.rel}index.html is missing (${name})`);
-        continue;
-      }
-      reference.push(html);
-      const text = mainText(html);
-      texts.push(text);
-      if (page.op) {
-        if (!text.includes(page.op.summary)) problems.push(`names: ${page.rel} does not show the operation "${page.op.summary}"`);
-        if (!text.includes(page.op.label)) problems.push(`names: ${page.rel} does not show "${page.op.label}"`);
-      }
-      // Version links and the badge (FR-003, FR-004; WP07's mapping): the
-      // expected href per version is the switcher's own — the same operation
-      // in the target version when it routes one, else that version's overview.
-      const nav = /<[^>]*\bdk-openapi-nav\b[\s\S]*?<\/nav>/i.exec(html)?.[0] ?? '';
-      if (nav === '') problems.push(`nav: ${page.rel} has no version navigation`);
-      for (const other of config.specs.filter((s) => s.label !== spec.label)) {
-        const { href, sameOperation } = switcherHref(config.section, page, other, operationSlugsOf);
-        if (!new RegExp(`href="[^"]*${href}"`).test(nav)) {
-          problems.push(
-            `nav: ${page.rel} does not link to version ${other.label}${sameOperation ? ' at the same operation' : ''}`,
-          );
-        }
-      }
-      const current = /dk-openapi-nav__current[\s\S]*?<\/(?:li|p|div|span)>\s*(?:<\/\w+>)?/i.exec(nav)?.[0] ?? '';
-      const badged = /dk-openapi-badge/.test(current);
-      if (spec.released && badged) problems.push(`badge: the released version ${spec.label} carries the unreleased badge on ${page.rel}`);
-      if (!spec.released && !(badged && /unreleased/i.test(current))) {
-        problems.push(`badge: the unreleased version ${spec.label} shows no "unreleased" text on ${page.rel}`);
-      }
-      // A generated page is published, not a draft: no draft notice, not noindex (a
-      // missing doc_status defaults to draft in the docs schema).
-      if (/\bdk-draft-notice\b/.test(html)) problems.push(`status: ${page.rel} carries the draft notice`);
-      if (/<meta[^>]*name="robots"[^>]*noindex/i.test(html)) problems.push(`status: ${page.rel} is marked noindex`);
-      // No request console, no fetch of the spec (FR-009).
-      for (const signal of consoleSignals(html)) problems.push(`console: ${page.rel} shows ${signal}`);
-      // Sitemap and search (FR-008, FR-015): a released version's pages are listed
-      // and indexed; an unreleased version's pages are built and served but held
-      // back from both, and carry no Pagefind marker (WP05).
-      const listed = sitemapLocs.some((loc) => loc.endsWith(`/${page.rel}`));
-      const indexed = fragments.some(
-        (f) => f.url.endsWith(`/${page.rel}`) || f.url.endsWith(`/${page.rel.replace(/\/$/, '')}`),
-      );
-      if (spec.released) {
-        if (!listed) problems.push(`sitemap: no entry for ${page.rel}`);
-        if (!indexed) problems.push(`search: ${page.rel} is not in the Pagefind index`);
-      } else {
-        if (listed) problems.push(`sitemap: unreleased ${page.rel} is listed (FR-015)`);
-        if (indexed) problems.push(`search: unreleased ${page.rel} is in the Pagefind index (FR-015)`);
-        if (/data-pagefind-body/i.test(html)) problems.push(`search: unreleased ${page.rel} carries data-pagefind-body (FR-015)`);
-      }
-    }
-    const allText = texts.join(' ');
-    for (const schema of schemas) {
-      for (const property of schema.properties) {
-        if (!allText.includes(property)) problems.push(`names: property "${property}" of schema ${schema.name} is not shown in ${name}`);
-      }
-    }
-
-    // Raw document and checksum: byte for byte (FR-006).
-    const rawName = `openapi.${ext}`;
-    const raw = existsSync(path.join(dist, name, rawName)) ? readFileSync(path.join(dist, name, rawName)) : undefined;
-    if (raw === undefined) problems.push(`raw: ${name}/${rawName} is missing`);
-    else if (Buffer.compare(raw, input) !== 0) problems.push(`raw: ${name}/${rawName} differs from ${spec.file}`);
-    const sum = await readOr(path.join(dist, name, `${rawName}.sha256`));
-    if (sum === undefined) problems.push(`raw: ${name}/${rawName}.sha256 is missing`);
-    else if (sum !== `${sha256Hex(input)}  ${rawName}\n`) problems.push(`raw: ${name}/${rawName}.sha256 is not "<sha256 of ${spec.file}>  ${rawName}\\n"`);
-
-    // llms.txt (FR-008).
-    const line = new RegExp(`^- \\[${spec.label}\\]\\(https?://[^)\\s]*/${name}/${rawName.replace('.', '\\.')}\\)${spec.released ? '' : ' \\(unreleased\\)'}$`, 'm');
-    if (!line.test(llms)) problems.push(`llms.txt: no line for ${spec.label}${spec.released ? '' : ' (unreleased)'}`);
-
-    // llms.txt operation lines (openapi-second-slice WP04, FR-014): one indented
-    // line per operation when the site opted in (`llmsOperations`), none when it
-    // did not — the opt-out keeps llms.txt byte-identical (NFR-002), which is
-    // checked here, not assumed. Scoped to the version's own block (its line up
-    // to the next version line), so two versions sharing an operation summary
-    // cannot satisfy each other's check.
-    const versionLineMatch = new RegExp(`^- \\[${spec.label}\\]\\(https?://[^)\\s]*\\)[^\n]*$`, 'm').exec(llms);
-    const block = versionLineMatch === null ? '' : llms.slice(versionLineMatch.index + versionLineMatch[0].length).split(/^(?=- \[)/m)[0];
-    for (const op of operations) {
-      const operationLine = op.summary === undefined ? `  - ${op.label}` : `  - ${op.label}: ${op.summary}`;
-      if (config.llmsOperations === true) {
-        if (!block.includes(operationLine)) {
-          problems.push(`llms.txt: no operation line "${operationLine.trim()}" for ${name}`);
-        }
-      } else if (block.includes(operationLine)) {
-        problems.push(`llms.txt: an operation line for ${name} is present without llmsOperations on`);
-      }
-    }
-
-    // The synthetic agent records (WP03): the index entry and the page payload
-    // both name the raw document route and carry the input's digest, so a
-    // drifted projection fails the gate (FR-006's invariant, on the agent
-    // surfaces too).
-    const rawRoute = `/${name}/${rawName}`;
-    const digest = sha256Hex(input);
-    if (agentRecords !== undefined) {
-      const record = agentRecords.find((entry) => entry?.slug === `${config.section}/${spec.label}`);
-      if (record === undefined) {
-        problems.push(`agents: no api/index.json record for ${name}`);
-      } else {
-        if (typeof record.rawDocumentUrl !== 'string' || !record.rawDocumentUrl.endsWith(rawRoute)) {
-          problems.push(`agents: the ${name} record's rawDocumentUrl does not name ${rawRoute}`);
-        }
-        if (record.sha256 !== digest) {
-          problems.push(`agents: the ${name} record's sha256 is not the digest of ${spec.file}`);
-        }
-      }
-    }
-    const payloadText = await readOr(path.join(dist, 'api', 'pages', `${config.section}/${spec.label}.json`));
-    if (payloadText === undefined) {
-      problems.push(`agents: api/pages/${config.section}/${spec.label}.json is missing`);
-    } else {
-      try {
-        const payload = JSON.parse(payloadText);
-        if (payload?.sha256 !== digest) {
-          problems.push(`agents: the ${name} page payload's sha256 is not the digest of ${spec.file}`);
-        }
-        if (typeof payload?.rawDocumentUrl !== 'string' || !payload.rawDocumentUrl.endsWith(rawRoute)) {
-          problems.push(`agents: the ${name} page payload's rawDocumentUrl does not name ${rawRoute}`);
-        }
-      } catch {
-        problems.push(`agents: the ${name} page payload is not valid JSON`);
-      }
-    }
-  }
-
-  // One agent record per configured version, no more (WP03): a missing or
-  // duplicated record in the section fails even when each spec's own lookups
-  // above found theirs.
-  if (agentRecords !== undefined) {
-    const held = agentRecords.filter(
-      (entry) => typeof entry?.slug === 'string' && entry.slug.startsWith(`${config.section}/`),
+    problems.push(
+      ...(await checkOneSpec({ dist, config, spec, input, described, llms, sitemapLocs, fragments, agentRecords, operationSlugsOf, reference })),
     );
-    if (held.length !== config.specs.length) {
-      problems.push(`agents: api/index.json holds ${held.length} ${config.section} record, expected ${config.specs.length}`);
-    }
   }
-
-  // NFR-002, as waived: nothing beyond an ordinary page's, but the pinned allowlist.
-  const ordinary = [];
-  const isReference = (rel) => rel.split(path.sep).join('/').startsWith(`${config.section}/`);
-  for (const file of await htmlFilesBelow(dist, isReference)) ordinary.push(await readFile(file, 'utf8'));
-  problems.push(...cspAdditions(reference, ordinary, allow).problems.map((p) => `csp: ${p}`));
+  problems.push(...agentCountProblems(agentRecords, config));
+  problems.push(...(await cspProblems(dist, config, reference, allow)));
   return problems;
 }
 
