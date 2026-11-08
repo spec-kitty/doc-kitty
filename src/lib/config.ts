@@ -82,7 +82,7 @@ import {
 } from './plantuml-external.mjs';
 import { toPublication } from './integrations/openapi-publish.js';
 import { normaliseOpenApiOptions, type OpenApiOptions } from './openapi/options.mjs';
-import { materialiseOpenApiSpecs, composeSitemapPredicates } from './openapi/materialise.mjs';
+import { materialiseOpenApiSpecs, composeSitemapPredicates, unregisterSitemapPredicate } from './openapi/materialise.mjs';
 // The sitemap seams of the plan's parallel-edit registry (`sitemapPredicates`
 // and `composeSitemapPredicates`) live in materialise.mjs, dependency-light, so
 // a module pushing to them never pulls this file's Starlight imports in. They
@@ -645,6 +645,13 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // The llms.txt route lists each version's raw document (FR-008), from the
     // materialised list: it never re-reads a file.
     setInternalEnv(DK_OPENAPI_ENV, JSON.stringify(toPublication(openapiOpts, openApiSpecs)));
+  } else {
+    // With the option absent no openApiPlugin runs to own the registry's
+    // unreleased-versions sitemap predicate, so THIS evaluation drops any an
+    // earlier one in the same process registered (a dev restart re-runs this
+    // config against module-level state that survives it): a site that
+    // dropped the option must not keep filtering its sitemap (#285).
+    unregisterSitemapPredicate('openapi:unreleased-versions');
   }
   // Everything generated-pages (codegen integration, `behaviour` sidebar section)
   // hangs off `sources`, i.e. `pages`: `gherkin: true` or an object without

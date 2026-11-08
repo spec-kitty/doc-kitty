@@ -226,6 +226,36 @@ describe('with the option (FR-002)', () => {
     expect(materialise.devHandlers.length).toBe(dev);
     expect(materialise.sitemapPredicates.length).toBe(sitemap);
   });
+
+  it('a re-evaluation with every version released (or no openapi) drops the unreleased sitemap predicate', async () => {
+    const materialise = await import('../lib/openapi/materialise.mjs');
+    const page = 'https://spec-kitty.github.io/reference/api/main/';
+    // The sitemap filter this config composes, with a draft filter that keeps
+    // everything — so only the registered OpenAPI predicate can drop `page`.
+    const kept = () => materialise.composeSitemapPredicates(() => true)(page);
+
+    // First evaluation: `main` is unreleased, so the predicate is registered
+    // and the composed filter drops the unreleased version's URLs (FR-015).
+    defineDocKittyIntegrations({ title: 'T', openapi: OPENAPI_OPTION });
+    expect(kept()).toBe(false);
+
+    // Re-evaluation in the SAME process (a dev restart re-runs the config
+    // against the module-level registry): every version released. The
+    // predicate must be dropped, not left stale-filtering the sitemap.
+    defineDocKittyIntegrations({
+      title: 'T',
+      openapi: {
+        ...OPENAPI_OPTION,
+        specs: OPENAPI_OPTION.specs.map((spec) => ({ ...spec, released: true })),
+      },
+    });
+    expect(kept()).toBe(true);
+
+    // Another re-evaluation, now without the openapi option at all: still no
+    // stale predicate (no plugin runs, so the config itself must unregister).
+    defineDocKittyIntegrations({ title: 'T' });
+    expect(kept()).toBe(true);
+  });
 });
 
 function fs_realpath(p: string): string {

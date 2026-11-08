@@ -42,7 +42,7 @@ import { openApiPublishHooks } from '../integrations/openapi-publish.js';
 import { openApiDevHandler } from '../integrations/openapi-dev.js';
 import { openApiLinkCheck } from '../integrations/openapi-link-check.js';
 import { PLACEHOLDER_GROUP_PREFIX } from '../route-shaping.js';
-import { buildDoneHooks, devHandlers, pagePropsHooks, registerBuildDoneHook, registerDevHandler, registerSitemapPredicate } from './materialise.mjs';
+import { buildDoneHooks, devHandlers, pagePropsHooks, registerBuildDoneHook, registerDevHandler, registerSitemapPredicate, unregisterSitemapPredicate } from './materialise.mjs';
 import { openApiSitemapPredicate } from './indexing.js';
 
 // The registry's hook seams, re-exported so a later work package imports them
@@ -365,9 +365,15 @@ export function openApiPlugin(options: NormalisedOpenApiOptions, specs: Material
   // draft filter itself (WP02's byte-identity contract). This runs while
   // `defineDocKittyIntegrations` builds its plugins, before it composes the sitemap
   // filter, so `composeSitemapPredicates` sees it. Keyed, so a dev restart's
-  // second registration replaces this one instead of stacking it.
+  // second registration replaces this one instead of stacking it — and
+  // UNREGISTERED when every version is released, because the registry is
+  // module-level and survives the re-evaluation: a restart whose versions are
+  // all released must drop the predicate the earlier, unreleased evaluation
+  // registered, not keep filtering with it (#285).
   if (data.versions.some((version) => !version.released)) {
     registerSitemapPredicate('openapi:unreleased-versions', openApiSitemapPredicate(options.section, data.versions));
+  } else {
+    unregisterSitemapPredicate('openapi:unreleased-versions');
   }
   const publishHooks = openApiPublishHooks({ section: options.section, specs });
   return {
