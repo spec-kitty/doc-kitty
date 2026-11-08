@@ -1,0 +1,82 @@
+openapi: 3.1.0
+info:
+  title: Shipping API
+  version: 1.1.0
+  description: A small fixture API for the DocKitty OpenAPI reference pages.
+servers:
+  - url: https://api.example.com/v1
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: List parcels
+      description: Returns every parcel the caller can see.
+      tags: [parcels]
+      responses:
+        '200':
+          description: The parcels.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parcel'
+    post:
+      operationId: createParcel
+      summary: Create a parcel
+      tags: [parcels]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParcelInput'
+      responses:
+        '201':
+          description: The created parcel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parcel'
+  /parcels/{parcelId}:
+    get:
+      operationId: getParcel
+      summary: Get a parcel
+      tags: [parcels]
+      parameters:
+        - name: parcelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The parcel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parcel'
+        '404':
+          description: No parcel has this id.
+components:
+  schemas:
+    ParcelInput:
+      type: object
+      required: [recipient]
+      properties:
+        recipient:
+          type: string
+          description: Name of the recipient.
+        note:
+          type: [string, 'null']
+          description: Optional delivery note.
+    Parcel:
+      type: object
+      required: [id, recipient]
+      properties:
+        id:
+          type: string
+        recipient:
+          type: string
+        note:
+          type: [string, 'null']

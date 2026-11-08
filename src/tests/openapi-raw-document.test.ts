@@ -7,6 +7,11 @@
  * calls (`astro:build:done`), and the `llms.txt` lines through the real route.
  * Each assertion fails when its behaviour is removed: the bytes are compared with
  * `Buffer.compare`, and the build assertions get a negative control per check.
+ *
+ * WP02 (mission openapi-second-slice-01M6WXJ4): the publisher takes the
+ * config-time BYTES from the materialised list (FR-007) — it never reads a file —
+ * so a spec is `{ label, ext, released, bytes, sha256 }` here, and the one input
+ * check left is the bytes/digest invariant.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
@@ -16,6 +21,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import type { OpenApiPublication } from '../lib/integrations/openapi-publish.js';
 
 vi.mock('astro:content', () => ({ getCollection: async () => [], render: async () => ({ headings: [] }) }));
 
@@ -41,9 +47,8 @@ const SPEC_V1 = '﻿openapi: 3.1.0\r\ninfo: {title: T, version: "1"}\r\npaths: {
 const SPEC_MAIN = '{"openapi":"3.0.3","info":{"title":"T","version":"2"},"paths":{}}';
 
 function spec(label: string, ext: string, content: string | Buffer, released = true) {
-  const absPath = path.join(dir, `${label}.${ext}`);
-  writeFileSync(absPath, content);
-  return { label, absPath, ext, released };
+  const bytes = Buffer.from(content);
+  return { label, ext, released, bytes, sha256: sha(bytes) };
 }
 
 const sha = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex');
@@ -105,24 +110,18 @@ describe('the raw document and its checksum (FR-006)', () => {
 });
 
 describe('generated-page rules (FR-012, ADR-0049 section 3)', () => {
-  it('writes nothing for either version when one input is unreadable', () => {
+  it('writes nothing when a spec\'s bytes no longer hash to their recorded sha256 (the FR-007 invariant)', () => {
     const options = {
       section: 'reference/api',
-      specs: [spec('v1', 'yaml', SPEC_V1), { label: 'main', absPath: path.join(dir, 'gone.yaml'), ext: 'yaml', released: false }],
+      specs: [
+        spec('v1', 'yaml', SPEC_V1),
+        { label: 'main', ext: 'json', released: false, bytes: Buffer.from(SPEC_MAIN), sha256: 'f'.repeat(64) },
+      ],
     };
-    expect(() => publish.publishOpenApiDocuments(outDir, options)).toThrow(/\[dk-openapi\] specs\[1\] "main": cannot read the file/);
+    expect(() => publish.publishOpenApiDocuments(outDir, options)).toThrow(
+      /\[dk-openapi\] specs\[1\] "main": sha256 mismatch/,
+    );
     expect(treeOf(outDir)).toEqual({});
-  });
-
-  it('writes nothing when one input is empty, and does not delete the existing output', () => {
-    publishBoth();
-    const before = treeOf(outDir);
-    const options = {
-      section: 'reference/api',
-      specs: [spec('v1', 'yaml', 'openapi: 3.1.0\n'), spec('main', 'json', '  \n', false)],
-    };
-    expect(() => publish.publishOpenApiDocuments(outDir, options)).toThrow(/specs\[1\] "main": the file is empty/);
-    expect(treeOf(outDir)).toEqual(before);
   });
 
   it('stops on an authored file at an output path, names it, and writes nothing', () => {
@@ -169,11 +168,30 @@ describe('generated-page rules (FR-012, ADR-0049 section 3)', () => {
 });
 
 describe('llms.txt (FR-008)', () => {
-  const publication = {
+  const publication: OpenApiPublication = {
     section: 'reference/api',
+    llmsOperations: false,
     versions: [
-      { label: 'v1', released: true, ext: 'yaml' },
-      { label: 'main', released: false, ext: 'json' },
+      {
+        label: 'v1',
+        released: true,
+        ext: 'yaml',
+        sha256: sha(SPEC_V1),
+        title: 'T',
+        apiVersion: '1',
+        operations: [],
+        rawRoute: '/reference/api/v1/openapi.yaml',
+      },
+      {
+        label: 'main',
+        released: false,
+        ext: 'json',
+        sha256: sha(SPEC_MAIN),
+        title: 'T',
+        apiVersion: '2',
+        operations: [],
+        rawRoute: '/reference/api/main/openapi.json',
+      },
     ],
   };
 
@@ -215,10 +233,15 @@ components:
   const picker = 'customElements.define("starlight-openapi-content-picker", class extends HTMLElement {});';
   const allow = { pinnedVersion: 'test', scripts: [`sha256-${createHash('sha256').update(picker).digest('base64')}`], styleAttributes: [], styleBlocks: [] };
 
+  /** One reference page. Both versions route `listThings`, so an operation
+   * page's version link targets the other version's page for the SAME
+   * operation (WP07's same-operation mapping); an overview page links the
+   * other version's overview. */
   function page(label: string, released: boolean, rel: string, op = false, extra = '') {
     const other = label === 'v1' ? 'next' : 'v1';
     const badge = released ? '' : '<span class="dk-openapi-badge">unreleased</span>';
-    return `<html><head><meta name="robots" content="index"></head><body><nav class="dk-openapi-nav"><ul><li class="dk-openapi-nav__current">${label} ${badge}</li><li><a href="/reference/api/${other}/">${other}</a></li></ul></nav><main>${
+    const href = op ? `/reference/api/${other}/operations/listthings/` : `/reference/api/${other}/`;
+    return `<html><head><meta name="robots" content="index"></head><body><nav class="dk-openapi-nav"><ul><li class="dk-openapi-nav__current">${label} ${badge}</li><li><a href="${href}">${other}</a></li></ul></nav><main>${
       op ? 'List things GET /things' : 'Overview'
     } colour ${extra}</main></body></html>`;
   }
@@ -227,15 +250,20 @@ components:
     return gzipSync(Buffer.from(`pagefind_dcd{"url":"${url}"}`));
   }
 
-  /** A complete minimal site for the two-version config. */
-  function site(): string {
+  /** A complete minimal site for the two-version config. `llmsOperations`
+   * also writes the indented operation lines llms.txt carries when a site
+   * opts in (WP04, FR-014); the agent records mirror WP03's projection. */
+  function site(llmsOperations = false): string {
     const root = path.join(dir, 'site');
     const dist = path.join(root, 'dist');
     mkdirSync(path.join(root, 'openapi'), { recursive: true });
     mkdirSync(path.join(dist, 'pagefind/fragment'), { recursive: true });
     mkdirSync(path.join(dist, 'guides'));
+    mkdirSync(path.join(dist, 'api/pages/reference/api'), { recursive: true });
     writeFileSync(path.join(dist, 'guides/index.html'), '<html><body><main>ordinary</main></body></html>');
     const locs: string[] = [];
+    const records: Record<string, unknown>[] = [];
+    const llmsLines: string[] = ['# D', '', '## OpenAPI documents', ''];
     let n = 0;
     for (const v of config.specs) {
       writeFileSync(path.join(root, v.file), doc);
@@ -245,21 +273,39 @@ components:
       writeFileSync(path.join(base, 'operations/listthings/index.html'), page(v.label, v.released, 'x', true, `<script type="module">${picker}</script>`));
       writeFileSync(path.join(base, 'openapi.yaml'), doc);
       writeFileSync(path.join(base, 'openapi.yaml.sha256'), `${sha(doc)}  openapi.yaml\n`);
+      // WP03's synthetic agent records: one index entry and one page payload
+      // per version, both naming the raw document and its digest.
+      const record = {
+        slug: `reference/api/${v.label}`,
+        rawDocumentUrl: `/reference/api/${v.label}/openapi.yaml`,
+        sha256: sha(doc),
+      };
+      records.push(record);
+      writeFileSync(
+        path.join(dist, 'api/pages/reference/api', `${v.label}.json`),
+        JSON.stringify({ ...record, _links: { describedby: { href: record.rawDocumentUrl } } }, null, 2),
+      );
+      llmsLines.push(`- [${v.label}](https://d.example/reference/api/${v.label}/openapi.yaml)${v.released ? '' : ' (unreleased)'}`);
+      if (llmsOperations) llmsLines.push('  - GET /things: List things');
       for (const rel of [`reference/api/${v.label}/`, `reference/api/${v.label}/operations/listthings/`]) {
+        // FR-015 (WP05): an unreleased version's pages are built and served but held
+        // back from the sitemap and the search index, so the complete site lists and
+        // indexes only the released versions.
+        if (!v.released) continue;
         locs.push(`<url><loc>https://d.example/${rel}</loc></url>`);
         writeFileSync(path.join(dist, 'pagefind/fragment', `${n++}.pf_fragment`), fragment(`/${rel}`));
       }
     }
     writeFileSync(path.join(dist, 'sitemap-0.xml'), `<urlset>${locs.join('')}</urlset>`);
-    writeFileSync(
-      path.join(dist, 'llms.txt'),
-      '# D\n\n## OpenAPI documents\n\n- [v1](https://d.example/reference/api/v1/openapi.yaml)\n- [next](https://d.example/reference/api/next/openapi.yaml) (unreleased)\n',
-    );
+    writeFileSync(path.join(dist, 'api/index.json'), JSON.stringify({ count: records.length, pages: records }, null, 2));
+    writeFileSync(path.join(dist, 'llms.txt'), `${llmsLines.join('\n')}\n`);
     return dist;
   }
 
   const check = (dist: string, allowlist: Record<string, unknown> = allow) =>
     assertions.checkOpenApiArtifacts(dist, { config, allow: allowlist } as never);
+  const checkAs = (dist: string, configOverride: Record<string, unknown>) =>
+    assertions.checkOpenApiArtifacts(dist, { config: { ...config, ...configOverride }, allow } as never);
   const edit = (file: string, fn: (s: string) => string) => writeFileSync(file, fn(readFileSync(file, 'utf8')));
 
   it('passes on a complete site', async () => {
@@ -278,10 +324,67 @@ components:
     const dist = site();
     edit(path.join(dist, 'llms.txt'), (s) => s.replace(' (unreleased)', ''));
     expect(await check(dist)).toContainEqual(expect.stringContaining('llms.txt: no line for next (unreleased)'));
-    edit(path.join(dist, 'sitemap-0.xml'), (s) => s.replace('<url><loc>https://d.example/reference/api/next/</loc></url>', ''));
-    expect(await check(dist)).toContainEqual(expect.stringContaining('sitemap: no entry for reference/api/next/'));
-    rmSync(path.join(dist, 'pagefind/fragment/2.pf_fragment'));
-    expect(await check(dist)).toContainEqual(expect.stringContaining('search: reference/api/next/ is not in the Pagefind index'));
+    edit(path.join(dist, 'sitemap-0.xml'), (s) => s.replace('<url><loc>https://d.example/reference/api/v1/</loc></url>', ''));
+    expect(await check(dist)).toContainEqual(expect.stringContaining('sitemap: no entry for reference/api/v1/'));
+    rmSync(path.join(dist, 'pagefind/fragment/1.pf_fragment'));
+    expect(await check(dist)).toContainEqual(
+      expect.stringContaining('search: reference/api/v1/operations/listthings/ is not in the Pagefind index'),
+    );
+  });
+
+  it('fails when a version has no agent record, or the section miscounts', async () => {
+    const dist = site();
+    const indexFile = path.join(dist, 'api/index.json');
+    const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { pages: { slug: string }[] };
+    index.pages = index.pages.filter((record) => record.slug !== 'reference/api/next');
+    index.count = index.pages.length;
+    writeFileSync(indexFile, JSON.stringify(index, null, 2));
+    const problems = await check(dist);
+    expect(problems).toContainEqual(expect.stringContaining('agents: no api/index.json record for reference/api/next'));
+    expect(problems).toContainEqual(expect.stringContaining('agents: api/index.json holds 1 reference/api record, expected 2'));
+  });
+
+  it('fails when an agent record or page payload names the wrong digest or raw document', async () => {
+    const dist = site();
+    edit(path.join(dist, 'api/index.json'), (s) => s.replace(sha(doc), 'a'.repeat(64)));
+    expect(await check(dist)).toContainEqual(
+      expect.stringContaining("agents: the reference/api/v1 record's sha256 is not the digest of openapi/v1.yaml"),
+    );
+    edit(path.join(dist, 'api/pages/reference/api/next.json'), (s) => s.replace('/reference/api/next/openapi.yaml', '/nowhere.yaml'));
+    expect(await check(dist)).toContainEqual(
+      expect.stringContaining("agents: the reference/api/next page payload's rawDocumentUrl does not name /reference/api/next/openapi.yaml"),
+    );
+    rmSync(path.join(dist, 'api/pages/reference/api/v1.json'));
+    expect(await check(dist)).toContainEqual(
+      expect.stringContaining('agents: api/pages/reference/api/v1.json is missing'),
+    );
+  });
+
+  it('the llms operation lines: required when opted in, refused otherwise (NFR-002)', async () => {
+    const dist = site(true);
+    expect(await checkAs(dist, { llmsOperations: true })).toEqual([]);
+    // The same lines without the option must fail: byte-compat is checked, not assumed.
+    expect(await checkAs(dist, {})).toContainEqual(
+      expect.stringContaining('llms.txt: an operation line for reference/api/v1 is present without llmsOperations on'),
+    );
+    // With the option on, a dropped line fails.
+    edit(path.join(dist, 'llms.txt'), (s) => s.replace('  - GET /things: List things\n', ''));
+    expect(await checkAs(dist, { llmsOperations: true })).toContainEqual(
+      expect.stringContaining('llms.txt: no operation line "- GET /things: List things" for reference/api/v1'),
+    );
+  });
+
+  it('fails when an unreleased version reaches the sitemap, the index or the Pagefind marker (FR-015)', async () => {
+    const dist = site();
+    edit(path.join(dist, 'sitemap-0.xml'), (s) =>
+      s.replace('</urlset>', '<url><loc>https://d.example/reference/api/next/</loc></url></urlset>'),
+    );
+    writeFileSync(path.join(dist, 'pagefind/fragment', '9.pf_fragment'), fragment('/reference/api/next/'));
+    edit(path.join(dist, 'reference/api/next/index.html'), (s) => s.replace('<main>', '<main data-pagefind-body>'));
+    const problems = await check(dist);
+    expect(problems).toContainEqual(expect.stringContaining('sitemap: unreleased reference/api/next/ is listed (FR-015)'));
+    expect(problems).toContainEqual(expect.stringContaining('search: unreleased reference/api/next/ is in the Pagefind index (FR-015)'));
+    expect(problems).toContainEqual(expect.stringContaining('search: unreleased reference/api/next/ carries data-pagefind-body (FR-015)'));
   });
 
   it('fails on a missing page, a missing name, a missing link and a missing badge', async () => {
@@ -297,6 +400,16 @@ components:
     expect(problems).toContainEqual(expect.stringContaining('property "colour" of schema Thing'));
     expect(problems).toContainEqual(expect.stringContaining('nav: reference/api/next/ does not link to version v1'));
     expect(problems).toContainEqual(expect.stringContaining('badge: the unreleased version next shows no "unreleased" text'));
+  });
+
+  it('fails when an operation page links another version overview instead of the same operation', async () => {
+    const dist = site();
+    edit(path.join(dist, 'reference/api/v1/operations/listthings/index.html'), (s) =>
+      s.replace('/reference/api/next/operations/listthings/', '/reference/api/next/'),
+    );
+    expect(await check(dist)).toEqual([
+      expect.stringContaining('nav: reference/api/v1/operations/listthings/ does not link to version next at the same operation'),
+    ]);
   });
 
   it('fails on a request console, a spec fetch, a draft notice and a noindex', async () => {

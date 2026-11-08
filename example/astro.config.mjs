@@ -153,7 +153,15 @@ export default defineConfig({
     // no CLI flag. See docs/guides/consumer-setup.md and docs/guides/authoring.md.
     // Opt-in OpenAPI reference pages (mission openapi-reference-pages): each spec is
     // rendered at build time under /reference/api/<label>/ with the raw document
-    // beside it. `v1` is released; `main` is unreleased and carries the badge.
+    // beside it. `v1` and `v1-1` are released; `main` is unreleased and carries the
+    // badge. `v1` and `main` are explicit; `v1-1` is the tagged-release archive
+    // (WP08): the glob matches only openapi/v1-*.yaml and the label pattern takes
+    // the hyphenated stem. Archive matches follow the explicit specs (FR-023), so
+    // the version nav lists v1, main, v1-1. The label is `v1-1`, not `v1.1`,
+    // because the pinned renderer slugifies page routes (a dot would drop:
+    // `v1.1` → `v11`); the archive refuses a derived label containing a dot.
+    // `v1` carries deleteParcel, an operation no other version has (the switcher's
+    // fallback case).
     openapi: {
       // The adopter imports the renderer; the toolkit never imports the peer.
       renderer: starlightOpenAPI,
@@ -161,6 +169,7 @@ export default defineConfig({
         { path: 'openapi/v1.yaml', label: 'v1', released: true },
         { path: 'openapi/main.yaml', label: 'main', released: false },
       ],
+      archive: { glob: 'openapi/v1-*.yaml', labelPattern: '(v1-\\d+)', released: true },
     },
     gherkin: {
       sources: ['features'],

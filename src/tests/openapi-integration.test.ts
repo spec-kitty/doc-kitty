@@ -183,6 +183,49 @@ describe('with the option (FR-002)', () => {
       }),
     ).toThrow(/\[dk-openapi\] specs\[0\] "v1": "released" is required/);
   });
+
+  it('seam registration stays idempotent however often setup re-runs in one process', async () => {
+    const { normaliseOpenApiOptions } = await import('../lib/openapi/options.mjs');
+    const materialise = await import('../lib/openapi/materialise.mjs');
+    const options = normaliseOpenApiOptions(OPENAPI_OPTION, { siteRoot: site });
+    const specs = materialise.materialiseOpenApiSpecs(options, {
+      siteRoot: site,
+      offline: false,
+      cacheDir: path.join(site, 'node_modules/.cache/doc-kitty/openapi'),
+    });
+    expect(specs.map((spec) => spec.label)).toEqual(['v1', 'main']);
+
+    /** One `defineDocKittyIntegrations`-shaped setup pass: the outer plugin's `config:setup`, then the inner integration's hooks. */
+    const runSetup = (command: string) => {
+      const added: Plugin[] = [];
+      const plugin = adapters.openApiPlugin(options, specs);
+      plugin.hooks['config:setup']({
+        command,
+        astroConfig: { base: '/' },
+        addIntegration: (integration: Plugin) => added.push(integration),
+        addRouteMiddleware: vi.fn(),
+      });
+      const innerPlugin = added[0]!;
+      innerPlugin.hooks['astro:config:setup']({ updateConfig: vi.fn(), config: { base: '/' }, command });
+      innerPlugin.hooks['astro:server:setup']({});
+    };
+
+    // A dev restart (or a repeated setup in one process) re-runs all of this
+    // against the SAME module-level hook lists: the registrations must replace
+    // themselves, not stack (a stacked link check would run twice per build).
+    runSetup('dev');
+    const buildDone = materialise.buildDoneHooks.length;
+    const dev = materialise.devHandlers.length;
+    const sitemap = materialise.sitemapPredicates.length;
+    expect(buildDone).toBeGreaterThan(0);
+    expect(dev).toBeGreaterThan(0);
+    expect(sitemap).toBeGreaterThan(0);
+    runSetup('dev');
+    runSetup('build');
+    expect(materialise.buildDoneHooks.length).toBe(buildDone);
+    expect(materialise.devHandlers.length).toBe(dev);
+    expect(materialise.sitemapPredicates.length).toBe(sitemap);
+  });
 });
 
 function fs_realpath(p: string): string {
@@ -334,7 +377,7 @@ describe('description adapter (FR-002 with the strict docs schema)', () => {
   });
 
   it('serves the virtual module with the section and versions', () => {
-    const plugin = adapters.openApiVitePlugin({ section: 's', versions: [{ label: 'v1', released: true }] });
+    const plugin = adapters.openApiVitePlugin({ section: 's', versions: [{ label: 'v1', released: true, operations: [] }] });
     const id = plugin.resolveId('virtual:doc-kitty/openapi')!;
     expect(plugin.resolveId('other')).toBeNull();
     expect(plugin.load(id)).toContain('"section":"s"');
@@ -346,8 +389,8 @@ describe('version nav data (FR-003, FR-004)', () => {
   const data = {
     section: 'reference/api',
     versions: [
-      { label: 'v1', released: true },
-      { label: 'main', released: false },
+      { label: 'v1', released: true, operations: [] },
+      { label: 'main', released: false, operations: [] },
     ],
   };
 
@@ -386,16 +429,20 @@ describe('version nav data (FR-003, FR-004)', () => {
 describe('chrome sources', () => {
   const nav = read('../components/OpenApiVersionNav.astro');
   const pageTitle = read('../components/PageTitle.astro');
+  // WP07 (recorded out-of-map edit, flagged for the reviewer): the hrefs moved
+  // into switcher.ts, whose entries carry the based `href` (T035's shape), so
+  // the component renders `entry.href` and withBase lives in switcher.ts now.
+  const switcher = read('../lib/openapi/switcher.ts');
 
   it('every link goes through withBase; the badge is text', () => {
-    expect(nav).toContain("import { withBase } from '../lib/with-base.js'");
-    expect(nav).toMatch(/href=\{withBase\(version\.route\)\}/);
+    expect(switcher).toContain("import { withBase } from '../with-base.js'");
+    expect(nav).toMatch(/href=\{entry\.href\}/);
     expect(nav.match(/href=/g)).toHaveLength(1);
     expect(nav).toMatch(/>unreleased<\/span>/);
   });
 
   it('lists versions only when there is more than one', () => {
-    expect(nav).toMatch(/versions\.length > 1/);
+    expect(nav).toMatch(/count > 1/);
   });
 
   it('PageTitle mounts it from the route local, abutted so other pages are unchanged', () => {
