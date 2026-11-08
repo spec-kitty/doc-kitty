@@ -1,0 +1,12 @@
+# doc-kitty
+
+> Documentation website template, astro based, kitty-enabled. The goal is to ship a reusable set of scripts, templates,  and an accompanying agent pack to allow ourselves and others to easily ship documentation websites.
+
+## Core Resources
+
+- [GitHub Repository](https://github.com/spec-kitty/doc-kitty): Source code, documentation, and issue tracker.
+
+## AI Agent & LLM Indexing
+
+- Structured following the standard /llms.txt specification for AI search engines and coding assistants.
+- Validated via [AccessGuard AI-Readiness Suite](https://ronanchnlps-bit.github.io/).
