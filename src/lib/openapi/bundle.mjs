@@ -391,6 +391,7 @@ function bundleSource(input, context) {
  */
 function swagger2Source(input) {
   const { entry, absPath, label, released, ext, bytes, document } = localInput(input);
+  assertSelfContained(document, entry);
   const info = docInfo(document, entry);
   return [
     {
@@ -420,6 +421,24 @@ function swagger2Source(input) {
 export function assertRefsUnderLimit(document, entry) {
   if (collectRefs(document).length > MAX_REF_COUNT) {
     throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: ref limit exceeded: more than ${MAX_REF_COUNT} $ref entries`);
+  }
+}
+
+/**
+ * Swagger 2.0 and pinned remote documents are never bundled here, yet the
+ * renderer's own `bundle()` would follow any external `$ref` with its default
+ * resolvers. Fail closed: such a document must be self-contained, so every
+ * `$ref` must be an internal pointer. Also applies the ref-count bound.
+ * @param {unknown} document
+ * @param {string} entry
+ */
+export function assertSelfContained(document, entry) {
+  assertRefsUnderLimit(document, entry);
+  const external = collectRefs(document).find((ref) => !ref.startsWith('#'));
+  if (external !== undefined) {
+    throw new Error(
+      `${OPENAPI_LOG_PREFIX} ${entry}: the $ref '${external}' is external: Swagger 2.0 / remote specs must be self-contained; inline the ref or bundle the document locally`,
+    );
   }
 }
 

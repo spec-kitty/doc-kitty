@@ -123,7 +123,11 @@ openapi: {
 ```
 
 The file must be one self-contained OpenAPI 3.0 or 3.1 document, a Swagger 2.0
-document, or a folder of files whose relative `$ref`s stay inside it.
+document, or a folder of files whose relative `$ref`s stay inside it. A
+Swagger 2.0 document and a remote (pinned URL) document must be
+self-contained: every `$ref` must start with `#`. An external ref is refused
+with `Swagger 2.0 / remote specs must be self-contained; inline the ref or
+bundle the document locally`.
 
 ## 3. Use the stable addresses
 

@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { writeCacheAtomic } from '../lib/openapi/cache.mjs';
 import { startHttpsStub, type HttpsStub } from './helpers/https-stub';
 
 vi.mock('../lib/openapi/options.mjs', async (importOriginal) => {
@@ -17,7 +18,7 @@ vi.mock('../lib/openapi/options.mjs', async (importOriginal) => {
 
 const materialise = await import('../lib/openapi/materialise.mjs');
 const { normaliseOpenApiOptions, parseDocument } = await import('../lib/openapi/options.mjs');
-const { MAX_SPEC_BYTES } = await import('../lib/openapi/limits.mjs');
+const { MAX_SPEC_BYTES, MAX_REF_COUNT } = await import('../lib/openapi/limits.mjs');
 
 const YAML = `${[
   'openapi: 3.1.0',
@@ -263,4 +264,35 @@ describe('WP10 pinned remote source (FR-021, FR-028, NFR-008)', () => {
     expect(() => remoteMaterialise(`${server.origin}/content-length-lie.yaml`)).toThrow(/10 MB limit/);
     expect(parserSpy).not.toHaveBeenCalled();
   }, 60_000);
+
+  describe('a pinned remote document must be self-contained (ADR-0078 s4)', () => {
+    const seeded = (body: string) => {
+      const pin = createHash('sha256').update(body).digest('hex');
+      writeCacheAtomic(cacheDir, pin, 'yaml', Buffer.from(body));
+      return pin;
+    };
+    const withSchema = (schema: string) =>
+      YAML.replace(
+        '          description: The parcels.',
+        `          description: The parcels.\n          content:\n            application/json:\n              schema:\n                ${schema}`,
+      );
+
+    it('rejects an external $ref, offline, naming the spec and the ref', () => {
+      const pin = seeded(withSchema("$ref: '../../outside.yaml#/P'"));
+      expect(() => remoteMaterialise(`${server.origin}/api.yaml`, pin, true)).toThrow(
+        /specs\[0\][\s\S]*\.\.\/\.\.\/outside\.yaml#\/P[\s\S]*must be self-contained/,
+      );
+    });
+
+    it('accepts internal refs', () => {
+      const pin = seeded(withSchema("$ref: '#/components/schemas/P'"));
+      expect(remoteMaterialise(`${server.origin}/api.yaml`, pin, true)).toHaveLength(1);
+    });
+
+    it('rejects more than MAX_REF_COUNT internal refs', () => {
+      const refs = Array.from({ length: MAX_REF_COUNT + 1 }, (_, i) => `  r${i}:\n    $ref: '#/x'`);
+      const pin = seeded(`${YAML}x-refs:\n${refs.join('\n')}\n`);
+      expect(() => remoteMaterialise(`${server.origin}/api.yaml`, pin, true)).toThrow(/ref limit exceeded/);
+    });
+  });
 });
