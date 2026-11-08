@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: Duplicate label API
+  version: 1.0.0
+  description: The explicit spec of the duplicate-label row, with label v1; the sibling file api-v1.yaml is an archive match whose derived label is also v1.
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: List parcels
+      responses:
+        '200':
+          description: The parcels.

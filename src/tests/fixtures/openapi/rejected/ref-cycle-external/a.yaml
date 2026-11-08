@@ -1,0 +1,12 @@
+openapi: 3.1.0
+info:
+  title: External cycle A
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    A:
+      type: object
+      properties:
+        b:
+          $ref: './b.yaml#/components/schemas/B'

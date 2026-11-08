@@ -1,0 +1,12 @@
+Pet:
+  type: object
+  required: [id, name]
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    friends:
+      type: array
+      items:
+        $ref: './pet.yaml#/Pet'

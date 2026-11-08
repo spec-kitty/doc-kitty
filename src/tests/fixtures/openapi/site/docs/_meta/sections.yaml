@@ -1,0 +1,12 @@
+# Authored section registry for the OpenAPI fixture sites (mission
+# openapi-second-slice-01M6WXJ4, WP01). Minimal on purpose: one section for the
+# guides pages the spec descriptions link to. Without a registry the toolkit
+# falls back to `starlightDefaultSidebar`, whose `{ label, autogenerate }` group
+# shape Starlight 0.39+ rejects — the example avoids the same fallback by
+# carrying this file.
+version: 1
+sections:
+  - id: guides
+    label: Guides
+    order: 10
+    type: Guide

@@ -1,0 +1,15 @@
+openapi: 3.1.0
+info:
+  title: Archive API
+  version: 1.0.0
+  description: Tagged-release file 1 of 3 for the archive input (FR-018). Its label is derived from this file name by the archive's label pattern.
+servers:
+  - url: https://api.example.test/v1
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: List parcels
+      responses:
+        '200':
+          description: The parcels.

@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: Duplicate label API (archive match)
+  version: 1.0.0
+  description: The archive match of the duplicate-label row, matched by the glob `openapi/api-v*.yaml`; its derived label (v1, via `api-(v\d+)`) collides with the explicit spec's label.
+paths:
+  /parcels:
+    get:
+      operationId: listParcelsArchive
+      summary: List parcels (archive)
+      responses:
+        '200':
+          description: The parcels.

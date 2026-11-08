@@ -1,0 +1,14 @@
+openapi: 3.1.0
+info:
+  title: Absolute file ref API
+  version: 1.0.0
+paths:
+  /parcels:
+    get:
+      responses:
+        '200':
+          description: The parcels.
+          content:
+            application/json:
+              schema:
+                $ref: 'file:///etc/passwd#/Pet'

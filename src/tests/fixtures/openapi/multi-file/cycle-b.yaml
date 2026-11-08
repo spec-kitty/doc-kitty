@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: External cycle B
+  version: 1.0.0
+  description: The other half of the external $ref cycle; a rejected-input row under rejected/ref-cycle-external drives the pair.
+paths: {}
+components:
+  schemas:
+    B:
+      type: object
+      properties:
+        a:
+          $ref: './cycle-a.yaml#/components/schemas/A'

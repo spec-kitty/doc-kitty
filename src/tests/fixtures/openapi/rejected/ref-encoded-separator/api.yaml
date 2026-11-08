@@ -1,0 +1,14 @@
+openapi: 3.1.0
+info:
+  title: Encoded separator ref API
+  version: 1.0.0
+paths:
+  /parcels:
+    get:
+      responses:
+        '200':
+          description: The parcels.
+          content:
+            application/json:
+              schema:
+                $ref: '..%2fout.yaml#/Pet'

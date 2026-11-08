@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: External cycle A
+  version: 1.0.0
+  description: One half of an external $ref cycle (a.yaml -> b.yaml -> a.yaml), which must fail closed naming the chain.
+paths: {}
+components:
+  schemas:
+    A:
+      type: object
+      properties:
+        b:
+          $ref: './cycle-b.yaml#/components/schemas/B'
