@@ -19,8 +19,8 @@ import { absolute, buildIdForBuild, docsRoot, mcpLaunchUsage, openApiStampConfig
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { servedSurfaces } from '../served-surfaces.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
-import { readPublication } from '../integrations/openapi-publish.js';
-import type { OpenApiPublication, OpenApiPublicationVersion } from '../integrations/openapi-publish.js';
+import { readPublication } from '../openapi/publication.js';
+import type { OpenApiPublication, OpenApiPublicationVersion } from '../openapi/publication.js';
 import type { Operation } from '../openapi/operations.mjs';
 import { flattenText } from '../openapi/summary.mjs';
 import { withBase } from '../with-base.js';

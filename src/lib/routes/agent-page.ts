@@ -29,7 +29,7 @@ import { absolute, memoizedBuildIdForEntries } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { readAgentIncludes, spliceAgentIncludes } from '../gherkin/agent-includes.mjs';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
-import { readPublication } from '../integrations/openapi-publish.js';
+import { readPublication } from '../openapi/publication.js';
 import { openApiSummaryMarkdown } from '../openapi/summary.mjs';
 import { openApiKeywords, toOpenApiVersionRecord } from './agent-index.js';
 

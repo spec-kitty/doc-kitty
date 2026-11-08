@@ -29,7 +29,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, wr
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { MaterialisedSpec } from '../openapi/materialise.mjs';
-import type { Operation } from '../openapi/operations.mjs';
+import type { OpenApiPublication } from '../openapi/publication.js';
 
 const PREFIX = '[dk-openapi]';
 
@@ -48,26 +48,6 @@ export interface PublishedSpec {
 export interface PublishOptions {
   section: string;
   specs: PublishedSpec[];
-}
-
-/** One version of the publication handoff (`DK_OPENAPI` internal env). */
-export interface OpenApiPublicationVersion {
-  label: string;
-  released: boolean;
-  ext: string;
-  sha256: string;
-  title: string;
-  apiVersion: string;
-  operations: Operation[];
-  /** The version's raw document route, base-less. */
-  rawRoute: string;
-}
-
-/** The version list the `llms.txt` route reads, and WP03/WP12 project further. */
-export interface OpenApiPublication {
-  section: string;
-  llmsOperations: boolean;
-  versions: OpenApiPublicationVersion[];
 }
 
 /** The option fields the publication reads. */
@@ -105,17 +85,6 @@ export function toPublication(options: PublicationOptions, specs: MaterialisedSp
  * re-export keeps the module the route and the publisher tests import.
  */
 export { openApiLlmsLines } from '../openapi/llms.js';
-
-/** Parse the `DK_OPENAPI` handoff; `undefined` when absent or malformed. */
-export function readPublication(raw: string | undefined): OpenApiPublication | undefined {
-  if (!raw) return undefined;
-  try {
-    const value = JSON.parse(raw) as OpenApiPublication;
-    return typeof value.section === 'string' && Array.isArray(value.versions) ? value : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 interface Planned {
   dir: string;

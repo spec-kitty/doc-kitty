@@ -33,7 +33,8 @@ import { absolute, docsRoot, mcpLaunchUsage } from './shared.js';
 import { collectDocEntries } from '../docs-index.js';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
-import { openApiLlmsLines, readPublication } from '../integrations/openapi-publish.js';
+import { openApiLlmsLines } from '../openapi/llms.js';
+import { readPublication } from '../openapi/publication.js';
 
 export interface LlmsTxtLinks {
   /**

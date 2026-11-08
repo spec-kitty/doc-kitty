@@ -53,7 +53,7 @@ const RELATION_SECTIONS = /** @type {const} */ ([
  * @property {string | string[]} [indexBasename] the site's index file name(s), default `README`
  * @property {string} [base] site base path (e.g. `/docs`) that graph `href`s and body links may carry
  * @property {string} [siteUrl] absolute site origin (e.g. `https://docs.example.org`); the `base` is added to it, and a URL that already ends in the base is accepted as is. Internal links that are not bundle pages become absolute against it
- * @property {import('../integrations/openapi-publish.js').OpenApiPublication} [openapi] published versions to export as generated summaries
+ * @property {import('../openapi/publication.js').OpenApiPublication} [openapi] published versions to export as generated summaries
  */
 
 // --- paths ------------------------------------------------------------------
@@ -498,7 +498,7 @@ function normalizeBase(base) {
  * The body comes from the one summary function the agent page uses (FR-002/FR-004).
  *
  * @param {Map<string, string>} out
- * @param {import('../integrations/openapi-publish.js').OpenApiPublication | undefined} publication
+ * @param {import('../openapi/publication.js').OpenApiPublication | undefined} publication
  * @param {Omit<import('./links.mjs').LinkContext, 'pageHref' | 'pageId'>} links
  * @returns {Array<{node: Record<string, any>, path: string}>}
  */

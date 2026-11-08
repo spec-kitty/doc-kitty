@@ -28,7 +28,7 @@
  * to Starlight's default (indexed) when no versions were published — a site
  * without the `openapi` option builds exactly what it did before.
  */
-import { readPublication } from '../integrations/openapi-publish.js';
+import { readPublication } from '../openapi/publication.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
 import { routeOfSlug } from '../vocabulary-core.mjs';
 

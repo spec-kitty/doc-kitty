@@ -4,7 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import type { AstroIntegration } from 'astro';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
-import { readPublication } from '../integrations/openapi-publish.js';
+import { readPublication } from '../openapi/publication.js';
 import type { IndexBasenameOption } from '../metadata.js';
 import { exportOkfToDisk } from './disk.mjs';
 

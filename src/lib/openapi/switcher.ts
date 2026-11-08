@@ -24,7 +24,7 @@
  * version's overview (resolved decision 5).
  */
 import { slug } from 'github-slugger';
-import { readPublication, type OpenApiPublication } from '../integrations/openapi-publish.js';
+import { readPublication, type OpenApiPublication } from '../openapi/publication.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
 import type { OpenApiNav } from './adapters.js';
