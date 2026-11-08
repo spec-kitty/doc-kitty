@@ -33,7 +33,7 @@ unchanged; its text and the ADR index are untouched.
 
 ADR-0049 accepted `starlight-openapi` for the reference pages and recorded
 which site surfaces saw them. The second OpenAPI slice (#285, sub-issues #257,
-#258, #259, #260) closed the gaps: synthetic agent entries, per-operation
+to #260) closed the gaps: synthetic agent entries, per-operation
 search, the version switcher, the tagged-release archive, multi-file and remote
 inputs, and the unreleased-version publication rules. Epic issue #257 originally
 asked for the pages to reach *every* surface. The maintainer resolved five
@@ -78,7 +78,7 @@ synthetic entry on the agent surfaces, projected once and shared:
 | Version switcher | Yes | A native disclosure of plain links on every page; it targets the **same operation** in the other version when that version routes one, else that version's overview (#259). No inline script, so no new CSP hash. |
 | Sitemap | Released only | Unreleased pages are built and served but held back (FR-015). |
 | Search (Pagefind) | Released only, one result per operation | Findable by summary, method and path (FR-013); unreleased pages carry no `data-pagefind-body`. |
-| `llms.txt` | Yes | One line per version (raw document link, "(unreleased)" suffix); with `openapi.llmsOperations: true`, one indented line per operation (`  - METHOD /path: summary`). Off by default, so an opting-out site's `llms.txt` is byte-identical. |
+| `llms.txt` | Yes | One line per version (raw document link, "(unreleased)" suffix); with `openapi.llmsOperations: true`, one line per operation, indented two spaces (`- METHOD /path: summary`). Off by default, so an opting-out site's `llms.txt` is byte-identical. |
 | Agent index + agent pages | Yes | The synthetic entries of §1. |
 | Content graph | Yes | One `resource` node per version, with its raw-document edge. |
 | OKF bundle | Yes | One file per version, the shared summary Markdown. |

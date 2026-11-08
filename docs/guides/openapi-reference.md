@@ -158,7 +158,7 @@ sha256sum -c openapi.yaml.sha256
   are built and served, but held back from the sitemap and from site search.
 - `llms.txt` has one line for each version. An unreleased version ends with
   "(unreleased)". With `llmsOperations: true`, each version's line is followed
-  by one line per operation, `  - METHOD /path: summary`.
+  by one line per operation, indented two spaces: `- METHOD /path: summary`.
 - Each version has one entry in the agent API and the content graph, released
   or not, carrying the same `sha256` as the published checksum.
 - Released operation pages are individual search results, findable by summary,
