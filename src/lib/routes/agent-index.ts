@@ -10,7 +10,7 @@
  */
 import process from 'node:process';
 import type { APIRoute } from 'astro';
-import type { AgentIndex, AgentRecordEntry, SectionRecord } from '../contract.js';
+import type { AgentIndex, AgentRecordEntry, AgentRecordLinks, IndexLinks, SectionRecord } from '../contract.js';
 import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { DEFAULT_AGENT_PRIORITY, rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
 import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
@@ -152,13 +152,78 @@ export interface OpenApiRecordEntry extends AgentRecordEntry {
   sha256: string;
 }
 
+/**
+ * The surfaces the index declares, after detection defaults and the caller's
+ * `links` overrides: every `_links` builder below gates on this one map.
+ */
+interface DeclaredSurfaces {
+  pages: boolean;
+  llms: boolean;
+  sitemap: boolean;
+  rss: boolean;
+  bibliography: boolean;
+  scenarios: boolean;
+  mcp: boolean;
+}
+
+/**
+ * One record's `_links`: the rendered page, the per-page JSON source when the
+ * site declares `pages`, and the resolved `related` refs as links. Shared by
+ * the docs records and the synthetic OpenAPI records so both emit the same
+ * shape.
+ */
+function recordLinks(
+  declared: DeclaredSurfaces,
+  url: string,
+  source: string,
+  related: AgentRecordLinks['related'],
+): AgentRecordLinks {
+  return {
+    ...(declared.pages ? { self: { href: source } } : {}),
+    html: { href: url },
+    related,
+  };
+}
+
+/**
+ * The index document's own `_links`: every surface the site declares. The
+ * content-graph link is always emitted (the integration injects the route on
+ * every site, #176); the MCP pointer stays opt-in (FR-009).
+ */
+function indexLinks(site: URL | undefined, indexPath: string, declared: DeclaredSurfaces): IndexLinks {
+  return {
+    self: { href: absolute(site, indexPath) },
+    ...(declared.llms ? { llms: { href: absolute(site, '/llms.txt') } } : {}),
+    ...(declared.sitemap ? { sitemap: { href: absolute(site, '/sitemap-index.xml') } } : {}),
+    contentGraph: { href: absolute(site, '/api/content-graph.json') },
+    ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
+    ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
+    ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
+    // FR-009: the opt-in MCP wiring pointer. `usage` names the installed
+    // tarball bin (the C-002 ruling on registry publishing is pending, so
+    // no `npx -y @spec-kitty/…` form is advertised yet). `href` is a
+    // RESERVED NAME, not an installable package: `@spec-kitty/doc-kitty-mcp`
+    // is `private: true` until publishing is decided, so `npm install` of it
+    // fails today. Consumers must follow `usage`, not `href`.
+    ...(declared.mcp
+      ? {
+          mcp: {
+            href: 'npm:@spec-kitty/doc-kitty-mcp',
+            title: 'Doc-Kitty MCP server',
+            usage: mcpLaunchUsage(site),
+          },
+        }
+      : {}),
+  };
+}
+
 export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
   const indexPath = options.indexPath ?? '/api/index.json';
   return async ({ site }) => {
     // Read per request, not in the factory: dev re-detects when routes change, and
     // a value taken in the factory would keep naming the old set.
     const surfaces = servedSurfaces();
-    const declared = {
+    const declared: DeclaredSurfaces = {
       pages: surfaces?.agentPages ?? true,
       llms: surfaces?.llms ?? true,
       sitemap: surfaces?.sitemap ?? true,
@@ -221,17 +286,14 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       const audience: AudienceEntry[] = entry.data.audience ?? [];
       const url = absolute(site, record.route);
       const source = absolute(site, record.source);
+      const relatedLinks = related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title }));
       return {
         ...record,
         related,
         audience,
         url,
         source,
-        _links: {
-          ...(declared.pages ? { self: { href: source } } : {}),
-          html: { href: url },
-          related: related.map((r) => ({ href: absolute(site, routeOfSlug(r.ref)), title: r.title })),
-        },
+        _links: recordLinks(declared, url, source, relatedLinks),
       };
     });
 
@@ -254,11 +316,7 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
           audience: [],
           url,
           source,
-          _links: {
-            ...(declared.pages ? { self: { href: source } } : {}),
-            html: { href: url },
-            related: [],
-          },
+          _links: recordLinks(declared, url, source, []),
         };
         pages.push(entry);
       }
@@ -277,32 +335,7 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       count: pages.length,
       buildId,
       sections,
-      _links: {
-        self: { href: absolute(site, indexPath) },
-        ...(declared.llms ? { llms: { href: absolute(site, '/llms.txt') } } : {}),
-        ...(declared.sitemap ? { sitemap: { href: absolute(site, '/sitemap-index.xml') } } : {}),
-        // Always declared: the `doc-kitty:content-graph` integration injects the route
-        // on every site (#176), so unlike the site-owned surfaces below it cannot dangle.
-        contentGraph: { href: absolute(site, '/api/content-graph.json') },
-        ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
-        ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
-        ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
-        // FR-009: the opt-in MCP wiring pointer. `usage` names the installed
-        // tarball bin (the C-002 ruling on registry publishing is pending, so
-        // no `npx -y @spec-kitty/…` form is advertised yet). `href` is a
-        // RESERVED NAME, not an installable package: `@spec-kitty/doc-kitty-mcp`
-        // is `private: true` until publishing is decided, so `npm install` of it
-        // fails today. Consumers must follow `usage`, not `href`.
-        ...(declared.mcp
-          ? {
-              mcp: {
-                href: 'npm:@spec-kitty/doc-kitty-mcp',
-                title: 'Doc-Kitty MCP server',
-                usage: mcpLaunchUsage(site),
-              },
-            }
-          : {}),
-      },
+      _links: indexLinks(site, indexPath, declared),
       pages,
     };
 
