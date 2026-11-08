@@ -1,0 +1,15 @@
+openapi: 3.1.0
+info:
+  title: One-operation API
+  version: 1.0.0
+  description: The smallest spec the agent-index growth check (NFR-004) builds, exactly one operation, so the index must grow by exactly one entry.
+servers:
+  - url: https://api.example.test/v1
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: List parcels
+      responses:
+        '200':
+          description: The parcels.

@@ -1,0 +1,39 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Swagger 2 petstore",
+    "version": "1.0.0",
+    "description": "A small Swagger 2.0 document (FR-020): accepted with its original bytes published, any conversion in memory only."
+  },
+  "host": "petstore.example.test",
+  "basePath": "/v1",
+  "schemes": ["https"],
+  "paths": {
+    "/pets": {
+      "get": {
+        "operationId": "listPets",
+        "summary": "List pets",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "The pets.",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Pet" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Pet": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    }
+  }
+}

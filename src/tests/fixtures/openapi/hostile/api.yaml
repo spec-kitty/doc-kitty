@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info:
+  title: 'Hostile <script>alert(1)</script> ](javascript:alert(1)) API'
+  version: 1.0.0
+  description: "Spec-derived titles, operation summaries and tag names below carry script tags and Markdown link syntax whose target is javascript:alert(1). DocKitty's own outputs (agent records, llms.txt, OKF summary, switcher labels) must flatten them to one line and escape the link syntax (FR-028). Rendered descriptions deliberately contain no clickable dangerous link: WP06 rejects those in its own fixtures. The renderer's HTML is owner-trusted and NOT sanitised (C-008)."
+servers:
+  - url: https://api.example.test/v1
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: 'List <script>alert(1)</script> ](javascript:alert(1)) parcels'
+      description: |
+        First line of a plain-text description.
+        Second line after an embedded newline.
+      tags: ['<script>tag</script> ](javascript:alert(1))']
+      responses:
+        '200':
+          description: The parcels.
+    post:
+      operationId: createParcel
+      summary: "Create a ](javascript:alert(2)) parcel"
+      description: 'A plain-text description with a <script> tag.'
+      responses:
+        '201':
+          description: The parcel.

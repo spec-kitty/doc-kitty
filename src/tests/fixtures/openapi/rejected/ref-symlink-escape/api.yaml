@@ -1,0 +1,23 @@
+openapi: 3.1.0
+info:
+  title: Symlink escape API
+  version: 1.0.0
+paths:
+  /parcels:
+    get:
+      responses:
+        '200':
+          description: The parcels.
+          content:
+            application/json:
+              schema:
+                $ref: 'link.yaml#/Pet'
+  /encoded:
+    get:
+      responses:
+        '200':
+          description: Encoded separators.
+          content:
+            application/json:
+              schema:
+                $ref: 'link/%2e%2e/link.yaml#/Pet'

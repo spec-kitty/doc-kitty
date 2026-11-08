@@ -1,0 +1,21 @@
+openapi: 3.1.0
+info:
+  title: Archive API
+  version: 1.1.0
+  description: Tagged-release file 2 of 3; same operations as 1.0.0 plus createParcel, so versions from an archive differ in content.
+servers:
+  - url: https://api.example.test/v1
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: List parcels
+      responses:
+        '200':
+          description: The parcels.
+    post:
+      operationId: createParcel
+      summary: Create a parcel
+      responses:
+        '201':
+          description: The parcel.

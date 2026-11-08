@@ -1,0 +1,407 @@
+openapi: 3.1.0
+info:
+  title: Alias-heavy API
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    A0: &anchor0 {type: object}
+    A1: &anchor1 {type: object}
+    A2: &anchor2 {type: object}
+    A3: &anchor3 {type: object}
+    A4: &anchor4 {type: object}
+    A5: &anchor5 {type: object}
+    A6: &anchor6 {type: object}
+    A7: &anchor7 {type: object}
+    A8: &anchor8 {type: object}
+    A9: &anchor9 {type: object}
+    A10: &anchor10 {type: object}
+    A11: &anchor11 {type: object}
+    A12: &anchor12 {type: object}
+    A13: &anchor13 {type: object}
+    A14: &anchor14 {type: object}
+    A15: &anchor15 {type: object}
+    A16: &anchor16 {type: object}
+    A17: &anchor17 {type: object}
+    A18: &anchor18 {type: object}
+    A19: &anchor19 {type: object}
+    A20: &anchor20 {type: object}
+    A21: &anchor21 {type: object}
+    A22: &anchor22 {type: object}
+    A23: &anchor23 {type: object}
+    A24: &anchor24 {type: object}
+    A25: &anchor25 {type: object}
+    A26: &anchor26 {type: object}
+    A27: &anchor27 {type: object}
+    A28: &anchor28 {type: object}
+    A29: &anchor29 {type: object}
+    A30: &anchor30 {type: object}
+    A31: &anchor31 {type: object}
+    A32: &anchor32 {type: object}
+    A33: &anchor33 {type: object}
+    A34: &anchor34 {type: object}
+    A35: &anchor35 {type: object}
+    A36: &anchor36 {type: object}
+    A37: &anchor37 {type: object}
+    A38: &anchor38 {type: object}
+    A39: &anchor39 {type: object}
+    A40: &anchor40 {type: object}
+    A41: &anchor41 {type: object}
+    A42: &anchor42 {type: object}
+    A43: &anchor43 {type: object}
+    A44: &anchor44 {type: object}
+    A45: &anchor45 {type: object}
+    A46: &anchor46 {type: object}
+    A47: &anchor47 {type: object}
+    A48: &anchor48 {type: object}
+    A49: &anchor49 {type: object}
+    A50: &anchor50 {type: object}
+    A51: &anchor51 {type: object}
+    A52: &anchor52 {type: object}
+    A53: &anchor53 {type: object}
+    A54: &anchor54 {type: object}
+    A55: &anchor55 {type: object}
+    A56: &anchor56 {type: object}
+    A57: &anchor57 {type: object}
+    A58: &anchor58 {type: object}
+    A59: &anchor59 {type: object}
+    A60: &anchor60 {type: object}
+    A61: &anchor61 {type: object}
+    A62: &anchor62 {type: object}
+    A63: &anchor63 {type: object}
+    A64: &anchor64 {type: object}
+    A65: &anchor65 {type: object}
+    A66: &anchor66 {type: object}
+    A67: &anchor67 {type: object}
+    A68: &anchor68 {type: object}
+    A69: &anchor69 {type: object}
+    A70: &anchor70 {type: object}
+    A71: &anchor71 {type: object}
+    A72: &anchor72 {type: object}
+    A73: &anchor73 {type: object}
+    A74: &anchor74 {type: object}
+    A75: &anchor75 {type: object}
+    A76: &anchor76 {type: object}
+    A77: &anchor77 {type: object}
+    A78: &anchor78 {type: object}
+    A79: &anchor79 {type: object}
+    A80: &anchor80 {type: object}
+    A81: &anchor81 {type: object}
+    A82: &anchor82 {type: object}
+    A83: &anchor83 {type: object}
+    A84: &anchor84 {type: object}
+    A85: &anchor85 {type: object}
+    A86: &anchor86 {type: object}
+    A87: &anchor87 {type: object}
+    A88: &anchor88 {type: object}
+    A89: &anchor89 {type: object}
+    A90: &anchor90 {type: object}
+    A91: &anchor91 {type: object}
+    A92: &anchor92 {type: object}
+    A93: &anchor93 {type: object}
+    A94: &anchor94 {type: object}
+    A95: &anchor95 {type: object}
+    A96: &anchor96 {type: object}
+    A97: &anchor97 {type: object}
+    A98: &anchor98 {type: object}
+    A99: &anchor99 {type: object}
+    A100: &anchor100 {type: object}
+    A101: &anchor101 {type: object}
+    A102: &anchor102 {type: object}
+    A103: &anchor103 {type: object}
+    A104: &anchor104 {type: object}
+    A105: &anchor105 {type: object}
+    A106: &anchor106 {type: object}
+    A107: &anchor107 {type: object}
+    A108: &anchor108 {type: object}
+    A109: &anchor109 {type: object}
+    A110: &anchor110 {type: object}
+    A111: &anchor111 {type: object}
+    A112: &anchor112 {type: object}
+    A113: &anchor113 {type: object}
+    A114: &anchor114 {type: object}
+    A115: &anchor115 {type: object}
+    A116: &anchor116 {type: object}
+    A117: &anchor117 {type: object}
+    A118: &anchor118 {type: object}
+    A119: &anchor119 {type: object}
+    A120: &anchor120 {type: object}
+    A121: &anchor121 {type: object}
+    A122: &anchor122 {type: object}
+    A123: &anchor123 {type: object}
+    A124: &anchor124 {type: object}
+    A125: &anchor125 {type: object}
+    A126: &anchor126 {type: object}
+    A127: &anchor127 {type: object}
+    A128: &anchor128 {type: object}
+    A129: &anchor129 {type: object}
+    A130: &anchor130 {type: object}
+    A131: &anchor131 {type: object}
+    A132: &anchor132 {type: object}
+    A133: &anchor133 {type: object}
+    A134: &anchor134 {type: object}
+    A135: &anchor135 {type: object}
+    A136: &anchor136 {type: object}
+    A137: &anchor137 {type: object}
+    A138: &anchor138 {type: object}
+    A139: &anchor139 {type: object}
+    A140: &anchor140 {type: object}
+    A141: &anchor141 {type: object}
+    A142: &anchor142 {type: object}
+    A143: &anchor143 {type: object}
+    A144: &anchor144 {type: object}
+    A145: &anchor145 {type: object}
+    A146: &anchor146 {type: object}
+    A147: &anchor147 {type: object}
+    A148: &anchor148 {type: object}
+    A149: &anchor149 {type: object}
+    A150: &anchor150 {type: object}
+    A151: &anchor151 {type: object}
+    A152: &anchor152 {type: object}
+    A153: &anchor153 {type: object}
+    A154: &anchor154 {type: object}
+    A155: &anchor155 {type: object}
+    A156: &anchor156 {type: object}
+    A157: &anchor157 {type: object}
+    A158: &anchor158 {type: object}
+    A159: &anchor159 {type: object}
+    A160: &anchor160 {type: object}
+    A161: &anchor161 {type: object}
+    A162: &anchor162 {type: object}
+    A163: &anchor163 {type: object}
+    A164: &anchor164 {type: object}
+    A165: &anchor165 {type: object}
+    A166: &anchor166 {type: object}
+    A167: &anchor167 {type: object}
+    A168: &anchor168 {type: object}
+    A169: &anchor169 {type: object}
+    A170: &anchor170 {type: object}
+    A171: &anchor171 {type: object}
+    A172: &anchor172 {type: object}
+    A173: &anchor173 {type: object}
+    A174: &anchor174 {type: object}
+    A175: &anchor175 {type: object}
+    A176: &anchor176 {type: object}
+    A177: &anchor177 {type: object}
+    A178: &anchor178 {type: object}
+    A179: &anchor179 {type: object}
+    A180: &anchor180 {type: object}
+    A181: &anchor181 {type: object}
+    A182: &anchor182 {type: object}
+    A183: &anchor183 {type: object}
+    A184: &anchor184 {type: object}
+    A185: &anchor185 {type: object}
+    A186: &anchor186 {type: object}
+    A187: &anchor187 {type: object}
+    A188: &anchor188 {type: object}
+    A189: &anchor189 {type: object}
+    A190: &anchor190 {type: object}
+    A191: &anchor191 {type: object}
+    A192: &anchor192 {type: object}
+    A193: &anchor193 {type: object}
+    A194: &anchor194 {type: object}
+    A195: &anchor195 {type: object}
+    A196: &anchor196 {type: object}
+    A197: &anchor197 {type: object}
+    A198: &anchor198 {type: object}
+    A199: &anchor199 {type: object}
+    U0: *anchor0
+    U1: *anchor1
+    U2: *anchor2
+    U3: *anchor3
+    U4: *anchor4
+    U5: *anchor5
+    U6: *anchor6
+    U7: *anchor7
+    U8: *anchor8
+    U9: *anchor9
+    U10: *anchor10
+    U11: *anchor11
+    U12: *anchor12
+    U13: *anchor13
+    U14: *anchor14
+    U15: *anchor15
+    U16: *anchor16
+    U17: *anchor17
+    U18: *anchor18
+    U19: *anchor19
+    U20: *anchor20
+    U21: *anchor21
+    U22: *anchor22
+    U23: *anchor23
+    U24: *anchor24
+    U25: *anchor25
+    U26: *anchor26
+    U27: *anchor27
+    U28: *anchor28
+    U29: *anchor29
+    U30: *anchor30
+    U31: *anchor31
+    U32: *anchor32
+    U33: *anchor33
+    U34: *anchor34
+    U35: *anchor35
+    U36: *anchor36
+    U37: *anchor37
+    U38: *anchor38
+    U39: *anchor39
+    U40: *anchor40
+    U41: *anchor41
+    U42: *anchor42
+    U43: *anchor43
+    U44: *anchor44
+    U45: *anchor45
+    U46: *anchor46
+    U47: *anchor47
+    U48: *anchor48
+    U49: *anchor49
+    U50: *anchor50
+    U51: *anchor51
+    U52: *anchor52
+    U53: *anchor53
+    U54: *anchor54
+    U55: *anchor55
+    U56: *anchor56
+    U57: *anchor57
+    U58: *anchor58
+    U59: *anchor59
+    U60: *anchor60
+    U61: *anchor61
+    U62: *anchor62
+    U63: *anchor63
+    U64: *anchor64
+    U65: *anchor65
+    U66: *anchor66
+    U67: *anchor67
+    U68: *anchor68
+    U69: *anchor69
+    U70: *anchor70
+    U71: *anchor71
+    U72: *anchor72
+    U73: *anchor73
+    U74: *anchor74
+    U75: *anchor75
+    U76: *anchor76
+    U77: *anchor77
+    U78: *anchor78
+    U79: *anchor79
+    U80: *anchor80
+    U81: *anchor81
+    U82: *anchor82
+    U83: *anchor83
+    U84: *anchor84
+    U85: *anchor85
+    U86: *anchor86
+    U87: *anchor87
+    U88: *anchor88
+    U89: *anchor89
+    U90: *anchor90
+    U91: *anchor91
+    U92: *anchor92
+    U93: *anchor93
+    U94: *anchor94
+    U95: *anchor95
+    U96: *anchor96
+    U97: *anchor97
+    U98: *anchor98
+    U99: *anchor99
+    U100: *anchor100
+    U101: *anchor101
+    U102: *anchor102
+    U103: *anchor103
+    U104: *anchor104
+    U105: *anchor105
+    U106: *anchor106
+    U107: *anchor107
+    U108: *anchor108
+    U109: *anchor109
+    U110: *anchor110
+    U111: *anchor111
+    U112: *anchor112
+    U113: *anchor113
+    U114: *anchor114
+    U115: *anchor115
+    U116: *anchor116
+    U117: *anchor117
+    U118: *anchor118
+    U119: *anchor119
+    U120: *anchor120
+    U121: *anchor121
+    U122: *anchor122
+    U123: *anchor123
+    U124: *anchor124
+    U125: *anchor125
+    U126: *anchor126
+    U127: *anchor127
+    U128: *anchor128
+    U129: *anchor129
+    U130: *anchor130
+    U131: *anchor131
+    U132: *anchor132
+    U133: *anchor133
+    U134: *anchor134
+    U135: *anchor135
+    U136: *anchor136
+    U137: *anchor137
+    U138: *anchor138
+    U139: *anchor139
+    U140: *anchor140
+    U141: *anchor141
+    U142: *anchor142
+    U143: *anchor143
+    U144: *anchor144
+    U145: *anchor145
+    U146: *anchor146
+    U147: *anchor147
+    U148: *anchor148
+    U149: *anchor149
+    U150: *anchor150
+    U151: *anchor151
+    U152: *anchor152
+    U153: *anchor153
+    U154: *anchor154
+    U155: *anchor155
+    U156: *anchor156
+    U157: *anchor157
+    U158: *anchor158
+    U159: *anchor159
+    U160: *anchor160
+    U161: *anchor161
+    U162: *anchor162
+    U163: *anchor163
+    U164: *anchor164
+    U165: *anchor165
+    U166: *anchor166
+    U167: *anchor167
+    U168: *anchor168
+    U169: *anchor169
+    U170: *anchor170
+    U171: *anchor171
+    U172: *anchor172
+    U173: *anchor173
+    U174: *anchor174
+    U175: *anchor175
+    U176: *anchor176
+    U177: *anchor177
+    U178: *anchor178
+    U179: *anchor179
+    U180: *anchor180
+    U181: *anchor181
+    U182: *anchor182
+    U183: *anchor183
+    U184: *anchor184
+    U185: *anchor185
+    U186: *anchor186
+    U187: *anchor187
+    U188: *anchor188
+    U189: *anchor189
+    U190: *anchor190
+    U191: *anchor191
+    U192: *anchor192
+    U193: *anchor193
+    U194: *anchor194
+    U195: *anchor195
+    U196: *anchor196
+    U197: *anchor197
+    U198: *anchor198
+    U199: *anchor199

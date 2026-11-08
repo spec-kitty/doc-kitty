@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: Empty label API
+  version: 1.0.0
+  description: The file NAME is this row's fixture. With the label pattern `api-v-(\d*)` the capturing group matches the empty string, so the derived label is empty and the archive must fail closed naming this file.
+paths:
+  /parcels:
+    get:
+      operationId: listParcels
+      summary: List parcels
+      responses:
+        '200':
+          description: The parcels.

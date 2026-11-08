@@ -1,0 +1,30 @@
+openapi: 3.1.0
+info:
+  title: Multi-file pets API
+  version: 1.0.0
+  description: The entry of a definition split across files with relative $ref (FR-019). Pet lives in schemas/pet.yaml; the self-referencing list item is an internal cycle, which bundling must preserve.
+servers:
+  - url: https://api.example.test/v1
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      summary: List pets
+      responses:
+        '200':
+          description: The pets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './schemas/pet.yaml#/Pet'
+components:
+  schemas:
+    PetList:
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/PetList'
+        first:
+          $ref: './schemas/pet.yaml#/Pet'

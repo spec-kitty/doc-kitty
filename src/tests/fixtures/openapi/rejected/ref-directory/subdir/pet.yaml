@@ -1,0 +1,4 @@
+# Exists only so `subdir/` is a directory in git and in every copied site:
+# the ref names the directory itself, which is not a regular file.
+Pet:
+  type: object

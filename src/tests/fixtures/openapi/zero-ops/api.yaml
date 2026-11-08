@@ -1,0 +1,16 @@
+openapi: 3.1.0
+info:
+  title: Zero-operation API
+  version: 1.0.0
+  description: A spec version with no operations at all. Its synthetic entry must still exist, its llms.txt summary is empty, and the switcher still lists it (spec edge case).
+servers:
+  - url: https://api.example.test/v1
+paths: {}
+components:
+  schemas:
+    Parcel:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
