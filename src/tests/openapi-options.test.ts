@@ -122,6 +122,10 @@ describe('normaliseOpenApiOptions: refusals', () => {
     expect(() => runSpec({ label: 'V1.2.0', path: 'openapi/main.json' })).toThrow(/label may not contain "."/);
   });
 
+  it.each(['index', 'Index', 'INDEX'])('refuses the reserved label %j, which routes as the section page', (label) => {
+    expect(() => runSpec({ label })).toThrow(/label "index" is reserved.*choose another/);
+  });
+
   it('refuses a missing label', () => {
     expect(() => runSpec({ label: undefined })).toThrow('specs[0]: "label" is required');
   });

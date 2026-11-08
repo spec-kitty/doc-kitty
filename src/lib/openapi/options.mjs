@@ -45,6 +45,12 @@ export const RESERVED_OPENAPI_ROOT = 'api';
  */
 const ROUTE_SAFE_SEGMENT = /^[a-z0-9_-]+$/;
 
+/**
+ * A version labelled `index` would be served at `<section>/index/`, which the
+ * agent index, content graph and OKF map to the section page itself.
+ */
+export const RESERVED_LABEL = 'index';
+
 /** File extensions the raw document may have, as published in `openapi.<ext>`. */
 const EXTENSIONS = ['yaml', 'yml', 'json'];
 
@@ -238,6 +244,11 @@ function normaliseLabel(spec, name) {
   if (!ROUTE_SAFE_SEGMENT.test(label)) {
     throw new Error(
       `${OPENAPI_LOG_PREFIX} ${entry}: label may use only a-z, 0-9, "_" and "-" (after lower-casing)`,
+    );
+  }
+  if (label === RESERVED_LABEL) {
+    throw new Error(
+      `${OPENAPI_LOG_PREFIX} ${entry}: label "index" is reserved (the renderer serves it at <section>/index/ while the agent index and content graph map it to the section page); choose another label, for example "latest"`,
     );
   }
   if (typeof released !== 'boolean') {

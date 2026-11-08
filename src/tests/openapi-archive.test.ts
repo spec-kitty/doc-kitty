@@ -250,6 +250,13 @@ describe('archive fail-closed (FR-022, FR-028)', () => {
     ).toThrow(/derived label "v1\.0\.0" contains "\.".*api-v1\.0\.0\.yaml/);
   });
 
+  it('refuses a derived label of "index", which routes as the section page', () => {
+    const root = makeSite({ 'openapi/api-Index.yaml': specText('Index API', '1.0.0') });
+    expect(() =>
+      materialised(root, { archive: { glob: 'openapi/*.yaml', labelPattern: 'api-(.+)\\.yaml' } }),
+    ).toThrow(/derived label "index" is reserved.*api-Index\.yaml/);
+  });
+
   it('[WP08] refuses a derived label with characters a route segment cannot carry', () => {
     const root = makeSite({ 'openapi/api-v1 beta.yaml': specText('Space API', '1.0.0') });
     expect(() => materialised(root, { archive: { glob: 'openapi/*.yaml', labelPattern: 'api-(v1 beta)' } })).toThrow(

@@ -27,7 +27,7 @@
 import { globSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { MAX_ARCHIVE_MATCHES } from './limits.mjs';
-import { OPENAPI_LOG_PREFIX } from './options.mjs';
+import { OPENAPI_LOG_PREFIX, RESERVED_LABEL } from './options.mjs';
 import { materialiseSpec } from './materialise.mjs';
 
 /** One label is one route segment: a dot would not survive the renderer's slug. */
@@ -185,6 +185,12 @@ function deriveLabel(entry, pattern, rel) {
     fail(
       entry,
       `the derived label ${JSON.stringify(label)} contains "."; the renderer drops dots from routes, so use a hyphen (${rel})`,
+    );
+  }
+  if (label === RESERVED_LABEL) {
+    fail(
+      entry,
+      `the derived label "index" is reserved (it routes as the section page); rename the archived file or capture another part of the name (${rel})`,
     );
   }
   if (!ROUTE_SAFE_LABEL.test(label)) {
