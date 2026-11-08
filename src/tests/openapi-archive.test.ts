@@ -248,6 +248,13 @@ describe('archive fail-closed (FR-022, FR-028)', () => {
     expect(() =>
       materialised(root, { archive: { glob: 'openapi/*.yaml', labelPattern: 'api-(v[\\d.]+)\\.yaml' } }),
     ).toThrow(/derived label "v1\.0\.0" contains "\.".*api-v1\.0\.0\.yaml/);
+    // The advice must be something the user can do: labelPattern only captures.
+    expect(() =>
+      materialised(root, { archive: { glob: 'openapi/*.yaml', labelPattern: 'api-(v[\\d.]+)\\.yaml' } }),
+    ).toThrow(/rename the archived files, or capture a dot-free part of the name \(for example the major version\)/);
+    expect(() =>
+      materialised(root, { archive: { glob: 'openapi/*.yaml', labelPattern: 'api-(v[\\d.]+)\\.yaml' } }),
+    ).not.toThrow(/hyphen/);
   });
 
   it('refuses a derived label of "index", which routes as the section page', () => {

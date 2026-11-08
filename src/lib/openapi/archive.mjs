@@ -184,7 +184,7 @@ function deriveLabel(entry, pattern, rel) {
   if (label.includes('.')) {
     fail(
       entry,
-      `the derived label ${JSON.stringify(label)} contains "."; the renderer drops dots from routes, so use a hyphen (${rel})`,
+      `the derived label ${JSON.stringify(label)} contains "."; the renderer drops dots from routes, so rename the archived files, or capture a dot-free part of the name (for example the major version) (${rel})`,
     );
   }
   if (label === RESERVED_LABEL) {
