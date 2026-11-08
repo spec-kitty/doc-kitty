@@ -147,6 +147,36 @@ describe('bundling and Swagger 2 (FR-019, FR-020)', () => {
   });
 });
 
+describe('Swagger 2.0 documents must be self-contained (FR-022, ADR-0078 s3)', () => {
+  const swagger = (schema: Record<string, unknown>) =>
+    JSON.stringify({
+      swagger: '2.0',
+      info: { title: 'S2', version: '1.0.0' },
+      paths: { '/pets': { get: { operationId: 'listPets', responses: { 200: { description: 'ok', schema } } } } },
+      definitions: { Pet: { type: 'object' } },
+    });
+  const run = (body: string) => {
+    mkdirSync(path.join(site, 'openapi', 'swagger2'), { recursive: true });
+    writeFileSync(path.join(site, 'openapi', 'swagger2', 'gate.json'), body);
+    return materialised({ specs: [{ path: 'openapi/swagger2/gate.json', label: 'v2', released: true }] });
+  };
+
+  it('rejects a ../ ref naming the spec, the ref and the remedy', () => {
+    expect(() => run(swagger({ $ref: '../../outside.yaml#/Pet' }))).toThrow(
+      /specs\[0\][\s\S]*\.\.\/\.\.\/outside\.yaml#\/Pet[\s\S]*Swagger 2\.0 \/ remote specs must be self-contained; inline the ref or bundle the document locally/,
+    );
+  });
+
+  it('rejects an https ref', () => {
+    expect(() => run(swagger({ $ref: 'https://example.com/pet.json' }))).toThrow(/self-contained/);
+  });
+
+  it('still accepts internal #/definitions refs', () => {
+    const specs = run(swagger({ $ref: '#/definitions/Pet' }));
+    expect(specs[0]!.origin).toBe('swagger2');
+  });
+});
+
 describe('the $ref gate (FR-022, FR-028)', () => {
   /** A valid minimal spec, for rows whose setup writes a target file. */
   const MINIMAL_SPEC = `${[

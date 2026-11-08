@@ -20,6 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCacheVerified, writeCacheAtomic, cacheEntryPath } from './cache.mjs';
 import { FETCH_TIMEOUT_MS, MAX_REDIRECTS, MAX_SPEC_BYTES, MAX_YAML_ALIASES } from './limits.mjs';
+import { assertSelfContained } from './bundle.mjs';
 import { extractOperations } from './operations.mjs';
 import { OPENAPI_LOG_PREFIX, parseDocument } from './options.mjs';
 
@@ -238,6 +239,7 @@ export function materialiseRemote(input, context) {
       renderPath = writeCacheAtomic(context.cacheDir, input.sha256, input.ext, bytes);
     }
     const document = parseRemote(bytes, input.url);
+    assertSelfContained(document, entry);
     const info = /** @type {Record<string, string>} */ (document.info);
     return [{
       label: input.label,

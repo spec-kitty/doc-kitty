@@ -114,6 +114,9 @@ and every surface reads it:
   published as **one bundled file**: the published bytes are the bundle, and
   match no single source file (decision 1). Swagger 2.0 documents are accepted;
   the original bytes are published and conversion happens in memory only.
+  Swagger 2.0 and remote documents are never bundled, so they must be
+  **self-contained**: any `$ref` that does not start with `#` is refused,
+  because the renderer's own bundler would otherwise follow it.
 - Labels are unique, lower-cased, and route-safe: `a-z`, `0-9`, `_`, `-`.
   **A dot is refused** — the renderer slugifies routes and drops dots, so
   `v1.1` would advertise an address the site does not serve (`/v11/`).
@@ -134,7 +137,8 @@ Spec inputs are **owner-trusted**, exactly like the site's Markdown:
   host filtering.
 - Broken or hostile input fails closed through the FR-028 bounds: realpath
   containment for `$ref` targets and archive matches, regular files only,
-  absolute/`file://`/`http(s)` refs rejected, at most 200 archive matches, a
+  absolute/`file://`/`http(s)` refs rejected (Swagger 2.0 and remote documents
+  must be self-contained: every external `$ref` is refused), at most 200 archive matches, a
   30 s fetch timeout, a 10 MB size cap, at most 100 YAML aliases, bounded ref
   count and depth, no URL userinfo, no authentication headers, a verified
   cache (hash checked before parse, atomic write, never through a symlinked
