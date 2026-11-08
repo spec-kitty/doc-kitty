@@ -18,7 +18,7 @@ import { siteDraftRoutes } from '../integrations/shared.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
 import type { IndexBasenameOption } from '../metadata.js';
 import { flattenText } from '../openapi/summary.mjs';
-import { readPublication } from '../integrations/openapi-publish.js';
+import { readPublication } from '../openapi/publication.js';
 import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import { absolute } from './shared.js';
 

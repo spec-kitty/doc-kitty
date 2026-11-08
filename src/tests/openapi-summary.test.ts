@@ -11,7 +11,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { escapeMdLink, flattenText, openApiSummaryMarkdown } from '../lib/openapi/summary.mjs';
-import type { OpenApiPublicationVersion } from '../lib/integrations/openapi-publish.js';
+import type { OpenApiPublicationVersion } from '../lib/openapi/publication.js';
 
 /** A publication version as WP02 materialises it, with the contract's shape. */
 function version(over: Partial<OpenApiPublicationVersion> = {}): OpenApiPublicationVersion {

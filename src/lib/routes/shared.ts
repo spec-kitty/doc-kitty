@@ -13,7 +13,7 @@ import type { DocKittyFrontmatter, IndexBasenameOption } from '../metadata.js';
 import { isPublished, readmeToIndexId, slugFromEntryId } from '../metadata.js';
 import { toolkitVersion } from '../generator-stamp.mjs';
 import { withBase } from '../with-base.js';
-import { readPublication, type OpenApiPublication } from '../integrations/openapi-publish.js';
+import { readPublication, type OpenApiPublication } from '../openapi/publication.js';
 
 /**
  * The minimal content-layer entry shape the docs-root resolver reads: the store

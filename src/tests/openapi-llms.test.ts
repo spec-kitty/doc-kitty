@@ -14,12 +14,13 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
-import type { OpenApiPublication } from '../lib/integrations/openapi-publish.js';
+import type { OpenApiPublication } from '../lib/openapi/publication.js';
 import type { Operation } from '../lib/openapi/operations.mjs';
 
 vi.mock('astro:content', () => ({ getCollection: async () => [], render: async () => ({ headings: [] }) }));
 
-const { openApiLlmsLines, readPublication } = await import('../lib/integrations/openapi-publish.js');
+const { openApiLlmsLines } = await import('../lib/integrations/openapi-publish.js');
+const { readPublication } = await import('../lib/openapi/publication.js');
 const { llmsTxtRoute } = await import('../lib/routes/llms-txt.js');
 const { DK_OPENAPI_ENV } = await import('../lib/internal-env.mjs');
 

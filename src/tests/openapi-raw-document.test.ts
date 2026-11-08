@@ -21,11 +21,12 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import type { OpenApiPublication } from '../lib/integrations/openapi-publish.js';
+import type { OpenApiPublication } from '../lib/openapi/publication.js';
 
 vi.mock('astro:content', () => ({ getCollection: async () => [], render: async () => ({ headings: [] }) }));
 
 const publish = await import('../lib/integrations/openapi-publish.js');
+const { readPublication } = await import('../lib/openapi/publication.js');
 const { llmsTxtRoute } = await import('../lib/routes/llms-txt.js');
 const assertions = await import('../scripts/assert-openapi-artifacts.mjs');
 const { DK_OPENAPI_ENV } = await import('../lib/internal-env.mjs');
@@ -213,9 +214,9 @@ describe('llms.txt (FR-008)', () => {
   });
 
   it('ignores a malformed handoff rather than failing the route', () => {
-    expect(publish.readPublication('{nope')).toBeUndefined();
-    expect(publish.readPublication('{"section":1}')).toBeUndefined();
-    expect(publish.readPublication(undefined)).toBeUndefined();
+    expect(readPublication('{nope')).toBeUndefined();
+    expect(readPublication('{"section":1}')).toBeUndefined();
+    expect(readPublication(undefined)).toBeUndefined();
   });
 });
 

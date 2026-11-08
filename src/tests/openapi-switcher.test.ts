@@ -21,7 +21,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DK_OPENAPI_ENV } from '../lib/internal-env.mjs';
 import type { OpenApiNav, OpenApiNavVersion } from '../lib/openapi/adapters.js';
 import type { Operation } from '../lib/openapi/operations.mjs';
-import type { OpenApiPublication, OpenApiPublicationVersion } from '../lib/integrations/openapi-publish.js';
+import type { OpenApiPublication, OpenApiPublicationVersion } from '../lib/openapi/publication.js';
 import { switcherEntries, switcherPublication } from '../lib/openapi/switcher.js';
 import { buildOpenApiFixture, readAll, removeOpenApiFixtureBuilds } from './helpers/openapi-build';
 

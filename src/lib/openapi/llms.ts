@@ -22,7 +22,7 @@
  * (plan.md's parallel-edit registry); the route imports it from there.
  */
 import type { Operation } from './operations.mjs';
-import type { OpenApiPublication } from '../integrations/openapi-publish.js';
+import type { OpenApiPublication } from '../openapi/publication.js';
 import { escapeMdLink, flattenText } from './summary.mjs';
 
 /** Bytewise string order: locale-independent, the order the contract names. */

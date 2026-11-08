@@ -22,7 +22,7 @@ import path from 'node:path';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { buildOpenApiFixture, readAll, removeOpenApiFixtureBuilds, FIXTURES } from './helpers/openapi-build';
 import { DK_OPENAPI_ENV } from '../lib/internal-env.mjs';
-import type { OpenApiPublication } from '../lib/integrations/openapi-publish.js';
+import type { OpenApiPublication } from '../lib/openapi/publication.js';
 
 const { entries } = vi.hoisted(() => ({
   entries: [
