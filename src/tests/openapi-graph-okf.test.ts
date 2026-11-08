@@ -30,7 +30,7 @@ interface GraphNode {
   kind?: string;
   title?: string;
   url?: string;
-  resource?: { sha256?: string; released?: boolean; overview?: string };
+  openapi?: { sha256?: string; released?: boolean; overview?: string };
 }
 
 interface ContentGraphDoc {
@@ -91,7 +91,7 @@ describe('[WP12] content graph and OKF synthetic entries', () => {
         kind: 'resource',
         title: 'Parcels API',
         url: `https://docs.example.test/reference/api/${label}/openapi.yaml`,
-        resource: {
+        openapi: {
           sha256: digest,
           released: label === 'v1',
           overview: `https://docs.example.test/reference/api/${label}/`,
@@ -112,7 +112,7 @@ describe('[WP12] content graph and OKF synthetic entries', () => {
       const body = bodyOf(text(pair.a, `okf/${key}`));
       expect(body).toContain(`# Parcels API ${label}\n`);
       expect(body).toContain(`- Raw document: ${graphNode?.url}\n`);
-      expect(body).toContain(`- sha256: ${graphNode?.resource?.sha256}\n`);
+      expect(body).toContain(`- sha256: ${graphNode?.openapi?.sha256}\n`);
       expect(body).toContain('## Operations\n');
       const title = `Parcels API ${label}${label === 'v1' ? '' : ' (unreleased)'}`;
       expect(text(pair.a, 'okf/index.md')).toContain(`[${title}](/${key})`);
@@ -145,7 +145,7 @@ describe('[WP12] based graph and OKF URLs', () => {
     const graph = json<ContentGraphDoc>(files, 'api/content-graph.json');
     expect(graph.nodes.find((node) => node.id === 'openapi:v1')).toMatchObject({
       url: 'https://docs.example.test/handbook/reference/api/v1/openapi.yaml',
-      resource: { overview: 'https://docs.example.test/handbook/reference/api/v1/' },
+      openapi: { overview: 'https://docs.example.test/handbook/reference/api/v1/' },
     });
     expect(bodyOf(text(files, 'okf/reference/api/v1.md'))).toContain(
       '- Raw document: https://docs.example.test/handbook/reference/api/v1/openapi.yaml\n',
@@ -197,7 +197,7 @@ describe('[WP12] hostile spec strings in graph and OKF', () => {
       'Hostile <script>alert(1)</script> ](javascript:alert(1)) API',
     );
     const body = bodyOf(text(files, 'okf/reference/api/v1.md'));
-    expect(body).toContain('- GET /parcels: List <script>alert\\(1\\)</script> \\]\\(javascript:alert\\(1\\)\\) parcels\n');
+    expect(body).toContain('- GET /parcels: List \\<script\\>alert\\(1\\)\\</script\\> \\]\\(javascript:alert\\(1\\)\\) parcels\n');
     expect(body).toContain('- POST /parcels: Create a \\]\\(javascript:alert\\(2\\)\\) parcel\n');
     expect(body).not.toContain('](javascript:');
   });

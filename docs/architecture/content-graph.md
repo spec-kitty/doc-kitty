@@ -57,6 +57,7 @@ uses.
 | `persona` | bundle path | A page under `context/audience/` |
 | `catalog` | `catalog:<type>:<id>` | A bibliography entry cited by `external_references` |
 | `resource` | `resource:<url-or-path>` | An external URL, or a `sources` resource that is not a page |
+| `resource` | `openapi:<label>` | One published OpenAPI version, when the `openapi` option is set (see below) |
 
 A page node carries these fields when the page has a value for them:
 
@@ -65,6 +66,16 @@ A page node carries these fields when the page has a value for them:
   mapped from `doc_status` (see the [metadata model](./metadata-model.md#doc_status-to-okf-status)).
 - DocKitty fields: `doc_status`, `doc_kind`, `section`, `href`, `authors`,
   `updated`.
+
+An `openapi:<label>` node has its own id namespace: `<label>` is the version
+label from the `openapi.specs` option, so it cannot collide with a page path or
+a `resource:` id. It is a `resource` node with a `title`, a `url` (the version's
+raw document) and an `openapi` object, `{ sha256, released, overview }`: the
+raw document's digest, whether the version is released, and the absolute URL of
+the version's overview page. `resource` stays what it is on every node, a
+string path, and is unset here. The node has no edges: the graph holds
+frontmatter relations only, and a spec version has no frontmatter. Sites
+without the option have no such nodes.
 
 Instants are UTC `YYYY-MM-DDTHH:MM:SSZ` and actors use the
 [actor convention](./metadata-model.md#actors). Catalog and resource nodes carry

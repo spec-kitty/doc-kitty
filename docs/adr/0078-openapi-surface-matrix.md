@@ -82,7 +82,7 @@ synthetic entry on the agent surfaces, projected once and shared:
 | Search (Pagefind) | Released only, one result per operation | Findable by summary, method and path (FR-013); unreleased pages carry no `data-pagefind-body`. |
 | `llms.txt` | Yes | One line per version (raw document link, "(unreleased)" suffix); with `openapi.llmsOperations: true`, one line per operation, indented two spaces (`- METHOD /path: summary`). Off by default, so an opting-out site's `llms.txt` is byte-identical. |
 | Agent index + agent pages | Yes | The synthetic entries of §1. |
-| Content graph | Yes | One `resource` node per version, with its raw-document edge. |
+| Content graph | Yes | One `resource` node per version, id `openapi:<label>`, with its raw document `url` and an `openapi` object (`sha256`, `released`, `overview`). No edges: the graph holds frontmatter relations only. |
 | OKF bundle | Yes | One file per version, the shared summary Markdown. |
 | RSS / Atom feeds | **No** (FR-011) | A spec version has no publication date, and the raw document carries its own history. |
 | Glossary autolinker | **No** (FR-010) | The renderer runs its own Markdown pipeline over descriptions; autolinking there would silently miss. |
