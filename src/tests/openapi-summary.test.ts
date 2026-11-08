@@ -12,6 +12,10 @@
 import { describe, expect, it } from 'vitest';
 import { escapeMdLink, flattenText, openApiSummaryMarkdown } from '../lib/openapi/summary.mjs';
 import type { OpenApiPublicationVersion } from '../lib/openapi/publication.js';
+import { openApiLlmsLines } from '../lib/openapi/llms.js';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 
 /** A publication version as WP02 materialises it, with the contract's shape. */
 function version(over: Partial<OpenApiPublicationVersion> = {}): OpenApiPublicationVersion {
@@ -98,8 +102,8 @@ describe('hostile spec strings (FR-028, the hostile fixture contract)', () => {
     });
     const markdown = openApiSummaryMarkdown(hostile, '/reference/api/v1/openapi.yaml');
     // Flattened to one line, never a raw newline inside a field.
-    expect(markdown).toContain('# Hostile <script>alert\\(1\\)</script> API v1\n');
-    expect(markdown).toContain('- GET /parcels: List <script>alert\\(1\\)</script> parcels\n');
+    expect(markdown).toContain('# Hostile \\<script\\>alert\\(1\\)\\</script\\> API v1\n');
+    expect(markdown).toContain('- GET /parcels: List \\<script\\>alert\\(1\\)\\</script\\> parcels\n');
     // Link syntax escaped with a backslash, so no Markdown link can be injected.
     expect(markdown).toContain('- POST /parcels: Create a \\]\\(javascript:alert\\(2\\)\\) parcel\n');
     expect(markdown).not.toMatch(/[^\\]\]\(/);
@@ -107,5 +111,85 @@ describe('hostile spec strings (FR-028, the hostile fixture contract)', () => {
     expect(markdown).toContain(`- sha256: ${'a'.repeat(64)}`);
     expect(markdown).toContain('- Raw document: /reference/api/v1/openapi.yaml');
     expect(markdown).toContain(' API v1\n');
+  });
+});
+
+interface MdNode {
+  type: string;
+  children?: MdNode[];
+  position?: { start: { offset?: number } };
+}
+
+/**
+ * The node types of a parsed Markdown document. A `link` counts only when it was
+ * written with link syntax (`[..](..)` or `<..>`): a GFM bare-URL autolink of
+ * plain text is allowed to stay.
+ */
+function nodeTypes(markdown: string): Set<string> {
+  const types = new Set<string>();
+  const visit = (node: MdNode): void => {
+    const first = markdown[node.position?.start.offset ?? -1];
+    if (node.type !== 'link' || first === '[' || first === '<') types.add(node.type);
+    for (const child of node.children ?? []) visit(child);
+  };
+  visit(unified().use(remarkParse).use(remarkGfm).parse(markdown) as MdNode);
+  return types;
+}
+
+describe('escaping survives a Markdown parse (FR-028)', () => {
+  const hostile = [
+    '\\[x\\]\\(https://e\\)',
+    '<https://e/a>',
+    '<a href="x">y</a>',
+    '[x](https://e)',
+    '`code`',
+    '\\',
+  ];
+  const expectInert = (markdown: string, text: string): void => {
+    const types = nodeTypes(markdown);
+    expect(types.has('link'), text).toBe(false);
+    expect(types.has('html'), text).toBe(false);
+    expect(types.has('inlineCode'), text).toBe(false);
+  };
+
+  it('[escape] spec-derived titles, paths, summaries and versions never become a link or html node', () => {
+    for (const text of hostile) {
+      const markdown = openApiSummaryMarkdown(
+        version({
+          title: text,
+          apiVersion: text,
+          operations: [{ method: 'GET', path: text, summary: text, slug: 'operations/x' }],
+        }),
+        '/reference/api/v1/openapi.yaml',
+      );
+      // The raw-document line is toolkit-produced (a bare route), not spec text.
+      expectInert(
+        markdown
+          .split('\n')
+          .filter((line) => !line.startsWith('- Raw document'))
+          .join('\n'),
+        text,
+      );
+    }
+  });
+
+  it('[escape] escapeMdLink escapes the backslash first, then angle brackets and backticks', () => {
+    expect(escapeMdLink('\\[')).toBe('\\\\\\[');
+    expect(escapeMdLink('<a>`')).toBe('\\<a\\>\\`');
+  });
+
+  it('[escape] the llms.txt operation lines apply the same escaping', () => {
+    for (const text of hostile) {
+      const lines = openApiLlmsLines(
+        {
+          section: 'reference/api',
+          llmsOperations: true,
+          versions: [version({ operations: [{ method: 'GET', path: text, summary: text, slug: 'operations/x' }] })],
+        },
+        () => 'https://d.example/openapi.yaml',
+      );
+      // Line 0 is the toolkit's own `[label](url)` link; the rest is spec text.
+      expectInert(lines.slice(1).join('\n'), text);
+    }
   });
 });

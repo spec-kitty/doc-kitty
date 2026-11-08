@@ -43,12 +43,16 @@ export function flattenText(value) {
 }
 
 /**
- * Backslash-escape the Markdown link syntax characters: no link can be injected.
+ * Backslash-escape the characters that open a Markdown link, an autolink, an
+ * HTML node or a code span: the backslash itself first (an author's own `\[`
+ * must not cancel our escape), then `[ ] ( ) < >` and the backtick. Plain-text
+ * bare URLs may still autolink under GFM; no link syntax, raw HTML or code can
+ * be injected.
  * @param {unknown} value
  * @returns {string}
  */
 export function escapeMdLink(value) {
-  return String(value ?? '').replace(/[[\]()]/g, (character) => `\\${character}`);
+  return String(value ?? '').replace(/[\\[\]()<>`]/g, (character) => `\\${character}`);
 }
 
 /** Spec-derived text: flattened, then link-escaped. */
