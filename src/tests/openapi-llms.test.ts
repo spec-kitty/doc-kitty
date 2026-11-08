@@ -161,7 +161,7 @@ describe('llms.txt operation lines (WP04)', () => {
     expect(lines).toEqual([
       '- [v1](https://d.example/reference/api/v1/openapi.yaml)',
       '  - GET /line break: id \\]\\(javascript:alert\\(3\\)\\)',
-      '  - GET /parcels: List <script>alert\\(1\\)</script> parcels',
+      '  - GET /parcels: List \\<script\\>alert\\(1\\)\\</script\\> parcels',
       '  - POST /parcels: Create a \\]\\(javascript:alert\\(2\\)\\) parcel',
     ]);
     // Every operation line stays one physical line.
