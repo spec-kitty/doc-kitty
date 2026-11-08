@@ -106,8 +106,17 @@ function collectRefs(node, refs = []) {
 function readWalked(real, entry, name) {
   let bytes;
   try {
+    // Stat first: an oversized file is refused before it is read into memory.
+    const size = statSync(real).size;
+    if (size > MAX_SPEC_BYTES) {
+      throw Object.assign(new Error('too large'), { dkSize: size });
+    }
     bytes = readFileSync(real);
-  } catch {
+  } catch (error) {
+    const size = /** @type {{ dkSize?: number }} */ (error)?.dkSize;
+    if (size !== undefined) {
+      throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: 10 MB limit exceeded: the file is ${size} bytes (${name})`);
+    }
     throw new Error(`${OPENAPI_LOG_PREFIX} ${entry}: cannot read the file (${name})`);
   }
   if (bytes.length > MAX_SPEC_BYTES) {
