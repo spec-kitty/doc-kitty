@@ -163,11 +163,16 @@ describe('openapi indexing (WP05: FR-013, FR-015)', () => {
       { label: 'main', released: false },
     ];
 
-    it('[WP05] the sitemap predicate drops an unreleased route, with or without a site base, and nothing else', () => {
+    it('[WP05] the sitemap predicate drops an unreleased route under the base, as a segment-bounded prefix, and nothing else', () => {
       const keep = openApiSitemapPredicate('reference/api', versions);
       expect(keep('https://docs.example.test/reference/api/main/')).toBe(false);
       expect(keep('https://docs.example.test/reference/api/main/operations/listparcels/')).toBe(false);
-      expect(keep('https://docs.example.test/doc-kitty/reference/api/main/')).toBe(false);
+      expect(openApiSitemapPredicate('reference/api', versions, '/doc-kitty/')('https://docs.example.test/doc-kitty/reference/api/main/')).toBe(false);
+      // Only a path prefix after the base counts: an unrelated parent segment or a
+      // lookalike base keeps the page.
+      expect(keep('https://docs.example.test/old/reference/api/main/')).toBe(true);
+      expect(keep('https://docs.example.test/old/reference/api/beta/')).toBe(true);
+      expect(openApiSitemapPredicate('reference/api', versions, '/doc-kitty')('https://docs.example.test/doc-kittyx/reference/api/main/')).toBe(true);
       // Released versions, a lookalike label, and every other section stay.
       expect(keep('https://docs.example.test/reference/api/v1/')).toBe(true);
       expect(keep('https://docs.example.test/reference/api/v1/operations/listparcels/')).toBe(true);

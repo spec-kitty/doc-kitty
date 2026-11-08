@@ -95,17 +95,19 @@ export function openApiPagefind(_title: string, schema?: IndexingSchema): boolea
  * The sitemap predicate that holds an unreleased version's pages back (FR-015).
  * `page` is the absolute URL `@astrojs/sitemap` hands its filter.
  *
- * The URL is matched on its `/<section>/<label>/` chain without stripping the
- * site base: the sitemap emits the base, and that chain is unique in a route (an
- * authored page under it is refused at config time as a route collision), so the
- * chain identifies the version whether the site ships at `/` or under
- * `/doc-kitty/`. A version marked `released: true` contributes no chain, and a
- * site with every version released registers no predicate at all.
+ * The URL path is stripped of the site `base` (Astro's `config.base`, `/` by
+ * default) at a segment boundary, then matched as a path prefix on segment
+ * boundaries: `/<section>/<label>/` drops the version's pages, but neither
+ * `/old/<section>/<label>/` nor `/<section>/<label>x/` is touched. A version
+ * marked `released: true` contributes no route, and a site with every version
+ * released registers no predicate at all.
  */
 export function openApiSitemapPredicate(
   section: string,
   versions: readonly IndexingVersion[],
+  base = '/',
 ): (page: string) => boolean {
+  const prefix = base.replace(/\/+$/, '');
   const unreleased = versions
     .filter((version) => !version.released)
     .map((version) => routeOfSlug(`${section}/${version.label}/index`));
@@ -118,6 +120,10 @@ export function openApiSitemapPredicate(
       pathname = page;
     }
     const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`;
-    return !unreleased.some((route) => normalized.includes(route));
+    const underBase =
+      prefix !== '' && (normalized === `${prefix}/` || normalized.startsWith(`${prefix}/`))
+        ? normalized.slice(prefix.length)
+        : normalized;
+    return !unreleased.some((route) => underBase.startsWith(route));
   };
 }

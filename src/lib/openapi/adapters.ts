@@ -355,7 +355,7 @@ export function resolveOpenApiNav(
  * registry's `buildDoneHooks` after the publisher and its `devHandlers` on server
  * setup (plan.md's parallel-edit registry).
  */
-export function openApiPlugin(options: NormalisedOpenApiOptions, specs: MaterialisedSpec[]) {
+export function openApiPlugin(options: NormalisedOpenApiOptions, specs: MaterialisedSpec[], base = '/') {
   const data: OpenApiModuleData = {
     section: options.section,
     versions: specs.map(({ label, released, operations }) => ({ label, released, operations })),
@@ -371,7 +371,7 @@ export function openApiPlugin(options: NormalisedOpenApiOptions, specs: Material
   // all released must drop the predicate the earlier, unreleased evaluation
   // registered, not keep filtering with it (#285).
   if (data.versions.some((version) => !version.released)) {
-    registerSitemapPredicate('openapi:unreleased-versions', openApiSitemapPredicate(options.section, data.versions));
+    registerSitemapPredicate('openapi:unreleased-versions', openApiSitemapPredicate(options.section, data.versions, base));
   } else {
     unregisterSitemapPredicate('openapi:unreleased-versions');
   }
@@ -438,9 +438,9 @@ export function openApiStylesheetFilter() {
 }
 
 /** The Starlight plugins for the option, in the order they must run: the adopter's renderer first. */
-export function openApiPlugins(options: NormalisedOpenApiOptions, specs: MaterialisedSpec[]) {
+export function openApiPlugins(options: NormalisedOpenApiOptions, specs: MaterialisedSpec[], base = '/') {
   const renderer = options.renderer(openApiRendererConfig(options, specs));
-  return [renderer, openApiPlugin(options, specs), openApiStylesheetFilter()];
+  return [renderer, openApiPlugin(options, specs, base), openApiStylesheetFilter()];
 }
 
 /**
