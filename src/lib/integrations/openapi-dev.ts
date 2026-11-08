@@ -143,8 +143,8 @@ function end(response: DevResponse, status: number): void {
 }
 
 /**
- * Answer one request: a traversal signal is refused everywhere, a route outside
- * this middleware's namespace is passed on, and only an exact allowlist entry is
+ * Answer one request: a route outside this middleware's namespace is passed on,
+ * a traversal signal inside it is refused, and only an exact allowlist entry is
  * served (GET/HEAD).
  */
 function handle(state: DevState, request: DevRequest, response: DevResponse, next: Next): void {
@@ -158,10 +158,11 @@ function handle(state: DevState, request: DevRequest, response: DevResponse, nex
     // is refused; anything else is the dev server's to answer.
     return withoutBase(rawPath, state.base).startsWith(state.prefix) ? end(response, 404) : next();
   }
+  const route = withoutBase(pathname, state.base);
+  // Not this middleware's namespace: the dev server's to answer, whatever the path looks like.
+  if (!route.startsWith(state.prefix)) return next();
   // Refused before any matching: a traversal attempt is never a legitimate URL.
   if (isTraversal(rawPath) || isTraversal(pathname)) return end(response, 404);
-  const route = withoutBase(pathname, state.base);
-  if (!route.startsWith(state.prefix)) return next();
   if (method !== 'GET' && method !== 'HEAD') {
     response.statusCode = 405;
     response.setHeader('Allow', 'GET, HEAD');

@@ -196,6 +196,10 @@ describe('raw documents in astro dev (WP04)', () => {
     }
     // Malformed encoding outside this middleware's namespace is passed on.
     expect(dev.call('GET', '/guides/%zz').next).toBe(true);
+    // A traversal-looking request outside the namespace is not this middleware's to refuse.
+    for (const url of ['/guides/a%2Fb/', '/guides/../x/', '/consumer-fixture/guides/a%5Cb/']) {
+      expect(dev.call('GET', url).next, url).toBe(true);
+    }
     // A traversal attempt is refused on any method, not answered as 405.
     expect(dev.call('POST', '/reference/api/v1/%2e%2e/openapi.yaml').status).toBe(404);
   });
