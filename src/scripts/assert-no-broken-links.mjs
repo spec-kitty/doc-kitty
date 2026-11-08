@@ -81,16 +81,25 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-// Any `scheme:` prefix (`http:`, `https:`, `mailto:`, `tel:`, `javascript:`, …).
-// Mirrors `src/lib/with-base.ts` / `src/lib/rehype/base-absolute-links.ts`'s
-// classification — kept as an independent copy here (this script is
-// dependency-free stdlib Node, not part of the Astro-runtime TS layer those
-// live in) but documented as mirroring it so the three seams agree on what
-// counts as "external".
-const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
+// The dist link-check primitives this gate shares with the OpenAPI section
+// gate (`src/lib/integrations/openapi-link-check.ts`) live in ONE stdlib-only
+// module (#285, F3): the scheme classifier, entity-decoding href extraction
+// (quoted AND unquoted — the superset), the sorted missing-dir-tolerant HTML
+// walk, the prefix-generic page route, the null-signalling base strip, and
+// the route-to-dist-file resolution. Imported here (this gate's own walk and
+// base checks use them) and re-exported so its tests and callers keep
+// importing them from the script.
+import {
+  SCHEME_RE,
+  extractHrefs,
+  walkHtmlFiles,
+  pageRouteFor,
+  stripBase,
+  distCandidatesFor,
+  distFileExists,
+} from '../lib/link-check-shared.mjs';
 
-// `<a href="...">` / `<a href='...'>`, href in any attribute position.
-const ANCHOR_HREF_RE = /<a\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>/gi;
+export { SCHEME_RE, extractHrefs, walkHtmlFiles, pageRouteFor, stripBase, distCandidatesFor, distFileExists };
 
 // Mirrors `check-links.mjs`'s `isTemplate` skip (`/(^|\/)template\.md$/i`),
 // translated to the rendered route: the ADR template's own scaffolding
@@ -98,17 +107,6 @@ const ANCHOR_HREF_RE = /<a\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>/gi;
 // intentionally never a real target — an adopter fills it in when they copy
 // the template. Neither gate treats this file's links as real.
 const TEMPLATE_PAGE_RE = /(^|\/)template\/index\.html$/i;
-
-/** Extract every `<a href>` value from one page's raw HTML, in document order. */
-export function extractHrefs(html) {
-  const hrefs = [];
-  let m;
-  ANCHOR_HREF_RE.lastIndex = 0;
-  while ((m = ANCHOR_HREF_RE.exec(html)) !== null) {
-    hrefs.push(m[1] ?? m[2] ?? '');
-  }
-  return hrefs;
-}
 
 /**
  * True for a link this gate does not resolve at all (v1 scope, see module
@@ -121,11 +119,6 @@ export function isSkippableHref(href) {
   if (trimmed.startsWith('//')) return true;
   if (SCHEME_RE.test(trimmed)) return true;
   return false;
-}
-
-/** Recursively collect every `.html` file under `dir`, as posix paths relative to `dir`. */
-export function walkHtmlFiles(dir, root = dir) {
-  return walkFilesWithExt(dir, '.html', root);
 }
 
 /** Recursively collect every file with `ext` (e.g. `.json`) under `dir`, as posix paths relative to `dir`. */
@@ -143,25 +136,6 @@ function walkFilesWithExt(dir, ext, root = dir) {
 }
 
 /**
- * The page's own route (base-INCLUDED, matching what a browser actually has
- * as `location.pathname` for this page) for a dist-relative HTML file path —
- * Astro's default directory build format: `foo/index.html` -> `<base>/foo/`
- * (trailing-slash directory route, so a bare/`./`-relative href on the page
- * resolves against that directory, not against a sibling of `foo`); the
- * top-level `index.html` -> `<base>/`; a non-index file, e.g. `404.html`
- * -> `<base>/404` (no implied trailing slash — this gate does not assume a
- * directory shape for a route it did not itself derive from an `index.html`).
- */
-export function pageRouteFor(relHtmlPath, base) {
-  const posix = relHtmlPath.split(path.sep).join('/');
-  if (posix === 'index.html') return `${base}/`;
-  if (posix.endsWith('/index.html')) {
-    return `${base}/${posix.slice(0, -'index.html'.length)}`;
-  }
-  return `${base}/${posix.slice(0, -'.html'.length)}`;
-}
-
-/**
  * Resolve one href AS A URL against the page's own route (RFC 3986, via the
  * WHATWG `URL` resolver — this is the trailing-slash-directory-semantics
  * "whole point" vs. the filesystem-based `check-links.mjs`), then strip the
@@ -171,43 +145,6 @@ export function resolveHref(href, pageRoute) {
   const pageUrl = new URL(pageRoute, 'https://dist.invalid');
   const resolved = new URL(href, pageUrl);
   return decodeURI(resolved.pathname);
-}
-
-/**
- * Strip the configured `base` off a resolved pathname. Returns `null` when
- * the pathname does not carry it at all — the #61 base-less/wrong-base
- * signal, reported distinctly from an ordinary missing target (see module
- * doc: dist's on-disk layout has no `<base>/` directory, so a base-less href
- * would otherwise coincidentally "exist"). With no `base` configured
- * (`''`, the default — an un-based site), every pathname trivially carries
- * it and this is a no-op.
- */
-export function stripBase(pathname, base) {
-  if (!base) return pathname;
-  if (pathname === base) return '/';
-  if (pathname.startsWith(`${base}/`)) return pathname.slice(base.length) || '/';
-  return null;
-}
-
-/**
- * Dist-relative candidate file(s) a base-agnostic route could be served from,
- * per the WP spec: "an `index.html` for a directory route, or the file". A
- * route ending in `/` is unambiguously a directory route; one that doesn't
- * (an asset like `/rss.xml`, or a directory route linked without its
- * trailing slash) is checked as a literal file FIRST, falling back to its
- * `index.html` — so both shapes resolve without needing an extension
- * allowlist.
- */
-export function distCandidatesFor(route) {
-  const trimmed = route.replace(/^\/+/, '');
-  if (trimmed === '') return ['index.html'];
-  if (route.endsWith('/')) return [path.posix.join(trimmed, 'index.html')];
-  return [trimmed, path.posix.join(trimmed, 'index.html')];
-}
-
-/** Does `route` (base already stripped) exist in `distDir`, per {@link distCandidatesFor}? */
-export function distFileExists(distDir, route) {
-  return distCandidatesFor(route).some((candidate) => existsSync(path.join(distDir, candidate)));
 }
 
 /** A route as a key: with a leading and a trailing slash. */
