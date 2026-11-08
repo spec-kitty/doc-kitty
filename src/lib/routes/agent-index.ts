@@ -84,7 +84,7 @@ export interface OpenApiVersionRecord {
   section: string;
   title: string;
   description: string;
-  type: 'reference';
+  type: 'Reference';
   doc_status: 'active';
   kind: 'Reference';
   tags: string[];
@@ -115,7 +115,7 @@ export function toOpenApiVersionRecord(
     section: sectionOf(slug),
     title: `${flattenText(version.title)} ${version.label}${version.released ? '' : ' (unreleased)'}`,
     description: `OpenAPI ${flattenText(version.apiVersion)} contract, ${version.operations.length} operations`,
-    type: 'reference',
+    type: 'Reference',
     doc_status: 'active',
     kind: 'Reference',
     tags: ['openapi'],

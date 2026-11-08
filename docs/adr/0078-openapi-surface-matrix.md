@@ -54,7 +54,7 @@ Every materialised spec version — from `specs[].path`, a remote `url`, the
 `archive` glob, a multi-file definition or a Swagger 2.0 document — yields one
 synthetic entry on the agent surfaces, projected once and shared:
 
-- `slug` is `<section>/<label>`; the record carries `type: reference`,
+- `slug` is `<section>/<label>`; the record carries `type: Reference`,
   `doc_status: active`, `kind: Reference`, `tags: ["openapi"]`, the `released`
   flag, `rawDocumentUrl` (the base-aware path of the published raw document)
   and its `sha256`.
