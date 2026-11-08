@@ -61,7 +61,7 @@ import { loadReport } from '../gherkin/results-load.mjs';
 import { featureView } from '../gherkin/view.mjs';
 import { GHERKIN_PRODUCER, stampContentHash, toolkitVersion } from '../generator-stamp.mjs';
 import { isScenarioIndexed } from './scenario-index-filter.js';
-import { absolute, buildIdForBuild, docsRoot, toBuildIdEntries } from './shared.js';
+import { absolute, buildIdForBuild, docsRoot, openApiStampConfig, toBuildIdEntries } from './shared.js';
 
 /**
  * The emitted shape's version. `2` since 0.4.0 (#183): the deprecated
@@ -337,8 +337,10 @@ export function scenarioIndexRoute(options: ScenarioIndexRouteOptions = {}): API
     // FR-008 (WP01/T004): the corpus-wide build identity over EVERY entry
     // (pre-filter, pre-projection — the same full-corpus mapping agent-index
     // and agent-page apply), stamped into the emitted body below so a torn
-    // corpus read across artifact kinds is detectable.
-    const buildId = buildIdForBuild(toBuildIdEntries(entries));
+    // corpus read across artifact kinds is detectable. The OpenAPI specs'
+    // identity folds in through the same shared seam (#257), so this artifact
+    // keeps agreeing with the index's stamp on an `openapi` site.
+    const buildId = buildIdForBuild(toBuildIdEntries(entries), openApiStampConfig());
     const pages = entries
       .map((entry) => ({
         entry,

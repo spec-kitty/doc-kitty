@@ -15,7 +15,7 @@ import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { DEFAULT_AGENT_PRIORITY, rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
 import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { absolute, buildIdForBuild, docsRoot, mcpLaunchUsage } from './shared.js';
+import { absolute, buildIdForBuild, docsRoot, mcpLaunchUsage, openApiStampConfig } from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { servedSurfaces } from '../served-surfaces.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
@@ -168,7 +168,10 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
     // `withBody`: the build identity hashes every entry's body bytes
     // (FR-008); downstream consumers of the entries ignore the field.
     const all = await collectDocEntries({ withBody: true });
-    const buildId = buildIdForBuild(all);
+    // The publication read once: the OpenAPI records below and the build
+    // identity's spec fold (#257) share it.
+    const openapi = readPublication(process.env[DK_OPENAPI_ENV]);
+    const buildId = buildIdForBuild(all, openApiStampConfig(openapi));
     // Resolve against the full corpus, not just the discoverable subset, so a
     // `related` ref into a non-discoverable page still resolves (FR-004).
     const index = buildDocsIndex(all);
@@ -234,9 +237,9 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
     // among them (contracts/synthetic-entry.md). Only the `openapi` option
     // publishes the handoff, so a site without it emits exactly what it did
     // before. The records are not docs entries: the section `feeds` filter and
-    // `rankForAgents` never see them, and the buildId above stays docs-corpus
-    // only, so index, docs pages and synthetic pages keep agreeing on it.
-    const openapi = readPublication(process.env[DK_OPENAPI_ENV]);
+    // `rankForAgents` never see them. The buildId above folds the specs'
+    // (label, released, sha256) through the shared `openApiStampConfig` seam,
+    // so index, docs pages and synthetic pages keep agreeing on it.
     if (openapi) {
       for (const version of openapi.versions) {
         const record = toOpenApiVersionRecord(openapi, version);
