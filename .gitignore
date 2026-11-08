@@ -154,6 +154,8 @@ example/.dk-test-chrome/
 example/dist-chrome-*/
 # served-surfaces-build.test.ts builds the example here (page-chrome WP01).
 example/dist-wp01-served-surfaces-test/
+# openapi-materialise.test.ts builds OpenAPI fixtures here (openapi WP02, transient).
+example/.dk-test-openapi/
 
 # @beoe/rehype-mermaid disk cache (#13 WP03 FR-009) — CI-restored via actions/cache,
 # never committed. Persists across build-mode builds so an unchanged diagram skips Chromium.

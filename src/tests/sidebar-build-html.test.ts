@@ -202,8 +202,10 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
       'Glossary Demo',
       // The `openapi` option appends one group per version, after the shaped sections
       // (WP04: the example sets the option). They are not registry sections.
+      // `v1-1` comes from WP08's archive, whose matches follow the explicit specs (FR-023).
       'API v1',
       'API main',
+      'API v1-1',
     ]);
   });
 

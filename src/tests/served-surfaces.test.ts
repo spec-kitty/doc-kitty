@@ -32,6 +32,7 @@ const NONE: ServedSurfaces = {
   sitemap: false,
   okf: true,
   pageAtom: false,
+  openapi: false,
 };
 
 describe('detectServedSurfaces', () => {
@@ -62,6 +63,7 @@ describe('detectServedSurfaces', () => {
       sitemap: true,
       okf: true,
       pageAtom: false,
+      openapi: false,
     });
   });
 
@@ -69,6 +71,11 @@ describe('detectServedSurfaces', () => {
     expect(detectServedSurfaces([], true)).toEqual({ ...NONE, sitemap: true });
     expect(detectServedSurfaces([], false)).toEqual(NONE);
     expect(detectServedSurfaces(['/sitemap-index.xml'], false).sitemap).toBe(false);
+  });
+
+  it('the openapi flag follows the third argument: the option says it, routes cannot (WP02)', () => {
+    expect(detectServedSurfaces([], false, true)).toEqual({ ...NONE, openapi: true });
+    expect(detectServedSurfaces(['/reference/api/[...slug]'], false).openapi).toBe(false);
   });
 
   it('leaves a route at a non-standard path undetected, the documented limit', () => {
@@ -136,6 +143,15 @@ describe('servedSurfacesIntegration', () => {
   it('does not count a redirect at a surface path; a real route there is the control', () => {
     resolve(servedSurfacesIntegration(), [route('/rss.xml', 'redirect'), route('/llms.txt')]);
     expect(servedSurfaces()).toEqual({ ...NONE, llms: true });
+  });
+
+  it('carries the openapi flag of the option through every publish (WP02)', () => {
+    const integration = servedSurfacesIntegration(true);
+    resolve(integration, [route('/rss.xml')]);
+    configDone(integration, 'https://example.test');
+    expect(servedSurfaces()).toEqual({ ...NONE, rss: true, sitemap: true, openapi: true });
+    resolve(integration, [route('/llms.txt')]);
+    expect(servedSurfaces()).toEqual({ ...NONE, llms: true, sitemap: true, openapi: true });
   });
 });
 

@@ -47,12 +47,16 @@ export default defineConfig({
     indexBasename: ['README', 'index'],
     // The example's `openapi` option (paths resolve against the example root, the build's
     // working directory): its reference pages are pages of the example (WP04).
+    // Repeats the example's specs one-for-one, in its order: the themed build must
+    // produce the same pages as the stock build (WP01's third spec, `v1-1`, served from
+    // WP08's tagged-release archive, is mirrored here for exactly that reason).
     openapi: {
       renderer: starlightOpenAPI,
       specs: [
         { path: 'openapi/v1.yaml', label: 'v1', released: true },
         { path: 'openapi/main.yaml', label: 'main', released: false },
       ],
+      archive: { glob: 'openapi/v1-*.yaml', labelPattern: '(v1-\\d+)', released: true },
     },
     legacyHtmlRedirects: JSON.parse(readFileSync(new URL('legacy-redirects.json', EXAMPLE), 'utf8')),
   }),

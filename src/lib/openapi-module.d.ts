@@ -3,11 +3,7 @@
  * (served by the `openapi` option's Vite plugin, `lib/openapi/adapters.ts`).
  */
 declare module 'virtual:doc-kitty/openapi' {
-  export const openApi: {
-    /** Mount point of the reference pages, without slashes at the ends. */
-    section: string;
-    versions: Array<{ label: string; released: boolean }>;
-  };
+  export const openApi: import('./openapi/adapters.js').OpenApiModuleData;
 }
 
 /** The version nav the route middleware sets for a reference page (`PageTitle` reads it). */
