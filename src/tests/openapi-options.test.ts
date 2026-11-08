@@ -158,6 +158,16 @@ describe('normaliseOpenApiOptions: refusals', () => {
     expect(() => run({ section, specs: [spec()] })).toThrow('"api/" is reserved for the agent API');
   });
 
+  it('refuses a dotted section segment exactly like a dotted label, suggesting a hyphen (#259)', () => {
+    expect(() => run({ section: 'docs/v1.1', specs: [spec()] })).toThrow(
+      'a segment may not contain "." (the renderer drops dots from routes); use a hyphen instead, for example "v1-1"',
+    );
+  });
+
+  it('still accepts a hyphenated section', () => {
+    expect(run({ section: 'docs/v1-1', specs: [spec()] }).section).toBe('docs/v1-1');
+  });
+
   it('allows a section that only starts with "api"', () => {
     expect(run({ section: 'apis', specs: [spec()] }).section).toBe('apis');
   });

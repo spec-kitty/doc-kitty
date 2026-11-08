@@ -47,14 +47,14 @@ export interface SwitcherEntry {
  * The renderer's base route of a version: `<section>/<label>` with each segment
  * slugified, trailing slash included. Segments that are empty or `.` never match
  * a real route and are dropped before slugging — the renderer's own
- * `getSchemaBasePath` does NOT drop them, but no conforming config can produce
- * one (the `section` rule refuses empty and `.` segments, and a dotted label is
- * refused by the toolkit's label validation, openapi-second-slice WP11), so the
- * drop is a guard, not a behaviour difference. The route is built the way the
- * nav's own `versionRoute` builds its verbatim one (FR-003, issue 134): through
- * `routeOfSlug`, the one owner of the address rule, with `/index` appended so
- * the strip yields the directory route — which also keeps a label that itself
- * slugs to `index` routing to its own directory.
+ * `getSchemaBasePath` does NOT drop them — so the drop is a guard, not a
+ * behaviour difference: every section segment and every label follows the same
+ * route-safe rule (a-z, 0-9, `_`, `-`; dots refused, #259), so no conforming
+ * config produces a segment that slugs differently from the way it reads. The
+ * route is built the way the nav's own `versionRoute` builds its verbatim one
+ * (FR-003, issue 134): through `routeOfSlug`, the one owner of the address
+ * rule, with `/index` appended so the strip yields the directory route — which
+ * also keeps a label that itself slugs to `index` routing to its own directory.
  */
 function versionBase(section: string, label: string): string {
   const segments = [...section.split('/'), label].filter((segment) => segment !== '' && segment !== '.');

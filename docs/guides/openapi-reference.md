@@ -77,7 +77,7 @@ export default defineConfig({
 | Field | Meaning |
 | --- | --- |
 | `renderer` | Required. The `starlight-openapi` plugin factory that you imported. |
-| `section` | Optional. Where the pages live. Default `reference/api`. Use lowercase segments of `a-z`, `0-9`, `.`, `_` and `-`. The `api/` root is reserved for the agent API. |
+| `section` | Optional. Where the pages live. Default `reference/api`. Use lowercase segments of `a-z`, `0-9`, `_` and `-` — no dots, exactly like a label. The `api/` root is reserved for the agent API. |
 | `specs[].path` | A local definition, relative to the project root. It must end in `.yaml`, `.yml` or `.json`. Either `path` or `url`, never both. |
 | `specs[].url` | A remote definition. `https:` only, and it requires `sha256`. At most five redirects are followed; the digest is of the final bytes. |
 | `specs[].sha256` | 64 lowercase hex. Required with `url`. With `path` it is an optional pin, verified when the file is read. |
@@ -201,7 +201,7 @@ index and label, and the file. A failing build publishes nothing.
 | a `$ref` error (`is not a relative file reference`, `escapes the definition folder`, `cannot resolve the $ref`, …) | Keep `$ref` values inside the definition's folder, as relative file paths. |
 | `"label" is required`, `label may use only …`, `label may not contain "."`, or `duplicate label` | Give each version a unique label of `a-z`, `0-9`, `_` and `-` — no dots. |
 | `"released" is required and must be true or false` | Set `released: true` or `released: false`. |
-| `each "/"-separated segment must be non-empty and use only a-z, 0-9, ".", "_" or "-"`, or `"api/" is reserved` | Choose a section that follows the rule in the table above. |
+| `each "/"-separated segment must be non-empty and use only a-z, 0-9, "_" and "-"`, `a segment may not contain "."`, or `"api/" is reserved` | Choose a section that follows the rule in the table above. |
 | `https is required`, `userinfo is not allowed`, or `sha256 is required for a remote spec` | Use an `https:` URL with no user and password, and pin its sha256. |
 | `the url must end in .yaml, .yml or .json` | Point the `url` at a `.yaml`, `.yml` or `.json` document. |
 | `sha256 mismatch` | The response no longer hashes to the pin. Update the pin, or investigate the change. |
