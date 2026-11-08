@@ -149,7 +149,12 @@ import {
 //     (doc_status:active, +1) -> 69.
 //   - #250 adds the GitHub alert fixture guides/github-alerts.md
 //     (doc_status:active, +1) -> 70.
-const EXPECTED_INDEX_ENTRY_COUNT = 70;
+//   - openapi-second-slice WP03 (FR-001): the example's three OpenAPI spec
+//     versions (main, v1, v1-1) each append ONE synthetic record to the agent
+//     index after the docs records. The generated reference PAGES themselves
+//     are not docs-collection entries and were already counted only in the
+//     sitemap pin below; the synthetic index records add +3: 70 -> 73.
+const EXPECTED_INDEX_ENTRY_COUNT = 73;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -175,7 +180,16 @@ const EXPECTED_INDEX_ENTRY_COUNT = 70;
 // reference pages (2 overviews + 3 + 2 operation pages), unreleased version included:
 // they are not docs-collection entries, so the agent-index pin above does not move,
 // but the sitemap lists them. 70 -> 77.
-const EXPECTED_SITEMAP_URL_COUNT = 77;
+// openapi-second-slice WP01: the v1-1 spec (openapi/v1-1.yaml, label `v1-1`) adds
+// its overview and 3 operation pages (listParcels, createParcel, getParcel), and
+// v1 gains deleteParcel: 77 -> 82. WP08 serves the same v1-1 version from the
+// tagged-release archive (openapi/v1-*.yaml) under the same label and ext, so it
+// adds and removes no page.
+// openapi-second-slice WP05 (FR-015): the unreleased `main` version leaves the
+// sitemap — its overview and its 3 operation pages (listParcels, createParcel,
+// getParcel) are filtered — while its pages stay built, published and served.
+// 82 -> 78.
+const EXPECTED_SITEMAP_URL_COUNT = 78;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -2250,7 +2264,8 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 22 example .md files − 3 drafts, plus the 7 generated OpenAPI reference pages; if example content changed ` +
+        `(the published set — 22 example .md files − 3 drafts, plus the 8 released generated OpenAPI reference pages; the unreleased ` +
+        `\`main\` version's 4 are filtered, FR-015. If example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }

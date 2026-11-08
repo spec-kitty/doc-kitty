@@ -417,7 +417,10 @@ describe('opt-in openapi option — consumption proof (FR-010, SC-004, FR-007)',
       expect(has('toolkit chrome (.dk-openapi-*, data-dk-openapi-nav)', /^_astro\/.+\.css$/), 'the chrome stylesheet').toBe(true);
       expect(has('raw document', /^reference\/api\/main\/openapi\.yaml$/), 'the raw document').toBe(true);
       expect(has('checksum sidecar', /^reference\/api\/main\/openapi\.yaml\.sha256$/), 'the sidecar').toBe(true);
-      expect(has('reference section', /^pagefind\//), 'a route in the unpacked search index').toBe(true);
+      // The reference route is traced from its published page, not from the search
+      // index: this fixture's only version is unreleased, so FR-015 (WP05) keeps it
+      // out of Pagefind while the page itself stays built and served.
+      expect(has('reference section', /^reference\/api\/main\/index\.html$/), 'the reference page').toBe(true);
     });
 
     it('a missing or wrong renderer fails the build with the import hint, publishing nothing', () => {
@@ -433,5 +436,103 @@ describe('opt-in openapi option — consumption proof (FR-010, SC-004, FR-007)',
         expect(existsSync(path.join(withDir, 'dist', 'reference', 'api'))).toBe(false);
       }
     }, 600_000);
+  });
+
+  // The two-spec arm of mission openapi-second-slice-01M6WXJ4 (WP01/T006): what a
+  // site with TWO spec versions gets beyond the pages, raw documents and sidecars
+  // arm B already proves. The green cases pin today's publishing behaviour; the
+  // `[WPnn]` cases are `it.fails` until their work package lands — set
+  // DK_SEAM_SHOW_RED=1 to run them as ordinary `it`s and watch each fail for its
+  // stated reason (the red-first evidence), as in src/tests/openapi-seam.test.ts.
+  describe('arm B — two spec versions (mission openapi-second-slice-01M6WXJ4, WP01)', () => {
+    /** Runs a red case as `it.fails`, or as `it` under DK_SEAM_SHOW_RED=1. */
+    const red = (title: string, fn: () => void) => (process.env.DK_SEAM_SHOW_RED ? it : it.fails)(title, fn);
+
+    const V1_SPEC = `openapi: 3.0.3
+info:
+  title: Consumer API
+  version: 1.0.0
+paths:
+  /gadgets:
+    get:
+      operationId: listGadgets
+      summary: List gadgets
+      responses:
+        '200':
+          description: The gadgets.
+`;
+
+    let dist: string;
+
+    beforeAll(() => {
+      writeFileSync(path.join(withDir, 'openapi', 'v1.yaml'), V1_SPEC);
+      writeFileSync(path.join(withDir, 'astro.config.mjs'), withConfig);
+      configureOpenapi(withDir, {
+        importLine: "import starlightOpenAPI from 'starlight-openapi';",
+        option:
+          "{ renderer: starlightOpenAPI, llmsOperations: true, specs: [{ path: 'openapi/v1.yaml', label: 'v1', released: true }, { path: 'openapi/main.yaml', label: 'main', released: false }] }",
+      });
+      const build = buildFixture(withDir);
+      expect(build.status, `two-version build must succeed:\n${build.output}`).toBe(0);
+      dist = path.join(withDir, 'dist');
+    }, 600_000);
+
+    it('publishes both versions: pages, raw documents and sidecars', () => {
+      for (const [label, spec] of [
+        ['v1', V1_SPEC],
+        ['main', SPEC],
+      ] as const) {
+        const versionDir = path.join(dist, 'reference', 'api', label);
+        const files = listFiles(versionDir);
+        expect(files, `${label} overview page`).toContain('index.html');
+        expect(files.some((f) => f.endsWith('/index.html') && /gadgets|widgets/i.test(f)), `${label} operation page`).toBe(true);
+        const raw = path.join(versionDir, 'openapi.yaml');
+        expect(readFileSync(raw, 'utf8'), `${label} raw document`).toBe(spec);
+        expect(readFileSync(`${raw}.sha256`, 'utf8'), `${label} sidecar`).toBe(`${sha256(raw)}  openapi.yaml\n`);
+      }
+    }, 60_000);
+
+    it('[WP03] two synthetic entries in /api/index.json, one per version', () => {
+      const index = JSON.parse(readFileSync(path.join(dist, 'api', 'index.json'), 'utf8')) as {
+        pages: Array<{ slug?: string; tags?: string[] }>;
+      };
+      const entries = index.pages.filter((entry) => Array.isArray(entry.tags) && entry.tags.includes('openapi'));
+      expect(entries.map((entry) => entry.slug)).toEqual(['reference/api/v1', 'reference/api/main']);
+    });
+
+    it('[WP03] a page record per version, with rawDocumentUrl and the sha256', () => {
+      const page = JSON.parse(readFileSync(path.join(dist, 'api', 'pages', 'reference', 'api', 'v1.json'), 'utf8')) as {
+        rawDocumentUrl?: string;
+        sha256?: string;
+      };
+      expect(page.rawDocumentUrl).toBe('/consumer-fixture/reference/api/v1/openapi.yaml');
+      const sidecar = readFileSync(path.join(dist, 'reference', 'api', 'v1', 'openapi.yaml.sha256'), 'utf8');
+      expect(page.sha256).toBe(sidecar.slice(0, 64));
+    });
+
+    it('[WP03] the record sha256 equals the served bytes of the raw document', () => {
+      const page = JSON.parse(readFileSync(path.join(dist, 'api', 'pages', 'reference', 'api', 'v1.json'), 'utf8')) as {
+        sha256?: string;
+      };
+      expect(page.sha256).toBe(sha256(path.join(dist, 'reference', 'api', 'v1', 'openapi.yaml')));
+    });
+
+    it('[WP12] a content-graph node per spec version', () => {
+      const graph = JSON.parse(readFileSync(path.join(dist, 'api', 'content-graph.json'), 'utf8')) as {
+        nodes: Array<{ id: string; kind?: string }>;
+      };
+      const node = graph.nodes.find((candidate) => candidate.id === 'openapi:v1');
+      expect(node, 'the openapi:v1 node').toBeDefined();
+      expect(node?.kind).toBe('resource');
+    });
+
+    it('[WP12] an OKF file per spec version', () => {
+      expect(existsSync(path.join(dist, 'okf', 'reference', 'api', 'v1.md')), 'okf/reference/api/v1.md').toBe(true);
+    });
+
+    it('[WP04] the llms.txt operation line for the opted-in version', () => {
+      const llms = readFileSync(path.join(dist, 'llms.txt'), 'utf8');
+      expect(llms).toContain('  - GET /gadgets: List gadgets');
+    });
   });
 });
