@@ -78,16 +78,20 @@ The materialised list feeds the surface matrix of ADR-0078. The mechanisms:
 - **Renderer pages.** The adopter's `starlight-openapi` factory receives the
   materialised specs. The pages render inside the DocKitty frame with `--dk-*`
   theming; the renderer's own stylesheet is filtered out.
-- **Version switcher.** `openapi-switcher` middleware injects a native
-  disclosure of plain links into every page, marking the current version and
-  unreleased ones. A link from an operation page targets the same operation in
+- **Version switcher.** `src/lib/openapi/switcher.ts` builds the version
+  list and the `PageTitle` override renders it (`OpenApiVersionNav.astro`) as
+  a native disclosure of plain links on every API page, marking the current
+  version and unreleased ones. A link from an operation page targets the same operation in
   the other version when that version routes one (mapped by the renderer's own
   slug rules), else that version's overview.
 - **Raw documents.** The `astro:build:done` publisher
   (`src/lib/integrations/openapi-publish.ts`) writes each version's bytes and a
   `sha256sum`-format checksum, refuses an authored file at an output path,
-  prunes the output of removed versions, and hands the publication to the
-  routes through an internal environment handoff. In `astro dev`, a middleware
+  and prunes the output of removed versions. The routes read the publication
+  (versions, flags, digests and operations) from a content-addressed file in
+  the OpenAPI cache, written at config evaluation; only its path travels in
+  the internal `DK_OPENAPI` handoff (`src/lib/openapi/publication.ts`), so the
+  environment stays small however large the specs grow. In `astro dev`, a middleware
   handler serves the raw routes with the same bytes, from an exact route
   allowlist, GET and HEAD only.
 - **Synthetic agent entries.** `agent-index.ts` and `agent-page.ts` project
@@ -96,10 +100,11 @@ The materialised list feeds the surface matrix of ADR-0078. The mechanisms:
   projection (`toOpenApiVersionRecord`) so the two cannot drift. The records
   carry `released`, `rawDocumentUrl` and `sha256`.
 - **Feeds and discovery.** `llms.txt` gains one line per version (plus the
-  opt-in operation lines). A sitemap predicate adds released pages to the
-  sitemap; unreleased pages are built and served but held back from the
-  sitemap and from Pagefind (no `data-pagefind-body`, no search fragment). The
-  content graph gains one `resource` node per version; the OKF bundle one file
+  opt-in operation lines). Released pages reach the sitemap like any
+  page; a sitemap predicate drops the unreleased ones. Unreleased pages are
+  built and served but held back from the sitemap and from Pagefind (no `data-pagefind-body`, no search fragment). The
+  content graph gains one `openapi:<label>` node per version, with a typed
+  `openapi` field (`sha256`, `released`, `overview`); the OKF bundle one file
   per version.
 - **Deliberate exclusions.** RSS/Atom feeds, the glossary autolinker and the
   frontmatter gate never see the pages (ADR-0078 §2). The spec input is
