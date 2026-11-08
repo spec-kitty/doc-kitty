@@ -4,7 +4,8 @@
  * slice WP02: the full static shape of contracts/config-options.md).
  *
  * `normaliseOpenApiOptions` validates everything that needs no filesystem or
- * network: types, the label rule, `https`-only remote URLs with their pinned
+ * network: types, the label and section rules (both route-safe, no dots),
+ * `https`-only remote URLs with their pinned
  * sha256, the archive's glob and labelPattern, and the flags. It never reads a
  * file — reading, parsing and the structural check moved to
  * `materialise.mjs` (WP02), which runs it at config time and returns the one
@@ -34,17 +35,15 @@ export const DEFAULT_OPENAPI_SECTION = 'reference/api';
 /** The agent API owns this first segment, so no section may be or sit under it. */
 export const RESERVED_OPENAPI_ROOT = 'api';
 
-/** The characters a label (or a section segment) may use, after lower-casing (research R6). */
-const SAFE_SEGMENT = /^[a-z0-9._-]+$/;
-
 /**
- * The characters a version label may use: a segment rule without the dot.
+ * The characters a version label may use — and, the same rule (#259), a
+ * `section` segment: a-z, 0-9, `_` and `-` after lower-casing, never a dot.
  * The pinned renderer slugifies page routes and drops dots (`v1.1` routes as
- * `v11`), so a dotted label would advertise an address the site does not
- * serve; the archive source enforces the same rule on derived labels
- * (maintainer decision 2026-11-08; ADR-0078).
+ * `v11`), so a dotted label or section segment would advertise an address the
+ * site does not serve; the archive source enforces the same rule on derived
+ * labels (maintainer decision 2026-11-08; ADR-0078).
  */
-const ROUTE_SAFE_LABEL = /^[a-z0-9_-]+$/;
+const ROUTE_SAFE_SEGMENT = /^[a-z0-9_-]+$/;
 
 /** File extensions the raw document may have, as published in `openapi.<ext>`. */
 const EXTENSIONS = ['yaml', 'yml', 'json'];
@@ -179,8 +178,9 @@ export function parseDocument(text, options = {}) {
 }
 
 /**
- * Validate the `section` option: `/`-separated segments that each follow the label
- * rule, none of them empty, and not the agent API's reserved root.
+ * Validate the `section` option: `/`-separated segments that each follow the
+ * label rule (route-safe, no dots), none of them empty, and not the agent API's
+ * reserved root.
  * @param {unknown} raw
  * @returns {string}
  */
@@ -190,13 +190,27 @@ function normaliseSection(raw) {
     new Error(`${OPENAPI_LOG_PREFIX} section ${JSON.stringify(raw)}: ${why}`);
   if (typeof raw !== 'string') throw fail('must be a string');
   const segments = raw.split('/');
-  if (!segments.every((s) => SAFE_SEGMENT.test(s) && s !== '.' && s !== '..')) {
-    throw fail('each "/"-separated segment must be non-empty and use only a-z, 0-9, ".", "_" or "-"');
+  if (!segments.every((segment) => ROUTE_SAFE_SEGMENT.test(segment))) {
+    throw fail(sectionProblem(segments));
   }
   if (segments[0] === RESERVED_OPENAPI_ROOT) {
     throw fail(`"${RESERVED_OPENAPI_ROOT}/" is reserved for the agent API`);
   }
   return raw;
+}
+
+/**
+ * The refusal for a section whose segments broke the route-safe rule: a dot is
+ * named with the label rule's own fix (a hyphen), anything else gets the
+ * character rule itself.
+ * @param {string[]} segments
+ * @returns {string}
+ */
+function sectionProblem(segments) {
+  if (segments.some((segment) => segment.includes('.'))) {
+    return 'a segment may not contain "." (the renderer drops dots from routes); use a hyphen instead, for example "v1-1"';
+  }
+  return 'each "/"-separated segment must be non-empty and use only a-z, 0-9, "_" and "-"';
 }
 
 /**
@@ -221,7 +235,7 @@ function normaliseLabel(spec, name) {
       `${OPENAPI_LOG_PREFIX} ${entry}: label may not contain "." (the renderer drops dots from routes); use a hyphen instead, for example "v1-1"`,
     );
   }
-  if (!ROUTE_SAFE_LABEL.test(label)) {
+  if (!ROUTE_SAFE_SEGMENT.test(label)) {
     throw new Error(
       `${OPENAPI_LOG_PREFIX} ${entry}: label may use only a-z, 0-9, "_" and "-" (after lower-casing)`,
     );
