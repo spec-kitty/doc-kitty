@@ -9,6 +9,9 @@ section: Breaking
   derived by `archive.labelPattern` alike — with a pointed `[dk-openapi]`
   error. Rename it to a route-safe label such as `v1-1`. Every `section`
   segment follows the same rule: a mount point such as `reference/v1.1` is
-  refused too; write `reference/v1-1`. See
+  refused too; write `reference/v1-1`. A version labelled `index` (any case)
+  is refused as well, explicit or derived from an archive: the renderer serves
+  it at `<section>/index/`, but the agent index and content graph map that
+  address to the section page. Pick another label. See
   [ADR-0078](docs/adr/0078-openapi-surface-matrix.md) and
   [the migration note](docs/migrations/0.6-to-0.7.md).
