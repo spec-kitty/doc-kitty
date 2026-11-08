@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/behaviour/shipping/declare-customs/">
+  <id>https://spec-kitty.github.io/doc-kitty/behaviour/shipping/declare-customs/</id>
+  <title>Declare a consignment to customs</title>
+  <updated>2026-10-19T08:58:27.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/behaviour/shipping/declare-customs/"/>
+  <summary>Every consignment that crosses a customs border needs a declaration lodged before the sailing&apos;s cut-off.</summary>
+  <content type="html">&lt;span id=&quot;declare-a-consignment-to-customs&quot;&gt;&lt;/span&gt;
+&lt;p&gt;As a shipper&lt;br&gt;
+I want to declare my &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; to customs before it sails&lt;br&gt;
+So that the &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt; clears the border without being held&lt;/p&gt;
+&lt;p&gt;Every consignment that crosses a customs border needs a declaration lodged
+before the sailing’s cut-off. The declared value sets the duty owed, and an
+insured consignment names the marine &lt;a href=&quot;/doc-kitty/glossary/shipping/#policy&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;policy&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;policy&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;policy, glossary term&quot;&gt;policy&lt;/a&gt; that covers it.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;2 rules · 3 scenarios · 3 example rows&lt;/em&gt;&lt;/p&gt;
+&lt;p class=&quot;dk-gherkin__results&quot;&gt;&lt;strong&gt;Results:&lt;/strong&gt; 1 undefined, 4 passed · as of &lt;time datetime=&quot;2026-10-19T00:00:00.000Z&quot;&gt;2026-10-19&lt;/time&gt;&lt;/p&gt;
+&lt;h2 id=&quot;background&quot;&gt;Background&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; a booked &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt; from Rotterdam to Felixstowe&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; the customs cut-off is 24 hours before the sailing departs&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; goods with a declared value under 150 EUR are relieved of duty&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;rule-duty-follows-the-declared-value-and-the-commoditys-duty-rate&quot;&gt;Rule: Duty follows the declared value and the commodity’s duty rate&lt;/h2&gt;
+&lt;h3 id=&quot;scenario-outline-calculate-the-duty-owed-on-a-declaration&quot;&gt;Scenario Outline: Calculate the duty owed on a declaration&lt;/h3&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt; (3 passed)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; the &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; is declared under a commodity code with a duty rate of &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;rate&gt;&lt;/code&gt;%&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; its declared value is &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;value&gt;&lt;/code&gt; EUR&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the shipper lodges the declaration before the cut-off&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the declaration is accepted&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; the duty owed is &lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;duty&gt;&lt;/code&gt; EUR&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Examples: Dutiable goods&lt;/strong&gt;&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;rate&lt;/th&gt;&lt;th&gt;value&lt;/th&gt;&lt;th&gt;duty&lt;/th&gt;&lt;th&gt;Result&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;6&lt;/td&gt;&lt;td&gt;10000&lt;/td&gt;&lt;td&gt;600&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;25000&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;Examples: Below the relief threshold&lt;/strong&gt; &lt;code dir=&quot;auto&quot;&gt;@edge&lt;/code&gt;&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;rate&lt;/th&gt;&lt;th&gt;value&lt;/th&gt;&lt;th&gt;duty&lt;/th&gt;&lt;th&gt;Result&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;6&lt;/td&gt;&lt;td&gt;120&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;Passed&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;h2 id=&quot;rule-a-declaration-carries-the-evidence-customs-asks-for&quot;&gt;Rule: A declaration carries the evidence customs asks for&lt;/h2&gt;
+&lt;h3 id=&quot;scenario-lodge-a-declaration-for-an-insured-consignment&quot;&gt;Scenario: Lodge a declaration for an insured consignment&lt;/h3&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Given&lt;/strong&gt; the &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt; is insured under a marine &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; &lt;a href=&quot;/doc-kitty/glossary/shipping/#policy&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;policy&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;policy&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;policy, glossary term&quot;&gt;policy&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;When&lt;/strong&gt; the shipper lodges this declaration:&lt;/p&gt;
+&lt;div class=&quot;expressive-code&quot;&gt;&lt;figure class=&quot;frame not-content&quot;&gt;&lt;figcaption class=&quot;header&quot;&gt;&lt;/figcaption&gt;&lt;pre data-language=&quot;xml&quot;&gt;&lt;code&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;declaration&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt; &lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;consignment&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;C-100&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span class=&quot;indent&quot;&gt;  &lt;/span&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;goods&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt; &lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;code&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;6912.00&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt; &lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;value&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;10000&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt; &lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;currency&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;EUR&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;/&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span class=&quot;indent&quot;&gt;  &lt;/span&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;insurance&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt; &lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;--0:#C5E478;--1:#3B61B0&quot;&gt;policy&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#ECC48D;--1:#984E4D&quot;&gt;MC-2026-0412&lt;/span&gt;&lt;span style=&quot;--0:#D9F5DD;--1:#111111&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA;--1:#8844AE&quot;&gt;/&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ec-line&quot;&gt;&lt;div class=&quot;code&quot;&gt;&lt;span style=&quot;--1:#8844AE&quot;&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&amp;#x3C;/&lt;/span&gt;&lt;span style=&quot;--0:#CAECE6&quot;&gt;declaration&lt;/span&gt;&lt;span style=&quot;--0:#7FDBCA&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Then&lt;/strong&gt; the declaration is accepted&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;And&lt;/strong&gt; the declaration records the policy reference &lt;code dir=&quot;auto&quot;&gt;&quot;MC-2026-0412&quot;&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;scenario-hold-a-declaration-lodged-after-the-cut-off&quot;&gt;Scenario: Hold a declaration lodged after the cut-off&lt;/h3&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;undefined&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Undefined&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; the customs cut-off has passed&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the shipper lodges the declaration&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the declaration is held for manual review&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; the &lt;a href=&quot;/doc-kitty/glossary/shipping/#freight&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;freight&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;freight&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;freight, glossary term&quot;&gt;freight&lt;/a&gt; invoice carries a late-lodgement surcharge&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

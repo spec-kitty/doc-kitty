@@ -17,12 +17,12 @@
   "authors": [],
   "keywords": [],
   "generated": {
-    "by": "doc-kitty-gherkin/0.5.0",
+    "by": "doc-kitty-gherkin/0.6.0",
     "at": "2026-10-18T05:55:21Z",
     "content_hash": "sha256:16468cd02ce6"
   },
   "markdown": "# Behaviour\n\nBehaviour specifications generated from the repository's Gherkin feature files.\n\n- [HR](./hr/) — Behaviour specifications for HR, generated from Gherkin feature files.\n- [Shipping](./shipping/) — Behaviour specifications for Shipping, generated from Gherkin feature files.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour.json"

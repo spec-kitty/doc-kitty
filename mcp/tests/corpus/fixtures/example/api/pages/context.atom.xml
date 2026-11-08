@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/context/">
+  <id>https://spec-kitty.github.io/doc-kitty/context/</id>
+  <title>Context</title>
+  <updated>2026-08-21T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/context/"/>
+  <summary>Why this project exists, who it serves, and its domain vocabulary.</summary>
+  <content type="html">&lt;span id=&quot;context&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Domain and product context for the example project. The pages below map the
+“why” and the “what”: the product problem this example solves, and the domain
+vocabulary it uses.&lt;/p&gt;</content>
+</entry>

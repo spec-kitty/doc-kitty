@@ -28,7 +28,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Overview\n\nThe site is a static Astro + Starlight build driven entirely by the `docs/`\ntree.\n\n```mermaid\n%% title: Build pipeline\n%% description: The docs/ tree feeds the toolkit loader, which fans out to Starlight, the sitemap, RSS, llms.txt, and the agent-API, then Starlight emits the static site.\nflowchart LR\n  D[docs/**  README-as-index + frontmatter] --> L[toolkit loader]\n  L --> S[Starlight  nav / search / theme]\n  L --> M[sitemap-index.xml]\n  L --> R[rss.xml]\n  L --> T[llms.txt]\n  L --> A[\"/api/*.json  agent-API\"]\n  S --> H[dist/  static HTML]\n```\n\n## Key properties\n\n- **Static** — no server; everything renders at build time.\n- **Metadata-driven** — nav, feeds, and the agent-API all read from frontmatter.\n- **Convention-first** — the `docs/` tree is a valid OKF bundle.\n\nSee the toolkit's own architecture docs for the internals.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/overview.json"

@@ -23,7 +23,7 @@
   ],
   "keywords": [],
   "markdown": "The pending placeholder draft sentinel — this page exists only to prove that a\n`doc_status: draft` persona is excluded from the hub list, the sitemap, the RSS\nfeed, and the agent index while it remains unpublished (FR-022 / US5).\n\nOnce promoted to `active`, it would list on the Audiences hub like any other\npersona; until then it is listed in the sidebar of a build with drafts on, and is\nnot built with `DK_PUBLISH_DRAFTS=off`.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/draft-persona.json"

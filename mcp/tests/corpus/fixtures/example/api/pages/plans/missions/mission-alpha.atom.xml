@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/">
+  <id>https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/</id>
+  <title>Mission Alpha</title>
+  <updated>2026-10-13T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/plans/missions/mission-alpha/"/>
+  <summary>A short mission write-up used to demonstrate the registry subtypes rename (plans/features -&gt; plans/missions).</summary>
+  <content type="html">&lt;span id=&quot;mission-alpha&quot;&gt;&lt;/span&gt;
+&lt;p&gt;The &lt;code dir=&quot;auto&quot;&gt;type: Mission&lt;/code&gt; above is not a code-derivation special case — it agrees
+with what the section registry ALREADY derives for this path: the &lt;code dir=&quot;auto&quot;&gt;plans&lt;/code&gt;
+section defaults to &lt;code dir=&quot;auto&quot;&gt;Plan&lt;/code&gt;, and the &lt;code dir=&quot;auto&quot;&gt;missions&lt;/code&gt; &lt;code dir=&quot;auto&quot;&gt;subtypes&lt;/code&gt; rule in
+&lt;code dir=&quot;auto&quot;&gt;example/docs/_meta/sections.yaml&lt;/code&gt; overrides it to &lt;code dir=&quot;auto&quot;&gt;Mission&lt;/code&gt; for every page
+under &lt;code dir=&quot;auto&quot;&gt;plans/missions/&lt;/code&gt;. That registry rule is the only reason this path
+derives &lt;code dir=&quot;auto&quot;&gt;Mission&lt;/code&gt; instead of falling through to the built-in
+&lt;code dir=&quot;auto&quot;&gt;plans/features&lt;/code&gt; -&gt; &lt;code dir=&quot;auto&quot;&gt;Feature&lt;/code&gt; table.&lt;/p&gt;
+&lt;p&gt;See also &lt;a href=&quot;/doc-kitty/plans/missions/mission-beta/&quot;&gt;Mission Beta&lt;/a&gt;.&lt;/p&gt;</content>
+</entry>

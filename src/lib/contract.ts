@@ -115,6 +115,22 @@ export interface AgentRecordEntry {
   audience: AudienceRecord[];
   /** Absolute URL of the rendered page. */
   url: string;
+  /**
+   * Present only on the OpenAPI version records (mission
+   * openapi-second-slice-01M6WXJ4, WP03): whether the version is released.
+   * Additive within major "3"; docs records never carry it.
+   */
+  released?: boolean;
+  /**
+   * Present only on the OpenAPI version records: the raw document's
+   * site-absolute, base-aware path. Additive within major "3".
+   */
+  rawDocumentUrl?: string;
+  /**
+   * Present only on the OpenAPI version records: sha256 of the published raw
+   * document bytes, 64 lowercase hex. Additive within major "3".
+   */
+  sha256?: string;
   _links: AgentRecordLinks;
 }
 
@@ -187,6 +203,12 @@ export interface AgentPageLinks {
   up?: AgentLink;
   html: AgentLink;
   related: AgentTitledLink[];
+  /**
+   * The raw document, on the OpenAPI version pages only (mission
+   * openapi-second-slice-01M6WXJ4, WP03): carried as the same base-aware
+   * path `rawDocumentUrl` names. Additive within major "3".
+   */
+  describedby?: AgentLink;
 }
 
 /**
@@ -218,6 +240,22 @@ export interface AgentPagePayload {
   verified?: PageVerifiedStamp[];
   sources?: PageSourceRef[];
   includes?: AgentIncludeRef[];
+  /**
+   * Present only on the OpenAPI version pages (mission
+   * openapi-second-slice-01M6WXJ4, WP03): whether the version is released.
+   * Additive within major "3"; docs pages never carry it.
+   */
+  released?: boolean;
+  /**
+   * Present only on the OpenAPI version pages: the raw document's
+   * site-absolute, base-aware path. Additive within major "3".
+   */
+  rawDocumentUrl?: string;
+  /**
+   * Present only on the OpenAPI version pages: sha256 of the published raw
+   * document bytes, 64 lowercase hex. Additive within major "3".
+   */
+  sha256?: string;
   /** Raw Markdown source with every `::gherkin` include expanded. */
   markdown: string;
   /** The build identity; equal to the index's `buildId` of the same build. */

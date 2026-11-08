@@ -1,8 +1,8 @@
 {
   "version": "2",
-  "generated_by": "doc-kitty-gherkin/0.5.0",
+  "generated_by": "doc-kitty-gherkin/0.6.0",
   "count": 3,
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "results": {
     "report": "reports/cucumber.ndjson",
     "format": "messages",

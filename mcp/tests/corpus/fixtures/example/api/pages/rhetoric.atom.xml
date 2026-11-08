@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/rhetoric/">
+  <id>https://spec-kitty.github.io/doc-kitty/rhetoric/</id>
+  <title>Rhetoric</title>
+  <updated>2026-09-08T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/rhetoric/"/>
+  <summary>A real Markua conversion of Aristotle&apos;s Rhetoric Book I, showcasing custom sections, footnotes, a native glossary, and personas.</summary>
+  <content type="html">&lt;span id=&quot;rhetoric&quot;&gt;&lt;/span&gt;
+&lt;p&gt;This section is a real Markua-authored conversion of Aristotle’s &lt;em&gt;Rhetoric&lt;/em&gt;,
+Book I — not a demo fixture. It shows how a full converted work reads as
+native doc-kitty pages: a custom top-level section registered in
+&lt;code dir=&quot;auto&quot;&gt;sections.yaml&lt;/code&gt; rather than baked into a template, Markua footnotes and
+editor’s-note callouts, a native glossary built from the source’s own term
+list, and constructed reader personas wired to the audience surface.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;/doc-kitty/rhetoric/book-one/&quot;&gt;Book I: Purposes and Definitions of Rhetoric&lt;/a&gt; — the
+complete converted text: 15 chapters covering what rhetoric is for, its
+three species, and the topics orators argue from.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/doc-kitty/rhetoric/book-two/&quot;&gt;Book II: Persuasion techniques&lt;/a&gt; — landing only.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/doc-kitty/rhetoric/book-three/&quot;&gt;Book III: Stylistic Delivery and Arrangement Techniques&lt;/a&gt; —
+landing only.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This content is a CC-BY-SA-4.0 derivative of a public-domain translation. See
+&lt;a href=&quot;/doc-kitty/rhetoric/about-and-license/&quot;&gt;About and license&lt;/a&gt; for full attribution.&lt;/p&gt;</content>
+</entry>

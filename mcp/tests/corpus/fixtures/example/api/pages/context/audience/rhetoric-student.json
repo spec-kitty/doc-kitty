@@ -23,7 +23,7 @@
   ],
   "keywords": [],
   "markdown": "# The Rhetoric Student\n\nThis reader is new to Aristotle's *Rhetoric* and approaches it as a text to be\nstudied, not skimmed. They may be encountering classical rhetorical theory for\nthe first time as part of a course in communication, argumentation, or classics,\nor they may be reading independently to understand where later persuasion theory\ncomes from.\n\nWhat they need most is a version of the text that does not assume prior\nfamiliarity: unfamiliar terms glossed in place, footnotes that read as part of\nthe argument rather than as scholarly clutter, and enough structural signposting\n(book, chapter, section) to keep their bearings across a long, dense work. They\nare patient with the original argument's pace, but impatient with anything that\nmakes the text harder to follow than the ideas already are.\n\nThey measure a converted showcase page as successful when they can read a\nchapter start to finish, resolve every unfamiliar term without leaving the page,\nand come away able to summarise the chapter's argument in their own words.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/audience/rhetoric-student.json"

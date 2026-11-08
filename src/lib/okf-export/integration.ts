@@ -1,7 +1,10 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import process from 'node:process';
 import type { AstroIntegration } from 'astro';
+import { DK_OPENAPI_ENV } from '../internal-env.mjs';
+import { readPublication } from '../integrations/openapi-publish.js';
 import type { IndexBasenameOption } from '../metadata.js';
 import { exportOkfToDisk } from './disk.mjs';
 
@@ -42,7 +45,7 @@ export function okfExportIntegration(
           graphFile,
           docsDir,
           outDir: path.join(distDir, 'okf'),
-          options: { indexBasename, base, siteUrl },
+          options: { indexBasename, base, siteUrl, openapi: readPublication(process.env[DK_OPENAPI_ENV]) },
         });
         logger.info(`wrote ${bundle.size} file(s) to okf/`);
       },

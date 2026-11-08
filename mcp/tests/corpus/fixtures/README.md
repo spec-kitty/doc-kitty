@@ -28,5 +28,10 @@ context/audience + guides/getting-started) so tests stay small and fast:
 Provenance of the minted example copy: the lane-b `example/dist` build of
 2026-11-01 (contract version "3", 70 agent-discoverable pages, `buildId`
 present on index, pages and scenarios alike; scenario surface live).
+Re-minted 2026-11-08 (openapi-second-slice WP03): 73 pages — the 3 synthetic
+OpenAPI version records (`reference/api/{main,v1,v1-1}`, carrying the
+OpenAPI-only `released`/`rawDocumentUrl`/`sha256` keys) are appended after
+the docs records, and the page-artifact Atom files (`*.atom.xml`) now sit
+beside the page JSON as they do in a real `dist/api`.
 WP05 owns `mcp/tests/fixtures/**` separately - keep this tree WP02-scoped and
 re-mintable via the commands above.

@@ -31,7 +31,7 @@
   "authors": [],
   "keywords": [],
   "generated": {
-    "by": "doc-kitty-gherkin/0.5.0",
+    "by": "doc-kitty-gherkin/0.6.0",
     "at": "2026-10-19T08:58:27Z",
     "content_hash": "sha256:2c4e57f9ba43"
   },
@@ -42,7 +42,7 @@
     }
   ],
   "markdown": "# Declare a consignment to customs\n\nAs a shipper\\\nI want to declare my cargo to customs before it sails\\\nSo that the consignment clears the border without being held\n\nEvery consignment that crosses a customs border needs a declaration lodged\nbefore the sailing's cut-off. The declared value sets the duty owed, and an\ninsured consignment names the marine policy that covers it.\n\n*2 rules · 3 scenarios · 3 example rows*\n\n## Background\n\n- **Given** a booked consignment from Rotterdam to Felixstowe\n- **And** the customs cut-off is 24 hours before the sailing departs\n- **And** goods with a declared value under 150 EUR are relieved of duty\n\n## Rule: Duty follows the declared value and the commodity's duty rate\n\n### Scenario Outline: Calculate the duty owed on a declaration\n\n- **Given** the cargo is declared under a commodity code with a duty rate of `<rate>`%\n- **And** its declared value is `<value>` EUR\n- **When** the shipper lodges the declaration before the cut-off\n- **Then** the declaration is accepted\n- **And** the duty owed is `<duty>` EUR\n\n**Examples: Dutiable goods**\n\n| rate | value | duty |\n| --- | --- | --- |\n| 6 | 10000 | 600 |\n| 0 | 25000 | 0 |\n\n**Examples: Below the relief threshold** `@edge`\n\n| rate | value | duty |\n| --- | --- | --- |\n| 6 | 120 | 0 |\n\n## Rule: A declaration carries the evidence customs asks for\n\n### Scenario: Lodge a declaration for an insured consignment\n\n- **Given** the consignment is insured under a marine cargo policy\n- **When** the shipper lodges this declaration:\n\n  ```xml\n  <declaration consignment=\"C-100\">\n    <goods code=\"6912.00\" value=\"10000\" currency=\"EUR\"/>\n    <insurance policy=\"MC-2026-0412\"/>\n  </declaration>\n  ```\n\n- **Then** the declaration is accepted\n- **And** the declaration records the policy reference `\"MC-2026-0412\"`\n\n### Scenario: Hold a declaration lodged after the cut-off\n\n- **Given** the customs cut-off has passed\n- **When** the shipper lodges the declaration\n- **Then** the declaration is held for manual review\n- **And** the freight invoice carries a late-lodgement surcharge",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping/declare-customs.json"

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/</id>
+  <title>Markua graceful degradation</title>
+  <updated>2026-08-29T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/"/>
+  <summary>Deliberately malformed Markua that must never fail the build (NFR-002).</summary>
+  <content type="html">
+
+&lt;span id=&quot;markua-graceful-degradation&quot;&gt;&lt;/span&gt;
+&lt;p&gt;This page collects the &lt;em&gt;cannot-fail-the-build&lt;/em&gt; cases. Each construct below is
+deliberately malformed; the build must still exit 0 (NFR-002) and every case must
+degrade to &lt;strong&gt;readable text&lt;/strong&gt; — never broken markup, never a thrown error.&lt;/p&gt;
+&lt;h2 id=&quot;an-unknown-icon-drops-gracefully&quot;&gt;An unknown icon drops gracefully&lt;/h2&gt;
+&lt;p&gt;A callout naming an icon that is not in the seed map keeps rendering, without the
+icon, and the build emits a single warning naming the unknown value:&lt;/p&gt;
+&lt;aside class=&quot;dk-callout dk-callout--tip&quot;&gt;&lt;div class=&quot;dk-callout__body&quot;&gt;&lt;p&gt;This tip names an unknown icon (&lt;code dir=&quot;auto&quot;&gt;fa-obscure-name&lt;/code&gt;). The icon is dropped with a&lt;/p&gt;&lt;/div&gt;&lt;/aside&gt;
+&lt;p&gt;build warning, and the tip itself still renders. &lt;/p&gt;
+&lt;h2 id=&quot;an-unsupported-attribute-is-ignored&quot;&gt;An unsupported attribute is ignored&lt;/h2&gt;
+&lt;p&gt;&lt;code dir=&quot;auto&quot;&gt;{fullbleed:}&lt;/code&gt; is not an honoured figure attribute; it is silently dropped and the
+image still renders:&lt;/p&gt;
+&lt;figure class=&quot;dk-figure&quot;&gt;a placeholder image&lt;figcaption class=&quot;dk-figure__caption&quot;&gt;A placeholder&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;h2 id=&quot;an-unbalanced-wrapper-stays-literal&quot;&gt;An unbalanced wrapper stays literal&lt;/h2&gt;
+&lt;p&gt;An &lt;code dir=&quot;auto&quot;&gt;{aside}&lt;/code&gt; with no matching &lt;code dir=&quot;auto&quot;&gt;{/aside}&lt;/code&gt; cannot be grouped, so its marker is left
+as literal text and the surrounding content renders normally — the rest of the
+page is &lt;strong&gt;not&lt;/strong&gt; swallowed:&lt;/p&gt;
+&lt;p&gt;{aside}
+This paragraph follows an unterminated wrapper. The &lt;code dir=&quot;auto&quot;&gt;{aside}&lt;/code&gt; marker above renders
+as the literal text &lt;code dir=&quot;auto&quot;&gt;{aside}&lt;/code&gt;, and this paragraph renders as an ordinary
+paragraph. &lt;/p&gt;
+&lt;h2 id=&quot;ordinary-content-still-renders&quot;&gt;Ordinary content still renders&lt;/h2&gt;
+&lt;p&gt;The malformed cases above do not break anything that follows them. This closing
+paragraph proves the page keeps rendering to the end.&lt;/p&gt;</content>
+</entry>

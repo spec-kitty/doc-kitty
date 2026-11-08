@@ -21,7 +21,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# A page that lives in the shipping context\n\nThis page declares `glossary_context: shipping` in its frontmatter. That one field\nchanges how the auto-linker treats an otherwise ambiguous term: the page's own context\nis used to settle a collision the context-free page had to leave plain.\n\n## The collision resolves itself here\n\nThe word policy is defined in both shipping and hr, but because this page belongs to\nthe shipping context the auto-linker links policy straight to the shipping definition —\nno `:term` directive, no build warning. Hovering the link shows the definition inline,\nand following it opens the full glossary entry in a new tab.\n\n## Single-context terms link as usual\n\nTerms that live in only one context never needed the page context. The word cargo and\nthe word freight both link to their shipping definitions on their first mention in this\nsection, exactly as they would on any page.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/glossary-demo/shipping-guide.json"

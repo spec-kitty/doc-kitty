@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/context/product/">
+  <id>https://spec-kitty.github.io/doc-kitty/context/product/</id>
+  <title>Product</title>
+  <updated>2026-08-21T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/context/product/"/>
+  <summary>The problem this example solves and who it is for.</summary>
+  <content type="html">&lt;span id=&quot;product&quot;&gt;&lt;/span&gt;
+&lt;h2 id=&quot;problem-statement&quot;&gt;Problem statement&lt;/h2&gt;
+&lt;p&gt;Teams that adopt the Common Docs convention have a well-structured &lt;code dir=&quot;auto&quot;&gt;docs/&lt;/code&gt; tree
+but no polished, agent-aware way to publish it.&lt;/p&gt;
+&lt;h2 id=&quot;target-users&quot;&gt;Target users&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Maintainers&lt;/strong&gt; who want a docsite without hand-rolling an Astro theme.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Agents&lt;/strong&gt; that need to discover and read documentation reliably.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;value-proposition&quot;&gt;Value proposition&lt;/h2&gt;
+&lt;p&gt;Point the toolkit at a DocKitty &lt;code dir=&quot;auto&quot;&gt;docs/&lt;/code&gt; tree and get a Starlight
+site plus &lt;code dir=&quot;auto&quot;&gt;sitemap-index.xml&lt;/code&gt;, &lt;code dir=&quot;auto&quot;&gt;rss.xml&lt;/code&gt;, and an agent-API, with no bespoke wiring.&lt;/p&gt;
+&lt;h2 id=&quot;out-of-scope&quot;&gt;Out of scope&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Authoring the documentation content itself.&lt;/li&gt;
+&lt;li&gt;Hosting a retrieval/embedding index (the agent-API is a map, not a RAG).&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

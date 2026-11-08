@@ -17,12 +17,12 @@
   "authors": [],
   "keywords": [],
   "generated": {
-    "by": "doc-kitty-gherkin/0.5.0",
+    "by": "doc-kitty-gherkin/0.6.0",
     "at": "2026-10-18T05:55:21Z",
     "content_hash": "sha256:07bf420aeb22"
   },
   "markdown": "# Shipping\n\nBehaviour specifications generated from the repository's Gherkin feature files.\n\n- [Book a consignment](./book-consignment/) — A booking reserves space on one sailing for one consignment.\n- [Declare a consignment to customs](./declare-customs/) — Every consignment that crosses a customs border needs a declaration lodged before the sailing's cut-off.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/behaviour/shipping.json"

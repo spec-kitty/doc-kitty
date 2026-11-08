@@ -273,8 +273,16 @@ describe('example build (coverage)', () => {
       try {
         expect(run.status, `${run.stdout}\n${run.stderr}`.slice(-3000)).toBe(0);
         const files = atomFiles(exampleDist);
-        const index = JSON.parse(readFileSync(path.join(exampleDist, 'api', 'index.json'), 'utf8')).pages as Array<{ source: string }>;
+        const index = JSON.parse(readFileSync(path.join(exampleDist, 'api', 'index.json'), 'utf8')).pages as Array<{ source: string; rawDocumentUrl?: string }>;
+        // FR-011 (mission openapi-second-slice-01M6WXJ4): synthetic OpenAPI
+        // version records are feed-excluded BY DECISION — a spec version has no
+        // publication date and the raw document carries its own history — so
+        // they get no Atom entry and must not count as "undated" here. They are
+        // skipped by their explicit OpenAPI-only contract marker
+        // (`rawDocumentUrl`, present only on those records), never by path
+        // guessing: a docs page tagged `openapi` still needs its entry.
         const published = index
+          .filter((p) => p.rawDocumentUrl === undefined)
           .map((p) => p.source.replace(/^.*\/api\/pages\//, '').replace(/\.json$/, ''))
           .sort();
         expect(published.length, 'control: the index lists pages').toBeGreaterThan(20);

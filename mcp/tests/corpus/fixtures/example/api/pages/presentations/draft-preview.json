@@ -19,7 +19,7 @@
   ],
   "keywords": [],
   "markdown": "## Why a draft deck\n\nThis deck is intentionally **draft**. It forces the out-of-frame route to render\nso the routing seam (ADR-0021) and reveal's SSR-safe init (ADR-0022) are proven\nat build time — but as a draft it is excluded from every generator (sitemap,\nRSS, llms.txt, the agent API) and does not move the published counts. A build with `DK_PUBLISH_DRAFTS=off` leaves the deck out entirely.\n\n### What it proves\n\n- The `presentations/[...slug]` route shadows Starlight and emits\n  `.reveal > .slides` out-of-frame, not the Starlight article shell.\n- reveal is initialized only in the browser; the static build never imports it.\n\n## Second slide\n\nA second heading so the transform (WP02) has more than one slide boundary to\nwork with, and so the smoke build renders real slide content.\n\n### Speaker aside\n\nDraft decks carry `data-pagefind-ignore`, so none of this text is indexed.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/draft-preview.json"

@@ -17,7 +17,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Context\n\nDomain and product context for the example project. The pages below map the\n\"why\" and the \"what\": the product problem this example solves, and the domain\nvocabulary it uses.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context.json"

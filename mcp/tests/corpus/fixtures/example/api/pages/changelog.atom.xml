@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/changelog/">
+  <id>https://spec-kitty.github.io/doc-kitty/changelog/</id>
+  <title>Changelog</title>
+  <updated>2026-10-19T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/changelog/"/>
+  <summary>Release history of the DocKitty toolkit, rendered from the repository CHANGELOG.md.</summary>
+  <content type="html">&lt;span id=&quot;changelog&quot;&gt;&lt;/span&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;/doc-kitty/changelog/releases/&quot;&gt;Release history&lt;/a&gt; — every release of
+&lt;code dir=&quot;auto&quot;&gt;@spec-kitty/doc-toolkit&lt;/code&gt;, rendered from the repository’s &lt;code dir=&quot;auto&quot;&gt;CHANGELOG.md&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

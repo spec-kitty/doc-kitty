@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/architecture/blocks-demonstrator/">
+  <id>https://spec-kitty.github.io/doc-kitty/architecture/blocks-demonstrator/</id>
+  <title>Content blocks demonstrator</title>
+  <updated>2026-08-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/architecture/blocks-demonstrator/"/>
+  <summary>A single page that declares audience, related, and external references so all three doc-kitty content blocks render together for the accessibility lane.</summary>
+  <content type="html">&lt;span id=&quot;content-blocks-demonstrator&quot;&gt;&lt;/span&gt;
+&lt;p&gt;This page exists to render all three doc-kitty content blocks on one route so the
+accessibility lane can scan them together (post-spec R1). It declares:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;an &lt;strong&gt;audience&lt;/strong&gt; block linking the relocated
+&lt;a href=&quot;/doc-kitty/context/audience/example-persona/&quot;&gt;example persona&lt;/a&gt;, so the audience
+&lt;code dir=&quot;auto&quot;&gt;&amp;#x3C;section&gt;&lt;/code&gt; renders a heading and a reader list;&lt;/li&gt;
+&lt;li&gt;a &lt;strong&gt;related&lt;/strong&gt; block pointing at the
+&lt;a href=&quot;/doc-kitty/architecture/superseded-note/&quot;&gt;superseded architecture note&lt;/a&gt; — a real &lt;code dir=&quot;auto&quot;&gt;superseded&lt;/code&gt; page, so
+its Related card carries the stale-target status marker — plus the
+&lt;a href=&quot;/doc-kitty/architecture/overview/&quot;&gt;architecture overview&lt;/a&gt; as a normal, current target;&lt;/li&gt;
+&lt;li&gt;an &lt;strong&gt;external references&lt;/strong&gt; block with one inline reference (no catalog key) and
+one catalog citation resolved from the bibliography, so a resolved title and a
+mono citation key both appear.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The blocks self-resolve from this page’s frontmatter (ADR-0017): nothing on this
+page is hand-authored HTML — the three regions below are rendered by the carrier
+bodies from the metadata above.&lt;/p&gt;</content>
+</entry>

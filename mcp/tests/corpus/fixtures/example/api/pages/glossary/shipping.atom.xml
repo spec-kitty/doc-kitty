@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/glossary/shipping/">
+  <id>https://spec-kitty.github.io/doc-kitty/glossary/shipping/</id>
+  <title>shipping</title>
+  <updated>2026-10-18T06:09:39.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/glossary/shipping/"/>
+  <summary>Glossary terms for the shipping context.</summary>
+  <content type="html">&lt;span id=&quot;shipping&quot;&gt;&lt;/span&gt;
+&lt;p&gt;How physical goods move from a seller to a buyer across carriers and borders.&lt;/p&gt;
+&lt;h2 id=&quot;cargo&quot;&gt;cargo&lt;/h2&gt;
+&lt;p&gt;Goods carried by a vessel, aircraft, or vehicle under a single transport
+arrangement. &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;Cargo, glossary term&quot;&gt;Cargo&lt;/a&gt; is booked, tracked, and insured as one unit from its
+origin to its destination.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Aliases:&lt;/strong&gt; &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A pallet of ceramics booked from Rotterdam to Osaka.&lt;/li&gt;
+&lt;li&gt;A refrigerated container of vaccines moving under a cold-chain contract.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Meta:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;standard:&lt;/strong&gt; &lt;a href=&quot;https://www.iso.org/standard/64863.html&quot;&gt;https://www.iso.org/standard/64863.html&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;freight&quot;&gt;freight&lt;/h2&gt;
+&lt;p&gt;The charge a carrier levies to move &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt;, and — by extension — the load
+itself when it is described as revenue-bearing.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Ocean &lt;a href=&quot;/doc-kitty/glossary/shipping/#freight&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;freight&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;freight&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;freight, glossary term&quot;&gt;freight&lt;/a&gt; quoted per twenty-foot equivalent unit.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;policy&quot;&gt;policy&lt;/h2&gt;
+&lt;p&gt;A marine insurance contract that covers loss of or damage to &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; in
+transit, bounded by the agreed route and mode of transport.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;An open marine cargo cover renewed each quarter.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

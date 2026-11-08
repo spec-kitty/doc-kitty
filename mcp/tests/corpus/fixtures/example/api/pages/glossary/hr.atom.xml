@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/glossary/hr/">
+  <id>https://spec-kitty.github.io/doc-kitty/glossary/hr/</id>
+  <title>hr</title>
+  <updated>2026-10-18T06:09:39.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/glossary/hr/"/>
+  <summary>Glossary terms for the hr context.</summary>
+  <content type="html">&lt;span id=&quot;hr&quot;&gt;&lt;/span&gt;
+&lt;p&gt;How the organisation hires, supports, and develops the people who work in it.&lt;/p&gt;
+&lt;h2 id=&quot;policy&quot;&gt;policy&lt;/h2&gt;
+&lt;p&gt;A written rule that governs how employees are expected to act — a leave
+rule or a code of conduct, for instance — approved by the people team.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A remote-work rule setting core collaboration hours.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;onboarding&quot;&gt;onboarding&lt;/h2&gt;
+&lt;p&gt;The structured first weeks of a new hire’s employment — access, training,
+and introductions — until they can work without close guidance.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A thirty-day plan with a named buddy and a week-one checklist.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

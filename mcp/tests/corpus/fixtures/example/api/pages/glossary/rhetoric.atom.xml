@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/glossary/rhetoric/">
+  <id>https://spec-kitty.github.io/doc-kitty/glossary/rhetoric/</id>
+  <title>rhetoric</title>
+  <updated>2026-10-18T06:09:39.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/glossary/rhetoric/"/>
+  <summary>Glossary terms for the rhetoric context.</summary>
+  <content type="html">&lt;span id=&quot;rhetoric&quot;&gt;&lt;/span&gt;
+&lt;p&gt;The art of finding the available means of persuasion.&lt;/p&gt;
+&lt;h2 id=&quot;deliberative-rhetoric&quot;&gt;Deliberative rhetoric&lt;/h2&gt;
+&lt;p&gt;The art of speaking on things that will (or should) happen in the future.
+This is a specific form of rhetoric, usually aimed at convincing a group
+of people to take a certain course of action.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Aliases:&lt;/strong&gt; &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#deliberative-rhetoric&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Deliberative rhetoric&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;deliberative-rhetoric&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;political oratory, glossary term&quot;&gt;political oratory&lt;/a&gt;, &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#deliberative-rhetoric&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Deliberative rhetoric&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;deliberative-rhetoric&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;legislative rhetoric, glossary term&quot;&gt;legislative rhetoric&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;dialectic&quot;&gt;Dialectic&lt;/h2&gt;
+&lt;p&gt;The art of investigating or discussing the truth of opinions. It is a
+method of argument, using logical reasoning and questioning, that has
+been the foundation of future scientific and legal methods.&lt;/p&gt;
+&lt;h2 id=&quot;dicast&quot;&gt;Dicast&lt;/h2&gt;
+&lt;p&gt;A member of a jury in ancient Athens. The dicasts were selected by lot,
+and were paid for their service. The term is used to indicate someone who
+holds a formal position, and is asked to render judgement on a (legal)
+matter. The modern term “judge” is used in the text to indicate someone
+who forms an opinion on a matter, without the connotation of them being
+in a formal position of power.&lt;/p&gt;
+&lt;h2 id=&quot;enthymeme&quot;&gt;Enthymeme&lt;/h2&gt;
+&lt;p&gt;A form of &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#syllogism&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Syllogism&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;syllogism&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;syllogism, glossary term&quot;&gt;syllogism&lt;/a&gt;, where one of the premises is not stated, but is
+implied. This is a form of argumentation that is often used in rhetoric,
+as the speaker can rely on the audience to fill in the missing premise.
+This makes the argument more persuasive, provided the audience has
+sufficient knowledge to fill in the gaps.&lt;/p&gt;
+&lt;h2 id=&quot;epideictic-rhetoric&quot;&gt;Epideictic rhetoric&lt;/h2&gt;
+&lt;p&gt;The art of speaking on things that are happening in the present (or have
+happened very recently). This is a specific form of rhetoric, usually
+intended to speak about the virtues of a person, or their
+accomplishments. In modern times, we would call this “public relations”
+or “marketing”.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Aliases:&lt;/strong&gt; &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#epideictic-rhetoric&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Epideictic rhetoric&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;epideictic-rhetoric&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;ceremonial oratory, glossary term&quot;&gt;ceremonial oratory&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;forensic-rhetoric&quot;&gt;Forensic rhetoric&lt;/h2&gt;
+&lt;p&gt;The art of speaking on things that have happened in the past. This is a
+specific form of rhetoric, usually aimed at convincing a judge or jury of
+the truth of a matter.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Aliases:&lt;/strong&gt; &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#forensic-rhetoric&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Forensic rhetoric&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;forensic-rhetoric&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;forensic oratory, glossary term&quot;&gt;forensic oratory&lt;/a&gt;, &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#forensic-rhetoric&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Forensic rhetoric&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;forensic-rhetoric&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;judicial rhetoric, glossary term&quot;&gt;judicial rhetoric&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;induction&quot;&gt;Induction&lt;/h2&gt;
+&lt;p&gt;A form of reasoning that starts from specific observations, and then
+makes a generalization. This is the opposite of deduction, which starts
+from a generalization and then makes a specific conclusion. &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#induction&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Induction&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;induction&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;Induction, glossary term&quot;&gt;Induction&lt;/a&gt; is
+often used in scientific reasoning, as it is a way to form a hypothesis
+based on empirical evidence.&lt;/p&gt;
+&lt;h2 id=&quot;orator&quot;&gt;Orator&lt;/h2&gt;
+&lt;p&gt;Someone who speaks publicly, either to a crowd, a general assembly, or in
+a court of law. The term “&lt;a href=&quot;/doc-kitty/glossary/rhetoric/#orator&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Orator&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;orator&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;orator, glossary term&quot;&gt;orator&lt;/a&gt;” is mostly used for those skilled in the
+art of persuasion, but in essence, it refers to anyone who speaks on
+formal occasions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Aliases:&lt;/strong&gt; &lt;a href=&quot;/doc-kitty/glossary/rhetoric/#orator&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;Orator&quot; data-glossary-context=&quot;rhetoric&quot; data-glossary-anchor=&quot;orator&quot; data-glossary-context-slug=&quot;rhetoric&quot; aria-label=&quot;rhetorician, glossary term&quot;&gt;rhetorician&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;sophist&quot;&gt;Sophist&lt;/h2&gt;
+&lt;p&gt;A paid teacher of philosophy, rhetoric, and science in the ancient
+Hellenistic world. Sophists are associated with teaching others how to
+argue and live a virtuous life, and how to be a good citizen. They were
+often criticized for their relativistic views on truth and morality, and
+for “having their heads in the clouds”.&lt;/p&gt;
+&lt;h2 id=&quot;syllogism&quot;&gt;Syllogism&lt;/h2&gt;
+&lt;p&gt;A form of reasoning aimed at drawing a conclusion from two propositions
+that share a common subject. The conclusion is valid if both of the
+propositions are accurate. This is a rudimentary form of logical
+reasoning, stating &lt;code dir=&quot;auto&quot;&gt;A &amp;#x26; B -&gt; C&lt;/code&gt; where &lt;code dir=&quot;auto&quot;&gt;A&lt;/code&gt; and &lt;code dir=&quot;auto&quot;&gt;B&lt;/code&gt; are premises, and &lt;code dir=&quot;auto&quot;&gt;C&lt;/code&gt;
+is the conclusion. Modern logical theory teaches us to interpret this as:
+“either &lt;code dir=&quot;auto&quot;&gt;C&lt;/code&gt; is true, or &lt;code dir=&quot;auto&quot;&gt;A &amp;#x26; B&lt;/code&gt; is false”, which is slightly different to
+the classical interpretation of the form.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Examples:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;All men are mortal. Socrates is a man. Therefore, Socrates is mortal.&lt;/li&gt;
+&lt;li&gt;All dogs are animals. All animals have four legs. Therefore, all dogs have four legs. (In this example, the second premise is incorrect, as there are animals with less than four legs.)&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

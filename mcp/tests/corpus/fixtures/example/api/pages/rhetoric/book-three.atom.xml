@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/rhetoric/book-three/">
+  <id>https://spec-kitty.github.io/doc-kitty/rhetoric/book-three/</id>
+  <title>III: Stylistic Delivery and Arrangement Techniques</title>
+  <updated>2026-09-08T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/rhetoric/book-three/"/>
+  <summary>Book III of Aristotle&apos;s Rhetoric covers style, word choice, and speech arrangement. Out of scope for this showcase.</summary>
+  <content type="html">&lt;span id=&quot;iii-stylistic-delivery-and-arrangement-techniques&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Book III moves from argument to expression: word choice, metaphor, and
+sentence structure (style), then how to organize the parts of a speech
+(arrangement). Delivery gets a brief mention, with the reader pointed
+elsewhere in Aristotle’s work for the fuller treatment.&lt;/p&gt;
+&lt;p&gt;This showcase converts &lt;a href=&quot;/doc-kitty/rhetoric/book-one/&quot;&gt;Book I&lt;/a&gt; only — Book III’s
+chapters are out of scope here. This page is a landing only, so the section
+stays navigable without dangling links.&lt;/p&gt;
+&lt;p&gt;Back to the &lt;a href=&quot;/doc-kitty/rhetoric/&quot;&gt;Rhetoric hub&lt;/a&gt;.&lt;/p&gt;</content>
+</entry>

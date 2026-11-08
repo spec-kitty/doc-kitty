@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/glossary-demo/cargo-and-collisions/">
+  <id>https://spec-kitty.github.io/doc-kitty/glossary-demo/cargo-and-collisions/</id>
+  <title>Cargo, consignments, and a cross-context collision</title>
+  <updated>2026-08-26T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/glossary-demo/cargo-and-collisions/"/>
+  <summary>The context-free demonstrator — auto-linking, an unresolved collision left plain with one build warning, a forced :term link, and a suppressed one.</summary>
+  <content type="html">&lt;span id=&quot;cargo-consignments-and-a-cross-context-collision&quot;&gt;&lt;/span&gt;
+&lt;p&gt;This page declares &lt;strong&gt;no&lt;/strong&gt; &lt;code dir=&quot;auto&quot;&gt;glossary_context&lt;/code&gt;, so it is the honest test of what the
+auto-linker does when a term is ambiguous. It sits deliberately outside any single
+bounded context, which is exactly the situation the collision rules exist for.&lt;/p&gt;
+&lt;h2 id=&quot;auto-linking-a-single-context-term&quot;&gt;Auto-linking a single-context term&lt;/h2&gt;
+&lt;p&gt;The first time a context-free term appears in a section, doc-kitty links it to its
+definition. Here the word &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; becomes a link, and its alias &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt; links the
+same way — both point at the shipping definition. A second mention of cargo in this
+same section stays plain text, because only the first occurrence per section is
+linked.&lt;/p&gt;
+&lt;h2 id=&quot;an-unresolved-collision-stays-plain&quot;&gt;An unresolved collision stays plain&lt;/h2&gt;
+&lt;p&gt;The word policy is defined in &lt;strong&gt;both&lt;/strong&gt; the shipping and the hr contexts. On a
+context-free page the auto-linker refuses to guess which one you mean, so it leaves
+policy as plain text and prints one build warning naming the competing contexts. That
+warning is the pinned, greppable signal the build asserts on.&lt;/p&gt;
+&lt;h2 id=&quot;forcing-a-link-with-the--directive&quot;&gt;Forcing a link with the  directive&lt;/h2&gt;
+&lt;p&gt;When you do know which context you mean, name it. The directive
+&lt;a href=&quot;/doc-kitty/glossary/hr/#policy&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;policy&quot; data-glossary-context=&quot;hr&quot; data-glossary-anchor=&quot;policy&quot; data-glossary-context-slug=&quot;hr&quot; aria-label=&quot;policy, glossary term&quot;&gt;policy&lt;/a&gt; resolves policy to the hr definition even though this page
+declares no context of its own — the one sanctioned way to link across a collision.&lt;/p&gt;
+&lt;h2 id=&quot;suppressing-a-link&quot;&gt;Suppressing a link&lt;/h2&gt;
+&lt;p&gt;Sometimes a word that happens to be a term should stay plain — a label you are
+quoting, for instance. Write &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;cargo, glossary term&quot;&gt;cargo&lt;/a&gt; and it renders as ordinary text
+with no link, even though cargo is a real term.&lt;/p&gt;</content>
+</entry>

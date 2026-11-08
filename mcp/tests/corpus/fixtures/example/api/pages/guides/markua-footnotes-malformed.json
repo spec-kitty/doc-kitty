@@ -22,7 +22,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "<!-- markdownlint-disable -->\n<!-- This is a Markua fixture: it deliberately contains malformed footnote\n     constructs (an unmatched reference marker and an orphan definition) that must\n     degrade to readable text and never throw. doc_status: draft — no ratchet move. -->\n\n# Markua footnotes graceful degradation\n\nEvery case below is deliberately malformed. The build must still exit 0 (NFR-002)\nand every case must degrade to **readable text** — never broken markup, never a\nthrown error.\n\n## An unmatched reference marker degrades to literal text\n\nThere is no definition for this marker, so `remark-gfm` never makes it a footnote\nand it stays as the literal source text: a reference[^^7_7] with no matching\ndefinition renders verbatim as `[^^7_7]`, not a broken link.\n\n## An orphan definition renders nowhere\n\nThe definition below has no reference anywhere on the page. GFM keeps it out of\nthe rendered notes list, so it simply does not appear — the build does not fail.\n\n[^^8_8]: This orphan definition is never referenced, so it renders nowhere.",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-footnotes-malformed.json"

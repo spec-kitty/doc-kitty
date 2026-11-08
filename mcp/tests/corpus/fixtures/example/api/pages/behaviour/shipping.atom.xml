@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/behaviour/shipping/">
+  <id>https://spec-kitty.github.io/doc-kitty/behaviour/shipping/</id>
+  <title>Shipping</title>
+  <updated>2026-10-18T05:55:21.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/behaviour/shipping/"/>
+  <summary>Behaviour specifications for Shipping, generated from Gherkin feature files.</summary>
+  <content type="html">&lt;span id=&quot;shipping&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Behaviour specifications generated from the repository’s Gherkin feature files.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;./book-consignment/&quot;&gt;Book a consignment&lt;/a&gt; — A booking reserves space on one sailing for one &lt;a href=&quot;/doc-kitty/glossary/shipping/#cargo&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;cargo&quot; data-glossary-context=&quot;shipping&quot; data-glossary-anchor=&quot;cargo&quot; data-glossary-context-slug=&quot;shipping&quot; aria-label=&quot;consignment, glossary term&quot;&gt;consignment&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;./declare-customs/&quot;&gt;Declare a consignment to customs&lt;/a&gt; — Every consignment that crosses a customs border needs a declaration lodged before the sailing’s cut-off.&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

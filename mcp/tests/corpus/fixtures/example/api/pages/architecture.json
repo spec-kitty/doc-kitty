@@ -17,7 +17,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Architecture\n\nThis describes the **current state**, not intended future work (see `plans/`).\n\n- [Overview](/architecture/overview/) — how the site is built and rendered.\n\n_Last architecture review: 2026-08-21._",
-  "buildId": "09a718747af2fc36e8b29c557f479acf36905e1f2e64086c0939dc761f78b5cc",
+  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture.json"

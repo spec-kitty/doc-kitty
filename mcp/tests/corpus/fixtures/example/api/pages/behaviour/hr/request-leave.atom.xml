@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/">
+  <id>https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/</id>
+  <title>Request annual leave</title>
+  <updated>2026-10-18T05:55:21.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/behaviour/hr/request-leave/"/>
+  <summary>Leave requests are checked against the employee&apos;s remaining allowance.</summary>
+  <content type="html">&lt;span id=&quot;request-annual-leave&quot;&gt;&lt;/span&gt;
+&lt;p&gt;As an employee&lt;br&gt;
+I want to request annual leave from the people team&lt;br&gt;
+So that my time off is agreed before I plan around it&lt;/p&gt;
+&lt;p&gt;Leave requests are checked against the employee’s remaining allowance. A
+request that overlaps a team blackout period needs the manager’s sign-off.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;4 scenarios&lt;/em&gt;&lt;/p&gt;
+&lt;p class=&quot;dk-gherkin__results&quot;&gt;&lt;strong&gt;Results:&lt;/strong&gt; 4 passed · as of &lt;time datetime=&quot;2026-10-19T00:00:00.000Z&quot;&gt;2026-10-19&lt;/time&gt;&lt;/p&gt;
+&lt;h2 id=&quot;background&quot;&gt;Background&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; an employee with 12 days of annual leave remaining&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;scenario-approve-a-request-within-the-allowance&quot;&gt;Scenario: Approve a request within the allowance&lt;/h2&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the employee requests 5 days of leave starting on 3 November&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the request is approved under the leave &lt;a href=&quot;/doc-kitty/glossary/hr/#policy&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;policy&quot; data-glossary-context=&quot;hr&quot; data-glossary-anchor=&quot;policy&quot; data-glossary-context-slug=&quot;hr&quot; aria-label=&quot;policy, glossary term&quot;&gt;policy&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; the employee has 7 days of annual leave remaining&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;scenario-refuse-a-request-that-exceeds-the-allowance&quot;&gt;Scenario: Refuse a request that exceeds the allowance&lt;/h2&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the employee requests 15 days of leave&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the request is refused because it exceeds the remaining allowance&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;And&lt;/strong&gt; the employee still has 12 days of annual leave remaining&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;scenario-hold-a-request-that-overlaps-a-blackout-period&quot;&gt;Scenario: Hold a request that overlaps a blackout period&lt;/h2&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; the team has a blackout period from 15 to 19 December&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the employee requests 2 days of leave starting on 18 December&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the request waits for the manager’s sign-off&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;scenario-pro-rate-the-allowance-of-a-new-starter&quot;&gt;Scenario: Pro-rate the allowance of a new starter&lt;/h2&gt;
+&lt;p class=&quot;dk-gherkin__result&quot;&gt;&lt;span class=&quot;dk-gherkin__status&quot; data-status=&quot;passed&quot;&gt;&lt;span class=&quot;dk-gherkin__sr&quot;&gt;Result: &lt;/span&gt;Passed on retry&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Given&lt;/strong&gt; a new starter who joined on 1 October and is still in &lt;a href=&quot;/doc-kitty/glossary/hr/#onboarding&quot; class=&quot;dk-glossary-link&quot; data-glossary-term=&quot;onboarding&quot; data-glossary-context=&quot;hr&quot; data-glossary-anchor=&quot;onboarding&quot; data-glossary-context-slug=&quot;hr&quot; aria-label=&quot;onboarding, glossary term&quot;&gt;onboarding&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;When&lt;/strong&gt; the people team calculates the new starter’s allowance&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Then&lt;/strong&gt; the new starter has 6 days of annual leave for the rest of the year&lt;/li&gt;
+&lt;/ul&gt;</content>
+</entry>

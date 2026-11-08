@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/adr/">
+  <id>https://spec-kitty.github.io/doc-kitty/adr/</id>
+  <title>Decision Records</title>
+  <updated>2026-08-21T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/adr/"/>
+  <summary>The immutable log of architectural decisions for the example.</summary>
+  <content type="html">&lt;span id=&quot;decision-records&quot;&gt;&lt;/span&gt;
+&lt;p&gt;ADRs are never edited once accepted — a new ADR supersedes an old one.&lt;/p&gt;
+&lt;p&gt;This page is a &lt;code dir=&quot;auto&quot;&gt;kind: Hub&lt;/code&gt; index: the ADRs below are listed automatically by the
+Hub layout on build, so there is no hand-maintained table to keep in sync.&lt;/p&gt;
+&lt;p&gt;To add one, copy &lt;code dir=&quot;auto&quot;&gt;template.md&lt;/code&gt; from this folder to &lt;code dir=&quot;auto&quot;&gt;NNNN-short-title.md&lt;/code&gt;. The
+template is a draft page, so it is only built when drafts are published.&lt;/p&gt;</content>
+</entry>
