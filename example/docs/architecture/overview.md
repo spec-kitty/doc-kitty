@@ -2,7 +2,7 @@
 title: Overview
 description: How the example turns a Common Docs tree into a site plus feeds and an agent-API.
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-11-10T00:00:00Z
 type: Architecture
 kind: Explanation
 sidebar:
@@ -31,6 +31,27 @@ flowchart LR
   L --> T[llms.txt]
   L --> A["/api/*.json  agent-API"]
   S --> H[dist/  static HTML]
+```
+
+## Page metadata model
+
+Every page carries the same frontmatter, and its section comes from the
+section registry.
+
+```mermaid
+%% title: Page metadata model
+%% description: A section holds many pages; each page carries one frontmatter block and may relate to other pages.
+erDiagram
+  SECTION ||--o{ PAGE : holds
+  PAGE ||--|| FRONTMATTER : carries
+  PAGE }o--o{ PAGE : relates_to
+  FRONTMATTER {
+    string title
+    string description
+    string doc_status
+    datetime updated
+    string kind
+  }
 ```
 
 ## Key properties

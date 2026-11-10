@@ -250,9 +250,36 @@ export const BUILD_MERMAID_CONFIG = {
  * `removeTitle`/`removeDesc` (the accessible name/description come from Mermaid's
  * `<title>`/`<desc>`, injected by `diagramMeta`) and `cleanupIds` (the
  * `aria-labelledby`/`aria-describedby` id references must survive), and preserve
- * the viewBox (responsive inline SVG). */
+ * the viewBox (responsive inline SVG).
+ *
+ * `dropUndefinedStyleDeclarations` runs FIRST (#315): Mermaid 11.17.1's erDiagram
+ * writes `style="undefined;undefined"` on every relationship edge, and
+ * `preset-default`'s `minifyStyles` (csso) throws on a declaration with no
+ * `property: value` shape, failing the whole build on any erDiagram. */
+/** A style declaration Mermaid left unset: a bare `undefined`, or `prop: undefined`. */
+const UNDEFINED_DECLARATION = /(?:^|;)\s*(?:[\w-]+\s*:\s*)?undefined\s*(?:;|$)/;
+
 export const BUILD_SVGO_CONFIG = {
   plugins: [
+    {
+      name: 'dropUndefinedStyleDeclarations',
+      fn: () => ({
+        element: {
+          enter: (node: { attributes: Record<string, string> }) => {
+            const style = node.attributes.style;
+            if (style === undefined || !UNDEFINED_DECLARATION.test(style)) return;
+            // Only now split: a style with no undefined declaration is left
+            // byte-identical (a `url(data:…;base64,…)` value must never be cut).
+            const kept = style
+              .split(';')
+              .map((declaration) => declaration.trim())
+              .filter((declaration) => declaration !== '' && !UNDEFINED_DECLARATION.test(declaration));
+            if (kept.length === 0) delete node.attributes.style;
+            else node.attributes.style = kept.join(';');
+          },
+        },
+      }),
+    },
     {
       name: 'preset-default',
       params: {
