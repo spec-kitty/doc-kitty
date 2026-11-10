@@ -242,6 +242,30 @@ export const BUILD_MERMAID_CONFIG = {
   themeVariables: SENTINEL_THEME_VARIABLES,
 } as const;
 
+/** A style declaration Mermaid left unset: a bare `undefined`, or `prop: undefined`. */
+const UNDEFINED_DECLARATION = /(?:^|;)\s*(?:[\w-]+\s*:\s*)?undefined\s*(?:;|$)/;
+
+/** svgo plugin (#315): remove the unset declarations Mermaid writes before csso sees
+ * them. A style with none is left byte-identical. When one is present the split on
+ * `;` is still lossless for the rest: a fragment cut out of a `url(data:…;…)` value
+ * never matches and is re-joined unchanged. */
+const dropUndefinedStyleDeclarations = () => ({
+  element: {
+    enter: (node: { attributes: Record<string, string> }) => {
+      const style = node.attributes.style;
+      if (style === undefined || !UNDEFINED_DECLARATION.test(style)) return;
+      // Only now split: a style with no undefined declaration is left
+      // byte-identical (a `url(data:…;base64,…)` value must never be cut).
+      const kept = style
+        .split(';')
+        .map((declaration) => declaration.trim())
+        .filter((declaration) => declaration !== '' && !UNDEFINED_DECLARATION.test(declaration));
+      if (kept.length === 0) delete node.attributes.style;
+      else node.attributes.style = kept.join(';');
+    },
+  },
+});
+
 /**
  * SVGO overrides for the build-rendered SVG. `@beoe/rehype-mermaid`'s default
  * SVGO preset STRIPS `<title>` (`removeTitle`) — which would silently destroy
@@ -256,30 +280,9 @@ export const BUILD_MERMAID_CONFIG = {
  * writes `style="undefined;undefined"` on every relationship edge, and
  * `preset-default`'s `minifyStyles` (csso) throws on a declaration with no
  * `property: value` shape, failing the whole build on any erDiagram. */
-/** A style declaration Mermaid left unset: a bare `undefined`, or `prop: undefined`. */
-const UNDEFINED_DECLARATION = /(?:^|;)\s*(?:[\w-]+\s*:\s*)?undefined\s*(?:;|$)/;
-
 export const BUILD_SVGO_CONFIG = {
   plugins: [
-    {
-      name: 'dropUndefinedStyleDeclarations',
-      fn: () => ({
-        element: {
-          enter: (node: { attributes: Record<string, string> }) => {
-            const style = node.attributes.style;
-            if (style === undefined || !UNDEFINED_DECLARATION.test(style)) return;
-            // Only now split: a style with no undefined declaration is left
-            // byte-identical (a `url(data:…;base64,…)` value must never be cut).
-            const kept = style
-              .split(';')
-              .map((declaration) => declaration.trim())
-              .filter((declaration) => declaration !== '' && !UNDEFINED_DECLARATION.test(declaration));
-            if (kept.length === 0) delete node.attributes.style;
-            else node.attributes.style = kept.join(';');
-          },
-        },
-      }),
-    },
+    { name: 'dropUndefinedStyleDeclarations', fn: dropUndefinedStyleDeclarations },
     {
       name: 'preset-default',
       params: {
@@ -550,6 +553,9 @@ export const diagramsIntegration: AstroIntegration = {
           JSON.stringify({
             mermaidConfig: BUILD_MERMAID_CONFIG,
             svgo: BUILD_SVGO_CONFIG,
+            // JSON.stringify drops functions: fold the plugin and its regex in so editing either
+            // also invalidates the cache.
+            svgoPlugin: [String(dropUndefinedStyleDeclarations), UNDEFINED_DECLARATION.source],
             strategy: BUILD_MERMAID_OPTS.strategy,
             v: 1,
           }),
