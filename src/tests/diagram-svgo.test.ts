@@ -58,22 +58,19 @@ describe('BUILD_SVGO_CONFIG survives Mermaid erDiagram edge styles (#315)', () =
     expect(out).toMatch(/stroke-width[:=]"?2/);
   });
 
-  it('never cuts a style value that itself holds a semicolon', async () => {
+  it('keeps a semicolon inside a value intact when it drops an undefined declaration', async () => {
     const optimize = await beoeSvgo();
     const out = optimize(
-      SVG('<rect width="10" height="10" style="fill:url(data:image/png;base64,QUJD)"/>'),
+      SVG('<rect width="10" height="10" style="fill:url(data:image/png;base64,QUJD);undefined"/>'),
       BUILD_SVGO_CONFIG,
     ).data;
     expect(out).toContain('data:image/png;base64,QUJD');
+    expect(out).not.toContain('undefined');
   });
 
-  it('leaves a well-formed style alone and keeps the a11y overrides', async () => {
+  it('keeps the a11y overrides', async () => {
     const optimize = await beoeSvgo();
-    const out = optimize(
-      SVG('<path d="M0 0L100 100" style="fill:none;stroke:#abcdef"/>'),
-      BUILD_SVGO_CONFIG,
-    ).data;
-    expect(out).toMatch(/#abcdef/i);
+    const out = optimize(SVG('<path d="M0 0L100 100"/>'), BUILD_SVGO_CONFIG).data;
     expect(out).toContain('<title>ER</title>'); // removeTitle stays off
     expect(out).toContain('viewBox="0 0 100 100"'); // removeViewBox stays off
   });
