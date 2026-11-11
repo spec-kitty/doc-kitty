@@ -1142,6 +1142,19 @@ To pin a mode, set `DK_DIAGRAM_BUILD_RENDER` in the build's environment:
 Set `client` in a CI job that has no Chromium. The site then renders the same
 way on every runner, whatever happens to be installed on it.
 
+To check that a build-mode build drew every diagram, run this on its output:
+
+```sh
+pnpm exec dockitty-assert-diagrams dist
+```
+
+It reads every page in `dist` and fails when a diagram figure holds no `<svg>`,
+or when the page still has a `mermaid` or `plantuml` code block, a client-mode
+`<pre class="mermaid">`, a PlantUML error block, or a `plantuml.com` URL. It
+skips redirect pages, which share their target's route. It exits 1 on a defect
+and 2 on a usage error. A client-mode build fails it by design. The check reads
+built pages only: it cannot tell whether a page you meant to publish was built.
+
 ### PlantUML
 
 PlantUML blocks are drawn in build mode only. In client mode a
