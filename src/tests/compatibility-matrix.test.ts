@@ -15,6 +15,8 @@ const EXPECTED_PEERS = {
   // Optional peers (peerDependenciesMeta), exact-pinned: only sites that set `openapi` install them.
   '@astrojs/markdown-satteri': '0.4.4',
   'starlight-openapi': '0.27.0',
+  // Optional, exact-pinned: only sites that render diagrams in build mode install it (#314).
+  playwright: '1.62.1',
 };
 
 const NODE_FLOOR = '>=22.22.0';
@@ -22,6 +24,14 @@ const NODE_FLOOR = '>=22.22.0';
 describe('compatibility matrix', () => {
   it('pins the peer ranges adopters install against', () => {
     expect(toolkit.peerDependencies).toEqual(EXPECTED_PEERS);
+  });
+
+  it('keeps the playwright peer on the exact @playwright/test the toolkit tests with (#314)', () => {
+    // Build mode drives the consumer's playwright; the toolkit's own builds and
+    // a11y run use @playwright/test. Bump both together, or a consumer pins a
+    // version the toolkit never rendered with.
+    expect(toolkit.peerDependencies.playwright).toBe(root.devDependencies['@playwright/test']);
+    expect(toolkit.peerDependenciesMeta.playwright).toEqual({ optional: true });
   });
 
   it('keeps Starlight on one 0.x minor, since Starlight minors break', () => {
