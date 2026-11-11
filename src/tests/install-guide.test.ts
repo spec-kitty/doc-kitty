@@ -101,6 +101,8 @@ describe('repository consumer setup guide agrees with the install guide (#193)',
   it('installs the current release and the peers at the fixture versions in every pnpm add', () => {
     const lines = setup.split('\n').filter((l) => l.trim().startsWith('pnpm add '));
     expect(lines.filter((l) => pnpmAdd(l).has(toolkit.name)).length).toBeGreaterThan(0);
+    // The build-mode install (#314) is a follow-up add; keep it covered.
+    expect(lines.filter((l) => !pnpmAdd(l).has(toolkit.name)).length).toBeGreaterThan(0);
     for (const line of lines) {
       const specs = pnpmAdd(line);
       if (!specs.has(toolkit.name)) {
