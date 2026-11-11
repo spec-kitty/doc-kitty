@@ -41,6 +41,8 @@ split and the MoSCoW levels are set in the roadmap; this index reflects them.
   diagrams.
 - [Doctrine variation](./doctrine-variation.md) (Should) — recast the convention as
   charter and doctrine.
+- [Page feedback](./page-feedback.md) (Should) — toggleable edit-this-page and
+  page or section comments.
 - [Glossary + Contextive](./glossary-and-contextive.md) (Should) — auto-linked
   glossary with Contextive.
 - [Generated sitemap + HATEOAS read API](./generated-sitemap-and-read-api.md)
