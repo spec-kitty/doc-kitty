@@ -1,6 +1,7 @@
 /**
- * The source half of the no-plantuml.com guard (#13 C-001), shared by
- * `assert-build-artifacts.mjs` and its test. It scans every `.ts`/`.mjs`/`.js`
+ * The no-plantuml.com guard (#13 C-001), shared by `assert-build-artifacts.mjs`,
+ * the `dockitty-plantuml-guard` bin (`plantuml-guard-bin.mjs`, #314) and their
+ * tests. `checkPlantumlSources` scans every `.ts`/`.mjs`/`.js`
  * file under the toolkit's `lib/` tree, so it does not care which file defines
  * `DEFAULT_PLANTUML_SERVER_URL`, and returns a failure message instead of exiting.
  */
@@ -50,4 +51,35 @@ export function checkPlantumlSources(libDir) {
     return { ok: false, message: `no-plantuml.com: DEFAULT_PLANTUML_SERVER_URL "${defaultServer}" is not a recognisably self-hosted http(s) endpoint (#13 C-001)` };
   }
   return { ok: true, defaultServer, files: files.length };
+}
+
+/**
+ * The server a build will send PlantUML diagrams to: `DK_PLANTUML_SERVER_URL`
+ * when set, else the toolkit default. A plantuml.com URL fails (#314).
+ * @param {string | undefined} envValue the raw `DK_PLANTUML_SERVER_URL`
+ * @param {string | undefined} defaultServer the toolkit default, when known
+ * @returns {{ ok: true, url: string, source: string } | { ok: false, message: string }}
+ */
+export function checkPlantumlServerUrl(envValue, defaultServer) {
+  const fromEnv = (envValue ?? '').trim();
+  const url = fromEnv !== '' ? fromEnv : defaultServer;
+  const source = fromEnv !== '' ? 'DK_PLANTUML_SERVER_URL' : 'toolkit default';
+  if (url === undefined) return { ok: false, message: 'no-plantuml.com: no PlantUML server could be resolved' };
+  if (/plantuml\.com/i.test(url)) {
+    return { ok: false, message: `no-plantuml.com: the build would render PlantUML at "${url}" (${source}); point DK_PLANTUML_SERVER_URL at a self-hosted server (#13 C-001)` };
+  }
+  return { ok: true, url, source };
+}
+
+/**
+ * A site's config source, read as text: it must name no plantuml.com URL (#314).
+ * @param {string} text the config file's contents
+ * @param {string} label the path to name in the message
+ * @returns {{ ok: true } | { ok: false, message: string }}
+ */
+export function checkSiteConfigSource(text, label) {
+  const match = PLANTUML_COM_URL_RE.exec(text);
+  if (match === null) return { ok: true };
+  const line = text.slice(0, match.index).split('\n').length;
+  return { ok: false, message: `no-plantuml.com: ${label}:${line} names a plantuml.com URL (${match[0]}); the site must use a self-hosted PlantUML server (#13 C-001)` };
 }

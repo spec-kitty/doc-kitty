@@ -1239,6 +1239,20 @@ other settings it cannot read; see
 pass `--canary-host dk-canary --canary-port 18091`, and a real internet-mode
 service looks sandboxed and passes. Always pass `--service-container`.
 
+Before the build, also check that no diagram can reach the public
+`plantuml.com` server:
+
+```sh
+pnpm exec dockitty-plantuml-guard --astro-config astro.config.mjs
+```
+
+It checks three things. The installed toolkit's PlantUML stage names no
+`plantuml.com` URL and defaults to a self-hosted server. The server this build
+will use (`DK_PLANTUML_SERVER_URL`, or that default) is not `plantuml.com`. The
+site config names no `plantuml.com` URL; it is read as text, so the check needs
+no installed site dependency. It exits 1 when a check fails and 2 on a usage
+error.
+
 A stricter setup also takes the network away from the container. For
 example, put it on a Docker network created with `--internal`, and run the
 build in a container on the same network. The security profile is the
