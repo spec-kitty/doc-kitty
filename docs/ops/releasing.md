@@ -62,6 +62,11 @@ a checkout cannot go to the public npm registry by mistake.
 
 1. **Bump the version.** Set `version` in `src/package.json`. Under `0.x`, use
    the minor number for breaking changes and the patch number for everything else.
+   The version also appears in two places that CI checks against it. Update the
+   `pnpm add @spec-kitty/doc-toolkit@<version>` lines in
+   `docs/guides/consumer-setup.md` and `example/docs/guides/install.md`. Then run
+   `pnpm generate:features`, which stamps the version into the generated
+   example feature pages.
 2. **Resync the consumption fixture.** A version bump changes the packed
    tarball, so regenerate the fixture lockfile:
    `DK_CONSUMPTION_BOOTSTRAP=1 node tests/consumption/scripts/run-consumption-test.mjs`.
