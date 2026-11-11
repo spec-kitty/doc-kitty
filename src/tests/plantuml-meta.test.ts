@@ -343,6 +343,8 @@ describe('no-plantuml.com source guard (the build gate\'s C-001 step)', () => {
   });
 
   it('dockitty-plantuml-guard exits 2 on an unknown argument', () => {
-    expect(runGuard(['--nope'], {}).status).toBe(2);
+    const run = runGuard(['--nope'], {});
+    expect(run.stderr).toMatch(/unknown argument: --nope/);
+    expect(run.status).toBe(2);
   });
 });

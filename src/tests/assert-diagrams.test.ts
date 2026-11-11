@@ -66,7 +66,11 @@ describe('dockitty-assert-diagrams <dist>', () => {
   });
 
   it('exits 2 without a directory', () => {
-    expect(run().status).toBe(2);
-    expect(run('/no/such/dist').status).toBe(2);
+    const none = run();
+    expect(none.stderr).toMatch(/usage: dockitty-assert-diagrams <dist>/);
+    expect(none.status).toBe(2);
+    const missing = run('/no/such/dist');
+    expect(missing.stderr).toMatch(/\/no\/such\/dist is not a directory/);
+    expect(missing.status).toBe(2);
   });
 });
