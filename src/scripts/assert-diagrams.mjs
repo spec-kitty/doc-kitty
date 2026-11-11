@@ -45,7 +45,7 @@ function htmlFiles(dir) {
     if (entry.isDirectory()) out.push(...htmlFiles(abs));
     else if (entry.name.endsWith('.html')) out.push(abs);
   }
-  return out.sort();
+  return out.sort((a, b) => a.localeCompare(b));
 }
 
 let pages = 0;

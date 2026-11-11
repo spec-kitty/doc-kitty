@@ -263,7 +263,7 @@ jobs:
             --canary-host "$GATEWAY" \
             --service-container "${{ job.services.plantuml.id }}"
       # The consumer bins, run as a consumer runs them (#314).
-      - name: Assert no diagram can reach plantuml.com
+      - name: Assert no diagram can reach the public PlantUML server
         run: node src/scripts/plantuml-guard-bin.mjs --astro-config example/astro.config.mjs
       # Shared build definition (WP03 composite; also reused by WP05 deploy).
       - name: Build example site
