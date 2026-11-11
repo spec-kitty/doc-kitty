@@ -8,6 +8,50 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- Unreleased entries live in docs/changelog/unreleased/ as one file per change and are written here at release time. Do not add entries here. -->
 
+## [0.7.1] — 2026-11-11
+
+### Added
+
+- **`dockitty-assert-diagrams` proves a built site drew every diagram (#314).**
+  Before, a site that renders diagrams at build time had to write its own check
+  of the output to learn that a diagram had shipped as a code block, as a
+  client-side `<pre class="mermaid">` or as a PlantUML error. Now `pnpm exec
+  dockitty-assert-diagrams dist` fails on any of those, on a diagram figure with
+  no `<svg>`, and on a `plantuml.com` URL. It skips redirect pages.
+
+- **`dockitty-plantuml-guard` checks a site's PlantUML setup before the
+  build (#314).** Before, the no-`plantuml.com` guard was a library a site had
+  to call through an inline `node -e` script, and it read only the toolkit's
+  own files. Now `pnpm exec dockitty-plantuml-guard --astro-config
+  astro.config.mjs` checks the installed toolkit, the server the build will use
+  (`DK_PLANTUML_SERVER_URL` or the default) and the site's config, and fails
+  when any of them names `plantuml.com`.
+
+### Changed
+
+- **Build-mode diagrams name the Playwright version they need (#314).**
+  Before, the consumer guide said build mode needs "Playwright" but not which
+  package or version, so a site had to find out that it needs `playwright` at
+  the toolkit's own version. Now the toolkit declares `playwright` as an
+  optional peer pinned to that version (1.62.1), and the guide shows the
+  install. A site that does not render diagrams in build mode installs nothing
+  new. A site that does gets a peer warning when its `playwright` drifts from
+  the toolkit's.
+
+### Fixed
+
+- **PlantUML `@startyaml` diagrams follow the site theme (#314).** Before, a
+  YAML diagram rendered in PlantUML's default colours, while `@startjson` took
+  the theme's node, border, text and arrow colours. Now `@startyaml` gets the
+  same style block, so both data trees match the rest of the page's diagrams.
+
+- **Mermaid `erDiagram` renders in build mode (#315).** Before, any
+  `erDiagram` failed the whole build with "Cannot read properties of undefined
+  (reading '0')": Mermaid writes `style="undefined;undefined"` on its
+  relationship edges, and the SVG minifier threw on it. Now the build drops the
+  unset style declarations before minifying, and the example site carries an
+  `erDiagram` so a build-mode run covers it.
+
 ## [0.7.0] — 2026-11-08
 
 ### 💥 Breaking
@@ -1617,7 +1661,8 @@ the feature-by-feature status and the decision records under
 - Build-time PlantUML rendering requires a PlantUML service (provided in CI); a
   local build without it skips PlantUML figures.
 
-[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/spec-kitty/doc-kitty/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/spec-kitty/doc-kitty/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/spec-kitty/doc-kitty/compare/v0.4.0...v0.5.0
