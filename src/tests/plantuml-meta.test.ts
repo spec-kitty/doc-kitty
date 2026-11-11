@@ -10,6 +10,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+import toolkitPkg from '../package.json' with { type: 'json' };
 import { checkPlantumlSources } from '../scripts/plantuml-guard.mjs';
 import {
   parsePlantumlMeta,
@@ -312,5 +314,35 @@ describe('no-plantuml.com source guard (the build gate\'s C-001 step)', () => {
     } finally {
       rmSync(lib, { recursive: true, force: true });
     }
+  });
+
+  // The bin a consumer runs before its build (#314), reached through the
+  // package's `bin` map so a broken mapping fails here too.
+  const guardBin = fileURLToPath(new URL(`../${toolkitPkg.bin['dockitty-plantuml-guard']}`, import.meta.url));
+  const runGuard = (args: string[], env: Record<string, string>) =>
+    spawnSync(process.execPath, [guardBin, ...args], {
+      encoding: 'utf8',
+      env: { PATH: process.env.PATH ?? '', ...env },
+    });
+
+  it.each([
+    ['passes with the default server and a clean config', {}, "export default { site: 'https://example.org' };\n", 0, /server ok — http:\/\/localhost:8091\/svg\/ \(toolkit default\)/],
+    ['fails when DK_PLANTUML_SERVER_URL is plantuml.com', { DK_PLANTUML_SERVER_URL: 'https://www.plantuml.com/plantuml/svg/' }, '', 1, /FAIL — no-plantuml\.com: the build would render PlantUML at/],
+    ['fails when the site config names a plantuml.com URL', {}, "const s = 'https://www.plantuml.com/plantuml/svg/';\n", 1, /astro\.config\.mjs:1 names a plantuml\.com URL/],
+  ])('dockitty-plantuml-guard %s', (_name, env, config, status, output) => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'dk-plantuml-guard-bin-'));
+    try {
+      const configPath = path.join(dir, 'astro.config.mjs');
+      writeFileSync(configPath, config);
+      const run = runGuard(['--astro-config', configPath], env);
+      expect(run.stdout + run.stderr).toMatch(output);
+      expect(run.status).toBe(status);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('dockitty-plantuml-guard exits 2 on an unknown argument', () => {
+    expect(runGuard(['--nope'], {}).status).toBe(2);
   });
 });
