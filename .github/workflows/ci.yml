@@ -262,6 +262,9 @@ jobs:
             --server http://localhost:8091/svg/ \
             --canary-host "$GATEWAY" \
             --service-container "${{ job.services.plantuml.id }}"
+      # The consumer bins, run as a consumer runs them (#314).
+      - name: Assert no diagram can reach plantuml.com
+        run: node src/scripts/plantuml-guard-bin.mjs --astro-config example/astro.config.mjs
       # Shared build definition (WP03 composite; also reused by WP05 deploy).
       - name: Build example site
         uses: ./.github/actions/build-example
@@ -269,6 +272,8 @@ jobs:
       # while deploy reuses the pure build (contracts/build-example-action.contract.md).
       - name: Assert build artifacts
         run: pnpm assert:artifacts example/dist
+      - name: Assert every diagram was drawn at build time
+        run: node src/scripts/assert-diagrams.mjs example/dist
       # Base-aware, built-output link gate (link-integrity #62, WP02 — FR-005,
       # NFR-003/004). Runs HERE, after the build, because it walks the RENDERED
       # `example/dist/**/*.html` — the pre-build `validate:links` (doc-sanity
