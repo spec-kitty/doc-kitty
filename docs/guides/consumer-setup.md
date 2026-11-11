@@ -1150,7 +1150,8 @@ pnpm exec dockitty-assert-diagrams dist
 
 It reads every page in `dist` and fails when a diagram figure holds no `<svg>`,
 or when the page still has a `mermaid` or `plantuml` code block, a client-mode
-`<pre class="mermaid">`, a PlantUML error block, or a `plantuml.com` URL. It
+`<pre class="mermaid">`, a PlantUML error block, or a `plantuml.com` URL it would
+load (a link to PlantUML's documentation is fine). It
 skips redirect pages, which share their target's route. It exits 1 on a defect
 and 2 on a usage error. A client-mode build fails it by design. The check reads
 built pages only: it cannot tell whether a page you meant to publish was built.

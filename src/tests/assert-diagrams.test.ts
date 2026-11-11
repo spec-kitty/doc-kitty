@@ -24,15 +24,20 @@ describe('diagramDefects (one built page)', () => {
     ['a figure with no <svg>', '<figure class="dk-diagram"><pre>x</pre></figure>', /figure 1 holds no <svg>/],
     ['a raw mermaid fence', '<pre data-language="mermaid"><code>graph LR</code></pre>', /raw diagram code block/],
     ['a raw plantuml fence', '<pre><code class="language-plantuml">@startuml</code></pre>', /raw diagram code block/],
+    ['a single-quoted raw fence', "<pre data-language='mermaid'><code>graph LR</code></pre>", /raw diagram code block/],
     ['a client-mode mermaid block', '<figure class="dk-diagram"><pre class="mermaid">graph LR</pre></figure>', /client-rendered/],
     ['a plantuml-error block', '<div class="plantuml-error">boom</div>', /plantuml-error block/],
-    ['a plantuml.com URL', '<img src="https://www.plantuml.com/plantuml/svg/abc">', /plantuml\.com URL/],
+    ['an image loaded from plantuml.com', '<img src="https://www.plantuml.com/plantuml/svg/abc">', /plantuml\.com URL/],
+    ['a figure whose <svg> sits after the figure closes', '<figure class="dk-diagram"><pre>x</pre></figure><svg></svg>', /figure 1 holds no <svg>/],
   ])('fails %s', (_name, body, defect) => {
     expect(diagramDefects(page(body)).defects.join('\n')).toMatch(defect);
   });
 
-  it('does not read prose naming plantuml.com, or a code sample in another language, as a defect', () => {
-    const body = '<p>Never use plantuml.com.</p><pre data-language="markdown"><code>```mermaid</code></pre>';
+  it('does not read prose or a link naming plantuml.com, a code sample in another language, or a nested figure as a defect', () => {
+    const body =
+      '<p>Never use plantuml.com.</p><a href="https://plantuml.com/yaml">YAML diagrams</a>' +
+      '<pre data-language="markdown"><code>```mermaid</code></pre>' +
+      '<figure class="dk-diagram"><figure class="inner"></figure><svg></svg></figure>';
     expect(diagramDefects(page(body)).defects).toEqual([]);
   });
 });
