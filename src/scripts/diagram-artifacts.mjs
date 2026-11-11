@@ -10,19 +10,24 @@
  *   - a client-rendered `<pre class="mermaid">` (client mode draws in the
  *     browser, so the page ships no picture);
  *   - an `astro-plantuml` `plantuml-error` block;
- *   - a plantuml.com URL (the output half of the no-plantuml.com guard).
+ *   - a plantuml.com URL the page would load (a render endpoint anywhere, or a
+ *     plantuml.com URL in `src`/`srcset`/`data`/`poster`): the output half of
+ *     the no-plantuml.com guard. A plain link to PlantUML's documentation passes.
  */
-import { PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import { REDIRECT_STUB_RE } from '../lib/legacy-html-redirects.mjs';
 
 const DIAGRAM_LANGUAGE = '(?:mermaid|plantuml)';
-const FIGURE_RE = /<figure\b[^>]*\bclass="[^"]*\bdk-diagram\b[^"]*"[^>]*>[\s\S]*?<\/figure>/g;
+/** An attribute value, quoted either way or unquoted: `name="… x …"`, `name='x'`, `name=x`. */
+const attrHas = (name, word) => `\\b${name}\\s*=\\s*(?:"[^"]*\\b${word}\\b[^"]*"|'[^']*\\b${word}\\b[^']*'|${word}\\b)`;
+const FIGURE_OPEN_RE = new RegExp(`<figure\\b[^>]*${attrHas('class', 'dk-diagram')}[^>]*>`, 'gi');
 const CHECKS = [
-  [new RegExp(`<pre\\b[^>]*\\bdata-language="${DIAGRAM_LANGUAGE}"`, 'gi'), 'raw diagram code block (the fence shipped as code)'],
-  [new RegExp(`\\bclass="[^"]*\\blanguage-${DIAGRAM_LANGUAGE}\\b`, 'gi'), 'raw diagram code block (the fence shipped as code)'],
-  [/<pre\b[^>]*\bclass="[^"]*\bmermaid\b[^"]*"/gi, 'client-rendered <pre class="mermaid"> (not drawn at build time)'],
-  [/\bclass="[^"]*\bplantuml-error\b/gi, 'plantuml-error block (the diagram failed to render)'],
+  [new RegExp(`<pre\\b[^>]*${attrHas('data-language', DIAGRAM_LANGUAGE)}`, 'gi'), 'raw diagram code block (the fence shipped as code)'],
+  [new RegExp(attrHas('class', `language-${DIAGRAM_LANGUAGE}`), 'gi'), 'raw diagram code block (the fence shipped as code)'],
+  [new RegExp(`<pre\\b[^>]*${attrHas('class', 'mermaid')}`, 'gi'), 'client-rendered <pre class="mermaid"> (not drawn at build time)'],
+  [new RegExp(attrHas('class', 'plantuml-error'), 'gi'), 'plantuml-error block (the diagram failed to render)'],
 ];
+const PLANTUML_LOAD_RE =
+  /plantuml\.com\/plantuml\/(?:svg|png|img|txt|uml)\/[^\s"'<>]*|\b(?:src|srcset|data|poster)\s*=\s*["']?[^"'\s>]*plantuml\.com[^"'\s>]*/i;
 
 /** True for a redirect stub page: it shares its target's route, so it is not the page. */
 export const isRedirectStub = (html) => REDIRECT_STUB_RE.test(html);
@@ -33,15 +38,22 @@ export const isRedirectStub = (html) => REDIRECT_STUB_RE.test(html);
  */
 export function diagramDefects(html) {
   const defects = [];
-  const figures = html.match(FIGURE_RE) ?? [];
-  figures.forEach((figure, index) => {
-    if (!/<svg\b/i.test(figure)) defects.push(`dk-diagram figure ${index + 1} holds no <svg>`);
+  // Each figure runs from its opening tag to the next one (or the page end), so
+  // a nested <figure> inside a diagram cannot cut the search for its <svg> short.
+  const opens = [...html.matchAll(FIGURE_OPEN_RE)].map((m) => m.index);
+  opens.forEach((start, index) => {
+    const segment = html.slice(start, opens[index + 1] ?? html.length);
+    const svg = segment.search(/<svg\b/i);
+    const close = segment.search(/<\/figure>/i);
+    if (svg === -1 || (close !== -1 && close < svg && !/<figure\b/i.test(segment.slice(1, close)))) {
+      defects.push(`dk-diagram figure ${index + 1} holds no <svg>`);
+    }
   });
   for (const [re, label] of CHECKS) {
     const count = html.match(re)?.length ?? 0;
     if (count > 0) defects.push(count === 1 ? label : `${label} ×${count}`);
   }
-  const url = PLANTUML_COM_URL_RE.exec(html);
+  const url = PLANTUML_LOAD_RE.exec(html);
   if (url) defects.push(`plantuml.com URL (${url[0]})`);
-  return { figures: figures.length, defects };
+  return { figures: opens.length, defects };
 }
