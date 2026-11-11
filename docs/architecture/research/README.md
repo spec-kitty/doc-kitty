@@ -35,6 +35,8 @@ how it works, so a decision can cite them. They are not the present-state design
 - [Gherkin authoring aids and the Specification layout](./gherkin-authoring-aids.md) —
   pre-spec research for the imperative-step lint, per-folder glossary context and
   Specification layout (#196–#198), with the decisions they need.
+- [Page feedback](./page-feedback.md) — edit-this-page links and giscus or
+  section-anchored comments, without a database.
 - [Ticketing report page](./ticketing-report.md) — a build-time report of a repo's
   tracker tickets, via an adaptor layer (GitHub first), so the docsite also serves
   as a ticketing portal.
