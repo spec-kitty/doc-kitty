@@ -2,7 +2,7 @@
 title: Install the toolkit
 description: Install @spec-kitty/doc-toolkit 0.4.0 from GitHub Packages with its Astro 7 and Starlight 0.42 peers, wire it into a new site, and build it.
 doc_status: active
-updated: 2026-10-19T00:00:00Z
+updated: 2026-11-11T00:00:00Z
 type: Guide
 kind: How-To
 tags: [setup, install, consumer, release]
@@ -41,10 +41,14 @@ The toolkit declares these peers. Your project installs them:
 | `@astrojs/markdown-remark` | `>=7.3.0 <8` |
 | `@astrojs/markdown-satteri` | `0.4.4` |
 | `starlight-openapi` | `0.27.0` |
+| `playwright` | `1.62.1` |
 
-The last two are optional. Install them only to publish OpenAPI reference pages
+`@astrojs/markdown-satteri` and `starlight-openapi` are optional. Install them
+only to publish OpenAPI reference pages
 (see the [OpenAPI how-to](https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/openapi-reference.md)).
-The install command below leaves them out.
+`playwright` is optional too. Install it only to draw diagrams at build time
+(see the consumer setup guide's render modes). The install command below
+leaves all three out.
 
 ## 1. Point the `@spec-kitty` scope at GitHub Packages
 

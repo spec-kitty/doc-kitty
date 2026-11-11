@@ -100,9 +100,18 @@ describe('repository consumer setup guide agrees with the install guide (#193)',
 
   it('installs the current release and the peers at the fixture versions in every pnpm add', () => {
     const lines = setup.split('\n').filter((l) => l.trim().startsWith('pnpm add '));
-    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.filter((l) => pnpmAdd(l).has(toolkit.name)).length).toBeGreaterThan(0);
     for (const line of lines) {
       const specs = pnpmAdd(line);
+      if (!specs.has(toolkit.name)) {
+        // A follow-up add (#314: `pnpm add playwright@…`) installs only optional
+        // peers, each at exactly the version the toolkit declares.
+        for (const [name, spec] of specs) {
+          expect(toolkit.peerDependenciesMeta?.[name]?.optional, `${name} in ${line}`).toBe(true);
+          expect(spec, `${name} in ${line}`).toBe(toolkit.peerDependencies![name]);
+        }
+        continue;
+      }
       expect(specs.get(toolkit.name), line).toBe(toolkit.version);
       for (const peer of PEERS) expect(specs.get(peer), `${peer} in ${line}`).toBe(fixtureDeps[peer]);
     }
