@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-06T00:00:00Z
+updated: 2026-11-11T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -1114,6 +1114,20 @@ The build picks the mode itself. When it finds a Playwright Chromium, it uses
 build mode. Otherwise it uses client mode, so a build never fails for lack of a
 browser. The toolkit does not install Playwright, so a fresh site uses client
 mode until you add it.
+
+To use build mode, add the `playwright` package to the site at exactly the
+version the toolkit declares as its optional `playwright` peer (1.62.1 for this
+release), then install its Chromium:
+
+```sh
+pnpm add playwright@1.62.1
+pnpm exec playwright install --with-deps chromium
+```
+
+Keep that pin in step with the toolkit: when you bump the toolkit, read its
+`playwright` peer and move yours to match. The package manager warns when the
+two differ. Another version may draw diagrams differently from what the
+toolkit was tested with, or look for a Chromium build you did not install.
 
 To pin a mode, set `DK_DIAGRAM_BUILD_RENDER` in the build's environment:
 

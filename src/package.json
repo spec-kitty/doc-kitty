@@ -80,13 +80,17 @@
     "@astrojs/starlight": ">=0.42.0 <0.43.0",
     "astro": ">=7.2.10 <8",
     "@astrojs/markdown-satteri": "0.4.4",
-    "starlight-openapi": "0.27.0"
+    "starlight-openapi": "0.27.0",
+    "playwright": "1.62.1"
   },
   "peerDependenciesMeta": {
     "@astrojs/markdown-satteri": {
       "optional": true
     },
     "starlight-openapi": {
+      "optional": true
+    },
+    "playwright": {
       "optional": true
     }
   },
