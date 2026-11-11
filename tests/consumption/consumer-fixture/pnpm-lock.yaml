@@ -977,8 +977,8 @@ packages:
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
   '@spec-kitty/doc-toolkit@file:toolkit.tgz':
-    resolution: {integrity: sha512-ZRlwz4mVP6DXS2AVhAShHl+gxw+qOQPlAhJYOd48sUozWREHkDWJVK2tLZkv9X8TXOV9WqsRXWx4y7w86sP8iQ==, tarball: file:toolkit.tgz}
-    version: 0.7.0
+    resolution: {integrity: sha512-2VN+GO/8D/mjdJzx9OB32FGhtnum0ca0YobDl2HK2y1kbexzc4lMnsDcMCXYhnCMEa9W9CNzls27/AiixmDwVQ==, tarball: file:toolkit.tgz}
+    version: 0.7.1
     engines: {node: '>=22.22.0'}
     hasBin: true
     peerDependencies:
@@ -986,9 +986,12 @@ packages:
       '@astrojs/markdown-satteri': 0.4.4
       '@astrojs/starlight': '>=0.42.0 <0.43.0'
       astro: '>=7.2.10 <8'
+      playwright: 1.62.1
       starlight-openapi: 0.27.0
     peerDependenciesMeta:
       '@astrojs/markdown-satteri':
+        optional: true
+      playwright:
         optional: true
       starlight-openapi:
         optional: true
@@ -4100,7 +4103,6 @@ snapshots:
     transitivePeerDependencies:
       - debug
       - openapi-types
-      - playwright
       - supports-color
 
   '@tybys/wasm-util@0.10.4':
