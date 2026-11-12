@@ -37,6 +37,8 @@ how it works, so a decision can cite them. They are not the present-state design
   Specification layout (#196–#198), with the decisions they need.
 - [Page feedback](./page-feedback.md) — edit-this-page links and giscus or
   section-anchored comments, without a database.
+- [Spec Kitty packs as generated pages](./packs.md) — a pack hub, kind hubs and
+  artefact pages from one stub entry, plus a repository's active charter.
 - [Ticketing report page](./ticketing-report.md) — a build-time report of a repo's
   tracker tickets, via an adaptor layer (GitHub first), so the docsite also serves
   as a ticketing portal.
