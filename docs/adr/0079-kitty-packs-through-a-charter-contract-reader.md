@@ -60,8 +60,9 @@ It is an anti-corruption layer: it turns a pack directory into doc-kitty's own
 
 The reader classifies files with the charter's `file-kinds.yaml`, never with a
 hard-coded layout. It does not follow open-packs' current tree: where a pack and
-the contract disagree (for example, an org pack with no `pack-manifest.yaml`), the
-contract wins and the reader reports the gap.
+the contract disagree (for example, a pack whose `pack-manifest.yaml` lists files it does not hold), the
+contract wins and the reader reports the gap. A pack with no manifest is not such a
+case: the charter generates one where a pack holds none (charter ADR-0042).
 
 doc-kitty **vendors a snapshot** of the contract: `src/lib/packs/contract/` holds
 `file-kinds.yaml`, the schemas the reader uses, and the charter's classifier
@@ -69,7 +70,14 @@ conformance cases (the sample paths and expected classes its own tests use). A
 `contract.lock.json` records the charter commit and each file's sha256. Unit tests
 fail when the bytes and the lock disagree, and run the conformance cases against
 the reader. A maintainer script (`pnpm packs:sync-contract --commit <sha>`)
-refreshes the snapshot. A pinned charter **release** replaces the commit once the
+refreshes `file-kinds.yaml` and the schemas.
+
+The charter does not publish the conformance cases as data yet: they live only in
+its Java tests (`PackFileKindTest`, `RetiredFilesTest`). Until
+spec-kitty-charter#559 publishes them with the contract, doc-kitty transcribes them
+from those tests into the snapshot, and the lock records the test files and commit
+they came from. Re-transcribing them is part of each contract refresh. Once #559
+lands, the sync script copies them like the other files. A pinned charter **release** replaces the commit once the
 charter publishes contract releases (charter #45).
 
 The YAML is data, but the precedence of its sections, the root-level case-variant
@@ -130,7 +138,7 @@ interface PackModel {
   identity: {                        // pack.yaml (pack-descriptor)
     packId: string;                  // ULID, the runtime identity
     name: string;                    // display handle; may differ from dir
-    version?: string;
+    version: string;                 // pack_version, required by pack-descriptor
     level?: 'built-in' | 'org' | 'project' | string;
     parent?: string | null;          // pack_id
     dependsOn: { packId: string; range?: string }[];
@@ -146,7 +154,10 @@ interface PackModel {
     constituents: { kind: string; id: string; path: string; contentHash: string }[];
   };
   presets: { name: string; path: string }[];
-  policy?: Record<string, string>;   // the file named by mutability_policy (only policy.yaml today); absent means all open
+  policy?: {                         // the file named by mutability_policy (only policy.yaml today)
+    kindDefaults: Record<string, string>;  // level per artefact kind; a kind left out is open
+    artifacts: Record<string, string>;     // level per bare URN; wins over its kind's default
+  };                                 // absent means all open
   inventory: {
     source: 'manifest' | 'file-kinds';  // the manifest only when it is present and verified; else the walk
     kinds: { kind: string; ids: string[] }[];
@@ -247,8 +258,10 @@ packs do. The gates that today recognise only the Gherkin and glossary producers
 (`PRODUCERS` in `generator-stamp.mjs`, `isGeneratedPage` in
 `validate-frontmatter.mjs`, and the Gherkin output scan) become one producer
 registry with an ownership scope per producer. Gherkin and packs pages are
-recognised by their stamp. The glossary keeps its existing path rule as its
-scope until it stamps its pages. That work is part of the first implementation
+recognised by their stamp **and** their ownership scope: a stamp alone never
+exempts a page, so an authored page cannot opt out of validation by claiming one
+(the rule `validate-frontmatter.mjs` already applies to the glossary, which stamps
+its pages and keeps its path rule as its scope). That work is part of the first implementation
 slice, not an afterthought.
 
 With the registry in place, the sitemap, search, `llms.txt`, the agent API and the
