@@ -88,12 +88,16 @@ A packs repository already proves its packs against a charter commit
 (`charter.lock.yaml` in open-packs). The page must not claim a different
 contract silently.
 
-- `packs.charterLock` names the consumer's pin file. When it is set, the reader
-  compares that commit with the vendored snapshot's. A mismatch is a warning, and
-  each page records both: the commit the packs were proven against and the commit
-  doc-kitty read them with.
-- `packs.contract` points at a newer snapshot directory, in the vendored layout,
-  so a consumer ahead of doc-kitty's release can render with its own pin.
+- `packs.charterLock` names the consumer's pin file, a YAML file whose `commit`
+  key holds the charter commit (the shape of open-packs' `charter.lock.yaml`).
+  When it is set, the reader compares that commit with the vendored snapshot's. A
+  mismatch is a warning, and each page records both: the commit the packs were
+  proven against and the commit doc-kitty read them with.
+- `packs.contract` points at another snapshot directory in the vendored layout,
+  with its own `contract.lock.json`, so a consumer can render with the contract it
+  pins without waiting for a doc-kitty release. The build checks that snapshot's
+  lock as it checks the vendored one. The conformance cases run in doc-kitty's own
+  tests, not in a consumer's build.
 - doc-kitty never fetches a contract at build time.
 
 ### D3. doc-kitty renders; the charter judges
@@ -142,9 +146,9 @@ interface PackModel {
     constituents: { kind: string; id: string; path: string; contentHash: string }[];
   };
   presets: { name: string; path: string }[];
-  policy?: Record<string, string>;   // the file named by mutability_policy; absent means all open
+  policy?: Record<string, string>;   // the file named by mutability_policy (only policy.yaml today); absent means all open
   inventory: {
-    source: 'manifest' | 'file-kinds';  // which enumeration the page used
+    source: 'manifest' | 'file-kinds';  // the manifest only when it is present and verified; else the walk
     kinds: { kind: string; ids: string[] }[];
   };
   problems: { severity: 'warning'; code: string; file?: string; message: string }[];
@@ -167,12 +171,18 @@ defineDocKittyIntegrations({
     include: ['*'], exclude: [],    // pack directory names
     sourceUrlPrefix: 'https://github.com/spec-kitty/spec-kitty-open-packs/blob/main/packs/',
     charterLock: '../charter.lock.yaml',  // optional (D2)
-    contract: undefined,            // optional newer snapshot (D2)
-    extraFacts: undefined,          // optional (pack) => [{ label, value }] (D6)
+    contract: undefined,            // optional snapshot directory (D2)
+    extraFacts: [                   // optional extra facts rows (D6), declarative
+      { label: 'Tree digest', file: '../packs/{dir}.source.yaml', key: 'tree_digest.value' },
+    ],
     allowEmpty: false,
   },
 });
 ```
+
+The option is flat, unlike Gherkin's `pages` block, because packs have no
+in-page mode. Every value is plain data, so the bare-Node CLIs (D6) read the same
+option through the existing site-config evaluation and agree with the build.
 
 - Source roots resolve against the site root (`process.cwd()`), as Gherkin
   sources do. They must stay inside the **repository root** (the git top level,
@@ -211,7 +221,9 @@ is shown, never used in a URL: `qa` is named `quality-assurance` and keeps
   else the bare ULID, always with its range), presets, locked artefacts, the
   `manifest_hash` with its verified state, the inventory per kind with counts and
   its source, and the two contract commits. `extraFacts` lets a site add rows,
-  such as open-packs' own digest; doc-kitty computes no digest of its own.
+  each read from a YAML key in a file beside the pack, such as open-packs' own
+  tree digest. A missing file or key is a warning and an empty cell. doc-kitty
+  computes no digest of its own.
 - **README links are relocated.** A link into the pack becomes a link to the
   rendered artefact page when there is one, else a link under `sourceUrlPrefix`.
   A link that resolves into `docsDir` becomes a site link. Anything else becomes
@@ -222,24 +234,31 @@ is shown, never used in a URL: `qa` is named `quality-assurance` and keeps
   landing and other authored pages in the section stay authored, and the hub
   lists the pack pages under it. A pack directory whose slug collides with an
   authored page is fatal.
-- `dockitty-generate-pack-pages --check` fails on drift. The generator also runs
-  at `astro:config:setup` (the Gherkin and glossary seam) and watches the pack
-  files in dev.
+- `dockitty-generate-pack-pages --check` fails on drift, and
+  `dockitty-read-pack <dir> --json` prints one `PackModel` for debugging. The
+  generator also runs at `astro:config:setup` (the Gherkin and glossary seam) and
+  watches the pack files in dev.
+- The `packs` section joins the build-generated section ids, as Gherkin's does,
+  so a first build with no generated pages yet does not warn about the section.
 
 **This amends ADR-0046 decision 4 ("Single ownership").** A producer may own a
 whole section, as Gherkin does, or a set of directories inside a section, as
-packs do. Ownership is still decided by stamp only. The gates that today
-recognise only the Gherkin and glossary producers (`PRODUCERS` and
-`isGeneratedPage` in the frontmatter gate, and the Gherkin output scan) become one
-producer registry with an ownership scope per producer. That work is part of the
-first implementation slice, not an afterthought.
+packs do. The gates that today recognise only the Gherkin and glossary producers
+(`PRODUCERS` in `generator-stamp.mjs`, `isGeneratedPage` in
+`validate-frontmatter.mjs`, and the Gherkin output scan) become one producer
+registry with an ownership scope per producer. Gherkin and packs pages are
+recognised by their stamp. The glossary keeps its existing path rule as its
+scope until it stamps its pages. That work is part of the first implementation
+slice, not an afterthought.
 
 With the registry in place, the sitemap, search, `llms.txt`, the agent API and the
 OKF export cover pack pages as ordinary entries, with no packs-specific code.
 
 ### D7. Later slices extend the same reader and section
 
-Kind hubs and artefact pages (`/<section>/<dir>/<kind>/<id>/`, with the raw YAML
+Kind hubs and artefact pages (`/<section>/<dir>/<kind>/<id>/`, where `<kind>` is
+the contract's artifact kind token with `_` written as `-`, such as
+`agent-profile`, and with the raw YAML
 published beside each, as ADR-0067 does), DRG cross-links and backlinks, the
 active-charter hub from `.kittify/`, git and bundle sources with a publication
 allow, the remaining kinds, and several versions of a pack. Each adds to

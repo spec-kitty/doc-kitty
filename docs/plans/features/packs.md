@@ -162,7 +162,7 @@ after the upgrade.
    - record the built site's URL list (sitemap) before the change;
    - set `packs: { sources: ['../packs'], charterLock: '../charter.lock.yaml' }`;
    - delete the generated `docs/packs/<dir>.md` files before the first
-     generation, since they collide with `docs/packs/<dir>/README.md` on route;
+     generation, since they collide with `docs/packs/<dir>/index.md` (open-packs' first `indexBasename`) on route;
    - rewrite the 19 relative links in the authored `docs/packs/index.md` (for
      example `built-in.md`) to the new files;
    - keep `docs/packs/index.md` and `catalog-proposal.md` authored; every other
