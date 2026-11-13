@@ -43,8 +43,8 @@ split and the MoSCoW levels are set in the roadmap; this index reflects them.
   charter and doctrine.
 - [Page feedback](./page-feedback.md) (Should) — toggleable edit-this-page and
   page or section comments.
-- [Spec Kitty packs](./packs.md) (Should) — generated pages for packs and a
-  repository's active charter.
+- [Kitty packs](./packs.md) (Should) — generated pack pages read through a
+  charter-contract reader, then artefact pages and a repository's active charter.
 - [Glossary + Contextive](./glossary-and-contextive.md) (Should) — auto-linked
   glossary with Contextive.
 - [Generated sitemap + HATEOAS read API](./generated-sitemap-and-read-api.md)

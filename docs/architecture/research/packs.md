@@ -1,237 +1,245 @@
 ---
-title: Spec Kitty packs as generated pages
-description: "Research on rendering Spec Kitty charter packs and a repository's active charter as generated hub pages, from one authored stub entry."
+title: Kitty packs in doc-kitty
+description: "Research on first-class support for Spec Kitty packs: what a pack is under the charter's contract, what open-packs and core do today, and which pack behaviour doc-kitty should own."
 doc_status: draft
-updated: 2026-11-12T00:00:00Z
+updated: 2026-11-13T00:00:00Z
 type: Architecture
 kind: Explanation
-tags: [packs, doctrine, generated, hubs, kittified]
+tags: [packs, doctrine, generated, charter, open-packs]
 related:
   - plans/features/packs
-  - architecture/research/page-feedback
+  - adr/0079-kitty-packs-through-a-charter-contract-reader
+  - adr/0046-gherkin-feature-pages
+  - adr/0042-native-documentation-charter
 ---
 
-# Spec Kitty packs as generated pages
+# Kitty packs in doc-kitty
 
-An idea for native support of Spec Kitty **packs** (bundles of directives,
-tactics, procedures, agent profiles, glossary and more) and of a repository's
-**active charter**. An author writes one markdown entry that names a pack
-source, and the toolkit generates a nested set of hub pages for the pack and
-everything in it. This page is a proposal, not a decision. The plan is the
-[packs feature](../../plans/features/packs.md).
+Spec Kitty **packs** are bundles of doctrine: directives, tactics, procedures,
+agent profiles, glossary packs and more, with a README that describes the pack.
+This page records how packs look today across the Spec Kitty repositories, and
+which pack behaviour doc-kitty should own. The decision is
+[ADR-0079](../../adr/0079-kitty-packs-through-a-charter-contract-reader.md); the
+slices are in the [packs feature plan](../../plans/features/packs.md).
 
-The use cases are the kitty ecosystem's own repositories: a packs repository
-such as `spec-kitty-open-packs`, which should publish one browsable page per
-artefact, and any kittified repository, which should show the charter it runs
-under.
+It replaces an earlier draft of this page, written before open-packs #248 made
+each pack's `README.md` its pack document. That draft assumed `pack.md`,
+`PROVENANCE.md` and `org-charter.yaml`, which are now retired.
 
 > **Naming.** In doc-kitty, "charter" already means the documentation-governance
 > charter (`docs/_meta/charter.yaml`, `src/lib/effective-charter.mjs`,
-> ADR-0042). This feature therefore uses **packs**: the section is `packs`, the
-> stub kind is `Pack`, and the repository view is the "active charter" hub
-> inside it. `Persona` is also taken (audience profiles), so agent profiles
-> become `AgentProfile`.
+> ADR-0042). This feature therefore says **packs**: the section is `packs`, the
+> page kind is `Pack`, and the repository's doctrine view is the "active charter"
+> hub. `Persona` is also taken (audience profiles), so agent profiles become
+> `AgentProfile`.
 
-## What a pack is
+## Who owns what today
 
-A pack is a directory, for example `spec-kitty-open-packs/packs/foundation/`:
+Four repositories touch packs. Each is its own bounded context, with its own
+vocabulary and its own verdicts:
 
-| File | Authored? | Role |
+| Context | Owns | Reads packs how |
 |---|---|---|
-| `pack.yaml` | Authored | Identity and lineage: `pack_id` (ULID, the only runtime identity), `name`, `pack_version`, `pack_level`, `depends_on`, `parent_pack` |
-| `pack-manifest.yaml` | Generated | Every constituent with kind, id, path and content hash, plus per-kind counts |
-| `<pack>.source.yaml` | Generated | Pin lockfile: upstream repository, commit, subtree and tree digest |
-| `org-charter.yaml`, `policy.yaml`, `presets/` | Authored | The pack's own selection, its mutability policy, and activation presets |
-| `pack.md`, `README.md` | Authored | Prose |
+| **spec-kitty-charter** | The pack **format**: `contracts/packs/file-kinds.yaml`, 27 JSON Schemas, the Markdown codec, and the verdict on composition and registration | Java service: `PUT /packs/{packId}` registers a whole pack; `GET /packs/{packId}/doc` serves its README |
+| **spec-kitty-open-packs** | Pack **content**: `packs/<name>/`, its CI gates, per-pack digest sidecars, and a docsite built with doc-kitty | Python: `validate_pack_schemas.py` mirrors the charter contract; `charter_service_check.py` asks the service; `gen_pack_reference.py` writes `docs/packs/*.md` |
+| **spec-kitty (core)** | The **runtime**: resolving the built-in, org and project tiers, and activation | Python: `pack.yaml`, `pack-manifest.yaml`, graph files, presets and artefact folders. It never reads `README.md` |
+| **doc-kitty** | **Rendering** a docs tree as a site, with agent surfaces and drift gates | Nothing yet |
 
-Artefacts are YAML files in one directory per kind. The kinds are listed in
-`spec-kitty/src/charter/offering/artifact_kinds.py`: directive, tactic,
-styleguide, toolguide, paradigm, procedure, agent profile, mission step
-contract, template, asset, glossary pack, anti-pattern and skill. The ids,
-titles and summaries sit in different fields per kind:
+The charter is the authority. ADR-0015 in the charter makes its schemas
+canonical and asks consumers to adapt. open-packs pins the charter commit it is
+proven against in `charter.lock.yaml`. The operator's direction for this design
+is the same: read packs through the **charter's contract**, not through
+open-packs' current layout, which is still being aligned with that contract.
 
-| Kind | Id | Title | Summary |
-|---|---|---|---|
-| Directive | `id` (`DIRECTIVE_041`) | `title` | `intent` |
-| Tactic | `id` (slug) | `name` | `purpose` |
-| Procedure | `id` (slug) | `title` | `description` |
-| Agent profile | `profile-id` (kebab-case keys throughout) | `name` | `description` |
-| Glossary pack | `id` | — | per-term `definition` |
+## The pack under the charter's contract
 
-The canonical JSON Schemas, one per descriptor and artefact kind, live in
-`spec-kitty-charter/contracts/packs/schemas/`. A packs repository pins them
-through `charter.lock.yaml`.
+`contracts/packs/file-kinds.yaml` classifies every file of a pack checkout
+(globs relative to `<checkout>/packs/`). It tries its sections in order:
+`files` (a glob to a schema), `exclusions`, `retired`, `payloads` and
+`ignored`. It also lists the `node_kinds`, `artifact_kinds` and
+`fragment_kinds`.
 
-**Relationships** come from the DRG graph files: `<kind>.graph.yaml` shards in
-built-in packs, or one `drg/fragment.yaml` in org packs. Each node has a
-`urn: <kind>:<id>`, and each edge has a source, target, relation and condition.
-Packs depend on each other through `depends_on: [{pack_id, range}]`.
-
-**The active charter** of a repository is `.kittify/charter/charter.yaml`
-(schema 2.0.0). It holds the selected packs and artefacts, plus a compiled
-`catalog.references[]` with id, kind, title, summary and source path for every
-artefact in force. Org packs are declared in `.kittify/config.yaml`
-(`charter_packs.org.packs`), and project packs live in `.kittify/charter-packs/`.
-
-The CLI has JSON output (`charter pack list --json`, `charter context --json`,
-`charter status --json`), but none of it emits a whole pack tree. Parsing the
-YAML directly is the only complete source today.
-
-**The format is still moving.** Core is at 4.0.0rc8, the October 2026
-`charter_pack_cutover` migration renamed layouts, and most recent charter ADRs
-are pack rulings. A Java charter service is planned to take over reads.
-
-## What doc-kitty already has
-
-- **A generated-section precedent.** The Gherkin feature pages
-  (`src/scripts/generate-feature-pages.mjs`, `src/lib/gherkin/generate.mjs`)
-  load sources, plan pages, stamp them with `generated: { by, at }`
-  (`src/lib/generator-stamp.mjs`) and write them. A `--check` mode fails on
-  drift, and an authored file inside the generated section is an error.
-  Generated pages get no edit link (`sourceLink()`), and they already carry a
-  `sources:` frontmatter list.
-- **Hubs.** A hub is a slug parent in the content collection
-  (`src/lib/hub-children.mjs`) rendered by `src/layouts/Hub.astro`. Gherkin hubs
-  pair `kind: Hub` with a committed list in the body.
-- **A page-scoped source pointer.** Schematic pages take a `schematic_path` with
-  a containment check and publish the raw YAML next to the page.
-- **An open `kind` vocabulary.** Any string passes the schema, and the gate only
-  warns. New kinds are appended to `KINDS` (ADR-0046, ADR-0067).
-- **No Spec Kitty dependency.** ADR-0042 keeps doc-kitty free of a Spec Kitty
-  runtime dependency, so a generator must read files, not import the CLI.
-
-What does not exist is the combination: a page-scoped stub that owns a
-generated subtree.
-
-## Generation strategy
-
-| | Generated files (recommended) | Injected routes |
+| File | Rule | Role |
 |---|---|---|
-| How | Write stamped markdown into the docs tree, during `astro:config:setup` or from a pre-build script | An integration injects routes or virtual entries from the stub |
-| Agent payloads, OKF, sitemap, search, links gate | Automatic: the pages are ordinary entries | Each needs synthetic records, as OpenAPI does today |
-| Docs loader | Fits the walk-based route table | `docKittyDocsLoader` rejects patterns that desync its walk |
-| Cost | Generated files in the tree, and the merge-conflict profile of ADR-0072 | Much more surface code |
+| `*/pack.yaml` | `pack-descriptor` | Identity and lineage: `pack_id` (ULID, the only runtime identity), `name`, `pack_version`, `pack_level`, `parent_pack`, `depends_on: [{pack_id, range}]`, `pack_drg`. Closed schema; `schema_version: "1.0"` is optional |
+| `*/README.md` | `pack-document`, Markdown | The pack's description. Only the root README counts |
+| `*/pack-manifest.yaml` | `pack-manifest` | Derived: every constituent with `kind`, `id`, `path`, `content_hash`, plus `manifest_hash`. Charter ADR-0042 (amended 2026-11-12) says it is always generated and restamped on every write |
+| `*/presets/*.yaml` | `preset` | Activation presets |
+| `*/policy.yaml` | `policy` | Mutability per artefact, e.g. `agent_profile:generic-agent: locked` |
+| `**/*.graph.yaml`, `*/drg/fragment.yaml` | `graph-shard`, `org-fragment` | DRG nodes (`urn: <kind>:<id>`) and edges |
+| `**/*.<kind>.yaml` | one schema per kind | Artefacts: directive, tactic, styleguide, toolguide, paradigm, procedure, agent, step-contract, asset, glossary-pack, skill, mission-type, guard, lifecycle |
+| `**/toolguides/*.guide.md`, mission step prompts | Markdown schemas | Prose bodies |
+| `*/pack.md`, `*/PROVENANCE.md`, `*/org-charter.yaml` | `retired` | Refused by name (422, `retired`), case variants too |
+| `**/*.md` | `ignored` | Not held, not served, not refused |
 
-Generating files at `astro:config:setup`, as the glossary and Gherkin
-integrations do, gives the real-file benefits without a separate step.
+### The pack document
 
-## Page hierarchy
+The `pack-document` schema works over the codec's Markdown model:
 
-One `packs` section, with packs as directories (not one registry section per
-pack, which would make `sections.yaml` drift with every new pack):
-
-```text
-/packs/                         section hub
-/packs/<pack>/                  pack hub (the authored stub)
-/packs/<pack>/<kind>/           kind hub, e.g. /packs/foundation/tactics/
-/packs/<pack>/<kind>/<id>/      artefact page
-/packs/active/                  the repository's active charter
+```json
+{ "required": ["preamble", "sections"], "additionalProperties": false,
+  "properties": { "frontmatter": { "type": "object" }, "title": { "minLength": 1 },
+                  "preamble": { "type": "string" },
+                  "sections": [{ "title": "…", "content": "…" }] } }
 ```
 
-- **Pack hub**: name, version, level, depends-on and used-by packs, the
-  manifest digest, and one card per kind with its count.
-- **Kind hub**: what the kind is, then one card per artefact with its title and
-  a one-sentence summary. Without the summary a hub of 138 tactics is a wall of
-  names.
-- **Artefact page**: a layout per kind (a directive's intent and enforcement, a
-  tactic's steps and failure modes, a procedure's entry and exit conditions),
-  related artefacts from the DRG, and "Used by" backlinks. The verbatim YAML is
-  published next to the page and linked, so both the rendered and the raw form
-  are available and labelled.
-- **Active charter hub**: the selected packs, activations, overrides, the
-  resolved artefact set, and for each artefact the tier it comes from
-  (built-in, org, project).
+So a README is optional frontmatter, an optional H1 (the pack's title), a
+preamble, then H2 sections. Every part is free text. The schema has no required
+heading, no link rule and no size limit. The `## Provenance` section is a
+convention from the open-packs migration, not a schema rule.
 
-URLs use the artefact id, never the title. Cross-links resolve by (pack, kind,
-id), and an unresolved target renders as plain text, not a broken link.
-Backlinks are written into the generated markdown, so agents that read the raw
-pages see them too. An artefact has one canonical URL even when several packs
-re-export it.
+The codec refuses, and never warns about: a byte order mark, any carriage
+return, unterminated or non-mapping frontmatter, a second H1 or an H1 that is not
+the first block, an H1 or H2 indented by 1 to 3 spaces, an empty heading, a tab
+after the `#` run, a closing `#` sequence, a setext underline, and an unclosed
+fence. A refused README makes the pack unreadable: 500 `pack_unreadable` on read,
+422 on registration.
 
-## Authoring contract (sketch)
+`GET /packs/{packId}/doc` returns the README byte for byte with
+`Accept: text/markdown`. With JSON (the default) it returns `{title, body,
+_links}`, where `body` is the canonical re-serialisation below the H1, without
+frontmatter. Built-in packs have no `/doc` read (charter ADR-0073 D9).
 
-The stub's location is the pack hub's URL, and its body is the hub's
-introduction:
+### Versioning in the contract
 
-```yaml
-# docs/packs/foundation.md
----
-title: Foundation doctrine
-description: The built-in doctrine every Spec Kitty project starts from.
-kind: Pack
-pack:
-  source:
-    local: ../spec-kitty-open-packs/packs/foundation
-    # git: { repo: spec-kitty/spec-kitty-open-packs, ref: v3.0.0, path: packs/foundation }
-    # project: true            # this repository's .kittify: the active charter hub
-  include: { kinds: [directive, tactic, procedure, agent_profile, glossary_pack] }
-  exclude: { ids: [] }
-  titles: { kinds: { tactic: Tactics } }
----
-```
+- Schema `$id`s carry no version (`https://schemas.spec-kitty.ai/charter/packs/<kind>.schema.json`)
+  and are identifiers only. There is no published schema package.
+- Some files carry a `schema_version` (descriptor `"1.0"`, manifest `"1.0"`,
+  policy `1`). `pack-document` has none.
+- The service contract is `0.2.0-SNAPSHOT`, where a minor may break (charter
+  ADR-0022). Consumers pin an exact charter commit, as open-packs does.
+- Contract release publishing is open (charter #45).
 
-The site config decides what is allowed; the stub only declares what it wants:
+## What open-packs does today
 
-```ts
-defineDocKittyIntegrations({
-  packs: {
-    section: 'packs',
-    network: { allowHosts: ['github.com'], offline: false },
-    maxArtefacts: 2000,
-  },
-});
-```
+open-packs already renders its docs with doc-kitty: `site/` depends on
+`@spec-kitty/doc-toolkit` **0.3.0** (doc-kitty is at 0.7.1), with
+`docsDir: '../docs'` and `indexBasename: ['index', 'README']`. Its ADR
+2026-10-17-1 chose doc-kitty to share one toolchain with the charter's site.
 
-Rules to pin down:
+`scripts/docs/gen_pack_reference.py` (636 lines) writes one
+`docs/packs/<pack>.md` per pack directory:
 
-- A `local` path resolves inside the project root after `realpath`. A `..`
-  escape is refused, not clamped.
-- A `git.ref` must be a full commit or a tag, never a branch. The resolved
-  commit goes into provenance.
-- An unknown kind is a warning plus a generic page, never a build failure. The
-  source syntax is ours; the kind vocabulary belongs to Spec Kitty.
-- Generated children carry a `generated:` stamp from a new producer; the stub
-  does not. The generator deletes only its own stale files, and fails if an
-  authored file sits in its subtree (ADR-0046).
-- A `generate-pack-pages --check` gate in the Gherkin shape catches drift.
+- doc-kitty-valid frontmatter with `kind: Reference` and a
+  `generated: {by, at}` stamp. `at` is a fixed constant, because a git date made
+  the drift gate fail spuriously;
+- a "do not edit" banner;
+- version, `pack_level` and `depends_on`, with each dependency named by the
+  local pack that holds its `pack_id`;
+- the README **preamble only**, as "Purpose";
+- an artefact inventory: per-kind counts of the immediate subdirectories, and a
+  full file listing in `<details>`;
+- a bespoke content checksum (sha256 over sorted path, NUL, bytes, LF).
+
+It records no validation verdict, on purpose: the CI gates are the verdict
+(open-packs #249). Two CI jobs run `gen_pack_reference.py --check`. The
+hand-authored `docs/packs/index.md` and `catalog-proposal.md` sit beside the
+generated pages, protected by a reserved-slug list.
+
+Gaps against the charter's contract, which the operator calls "alignment
+ongoing":
+
+- Org packs such as `go` have no `pack-manifest.yaml`, though the charter now
+  says one is always generated. The generator counts directories instead of
+  reading constituents.
+- The checksum is open-packs' own recipe. A second digest, `spec-kitty-snapshot-sha256`,
+  sits in per-pack sidecars `packs/<name>.source.yaml` (open-packs ADR
+  2026-11-11-2), outside the pack and outside `file-kinds.yaml`. Neither is the
+  charter's `manifest_hash`.
+- READMEs link relatively into the repository (`../../docs/guides/compose-packs.md`).
+  That only resolves from the pack directory, so a page rendered elsewhere has to
+  rewrite those links.
+
+open-packs #19 (content-from-code docsite) and #24 (validator and schema
+reference pages) are the epics behind this generator.
+
+## What core does today
+
+- Core resolves three tiers: `built-in` (`packs/built-in/` beside the source, or
+  `SPEC_KITTY_PACKS_ROOT`), `org` (`.kittify/config.yaml`
+  `charter_packs.org.packs[]`, with `local_path`, `source_type`, `url`, `ref`,
+  `subdir`), and the project pack at `.kittify/charter-packs/`.
+- It reads `pack.yaml`, `pack-manifest.yaml`, graph files, presets and the
+  per-kind folders (`src/charter/offering/artifact_kinds.py`). It never reads
+  `README.md`, and it has no `policy.yaml` reader. It still names
+  `org-charter.yaml` and `PROVENANCE.md` in places, so it is not yet caught up
+  with #248 either.
+- JSON surfaces: `charter pack list --json`, `charter pack validate --json`
+  (`{ok, errors[], advisories[]}`), `charter status --json`, and
+  `charter context --json`. **Nothing emits a whole pack tree or a README.** The
+  charter service has no export either; charter #543 proposes an archive
+  download.
+- The active charter is `.kittify/charter/charter.yaml` (`schema_version: 2.0.0`),
+  with a compiled `catalog.references[]` of `{id, kind, title, summary,
+  source_path, local_path}`.
+- Core's own docs site moved from DocFX to doc-kitty (core epic #6100, core ADR
+  2026-10-31-1). That is the "DocFX to doc-kitty overhaul": the product line
+  standardises on doc-kitty, so pack rendering written once in doc-kitty serves
+  open-packs, the charter site and core alike. No core docs page renders packs
+  yet.
+
+## What the charter site does today
+
+The charter's site also runs doc-kitty (0.7.0). It documents each schema with a
+hand-authored `kind: Schematic` page (`docs/architecture/pack-schemas/`) and
+renders the OpenAPI contract. It renders no pack content.
+
+## Where pack behaviour belongs
+
+| Behaviour | Owner | Why |
+|---|---|---|
+| The pack format, schemas and codec | Charter | It is the published language. A copy elsewhere is a fork |
+| The verdict on a pack (valid, composable, registrable) | Charter service, run by open-packs CI | Already in place. A third implementation would drift |
+| Pack content and its provenance prose | open-packs | Authored there |
+| Pack digests in sidecars | open-packs | An open-packs release concern, outside the pack |
+| Reading a pack for display | **doc-kitty**, through one adapter | Every doc-kitty site that shows packs needs it |
+| Pack pages, kind hubs, artefact pages | **doc-kitty** | Replaces `gen_pack_reference.py` and serves core and the charter too |
+| Rewriting README links for the rendered location | **doc-kitty** | Only the renderer knows where the page lands |
+| Drift gate for generated pages | **doc-kitty** | The generated-section pattern of ADR-0046 |
+| Frontmatter and link checks on generated pages | **doc-kitty** | Generated pages are ordinary entries for the existing gates |
+| Frontmatter in pack READMEs | Neither yet | The schema allows any; doc-kitty synthesises page frontmatter instead of requiring it |
+
+doc-kitty should **not** validate pack READMEs against the codec. It reads them
+tolerantly and reports only what rendering needs: a link that does not resolve
+after relocation, or a file the contract snapshot does not classify.
+
+## doc-kitty's existing machinery
+
+- **Generated sections.** The Gherkin generator (`src/lib/gherkin/generate.mjs`)
+  runs at `astro:config:setup`, writes stamped Markdown, prunes only its own stale
+  pages, fails on an authored file in its section, and has a `--check` CLI. Stamps
+  are `generated: {by: <producer>/<version>, at, content_hash}`
+  (`src/lib/generator-stamp.mjs`), with `at` bumped only when the hash changes, so
+  output is deterministic without a frozen date.
+- **Hubs.** A slug parent is a hub (`src/lib/hub-children.mjs`, `Hub.astro`).
+- **Raw sources next to pages.** Schematic pages publish their YAML beside the
+  page (ADR-0067).
+- **Open `kind` vocabulary.** New kinds are appended to `KINDS`
+  (`src/lib/vocabulary-core.mjs`).
+- **No Spec Kitty runtime dependency** (ADR-0042). A reader must parse files.
 
 ## Prior art
 
-- **open-packs' own reference pages** (`spec-kitty-open-packs/docs/packs/*.md`)
-  are generated from the packs already: the closest precedent.
-- **Backstage catalog**: relations declared once and shown in both directions,
-  and one URL per entity from kind and name.
-- **docusaurus-openapi-docs**: owned generated files, a generated sidebar slice,
-  group landing pages and a version switcher.
-- **starlight-openapi, starlight-typedoc**: one page per item from one
-  declaration.
-- **MkDocs gen-files with literate-nav**: navigation built from the same
-  enumeration as the pages.
+- **open-packs' `gen_pack_reference.py`**: the direct predecessor. Deterministic,
+  drift-gated, no verdict.
+- **Backstage catalog**: one URL per entity from kind and name; relations shown in
+  both directions.
+- **docusaurus-openapi-docs**, **starlight-openapi**, **starlight-typedoc**: one page
+  per item from one declaration, a generated sidebar slice, and a version switcher.
+- **MkDocs gen-files with literate-nav**: navigation from the same enumeration as
+  the pages.
 
 ## Risks
 
-- **Format churn.** Validate against the published schemas, record the schema
-  version, and warn rather than fail on unknown fields. Longer term, ask
-  spec-kitty for a `pack export --json` command, so doc-kitty reads one
-  versioned contract instead of the directory layout.
-- **Private packs.** Fetching a pack and publishing it are separate decisions. A
-  public site must not publish private doctrine because a stub asked for it, so
-  publication needs a site-level allow, and a `bundle` source (a pre-resolved
-  JSON file) lets CI build offline.
-- **Renames.** An artefact id that changes breaks its URL. A committed alias file
-  can feed the existing redirect gate.
-- **Several versions of a pack.** Follow the OpenAPI versions pattern later; the
-  first slices render one version.
-- **Search noise.** Hundreds of artefact pages can drown the authored docs. Weight
-  hubs higher, keep one summary per card, leave artefact pages out of RSS, and
-  group them in `llms.txt`.
-
-## Open questions
-
-1. Should the active-charter hub read `.kittify/charter/charter.yaml` directly,
-   or the output of `charter status --json` committed as a bundle?
-2. Which kinds belong in the first slice? Directives, tactics, procedures, agent
-   profiles and glossary cover most readers; missions, step contracts and
-   templates can follow.
-3. Is a packs repository's own site the main consumer, or a kittified
-   repository showing the packs it uses? The answer orders slices 2 and 4.
+- **Contract churn.** Most recent charter ADRs are pack rulings. Mitigation: a
+  vendored, digest-checked contract snapshot, unknown files reported and never
+  fatal, and a site-level override to a newer snapshot.
+- **Two parsers of one README.** doc-kitty renders Markdown the codec might
+  refuse. Accepted: the verdict is the charter's, and a refused pack fails
+  open-packs CI before it is published.
+- **Link relocation.** README links are written for the pack directory.
+  Unresolvable links become plain text with a warning, never a broken link.
+- **Scale and search noise.** `foundation` alone is about 240 files.
+- **Private packs.** Fetching a pack and publishing it are separate decisions.
+- **Lagging consumers.** open-packs is four minor releases behind; core is behind
+  #248. Neither blocks doc-kitty, but both gate the migration.
