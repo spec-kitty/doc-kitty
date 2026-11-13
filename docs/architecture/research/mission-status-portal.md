@@ -2,11 +2,12 @@
 title: Mission status portal for kittified repos
 description: "Generate a mission overview from a repo's Spec Kitty state so the docsite doubles as a status portal."
 doc_status: draft
-updated: 2026-08-22T00:00:00Z
+updated: 2026-11-13T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [spec-kitty, portal, status, integration]
 related:
+  - architecture/research/missions-and-ops
   - architecture/research/qa-portal
   - adr/0006-direct-render-default-projection-deferred
 ---
@@ -16,6 +17,13 @@ related:
 An idea for first-class support of Spec Kitty ("kittified") repositories: when a
 repo is governed by Spec Kitty, doc-kitty generates a mission overview so the
 docsite doubles as a status portal. This is a proposal, not a decision.
+
+> **Partly superseded (2026-11-13).** [Missions and Ops as generated pages](./missions-and-ops.md)
+> measures core's current layout and replaces this page's data and design
+> sections. Several claims here are stale: work-package state lives in
+> `status.events.jsonl` and `status.json`, not in WP frontmatter; `lanes.json`
+> and `acceptance-matrix.json` exist in most missions; and core has no
+> `.kittify/canonical-events.jsonl`.
 
 It pairs with the [QA portal](./qa-portal.md) idea under a shared theme: doc-kitty
 as a repository portal (docs, status, and QA), not only a docsite.
