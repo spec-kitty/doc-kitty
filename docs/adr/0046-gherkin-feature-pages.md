@@ -10,6 +10,7 @@ authors:
 related:
   - adr/0051-gherkin-in-any-page
   - adr/0055-gherkin-scenario-results
+  - adr/0079-kitty-packs-through-a-charter-contract-reader
   - adr/0026-glossary-source-and-generation-seam
   - adr/0027-auto-link-resolution-scoping-and-term-directive
   - adr/0028-glossary-frontmatter-fields
