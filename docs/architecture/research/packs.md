@@ -22,8 +22,9 @@ which pack behaviour doc-kitty should own. The decision is
 [ADR-0079](../../adr/0079-kitty-packs-through-a-charter-contract-reader.md); the
 slices are in the [packs feature plan](../../plans/features/packs.md).
 
-It replaces an earlier draft of this page, written before open-packs #248 made
-each pack's `README.md` its pack document. That draft assumed `pack.md`,
+It replaces an earlier draft of this page, written before open-packs #248
+(issues #241 and #242, charter #451) made each pack's `README.md` its pack
+document. That draft assumed `pack.md`,
 `PROVENANCE.md` and `org-charter.yaml`, which are now retired.
 
 > **Naming.** In doc-kitty, "charter" already means the documentation-governance
@@ -67,9 +68,10 @@ open-packs' current layout, which is still being aligned with that contract.
 | `*/presets/*.yaml` | `preset` | Activation presets |
 | `*/policy.yaml` | `policy` | Mutability per artefact, e.g. `agent_profile:generic-agent: locked` |
 | `**/*.graph.yaml`, `*/drg/fragment.yaml` | `graph-shard`, `org-fragment` | DRG nodes (`urn: <kind>:<id>`) and edges |
-| `**/*.<kind>.yaml` | one schema per kind | Artefacts: directive, tactic, styleguide, toolguide, paradigm, procedure, agent, step-contract, asset, glossary-pack, skill, mission-type, guard, lifecycle |
-| `**/toolguides/*.guide.md`, mission step prompts | Markdown schemas | Prose bodies |
-| `*/pack.md`, `*/PROVENANCE.md`, `*/org-charter.yaml` | `retired` | Refused by name (422, `retired`), case variants too |
+| `**/*.<kind>.yaml` | one schema per kind | Artefacts: directive, tactic, styleguide, toolguide, paradigm, procedure, agent, step-contract, asset, glossary-pack, skill, mission-type, guard, lifecycle, and `step-enhancement` under `missions/` |
+| `**/charter.yaml` | `charter` | A charter file |
+| `**/toolguides/*.guide.md`, mission step prompts, guidelines, prompt fragments | Markdown schemas | Prose bodies |
+| `*/pack.md`, `*/PROVENANCE.md`, `*/org-charter.yaml` | `retired` | Refused by name (422, `retired`), and so are root-level case variants such as `Readme.md` |
 | `**/*.md` | `ignored` | Not held, not served, not refused |
 
 ### The pack document
@@ -88,8 +90,8 @@ preamble, then H2 sections. Every part is free text. The schema has no required
 heading, no link rule and no size limit. The `## Provenance` section is a
 convention from the open-packs migration, not a schema rule.
 
-The codec refuses, and never warns about: a byte order mark, any carriage
-return, unterminated or non-mapping frontmatter, a second H1 or an H1 that is not
+The codec refuses, and never warns about: input that is not UTF-8, a byte order
+mark, any carriage return, unterminated, invalid or non-mapping frontmatter, a second H1 or an H1 that is not
 the first block, an H1 or H2 indented by 1 to 3 spaces, an empty heading, a tab
 after the `#` run, a closing `#` sequence, a setext underline, and an unclosed
 fence. A refused README makes the pack unreadable: 500 `pack_unreadable` on read,
@@ -98,7 +100,8 @@ fence. A refused README makes the pack unreadable: 500 `pack_unreadable` on read
 `GET /packs/{packId}/doc` returns the README byte for byte with
 `Accept: text/markdown`. With JSON (the default) it returns `{title, body,
 _links}`, where `body` is the canonical re-serialisation below the H1, without
-frontmatter. Built-in packs have no `/doc` read (charter ADR-0073 D9).
+frontmatter. A built-in pack answers `404 pack_not_found` (charter ADR-0073
+decision 9).
 
 ### Versioning in the contract
 
@@ -127,8 +130,9 @@ open-packs already renders its docs with doc-kitty: `site/` depends on
 - version, `pack_level` and `depends_on`, with each dependency named by the
   local pack that holds its `pack_id`;
 - the README **preamble only**, as "Purpose";
-- an artefact inventory: per-kind counts of the immediate subdirectories, and a
-  full file listing in `<details>`;
+- an artefact inventory: a recursive file count per top-level subdirectory, a
+  total, and a full file listing in `<details>`. Root files such as `pack.yaml`
+  are in no kind;
 - a bespoke content checksum (sha256 over sorted path, NUL, bytes, LF).
 
 It records no validation verdict, on purpose: the CI gates are the verdict
@@ -139,13 +143,23 @@ generated pages, protected by a reserved-slug list.
 Gaps against the charter's contract, which the operator calls "alignment
 ongoing":
 
-- Org packs such as `go` have no `pack-manifest.yaml`, though the charter now
-  says one is always generated. The generator counts directories instead of
-  reading constituents.
+- The 12 org packs, such as `go`, have no `pack-manifest.yaml`, though the
+  charter now says one is always generated. Only the 7 built-in-level packs have
+  one, and charter ADR-0042 (amended 2026-11-12) records that `built-in`'s is
+  stale: it lists 53 files the load does not hold and leaves out 54 it does. A
+  manifest hash read from disk is therefore not trustworthy on its own. The
+  generator counts directories instead of reading constituents.
+- Two packs have a `pack.yaml` `name` that differs from their directory: `qa` is
+  `quality-assurance` and `internal` is `spec-kitty-internal`. Today's URLs come
+  from the directory.
 - The checksum is open-packs' own recipe. A second digest, `spec-kitty-snapshot-sha256`,
   sits in per-pack sidecars `packs/<name>.source.yaml` (open-packs ADR
   2026-11-11-2), outside the pack and outside `file-kinds.yaml`. Neither is the
-  charter's `manifest_hash`.
+  charter's `manifest_hash`, and readers use the bespoke recipe today to verify a
+  download.
+- open-packs proves its packs against the charter commit in its own
+  `charter.lock.yaml`. A renderer pinned to a different commit can disagree with
+  that verdict.
 - READMEs link relatively into the repository (`../../docs/guides/compose-packs.md`).
   That only resolves from the pack directory, so a page rendered elsewhere has to
   rewrite those links.
@@ -155,25 +169,30 @@ reference pages) are the epics behind this generator.
 
 ## What core does today
 
-- Core resolves three tiers: `built-in` (`packs/built-in/` beside the source, or
-  `SPEC_KITTY_PACKS_ROOT`), `org` (`.kittify/config.yaml`
+- Core resolves three tiers: `built-in` (`packs/built-in/` beside the source,
+  fetched from a pinned open-packs commit by `charter pack vendor` and
+  `scripts/sync_packs.py`, or `SPEC_KITTY_PACKS_ROOT`), `org` (`.kittify/config.yaml`
   `charter_packs.org.packs[]`, with `local_path`, `source_type`, `url`, `ref`,
   `subdir`), and the project pack at `.kittify/charter-packs/`.
 - It reads `pack.yaml`, `pack-manifest.yaml`, graph files, presets and the
-  per-kind folders (`src/charter/offering/artifact_kinds.py`). It never reads
-  `README.md`, and it has no `policy.yaml` reader. It still names
+  per-kind folders (`src/charter/offering/artifact_kinds.py`). It never reads a
+  pack's `README.md` as a document: it only filters it out, and `charter org
+  init` writes a stub. It has no `policy.yaml` reader. It still names
   `org-charter.yaml` and `PROVENANCE.md` in places, so it is not yet caught up
   with #248 either.
 - JSON surfaces: `charter pack list --json`, `charter pack validate --json`
   (`{ok, errors[], advisories[]}`), `charter status --json`, and
-  `charter context --json`. **Nothing emits a whole pack tree or a README.** The
-  charter service has no export either; charter #543 proposes an archive
-  download.
+  `charter context --json`. `charter pack assemble` writes a merged pack
+  directory from input packs, but **no command exports an installed or
+  registered pack as JSON or an archive, and none emits its README.** The charter
+  service reads a pack's artefacts, relationships and document one by one, with
+  no whole-pack export; charter #543 proposes an archive download.
 - The active charter is `.kittify/charter/charter.yaml` (`schema_version: 2.0.0`),
   with a compiled `catalog.references[]` of `{id, kind, title, summary,
   source_path, local_path}`.
-- Core's own docs site moved from DocFX to doc-kitty (core epic #6100, core ADR
-  2026-10-31-1). That is the "DocFX to doc-kitty overhaul": the product line
+- Core's own docs site is moving from DocFX to doc-kitty (core epic #6100; core
+  ADR 2026-10-31-1, still marked Proposed). Its `site/` pins doc-kitty by git
+  commit, not by an npm version. That is the "DocFX to doc-kitty overhaul": the product line
   standardises on doc-kitty, so pack rendering written once in doc-kitty serves
   open-packs, the charter site and core alike. No core docs page renders packs
   yet.
@@ -191,7 +210,7 @@ renders the OpenAPI contract. It renders no pack content.
 | The pack format, schemas and codec | Charter | It is the published language. A copy elsewhere is a fork |
 | The verdict on a pack (valid, composable, registrable) | Charter service, run by open-packs CI | Already in place. A third implementation would drift |
 | Pack content and its provenance prose | open-packs | Authored there |
-| Pack digests in sidecars | open-packs | An open-packs release concern, outside the pack |
+| Pack digests in sidecars, and any checksum shown for download verification | open-packs | An open-packs release concern, outside the pack. doc-kitty offers an extension point, not a policy |
 | Reading a pack for display | **doc-kitty**, through one adapter | Every doc-kitty site that shows packs needs it |
 | Pack pages, kind hubs, artefact pages | **doc-kitty** | Replaces `gen_pack_reference.py` and serves core and the charter too |
 | Rewriting README links for the rendered location | **doc-kitty** | Only the renderer knows where the page lands |
@@ -201,7 +220,10 @@ renders the OpenAPI contract. It renders no pack content.
 
 doc-kitty should **not** validate pack READMEs against the codec. It reads them
 tolerantly and reports only what rendering needs: a link that does not resolve
-after relocation, or a file the contract snapshot does not classify.
+after relocation, or a file the contract snapshot does not classify. It should,
+however, check what it displays as fact. Recomputing each constituent's
+`content_hash` (SHA-256 of the bytes after CRLF to LF) is cheap, is not a
+verdict on the pack, and stops a stale manifest from being shown as current.
 
 ## doc-kitty's existing machinery
 
@@ -243,3 +265,8 @@ after relocation, or a file the contract snapshot does not classify.
 - **Private packs.** Fetching a pack and publishing it are separate decisions.
 - **Lagging consumers.** open-packs is four minor releases behind; core is behind
   #248. Neither blocks doc-kitty, but both gate the migration.
+- **A second classifier.** `file-kinds.yaml` is data, but its precedence, the
+  case-variant refusal and its strict keys are Java behaviour. A reader that
+  vendors only the YAML reimplements the classification.
+- **Unverified integrity.** A stale manifest hash shown as fact misleads more
+  than no hash.
