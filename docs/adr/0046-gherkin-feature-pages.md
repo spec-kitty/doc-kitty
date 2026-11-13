@@ -2,7 +2,7 @@
 title: "ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection"
 description: An opt-in gherkin preset parses .feature sources once and generates one Specification page per feature into the docs collection, reusing the ADR-0026 seam.
 doc_status: active
-updated: 2026-10-14T00:00:00Z
+updated: 2026-11-13T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -32,6 +32,11 @@ Decisions 1, 2, 6, 8 and 9 are amended by
 preset also renders `gherkin` fences and `::gherkin` includes on docs pages,
 `sources` becomes optional and only drives generated pages, and in-page errors are
 build-fatal through an error sink.
+
+Decision 4 is amended by
+[ADR-0079](./0079-kitty-packs-through-a-charter-contract-reader.md): a producer may
+own a set of directories inside a section rather than the whole section, through
+one producer registry with an ownership scope per producer.
 
 Decision 9 is amended by [ADR-0055](./0055-gherkin-scenario-results.md): with a
 `results` route option, the scenario index carries each scenario's result from the
