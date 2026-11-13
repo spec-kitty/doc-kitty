@@ -57,7 +57,7 @@ kind: Hub
 | [0043](./0043-toolkit-package-scope-and-self-reference.md) | ADR-0043: DocKitty ships under the @spec-kitty scope; NFR-001 forbids runtime coupling, not self-reference | Accepted | 2026-09-28 |
 | [0044](./0044-header-carrier.md) | ADR-0044: Header is the fifth carrier; a theme replaces the site header through dk:site-header | Accepted | 2026-10-13 |
 | [0045](./0045-frame-width-token.md) | ADR-0045: The page frame is full width by default; --dk-width-frame caps it | Accepted | 2026-10-13 |
-| [0046](./0046-gherkin-feature-pages.md) | ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection | Accepted | 2026-10-14 |
+| [0046](./0046-gherkin-feature-pages.md) | ADR-0046: Render Gherkin .feature files as Specification pages by codegen into the docs collection | Accepted | 2026-11-13 |
 | [0047](./0047-relative-markdown-links.md) | ADR-0047: Relative Markdown links are rewritten at build | Accepted | 2026-10-13 |
 | [0048](./0048-generated-page-names-and-empty-sources.md) | ADR-0048: Generated index page names and empty Gherkin sources | Accepted | 2026-10-13 |
 | [0049](./0049-openapi-reference-via-existing-integration.md) | ADR-0049: OpenAPI reference pages through an existing integration | Accepted | 2026-10-29 |
@@ -86,6 +86,11 @@ kind: Hub
 | [0072](./0072-parallel-landing-without-shared-files.md) | ADR-0072: Land PRs in parallel without shared hand-edited files | Accepted | 2026-11-01 |
 | [0073](./0073-generic-mcp-server-over-published-artifacts.md) | ADR-0073: One generic MCP server over published artifacts | Accepted | 2026-11-02 |
 | [0074](./0074-plantuml-external-include-opt-in.md) | ADR-0074: Let operators opt PlantUML into external includes | Accepted | 2026-11-03 |
+| [0075](./0075-sidebar-carrier-renders-own-sublist-on-opt-in.md) | ADR-0075: The Sidebar carrier renders its own sublist on opt-in | Accepted | 2026-11-06 |
+| [0076](./0076-carrier-places-hub-blocks-after-layout.md) | ADR-0076: Place a hub's metadata blocks after its layout | Accepted | 2026-11-05 |
+| [0077](./0077-shared-disclosure-control.md) | ADR-0077: One disclosure control over a native details baseline | Accepted | 2026-11-06 |
+| [0078](./0078-openapi-surface-matrix.md) | ADR-0078: The OpenAPI surface matrix | Accepted | 2026-11-08 |
+| [0079](./0079-kitty-packs-through-a-charter-contract-reader.md) | ADR-0079: Kitty packs as generated pages, read through a charter-contract reader | Accepted | 2026-11-13 |
 
 New ADRs copy [`template.md`](./template.md) and take the next free number. Do
 not edit the table above: after a merge, the ADR index workflow regenerates it
