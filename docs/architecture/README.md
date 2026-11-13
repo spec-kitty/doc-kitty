@@ -65,6 +65,9 @@ page:
   materialises spec versions once and projects them onto every surface: the
   source registry, the raw-document publisher, the synthetic agent entries,
   and the gates that pin them.
+- [Kitty packs (target design)](./packs.md) — the envisioned shape of pack pages
+  per ADR-0079: the charter-contract reader, `PackModel`, the generator and its
+  per-directory ownership, contract pinning, and what each slice builds.
 
 ## Build and delivery
 
