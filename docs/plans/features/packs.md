@@ -186,8 +186,9 @@ until its manifest is regenerated.
 
 ## Cross-repository items
 
-None is filed from this plan. On 2026-11-13 the operator approved the three
-rows marked **approved** to go forward. The rest are open.
+On 2026-11-13 the operator approved the three rows marked **approved**. They are
+not filed yet: this run had no write access to spec-kitty-open-packs or
+spec-kitty-charter. The rest are open.
 
 | Repository | Item | Needed by |
 |---|---|---|
