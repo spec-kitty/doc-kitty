@@ -58,7 +58,7 @@ titles and summaries sit in different fields per kind:
 | Agent profile | `profile-id` (kebab-case keys throughout) | `name` | `description` |
 | Glossary pack | `id` | — | per-term `definition` |
 
-The canonical JSON Schemas (25 files) live in
+The canonical JSON Schemas, one per descriptor and artefact kind, live in
 `spec-kitty-charter/contracts/packs/schemas/`. A packs repository pins them
 through `charter.lock.yaml`.
 
