@@ -43,7 +43,7 @@ sections "The sidebar child cap" and "Listing a large hub".
 
 ## Slices
 
-1. **Sidebar child cap.** `sidebar.childCap` in site config (default 50), per
+1. **Sidebar child cap** (#341). `sidebar.childCap` in site config (default 50), per
    section in `sections.yaml`, and per hub in frontmatter (`sidebar_child_cap`),
    resolved most specific first. Enforced in `shapeSidebar`. A capped group keeps
    its index link and one "N items" entry to the hub, marked current on a capped
@@ -52,18 +52,18 @@ sections "The sidebar child cap" and "Listing a large hub".
    sidebar links per page in the built HTML are at most the cap plus two; a capped
    child shows the "N items" entry as current; and the output for an uncapped
    hub is byte-identical to today's.
-2. **Paged hub listing.** The first page of children server-rendered on the hub,
+2. **Paged hub listing** (#342). The first page of children server-rendered on the hub,
    then `/<hub>/page/N/` pages in the Starlight frame with a labelled pagination
    `nav`. Paged URLs are self-canonical and out of the sitemap; every child stays
    in it. *Done when* every fixture child is reachable from the paged listing with
    scripts off, the pagination passes axe, and the sitemap holds every child and
    no paged URL.
-3. **Progressive listing.** A build-time `index.json` per large hub (chunked), a
+3. **Progressive listing** (#343). A build-time `index.json` per large hub (chunked), a
    "Load more" button with an `aria-live` count, sort and filter controls, and
    query-string state. A `hub_layout: cards` presentation over the same data (core
    #6941). *Done when* the controls pass axe and keyboard checks, a filtered URL
    reproduces its view on reload, and the index lists every child.
-4. **Agent and feed modes.** An `llms: summary` mode for `feeds`, so `llms.txt`
+4. **Agent and feed modes** (#344). An `llms: summary` mode for `feeds`, so `llms.txt`
    lists a large hub and its `index.json` instead of every child. *Done when* the
    built `llms.txt` for the fixture hub has one entry plus the index, and the
    agent API still lists every child.
@@ -73,3 +73,5 @@ configuration page, and a changelog fragment. Slice 1 also records its build-tim
 and HTML-size measurements on a 1,000-child fixture.
 
 Order: 1, then 2, then 3 and 4 in either order. Slice 1 can ship alone.
+
+Tracked as epic #340.

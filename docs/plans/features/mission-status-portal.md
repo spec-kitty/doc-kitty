@@ -48,24 +48,24 @@ research is partly superseded by it.
 
 ## Slices
 
-1. **ADR: missions and Ops through a mission-status contract reader.** The
+1. **ADR: missions and Ops through a mission-status contract reader** (#346). The
    reader, the export versus file adapters, `MissionModel` and `OpModel`, the page
    tree, publication rules and the leak gate (completing ADR-0006 for generated
    surfaces). *Done when* the operator accepts it.
-2. **Mission reader.** `src/lib/missions/`, a vendored snapshot of core's
+2. **Mission reader** (#347). `src/lib/missions/`, a vendored snapshot of core's
    mission-status contract with its conformance fixtures and a lock, the export
    adapter, the file adapter labelled "snapshot, unverified",
    `dockitty-read-mission --json`, and the producer registry from #330. *Done
    when* the conformance fixtures pass, a numbered mission and a `01M…` mission
    from fixtures both map to the model, WP state and execution lanes stay
    distinct, and an unknown schema major is a warning plus a facts-only model.
-3. **Mission pages and status hub.** `/missions/<slug>/` with spec and plan
+3. **Mission pages and status hub** (#348). `/missions/<slug>/` with spec and plan
    sub-pages, the WP table, issues and PRs, an ID redirect, the `missions.publish`
    allow-list and the leak gate, on top of the large-hubs listing. *Done when*,
    on a fixture tree, every published mission has a page; a denied file class
    fails `--check`; a mission outside the allow-list emits nothing at all; and the
    hub lists every mission through the paged listing.
-4. **Op ledger.** Monthly ledger pages and JSON, per-mission Op panels,
+4. **Op ledger** (#349). Monthly ledger pages and JSON, per-mission Op panels,
    `ops.include` and `ops.recent`, and agent-only feeds. `request_text` never
    reaches a page or a JSON file. *Done when* the fixture ledger has one page per
    month; a test fails if any output contains a fixture prompt string; and only
@@ -80,19 +80,20 @@ and 4 can run in parallel.
 
 ## Asks for core
 
-Not filed. For the operator to approve:
+Approved by the operator and filed on 2026-11-13:
 
-| Ask | Needed by |
-|---|---|
-| `spec-kitty mission export --json`: every mission's overview and detail, with a cursor, runnable in CI | Slice 2's authoritative adapter |
-| A published release of the mission-status contract and its conformance fixtures | Slice 2 pinning |
-| A structured `mission_id` and `wp_id` on every Op that belongs to a mission | Slice 4's per-mission panels |
-| A declared field that marks a mission private | Slice 3's publication rules |
-| Use the large-hubs listing for core #6941 (mission and glossary card grids) | Core's docsite |
+| Ask | Issue | Needed by |
+|---|---|---|
+| A batch export verb on the Mission Status Read API (every mission's overview and detail, a cursor) and a versioned release of its contract and fixtures | spec-kitty#7627 (under core epic #5528) | Slice 2's authoritative adapter and its pinning |
+| A structured `mission_id` and `wp_id` on every Op that belongs to a mission | spec-kitty#7628 | Slice 4's per-mission panels |
+| A declared field that marks a mission not for publication | spec-kitty#7629 | Slice 3's publication rules |
+| Use the large-hubs listing for core's mission and glossary card grids | Comment on spec-kitty#6941 | Core's docsite |
 
-## Tracking proposal
+## Tracking
 
-Two epics, because the generic feature ships and helps on its own:
+Filed on 2026-11-13 as proposed: [Large hubs](./large-hubs.md) is epic #340
+(#341 to #344), and this plan is epic #345 (#346 to #349). The proposal it
+followed:
 
 - **Epic: Large hubs.** Children are its four slices, in order. It has no
   dependency on Spec Kitty and serves packs (#328), Gherkin sections and core's
