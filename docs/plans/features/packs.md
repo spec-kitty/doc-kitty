@@ -76,7 +76,9 @@ Each slice is one child issue of #328.
    - A `dockitty-read-pack <dir> --json` CLI that prints the model, as the
      slice's consumer and a debugging aid.
 
-   *Done when* the charter's conformance cases pass against the reader; a changed
+   *Done when* the charter's conformance cases pass against the reader (transcribed
+   from its Java tests, with their source recorded in the lock, until
+   spec-kitty-charter#559 publishes them); a changed
    snapshot byte fails the lock test; fixtures (a pack with a manifest, one
    without, one with a retired file, one whose manifest is stale) read into the
    documented model with the expected warnings and `verified` flags; a mismatched
@@ -167,11 +169,11 @@ after the upgrade.
      example `built-in.md`) to the new files;
    - keep `docs/packs/index.md` and `catalog-proposal.md` authored; every other
      page in `docs/packs/` is a pack;
-   - replace the `gen_pack_reference.py --check` steps: the one in
-     `validate-packs.yml` runs in a Python-only job, so move the drift check to a
-     Node job (`docs-site.yml`) and make it run on pushes to `main` as the old
-     step did;
-   - repoint `docs-site.yml`'s path filters from `scripts/docs/**` to `packs/**`;
+   - replace both `gen_pack_reference.py --check` steps (`validate-packs.yml` and
+     `docs-site.yml`) with doc-kitty's Node check. Both jobs run Python only today,
+     so the check needs a job with Node and the site's dependencies installed;
+   - drop `scripts/docs/**` from `docs-site.yml`'s path filters (`packs/**` is
+     already there);
    - delete `scripts/docs/gen_pack_reference.py` and
      `tests/docs/test_gen_pack_reference.py`, and update
      `tests/ci/test_workflows.py`;
@@ -196,8 +198,8 @@ open.
 |---|---|---|
 | open-packs | **approved**: Upgrade `@spec-kitty/doc-toolkit` 0.3.0 to the packs release and make the switch (migration steps 2 and 3, including the CI, test and link changes). Filed as spec-kitty-open-packs#254 | Retiring the generator |
 | open-packs | Decide on ADR 2026-07-18-2 and 2026-07-18-3 and the download checksum (migration step 4) | Retiring the generator |
-| open-packs | **approved**: Generate `pack-manifest.yaml` for every pack, org packs included, and regenerate `built-in`'s, as charter ADR-0042 (amended 2026-11-12) requires. Filed as spec-kitty-open-packs#255 | A verified hash and an exact inventory on every page |
-| spec-kitty-charter | **approved**: Publish the packs contract (`file-kinds.yaml`, schemas and classifier conformance cases) as a versioned release, so doc-kitty pins a release, not a commit (extends charter #45). Filed as spec-kitty-charter#559 | Slice 2 pinning, later |
+| open-packs | **approved**: Generate `pack-manifest.yaml` for every pack, org packs included, and regenerate `built-in`'s. Charter ADR-0042 (amended 2026-11-12) lets open-packs regenerate or drop a manifest, since the service generates one where a pack holds none; only `built-in`'s stale one conflicts. Committed manifests give doc-kitty, which reads files, a verified hash. Filed as spec-kitty-open-packs#255 | A verified hash and an exact inventory on every page |
+| spec-kitty-charter | **approved**: Publish the packs contract (`file-kinds.yaml`, schemas and classifier conformance cases) as a versioned release, so doc-kitty pins a release, not a commit (extends charter #45). Filed as spec-kitty-charter#559 | Slice 2: the conformance cases as data (transcribed by hand until then), and release pinning |
 | spec-kitty-charter | Annotate each artefact schema with its display fields (title, summary), so renderers stop hard-coding the per-kind field map | Slice 4, optional |
 | spec-kitty-charter / core | A whole-pack read for built-in packs too (comment on charter #543 rather than file anew) | Slice 7, optional |
 | spec-kitty-charter | Render the packs the charter pins (`packs/open-packs.lock.yaml`) on its doc-kitty site, if wanted | Adoption |

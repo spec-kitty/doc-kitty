@@ -108,7 +108,7 @@ flowchart TB
 
 | Component | Role |
 |---|---|
-| Contract snapshot | `src/lib/packs/contract/` holds `file-kinds.yaml`, the schemas the reader uses, and the charter's classifier conformance cases. `pnpm packs:sync-contract --commit <sha>` refreshes it. |
+| Contract snapshot | `src/lib/packs/contract/` holds `file-kinds.yaml`, the schemas the reader uses, and the charter's classifier conformance cases, transcribed from its Java tests until spec-kitty-charter#559 publishes them. `pnpm packs:sync-contract --commit <sha>` refreshes `file-kinds.yaml` and the schemas. |
 | Contract lock | `contract.lock.json` records the charter commit and each snapshot file's sha256. A unit test fails when the bytes and the lock disagree. |
 | Pack reader | `readPack(dir)` turns a pack directory into a `PackModel`. It reimplements classification only and is held to the charter's conformance cases. It parses the README into the codec's shape with doc-kitty's own Markdown pipeline. It recomputes each manifest constituent's `content_hash`. |
 | Per-kind field map | Which fields give an artefact its title and summary, such as a directive's `title` and `intent`. It lives beside the snapshot, not in page templates. |
@@ -209,9 +209,11 @@ producer owns a whole section.
   hub, and `selectHubChildren` in `src/lib/hub-children.mjs` lists the pack pages
   under it as one-level-down children.
 
-Ownership is decided by stamp for Gherkin and packs pages. The producer registry
+Ownership is decided by stamp and scope together: a page is generated only when it
+carries a producer's stamp and sits inside that producer's scope, so an authored
+page cannot opt out of validation by claiming a stamp. The producer registry
 records each producer's scope: a whole section for Gherkin, a set of directories
-for packs. The glossary keeps its path rule as its scope until it stamps its pages.
+for packs, and the glossary's existing path rule (it already stamps its pages).
 The `packs` section joins the build-generated section ids, so a first build
 without pack pages does not warn.
 
@@ -263,8 +265,8 @@ releases (charter #45).
 
 ## Slices
 
-Each slice is a child issue of epic #328. Slice 1, the ADR itself (#329), is
-delivered as Accepted.
+Each slice is a child issue of epic #328. Slice 1, the ADR itself (#329), was
+accepted on 2026-11-13 and is done when PR #337 merges.
 
 | Slice | Issue | Builds |
 |---|---|---|
