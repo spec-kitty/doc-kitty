@@ -186,16 +186,18 @@ until its manifest is regenerated.
 
 ## Cross-repository items
 
-On 2026-11-13 the operator approved the three rows marked **approved**. They are
-not filed yet: this run had no write access to spec-kitty-open-packs or
-spec-kitty-charter. The rest are open.
+On 2026-11-13 the operator approved the three rows marked **approved**, and they
+are filed: spec-kitty/spec-kitty-open-packs#254, spec-kitty/spec-kitty-open-packs#255
+(linked to open-packs #250, which covers `built-in`) and
+spec-kitty/spec-kitty-charter#559 (extends charter #45). The other rows are
+open.
 
 | Repository | Item | Needed by |
 |---|---|---|
-| open-packs | **approved**: Upgrade `@spec-kitty/doc-toolkit` 0.3.0 to the packs release and make the switch (migration steps 2 and 3, including the CI, test and link changes) | Retiring the generator |
+| open-packs | **approved**: Upgrade `@spec-kitty/doc-toolkit` 0.3.0 to the packs release and make the switch (migration steps 2 and 3, including the CI, test and link changes). Filed as spec-kitty-open-packs#254 | Retiring the generator |
 | open-packs | Decide on ADR 2026-07-18-2 and 2026-07-18-3 and the download checksum (migration step 4) | Retiring the generator |
-| open-packs | **approved**: Generate `pack-manifest.yaml` for every pack, org packs included, and regenerate `built-in`'s, as charter ADR-0042 (amended 2026-11-12) requires | A verified hash and an exact inventory on every page |
-| spec-kitty-charter | **approved**: Publish the packs contract (`file-kinds.yaml`, schemas and classifier conformance cases) as a versioned release, so doc-kitty pins a release, not a commit (extends charter #45) | Slice 2 pinning, later |
+| open-packs | **approved**: Generate `pack-manifest.yaml` for every pack, org packs included, and regenerate `built-in`'s, as charter ADR-0042 (amended 2026-11-12) requires. Filed as spec-kitty-open-packs#255 | A verified hash and an exact inventory on every page |
+| spec-kitty-charter | **approved**: Publish the packs contract (`file-kinds.yaml`, schemas and classifier conformance cases) as a versioned release, so doc-kitty pins a release, not a commit (extends charter #45). Filed as spec-kitty-charter#559 | Slice 2 pinning, later |
 | spec-kitty-charter | Annotate each artefact schema with its display fields (title, summary), so renderers stop hard-coding the per-kind field map | Slice 4, optional |
 | spec-kitty-charter / core | A whole-pack read for built-in packs too (comment on charter #543 rather than file anew) | Slice 7, optional |
 | spec-kitty-charter | Render the packs the charter pins (`packs/open-packs.lock.yaml`) on its doc-kitty site, if wanted | Adoption |
