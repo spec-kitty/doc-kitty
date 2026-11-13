@@ -63,8 +63,8 @@ Each implementation slice also ships, as AGENTS.md and the charter require:
 Each slice is one child issue of #328.
 
 1. **ADR: kitty packs through a charter-contract reader** (#329). Delivered by
-   PR #337 as Proposed. *Done when* the operator accepts ADR-0079 and its status
-   reads Accepted.
+   PR #337. The operator accepted ADR-0079 on 2026-11-13. *Done when* PR #337
+   merges.
 2. **Pack reader, contract snapshot and producer registry** (#330).
    - `src/lib/packs/`: the vendored `file-kinds.yaml`, schemas and classifier
      conformance cases with `contract.lock.json`; `pnpm packs:sync-contract`; and

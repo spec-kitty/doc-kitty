@@ -1,7 +1,7 @@
 ---
 title: "ADR-0079: Kitty packs as generated pages, read through a charter-contract reader"
 description: doc-kitty renders packs as generated pages through one adapter pinned to a snapshot of the charter contract, and leaves the verdict to the charter.
-doc_status: draft
+doc_status: active
 updated: 2026-11-13T00:00:00Z
 type: ADR
 kind: ADR
@@ -19,7 +19,7 @@ related:
 
 ## Status
 
-**Proposed** — 2026-11-13. Epic #328; it is the record #329 asks for. The research
+**Accepted** — 2026-11-13, by the operator, with the decisions as recommended. Epic #328; it is the record #329 asks for. The research
 is [Kitty packs in doc-kitty](../architecture/research/packs.md). It amends
 [ADR-0046](0046-gherkin-feature-pages.md) decision 4 (D6 below).
 

@@ -264,7 +264,7 @@ releases (charter #45).
 ## Slices
 
 Each slice is a child issue of epic #328. Slice 1, the ADR itself (#329), is
-delivered as Proposed.
+delivered as Accepted.
 
 | Slice | Issue | Builds |
 |---|---|---|
