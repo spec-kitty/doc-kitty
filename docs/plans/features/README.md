@@ -43,6 +43,8 @@ split and the MoSCoW levels are set in the roadmap; this index reflects them.
   charter and doctrine.
 - [Page feedback](./page-feedback.md) (Should) — toggleable edit-this-page and
   page or section comments.
+- [Large hubs](./large-hubs.md) (Should) — a sidebar child cap and paged,
+  filterable hub listings for sections with hundreds of children.
 - [Kitty packs](./packs.md) (Should) — generated pack pages read through a
   charter-contract reader, then artefact pages and a repository's active charter.
 - [Glossary + Contextive](./glossary-and-contextive.md) (Should) — auto-linked
@@ -57,8 +59,8 @@ split and the MoSCoW levels are set in the roadmap; this index reflects them.
 
 - [Example content from ars-rethorica](./example-content-ars-rethorica.md) (Could) —
   a realistic Markua showcase.
-- [Mission status portal](./mission-status-portal.md) (Could) — spec-kitty mission
-  status in the docsite.
+- [Missions and Ops pages](./mission-status-portal.md) (Could) — a kittified
+  repository's missions and Ops as generated pages, at core's scale.
 - [QA portal](./qa-portal.md) (Could) — CI test artifacts and quality signals.
 - [Ticketing report](./ticketing-report.md) (Could) — a report over issue trackers.
 - [Gherkin scenario results](./gherkin-scenario-results.md) (Could) — each scenario's
