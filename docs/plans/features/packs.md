@@ -83,7 +83,7 @@ Each slice is one child issue of #328.
    `charterLock` warns; every open-packs pack at a pinned commit reads with no
    error; and the existing Gherkin and glossary ownership tests pass unchanged on
    the registry.
-3. **Pack pages, at parity with `gen_pack_reference.py`** (new).
+3. **Pack pages, at parity with `gen_pack_reference.py`** (#338).
    - The `packs` option, the `doc-kitty-packs` producer, generation at
      `astro:config:setup`, `dockitty-generate-pack-pages --check`, and ownership
      per pack directory with an authored section landing.
@@ -111,7 +111,7 @@ Each slice is one child issue of #328.
    - the frontmatter and links gates pass on the generated pages;
    - the sitemap, search index, `llms.txt`, agent API and OKF export each contain
      the fixture pack pages, asserted on built output.
-4. **Kind hubs and artefact pages** (new). `/<section>/<dir>/<kind>/<id>/` for
+4. **Kind hubs and artefact pages** (#339). `/<section>/<dir>/<kind>/<id>/` for
    directives, tactics, procedures, agent profiles and glossary packs; a card per
    artefact with its title and summary; and the raw YAML published beside each
    page. *Done when* those kinds render from fixtures with the title and summary
@@ -186,14 +186,15 @@ until its manifest is regenerated.
 
 ## Cross-repository items
 
-These need the operator's approval before anyone files them.
+None is filed from this plan. On 2026-11-13 the operator approved the three
+rows marked **approved** to go forward. The rest are open.
 
 | Repository | Item | Needed by |
 |---|---|---|
-| open-packs | Upgrade `@spec-kitty/doc-toolkit` 0.3.0 to the packs release and make the switch (migration steps 2 and 3, including the CI, test and link changes) | Retiring the generator |
+| open-packs | **approved**: Upgrade `@spec-kitty/doc-toolkit` 0.3.0 to the packs release and make the switch (migration steps 2 and 3, including the CI, test and link changes) | Retiring the generator |
 | open-packs | Decide on ADR 2026-07-18-2 and 2026-07-18-3 and the download checksum (migration step 4) | Retiring the generator |
-| open-packs | Generate `pack-manifest.yaml` for every pack, org packs included, and regenerate `built-in`'s, as charter ADR-0042 (amended 2026-11-12) requires | A verified hash and an exact inventory on every page |
-| spec-kitty-charter | Publish the packs contract (`file-kinds.yaml`, schemas and classifier conformance cases) as a versioned release, so doc-kitty pins a release, not a commit (extends charter #45) | Slice 2 pinning, later |
+| open-packs | **approved**: Generate `pack-manifest.yaml` for every pack, org packs included, and regenerate `built-in`'s, as charter ADR-0042 (amended 2026-11-12) requires | A verified hash and an exact inventory on every page |
+| spec-kitty-charter | **approved**: Publish the packs contract (`file-kinds.yaml`, schemas and classifier conformance cases) as a versioned release, so doc-kitty pins a release, not a commit (extends charter #45) | Slice 2 pinning, later |
 | spec-kitty-charter | Annotate each artefact schema with its display fields (title, summary), so renderers stop hard-coding the per-kind field map | Slice 4, optional |
 | spec-kitty-charter / core | A whole-pack read for built-in packs too (comment on charter #543 rather than file anew) | Slice 7, optional |
 | spec-kitty-charter | Render the packs the charter pins (`packs/open-packs.lock.yaml`) on its doc-kitty site, if wanted | Adoption |
