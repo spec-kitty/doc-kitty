@@ -16,6 +16,7 @@ related:
   - adr/0065-kind-required-again
   - adr/0067-schematic-pages-reference-a-schema
   - adr/0079-kitty-packs-through-a-charter-contract-reader
+  - adr/0080-tom-classification-field-and-measures-catalogue
   - architecture/metadata-model
   - architecture/section-registry
   - architecture/content-graph
@@ -276,7 +277,8 @@ The key is spelled in lowercase snake case, as every field in the contract is
 case-sensitive, and the vocabulary seam
 ([ADR-0031](../../adr/0031-vocabulary-override.md)) aliases values, not keys. A
 `TOM_classification` spelling would therefore be a second key to support, not an
-alias. **Decision for the ADR:** lowercase only, or accept both.
+alias. **Decided:** lowercase only, with no uppercase alias. The field is drafted
+as [ADR-0080](../../adr/0080-tom-classification-field-and-measures-catalogue.md).
 
 ### Shape
 
@@ -447,15 +449,13 @@ out of scope.
 2. **⚖ counsel** Can a DPA annex reference a living evidence index, or must it
    attach a dated snapshot? A snapshot per release with a digest is the safe
    default.
-3. **Maintainers.** Spell the key `tom_classification` only, or also accept
-   `TOM_classification`?
-4. **Maintainers.** Should `Role` be a new kind, or a Persona sub-use?
-5. **Maintainers.** Which consumer can validate the annex shape first?
-6. **Research.** Is BSI moving IT-Grundschutz to an OSCAL-based format? Not
+3. **Maintainers.** Should `Role` be a new kind, or a Persona sub-use?
+4. **Maintainers.** Which consumer can validate the annex shape first?
+5. **Research.** Is BSI moving IT-Grundschutz to an OSCAL-based format? Not
    verified here.
-7. **Research.** Confirm the DPV 2.x class tree for measures, and whether the
+6. **Research.** Confirm the DPV 2.x class tree for measures, and whether the
    ISO/IEC 27701:2025 edition keeps a GDPR mapping annex.
-8. **Verification.** Re-read every [K] item on EUR-Lex.
+7. **Verification.** Re-read every [K] item on EUR-Lex.
 
 ## Sources
 
