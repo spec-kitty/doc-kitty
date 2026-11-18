@@ -1,8 +1,8 @@
 ---
 title: Markua graceful degradation
-description: Deliberately malformed Markua that must never fail the build (NFR-002).
+description: Deliberately broken Markua that shows how DocKitty degrades to readable text without failing the build.
 doc_status: active
-updated: 2026-08-29T00:00:00Z
+updated: 2026-11-18T00:00:00Z
 type: Guide
 kind: Reference
 tags: [markua, fixture, degradation]
@@ -13,11 +13,24 @@ tags: [markua, fixture, degradation]
      malformed constructs) that conventional markdownlint rules flag. Not conventional
      Markdown; frontmatter + links are still validated by validate:docs/validate:links. -->
 
+<!-- Maintainers: this page is the NFR-002 fixture. A cold markua-ON build with
+     it present must exit 0 (src/scripts/assert-markua-builds.mjs), and the
+     build-artifact gate reads its HTML (src/scripts/assert-build-artifacts.mjs). -->
+
 # Markua graceful degradation
 
-This page collects the *cannot-fail-the-build* cases. Each construct below is
-deliberately malformed; the build must still exit 0 (NFR-002) and every case must
-degrade to **readable text** — never broken markup, never a thrown error.
+I> This page is broken on purpose. Each example below uses Markua syntax that is wrong or unsupported, to show how DocKitty handles mistakes like these.
+
+A Markua mistake never fails the build. The page still builds, and each broken
+construct falls back to readable text:
+
+- Something DocKitty cannot render, such as an unknown icon, is dropped, and the
+  build log prints a warning that names it.
+- An attribute DocKitty does not support is ignored.
+- Syntax that cannot be paired up, such as an unclosed wrapper, stays as literal
+  text.
+
+For the syntax that works, see the [Markua showcase](/guides/markua-showcase/).
 
 ## An unknown icon drops gracefully
 
