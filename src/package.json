@@ -35,6 +35,7 @@
     "./routes/scenario-index-injected": "./lib/routes/scenario-index-injected.ts",
     "./routes/content-graph-injected": "./lib/routes/content-graph-injected.ts",
     "./routes/page-atom-injected": "./lib/routes/page-atom-injected.ts",
+    "./routes/print-injected.astro": "./lib/routes/print-injected.astro",
     "./route-middleware": "./lib/route-middleware.ts",
     "./deck/*": "./lib/deck/*.ts",
     "./components/*": "./components/*",
@@ -57,7 +58,10 @@
     "dockitty-export-okf": "./scripts/export-okf.mjs",
     "dockitty-assert-plantuml-no-remote-include": "./scripts/assert-plantuml-no-remote-include.mjs",
     "dockitty-plantuml-guard": "./scripts/plantuml-guard-bin.mjs",
-    "dockitty-assert-diagrams": "./scripts/assert-diagrams.mjs"
+    "dockitty-assert-diagrams": "./scripts/assert-diagrams.mjs",
+    "dockitty-pdf": "./scripts/dockitty-pdf.mjs",
+    "dockitty-assert-pdf": "./scripts/assert-pdf-artifacts.mjs",
+    "dockitty-assert-pdf-determinism": "./scripts/assert-pdf-determinism.mjs"
   },
   "files": [
     "index.ts",
