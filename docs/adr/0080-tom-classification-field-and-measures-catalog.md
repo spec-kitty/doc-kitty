@@ -1,8 +1,8 @@
 ---
-title: "ADR-0080: A tom_classification field and a measures catalogue"
-description: "Pages classify the technical and organisational measures they evidence through an optional tom_classification field, resolved against a measures catalogue."
+title: "ADR-0080: A tom_classification field and a measures catalog"
+description: "Pages classify the technical and organisational measures they evidence through an optional tom_classification field, resolved against a measures catalog."
 doc_status: draft
-updated: 2026-11-18T00:00:00Z
+updated: 2026-11-20T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -16,12 +16,12 @@ related:
   - adr/0059-content-graph-and-okf-alignment
 ---
 
-# ADR-0080: A tom_classification field and a measures catalogue
+# ADR-0080: A tom_classification field and a measures catalog
 
 > [!CAUTION]
 > **This ADR is not legal advice.** It decides a metadata contract, not what a
 > data processing agreement must contain. Items marked **⚖ counsel** need review
-> by data-protection counsel before the default catalogue ships.
+> by data-protection counsel before the default catalog ships.
 
 ## Status
 
@@ -81,17 +81,17 @@ product copies them, the copies drift apart and lose their review history.
      ([ADR-0009](0009-finalize-metadata-contract.md)), and a TOM page is still a
      Reference, a How-To or a Runbook. The measure is what the page is about.
 
-2. **Ids resolve against a measures catalogue, `_meta/measures.yaml`.** It
-   follows the catalogue pattern of
+2. **Ids resolve against a measures catalog, `_meta/measures.yaml`.** It
+   follows the catalog pattern of
    [ADR-0018](0018-citation-catalog-collections.md).
    - **Entries.** Each entry is
      `{ id, label, nature, frameworks: [{ framework, ref }], dpv? }`. `nature` is
      `technical`, `organisational`, `legal` or `physical`, after DPV's four
      groups. The nature lives on the entry, so pages do not repeat it.
    - **Validation.** An id that does not resolve fails the build and the
-     build-free catalogue gate, exactly as a missing citation does.
+     build-free catalog gate, exactly as a missing citation does.
 
-3. **DocKitty ships a default catalogue.** It holds:
+3. **DocKitty ships a default catalog.** It holds:
    - the 17 example headings of 2021/914 Annex II;
    - the four items of GDPR Article 32(1);
 
@@ -101,11 +101,11 @@ product copies them, the copies drift apart and lose their review history.
    - **⚖ counsel**: decide whether headings 13 to 17 should be marked as
      controller-leaning.
 
-4. **Consumers extend or replace the catalogue through the charter**
+4. **Consumers extend or replace the catalog through the charter**
    ([ADR-0042](0042-native-documentation-charter.md)).
    - A consumer can add ISO/IEC 27001 Annex A, BSI C5 or SDM ids under its own
      licence terms, or drop the default.
-   - An absent catalogue means the shipped default.
+   - An absent catalog means the shipped default.
    - A docs tree that never uses the field is unaffected.
 
 5. **Organisational measures are linked, not copied.**
@@ -129,7 +129,7 @@ product copies them, the copies drift apart and lose their review history.
   inherits that contract's stamp and drift check.
 - **Operating-model templates:** `new-doc.mjs --template`,
   `scaffold.mjs --preset operating-model` and a `Role` kind.
-- **A sub-processor catalogue** (`_meta/subprocessors.yaml`) with a generated
+- **A sub-processor catalog** (`_meta/subprocessors.yaml`) with a generated
   list page.
 - **A shared organisation bundle.** A product site would merge an organisation
   site's annex by URL.
@@ -141,13 +141,13 @@ product copies them, the copies drift apart and lose their review history.
 - TOM evidence becomes queryable. The agent API, the content graph and a later
   export can gather it without parsing prose.
 - Organisation-wide measures are written, reviewed and dated once.
-- The default catalogue gives every consumer the same ids. DPV IRIs keep a path
+- The default catalog gives every consumer the same ids. DPV IRIs keep a path
   open to linked-data tools.
 
 ### Negative
 
-- A new optional field and a new catalogue grow the metadata contract.
-- The default catalogue is DocKitty's to maintain if the clauses or DPV change.
+- A new optional field and a new catalog grow the metadata contract.
+- The default catalog is DocKitty's to maintain if the clauses or DPV change.
 
 ### Risks
 
@@ -169,7 +169,7 @@ only one.
 Rejected. Tags are not validated, carry no scope or note, and cannot map to a
 framework or DPV.
 
-### Option C: Reuse `external_references` with a catalogue `type: measure`
+### Option C: Reuse `external_references` with a catalog `type: measure`
 
 Rejected. It needs no new key, but a citation is not a classification. The
 content graph would mix "cites" and "evidences", and scope would have no home.
