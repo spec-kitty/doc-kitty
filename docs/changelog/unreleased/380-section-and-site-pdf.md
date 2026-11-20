@@ -1,6 +1,7 @@
 ---
 section: Added
 ---
+
 - **Sections and the whole site can be published as PDFs (#380, #381, #382).**
   Before, a site had no way to offer a section, or the whole site, as one
   document. Now `pdf: true` on a section in `sections.yaml`, or
@@ -10,5 +11,5 @@ section: Added
   `dist/pdf/<name>.pdf` with the Playwright Chromium the toolkit already uses.
   The PDFs are tagged and outlined, and two prints give the same bytes.
   `dockitty-assert-pdf` and `dockitty-assert-pdf-determinism` check them. Slide
-  decks and OpenAPI pages are never included. See
+  decks, OpenAPI pages and template pages are never included. See
   [ADR-0081](docs/adr/0081-print-and-pdf-output-from-built-html-via-chromium.md).

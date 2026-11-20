@@ -47,7 +47,7 @@ Invariant: `sections` lists ids in registry order; `site` false ⇒ `appendix`/`
 }
 ```
 
-Invariant: one document per name in `ResolvedPdfOptions` (`sections` + `site` when true); `pages >= 1`.
+Invariant: one document per name in `ResolvedPdfOptions` (`sections` + `site` when true); `pages >= 0` (`0`: a section with no page besides its index prints its cover only).
 
 ## PdfArtefact (`dist/pdf/<name>.pdf`)
 

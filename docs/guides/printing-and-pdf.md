@@ -45,8 +45,8 @@ The layout changes for paper too:
 
 ### Dark mode prints light
 
-A reader in the dark theme still gets a light printout. When the browser starts
-a print, the page switches to the light theme, then switches back afterwards. The
+A reader in dark mode still gets a light printout. When the browser starts a
+print, the page switches to light mode, then switches back afterwards. The
 reader's choice is never stored.
 
 Some browsers print without telling the page. For them, a print-only fallback
@@ -61,6 +61,9 @@ There are two limits to know about:
 - In a site that draws its diagrams in the browser (client mode), a diagram
   keeps the colours it had when the print started. It is not redrawn halfway
   through the print. Build-mode diagrams follow the light colours every time.
+  A client-mode diagram inside a closed disclosure or a hidden tab is drawn only
+  once it is shown, so a browser print of it shows its source. The PDFs open
+  everything first and draw every diagram.
 
 ## Change how a page prints
 
@@ -86,8 +89,9 @@ rule ([ADR-0008](../adr/0008-swappable-theme-layer.md)).
   }
   ```
 
-- **Hidden elements and the white page.** These rules use `!important`, so an
-  override must use `!important` too.
+- **Hidden elements, the white page and the full width.** These rules use
+  `!important` to beat Starlight's own layout rules, so an override must use
+  `!important` too.
 
 ## Publish section PDFs
 
@@ -117,12 +121,12 @@ document.
 Each section with a PDF gets a print document at `/print/<section>/`. It renders
 every published page of the section, in reading order, behind a cover page. The
 cover holds the site name, the section's label and purpose, the build date, the
-section's own index page and a table of contents. Each page starts on a new
+section index and a table of contents. Each page starts on a new
 sheet. A link to another page in the same document jumps inside it, and any
 other link points at the live site.
 
 Print documents are hidden from search engines, the site search and the
-sitemap. `llms.txt`, the agent API, RSS and the OKF bundle never list them.
+sitemap. `llms.txt`, the Agent-API, RSS and the OKF bundle never list them.
 
 ### What never goes in a PDF
 
@@ -149,13 +153,16 @@ defineDocKittyIntegrations({
 The whole-site print document is `/print/`, and its PDF is `/pdf/site.pdf`. It
 holds every section that is not excluded or omitted, whatever that section's own PDF setting.
 The registered sections come first, then any folders with no registry entry,
-then the appendix sections. A section takes a place in it through its `pdf` key:
+then the appendix sections. A section takes its place in it through the `site`
+setting of its `pdf` key. `main`, the default, prints it in the main body.
+`appendix` moves it after the main body. `omit` leaves it out of the whole-site
+PDF only. The `section` setting, its own PDF, is separate:
 
 ```yaml
   - id: rhetoric
     label: Rhetoric
     order: 45
-    pdf: { site: appendix }   # or: main (the default), omit
+    pdf: { section: true, site: appendix }
 ```
 
 `site` names the whole-site PDF, so a section with the id `site` cannot have a
@@ -166,7 +173,16 @@ format: it adds no chapters and no page-numbered index.
 
 The PDFs are printed from the built site, with the Chromium that Playwright
 installs for build-mode diagrams. The `playwright` package is an optional peer
-of the toolkit.
+of the toolkit, so a site that does not render diagrams at build time installs
+it first:
+
+```sh
+pnpm add -D playwright
+npx playwright install chromium
+```
+
+Then build and print. `--base` is the site's base path, as in `astro.config`
+(`/` for a site at the domain root).
 
 ```sh
 pnpm build
@@ -180,14 +196,13 @@ npx dockitty-assert-pdf dist
 when a print fails and `2` on a usage error or missing input.
 
 Each PDF is tagged and has a bookmark outline. The language comes from the site.
-Both PDF dates are pinned to `SOURCE_DATE_EPOCH`, or to the last commit time
+The two PDF dates, `CreationDate` and `ModDate`, are pinned to `SOURCE_DATE_EPOCH`, or to the last commit time
 when that is unset, so two prints of one build are identical, byte for byte.
 `dockitty-assert-pdf-determinism dist --base /my-site` proves it. `dockitty-assert-pdf`
 checks that every expected PDF exists and is tagged, and that its outline lists
 every printed page. It does not check PDF/UA conformance.
 
-Diagram-heavy sections print best once their diagrams read well in the light
-theme. Diagram contrast and label clipping are tracked in
+Diagram-heavy sections print best once their diagrams read well in light mode. Diagram contrast and label clipping are tracked in
 [#369](https://github.com/spec-kitty/doc-kitty/issues/369) and
 [#370](https://github.com/spec-kitty/doc-kitty/issues/370).
 

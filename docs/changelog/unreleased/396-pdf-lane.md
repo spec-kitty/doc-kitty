@@ -1,6 +1,7 @@
 ---
 section: Changed
 ---
+
 - **CI prints the example's PDFs, and the deploy publishes them (#396, #397).**
   Before, nothing built or checked a PDF. Now an advisory `pdf` lane prints the
   example's PDFs from the drafts-off build, then checks them and proves two
