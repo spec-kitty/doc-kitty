@@ -28,6 +28,7 @@ import matter from 'gray-matter';
 import {
   compareCodeUnit,
   identityVocabulary,
+  normalizeSectionPdf,
   parseCharter,
   parseVocabulary,
   parseVocabularyAxis,
@@ -61,6 +62,7 @@ export const CHARTER_REGISTRY_RELPATH = path.join('_meta', 'charter.yaml');
  * @property {string} [type] The section-default frontmatter `type` (issue #24).
  * @property {SectionSubtypeRule[]} [subtypes] Sub-path → `type` rules (E-02/FR-005).
  * @property {unknown} [icon] The sidebar icon as authored; the frontmatter gate checks it.
+ * @property {import('./vocabulary-core.mjs').SectionPdfSetting} [pdf] The PDF setting (ADR-0081).
  */
 
 /** The resolved registry: entries sorted by `order`, tie-broken by `id`. */
@@ -125,7 +127,7 @@ function normalizeSectionRegistryEntries(rawSections) {
   const entries = [];
   for (const rec of rawSections) {
     if (rec == null || typeof rec !== 'object') continue;
-    const { id, label, order, type, subtypes, icon } = /** @type {Record<string, unknown>} */ (rec);
+    const { id, label, order, type, subtypes, icon, pdf } = /** @type {Record<string, unknown>} */ (rec);
     if (typeof id !== 'string' || id === '') continue;
     if (typeof label !== 'string' || label === '') continue;
     if (typeof order !== 'number' || !Number.isFinite(order)) continue;
@@ -133,6 +135,10 @@ function normalizeSectionRegistryEntries(rawSections) {
     const entry = { id, label, order };
     if (typeof type === 'string') entry.type = type;
     if (icon !== undefined) entry.icon = icon;
+    // ADR-0081: carried here too, so a bare-Node gate or the PDF command sees the same
+    // setting as the build. Warnings are the Astro side's to print; silent here.
+    const pdfSetting = normalizeSectionPdf(pdf, () => {}, id);
+    if (pdfSetting) entry.pdf = pdfSetting;
     if (Array.isArray(subtypes)) {
       entry.subtypes = subtypes.filter(
         /** @returns {r is SectionSubtypeRule} */
