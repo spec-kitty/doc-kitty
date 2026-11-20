@@ -26,7 +26,7 @@ related:
 
 > [!CAUTION]
 > **This page is not legal advice.** It is an engineering reading of public
-> texts, written for doc-kitty maintainers. Items marked **⚖ counsel** need review
+> texts, written for DocKitty maintainers. Items marked **⚖ counsel** need review
 > by qualified data-protection counsel before anyone relies on them, in the
 > product or in a contract.
 
@@ -48,9 +48,8 @@ It also covers three follow-ups:
 Audience: maintainers deciding the next metadata ADR, and consumers who document
 a service that a customer will name in a DPA.
 
-> **How the sources were checked.** Page fetches were blocked in the research
-> session, including EUR-Lex, so web search was the only check. Each claim is
-> tagged:
+> **How the sources were checked.** Sources were checked through search results
+> only; EUR-Lex was not read directly. Each claim is tagged:
 >
 > - **[S]** means a search result quoted or summarised the source;
 > - **[K]** means the claim comes from the published text as known, and was not
@@ -130,8 +129,10 @@ to the risk, including:
 
 Related provisions [K]:
 
-- Article 32(2) requires the risk assessment behind the measures.
-- Article 32(4) covers people acting under the processor's authority.
+- Article 32(2) says the appropriate level of security must take account of the
+  risks presented by the processing.
+- Article 32(4) covers people acting under the controller's or processor's
+  authority.
 - Article 33(2) requires the processor to notify the controller of a breach
   without undue delay.
 
@@ -160,7 +161,8 @@ Clause 7.7 offers two ways to authorise sub-processors [S]:
 - Annex III lists sub-processors. [K]
 - Annex II holds the TOMs, which must be described "in specific (and not generic)
   terms". It gives 17 example headings. [S] confirms the first four; the rest are
-  [K]:
+  [K].
+Short labels, paraphrased from the official headings.
 
 1. Pseudonymisation and encryption
 2. Confidentiality, integrity, availability and resilience of systems and services
@@ -185,7 +187,7 @@ of them a processor's documentation should claim.
 
 ### Guidance and national methods
 
-- **EDPB Guidelines 07/2020** (v2.0, July 2021) [S] read Article 28 as requiring:
+- **EDPB Guidelines 07/2020** (v2.0, July 2021) [S] recommend, on Article 28:
   - measures stated specifically, not as boilerplate;
   - controller approval of changes to the measures;
   - regular review.
@@ -216,9 +218,9 @@ Architecture is still the evidence behind several required items:
 | Candidate | Standing | Normative for a DPA | Machine-readable |
 |-----------|----------|---------------------|------------------|
 | GDPR Articles 28, 30 and 32 | EU regulation | Yes | No |
-| SCCs 2021/915 and 2021/914 | Commission implementing decisions | Yes, when used: the annex structure is binding and the parties fill it in | No; prose annexes |
+| SCCs 2021/915 and 2021/914 | Commission implementing decisions | Yes, when used: the annex structure is binding ⚖ and the parties fill it in | No; prose annexes |
 | EDPB Guidelines 07/2020 | Authoritative interpretation | No | No |
-| W3C DPV, including its TOM module and EU-GDPR extension | Final Community Group report (2.0 in 2024, 2.1 in 2025); "not a W3C Standard" [S] | No | Yes: RDF and OWL with stable `w3id.org/dpv` IRIs. Measures are typed as technical, organisational, legal or physical [S] |
+| [W3C DPV](https://w3id.org/dpv), including its TOM module and EU-GDPR extension | Final Community Group report; "not a W3C Standard" [S] | No | Yes: RDF and OWL with stable `w3id.org/dpv` IRIs. Measures are typed as technical, organisational, legal or physical [S] |
 | NIST OSCAL (SSP and component definition) | NIST; 1.1.x and 1.2.x releases [S] | No (a US context) | Yes: JSON, XML and YAML. The SSP models the system boundary, network architecture and data flow [K] |
 | ISO/IEC 27001:2022 Annex A | Voluntary standard | Only inside its certification | No; the text is paywalled |
 | ISO/IEC 27701:2025 | Standalone since October 2025 [S] | Only inside its certification | No |
@@ -237,7 +239,7 @@ Architecture is still the evidence behind several required items:
 Status legend:
 
 - ✅ **covered**: works today;
-- 🔁 **mappable**: works today through sections, tags, `related` or a template;
+- 🔁 **mappable**: works today through sections, tags or `related`;
 - 🆕 **new**: needs a new field, catalog or export;
 - ⛔ **out of scope**: legal content the toolkit does not author.
 
@@ -256,12 +258,12 @@ Status legend:
 | General description of TOMs, versioned | Article 30(2)(d), EDPB | none | 🆕 generated annex |
 | Organisational measures reused across products | Organisational headings below | none (no transclusion; one tree per repository) | 🆕 reuse |
 | Operating model (roles, governance, processes) | Article 28(3)(b), headings 4, 11 and 16 | `Persona` fields, `new-doc.mjs` and `scaffold.mjs` stubs | 🆕 templates |
-| Specific, non-generic wording | 2021/914 Annex II, EDPB | none | ⛔ (a template can prompt for it) |
+| Specific, non-generic wording | 2021/914 Annex II, EDPB | none | ⛔ (a future template could prompt for it) |
 
 No new top-level section is needed. The section registry already has security,
 architecture, integrations, operations and configuration.
 
-> Side observation: doc-kitty's own tree has no `security/`, `integrations/` or
+> Side observation: DocKitty's own tree has no `security/`, `integrations/` or
 > `operations/` folder (it uses `ops/`), although `sections.yaml` declares them.
 
 ## A `tom_classification` field
@@ -455,9 +457,11 @@ out of scope.
 4. **Maintainers.** Which consumer can validate the annex shape first?
 5. **Research.** Is BSI moving IT-Grundschutz to an OSCAL-based format? Not
    verified here.
-6. **Research.** Confirm the DPV 2.x class tree for measures, and whether the
+6. **Research.** Confirm the current DPV class tree for measures, and whether the
    ISO/IEC 27701:2025 edition keeps a GDPR mapping annex.
 7. **Verification.** Re-read every [K] item on EUR-Lex.
+8. **Verification.** Resolve each DPV IRI against the published DPV vocabulary
+   before the default catalog ships.
 
 ## Sources
 
@@ -478,8 +482,8 @@ Legal texts and authorities:
 
 Formats and standards:
 
-- [W3C DPV TOM module](https://w3c.github.io/dpv/2.3/dpv/modules/TOM) and
-  [DPV EU legal concepts](https://w3c.github.io/dpv/2.1/legal/eu)
+- [W3C DPV](https://w3id.org/dpv), including its TOM module and EU legal
+  concepts
 - [NIST OSCAL SSP](https://pages.nist.gov/OSCAL/learn/concepts/layer/implementation/ssp)
   and the [OSCAL 1.2.2 reference](https://pages.nist.gov/OSCAL-Reference/models/v1.2.2/)
 - [ISO/IEC 27701:2025 revision (DNV)](https://www.dnv.com/assurance/Management-Systems/new-iso/transition/revision-of-iso-iec-27701/)
