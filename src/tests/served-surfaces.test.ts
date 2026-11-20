@@ -33,6 +33,7 @@ const NONE: ServedSurfaces = {
   okf: true,
   pageAtom: false,
   openapi: false,
+  pdf: [],
 };
 
 describe('detectServedSurfaces', () => {
@@ -64,6 +65,7 @@ describe('detectServedSurfaces', () => {
       okf: true,
       pageAtom: false,
       openapi: false,
+      pdf: [],
     });
   });
 
@@ -75,6 +77,9 @@ describe('detectServedSurfaces', () => {
 
   it('the openapi flag follows the third argument: the option says it, routes cannot (WP02)', () => {
     expect(detectServedSurfaces([], false, true)).toEqual({ ...NONE, openapi: true });
+    // ADR-0081: the PDFs come from the resolved settings, never from a route.
+    expect(detectServedSurfaces([], false, false, ['architecture', 'site'])).toEqual({ ...NONE, pdf: ['architecture', 'site'] });
+    expect(detectServedSurfaces(['/pdf/[name].pdf'], false).pdf).toEqual([]);
     expect(detectServedSurfaces(['/reference/api/[...slug]'], false).openapi).toBe(false);
   });
 
