@@ -13,7 +13,9 @@ related:
   - adr/0011-theme-slot-surface-and-per-kind-layouts
   - adr/0040-build-time-diagram-render-dual-mode
   - adr/0050-route-collisions-and-single-index-setting
+  - adr/0057-internal-env-handoff-seam
   - adr/0070-excluded-folders
+  - adr/0072-parallel-landing-without-shared-files
   - adr/0077-shared-disclosure-control
   - plans/features/book-manuscript-content-type
 ---
@@ -27,10 +29,10 @@ settles the epic's open choices.
 
 ## Context
 
-A reader in the dark theme who prints a doc-kitty page gets a near-black PDF.
+A reader in dark mode who prints a doc-kitty page gets a near-black PDF.
 Starlight prints its own colour variables light, but doc-kitty's
 `--dk-* → --sl-*` bridge keys every colour on `data-theme`, and so wins. Screen
-chrome (the header bar, lightbox triggers, machine links) also prints.
+chrome (the header bar, lightbox triggers, machine-readable links) also prints.
 
 A site also cannot offer a section, or the whole set of pages, as one PDF. The
 research run on 2026-11-18 compared nine routes. doc-kitty's features live in
@@ -48,7 +50,9 @@ as code and printed Markua asides as literal text.
   printable width, fits each diagram on one sheet, wraps code, keeps headings
   with their text, and prints the URL after each external link. A4 is the
   default paper size (`@page`). A theme overrides any rule, including the paper
-  size, with a later sheet.
+  size, with a later sheet; the rules that hide chrome, whiten the page and
+  widen the content use `!important` to beat Starlight's layout, so their
+  overrides need it too.
 - A `beforeprint` hook sets `data-theme="light"` and restores the reader's
   value on `afterprint`. It never writes to storage. Client-mode diagrams pause
   their re-render while a print is in progress, so a print never catches a
@@ -104,8 +108,8 @@ defineDocKittyIntegrations({
   index page first, then its children by `sidebar.order` (on a tie, pages before
   folders), then title (numbers read as numbers), then slug. Ids
   are prefixed per page. A link to a page in the same document becomes an
-  anchor. Every other link becomes an absolute site URL and prints no URL
-  suffix.
+  anchor. Every other root-relative link becomes an absolute site URL and
+  prints no URL suffix.
 - The routes are `noindex`, out of search and out of the sitemap. They are not
   in `llms.txt`, the agent API, RSS or the OKF bundle, because those surfaces
   list docs entries and not built routes. `/print/` is reserved: while PDFs are
@@ -166,13 +170,38 @@ The epic left these choices open. The operator settled them on 2026-11-20:
 | Decks and OpenAPI pages | Never in a PDF. Further exclusions are configurable. |
 
 One choice stays open: when the advisory lane joins `ci-ok`. The maintainers
-decide that once it has been green for a period they agree on.
+decide that once it has been green for a period they agree on. Until then, a
+pull request can merge with a red `pdf` lane, but the deploy on `main` prints
+the PDFs and fails when a print fails. That is deliberate: a site never
+publishes a page that links to a PDF it does not have. A maintainer who sees a
+red lane fixes it before merging, or the next deploy stops.
+
+### 7. Public surface
+
+This decision adds these contracts, which later changes must keep or migrate:
+
+- The `pdf` key in `sections.yaml`, and the `pdf` and `printControl` options of
+  `defineDocKittyIntegrations`.
+- The URLs `/print/`, `/print/<section>/` and `/pdf/<name>.pdf`, with `site` as
+  a reserved PDF name, and the build file `dist/print/manifest.json`.
+- The commands `dockitty-pdf`, `dockitty-assert-pdf` and
+  `dockitty-assert-pdf-determinism`, and the package export
+  `@spec-kitty/doc-toolkit/routes/print-injected`.
+- The class `.dk-print-control`, and the attributes `data-dk-print` and
+  `html[data-dk-diagram-theme]`, the signal that client diagrams finished a
+  render in the current colour mode.
+- The `pdf` list in the served-surfaces record (#397), from the resolved
+  settings. Nothing reads it yet; it lets a later surface, such as the agent
+  index, link the PDFs without a second source of truth.
+
+The print control's labels are English, like the rest of the toolkit's
+chrome. Translating them waits for the toolkit's own label work.
 
 ## Consequences
 
 ### Positive
 
-- Every site prints clean and light in either theme, with no configuration.
+- Every site prints clean and light in either colour mode, with no configuration.
 - PDFs keep everything the render pipeline adds, because they come from the
   built site.
 - The PDFs are reproducible, tagged, and carry a bookmark outline.
@@ -226,5 +255,7 @@ check.
   [ADR-0011](0011-theme-slot-surface-and-per-kind-layouts.md),
   [ADR-0040](0040-build-time-diagram-render-dual-mode.md),
   [ADR-0050](0050-route-collisions-and-single-index-setting.md),
+  [ADR-0057](0057-internal-env-handoff-seam.md),
   [ADR-0070](0070-excluded-folders.md),
+  [ADR-0072](0072-parallel-landing-without-shared-files.md),
   [ADR-0077](0077-shared-disclosure-control.md).
