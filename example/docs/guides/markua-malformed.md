@@ -24,9 +24,8 @@ I> This page is broken on purpose. Each example below uses Markua syntax that is
 A Markua mistake never fails the build. The page still builds, and each broken
 construct falls back to readable text:
 
-- Something DocKitty cannot render, such as an unknown icon, is dropped, and the
-  build log prints a warning that names it.
-- An attribute DocKitty does not support is ignored.
+- An unknown icon is dropped, and the build log prints a warning that names it.
+- An attribute DocKitty does not support is silently ignored.
 - Syntax that cannot be paired up, such as an unclosed wrapper, stays as literal
   text.
 
