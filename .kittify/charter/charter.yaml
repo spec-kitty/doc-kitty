@@ -2470,8 +2470,3 @@ overrides: {}
 metadata:
   generated_at: '2026-08-21T20:31:29Z'
   bundle_schema_version: 2
-mission_type_activations:
-- software-dev
-- documentation
-- research
-- plan
