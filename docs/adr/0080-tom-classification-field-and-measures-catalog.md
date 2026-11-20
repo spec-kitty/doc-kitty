@@ -126,8 +126,10 @@ product copies them, the copies drift apart and lose their review history.
 
 6. **The content graph gains an edge.** The graph
    ([ADR-0059](0059-content-graph-and-okf-alignment.md)) gains a `classified-as`
-   edge from a page to its measure ids. Failure semantics for the ids are those
-   of decision 2.
+   edge from a page to its measure ids. The edge targets a catalog record, not a
+   page: it is checked against `measures.yaml`, unlike the typed edges of
+   ADR-0059, which target pages. Failure semantics for the ids are those of
+   decision 2.
 
 ### Out of this decision (follow-ups)
 
