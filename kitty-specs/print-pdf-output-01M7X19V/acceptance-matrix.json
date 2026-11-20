@@ -1,0 +1,289 @@
+{
+  "mission_slug": "print-pdf-output-01M7X19V",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/print.spec.ts; src/tests/print-css.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:27.209469+00:00",
+      "notes": "Chrome hidden in print media, both themes, 4 fixture pages."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/print.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:30.325370+00:00",
+      "notes": "h1#_top and .dk-metadata-band visible in print."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/print.spec.ts; src/lib/print/print.client.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:33.030824+00:00",
+      "notes": "beforeprint forces light, afterprint restores, storage untouched; client diagrams pause re-render."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/print.spec.ts (no-event case, mutant-checked); src/tests/print-tokens.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:35.739978+00:00",
+      "notes": "Generated fallback gives light text and background without the event."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/print-css.test.ts; tests/a11y/print.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:38.615787+00:00",
+      "notes": "White page, full width, fills only on exact blocks, diagrams within one sheet."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/print-css.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:41.454903+00:00",
+      "notes": "break-after/inside, orphans/widows 3, pre-wrap code."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/print-css.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:44.338292+00:00",
+      "notes": "External URL suffix at (0,1,2), off-switch works; print links excluded."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/styles/disclosure.css (unchanged); tests/a11y/print.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:47.179158+00:00",
+      "notes": "Disclosure print rules and fallback kept; hook independent."
+    },
+    {
+      "criterion_id": "FR-008a",
+      "description": "Verify FR-008a is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/print-css.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:50.080291+00:00",
+      "notes": "Tab rule ships; label and browser assertion descoped (no tabs component, no MDX)."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/print.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:52.817052+00:00",
+      "notes": "Runs in light/dark example projects of the a11y lane."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "docs/guides/printing-and-pdf.md",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:55.668846+00:00",
+      "notes": "Guide with dark-prints-light, theme overrides, PDFs, control."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "docs/adr/0081-print-and-pdf-output-from-built-html-via-chromium.md",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:00:58.493348+00:00",
+      "notes": "ADR records contract, alternatives, rulings, open ci-ok item."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sections-pdf.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:01.272873+00:00",
+      "notes": "Both registry readers carry pdf; invalid value advisory."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/pdf-options.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:04.253779+00:00",
+      "notes": "Site option, resolution order, floor, site reservation."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Verify FR-014 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "assert-print-artifacts (assert-build-artifacts); src/tests/print-order.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:07.208361+00:00",
+      "notes": "Section print routes with cover, TOC, pinned date, one page per sheet."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Verify FR-015 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "assert-print-artifacts; src/tests/print-order.test.ts siteSections",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:10.194317+00:00",
+      "notes": "Whole-site route, appendix last."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Verify FR-016 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/print-rewrite.test.ts; gate link mapping",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:12.961406+00:00",
+      "notes": "Ids namespaced, in-doc anchors, absolute links."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Verify FR-017 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/print-order.test.ts; src/tests/pdf-options.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:15.579373+00:00",
+      "notes": "Deck floor, configurable additions, template pages out, hub grids not rendered."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Verify FR-018 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "assert-print-artifacts (noindex, no pagefind, not in sitemap); src/tests/print-route.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:18.432357+00:00",
+      "notes": "Hidden from discovery; /print/ collision refused."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Verify FR-019 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/scripts/assert-print-artifacts.mjs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:21.085199+00:00",
+      "notes": "Expected names from config + sections.yaml, not the manifest."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "Verify FR-020 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/scripts/dockitty-pdf.mjs; src/tests/pdf-postprocess.test.ts (exit codes)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:23.719961+00:00",
+      "notes": "Prints all documents; light self-check; client diagram wait."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "Verify FR-021 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/pdf-postprocess.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:26.417287+00:00",
+      "notes": "Dates pinned, Title/Producer stamped, Lang from site."
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "Verify FR-022 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/scripts/assert-pdf-determinism.mjs (local PASS x3)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:29.134757+00:00",
+      "notes": "Byte-identical across runs incl. Mermaid, PlantUML, code."
+    },
+    {
+      "criterion_id": "FR-023",
+      "description": "Verify FR-023 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/scripts/assert-pdf-artifacts.mjs; src/tests/pdf-postprocess.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:31.894406+00:00",
+      "notes": "Pages, StructTreeRoot, MarkInfo, Lang, titles in outline; no PDF/UA claim."
+    },
+    {
+      "criterion_id": "FR-024",
+      "description": "Verify FR-024 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/pdf-workflows.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:34.625809+00:00",
+      "notes": "Path-scoped advisory lane on drafts-off dist."
+    },
+    {
+      "criterion_id": "FR-025",
+      "description": "Verify FR-025 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/pdf-workflows.test.ts; src/tests/pdf-links.test.ts; served-surfaces tests",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:37.366164+00:00",
+      "notes": "Deploy prints before upload; surfaces and link gate from config."
+    },
+    {
+      "criterion_id": "FR-026",
+      "description": "Verify FR-026 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/print-control.spec.ts (axe both modes)",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:40.030702+00:00",
+      "notes": "Opt-in control, download link only for PDF sections."
+    },
+    {
+      "criterion_id": "FR-027",
+      "description": "Verify FR-027 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "docs/guides/consumer-setup.md; docs/architecture/section-registry.md; docs/migrations/print-and-pdf.md; CI/CD docs",
+      "pass_fail": "pass",
+      "verified_by": "claude",
+      "verified_at": "2026-11-20T19:01:42.753406+00:00",
+      "notes": "Reference, registry, migration, CI docs, fragments."
+    }
+  ],
+  "negative_invariants": []
+}
