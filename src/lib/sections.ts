@@ -26,7 +26,7 @@ import { GLOSSARY_OUTPUT_DIRNAME } from './glossary/generate.js';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
-import { compareCodeUnit, humanizeSection } from './vocabulary-core.mjs';
+import { compareCodeUnit, humanizeSection, normalizeSectionPdf, type SectionPdfSetting } from './vocabulary-core.mjs';
 import { resolveGovernance } from './vocabulary-loader.mjs';
 import type { SectionSubtypeRule } from './metadata.js';
 import { isChildCap } from './child-cap.js';
@@ -76,6 +76,12 @@ export interface SectionRegistryEntry {
    * checked with the page icons, by the sidebar-icons integration and the frontmatter gate.
    */
   icon?: string;
+  /**
+   * The section's PDF setting (ADR-0081): its own PDF (`section`) and its placement in
+   * the whole-site PDF (`site`). Authored as `pdf: true|false` or a mapping; an invalid
+   * value is an advisory warning and leaves the site default in force.
+   */
+  pdf?: SectionPdfSetting;
   /**
    * Sidebar settings for the section. `childCap` (#341) is the sidebar child cap
    * of every hub in the section, between the hub's own `sidebar_child_cap` and the
@@ -153,7 +159,7 @@ function normalizeSectionEntries(
     if (rec == null || typeof rec !== 'object') {
       throw new Error(`${src}: a section entry is not a mapping (${JSON.stringify(rec)})`);
     }
-    const { id, label, order, type, purpose, feeds, subtypes, icon, sidebar } = rec as Record<string, unknown>;
+    const { id, label, order, type, purpose, feeds, subtypes, icon, pdf, sidebar } = rec as Record<string, unknown>;
 
     if (typeof id !== 'string' || id === '') {
       throw new Error(`${src}: a section entry is missing a string "id"`);
@@ -184,6 +190,8 @@ function normalizeSectionEntries(
     if (Array.isArray(feeds)) {
       entry.feeds = feeds.filter((f): f is string => typeof f === 'string');
     }
+    const pdfSetting = normalizeSectionPdf(pdf, (m) => warn(`${src}: ${m}`), id);
+    if (pdfSetting) entry.pdf = pdfSetting;
     if (sidebar !== undefined) {
       if (sidebar === null || typeof sidebar !== 'object' || Array.isArray(sidebar)) {
         throw new Error(`${src}: section "${id}" "sidebar" must be a mapping`);

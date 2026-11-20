@@ -78,6 +78,14 @@ export const DK_CHROME_OPTIONS_ENV = 'DK_CHROME_OPTIONS';
  */
 export const DK_SERVED_SURFACES_ENV = 'DK_SERVED_SURFACES';
 
+/**
+ * JSON `ResolvedPdfOptions` (`pdf-options.ts`, ADR-0081): which print documents and
+ * PDFs this site has, resolved from `sections.yaml` and the `pdf` option. Read by the
+ * print route, the print control, the served-surfaces record and the gates; never
+ * derived from `dist/pdf/`, which is written after the build.
+ */
+export const DK_PDF_OPTIONS_ENV = 'DK_PDF_OPTIONS';
+
 /** Every internal handoff name. */
 export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_INDEX_BASENAME_ENV,
@@ -91,6 +99,7 @@ export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV,
   DK_CHROME_OPTIONS_ENV,
   DK_SERVED_SURFACES_ENV,
+  DK_PDF_OPTIONS_ENV,
 ]);
 
 /**
