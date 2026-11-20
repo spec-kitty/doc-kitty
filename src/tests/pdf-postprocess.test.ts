@@ -11,7 +11,7 @@ import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { inspectPdf, outlineAt } from '../scripts/pdf-inspect.mjs';
 import { firstDifference, normaliseStructIds, objectAt, pdfDate, pdfString, pinPdf } from '../scripts/pdf-postprocess.mjs';
-import { checkPdfs, inOrder } from '../scripts/assert-pdf-artifacts.mjs';
+import { checkPdfs, existingDirUnder, inOrder } from '../scripts/assert-pdf-artifacts.mjs';
 import { comparePdfDirs } from '../scripts/assert-pdf-determinism.mjs';
 import { manifestEpoch, parseArgs, sourceDateEpoch, UsageError } from '../scripts/dockitty-pdf.mjs';
 
@@ -133,6 +133,16 @@ describe('the PDF gate', () => {
     // at level 3), "Overview" is a page outside any folder, printed at h2.
     const site = { ...doc, name: 'site', route: '/print/', titleLevel: 3 };
     expect(checkPdfs(distWith({ 'site.pdf': fakePdf() }, [site]))).toEqual([]);
+  });
+
+  it('reads only an existing directory under the working directory', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'dk-pdf-root-'));
+    mkdirSync(path.join(root, 'site', 'dist'), { recursive: true });
+    expect(existingDirUnder(root, 'site/dist')).toBe(path.join(root, 'site', 'dist'));
+    expect(existingDirUnder(root, '.')).toBe(root);
+    expect(existingDirUnder(root, 'site/missing')).toBeNull();
+    expect(existingDirUnder(root, '../elsewhere')).toBeNull();
+    expect(existingDirUnder(root, '/etc')).toBeNull();
   });
 
   it('accepts a cover-only document: a section with no page besides its index', () => {
