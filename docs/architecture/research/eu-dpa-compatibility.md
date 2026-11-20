@@ -2,7 +2,7 @@
 title: EU DPA compatibility
 description: "What an EU DPA asks a processor to describe, the gaps against DocKitty, a tom_classification field, organisational reuse and operating-model templates."
 doc_status: draft
-updated: 2026-11-18T00:00:00Z
+updated: 2026-11-20T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [gdpr, dpa, tom, compliance, security, metadata, templates, operating-model]
@@ -16,7 +16,7 @@ related:
   - adr/0065-kind-required-again
   - adr/0067-schematic-pages-reference-a-schema
   - adr/0079-kitty-packs-through-a-charter-contract-reader
-  - adr/0080-tom-classification-field-and-measures-catalogue
+  - adr/0080-tom-classification-field-and-measures-catalog
   - architecture/metadata-model
   - architecture/section-registry
   - architecture/content-graph
@@ -75,9 +75,9 @@ a service that a customer will name in a DPA.
   - reuse of organisational content;
   - templates.
 - **Recommendation:**
-  - an optional `tom_classification` field, backed by a measures catalogue;
+  - an optional `tom_classification` field, backed by a measures catalog;
   - a generated TOM annex export;
-  - an opt-in sub-processor catalogue;
+  - an opt-in sub-processor catalog;
   - an opt-in operating-model template set.
 
   Nothing in these ships legal text.
@@ -192,7 +192,7 @@ of them a processor's documentation should claim.
 
   These three points are the ones that matter most for a documentation toolkit.
 - **DSK Standard-Datenschutzmodell (SDM) 3.1** (DE, adopted May 2024) groups
-  measures under seven protection goals and keeps a catalogue of reference
+  measures under seven protection goals and keeps a catalog of reference
   measures. [S] It is in prose.
 - **CNIL security guide** (FR, 2024 edition) has 25 factsheets. The CNIL uses it
   as its own Article 32 reference. [S]
@@ -238,7 +238,7 @@ Status legend:
 
 - ✅ **covered**: works today;
 - 🔁 **mappable**: works today through sections, tags, `related` or a template;
-- 🆕 **new**: needs a new field, catalogue or export;
+- 🆕 **new**: needs a new field, catalog or export;
 - ⛔ **out of scope**: legal content the toolkit does not author.
 
 | DPA element | Source | DocKitty home today | Status |
@@ -246,11 +246,11 @@ Status legend:
 | Parties, contacts, instructions, legal purpose | Article 28(3), Article 30(2)(a), Annex I | none | ⛔ |
 | Nature of processing | Article 28(3), 2021/915 Annex II | Architecture | 🔁 |
 | Data categories, data subjects, sensitive data, retention, locations | 2021/915 Annex II, Article 30(2)(c) | none | 🆕 data inventory |
-| Sub-processors and change notices | Article 28(2) and 28(4), 2021/915 Annex IV, Clause 7.7 | Integrations (prose), changelog | 🆕 catalogue; 🔁 notices |
+| Sub-processors and change notices | Article 28(2) and 28(4), 2021/915 Annex IV, Clause 7.7 | Integrations (prose), changelog | 🆕 catalog; 🔁 notices |
 | Transfer assessment, risk assessment | Articles 32(2) and 44 to 46 | none | ⛔; 🔁 link to it |
 | TOM headings 1 to 17 and Article 32(1) | Article 32, 2021/914 Annex II | Security, Architecture, Operations (`Runbook`), Configuration | 🔁 pages; 🆕 classification |
 | Testing and review evidence | Article 32(1)(d), EDPB | `verified`, `updated`, `stale_after` | ✅ |
-| Certification and assurance | Articles 28(5), 32(3), 40, 42 | `external_references` and the bibliography catalogue | 🔁 |
+| Certification and assurance | Articles 28(5), 32(3), 40, 42 | `external_references` and the bibliography catalog | 🔁 |
 | Rights, breach and deletion processes | Article 28(3)(e) to (g), Article 33(2) | Operations runbooks | 🔁 |
 | Information that demonstrates compliance | Article 28(3)(h) | agent API, content graph, OKF export | ✅ |
 | General description of TOMs, versioned | Article 30(2)(d), EDPB | none | 🆕 generated annex |
@@ -278,7 +278,7 @@ case-sensitive, and the vocabulary seam
 ([ADR-0031](../../adr/0031-vocabulary-override.md)) aliases values, not keys. A
 `TOM_classification` spelling would therefore be a second key to support, not an
 alias. **Decided:** lowercase only, with no uppercase alias. The field is drafted
-as [ADR-0080](../../adr/0080-tom-classification-field-and-measures-catalogue.md).
+as [ADR-0080](../../adr/0080-tom-classification-field-and-measures-catalog.md).
 
 ### Shape
 
@@ -292,16 +292,16 @@ tom_classification:
     note: Audit log of every admin action, kept 13 months.
 ```
 
-- `measure` is an id in the measures catalogue.
+- `measure` is an id in the measures catalog.
 - `scope` says whether the measure belongs to this system or to the whole
   organisation. The organisation scope drives reuse (see the next section). The
   default is `system`.
 - `note` gives the specific detail the SCCs and the EDPB ask for.
 
-### The measures catalogue
+### The measures catalog
 
-The catalogue is `_meta/measures.yaml`, built like the bibliography and tools
-catalogues ([ADR-0018](../../adr/0018-citation-catalog-collections.md)):
+The catalog is `_meta/measures.yaml`, built like the bibliography and tools
+catalogs ([ADR-0018](../../adr/0018-citation-catalog-collections.md)):
 
 ```yaml
 - id: transmission-protection
@@ -313,19 +313,19 @@ catalogues ([ADR-0018](../../adr/0018-citation-catalog-collections.md)):
   dpv: https://w3id.org/dpv#...     # optional DPV concept IRI
 ```
 
-**Default catalogue.** DocKitty ships the 17 SCC headings and the four Article
+**Default catalog.** DocKitty ships the 17 SCC headings and the four Article
 32(1) items, as short labels with DPV IRIs.
 
 - The labels are identifiers taken from public legislation, not authored legal
   text. **⚖ counsel** should confirm that shipping them is fine.
-- A consumer extends the catalogue, or replaces it, through the charter. It can
+- A consumer extends the catalog, or replaces it, through the charter. It can
   add ISO/IEC 27001 Annex A, C5 or SDM ids, keeping its own licence obligations.
 
-**Validation** follows the catalogue rule: an id that does not resolve fails the
+**Validation** follows the catalog rule: an id that does not resolve fails the
 build, as a missing citation does. The nature (technical or organisational) lives
-on the catalogue entry, not on the page, so authors do not repeat it.
+on the catalog entry, not on the page, so authors do not repeat it.
 
-**Contract cost.** The field and catalogue need a new ADR, since adding a field
+**Contract cost.** The field and catalog need a new ADR, since adding a field
 takes one (ADR-0009). The Astro schema stays lenient and the gate validates, as
 with other fields ([ADR-0065](../../adr/0065-kind-required-again.md)). The content
 graph gains a `classified-as` edge.
@@ -430,10 +430,10 @@ out of scope.
 | Rank | Option | Verdict |
 |------|--------|---------|
 | 1 | Consumer guide and opt-in presets (compliance, operating model) | Recommend first; usable today with tags and `related` |
-| 2 | `tom_classification` field and measures catalogue | Recommend; needs an ADR |
+| 2 | `tom_classification` field and measures catalog | Recommend; needs an ADR |
 | 3 | Generated TOM annex export (`api/tom-annex.json`, an optional hub page, OKF inclusion). It groups pages by measure and scope, lists uncovered measures, and is versioned per release under the generated-section contract proposed in issue #359 | Recommend after rank 2. Label it an evidence index, not the contractual annex **⚖ counsel** |
 | 4 | Operating-model templates: `--template` and `--preset` in the stub tools, plus a `Role` kind | Recommend with rank 2, since the templates preset the field |
-| 5 | Opt-in sub-processor catalogue (`_meta/subprocessors.yaml`) and a generated list page | Recommend as opt-in |
+| 5 | Opt-in sub-processor catalog (`_meta/subprocessors.yaml`) and a generated list page | Recommend as opt-in |
 | 6 | Shared organisation bundle: merge another site's annex by URL | Next, once ranks 2 and 3 exist |
 | 7 | Data-inventory schema page ([ADR-0067](../../adr/0067-schematic-pages-reference-a-schema.md)) | Later **⚖ counsel** |
 | 8 | DPV JSON-LD in the content graph | Defer; cheap after rank 2 |
@@ -444,7 +444,7 @@ out of scope.
 
 ## Open questions
 
-1. **⚖ counsel** Which of headings 13 to 17 should a processor's catalogue flag
+1. **⚖ counsel** Which of headings 13 to 17 should a processor's catalog flag
    as controller duties?
 2. **⚖ counsel** Can a DPA annex reference a living evidence index, or must it
    attach a dated snapshot? A snapshot per release with a digest is the safe
