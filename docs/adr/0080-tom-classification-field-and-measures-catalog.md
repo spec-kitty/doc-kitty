@@ -26,8 +26,8 @@ related:
 ## Status
 
 Proposed. It follows the research in
-[EU DPA compatibility](../architecture/research/eu-dpa-compatibility.md). The
-operator chose the lowercase key `tom_classification`, with no uppercase alias.
+[EU DPA compatibility](../architecture/research/eu-dpa-compatibility.md). The key
+is lowercase `tom_classification`, with no uppercase alias.
 
 ## Context
 
@@ -73,7 +73,8 @@ product copies them, the copies drift apart and lose their review history.
          note: Every admin action is logged and kept for 13 months.
      ```
 
-   - **`scope`** is `system` (the default) or `organisation`.
+   - **`scope`** is `system` (the default) or `organisation`. The enum value
+     uses British spelling deliberately, matching the repo's prose.
    - **`note`** carries the specific detail the clauses and the EDPB ask for.
    - **Spelling.** The key is lowercase snake case, like every other field in
      the contract. There is no `TOM_classification` alias.
@@ -97,11 +98,10 @@ product copies them, the copies drift apart and lose their review history.
      [ADR-0031](0031-vocabulary-override.md) and
      [ADR-0065](0065-kind-required-again.md), where an unknown value only warns.
 
-3. **DocKitty ships a default catalog.** It holds:
-   - the 17 example headings of 2021/914 Annex II;
-   - the four items of GDPR Article 32(1);
+3. **DocKitty ships a default catalog.** It holds the 17 example headings of 2021/914 Annex II and the four items of GDPR
+   Article 32(1), each as a short label with its framework reference and DPV
+   concept IRI.
 
-   each as a short label with its framework reference and a DPV concept IRI.
    - The labels are identifiers taken from public legislation, not authored
      legal text. **⚖ counsel**: confirm that shipping them is fine.
    - **⚖ counsel**: decide whether headings 13 to 17 should be marked as
@@ -166,7 +166,6 @@ product copies them, the copies drift apart and lose their review history.
 - A consumer could read a classified page as a complete TOM description. The
   field marks evidence; it does not make the description specific or
   sufficient. **⚖ counsel**.
-- Shipping legislative headings as defaults may need counsel's sign-off first.
 
 ## Alternatives considered
 
@@ -188,7 +187,7 @@ content graph would mix "cites" and "evidences", and scope would have no home.
 
 ### Option D: Accept `TOM_classification` as well
 
-Rejected by the operator. Keys are case-sensitive, and the contract is
+Rejected. Keys are case-sensitive, and the contract is
 lowercase snake case throughout.
 
 ## References
