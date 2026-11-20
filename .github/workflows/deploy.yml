@@ -130,6 +130,17 @@ jobs:
       - name: Build example site
         uses: ./.github/actions/build-example
 
+      # The section and whole-site PDFs (ADR-0081, #397), printed from the dist this
+      # job just built (drafts off) with the Chromium the composite installed, and
+      # published with the site at /pdf/<name>.pdf. Main only: this workflow never runs
+      # for a pull request. A failed print or gate fails the deploy, so no published
+      # page links a missing PDF; the previous deployment stays live.
+      - name: Print the PDFs
+        run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          node src/scripts/dockitty-pdf.mjs --dist example/dist --base /doc-kitty
+          node src/scripts/assert-pdf-artifacts.mjs example/dist
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
