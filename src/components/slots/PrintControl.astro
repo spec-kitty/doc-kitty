@@ -5,6 +5,7 @@
  * handler lives in `print/print.client.ts`, which every in-frame page already loads); when
  * the page's section has its own PDF (from the resolved `pdf` settings, never from the
  * files in `dist/pdf/`, which are printed after the build), a link offers that PDF.
+ * Without `site` no PDF is printed (the print routes need it), so the link is left out.
  * Its screen styles sit in `print.css` with the rest of the print layer, and the print
  * layer hides it on paper. A theme restyles or hides it through `.dk-print-control`.
  */
@@ -17,7 +18,8 @@ interface Props {
 }
 
 const section = Astro.props.entryId.split('/')[0];
-const pdfHref = section && pdfOptions().sections.includes(section) ? withBase(`/pdf/${section}.pdf`) : undefined;
+const pdfHref =
+  import.meta.env.SITE && section && pdfOptions().sections.includes(section) ? withBase(`/pdf/${section}.pdf`) : undefined;
 ---
 
 <div class="dk-print-control">

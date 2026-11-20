@@ -159,7 +159,15 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
     // client rect → rendered. A `width > 0` test conflated the two and dropped
     // visible-but-settling diagrams (deck navigation + print) in slower renderers.
     const runNodes = scopeNodes.filter((node) => node.getClientRects().length > 0);
-    if (!runNodes.length) return;
+    if (!runNodes.length) {
+      // Nothing visible to draw: still report the theme, so the PDF printer's wait
+      // ends instead of timing out on a page whose every diagram is hidden (#381).
+      document.documentElement.setAttribute(
+        'data-dk-diagram-theme',
+        document.documentElement.getAttribute('data-theme') ?? 'light',
+      );
+      return;
+    }
     isRendering = true;
     // The theme this run renders in; published when the run settles (below).
     const runTheme = document.documentElement.getAttribute('data-theme') ?? 'light';

@@ -21,6 +21,7 @@
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
  * | DK_CHROME_OPTIONS             | define     | defineDocKittyIntegrations               | chromeOptions() (chrome-options.ts)       |
  * | DK_SERVED_SURFACES            | routes     | doc-kitty:served-surfaces routes:resolved | servedSurfaces() (served-surfaces.ts)    |
+ * | DK_PDF_OPTIONS                | define     | defineDocKittyIntegrations               | pdfOptions() (pdf-options.ts): print route, PrintControl |
  *
  * Readers read `process.env` at call time. Vite SSR evaluates the content config
  * and routes in a separate module graph, so module state would arrive empty.

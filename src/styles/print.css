@@ -37,7 +37,8 @@
   min-block-size: 24px;
   min-inline-size: 24px;
   padding: var(--dk-space-2xs) var(--dk-space-sm);
-  border: 1px solid var(--dk-color-border-strong);
+  /* The muted text colour keeps the control's edge at 3:1 or more on the page (WCAG 1.4.11). */
+  border: 1px solid var(--dk-color-text-muted);
   border-radius: var(--dk-radius-sm);
   background: var(--dk-color-surface-1);
   color: var(--dk-color-text-strong);
@@ -45,6 +46,12 @@
   font-size: var(--dk-text-sm);
   text-decoration: none;
   cursor: pointer;
+}
+
+/* The link keeps the usual link cue, so it does not read as a second button. */
+.dk-print-control__download {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .dk-print-control__print:hover,

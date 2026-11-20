@@ -36,7 +36,7 @@
     "./routes/scenario-index-injected": "./lib/routes/scenario-index-injected.ts",
     "./routes/content-graph-injected": "./lib/routes/content-graph-injected.ts",
     "./routes/page-atom-injected": "./lib/routes/page-atom-injected.ts",
-    "./routes/print-injected.astro": "./lib/routes/print-injected.astro",
+    "./routes/print-injected": "./lib/routes/print-injected.astro",
     "./route-middleware": "./lib/route-middleware.ts",
     "./deck/*": "./lib/deck/*.ts",
     "./components/*": "./components/*",

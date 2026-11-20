@@ -42,7 +42,12 @@ function expectedNames(pdf, registry, fail) {
 /** A file under `dist` for a same-site URL path (directory → `index.html`), or null. */
 function distFileFor(distDir, base, pathname) {
   if (!pathname.startsWith(`${base}/`) && pathname !== base) return null;
-  let rel = decodeURIComponent(pathname.slice(base.length));
+  let rel;
+  try {
+    rel = decodeURIComponent(pathname.slice(base.length));
+  } catch {
+    return null; // a malformed escape resolves to nothing: reported as dangling
+  }
   if (rel === '' || rel.endsWith('/')) rel = `${rel}index.html`;
   const file = path.join(distDir, rel);
   // A path without its trailing slash names a page directory: the page is its index.
@@ -95,9 +100,16 @@ export async function assertPrintArtifacts(distDir, { ok, fail }) {
     const where = `print routes: ${doc.name}`;
     if (!/<meta name="robots" content="noindex"/.test(html)) fail(`${where}: no robots noindex meta`);
     if (/data-pagefind-body/.test(html)) fail(`${where}: the page is in the search index (data-pagefind-body)`);
-    if (!(doc.pages >= 1)) fail(`${where}: no published page to print (pages: ${doc.pages})`);
-    const titles = (html.match(new RegExp(`<h${doc.titleLevel}\\b[^>]*class="dk-print-page__title"`, 'g')) ?? []).length;
-    if (titles !== doc.pages) fail(`${where}: ${titles} page title(s) at h${doc.titleLevel}, the manifest says ${doc.pages}`);
+    if (!Number.isInteger(doc.pages) || doc.pages < 0) fail(`${where}: the manifest gives no page count (pages: ${doc.pages})`);
+    // A section with only an index page (or only drafts) prints its cover alone.
+    else if (doc.pages === 0) ok(`${where}: note: no published page besides the index, so it prints the cover only`);
+    // One `dk-print-page` section per printed page; a top-level page of the whole-site
+    // document titles at h2, every other at `titleLevel`.
+    const pageTitles = [...html.matchAll(/<section class="dk-print-page"[^>]*>\s*<header class="dk-print-page__hero">\s*<h([1-6])\b/g)];
+    const titles = pageTitles.length;
+    if (titles !== doc.pages) fail(`${where}: ${titles} page title(s), the manifest says ${doc.pages}`);
+    const wrong = pageTitles.filter((m) => Number(m[1]) !== doc.titleLevel && Number(m[1]) !== 2);
+    if (wrong.length) fail(`${where}: ${wrong.length} page title(s) at neither h2 nor h${doc.titleLevel}`);
     const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
     const dupes = [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
     if (dupes.length) fail(`${where}: duplicate id(s) ${dupes.slice(0, 5).join(', ')}`);
@@ -122,7 +134,13 @@ export async function assertPrintArtifacts(distDir, { ok, fail }) {
         else if (!ids.includes(href.slice(1))) missingFragments.push(href);
         continue;
       }
-      const url = new URL(href);
+      let url;
+      try {
+        url = new URL(href);
+      } catch {
+        dangling.push(href);
+        continue;
+      }
       if (url.origin !== docUrl.origin) continue;
       const target = distFileFor(distDir, base, url.pathname);
       if (!target || !existsSync(target)) dangling.push(href);

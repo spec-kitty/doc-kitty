@@ -81,6 +81,8 @@ interface Unit {
   role: 'cover' | 'section' | 'page';
   title: string;
   sectionId?: string;
+  /** The page title's heading level, when not the document's `titleLevel`. */
+  level?: number;
 }
 const units: Unit[] = [];
 let next = 0;
@@ -98,10 +100,11 @@ if (isSite) {
     entries.map((entry) => entry.slug),
     options,
   );
-  // A page at the top level, outside any folder, prints as a page right after the cover.
+  // A page at the top level, outside any folder, prints as a page right after the cover,
+  // at the section level (h2): it sits in no section, and an h3 there would skip a level.
   for (const slug of order.loose) {
     const page = entries.find((entry) => entry.slug === slug);
-    if (page && !options.excludeKinds.includes(page.data.kind ?? '')) add({ role: 'page', entry: page, title: page.data.title });
+    if (page && !options.excludeKinds.includes(page.data.kind ?? '')) add({ role: 'page', entry: page, title: page.data.title, level: 2 });
   }
   for (const id of [...order.main, ...order.unregistered, ...order.appendix]) {
     const { index, pages } = sectionPages(entries, id, options.excludeKinds);
@@ -196,10 +199,10 @@ const date = buildDate();
             anchor={unit.anchor}
             pageAnchors={pageAnchors}
             origin={origin}
-            demote={isSite ? 2 : 1}
-            floor={titleLevel + 1}
+            demote={(unit.level ?? titleLevel) - 1}
+            floor={(unit.level ?? titleLevel) + 1}
             pagePath={pathOf(unit)}
-            hero={{ title: unit.title, level: titleLevel, docStatus: unit.entry?.data.doc_status, updated: unit.entry?.data.updated }}
+            hero={{ title: unit.title, level: unit.level ?? titleLevel, docStatus: unit.entry?.data.doc_status, updated: unit.entry?.data.updated }}
           >
             {Content && <Content />}
           </PrintPage>
