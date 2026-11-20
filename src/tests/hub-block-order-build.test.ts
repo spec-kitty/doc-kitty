@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { buildChromeFixture, GOLDEN_DIR, NON_HUB_PAGE, normaliseBuildIds, normaliseFooterAndHeadLinks, normaliseMetadataBlocks } from './fixtures/chrome/harness.mjs';
+import { buildChromeFixture, GOLDEN_DIR, NON_HUB_PAGE, normaliseBuildIds, normaliseFooterAndHeadLinks, normaliseMetadataBlocks, normalisePrintHook } from './fixtures/chrome/harness.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 // A dedicated out-of-tree output dir, as the other example build suites use.
@@ -96,7 +96,7 @@ describe('the chrome fixture', () => {
     for (const block of [AUDIENCE, RELATED, REFS, GLOSSARY]) expect(html, block).toContain(block);
     const golden = readFileSync(path.join(GOLDEN_DIR, 'page.html'), 'utf8');
     expect(
-      normaliseFooterAndHeadLinks(normaliseMetadataBlocks(html), 'actual') === normaliseFooterAndHeadLinks(normaliseMetadataBlocks(golden), 'golden'),
+      normaliseFooterAndHeadLinks(normaliseMetadataBlocks(normalisePrintHook(html)), 'actual') === normaliseFooterAndHeadLinks(normaliseMetadataBlocks(golden), 'golden'),
       'the page differs from the golden outside its blocks and footer links',
     ).toBe(true);
   }, BUILD_TIMEOUT);
