@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { assertChromeArtifacts } from './assert-chrome-artifacts.mjs';
 import { assertSpecificationArtifacts } from './assert-specification-artifacts.mjs';
 import { assertOpenApiArtifacts } from './assert-openapi-artifacts.mjs';
+import { assertPrintArtifacts } from './assert-print-artifacts.mjs';
 import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import { compareCodeUnit, parseActor } from '../lib/vocabulary-core.mjs';
@@ -2687,6 +2688,10 @@ async function main() {
     fail(`one <h1> per page: ${h1Repeats.length} page(s) repeat their title as an <h2> (#191): ${h1Repeats.slice(0, 10).join(', ')}`);
   }
   ok(`one <h1> per page: all ${h1Pages} published HTML page(s) have exactly one <h1>, and none repeats it as an <h2> (#191)`);
+
+  // 6-print) The print documents (ADR-0081, #380): exactly the ones the config and
+  // sections.yaml enable, hidden from discovery, with unique ids and resolving links.
+  await assertPrintArtifacts(distDir, { ok, fail });
 
   // 6a) diagrams — the published diagram demonstrator, asserted for the ACTIVE
   // render MODE (#13, C-005). The mode is detected once from the demonstrator's

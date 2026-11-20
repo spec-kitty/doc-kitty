@@ -24,6 +24,13 @@ export type ServedSurfaces = Record<keyof typeof SURFACE_ROUTES, boolean> & {
   okf: true;
   /** The `openapi` option is set: the reference pages are served (WP02). */
   openapi: boolean;
+  /**
+   * The PDFs the site publishes at `/pdf/<name>.pdf` (ADR-0081): each section with its
+   * own PDF, then `site` for the whole-site PDF. Unlike the rest, this comes from the
+   * resolved `pdf` settings, not from the routes: the PDFs are printed after the build,
+   * so nothing in the build serves them yet.
+   */
+  pdf: string[];
 };
 
 /**
@@ -32,12 +39,17 @@ export type ServedSurfaces = Record<keyof typeof SURFACE_ROUTES, boolean> & {
  * @param openapi whether the `openapi` option is set (route detection cannot
  *   see the renderer's injected routes, so the option says it)
  */
-export function detectServedSurfaces(patterns: string[], siteConfigured: boolean, openapi = false): ServedSurfaces {
+export function detectServedSurfaces(
+  patterns: string[],
+  siteConfigured: boolean,
+  openapi = false,
+  pdf: readonly string[] = [],
+): ServedSurfaces {
   const routes = new Set(patterns);
   const detected = Object.fromEntries(
     Object.entries(SURFACE_ROUTES).map(([surface, pattern]) => [surface, routes.has(pattern)]),
   ) as Record<keyof typeof SURFACE_ROUTES, boolean>;
-  return { ...detected, sitemap: siteConfigured, okf: true, openapi };
+  return { ...detected, sitemap: siteConfigured, okf: true, openapi, pdf: [...pdf] };
 }
 
 let cached: { raw: string; surfaces: ServedSurfaces } | undefined;
