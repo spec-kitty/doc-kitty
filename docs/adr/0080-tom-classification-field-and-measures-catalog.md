@@ -12,7 +12,6 @@ related:
   - adr/0009-finalize-metadata-contract
   - adr/0018-citation-catalog-collections
   - adr/0031-vocabulary-override
-  - adr/0042-native-documentation-charter
   - adr/0059-content-graph-and-okf-alignment
 ---
 
@@ -101,11 +100,14 @@ product copies them, the copies drift apart and lose their review history.
    - **⚖ counsel**: decide whether headings 13 to 17 should be marked as
      controller-leaning.
 
-4. **Consumers extend or replace the catalog through the charter**
-   ([ADR-0042](0042-native-documentation-charter.md)).
-   - A consumer can add ISO/IEC 27001 Annex A, BSI C5 or SDM ids under its own
-     licence terms, or drop the default.
-   - An absent catalog means the shipped default.
+4. **Consumers replace the catalog with their own file.** This follows the
+   ADR-0018 pattern.
+   - A consumer authors its own `docs/_meta/measures.yaml`. When that file is
+     present, it **replaces** the shipped default wholesale. There is no merge.
+     A consumer that wants the defaults copies them into its own file.
+   - A consumer can add ISO/IEC 27001 Annex A, BSI C5 or SDM ids this way, under
+     its own licence terms.
+   - An absent file means the shipped default.
    - A docs tree that never uses the field is unaffected.
 
 5. **Organisational measures are linked, not copied.**
@@ -131,6 +133,8 @@ product copies them, the copies drift apart and lose their review history.
   `scaffold.mjs --preset operating-model` and a `Role` kind.
 - **A sub-processor catalog** (`_meta/subprocessors.yaml`) with a generated
   list page.
+- **A charter-level merge mechanism** that extends the default catalog instead
+  of replacing it.
 - **A shared organisation bundle.** A product site would merge an organisation
   site's annex by URL.
 

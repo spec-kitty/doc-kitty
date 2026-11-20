@@ -318,8 +318,10 @@ catalogs ([ADR-0018](../../adr/0018-citation-catalog-collections.md)):
 
 - The labels are identifiers taken from public legislation, not authored legal
   text. **⚖ counsel** should confirm that shipping them is fine.
-- A consumer extends the catalog, or replaces it, through the charter. It can
-  add ISO/IEC 27001 Annex A, C5 or SDM ids, keeping its own licence obligations.
+- A consumer authors its own `docs/_meta/measures.yaml`. When present, it
+  replaces the shipped default wholesale, as in ADR-0018. A consumer that wants
+  the defaults copies them in. It can add ISO/IEC 27001 Annex A, C5 or SDM ids,
+  keeping its own licence obligations.
 
 **Validation** follows the catalog rule: an id that does not resolve fails the
 build, as a missing citation does. The nature (technical or organisational) lives
