@@ -88,4 +88,9 @@ describe('readPrintDocument', () => {
     });
     expect(readPrintDocument('<html></html>', '/x/')).toBeUndefined();
   });
+
+  it('carries the pinned build time when the page records one', () => {
+    const html = '<html lang="en"><div data-dk-print-name="guides" data-dk-print-pages="2" data-dk-print-epoch="1767225600"></div></html>';
+    expect(readPrintDocument(html, '/print/guides/')?.sourceDateEpoch).toBe(1767225600);
+  });
 });

@@ -23,7 +23,6 @@
  * Exit codes, as `dockitty-export-okf`: 0 success; 1 a print, wait or post-pass
  * failed; 2 a usage error or missing input.
  */
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -64,21 +63,31 @@ export function parseArgs(argv) {
   return out;
 }
 
-/** `SOURCE_DATE_EPOCH`, else the last commit time; throws a UsageError when neither exists. */
-export function sourceDateEpoch(env = process.env, cwd = process.cwd()) {
+/**
+ * `SOURCE_DATE_EPOCH`, else the build time the print route recorded in the manifest
+ * (itself `SOURCE_DATE_EPOCH` or the last commit time at build); throws a UsageError
+ * when neither exists. Reading the manifest keeps the PDF dates equal to the cover's
+ * date, and keeps this command from running git.
+ */
+export function sourceDateEpoch(env = process.env, manifestEpoch = undefined) {
   const raw = env.SOURCE_DATE_EPOCH;
   if (raw !== undefined && raw !== '') {
     const n = Number(raw);
     if (!Number.isInteger(n) || n < 0) throw new UsageError(`SOURCE_DATE_EPOCH must be whole seconds, got ${raw}`);
     return n;
   }
+  if (Number.isInteger(manifestEpoch) && manifestEpoch > 0) return manifestEpoch;
+  throw new UsageError('no date to pin the PDFs to: set SOURCE_DATE_EPOCH, or build the site inside a git checkout');
+}
+
+/** The build time recorded in `<dist>/print/manifest.json`, or undefined. */
+export function manifestEpoch(distDir) {
   try {
-    const n = Number(execFileSync('git', ['log', '-1', '--format=%ct'], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim());
-    if (Number.isInteger(n) && n > 0) return n;
+    const manifest = JSON.parse(readFileSync(path.join(distDir, 'print', 'manifest.json'), 'utf8'));
+    return (manifest.documents ?? []).find((doc) => Number.isInteger(doc.sourceDateEpoch))?.sourceDateEpoch;
   } catch {
-    /* no git */
+    return undefined;
   }
-  throw new UsageError('no date to pin the PDFs to: set SOURCE_DATE_EPOCH, or run inside a git checkout');
 }
 
 const MIME = {
@@ -273,7 +282,7 @@ async function main() {
   try {
     options = parseArgs(process.argv.slice(2));
     if (!existsSync(options.dist)) throw new UsageError(`--dist ${options.dist}: no such directory`);
-    epochSeconds = sourceDateEpoch();
+    epochSeconds = sourceDateEpoch(process.env, manifestEpoch(options.dist));
   } catch (err) {
     if (err instanceof UsageError) {
       process.stderr.write(err.message === 'help' ? `${HELP}\n` : `dockitty-pdf: ${err.message}\n${HELP}\n`);

@@ -77,9 +77,11 @@ export async function assertPrintArtifacts(distDir, { ok, fail }) {
     return;
   }
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  const listed = (manifest.documents ?? []).map((doc) => doc.name).sort();
-  if (JSON.stringify(listed) !== JSON.stringify([...expected].sort())) {
-    fail(`print routes: the manifest lists ${listed.join(', ') || 'nothing'}, the config expects ${[...expected].sort().join(', ')}`);
+  const byName = (a, b) => String(a).localeCompare(String(b));
+  const listed = (manifest.documents ?? []).map((doc) => doc.name).sort(byName);
+  const wanted = [...expected].sort(byName);
+  if (JSON.stringify(listed) !== JSON.stringify(wanted)) {
+    fail(`print routes: the manifest lists ${listed.join(', ') || 'nothing'}, the config expects ${wanted.join(', ')}`);
   }
 
   // No print route beyond the expected ones.
