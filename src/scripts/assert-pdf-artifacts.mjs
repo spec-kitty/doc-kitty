@@ -82,6 +82,24 @@ export function checkPdfs(distDir, ok = () => {}) {
   return failures;
 }
 
+/**
+ * `arg` as an existing directory under `root`, rebuilt from the directory listings
+ * themselves (each segment must name an entry that is there), so nothing the caller
+ * typed reaches a file read; null when it leaves `root` or does not exist.
+ */
+export function existingDirUnder(root, arg) {
+  const base = path.resolve(root);
+  const relative = path.relative(base, path.resolve(base, arg));
+  if (relative.startsWith('..') || path.isAbsolute(relative)) return null;
+  let current = base;
+  for (const segment of relative.split(path.sep).filter(Boolean)) {
+    const entry = readdirSync(current, { withFileTypes: true }).find((e) => e.isDirectory() && e.name === segment);
+    if (!entry) return null;
+    current = path.join(current, entry.name);
+  }
+  return current;
+}
+
 function isMain() {
   try {
     return import.meta.url === pathToFileURL(realpathSync(process.argv[1] ?? '')).href;
@@ -94,9 +112,8 @@ if (isMain()) {
   const arg = process.argv[2];
   // The gate reads only a build inside the working directory: resolve the argument and
   // refuse anything that climbs out of it (`..`, another drive, an absolute path elsewhere).
-  const cwd = path.resolve(process.cwd());
-  const dist = path.resolve(cwd, arg ?? '');
-  if (!arg || !(dist === cwd || dist.startsWith(cwd + path.sep)) || !existsSync(dist)) {
+  const dist = arg ? existingDirUnder(process.cwd(), arg) : null;
+  if (!dist) {
     process.stderr.write('usage: assert-pdf-artifacts <dist> (a directory inside the working directory)\n');
     process.exit(2);
   }
