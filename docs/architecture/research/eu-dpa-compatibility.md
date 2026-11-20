@@ -323,14 +323,14 @@ catalogs ([ADR-0018](../../adr/0018-citation-catalog-collections.md)):
   the defaults copies them in. It can add ISO/IEC 27001 Annex A, C5 or SDM ids,
   keeping its own licence obligations.
 
-**Validation** follows the catalog rule: an id that does not resolve fails the
-build, as a missing citation does. The nature (technical or organisational) lives
+**Validation** follows the catalog rule of ADR-0018 §4. The schema accepts the
+field's shape, the resolver fails the build on an id that does not resolve (as
+for a missing citation), and `validate-catalog.mjs` runs the same check without a
+build. The nature (technical or organisational) lives
 on the catalog entry, not on the page, so authors do not repeat it.
 
 **Contract cost.** The field and catalog need a new ADR, since adding a field
-takes one (ADR-0009). The Astro schema stays lenient and the gate validates, as
-with other fields ([ADR-0065](../../adr/0065-kind-required-again.md)). The content
-graph gains a `classified-as` edge.
+takes one (ADR-0009). The content graph gains a `classified-as` edge.
 
 ## Reusing organisational descriptions
 

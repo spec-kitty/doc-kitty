@@ -13,6 +13,7 @@ related:
   - adr/0018-citation-catalog-collections
   - adr/0031-vocabulary-override
   - adr/0059-content-graph-and-okf-alignment
+  - adr/0065-kind-required-again
 ---
 
 # ADR-0080: A tom_classification field and a measures catalog
@@ -87,8 +88,14 @@ product copies them, the copies drift apart and lose their review history.
      `{ id, label, nature, frameworks: [{ framework, ref }], dpv? }`. `nature` is
      `technical`, `organisational`, `legal` or `physical`, after DPV's four
      groups. The nature lives on the entry, so pages do not repeat it.
-   - **Validation.** An id that does not resolve fails the build and the
-     build-free catalog gate, exactly as a missing citation does.
+   - **Validation.** The schema accepts the field's shape. The resolver fails the
+     build on a measure id that is not in the catalog, and
+     `validate-catalog.mjs` runs the same check without a build, as
+     [ADR-0018](0018-citation-catalog-collections.md) §4 does for citations.
+   - **Why it fails hard.** A measure id is a closed reference, like a citation
+     key, so a typo is an error. This differs from the open vocabularies of
+     [ADR-0031](0031-vocabulary-override.md) and
+     [ADR-0065](0065-kind-required-again.md), where an unknown value only warns.
 
 3. **DocKitty ships a default catalog.** It holds:
    - the 17 example headings of 2021/914 Annex II;
@@ -117,11 +124,10 @@ product copies them, the copies drift apart and lose their review history.
      `related`. It does not restate it.
    - Any later export lists an organisation-scope measure once, as inherited.
 
-6. **The build schema stays lenient; the gate validates.** This matches how the
-   other optional fields are handled
-   ([ADR-0065](0065-kind-required-again.md)). The content graph
+6. **The content graph gains an edge.** The graph
    ([ADR-0059](0059-content-graph-and-okf-alignment.md)) gains a `classified-as`
-   edge from a page to its measure ids.
+   edge from a page to its measure ids. Failure semantics for the ids are those
+   of decision 2.
 
 ### Out of this decision (follow-ups)
 
