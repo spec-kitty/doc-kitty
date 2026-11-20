@@ -526,3 +526,27 @@ export function emitTokenSheet(resolved: ResolvedTheme): string {
 
   return parts.join('\n\n') + '\n';
 }
+
+/**
+ * Emit the print-token fallback (#386, ADR-0081): for every mode-varying token, its
+ * resolved LIGHT value, declared under `@media print` for `:root:root[data-theme='dark']`
+ * (specificity 0,3,0), plus `color-scheme: light`.
+ *
+ * It covers a print that fires no `beforeprint` (the `print.client.ts` hook is the
+ * primary fix and gives brand-exact colours). At 0,3,0 it beats the generated or static
+ * dark block AND a brand's own `:root[data-theme='dark']` block in any source order, while
+ * a light-theme print is left alone, so brand light values survive there. The values come
+ * from the resolved theme, the same data `emitTokenSheet` writes into `:root`; nothing is
+ * restated by hand. A brand that ships per-mode colour as a CSS file (a string `tokens`
+ * or `customCss`) is invisible to this emitter, so that path prints the merged object
+ * catalog's light values: light, but not brand-exact.
+ */
+export function emitPrintTokenSheet(resolved: ResolvedTheme): string {
+  const decls = MODE_VARYING.map((name) => `${name}: ${resolved.tokens[name] ?? DEFAULT_BASE[name]};`);
+  decls.push('color-scheme: light;');
+  const inner = block(":root:root[data-theme='dark']", decls)
+    .split('\n')
+    .map((line) => `  ${line}`)
+    .join('\n');
+  return `@media print {\n${inner}\n}\n`;
+}
