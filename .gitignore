@@ -34,22 +34,6 @@ pnpm-debug.log*
 coverage/
 
 # Added by Spec Kitty CLI (auto-managed)
-.claude/
-.codex/
-.vibe/
-.pi/
-.letta/
-.opencode/
-.windsurf/
-.gemini/
-.qwen/
-.kilocode/
-.augment/
-.amazonq/
-.kiro/
-.agent/
-.github/copilot/
-.agents/skills/
 .kittify/.dashboard
 .kittify/charter/context-state.json
 .kittify/derived/
@@ -162,9 +146,53 @@ example/.dk-test-openapi/
 .beoe-cache/
 example/.beoe-cache/
 .kittify/lint-report.json
-.cursor/rules/spec-kitty.mdc
-.cursor/commands/
-.cursor/skills/
 
 # spec-kitty decision-index lock files (transient)
 kitty-specs/**/decisions/index.json.lock
+
+# >>> Spec Kitty agent files (auto-managed; lines in this block are replaced) >>>
+.codex/auth.json
+.codex/history.jsonl
+.codex/sessions/
+.codex/log/
+.claude/settings.local.json
+.gemini/.env
+.qwen/.env
+.llxprt/.env
+.vibe/
+.pi/
+.letta/
+.github/copilot/
+.agents/skills/spec-kitty-*/
+.agents/skills/spec-kitty.*/
+.agents/skills/spec-kitty/
+.agents/skills/spk-*/
+.claude/agents/analyst-annie.md
+.claude/agents/architect-alphonso.md
+.claude/agents/comms-cleo.md
+.claude/agents/curator-carla.md
+.claude/agents/debugger-debbie.md
+.claude/agents/designer-dagmar.md
+.claude/agents/diagram-daisy.md
+.claude/agents/doctrine-daphne.md
+.claude/agents/frontend-freddy.md
+.claude/agents/generic-agent.md
+.claude/agents/implementer-ivan.md
+.claude/agents/lexical-larry.md
+.claude/agents/minutes-mahad.md
+.claude/agents/node-norris.md
+.claude/agents/paula-patterns.md
+.claude/agents/planner-priti.md
+.claude/agents/randy-reducer.md
+.claude/agents/researcher-robbie.md
+.claude/agents/retrospective-facilitator.md
+.claude/agents/reviewer-renata.md
+.claude/agents/scribe-sally.md
+.claude/agents/synthesizer-sam.md
+.claude/commands/spec-kitty.*
+.claude/skills/adversarial-squad/
+.claude/skills/spec-kitty-*/
+.claude/skills/spec-kitty.*/
+.claude/skills/spec-kitty/
+.claude/skills/spk-*/
+# <<< Spec Kitty agent files <<<
