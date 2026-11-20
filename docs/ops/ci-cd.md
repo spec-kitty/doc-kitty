@@ -120,6 +120,14 @@ for the `code` and `workflows` groups and skips for the others. It proves the
 PlantUML allowlist opt-in against the real service, and `ci-ok` needs it. A
 skip by path is green. A skip because the PR is paused is red.
 
+The `pdf` lane runs whenever `build-example` runs. It prints the example's
+section and whole-site PDFs from the drafts-off build, checks them, and prints
+them a second time to prove the bytes do not change. It is **advisory**: `ci-ok`
+does not need it, so a red `pdf` run never blocks a merge. Read its log, and the
+`example-pdf` artifact, for the PDFs themselves. The deploy on `main` prints the
+PDFs the same way and publishes them with the site. A print failure there fails
+the deploy. See [Printing and PDF](../guides/printing-and-pdf.md).
+
 The [lane matrix](../architecture/ci-cd-pipeline.md#lane-matrix) in the design
 doc is authoritative, including the reasons each lane runs where it does.
 

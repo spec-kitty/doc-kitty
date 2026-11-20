@@ -22,10 +22,18 @@ const DEFAULTS: ChromeOptions = {
   metadataBlocks: { collapsed: true },
   footer: { machineEntryPoints: { label: 'Machine-readable' } },
   pageFormats: { atom: true },
+  printControl: false,
 };
 const REPOSITORY = { provider: 'gitlab', repo: 'owner/name', branch: 'main' };
 
 const CASES: Array<{ key: string; accepted: Record<string, unknown>; read: Partial<ChromeOptions>; rejected: Record<string, unknown>; message: string }> = [
+  {
+    key: 'printControl',
+    accepted: { printControl: true },
+    read: { printControl: true },
+    rejected: { printControl: 'yes' },
+    message: '[dk-config] printControl must be a boolean',
+  },
   {
     key: 'sidebar.collapsed',
     accepted: { sidebar: { collapsed: false } },
@@ -179,6 +187,7 @@ describe('chromeOptions()', () => {
       footer: { machineEntryPoints: false },
       pageFormats: { atom: false },
       repository: { ...REPOSITORY, siteDir: 'example' },
+      printControl: true,
     });
     expect(chromeOptions()).toEqual({
       sidebar: { collapsed: false, titleIsIndex: true },
@@ -186,6 +195,7 @@ describe('chromeOptions()', () => {
       footer: { machineEntryPoints: false },
       pageFormats: { atom: false },
       repository: { ...REPOSITORY, siteDir: 'example' },
+      printControl: true,
     });
   });
 

@@ -1,0 +1,219 @@
+---
+/**
+ * The print documents (ADR-0081, #380), injected at `/print/[...name]` by the
+ * `doc-kitty:print-route` integration: `/print/<section>/` for each section with its own
+ * PDF and `/print/` for the whole site. Each renders its pages through the docs
+ * collection's own `render()`, so every remark and rehype plugin applies, inside the
+ * Starlight frame (which the print layer hides), behind a cover page.
+ *
+ * Headings: the document title is the page `<h1>`. A section document has page titles
+ * at `h2`; the whole-site document has section dividers at `h2` and page titles at `h3`.
+ * Content headings are demoted below the page titles, and a cover or divider body
+ * below those, so the PDF outline's page-title level holds page titles only.
+ */
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+import process from 'node:process';
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { getCollection, render } from 'astro:content';
+import { printRouteOptions } from 'virtual:doc-kitty/print-route';
+import PrintCover from '../../components/print/PrintCover.astro';
+import PrintPage from '../../components/print/PrintPage.astro';
+import { DK_DOCS_ROOT_ENV } from '../internal-env.mjs';
+import { slugFromEntryId } from '../metadata.js';
+import { pdfOptions, SITE_PDF_NAME } from '../pdf-options.js';
+import { sectionPages, siteSections } from '../print/order.js';
+import { humanizeSection } from '../vocabulary-core.mjs';
+import { resolveSectionRegistry, sectionLabels, sectionOrder, sectionPurposes } from '../sections.js';
+import { hrefOfSlug } from '../with-base.js';
+
+export function getStaticPaths() {
+  const options = pdfOptions();
+  const paths: Array<{ params: { name: string | undefined }; props: { name: string } }> = options.sections.map((id) => ({
+    params: { name: id },
+    props: { name: id },
+  }));
+  if (options.site) paths.push({ params: { name: undefined }, props: { name: SITE_PDF_NAME } });
+  return paths;
+}
+
+interface Entry {
+  id: string;
+  slug: string;
+  data: { title: string; description?: string; kind?: string; type?: string; doc_status?: string; updated?: Date; sidebar?: { order?: number } };
+  raw: Parameters<typeof render>[0];
+}
+
+const { name } = Astro.props as { name: string };
+const options = pdfOptions();
+const isSite = name === SITE_PDF_NAME && options.site;
+const docsRoot = process.env[DK_DOCS_ROOT_ENV] ?? path.join(process.cwd(), 'docs');
+const registry = resolveSectionRegistry(docsRoot, { warn: () => {} }) ?? [];
+const labels = sectionLabels(registry);
+const purposes = sectionPurposes(registry);
+const labelOf = (id: string) => labels[id] ?? humanizeSection(id);
+
+const excluded = new Set(options.excludeSections);
+const entries: Entry[] = (await getCollection('docs'))
+  .map((raw) => ({ id: raw.id, slug: slugFromEntryId(raw.id), data: raw.data as unknown as Entry['data'], raw }))
+  // A `type: Template` page is copy-me scaffolding (the ADR template), not documentation:
+  // its placeholder links are not real targets (the link checkers skip it too).
+  .filter((entry) => !excluded.has(entry.slug.split('/')[0]) && entry.data.type !== 'Template');
+
+/**
+ * The pinned build time, in seconds: `SOURCE_DATE_EPOCH`, else the last commit time,
+ * else none. The cover prints its date, and the manifest carries it so `dockitty-pdf`
+ * pins the PDF dates to the same moment without running git itself.
+ */
+function buildEpoch(): number | undefined {
+  let seconds = Number(process.env.SOURCE_DATE_EPOCH);
+  if (!Number.isFinite(seconds) || process.env.SOURCE_DATE_EPOCH === undefined || process.env.SOURCE_DATE_EPOCH === '') {
+    try {
+      seconds = Number(execFileSync('git', ['log', '-1', '--format=%ct'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim());
+    } catch {
+      return undefined;
+    }
+  }
+  return Number.isInteger(seconds) && seconds > 0 ? seconds : undefined;
+}
+
+// The units of the document, in order. Each gets an anchor `p<N>`; the cover body is `p0`.
+interface Unit {
+  anchor: string;
+  entry?: Entry;
+  /** `cover`: the document's index page body; `section`: a whole-site divider. */
+  role: 'cover' | 'section' | 'page';
+  title: string;
+  sectionId?: string;
+  /** The page title's heading level, when not the document's `titleLevel`. */
+  level?: number;
+}
+const units: Unit[] = [];
+let next = 0;
+const add = (unit: Omit<Unit, 'anchor'>) => units.push({ ...unit, anchor: `p${next++}` });
+
+let title: string;
+let summary: string | undefined;
+if (isSite) {
+  title = printRouteOptions.siteTitle;
+  summary = printRouteOptions.siteDescription;
+  const root = entries.find((entry) => entry.slug === '');
+  add({ role: 'cover', entry: root, title });
+  const order = siteSections(
+    sectionOrder(registry),
+    entries.map((entry) => entry.slug),
+    options,
+  );
+  // A page at the top level, outside any folder, prints as a page right after the cover,
+  // at the section level (h2): it sits in no section, and an h3 there would skip a level.
+  for (const slug of order.loose) {
+    const page = entries.find((entry) => entry.slug === slug);
+    if (page && !options.excludeKinds.includes(page.data.kind ?? '')) add({ role: 'page', entry: page, title: page.data.title, level: 2 });
+  }
+  for (const id of [...order.main, ...order.unregistered, ...order.appendix]) {
+    const { index, pages } = sectionPages(entries, id, options.excludeKinds);
+    if (!index && pages.length === 0) continue;
+    add({ role: 'section', entry: index, title: labelOf(id), sectionId: id });
+    for (const page of pages) add({ role: 'page', entry: page, title: page.data.title });
+  }
+} else {
+  const { index, pages } = sectionPages(entries, name, options.excludeKinds);
+  title = labelOf(name);
+  summary = purposes[name] ?? index?.data.description;
+  add({ role: 'cover', entry: index, title });
+  for (const page of pages) add({ role: 'page', entry: page, title: page.data.title });
+}
+
+const pageCount = units.filter((unit) => unit.role === 'page').length;
+const titleLevel = isSite ? 3 : 2;
+const pageAnchors = new Map<string, string>(
+  units
+    .filter((unit) => unit.entry)
+    .map((unit) => [hrefOfSlug(unit.entry!.slug).replace(/\/?$/, '/'), unit.anchor]),
+);
+const pathOf = (unit: Unit) => (unit.entry ? hrefOfSlug(unit.entry.slug).replace(/\/?$/, '/') : undefined);
+const origin = (Astro.site?.origin ?? '').replace(/\/$/, '');
+const rendered = await Promise.all(units.map(async (unit) => (unit.entry ? (await render(unit.entry.raw)).Content : undefined)));
+// The table of contents: pages, nested under their section in the whole-site document.
+const contents: Array<{ anchor: string; title: string; pages?: Array<{ anchor: string; title: string }> }> = [];
+for (const unit of units) {
+  if (unit.role === 'section') contents.push({ anchor: unit.anchor, title: unit.title, pages: [] });
+  else if (unit.role === 'page') {
+    const row = { anchor: unit.anchor, title: unit.title };
+    const section = isSite ? contents[contents.length - 1] : undefined;
+    if (section?.pages) section.pages.push(row);
+    else contents.push(row);
+  }
+}
+const epoch = buildEpoch();
+const date = epoch === undefined ? undefined : new Date(epoch * 1000).toISOString().slice(0, 10);
+---
+
+<StarlightPage
+  frontmatter={{
+    title,
+    description: summary ?? `${title}, as one printable document.`,
+    doc_status: 'active',
+    pagefind: false,
+    tableOfContents: false,
+    prev: false,
+    next: false,
+    head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex' } }],
+  }}
+>
+  <div
+    class="dk-print-document"
+    data-dk-print-name={name}
+    data-dk-print-title={title}
+    data-dk-print-pages={String(pageCount)}
+    data-dk-print-epoch={epoch === undefined ? undefined : String(epoch)}
+    data-dk-print-title-level={String(titleLevel)}
+    data-dk-print-titles={JSON.stringify(units.filter((unit) => unit.role === 'page').map((unit) => unit.title))}
+  >
+    {
+      units.map((unit, i) => {
+        const Content = rendered[i];
+        if (unit.role === 'cover') {
+          return (
+            <PrintCover siteTitle={printRouteOptions.siteTitle} summary={summary} buildDate={date} contents={contents}>
+              {Content && (
+                <PrintPage anchor={unit.anchor} pageAnchors={pageAnchors} origin={origin} demote={isSite ? 3 : 2} floor={titleLevel + 1} class="dk-print-cover__body" pagePath={pathOf(unit)}>
+                  <Content />
+                </PrintPage>
+              )}
+            </PrintCover>
+          );
+        }
+        if (unit.role === 'section') {
+          return (
+            <PrintPage
+              anchor={unit.anchor}
+              pageAnchors={pageAnchors}
+              origin={origin}
+              demote={3}
+              floor={titleLevel + 1}
+              pagePath={pathOf(unit)}
+              hero={{ title: unit.title, level: 2 }}
+              class="dk-print-section"
+            >
+              {Content && <Content />}
+            </PrintPage>
+          );
+        }
+        return (
+          <PrintPage
+            anchor={unit.anchor}
+            pageAnchors={pageAnchors}
+            origin={origin}
+            demote={(unit.level ?? titleLevel) - 1}
+            floor={(unit.level ?? titleLevel) + 1}
+            pagePath={pathOf(unit)}
+            hero={{ title: unit.title, level: unit.level ?? titleLevel, docStatus: unit.entry?.data.doc_status, updated: unit.entry?.data.updated }}
+          >
+            {Content && <Content />}
+          </PrintPage>
+        );
+      })
+    }
+  </div>
+</StarlightPage>

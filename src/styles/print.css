@@ -1,0 +1,187 @@
+/*
+ * DocKitty print layer (#378, ADR-0081): what a page looks like on paper.
+ *
+ * `print.client.ts` imports this sheet, and `PageTitle.astro` loads that script, so it
+ * reaches every in-frame page (the print routes included) and never the out-of-frame
+ * deck route, whose print rules live in `dk-reveal-theme.css`. The sheet follows the
+ * module graph like `disclosure.css`, so no `.css` file joins the global list.
+ *
+ * Starlight already prints its own variables light; doc-kitty's `--dk-* → --sl-*`
+ * bridge overrides that. Light printing therefore comes from two places: the
+ * `beforeprint` hook in `print.client.ts` (sets `data-theme="light"`), and the
+ * generated `virtual:doc-kitty/print-tokens.css` fallback for a print that fires no
+ * event. Neither restates a colour here.
+ *
+ * A theme overrides any rule below by loading a later sheet (`customCss`). Paper size:
+ * restate `@page { size: Letter; }`. Link URLs after external links: turn them off with
+ * `.sl-markdown-content a::after { content: none; }` inside `@media print`.
+ */
+
+@page {
+  size: A4;
+  margin: 18mm 16mm;
+}
+
+/* ---- The print control on screen (#379; hidden on paper below) ---------- */
+.dk-print-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dk-space-xs);
+  margin-block: var(--dk-space-sm);
+}
+
+.dk-print-control__print,
+.dk-print-control__download {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  min-inline-size: 24px;
+  padding: var(--dk-space-2xs) var(--dk-space-sm);
+  /* The muted text colour keeps the control's edge at 3:1 or more on the page (WCAG 1.4.11). */
+  border: 1px solid var(--dk-color-text-muted);
+  border-radius: var(--dk-radius-sm);
+  background: var(--dk-color-surface-1);
+  color: var(--dk-color-text-strong);
+  font: inherit;
+  font-size: var(--dk-text-sm);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The link keeps the usual link cue, so it does not read as a second button. */
+.dk-print-control__download {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.dk-print-control__print:hover,
+.dk-print-control__download:hover {
+  background: var(--dk-color-surface-2);
+}
+
+.dk-print-control__print:focus-visible,
+.dk-print-control__download:focus-visible {
+  outline: 2px solid var(--dk-color-accent);
+  outline-offset: 2px;
+}
+
+@media print {
+  /* ---- Screen chrome (FR-001) ------------------------------------------- */
+  .page > header.header,
+  .sidebar,
+  starlight-menu-button,
+  .right-sidebar-container,
+  site-search,
+  starlight-theme-select,
+  .pagination-links,
+  a[href='#_top'].sl-skip-link,
+  .sl-skip-link,
+  .dk-lightbox__trigger,
+  dialog.dk-lightbox,
+  .expressive-code .copy,
+  .dk-machine-links,
+  .dk-page-formats,
+  .dk-print-control,
+  .dk-hub__aux {
+    display: none !important;
+  }
+
+  /* ---- Surfaces and width (FR-005) -------------------------------------- */
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .page > .main-frame {
+    padding-top: 0;
+    padding-inline-start: 0;
+  }
+
+  .main-pane,
+  .content-panel > .sl-container,
+  .sl-container {
+    --sl-content-width: 100%;
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+
+  /* Fills print only where they carry meaning; the rest stay off to save ink. */
+  .starlight-aside,
+  .dk-callout,
+  .expressive-code,
+  .dk-diagram {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Diagrams fit the printable width and never outgrow one sheet (A4 less margins). */
+  .dk-diagram,
+  .sl-markdown-content .dk-diagram:has(> svg[data-diagram-type='JSON']) {
+    overflow: visible !important;
+  }
+
+  .dk-diagram svg,
+  .sl-markdown-content .dk-diagram > svg[data-diagram-type='JSON'] {
+    max-width: 100% !important;
+    max-height: 240mm;
+    height: auto;
+  }
+
+  /* ---- Page breaks (FR-006) ---------------------------------------------- */
+  .sl-markdown-content :is(h1, h2, h3, h4),
+  .dk-print-document :is(h1, h2, h3, h4) {
+    break-after: avoid;
+  }
+
+  figure,
+  .dk-diagram,
+  .starlight-aside,
+  .dk-callout,
+  .expressive-code,
+  tr {
+    break-inside: avoid;
+  }
+
+  .sl-markdown-content :is(p, li) {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Long code lines wrap instead of being cut at the page edge. */
+  .expressive-code pre,
+  .expressive-code code,
+  .sl-markdown-content pre {
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---- External link URLs (FR-007) --------------------------------------- */
+  /* `:where()` keeps this at (0,1,2), the specificity of the documented off-switch, so a
+     theme's later `.sl-markdown-content a::after { content: none }` wins. */
+  .sl-markdown-content a:where([href^='http']:not(:has(img)):not([data-dk-print-link]):not(.sl-anchor-link))::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+
+  /* ---- Tabs print every panel (FR-008a) ---------------------------------- */
+  starlight-tabs [role='tablist'] {
+    display: none;
+  }
+
+  starlight-tabs [role='tabpanel'],
+  starlight-tabs [role='tabpanel'][hidden] {
+    display: block !important;
+  }
+
+  /* ---- Print documents (/print/…, FR-014/FR-015) ------------------------- */
+  .dk-print-page,
+  .dk-print-section {
+    break-before: page;
+  }
+
+  .dk-print-cover {
+    break-after: page;
+  }
+}

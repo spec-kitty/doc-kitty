@@ -162,6 +162,24 @@ export function excludedLinkReason(folder) {
 }
 
 /**
+ * The PDF routes a build expects, from `dist/print/manifest.json` (ADR-0081): the PDFs
+ * are printed after the build, so a link to one is valid before its file exists. Only
+ * the names the manifest lists count; any other `/pdf/` link stays broken.
+ * @param {string} distDir
+ * @returns {Set<string>} routes like `/pdf/architecture.pdf`
+ */
+export function expectedPdfRoutes(distDir) {
+  const file = path.join(distDir, 'print', 'manifest.json');
+  if (!existsSync(file)) return new Set();
+  try {
+    const documents = JSON.parse(readFileSync(file, 'utf8')).documents ?? [];
+    return new Set(documents.map((doc) => `/pdf/${doc.name}.pdf`));
+  } catch {
+    return new Set();
+  }
+}
+
+/**
  * Walk every `.html` file in `distDir` and return every internal-href
  * failure. Pure given a built dist dir — no network, no build.
  *
@@ -174,6 +192,7 @@ export function excludedLinkReason(folder) {
  */
 export function findBrokenLinks(distDir, base, options = {}) {
   const excludedRoutes = options.excludedRoutes ?? new Map();
+  const pdfRoutes = expectedPdfRoutes(distDir);
   const failures = [];
   for (const relHtmlPath of walkHtmlFiles(distDir).sort()) {
     if (TEMPLATE_PAGE_RE.test(relHtmlPath)) continue;
@@ -206,7 +225,7 @@ export function findBrokenLinks(distDir, base, options = {}) {
         continue;
       }
 
-      if (!distFileExists(distDir, route)) {
+      if (!distFileExists(distDir, route) && !pdfRoutes.has(route)) {
         const folder = excludedRoutes.get(routeKey(route));
         failures.push({
           page: relHtmlPath,

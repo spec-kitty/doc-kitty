@@ -35,7 +35,13 @@ export const TOOLKIT_PATHS = ['src/index.ts', 'src/lib', 'src/components', 'src/
  */
 export const CHROME_DISTS = {
   'title-as-index': { sidebar: { titleIsIndex: true } },
-  unthemed: { theme: null },
+  // The unthemed dist also carries the print control (#379) and one section PDF
+  // (guides), so the a11y lane checks the control and its download link in both modes.
+  unthemed: {
+    theme: null,
+    printControl: true,
+    pdf: { sections: true, exclude: { sections: ['context', 'reference', 'adr', 'glossary'] } },
+  },
 };
 export const chromeDistPath = (name) => `example/dist-chrome-${name}`;
 
@@ -227,6 +233,27 @@ export function normaliseFooterAndHeadLinks(html, side) {
     .replace(HEAD_ALTERNATES, '')
     .replace(DK_CHROME_META, `$1${HEAD_MARKER}`)
     .replace(SITE_FOOTER_HOST, `</footer>${FOOTER_MARKER('machine-links')}${FOOTER_MARKER('page-formats')}`);
+}
+
+/**
+ * The print layer's hook (#378, `src/lib/print/print.client.ts`), which `PageTitle.astro`
+ * loads on every in-frame page after the goldens were captured. The bundler inlines it as
+ * one module script after the metadata band; its rules ride the disclosure `<style>`
+ * that `normaliseMetadataBlocks` already covers. Only an inline module script that
+ * carries the hook's own `data-dk-printing` marker matches, exactly once, so any other
+ * script, or a second copy, still fails the comparison.
+ */
+const PRINT_HOOK_SCRIPT = /<script type="module">[^<]*data-dk-printing[^<]*<\/script>/;
+
+/**
+ * Remove the print hook's inline script from an ACTUAL page. Throws when the page has
+ * none, so the normaliser cannot pass by matching nothing.
+ *
+ * @param {string} html
+ */
+export function normalisePrintHook(html) {
+  if (!PRINT_HOOK_SCRIPT.test(html)) throw new Error('normalisePrintHook: the actual page has no print hook script');
+  return html.replace(PRINT_HOOK_SCRIPT, '');
 }
 
 /**

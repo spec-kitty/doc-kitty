@@ -33,6 +33,8 @@ export interface ChromeOptionsInput {
   footer?: { machineEntryPoints?: false | { label: string } };
   pageFormats?: { atom?: boolean };
   repository?: RepositorySettings;
+  /** The "Print / Save as PDF" page control (ADR-0081, #379). Off by default. */
+  printControl?: boolean;
 }
 
 /** The options with their defaults applied. */
@@ -42,6 +44,7 @@ export interface ChromeOptions {
   footer: { machineEntryPoints: false | { label: string } };
   pageFormats: { atom: boolean };
   repository?: RepositorySettings;
+  printControl: boolean;
 }
 
 const DEFAULT_MACHINE_ENTRY_POINTS_LABEL = 'Machine-readable';
@@ -55,6 +58,7 @@ function withDefaults(input: ChromeOptionsInput): ChromeOptions {
     metadataBlocks: { collapsed: input.metadataBlocks?.collapsed ?? true },
     footer: { machineEntryPoints: input.footer?.machineEntryPoints ?? { label: DEFAULT_MACHINE_ENTRY_POINTS_LABEL } },
     pageFormats: { atom: input.pageFormats?.atom ?? true },
+    printControl: input.printControl ?? false,
     ...(input.repository ? { repository: input.repository } : {}),
   };
 }
@@ -94,7 +98,8 @@ function assertNonEmpty(value: unknown, key: string): void {
  * return the input. The `sidebar` keys are checked where that option is split.
  */
 export function validateChromeOptions(input: ChromeOptionsInput): ChromeOptionsInput {
-  const { metadataBlocks, footer, pageFormats, repository } = input;
+  const { metadataBlocks, footer, pageFormats, repository, printControl } = input;
+  assertBoolean(printControl, 'printControl');
   if (metadataBlocks !== undefined) {
     assertObject(metadataBlocks, 'metadataBlocks', ['collapsed']);
     assertBoolean(metadataBlocks.collapsed, 'metadataBlocks.collapsed');

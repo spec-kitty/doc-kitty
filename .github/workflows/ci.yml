@@ -493,6 +493,55 @@ jobs:
           path: test-results
           retention-days: 7
 
+  # --- Lane: pdf — print the section and whole-site PDFs (ADR-0081, #396). ------
+  # ADVISORY: this job is deliberately NOT in ci-ok's `needs` nor in REQUIRED_LANES
+  # (.github/scripts/ci-ok-decision.mjs), so a red run here never blocks a merge.
+  # Joining ci-ok is a maintainers' decision once the lane has been green for a
+  # while (ADR-0081 §6). Path-scoped like a11y (ADR-0007): it runs when build-example
+  # runs, so a change to this repo's own docs/ alone never triggers it. It consumes
+  # the DRAFTS-OFF dist build-example already uploads (the build the deploy
+  # publishes) and runs no second site build; Chromium comes from the same pinned
+  # Playwright container as the a11y lane. Steps: print, gate, determinism. The lane
+  # reads built output only and never runs a generated-section producer (#359).
+  pdf:
+    needs: [detect-changes, build-example]
+    if: needs.detect-changes.outputs.run_build_example == 'true'
+    runs-on: ubuntu-latest
+    # A hung Chromium must not hold a runner: the example's PDFs take seconds.
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Enable corepack
+        run: corepack enable
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+      - name: Download drafts-off dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: example-dist-nodrafts
+          path: example/dist-nodrafts
+      # Both PDF dates are pinned to this commit's time, so the PDFs are a function of
+      # the commit (the container's checkout needs the workspace marked safe for git).
+      - name: Pin the PDF dates to the commit
+        run: echo "SOURCE_DATE_EPOCH=$(git -c safe.directory='*' log -1 --format=%ct)" >> "$GITHUB_ENV"
+      - name: Print the PDFs
+        run: node src/scripts/dockitty-pdf.mjs --dist example/dist-nodrafts --base /doc-kitty
+      - name: Assert the PDFs (count, tagging, language, outline)
+        run: node src/scripts/assert-pdf-artifacts.mjs example/dist-nodrafts
+      - name: Assert two prints are byte-identical
+        run: node src/scripts/assert-pdf-determinism.mjs example/dist-nodrafts --base /doc-kitty
+      - name: Upload the PDFs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: example-pdf
+          path: example/dist-nodrafts/pdf
+          retention-days: 7
+          if-no-files-found: ignore
+
   # --- Gate: ci-ok — the single required status check (FR-012, C-005). --------
   # Job id MUST stay exactly `ci-ok` (branch protection references this string).
   # All FIVE lanes (code-quality, doc-sanity, build-example, a11y, plantuml-allowlist) are gated by the

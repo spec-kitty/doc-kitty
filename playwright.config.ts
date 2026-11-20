@@ -68,9 +68,11 @@ const PUBLISHED_LANE = {
 // only makes sense there.
 const FIXTURE_SMOKE_SPEC = 'chrome-fixture-dists.spec.ts';
 const TITLE_AS_INDEX_SPEC = 'sidebar-title-as-index.spec.ts';
-const EXAMPLE_LANE = { testIgnore: [FIXTURE_SMOKE_SPEC, TITLE_AS_INDEX_SPEC] };
+// The print control (#379) is on in the unthemed fixture dist only.
+const PRINT_CONTROL_SPEC = 'print-control.spec.ts';
+const EXAMPLE_LANE = { testIgnore: [FIXTURE_SMOKE_SPEC, TITLE_AS_INDEX_SPEC, PRINT_CONTROL_SPEC] };
 const UNTHEMED_LANE = {
-  testMatch: [FIXTURE_SMOKE_SPEC, 'metadata-blocks.spec.ts', 'footer-links.spec.ts'],
+  testMatch: [FIXTURE_SMOKE_SPEC, 'metadata-blocks.spec.ts', 'footer-links.spec.ts', PRINT_CONTROL_SPEC],
   grep: /axe|fixture dist/i,
 };
 

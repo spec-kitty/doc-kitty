@@ -31,12 +31,18 @@
 import type { AstroIntegration } from 'astro';
 import { createBuildState, type BuildState } from './build-state.js';
 import { chromeOptions } from './chrome-options.js';
-import { emitTokenSheet, type ResolvedTheme } from './theme.js';
+import { emitPrintTokenSheet, emitTokenSheet, type ResolvedTheme } from './theme.js';
 
 /** The generated JS manifest module the carriers import from. */
 export const MANIFEST_MODULE_ID = 'virtual:doc-kitty/manifest';
 /** The generated token-sheet CSS module `config.ts` layers into `customCss`. */
 export const THEME_CSS_MODULE_ID = 'virtual:doc-kitty/theme.css';
+/**
+ * The generated print-token fallback (`emitPrintTokenSheet`, #386). Imported by
+ * `print/print.client.ts`, so it rides the same module graph as `print.css`; served on
+ * the themed AND the no-theme path (the Default catalog is a resolved theme too).
+ */
+export const PRINT_TOKENS_CSS_MODULE_ID = 'virtual:doc-kitty/print-tokens.css';
 
 /**
  * An Astro layout component the carrier renders around the content slot — the
@@ -191,6 +197,8 @@ export function docKittyManifest(resolved: ResolvedTheme, state: BuildState = cr
   const themeCss = emitTokenSheet(resolved);
   const RESOLVED_MANIFEST = `\0${MANIFEST_MODULE_ID}`;
   const isThemeCss = (id: string): boolean => id.split('?')[0] === THEME_CSS_MODULE_ID;
+  const printTokensCss = emitPrintTokenSheet(resolved);
+  const isPrintTokensCss = (id: string): boolean => id.split('?')[0] === PRINT_TOKENS_CSS_MODULE_ID;
 
   // A minimal Vite plugin; its shape is checked structurally against Vite's
   // `PluginOption` at the `updateConfig({ vite })` call below (no `vite` type
@@ -203,7 +211,7 @@ export function docKittyManifest(resolved: ResolvedTheme, state: BuildState = cr
       // CSS sheet: keep the `.css` id (un-prefixed) so Vite treats it as CSS.
       // Any query suffix (`?inline`, `?direct`, …) still names the sheet; keep it
       // on the id so Vite applies the query's own handling in `astro dev`.
-      if (isThemeCss(id)) return id;
+      if (isThemeCss(id) || isPrintTokensCss(id)) return id;
       return null;
     },
     load(id: string): string | null {
@@ -211,6 +219,7 @@ export function docKittyManifest(resolved: ResolvedTheme, state: BuildState = cr
       // after every `astro:config:setup` (see `integrations/sidebar-icons.ts`).
       if (id === RESOLVED_MANIFEST) return generateManifestSource(resolved, { customSidebar: usesCustomSidebar(state) });
       if (isThemeCss(id)) return themeCss;
+      if (isPrintTokensCss(id)) return printTokensCss;
       return null;
     },
   };

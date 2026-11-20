@@ -1055,6 +1055,35 @@ A generated page shows no source link, because its file isn't what an author
 edits. The edit link for generated pages is tracked in
 [#150](https://github.com/spec-kitty/doc-kitty/issues/150).
 
+### Print control
+
+Every page already prints cleanly, with no option. `printControl: true` adds a
+**Print / Save as PDF** button to each page. When the page's section has its own
+PDF, a **Download section PDF** link follows the button. It is off by default.
+
+```ts
+printControl: true,
+```
+
+## Optional: Print documents and PDFs
+
+Sections can opt into PDFs, and the whole site can too. The PDFs are printed
+from the built site by `dockitty-pdf`. A section opts in with `pdf: true` in
+`sections.yaml`, and the site sets defaults here. All of it is off by default.
+
+```ts
+pdf: {
+  sections: false,   // the default for a section that authors no `pdf` key
+  site: true,        // the whole-site PDF, /pdf/site.pdf
+  exclude: { sections: ['changelog'], kinds: ['Persona'] },   // on top of decks, always out
+},
+```
+
+See [Printing and PDF](./printing-and-pdf.md) for the section key, the print
+routes, the commands and CI, and
+[ADR-0081](../adr/0081-print-and-pdf-output-from-built-html-via-chromium.md) for
+the decision.
+
 ## Optional: Diagrams
 
 The `diagrams` option decides whether ```` ```mermaid ```` and ```` ```plantuml ````
@@ -1905,11 +1934,11 @@ gherkin: {
 
 ## Internal environment names
 
-DocKitty passes eleven settings between its own parts through environment
+DocKitty passes twelve settings between its own parts through environment
 variables: `DK_INDEX_BASENAME`, `DK_GHERKIN_RESULTS`, `DK_GHERKIN_ROUTE`,
 `DK_PUBLISH_DRAFTS_RESOLVED`, `DK_DOCS_ROOT`, `DK_MARKUA`, `DK_EXCLUDE`,
-`DK_OPENAPI`, `DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED`, `DK_CHROME_OPTIONS` and
-`DK_SERVED_SURFACES`. DocKitty sets these for its own
+`DK_OPENAPI`, `DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED`, `DK_CHROME_OPTIONS`,
+`DK_SERVED_SURFACES` and `DK_PDF_OPTIONS`. DocKitty sets these for its own
 use; never set them by hand. DocKitty clears any value you set when the config loads.
 Set the matching option on `defineDocKittyIntegrations` instead.
 ([ADR-0057](../adr/0057-internal-env-handoff-seam.md) explains the design.)
