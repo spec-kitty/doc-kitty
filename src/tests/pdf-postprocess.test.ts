@@ -124,7 +124,18 @@ describe('the PDF gate', () => {
     expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf(), 'x.pdf': fakePdf() }, [doc]))[0]).toMatch(/unexpected x\.pdf/);
     expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf({ lang: 'nl' }) }, [doc]))[0]).toMatch(/\/Lang is "nl"/);
     expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf() }, [{ ...doc, titles: ['Other'] }]))[0]).toMatch(/outline does not list/);
-    expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf() }, [{ ...doc, pages: 0, titles: [] }]))[0]).toMatch(/printed no page/);
+    expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf() }, [{ ...doc, pages: Number.NaN, titles: [] }]))[0]).toMatch(/no page count/);
+  });
+
+  it('finds a whole-site top-level page one outline level up, beside the section dividers', () => {
+    // The fake outline is Architecture > Overview: in a whole-site document (page titles
+    // at level 3), "Overview" is a page outside any folder, printed at h2.
+    const site = { ...doc, name: 'site', route: '/print/', titleLevel: 3 };
+    expect(checkPdfs(distWith({ 'site.pdf': fakePdf() }, [site]))).toEqual([]);
+  });
+
+  it('accepts a cover-only document: a section with no page besides its index', () => {
+    expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf() }, [{ ...doc, pages: 0, titles: [] }]))).toEqual([]);
   });
 
   it('matches titles in order, gaps allowed', () => {

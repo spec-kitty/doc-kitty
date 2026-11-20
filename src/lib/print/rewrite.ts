@@ -42,6 +42,31 @@ const LEVEL_CLASS = /\blevel-h([1-6])\b/g;
 /** An element that is a heading by ARIA (`role="heading" aria-level="N"`), e.g. a Markua aside's. */
 const ARIA_HEADING_TAG = /<[a-zA-Z][^<>]*\brole="heading"[^<>]*>/g;
 
+/** The highest (smallest) heading level in the fragment, tags and ARIA headings both; 6 when none. */
+function topLevel(html: string): number {
+  let top = 6;
+  for (const m of html.matchAll(/<h([1-6])(?=[\s>])/g)) top = Math.min(top, Number(m[1]));
+  for (const tag of html.match(ARIA_HEADING_TAG) ?? []) {
+    const level = /\baria-level="([1-6])"/.exec(tag);
+    if (level) top = Math.min(top, Number(level[1]));
+  }
+  return top;
+}
+
+/** A start tag. Text and code samples (where `<` is escaped) never match. */
+const START_TAG = /<[a-zA-Z][^<>]*>/g;
+/** Apply `fn` to every start tag only, so text that shows markup is left alone. */
+const inTags = (html: string, fn: (tag: string) => string): string => html.replace(START_TAG, fn);
+
+/** Decode a percent-encoded fragment (remark encodes non-ASCII ones); keep it when malformed. */
+function decodeFragment(fragment: string): string {
+  try {
+    return decodeURIComponent(fragment);
+  } catch {
+    return fragment;
+  }
+}
+
 const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** Normalise a route path for lookup: decode, and end in exactly one slash. */
@@ -59,17 +84,24 @@ function routeKey(pathname: string): string {
 export function rewritePage(html: string, options: RewriteOptions): string {
   const { prefix, pageAnchors, origin, demote, pagePath, floor = 1 } = options;
   const ids = new Set<string>();
-  for (const match of html.matchAll(ID_ATTR)) ids.add(match[2]);
-  const local = (id: string): string => (ids.has(id) ? `${prefix}-${id}` : id);
+  for (const tag of html.match(START_TAG) ?? []) for (const match of tag.matchAll(ID_ATTR)) ids.add(match[2]);
+  const local = (id: string): string => {
+    if (ids.has(id)) return `${prefix}-${id}`;
+    const decoded = decodeFragment(id);
+    return ids.has(decoded) ? `${prefix}-${decoded}` : id;
+  };
 
-  let out = html.replace(ID_ATTR, (_m, space: string, id: string) => `${space}id="${prefix}-${id}"`);
-  out = out.replace(ID_LIST_ATTR, (_m, attr: string, list: string) => `${attr}="${list.split(/\s+/).map(local).join(' ')}"`);
-  out = out.replace(FRAGMENT_HREF, (_m, attr: string, id: string) => `${attr}="#${local(id)}"`);
+  let out = inTags(html, (tag) =>
+    tag
+      .replace(ID_ATTR, (_m, space: string, id: string) => `${space}id="${prefix}-${id}"`)
+      .replace(ID_LIST_ATTR, (_m, attr: string, list: string) => `${attr}="${list.split(/\s+/).map(local).join(' ')}"`)
+      .replace(FRAGMENT_HREF, (_m, attr: string, id: string) => `${attr}="#${local(id)}"`),
+  );
   // `url(#…)` only in attribute values (SVG `marker-end`, `fill`, inline `style`) and in
   // `<style>` blocks (below), never in text, so a code sample that shows one is untouched.
   const urlRefs = (text: string): string =>
     text.replace(URL_REF, (_m, quote: string, id: string) => `url(${quote}#${local(id)}${quote})`);
-  out = out.replace(/(<[a-zA-Z][^<>]*>)/g, (tag: string) => tag.replace(/="([^"]*)"/g, (_m, value: string) => `="${urlRefs(value)}"`));
+  out = inTags(out, (tag: string) => tag.replace(/="([^"]*)"/g, (_m, value: string) => `="${urlRefs(value)}"`));
 
   // `#id` selectors in a page's own `<style>` blocks, for ids this page defines only.
   if (ids.size > 0) {
@@ -93,7 +125,7 @@ export function rewritePage(html: string, options: RewriteOptions): string {
   out = out.replace(ROOT_LINK, (_m, head: string, href: string) => {
     const hash = href.indexOf('#');
     const pathPart = hash === -1 ? href : href.slice(0, hash);
-    const fragment = hash === -1 ? '' : href.slice(hash + 1);
+    const fragment = hash === -1 ? '' : decodeFragment(href.slice(hash + 1));
     const anchor = pageAnchors.get(routeKey(pathPart.split('?')[0]));
     const target = anchor ? `#${fragment ? `${anchor}-${fragment}` : anchor}` : `${origin}${href}`;
     return `${head}href="${target}" data-dk-print-link`;
@@ -101,9 +133,11 @@ export function rewritePage(html: string, options: RewriteOptions): string {
 
   if (demote > 0 || floor > 1) {
     // A content `<h1>` (a Markua part title, say) must not land on the page-title level.
-    const shift = (level: string): number => Math.min(6, Math.max(Number(level) + demote, floor));
+    // The whole page moves by one offset, so its levels keep their order and skip none.
+    const offset = Math.max(demote, floor - topLevel(out));
+    const shift = (level: string): number => Math.min(6, Number(level) + offset);
     out = out.replace(HEADING_TAG, (_m, close: string, level: string) => `<${close}h${shift(level)}`);
-    out = out.replace(LEVEL_CLASS, (_m, level: string) => `level-h${shift(level)}`);
+    out = inTags(out, (tag) => tag.replace(LEVEL_CLASS, (_m, level: string) => `level-h${shift(level)}`));
     // The PDF outline counts these as headings too.
     out = out.replace(ARIA_HEADING_TAG, (tag: string) =>
       tag.replace(/\baria-level="([1-6])"/, (_m, level: string) => `aria-level="${shift(level)}"`),

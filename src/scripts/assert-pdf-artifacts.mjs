@@ -14,7 +14,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { inspectPdf, outlineAt } from './pdf-inspect.mjs';
+import { inspectPdf } from './pdf-inspect.mjs';
 
 /** Is `wanted` a subsequence of `items` (in order, gaps allowed)? */
 export function inOrder(items, wanted) {
@@ -51,7 +51,7 @@ export function checkPdfs(distDir, ok = () => {}) {
       continue;
     }
     const before = failures.length;
-    if (!(doc.pages >= 1)) failures.push(`${where}: the document printed no page (manifest pages: ${doc.pages})`);
+    if (!Number.isInteger(doc.pages) || doc.pages < 0) failures.push(`${where}: the manifest gives no page count (pages: ${doc.pages})`);
     if (info.pages < 1) failures.push(`${where}: no page`);
     if (!info.structTreeRoot) failures.push(`${where}: not tagged (no /StructTreeRoot)`);
     if (!info.markInfo) failures.push(`${where}: not tagged (no /MarkInfo /Marked true)`);
@@ -61,7 +61,11 @@ export function checkPdfs(distDir, ok = () => {}) {
     // Chromium builds a bookmark title from the laid-out heading text, so a title that
     // wraps can lose the space at the line break: compare without whitespace.
     const squash = (text) => text.replace(/\s+/g, '');
-    const level = outlineAt(info.outline, doc.titleLevel).map((node) => squash(node.title));
+    // Page titles sit at `titleLevel`; a top-level page of the whole-site document sits
+    // one up, beside the section dividers. Read the outline in order over those depths.
+    const flatten = (nodes, depth) =>
+      nodes.flatMap((node) => [...(depth >= 2 ? [node] : []), ...(depth < doc.titleLevel ? flatten(node.children, depth + 1) : [])]);
+    const level = flatten(info.outline, 1).map((node) => squash(node.title));
     if (!inOrder(level, titles.map(squash))) {
       failures.push(`${where}: the outline does not list the ${titles.length} page title(s) in order at level ${doc.titleLevel}`);
     }

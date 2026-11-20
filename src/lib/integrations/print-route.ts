@@ -1,5 +1,5 @@
 /** The print-route integration (ADR-0081, #380). Imports nothing from `config.ts`. */
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,7 +10,7 @@ import { registerSitemapPredicate, unregisterSitemapPredicate } from '../openapi
 export const PRINT_ROUTE_MODULE_ID = 'virtual:doc-kitty/print-route';
 
 /** The injected route's entrypoint, a package export so a consuming site resolves it. */
-const PRINT_ROUTE_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/print-injected.astro';
+const PRINT_ROUTE_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/print-injected';
 
 /** The route pattern: `/print/` (whole site) and `/print/<section>/`. */
 export const PRINT_ROUTE_PATTERN = '/print/[...name]';
@@ -51,10 +51,14 @@ export function printSitemapPredicate(base: string): (page: string) => boolean {
   };
 }
 
-/** The error text when a docs folder already owns `/print/` (ADR-0050). */
+/**
+ * The error text when a docs folder already owns `/print/` (ADR-0050). Slugs are lower
+ * case, so `Print/` or `PRINT.md` claims the route as well.
+ */
 export function printCollisionMessage(docsRoot: string): string | undefined {
-  for (const candidate of ['print', 'print.md', 'print.mdx']) {
-    if (existsSync(path.join(docsRoot, candidate))) {
+  if (!existsSync(docsRoot)) return undefined;
+  for (const candidate of readdirSync(docsRoot)) {
+    if (['print', 'print.md', 'print.mdx'].includes(candidate.toLowerCase())) {
       return (
         `[dk-config] the docs tree has "${candidate}", but /print/ is reserved for the print documents ` +
         `(ADR-0081); rename it, or turn the PDFs off`

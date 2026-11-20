@@ -55,9 +55,28 @@ describe('rewritePage', () => {
     expect(out).toBe('<p role="heading" aria-level="4">Sub</p><div aria-level="2">x</div>');
   });
 
-  it('never lets a heading rise above the floor', () => {
-    const out = rewritePage('<h1>Part</h1><h2>Section</h2>', { ...opts, demote: 1, floor: 3 });
-    expect(out).toBe('<h3>Part</h3><h3>Section</h3>');
+  it('never lets a heading rise above the floor, and keeps the levels apart', () => {
+    const out = rewritePage('<h1>Part</h1><h2>Section</h2><h3>Sub</h3>', { ...opts, demote: 1, floor: 3 });
+    expect(out).toBe('<h3>Part</h3><h4>Section</h4><h5>Sub</h5>');
+  });
+
+  it('skips no level: each heading sits at most one below the one before it', () => {
+    const out = rewritePage('<h1>A</h1><h2>B</h2><h3>C</h3><h2>D</h2>', { ...opts, demote: 2, floor: 4 });
+    const levels = [...out.matchAll(/<h([1-6])>/g)].map((m) => Number(m[1]));
+    expect(levels).toEqual([4, 5, 6, 5]);
+    for (let i = 1; i < levels.length; i += 1) expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1);
+  });
+
+  it('leaves markup shown as text alone, ids, links and classes alike', () => {
+    const html = '<h2 id="x">X</h2><p><code>&#x3C;a id="x" href="#x" class="level-h2"></code></p>';
+    const out = rewritePage(html, { ...opts, demote: 1 });
+    expect(out).toContain('<h3 id="p1-x">X</h3>');
+    expect(out).toContain('<code>&#x3C;a id="x" href="#x" class="level-h2"></code>');
+  });
+
+  it('matches a percent-encoded fragment to its non-ASCII heading id', () => {
+    const out = rewritePage('<h2 id="café">C</h2><a href="#caf%C3%A9">c</a>', { ...opts, demote: 0 });
+    expect(out).toContain('<a href="#p1-café">');
   });
 
   it('leaves text that merely contains a hash alone', () => {

@@ -141,20 +141,30 @@ async function loadChromium() {
 }
 
 /**
- * Runs in the page: is it light, as printed? The body background must be light and the
- * body text dark. A dark page here means the force-light step failed, and its PDF would
- * be the near-black print this command exists to prevent (#377).
+ * Runs in the page: is it light, as printed? The theme must be light, and the body
+ * text dark. The print layer forces a white page, so the background proves nothing; the
+ * text colour comes from the theme's tokens. Colours are resolved to sRGB through a
+ * canvas first, so `oklch()` or `color()` values compare like `rgb()` ones. A dark page
+ * here means the force-light step failed, and its PDF would be the near-black print this
+ * command exists to prevent (#377).
  */
 export function lightCheck() {
+  const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
   const luminance = (css) => {
-    const [r, g, b] = (css.match(/[\d.]+/g) ?? ['0', '0', '0']).map(Number);
+    context.clearRect(0, 0, 1, 1);
+    context.fillStyle = '#000';
+    context.fillStyle = css;
+    context.fillRect(0, 0, 1, 1);
+    const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   };
   const style = getComputedStyle(document.body);
+  const theme = document.documentElement.getAttribute('data-theme');
   return {
     background: style.backgroundColor,
     text: style.color,
-    light: luminance(style.backgroundColor) > 200 && luminance(style.color) < 120,
+    theme,
+    light: theme === 'light' && luminance(style.backgroundColor) > 200 && luminance(style.color) < 120,
   };
 }
 
@@ -170,6 +180,10 @@ async function printDocument(browser, origin, doc, timeout) {
       }
     });
     const page = await context.newPage();
+    // Print media from the start: the print layer shows every tab panel and opens every
+    // disclosure, so client-mode diagrams inside them are boxed, and drawn, on load.
+    // Under screen media they would be skipped and print as their Mermaid source.
+    await page.emulateMedia({ media: 'print', colorScheme: 'light' });
     const response = await page.goto(`${origin}${doc.route}`, { waitUntil: 'load', timeout });
     if (!response || !response.ok()) throw new Error(`${doc.route} answered ${response?.status() ?? 'nothing'}`);
     // Switch only when needed: setting the same value still notifies the diagram
@@ -181,7 +195,6 @@ async function printDocument(browser, origin, doc, timeout) {
       root.removeAttribute('data-dk-diagram-theme');
       root.setAttribute('data-theme', 'light');
     });
-    await page.emulateMedia({ media: 'print', colorScheme: 'light' });
     // Lazy images below the fold would print blank, or not, depending on timing: load
     // every image now and wait for each to decode (a broken one is not this command's
     // concern; the link gates own it).
@@ -204,7 +217,7 @@ async function printDocument(browser, origin, doc, timeout) {
     }
     const colours = await page.evaluate(lightCheck);
     if (!colours.light) {
-      throw new Error(`${doc.route}: the page is not light at print time (background ${colours.background}, text ${colours.text})`);
+      throw new Error(`${doc.route}: the page is not light at print time (theme ${colours.theme}, background ${colours.background}, text ${colours.text})`);
     }
     return await page.pdf({ tagged: true, outline: true, preferCSSPageSize: true, printBackground: false });
   } finally {

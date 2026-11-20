@@ -25,7 +25,7 @@ describe('printRouteIntegration', () => {
       updateConfig: () => {},
     } as never);
     expect(routes).toEqual([
-      { pattern: PRINT_ROUTE_PATTERN, entrypoint: '@spec-kitty/doc-toolkit/routes/print-injected.astro', prerender: true },
+      { pattern: PRINT_ROUTE_PATTERN, entrypoint: '@spec-kitty/doc-toolkit/routes/print-injected', prerender: true },
     ]);
     const filter = composeSitemapPredicates(() => true);
     expect(filter('https://x.org/doc-kitty/print/architecture/')).toBe(false);
@@ -54,8 +54,9 @@ describe('printRouteIntegration', () => {
 
   it('refuses a docs tree that owns /print/', () => {
     const root = docsRoot();
-    mkdirSync(path.join(root, 'print'));
-    expect(printCollisionMessage(root)).toMatch(/\/print\/ is reserved/);
+    expect(printCollisionMessage(root)).toBeUndefined();
+    mkdirSync(path.join(root, 'Print'));
+    expect(printCollisionMessage(root), 'slugs are lower case').toMatch(/"Print".*\/print\/ is reserved/);
     expect(() => printRouteIntegrations({ ...base, docsRoot: root, enabled: true })).toThrow(/reserved/);
     // A site without PDFs keeps its folder.
     expect(() => printRouteIntegrations({ ...base, docsRoot: root, enabled: false })).not.toThrow();

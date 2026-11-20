@@ -28,7 +28,8 @@ export type ServedSurfaces = Record<keyof typeof SURFACE_ROUTES, boolean> & {
    * The PDFs the site publishes at `/pdf/<name>.pdf` (ADR-0081): each section with its
    * own PDF, then `site` for the whole-site PDF. Unlike the rest, this comes from the
    * resolved `pdf` settings, not from the routes: the PDFs are printed after the build,
-   * so nothing in the build serves them yet.
+   * so nothing in the build serves them yet. Empty without `site`: no print route is
+   * built then, so no PDF is printed.
    */
   pdf: string[];
 };
@@ -49,7 +50,7 @@ export function detectServedSurfaces(
   const detected = Object.fromEntries(
     Object.entries(SURFACE_ROUTES).map(([surface, pattern]) => [surface, routes.has(pattern)]),
   ) as Record<keyof typeof SURFACE_ROUTES, boolean>;
-  return { ...detected, sitemap: siteConfigured, okf: true, openapi, pdf: [...pdf] };
+  return { ...detected, sitemap: siteConfigured, okf: true, openapi, pdf: siteConfigured ? [...pdf] : [] };
 }
 
 let cached: { raw: string; surfaces: ServedSurfaces } | undefined;
