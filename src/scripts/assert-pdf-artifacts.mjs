@@ -94,9 +94,9 @@ if (isMain()) {
   const arg = process.argv[2];
   // The gate reads only a build inside the working directory: resolve the argument and
   // refuse anything that climbs out of it (`..`, another drive, an absolute path elsewhere).
-  const dist = arg ? path.resolve(process.cwd(), arg) : '';
-  const inside = dist !== '' && !path.relative(process.cwd(), dist).startsWith('..') && !path.isAbsolute(path.relative(process.cwd(), dist));
-  if (!inside || !existsSync(dist)) {
+  const cwd = path.resolve(process.cwd());
+  const dist = path.resolve(cwd, arg ?? '');
+  if (!arg || !(dist === cwd || dist.startsWith(cwd + path.sep)) || !existsSync(dist)) {
     process.stderr.write('usage: assert-pdf-artifacts <dist> (a directory inside the working directory)\n');
     process.exit(2);
   }
