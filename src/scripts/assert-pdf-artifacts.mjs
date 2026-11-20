@@ -29,12 +29,18 @@ export function inOrder(items, wanted) {
  */
 export function checkPdfs(distDir, ok = () => {}) {
   const failures = [];
-  const manifestPath = path.join(distDir, 'print', 'manifest.json');
+  const root = path.resolve(distDir);
+  const manifestPath = path.join(root, 'print', 'manifest.json');
   if (!existsSync(manifestPath)) return [`${manifestPath} is missing: no print documents were built`];
-  const documents = JSON.parse(readFileSync(manifestPath, 'utf8')).documents ?? [];
-  const pdfDir = path.join(distDir, 'pdf');
-  const present = existsSync(pdfDir) ? readdirSync(pdfDir).filter((f) => f.endsWith('.pdf')).sort() : [];
-  const expected = documents.map((doc) => `${doc.name}.pdf`).sort();
+  const listed = JSON.parse(readFileSync(manifestPath, 'utf8')).documents ?? [];
+  // A document name is a section id or `site`: never a path. Refuse anything else
+  // before it is joined into a file path.
+  const documents = listed.filter((doc) => typeof doc.name === 'string' && /^[\w-]+$/.test(doc.name));
+  for (const doc of listed.filter((d) => !documents.includes(d))) failures.push(`pdf: the manifest names ${JSON.stringify(doc.name)}, not a document name`);
+  const pdfDir = path.join(root, 'pdf');
+  const byName = (a, b) => a.localeCompare(b);
+  const present = existsSync(pdfDir) ? readdirSync(pdfDir).filter((f) => f.endsWith('.pdf')).sort(byName) : [];
+  const expected = documents.map((doc) => `${doc.name}.pdf`).sort(byName);
   const missing = expected.filter((f) => !present.includes(f));
   const extra = present.filter((f) => !expected.includes(f));
   if (missing.length) failures.push(`pdf: missing ${missing.join(', ')}`);

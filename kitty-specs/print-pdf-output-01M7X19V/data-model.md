@@ -41,11 +41,13 @@ Invariant: `sections` lists ids in registry order; `site` false ⇒ `appendix`/`
 {
   "version": 1,
   "documents": [
-    { "name": "architecture", "route": "/print/architecture/", "title": "Architecture", "lang": "en", "titleLevel": 2, "pages": 5, "titles": ["Content blocks demonstrator", "…"] },
+    { "name": "architecture", "route": "/print/architecture/", "title": "Architecture", "lang": "en", "titleLevel": 2, "pages": 5, "titles": ["Content blocks demonstrator", "…"], "sourceDateEpoch": 1795204319 },
     { "name": "site", "route": "/print/", "title": "DocKitty Example", "lang": "en", "titleLevel": 3, "pages": 55, "titles": ["…"] }
   ]
 }
 ```
+
+`sourceDateEpoch` is the build time the cover shows (`SOURCE_DATE_EPOCH`, else the last commit time); `dockitty-pdf` pins the PDF dates to it when `SOURCE_DATE_EPOCH` is unset, so it never runs git. Absent when neither was known.
 
 Invariant: one document per name in `ResolvedPdfOptions` (`sections` + `site` when true); `pages >= 0` (`0`: a section with no page besides its index prints its cover only).
 

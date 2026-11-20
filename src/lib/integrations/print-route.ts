@@ -34,6 +34,15 @@ export interface PrintManifestDocument {
   pages: number;
   /** The printed page titles, in order: the outline entries the PDF gate expects. */
   titles: string[];
+  /** The build time the cover shows and the PDF dates pin to, in seconds; absent when unknown. */
+  sourceDateEpoch?: number;
+}
+
+/** `base` without its trailing slashes (no regex: a `/+$` pattern backtracks). */
+function trimSlashes(base: string): string {
+  let end = base.length;
+  while (end > 0 && base[end - 1] === '/') end -= 1;
+  return base.slice(0, end);
 }
 
 /**
@@ -41,7 +50,7 @@ export interface PrintManifestDocument {
  * the sitemap already lists, and are `noindex`.
  */
 export function printSitemapPredicate(base: string): (page: string) => boolean {
-  const prefix = `${base.replace(/\/+$/, '')}/print/`;
+  const prefix = `${trimSlashes(base)}/print/`;
   return (page: string): boolean => {
     try {
       return !new URL(page).pathname.startsWith(prefix);
@@ -72,8 +81,13 @@ const ATTR = (name: string) => new RegExp(`${name}="([^"]*)"`);
 
 /** Read a built print page's document record from its root element and `<html lang>`. */
 export function readPrintDocument(html: string, route: string): PrintManifestDocument | undefined {
-  const root = html.match(/<[^>]*\bdata-dk-print-name="[^"]*"[^>]*>/)?.[0];
-  if (!root) return undefined;
+  // The start tag that carries `data-dk-print-name`, found by index, not by regex.
+  const at = html.indexOf(' data-dk-print-name="');
+  const open = at === -1 ? -1 : html.lastIndexOf('<', at);
+  const close = at === -1 ? -1 : html.indexOf('>', at);
+  if (open === -1 || close === -1) return undefined;
+  const root = html.slice(open, close + 1);
+  const epoch = root.match(ATTR('data-dk-print-epoch'))?.[1];
   const unescape = (text: string) =>
     text.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
   return {
@@ -84,6 +98,7 @@ export function readPrintDocument(html: string, route: string): PrintManifestDoc
     titleLevel: Number(root.match(ATTR('data-dk-print-title-level'))?.[1] ?? 2),
     pages: Number(root.match(ATTR('data-dk-print-pages'))?.[1] ?? 0),
     titles: JSON.parse(unescape(root.match(ATTR('data-dk-print-titles'))?.[1] ?? '[]')),
+    ...(epoch ? { sourceDateEpoch: Number(epoch) } : {}),
   };
 }
 
@@ -136,7 +151,7 @@ export function printRouteIntegrations(
       'astro:build:done': async ({ dir }) => {
         const printDir = path.join(fileURLToPath(dir), 'print');
         if (!existsSync(printDir)) return;
-        const base = options.base.replace(/\/+$/, '');
+        const base = trimSlashes(options.base);
         const documents: PrintManifestDocument[] = [];
         const candidates = [
           ['', path.join(printDir, 'index.html')],

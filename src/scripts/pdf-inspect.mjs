@@ -61,29 +61,38 @@ export function readXref(text) {
   return { offsets, trailer };
 }
 
+/** The index just past the literal string `( … )` opening at `open`, honouring escapes and nesting. */
+function skipLiteralString(text, open) {
+  let nest = 1;
+  let i = open + 1;
+  while (i < text.length && nest > 0) {
+    if (text[i] === '\\') i += 2;
+    else {
+      if (text[i] === '(') nest += 1;
+      else if (text[i] === ')') nest -= 1;
+      i += 1;
+    }
+  }
+  return i;
+}
+
 /** The balanced `<< … >>` dictionary text starting at `start`. */
 export function readDictAt(text, start) {
   if (start < 0 || !text.startsWith('<<', start)) throw new Error('malformed PDF: expected a dictionary');
   let depth = 0;
-  for (let i = start; i < text.length - 1; i++) {
+  let i = start;
+  while (i < text.length - 1) {
     if (text[i] === '(') {
-      // Skip a literal string, honouring escapes and nesting.
-      let nest = 1;
-      for (i += 1; i < text.length && nest > 0; i++) {
-        if (text[i] === '\\') i += 1;
-        else if (text[i] === '(') nest += 1;
-        else if (text[i] === ')') nest -= 1;
-      }
-      i -= 1;
-      continue;
-    }
-    if (text[i] === '<' && text[i + 1] === '<') {
+      i = skipLiteralString(text, i);
+    } else if (text[i] === '<' && text[i + 1] === '<') {
       depth += 1;
-      i += 1;
+      i += 2;
     } else if (text[i] === '>' && text[i + 1] === '>') {
       depth -= 1;
+      i += 2;
+      if (depth === 0) return text.slice(start, i);
+    } else {
       i += 1;
-      if (depth === 0) return text.slice(start, i + 1);
     }
   }
   throw new Error('malformed PDF: unterminated dictionary');
@@ -108,7 +117,7 @@ export function decodePdfString(token) {
   const out = body.replace(/\\([nrtbf()\\]|[0-7]{1,3}|\r?\n)/g, (_m, esc) => {
     const map = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', '(': '(', ')': ')', '\\': '\\' };
     if (esc in map) return map[esc];
-    if (/^[0-7]/.test(esc)) return String.fromCharCode(parseInt(esc, 8));
+    if (/^[0-7]/.test(esc)) return String.fromCharCode(Number.parseInt(esc, 8));
     return '';
   });
   if (out.charCodeAt(0) === 0xfe && out.charCodeAt(1) === 0xff) {

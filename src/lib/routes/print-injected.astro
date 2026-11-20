@@ -60,8 +60,12 @@ const entries: Entry[] = (await getCollection('docs'))
   // its placeholder links are not real targets (the link checkers skip it too).
   .filter((entry) => !excluded.has(entry.slug.split('/')[0]) && entry.data.type !== 'Template');
 
-/** The pinned build date: `SOURCE_DATE_EPOCH`, else the last commit time, else none. */
-function buildDate(): string | undefined {
+/**
+ * The pinned build time, in seconds: `SOURCE_DATE_EPOCH`, else the last commit time,
+ * else none. The cover prints its date, and the manifest carries it so `dockitty-pdf`
+ * pins the PDF dates to the same moment without running git itself.
+ */
+function buildEpoch(): number | undefined {
   let seconds = Number(process.env.SOURCE_DATE_EPOCH);
   if (!Number.isFinite(seconds) || process.env.SOURCE_DATE_EPOCH === undefined || process.env.SOURCE_DATE_EPOCH === '') {
     try {
@@ -70,7 +74,7 @@ function buildDate(): string | undefined {
       return undefined;
     }
   }
-  return Number.isFinite(seconds) && seconds > 0 ? new Date(seconds * 1000).toISOString().slice(0, 10) : undefined;
+  return Number.isInteger(seconds) && seconds > 0 ? seconds : undefined;
 }
 
 // The units of the document, in order. Each gets an anchor `p<N>`; the cover body is `p0`.
@@ -141,7 +145,8 @@ for (const unit of units) {
     else contents.push(row);
   }
 }
-const date = buildDate();
+const epoch = buildEpoch();
+const date = epoch === undefined ? undefined : new Date(epoch * 1000).toISOString().slice(0, 10);
 ---
 
 <StarlightPage
@@ -161,6 +166,7 @@ const date = buildDate();
     data-dk-print-name={name}
     data-dk-print-title={title}
     data-dk-print-pages={String(pageCount)}
+    data-dk-print-epoch={epoch === undefined ? undefined : String(epoch)}
     data-dk-print-title-level={String(titleLevel)}
     data-dk-print-titles={JSON.stringify(units.filter((unit) => unit.role === 'page').map((unit) => unit.title))}
   >

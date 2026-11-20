@@ -13,7 +13,7 @@ import { inspectPdf, outlineAt } from '../scripts/pdf-inspect.mjs';
 import { firstDifference, normaliseStructIds, objectAt, pdfDate, pdfString, pinPdf } from '../scripts/pdf-postprocess.mjs';
 import { checkPdfs, inOrder } from '../scripts/assert-pdf-artifacts.mjs';
 import { comparePdfDirs } from '../scripts/assert-pdf-determinism.mjs';
-import { parseArgs, sourceDateEpoch, UsageError } from '../scripts/dockitty-pdf.mjs';
+import { manifestEpoch, parseArgs, sourceDateEpoch, UsageError } from '../scripts/dockitty-pdf.mjs';
 
 /** A minimal Chromium-like PDF: `created` is the wall clock, `idBase` the DOM node counter. */
 function fakePdf({ created = "D:20261120175635+00'00'", idBase = 922, lang = 'en' } = {}) {
@@ -120,6 +120,7 @@ describe('the PDF gate', () => {
   });
 
   it('fails a missing, extra, wrong-language, untitled or empty document', () => {
+    expect(checkPdfs(distWith({}, [{ ...doc, name: '../escape' }]))[0], 'a name is never a path').toMatch(/not a document name/);
     expect(checkPdfs(distWith({}, [doc]))[0]).toMatch(/missing architecture\.pdf/);
     expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf(), 'x.pdf': fakePdf() }, [doc]))[0]).toMatch(/unexpected x\.pdf/);
     expect(checkPdfs(distWith({ 'architecture.pdf': fakePdf({ lang: 'nl' }) }, [doc]))[0]).toMatch(/\/Lang is "nl"/);
@@ -182,5 +183,16 @@ describe('dockitty-pdf arguments', () => {
   it('pins to SOURCE_DATE_EPOCH, and refuses a malformed one', () => {
     expect(sourceDateEpoch({ SOURCE_DATE_EPOCH: '1767225600' })).toBe(1767225600);
     expect(() => sourceDateEpoch({ SOURCE_DATE_EPOCH: 'yesterday' })).toThrow(UsageError);
+  });
+
+  it('falls back to the build time the manifest records, and runs no git', () => {
+    expect(sourceDateEpoch({}, 1767225600)).toBe(1767225600);
+    expect(sourceDateEpoch({ SOURCE_DATE_EPOCH: '5' }, 1767225600), 'the variable wins').toBe(5);
+    expect(() => sourceDateEpoch({}, undefined)).toThrow(/no date to pin/);
+    const dist = mkdtempSync(path.join(tmpdir(), 'dk-pdf-epoch-'));
+    mkdirSync(path.join(dist, 'print'));
+    writeFileSync(path.join(dist, 'print', 'manifest.json'), JSON.stringify({ version: 1, documents: [{ name: 'a', sourceDateEpoch: 42 }] }));
+    expect(manifestEpoch(dist)).toBe(42);
+    expect(manifestEpoch(path.join(dist, 'none'))).toBeUndefined();
   });
 });

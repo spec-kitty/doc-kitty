@@ -119,8 +119,14 @@ export function firstDifference(a, b) {
 /** The `N G obj` that holds byte `offset`, for a readable difference report. */
 export function objectAt(buf, offset) {
   const before = buf.subarray(0, offset + 1).toString('latin1');
-  const m = [...before.matchAll(/(\d+) (\d+) obj\b/g)].pop();
-  if (!m) return 'the file header';
-  const end = before.indexOf('endobj', m.index);
-  return end === -1 ? `${m[1]} ${m[2]} obj` : 'the space between objects (xref or trailer)';
+  // The last ` obj` keyword whose two preceding tokens are numbers (`N G obj`).
+  for (let at = before.lastIndexOf(' obj'); at !== -1; at = before.lastIndexOf(' obj', at - 1)) {
+    const tokens = before.slice(Math.max(0, at - 24), at).split(/\s/);
+    const [id, gen] = tokens.slice(-2);
+    if (tokens.length >= 2 && /^\d+$/.test(id) && /^\d+$/.test(gen)) {
+      return before.includes('endobj', at) ? 'the space between objects (xref or trailer)' : `${id} ${gen} obj`;
+    }
+    if (at === 0) break;
+  }
+  return 'the file header';
 }

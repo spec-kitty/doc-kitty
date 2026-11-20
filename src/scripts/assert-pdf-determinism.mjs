@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { UsageError, parseArgs, printPdfs, sourceDateEpoch } from './dockitty-pdf.mjs';
+import { UsageError, manifestEpoch, parseArgs, printPdfs, sourceDateEpoch } from './dockitty-pdf.mjs';
 import { firstDifference, objectAt } from './pdf-postprocess.mjs';
 
 /** Compare the PDFs of two output directories; returns difference messages. */
@@ -48,7 +48,7 @@ if (isMain()) {
   try {
     const [dist, ...rest] = process.argv.slice(2);
     options = parseArgs(['--dist', dist ?? '', ...rest]);
-    epochSeconds = sourceDateEpoch();
+    epochSeconds = sourceDateEpoch(process.env, manifestEpoch(options.dist));
   } catch (err) {
     process.stderr.write(`assert:pdf-determinism: ${err instanceof Error ? err.message : String(err)}\nusage: assert-pdf-determinism <dist> --base <path>\n`);
     process.exit(2);
