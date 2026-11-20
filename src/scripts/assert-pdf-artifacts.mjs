@@ -91,9 +91,13 @@ function isMain() {
 }
 
 if (isMain()) {
-  const dist = process.argv[2];
-  if (!dist || !existsSync(dist)) {
-    process.stderr.write('usage: assert-pdf-artifacts <dist>\n');
+  const arg = process.argv[2];
+  // The gate reads only a build inside the working directory: resolve the argument and
+  // refuse anything that climbs out of it (`..`, another drive, an absolute path elsewhere).
+  const dist = arg ? path.resolve(process.cwd(), arg) : '';
+  const inside = dist !== '' && !path.relative(process.cwd(), dist).startsWith('..') && !path.isAbsolute(path.relative(process.cwd(), dist));
+  if (!inside || !existsSync(dist)) {
+    process.stderr.write('usage: assert-pdf-artifacts <dist> (a directory inside the working directory)\n');
     process.exit(2);
   }
   const failures = checkPdfs(dist, (m) => process.stdout.write(`assert:pdf: ok — ${m}\n`));
@@ -102,5 +106,5 @@ if (isMain()) {
     for (const more of failures.slice(1)) process.stderr.write(`assert:pdf: also — ${more}\n`);
     process.exit(1);
   }
-  process.stdout.write(`assert:pdf: PASS — every PDF in ${dist}/pdf is present, tagged and outlined\n`);
+  process.stdout.write(`assert:pdf: PASS — every PDF in ${arg}/pdf is present, tagged and outlined\n`);
 }

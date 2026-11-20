@@ -198,8 +198,8 @@ when a print fails and `2` on a usage error or missing input.
 Each PDF is tagged and has a bookmark outline. The language comes from the site.
 The two PDF dates, `CreationDate` and `ModDate`, are pinned to `SOURCE_DATE_EPOCH`, or to the last commit time
 when that is unset, so two prints of one build are identical, byte for byte.
-`dockitty-assert-pdf-determinism dist --base /my-site` proves it. `dockitty-assert-pdf`
-checks that every expected PDF exists and is tagged, and that its outline lists
+`dockitty-assert-pdf-determinism dist --base /my-site` proves it. `dockitty-assert-pdf`,
+run from the site's directory on a `dist` inside it, checks that every expected PDF exists and is tagged, and that its outline lists
 every printed page. It does not check PDF/UA conformance.
 
 Diagram-heavy sections print best once their diagrams read well in light mode. Diagram contrast and label clipping are tracked in
