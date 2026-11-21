@@ -286,7 +286,10 @@ jobs:
           if [ -n "$dirty" ]; then
             echo "::error::install and build changed the working tree (#398):"
             echo "$dirty"
-            git diff --stat
+            # --summary names a mode flip (`mode change 100644 => 100755`), which
+            # --stat shows as 0 lines; the bounded diff shows a restamp's lines.
+            git diff --summary
+            git diff | head -200
             exit 1
           fi
       # Artifact assertions run HERE (not in the composite) so the PR gate asserts
