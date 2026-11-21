@@ -277,6 +277,18 @@ jobs:
       # Shared build definition (WP03 composite; also reused by WP05 deploy).
       - name: Build example site
         uses: ./.github/actions/build-example
+      # A clean install and build must not write into the source tree (#398): no
+      # restamped generated page (glossary, Gherkin) and no bin mode flip. Build
+      # output is gitignored, so any line here is a tracked or new source file.
+      - name: Assert the build left the working tree clean
+        run: |
+          dirty="$(git status --porcelain)"
+          if [ -n "$dirty" ]; then
+            echo "::error::install and build changed the working tree (#398):"
+            echo "$dirty"
+            git diff --stat
+            exit 1
+          fi
       # Artifact assertions run HERE (not in the composite) so the PR gate asserts
       # while deploy reuses the pure build (contracts/build-example-action.contract.md).
       - name: Assert build artifacts
