@@ -417,6 +417,7 @@ describe('draftPublicationIntegration', () => {
     expect(process.env[DK_PUBLISH_DRAFTS_RESOLVED_ENV]).toBe('off');
     expect([...state.unpublishedDirs].sort()).toEqual([
       'adr/template',
+      'architecture/diagram-contrast-fixture',
       'behaviour/shipping/track-consignment',
       'context/audience/draft-persona',
       'guides/markua-footnotes-malformed',

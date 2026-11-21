@@ -51,6 +51,7 @@ type Mode = keyof typeof OUT;
 const SIDEBAR_DRAFTS = [
   'context/audience/draft-persona',
   'adr/template',
+  'architecture/diagram-contrast-fixture',
   'behaviour/shipping/track-consignment',
   'guides/markua-footnotes-malformed',
 ];
