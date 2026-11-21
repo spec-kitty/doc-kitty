@@ -330,8 +330,10 @@ Three fields in `/api/*.json` come from the build, not from page frontmatter:
   (`_meta/sections.yaml`) in registry order, as `{ id, label, order, purpose? }`;
   a site without a registry emits `[]`.
 - `_links.mcp` on the index is opt-in (`links: { mcp: true }`) and points agents at
-  the generic MCP server. Its `href` is a reserved name, not an installable
-  package yet.
+  the generic MCP server. The package is not published yet, so its `href` is
+  the build-from-source section of the
+  [MCP server quickstart](../guides/mcp-server-quickstart.md#build-from-source)
+  and its `title` says the server must be built from source.
 
 The shapes are published as types in `@spec-kitty/doc-toolkit/contract`; see
 [ADR-0073](../adr/0073-generic-mcp-server-over-published-artifacts.md).
