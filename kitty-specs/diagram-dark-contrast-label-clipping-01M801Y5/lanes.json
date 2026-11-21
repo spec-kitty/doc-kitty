@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
+  "mission_id": "01M801Y5WHJJW69QKAFCPMFF4X",
+  "mission_branch": "kitty/mission-diagram-dark-contrast-label-clipping-01M801Y5",
+  "target_branch": "main",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "example/docs/architecture/diagram-contrast-fixture.md",
+        "tests/a11y/diagram-legibility.spec.ts",
+        "tests/a11y/helpers/legibility.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/integrations/diagrams.ts",
+        "src/lib/rehype/diagram-label-contrast.ts",
+        "src/styles/dk-components.css",
+        "src/tests/diagram-label-contrast.test.ts",
+        "src/tests/diagram-preset.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "docs/architecture/diagrams.md",
+        "docs/changelog/unreleased/369-diagram-label-legibility.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-11-21T22:10:36.180281+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP03"
+  ],
+  "planning_commit_sha": "9621b5f855988adeb6077e7ffc04d12271fb08ce"
+}
