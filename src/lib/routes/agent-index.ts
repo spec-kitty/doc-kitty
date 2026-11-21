@@ -64,7 +64,7 @@ export interface AgentIndexLinks {
   scenarios?: boolean;
   /**
    * The MCP wiring pointer (FR-009). Unlike the siblings here this defaults to
-   * OFF: it advertises `@spec-kitty/doc-kitty-mcp`, so it is opt-in until a
+   * OFF: it advertises the Doc-Kitty MCP server, so it is opt-in until a
    * site deliberately wires the server into its agent story. When true, the
    * index carries `_links.mcp` — `{ href, title, usage }`, where `href`
    * points at the build-from-source instructions while the package is

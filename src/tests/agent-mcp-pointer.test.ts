@@ -22,6 +22,7 @@ vi.mock('astro:content', () => ({
 
 const { agentIndexRoute } = await import('../lib/routes/agent-index.js');
 const { llmsTxtRoute } = await import('../lib/routes/llms-txt.js');
+const { MCP_BUILD_FROM_SOURCE_URL } = await import('../lib/routes/shared.js');
 
 const SITE = new URL('https://docs.example/');
 
@@ -43,6 +44,8 @@ async function getLlmsTxt(links?: { mcp?: boolean }) {
   return (await route({ site: SITE })).text();
 }
 
+// Pinned independently of the exported constant so a change to it is a
+// deliberate, visible test edit (deployed sites bake this URL in).
 const BUILD_FROM_SOURCE =
   'https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/mcp-server-quickstart.md#build-from-source';
 
@@ -92,7 +95,8 @@ describe('links.mcp (FR-009)', () => {
       fileURLToPath(new URL('../../docs/guides/mcp-server-quickstart.md', import.meta.url)),
       'utf8',
     );
-    expect(BUILD_FROM_SOURCE.endsWith('#build-from-source')).toBe(true);
+    expect(MCP_BUILD_FROM_SOURCE_URL).toBe(BUILD_FROM_SOURCE);
+    expect(MCP_BUILD_FROM_SOURCE_URL.endsWith('#build-from-source')).toBe(true);
     expect(quickstart.split('\n')).toContain('## Build from source');
   });
 });
