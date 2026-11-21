@@ -341,7 +341,9 @@ export const GET = agentIndexRoute({
 
 `links` takes `pages`, `rss`, `bibliography` and `scenarios`, and the opt-in
 `mcp`, which is off unless you set it. `llms` and `sitemap` follow detection
-alone.
+alone. The MCP server is not published yet, so `mcp: true` points readers at
+the build-from-source steps rather than at a package; see
+[Let your own site advertise the wiring](./mcp-server-quickstart.md#let-your-own-site-advertise-the-wiring).
 
 On the page route, `agentPageRoute({ links: { index: false } })` drops the `up`
 link when you do not mount the index route. A site that mounts the index but not

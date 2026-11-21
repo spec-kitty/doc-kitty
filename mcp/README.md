@@ -29,11 +29,12 @@ client, the two input modes, Windows notes) lives in the docs guide:
 [docs/guides/mcp-server-quickstart.md](../docs/guides/mcp-server-quickstart.md)
 - the guide is the single owner so the story cannot drift between surfaces.
 
-In short: `pnpm --filter @spec-kitty/doc-kitty-mcp build` then
-`pnpm pack --filter @spec-kitty/doc-kitty-mcp`, install the tarball, launch
-`doc-kitty-mcp --site <url>` or `--dir <path>`. The launch line is exactly the
-one the toolkit emits into `_links.mcp.usage` and `llms.txt` when a site opts
-in with `links.mcp`.
+In short: the package is not published yet (#408), so build it from source.
+`pnpm pack --filter @spec-kitty/doc-kitty-mcp` builds and packs it; install the
+tarball, then launch `doc-kitty-mcp --site <url>` or `--dir <path>`. The launch
+line is exactly the one the toolkit emits into `_links.mcp.usage` and
+`llms.txt` when a site opts in with `links.mcp`; both surfaces point at the
+guide's build-from-source section until the package ships.
 
 ## What you get
 
