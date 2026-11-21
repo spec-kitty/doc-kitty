@@ -39,9 +39,10 @@ export interface AgentTitledLink extends AgentLink {
 /**
  * The opt-in MCP wiring pointer (WP01/T005, FR-009): how an agent launches the
  * generic DocKitty MCP server against this site. Emitted at `_links.mcp` on
- * the machine index when the site opts in via `links.mcp`; until the C-002
- * publishing ruling the `usage` string documents the packed-tarball launch
- * form (the installed `doc-kitty-mcp` bin), not an npmjs `npx` line.
+ * the machine index when the site opts in via `links.mcp`. Until the package
+ * is published (#408), `href` points at the build-from-source instructions
+ * (#307) and `usage` is the launch line of the bin built from source, not an
+ * npmjs `npx` line.
  */
 export interface McpWiringPointer extends AgentLink {
   /** Display title of the pointed-at service. */

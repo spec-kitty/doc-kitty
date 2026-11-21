@@ -10,6 +10,8 @@
  * Route-level unit tests with a mocked collection — the example site itself
  * ships with the knob OFF.
  */
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('astro:content', () => ({
@@ -81,5 +83,16 @@ describe('links.mcp (FR-009)', () => {
         'once built, doc-kitty-mcp --site https://docs.example/docs serves the machine index ' +
         '(https://docs.example/docs/api/index.json) to MCP clients',
     ]);
+  });
+
+  it('targets a heading that exists in the quickstart, so the emitted link resolves', () => {
+    // The anchor is GitHub's slug of the heading; renaming the heading would
+    // silently break every emitted pointer.
+    const quickstart = readFileSync(
+      fileURLToPath(new URL('../../docs/guides/mcp-server-quickstart.md', import.meta.url)),
+      'utf8',
+    );
+    expect(BUILD_FROM_SOURCE.endsWith('#build-from-source')).toBe(true);
+    expect(quickstart.split('\n')).toContain('## Build from source');
   });
 });

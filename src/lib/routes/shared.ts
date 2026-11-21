@@ -143,6 +143,16 @@ export function mcpLaunchUsage(site: URL | undefined): string {
   return `doc-kitty-mcp --site ${absolute(site, '/').replace(/\/+$/, '')}`;
 }
 
+/**
+ * Where `links.mcp` sends a reader to get the server (#307). The
+ * `@spec-kitty/doc-kitty-mcp` package is not published (`private: true`;
+ * publishing is #408), so an `npm:` name would point at nothing installable.
+ * Until it ships, both surfaces point here: the build-from-source steps in the
+ * MCP quickstart. #408 swaps this for the registry form.
+ */
+export const MCP_BUILD_FROM_SOURCE_URL =
+  'https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/mcp-server-quickstart.md#build-from-source';
+
 export function absolute(site: URL | undefined, path: string): string {
   const base = site ?? new URL('http://localhost:4321');
   return new URL(withBase(path), base).href;
