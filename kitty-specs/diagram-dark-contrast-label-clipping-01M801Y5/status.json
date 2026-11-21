@@ -33,7 +33,8 @@
         "Red legibility spec + draft fixture; red reasons in commit 3661278",
         "Cycle 1: REQUEST_CHANGES (false-positive edge-label backdrop)",
         "Cycle 1 findings addressed in c1930bd; draft deviation recorded",
-        "Cycle 2 fixed: fixture registered in both draft tests (934b407, out-of-map, one line each); unit suite 4276/4276; evidence attached on coord branch"
+        "Cycle 2 fixed: fixture registered in both draft tests (934b407, out-of-map, one line each); unit suite 4276/4276; evidence attached on coord branch",
+        "Review passed (cycle 3, claude::reviewer-renata). RAN: draft-publication unit tests 108/108 on 934b407 (3 failed at 626989e; fixed by one registration line in each of the two draft tests); pnpm lint, validate:example, validate:links pass; static review of the spec and helper: non-vacuity counts asserted, linkStyle is the only exclusion, backdrop measured from pixels. ACCEPTED FROM EVIDENCE (I could not start a PlantUML server here): legibility.json for light and dark at 1280 and 390 (evidence/red-lane-a). Every hard assertion holds: 4 figures, 24 labels, themed edges per figure [3,2,2,3], 0 skipped, 1 authored edge. The run is red only on soft assertions: light deep fill 3.06; dark pale fill 1.41, deep fill 3.88, ArchiMate 1.19-1.41; 3 overflowing labels, all in the author-font figure (#370). Themed edges min 6.15 light / 10.63 dark, so #369 item 1 is a guard only. WP01 is test-only, so the lane matches main for product code. Not independently run: the red against main and the full unit suite."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
