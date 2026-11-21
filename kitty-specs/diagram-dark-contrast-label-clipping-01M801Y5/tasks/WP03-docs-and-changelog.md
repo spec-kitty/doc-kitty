@@ -8,12 +8,11 @@ requirement_refs:
 - C-001
 planning_base_branch: main
 merge_target_branch: main
-branch_strategy: Planning artifacts were generated on kitty/mission-diagram-dark-contrast-label-clipping-01M801Y5, which merges into main. Execution worktrees are allocated per computed lane from lanes.json.
+branch_strategy: Planning artifacts for this mission were generated on main. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into main unless the human explicitly redirects the landing branch.
 subtasks:
 - T010
 - T011
 - T012
-agent: claude
 history: []
 agent_profile: curator-carla
 authoritative_surface: docs/
