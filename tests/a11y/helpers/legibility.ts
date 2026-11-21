@@ -5,7 +5,10 @@
 // missed the very defect it was meant to catch, so this helper reads pixels:
 //   1. collect every label and every edge in the build-rendered diagrams, with its
 //      computed foreground colour and the page points to sample;
-//   2. hide them all, take ONE full-page screenshot, then restore them;
+//   2. hide them, take ONE full-page screenshot, then restore them. A label hides
+//      only its GLYPHS (transparent text): its own background, such as a Mermaid
+//      edge label's node-fill box, is part of what the reader sees behind the text
+//      and must stay painted. An edge hides whole;
 //   3. decode that PNG in a page canvas and read the backdrop at each point.
 // No image library is needed: the browser decodes its own screenshot.
 //
@@ -46,6 +49,10 @@ export interface OverflowReading {
 
 export interface LegibilityReport {
   figures: number;
+  /** Themed edges measured, per figure (in page order). */
+  themedEdgesPerFigure: number[];
+  /** Edges found but not measured, with the reason: a guard against silent loss. */
+  skippedEdges: Array<{ figure: number; id: string; reason: string }>;
   labels: LabelReading[];
   edges: EdgeReading[];
   overflow: OverflowReading[];
@@ -64,12 +71,14 @@ export function contrastRatio(a: readonly number[], b: readonly number[]): numbe
 
 /** The colour shape passed between Node and the page. */
 type Rgb = [number, number, number];
+/** A colour with its alpha (0–1). */
+type Rgba = [number, number, number, number];
 
 interface Target {
   kind: 'label' | 'edge';
   figure: number;
   text: string;
-  fg: Rgb;
+  fg: Rgba;
   fgText: string;
   authored: boolean;
   /** Page-coordinate points (CSS px from the document origin) to sample. */
@@ -83,12 +92,14 @@ interface Target {
 export async function measureLegibility(page: Page): Promise<LegibilityReport> {
   // Step 1: collect targets and hide them.
   const collected = await page.evaluate(() => {
-    const parse = (value: string): [number, number, number] | null => {
+    // Colour with alpha; a translucent foreground is blended over its backdrop later.
+    const parse = (value: string): [number, number, number, number] | null => {
       const m = /rgba?\(([^)]+)\)/.exec(value);
       if (!m) return null;
       const parts = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
-      if (parts.length > 3 && parts[3] === 0) return null; // fully transparent
-      return [parts[0], parts[1], parts[2]];
+      const alpha = parts.length > 3 ? parts[3] : 1;
+      if (alpha === 0) return null; // fully transparent
+      return [parts[0], parts[1], parts[2], alpha];
     };
     const sx = window.scrollX;
     const sy = window.scrollY;
@@ -96,12 +107,17 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
       kind: 'label' | 'edge';
       figure: number;
       text: string;
-      fg: [number, number, number];
+      fg: [number, number, number, number];
       fgText: string;
       authored: boolean;
       points: Array<[number, number]>;
     }> = [];
-    const hidden: Element[] = [];
+    // Each element hidden for the screenshot, with the inline style to restore.
+    const hidden: Array<[Element, string | null]> = [];
+    const glyphs: Element[] = [];
+    const wholes: Element[] = [];
+    const themedEdgesPerFigure: number[] = [];
+    const skippedEdges: Array<{ figure: number; id: string; reason: string }> = [];
     const overflow: Array<{
       figure: number;
       text: string;
@@ -114,6 +130,10 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
 
     figures.forEach((figure, fi) => {
       const svg = figure.querySelector(':scope > svg') as SVGSVGElement;
+      // Only points inside the figure's visible box count: `.dk-diagram` scrolls a
+      // wide diagram, and a point under the scroll clip shows the page, not the diagram.
+      const box = figure.getBoundingClientRect();
+      const visible = (x: number, y: number): boolean => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
 
       // Labels: the nearest element holding each run of visible text.
       const owners = new Set<Element>();
@@ -135,15 +155,18 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
         const fg = parse(fgText);
         if (!fg) continue;
         // A 5 x 3 grid inside the text box; the backdrop is the most frequent
-        // pixel there once the text itself is hidden.
+        // pixel there once the glyphs are hidden.
         const points: Array<[number, number]> = [];
         for (let ix = 1; ix <= 5; ix++) {
           for (let iy = 1; iy <= 3; iy++) {
-            points.push([rect.left + sx + (rect.width * ix) / 6, rect.top + sy + (rect.height * iy) / 4]);
+            const x = rect.left + (rect.width * ix) / 6;
+            const y = rect.top + (rect.height * iy) / 4;
+            if (visible(x, y)) points.push([x + sx, y + sy]);
           }
         }
+        if (points.length === 0) continue;
         targets.push({ kind: 'label', figure: fi, text: owner.textContent!.trim().replace(/\s+/g, ' '), fg, fgText, authored: false, points });
-        hidden.push(owner);
+        glyphs.push(owner);
       }
 
       // Edges: Mermaid flowchart links and PlantUML links. Where an edge label sits on
@@ -155,13 +178,21 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
       const underLabel = (x: number, y: number): boolean =>
         labelBoxes.some((r) => x >= r.left - 1 && x <= r.right + 1 && y >= r.top - 1 && y <= r.bottom + 1);
       const edges = [...svg.querySelectorAll('path.flowchart-link, g.link > path')] as SVGPathElement[];
+      let themedCount = 0;
       for (const edge of edges) {
+        const id = edge.id || edge.getAttribute('class') || 'edge';
         const cs = getComputedStyle(edge);
         const fg = parse(cs.stroke);
-        if (!fg || typeof edge.getTotalLength !== 'function') continue;
+        if (!fg) {
+          skippedEdges.push({ figure: fi, id, reason: `unparseable stroke '${cs.stroke}'` });
+          continue;
+        }
         const length = edge.getTotalLength();
         const ctm = edge.getScreenCTM();
-        if (!length || !ctm) continue;
+        if (!length || !ctm) {
+          skippedEdges.push({ figure: fi, id, reason: 'zero length or no screen transform' });
+          continue;
+        }
         // Themed edges take their stroke from the token; anything else is the author's.
         const declared = `${edge.getAttribute('style') ?? ''}`;
         const themed = getComputedStyle(document.documentElement).getPropertyValue('--dk-diagram-edge').trim();
@@ -178,14 +209,19 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
         for (let i = 1; i < 16; i++) {
           const p = edge.getPointAtLength((length * i) / 16);
           const sp = new DOMPoint(p.x, p.y).matrixTransform(ctm);
-          if (!underLabel(sp.x, sp.y)) points.push([sp.x + sx, sp.y + sy]);
+          if (!underLabel(sp.x, sp.y) && visible(sp.x, sp.y)) points.push([sp.x + sx, sp.y + sy]);
         }
-        if (points.length === 0) continue;
-        targets.push({ kind: 'edge', figure: fi, text: edge.id || edge.getAttribute('class') || 'edge', fg, fgText: cs.stroke, authored, points });
-        hidden.push(edge);
+        if (points.length === 0) {
+          skippedEdges.push({ figure: fi, id, reason: 'every sample point is under a label or outside the figure' });
+          continue;
+        }
+        if (!authored) themedCount += 1;
+        targets.push({ kind: 'edge', figure: fi, text: id, fg, fgText: cs.stroke, authored, points });
+        wholes.push(edge);
       }
+      themedEdgesPerFigure.push(themedCount);
       // Arrowheads and PlantUML arrow polygons would otherwise paint over the sampled backdrop.
-      for (const extra of svg.querySelectorAll('marker, g.link > polygon')) hidden.push(extra);
+      for (const extra of svg.querySelectorAll('marker, g.link > polygon')) wholes.push(extra);
 
       // Fit: Mermaid HTML labels.
       for (const fo of svg.querySelectorAll('foreignObject')) {
@@ -206,9 +242,25 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
       }
     });
 
-    for (const el of hidden) (el as HTMLElement).style.setProperty('visibility', 'hidden', 'important');
-    (window as unknown as { __dkHidden: Element[] }).__dkHidden = hidden;
-    return { figures: figures.length, targets, overflow };
+    for (const el of [...glyphs, ...wholes]) hidden.push([el, el.getAttribute('style')]);
+    for (const el of glyphs) {
+      const style = (el as HTMLElement).style;
+      if (el instanceof SVGElement) style.setProperty('fill', 'transparent', 'important');
+      else {
+        style.setProperty('color', 'transparent', 'important');
+        style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
+      }
+      // Descendants with their own colour (a `<b>` in a label) hide too.
+      for (const inner of el.querySelectorAll('*')) {
+        if (!(inner instanceof HTMLElement)) continue;
+        hidden.push([inner, inner.getAttribute('style')]);
+        inner.style.setProperty('color', 'transparent', 'important');
+        inner.style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
+      }
+    }
+    for (const el of wholes) (el as HTMLElement).style.setProperty('visibility', 'hidden', 'important');
+    (window as unknown as { __dkHidden: Array<[Element, string | null]> }).__dkHidden = hidden;
+    return { figures: figures.length, targets, overflow, themedEdgesPerFigure, skippedEdges };
   });
 
   // Step 2: one screenshot with every label and edge hidden.
@@ -217,8 +269,10 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
   // Step 3: restore, then sample the screenshot in a canvas.
   const samples = await page.evaluate(
     async ({ b64, targets }) => {
-      for (const el of (window as unknown as { __dkHidden: Element[] }).__dkHidden) {
-        (el as HTMLElement).style.removeProperty('visibility');
+      // Reverse order: an element recorded twice is restored to its FIRST (original) style.
+      for (const [el, style] of [...(window as unknown as { __dkHidden: Array<[Element, string | null]> }).__dkHidden].reverse()) {
+        if (style === null) el.removeAttribute('style');
+        else el.setAttribute('style', style);
       }
       const img = new Image();
       img.src = `data:image/png;base64,${b64}`;
@@ -254,19 +308,32 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
         counts.set(key, entry);
       }
       const bg = [...counts.values()].sort((a, b) => b.n - a.n)[0].c;
-      labels.push({ figure: t.figure, text: t.text.slice(0, 60), fg: t.fgText, bg: hex(bg), ratio: round(contrastRatio(t.fg, bg)) });
+      labels.push({ figure: t.figure, text: t.text.slice(0, 60), fg: t.fgText, bg: hex(bg), ratio: round(contrastRatio(over(t.fg, bg), bg)) });
     } else {
       // Lowest contrast along the edge.
       let worst = { ratio: Infinity, bg: pts[0] };
       for (const c of pts) {
-        const r = contrastRatio(t.fg, c);
+        const r = contrastRatio(over(t.fg, c), c);
         if (r < worst.ratio) worst = { ratio: r, bg: c };
       }
       edges.push({ figure: t.figure, id: t.text, stroke: t.fgText, bg: hex(worst.bg), ratio: round(worst.ratio), authored: t.authored });
     }
   });
 
-  return { figures: collected.figures, labels, edges, overflow: collected.overflow };
+  return {
+    figures: collected.figures,
+    themedEdgesPerFigure: collected.themedEdgesPerFigure,
+    skippedEdges: collected.skippedEdges,
+    labels,
+    edges,
+    overflow: collected.overflow,
+  };
 }
+
+/** A translucent foreground as the reader sees it: blended over its backdrop. */
+const over = (fg: readonly number[], bg: readonly number[]): number[] => {
+  const a = fg[3] ?? 1;
+  return [0, 1, 2].map((i) => fg[i] * a + bg[i] * (1 - a));
+};
 
 const round = (n: number): number => Math.round(n * 100) / 100;

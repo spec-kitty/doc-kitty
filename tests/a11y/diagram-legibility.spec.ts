@@ -36,7 +36,10 @@ test.describe('Diagram legibility (#369, #370)', () => {
       expect(report.figures, 'all four fixture diagrams render as build-time SVG').toBe(4);
       expect(report.labels.length, 'labels were measured').toBeGreaterThanOrEqual(20);
       const themed = report.edges.filter((e) => !e.authored);
-      expect(themed.length, 'themed edges were measured').toBeGreaterThanOrEqual(8);
+      // Per figure, in page order: long labels 3, author font 2, author colours 2 (+1
+      // linkStyle), ArchiMate 3. A lost edge fails here rather than passing quietly.
+      expect(report.themedEdgesPerFigure, 'themed edges measured per figure').toEqual([3, 2, 2, 3]);
+      expect(report.skippedEdges, 'edges found but not measured').toEqual([]);
       expect(report.edges.filter((e) => e.authored).length, 'only the one linkStyle edge is author-coloured').toBe(1);
 
       const lowLabels = report.labels.filter((l) => l.ratio < LABEL_MIN);
