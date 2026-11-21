@@ -20,9 +20,9 @@
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "title": "Build-time Mermaid: node and edge labels are clipped (font-metric mismatch)",
+      "verdict": "in-mission",
+      "wp": "WP02"
     },
     "#371": {
       "evidence_ref": "<link or commit>",
