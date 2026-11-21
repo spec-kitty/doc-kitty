@@ -20,7 +20,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::frontend-freddy",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -31,7 +31,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Red legibility spec + draft fixture; red reasons in commit 3661278",
-        "Cycle 1: REQUEST_CHANGES (false-positive edge-label backdrop)"
+        "Cycle 1: REQUEST_CHANGES (false-positive edge-label backdrop)",
+        "Cycle 1 findings addressed in c1930bd; draft deviation recorded"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
