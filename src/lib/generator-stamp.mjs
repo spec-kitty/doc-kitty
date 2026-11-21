@@ -163,24 +163,33 @@ function contentHashOf(hash) {
 }
 
 /**
- * Build a stamp. `at` is stable: it is carried over from `previous` while
- * `previous.content_hash` equals the new hash (even across a version bump) and
- * is `now` (whole-second UTC) once the content changes.
+ * Build a stamp. While `previous.content_hash` equals the new hash, the page is
+ * unchanged and so is its stamp: `previous` comes back as it is, `by` included,
+ * so a version bump alone never rewrites a committed generated page (#398). Once
+ * the content changes, `by` names the current toolkit version and `at` is `now`
+ * (whole-second UTC). So `by` records the version that last changed the content.
+ *
+ * `previous.at` is kept only while it still reads as a date, and `previous.by`
+ * only while it is this producer's own versioned stamp; otherwise that field is
+ * written fresh.
  *
  * @param {object} args
  * @param {string} args.producer one of {@link PRODUCERS}
  * @param {string} args.hash hex digest of the generated content
- * @param {{at?: string, content_hash?: string}} [args.previous] the page's existing stamp
+ * @param {{by?: string, at?: string, content_hash?: string}} [args.previous] the page's existing stamp
  * @param {Date} [args.now] injectable clock
  * @returns {{by: string, at: string, content_hash: string}}
  */
 export function makeStamp({ producer, hash, previous, now = new Date() }) {
   const content_hash = contentHashOf(hash);
+  const unchanged = previous?.content_hash === content_hash;
   // A kept `at` must still read as a date: the gate rejects one that does not (#227).
-  const keep = previous?.content_hash === content_hash && typeof previous.at === 'string' && normaliseInstant(previous.at) !== null;
+  const keepAt = unchanged && typeof previous.at === 'string' && normaliseInstant(previous.at) !== null;
+  // A kept `by` must be this producer's own versioned stamp, and moves with `at`.
+  const keepBy = keepAt && isGeneratedStamp(previous.by, producer);
   return {
-    by: `${producer}/${toolkitVersion()}`,
-    at: keep ? /** @type {string} */ (previous.at) : formatInstant(now),
+    by: keepBy ? /** @type {string} */ (previous.by) : `${producer}/${toolkitVersion()}`,
+    at: keepAt ? /** @type {string} */ (previous.at) : formatInstant(now),
     content_hash,
   };
 }

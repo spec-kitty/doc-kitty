@@ -479,8 +479,11 @@ generated:
 ```
 
 `by` is `<producer>/<toolkit version>`. `content_hash` is the DocKitty extension
-to OKF's `generated`: a hash of the page content without the stamp. `at` only
-moves when the hash does, so regeneration over unchanged input is byte-stable.
+to OKF's `generated`: a hash of the page content without the stamp. `by` and `at`
+only move when the hash does, so regeneration over unchanged input is byte-stable,
+also across a toolkit release (#398). `by` therefore names the toolkit version
+that last changed the page's content, not the version that last ran. A build
+never rewrites a committed generated page because of a version bump alone.
 
 Two outputs read a stamp differently (#226). RSS dates an item from `updated`,
 else the stamp's `at`, whatever the stamp's `by`. The OKF export takes `by`, `at`
