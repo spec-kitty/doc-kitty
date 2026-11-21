@@ -1,10 +1,14 @@
 /**
  * FR-009 (WP01/T005): the opt-in MCP wiring pointer. With `links.mcp: true`
- * the machine index carries `_links.mcp` (href `npm:@spec-kitty/doc-kitty-mcp`,
- * the `doc-kitty-mcp --site <this site's base URL>` launch line in `usage`)
- * and llms.txt gains its one-line mention; the default (`mcp` unset) emits
- * neither, byte-compatibly. Route-level unit tests with a mocked collection —
- * the example site itself ships with the knob OFF.
+ * the machine index carries `_links.mcp` and llms.txt gains its one-line
+ * mention; the default (`mcp` unset or false) emits neither, byte-compatibly.
+ *
+ * #307: `@spec-kitty/doc-kitty-mcp` is not published (publishing is #408), so
+ * neither surface may present it as installable. The `href` points at the
+ * build-from-source instructions, not an `npm:` name, and both the title and
+ * the llms.txt line say plainly that the server must be built from source.
+ * Route-level unit tests with a mocked collection — the example site itself
+ * ships with the knob OFF.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -37,6 +41,9 @@ async function getLlmsTxt(links?: { mcp?: boolean }) {
   return (await route({ site: SITE })).text();
 }
 
+const BUILD_FROM_SOURCE =
+  'https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/mcp-server-quickstart.md#build-from-source';
+
 describe('links.mcp (FR-009)', () => {
   it('is off by default: no _links.mcp and no llms.txt mention', async () => {
     vi.stubEnv('BASE_URL', '/docs');
@@ -45,23 +52,34 @@ describe('links.mcp (FR-009)', () => {
     expect(await getLlmsTxt()).not.toContain('MCP server');
   });
 
-  it('emits the pointer with this site\'s base URL substituted, and the llms.txt one-liner', async () => {
+  it('emits nothing with links.mcp: false', async () => {
+    vi.stubEnv('BASE_URL', '/docs');
+    const index = await getIndex({ mcp: false });
+    expect('mcp' in index._links).toBe(false);
+    const llms = await getLlmsTxt({ mcp: false });
+    expect(llms).not.toContain('MCP server');
+    expect(llms).not.toContain('doc-kitty-mcp');
+  });
+
+  it('points at the build-from-source instructions, never an uninstallable npm name (#307)', async () => {
     vi.stubEnv('BASE_URL', '/docs');
     const index = await getIndex({ mcp: true });
     expect(index._links.mcp).toEqual({
-      href: 'npm:@spec-kitty/doc-kitty-mcp',
-      title: 'Doc-Kitty MCP server',
+      href: BUILD_FROM_SOURCE,
+      title: 'Doc-Kitty MCP server (not published yet: build it from source, see href)',
       usage: 'doc-kitty-mcp --site https://docs.example/docs',
     });
-    // Until the C-002 publishing ruling, the usage names the packed-tarball
-    // bin — never an npmjs `npx -y` form.
+    // No registry form of any kind until the package is published (#408).
+    expect(JSON.stringify(index._links.mcp)).not.toContain('npm:');
     expect(index._links.mcp.usage).not.toContain('npx');
 
     const llms = await getLlmsTxt({ mcp: true });
-    const mcpLines = llms.split('\n').filter((line) => line.startsWith('MCP server:'));
+    expect(llms).not.toContain('npm:');
+    const mcpLines = llms.split('\n').filter((line) => line.startsWith('MCP server'));
     expect(mcpLines).toEqual([
-      'MCP server: doc-kitty-mcp --site https://docs.example/docs serves the machine index ' +
-        '(https://docs.example/docs/api/index.json) to MCP clients (npm:@spec-kitty/doc-kitty-mcp)',
+      'MCP server (not published yet, build it from source: ' + BUILD_FROM_SOURCE + '): ' +
+        'once built, doc-kitty-mcp --site https://docs.example/docs serves the machine index ' +
+        '(https://docs.example/docs/api/index.json) to MCP clients',
     ]);
   });
 });
