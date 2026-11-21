@@ -37,16 +37,16 @@
       "wp": "WP02"
     },
     "#405": {
-      "evidence_ref": "<auto-classified: no action required>",
+      "evidence_ref": "PR #405 cited only for file avoidance (ruling R36)",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<auto-classified: pr_or_commit_ref>",
+      "title": "PDF lane PR",
       "verdict": "not-applicable",
-      "wp": null
+      "wp": "WP02"
     }
   },
   "schema_version": 1
