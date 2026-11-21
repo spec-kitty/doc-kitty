@@ -18,6 +18,9 @@ requirement_refs:
 planning_base_branch: main
 merge_target_branch: main
 branch_strategy: Planning artifacts for this mission were generated on main. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into main unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-diagram-dark-contrast-label-clipping-01M801Y5
+base_commit: ac9718518d9ff52e1de3ef29777fdbe45903dbad
+created_at: '2026-11-21T23:25:24.208777+00:00'
 subtasks:
 - T005
 - T006
