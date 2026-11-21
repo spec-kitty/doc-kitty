@@ -1,5 +1,17 @@
 {
   "rows": {
+    "#0": {
+      "evidence_ref": "False positive: hex colour `#000000` in research.md parsed as issue #0 by issue_reference_discovery; not an issue",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": "WP01"
+    },
     "#369": {
       "evidence_ref": "<link or commit>",
       "fr": null,
