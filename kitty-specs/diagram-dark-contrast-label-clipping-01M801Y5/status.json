@@ -1,7 +1,7 @@
 {
-  "event_count": 3,
-  "last_event_id": "01M802JJB62K20H80G8HRQ7EC9",
-  "materialized_at": "2026-11-21T22:10:35.494121+00:00",
+  "event_count": 5,
+  "last_event_id": "01M802MS41Q38E180CVN776836",
+  "materialized_at": "2026-11-21T22:11:47.814033+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -13,17 +13,26 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 3
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M802JF02QKGNJ6HMSA8YJBGC",
-      "last_transition_at": "2026-11-21T22:10:32.066137+00:00"
+      "implementer_of_record": "claude",
+      "lane": "in_progress",
+      "last_event_id": "01M802MS41Q38E180CVN776836",
+      "last_transition_at": "2026-11-21T22:11:47.814033+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 7400,
+      "shell_pid_created_at": "1795299100.26"
     },
     "WP02": {
       "actor": "finalize-tasks",
