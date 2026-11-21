@@ -16,5 +16,7 @@
   "target_branch": "main",
   "topology": "single_branch",
   "topology_settled": false,
-  "topology_source": "default"
+  "topology_source": "default",
+  "contracts": "none",
+  "contracts_rationale": "Build-time render transform and CSS only: no API, event or CLI interface is added or changed."
 }
