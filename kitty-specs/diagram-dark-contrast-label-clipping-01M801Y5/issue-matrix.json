@@ -25,16 +25,16 @@
       "wp": "WP02"
     },
     "#371": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "see #371: item 4 of #369 split out, not owed here",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "title": "Click-to-zoom on narrow viewports",
+      "verdict": "not-applicable",
+      "wp": "WP02"
     },
     "#405": {
       "evidence_ref": "<auto-classified: no action required>",
