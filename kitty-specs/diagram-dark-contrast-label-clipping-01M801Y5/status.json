@@ -1,7 +1,7 @@
 {
-  "event_count": 13,
-  "last_event_id": "01M805EB6Y38XDKBFEAWDW1Y3B",
-  "materialized_at": "2026-11-21T23:00:42.846545+00:00",
+  "event_count": 15,
+  "last_event_id": "01M805GJVVRN1EGDE388ZM4V7E",
+  "materialized_at": "2026-11-21T23:01:56.074369+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 3
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -25,9 +25,9 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude::frontend-freddy",
-      "lane": "planned",
-      "last_event_id": "01M805EB6Y38XDKBFEAWDW1Y3B",
-      "last_transition_at": "2026-11-21T23:00:42.846545+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M805GJVVRN1EGDE388ZM4V7E",
+      "last_transition_at": "2026-11-21T23:01:56.074369+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Red legibility spec + draft fixture; red reasons in commit 3661278",
@@ -42,7 +42,7 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
