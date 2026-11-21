@@ -8,9 +8,9 @@
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "title": "Build-time diagrams: Mermaid edges and ArchiMate labels unreadable in dark mode",
+      "verdict": "in-mission",
+      "wp": "WP02"
     },
     "#370": {
       "evidence_ref": "<link or commit>",
