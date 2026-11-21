@@ -53,6 +53,8 @@ export interface LegibilityReport {
   themedEdgesPerFigure: number[];
   /** Edges found but not measured, with the reason: a guard against silent loss. */
   skippedEdges: Array<{ figure: number; id: string; reason: string }>;
+  /** Labels found but not measured, with the reason. */
+  skippedLabels: Array<{ figure: number; text: string; reason: string }>;
   labels: LabelReading[];
   edges: EdgeReading[];
   overflow: OverflowReading[];
@@ -118,6 +120,7 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
     const wholes: Element[] = [];
     const themedEdgesPerFigure: number[] = [];
     const skippedEdges: Array<{ figure: number; id: string; reason: string }> = [];
+    const skippedLabels: Array<{ figure: number; text: string; reason: string }> = [];
     const overflow: Array<{
       figure: number;
       text: string;
@@ -164,7 +167,10 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
             if (visible(x, y)) points.push([x + sx, y + sy]);
           }
         }
-        if (points.length === 0) continue;
+        if (points.length === 0) {
+          skippedLabels.push({ figure: fi, text: owner.textContent!.trim().slice(0, 60), reason: 'no sample point inside the figure' });
+          continue;
+        }
         targets.push({ kind: 'label', figure: fi, text: owner.textContent!.trim().replace(/\s+/g, ' '), fg, fgText, authored: false, points });
         glyphs.push(owner);
       }
@@ -250,17 +256,21 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
         style.setProperty('color', 'transparent', 'important');
         style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
       }
-      // Descendants with their own colour (a `<b>` in a label) hide too.
+      // Descendants with their own colour (a `<b>` in a label, a `<tspan>` with its
+      // own fill) hide too.
       for (const inner of el.querySelectorAll('*')) {
-        if (!(inner instanceof HTMLElement)) continue;
         hidden.push([inner, inner.getAttribute('style')]);
-        inner.style.setProperty('color', 'transparent', 'important');
-        inner.style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
+        const style = (inner as HTMLElement).style;
+        if (inner instanceof SVGElement) style.setProperty('fill', 'transparent', 'important');
+        else {
+          style.setProperty('color', 'transparent', 'important');
+          style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
+        }
       }
     }
     for (const el of wholes) (el as HTMLElement).style.setProperty('visibility', 'hidden', 'important');
     (window as unknown as { __dkHidden: Array<[Element, string | null]> }).__dkHidden = hidden;
-    return { figures: figures.length, targets, overflow, themedEdgesPerFigure, skippedEdges };
+    return { figures: figures.length, targets, overflow, themedEdgesPerFigure, skippedEdges, skippedLabels };
   });
 
   // Step 2: one screenshot with every label and edge hidden.
@@ -324,6 +334,7 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
     figures: collected.figures,
     themedEdgesPerFigure: collected.themedEdgesPerFigure,
     skippedEdges: collected.skippedEdges,
+    skippedLabels: collected.skippedLabels,
     labels,
     edges,
     overflow: collected.overflow,

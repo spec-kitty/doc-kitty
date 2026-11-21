@@ -40,6 +40,7 @@ test.describe('Diagram legibility (#369, #370)', () => {
       // linkStyle), ArchiMate 3. A lost edge fails here rather than passing quietly.
       expect(report.themedEdgesPerFigure, 'themed edges measured per figure').toEqual([3, 2, 2, 3]);
       expect(report.skippedEdges, 'edges found but not measured').toEqual([]);
+      expect(report.skippedLabels, 'labels found but not measured').toEqual([]);
       expect(report.edges.filter((e) => e.authored).length, 'only the one linkStyle edge is author-coloured').toBe(1);
 
       const lowLabels = report.labels.filter((l) => l.ratio < LABEL_MIN);
