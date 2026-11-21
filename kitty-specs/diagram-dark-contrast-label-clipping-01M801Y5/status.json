@@ -65,6 +65,9 @@
       "last_event_id": "01M807VJ7S461C83Y07796F2B1",
       "last_transition_at": "2026-11-21T23:42:53.177140+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 28351,
