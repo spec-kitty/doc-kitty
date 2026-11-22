@@ -16,9 +16,11 @@
  *   2. `payloads`: the first match is mapped, with no schema.
  *   3. A root case variant: `<pack>/<name>` equal, ignoring case, to the file of
  *      a root `files` or `retired` rule (`*\/<name>`) is retired under that rule.
- *   4. `ignored`, matched ignoring case, except for a path a `files`, `retired`
- *      or `payloads` rule takes with path and glob both in lower case: that path
- *      is `unmodelled`.
+ *   4. `ignored`, matched ignoring case. First, steps 1 and 2 run again with path
+ *      and globs both in lower case (the charter's `PackFileKind.classifyFolded`):
+ *      when that folded run maps or retires the path, it is `unmodelled`, not
+ *      ignored. When an exclusion wins the folded run, or nothing matches, the
+ *      `ignored` rules apply (`core/missions/plan/Templates/README.md` is excluded).
  *   5. Anything else is `unmodelled`.
  *
  * Pure: no fs.
@@ -112,8 +114,12 @@ export function createClassifier(fileKinds) {
     .map((r) => ({ name: rootRuleName(r.match), r }))
     .filter((x) => x.name !== undefined);
 
-  /** @param {CompiledRule[]} section @param {string} path */
-  const first = (section, path) => section.find((r) => r.regex.test(path));
+  /**
+   * @param {CompiledRule[]} section
+   * @param {string} path
+   * @param {boolean} folded match the lower-cased globs (the path is lower-cased by the caller)
+   */
+  const first = (section, path, folded = false) => section.find((r) => (folded ? r.lower : r.regex).test(path));
 
   /** @param {CompiledRule} r @returns {Classification} */
   const mappedByFile = (r) => ({
@@ -124,17 +130,31 @@ export function createClassifier(fileKinds) {
     contentForm: r.rule.content_form ?? 'yaml',
   });
 
-  /** @param {string} path @returns {Classification} */
-  const classify = (path) => {
-    const f = first(files, path);
-    const e = first(exclusions, path);
-    const r = first(retired, path);
+  /**
+   * Steps 1 and 2: `files`, `exclusions` and `retired` with their precedence,
+   * then `payloads`. `undefined` when no rule takes the path.
+   *
+   * @param {string} path
+   * @param {boolean} folded
+   * @returns {Classification | undefined}
+   */
+  const precedence = (path, folded) => {
+    const f = first(files, path, folded);
+    const e = first(exclusions, path, folded);
+    const r = first(retired, path, folded);
     if (f && r && !e) return { expect: 'retired', rule: r.match, reason: r.rule.reason };
     if (f) return mappedByFile(f);
     if (e) return { expect: 'excluded', rule: e.match, reason: e.rule.reason };
     if (r) return { expect: 'retired', rule: r.match, reason: r.rule.reason };
-    const p = first(payloads, path);
+    const p = first(payloads, path, folded);
     if (p) return { expect: 'mapped', rule: p.match, kind: p.rule.kind, contentForm: p.rule.content_form ?? 'bytes' };
+    return undefined;
+  };
+
+  /** @param {string} path @returns {Classification} */
+  const classify = (path) => {
+    const decided = precedence(path, false);
+    if (decided) return decided;
     const segments = path.split('/');
     if (segments.length === 2) {
       const variant = roots.find(({ name }) => name?.toLowerCase() === segments[1].toLowerCase());
@@ -146,8 +166,8 @@ export function createClassifier(fileKinds) {
         };
       }
     }
-    const lowerPath = path.toLowerCase();
-    if ([...files, ...retired, ...payloads].some((rule) => rule.lower.test(lowerPath))) return { expect: 'unmodelled' };
+    const folded = precedence(path.toLowerCase(), true);
+    if (folded?.expect === 'mapped' || folded?.expect === 'retired') return { expect: 'unmodelled' };
     const i = first(ignored, path);
     if (i) return { expect: 'excluded', rule: i.match, reason: i.rule.reason };
     return { expect: 'unmodelled' };
