@@ -192,7 +192,7 @@
     },
     "WP06": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -205,6 +205,7 @@
         "ADR-0083 + packs/metadata-model/consumer-setup docs + fragment; doc gates, markdownlint, Vale 3.18.0 clean"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP06-adr-docs-changelog/review-cycle-1.md",
         "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP06-adr-docs-changelog/review-cycle-1.md",
@@ -212,13 +213,13 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 18476,
-      "shell_pid_created_at": "1795357417.14",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T024": "done",
-        "T025": "done",
-        "T026": "done",
-        "T027": "done"
+        "T024": "planned",
+        "T025": "planned",
+        "T026": "planned",
+        "T027": "planned"
       }
     }
   }
