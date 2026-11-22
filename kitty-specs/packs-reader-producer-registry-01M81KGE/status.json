@@ -203,7 +203,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "ADR-0083 + packs/metadata-model/consumer-setup docs + fragment; doc gates, markdownlint, Vale 3.18.0 clean",
-        "Cycle 2: fold B1, B2 and notes"
+        "Cycle 2: fold B1, B2 and notes",
+        "Cycle 2: B1 (replaces, not validated yet), B2 (narrower at root), notes 1-3"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
