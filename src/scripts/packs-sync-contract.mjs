@@ -45,6 +45,14 @@ const USAGE =
 /** @param {string} ref */
 const isFullSha = (ref) => /^[0-9a-f]{40}$/.test(ref);
 
+/**
+ * A plain tag name: no revision syntax (`~`, `^`, `:`, `@{`, `..`), so
+ * `refs/tags/<ref>` names exactly one ref and never a commit relative to it.
+ *
+ * @param {string} ref
+ */
+const isPlainTagName = (ref) => /^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(ref) && !ref.includes('..') && !ref.endsWith('.lock');
+
 /** @param {string} ref @param {string} where */
 const notPinnable = (ref, where) =>
   new Error(`packs-sync-contract: ${ref} is not a tag or a full 40-character commit in ${where}; a branch, HEAD or a short sha cannot pin the contract`);
@@ -67,6 +75,7 @@ function cloneCharter(ref) {
   try {
     git(dir, ['init', '-q']);
     // A tag is fetched as a tag, so a branch of the same name is never taken for it.
+    if (!isFullSha(ref) && !isPlainTagName(ref)) throw new Error('not a plain tag name');
     const refspec = isFullSha(ref) ? ref : `refs/tags/${ref}:refs/tags/${ref}`;
     git(dir, ['fetch', '-q', '--depth', '1', CHARTER_REPOSITORY, refspec]);
   } catch {
@@ -86,6 +95,9 @@ function cloneCharter(ref) {
 function resolvePinnable(checkout, ref) {
   try {
     if (isFullSha(ref)) return { commit: git(checkout, ['rev-parse', '--verify', `${ref}^{commit}`]).toString().trim() };
+    if (!isPlainTagName(ref)) throw new Error('not a plain tag name');
+    // The tag must exist as a ref of its own; only then is it peeled to its commit.
+    git(checkout, ['show-ref', '--verify', '--quiet', `refs/tags/${ref}`]);
     return { commit: git(checkout, ['rev-parse', '--verify', `refs/tags/${ref}^{commit}`]).toString().trim(), tag: ref };
   } catch {
     throw notPinnable(ref, checkout);
