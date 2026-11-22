@@ -1,7 +1,7 @@
 {
-  "event_count": 40,
-  "last_event_id": "01M81RMZFZNJQ6G8040VEZKZ8T",
-  "materialized_at": "2026-11-22T13:55:37.599066+00:00",
+  "event_count": 41,
+  "last_event_id": "01M81S6RBWCE6S09Z1D5HTVTPD",
+  "materialized_at": "2026-11-22T14:05:20.124940+00:00",
   "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
   "mission_type": "",
@@ -12,9 +12,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 2,
+    "for_review": 1,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 2
   },
   "work_packages": {
@@ -147,22 +147,22 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
-      "lane": "for_review",
-      "last_event_id": "01M81REE8MQ9P3CF4V6BDA5P99",
-      "last_transition_at": "2026-11-22T13:52:03.348573+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M81S6RBWCE6S09Z1D5HTVTPD",
+      "last_transition_at": "2026-11-22T14:05:20.124940+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "classified-as edges + measure nodes; route loads catalog. Includes out-of-map fix 8a6204c to WP02 files: default catalog moved from measures.default.yaml (read via import.meta.url, not found once Vite bundles the route into .prerender/chunks) to statically imported measures-default.mjs, same 17 records, still validated; identical cherry-pick on lane-e (ff3a71a). Full fast suite 4079/4079."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 290,
-      "shell_pid_created_at": "1795354757.23",
+      "role": "reviewer",
+      "shell_pid": 11567,
+      "shell_pid_created_at": "1795356316.49",
       "subtasks": {
         "T016": "done",
         "T017": "done",
