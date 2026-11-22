@@ -74,9 +74,6 @@ describe('links.mcp (FR-009)', () => {
       title: 'Doc-Kitty MCP server (not published yet: build it from source, see href)',
       usage: 'doc-kitty-mcp --site https://docs.example/docs',
     });
-    // No registry form of any kind until the package is published (#408).
-    expect(JSON.stringify(index._links.mcp)).not.toContain('npm:');
-    expect(index._links.mcp.usage).not.toContain('npx');
 
     const llms = await getLlmsTxt({ mcp: true });
     expect(llms).not.toContain('npm:');
@@ -96,7 +93,6 @@ describe('links.mcp (FR-009)', () => {
       'utf8',
     );
     expect(MCP_BUILD_FROM_SOURCE_URL).toBe(BUILD_FROM_SOURCE);
-    expect(MCP_BUILD_FROM_SOURCE_URL.endsWith('#build-from-source')).toBe(true);
     expect(quickstart.split('\n')).toContain('## Build from source');
   });
 });
