@@ -8,11 +8,11 @@
       "criterion_id": "FR-001",
       "description": "Verify FR-001 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "tests/a11y/diagram-legibility.spec.ts (light+dark, 1280/390) on lane-b 9840913; red on main code: ArchiMate labels 1.19-1.41:1 dark (tasks/WP01-fixture-and-browser-check/evidence/red-lane-a); unit: diagram-label-contrast.test.ts 'pins black on the ArchiMate layer fills'",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:33.390149+00:00",
+      "notes": "ArchiMate labels now >=4.5:1 in both themes"
     },
     {
       "criterion_id": "FR-002",
