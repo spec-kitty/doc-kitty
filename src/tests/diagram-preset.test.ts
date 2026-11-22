@@ -33,6 +33,8 @@ import { restoreInternalEnv } from './helpers/restore-internal-env';
 import diagramMeta from '../lib/remark/diagram-meta.js';
 import plantumlMeta from '../lib/remark/plantuml-meta.js';
 import diagramFigure from '../lib/rehype/diagram-figure.js';
+import diagramLabelContrast from '../lib/rehype/diagram-label-contrast.js';
+import { DIAGRAM_LABEL_FONT_STACK, pinDiagramLabelFont } from '../lib/integrations/diagrams.js';
 import {
   sentinelThemeRewrite,
   BUILD_MERMAID_OPTS,
@@ -188,19 +190,24 @@ describe('defineDocKittyIntegrations diagrams preset (opt-in, FR-001)', () => {
     expect(typeof md?.remarkPlugins?.[2]).toBe('function'); // astro-plantuml createRemarkPlugin
 
     // The rehype chain: `@beoe/rehype-mermaid` (with the build opts tuple) → the
-    // sentinel→var theme rewrite → the shared figure wrapper, in that order.
+    // sentinel→var theme rewrite → the label-font pin (#370) → the author-fill label
+    // contrast pass (#369, after the rewrite so only author colours are literal) →
+    // the shared figure wrapper.
     const rehype = md?.rehypePlugins ?? [];
-    expect(rehype).toHaveLength(3);
+    expect(rehype).toHaveLength(5);
     const beoeEntry = rehype[0] as [unknown, unknown];
     expect(Array.isArray(beoeEntry)).toBe(true);
     expect(typeof beoeEntry[0]).toBe('function'); // the @beoe plugin
     expect(beoeEntry[1]).toBe(BUILD_MERMAID_OPTS); // exact registered build opts
     expect(BUILD_MERMAID_OPTS).toMatchObject({
       strategy: 'inline',
-      mermaidConfig: { theme: 'base', securityLevel: 'strict' },
+      // The render page measures labels in the pinned font (#370).
+      mermaidConfig: { theme: 'base', securityLevel: 'strict', fontFamily: DIAGRAM_LABEL_FONT_STACK },
     });
     expect(rehype[1]).toBe(sentinelThemeRewrite);
-    expect(rehype[2]).toBe(diagramFigure);
+    expect(rehype[2]).toBe(pinDiagramLabelFont);
+    expect(rehype[3]).toBe(diagramLabelContrast);
+    expect(rehype[4]).toBe(diagramFigure);
   });
 
   it('[build mode] injects NO client render owner (the build figure is static)', async () => {

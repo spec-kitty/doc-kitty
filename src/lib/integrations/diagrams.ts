@@ -13,6 +13,7 @@ import type { AstroIntegration } from 'astro';
 import diagramMeta from '../remark/diagram-meta.js';
 import plantumlMeta from '../remark/plantuml-meta.js';
 import diagramFigure from '../rehype/diagram-figure.js';
+import diagramLabelContrast from '../rehype/diagram-label-contrast.js';
 import { withMermaidDiskCache, beoeDiskCache, BEOE_CACHE_DIR } from '../diagram/beoe-cache.js';
 
 /** Minimal structural mdast node — enough to find mermaid fences and recurse. */
@@ -233,12 +234,52 @@ export const SENTINEL_THEME_VARIABLES: Readonly<Record<string, string>> = {
   secondBkg: DIAGRAM_SENTINELS['cluster-fill'],
 };
 
+/**
+ * The one font Mermaid's HTML labels are measured AND shown in (#370). Mermaid sizes
+ * each label's `foreignObject` at render time, in a blank Chromium page, from the
+ * font that page resolves; the reader's browser then draws the label in whatever
+ * font the site resolves. When the two differ, the label overflows its box and is
+ * cut off. An author `%%{init}%%` that sets `themeVariables.fontFamily` makes this
+ * certain: the baked SVG then carries no label `font-family`, so the site shows the
+ * labels in its own, wider sans font.
+ *
+ * The render page measures labels in the renderer's configured `fontFamily`, which
+ * {@link BUILD_MERMAID_CONFIG} sets to this stack. An author directive does not move
+ * that measurement (checked with the author's font installed on the build machine).
+ * {@link pinDiagramLabelFont} writes {@link labelFontRule} into each baked SVG's own
+ * `<style>`, scoped to its id, with `!important` so neither an author directive nor a
+ * site rule can change the display font. Inside the SVG the rule travels with the
+ * figure, its lightbox copy (a clone, same id) and the disk cache, and adds nothing
+ * to the toolkit's global CSS.
+ *
+ * Every family in the stack shares Arial's advance widths: Liberation Sans and Arimo
+ * on a Linux build machine, Arial or Helvetica on macOS, Windows and iOS. A reader
+ * device with none of them falls back to its own sans font, which can still be wider.
+ */
+export const DIAGRAM_LABEL_FONT_STACK = 'Arial, Helvetica, "Liberation Sans", Arimo, sans-serif';
+
+/** An id as a CSS identifier: every character outside `[A-Za-z0-9_-]`, a leading
+ * digit, and a digit after a leading `-` are escaped (the subset of
+ * `CSS.escape` an SVG id can need; Mermaid's own ids need none of it). */
+export function cssEscapeId(id: string): string {
+  return id.replace(/[^A-Za-z0-9_-]|^\d|(?<=^-)\d|^-$/g, (c) =>
+    /\d/.test(c) ? `\\${c.charCodeAt(0).toString(16)} ` : `\\${c}`,
+  );
+}
+
+/** The label-font rule for the SVGs `scope` selects. */
+export const labelFontRule = (scope: string): string =>
+  `${scope} foreignObject,${scope} foreignObject *{font-family:${DIAGRAM_LABEL_FONT_STACK}!important}`;
+
 /** The `mermaidConfig` handed to `@beoe/rehype-mermaid` in build mode: the
  * `base` theme, `securityLevel: 'strict'` (client-parity), and the full sentinel
  * `themeVariables`. */
 export const BUILD_MERMAID_CONFIG = {
   theme: 'base',
   securityLevel: 'strict',
+  // The label font (#370), stated here rather than left to the renderer's default,
+  // so the render page measures in the font `pinDiagramLabelFont` displays.
+  fontFamily: DIAGRAM_LABEL_FONT_STACK,
   themeVariables: SENTINEL_THEME_VARIABLES,
 } as const;
 
@@ -297,6 +338,34 @@ export const BUILD_SVGO_CONFIG = {
     },
   ],
 } as const;
+
+/**
+ * Write {@link labelFontRule} into each build-rendered Mermaid `<svg>` (#370), scoped
+ * to its id like Mermaid's own rules, so the site draws labels in the font the render
+ * page measured them in. A Mermaid SVG is recognised by `aria-roledescription`, which
+ * Mermaid sets on every diagram root; PlantUML (a raw node, SVG `<text>` sized with
+ * `textLength`) is not touched.
+ */
+export function pinDiagramLabelFont() {
+  return function transformer(tree: RewriteHastNode): void {
+    const walk = (node: RewriteHastNode): void => {
+      const props = node.properties;
+      if (node.tagName === 'svg' && props?.ariaRoleDescription !== undefined && typeof props.id === 'string') {
+        const rule = labelFontRule(`#${cssEscapeId(props.id)}`);
+        const style = (node.children ?? []).find((c) => c.tagName === 'style');
+        const text: RewriteHastNode = { type: 'text', value: rule };
+        if (style) style.children = [...(style.children ?? []), text];
+        else {
+          const newStyle: RewriteHastNode = { type: 'element', tagName: 'style', properties: {}, children: [text] };
+          node.children = [newStyle, ...(node.children ?? [])];
+        }
+        return;
+      }
+      for (const child of node.children ?? []) walk(child);
+    };
+    walk(tree);
+  };
+}
 
 /**
  * The options tuple handed to `@beoe/rehype-mermaid` in build mode (T001): inline
@@ -415,13 +484,44 @@ const SENTINEL_TO_VAR: ReadonlyMap<string, string> = new Map(
   ]),
 );
 
-/** Replace every sentinel hex occurrence in `value` with its `var(--dk-diagram-*)`.
- * Case-insensitive whole-hex match; a non-sentinel hex passes through untouched. */
+/**
+ * Each sentinel as an `rgb()`/`rgba()` pattern (#369). Mermaid writes a colour it
+ * derives from a theme variable in functional notation, not hex: the edge-label halo
+ * is `.labelBkg{background-color:rgba(225,240,193,.5)}`, the node-fill sentinel at
+ * half alpha. A hex-only rewrite leaves it raw, so a pale green box sits behind edge
+ * labels in dark mode. An opaque match becomes the token; a translucent one becomes
+ * the token at the same alpha through `color-mix`.
+ */
+const SENTINEL_RGB_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = Object.entries(DIAGRAM_SENTINELS).map(
+  ([token, hex]) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    const sep = String.raw`\s*[,\s]\s*`;
+    const alpha = String.raw`(?:\s*[,/]\s*(\d*\.?\d+%?))?`;
+    const pattern = new RegExp(String.raw`rgba?\(\s*` + `${r}${sep}${g}${sep}${b}` + alpha + String.raw`\s*\)`, 'gi');
+    return [pattern, `var(--dk-diagram-${token})`] as const;
+  },
+);
+
+/** An `rgba()` alpha (`.5`, `0.5`, `50%`) as a whole percentage. */
+const alphaPercent = (alpha: string): number =>
+  Math.round(alpha.endsWith('%') ? parseFloat(alpha) : parseFloat(alpha) * 100);
+
+/** Replace every sentinel occurrence in `value` with its `var(--dk-diagram-*)`: a hex
+ * (case-insensitive whole-hex match) or an `rgb()`/`rgba()` of the same colour. A
+ * non-sentinel colour passes through untouched. */
 function rewriteSentinels(value: string): string {
   let out = value;
   for (const [hex, cssVar] of SENTINEL_TO_VAR) {
     if (out.toLowerCase().includes(hex)) {
       out = out.replace(new RegExp(hex, 'gi'), cssVar);
+    }
+  }
+  if (out.includes('rgb')) {
+    for (const [pattern, cssVar] of SENTINEL_RGB_PATTERNS) {
+      out = out.replace(pattern, (_match: string, alpha: string | undefined) => {
+        const pct = alpha === undefined ? 100 : alphaPercent(alpha);
+        return pct >= 100 ? cssVar : `color-mix(in srgb,${cssVar} ${pct}%,transparent)`;
+      });
     }
   }
   return out;
@@ -592,6 +692,10 @@ export const diagramsIntegration: AstroIntegration = {
             rehypePlugins: [
               [cachedMermaid, BUILD_MERMAID_OPTS],
               sentinelThemeRewrite,
+              pinDiagramLabelFont,
+              // After the rewrite, so every themed colour is a var() and every literal
+              // fill left is the author's (#369).
+              diagramLabelContrast,
               diagramFigure,
             ],
           },
