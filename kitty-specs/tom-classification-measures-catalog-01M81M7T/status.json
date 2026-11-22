@@ -2,10 +2,9 @@
   "event_count": 68,
   "last_event_id": "01M81X2GGPGGBGWJGXZHB5YJSM",
   "materialized_at": "2026-11-22T15:12:55.318783+00:00",
-  "mission_number": "21",
+  "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
-  "mission_type": "software-dev",
-  "schema_version": 2,
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,289 +19,156 @@
   "work_packages": {
     "WP01": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude",
       "force_count": 0,
       "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M81X2F4DAPE4N0CPGC5324DF",
       "last_transition_at": "2026-11-22T15:12:53.901116+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "ADR-0080 accepted, glossary terms, changelog fragment",
-        "Review passed (claude::reviewer-renata). Reviewed 33fbcc1 on feat/406-tom-classification directly; spec-kitty recorded no review range (not_recorded; cf. spec-kitty#7809). T001: ADR-0080 doc_status active, updated 2026-11-22; Status reads Accepted, 2026-11-21, by operator ruling on #406. Counsel items stay open and non-blocking per D1; the ⚖ markers are untouched; the Decision text is unchanged; the diff touches frontmatter and Status only. T002: the Measure and TOM classification glossary bullets match the WP wording, including the OQ-3 'marks evidence, not complete' clause, with a relative link. T003: Added fragment; its claims match the spec (17 Annex II headings, scope/note, measures.yaml replaces the default, unknown id fails the build and validate:catalog, classified-as edges, /api/pages, OKF); the root-relative link follows the unreleased README. C-004/C-006: no new ADR number, and docs/adr/README.md and CHANGELOG.md are not in the diff. RAN on 33fbcc1: validate:docs, validate:links, validate:changelog, validate:adr-ids pass; markdownlint 0 issues. validate:adr-index fails, and it already fails on main 9621b5f (main's index lacks rows 0075-0080 and has a stale 0046 date). On this branch the only extra change is ADR-0080 regenerating as Accepted. Left to the bot, as the WP prescribes. Nit: the ADR Status wording is 'Accepted — 2026-11-21, by operator ruling on issue #406' rather than the prompt's exact sentence; it is equivalent. Vale not installed here."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP01-accept-adr-0080-and-vocabulary/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP01-accept-adr-0080-and-vocabulary/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 892,
-      "shell_pid_created_at": "1795352111.87",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done"
-      }
+      "shell_pid": 3545,
+      "shell_pid_created_at": "1795351892.76"
     },
     "WP02": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::node-norris",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
       "lane": "done",
       "last_event_id": "01M81X26VECSSEBRDZX0Y6GAS2",
       "last_transition_at": "2026-11-22T15:12:45.422710+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Core, loader, default catalog; 25 tests",
-        "Review passed (claude::reviewer-renata). Reviewed lane-a at 0e0aba1. The recorded range a4b41a6..3f6ad4b leaves out the revert 0e0aba1. The net non-kitty-specs diff from the lane base 81d1664 is byte-identical to f5369d3: the glossary stamp churn (3f6ad4b) and its revert cancel out, and no package.json or lockfile changed. Checked: measures-core.mjs is pure (no fs, YAML parser or Astro), so the build routes and validate-catalog can share it. An absent docs/_meta/measures.yaml falls back to the shipped default; a consumer file replaces it wholesale. An absent tom_classification resolves to [] with no problems. An unknown id gives the contract's exact string '[dk-measures] <page>: unknown measure id \"<id>\" (not in <catalog>)'. The conflicting-scope and malformed-catalog strings match contracts/frontmatter-and-catalog.md. Duplicates collapse to the first occurrence, as documented. The loader memoises per resolved root, and the default path comes from import.meta.url ('lib' is in files). Default catalog: 17 records in Annex II heading order (Decision 2021/914); eu-gdpr Art. 32(1)(a)-(d) on headings 1-4 only; ids, natures and DPV terms exactly match research R2; all 17 IRIs exist in the published DPV 2.3 dpv.ttl (https://w3id.org/dpv#). RAN on 0e0aba1: both new test files 25/25; pnpm test src 4301/4301, mcp 181/181; pnpm lint clean; root pnpm typecheck clean. Note: the toolkit's own tsc --noEmit has 55 errors identically before (81d1664) and after, none in measures files, so this predates WP02. Heads-up for WP03: the core accepts unknown keys in an entry object (e.g. a typo 'scop:' silently defaults to system); shape strictness is WP03's schema job per this prompt."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP02-measures-core-loader-default/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP02-measures-core-loader-default/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 23543,
-      "shell_pid_created_at": "1795353131.84",
-      "subtasks": {
-        "T004": "done",
-        "T005": "done",
-        "T006": "done",
-        "T007": "done",
-        "T008": "done"
-      }
+      "shell_pid": 4644,
+      "shell_pid_created_at": "1795351978.94"
     },
     "WP03": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::node-norris",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
       "lane": "done",
       "last_event_id": "01M81X282CGA9BRGEY4SM0XVRB",
       "last_transition_at": "2026-11-22T15:12:46.668107+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Field shape in schema and gate, case-variant warning; full fast suite 4044 green",
-        "Review passed (claude::reviewer-renata). Reviewed lane-b at 0a16612. The recorded range ff83357..faa0c48 leaves out the fix 0a16612, which I reviewed. tom_classification is the same zod expression in schema.ts docKittyFields and in validate-frontmatter.mjs: a union of a non-empty string or a STRICT { measure: non-empty string, scope?: system|organisation, note?: string }. TomScope and TomClassificationRef are in metadata.ts. The gate warns on a case variant ('unknown key TOM_classification: did you mean tom_classification?'), and the build drops it (tested). Parity answer: the two shapes are separate but identical expressions, kept in step only by SHAPE_PARITY fixtures that run both arms on each file (the repo's existing NFR-005 convention). Nothing compares the definitions directly. Fixtures now cover bad-scope, no-measure, not-list, unknown-key and valid. My own probe found both arms agree on a non-string note, an empty id, null, a number entry and an empty list. The cycle finding (an unknown entry key such as 'scop:' silently defaulting the scope) is fixed by .strict() on both arms, plus a parity fixture and a build-schema case. RAN on 0a16612: WP03 shape+parity files pass; pnpm test src 4290/4290, mcp 181/181; lint and typecheck clean; validate:docs and validate:example pass. Note for later WPs: the measures core (WP02) still tolerates extra entry keys, but every page passes the strict schema first, so this is not reachable through the build."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP03-field-shape-schema-and-gate/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP03-field-shape-schema-and-gate/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 24178,
-      "shell_pid_created_at": "1795354714.95",
-      "subtasks": {
-        "T009": "done",
-        "T010": "done",
-        "T011": "done",
-        "T012": "done"
-      }
+      "shell_pid": 7122,
+      "shell_pid_created_at": "1795352282.44"
     },
     "WP04": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::node-norris",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
       "lane": "done",
       "last_event_id": "01M81X2A2CS2KBR952GXS7DWRN",
       "last_transition_at": "2026-11-22T15:12:48.716535+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Gate resolves measures via shared core; 18 catalog tests green, validate:catalog green",
-        "Review passed (claude::reviewer-renata). Reviewed 9e361d0 (range 357c988..9e361d0). validate-catalog.mjs imports buildMeasuresIndex and classificationProblems from measures-core.mjs and readMeasuresCatalog from measures-loader.mjs, the modules the build routes use, with no re-implementation, so gate and build verdicts and wording cannot diverge (NFR-002). Every page's tom_classification is resolved against <root>/_meta/measures.yaml, else the shipped default. A malformed consumer catalog is reported even when no page uses it (tested). The success line counts classified pages. Messages: unknown id is '[dk-measures] <page>: unknown measure id \"<id>\" (not in <catalog>)', matching the contract (tested exactly); malformed-catalog messages come from parseMeasuresCatalog. Dependency gate respected: WP04 depends on WP02 only; WP02 was approved 13:12:34 and WP04 claimed 13:15:06. lane-c merges lane-a, and the WP02 files are identical to f5369d3. RAN on 9e361d0: validate-catalog-measures + catalog tests 15/15; real pnpm validate:catalog passes on docs and example/docs (24 refs, 0 classifications today); pnpm test src 4306/4306, mcp 181/181; lint and typecheck clean. Integration note: the WP05 loader fix (8a6204c, the default becomes a data module) changes measures-loader.mjs, which this gate imports. After lanes merge, re-run validate:catalog and these tests on the merged tree."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP04-build-free-gate-parity/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP04-build-free-gate-parity/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 13628,
-      "shell_pid_created_at": "1795355425.03",
-      "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
-      }
+      "shell_pid": 1185,
+      "shell_pid_created_at": "1795353300.68"
     },
     "WP05": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::node-norris",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
       "lane": "done",
       "last_event_id": "01M81X2BBF6RPJQC2KWH0PMKAR",
       "last_transition_at": "2026-11-22T15:12:50.031469+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "classified-as edges + measure nodes; route loads catalog. Includes out-of-map fix 8a6204c to WP02 files: default catalog moved from measures.default.yaml (read via import.meta.url, not found once Vite bundles the route into .prerender/chunks) to statically imported measures-default.mjs, same 17 records, still validated; identical cherry-pick on lane-e (ff3a71a). Full fast suite 4079/4079.",
-        "Review passed (claude::reviewer-renata). Reviewed 37b200e + 8a6204c (range ffb92a8..8a6204c). Graph: one classified-as edge per resolved measure, from published pages only, to a catalog:measure:<id> node (title = label, url = DPV IRI when present, measure {nature, frameworks}). The edge carries note when non-empty and ALWAYS scope. buildContentGraph resolves every entry's classification (drafts included) before emitting, so an unknown id on a draft still throws, naming the page file and the id; nothing is emitted for drafts (tested). The always-on content-graph route loads loadMeasuresCatalog(docsRoot), so every site, the example included, gets the check. The FR-010 ratchet has a positive control. Bundling fix 8a6204c: DEFAULT_MEASURES in measures-default.mjs is JSON-identical (key order included) to the approved WP02 YAML (f5369d3): 17 records, 0 problems through parseMeasuresCatalog. The loader still validates the default through parseMeasuresCatalog; a consumer _meta/measures.yaml still replaces it wholesale (test passes). 8a6204c and lane-e's ff3a71a have identical diffs apart from index lines, and measures-default.mjs and measures-loader.mjs are identical on lane-d and lane-e. WP07 loop closed: I built a real graph with this lane's buildContentGraph from WP07's fixture classifications; its measure nodes and classified-as edges serialize byte-identically to WP07's okf-export-measures/graph.json. RAN on 8a6204c: content-graph + measures tests 41/41; pnpm test src 4322/4322 (includes the example build via agent-links), mcp 181/181; lint and typecheck clean; validate:catalog passes. Nits: only the outer DEFAULT_MEASURES array is frozen, not the records inside; WP04's gate (lane-c) imports the loader this commit changes, so re-run validate:catalog after the lanes merge."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP05-content-graph-classified-as/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP05-content-graph-classified-as/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 11567,
-      "shell_pid_created_at": "1795356316.49",
-      "subtasks": {
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done"
-      }
+      "shell_pid": 290,
+      "shell_pid_created_at": "1795354757.23"
     },
     "WP06": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::node-norris",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
       "lane": "done",
       "last_event_id": "01M81X2CNRC4GBDTZHV1TWYWV9",
       "last_transition_at": "2026-11-22T15:12:51.384464+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "tom_classification on /api/pages records via resolvePageMeasures; key only when declared; unknown id throws naming page path and id. Carries the identical out-of-map loader fix ff3a71a (= lane-d 8a6204c): default catalog moved from measures.default.yaml (import.meta.url read breaks once Vite bundles the route) to statically imported measures-default.mjs, same 17 records. Full fast suite 4078/4078.",
-        "Review passed (claude::reviewer-renata). Reviewed 66605d7 + ff3a71a. resolvePageMeasures maps resolveClassification (the shared core) to {measure, label, nature, scope, note?}; AgentPageMeasure is in contract.ts. Graph agreement: the API record and the WP05 graph edge resolve through the same core against the same loadMeasuresCatalog(docsRoot) records, so label, nature and scope cannot disagree. No field means resolvePageMeasures returns undefined and the key is absent, not []; a declared empty list gives []. Spread safety: toAgentRecord picks only named fields (no tom_classification), and nothing spread after it uses the key, so it cannot overwrite or be overwritten. An unknown id throws, naming the page's path relative to the docs root (else <slug|README>.md) and the id, with the same label rule as WP05. Loader fix ff3a71a: identical diff to lane-d's 8a6204c; measures-default.mjs and measures-loader.mjs are identical across lane-d and lane-e (verified on WP05). RAN on ff3a71a: agent-page-measures 6/6; pnpm test src 4321/4321, mcp 181/181; lint and typecheck clean."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP06-agent-page-classification/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP06-agent-page-classification/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 26010,
-      "shell_pid_created_at": "1795356983.96",
-      "subtasks": {
-        "T020": "done",
-        "T021": "done",
-        "T022": "done"
-      }
+      "shell_pid": 290,
+      "shell_pid_created_at": "1795354757.23"
     },
     "WP07": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::node-norris",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
       "lane": "done",
       "last_event_id": "01M81X290Z900J18Q47TGZBJ3Q",
       "last_transition_at": "2026-11-22T15:12:47.647178+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "OKF Measures section; 87 OKF tests green",
-        "Review passed (claude::reviewer-renata). Reviewed b5438b8 (range 18019cc..b5438b8). okf-export/core.mjs adds ['classified-as','Measures'] to RELATION_SECTIONS between References and Derived from, matching contracts/machine-surfaces.md. relationLine adds ' (organisation)' only for classified-as with scope organisation, then the note. A measure node with an http(s) url links to it; without an IRI it renders as plain text, never as an unlinked source (tested). Graphs without the relation take the old code paths unchanged (the existing OKF tests pass). Fixture drift check: graph.json's measure nodes (id catalog:measure:<id>, kind catalog, title, url = DPV IRI, measure {nature, frameworks}) and classified-as edges (id source|rel|target, rel, note?, scope) match the contract's content-graph examples field for field. The real graph route (WP05) does not exist yet, so the fixture can only be checked against the contract today; WP09's artifact assertions on the real build should close that loop. Nit: the contract's OKF markdown example lists Events logging before Accountability, but edges keep code-unit order, so a real bundle prints Accountability first; the example text is illustrative, so consider reordering it. RAN on b5438b8: OKF tests 81/81 (3 files); pnpm test src 4281/4281, mcp 181/181; lint and typecheck clean; no dependency changes."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP07-okf-measures-section/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP07-okf-measures-section/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 23059,
-      "shell_pid_created_at": "1795354676.75",
-      "subtasks": {
-        "T023": "done",
-        "T024": "done",
-        "T025": "done"
-      }
+      "shell_pid": 17011,
+      "shell_pid_created_at": "1795352487.59"
     },
     "WP08": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::scribe-sally",
       "force_count": 0,
       "implementer_of_record": "claude::scribe-sally",
       "lane": "done",
       "last_event_id": "01M81X2GGPGGBGWJGXZHB5YJSM",
       "last_transition_at": "2026-11-22T15:12:55.318783+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Metadata model, content graph, consumer setup (measures catalog reference), authoring guide. Default is lib/measures-default.mjs (no YAML). Documents OKF Measures ordering by measure id. validate:docs, validate:links, markdownlint-cli2 and Vale 3.18.0 clean.",
-        "Review passed (claude::reviewer-renata). Reviewed 64296f8 on feat/406-tom-classification directly; spec-kitty recorded no review range (not_recorded; the #7809 planning-lane shape). No IMPLEMENTATION_MISSING. Docs vs approved code: metadata-model (field table row; strict object form; case-variant warning; closed-reference resolution; drafts checked; validate:catalog; /api/pages record {measure,label,nature,scope,note?} present only when declared; OKF section; no HTML rendering). content-graph (catalog:measure:<id> node with title/url/measure{nature,frameworks}, emitted only when a published page uses it; classified-as edge always carries scope; OKF ordering correctly documented as code-unit order of target ids, i.e. by measure id, not authored order). consumer-setup (default = 17 Annex II headings with Art. 32(1)(a)-(d) on 1-4 and nearest DPV concept; the default is named as lib/measures-default.mjs DEFAULT_MEASURES, reflecting the bundling fix; wholesale replace; field table matches parseMeasuresCatalog; a malformed catalog fails the build and validate:catalog even when unused, which is true since the content-graph route loads the catalog unconditionally). authoring (how-to plus the link-don't-copy organisation pattern, matching the WP09 example pair). git grep finds no 'measures.default.yaml' in docs, src or example. RAN on 64296f8: validate:docs (no warnings in the changed files), validate:links, markdownlint 0 issues. Vale is not installed here. Nits: (1) 'the build-free gate runs the same check with the same wording': the wording matches, but the gate prints the page path relative to cwd (example/docs/...) while the build prints it relative to the docs root; (2) authoring.md 'related' inserts adr/0080 between 0061 and 0062."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP08-docs-contract-graph-guides/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP08-docs-contract-graph-guides/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 32079,
-      "shell_pid_created_at": "1795357347.41",
-      "subtasks": {
-        "T026": "done",
-        "T027": "done",
-        "T028": "done",
-        "T029": "done"
-      }
+      "shell_pid": 195,
+      "shell_pid_created_at": "1795357024.06"
     },
     "WP09": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::node-norris",
       "force_count": 1,
       "implementer_of_record": "claude::node-norris",
       "lane": "done",
       "last_event_id": "01M81X2DYBMJ82TFHFGT3B5XW1",
       "last_transition_at": "2026-11-22T15:12:52.683131+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id.",
-        "Cycle 1 fixed in bc5c9d8: AgentPagePayload key table + AgentPageMeasure table (nested map); example banners no longer say 'policy'; link-not-copy loops all org classified-as targets. FULL pnpm test: src 218 files/4333 tests, mcp 23/181, all green; build + assert:artifacts PASS.",
-        "Review passed (cycle 2, claude::reviewer-renata). bc5c9d8 fixes all three cycle-1 points. (1) agent-api-build-identity KEYS: AgentPagePayload lists tom_classification, and a new AgentPageMeasure table {measure,label,nature,scope,note} is registered in CHILDREN, so entry keys are walked too. This is an out-of-map edit closing WP06's gap. (2) Both banners reworded without 'policy'; the pinned glossary collision warning fires once again. (3) Link-don't-copy now loops over every classified-as target of context/incident-handling (at least 2 required) and fails if architecture/audit-logging repeats any. Cycle-1 checks still hold: the d/e/f merge is clean; the assertions read dist/ only; pins 75/80 are explained by the two pages; the negative case (events-loging) fails the build with the contract message. RAN on bc5c9d8: full pnpm test, every project: src 218 files / 4333 tests, mcp 181, all green; lint and typecheck clean; example build plus assert:artifacts PASS, including tom-classification. Post-merge reminder: lane-g lacks lane-c (WP04), so re-run validate:catalog and validate-catalog-measures on the consolidated tree."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP09-example-pages-and-artifact-assertions/review-cycle-2.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP09-example-pages-and-artifact-assertions/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 21413,
-      "shell_pid_created_at": "1795360103.35",
-      "subtasks": {
-        "T030": "done",
-        "T031": "done",
-        "T032": "done"
-      }
+      "shell_pid": 195,
+      "shell_pid_created_at": "1795358245.64"
     }
   }
 }
