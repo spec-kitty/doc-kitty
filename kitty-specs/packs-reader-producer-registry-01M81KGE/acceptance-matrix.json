@@ -1,0 +1,199 @@
+{
+  "mission_slug": "packs-reader-producer-registry-01M81KGE",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Snapshot of the packs contract pinned to contract-packs-v0.1.0-rc.1 (69ec326) with a lock of tag, commit and sha256 per file",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-contract.test.ts: pinned to the tag and commit; holds exactly the locked files",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:14.676853+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "A changed, added or removed snapshot file fails the lock test",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-contract.test.ts: one changed byte; a file not in the lock; a missing locked file; a symlink",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:19.946331+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "pnpm packs:sync-contract --ref <tag|full sha> refreshes the snapshot and lock",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-sync-contract.test.ts (tag, commit, no-op, refuses branch/HEAD/short sha, all-or-nothing); real tag re-sync byte-identical",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:24.478697+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "The classifier gives every vendored conformance case its outcome, rule, kind, schema and content form",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-classify.test.ts: 76/76 cases + rule coverage; reviewer javadiff 0/18,495 divergences vs PackFileKind.java",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:29.350040+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "readPack returns the ADR-0079 D4 PackModel and never throws on pack content",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-read.test.ts: four fixtures, robustness (unparsable files, binary, symlinks)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:33.992002+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "README parsed into frontmatter, title, preamble and H2 sections",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-readme.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:38.779545+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Policy located through mutability_policy and mapped",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-read.test.ts: alpha policy; named-but-missing policy warns",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:43.230309+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "content_hash recomputed (CRLF and lone CR to LF); verified only when hashes and membership match",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-read.test.ts: alpha CRLF tactic verified; delta unverified; symlinked entry unverified",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:47.572684+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Inventory from a verified manifest, else a file-kinds walk, labelled with its source",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-read.test.ts: alpha source=manifest; beta and delta source=file-kinds",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:51.908049+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Warnings for retired, unmodelled, membership drift, hash mismatch, unknown key or content form, unreadable files",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-read.test.ts, packs-contract.test.ts (unknown key and content form)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:29:56.397303+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "charterLock mismatch warns and records both commits",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-read.test.ts: the charter lock (ADR-0079 D2)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:00.744144+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "packs.contract names another snapshot whose lock is verified when loaded",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-options.test.ts: bad lock refused; valid snapshot accepted",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:05.177216+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "packs option accepts charterLock and contract, validated eagerly with [dk-packs] errors",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/packs-options.test.ts incl. defineDocKittyIntegrations({ packs })",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:09.620742+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "dockitty-read-pack prints the model and has a bin entry",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/read-pack-cli.test.ts; src/package.json bin dockitty-read-pack",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:13.879730+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Producer registry with roles and section/directories ownership scopes",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/producers.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:18.158531+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "PRODUCERS, isGeneratedStamp, isGeneratedPage and the Gherkin output scan read the registry with unchanged behaviour",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/producer-output.test.ts; existing schema-validator-parity, legacy-stamp-removal, gherkin-generate tests unedited and green; reviewer old-vs-new isGeneratedPage over 345 pages: 0 diffs",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:22.633970+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "An ownership stamp outside its producer's scope never makes a page generated",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/producers.test.ts: directories-scoped positive control; root page; glossary stamp elsewhere",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:26.857903+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "ADR-0083 extends ADR-0079 with the registry, ADR-0079 unedited",
+      "proof_type": "automated_test",
+      "evidence": "docs/adr/0083-producer-registry-and-ownership-scopes.md (Proposed); WP06 approved cycle 2",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T14:30:31.173290+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-001",
+      "description": "The pack reader never parses pack content through gray-matter (cache by input, ---js evaluation): no gray-matter import under src/lib/packs",
+      "verification_method": "grep_absence",
+      "verification_command": "from 'gray-matter'",
+      "result": "confirmed_absent",
+      "evidence": "grep found zero matches",
+      "scope": ".worktrees/packs-reader-producer-registry-01M81KGE-lane-e/src/lib/packs"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "event_count": 68,
+  "last_event_id": "01M81TRC2BVTTY90JQAMYVJRAF",
+  "materialized_at": "2026-11-22T14:32:25.931168+00:00",
+  "mission_number": "",
+  "mission_slug": "packs-reader-producer-registry-01M81KGE",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 6,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M81TR2RG6C7PDCTGH3DRRYER",
+      "last_transition_at": "2026-11-22T14:32:16.400863+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP01-producer-registry/review-cycle-1.md",
+        "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP01-producer-registry/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 4647,
+      "shell_pid_created_at": "1795350982.52"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 1,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81TR4KD69BB5FTR6ZWC7CJF",
+      "last_transition_at": "2026-11-22T14:32:18.285466+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP02-contract-snapshot/review-cycle-2.md",
+        "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP02-contract-snapshot/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 23368,
+      "shell_pid_created_at": "1795351466.86"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 1,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81TR69VBFGQKJ31FFXJQACZ",
+      "last_transition_at": "2026-11-22T14:32:20.027172+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP03-classifier/review-cycle-2.md",
+        "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP03-classifier/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 194,
+      "shell_pid_created_at": "1795354024.51"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 1,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81TR7ZDWMGEHFP7Q8VJWX6A",
+      "last_transition_at": "2026-11-22T14:32:21.741942+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP04-pack-reader/review-cycle-2.md",
+        "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP04-pack-reader/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 194,
+      "shell_pid_created_at": "1795354999.3"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81TR9TPG7Y8BHSC7VD11WKA",
+      "last_transition_at": "2026-11-22T14:32:23.639011+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP05-option-cli-corpus/review-cycle-1.md",
+        "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP05-option-cli-corpus/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 194,
+      "shell_pid_created_at": "1795356149.71"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude::comms-cleo",
+      "force_count": 1,
+      "implementer_of_record": "claude::comms-cleo",
+      "lane": "done",
+      "last_event_id": "01M81TRC2BVTTY90JQAMYVJRAF",
+      "last_transition_at": "2026-11-22T14:32:25.931168+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP06-adr-docs-changelog/review-cycle-2.md",
+        "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP06-adr-docs-changelog/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 194,
+      "shell_pid_created_at": "1795357240.22"
+    }
+  }
+}
