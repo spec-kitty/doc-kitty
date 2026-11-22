@@ -20,6 +20,7 @@ import type {
   ToolRecord,
 } from './metadata.js';
 import { buildCatalog } from './catalog.js';
+import { resolveClassification, type MeasureRecord } from './measures-core.mjs';
 import {
   resolveCitation,
   resolveProfile,
@@ -116,7 +117,7 @@ export function buildDocsIndex(entries: DocEntry[]): DocsIndex {
 /** The `schema` value of `api/content-graph.json`; bump on a breaking shape change. */
 export const CONTENT_GRAPH_SCHEMA = 'dockitty.content-graph/1';
 
-export type GraphRel = 'related' | 'audience' | 'cites' | 'in-section' | 'derived-from';
+export type GraphRel = 'related' | 'audience' | 'cites' | 'in-section' | 'derived-from' | 'classified-as';
 
 /** A `{by, at}` stamp as the graph writes it (`at` is a UTC instant). */
 export interface GraphStamp {
@@ -139,6 +140,11 @@ export interface GraphNode {
    * its overview page. Absent on every other node.
    */
   openapi?: { sha256: string; released: boolean; overview: string };
+  /**
+   * A measure node (`id` `catalog:measure:<id>`, ADR-0080): the measure's nature
+   * and framework references. Absent on every other node.
+   */
+  measure?: { nature: string; frameworks: Array<{ framework: string; ref: string }> };
   tags?: string[];
   status?: 'draft' | 'stable' | 'deprecated';
   generated?: GraphStamp;
@@ -161,6 +167,8 @@ export interface GraphEdge {
   target: string;
   rel: GraphRel;
   note?: string;
+  /** Only on `classified-as` edges, and always written there (ADR-0080). */
+  scope?: 'system' | 'organisation';
 }
 
 export interface ContentGraph {
@@ -178,6 +186,8 @@ export interface PageLocation {
   /** Root-absolute route from the shared route table (`/guides/`). */
   route: string;
   index: boolean;
+  /** The page's file path from the docs root (`guides/setup.md`), for messages. */
+  file?: string;
 }
 
 export interface ContentGraphContext {
@@ -186,6 +196,11 @@ export interface ContentGraphContext {
   /** Draft routes from `draftRoutesOf`: read off disk, so independent of `DK_PUBLISH_DRAFTS`. */
   draftRoutes: ReadonlySet<string>;
   catalog: CitationCatalog;
+  /**
+   * The effective measures catalog (ADR-0080). Optional so existing callers build;
+   * when absent, a page with `tom_classification` fails as against an empty catalog.
+   */
+  measures?: { index: ReadonlyMap<string, MeasureRecord>; source: string };
 }
 
 /**
@@ -204,19 +219,20 @@ export function locatePages(
   for (const file of [...paths].sort(compareCodeUnit)) {
     const slug = ids.get(file) as string;
     const id = file.replace(/\.mdx?$/i, '');
-    out[slug] = { id, route: routes[file] as string, index: id !== slug };
+    out[slug] = { id, route: routes[file] as string, index: id !== slug, file };
   }
   return out;
 }
 
 type Sink = {
   node: (n: GraphNode) => void;
-  edge: (source: string, rel: GraphRel, target: string, note?: string) => void;
+  edge: (source: string, rel: GraphRel, target: string, note?: string, scope?: GraphEdge['scope']) => void;
 };
 
 interface GraphScope {
   index: DocsIndex;
   catalog: CitationCatalog;
+  measures: { index: ReadonlyMap<string, MeasureRecord>; source: string };
   locate: (slug: string) => PageLocation;
   /** Bundle ids of every page (drafts included), for `sources` that name a page. */
   pageIds: ReadonlySet<string>;
@@ -313,6 +329,30 @@ function citeEdges({ slug, data }: DocEntry, g: GraphScope, sink: Sink): void {
   }
 }
 
+/** The file name a measures message uses for a page. */
+const pageFileOf = (loc: PageLocation): string => loc.file ?? `${loc.id}.md`;
+
+/**
+ * `classified-as` edges (ADR-0080): one per measure the page lists, to a
+ * `catalog:measure:<id>` node. An unknown id throws, naming the page and the id;
+ * `buildContentGraph` resolves every entry (drafts too) before it emits.
+ */
+function classifiedEdges({ slug, data }: DocEntry, g: GraphScope, sink: Sink): void {
+  if (data.tom_classification === undefined) return;
+  const loc = g.locate(slug);
+  for (const m of resolveClassification(data.tom_classification, g.measures.index, pageFileOf(loc), g.measures.source)) {
+    const node: GraphNode = compact({
+      id: `catalog:measure:${m.measure}`,
+      kind: 'catalog' as const,
+      title: m.label,
+      url: m.dpv,
+      measure: { nature: m.nature, frameworks: m.frameworks },
+    });
+    sink.node(node);
+    sink.edge(loc.id, 'classified-as', node.id, m.note, m.scope);
+  }
+}
+
 /** The nearest published section index above `slug`, falling back to the bundle root. */
 function sectionEdge({ slug }: DocEntry, g: GraphScope, sink: Sink): void {
   if (slug === '') return;
@@ -352,6 +392,7 @@ export function buildContentGraph(entries: readonly DocEntry[], ctx: ContentGrap
   const scope: GraphScope = {
     index: buildDocsIndex([...entries]),
     catalog: ctx.catalog,
+    measures: ctx.measures ?? { index: new Map(), source: 'no measures catalog' },
     locate,
     pageIds: new Set(entries.map((e) => locate(e.slug).id)),
     publishedIndexes: new Set(published.filter((e) => locate(e.slug).index).map((e) => e.slug)),
@@ -360,14 +401,23 @@ export function buildContentGraph(entries: readonly DocEntry[], ctx: ContentGrap
   const edges = new Map<string, GraphEdge>();
   const sink: Sink = {
     node: (n) => void (nodes.has(n.id) || nodes.set(n.id, n)),
-    edge: (source, rel, target, note) => {
+    edge: (source, rel, target, note, edgeScope) => {
       const id = `${source}|${rel}|${target}`;
-      if (!edges.has(id)) edges.set(id, compact({ id, source, target, rel, note: note || undefined }));
+      if (!edges.has(id)) edges.set(id, compact({ id, source, target, rel, note: note || undefined, scope: edgeScope }));
     },
   };
+  // A measure id is a closed reference (ADR-0080): resolve every page's
+  // classification, drafts included, so a typo on a draft still fails the build.
+  for (const { slug, data } of entries) {
+    if (data.tom_classification !== undefined) {
+      resolveClassification(data.tom_classification, scope.measures.index, pageFileOf(locate(slug)), scope.measures.source);
+    }
+  }
   for (const entry of published) sink.node(pageNode(entry, locate(entry.slug)));
   for (const entry of published) {
-    for (const emit of [relatedEdges, audienceEdges, citeEdges, sectionEdge, derivedEdges]) emit(entry, scope, sink);
+    for (const emit of [relatedEdges, audienceEdges, citeEdges, classifiedEdges, sectionEdge, derivedEdges]) {
+      emit(entry, scope, sink);
+    }
   }
   return {
     schema: CONTENT_GRAPH_SCHEMA,
