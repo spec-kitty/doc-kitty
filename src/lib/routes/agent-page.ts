@@ -18,14 +18,17 @@
  *   export const getStaticPaths = route.getStaticPaths;
  *   export const GET = route.GET;
  */
+import path from 'node:path';
 import process from 'node:process';
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
-import type { AgentLink, AgentPagePayload } from '../contract.js';
+import type { AgentLink, AgentPageMeasure, AgentPagePayload } from '../contract.js';
 import type { AudienceEntry, DocKittyFrontmatter, ResolvedRelated } from '../metadata.js';
 import { pageSourceId, resolveRelated, slugFromEntryId, toAgentRecord } from '../metadata.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { absolute, memoizedBuildIdForEntries } from './shared.js';
+import { absolute, docsRoot, memoizedBuildIdForEntries } from './shared.js';
+import { resolveClassification } from '../measures-core.mjs';
+import { loadMeasuresCatalog, type MeasuresCatalog } from '../measures-loader.mjs';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { readAgentIncludes, spliceAgentIncludes } from '../gherkin/agent-includes.mjs';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
@@ -67,6 +70,36 @@ export interface OpenApiPagePayload extends AgentPagePayload {
  * (`id`/`body` are empty placeholders the branch never reads).
  */
 export type AgentPageRouteProps = { id: string; body: string; openApi?: string };
+
+/**
+ * A page's `tom_classification`, resolved against the measures catalog into the
+ * record shape `{ measure, label, nature, scope, note? }` (ADR-0080). `undefined`
+ * when the page has no such field, so its payload stays byte-identical. Throws on
+ * an unknown id, naming `pageLabel` and the id, which fails the page's build.
+ */
+export function resolvePageMeasures(
+  data: Pick<DocKittyFrontmatter, 'tom_classification'>,
+  catalog: Pick<MeasuresCatalog, 'index' | 'source'>,
+  pageLabel: string,
+): AgentPageMeasure[] | undefined {
+  if (data.tom_classification === undefined) return undefined;
+  return resolveClassification(data.tom_classification, catalog.index, pageLabel, catalog.source).map((m) => ({
+    measure: m.measure,
+    label: m.label,
+    nature: m.nature,
+    scope: m.scope,
+    ...(m.note !== undefined ? { note: m.note } : {}),
+  }));
+}
+
+/** The page's file, relative to the docs root, for messages; else `<slug>.md`. */
+function pageLabelOf(entry: { filePath?: string }, slug: string, root: string): string {
+  if (entry.filePath) {
+    const rel = path.relative(root, path.resolve(entry.filePath)).split(path.sep).join('/');
+    if (rel !== '' && !rel.startsWith('..')) return rel;
+  }
+  return `${slug || 'README'}.md`;
+}
 
 export function agentPageRoute(options: AgentPageRouteOptions = {}) {
   const linkIndex = options.links?.index ?? true;
@@ -127,6 +160,14 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
       };
     });
     const audience: AudienceEntry[] = data.audience ?? [];
+    // TOM classification (ADR-0080): resolved only when declared, so other
+    // payloads are unchanged; an unknown id throws and fails this page's build.
+    let measures: AgentPageMeasure[] | undefined;
+    if (data.tom_classification !== undefined) {
+      const root = await docsRoot();
+      const label = pageLabelOf(entry as { filePath?: string }, slugFromEntryId(id), root);
+      measures = resolvePageMeasures(data, loadMeasuresCatalog(root), label);
+    }
     // `rendered` is the content layer's stored render (glob-loaded Markdown);
     // its frontmatter is the remark-time copy, not the validated `entry.data`.
     const rendered = (entry as { rendered?: { metadata?: { frontmatter?: unknown } } }).rendered;
@@ -152,6 +193,7 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
       ...(data.generated ? { generated: data.generated } : {}),
       ...(data.verified ? { verified: data.verified } : {}),
       ...(data.sources ? { sources: data.sources } : {}),
+      ...(measures ? { tom_classification: measures } : {}),
       ...(expanded.includes.length > 0 ? { includes: expanded.includes } : {}),
       /**
        * Raw Markdown source of the page (frontmatter stripped by Astro), with

@@ -7,6 +7,10 @@
  *
  * The `doc-kitty:content-graph` integration injects this route on every site; a
  * site mounts nothing. Drafts are left out whatever `DK_PUBLISH_DRAFTS` says.
+ *
+ * It also loads the measures catalog of `docsDir` (ADR-0080): the consumer's
+ * `_meta/measures.yaml`, else the shipped default. Because every site serves this
+ * route, an unknown measure id or a malformed catalog fails every build.
  */
 import path from 'node:path';
 import process from 'node:process';
@@ -16,6 +20,7 @@ import { buildContentGraph, collectCitationCatalog, collectDocEntries, locatePag
 import type { GraphNode } from '../docs-index.js';
 import { siteDraftRoutes } from '../integrations/shared.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
+import { loadMeasuresCatalog } from '../measures-loader.mjs';
 import type { IndexBasenameOption } from '../metadata.js';
 import { flattenText } from '../openapi/summary.mjs';
 import { readPublication } from '../openapi/publication.js';
@@ -51,12 +56,15 @@ export function contentGraphRoute({ docsDir, indexBasename }: ContentGraphRouteO
   return async ({ site }) => {
     const entries = await collectDocEntries();
     const catalog = await collectCitationCatalog();
+    const docsRoot = path.resolve(process.cwd(), docsDir);
+    const { index, source } = loadMeasuresCatalog(docsRoot);
     // The same walk the loader and the draft rule use, so ids and routes agree with both.
-    const paths = walkMarkdownPaths(path.resolve(process.cwd(), docsDir));
+    const paths = walkMarkdownPaths(docsRoot);
     const graph = buildContentGraph(entries, {
       locations: locatePages(paths, indexBasename),
       draftRoutes: siteDraftRoutes(docsDir, indexBasename),
       catalog,
+      measures: { index, source },
     });
     const openApiNodes = openApiGraphNodes(site);
     if (openApiNodes.length > 0) {

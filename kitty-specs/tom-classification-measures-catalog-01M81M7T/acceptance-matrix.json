@@ -1,0 +1,149 @@
+{
+  "mission_slug": "tom-classification-measures-catalog-01M81M7T",
+  "mission_number": "",
+  "mission_type": "",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "review",
+      "evidence": "docs/adr/0080 Status Accepted (33fbcc1, WP01 approved); ADR index left to bot",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:31.920196+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-classification-shape.test.ts + schema-validator-parity.test.ts (incl. strict unknown-key fixture), WP03",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:36.526982+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/lib/measures-default.mjs 17 records; measures-loader.test.ts default-catalog case (ids, Annex II refs 1-17, eu-gdpr on 1-4, DPV IRIs)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:40.650648+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "measures-loader.test.ts consumer wholesale replace + no-catalog default; validate-catalog-measures.test.ts consumer case",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:45.104961+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "content-graph-measures.test.ts unknown id names page+id (drafts too); agent-page-measures.test.ts; manual negative build check events-loging fails pnpm build (fd25863 body)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:49.413202+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "validate-catalog-measures.test.ts: default ok, unknown id, consumer replace, bad catalog, CLI exit 1; gate imports measures-core (no re-implementation)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:53.843166+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "content-graph-measures.test.ts + content-graph.test.ts strict schema; assert-build-artifacts assertTomClassification on the real example graph",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:58.334312+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "agent-page-measures.test.ts; agent-api-build-identity contract table; assert-build-artifacts reads dist/api/pages/architecture/audit-logging.json",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:02.565979+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "okf-export-measures.test.ts; assert-build-artifacts checks okf/architecture/audit-logging.md Measures section",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:06.729370+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "FR-010 ratchets with positive controls in content-graph-measures.test.ts and agent-page-measures.test.ts; assert-build-artifacts: unclassified overview.json has no key",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:11.246880+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "review",
+      "evidence": "WP08 docs (metadata-model, content-graph, consumer-setup, authoring) + WP01 glossary terms; validate:docs, links, markdownlint, Vale clean",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:15.606540+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "example/docs/context/incident-handling.md + architecture/audit-logging.md; assert-build-artifacts link-not-copy loop over all org measures",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:19.852064+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "docs/changelog/unreleased/406-tom-classification.md; pnpm validate:changelog OK",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:24.553358+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Verify FR-014 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tom-classification-shape.test.ts case-variant warning; parity WARNINGS fixture tom-classification-case-variant.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:28.994734+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

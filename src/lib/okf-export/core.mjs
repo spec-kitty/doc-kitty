@@ -39,13 +39,14 @@ const RELATION_SECTIONS = /** @type {const} */ ([
   ['related', 'Related'],
   ['audience', 'Audience'],
   ['cites', 'References'],
+  ['classified-as', 'Measures'],
   ['derived-from', 'Derived from'],
 ]);
 
 /**
  * @typedef {object} ExportGraph
  * @property {Array<Record<string, any>>} nodes
- * @property {Array<{source: string, target: string, rel: string, note?: string}>} edges
+ * @property {Array<{source: string, target: string, rel: string, note?: string, scope?: string}>} edges
  */
 
 /**
@@ -250,7 +251,10 @@ const linkLine = (label, href, suffix) => `- [${escapeLabel(label)}](${href})${s
  * Pages and personas link as bundle paths; a catalog or inline citation links to
  * its external URL; a non-URL `derived-from` resource is plain text.
  *
- * @param {{target: string, rel: string, note?: string}} edge
+ * A `classified-as` line (ADR-0080) adds ` (organisation)` for an organisation-scope
+ * measure and falls back to plain text when the measure has no concept IRI.
+ *
+ * @param {{target: string, rel: string, note?: string, scope?: string}} edge
  * @param {Record<string, any> | undefined} target
  * @param {string[]} indexNames
  * @returns {string | null}
@@ -258,13 +262,15 @@ const linkLine = (label, href, suffix) => `- [${escapeLabel(label)}](${href})${s
 function relationLine(edge, target, indexNames) {
   if (!target) return null;
   const label = target.title ?? target.id;
-  const note = edge.note ? ` - ${edge.note}` : '';
+  const scope = edge.rel === 'classified-as' && edge.scope === 'organisation' ? ' (organisation)' : '';
+  const note = `${scope}${edge.note ? ` - ${edge.note}` : ''}`;
   if (target.kind === 'page' || target.kind === 'persona') {
     return linkLine(label, `/${bundlePathOf(target.id, indexNames)}`, note);
   }
   const external = [target.url, target.resource].find((u) => typeof u === 'string' && /^https?:\/\//.test(u));
   if (external) return linkLine(label, external, note);
   if (edge.rel === 'derived-from' && target.resource) return `- ${escapeLabel(label)} (\`${target.resource}\`)${note}`;
+  if (edge.rel === 'classified-as') return `- ${escapeLabel(label)}${note}`;
   return null;
 }
 
@@ -282,7 +288,7 @@ const unlinkedSource = (edgeTarget) => ({
  * The generated relation sections of one page and the `sources` entries for the
  * citations the body cannot link.
  *
- * @param {Array<{target: string, rel: string, note?: string}>} edges the page's outgoing edges
+ * @param {Array<{target: string, rel: string, note?: string, scope?: string}>} edges the page's outgoing edges
  * @param {Map<string, Record<string, any>>} nodes
  * @param {string[]} indexNames
  * @returns {{markdown: string, extraSources: Array<Record<string, string>>}}

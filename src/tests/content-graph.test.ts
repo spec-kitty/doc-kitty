@@ -10,6 +10,7 @@ import { z } from 'zod';
 import type { DocEntry, DocKittyFrontmatter } from '../lib/metadata.js';
 import { resolveCitation, resolveProfile, resolveRelated } from '../lib/metadata.js';
 import { buildCatalog } from '../lib/catalog.js';
+import { buildMeasuresIndex, parseMeasuresCatalog } from '../lib/measures-core.mjs';
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }));
 
@@ -58,6 +59,7 @@ const entries = (): DocEntry[] => [
       { resource: 'guides/deploy.md', title: 'a bundle page' },
       { resource: 'features/x.feature', title: 'Gherkin source' },
     ],
+    tom_classification: [{ measure: 'events-logging', scope: 'organisation', note: 'Admin actions.' }],
     verified: { by: 'human:ann', at: '2026-10-01T10:00:00Z' } as never,
     stale_after: '2027-01-01',
     authors: ['stijn@sddevelopment.be', 'human:ann', 'not an actor', 'a+b@x.io'],
@@ -69,7 +71,24 @@ const entries = (): DocEntry[] => [
 
 const options = () => {
   const locations = locatePages(PATHS);
-  return { locations, draftRoutes: new Set(['/drafts/']), catalog };
+  const measures = {
+    index: buildMeasuresIndex(
+      parseMeasuresCatalog(
+        [
+          {
+            id: 'events-logging',
+            label: 'Events logging',
+            nature: 'technical',
+            frameworks: [{ framework: 'eu-scc-2021-914-annex-ii', ref: '9' }],
+            dpv: 'https://w3id.org/dpv#ActivityMonitoring',
+          },
+        ],
+        'test catalog',
+      ).records,
+    ),
+    source: 'test catalog',
+  };
+  return { locations, draftRoutes: new Set(['/drafts/']), catalog, measures };
 };
 
 const build = (list = entries()) => buildContentGraph(list, options());
@@ -187,6 +206,13 @@ describe('buildContentGraph', () => {
         url: z.string().optional(),
         authors: z.array(actor).optional(),
         updated: instant.optional(),
+        measure: z
+          .object({
+            nature: z.enum(['technical', 'organisational', 'legal', 'physical']),
+            frameworks: z.array(z.object({ framework: z.string(), ref: z.string() }).strict()).min(1),
+          })
+          .strict()
+          .optional(),
       })
       .strict();
     const edge = z
@@ -194,8 +220,9 @@ describe('buildContentGraph', () => {
         id: z.string(),
         source: z.string(),
         target: z.string(),
-        rel: z.enum(['related', 'audience', 'cites', 'in-section', 'derived-from']),
+        rel: z.enum(['related', 'audience', 'cites', 'in-section', 'derived-from', 'classified-as']),
         note: z.string().optional(),
+        scope: z.enum(['system', 'organisation']).optional(),
       })
       .strict();
     const graph = z
