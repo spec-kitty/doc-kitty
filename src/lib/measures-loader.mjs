@@ -3,7 +3,8 @@
  * Filesystem loader for the measures catalog (ADR-0080).
  *
  * The effective catalog of a docs root is `<docsRoot>/_meta/measures.yaml` when
- * that file exists, else the default this package ships next to this module. A
+ * that file exists, else the default this package ships (`./measures-default.mjs`,
+ * statically imported so it survives bundling into a page route). A
  * consumer file REPLACES the default wholesale; there is no merge (ADR-0080
  * decision 4). No consumer configuration is involved: an absent file means the
  * default, and a tree that never uses `tom_classification` costs one existence
@@ -20,17 +21,14 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import { MEASURES_TAG, buildMeasuresIndex, parseMeasuresCatalog } from './measures-core.mjs';
+import { DEFAULT_MEASURES } from './measures-default.mjs';
 
 /** @typedef {import('./measures-core.mjs').MeasureRecord} MeasureRecord */
 
 /** The consumer catalog, relative to a docs root. */
 export const MEASURES_REGISTRY_RELPATH = path.join('_meta', 'measures.yaml');
-
-/** The shipped default, resolved from this module so it works from any install layout. */
-export const DEFAULT_MEASURES_PATH = fileURLToPath(new URL('./measures.default.yaml', import.meta.url));
 
 /** How messages name the shipped default. */
 export const DEFAULT_MEASURES_SOURCE = 'the shipped default catalog';
@@ -63,12 +61,15 @@ const cache = new Map();
  */
 export function readMeasuresCatalog(docsRoot) {
   const consumer = path.join(docsRoot, MEASURES_REGISTRY_RELPATH);
-  const isDefault = !existsSync(consumer);
-  const file = isDefault ? DEFAULT_MEASURES_PATH : consumer;
-  const source = isDefault ? DEFAULT_MEASURES_SOURCE : path.relative(process.cwd(), consumer) || consumer;
+  if (!existsSync(consumer)) {
+    // The default is validated like any catalog, so a bad edit to it fails loudly.
+    return { ...parseMeasuresCatalog(DEFAULT_MEASURES, DEFAULT_MEASURES_SOURCE), source: DEFAULT_MEASURES_SOURCE, isDefault: true };
+  }
+  const isDefault = false;
+  const source = path.relative(process.cwd(), consumer) || consumer;
   let data;
   try {
-    data = matter(['---', readFileSync(file, 'utf8'), '---', ''].join('\n')).data;
+    data = matter(['---', readFileSync(consumer, 'utf8'), '---', ''].join('\n')).data;
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);
     return { records: [], problems: [`${MEASURES_TAG} ${source}: cannot be parsed (${reason})`], source, isDefault };

@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 import {
-  DEFAULT_MEASURES_PATH,
   DEFAULT_MEASURES_SOURCE,
   clearMeasuresCatalogCache,
   loadMeasuresCatalog,
@@ -30,9 +28,10 @@ describe('the shipped default catalog', () => {
     for (const r of records) expect(r.dpv).toMatch(/^https:\/\/w3id\.org\/dpv#[A-Za-z]+$/);
   });
 
-  it('resolves from the module, not from the working directory', () => {
-    expect(path.basename(DEFAULT_MEASURES_PATH)).toBe('measures.default.yaml');
-    expect(path.isAbsolute(DEFAULT_MEASURES_PATH)).toBe(true);
+  it('is a statically imported data module, so it survives bundling into a page route', async () => {
+    const { DEFAULT_MEASURES } = await import('../lib/measures-default.mjs');
+    expect(readMeasuresCatalog(fixture('no-catalog')).records).toEqual(DEFAULT_MEASURES);
+    expect(Object.isFrozen(DEFAULT_MEASURES)).toBe(true);
   });
 });
 
