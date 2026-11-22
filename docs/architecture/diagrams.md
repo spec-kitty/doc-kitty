@@ -156,8 +156,9 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
     the font they were measured in: `Arial, Helvetica, "Liberation Sans",
     Arimo`, all with Arial's widths. So a site font cannot widen a label past its
     box, unless the reader's device has none of these fonts and falls back to a
-    wider sans font. Labels drawn as SVG text, such as sequence diagram labels,
-    keep Mermaid's own sizing.
+    wider sans font. The rule also overrides a font set on one node with
+    `classDef`. Labels drawn as SVG text, such as sequence diagram labels, keep
+    Mermaid's own sizing.
   - *Author font.* Labels always use this stack. An author font in an
     `%%{init}%%` directive is not applied to labels: a fit the toolkit can
     guarantee wins over the author's choice. Author fonts are tracked in
