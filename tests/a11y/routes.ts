@@ -48,6 +48,13 @@ export const ROUTES = {
   // PlantUML has no renderer, so the fence stays a plain code block (no figure).
   // The diagram e2e's build branch asserts the named figure here (DX-2/DX-5).
   plantuml: `${BASE}/architecture/plantuml-demonstrator/`,
+  // Diagram contrast fixture (#369, #370) — long labels, an author-font init
+  // directive, author fills and an ArchiMate view, so diagram-legibility.spec.ts can
+  // prove every label fits its box and every label and themed edge is readable
+  // against what is painted behind it, in both themes. Build mode only. A draft:
+  // present only in a drafts-on build (`pnpm build:a11y`), so it stays out of the
+  // published lane.
+  diagramContrast: `${BASE}/architecture/diagram-contrast-fixture/`,
   // Glossary demonstrator — the CONTEXT-FREE page (WP09 T033). It declares NO
   // `glossary_context`, so it carries BOTH a plain auto-link (`cargo`, single
   // context) AND a `:term`-only forced link (`policy` → the hr context) that a
