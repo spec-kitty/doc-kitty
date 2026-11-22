@@ -1,6 +1,8 @@
 {
+  "accept_commit": "e40616f54adaeef7b0c5a687e60e95e6e3fb542f",
   "acceptance_history": [
     {
+      "accept_commit": "e40616f54adaeef7b0c5a687e60e95e6e3fb542f",
       "acceptance_mode": "pr",
       "accepted_at": "2026-11-22T06:25:15.032026+00:00",
       "accepted_by": "claude::implementer",
