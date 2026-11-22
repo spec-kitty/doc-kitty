@@ -18,10 +18,10 @@
       "criterion_id": "FR-002",
       "description": "Verify FR-002 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/tom-classification-shape.test.ts + schema-validator-parity.test.ts (incl. strict unknown-key fixture), WP03",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:36.526982+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
