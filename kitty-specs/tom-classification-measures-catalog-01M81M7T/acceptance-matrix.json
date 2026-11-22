@@ -28,10 +28,10 @@
       "criterion_id": "FR-003",
       "description": "Verify FR-003 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/lib/measures-default.mjs 17 records; measures-loader.test.ts default-catalog case (ids, Annex II refs 1-17, eu-gdpr on 1-4, DPV IRIs)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:40.650648+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
