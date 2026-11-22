@@ -60,7 +60,7 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
@@ -72,7 +72,8 @@
       "notes": [
         "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green",
         "Cycle 1 fixed in 9840913: translucent fills (rgba/#rrggbbaa alpha x fill-opacity x opacity) get black/white only if >=4.5 over pure black/white, else stay themed; cssEscapeId; see-through fixture node (2.7:1 light on cycle-1 code, now 6.38/6.93). Unit 4302/4302, mcp 181, typecheck, lint, e2e 446 passed (4 env-only, same on main)",
-        "Review passed (cycle 2, claude::reviewer-renata). Cycle-1 blocker fixed in 9840913. The effective alpha now multiplies rgba/#rgba/#rrggbbaa alpha by fill-opacity and opacity, for Mermaid and PlantUML. Opaque fills are unchanged. A translucent fill gets black only if black clears 4.5:1 with the fill over pure black, and white only if white clears it over pure white; otherwise the label stays themed. Worst-case reasoning verified: compositing is linear per sRGB channel and luminance rises with each channel, so the blend is darkest over black and lightest over white, the binding cases for black and white text over ANY page, mid-grey and brand colours included. Neither colour safe -> themed. RAN: my own sweep (512 fills x 7 alphas x 48 pages): every pinned colour is >= 4.501:1 over every page. The 3 cycle-1 repros now return themed. PlantUML fill-opacity is honoured. pnpm test src 4302/4302, mcp 181/181; lint and typecheck clean. cssEscapeId addresses the nit. Note on the themed fallback: it is exactly main's behaviour, so it is never worse than main. It is more conservative than cycle 1 in a narrow band (e.g. rgba(230,230,230,.5): cycle 1 pinned black, which passes on the toolkit's near-black dark page; now themed, which fails in dark). That is a deliberate trade for brand-independence; non-blocking, worth a follow-up if a real diagram hits it. Shared file: example/docs/architecture/diagram-contrast-fixture.md is WP01-owned; one see-through node was added here as a recorded out-of-map edit, coordinated with WP01 (already approved). ACCEPTED FROM IMPLEMENTER (no PlantUML server here): Playwright light+dark green, with the see-through node at 6.38/6.93 vs 2.7 on cycle-1 code, plus the half-by-half proof."
+        "Review passed (cycle 2, claude::reviewer-renata). Cycle-1 blocker fixed in 9840913. The effective alpha now multiplies rgba/#rgba/#rrggbbaa alpha by fill-opacity and opacity, for Mermaid and PlantUML. Opaque fills are unchanged. A translucent fill gets black only if black clears 4.5:1 with the fill over pure black, and white only if white clears it over pure white; otherwise the label stays themed. Worst-case reasoning verified: compositing is linear per sRGB channel and luminance rises with each channel, so the blend is darkest over black and lightest over white, the binding cases for black and white text over ANY page, mid-grey and brand colours included. Neither colour safe -> themed. RAN: my own sweep (512 fills x 7 alphas x 48 pages): every pinned colour is >= 4.501:1 over every page. The 3 cycle-1 repros now return themed. PlantUML fill-opacity is honoured. pnpm test src 4302/4302, mcp 181/181; lint and typecheck clean. cssEscapeId addresses the nit. Note on the themed fallback: it is exactly main's behaviour, so it is never worse than main. It is more conservative than cycle 1 in a narrow band (e.g. rgba(230,230,230,.5): cycle 1 pinned black, which passes on the toolkit's near-black dark page; now themed, which fails in dark). That is a deliberate trade for brand-independence; non-blocking, worth a follow-up if a real diagram hits it. Shared file: example/docs/architecture/diagram-contrast-fixture.md is WP01-owned; one see-through node was added here as a recorded out-of-map edit, coordinated with WP01 (already approved). ACCEPTED FROM IMPLEMENTER (no PlantUML server here): Playwright light+dark green, with the see-through node at 6.38/6.93 vs 2.7 on cycle-1 code, plus the half-by-half proof.",
+        "Cycle 3: author edge colours (operator ruling, option a)"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -83,14 +84,14 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 22141,
-      "shell_pid_created_at": "1795308002.01",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T005": "done",
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done"
+        "T005": "planned",
+        "T006": "planned",
+        "T007": "planned",
+        "T008": "planned",
+        "T009": "planned"
       },
       "tracker_refs": [
         "spec-kitty/doc-kitty#369",
