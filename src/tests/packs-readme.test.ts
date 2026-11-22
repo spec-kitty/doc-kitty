@@ -52,6 +52,18 @@ describe('parsePackDocument', () => {
     expect(doc.problems.map((p) => p.code)).toEqual(['readme-ambiguous-heading']);
   });
 
+  it('closes the frontmatter only on a line that is `---`, not on a line ending in it', () => {
+    const doc = parsePackDocument('---\nnote: a---\nowner: me\n---\n\n# T\n');
+    expect(doc.frontmatter).toEqual({ note: 'a---', owner: 'me' });
+    expect(doc.title).toBe('T');
+    expect(parsePackDocument('---\n---\n# X\n')).toEqual({ title: 'X', preamble: '', sections: [], problems: [] });
+  });
+
+  it('keeps tagged frontmatter values as plain data', () => {
+    const doc = parsePackDocument('---\nblob: !!binary aGVsbG8=\n---\n');
+    expect(Buffer.isBuffer(doc.frontmatter?.blob)).toBe(false);
+  });
+
   it('normalises CRLF and a byte order mark', () => {
     const doc = parsePackDocument('﻿# T\r\n\r\nIntro.\r\n\r\n## S\r\n\r\nBody.\r\n');
     expect(doc).toEqual({ title: 'T', preamble: 'Intro.', sections: [{ title: 'S', content: 'Body.' }], problems: [] });

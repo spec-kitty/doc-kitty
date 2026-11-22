@@ -11,7 +11,7 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
-import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -203,6 +203,65 @@ describe('robustness', () => {
       'descriptor-unknown-key',
       'policy-missing',
     ]);
+  });
+
+  it('refuses a manifest entry reached through a symlinked directory, and does not verify', () => {
+    const root = temp();
+    const dir = path.join(root, 'beta');
+    cpSync(fixture('no-manifest/beta'), dir, { recursive: true });
+    const outside = path.join(root, 'outside');
+    cpSync(path.join(dir, 'directives'), outside, { recursive: true });
+    rmSync(path.join(dir, 'directives'), { recursive: true });
+    symlinkSync(outside, path.join(dir, 'directives'));
+    const hash = packContentHash(readFileSync(path.join(outside, 'b.directive.yaml')));
+    writeFileSync(
+      path.join(dir, 'pack-manifest.yaml'),
+      `schema_version: "1.0"\nmanifest_hash: ${'b'.repeat(64)}\nconstituents:\n  - kind: directive\n    id: b\n    path: directives/b.directive.yaml\n    content_hash: ${hash}\n`,
+    );
+    const model = readPack(dir);
+    expect(model.manifest?.verified).toBe(false);
+    expect(model.inventory.source).toBe('file-kinds');
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([
+      ['symlink', 'directives'],
+      ['manifest-missing-file', 'directives/b.directive.yaml'],
+    ]);
+  });
+
+  it('reads no file through a symlink: pack.yaml, the README and the policy', () => {
+    const root = temp();
+    const dir = path.join(root, 'beta');
+    cpSync(fixture('no-manifest/beta'), dir, { recursive: true });
+    const outside = path.join(root, 'outside');
+    mkdirSync(outside);
+    writeFileSync(path.join(outside, 'README.md'), '# Outside\n');
+    writeFileSync(path.join(outside, 'policy.yaml'), 'schema_version: 1\nkind_defaults:\n  directive: locked\n');
+    rmSync(path.join(dir, 'README.md'));
+    symlinkSync(path.join(outside, 'README.md'), path.join(dir, 'README.md'));
+    symlinkSync(path.join(outside, 'policy.yaml'), path.join(dir, 'policy.yaml'));
+    writeFileSync(path.join(dir, 'pack.yaml'), readFileSync(path.join(dir, 'pack.yaml'), 'utf8') + 'mutability_policy: policy.yaml\n');
+    const model = readPack(dir);
+    expect(model.document).toBeUndefined();
+    expect(model.policy).toBeUndefined();
+    expect(codes(model)).toEqual(['symlink', 'policy-missing', 'symlink']);
+  });
+
+  it('never instantiates YAML tags: frontmatter, descriptor and manifest values stay plain data', () => {
+    const root = temp();
+    const dir = path.join(root, 'tagged');
+    cpSync(fixture('no-manifest/beta'), dir, { recursive: true });
+    writeFileSync(
+      path.join(dir, 'README.md'),
+      '---\nblob: !!binary aGVsbG8=\nwhen: !!timestamp 2026-01-01\nset: !!set {a: null}\nmap: !!omap [{a: 1}]\n---\n\n# Tagged\n',
+    );
+    writeFileSync(path.join(dir, 'pack.yaml'), 'pack_id: 01JTAGGED0000000000000000T\nname: tagged\npack_version: 1.10\nschema_version: 1.0\n');
+    const model = readPack(dir);
+    const fm = model.document?.frontmatter as Record<string, unknown>;
+    for (const value of Object.values(fm)) {
+      expect(Buffer.isBuffer(value) || value instanceof Date || value instanceof Set || value instanceof Map).toBe(false);
+    }
+    expect(model.identity.version).toBe('1.10');
+    expect(model.identity.schemaVersion).toBe('1.0');
+    expect(codes(model)).toEqual([]);
   });
 
   it('is deterministic: two reads give byte-identical JSON', () => {
