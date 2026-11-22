@@ -64,7 +64,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Snapshot at 69ec326 with lock, verified loader, sync script (--ref/--commit); lock and sync tests red-first and green",
-        "Cycle 2: folds for review-cycle-1 (B1 + notes 1-4) are on lane-b"
+        "Cycle 2: folds for review-cycle-1 (B1 + notes 1-4) are on lane-b",
+        "Cycle 2: B1 fixed (tag or full sha only; refs/tags fetch; lock untouched on refusal) + notes 1-4 folded; red 09b29d4, fix e46442c"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
