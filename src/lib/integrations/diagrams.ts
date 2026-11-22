@@ -13,7 +13,7 @@ import type { AstroIntegration } from 'astro';
 import diagramMeta from '../remark/diagram-meta.js';
 import plantumlMeta from '../remark/plantuml-meta.js';
 import diagramFigure from '../rehype/diagram-figure.js';
-import diagramLabelContrast from '../rehype/diagram-label-contrast.js';
+import diagramLabelContrast, { cssEscapeId } from '../rehype/diagram-label-contrast.js';
 import { withMermaidDiskCache, beoeDiskCache, BEOE_CACHE_DIR } from '../diagram/beoe-cache.js';
 
 /** Minimal structural mdast node — enough to find mermaid fences and recurse. */
@@ -258,14 +258,8 @@ export const SENTINEL_THEME_VARIABLES: Readonly<Record<string, string>> = {
  */
 export const DIAGRAM_LABEL_FONT_STACK = 'Arial, Helvetica, "Liberation Sans", Arimo, sans-serif';
 
-/** An id as a CSS identifier: every character outside `[A-Za-z0-9_-]`, a leading
- * digit, and a digit after a leading `-` are escaped (the subset of
- * `CSS.escape` an SVG id can need; Mermaid's own ids need none of it). */
-export function cssEscapeId(id: string): string {
-  return id.replace(/[^A-Za-z0-9_-]|^\d|(?<=^-)\d|^-$/g, (c) =>
-    /\d/.test(c) ? `\\${c.charCodeAt(0).toString(16)} ` : `\\${c}`,
-  );
-}
+/** Re-exported: the id escape lives with the edge-colour pass, which needs it too. */
+export { cssEscapeId };
 
 /** The label-font rule for the SVGs `scope` selects. */
 export const labelFontRule = (scope: string): string =>

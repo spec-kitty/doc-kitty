@@ -3,6 +3,7 @@
 // proves the outcome on a real build; these pin each rule on its own.
 import { describe, it, expect } from 'vitest';
 import diagramLabelContrast, {
+  edgeThemesToOverride,
   fixPlantumlRaw,
   labelColourFor,
   parseLiteralColour,
@@ -219,6 +220,57 @@ describe('diagramLabelContrast — Mermaid', () => {
     const before = JSON.stringify(tree);
     diagramLabelContrast()(tree);
     expect(JSON.stringify(tree)).toBe(before);
+  });
+});
+
+describe('author edge colours (#369 item 1, cycle 3)', () => {
+  it('flags a colour only in the theme where it is under 3:1 against the worst page', () => {
+    expect(edgeThemesToOverride('#0a0721')).toEqual(['dark']); // the consumer's lineColor
+    expect(edgeThemesToOverride('#f5f5f5')).toEqual(['light']);
+    expect(edgeThemesToOverride('#d9731a')).toEqual([]); // readable on both
+    expect(edgeThemesToOverride('var(--dk-diagram-edge)')).toEqual([]); // themed
+  });
+
+  /** A Mermaid <svg> with an init lineColor rule, two edges (one linkStyle) and markers. */
+  function edgeSvg(lineColour: string, linkStyle: string): LabelHastNode {
+    return el('svg', { id: 'm1', ariaRoleDescription: 'flowchart-v2' }, [
+      el('style', {}, [{ type: 'text', value: `#m1 .marker{fill:${lineColour};stroke:${lineColour};}#m1 .marker.cross{stroke:${lineColour};}#m1 .flowchart-link{stroke:${lineColour};fill:none;}` }]),
+      el('marker', { id: 'm1_flowchart-v2-pointEnd', className: ['marker', 'flowchart-v2'] }, [el('path')]),
+      el('marker', { id: `m1_flowchart-v2-pointEnd__${linkStyle.slice(1)}`, className: ['marker', 'flowchart-v2'] }, [el('path')]),
+      el('g', { className: ['edgePaths'] }, [
+        el('path', { id: 'm1-L_a_b_0', className: ['flowchart-link'], style: ';' }),
+        el('path', { id: 'm1-L_b_c_0', className: ['flowchart-link'], style: `stroke:${linkStyle};stroke-width:2px;fill:none` }),
+      ]),
+    ]);
+  }
+  const addedRules = (svg: LabelHastNode): string => {
+    diagramLabelContrast()({ type: 'root', children: [svg] });
+    const texts = svg.children![0].children!.map((t) => t.value ?? '');
+    return texts.slice(1).join('');
+  };
+
+  it('overrides a dark init lineColor in dark mode, per edge and per arrowhead, and leaves a readable linkStyle edge alone', () => {
+    const rules = addedRules(edgeSvg('#0a0721', '#d9731a'));
+    expect(rules).toContain(":root[data-theme='dark'] #m1-L_a_b_0{stroke:var(--dk-diagram-edge)!important}");
+    expect(rules).toContain(":root[data-theme='dark'] #m1_flowchart-v2-pointEnd,:root[data-theme='dark'] #m1_flowchart-v2-pointEnd *{");
+    expect(rules).not.toContain('L_b_c_0'); // #d9731a is readable on both pages
+    expect(rules).not.toContain('pointEnd__d9731a');
+    expect(rules).not.toContain("data-theme='light'");
+  });
+
+  it('overrides a pale linkStyle edge and its own arrowhead in light mode only', () => {
+    const rules = addedRules(edgeSvg('#d9731a', '#f5f5f5'));
+    expect(rules).toContain(":root[data-theme='light'] #m1-L_b_c_0{stroke:var(--dk-diagram-edge)!important}");
+    expect(rules).toContain(
+      ":root[data-theme='light'] #m1_flowchart-v2-pointEnd__f5f5f5,:root[data-theme='light'] #m1_flowchart-v2-pointEnd__f5f5f5 *{fill:var(--dk-diagram-edge)!important;stroke:var(--dk-diagram-edge)!important}",
+    );
+    expect(rules).not.toContain("data-theme='dark'");
+    expect(rules).not.toContain('L_a_b_0'); // the readable #d9731a class colour stays
+  });
+
+  it('adds nothing when every edge is themed', () => {
+    const svg = edgeSvg('var(--dk-diagram-edge)', '#d9731a');
+    expect(addedRules(svg)).toBe('');
   });
 });
 

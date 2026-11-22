@@ -23,6 +23,14 @@
  * A label colour the author set is the author's choice and is left alone; a themed
  * fill keeps its themed label.
  *
+ * Edges follow the same idea (#369 item 1). An author can fix an edge colour, with
+ * an `%%{init}%%` `lineColor` (a class rule for every edge and arrowhead) or a
+ * `linkStyle` (one edge, with its own colour-suffixed arrowhead). A dark colour
+ * vanishes on the dark page and a pale one on the light page. Each such edge keeps
+ * its colour in the theme where it is readable; in a theme where it is under 3:1
+ * against the worst page (pure black for dark, pure white for light), an id-scoped
+ * rule gives it the themed `--dk-diagram-edge` instead.
+ *
  * Two shapes reach this pass:
  *   - Mermaid: a hast `<svg>` (inline strategy). `g.node` and `g.cluster` groups.
  *   - PlantUML: one `raw` HTML string from `astro-plantuml`. Each
@@ -202,7 +210,88 @@ function fixMermaidGroup(group: LabelHastNode): void {
 }
 
 /** Walk one Mermaid `<svg>` and fix every node and cluster group. */
+/** An id as a CSS identifier: every character outside `[A-Za-z0-9_-]`, a leading
+ * digit, and a digit after a leading `-` are escaped (the subset of
+ * `CSS.escape` an SVG id can need; Mermaid's own ids need none of it). */
+export function cssEscapeId(id: string): string {
+  return id.replace(/[^A-Za-z0-9_-]|^\d|(?<=^-)\d|^-$/g, (c) =>
+    /\d/.test(c) ? `\\${c.charCodeAt(0).toString(16)} ` : `\\${c}`,
+  );
+}
+
+/** The WCAG 1.4.11 minimum for an edge (non-text). */
+const EDGE_MIN = 3;
+
+/** The themes in which an edge colour is under {@link EDGE_MIN} against the worst
+ * page: pure black stands for every dark page, pure white for every light one. */
+export function edgeThemesToOverride(colour: string): Array<'dark' | 'light'> {
+  const c = parseLiteralColour(colour);
+  if (!c || c.alpha === 0) return [];
+  // A translucent stroke shows the page through it: judge it as drawn on each page.
+  const l = (backdrop: number): number => luminance(over(c.rgb, c.alpha, backdrop));
+  const out: Array<'dark' | 'light'> = [];
+  if (blackOn(l(0)) < EDGE_MIN) out.push('dark');
+  if (whiteOn(l(255)) < EDGE_MIN) out.push('light');
+  return out;
+}
+
+/** The literal colour of the first declaration of `prop` in a CSS rule body whose
+ * selector `test` accepts, across an SVG's `<style>` text. */
+function ruleColour(css: string, test: (selector: string) => boolean, ...props: string[]): string | undefined {
+  for (const m of css.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+    if (!test(m[1])) continue;
+    for (const prop of props) {
+      const v = styleValue(m[2], prop);
+      if (v !== undefined && parseLiteralColour(v)) return v;
+    }
+  }
+  return undefined;
+}
+
+/** Give each author-coloured edge and arrowhead of one Mermaid `<svg>` the themed
+ * edge colour in the theme where its own colour is unreadable. */
+function fixMermaidEdges(svg: LabelHastNode): void {
+  const styles = elementChildren(svg).filter((c) => c.tagName === 'style');
+  const css = styles
+    .flatMap((s) => s.children ?? [])
+    .map((t) => (typeof t.value === 'string' ? t.value : ''))
+    .join('');
+  // An %%{init}%% lineColor reaches every edge and every shared arrowhead.
+  const linkColour = ruleColour(css, (s) => s.includes('.flowchart-link'), 'stroke');
+  const markerColour = ruleColour(css, (s) => /\.marker(?![\w-])/.test(s) && !s.includes('.cross'), 'fill', 'stroke');
+  const rules: string[] = [];
+  const override = (id: string, colour: string | undefined, decl: string, alsoChildren: boolean): void => {
+    if (colour === undefined) return;
+    for (const theme of edgeThemesToOverride(colour)) {
+      const scope = `:root[data-theme='${theme}'] #${cssEscapeId(id)}`;
+      rules.push(`${alsoChildren ? `${scope},${scope} *` : scope}{${decl}}`);
+    }
+  };
+  const EDGE = 'stroke:var(--dk-diagram-edge)!important';
+  const HEAD = 'fill:var(--dk-diagram-edge)!important;stroke:var(--dk-diagram-edge)!important';
+  const walk = (node: LabelHastNode): void => {
+    const id = node.properties?.id;
+    if (typeof id === 'string') {
+      if (node.tagName === 'path' && classes(node).includes('flowchart-link')) {
+        // A linkStyle stroke is inline; otherwise the edge takes the class rule.
+        override(id, styleValue(styleOf(node), 'stroke') ?? linkColour, EDGE, false);
+      } else if (node.tagName === 'marker') {
+        // A linkStyle edge gets its own arrowhead, its colour in the id (`…__d9731a`).
+        const variant = /__([0-9a-f]{3,8})$/i.exec(id)?.[1];
+        override(id, variant ? `#${variant}` : markerColour, HEAD, true);
+      }
+    }
+    for (const child of elementChildren(node)) walk(child);
+  };
+  walk(svg);
+  if (rules.length === 0) return;
+  const text: LabelHastNode = { type: 'text', value: rules.join('') };
+  if (styles[0]) styles[0].children = [...(styles[0].children ?? []), text];
+  else svg.children = [{ type: 'element', tagName: 'style', properties: {}, children: [text] }, ...(svg.children ?? [])];
+}
+
 function fixMermaidSvg(svg: LabelHastNode): void {
+  fixMermaidEdges(svg);
   const walk = (node: LabelHastNode): void => {
     if (node.tagName === 'g') {
       const c = classes(node);
