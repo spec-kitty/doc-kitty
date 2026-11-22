@@ -1,7 +1,7 @@
 {
-  "event_count": 33,
-  "last_event_id": "01M80YQDH7AZ0HEEA3WJ1B93Q5",
-  "materialized_at": "2026-11-22T06:22:34.535675+00:00",
+  "event_count": 34,
+  "last_event_id": "01M80YT73BXWJSBPJKKYNVB4XE",
+  "materialized_at": "2026-11-22T06:24:06.251597+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -90,15 +90,15 @@
       }
     },
     "WP03": {
-      "actor": "claude",
+      "actor": "Claude",
       "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 1,
+      "force_count": 2,
       "implementer_of_record": "claude::curator-carla",
       "lane": "approved",
-      "last_event_id": "01M80YQDH7AZ0HEEA3WJ1B93Q5",
-      "last_transition_at": "2026-11-22T06:22:34.535675+00:00",
+      "last_event_id": "01M80YT73BXWJSBPJKKYNVB4XE",
+      "last_transition_at": "2026-11-22T06:24:06.251597+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "implementation is on the Mission branch at eeb40b3; lane-planning maps to main; never commit to main (operator ruling via dispatcher, 2026-11-22)",
