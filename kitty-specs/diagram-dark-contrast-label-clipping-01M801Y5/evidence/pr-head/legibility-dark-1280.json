@@ -1,0 +1,285 @@
+{
+ "figures": 4,
+ "themedEdgesPerFigure": [
+  3,
+  2,
+  2,
+  3
+ ],
+ "labelsPerFigure": [
+  8,
+  6,
+  4,
+  7
+ ],
+ "skippedEdges": [],
+ "skippedLabels": [],
+ "labels": [
+  {
+   "figure": 0,
+   "text": "Spec Kitty open core and its producer ecosystem",
+   "fg": "rgb(245, 197, 24)",
+   "bg": "rgb(18,19,23)",
+   "ratio": 11.39
+  },
+  {
+   "figure": 0,
+   "text": "appends lifecycle events to the log",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 0,
+   "text": "materializes the snapshot that consumers read",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 0,
+   "text": "publishes llms.txt and the JSON agent API",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 0,
+   "text": "Command line interface for mission authors",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 0,
+   "text": "status.reducer.materialize_snapshot over the event log",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 0,
+   "text": "Consumer documentation site built with the toolkit",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 0,
+   "text": "Agent reading the discovery surfaces",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 1,
+   "text": "Spec Kitty open core and its producer ecosystem",
+   "fg": "rgb(245, 197, 24)",
+   "bg": "rgb(18,19,23)",
+   "ratio": 11.39
+  },
+  {
+   "figure": 1,
+   "text": "appends events",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 1,
+   "text": "folded by the reducer and consumed by the site",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 1,
+   "text": "Command line interface that appends lifecycle events",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 1,
+   "text": "status.reducer.materialize_snapshot folded by the reducer",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 1,
+   "text": "Consumer documentation site built with the toolkit",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(24,26,31)",
+   "ratio": 12.01
+  },
+  {
+   "figure": 2,
+   "text": "Pale fill, no label colour",
+   "fg": "rgb(0, 0, 0)",
+   "bg": "rgb(255,255,204)",
+   "ratio": 20.43
+  },
+  {
+   "figure": 2,
+   "text": "Deep fill, no label colour",
+   "fg": "rgb(255, 255, 255)",
+   "bg": "rgb(17,104,189)",
+   "ratio": 5.62
+  },
+  {
+   "figure": 2,
+   "text": "Deep fill with a white label",
+   "fg": "rgb(255, 255, 255)",
+   "bg": "rgb(29,107,58)",
+   "ratio": 6.53
+  },
+  {
+   "figure": 2,
+   "text": "See-through fill, no label colour",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(15,67,119)",
+   "ratio": 6.93
+  },
+  {
+   "figure": 3,
+   "text": "Operator",
+   "fg": "rgb(0, 0, 0)",
+   "bg": "rgb(255,255,204)",
+   "ratio": 20.43
+  },
+  {
+   "figure": 3,
+   "text": "built-in pack (trusted by position)",
+   "fg": "rgb(0, 0, 0)",
+   "bg": "rgb(194,240,255)",
+   "ratio": 17.2
+  },
+  {
+   "figure": 3,
+   "text": "Operator machine",
+   "fg": "rgb(0, 0, 0)",
+   "bg": "rgb(201,255,201)",
+   "ratio": 18.63
+  },
+  {
+   "figure": 3,
+   "text": "Deterministic governed checks",
+   "fg": "rgb(0, 0, 0)",
+   "bg": "rgb(201,255,201)",
+   "ratio": 18.63
+  },
+  {
+   "figure": 3,
+   "text": "uses",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 13.32
+  },
+  {
+   "figure": 3,
+   "text": "serves",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 13.32
+  },
+  {
+   "figure": 3,
+   "text": "runs on",
+   "fg": "rgb(214, 214, 218)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 13.32
+  }
+ ],
+ "edges": [
+  {
+   "figure": 0,
+   "id": "m02137356416001679-0-L_cli_reducer_0",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(18,19,23)",
+   "ratio": 10.63,
+   "authored": false
+  },
+  {
+   "figure": 0,
+   "id": "m02137356416001679-0-L_reducer_site_0",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(18,19,23)",
+   "ratio": 10.63,
+   "authored": false
+  },
+  {
+   "figure": 0,
+   "id": "m02137356416001679-0-L_site_agent_0",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 11.05,
+   "authored": false
+  },
+  {
+   "figure": 1,
+   "id": "m07739480247845825-0-L_events_snapshot_0",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(18,19,23)",
+   "ratio": 10.63,
+   "authored": false
+  },
+  {
+   "figure": 1,
+   "id": "m07739480247845825-0-L_snapshot_docs_0",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(18,19,23)",
+   "ratio": 10.63,
+   "authored": false
+  },
+  {
+   "figure": 2,
+   "id": "m03649657582719288-0-L_pale_deep_0",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 11.05,
+   "authored": false
+  },
+  {
+   "figure": 2,
+   "id": "m03649657582719288-0-L_deep_both_0",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 11.05,
+   "authored": false
+  },
+  {
+   "figure": 2,
+   "id": "m03649657582719288-0-L_both_pale_0",
+   "stroke": "rgb(217, 115, 26)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 5.9,
+   "authored": true
+  },
+  {
+   "figure": 3,
+   "id": "op-to-pack",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 11.05,
+   "authored": false
+  },
+  {
+   "figure": 3,
+   "id": "pack-to-checks",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 11.05,
+   "authored": false
+  },
+  {
+   "figure": 3,
+   "id": "checks-to-machine",
+   "stroke": "rgb(169, 199, 232)",
+   "bg": "rgb(13,14,17)",
+   "ratio": 11.05,
+   "authored": false
+  }
+ ],
+ "overflow": []
+}
