@@ -1,7 +1,7 @@
 {
-  "event_count": 56,
-  "last_event_id": "01M81V1PQF5FB8CGAJS5Z3TWF0",
-  "materialized_at": "2026-11-22T14:37:31.746610+00:00",
+  "event_count": 58,
+  "last_event_id": "01M81WTB7QKFKJMEKTQKM8HRT6",
+  "materialized_at": "2026-11-22T15:08:27.767614+00:00",
   "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
   "mission_type": "software-dev",
@@ -13,8 +13,8 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 1,
-    "in_review": 0,
+    "in_progress": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
@@ -273,17 +273,18 @@
     },
     "WP09": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude::node-norris",
-      "lane": "in_progress",
-      "last_event_id": "01M81V1PQF5FB8CGAJS5Z3TWF0",
-      "last_transition_at": "2026-11-22T14:37:31.746610+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M81WTB7QKFKJMEKTQKM8HRT6",
+      "last_transition_at": "2026-11-22T15:08:27.767614+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id."
+        "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id.",
+        "Cycle 1 fixed in bc5c9d8: AgentPagePayload key table + AgentPageMeasure table (nested map); example banners no longer say 'policy'; link-not-copy loops all org classified-as targets. FULL pnpm test: src 218 files/4333 tests, mcp 23/181, all green; build + assert:artifacts PASS."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -293,13 +294,13 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 21413,
+      "shell_pid_created_at": "1795360103.35",
       "subtasks": {
-        "T030": "planned",
-        "T031": "planned",
-        "T032": "planned"
+        "T030": "done",
+        "T031": "done",
+        "T032": "done"
       }
     }
   }
