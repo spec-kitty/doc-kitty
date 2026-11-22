@@ -1,0 +1,79 @@
+{
+  "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/diagram-legibility.spec.ts (light+dark, 1280/390) on lane-b 9840913; red on main code: ArchiMate labels 1.19-1.41:1 dark (tasks/WP01-fixture-and-browser-check/evidence/red-lane-a); unit: diagram-label-contrast.test.ts 'pins black on the ArchiMate layer fills'",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:33.390149+00:00",
+      "notes": "ArchiMate labels now >=4.5:1 in both themes"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "diagram-legibility.spec.ts green on 9840913 (labels min 4.96 light, 5.62 dark); red on main code: pale fill 1.41 dark, deep fill 3.06 light / 3.88 dark; unit: Mermaid author-fill and cluster cases",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:37.817429+00:00",
+      "notes": "Mermaid node/cluster labels on author fills >=4.5:1 both themes; see-through fill stays themed (6.38/6.93)"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "diagram-label-contrast.test.ts 'keeps an author label colour, wherever Mermaid put it (FR-003)'; fixture node 'Deep fill with a white label' kept #fff (6.53:1)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:42.223414+00:00",
+      "notes": "author label colour untouched"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "diagram-legibility.spec.ts overflow assertion green at 1280 and 390 px; red on main code: 3 overflowing labels in the author-font diagram; half-proof: removing pinDiagramLabelFont brings the overflow back",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:46.615349+00:00",
+      "notes": "Toolkit Arial-metric stack always wins (operator ruling B, 2026-11-22; author fonts tracked in #412)"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "diagram-legibility.spec.ts themed edges per figure [3,2,2,3], min 6.15:1 light / 10.63:1 dark, on both main code and the fix",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:51.257607+00:00",
+      "notes": "ratchet: #369 item 1 does not reproduce (root cause comment on #369)"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "tests/a11y/diagram-legibility.spec.ts in the light and dark projects at 1280 and 390 px; non-vacuity: 4 figures, >=20 labels, themed edges [3,2,2,3], no skipped edges or labels",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:55.917303+00:00",
+      "notes": "one browser check covers FR-001/002/004/005"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "docs/changelog/unreleased/369-diagram-label-legibility.md (eeb40b3, 2a7172e); pnpm validate:changelog OK",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:25:00.326274+00:00",
+      "notes": "one Fixed fragment for #369 and #370"
+    }
+  ],
+  "negative_invariants": []
+}

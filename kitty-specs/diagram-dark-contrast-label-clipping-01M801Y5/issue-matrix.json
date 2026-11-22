@@ -1,0 +1,65 @@
+{
+  "rows": {
+    "#0": {
+      "evidence_ref": "False positive: hex colour `#000000` in research.md parsed as issue #0 by issue_reference_discovery; not an issue",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": "WP01"
+    },
+    "#369": {
+      "evidence_ref": "<link or commit>",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Build-time diagrams: Mermaid edges and ArchiMate labels unreadable in dark mode",
+      "verdict": "in-mission",
+      "wp": "WP02"
+    },
+    "#370": {
+      "evidence_ref": "<link or commit>",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Build-time Mermaid: node and edge labels are clipped (font-metric mismatch)",
+      "verdict": "in-mission",
+      "wp": "WP02"
+    },
+    "#371": {
+      "evidence_ref": "see #371: item 4 of #369 split out, not owed here",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Click-to-zoom on narrow viewports",
+      "verdict": "not-applicable",
+      "wp": "WP02"
+    },
+    "#405": {
+      "evidence_ref": "PR #405 cited only for file avoidance (ruling R36)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "PDF lane PR",
+      "verdict": "not-applicable",
+      "wp": "WP02"
+    }
+  },
+  "schema_version": 1
+}

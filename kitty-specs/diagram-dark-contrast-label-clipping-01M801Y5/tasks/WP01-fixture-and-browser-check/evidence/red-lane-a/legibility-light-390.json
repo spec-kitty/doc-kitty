@@ -1,0 +1,297 @@
+{
+ "figures": 4,
+ "themedEdgesPerFigure": [
+  3,
+  2,
+  2,
+  3
+ ],
+ "skippedEdges": [],
+ "skippedLabels": [],
+ "labels": [
+  {
+   "figure": 0,
+   "text": "Spec Kitty open core and its producer ecosystem",
+   "fg": "rgb(128, 101, 8)",
+   "bg": "rgb(244,242,237)",
+   "ratio": 4.96
+  },
+  {
+   "figure": 0,
+   "text": "appends lifecycle events to the log",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 0,
+   "text": "materializes the snapshot that consumers read",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 0,
+   "text": "publishes llms.txt and the JSON agent API",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 0,
+   "text": "Command line interface for mission authors",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 0,
+   "text": "status.reducer.materialize_snapshot over the event log",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 0,
+   "text": "Consumer documentation site built with the toolkit",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 0,
+   "text": "Agent reading the discovery surfaces",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 1,
+   "text": "Spec Kitty open core and its producer ecosystem",
+   "fg": "rgb(128, 101, 8)",
+   "bg": "rgb(244,242,237)",
+   "ratio": 4.96
+  },
+  {
+   "figure": 1,
+   "text": "appends events",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 1,
+   "text": "folded by the reducer and consumed by the site",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 1,
+   "text": "Command line interface that appends lifecycle events",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 1,
+   "text": "status.reducer.materialize_snapshot folded by the reducer",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 1,
+   "text": "Consumer documentation site built with the toolkit",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,255)",
+   "ratio": 17.21
+  },
+  {
+   "figure": 2,
+   "text": "Pale fill, no label colour",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,204)",
+   "ratio": 16.74
+  },
+  {
+   "figure": 2,
+   "text": "Deep fill, no label colour",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(17,104,189)",
+   "ratio": 3.06
+  },
+  {
+   "figure": 2,
+   "text": "Deep fill with a white label",
+   "fg": "rgb(255, 255, 255)",
+   "bg": "rgb(29,107,58)",
+   "ratio": 6.53
+  },
+  {
+   "figure": 3,
+   "text": "Operator",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(255,255,204)",
+   "ratio": 16.74
+  },
+  {
+   "figure": 3,
+   "text": "built-in pack (trusted by position)",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(194,240,255)",
+   "ratio": 14.09
+  },
+  {
+   "figure": 3,
+   "text": "Operator machine",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(201,255,201)",
+   "ratio": 15.27
+  },
+  {
+   "figure": 3,
+   "text": "Deterministic governed checks",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(201,255,201)",
+   "ratio": 15.27
+  },
+  {
+   "figure": 3,
+   "text": "uses",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 16.48
+  },
+  {
+   "figure": 3,
+   "text": "serves",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 16.48
+  },
+  {
+   "figure": 3,
+   "text": "runs on",
+   "fg": "rgb(26, 27, 31)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 16.48
+  }
+ ],
+ "edges": [
+  {
+   "figure": 0,
+   "id": "m004655104644811625-0-L_cli_reducer_0",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(244,242,237)",
+   "ratio": 6.15,
+   "authored": false
+  },
+  {
+   "figure": 0,
+   "id": "m004655104644811625-0-L_reducer_site_0",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(244,242,237)",
+   "ratio": 6.15,
+   "authored": false
+  },
+  {
+   "figure": 0,
+   "id": "m004655104644811625-0-L_site_agent_0",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 6.59,
+   "authored": false
+  },
+  {
+   "figure": 1,
+   "id": "m07931141061542788-0-L_events_snapshot_0",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(244,242,237)",
+   "ratio": 6.15,
+   "authored": false
+  },
+  {
+   "figure": 1,
+   "id": "m07931141061542788-0-L_snapshot_docs_0",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(244,242,237)",
+   "ratio": 6.15,
+   "authored": false
+  },
+  {
+   "figure": 2,
+   "id": "m05437343670836197-0-L_pale_deep_0",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 6.59,
+   "authored": false
+  },
+  {
+   "figure": 2,
+   "id": "m05437343670836197-0-L_deep_both_0",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 6.59,
+   "authored": false
+  },
+  {
+   "figure": 2,
+   "id": "m05437343670836197-0-L_both_pale_0",
+   "stroke": "rgb(217, 115, 26)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 3.14,
+   "authored": true
+  },
+  {
+   "figure": 3,
+   "id": "op-to-pack",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 6.59,
+   "authored": false
+  },
+  {
+   "figure": 3,
+   "id": "pack-to-checks",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 6.59,
+   "authored": false
+  },
+  {
+   "figure": 3,
+   "id": "checks-to-machine",
+   "stroke": "rgb(44, 94, 134)",
+   "bg": "rgb(251,250,247)",
+   "ratio": 6.59,
+   "authored": false
+  }
+ ],
+ "overflow": [
+  {
+   "figure": 1,
+   "text": "Spec Kitty open core and its producer ecosystem",
+   "boxWidth": 304.281005859375,
+   "contentWidth": 327,
+   "boxHeight": 21,
+   "contentHeight": 21
+  },
+  {
+   "figure": 1,
+   "text": "appends events",
+   "boxWidth": 98.85900115966797,
+   "contentWidth": 105,
+   "boxHeight": 21,
+   "contentHeight": 21
+  },
+  {
+   "figure": 1,
+   "text": "status.reducer.materialize_snapshot folded by the reducer",
+   "boxWidth": 228.01600646972656,
+   "contentWidth": 242,
+   "boxHeight": 42,
+   "contentHeight": 42
+  }
+ ]
+}
