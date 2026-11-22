@@ -55,24 +55,72 @@ export function packContentHash(bytes) {
 }
 
 /**
- * Read a YAML file: `{ value }`, or `{ error }` when it is missing or does not parse.
- * `strings` reads every scalar as a string (the YAML failsafe schema): a
- * manifest's unquoted hex hash of digits, or of digits and one `e`, would
- * otherwise read as a number.
+ * How every pack file is parsed: data only. Known tags (`!!binary`, `!!set`,
+ * `!!timestamp`, `!!omap`) are not resolved to objects, and the failsafe schema
+ * reads every scalar as a string, so `pack_version: 1.10` stays `1.10` and a
+ * manifest's unquoted all-digit hash stays a hash. A pack is another
+ * repository's content.
+ */
+const YAML_OPTIONS = Object.freeze({ schema: 'failsafe', resolveKnownTags: false, logLevel: 'error' });
+
+/**
+ * Read and parse a YAML file at an absolute path: `{ value }`, or `{ error }` when
+ * it is missing or does not parse.
  *
- * @param {string} file
- * @param {{ strings?: boolean }} [options]
+ * @param {string | undefined} file
  * @returns {{ value?: any, error?: 'missing' | string }}
  */
-function readYaml(file, { strings = false } = {}) {
-  if (!existsSync(file)) return { error: 'missing' };
+function readYamlFile(file) {
+  if (file === undefined || !existsSync(file)) return { error: 'missing' };
   try {
-    const text = readFileSync(file, 'utf8');
-    return { value: strings ? parseYaml(text, { schema: 'failsafe' }) : parseYaml(text) };
+    return { value: parseYaml(readFileSync(file, 'utf8'), YAML_OPTIONS) };
   } catch (error) {
     return { error: /** @type {Error} */ (error).message.split('\n')[0] };
   }
 }
+
+/**
+ * The absolute path of a regular file the pack holds at `rel`, or undefined: a
+ * path that escapes the pack, or any of whose components is a symlink, is not
+ * held (it would be read through the link), and neither is a directory.
+ *
+ * @param {string} root the pack directory, absolute
+ * @param {string} rel pack-relative, `/`-separated
+ * @returns {string | undefined}
+ */
+function heldFile(root, rel) {
+  if (rel === '' || path.isAbsolute(rel)) return undefined;
+  const abs = path.resolve(root, rel);
+  if (!abs.startsWith(root + path.sep)) return undefined;
+  let current = root;
+  for (const part of path.relative(root, abs).split(path.sep)) {
+    current = path.join(current, part);
+    let stat;
+    try {
+      stat = lstatSync(current);
+    } catch {
+      return undefined;
+    }
+    if (stat.isSymbolicLink()) return undefined;
+    if (current === abs) return stat.isFile() ? abs : undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Read a YAML file the pack holds (see {@link heldFile}).
+ *
+ * @param {string} root
+ * @param {string} rel
+ */
+const readHeldYaml = (root, rel) => readYamlFile(heldFile(root, rel));
+
+/**
+ * Is a failsafe-schema scalar one of YAML's null spellings (or absent)?
+ *
+ * @param {unknown} v
+ */
+const isYamlNull = (v) => v === null || v === undefined || (typeof v === 'string' && ['', '~', 'null', 'Null', 'NULL'].includes(v));
 
 /** @param {unknown} v @returns {v is Record<string, any>} */
 const isMapping = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -111,9 +159,9 @@ function walkPack(root) {
  *
  * @param {string} rel pack-relative path
  * @param {string} artifactKind
- * @param {string} abs
+ * @param {string} root the pack directory
  */
-function artifactId(rel, artifactKind, abs) {
+function artifactId(rel, artifactKind, root) {
   if (artifactKind === 'template') {
     const mission = /^missions\/([^/]+)\/templates\/(.+)$/.exec(rel);
     if (mission) return `${mission[1]}/${mission[2]}`;
@@ -121,7 +169,7 @@ function artifactId(rel, artifactKind, abs) {
     if (top) return top[1];
   }
   if (/\.ya?ml$/.test(rel)) {
-    const { value } = readYaml(abs);
+    const { value } = readHeldYaml(root, rel);
     if (isMapping(value) && typeof value.id === 'string' && value.id !== '') return value.id;
   }
   const base = rel.split('/').pop() ?? rel;
@@ -169,7 +217,7 @@ export function readPack(dir, options = {}) {
    *   dependsOn: { packId: string, range?: string }[], schemaVersion?: string }} */
   const id = { packId: '', name: packDir, version: '', dependsOn: [] };
   const descriptorSchema = schemas['pack-descriptor'] ?? {};
-  const descriptor = readYaml(path.join(root, 'pack.yaml'));
+  const descriptor = readHeldYaml(root, 'pack.yaml');
   /** @type {Record<string, any>} */
   let desc = {};
   if (descriptor.error === 'missing') warn('descriptor-missing', 'the pack has no pack.yaml', 'pack.yaml');
@@ -191,7 +239,7 @@ export function readPack(dir, options = {}) {
     if (typeof desc.name === 'string' && desc.name !== '') id.name = desc.name;
     if (desc.pack_version !== undefined && desc.pack_version !== null) id.version = String(desc.pack_version);
     if (typeof desc.pack_level === 'string') id.level = desc.pack_level;
-    if ('parent_pack' in desc) id.parent = typeof desc.parent_pack === 'string' ? desc.parent_pack : null;
+    if ('parent_pack' in desc) id.parent = isYamlNull(desc.parent_pack) ? null : String(desc.parent_pack);
     if (Array.isArray(desc.depends_on)) {
       id.dependsOn = desc.depends_on
         .filter(isMapping)
@@ -215,9 +263,10 @@ export function readPack(dir, options = {}) {
   // --- README -------------------------------------------------------------
   /** @type {PackModel['document']} */
   let document;
-  if (existsSync(path.join(root, 'README.md'))) {
+  const readme = heldFile(root, 'README.md');
+  if (readme !== undefined) {
     try {
-      const parsed = parsePackDocument(readFileSync(path.join(root, 'README.md'), 'utf8'));
+      const parsed = parsePackDocument(readFileSync(readme, 'utf8'));
       for (const p of parsed.problems) warn(p.code, p.message, 'README.md');
       const { problems: _drop, ...doc } = parsed;
       document = doc;
@@ -228,7 +277,7 @@ export function readPack(dir, options = {}) {
 
   // --- presets ------------------------------------------------------------
   const presets = filesOfKind('preset').map((rel) => {
-    const { value } = readYaml(path.join(root, rel));
+    const { value } = readHeldYaml(root, rel);
     const stem = (rel.split('/').pop() ?? rel).replace(/\.ya?ml$/, '');
     return { name: isMapping(value) && typeof value.id === 'string' ? value.id : stem, path: rel };
   });
@@ -238,9 +287,7 @@ export function readPack(dir, options = {}) {
   let policy;
   if (typeof desc.mutability_policy === 'string') {
     const rel = desc.mutability_policy;
-    const abs = path.resolve(root, rel);
-    const inside = abs.startsWith(root + path.sep);
-    const read = inside ? readYaml(abs) : { error: 'missing' };
+    const read = readHeldYaml(root, rel);
     if (read.error === 'missing') warn('policy-missing', `mutability_policy names ${rel}, which the pack does not hold`, rel);
     else if (read.error || !isMapping(read.value)) warn('policy-unreadable', `${rel} does not parse as a mapping${read.error ? `: ${read.error}` : ''}`, rel);
     else {
@@ -259,7 +306,7 @@ export function readPack(dir, options = {}) {
     if (c?.expect !== 'mapped' || !c.kind) continue;
     const artifactKind = c.kind.replace(/-/g, '_');
     if (!artifactKinds.has(artifactKind)) continue;
-    candidates.set(rel, { kind: artifactKind, id: artifactId(rel, artifactKind, path.join(root, rel)) });
+    candidates.set(rel, { kind: artifactKind, id: artifactId(rel, artifactKind, root) });
   }
   /** @param {Iterable<{ kind: string, id: string }>} entries @returns {InventoryKind[]} */
   const inventoryOf = (entries) => {
@@ -275,7 +322,7 @@ export function readPack(dir, options = {}) {
   // --- manifest -----------------------------------------------------------
   /** @type {PackModel['manifest']} */
   let manifest;
-  const manifestRead = readYaml(path.join(root, 'pack-manifest.yaml'), { strings: true });
+  const manifestRead = readHeldYaml(root, 'pack-manifest.yaml');
   if (manifestRead.error && manifestRead.error !== 'missing') {
     warn('manifest-unreadable', `pack-manifest.yaml does not parse: ${manifestRead.error}`, 'pack-manifest.yaml');
   } else if (manifestRead.error === undefined && !isMapping(manifestRead.value)) {
@@ -297,8 +344,8 @@ export function readPack(dir, options = {}) {
       if (!preset && e.kind !== undefined && !artifactKinds.has(e.kind)) {
         warn('manifest-unknown-kind', `pack-manifest.yaml lists ${rel} with kind \`${e.kind}\`, which the contract does not know`, rel);
       }
-      const abs = path.resolve(root, rel);
-      if (rel === '' || !abs.startsWith(root + path.sep) || !existsSync(abs) || lstatSync(abs).isSymbolicLink() || !statSync(abs).isFile()) {
+      const abs = heldFile(root, rel);
+      if (abs === undefined) {
         verified = false;
         warn('manifest-missing-file', 'pack-manifest.yaml lists this file, but the pack does not hold it', rel || 'pack-manifest.yaml');
         continue;
@@ -335,7 +382,7 @@ export function readPack(dir, options = {}) {
   /** @type {PackModel['contract']} */
   const contractInfo = { readWith: contract.lock.commit };
   if (options.charterLock !== undefined) {
-    const lock = readYaml(path.resolve(options.charterLock));
+    const lock = readYamlFile(path.resolve(options.charterLock));
     const commit = isMapping(lock.value) && typeof lock.value.commit === 'string' ? lock.value.commit : undefined;
     if (commit === undefined) {
       warn('charter-lock-unreadable', `charterLock ${options.charterLock} has no readable \`commit\`${lock.error && lock.error !== 'missing' ? `: ${lock.error}` : lock.error === 'missing' ? ' (missing)' : ''}`);

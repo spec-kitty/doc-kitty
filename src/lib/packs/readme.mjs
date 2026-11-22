@@ -32,7 +32,7 @@ function plainText(node) {
 }
 
 /** A frontmatter block: `---` on the first line, up to the next line that is `---`. */
-const FRONTMATTER = /^---[ \t]*\n([\s\S]*?)\n?---[ \t]*(?:\n|$)/;
+const FRONTMATTER = /^---[ \t]*\n(?:([\s\S]*?)\n)?---[ \t]*(?:\n|$)/;
 
 /** Trim blank lines around a block, keeping its inner layout. @param {string} s */
 const trimBlock = (s) => s.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '');
@@ -52,7 +52,8 @@ export function parsePackDocument(source) {
   if (block) {
     body = text.slice(block[0].length);
     try {
-      const data = parseYaml(block[1]);
+      // Data only: known tags (`!!binary`, `!!set`, …) are not resolved to objects.
+      const data = parseYaml(block[1] ?? '', { resolveKnownTags: false, logLevel: 'error' });
       if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
         if (Object.keys(data).length > 0) frontmatter = data;
       } else if (data !== null && data !== undefined) {
