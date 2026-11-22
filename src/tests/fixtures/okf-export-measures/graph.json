@@ -1,0 +1,60 @@
+{
+  "schema": "dockitty.content-graph/1",
+  "okf_version": "0.2",
+  "generatedFrom": "doc-kitty",
+  "nodes": [
+    { "id": "README", "kind": "page", "type": "Context", "title": "Home", "description": "The bundle root.", "status": "stable" },
+    { "id": "catalog:biblio:b1", "kind": "catalog", "title": "A Book", "url": "https://books.example/b1" },
+    {
+      "id": "catalog:measure:accountability",
+      "kind": "catalog",
+      "title": "Accountability",
+      "url": "https://w3id.org/dpv#ComplianceMonitoring",
+      "measure": { "nature": "organisational", "frameworks": [{ "framework": "eu-scc-2021-914-annex-ii", "ref": "16" }] }
+    },
+    {
+      "id": "catalog:measure:custom-x",
+      "kind": "catalog",
+      "title": "Custom measure",
+      "measure": { "nature": "legal", "frameworks": [{ "framework": "internal", "ref": "X" }] }
+    },
+    {
+      "id": "catalog:measure:events-logging",
+      "kind": "catalog",
+      "title": "Events logging",
+      "url": "https://w3id.org/dpv#ActivityMonitoring",
+      "measure": { "nature": "technical", "frameworks": [{ "framework": "eu-scc-2021-914-annex-ii", "ref": "9" }] }
+    },
+    { "id": "security/README", "kind": "page", "type": "Security", "title": "Security", "description": "Security pages.", "status": "stable", "section": "security", "href": "/security/" },
+    { "id": "security/audit-log", "kind": "page", "type": "Security", "title": "Audit log", "description": "How admin actions are logged.", "status": "stable", "section": "security", "href": "/security/audit-log/" },
+    { "id": "security/plain", "kind": "page", "type": "Security", "title": "Plain", "description": "A page with no measures.", "status": "stable", "section": "security", "href": "/security/plain/" }
+  ],
+  "edges": [
+    { "id": "security/README|in-section|README", "source": "security/README", "target": "README", "rel": "in-section" },
+    { "id": "security/audit-log|cites|catalog:biblio:b1", "source": "security/audit-log", "target": "catalog:biblio:b1", "rel": "cites" },
+    {
+      "id": "security/audit-log|classified-as|catalog:measure:accountability",
+      "source": "security/audit-log",
+      "target": "catalog:measure:accountability",
+      "rel": "classified-as",
+      "scope": "organisation"
+    },
+    {
+      "id": "security/audit-log|classified-as|catalog:measure:custom-x",
+      "source": "security/audit-log",
+      "target": "catalog:measure:custom-x",
+      "rel": "classified-as",
+      "scope": "system"
+    },
+    {
+      "id": "security/audit-log|classified-as|catalog:measure:events-logging",
+      "source": "security/audit-log",
+      "target": "catalog:measure:events-logging",
+      "rel": "classified-as",
+      "note": "Every admin action is logged.",
+      "scope": "system"
+    },
+    { "id": "security/audit-log|in-section|security/README", "source": "security/audit-log", "target": "security/README", "rel": "in-section" },
+    { "id": "security/plain|in-section|security/README", "source": "security/plain", "target": "security/README", "rel": "in-section" }
+  ]
+}

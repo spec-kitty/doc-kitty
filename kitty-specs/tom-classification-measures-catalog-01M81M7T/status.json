@@ -4,7 +4,7 @@
   "materialized_at": "2026-11-22T14:16:38.167527+00:00",
   "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "schema_version": 2,
   "summary": {
     "approved": 7,
