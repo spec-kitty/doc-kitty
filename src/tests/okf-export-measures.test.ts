@@ -54,4 +54,18 @@ describe('OKF export: Measures section', () => {
     expect(checkOkfBundle(bundle)).toEqual([]);
     expect([...run()]).toEqual([...bundle]);
   });
+
+  it('keeps a multi-line note or label on its own list line', () => {
+    const hostile = structuredClone(graph);
+    const e = hostile.edges.find((x: { id: string }) => x.id.endsWith('catalog:measure:events-logging'));
+    e.note = 'first line\n## Injected heading\n- injected item';
+    const n = hostile.nodes.find((x: { id: string }) => x.id === 'catalog:measure:custom-x');
+    n.title = 'Custom\n## Label';
+    const doc = (exportOkfBundle(hostile, sources) as Map<string, string>).get('security/audit-log.md') as string;
+    expect(doc).not.toMatch(/^## Injected/m);
+    expect(doc).not.toMatch(/^- injected item/m);
+    expect(doc).not.toMatch(/^## Label/m);
+    expect(doc).toContain('- [Events logging](https://w3id.org/dpv#ActivityMonitoring) - first line ## Injected heading - injected item');
+    expect(doc).toContain('- Custom ## Label');
+  });
 });

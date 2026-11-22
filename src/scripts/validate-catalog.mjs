@@ -27,9 +27,11 @@
  * measures catalog: `<root>/_meta/measures.yaml` when present, else the shipped
  * default. Unlike citations, this check does NOT re-implement anything: the
  * measures core and loader are bare-Node safe, so the gate imports the very
- * module the build routes use, and the two cannot disagree on a verdict or its
- * wording (NFR-002). A malformed consumer catalog is reported even when no page
- * uses it.
+ * module the build routes use, and the two cannot disagree on a verdict
+ * (NFR-002, pinned by measures-parity.test.ts). The message is the same too,
+ * except that the gate names a page from the repository root
+ * (`example/docs/x.md`) and the build from the docs root (`x.md`). A malformed
+ * consumer catalog is reported even when no page uses it.
  */
 import { readdirSync, statSync, readFileSync, existsSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -178,7 +180,8 @@ export function validateRoot(root, problems) {
     const tom = parsed.data?.tom_classification;
     if (tom !== undefined) {
       classified++;
-      problems.push(...classificationProblems(tom, measures, relative('.', file), measuresCatalog.source));
+      const page = relative('.', file).split('\\').join('/');
+      problems.push(...classificationProblems(tom, measures, page, measuresCatalog.source));
     }
     const refs = parsed.data?.external_references;
     if (!Array.isArray(refs)) continue;

@@ -876,7 +876,8 @@ resolve against a measures catalog. You need no configuration for it.
 **The default.** When `docs/_meta/measures.yaml` is absent, the toolkit uses its
 shipped default: the 17 example headings of Decision (EU) 2021/914, Annex II.
 Headings 1 to 4 also carry GDPR Article 32(1)(a) to (d). Each record links the
-nearest W3C DPV concept. A tree that never uses `tom_classification` is unaffected.
+nearest W3C DPV concept, which is a pointer for linked-data tools, not a legal
+equivalence. A tree that never uses `tom_classification` is unaffected.
 
 **Your own catalog.** Write `docs/_meta/measures.yaml` as a YAML list of records:
 

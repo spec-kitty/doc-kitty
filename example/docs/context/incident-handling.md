@@ -34,5 +34,5 @@ repeating it.
 ## Why the classification says organisation
 
 The process does not belong to one system. Its `tom_classification` entries
-carry `scope: organisation`, so tools that gather evidence can list these
-measures once, as inherited, for every product that links here.
+carry `scope: organisation`, so a later export can list these measures once,
+as inherited, for every product that links here.

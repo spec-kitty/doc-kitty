@@ -26,6 +26,9 @@ tags: [glossary]
   identified by a stable id in the measures catalog: `docs/_meta/measures.yaml`,
   or the default the toolkit ships. See
   [ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md).
+- **Measures catalog** — the list of known measures for a docs tree: the
+  consumer's `docs/_meta/measures.yaml` when present, else the default the
+  toolkit ships. A consumer file replaces the default wholesale.
 - **TOM classification** — the optional `tom_classification` page field. It lists
   the measures a page provides evidence for. It marks evidence; it does not make
   a description of technical and organisational measures (TOMs) complete.

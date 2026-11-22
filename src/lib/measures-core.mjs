@@ -102,7 +102,14 @@ export function parseMeasuresCatalog(data, label) {
       Array.isArray(frameworks) &&
       frameworks.length > 0 &&
       frameworks.every((f) => isMapping(f) && isText(f.framework) && isText(f.ref));
-    if (!frameworksOk) say('"frameworks" must be a non-empty list of { framework, ref }');
+    const numericRef = Array.isArray(frameworks)
+      ? frameworks.find((f) => isMapping(f) && typeof f.ref === 'number')
+      : undefined;
+    if (numericRef) {
+      say(`"ref" must be a string; quote numbers such as "${/** @type {any} */ (numericRef).ref}"`);
+    } else if (!frameworksOk) {
+      say('"frameworks" must be a non-empty list of { framework, ref }');
+    }
     if (raw.dpv !== undefined && !(typeof raw.dpv === 'string' && /^https?:\/\//.test(raw.dpv))) {
       say('"dpv" must be an http(s) IRI');
     }

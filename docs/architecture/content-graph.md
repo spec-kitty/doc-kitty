@@ -82,7 +82,8 @@ without the option have no such nodes.
 A `catalog:measure:<id>` node is a record of the measures catalog
 ([ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md)). Its
 `title` is the measure's label and its `url` is the measure's DPV concept IRI,
-when the record has one. It also carries a `measure` object,
+when the record has one. That IRI names the nearest DPV concept; it is not a
+legal equivalence. It also carries a `measure` object,
 `{ nature, frameworks }`: the measure's nature (`technical`, `organisational`,
 `legal` or `physical`) and its framework references. The graph holds a measure
 node only when at least one published page lists that measure.
@@ -94,7 +95,9 @@ Instants are UTC `YYYY-MM-DDTHH:MM:SSZ` and actors use the
 ## Edges
 
 An edge is `{ id, source, target, rel, note?, scope? }`, and its `id` is
-`source|rel|target`. `rel` is one of:
+`source|rel|target`. The `rel` values and node fields may grow within schema
+`dockitty.content-graph/1`, so a reader must tolerate a value it does not know.
+`rel` is one of:
 
 | `rel` | From frontmatter | Target |
 |---|---|---|
@@ -120,8 +123,9 @@ not a page. A measure id that is not in the measures catalog fails the build, an
 that check covers draft pages too, even though a draft contributes no edges.
 
 The OKF export renders a page's `classified-as` edges as a `## Measures` section,
-after `## References`. Each line is the measure's label linked to its DPV IRI, an
-`(organisation)` marker for organisation scope, then the note. The lines follow
+after `## References`. Each line is the measure's label linked to its DPV IRI
+(plain text when the record has no IRI), an `(organisation)` marker for
+organisation scope, then the note. The lines follow
 the graph's edge order, which is the code-unit order of the target ids, so the
 measures appear sorted by measure id rather than in authored order.
 

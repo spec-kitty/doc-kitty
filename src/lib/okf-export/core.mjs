@@ -261,9 +261,13 @@ const linkLine = (label, href, suffix) => `- [${escapeLabel(label)}](${href})${s
  */
 function relationLine(edge, target, indexNames) {
   if (!target) return null;
-  const label = target.title ?? target.id;
-  const scope = edge.rel === 'classified-as' && edge.scope === 'organisation' ? ' (organisation)' : '';
-  const note = `${scope}${edge.note ? ` - ${edge.note}` : ''}`;
+  // A measure's label and note are authored free text (catalog and frontmatter):
+  // fold any line break into a space so they cannot open a heading or list item.
+  const measure = edge.rel === 'classified-as';
+  const flat = (/** @type {string} */ text) => (measure ? text.replace(/\s+/g, ' ').trim() : text);
+  const label = flat(target.title ?? target.id);
+  const scope = measure && edge.scope === 'organisation' ? ' (organisation)' : '';
+  const note = `${scope}${edge.note ? ` - ${flat(edge.note)}` : ''}`;
   if (target.kind === 'page' || target.kind === 'persona') {
     return linkLine(label, `/${bundlePathOf(target.id, indexNames)}`, note);
   }
