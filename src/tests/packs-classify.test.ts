@@ -20,8 +20,9 @@ const { fileKinds } = loadContract();
 
 describe('classifier conformance (charter classifier-cases.yaml)', () => {
   it('reads the whole case file', () => {
-    // 76 cases at contract-packs-v0.1.0-rc.1; a floor guards against a truncated read.
-    expect(cases.length).toBeGreaterThanOrEqual(70);
+    const raw = readFileSync(CASES_FILE, 'utf8');
+    expect(cases.length).toBe((raw.match(/^\s*- \{path:/gm) ?? []).length);
+    expect(cases.length).toBeGreaterThan(0);
   });
 
   it.each(cases.map((c) => [c.path, c] as const))('%s', (_path, c) => {
@@ -72,6 +73,19 @@ describe('compileGlob', () => {
   it('is case-sensitive unless asked otherwise', () => {
     expect(compileGlob('**/*.md').test('core/NOTES.MD')).toBe(false);
     expect(compileGlob('**/*.md', { caseInsensitive: true }).test('core/NOTES.MD')).toBe(true);
+  });
+});
+
+describe('case variants run the full precedence in lower case before the ignored step (PackFileKind.classifyFolded)', () => {
+  it('excludes a case variant of an excluded README: the folded run is an exclusion, so ignored applies', () => {
+    expect(classify('core/missions/plan/Templates/README.md', fileKinds)).toMatchObject({ expect: 'excluded', rule: '**/*.md' });
+    expect(classify('core/Assets/logos/README.md', fileKinds)).toMatchObject({ expect: 'excluded', rule: '**/*.md' });
+  });
+
+  it('refuses a case variant the folded run maps or retires', () => {
+    expect(classify('core/toolguides/a.guide.MD', fileKinds)).toEqual({ expect: 'unmodelled' });
+    expect(classify('core/Mission-Steps/plan/specify.md', fileKinds)).toEqual({ expect: 'unmodelled' });
+    expect(classify('core/Templates/spec-template.md', fileKinds)).toEqual({ expect: 'unmodelled' });
   });
 });
 
