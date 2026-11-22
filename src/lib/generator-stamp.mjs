@@ -166,15 +166,16 @@ function contentHashOf(hash) {
 const STAMP_VERSION = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/;
 
 /**
- * Build a stamp. While `previous.content_hash` equals the new hash, the page is
- * unchanged and so is its stamp: `previous` comes back as it is, `by` included,
+ * Build a stamp. While `previous.content_hash` equals the new hash, the hashed
+ * content is unchanged and so is the stamp: `previous` comes back as it is, `by` included,
  * so a version bump alone never rewrites a committed generated page (#398). Once
  * the content changes, `by` names the current toolkit version and `at` is `now`
- * (whole-second UTC). So `by` records the version that last changed the content.
+ * (whole-second UTC). So `by` records the version that last changed the hashed content
+ * (for a Gherkin page that is the `.feature` source, not the rendered body).
  *
  * `previous.at` is kept only while it still reads as a date, and `previous.by`
- * only while it is this producer's own stamp with a version-shaped suffix; otherwise that field is
- * written fresh.
+ * only while it is this producer's own stamp with a version-shaped suffix;
+ * otherwise that field is written fresh.
  *
  * @param {object} args
  * @param {string} args.producer one of {@link PRODUCERS}
