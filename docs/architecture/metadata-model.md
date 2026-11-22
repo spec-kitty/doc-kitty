@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-10-25T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -422,6 +422,16 @@ and `content_hash` only from an ownership stamp (`doc-kitty-gherkin/<version>` o
 `doc-kitty-glossary/<version>`). It ignores any other stamp, such as the
 scaffold's. The agent API is unchanged: it reports `updated` and the raw
 `generated` block.
+
+Which producers exist, and where each may own pages, is one registry,
+`src/lib/producers.mjs`
+([ADR-0083](../adr/0083-producer-registry-and-ownership-scopes.md)). An
+ownership producer has a scope: a whole section, or directories inside one. A
+page is generated only when it carries its producer's stamp and sits inside that
+producer's scope, so a stamp alone never exempts a page from the frontmatter
+gate. The glossary keeps its path rule (`glossary/` with `kind: Glossary` or
+`Hub`) as its scope. The scaffold is a provenance-only producer: its stamp never
+makes a page generated.
 
 ### `verified`
 
