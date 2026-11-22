@@ -98,10 +98,10 @@
       "criterion_id": "FR-010",
       "description": "Verify FR-010 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "FR-010 ratchets with positive controls in content-graph-measures.test.ts and agent-page-measures.test.ts; assert-build-artifacts: unclassified overview.json has no key",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:11.246880+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
