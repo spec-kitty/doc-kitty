@@ -132,7 +132,8 @@
       "last_transition_at": "2026-11-22T13:54:17.859113+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "readPack + PackModel; 25 tests red-first; 19/19 open-packs packs verified"
+        "readPack + PackModel; 25 tests red-first; 19/19 open-packs packs verified",
+        "Cycle 2: fold B1 (symlinked components) and B2 (YAML tags, frontmatter regex)"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
