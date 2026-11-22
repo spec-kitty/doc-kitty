@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PackModel (ADR-0079 D4)",
+  "type": "object",
+  "required": ["dir", "path", "identity", "presets", "inventory", "problems", "contract"],
+  "properties": {
+    "dir": { "type": "string" },
+    "path": { "type": "string" },
+    "identity": {
+      "type": "object",
+      "required": ["packId", "name", "version", "dependsOn"],
+      "properties": {
+        "packId": { "type": "string" }, "name": { "type": "string" }, "version": { "type": "string" },
+        "level": { "type": "string" }, "parent": { "type": ["string", "null"] },
+        "dependsOn": { "type": "array", "items": { "type": "object", "required": ["packId"], "properties": { "packId": { "type": "string" }, "range": { "type": "string" } } } },
+        "schemaVersion": { "type": "string" }
+      }
+    },
+    "document": {
+      "type": "object", "required": ["preamble", "sections"],
+      "properties": {
+        "frontmatter": { "type": "object" }, "title": { "type": "string" }, "preamble": { "type": "string" },
+        "sections": { "type": "array", "items": { "type": "object", "required": ["title", "content"] } }
+      }
+    },
+    "manifest": {
+      "type": "object", "required": ["hash", "verified", "constituents"],
+      "properties": { "hash": { "type": "string" }, "verified": { "type": "boolean" }, "constituents": { "type": "array" } }
+    },
+    "presets": { "type": "array" },
+    "policy": { "type": "object", "required": ["kindDefaults", "artifacts"] },
+    "inventory": { "type": "object", "required": ["source", "kinds"], "properties": { "source": { "enum": ["manifest", "file-kinds"] } } },
+    "problems": { "type": "array", "items": { "type": "object", "required": ["severity", "code", "message"], "properties": { "severity": { "const": "warning" } } } },
+    "contract": { "type": "object", "required": ["readWith"], "properties": { "readWith": { "type": "string" }, "provenAgainst": { "type": "string" } } }
+  }
+}
