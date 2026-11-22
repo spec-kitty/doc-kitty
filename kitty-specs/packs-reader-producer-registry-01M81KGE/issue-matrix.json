@@ -13,7 +13,7 @@
       "wp": null
     },
     "#329": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Context: ADR-0079 (#329) is the accepted decision this Mission implements; PR #337 merged",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -21,7 +21,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#330": {
