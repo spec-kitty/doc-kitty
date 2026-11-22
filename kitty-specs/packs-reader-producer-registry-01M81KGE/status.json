@@ -201,6 +201,9 @@
       "last_event_id": "01M81T6WCVZJMGC733GX29ZCRP",
       "last_transition_at": "2026-11-22T14:22:52.827461+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "ADR-0083 + packs/metadata-model/consumer-setup docs + fragment; doc gates, markdownlint, Vale 3.18.0 clean"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 194,
