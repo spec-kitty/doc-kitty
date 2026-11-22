@@ -18,8 +18,8 @@ tom_classification:
 # Audit logging
 
 > [!NOTE]
-> This page is an example of a TOM classification. It is not policy text and it
-> is not legal advice.
+> This page is an invented example of a TOM classification. It is not legal
+> advice.
 
 The example product writes one log line for every administrative action. Each
 line names the actor, the action and the time.

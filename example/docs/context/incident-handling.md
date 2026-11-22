@@ -17,8 +17,8 @@ tom_classification:
 # Incident handling
 
 > [!NOTE]
-> This page is an example of a TOM classification. It is not policy text and it
-> is not legal advice.
+> This page is an invented example of a TOM classification. It is not legal
+> advice.
 
 The example organisation handles incidents the same way for every product it
 runs. This page describes that process once. Product pages link here instead of

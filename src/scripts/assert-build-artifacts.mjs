@@ -607,8 +607,14 @@ async function assertTomClassification(distDir, index, builtRelOf) {
   // Linked, not copied (ADR-0080 decision 5): the system page relates to the organisation page
   // and does not repeat its organisation measures.
   if (!edge(SYSTEM_PAGE, 'related', ORG_PAGE)) fail(`tom-classification: ${SYSTEM_PAGE} has no related edge to ${ORG_PAGE}`);
-  if (edge(SYSTEM_PAGE, 'classified-as', 'catalog:measure:accountability')) {
-    fail(`tom-classification: ${SYSTEM_PAGE} restates the organisation measure accountability`);
+  const orgTargets = graph.edges.filter((e) => e.source === ORG_PAGE && e.rel === 'classified-as').map((e) => e.target);
+  if (orgTargets.length < 2) {
+    fail(`tom-classification: ${ORG_PAGE} should classify two organisation measures (got ${JSON.stringify(orgTargets)})`);
+  }
+  for (const target of orgTargets) {
+    if (edge(SYSTEM_PAGE, 'classified-as', target)) {
+      fail(`tom-classification: ${SYSTEM_PAGE} restates the organisation measure ${target}`);
+    }
   }
 
   const record = JSON.parse(await readFile(path.join(distDir, 'api', 'pages', `${SYSTEM_PAGE}.json`), 'utf8'));
