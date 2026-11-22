@@ -329,11 +329,11 @@ describe('robustness', () => {
     const extra = [
       ['directive', 'ghost', 'README.md'],
       ['directive', 'a-again', 'directives/a.directive.yaml'],
-      ['agent_profile', 'phantom', 'tactics/t.tactic.yaml'],
     ]
       .map(([kind, id, p]) => `  - kind: ${kind}\n    id: ${id}\n    path: ${p}\n    content_hash: ${hashOf(p)}\n`)
       .join('');
-    writeFileSync(file, readFileSync(file, 'utf8').replace('presets:\n', `${extra}presets:\n`));
+    // The tactic is listed under another known kind.
+    writeFileSync(file, readFileSync(file, 'utf8').replace('presets:\n', `${extra}presets:\n`).replace('kind: tactic', 'kind: agent_profile'));
     const model = readPack(dir);
     expect(model.manifest?.verified).toBe(false);
     expect(model.inventory.source).toBe('file-kinds');

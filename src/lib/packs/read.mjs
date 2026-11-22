@@ -43,16 +43,29 @@ import { parsePackDocument } from './readme.mjs';
 /** @param {string} a @param {string} b */
 const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
+const LF = Buffer.from('\n');
+
 /**
  * The manifest's content-hash recipe: SHA-256, lower hex, of the bytes after
- * CRLF and lone CR are replaced by LF.
+ * CRLF and lone CR are replaced by LF. Works on the bytes, never on a string,
+ * so a large file cannot exceed the string limit.
  *
  * @param {Buffer} bytes
  */
 export function packContentHash(bytes) {
-  const normalised = Buffer.from(bytes.toString('latin1').replace(/\r\n?/g, '\n'), 'latin1');
-  return createHash('sha256').update(normalised).digest('hex');
+  const hash = createHash('sha256');
+  let start = 0;
+  for (let cr = bytes.indexOf(13); cr !== -1; cr = bytes.indexOf(13, start)) {
+    hash.update(bytes.subarray(start, cr));
+    hash.update(LF);
+    start = bytes[cr + 1] === 10 ? cr + 2 : cr + 1;
+  }
+  hash.update(bytes.subarray(start));
+  return hash.digest('hex');
 }
+
+/** Keys never copied from pack data into an object a later slice may spread or assign from. */
+const PROTOTYPE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
  * How every pack file is parsed: data only. Known tags (`!!binary`, `!!set`,
@@ -324,10 +337,28 @@ export function readPack(dir, options = {}) {
     if (read.error === 'missing') warn('policy-missing', `mutability_policy names ${rel}, which the pack does not hold`, rel);
     else if (read.error || !isMapping(read.value)) warn('policy-unreadable', `${rel} does not parse as a mapping${read.error ? `: ${read.error}` : ''}`, rel);
     else {
-      policy = {
-        kindDefaults: isMapping(read.value.kind_defaults) ? { ...read.value.kind_defaults } : {},
-        artifacts: isMapping(read.value.artifacts) ? { ...read.value.artifacts } : {},
+      /**
+       * A level map with single string values only; anything else, and any
+       * prototype key, is left out with a warning.
+       *
+       * @param {string} field
+       * @returns {Record<string, string>}
+       */
+      const levels = (field) => {
+        /** @type {Record<string, string>} */
+        const out = {};
+        const source = read.value[field];
+        if (!isMapping(source)) return out;
+        for (const [key, value] of Object.entries(source)) {
+          if (PROTOTYPE_KEYS.has(key) || typeof value !== 'string') {
+            warn('policy-invalid-value', `\`${field}.${key}\` in ${rel} is not a level the reader keeps; it is ignored`, rel);
+            continue;
+          }
+          out[key] = value;
+        }
+        return out;
       };
+      policy = { kindDefaults: levels('kind_defaults'), artifacts: levels('artifacts') };
     }
   }
 
@@ -386,20 +417,44 @@ export function readPack(dir, options = {}) {
         if (!preset) constituents.push(e);
       });
     }
+    // Membership both ways (ADR-0079 D3): every constituent the pack holds is
+    // listed (below), and every listed entry is a constituent of the kind it
+    // claims, listed once.
+    const presetPaths = new Set(presets.map((p) => p.path));
     const listed = new Set();
     for (const { e, preset } of entries) {
       const rel = /** @type {string} */ (e.path);
-      listed.add(rel);
-      if (!preset && e.kind !== undefined && !artifactKinds.has(e.kind)) {
-        warn('manifest-unknown-kind', `pack-manifest.yaml lists ${rel} with kind \`${e.kind}\`, which the contract does not know`, rel);
+      if (listed.has(rel)) {
+        verified = false;
+        warn('manifest-duplicate-entry', 'pack-manifest.yaml lists this file more than once', rel);
+        continue;
       }
+      listed.add(rel);
       const abs = heldFile(root, rel);
       if (abs === undefined) {
         verified = false;
         warn('manifest-missing-file', 'pack-manifest.yaml lists this file, but the pack does not hold it', rel || 'pack-manifest.yaml');
         continue;
       }
-      const actual = packContentHash(readFileSync(abs));
+      if (!preset && e.kind !== undefined && !artifactKinds.has(e.kind)) {
+        verified = false;
+        warn('manifest-unknown-kind', `pack-manifest.yaml lists ${rel} with kind \`${e.kind}\`, which the contract does not know`, rel);
+      } else if (preset ? !presetPaths.has(rel) : !candidates.has(rel)) {
+        verified = false;
+        warn('manifest-not-a-constituent', `pack-manifest.yaml lists this file as a ${preset ? 'preset' : 'constituent'}, but the contract does not classify it as one`, rel);
+        continue;
+      } else if (!preset && candidates.get(rel)?.kind !== e.kind) {
+        verified = false;
+        warn('manifest-kind-mismatch', `pack-manifest.yaml lists this file as \`${e.kind}\`; the contract classifies it as \`${candidates.get(rel)?.kind}\``, rel);
+      }
+      let actual;
+      try {
+        actual = packContentHash(readFileSync(abs));
+      } catch (error) {
+        verified = false;
+        warn('manifest-unreadable-file', `the file could not be read to check its hash: ${/** @type {Error} */ (error).message}`, rel);
+        continue;
+      }
       if (actual !== e.content_hash) {
         verified = false;
         warn('manifest-hash-mismatch', `content_hash ${e.content_hash} in pack-manifest.yaml, ${actual} recomputed`, rel);
