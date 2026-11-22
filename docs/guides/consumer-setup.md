@@ -905,10 +905,18 @@ equivalence. A tree that never uses `tom_classification` is unaffected.
 | `dpv` | no | an `http(s)` concept IRI |
 
 Your file **replaces** the default wholesale. There is no merge. To keep some
-default measures, copy their records into your file. The defaults are in
-`lib/measures-default.mjs` of the installed `@spec-kitty/doc-toolkit` package, as
-the `DEFAULT_MEASURES` list. Write the records you want into your YAML file with
-the same fields.
+default measures, write their records into your file in the shape above. The
+`transmission-protection` record in the example is the default one, written out.
+The defaults are listed in `lib/measures-default.mjs` of the installed
+`@spec-kitty/doc-toolkit` package, one row per heading:
+`[id, label, nature, DPV term, GDPR reference]`. Turn a row into a record like
+this:
+
+- `id`, `label` and `nature` copy across as they are.
+- `frameworks` gets `{ framework: eu-scc-2021-914-annex-ii, ref: "<n>" }`, where
+  `<n>` is the row's position, from 1 to 17. Rows 1 to 4 also get
+  `{ framework: eu-gdpr, ref: "<GDPR reference>" }`.
+- `dpv` is `https://w3id.org/dpv#` followed by the DPV term.
 
 Ids from a paywalled standard, such as ISO/IEC 27001 Annex A or BSI C5, are
 yours to add under your own licence terms.
