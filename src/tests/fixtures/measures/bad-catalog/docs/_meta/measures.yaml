@@ -1,0 +1,12 @@
+- id: dup
+  label: First
+  nature: technical
+  frameworks: [{ framework: x, ref: "1" }]
+- id: dup
+  label: Second
+  nature: technical
+  frameworks: [{ framework: x, ref: "2" }]
+- id: odd-nature
+  label: Odd
+  nature: magical
+  frameworks: [{ framework: x, ref: "3" }]
