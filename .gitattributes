@@ -24,3 +24,7 @@ kitty-specs/**/canary-evidence/** linguist-generated=true
 .kittify/migrations/** -diff
 kitty-specs/**/decisions/index.json merge=spec-kitty-decision-index
 *.feature text eol=lf
+# The vendored charter packs contract is pinned byte for byte by its
+# contract.lock.json (#330), and the pack fixtures hold CRLF on purpose.
+src/lib/packs/contract/** -text
+src/tests/fixtures/packs/** -text
