@@ -1,41 +1,48 @@
 {
-  "event_count": 17,
-  "last_event_id": "01M81NBPDWJYR615GVN7YM8VC6",
-  "materialized_at": "2026-11-22T12:58:07.669047+00:00",
+  "event_count": 31,
+  "last_event_id": "01M81QNW3WHYZSJ0C8WCQS2GS0",
+  "materialized_at": "2026-11-22T13:38:38.332189+00:00",
   "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
   "mission_type": "software-dev",
   "schema_version": 2,
   "summary": {
-    "approved": 0,
+    "approved": 3,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 2,
-    "in_progress": 1,
-    "in_review": 0,
-    "planned": 6
+    "for_review": 1,
+    "in_progress": 0,
+    "in_review": 1,
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude::scribe-sally",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude",
-      "lane": "for_review",
-      "last_event_id": "01M81N1PP10RZS8QJ62C6K09AH",
-      "last_transition_at": "2026-11-22T12:52:40.257085+00:00",
+      "lane": "approved",
+      "last_event_id": "01M81P3YQVAXTVJCW5KF7SB6BY",
+      "last_transition_at": "2026-11-22T13:11:22.619698+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "ADR-0080 accepted, glossary terms, changelog fragment"
+        "ADR-0080 accepted, glossary terms, changelog fragment",
+        "Review passed (claude::reviewer-renata). Reviewed 33fbcc1 on feat/406-tom-classification directly; spec-kitty recorded no review range (not_recorded; cf. spec-kitty#7809). T001: ADR-0080 doc_status active, updated 2026-11-22; Status reads Accepted, 2026-11-21, by operator ruling on #406. Counsel items stay open and non-blocking per D1; the ⚖ markers are untouched; the Decision text is unchanged; the diff touches frontmatter and Status only. T002: the Measure and TOM classification glossary bullets match the WP wording, including the OQ-3 'marks evidence, not complete' clause, with a relative link. T003: Added fragment; its claims match the spec (17 Annex II headings, scope/note, measures.yaml replaces the default, unknown id fails the build and validate:catalog, classified-as edges, /api/pages, OKF); the root-relative link follows the unreleased README. C-004/C-006: no new ADR number, and docs/adr/README.md and CHANGELOG.md are not in the diff. RAN on 33fbcc1: validate:docs, validate:links, validate:changelog, validate:adr-ids pass; markdownlint 0 issues. validate:adr-index fails, and it already fails on main 9621b5f (main's index lacks rows 0075-0080 and has a stale 0046 date). On this branch the only extra change is ADR-0080 regenerating as Accepted. Left to the bot, as the WP prescribes. Nit: the ADR Status wording is 'Accepted — 2026-11-21, by operator ruling on issue #406' rather than the prompt's exact sentence; it is equivalent. Vale not installed here."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 3545,
-      "shell_pid_created_at": "1795351892.76",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP01-accept-adr-0080-and-vocabulary/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP01-accept-adr-0080-and-vocabulary/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 892,
+      "shell_pid_created_at": "1795352111.87",
       "subtasks": {
         "T001": "done",
         "T002": "done",
@@ -44,22 +51,29 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
-      "lane": "for_review",
-      "last_event_id": "01M81N9EZ3ZYB9D43MDQYY6B4Q",
-      "last_transition_at": "2026-11-22T12:56:54.499270+00:00",
+      "lane": "approved",
+      "last_event_id": "01M81P64R2THX3QEFE4Z0MSXP0",
+      "last_transition_at": "2026-11-22T13:12:34.306539+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Core, loader, default catalog; 25 tests"
+        "Core, loader, default catalog; 25 tests",
+        "Review passed (claude::reviewer-renata). Reviewed lane-a at 0e0aba1. The recorded range a4b41a6..3f6ad4b leaves out the revert 0e0aba1. The net non-kitty-specs diff from the lane base 81d1664 is byte-identical to f5369d3: the glossary stamp churn (3f6ad4b) and its revert cancel out, and no package.json or lockfile changed. Checked: measures-core.mjs is pure (no fs, YAML parser or Astro), so the build routes and validate-catalog can share it. An absent docs/_meta/measures.yaml falls back to the shipped default; a consumer file replaces it wholesale. An absent tom_classification resolves to [] with no problems. An unknown id gives the contract's exact string '[dk-measures] <page>: unknown measure id \"<id>\" (not in <catalog>)'. The conflicting-scope and malformed-catalog strings match contracts/frontmatter-and-catalog.md. Duplicates collapse to the first occurrence, as documented. The loader memoises per resolved root, and the default path comes from import.meta.url ('lib' is in files). Default catalog: 17 records in Annex II heading order (Decision 2021/914); eu-gdpr Art. 32(1)(a)-(d) on headings 1-4 only; ids, natures and DPV terms exactly match research R2; all 17 IRIs exist in the published DPV 2.3 dpv.ttl (https://w3id.org/dpv#). RAN on 0e0aba1: both new test files 25/25; pnpm test src 4301/4301, mcp 181/181; pnpm lint clean; root pnpm typecheck clean. Note: the toolkit's own tsc --noEmit has 55 errors identically before (81d1664) and after, none in measures files, so this predates WP02. Heads-up for WP03: the core accepts unknown keys in an entry object (e.g. a typo 'scop:' silently defaults to system); shape strictness is WP03's schema job per this prompt."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 4644,
-      "shell_pid_created_at": "1795351978.94",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP02-measures-core-loader-default/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP02-measures-core-loader-default/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 23543,
+      "shell_pid_created_at": "1795353131.84",
       "subtasks": {
         "T004": "done",
         "T005": "done",
@@ -70,26 +84,52 @@
     },
     "WP03": {
       "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "in_review",
+      "last_event_id": "01M81QNW3WHYZSJ0C8WCQS2GS0",
+      "last_transition_at": "2026-11-22T13:38:38.332189+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Field shape in schema and gate, case-variant warning; full fast suite 4044 green"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "reviewer",
+      "shell_pid": 24178,
+      "shell_pid_created_at": "1795354714.95",
+      "subtasks": {
+        "T009": "done",
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
+    },
+    "WP04": {
+      "actor": "claude",
       "agent": "claude::node-norris",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
-      "lane": "in_progress",
-      "last_event_id": "01M81NBPDWJYR615GVN7YM8VC6",
-      "last_transition_at": "2026-11-22T12:58:07.669047+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M81PD0JGBW39DA77GTEH47PD",
+      "last_transition_at": "2026-11-22T13:16:19.408151+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Gate resolves measures via shared core; 18 catalog tests green, validate:catalog green"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
-      "shell_pid": 7122,
-      "shell_pid_created_at": "1795352282.44"
-    },
-    "WP04": {
-      "actor": "finalize-tasks",
-      "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M81MY8BSB4XMYFDDAQ882NSV",
-      "last_transition_at": "2026-11-22T12:50:47.289481+00:00"
+      "shell_pid": 1185,
+      "shell_pid_created_at": "1795353300.68",
+      "subtasks": {
+        "T013": "done",
+        "T014": "done",
+        "T015": "done"
+      }
     },
     "WP05": {
       "actor": "finalize-tasks",
@@ -106,11 +146,35 @@
       "last_transition_at": "2026-11-22T12:50:49.468271+00:00"
     },
     "WP07": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M81MYBKBR1PQ1T3TJENJRZZ6",
-      "last_transition_at": "2026-11-22T12:50:50.603110+00:00"
+      "implementer_of_record": "claude::node-norris",
+      "lane": "approved",
+      "last_event_id": "01M81QN808RA5ZMFYQ982K097R",
+      "last_transition_at": "2026-11-22T13:38:17.736523+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "OKF Measures section; 87 OKF tests green",
+        "Review passed (claude::reviewer-renata). Reviewed b5438b8 (range 18019cc..b5438b8). okf-export/core.mjs adds ['classified-as','Measures'] to RELATION_SECTIONS between References and Derived from, matching contracts/machine-surfaces.md. relationLine adds ' (organisation)' only for classified-as with scope organisation, then the note. A measure node with an http(s) url links to it; without an IRI it renders as plain text, never as an unlinked source (tested). Graphs without the relation take the old code paths unchanged (the existing OKF tests pass). Fixture drift check: graph.json's measure nodes (id catalog:measure:<id>, kind catalog, title, url = DPV IRI, measure {nature, frameworks}) and classified-as edges (id source|rel|target, rel, note?, scope) match the contract's content-graph examples field for field. The real graph route (WP05) does not exist yet, so the fixture can only be checked against the contract today; WP09's artifact assertions on the real build should close that loop. Nit: the contract's OKF markdown example lists Events logging before Accountability, but edges keep code-unit order, so a real bundle prints Accountability first; the example text is illustrative, so consider reordering it. RAN on b5438b8: OKF tests 81/81 (3 files); pnpm test src 4281/4281, mcp 181/181; lint and typecheck clean; no dependency changes."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP07-okf-measures-section/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP07-okf-measures-section/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 23059,
+      "shell_pid_created_at": "1795354676.75",
+      "subtasks": {
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
     },
     "WP08": {
       "actor": "finalize-tasks",
