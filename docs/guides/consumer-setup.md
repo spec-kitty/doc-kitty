@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-11T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -860,6 +860,62 @@ A malformed charter fails the build naming the file and offending key; an unknow
 *top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`
 or `_meta/sections.yaml`, both keep working (you will see one deprecation notice)
 — consolidate them with [Migrating to the charter](/guides/migrating-to-charter/).
+
+## Measures catalog
+
+A page can list the technical and organisational measures it evidences in its
+`tom_classification` field
+([ADR-0080](/adr/0080-tom-classification-field-and-measures-catalog/)). The ids
+resolve against a measures catalog. You need no configuration for it.
+
+> [!CAUTION]
+> This is not legal advice. The default labels name headings from public
+> legislation. A classified page marks evidence for a measure; it does not make a
+> description of your measures specific or sufficient.
+
+**The default.** When `docs/_meta/measures.yaml` is absent, the toolkit uses its
+shipped default: the 17 example headings of Decision (EU) 2021/914, Annex II.
+Headings 1 to 4 also carry GDPR Article 32(1)(a) to (d). Each record links the
+nearest W3C DPV concept. A tree that never uses `tom_classification` is unaffected.
+
+**Your own catalog.** Write `docs/_meta/measures.yaml` as a YAML list of records:
+
+```yaml
+# docs/_meta/measures.yaml
+- id: a-5-15-access-control
+  label: Access control
+  nature: organisational
+  frameworks:
+    - { framework: iso-27001-2022-annex-a, ref: "5.15" }
+- id: transmission-protection
+  label: Protection of data during transmission
+  nature: technical
+  frameworks:
+    - { framework: eu-scc-2021-914-annex-ii, ref: "6" }
+  dpv: https://w3id.org/dpv#EncryptionInTransfer
+```
+
+| Field | Required | Value |
+|---|---|---|
+| `id` | yes | kebab case, unique in the file |
+| `label` | yes | non-empty string |
+| `nature` | yes | `technical`, `organisational`, `legal` or `physical` |
+| `frameworks` | yes | non-empty list of `{ framework, ref }` |
+| `dpv` | no | an `http(s)` concept IRI |
+
+Your file **replaces** the default wholesale. There is no merge. To keep some
+default measures, copy their records into your file. The defaults are in
+`lib/measures-default.mjs` of the installed `@spec-kitty/doc-toolkit` package, as
+the `DEFAULT_MEASURES` list. Write the records you want into your YAML file with
+the same fields.
+
+Ids from a paywalled standard, such as ISO/IEC 27001 Annex A or BSI C5, are
+yours to add under your own licence terms.
+
+A malformed catalog fails the build and `pnpm validate:catalog`, naming the file
+and the record. This holds even when no page uses the catalog yet: a duplicate id,
+a missing field or an unknown `nature` is reported. An unknown measure id on a
+page fails both as well, naming the page and the id.
 
 ## Page chrome
 

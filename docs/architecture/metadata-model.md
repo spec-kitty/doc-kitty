@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-10-25T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -12,6 +12,7 @@ related:
   - context/convention
   - adr/0004-amend-common-docs-as-extensible-variation
   - adr/0005-frontmatter-doc-status-and-divio-type
+  - adr/0080-tom-classification-field-and-measures-catalog
 ---
 
 # Metadata model
@@ -38,6 +39,7 @@ put in frontmatter.
 | `audience` | no | `[{ profile, guidance_text }]` | "Who is this for" block |
 | `related` | no | `[string \| { ref, note }]` | on-page related block, agent-API |
 | `external_references` | no | `[{ url, title, note? } \| { type, id }]` | on-page references block |
+| `tom_classification` | no | `[id \| { measure, scope?, note? }]` | content-graph `classified-as` edges, `/api/pages` record, OKF export |
 | `hero_image` | no | `{ src, alt }` | page hero + default social image |
 | `social_thumb` | no | `{ src, alt } \| string` | OG / Twitter share image |
 | `agent` | no | `{ discoverable, priority, keywords }` | agent-API visibility/ordering |
@@ -182,6 +184,62 @@ search fragment.
 `url`. Because a catalog record carries no `doc_status`, this projection is emitted
 **outside** page-publication gating (FR-015): unlike `/api/index.json`, RSS, and
 the sitemap, it is not filtered by `draft`.
+
+## TOM classification
+
+A page can say which technical and organisational measures (TOMs) it provides
+evidence for. The optional `tom_classification` field lists them
+([ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md)):
+
+```yaml
+tom_classification:
+  - transmission-protection
+  - measure: events-logging
+    scope: system
+    note: Every admin action is logged and kept for 13 months.
+```
+
+> [!CAUTION]
+> This is not legal advice. A classification marks a page as evidence for a
+> measure. It does not make the page a complete or sufficient description of that
+> measure.
+
+Each entry is a bare measure id or an object:
+
+- `measure` is the measure id.
+- `scope` is `system` (the default) or `organisation`. The enum uses British
+  spelling on purpose.
+- `note` carries the specific detail for this page.
+
+The object form is strict. An unknown key, such as a misspelt `scop`, fails the
+build and the frontmatter gate, so a typo never falls back to the default scope.
+
+The key is lowercase only. A case variant such as `TOM_classification` is not the
+field: the build ignores it like any undeclared key, and the frontmatter gate
+warns and names `tom_classification`.
+
+It is a field, not a `kind`, because a `kind` says how to read a page. A page about
+logging is still a Reference or a Runbook; the measure is what it evidences.
+
+**Resolution.** Ids resolve against the measures catalog: the consumer's
+`docs/_meta/measures.yaml`, or the default the toolkit ships when that file is
+absent. See [Consumer setup](../guides/consumer-setup.md#measures-catalog). A
+measure id is a closed reference, like a citation key. An unknown id fails the
+build with a message that names the page and the id:
+
+```text
+[dk-measures] security/tls.md: unknown measure id "transmision-protection" (not in the shipped default catalog)
+```
+
+Draft pages are checked too. The build-free `pnpm validate:catalog` gate runs the
+same check with the same wording, so CI catches a typo without a site build.
+
+**Where it shows.** The content graph gains a `classified-as` edge from the page
+to each measure (see [Content graph](./content-graph.md)). The page's
+`/api/pages/<id>.json` record lists the resolved measures as
+`tom_classification: [{ measure, label, nature, scope, note? }]`. The key appears
+only on pages that declare the field. The OKF export adds a `## Measures` section.
+The HTML page does not render the classification.
 
 ## Images: hero image and social thumbnail
 
@@ -333,6 +391,9 @@ The metadata contract is finalized in
 supersedes ADR-0005's `divio_type`), the `related` and `external_references`
 shapes, the `hero_image`/`social_thumb` images, authored `type`, and freshness. This
 page describes the contract; ADR-0009 records the decisions and their rationale.
+
+[ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md) adds the
+optional `tom_classification` field and the measures catalog it resolves against.
 
 ## OKF alignment
 

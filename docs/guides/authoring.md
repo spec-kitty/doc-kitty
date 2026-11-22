@@ -2,7 +2,7 @@
 title: Authoring a document
 description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, show scenarios in any page, and show their test results.
 doc_status: active
-updated: 2026-10-25T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Guide
 kind: How-To
 tags: [authoring, workflow, gherkin, bdd]
@@ -14,6 +14,7 @@ related:
   - adr/0051-gherkin-in-any-page
   - adr/0055-gherkin-scenario-results
   - adr/0061-gherkin-authoring-aids
+  - adr/0080-tom-classification-field-and-measures-catalog
   - adr/0062-specification-layout-and-draft-notice
   - architecture/gherkin-pages
 ---
@@ -199,6 +200,53 @@ section per above), prove the old URLs still work before you ship:
 
    If a package script already names a directory, a directory you add is
    appended and the gate checks the script's own.
+
+## Classify the measures a page evidences
+
+A page that documents a technical or organisational measure (TOM) can say so.
+Then the content graph and the agent API can gather it as evidence. This marks
+evidence; it does not make the page a complete description of the measure.
+
+1. Add `tom_classification` to the frontmatter:
+
+   ```yaml
+   tom_classification:
+     - events-logging
+     - measure: storage-protection
+       note: Log archives are encrypted at rest.
+   ```
+
+2. Run `pnpm validate:catalog`. A misspelt id prints the page and the id.
+3. Build. The page gets a `classified-as` edge to each measure in
+   `api/content-graph.json`.
+
+Ids come from the measures catalog. See
+[Consumer setup](./consumer-setup.md#measures-catalog) for the default and for
+writing your own.
+
+**Link organisation measures; do not copy them.** Some measures describe the
+whole organisation, such as incident handling. Write that description once, on
+one page, with `scope: organisation`. Product pages that rely on it list that
+page in `related` and do not repeat the classification:
+
+```yaml
+# context/incident-handling.md
+tom_classification:
+  - measure: accountability
+    scope: organisation
+    note: Every incident gets a named owner and a written review.
+```
+
+```yaml
+# architecture/audit-logging.md
+tom_classification:
+  - events-logging
+related:
+  - context/incident-handling
+```
+
+The field, its scope and the error messages are described in the
+[metadata model](../architecture/metadata-model.md#tom-classification).
 
 ## Authoring behaviour specs
 
