@@ -154,7 +154,10 @@ import {
 //     index after the docs records. The generated reference PAGES themselves
 //     are not docs-collection entries and were already counted only in the
 //     sitemap pin below; the synthetic index records add +3: 70 -> 73.
-const EXPECTED_INDEX_ENTRY_COUNT = 73;
+//   - #406 (ADR-0080) adds the TOM classification example pair,
+//     context/incident-handling.md and architecture/audit-logging.md
+//     (doc_status:active, +2) -> 75.
+const EXPECTED_INDEX_ENTRY_COUNT = 75;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -189,7 +192,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 73;
 // sitemap — its overview and its 3 operation pages (listParcels, createParcel,
 // getParcel) are filtered — while its pages stay built, published and served.
 // 82 -> 78.
-const EXPECTED_SITEMAP_URL_COUNT = 78;
+// #406 (ADR-0080) adds context/incident-handling.md and architecture/audit-logging.md
+// (published, +2), 78 -> 80.
+const EXPECTED_SITEMAP_URL_COUNT = 80;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -573,6 +578,58 @@ function assertOkfBundle(distDir) {
     fail(`okf-export: ${violations.length} conformance violation(s): ${violations.map((v) => `${v.path}: rule ${v.rule}`).join('; ')}`);
   }
   ok('okf-export: dist/okf/ is an OKF v0.2 bundle with no conformance violation');
+}
+
+/**
+ * TOM classification end to end (ADR-0080, #406): the example's organisation page and the
+ * system page that links to it reach the real content graph, the per-page agent record and
+ * the OKF bundle. Reads the built artifacts; nothing here is a synthetic fixture.
+ */
+async function assertTomClassification(distDir, index, builtRelOf) {
+  const { graph } = await loadContentGraph(distDir, index, builtRelOf);
+  const SYSTEM_PAGE = 'architecture/audit-logging';
+  const ORG_PAGE = 'context/incident-handling';
+  const nodes = new Map(graph.nodes.map((node) => [node.id, node]));
+  const edge = (source, rel, target) => graph.edges.find((e) => e.id === `${source}|${rel}|${target}`);
+
+  const logging = nodes.get('catalog:measure:events-logging');
+  if (logging?.kind !== 'catalog' || !/^https:\/\/w3id\.org\/dpv#/.test(logging.url ?? '') || logging.measure?.nature !== 'technical') {
+    fail(`tom-classification: content graph lacks a catalog:measure:events-logging node with a DPV url and nature technical (got ${JSON.stringify(logging)})`);
+  }
+  const systemEdge = edge(SYSTEM_PAGE, 'classified-as', 'catalog:measure:events-logging');
+  if (systemEdge?.scope !== 'system') {
+    fail(`tom-classification: no system-scope classified-as edge ${SYSTEM_PAGE} -> events-logging (got ${JSON.stringify(systemEdge)})`);
+  }
+  const orgEdge = edge(ORG_PAGE, 'classified-as', 'catalog:measure:accountability');
+  if (orgEdge?.scope !== 'organisation' || !orgEdge.note) {
+    fail(`tom-classification: no organisation-scope classified-as edge with a note ${ORG_PAGE} -> accountability (got ${JSON.stringify(orgEdge)})`);
+  }
+  // Linked, not copied (ADR-0080 decision 5): the system page relates to the organisation page
+  // and does not repeat its organisation measures.
+  if (!edge(SYSTEM_PAGE, 'related', ORG_PAGE)) fail(`tom-classification: ${SYSTEM_PAGE} has no related edge to ${ORG_PAGE}`);
+  const orgTargets = graph.edges.filter((e) => e.source === ORG_PAGE && e.rel === 'classified-as').map((e) => e.target);
+  if (orgTargets.length < 2) {
+    fail(`tom-classification: ${ORG_PAGE} should classify two organisation measures (got ${JSON.stringify(orgTargets)})`);
+  }
+  for (const target of orgTargets) {
+    if (edge(SYSTEM_PAGE, 'classified-as', target)) {
+      fail(`tom-classification: ${SYSTEM_PAGE} restates the organisation measure ${target}`);
+    }
+  }
+
+  const record = JSON.parse(await readFile(path.join(distDir, 'api', 'pages', `${SYSTEM_PAGE}.json`), 'utf8'));
+  const measures = record.tom_classification;
+  if (!Array.isArray(measures) || measures[0]?.measure !== 'events-logging' || measures[0]?.label !== 'Events logging') {
+    fail(`tom-classification: /api/pages/${SYSTEM_PAGE}.json does not list events-logging first (got ${JSON.stringify(measures)})`);
+  }
+  const plain = JSON.parse(await readFile(path.join(distDir, 'api', 'pages', 'architecture', 'overview.json'), 'utf8'));
+  if ('tom_classification' in plain) fail('tom-classification: an unclassified page record carries tom_classification');
+
+  const concept = await readFile(path.join(distDir, 'okf', `${SYSTEM_PAGE}.md`), 'utf8');
+  if (!concept.includes('\n## Measures\n') || !concept.includes('[Events logging](https://w3id.org/dpv#ActivityMonitoring)')) {
+    fail(`tom-classification: okf/${SYSTEM_PAGE}.md has no Measures section listing Events logging`);
+  }
+  ok('tom-classification: classified-as edges (system and organisation scope), the page record and the OKF Measures section come from the real build');
 }
 
 /** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
@@ -2264,7 +2321,7 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 22 example .md files − 3 drafts, plus the 8 released generated OpenAPI reference pages; the unreleased ` +
+        `(the published set — 24 example .md files − 3 drafts, plus the 8 released generated OpenAPI reference pages; the unreleased ` +
         `\`main\` version's 4 are filtered, FR-015. If example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
@@ -2485,6 +2542,7 @@ async function main() {
   const builtRelOf = await assertAgentLinksResolve(distDir, index);
   await assertContentGraph(distDir, index, builtRelOf);
   assertOkfBundle(distDir);
+  await assertTomClassification(distDir, index, builtRelOf);
 
   // 4c) /api/bibliography.json — a catalog projection OUTSIDE page gating: valid
   // JSON, { version, count, records[] }, each record carrying id/title/url
