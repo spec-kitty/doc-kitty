@@ -273,7 +273,7 @@
     },
     "WP09": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::node-norris",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -283,7 +283,8 @@
       "last_transition_at": "2026-11-22T14:54:57.705265+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id."
+        "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id.",
+        "Cycle 1 fixed in bc5c9d8: AgentPagePayload key table + AgentPageMeasure table (nested map); example banners no longer say 'policy'; link-not-copy loops all org classified-as targets. FULL pnpm test: src 218 files/4333 tests, mcp 23/181, all green; build + assert:artifacts PASS."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
