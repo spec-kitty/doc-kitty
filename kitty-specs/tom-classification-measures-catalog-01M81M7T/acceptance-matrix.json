@@ -7,11 +7,11 @@
     {
       "criterion_id": "FR-001",
       "description": "Verify FR-001 is satisfied",
-      "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "proof_type": "review",
+      "evidence": "docs/adr/0080 Status Accepted (33fbcc1, WP01 approved); ADR index left to bot",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:31.920196+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
