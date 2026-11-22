@@ -36,8 +36,8 @@ pnpm pack --filter @spec-kitty/doc-kitty-mcp        # builds dist/, writes spec-
 npm i -g ./spec-kitty-doc-kitty-mcp-<version>.tgz   # or: npx ./spec-kitty-doc-kitty-mcp-<version>.tgz
 ```
 
-That puts the `doc-kitty-mcp` bin on your `PATH`. Once the package is
-published, the registry form will be `npx -y @spec-kitty/doc-kitty-mcp ...`.
+`npm i -g` puts the `doc-kitty-mcp` bin on your `PATH`. The `npx` form runs it
+once without installing it. Once the package is published, the registry form will be `npx -y @spec-kitty/doc-kitty-mcp ...`.
 
 ## Against a deployed site
 

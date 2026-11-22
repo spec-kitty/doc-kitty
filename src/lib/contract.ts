@@ -45,7 +45,7 @@ export interface AgentTitledLink extends AgentLink {
  * npmjs `npx` line.
  */
 export interface McpWiringPointer extends AgentLink {
-  /** Display title of the pointed-at service. */
+  /** Display title of the pointed-at service; says so while it is unpublished (#408). */
   title: string;
   /** Space-separated launch command with this site's base URL substituted. */
   usage: string;

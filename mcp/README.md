@@ -66,14 +66,13 @@ or as fabricated content. All seven codes:
 
 ## Publishing status
 
-Not published to any registry; the npm-scope, provenance, and registry-listing
-decision is deferred to a release-engineering ruling (mission constraint
-C-002). GitHub Packages was evaluated as a channel and found unsuitable as a
-public channel: its npm registry requires a token even to install public
-packages, so it can serve only as an internal/beta channel. Until the ruling,
-the tarball form above is the only supported installation, and the advertised
-launch line names the installed bin - never an `npx -y @spec-kitty/...`
-registry form.
+Not published to any registry yet. The operator ruled on 2026-11-21 to publish
+it to GitHub Packages with `@spec-kitty/doc-toolkit`; that work is tracked in
+[#408](https://github.com/spec-kitty/doc-kitty/issues/408). The GitHub Packages
+npm registry requires a token even to install public packages. Until #408
+ships, the tarball form above is the only supported installation, and the
+advertised launch line names the installed bin - never an
+`npx -y @spec-kitty/...` registry form.
 
 ## Development
 
