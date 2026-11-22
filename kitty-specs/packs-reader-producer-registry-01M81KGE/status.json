@@ -30,7 +30,8 @@
       "last_transition_at": "2026-11-22T13:19:25.961838+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Registry + scopes; full fast suite green (4052), lint and typecheck clean; no existing test edited"
+        "Registry + scopes; full fast suite green (4052), lint and typecheck clean; no existing test edited",
+        "Review passed (claude::reviewer-renata). Approved code head: lane-a 0e75bc3 (range 8a60bbb..0e75bc3; the recorded range 8a60bbb..fd61ba5 predates the folds). Lane head 15581cc adds only the coordination merge, with no src change. Red first: b9a87a2/88277a4 fail on missing modules; 30f1f27 fails 3 tests on the pre-fold code. No existing test edited. Mutation checks: inScope->true, dirs ignored, stamp not required, owned scan ignores producer, scopes override ignored: all 5 killed. Differential old-vs-new isGeneratedPage over 345 tracked pages (11 generated): 0 diffs. generator-stamp.mjs diff vs origin/main is producer lookups only; makeStamp and the other #410 functions untouched. Fast vitest at 0e75bc3: 193 files, 4055 tests, green. Full run (fast+build) at fd61ba5: 214 files, 4295 tests, green. Lint and typecheck clean. docs-loader-includes passes in the full fast run and 3/3 alone; it imports only GHERKIN_PRODUCER from the touched files, so I treat the implementer's failure as a load flake. Checklist: all 8 PASS. Follow-ups folded in 30f1f27/0e75bc3: isGeneratedPage takes {producerScopes}; unused toPosix import dropped; checkEntry type-checks section/kinds/dirs/recognition and refuses recognition:'scope' with an open section scope. Residual nit: an ownerOfPage options.scopes override is not run through checkEntry, so a caller could widen a scope-recognised producer; today no caller passes scopes."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
