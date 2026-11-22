@@ -12,6 +12,7 @@ import {
   BUILD_MERMAID_OPTS,
   DIAGRAM_LABEL_FONT_STACK,
   DIAGRAM_SENTINELS,
+  cssEscapeId,
   labelFontRule,
   pinDiagramLabelFont,
   sentinelThemeRewrite,
@@ -80,7 +81,7 @@ describe('labelColourFor', () => {
     expect(labelColourFor([17, 104, 189])).toBe('#ffffff'); // deep blue
   });
 
-  it('clears 4.5:1 for every fill, including the worst mid-grey', () => {
+  it('clears 4.5:1 for every opaque fill, including the worst mid-grey', () => {
     let worst = Infinity;
     for (let v = 0; v <= 255; v += 1) {
       for (const fill of [[v, v, v], [v, 0, 0], [0, v, 0], [0, 0, v], [255, v, 0]]) {
@@ -94,14 +95,62 @@ describe('labelColourFor', () => {
 
 describe('parseLiteralColour', () => {
   it('reads hex, short hex and rgb(), with or without !important', () => {
-    expect(parseLiteralColour('#FFC')).toEqual([255, 255, 204]);
-    expect(parseLiteralColour('#1168bd!important')).toEqual([17, 104, 189]);
-    expect(parseLiteralColour('rgb(1, 2, 3)')).toEqual([1, 2, 3]);
+    expect(parseLiteralColour('#FFC')).toEqual({ rgb: [255, 255, 204], alpha: 1 });
+    expect(parseLiteralColour('#1168bd!important')).toEqual({ rgb: [17, 104, 189], alpha: 1 });
+    expect(parseLiteralColour('rgb(1, 2, 3)')).toEqual({ rgb: [1, 2, 3], alpha: 1 });
   });
 
-  it('treats a token, a name, none, a gradient or a mostly transparent fill as not literal', () => {
-    for (const v of ['var(--dk-diagram-node-fill)', 'white', 'none', 'url(#g)', 'rgba(1,2,3,.2)']) {
+  it('reads the alpha of rgba(), #rgba and #rrggbbaa', () => {
+    expect(parseLiteralColour('rgba(17,104,189,.6)')).toEqual({ rgb: [17, 104, 189], alpha: 0.6 });
+    expect(parseLiteralColour('rgb(0 0 0 / 50%)')).toEqual({ rgb: [0, 0, 0], alpha: 0.5 });
+    expect(parseLiteralColour('#00000080')?.alpha).toBeCloseTo(128 / 255);
+    expect(parseLiteralColour('#0008')?.alpha).toBeCloseTo(136 / 255);
+  });
+
+  it('treats a token, a name, none or a gradient as not literal', () => {
+    for (const v of ['var(--dk-diagram-node-fill)', 'white', 'none', 'url(#g)']) {
       expect(parseLiteralColour(v), v).toBeNull();
+    }
+  });
+});
+
+describe('labelColourFor — translucent fills (review cycle 1)', () => {
+  /** The worst contrast of `text` over the fill composited on any page, from black to white. */
+  function worstOverAnyPage(rgb: number[], alpha: number, text: number[]): number {
+    let worst = Infinity;
+    for (let page = 0; page <= 255; page += 5) {
+      const seen = rgb.map((c) => c * alpha + page * (1 - alpha));
+      worst = Math.min(worst, contrast(seen, text));
+    }
+    return worst;
+  }
+
+  it('leaves the label themed when no fixed colour clears 4.5:1 over every page', () => {
+    // The reviewer's reproductions: each got white, which failed on a light page.
+    expect(labelColourFor([17, 104, 189], 0.6)).toBeNull();
+    expect(labelColourFor([0, 0, 0], 0.5)).toBeNull();
+    expect(labelColourFor([0, 0, 0], 0.3)).toBeNull(); // fill:#000; fill-opacity:.3
+  });
+
+  it('picks a colour that clears 4.5:1 over every page when one exists', () => {
+    for (const [rgb, alpha] of [[[255, 255, 204], 0.9], [[10, 20, 60], 0.85], [[255, 255, 255], 0.8]] as Array<[number[], number]>) {
+      const colour = labelColourFor(rgb, alpha);
+      expect(colour, `${rgb} @ ${alpha}`).not.toBeNull();
+      const text = colour === '#000000' ? [0, 0, 0] : [255, 255, 255];
+      expect(worstOverAnyPage(rgb, alpha, text), `${rgb} @ ${alpha}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('never picks a colour that fails over some page', () => {
+    for (let v = 0; v <= 255; v += 15) {
+      for (const alpha of [0.2, 0.5, 0.75, 0.95]) {
+        for (const rgb of [[v, v, v], [v, 0, 255 - v], [255, v, 0]]) {
+          const colour = labelColourFor(rgb, alpha);
+          if (colour === null) continue;
+          const text = colour === '#000000' ? [0, 0, 0] : [255, 255, 255];
+          expect(worstOverAnyPage(rgb, alpha, text), `${rgb} @ ${alpha}`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
     }
   });
 });
@@ -126,6 +175,24 @@ describe('diagramLabelContrast — Mermaid', () => {
       run(node);
       expect(JSON.stringify(node), where).toBe(before);
     }
+  });
+
+  it('folds rgba alpha, fill-opacity and opacity into the fill, and leaves a see-through fill themed', () => {
+    for (const fill of ['rgba(17,104,189,.6)', 'rgba(0,0,0,.5)']) {
+      const node = mermaidNode({ fill });
+      const before = JSON.stringify(node);
+      run(node);
+      expect(JSON.stringify(node), fill).toBe(before);
+    }
+    const faded = mermaidNode({ fill: '#000' });
+    faded.children![0].properties!.style = 'fill:#000;fill-opacity:.3';
+    const before = JSON.stringify(faded);
+    run(faded);
+    expect(JSON.stringify(faded)).toBe(before);
+    const nearlyOpaque = mermaidNode({ fill: '#ffffcc' });
+    nearlyOpaque.children![0].properties!.style = 'fill:#ffffcc;opacity:0.95';
+    run(nearlyOpaque);
+    expect(spanOf(nearlyOpaque).properties?.style).toBe('color:#000000!important');
   });
 
   it('leaves a themed fill and its themed label alone', () => {
@@ -164,6 +231,13 @@ describe('diagramLabelContrast — PlantUML (FR-001)', () => {
     for (const fill of ['#FFFFCC', '#C2F0FF', '#C9FFC9']) {
       expect(fixPlantumlRaw(entity(fill))).toBe(entity(fill, '#000000'));
     }
+  });
+
+  it('reads fill-opacity on the shape and leaves a see-through entity themed', () => {
+    const block = entity('#000000').replace('fill="#000000"', 'fill="#000000" fill-opacity="0.3"');
+    expect(fixPlantumlRaw(block)).toBe(block);
+    const styled = entity('#C9FFC9').replace('style="stroke:#181818;', 'style="opacity:0.95;stroke:#181818;');
+    expect(fixPlantumlRaw(styled)).toBe(styled.replace('fill="var(--dk-diagram-node-text)"', 'fill="#000000"'));
   });
 
   it('leaves a themed fill, an author text colour and every non-entity byte alone', () => {
@@ -214,6 +288,15 @@ describe('sentinelThemeRewrite — rgb()/rgba() sentinels (#369)', () => {
 describe('pinned label font (#370)', () => {
   it('measures labels in the pinned stack at render time', () => {
     expect(BUILD_MERMAID_OPTS.mermaidConfig.fontFamily).toBe(DIAGRAM_LABEL_FONT_STACK);
+  });
+
+  it('escapes an id that is not a plain CSS identifier', () => {
+    expect(cssEscapeId('m0046-0')).toBe('m0046-0');
+    expect(cssEscapeId('1abc')).toBe('\\31 abc');
+    expect(cssEscapeId('a:b.c')).toBe('a\\:b\\.c');
+    const svg = { type: 'element', tagName: 'svg', properties: { id: '9x', ariaRoleDescription: 'flowchart-v2' }, children: [] as Array<{ children: Array<{ value: string }> }> };
+    pinDiagramLabelFont()({ type: 'root', children: [svg] } as never);
+    expect(svg.children[0].children[0].value.startsWith('#\\39 x foreignObject')).toBe(true);
   });
 
   it('writes the same rule into each Mermaid SVG, scoped to its id', () => {

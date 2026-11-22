@@ -10,10 +10,18 @@
  * dark mode. Light text on a pale fill vanishes.
  *
  * The rule: where a shape's fill is a literal colour AND its label colour is themed
- * (unset, or a `var(--dk-diagram-*)`), the label is pinned to black or white,
- * whichever contrasts more with that fill. Either choice clears 4.58:1 for any
- * fill, so WCAG 1.4.3 holds in both themes. A label colour the author set is the
- * author's choice and is left alone; a themed fill keeps its themed label.
+ * (unset, or a `var(--dk-diagram-*)`), the label is pinned to black or white.
+ *   - An opaque fill: whichever contrasts more with it. That choice clears 4.58:1
+ *     for any opaque fill, so WCAG 1.4.3 holds in both themes.
+ *   - A translucent fill (`rgba()`/`#rrggbbaa` alpha, `fill-opacity`, `opacity`):
+ *     the page shows through, so the fill a reader sees depends on the theme and the
+ *     brand. Black text is weakest on the darkest possible backdrop and white text on
+ *     the lightest, so a colour is chosen only if it clears 4.5:1 with the fill
+ *     blended over pure black (for black) or pure white (for white): it then clears
+ *     it over any page. When neither does, the label stays themed, following the
+ *     page the fill is mostly showing.
+ * A label colour the author set is the author's choice and is left alone; a themed
+ * fill keeps its themed label.
  *
  * Two shapes reach this pass:
  *   - Mermaid: a hast `<svg>` (inline strategy). `g.node` and `g.cluster` groups.
@@ -34,20 +42,34 @@ export interface LabelHastNode {
 const BLACK = '#000000';
 const WHITE = '#ffffff';
 
-/** Parse `#rgb`, `#rrggbb` or `rgb()/rgba()` to 0–255 channels; anything else
- * (a `var()`, a named colour, `none`, a gradient `url()`) is not a literal fill. */
-export function parseLiteralColour(value: string): [number, number, number] | null {
+/** A literal colour: 0–255 channels and its alpha (0–1). */
+export interface LiteralColour {
+  rgb: [number, number, number];
+  alpha: number;
+}
+
+/** An alpha or opacity value (`.5`, `0.5`, `50%`) as 0–1; undefined when absent. */
+function parseAlpha(value: string | undefined): number | undefined {
+  if (value === undefined) return undefined;
   const v = value.trim().replace(/\s*!important$/i, '');
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(v);
+  const n = parseFloat(v);
+  if (Number.isNaN(n)) return undefined;
+  return Math.min(1, Math.max(0, v.endsWith('%') ? n / 100 : n));
+}
+
+/** Parse `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa` or `rgb()/rgba()`; anything else
+ * (a `var()`, a named colour, `none`, a gradient `url()`) is not a literal fill. */
+export function parseLiteralColour(value: string): LiteralColour | null {
+  const v = value.trim().replace(/\s*!important$/i, '');
+  const hex = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(v);
   if (hex) {
-    const h = hex[1].length === 3 ? hex[1].replace(/./g, (c) => c + c) : hex[1];
-    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
+    const h = hex[1].length <= 4 ? hex[1].replace(/./g, (c) => c + c) : hex[1];
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    return { rgb: [r, g, b], alpha: h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1 };
   }
   const rgb = /^rgba?\(\s*(\d+(?:\.\d+)?)\s*[,\s]\s*(\d+(?:\.\d+)?)\s*[,\s]\s*(\d+(?:\.\d+)?)\s*(?:[,/]\s*([\d.]+%?)\s*)?\)$/i.exec(v);
   if (rgb) {
-    // A mostly transparent fill shows the page through it: not a fixed backdrop.
-    if (rgb[4] !== undefined && parseFloat(rgb[4]) / (rgb[4].endsWith('%') ? 100 : 1) < 0.5) return null;
-    return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+    return { rgb: [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])], alpha: parseAlpha(rgb[4]) ?? 1 };
   }
   return null;
 }
@@ -61,12 +83,43 @@ function luminance([r, g, b]: readonly number[]): number {
   return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
 }
 
-/** Black or white, whichever contrasts more with `fill` (ties go to black). */
-export function labelColourFor(fill: readonly number[]): string {
-  const l = luminance(fill);
-  const onBlack = (l + 0.05) / 0.05;
-  const onWhite = 1.05 / (l + 0.05);
-  return onBlack >= onWhite ? BLACK : WHITE;
+/** WCAG contrast of black and of white text against a colour of luminance `l`. */
+const blackOn = (l: number): number => (l + 0.05) / 0.05;
+const whiteOn = (l: number): number => 1.05 / (l + 0.05);
+
+/** `rgb` at `alpha` composited over a backdrop channel value (0 or 255). */
+const over = (rgb: readonly number[], alpha: number, backdrop: number): number[] =>
+  rgb.map((c) => c * alpha + backdrop * (1 - alpha));
+
+/** The WCAG 1.4.3 minimum for label text. */
+const TEXT_MIN = 4.5;
+
+/**
+ * The label colour for a fill: black or white, or `null` to leave the label themed.
+ * An opaque fill always gets whichever contrasts more (ties go to black). A
+ * translucent one gets a colour only if it clears {@link TEXT_MIN} over every
+ * backdrop: black is checked with the fill over pure black, white with the fill
+ * over pure white, the worst case for each.
+ */
+export function labelColourFor(rgb: readonly number[], alpha = 1): string | null {
+  if (alpha >= 1) {
+    const l = luminance(rgb);
+    return blackOn(l) >= whiteOn(l) ? BLACK : WHITE;
+  }
+  const black = blackOn(luminance(over(rgb, alpha, 0)));
+  const white = whiteOn(luminance(over(rgb, alpha, 255)));
+  if (black >= TEXT_MIN && black >= white) return BLACK;
+  if (white >= TEXT_MIN) return WHITE;
+  return null;
+}
+
+/** The fill a shape paints: its literal colour with every opacity that applies to it
+ * folded into the alpha. `null` for a themed, missing or invisible fill. */
+function effectiveFill(fill: string | undefined, ...opacities: Array<string | undefined>): LiteralColour | null {
+  const colour = fill === undefined ? null : parseLiteralColour(fill);
+  if (!colour) return null;
+  const alpha = opacities.reduce((a, o) => a * (parseAlpha(o) ?? 1), colour.alpha);
+  return alpha > 0 ? { rgb: colour.rgb, alpha } : null;
 }
 
 /** The value of one declaration in an inline `style` string, or undefined. */
@@ -93,16 +146,22 @@ const elementChildren = (node: LabelHastNode): LabelHastNode[] =>
 const SHAPES = new Set(['rect', 'polygon', 'path', 'circle', 'ellipse']);
 
 /** The literal fill of a Mermaid node/cluster's own shape (its first shape child). */
-function shapeFill(group: LabelHastNode): [number, number, number] | null {
+function shapeFill(group: LabelHastNode): LiteralColour | null {
   for (const child of elementChildren(group)) {
     if (child.tagName === 'g' && classes(child).includes('label')) continue;
     // Some shapes (cylinder, hexagon) are wrapped in a bare `<g>`.
     const shape = child.tagName === 'g' ? elementChildren(child).find((c) => SHAPES.has(c.tagName ?? '')) : child;
     if (!shape || !SHAPES.has(shape.tagName ?? '')) continue;
-    const fromStyle = styleValue(styleOf(shape), 'fill');
-    const fromAttr = typeof shape.properties?.fill === 'string' ? (shape.properties.fill as string) : undefined;
-    const fill = fromStyle ?? fromAttr;
-    return fill === undefined ? null : parseLiteralColour(fill);
+    const style = styleOf(shape);
+    const attr = (name: string): string | undefined => {
+      const v = shape.properties?.[name];
+      return typeof v === 'string' || typeof v === 'number' ? String(v) : undefined;
+    };
+    return effectiveFill(
+      styleValue(style, 'fill') ?? attr('fill'),
+      styleValue(style, 'fill-opacity') ?? attr('fillOpacity'),
+      styleValue(style, 'opacity') ?? attr('opacity'),
+    );
   }
   return null;
 }
@@ -130,7 +189,8 @@ function fixMermaidGroup(group: LabelHastNode): void {
   );
   const authored = carriers.some((n) => !isThemedColour(styleValue(styleOf(n), 'color')));
   if (authored) return;
-  const colour = labelColourFor(fill);
+  const colour = labelColourFor(fill.rgb, fill.alpha);
+  if (colour === null) return;
   for (const label of labels) {
     const kept = styleOf(label)
       .split(';')
@@ -155,16 +215,23 @@ function fixMermaidSvg(svg: LabelHastNode): void {
 
 /** One PlantUML entity block: `<g class="entity" …>…</g>` with no nested group. */
 const ENTITY_BLOCK = /<g\b[^>]*\bclass="entity"[^>]*>(?:(?!<g\b)[\s\S])*?<\/g>/g;
-const FIRST_SHAPE_FILL = /<(?:rect|polygon|path|ellipse|circle)\b[^>]*?\sfill="([^"]+)"/;
+const FIRST_SHAPE = /<(?:rect|polygon|path|ellipse|circle)\b[^>]*>/;
 const THEMED_TEXT_FILL = /(<text\b[^>]*?\sfill=")(var\(--dk-diagram-[a-z-]+\))(")/g;
 
 /** Pin the label colour inside each PlantUML entity whose shape has a literal fill. */
 export function fixPlantumlRaw(html: string): string {
   return html.replace(ENTITY_BLOCK, (block) => {
-    const fillAttr = FIRST_SHAPE_FILL.exec(block)?.[1];
-    const fill = fillAttr === undefined ? null : parseLiteralColour(fillAttr);
+    const tag = FIRST_SHAPE.exec(block)?.[0] ?? '';
+    const attr = (name: string): string | undefined => new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
+    const style = attr('style') ?? '';
+    const fill = effectiveFill(
+      styleValue(style, 'fill') ?? attr('fill'),
+      styleValue(style, 'fill-opacity') ?? attr('fill-opacity'),
+      styleValue(style, 'opacity') ?? attr('opacity'),
+    );
     if (!fill) return block;
-    const colour = labelColourFor(fill);
+    const colour = labelColourFor(fill.rgb, fill.alpha);
+    if (colour === null) return block;
     return block.replace(THEMED_TEXT_FILL, (_m, pre: string, _v: string, post: string) => `${pre}${colour}${post}`);
   });
 }

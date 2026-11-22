@@ -258,6 +258,15 @@ export const SENTINEL_THEME_VARIABLES: Readonly<Record<string, string>> = {
  */
 export const DIAGRAM_LABEL_FONT_STACK = 'Arial, Helvetica, "Liberation Sans", Arimo, sans-serif';
 
+/** An id as a CSS identifier: every character outside `[A-Za-z0-9_-]`, a leading
+ * digit, and a digit after a leading `-` are escaped (the subset of
+ * `CSS.escape` an SVG id can need; Mermaid's own ids need none of it). */
+export function cssEscapeId(id: string): string {
+  return id.replace(/[^A-Za-z0-9_-]|^\d|(?<=^-)\d|^-$/g, (c) =>
+    /\d/.test(c) ? `\\${c.charCodeAt(0).toString(16)} ` : `\\${c}`,
+  );
+}
+
 /** The label-font rule for the SVGs `scope` selects. */
 export const labelFontRule = (scope: string): string =>
   `${scope} foreignObject,${scope} foreignObject *{font-family:${DIAGRAM_LABEL_FONT_STACK}!important}`;
@@ -342,7 +351,7 @@ export function pinDiagramLabelFont() {
     const walk = (node: RewriteHastNode): void => {
       const props = node.properties;
       if (node.tagName === 'svg' && props?.ariaRoleDescription !== undefined && typeof props.id === 'string') {
-        const rule = labelFontRule(`#${props.id}`);
+        const rule = labelFontRule(`#${cssEscapeId(props.id)}`);
         const style = (node.children ?? []).find((c) => c.tagName === 'style');
         const text: RewriteHastNode = { type: 'text', value: rule };
         if (style) style.children = [...(style.children ?? []), text];

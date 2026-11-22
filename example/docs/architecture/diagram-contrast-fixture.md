@@ -59,24 +59,28 @@ flowchart LR
 
 The author sets each node's fill here. Two nodes set only a fill, so the
 toolkit picks the label colour. One sets both a fill and a label colour, and
-the author's choice stands. The last edge carries an author-set colour.
+the author's choice stands. One fill is see-through, so the page shows through
+it and its label follows the theme. The last edge carries an author-set colour.
 
 ```mermaid
 %% title: Author-set node colours
-%% description: Three nodes with author-set fills and one edge with an author-set colour.
+%% description: Four nodes with author-set fills, one of them see-through, and one edge with an author-set colour.
 flowchart LR
   pale[Pale fill, no label colour]
   deep[Deep fill, no label colour]
   both[Deep fill with a white label]
+  faded[See-through fill, no label colour]
   pale --> deep
   deep --> both
   both --> pale
   classDef paleFill fill:#ffffcc,stroke:#999933
   classDef deepFill fill:#1168bd,stroke:#0b4884
   classDef bothSet fill:#1d6b3a,stroke:#124526,color:#ffffff
+  classDef seeThrough fill:#1168bd,fill-opacity:0.6,stroke:#0b4884
   class pale paleFill
   class deep deepFill
   class both bothSet
+  class faded seeThrough
   linkStyle 2 stroke:#d9731a,stroke-width:2px
 ```
 
