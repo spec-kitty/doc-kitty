@@ -103,6 +103,42 @@ describe('packs-sync-contract', () => {
     expect(readFileSync(path.join(to, 'contract.lock.json'), 'utf8')).toBe(before);
   });
 
+  it('refuses a branch, HEAD and a short sha: only a tag or a full commit pins provenance', () => {
+    const { repo, head } = fakeCharter();
+    git(repo, 'branch', 'moving');
+    for (const ref of ['moving', 'HEAD', head.slice(0, 7)]) {
+      const to = seededSnapshot();
+      const before = readFileSync(path.join(to, 'contract.lock.json'), 'utf8');
+      const res = run('--ref', ref, '--from', repo, '--to', to);
+      expect(res.status, ref).toBe(1);
+      expect(res.stderr).toContain(ref);
+      expect(res.stderr).toMatch(/tag or a full 40-character commit/);
+      expect(readFileSync(path.join(to, 'contract.lock.json'), 'utf8'), ref).toBe(before);
+    }
+  });
+
+  it('refuses --ref and --commit together', () => {
+    const { repo, head } = fakeCharter();
+    const res = run('--ref', 'contract-packs-v9.9.9', '--commit', head, '--from', repo, '--to', seededSnapshot());
+    expect(res.status).toBe(2);
+    expect(res.stderr).toMatch(/either --ref or --commit/);
+  });
+
+  it('writes nothing when a locked file is missing at the ref', () => {
+    const { repo } = fakeCharter();
+    const to = seededSnapshot();
+    const lockFile = path.join(to, 'contract.lock.json');
+    const lock = JSON.parse(readFileSync(lockFile, 'utf8'));
+    lock.files['schemas/absent.schema.json'] = '0'.repeat(64);
+    writeFileSync(lockFile, JSON.stringify(lock));
+    const before = readFileSync(lockFile, 'utf8');
+    const res = run('--ref', 'contract-packs-v9.9.9', '--from', repo, '--to', to);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('schemas/absent.schema.json');
+    expect(readFileSync(lockFile, 'utf8')).toBe(before);
+    expect(() => readFileSync(path.join(to, 'file-kinds.yaml'))).toThrow();
+  });
+
   it('fails without --ref, and on a ref the checkout does not hold', () => {
     const { repo } = fakeCharter();
     expect(run('--from', repo, '--to', seededSnapshot()).status).toBe(2);

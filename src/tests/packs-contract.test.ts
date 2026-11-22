@@ -6,7 +6,7 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
-import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -84,6 +84,26 @@ describe('the vendored packs contract snapshot', () => {
     const missing = copy();
     rmSync(path.join(missing, 'schemas', 'policy.schema.json'));
     expect(verifyContractLock(missing).join('\n')).toMatch(/schemas\/policy\.schema\.json.*missing/);
+  });
+
+  it('refuses a symlink in a snapshot, never following it', () => {
+    const dir = copy();
+    const outside = mkdtempSync(path.join(tmpdir(), 'dk-contract-outside-'));
+    temps.push(outside);
+    const target = path.join(outside, 'policy.schema.json');
+    cpSync(path.join(dir, 'schemas', 'policy.schema.json'), target);
+    rmSync(path.join(dir, 'schemas', 'policy.schema.json'));
+    symlinkSync(target, path.join(dir, 'schemas', 'policy.schema.json'));
+    expect(verifyContractLock(dir).join('\n')).toMatch(/schemas\/policy\.schema\.json.*symlink/);
+  });
+
+  it('says file-kinds.yaml is missing when a lock does not list it', () => {
+    const dir = copy();
+    rmSync(path.join(dir, 'file-kinds.yaml'));
+    const relock = JSON.parse(readFileSync(path.join(dir, 'contract.lock.json'), 'utf8'));
+    delete relock.files['file-kinds.yaml'];
+    writeFileSync(path.join(dir, 'contract.lock.json'), JSON.stringify(relock));
+    expect(() => loadContract(dir)).toThrow(/\[dk-packs\].*file-kinds\.yaml is missing/s);
   });
 
   it('fails when the lock itself is missing or unreadable', () => {
