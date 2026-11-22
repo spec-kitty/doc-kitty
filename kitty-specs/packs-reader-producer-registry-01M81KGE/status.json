@@ -204,7 +204,8 @@
       "notes": [
         "ADR-0083 + packs/metadata-model/consumer-setup docs + fragment; doc gates, markdownlint, Vale 3.18.0 clean",
         "Cycle 2: fold B1, B2 and notes",
-        "Cycle 2: B1 (replaces, not validated yet), B2 (narrower at root), notes 1-3"
+        "Cycle 2: B1 (replaces, not validated yet), B2 (narrower at root), notes 1-3",
+        "Review cycle 2 passed (claude::reviewer-renata). Reviewed by hand: feat/330 0d2f61b..e9b4a93 (all of WP06: 9621b5f..e9b4a93). The tool-derived range 1bc51e4..9934d84 holds coordination status commits only (the #7809 planning-WP misfire, reported, not forced). B1: D5 now says producerScopes replaces the scope per call and that overrides are not yet checked against decisions 3 and 4 (a tracked follow-up); it does not claim validation. B2: the Negative consequence now says narrower at the root and as wide as before inside the sections, which matches FR-017. Notes 1-3: README frontmatter described as core schema with known tags off (and 1.10 becomes the number 1.1), the contract example is commented out, and related lists metadata-model instead of generators. Cycle-1 checks still hold: warning codes 23/23, CLI exit codes, option keys, the cb9b154 pin, ADR number 0083 free. Gates on e9b4a93: validate:docs (4 pre-existing warnings, none in touched files), links, adr-ids, changelog, markdownlint on the 5 touched files: clean. Vale is not available in the reviewer container."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
