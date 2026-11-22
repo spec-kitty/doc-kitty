@@ -65,7 +65,8 @@
       "notes": [
         "Snapshot at 69ec326 with lock, verified loader, sync script (--ref/--commit); lock and sync tests red-first and green",
         "Cycle 2: folds for review-cycle-1 (B1 + notes 1-4) are on lane-b",
-        "Cycle 2: B1 fixed (tag or full sha only; refs/tags fetch; lock untouched on refusal) + notes 1-4 folded; red 09b29d4, fix e46442c"
+        "Cycle 2: B1 fixed (tag or full sha only; refs/tags fetch; lock untouched on refusal) + notes 1-4 folded; red 09b29d4, fix e46442c",
+        "Review cycle 2 passed (claude::reviewer-renata). Code head e46442c (range b344daa..e46442c; recorded lane head d46f2b1 only adds the coordination merge). Cycle-1 B1 and N1-N4 hold. B1: a branch, HEAD or short sha exits 1 naming the ref with the lock untouched, against a charter checkout and over the network (--ref main); the tag still syncs to a byte-identical lock; a full sha pins with no tag. N1: --ref plus --commit exits 2. N2: a snapshot symlink is refused. N3: a missing file-kinds.yaml reports missing. N4: all reads happen before any write. Red 09b29d4: 5 new tests fail on the 4490a73 code; existing tests are untouched except an added symlinkSync import. The snapshot stays byte-identical to charter 69ec326 (7/7) and the lock covers all 7. Fast vitest 193 files, 4049 tests, green; WP tests 16/16; lint and typecheck clean. Checklist: all 8 PASS. Nit: src/scripts/packs-sync-contract.mjs is committed 100755 while every other file under src/scripts on main is 100644; harmless with the shebang, but align it or keep it on purpose."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
