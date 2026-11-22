@@ -20,7 +20,7 @@ describe('tom_classification shape', () => {
     expect(warnings).toEqual([]);
   });
 
-  it.each(['bad-scope', 'no-measure', 'not-list'])('rejects err/tom-classification-%s.md naming the field', (name) => {
+  it.each(['bad-scope', 'no-measure', 'not-list', 'unknown-key'])('rejects err/tom-classification-%s.md naming the field', (name) => {
     const { problems } = validate(`tom-classification-${name}.md`, parse(`err/tom-classification-${name}.md`));
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('tom_classification');
@@ -30,6 +30,10 @@ describe('tom_classification shape', () => {
     const { problems, warnings } = validate('tom-classification-case-variant.md', parse('warn/tom-classification-case-variant.md'));
     expect(problems).toEqual([]);
     expect(warnings).toEqual(['unknown key `TOM_classification`: did you mean `tom_classification`?']);
+  });
+
+  it('rejects an unknown entry key on the build schema too, so a typo never defaults the scope', () => {
+    expect(buildSchema.safeParse(parse('err/tom-classification-unknown-key.md')).success).toBe(false);
   });
 
   it('the build schema keeps tom_classification and drops a case variant', () => {

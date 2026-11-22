@@ -175,7 +175,10 @@ const tomClassificationRef = z.union([
     measure: z.string().min(1),
     scope: z.enum(['system', 'organisation']).optional(),
     note: z.string().optional(),
-  }),
+  })
+    // Strict: an unknown key such as `scop` is an error, so a typo never
+    // silently falls back to the default scope.
+    .strict(),
 ]);
 
 /** The one spelling of the TOM classification key (ADR-0080 option D: no alias). */

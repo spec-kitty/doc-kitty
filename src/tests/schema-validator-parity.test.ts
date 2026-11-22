@@ -76,6 +76,7 @@ const SHAPE_PARITY: { file: string; relPath: string; reject: boolean }[] = [
   { file: 'err/tom-classification-bad-scope.md', relPath: 'tom-classification-bad-scope.md', reject: true },
   { file: 'err/tom-classification-no-measure.md', relPath: 'tom-classification-no-measure.md', reject: true },
   { file: 'err/tom-classification-not-list.md', relPath: 'tom-classification-not-list.md', reject: true },
+  { file: 'err/tom-classification-unknown-key.md', relPath: 'tom-classification-unknown-key.md', reject: true },
   { file: 'valid/valid.md', relPath: 'valid.md', reject: false },
   { file: 'valid/tom-classification.md', relPath: 'tom-classification.md', reject: false },
   // Persona with all required attribute fields (ADR-0019): both arms accept —
