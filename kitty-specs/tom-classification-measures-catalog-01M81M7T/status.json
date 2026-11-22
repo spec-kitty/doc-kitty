@@ -1,18 +1,18 @@
 {
-  "event_count": 36,
-  "last_event_id": "01M81QQSANCXCG76MCF39PFH45",
-  "materialized_at": "2026-11-22T13:39:41.005752+00:00",
+  "event_count": 38,
+  "last_event_id": "01M81RC59M1NGFJMNN1G9C79GN",
+  "materialized_at": "2026-11-22T13:50:48.628113+00:00",
   "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
   "mission_type": "",
   "schema_version": 2,
   "summary": {
-    "approved": 4,
+    "approved": 5,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 2,
     "in_review": 0,
     "planned": 2
@@ -116,22 +116,29 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
-      "lane": "for_review",
-      "last_event_id": "01M81PD0JGBW39DA77GTEH47PD",
-      "last_transition_at": "2026-11-22T13:16:19.408151+00:00",
+      "lane": "approved",
+      "last_event_id": "01M81RC59M1NGFJMNN1G9C79GN",
+      "last_transition_at": "2026-11-22T13:50:48.628113+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Gate resolves measures via shared core; 18 catalog tests green, validate:catalog green"
+        "Gate resolves measures via shared core; 18 catalog tests green, validate:catalog green",
+        "Review passed (claude::reviewer-renata). Reviewed 9e361d0 (range 357c988..9e361d0). validate-catalog.mjs imports buildMeasuresIndex and classificationProblems from measures-core.mjs and readMeasuresCatalog from measures-loader.mjs, the modules the build routes use, with no re-implementation, so gate and build verdicts and wording cannot diverge (NFR-002). Every page's tom_classification is resolved against <root>/_meta/measures.yaml, else the shipped default. A malformed consumer catalog is reported even when no page uses it (tested). The success line counts classified pages. Messages: unknown id is '[dk-measures] <page>: unknown measure id \"<id>\" (not in <catalog>)', matching the contract (tested exactly); malformed-catalog messages come from parseMeasuresCatalog. Dependency gate respected: WP04 depends on WP02 only; WP02 was approved 13:12:34 and WP04 claimed 13:15:06. lane-c merges lane-a, and the WP02 files are identical to f5369d3. RAN on 9e361d0: validate-catalog-measures + catalog tests 15/15; real pnpm validate:catalog passes on docs and example/docs (24 refs, 0 classifications today); pnpm test src 4306/4306, mcp 181/181; lint and typecheck clean. Integration note: the WP05 loader fix (8a6204c, the default becomes a data module) changes measures-loader.mjs, which this gate imports. After lanes merge, re-run validate:catalog and these tests on the merged tree."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 1185,
-      "shell_pid_created_at": "1795353300.68",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP04-build-free-gate-parity/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP04-build-free-gate-parity/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 13628,
+      "shell_pid_created_at": "1795355425.03",
       "subtasks": {
         "T013": "done",
         "T014": "done",
