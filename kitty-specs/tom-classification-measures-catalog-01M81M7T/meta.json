@@ -1,0 +1,19 @@
+{
+  "coordination_branch": "kitty/mission-tom-classification-measures-catalog-01M81M7T",
+  "created_at": "2026-11-22T12:38:33.155912+00:00",
+  "flattened": false,
+  "friendly_name": "TOM classification and measures catalog",
+  "mid8": "01M81M7T",
+  "mission_base_sha": "9621b5f855988adeb6077e7ffc04d12271fb08ce",
+  "mission_id": "01M81M7TM96RY27R7ZX40CNM7F",
+  "mission_number": null,
+  "mission_slug": "tom-classification-measures-catalog-01M81M7T",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Lets a DocKitty page say which technical and organisational measure (TOM) it evidences, resolved against a replaceable measures catalog, so TOM evidence becomes queryable in the agent API, the content graph and the OKF export. Gate for the EU DPA epic #400.",
+  "purpose_tldr": "Accept ADR-0080: tom_classification field, measures catalog, classified-as edge",
+  "slug": "tom-classification-measures-catalog-01M81M7T",
+  "target_branch": "feat/406-tom-classification",
+  "topology": "lanes_with_coord",
+  "topology_source": "explicit"
+}
