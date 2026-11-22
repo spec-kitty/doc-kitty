@@ -437,7 +437,6 @@ describe('mcp package clean-room consumption (WP06, NFR-003/C-002/US-3)', () => 
       title: 'Doc-Kitty MCP server (not published yet: build it from source, see href)',
       usage: `doc-kitty-mcp --site ${EXAMPLE_BAKED_ORIGIN}`,
     });
-    expect(builtIndex._links.mcp?.usage).not.toContain('npx'); // unpublished until #408
 
     const llmsTxt = readFileSync(path.join(EXAMPLE_DIST, 'llms.txt'), 'utf8');
     expect(llmsTxt).not.toContain('npm:@spec-kitty/doc-kitty-mcp');
