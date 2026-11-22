@@ -93,18 +93,17 @@ const BUILD_SUITES = [
   '../mcp/tests/perf/lane-served-site.lane.ts',
 ];
 
+// The open-packs corpus (#330): every pack of spec-kitty-open-packs at a pinned
+// commit, read from DK_OPEN_PACKS_DIR. It needs a checkout CI fetches, so it is
+// registered only when DK_PACKS_CORPUS=1, which `test:packs-corpus` sets: a plain
+// `vitest run` (and `pnpm test`) stays offline. CI runs
+// `pnpm --filter @spec-kitty/doc-toolkit test:packs-corpus` after the fetch.
+const PACKS_CORPUS = process.env.DK_PACKS_CORPUS === '1'
+  ? [{ test: { name: 'packs-corpus', include: ['tests/**/*.corpus.ts'], environment: 'node' } }]
+  : [];
+
 export default defineWorkspace([
-  {
-    // The open-packs corpus (#330): every pack of spec-kitty-open-packs at a
-    // pinned commit, read from DK_OPEN_PACKS_DIR. Its `*.corpus.ts` files are
-    // outside the `fast` include, so `pnpm test` stays offline; CI fetches the
-    // pinned commit and runs `pnpm --filter @spec-kitty/doc-toolkit test:packs-corpus`.
-    test: {
-      name: 'packs-corpus',
-      include: ['tests/**/*.corpus.ts'],
-      environment: 'node',
-    },
-  },
+  ...PACKS_CORPUS,
   {
     test: {
       name: 'fast',

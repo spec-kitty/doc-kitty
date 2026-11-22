@@ -75,7 +75,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:packs-corpus": "vitest run --project packs-corpus",
+    "test:packs-corpus": "DK_PACKS_CORPUS=1 vitest run --project packs-corpus",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },
