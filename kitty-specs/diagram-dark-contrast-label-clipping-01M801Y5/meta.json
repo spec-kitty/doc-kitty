@@ -1,4 +1,18 @@
 {
+  "accept_commit": "e40616f54adaeef7b0c5a687e60e95e6e3fb542f",
+  "acceptance_history": [
+    {
+      "accept_commit": "e40616f54adaeef7b0c5a687e60e95e6e3fb542f",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-22T06:25:15.032026+00:00",
+      "accepted_by": "claude::implementer",
+      "accepted_from_commit": "ffcb2c88e3e1f826c7d19e61e65567ba830b6c2b"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-22T06:25:15.032026+00:00",
+  "accepted_by": "claude::implementer",
+  "accepted_from_commit": "ffcb2c88e3e1f826c7d19e61e65567ba830b6c2b",
   "contracts": "none",
   "contracts_rationale": "Build-time render transform and CSS only: no API, event or CLI interface is added or changed.",
   "coordination_branch": "kitty/mission-diagram-dark-contrast-label-clipping-01M801Y5",
@@ -16,6 +30,7 @@
   "purpose_context": "This mission advances diagram dark contrast label clipping on main so stakeholders can track the work from mission creation onward.",
   "purpose_tldr": "diagram dark contrast label clipping",
   "slug": "diagram-dark-contrast-label-clipping-01M801Y5",
+  "status_phase": "1",
   "target_branch": "main",
   "topology": "lanes_with_coord",
   "topology_decision": {

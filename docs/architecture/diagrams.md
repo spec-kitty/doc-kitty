@@ -2,7 +2,7 @@
 title: Diagrams
 description: "How the diagrams surface fits together: the metadata transform, the single client render owner and its token map, the opt-in seam, and the two shells."
 doc_status: active
-updated: 2026-11-03T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Architecture
 kind: Explanation
 authors:
@@ -150,6 +150,29 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
 - **Accessibility + figure.** The `%%` (Mermaid) / `'` (PlantUML) metadata injects
   the accessible name into the SVG (`<title>`/`<desc>`); the same `diagram-figure`
   wraps it in `<figure role="group" aria-labelledby>` + `<figcaption>`.
+- **Labels fit their box and stay readable (#369, #370).**
+  - *Font.* Mermaid sizes each label's box when it renders the diagram. Each
+    build-rendered Mermaid SVG carries a rule that draws its labels in the font
+    they were measured in: `Arial, Helvetica, "Liberation Sans", Arimo`, all with
+    Arial's widths. A label fits its box whatever font the site sets. A reader
+    device with none of these fonts falls back to its own sans font, which can be
+    wider.
+  - *Author font.* Labels always use this stack. An author font in an
+    `%%{init}%%` directive is not applied to labels: a fit the toolkit can
+    guarantee wins over the author's choice. Author fonts are tracked in
+    [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
+  - *Author fills.* A fill the author sets does not follow the theme. A label on
+    an opaque author fill is black or white, whichever contrasts more with it.
+  - *See-through fills.* The page shows through, so the label gets black or white
+    only if that colour clears 4.5:1 over any page, from black to white.
+    Otherwise it keeps its theme colour. Some pale see-through fills, such as
+    `rgba(230,230,230,.5)`, keep a theme colour where black would also suit the
+    default pages: the rule gives up that case to hold for every brand.
+  - *Author colours.* A label colour the author sets is kept. An edge colour the
+    author sets is the author's to check.
+  - *Check.* `tests/a11y/diagram-legibility.spec.ts` measures every label and
+    edge on a fixture page against the pixels behind it, in both themes, at
+    1280 px and 390 px.
 - **CI + deploy** build-render both engines (Chromium in the build composite; a
   self-hosted PlantUML `services:` container) with a disk cache so an unchanged
   diagram never relaunches the engines. PlantUML has no client renderer, so in
