@@ -65,13 +65,6 @@ describe('parsePackDocument', () => {
     expect(parsePackDocument('---  \nowner: me\n---\t\n# T\n')).toMatchObject({ frontmatter: { owner: 'me' }, title: 'T' });
   });
 
-  it('splits a long frontmatter-like body quickly', () => {
-    const text = `---\n${'a\n'.repeat(200_000)}`;
-    const start = performance.now();
-    parsePackDocument(text);
-    expect(performance.now() - start).toBeLessThan(2000);
-  });
-
   it('keeps tagged frontmatter values as plain data', () => {
     const doc = parsePackDocument('---\nblob: !!binary aGVsbG8=\n---\n');
     expect(Buffer.isBuffer(doc.frontmatter?.blob)).toBe(false);

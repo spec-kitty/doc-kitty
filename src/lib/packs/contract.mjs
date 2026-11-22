@@ -69,6 +69,9 @@ const PREFIX = '[dk-packs]';
  * @property {{ code: string, message: string }[]} warnings
  */
 
+/** Code-unit order: deterministic, independent of the locale. @param {string} a @param {string} b */
+const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
 /** @param {Buffer} bytes */
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
@@ -94,7 +97,7 @@ function snapshotFiles(dir) {
     }
   };
   walk('');
-  return { files: files.filter((f) => f !== CONTRACT_LOCK_FILE).sort(), symlinks: symlinks.sort() };
+  return { files: files.filter((f) => f !== CONTRACT_LOCK_FILE).sort(byCodeUnit), symlinks: symlinks.sort(byCodeUnit) };
 }
 
 /**
@@ -137,7 +140,7 @@ export function verifyContractLock(dir) {
   const { files, symlinks } = snapshotFiles(dir);
   for (const link of symlinks) problems.push(`${link} is a symlink; a snapshot holds only regular files`);
   const onDisk = new Set(files);
-  for (const [file, expected] of Object.entries(lock.files).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+  for (const [file, expected] of Object.entries(lock.files).sort(([a], [b]) => byCodeUnit(a, b))) {
     if (symlinks.includes(file)) continue;
     if (!onDisk.has(file)) {
       problems.push(`${file} is missing (the lock lists it)`);
@@ -217,7 +220,7 @@ export function loadContract(dir = VENDORED_CONTRACT_DIR) {
   }
   /** @type {Record<string, any>} */
   const schemas = {};
-  for (const file of Object.keys(lock.files).sort()) {
+  for (const file of Object.keys(lock.files).sort(byCodeUnit)) {
     const match = /^schemas\/(.+)\.schema\.json$/.exec(file);
     if (!match) continue;
     try {

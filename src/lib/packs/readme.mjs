@@ -31,8 +31,35 @@ function plainText(node) {
   return Array.isArray(node.children) ? node.children.map(plainText).join('') : '';
 }
 
-/** A frontmatter block: `---` on the first line, up to the next line that is `---`. */
-const FRONTMATTER = /^---[ \t]*\n(?:([\s\S]*?)\n)?---[ \t]*(?:\n|$)/;
+/** A frontmatter fence line: `---`, optionally followed by spaces or tabs. */
+const FENCE = /^---[ \t]*$/;
+
+/**
+ * Split a frontmatter block off the text: `---` on the first line, up to the
+ * next line that is `---`. One pass over the lines, no backtracking. Undefined
+ * when the text has no closed block.
+ *
+ * @param {string} text LF-normalised
+ * @returns {{ block: string, body: string } | undefined}
+ */
+function splitFrontmatter(text) {
+  const firstEnd = text.indexOf('\n');
+  if (firstEnd === -1 || !FENCE.test(text.slice(0, firstEnd))) return undefined;
+  let lineStart = firstEnd + 1;
+  while (lineStart <= text.length) {
+    const end = text.indexOf('\n', lineStart);
+    const lineEnd = end === -1 ? text.length : end;
+    if (FENCE.test(text.slice(lineStart, lineEnd))) {
+      return {
+        block: text.slice(firstEnd + 1, Math.max(firstEnd + 1, lineStart - 1)),
+        body: end === -1 ? '' : text.slice(end + 1),
+      };
+    }
+    if (end === -1) return undefined;
+    lineStart = end + 1;
+  }
+  return undefined;
+}
 
 /** Trim blank lines around a block, keeping its inner layout. @param {string} s */
 const trimBlock = (s) => s.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '');
@@ -48,12 +75,12 @@ export function parsePackDocument(source) {
   /** @type {Record<string, unknown> | undefined} */
   let frontmatter;
   let body = text;
-  const block = FRONTMATTER.exec(text);
+  const block = splitFrontmatter(text);
   if (block) {
-    body = text.slice(block[0].length);
+    body = block.body;
     try {
       // Data only: known tags (`!!binary`, `!!set`, …) are not resolved to objects.
-      const data = parseYaml(block[1] ?? '', { resolveKnownTags: false, logLevel: 'error' });
+      const data = parseYaml(block.block, { resolveKnownTags: false, logLevel: 'error' });
       if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
         if (Object.keys(data).length > 0) frontmatter = data;
       } else if (data !== null && data !== undefined) {

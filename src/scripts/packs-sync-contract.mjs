@@ -114,7 +114,7 @@ export function syncContract({ ref, from, to = VENDORED_CONTRACT_DIR, log = (l) 
     const { commit, tag } = resolvePinnable(checkout, ref);
     const lockFile = path.join(to, CONTRACT_LOCK_FILE);
     const previous = existsSync(lockFile) ? JSON.parse(readFileSync(lockFile, 'utf8')) : undefined;
-    const list = previous?.files ? Object.keys(previous.files).sort() : [...DEFAULT_SNAPSHOT_FILES];
+    const list = previous?.files ? Object.keys(previous.files).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)) : [...DEFAULT_SNAPSHOT_FILES];
     /** @type {Map<string, Buffer>} */
     const contents = new Map();
     for (const file of list) {
@@ -172,6 +172,12 @@ export function main(argv) {
   if (!ref) {
     process.stderr.write(`${USAGE}\n`);
     return 2;
+  }
+  // Only a full commit or a plain tag name ever reaches git (no option-like or
+  // revision syntax), checked before any command runs.
+  if (!isFullSha(ref) && !isPlainTagName(ref)) {
+    process.stderr.write(`${notPinnable(ref, 'this command').message}\n`);
+    return 1;
   }
   try {
     syncContract({ ref, from: values.from && path.resolve(values.from), to: values.to && path.resolve(values.to) });

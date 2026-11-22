@@ -7,7 +7,12 @@
  *   dockitty-read-pack <dir> [--json] [--charter-lock <file>] [--contract <dir>] [--repo-root <dir>]
  *
  * Exit 0 when a model is printed, warnings included. Exit 2 for a usage error, a
- * directory with no `pack.yaml`, or a contract snapshot that fails its lock.
+ * directory with no `pack.yaml`, a path outside the repository root, or a
+ * contract snapshot that fails its lock.
+ *
+ * Every path argument must resolve, after symlinks, inside the repository root:
+ * `--repo-root`, else the nearest directory upward that holds `.git`, else the
+ * working directory. That is ADR-0079 D5's rule for pack sources.
  */
 import { existsSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -42,6 +47,38 @@ export function summarise(m) {
 }
 
 /**
+ * The repository root: the nearest directory at or above `start` that holds a
+ * `.git` entry, else `start`.
+ *
+ * @param {string} start absolute
+ */
+export function findRepoRoot(start) {
+  for (let dir = start; ; dir = path.dirname(dir)) {
+    if (existsSync(path.join(dir, '.git'))) return dir;
+    if (path.dirname(dir) === dir) return start;
+  }
+}
+
+/**
+ * A path argument resolved inside `root` (after symlinks), else undefined.
+ *
+ * @param {string} root real, absolute
+ * @param {string} arg
+ */
+function insideRoot(root, arg) {
+  const abs = path.resolve(arg);
+  let real;
+  try {
+    real = realpathSync(abs);
+  } catch {
+    // A path that does not exist yet (a charter lock the reader will warn
+    // about) is checked as written.
+    real = abs;
+  }
+  return real === root || real.startsWith(root + path.sep) ? real : undefined;
+}
+
+/**
  * @param {string[]} argv
  * @returns {number} the exit code
  */
@@ -72,18 +109,30 @@ export function main(argv) {
     process.stderr.write(`${USAGE}\n`);
     return 2;
   }
-  const dir = path.resolve(positionals[0]);
+  const root = realpathSync(values['repo-root'] ? path.resolve(values['repo-root']) : findRepoRoot(process.cwd()));
+  /** @type {Record<string, string | undefined>} */
+  const paths = {};
+  for (const [name, arg] of /** @type {[string, string | undefined][]} */ ([
+    ['dir', positionals[0]],
+    ['charter-lock', values['charter-lock']],
+    ['contract', values.contract],
+  ])) {
+    if (arg === undefined) continue;
+    const resolved = insideRoot(root, arg);
+    if (resolved === undefined) {
+      process.stderr.write(`[dk-packs] ${arg} is outside the repository root ${root}; pass --repo-root to widen it\n`);
+      return 2;
+    }
+    paths[name] = resolved;
+  }
+  const dir = /** @type {string} */ (paths.dir);
   if (!existsSync(dir) || !statSync(dir).isDirectory() || !existsSync(path.join(dir, 'pack.yaml'))) {
     process.stderr.write(`[dk-packs] ${positionals[0]} is not a pack directory (no pack.yaml)\n`);
     return 2;
   }
   let model;
   try {
-    model = readPack(dir, {
-      charterLock: values['charter-lock'],
-      contract: values.contract,
-      repoRoot: values['repo-root'],
-    });
+    model = readPack(dir, { charterLock: paths['charter-lock'], contract: paths.contract, repoRoot: root });
   } catch (error) {
     process.stderr.write(`${/** @type {Error} */ (error).message}\n`);
     return 2;
