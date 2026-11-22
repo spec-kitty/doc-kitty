@@ -1,5 +1,41 @@
 {
   "rows": {
+    "#330": {
+      "evidence_ref": "Context only: named as a parallel runner that may touch schema.ts/docs-index.ts; rebase coordination, no work owed",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "Pack reader and producer registry (parallel runner)",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#341": {
+      "evidence_ref": "Context only: named as a parallel runner for rebase coordination; no work owed",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "Sidebar child cap (parallel runner)",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#375": {
+      "evidence_ref": "Context only: the merged research landing that deferred the glossary terms to ADR-0080 acceptance; WP01 adds them",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "EU DPA compatibility research landing",
+      "verdict": "not-applicable",
+      "wp": null
+    },
     "#400": {
       "evidence_ref": "<auto-classified: no action required>",
       "fr": null,
@@ -13,28 +49,40 @@
       "wp": null
     },
     "#401": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Context only: a downstream child of epic #400 that this Mission unblocks; it owes no work here (spec C-003, out of scope)",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "title": "EU DPA epic child: builds on #406",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#404": {
+      "evidence_ref": "Context only: cited in the range #401-#404 as downstream follow-ups unblocked by this Mission (spec C-003)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "EU DPA epic child: builds on #406",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#406": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "This Mission implements #406 end to end (WP01-WP09); ADR-0080 accepted in WP01",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "title": "Accept and implement ADR-0080: tom_classification, measures catalog, classified-as edge",
+      "verdict": "in-mission",
+      "wp": "WP01"
     }
   },
   "schema_version": 1
