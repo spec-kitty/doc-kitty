@@ -2,7 +2,7 @@
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -68,11 +68,11 @@
       "criterion_id": "FR-007",
       "description": "Verify FR-007 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "docs/changelog/unreleased/369-diagram-label-legibility.md (eeb40b3, 2a7172e); pnpm validate:changelog OK",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:25:00.326274+00:00",
+      "notes": "one Fixed fragment for #369 and #370"
     }
   ],
   "negative_invariants": []
