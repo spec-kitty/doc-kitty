@@ -61,7 +61,7 @@
       "wp": null
     },
     "#338": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Follow-up: #338 builds pack pages and the doc-kitty-packs producer on this reader and registry",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -69,7 +69,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "deferred-with-followup",
       "wp": null
     },
     "#339": {
