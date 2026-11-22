@@ -126,7 +126,8 @@
       "last_transition_at": "2026-11-22T13:50:48.628113+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Gate resolves measures via shared core; 18 catalog tests green, validate:catalog green"
+        "Gate resolves measures via shared core; 18 catalog tests green, validate:catalog green",
+        "Review passed (claude::reviewer-renata). Reviewed 9e361d0 (range 357c988..9e361d0). validate-catalog.mjs imports buildMeasuresIndex and classificationProblems from measures-core.mjs and readMeasuresCatalog from measures-loader.mjs, the modules the build routes use, with no re-implementation, so gate and build verdicts and wording cannot diverge (NFR-002). Every page's tom_classification is resolved against <root>/_meta/measures.yaml, else the shipped default. A malformed consumer catalog is reported even when no page uses it (tested). The success line counts classified pages. Messages: unknown id is '[dk-measures] <page>: unknown measure id \"<id>\" (not in <catalog>)', matching the contract (tested exactly); malformed-catalog messages come from parseMeasuresCatalog. Dependency gate respected: WP04 depends on WP02 only; WP02 was approved 13:12:34 and WP04 claimed 13:15:06. lane-c merges lane-a, and the WP02 files are identical to f5369d3. RAN on 9e361d0: validate-catalog-measures + catalog tests 15/15; real pnpm validate:catalog passes on docs and example/docs (24 refs, 0 classifications today); pnpm test src 4306/4306, mcp 181/181; lint and typecheck clean. Integration note: the WP05 loader fix (8a6204c, the default becomes a data module) changes measures-loader.mjs, which this gate imports. After lanes merge, re-run validate:catalog and these tests on the merged tree."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
