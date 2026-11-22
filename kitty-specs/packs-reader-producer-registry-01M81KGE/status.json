@@ -53,7 +53,7 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -66,6 +66,7 @@
         "Snapshot at 69ec326 with lock, verified loader, sync script (--ref/--commit); lock and sync tests red-first and green"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP02-contract-snapshot/review-cycle-1.md",
         "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP02-contract-snapshot/review-cycle-1.md",
@@ -73,13 +74,13 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 26614,
-      "shell_pid_created_at": "1795353571.67",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done"
+        "T006": "planned",
+        "T007": "planned",
+        "T008": "planned",
+        "T009": "planned"
       }
     },
     "WP03": {
