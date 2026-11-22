@@ -10,6 +10,7 @@
  */
 
 import { formatInstant, normaliseInstant } from './vocabulary-core.mjs';
+import { PRODUCER_REGISTRY } from './producers.mjs';
 // A JSON module, not a path read from `import.meta.url`: Vite inlines it, so the
 // version still resolves once a route that stamps is bundled (#182).
 import toolkitManifest from '../package.json' with { type: 'json' };
@@ -23,8 +24,10 @@ export const GLOSSARY_PRODUCER = 'doc-kitty-glossary';
 /**
  * The OWNERSHIP producers: they generate (and so own) the pages they stamp
  * (each stamps `<producer>/<version>`). Only these make a page "generated".
+ * Read from the producer registry (`producers.mjs`, #330), which also holds each
+ * producer's ownership scope.
  */
-export const PRODUCERS = Object.freeze([GHERKIN_PRODUCER, GLOSSARY_PRODUCER]);
+export const PRODUCERS = Object.freeze(PRODUCER_REGISTRY.ids('ownership'));
 
 /**
  * The PROVENANCE-ONLY producer: the scaffold stamps the starting point of a page
@@ -39,10 +42,14 @@ export const SCAFFOLD_PRODUCER = 'doc-kitty-scaffold';
  * Retired in 0.4.0 (#210): never recognised as generated, only detected so
  * {@link retiredStampProblem} can tell the author to regenerate.
  */
-const RETIRED_STAMP_BY_PRODUCER = Object.freeze({
-  [GHERKIN_PRODUCER]: 'doc-kitty/gherkin',
-  [GLOSSARY_PRODUCER]: 'doc-kitty/glossary',
-});
+const RETIRED_STAMP_BY_PRODUCER = Object.freeze(
+  Object.fromEntries(
+    PRODUCERS.flatMap((id) => {
+      const retiredBy = PRODUCER_REGISTRY.get(id)?.retiredBy;
+      return retiredBy === undefined ? [] : [[id, retiredBy]];
+    }),
+  ),
+);
 const RETIRED_STAMP_BY = Object.freeze(Object.values(RETIRED_STAMP_BY_PRODUCER));
 
 /**
@@ -97,10 +104,9 @@ export function retiredStampProblem(generated) {
 }
 
 /** How to regenerate a page each ownership producer writes. */
-const REGENERATE_HINT = Object.freeze({
-  [GHERKIN_PRODUCER]: 'run `dockitty-generate-feature-pages`',
-  [GLOSSARY_PRODUCER]: 'run `astro build` or `astro dev`, which rewrites the glossary pages',
-});
+const REGENERATE_HINT = Object.freeze(
+  Object.fromEntries(PRODUCERS.map((id) => [id, PRODUCER_REGISTRY.get(id)?.regenerateHint ?? 'regenerate the page'])),
+);
 
 /**
  * The ownership producer a `generated.by` value names: its retired unversioned
@@ -111,8 +117,7 @@ const REGENERATE_HINT = Object.freeze({
  */
 function stampProducer(by) {
   if (typeof by !== 'string') return undefined;
-  const retired = PRODUCERS.find((producer) => RETIRED_STAMP_BY_PRODUCER[producer] === by);
-  return retired ?? PRODUCERS.find((producer) => by.startsWith(`${producer}/`));
+  return PRODUCER_REGISTRY.retiredProducerOf(by) ?? PRODUCERS.find((producer) => by.startsWith(`${producer}/`));
 }
 
 /**
