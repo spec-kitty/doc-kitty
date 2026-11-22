@@ -211,6 +211,15 @@ export interface AgentPageLinks {
   describedby?: AgentLink;
 }
 
+/** One resolved TOM classification entry on a page record (ADR-0080). */
+export interface AgentPageMeasure {
+  measure: string;
+  label: string;
+  nature: 'technical' | 'organisational' | 'legal' | 'physical';
+  scope: 'system' | 'organisation';
+  note?: string;
+}
+
 /**
  * The per-page detail artifact, `/api/pages/<id>.json`: every
  * {@link AgentRecordEntry} field plus the raw Markdown body and the
@@ -239,6 +248,11 @@ export interface AgentPagePayload {
   generated?: PageGeneratedStamp;
   verified?: PageVerifiedStamp[];
   sources?: PageSourceRef[];
+  /**
+   * The page's TOM classification (ADR-0080), each entry resolved against the
+   * measures catalog. Present only when the page declares `tom_classification`.
+   */
+  tom_classification?: AgentPageMeasure[];
   includes?: AgentIncludeRef[];
   /**
    * Present only on the OpenAPI version pages (mission
