@@ -10,12 +10,11 @@ requirement_refs:
 - NFR-003
 planning_base_branch: feat/406-tom-classification
 merge_target_branch: feat/406-tom-classification
-branch_strategy: Planning artifacts for this mission were generated on feat/406-tom-classification. During /spec-kitty.implement this WP runs in the lane worktree computed in lanes.json, and completed changes merge back into feat/406-tom-classification unless the human explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/406-tom-classification. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/406-tom-classification unless the human explicitly redirects the landing branch.
 subtasks:
 - T030
 - T031
 - T032
-agent: claude
 history:
 - timestamp: '2026-11-22T13:10:00Z'
   agent: claude
