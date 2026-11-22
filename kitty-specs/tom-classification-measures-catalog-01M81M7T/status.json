@@ -273,7 +273,7 @@
     },
     "WP09": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -286,6 +286,7 @@
         "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP09-example-pages-and-artifact-assertions/review-cycle-1.md",
         "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP09-example-pages-and-artifact-assertions/review-cycle-1.md",
@@ -293,12 +294,12 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 17526,
-      "shell_pid_created_at": "1795358177.43",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T030": "done",
-        "T031": "done",
-        "T032": "done"
+        "T030": "planned",
+        "T031": "planned",
+        "T032": "planned"
       }
     }
   }
