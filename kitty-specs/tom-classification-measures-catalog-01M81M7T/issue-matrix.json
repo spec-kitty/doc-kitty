@@ -13,15 +13,15 @@
       "wp": null
     },
     "#401": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Context only: a downstream child of epic #400 that this Mission unblocks; it owes no work here (spec C-003, out of scope)",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "title": "EU DPA epic child: builds on #406",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#406": {
