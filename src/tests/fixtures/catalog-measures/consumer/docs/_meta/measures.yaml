@@ -1,0 +1,5 @@
+- id: a-5-15-access-control
+  label: Access control
+  nature: organisational
+  frameworks:
+    - { framework: iso-27001-2022-annex-a, ref: "5.15" }
