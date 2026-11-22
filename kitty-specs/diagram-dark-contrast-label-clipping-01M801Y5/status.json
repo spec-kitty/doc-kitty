@@ -56,7 +56,7 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -69,6 +69,7 @@
         "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP02-font-and-label-contrast/review-cycle-1.md",
         "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP02-font-and-label-contrast/review-cycle-1.md",
@@ -76,14 +77,14 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 22390,
-      "shell_pid_created_at": "1795305633.21",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T005": "done",
-        "T006": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done"
+        "T005": "planned",
+        "T006": "planned",
+        "T007": "planned",
+        "T008": "planned",
+        "T009": "planned"
       }
     },
     "WP03": {
