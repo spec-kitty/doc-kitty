@@ -12,7 +12,7 @@ Subtask rows are reference rows. Completion is recorded with `spec-kitty agent t
 | T001 | Mark ADR-0080 Accepted (frontmatter and Status) | WP01 | |
 | T002 | Glossary terms "Measure" and "TOM classification" | WP01 | [P] |
 | T003 | Changelog fragment `406-tom-classification.md` | WP01 | [P] |
-| T004 | Shipped default catalog `measures.default.yaml` (17 records) | WP02 | |
+| T004 | Shipped default catalog, now `measures-default.mjs` (17 records; see research R1a) | WP02 | |
 | T005 | `parseMeasuresCatalog`, `buildMeasuresIndex` | WP02 | |
 | T006 | `normaliseClassification`, `resolveClassification`, `classificationProblems` | WP02 | |
 | T007 | Loader: consumer file or default, memoised | WP02 | |

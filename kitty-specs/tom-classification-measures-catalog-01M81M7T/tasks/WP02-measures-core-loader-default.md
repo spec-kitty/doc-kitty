@@ -31,7 +31,7 @@ authoritative_surface: src/lib/
 create_intent:
 - src/lib/measures-core.mjs
 - src/lib/measures-loader.mjs
-- src/lib/measures.default.yaml
+- src/lib/measures-default.mjs
 - src/tests/measures-core.test.ts
 - src/tests/measures-loader.test.ts
 - src/tests/fixtures/measures/consumer/docs/_meta/measures.yaml
@@ -40,7 +40,7 @@ execution_mode: code_change
 owned_files:
 - src/lib/measures-core.mjs
 - src/lib/measures-loader.mjs
-- src/lib/measures.default.yaml
+- src/lib/measures-default.mjs
 - src/tests/measures-core.test.ts
 - src/tests/measures-loader.test.ts
 - src/tests/fixtures/measures/**
@@ -50,6 +50,8 @@ tracker_refs: []
 ---
 
 # Work Package Prompt: WP02 - Measures core, loader and shipped default catalog
+
+> **Amendment (WP05, approved):** the shipped default moved from `src/lib/measures.default.yaml` to the statically imported data module `src/lib/measures-default.mjs` (`DEFAULT_MEASURES`), because a file read relative to `import.meta.url` breaks once Vite bundles a route. Same 17 records, still validated. See research R1a. The T004 and T007 text below describes the original plan.
 
 ## ⚡ Do This First: Load Agent Profile
 

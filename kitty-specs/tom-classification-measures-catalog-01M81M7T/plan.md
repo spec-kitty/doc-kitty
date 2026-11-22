@@ -11,7 +11,7 @@ Add an optional `tom_classification` frontmatter field, resolve it against a mea
 
 **Language/Version**: TypeScript 5 and ES modules (`.mjs` with JSDoc types) on Node 22+
 **Primary Dependencies**: Astro 5 + Starlight (existing), Zod 4 via `astro/zod` in the build schema and `zod` in the gate (existing), `gray-matter` for YAML (existing). No new dependency.
-**Storage**: Files only: `docs/_meta/measures.yaml` (consumer) and `src/lib/measures.default.yaml` (shipped)
+**Storage**: Files only: `docs/_meta/measures.yaml` (consumer) and `src/lib/measures-default.mjs` (shipped, a statically imported data module; amended in WP05, see research R1a)
 **Testing**: Vitest unit tests in `src/tests/`; fixture docs trees under `src/tests/fixtures/`; the example build and `assert-build-artifacts.mjs`
 **Target Platform**: Static site build (Astro) and bare-Node CI gates
 **Project Type**: Single package library (`src/`, `@spec-kitty/doc-toolkit`) plus the `example/` site
@@ -42,7 +42,7 @@ flowchart LR
   subgraph Sources
     P["page frontmatter<br/>tom_classification"]
     C["docs/_meta/measures.yaml"]
-    D["src/lib/measures.default.yaml"]
+    D["src/lib/measures-default.mjs"]
   end
   L["measures-loader.mjs<br/>(fs: consumer file, else default)"]
   K["measures-core.mjs<br/>(pure: parse catalog, normalise and resolve entries)"]
@@ -57,7 +57,7 @@ flowchart LR
 ```
 
 - **Core (`src/lib/measures-core.mjs`)**: `parseMeasuresCatalog(text, label)` returns `{ records, problems }`, and `buildMeasuresIndex(records)` keys them by id. `normaliseClassification(value)` turns bare ids into `{ measure, scope: 'system' }`, then `resolveClassification(entries, index, page)` returns resolved entries or throws `[dk-measures] <page>: unknown measure id "<id>" (not in <catalog>)`. `classificationProblems(entries, index)` returns the same verdicts as strings for the gate. The core has no fs and no Astro dependency.
-- **Loader (`src/lib/measures-loader.mjs`)**: `loadMeasuresCatalog(docsRoot)` reads `<docsRoot>/_meta/measures.yaml` when it exists, else the shipped default resolved from `import.meta.url`. It returns `{ index, source }`, where `source` is the path used in messages. A malformed catalog throws, naming the file and the record.
+- **Loader (`src/lib/measures-loader.mjs`)**: `loadMeasuresCatalog(docsRoot)` reads `<docsRoot>/_meta/measures.yaml` when it exists, else the shipped default (`DEFAULT_MEASURES` from `./measures-default.mjs`, statically imported). It returns `{ index, source }`, where `source` is the path used in messages. A malformed catalog throws, naming the file and the record.
 - **Schemas**: `tom_classification` is added to `docKittyFields` (build) and `frontmatterSchema` (gate) with the same Zod shape. The gate also warns on any case variant of the key (FR-014).
 - **Content graph**: `GraphRel` gains `classified-as`. `GraphEdge` gains an optional `scope`, written only on `classified-as` edges, and always written there (explicit `system` default). `GraphNode` gains an optional `measure: { nature, frameworks }`. A measure node is `{ id: 'catalog:measure:<id>', kind: 'catalog', title: label, url: dpv?, measure }`. `ContentGraphContext` gains `measures`. The route loads it from the same `docsDir` it walks.
 - **Agent page**: the payload gains `tom_classification: [{ measure, label, nature, scope, note? }]`, present only when the page has the field, so other pages stay byte-identical.
@@ -91,7 +91,7 @@ See [contracts/](./contracts/) for the exact shapes and [data-model.md](./data-m
 
 - **Purpose**: One parser and resolver that the build and the gate share.
 - **Relevant requirements**: FR-003, FR-004, FR-005, NFR-001, NFR-004
-- **Affected surfaces**: new `src/lib/measures-core.mjs`, `src/lib/measures-loader.mjs`, `src/lib/measures.default.yaml`, `src/tests/measures-core.test.ts`, `src/tests/measures-loader.test.ts`
+- **Affected surfaces**: new `src/lib/measures-core.mjs`, `src/lib/measures-loader.mjs`, `src/lib/measures-default.mjs` (was `measures.default.yaml`; see research R1a), `src/tests/measures-core.test.ts`, `src/tests/measures-loader.test.ts`
 - **Sequencing/depends-on**: none
 - **Risks**: The default YAML must ship in the package (`files: ["lib", …]` covers it). DPV IRIs are the nearest concept (research R2).
 
@@ -184,7 +184,7 @@ kitty-specs/tom-classification-measures-catalog-01M81M7T/
 src/lib/
 ├── measures-core.mjs        # new: pure parse + resolve
 ├── measures-loader.mjs      # new: consumer file or shipped default
-├── measures.default.yaml    # new: 17 default measures
+├── measures-default.mjs     # new: 17 default measures (data module)
 ├── schema.ts                # + tom_classification shape
 ├── metadata.ts              # + types
 ├── docs-index.ts            # + classified-as edge, measure nodes

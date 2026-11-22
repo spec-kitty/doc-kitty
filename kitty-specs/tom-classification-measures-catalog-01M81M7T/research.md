@@ -2,9 +2,15 @@
 
 ## R1: Catalog loading (decision DM-01M81M98JR2GQJ03SNS8MPVRTK)
 
-- **Decision**: The toolkit reads `<docsRoot>/_meta/measures.yaml` off disk and falls back to `src/lib/measures.default.yaml`. There is no new content collection.
+- **Decision**: The toolkit reads `<docsRoot>/_meta/measures.yaml` off disk and falls back to a default shipped in the toolkit. There is no new content collection.
 - **Rationale**: The ADR-0018 citation catalogs are Astro content collections that each consumer declares in `content.config.ts`, and they have no default. ADR-0080 needs two rules: an absent file means the default, and an unused field leaves a tree unaffected. A collection would make every consumer add a declaration just to get the default. A disk read mirrors `sections.yaml`, `vocabulary.yaml` and `charter.yaml`, which the toolkit also reads itself. ADR-0080's "follows the ADR-0018 pattern" holds where it matters: the file lives in `_meta`, it is a closed reference, the build fails hard, and a build-free gate gives the same verdict.
 - **Alternatives**: A `measures` collection with a `file()` loader (rejected: consumer wiring, no default). Embedding the catalog in TypeScript (rejected: a consumer copying the defaults wants YAML).
+
+## R1a: The shipped default is a data module (amendment, WP05)
+
+- **Decision**: The default lives in `src/lib/measures-default.mjs` (`DEFAULT_MEASURES`, frozen), statically imported by the loader. It replaces the planned `src/lib/measures.default.yaml`.
+- **Rationale**: The content-graph and agent-page routes are bundled by Vite. A file read relative to `import.meta.url` then points into `.prerender/chunks/`, so the YAML was not found and every example build failed (caught by the full suite in WP05). A static import travels with the bundle and loads the same way in bare Node for the `validate-catalog.mjs` gate. The records are unchanged, and the loader still validates them through `parseMeasuresCatalog`.
+- **Alternatives**: Resolving the YAML through the package name (rejected: depends on the install layout); Vite `?raw` imports (rejected: the bare-Node gate cannot load them).
 
 ## R2: Default catalog content and DPV mapping
 

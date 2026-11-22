@@ -13,7 +13,7 @@
       "write_scope": [
         "src/lib/measures-core.mjs",
         "src/lib/measures-loader.mjs",
-        "src/lib/measures.default.yaml",
+        "src/lib/measures-default.mjs",
         "src/tests/fixtures/measures/**",
         "src/tests/measures-core.test.ts",
         "src/tests/measures-loader.test.ts"

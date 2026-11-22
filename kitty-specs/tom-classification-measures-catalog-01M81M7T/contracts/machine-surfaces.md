@@ -34,8 +34,8 @@
 ```markdown
 ## Measures
 
-- [Events logging](https://w3id.org/dpv#ActivityMonitoring) - Every admin action is logged.
 - [Accountability](https://w3id.org/dpv#ComplianceMonitoring) (organisation)
+- [Events logging](https://w3id.org/dpv#ActivityMonitoring) - Every admin action is logged.
 ```
 
-- The section comes after `## References` and before `## Derived from`. A measure without a DPV IRI is plain text.
+- The section comes after `## References` and before `## Derived from`. Lines follow the graph's edge order, which is code-unit order of the target ids, so measures appear by id, not in authored order. A measure without a DPV IRI is plain text.

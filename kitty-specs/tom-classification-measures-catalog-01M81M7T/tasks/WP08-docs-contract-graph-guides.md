@@ -77,7 +77,7 @@ Requirements: FR-011 (contract, configuration reference, guide; the glossary is 
 Add a `## Measures catalog` section near the other `_meta` files (search the page for `_meta/charter.yaml` and place it in the same area). Cover:
 
 - what the file is, where it lives (`docs/_meta/measures.yaml`), and the record shape (`id`, `label`, `nature`, `frameworks`, `dpv?`) with a two-record example (one ISO/IEC 27001 Annex A style id);
-- **replace, not merge**: when present it replaces the 17 shipped defaults wholesale, so copy the defaults you still want (where to find them: `node_modules/@spec-kitty/doc-toolkit/lib/measures.default.yaml`; check the published path in `src/package.json`);
+- **replace, not merge**: when present it replaces the 17 shipped defaults wholesale, so copy the defaults you still want (where to find them: `lib/measures-default.mjs` in the installed `@spec-kitty/doc-toolkit` package, written into YAML by the consumer (research R1a));
 - absent means the default, and a tree that never uses the field is unaffected;
 - a malformed file fails the build and `pnpm validate:catalog`;
 - licensing note: ids from paywalled standards are the consumer's to add under their own licence terms (ADR-0080 decision 4).
