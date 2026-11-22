@@ -5,7 +5,7 @@ section: Added
 - **A pack reader, pinned to the charter's packs contract (#330).** Before,
   doc-kitty could not read a Spec Kitty pack. Now `readPack(dir)` reads a pack
   directory into one model: identity, the README's title, preamble and
-  sections, presets, policy, an inventory per kind, a manifest whose hashes are
+  sections, presets, mutability levels, an inventory per kind, a manifest whose hashes are
   recomputed, and warnings that never fail the build. It classifies files with a
   vendored snapshot of the charter's packs contract at
   `contract-packs-v0.1.0-rc.1`, checked by a lock and by the charter's own
