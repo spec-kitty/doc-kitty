@@ -487,6 +487,16 @@ and `content_hash` only from an ownership stamp (`doc-kitty-gherkin/<version>` o
 scaffold's. The agent API is unchanged: it reports `updated` and the raw
 `generated` block.
 
+Which producers exist, and where each may own pages, is one registry,
+`src/lib/producers.mjs`
+([ADR-0083](../adr/0083-producer-registry-and-ownership-scopes.md)). An
+ownership producer has a scope: a whole section, or directories inside one. A
+page is generated only when it carries its producer's stamp and sits inside that
+producer's scope, so a stamp alone never exempts a page from the frontmatter
+gate. The glossary keeps its path rule (`glossary/` with `kind: Glossary` or
+`Hub`) as its scope. The scaffold is a provenance-only producer: its stamp never
+makes a page generated.
+
 ### `verified`
 
 Either a list of `{ by: actor, at: instant }` entries or one bare mapping. The

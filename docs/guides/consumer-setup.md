@@ -1968,6 +1968,61 @@ gherkin: {
 - **Keep the report out of `public/`.** It holds failure messages and paths; only
   status words reach your pages.
 
+## Optional: Kitty packs
+
+doc-kitty can read Spec Kitty packs (a directory holding a `pack.yaml`) through
+one reader pinned to the charter's packs contract. Pack pages arrive with #338.
+This release ships the reader, a command that prints what it reads, and the two
+options that say which contract the packs were checked against. The design is in
+[ADR-0079](../adr/0079-kitty-packs-through-a-charter-contract-reader.md) and
+[Kitty packs](../architecture/packs.md).
+
+### Inspect a pack
+
+`dockitty-read-pack` prints the model doc-kitty reads from one pack directory:
+its identity, the README's title and sections, presets, policy, the inventory
+per kind and where it came from, the manifest's verified state, and warnings.
+
+```bash
+pnpm exec dockitty-read-pack ../packs/qa
+pnpm exec dockitty-read-pack ../packs/qa --json --charter-lock ../charter.lock.yaml
+```
+
+It exits 0 when it prints a model, even with warnings. It exits 2 for a usage
+error, a directory without a `pack.yaml`, or a contract snapshot whose lock fails.
+`--contract <dir>` reads with another snapshot, and `--repo-root <dir>` sets what
+the model's `path` is relative to.
+
+### Pin the contract
+
+```js
+defineDocKittyIntegrations({
+  packs: {
+    charterLock: '../charter.lock.yaml',
+    // contract: '../packs-contract', // only to read with another snapshot
+  },
+});
+```
+
+- `charterLock`: your pin file, a YAML file whose `commit` key names the charter
+  commit your packs are checked against (the shape of open-packs'
+  `charter.lock.yaml`). When it names another commit than the contract doc-kitty
+  reads with, each pack gets a `charter-lock-mismatch` warning, and the model
+  records both commits. The file need not exist when the config loads; a missing
+  one is a warning.
+- `contract`: a contract snapshot directory in doc-kitty's layout
+  (`file-kinds.yaml`, `schemas/`, `conformance/` and `contract.lock.json`), to
+  read with a newer contract than the one doc-kitty ships. Its lock is checked
+  when the config loads.
+
+Both paths resolve against the site root. The option is checked when the config
+loads: an unknown key, a value that is not a path, or a snapshot whose files do
+not match its lock fails the build with a `[dk-packs]` error. This release
+accepts only these two keys; the pack-page keys come with #338.
+
+doc-kitty ships the contract at the charter's `contract-packs-v0.1.0-rc.1`
+release. It never fetches a contract during a build.
+
 ## Internal environment names
 
 DocKitty passes eleven settings between its own parts through environment
