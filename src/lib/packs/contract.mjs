@@ -73,24 +73,28 @@ const PREFIX = '[dk-packs]';
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 /**
- * Snapshot-relative POSIX paths of every file under `dir`, the lock excepted.
+ * Snapshot-relative POSIX paths of every file under `dir`, the lock excepted, and
+ * of every symlink (never followed: a snapshot holds only real files).
  *
  * @param {string} dir
- * @returns {string[]}
+ * @returns {{ files: string[], symlinks: string[] }}
  */
 function snapshotFiles(dir) {
   /** @type {string[]} */
-  const out = [];
+  const files = [];
+  /** @type {string[]} */
+  const symlinks = [];
   /** @param {string} sub */
   const walk = (sub) => {
     for (const entry of readdirSync(path.join(dir, sub), { withFileTypes: true })) {
       const rel = sub === '' ? entry.name : `${sub}/${entry.name}`;
-      if (entry.isDirectory()) walk(rel);
-      else out.push(rel);
+      if (entry.isSymbolicLink()) symlinks.push(rel);
+      else if (entry.isDirectory()) walk(rel);
+      else files.push(rel);
     }
   };
   walk('');
-  return out.filter((f) => f !== CONTRACT_LOCK_FILE).sort();
+  return { files: files.filter((f) => f !== CONTRACT_LOCK_FILE).sort(), symlinks: symlinks.sort() };
 }
 
 /**
@@ -130,8 +134,11 @@ export function verifyContractLock(dir) {
   if (problem || !lock) return [/** @type {string} */ (problem)];
   /** @type {string[]} */
   const problems = [];
-  const onDisk = new Set(snapshotFiles(dir));
+  const { files, symlinks } = snapshotFiles(dir);
+  for (const link of symlinks) problems.push(`${link} is a symlink; a snapshot holds only regular files`);
+  const onDisk = new Set(files);
   for (const [file, expected] of Object.entries(lock.files).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+    if (symlinks.includes(file)) continue;
     if (!onDisk.has(file)) {
       problems.push(`${file} is missing (the lock lists it)`);
       continue;
@@ -196,6 +203,9 @@ export function loadContract(dir = VENDORED_CONTRACT_DIR) {
     throw new Error(`${PREFIX} contract snapshot ${abs} does not match its ${CONTRACT_LOCK_FILE}:\n  - ${problems.join('\n  - ')}`);
   }
   const lock = /** @type {ContractLock} */ (readLock(abs).lock);
+  if (!existsSync(path.join(abs, 'file-kinds.yaml'))) {
+    throw new Error(`${PREFIX} contract snapshot ${abs}: file-kinds.yaml is missing`);
+  }
   let fileKinds;
   try {
     fileKinds = parseYaml(readFileSync(path.join(abs, 'file-kinds.yaml'), 'utf8'));
