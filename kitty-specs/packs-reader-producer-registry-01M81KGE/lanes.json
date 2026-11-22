@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "mission_slug": "packs-reader-producer-registry-01M81KGE",
+  "mission_id": "01M81KGEWFFETMERGX1TFVGKRD",
+  "mission_branch": "kitty/mission-packs-reader-producer-registry-01M81KGE",
+  "target_branch": "feat/330-packs-reader-producer-registry",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/generator-stamp.mjs",
+        "src/lib/gherkin/generate.mjs",
+        "src/lib/producer-output.mjs",
+        "src/lib/producers.mjs",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/producer-output.test.ts",
+        "src/tests/producers.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        ".gitattributes",
+        "package.json",
+        "src/lib/packs/contract.mjs",
+        "src/lib/packs/contract/**",
+        "src/scripts/packs-sync-contract.mjs",
+        "src/tests/fixtures/packs-contract/**",
+        "src/tests/packs-contract.test.ts",
+        "src/tests/packs-sync-contract.test.ts"
+      ],
+      "predicted_surfaces": [
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/packs/classify.mjs",
+        "src/tests/packs-classify.test.ts"
+      ],
+      "predicted_surfaces": [],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/packs/index.mjs",
+        "src/lib/packs/read.mjs",
+        "src/lib/packs/readme.mjs",
+        "src/tests/fixtures/packs/**",
+        "src/tests/packs-read.test.ts",
+        "src/tests/packs-readme.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        ".github/workflows/ci.yml",
+        "src/lib/config.ts",
+        "src/lib/packs/options.mjs",
+        "src/package.json",
+        "src/scripts/read-pack.mjs",
+        "src/tests/fixtures/packs-corpus/**",
+        "src/tests/packs-open-packs.corpus.ts",
+        "src/tests/packs-options.test.ts",
+        "src/tests/read-pack-cli.test.ts",
+        "src/vitest.workspace.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "docs/adr/0083-producer-registry-and-ownership-scopes.md",
+        "docs/architecture/generators.md",
+        "docs/architecture/packs.md",
+        "docs/changelog/unreleased/330-packs-reader-producer-registry.md",
+        "docs/guides/consumer-setup.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-e"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-22T12:35:37.694538+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP06"
+  ],
+  "planning_commit_sha": "9621b5f855988adeb6077e7ffc04d12271fb08ce"
+}

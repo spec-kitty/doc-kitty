@@ -1,0 +1,47 @@
+{
+  "accept_commit": "2e7d6ac4fa8ca633c57392d7853d80ad754928c9",
+  "acceptance_history": [
+    {
+      "accept_commit": "2e7d6ac4fa8ca633c57392d7853d80ad754928c9",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-22T14:31:03.751293+00:00",
+      "accepted_by": "claude::node-norris",
+      "accepted_from_commit": "dfbe24a36c7c0ec21641a55f1b4cea8f2df29d82"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-11-22T14:31:03.751293+00:00",
+  "accepted_by": "claude::node-norris",
+  "accepted_from_commit": "dfbe24a36c7c0ec21641a55f1b4cea8f2df29d82",
+  "baseline_merge_commit": "e9b4a93fabf8c7b88d4b4f6a379a4ffa9959c729",
+  "create_return_branch": "feat/330-packs-reader-producer-registry",
+  "created_at": "2026-11-22T12:25:47.374587+00:00",
+  "flattened": true,
+  "friendly_name": "packs reader producer registry",
+  "merged_at": "2026-11-22T14:32:30.319179+00:00",
+  "merged_commit": "151be8e07e31682771c16f6bd624e2c7e3181895",
+  "mid8": "01M81KGE",
+  "mission_base_sha": "9621b5f855988adeb6077e7ffc04d12271fb08ce",
+  "mission_branch": "kitty/mission-packs-reader-producer-registry-01M81KGE",
+  "mission_id": "01M81KGEWFFETMERGX1TFVGKRD",
+  "mission_number": 21,
+  "mission_slug": "packs-reader-producer-registry-01M81KGE",
+  "mission_type": "software-dev",
+  "purpose_context": "This mission advances packs reader producer registry on feat/330-packs-reader-producer-registry so stakeholders can track the work from mission creation onward.",
+  "purpose_tldr": "packs reader producer registry",
+  "slug": "packs-reader-producer-registry-01M81KGE",
+  "status_phase": "1",
+  "target_branch": "feat/330-packs-reader-producer-registry",
+  "topology_decision": {
+    "code_lane_count": 5,
+    "from": "single_branch",
+    "rule": "lanes_with_coord",
+    "target_protected": false,
+    "to": "lanes_with_coord",
+    "wp_count": 6
+  },
+  "topology_settled": true,
+  "topology_source": "default",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-22T12:36:27.097293+00:00"
+}

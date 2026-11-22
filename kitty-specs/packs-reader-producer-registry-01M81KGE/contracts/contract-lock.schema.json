@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "contract.lock.json",
+  "type": "object",
+  "required": ["source", "contractPath", "commit", "files"],
+  "additionalProperties": false,
+  "properties": {
+    "source": { "type": "string" },
+    "contractPath": { "type": "string" },
+    "tag": { "type": "string" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "files": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" } }
+  }
+}
