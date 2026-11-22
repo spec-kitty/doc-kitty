@@ -48,10 +48,10 @@
       "criterion_id": "FR-005",
       "description": "Verify FR-005 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "content-graph-measures.test.ts unknown id names page+id (drafts too); agent-page-measures.test.ts; manual negative build check events-loging fails pnpm build (fd25863 body)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:10:49.413202+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
