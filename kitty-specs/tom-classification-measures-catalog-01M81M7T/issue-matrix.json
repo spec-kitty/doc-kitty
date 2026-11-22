@@ -73,7 +73,7 @@
       "wp": null
     },
     "#406": {
-      "evidence_ref": "This Mission implements #406 end to end (WP01-WP09); ADR-0080 accepted in WP01",
+      "evidence_ref": "Mission consolidated on feat/406-tom-classification (squash a1c7afd); all nine WPs done",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -81,7 +81,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "Accept and implement ADR-0080: tom_classification, measures catalog, classified-as edge",
-      "verdict": "in-mission",
+      "verdict": "fixed",
       "wp": "WP01"
     }
   },
