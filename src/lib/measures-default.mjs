@@ -37,163 +37,45 @@ function freezeRecords(records) {
   return Object.freeze(records);
 }
 
+const SCC = 'eu-scc-2021-914-annex-ii';
+const DPV = 'https://w3id.org/dpv#';
+
+/**
+ * One row per Annex II heading, in heading order: id, label, nature, DPV term,
+ * and, for headings 1 to 4, the GDPR Article 32(1) reference they restate.
+ *
+ * @type {ReadonlyArray<[string, string, import('./measures-core.mjs').MeasureNature, string, string?]>}
+ */
+const HEADINGS = [
+  ['pseudonymisation-encryption', 'Pseudonymisation and encryption', 'technical', 'Encryption', 'Art. 32(1)(a)'],
+  ['confidentiality-integrity-availability-resilience', 'Confidentiality, integrity, availability and resilience of systems and services', 'technical', 'SecurityMethod', 'Art. 32(1)(b)'],
+  ['availability-restoration', 'Restoring availability and access after an incident', 'technical', 'DataBackupProtocols', 'Art. 32(1)(c)'],
+  ['testing-evaluation', 'Regular testing, assessing and evaluating of the measures', 'organisational', 'SecurityAssessment', 'Art. 32(1)(d)'],
+  ['user-identification-authorisation', 'User identification and authorisation', 'technical', 'AccessControlMethod'],
+  ['transmission-protection', 'Protection of data during transmission', 'technical', 'EncryptionInTransfer'],
+  ['storage-protection', 'Protection of data during storage', 'technical', 'EncryptionAtRest'],
+  ['physical-security', 'Physical security of processing locations', 'physical', 'PhysicalAccessControlMethod'],
+  ['events-logging', 'Events logging', 'technical', 'ActivityMonitoring'],
+  ['system-configuration', 'System configuration, including default configuration', 'technical', 'PrivacyByDefault'],
+  ['it-security-governance', 'Internal IT and IT security governance and management', 'organisational', 'InformationSecurityPolicy'],
+  ['certification-assurance', 'Certification and assurance of processes and products', 'organisational', 'Certification'],
+  ['data-minimisation', 'Data minimisation', 'organisational', 'PrivacyByDesign'],
+  ['data-quality', 'Data quality', 'organisational', 'DataQualityManagement'],
+  ['limited-retention', 'Limited data retention', 'organisational', 'DataStoragePolicy'],
+  ['accountability', 'Accountability', 'organisational', 'ComplianceMonitoring'],
+  ['portability-erasure', 'Data portability and erasure', 'organisational', 'DataErasurePolicy'],
+];
+
 /** @type {ReadonlyArray<import('./measures-core.mjs').MeasureRecord>} */
-export const DEFAULT_MEASURES = freezeRecords([
-  {
-    id: 'pseudonymisation-encryption',
-    label: 'Pseudonymisation and encryption',
-    nature: 'technical',
+export const DEFAULT_MEASURES = freezeRecords(
+  HEADINGS.map(([id, label, nature, term, gdpr], index) => ({
+    id,
+    label,
+    nature,
     frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '1' },
-      { framework: 'eu-gdpr', ref: 'Art. 32(1)(a)' },
+      { framework: SCC, ref: String(index + 1) },
+      ...(gdpr ? [{ framework: 'eu-gdpr', ref: gdpr }] : []),
     ],
-    dpv: 'https://w3id.org/dpv#Encryption',
-  },
-  {
-    id: 'confidentiality-integrity-availability-resilience',
-    label: 'Confidentiality, integrity, availability and resilience of systems and services',
-    nature: 'technical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '2' },
-      { framework: 'eu-gdpr', ref: 'Art. 32(1)(b)' },
-    ],
-    dpv: 'https://w3id.org/dpv#SecurityMethod',
-  },
-  {
-    id: 'availability-restoration',
-    label: 'Restoring availability and access after an incident',
-    nature: 'technical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '3' },
-      { framework: 'eu-gdpr', ref: 'Art. 32(1)(c)' },
-    ],
-    dpv: 'https://w3id.org/dpv#DataBackupProtocols',
-  },
-  {
-    id: 'testing-evaluation',
-    label: 'Regular testing, assessing and evaluating of the measures',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '4' },
-      { framework: 'eu-gdpr', ref: 'Art. 32(1)(d)' },
-    ],
-    dpv: 'https://w3id.org/dpv#SecurityAssessment',
-  },
-  {
-    id: 'user-identification-authorisation',
-    label: 'User identification and authorisation',
-    nature: 'technical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '5' },
-    ],
-    dpv: 'https://w3id.org/dpv#AccessControlMethod',
-  },
-  {
-    id: 'transmission-protection',
-    label: 'Protection of data during transmission',
-    nature: 'technical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '6' },
-    ],
-    dpv: 'https://w3id.org/dpv#EncryptionInTransfer',
-  },
-  {
-    id: 'storage-protection',
-    label: 'Protection of data during storage',
-    nature: 'technical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '7' },
-    ],
-    dpv: 'https://w3id.org/dpv#EncryptionAtRest',
-  },
-  {
-    id: 'physical-security',
-    label: 'Physical security of processing locations',
-    nature: 'physical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '8' },
-    ],
-    dpv: 'https://w3id.org/dpv#PhysicalAccessControlMethod',
-  },
-  {
-    id: 'events-logging',
-    label: 'Events logging',
-    nature: 'technical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '9' },
-    ],
-    dpv: 'https://w3id.org/dpv#ActivityMonitoring',
-  },
-  {
-    id: 'system-configuration',
-    label: 'System configuration, including default configuration',
-    nature: 'technical',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '10' },
-    ],
-    dpv: 'https://w3id.org/dpv#PrivacyByDefault',
-  },
-  {
-    id: 'it-security-governance',
-    label: 'Internal IT and IT security governance and management',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '11' },
-    ],
-    dpv: 'https://w3id.org/dpv#InformationSecurityPolicy',
-  },
-  {
-    id: 'certification-assurance',
-    label: 'Certification and assurance of processes and products',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '12' },
-    ],
-    dpv: 'https://w3id.org/dpv#Certification',
-  },
-  {
-    id: 'data-minimisation',
-    label: 'Data minimisation',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '13' },
-    ],
-    dpv: 'https://w3id.org/dpv#PrivacyByDesign',
-  },
-  {
-    id: 'data-quality',
-    label: 'Data quality',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '14' },
-    ],
-    dpv: 'https://w3id.org/dpv#DataQualityManagement',
-  },
-  {
-    id: 'limited-retention',
-    label: 'Limited data retention',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '15' },
-    ],
-    dpv: 'https://w3id.org/dpv#DataStoragePolicy',
-  },
-  {
-    id: 'accountability',
-    label: 'Accountability',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '16' },
-    ],
-    dpv: 'https://w3id.org/dpv#ComplianceMonitoring',
-  },
-  {
-    id: 'portability-erasure',
-    label: 'Data portability and erasure',
-    nature: 'organisational',
-    frameworks: [
-      { framework: 'eu-scc-2021-914-annex-ii', ref: '17' },
-    ],
-    dpv: 'https://w3id.org/dpv#DataErasurePolicy',
-  },
-]);
+    dpv: `${DPV}${term}`,
+  })),
+);

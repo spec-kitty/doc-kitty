@@ -1,22 +1,13 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { exportOkfBundle } from '../lib/okf-export/core.mjs';
 import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
+import { readTree } from './helpers/read-tree.js';
 
 // The `## Measures` relation section, read from `classified-as` edges (ADR-0080, FR-009).
 const FIX = path.join(import.meta.dirname, 'fixtures', 'okf-export-measures');
 const graph = JSON.parse(readFileSync(path.join(FIX, 'graph.json'), 'utf8'));
-
-function readTree(root: string, rel = ''): Map<string, string> {
-  const out = new Map<string, string>();
-  for (const e of readdirSync(path.join(root, rel), { withFileTypes: true })) {
-    const next = path.posix.join(rel, e.name);
-    if (e.isDirectory()) readTree(root, next).forEach((v, k) => out.set(k, v));
-    else out.set(next, readFileSync(path.join(root, next), 'utf8'));
-  }
-  return out;
-}
 
 const sources = readTree(path.join(FIX, 'docs'));
 const run = () => exportOkfBundle(graph, sources) as Map<string, string>;
