@@ -87,8 +87,9 @@ flowchart LR
 ## Author-set edge colours
 
 This diagram sets its edge colour in an init directive, as one consumer diagram
-does, and one edge sets its own colour. A dark edge colour vanishes on the dark
-page, and a pale one on the light page. Each edge keeps the author's colour
+does, and two edges set their own colour, one pale and one mid-grey. A dark edge
+colour vanishes on the dark page, a pale one on the light page, and a mid-grey
+one fades on whichever surface is closest to it in brightness. Each edge keeps the author's colour
 where it is readable, and takes the theme's edge colour where it is not.
 
 ```mermaid
@@ -99,7 +100,9 @@ flowchart LR
   producer[Producer] --> queue[Queue]
   queue --> reader[Reader]
   reader --> store[Store]
+  store -.-> producer
   linkStyle 2 stroke:#f5f5f5,stroke-width:2px
+  linkStyle 3 stroke:#949494,stroke-width:2px
 ```
 
 ## ArchiMate view
