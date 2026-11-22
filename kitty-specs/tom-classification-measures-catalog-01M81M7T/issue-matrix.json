@@ -24,6 +24,18 @@
       "verdict": "not-applicable",
       "wp": null
     },
+    "#375": {
+      "evidence_ref": "Context only: the merged research landing that deferred the glossary terms to ADR-0080 acceptance; WP01 adds them",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "EU DPA compatibility research landing",
+      "verdict": "not-applicable",
+      "wp": null
+    },
     "#400": {
       "evidence_ref": "<auto-classified: no action required>",
       "fr": null,
