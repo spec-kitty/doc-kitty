@@ -100,7 +100,8 @@
       "notes": [
         "Classifier: 76/76 conformance cases, full rule coverage; case floor is 70 (file holds 76, prompt guessed 80)",
         "Cycle 2: fold B1 (folded step-1/2 run in step 4)",
-        "Cycle 2: folded step-1/2 precedence in step 4 (matches PackFileKind.ignored/classifyFolded); exact case count"
+        "Cycle 2: folded step-1/2 precedence in step 4 (matches PackFileKind.ignored/classifyFolded); exact case count",
+        "Review cycle 2 passed (claude::reviewer-renata). Code head 437ca3f (range 5276683..437ca3f). B1 fixed: steps 1-2 are one precedence(path, folded) function, and step 4 skips ignored only when the folded run maps or retires, as in PackFileKind.classifyFolded. Java-port differential harness (the port passes 76/76 vendored cases) over 18,495 generated paths: 0 divergences (276 in cycle 1). Red 27eab5a: the folded-exclusion test fails on the cycle-1 classify.mjs. The case count now equals the raw '- {path:' count (non-blocking note done). Classify tests 85/85; fast vitest 194 files, 4134 tests, green; lint and typecheck clean. Checklist: all 8 PASS."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
