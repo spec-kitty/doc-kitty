@@ -122,7 +122,7 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -135,6 +135,7 @@
         "readPack + PackModel; 25 tests red-first; 19/19 open-packs packs verified"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/packs-reader-producer-registry-01M81KGE-coord/kitty-specs/packs-reader-producer-registry-01M81KGE/tasks/WP04-pack-reader/review-cycle-1.md",
         "reference": "review-cycle://packs-reader-producer-registry-01M81KGE/WP04-pack-reader/review-cycle-1.md",
@@ -142,16 +143,16 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 17531,
-      "shell_pid_created_at": "1795355140.43",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done",
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done"
+        "T013": "planned",
+        "T014": "planned",
+        "T015": "planned",
+        "T016": "planned",
+        "T017": "planned",
+        "T018": "planned",
+        "T019": "planned"
       }
     },
     "WP05": {
