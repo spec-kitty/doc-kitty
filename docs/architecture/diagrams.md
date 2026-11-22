@@ -157,9 +157,10 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
     Arial's widths. A label fits its box whatever font the site sets. A reader
     device with none of these fonts falls back to its own sans font, which can be
     wider.
-  - *Author font.* An author font in an `%%{init}%%` directive does not reach the
-    labels. That choice is pending an operator decision. The rule lives in one
-    rehype pass (`pinDiagramLabelFont`), so it can change.
+  - *Author font.* Labels always use this stack. An author font in an
+    `%%{init}%%` directive is not applied to labels: a fit the toolkit can
+    guarantee wins over the author's choice. Author fonts are tracked in
+    [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
   - *Author fills.* A fill the author sets does not follow the theme. A label on
     an opaque author fill is black or white, whichever contrasts more with it.
   - *See-through fills.* The page shows through, so the label gets black or white

@@ -16,4 +16,5 @@ section: Fixed
   font, which is wider than the font its label boxes were measured in, so long
   labels were clipped. Now every build-rendered Mermaid label is measured and
   drawn in one Arial-metric font (Arial, Helvetica, Liberation Sans or Arimo).
-  An author font in an `%%{init}%%` directive no longer changes the label font.
+  An author font in an `%%{init}%%` directive is not applied to labels; author
+  fonts are tracked in #412.
