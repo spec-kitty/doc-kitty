@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.spec-kitty.ai/charter/packs/pack-document.schema.json",
+  "title": "Pack document",
+  "description": "The structure of a pack's description (README.md), over the parsed Markdown model: optional frontmatter, an optional H1 (the pack's title), a preamble, and H2 sections in order. Every part is free text; the codec's own rules (no carriage return, no byte order mark, no ambiguous heading) are enforced when the file is read.",
+  "type": "object",
+  "required": ["preamble", "sections"],
+  "additionalProperties": false,
+  "properties": {
+    "frontmatter": { "type": "object" },
+    "title": { "type": "string", "minLength": 1 },
+    "preamble": { "type": "string" },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "content"],
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "content": { "type": "string" }
+        }
+      }
+    }
+  }
+}
