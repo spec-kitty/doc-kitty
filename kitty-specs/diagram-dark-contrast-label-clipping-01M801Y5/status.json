@@ -1,7 +1,7 @@
 {
-  "event_count": 38,
-  "last_event_id": "01M80ZQD62P46B3PPDWGDYA9RT",
-  "materialized_at": "2026-11-22T06:40:02.622542+00:00",
+  "event_count": 43,
+  "last_event_id": "01M811N4SAGV020RFSQFG1K91G",
+  "materialized_at": "2026-11-22T07:13:45.623483+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -63,24 +63,25 @@
       "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 2,
+      "force_count": 3,
       "implementer_of_record": "claude::node-norris",
       "lane": "in_progress",
-      "last_event_id": "01M80ZQD62P46B3PPDWGDYA9RT",
-      "last_transition_at": "2026-11-22T06:40:02.622542+00:00",
+      "last_event_id": "01M811N4SAGV020RFSQFG1K91G",
+      "last_transition_at": "2026-11-22T07:13:45.623483+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green",
         "Cycle 1 fixed in 9840913: translucent fills (rgba/#rrggbbaa alpha x fill-opacity x opacity) get black/white only if >=4.5 over pure black/white, else stay themed; cssEscapeId; see-through fixture node (2.7:1 light on cycle-1 code, now 6.38/6.93). Unit 4302/4302, mcp 181, typecheck, lint, e2e 446 passed (4 env-only, same on main)",
         "Review passed (cycle 2, claude::reviewer-renata). Cycle-1 blocker fixed in 9840913. The effective alpha now multiplies rgba/#rgba/#rrggbbaa alpha by fill-opacity and opacity, for Mermaid and PlantUML. Opaque fills are unchanged. A translucent fill gets black only if black clears 4.5:1 with the fill over pure black, and white only if white clears it over pure white; otherwise the label stays themed. Worst-case reasoning verified: compositing is linear per sRGB channel and luminance rises with each channel, so the blend is darkest over black and lightest over white, the binding cases for black and white text over ANY page, mid-grey and brand colours included. Neither colour safe -> themed. RAN: my own sweep (512 fills x 7 alphas x 48 pages): every pinned colour is >= 4.501:1 over every page. The 3 cycle-1 repros now return themed. PlantUML fill-opacity is honoured. pnpm test src 4302/4302, mcp 181/181; lint and typecheck clean. cssEscapeId addresses the nit. Note on the themed fallback: it is exactly main's behaviour, so it is never worse than main. It is more conservative than cycle 1 in a narrow band (e.g. rgba(230,230,230,.5): cycle 1 pinned black, which passes on the toolkit's near-black dark page; now themed, which fails in dark). That is a deliberate trade for brand-independence; non-blocking, worth a follow-up if a real diagram hits it. Shared file: example/docs/architecture/diagram-contrast-fixture.md is WP01-owned; one see-through node was added here as a recorded out-of-map edit, coordinated with WP01 (already approved). ACCEPTED FROM IMPLEMENTER (no PlantUML server here): Playwright light+dark green, with the see-through node at 6.38/6.93 vs 2.7 on cycle-1 code, plus the half-by-half proof.",
-        "Cycle 3: author edge colours (operator ruling, option a)"
+        "Cycle 3: author edge colours (operator ruling, option a)",
+        "Cycle 3: author edge colours. Red 6fb4c8b (fixture lineColor #0a0721 + linkStyle #f5f5f5; all edges >=3:1 asserted; dark 1.02, light 1.04). Fix 33a1421: per-edge/per-marker id-scoped themed override only in the theme where the author colour is <3:1 vs pure black/white. Unit 4306/4306, mcp 181, typecheck, lint; legibility+diagram e2e 36/36"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP02-font-and-label-contrast/review-cycle-3.md",
-        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP02-font-and-label-contrast/review-cycle-3.md",
-        "reviewer": "claude::node-norris",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP02-font-and-label-contrast/review-cycle-4.md",
+        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP02-font-and-label-contrast/review-cycle-4.md",
+        "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
       "role": "implementer",
