@@ -38,11 +38,11 @@
       "criterion_id": "FR-004",
       "description": "Verify FR-004 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "diagram-legibility.spec.ts overflow assertion green at 1280 and 390 px; red on main code: 3 overflowing labels in the author-font diagram; half-proof: removing pinDiagramLabelFont brings the overflow back",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:46.615349+00:00",
+      "notes": "Toolkit Arial-metric stack always wins (operator ruling B, 2026-11-22; author fonts tracked in #412)"
     },
     {
       "criterion_id": "FR-005",
