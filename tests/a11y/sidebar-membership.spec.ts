@@ -23,6 +23,7 @@ import { BASE, ROUTES, a11yPorts, isLightProject, isPublishedProject } from './r
 const SIDEBAR_DRAFTS = [
   'context/audience/draft-persona',
   'adr/template',
+  'architecture/diagram-contrast-fixture',
   'behaviour/shipping/track-consignment',
   'guides/markua-footnotes-malformed',
 ] as const;

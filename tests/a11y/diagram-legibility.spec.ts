@@ -26,7 +26,12 @@ test.describe('Diagram legibility (#369, #370)', () => {
     test(`labels fit and contrast; themed edges contrast — ${width}px`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width, height: 900 });
       await gotoInMode(page, ROUTES.diagramContrast, modeOf(testInfo.project.name));
-      test.skip((await renderModeOf(page)) === 'client', 'build-render defects; this dist renders diagrams client-side');
+      const renderMode = await renderModeOf(page);
+      // CI builds the example in build mode (build-example sets DK_DIAGRAM_BUILD_RENDER),
+      // so a client-mode dist there is a broken build, not a reason to skip.
+      if (process.env.CI) expect(renderMode, 'CI serves a build-rendered dist').toBe('build');
+      test.skip(renderMode === 'client', 'build-render defects; this dist renders diagrams client-side');
+      await page.locator('figure.dk-diagram .dk-lightbox__trigger').first().waitFor();
       await page.evaluate(() => document.fonts.ready);
 
       const report = await measureLegibility(page);
@@ -34,7 +39,10 @@ test.describe('Diagram legibility (#369, #370)', () => {
 
       // Non-vacuity: the four fixture diagrams, with their labels and edges, were measured.
       expect(report.figures, 'all four fixture diagrams render as build-time SVG').toBe(4);
-      expect(report.labels.length, 'labels were measured').toBeGreaterThanOrEqual(20);
+      // Labels per figure, in page order: long labels 8 (4 nodes, 3 edge labels, 1
+      // subgraph title), author font 6, author colours 4 nodes, ArchiMate 7 (4
+      // elements, 3 link labels). A label that goes missing fails here.
+      expect(report.labelsPerFigure, 'labels measured per figure').toEqual([8, 6, 4, 7]);
       const themed = report.edges.filter((e) => !e.authored);
       // Per figure, in page order: long labels 3, author font 2, author colours 2 (+1
       // linkStyle), ArchiMate 3. A lost edge fails here rather than passing quietly.

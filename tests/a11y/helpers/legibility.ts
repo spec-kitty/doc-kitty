@@ -51,6 +51,8 @@ export interface LegibilityReport {
   figures: number;
   /** Themed edges measured, per figure (in page order). */
   themedEdgesPerFigure: number[];
+  /** Labels measured, per figure (in page order). */
+  labelsPerFigure: number[];
   /** Edges found but not measured, with the reason: a guard against silent loss. */
   skippedEdges: Array<{ figure: number; id: string; reason: string }>;
   /** Labels found but not measured, with the reason. */
@@ -151,12 +153,19 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
         const range = document.createRange();
         range.selectNodeContents(owner);
         const rect = range.getBoundingClientRect();
-        if (rect.width < 1 || rect.height < 1) continue;
+        const labelText = owner.textContent!.trim().slice(0, 60);
+        if (rect.width < 1 || rect.height < 1) {
+          skippedLabels.push({ figure: fi, text: labelText, reason: 'empty text box' });
+          continue;
+        }
         const cs = getComputedStyle(owner);
         const isSvgText = owner instanceof SVGElement;
         const fgText = isSvgText ? cs.fill : cs.color;
         const fg = parse(fgText);
-        if (!fg) continue;
+        if (!fg) {
+          skippedLabels.push({ figure: fi, text: labelText, reason: `unparseable colour '${fgText}'` });
+          continue;
+        }
         // A 5 x 3 grid inside the text box; the backdrop is the most frequent
         // pixel there once the glyphs are hidden.
         const points: Array<[number, number]> = [];
@@ -226,8 +235,11 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
         wholes.push(edge);
       }
       themedEdgesPerFigure.push(themedCount);
-      // Arrowheads and PlantUML arrow polygons would otherwise paint over the sampled backdrop.
+      // Arrowheads and PlantUML arrow polygons would otherwise paint over the sampled
+      // backdrop, and so would the figure's expand button (absolutely positioned at
+      // its top-right corner, over the diagram).
       for (const extra of svg.querySelectorAll('marker, g.link > polygon')) wholes.push(extra);
+      for (const trigger of figure.querySelectorAll('.dk-lightbox__trigger')) wholes.push(trigger);
 
       // Fit: Mermaid HTML labels.
       for (const fo of svg.querySelectorAll('foreignObject')) {
@@ -333,6 +345,7 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
   return {
     figures: collected.figures,
     themedEdgesPerFigure: collected.themedEdgesPerFigure,
+    labelsPerFigure: Array.from({ length: collected.figures }, (_, fi) => labels.filter((l) => l.figure === fi).length),
     skippedEdges: collected.skippedEdges,
     skippedLabels: collected.skippedLabels,
     labels,
