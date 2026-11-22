@@ -107,11 +107,11 @@
     {
       "criterion_id": "FR-011",
       "description": "Verify FR-011 is satisfied",
-      "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "proof_type": "review",
+      "evidence": "WP08 docs (metadata-model, content-graph, consumer-setup, authoring) + WP01 glossary terms; validate:docs, links, markdownlint, Vale clean",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:15.606540+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
