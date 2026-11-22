@@ -1,0 +1,15 @@
+{
+  "commit": "69ec326179246c9a79eca1ba1d424f059f5153e2",
+  "contractPath": "contracts/packs",
+  "files": {
+    "conformance/classifier-cases.yaml": "c8875305387d8a7e191ea3f3478d0e0366da254164a3e21fdfd427bd2ac2ffd7",
+    "file-kinds.yaml": "4c04f16718b86fa509661737488144a418b27fbc54e697d550315584350db548",
+    "schemas/pack-descriptor.schema.json": "15e5260de3ab8202631b9ddefc1266a64419130a2f849fa0f9ded32f6cfbf69f",
+    "schemas/pack-document.schema.json": "41331d15e99f7b7d0e3478f730ed462dcb356391e0b0e8703c8a05955be56321",
+    "schemas/pack-manifest.schema.json": "5166887f8e9360a652195ca3d7d31d8c4f9efe3762779c9cacde476f3a70549a",
+    "schemas/policy.schema.json": "1fe07e201e249236b8a5238f8e0d5af755bdaa9828d827abd8b3eeeb54a7cceb",
+    "schemas/preset.schema.json": "1c9e5e431f26cde5eb252ab09dc7a91fbf1b4ba0c1a024c33b54a3974d73498e"
+  },
+  "source": "https://github.com/spec-kitty/spec-kitty-charter",
+  "tag": "contract-packs-v0.1.0-rc.1"
+}

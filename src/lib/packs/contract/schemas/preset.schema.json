@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.spec-kitty.ai/charter/packs/preset.schema.json",
+  "$defs": {
+    "item": {
+      "additionalProperties": false,
+      "description": "One preset item: the id of an artifact or mission type, optionally marked must-have.",
+      "properties": {
+        "id": {
+          "description": "The artifact's or mission type's id (never a file stem), spelled with the characters a policy.yaml key allows: a letter or digit first, then letters, digits and _ / . -. A URN, a pack-qualified reference or an id with whitespace is not an id.",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_/.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "must_have": {
+          "const": true,
+          "description": "Present only on a must-have item: the item is part of the preset's required set (ADR-0031). There is no false spelling.",
+          "title": "Must Have",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "PresetItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "An activation preset of a Charter Pack (presets/<id>.yaml), in the sanitized shape of ADR-0042.\n\nA preset selects artifacts of any activatable kind, mission types, skills and glossary contexts included (one kind model, IC-20; decision DM-01M6RCY40CQQTHC130RWF43W0D): applying it sets selected.<kind> of the activation document for each kind it lists. Each item may carry the must-have mark; the marked items are the preset's required set (ADR-0031, operator ruling on #195), and a preset with any must-have item is a governing preset. Every activation list holds at least one item: a kind the preset does not select is left out. There is no kind gate: the key activated_kinds is not part of the shape, so a pack whose preset carries it is refused as unreadable (500 pack_unreadable) when the pack is loaded; a 422 refusal when the pack is registered is planned (PR A). Legacy required_<plural> keys are not part of the shape.",
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "description": "The preset shape's version, the string \"1.0\".",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "id": {
+      "description": "The preset's identity; equal to its file stem (presets/<id>.yaml).",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "description": {
+      "description": "What applying the preset puts in force.",
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "activated_directives": {
+      "description": "The directives this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Directives",
+      "type": "array"
+    },
+    "activated_tactics": {
+      "description": "The tactics this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Tactics",
+      "type": "array"
+    },
+    "activated_styleguides": {
+      "description": "The styleguides this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Styleguides",
+      "type": "array"
+    },
+    "activated_toolguides": {
+      "description": "The toolguides this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Toolguides",
+      "type": "array"
+    },
+    "activated_paradigms": {
+      "description": "The paradigms this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Paradigms",
+      "type": "array"
+    },
+    "activated_procedures": {
+      "description": "The procedures this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Procedures",
+      "type": "array"
+    },
+    "activated_agent_profiles": {
+      "description": "The agent profiles this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Agent Profiles",
+      "type": "array"
+    },
+    "activated_anti_patterns": {
+      "description": "The anti patterns this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Anti Patterns",
+      "type": "array"
+    },
+    "activated_glossaries": {
+      "description": "The glossary contexts this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Glossaries",
+      "type": "array"
+    },
+    "activated_skills": {
+      "description": "The skills this preset activates, in authored order. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Skills",
+      "type": "array"
+    },
+    "activated_mission_types": {
+      "description": "The mission types this preset activates, in authored order: a plain member list, applied as selected.mission_type. Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Mission Types",
+      "type": "array"
+    },
+    "activated_step_enhancements": {
+      "description": "The step enhancements this preset activates, in authored order: a plain member list, applied as selected.step_enhancement. Their prompt fragments have no second activation gate (ADR-0066 decision 4). Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Step Enhancements",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "description"
+  ],
+  "title": "Preset",
+  "type": "object"
+}
