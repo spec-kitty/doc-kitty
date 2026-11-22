@@ -108,6 +108,18 @@
       "verdict": "deferred-with-followup",
       "wp": null
     },
+    "#367": {
+      "evidence_ref": "Context: parallel PR/issue cited for coordination only; no work owed by this Mission",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": null
+    },
     "#401": {
       "evidence_ref": "<link or commit>",
       "fr": null,
