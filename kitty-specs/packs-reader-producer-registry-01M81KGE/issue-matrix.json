@@ -132,6 +132,18 @@
       "verdict": "unknown",
       "wp": null
     },
+    "#405": {
+      "evidence_ref": "Context: parallel PR/issue cited for coordination only; no work owed by this Mission",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": null
+    },
     "#559": {
       "evidence_ref": "Context: spec-kitty-charter#559 published the conformance cases this Mission vendors; no work owed here",
       "fr": null,
