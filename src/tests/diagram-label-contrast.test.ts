@@ -233,6 +233,20 @@ describe('diagramLabelContrast — PlantUML (FR-001)', () => {
     }
   });
 
+  // Real PlantUML 1.2026.9 output (server SVG, node-text sentinel already rewritten).
+  const ACTOR = "<g class=\"entity\" data-qualified-name=\"Bob\" id=\"ent0001\" data-source-line=\"2\"><ellipse cx=\"19.528\" cy=\"14\" rx=\"8\" ry=\"8\" fill=\"#FFC0CB\" style=\"stroke:#181818;stroke-width:0.5;\"/><path d=\"M19.528,22 L19.528,49 M6.528,30 L32.528,30 M19.528,49 L6.528,64 M19.528,49 L32.528,64\" style=\"stroke:#181818;stroke-width:0.5;\" fill=\"none\"/><text x=\"6\" y=\"78.495\" fill=\"var(--dk-diagram-node-text)\" font-size=\"14\" textLength=\"27.057\">Bob</text></g>";
+  const USECASE = "<g class=\"entity\" data-qualified-name=\"UC\" id=\"ent0002\" data-source-line=\"3\"><ellipse cx=\"115.53\" cy=\"43.654\" rx=\"47.77\" ry=\"14.524\" fill=\"#C9FFC9\" style=\"stroke:#181818;stroke-width:0.5;\"/><text x=\"83.873\" y=\"48.302\" fill=\"var(--dk-diagram-node-text)\" font-size=\"14\" textLength=\"63.314\">Book trip</text></g>";
+  const INTERFACE = "<g class=\"entity\" data-qualified-name=\"I\" id=\"ent0003\" data-source-line=\"4\"><ellipse cx=\"19.53\" cy=\"170.8\" rx=\"8\" ry=\"8\" fill=\"#C2F0FF\" style=\"stroke:#181818;stroke-width:0.5;\"/><text x=\"8.456\" y=\"200.795\" fill=\"var(--dk-diagram-node-text)\" font-size=\"14\" textLength=\"22.148\">API</text></g>";
+
+  it('leaves a label drawn outside its shape themed: actor and lollipop interface (squad finding)', () => {
+    expect(fixPlantumlRaw(ACTOR)).toBe(ACTOR);
+    expect(fixPlantumlRaw(INTERFACE)).toBe(INTERFACE);
+  });
+
+  it('pins a label drawn inside an ellipse shape (use case)', () => {
+    expect(fixPlantumlRaw(USECASE)).toBe(USECASE.replace('fill="var(--dk-diagram-node-text)"', 'fill="#000000"'));
+  });
+
   it('reads fill-opacity on the shape and leaves a see-through entity themed', () => {
     const block = entity('#000000').replace('fill="#000000"', 'fill="#000000" fill-opacity="0.3"');
     expect(fixPlantumlRaw(block)).toBe(block);

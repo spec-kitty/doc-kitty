@@ -215,8 +215,38 @@ function fixMermaidSvg(svg: LabelHastNode): void {
 
 /** One PlantUML entity block: `<g class="entity" …>…</g>` with no nested group. */
 const ENTITY_BLOCK = /<g\b[^>]*\bclass="entity"[^>]*>(?:(?!<g\b)[\s\S])*?<\/g>/g;
-const FIRST_SHAPE = /<(?:rect|polygon|path|ellipse|circle)\b[^>]*>/;
-const THEMED_TEXT_FILL = /(<text\b[^>]*?\sfill=")(var\(--dk-diagram-[a-z-]+\))(")/g;
+const FIRST_SHAPE = /<(rect|polygon|path|ellipse|circle)\b[^>]*>/;
+const THEMED_TEXT = /<text\b[^>]*?\sfill="var\(--dk-diagram-[a-z-]+\)"[^>]*>/g;
+
+/** A box in SVG user units: [minX, minY, maxX, maxY]. */
+type Box = [number, number, number, number];
+
+/** The numeric value of attribute `name` in tag `tag`, or NaN. */
+const num = (tag: string, name: string): number => Number(new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1] ?? NaN);
+
+/** The bounding box of a PlantUML shape tag; null when it cannot be read. For a
+ * polygon or path every number pair in its coordinates is taken as a point,
+ * which over-covers arcs a little and never misses the shape. */
+function shapeBox(kind: string, tag: string): Box | null {
+  let box: Box;
+  if (kind === 'rect') {
+    const [x, y, w, h] = ['x', 'y', 'width', 'height'].map((a) => num(tag, a));
+    box = [x, y, x + w, y + h];
+  } else if (kind === 'ellipse' || kind === 'circle') {
+    const [cx, cy] = [num(tag, 'cx'), num(tag, 'cy')];
+    const rx = kind === 'circle' ? num(tag, 'r') : num(tag, 'rx');
+    const ry = kind === 'circle' ? rx : num(tag, 'ry');
+    box = [cx - rx, cy - ry, cx + rx, cy + ry];
+  } else {
+    const coords = new RegExp(`\\s${kind === 'path' ? 'd' : 'points'}="([^"]*)"`).exec(tag)?.[1] ?? '';
+    const n = (coords.match(/-?\d*\.?\d+(?:e-?\d+)?/gi) ?? []).map(Number);
+    const xs = n.filter((_, i) => i % 2 === 0);
+    const ys = n.filter((_, i) => i % 2 === 1);
+    if (xs.length === 0 || ys.length === 0) return null;
+    box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+  }
+  return box.every(Number.isFinite) ? box : null;
+}
 
 /** Pin the label colour inside each PlantUML entity whose shape has a literal fill. */
 export function fixPlantumlRaw(html: string): string {
@@ -232,7 +262,16 @@ export function fixPlantumlRaw(html: string): string {
     if (!fill) return block;
     const colour = labelColourFor(fill.rgb, fill.alpha);
     if (colour === null) return block;
-    return block.replace(THEMED_TEXT_FILL, (_m, pre: string, _v: string, post: string) => `${pre}${colour}${post}`);
+    // Only a label drawn ON the shape sits on its fill. An actor's or a lollipop
+    // interface's label is drawn below a small head or circle, on the page, so it
+    // keeps its theme colour: the text's anchor point must lie inside the shape.
+    const box = shapeBox(FIRST_SHAPE.exec(block)?.[1] ?? '', tag);
+    if (!box) return block;
+    return block.replace(THEMED_TEXT, (text) => {
+      const [x, y] = [num(text, 'x'), num(text, 'y')];
+      const inside = x >= box[0] && x <= box[2] && y >= box[1] && y <= box[3];
+      return inside ? text.replace(/\sfill="var\(--dk-diagram-[a-z-]+\)"/, ` fill="${colour}"`) : text;
+    });
   });
 }
 

@@ -516,7 +516,7 @@ function rewriteSentinels(value: string): string {
       out = out.replace(new RegExp(hex, 'gi'), cssVar);
     }
   }
-  if (out.includes('rgb')) {
+  if (/rgb/i.test(out)) {
     for (const [pattern, cssVar] of SENTINEL_RGB_PATTERNS) {
       out = out.replace(pattern, (_match: string, alpha: string | undefined) => {
         const pct = alpha === undefined ? 100 : alphaPercent(alpha);
