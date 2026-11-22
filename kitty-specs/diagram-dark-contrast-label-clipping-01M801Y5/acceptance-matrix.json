@@ -18,11 +18,11 @@
       "criterion_id": "FR-002",
       "description": "Verify FR-002 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "diagram-legibility.spec.ts green on 9840913 (labels min 4.96 light, 5.62 dark); red on main code: pale fill 1.41 dark, deep fill 3.06 light / 3.88 dark; unit: Mermaid author-fill and cluster cases",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:37.817429+00:00",
+      "notes": "Mermaid node/cluster labels on author fills >=4.5:1 both themes; see-through fill stays themed (6.38/6.93)"
     },
     {
       "criterion_id": "FR-003",
