@@ -30,6 +30,7 @@
   "purpose_context": "This mission advances diagram dark contrast label clipping on main so stakeholders can track the work from mission creation onward.",
   "purpose_tldr": "diagram dark contrast label clipping",
   "slug": "diagram-dark-contrast-label-clipping-01M801Y5",
+  "status_phase": "1",
   "target_branch": "main",
   "topology": "lanes_with_coord",
   "topology_decision": {

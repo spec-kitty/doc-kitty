@@ -52,7 +52,11 @@
         "T002": "done",
         "T003": "done",
         "T004": "done"
-      }
+      },
+      "tracker_refs": [
+        "spec-kitty/doc-kitty#369",
+        "spec-kitty/doc-kitty#370"
+      ]
     },
     "WP02": {
       "actor": "claude",
@@ -87,7 +91,11 @@
         "T007": "done",
         "T008": "done",
         "T009": "done"
-      }
+      },
+      "tracker_refs": [
+        "spec-kitty/doc-kitty#369",
+        "spec-kitty/doc-kitty#370"
+      ]
     },
     "WP03": {
       "actor": "Claude",
@@ -118,7 +126,11 @@
         "T010": "done",
         "T011": "done",
         "T012": "done"
-      }
+      },
+      "tracker_refs": [
+        "spec-kitty/doc-kitty#369",
+        "spec-kitty/doc-kitty#370"
+      ]
     }
   }
 }
