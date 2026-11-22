@@ -480,7 +480,8 @@ generated:
 to OKF's `generated`: a hash of the page content without the stamp. `by` and `at`
 only move when the hash does, so regeneration over unchanged input is byte-stable,
 also across a toolkit release (#398). `by` therefore names the toolkit version
-that last changed the page's content, not the version that last ran. A build
+that last changed the hashed content, not the version that last ran. A Gherkin
+feature page hashes its `.feature` source, so a renderer-only change keeps `by`. A build
 never rewrites a committed generated page because of a version bump alone.
 
 Two outputs read a stamp differently (#226). RSS dates an item from `updated`,
