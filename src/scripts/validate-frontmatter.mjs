@@ -130,7 +130,7 @@ export const DESCRIPTION_SOFT_MIN = 50;
  * one. Today's producers:
  *   - Gherkin (`doc-kitty-gherkin/…`): a whole section, configurable
  *     (`gherkin.section`). This gate does not evaluate the site config, so the
- *     scope is any one top-level section unless `scopes` names the resolved
+ *     scope is any one top-level section unless `producerScopes` names the resolved
  *     one. A root page is never in it. The unversioned pre-0.3 stamp is retired
  *     (#210) and fails {@link validate}.
  *   - glossary: a `kind: Glossary`/`kind: Hub` page under the top-level
@@ -141,12 +141,12 @@ export const DESCRIPTION_SOFT_MIN = 50;
  *
  * @param {string} relPath POSIX path relative to the docs root.
  * @param {Record<string, unknown>} data Parsed frontmatter.
- * @param {Record<string, import('../lib/producers.mjs').OwnershipScope | undefined>} [scopes]
- *   resolved scopes per producer id, narrowing the registry's defaults.
+ * @param {{ producerScopes?: Record<string, import('../lib/producers.mjs').OwnershipScope | undefined> }} [options]
+ *   `producerScopes`: resolved scopes per producer id, narrowing the registry's defaults.
  * @returns {boolean}
  */
-export function isGeneratedPage(relPath, data, scopes) {
-  return PRODUCER_REGISTRY.ownerOfPage(relPath, data, { scopes }) !== undefined;
+export function isGeneratedPage(relPath, data, options = {}) {
+  return PRODUCER_REGISTRY.ownerOfPage(relPath, data, { scopes: options.producerScopes }) !== undefined;
 }
 
 // Instants and stamps (#177): the same shared parser as `docKittyFields` in
@@ -466,7 +466,7 @@ export function validate(
   // its scope, or the glossary path rule). The `updated` exemption applies only when the page does NOT supply
   // one — a generated feature page whose `@dk:updated=` tag supplied a value is
   // held to the normal `updated` shape check.
-  const isGenerated = isGeneratedPage(relPath, data, producerScopes);
+  const isGenerated = isGeneratedPage(relPath, data, { producerScopes });
   // A retired (pre-0.4.0) stamp is a hard error naming the fix, never a silent
   // loss of the generated-page exemptions (#210).
   const retired = retiredStampProblem(data?.generated);

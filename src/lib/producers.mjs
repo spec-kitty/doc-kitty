@@ -89,11 +89,17 @@ function isVersionedStampOf(by, id) {
   return typeof by === 'string' && by.startsWith(`${id}/`) && by.length > id.length + 1;
 }
 
+/** A single path segment: non-empty, no `/`. @param {unknown} v */
+const isSegment = (v) => typeof v === 'string' && v !== '' && !v.includes('/');
+
+/** @param {unknown} v */
+const isStringList = (v) => Array.isArray(v) && v.every((x) => typeof x === 'string' && x !== '');
+
 /**
  * @param {Producer} entry
  */
 function checkEntry(entry) {
-  const { id, role, scope } = entry;
+  const { id, role, scope, recognition } = entry;
   if (typeof id !== 'string' || id === '') throw new Error('producer registry: a producer needs a non-empty id');
   if (role !== 'ownership' && role !== 'provenance') {
     throw new Error(`producer registry: ${id} has role ${JSON.stringify(role)}; expected ownership or provenance`);
@@ -106,8 +112,22 @@ function checkEntry(entry) {
   if (!SCOPE_TYPES.has(scope.type)) {
     throw new Error(`producer registry: ${id} has unknown scope type ${JSON.stringify(scope.type)}`);
   }
-  if (scope.type === 'directories' && (typeof scope.section !== 'string' || !Array.isArray(scope.dirs) || scope.dirs.length === 0)) {
-    throw new Error(`producer registry: ${id} needs a section and non-empty dirs for a directories scope`);
+  if (recognition !== undefined && recognition !== 'stamp-and-scope' && recognition !== 'scope') {
+    throw new Error(`producer registry: ${id} has recognition ${JSON.stringify(recognition)}; expected stamp-and-scope or scope`);
+  }
+  if ((scope.type === 'directories' || scope.section !== undefined) && !isSegment(scope.section)) {
+    throw new Error(`producer registry: ${id} needs its scope's section to be one path segment`);
+  }
+  if (scope.type === 'directories' && !(isStringList(scope.dirs) && scope.dirs.length > 0 && scope.dirs.every(isSegment))) {
+    throw new Error(`producer registry: ${id} needs a non-empty dirs list of path segments for a directories scope`);
+  }
+  if (scope.kinds !== undefined && !isStringList(scope.kinds)) {
+    throw new Error(`producer registry: ${id} needs its scope's kinds to be a list of strings`);
+  }
+  // A producer recognised by its scope alone, over every section, would own every
+  // non-root page of the tree, stamp or no stamp.
+  if (recognition === 'scope' && scope.type === 'section' && scope.section === undefined) {
+    throw new Error(`producer registry: ${id} has recognition 'scope', so its scope must name a section`);
   }
 }
 

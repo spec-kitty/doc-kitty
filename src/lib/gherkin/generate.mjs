@@ -76,7 +76,7 @@ import {
   serializeFrontmatter,
   serializeHubFrontmatter,
 } from './feature-core.mjs';
-import { sourceLink, toPosix } from './load.mjs';
+import { sourceLink } from './load.mjs';
 import { DEFAULT_GHERKIN_SECTION } from './options.mjs';
 import { escapeHeading, escapeInline, renderFeatureBody } from './render.mjs';
 import { GHERKIN_LOG_PREFIX as PREFIX } from './text.mjs';
