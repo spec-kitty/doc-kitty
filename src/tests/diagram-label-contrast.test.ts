@@ -2,7 +2,9 @@
 // the pinned label font (#370). The browser check (tests/a11y/diagram-legibility.spec.ts)
 // proves the outcome on a real build; these pin each rule on its own.
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import diagramLabelContrast, {
+  EDGE_SURFACES,
   edgeThemesToOverride,
   fixPlantumlRaw,
   labelColourFor,
@@ -224,11 +226,65 @@ describe('diagramLabelContrast — Mermaid', () => {
 });
 
 describe('author edge colours (#369 item 1, cycle 3)', () => {
-  it('flags a colour only in the theme where it is under 3:1 against the worst page', () => {
+  it('flags a colour only in the theme where it falls under 3:1 against some surface', () => {
     expect(edgeThemesToOverride('#0a0721')).toEqual(['dark']); // the consumer's lineColor
     expect(edgeThemesToOverride('#f5f5f5')).toEqual(['light']);
-    expect(edgeThemesToOverride('#d9731a')).toEqual([]); // readable on both
     expect(edgeThemesToOverride('var(--dk-diagram-edge)')).toEqual([]); // themed
+    expect(edgeThemesToOverride('#8fb0f0')).toEqual(['light']); // the dark edge token: fine on dark only
+  });
+
+  it('judges a mid-range colour against the surface nearest it, not black or white (review cycle 4)', () => {
+    // The reviewer's reproductions: each cleared pure black/white but not a real surface.
+    expect(edgeThemesToOverride('#5c5c5c')).toContain('dark'); // 2.68:1 on the dark page
+    expect(edgeThemesToOverride('#606060')).toContain('dark'); // 2.85:1 on the dark page
+    expect(edgeThemesToOverride('#949494')).toContain('light'); // 2.68:1 on the light cluster fill
+    expect(edgeThemesToOverride('#d9731a')).toEqual(['light']); // 2.89:1 on the light cluster fill
+    expect(edgeThemesToOverride('#1168bd')).toEqual([]); // clears 3:1 on every surface of both
+    expect(edgeThemesToOverride('#000000')).toEqual(['dark']);
+    expect(edgeThemesToOverride('#ffffff')).toEqual(['light']);
+  });
+
+  it('never keeps a colour that fails on some surface of the theme', () => {
+    const lum = (hex: string): number => {
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+      const ch = (c: number): number => {
+        const v = c / 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
+    };
+    const ratio = (a: number, b: number): number => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    for (let v = 0; v <= 255; v += 5) {
+      const hex = `#${v.toString(16).padStart(2, '0').repeat(3)}`;
+      const themes = edgeThemesToOverride(hex);
+      for (const theme of ['dark', 'light'] as const) {
+        if (themes.includes(theme)) continue;
+        // Kept: it must clear 3:1 on every surface of that theme, and on black or white.
+        const surfaces = [...EDGE_SURFACES[theme], theme === 'dark' ? '#000000' : '#ffffff'];
+        for (const s of surfaces) expect(ratio(lum(hex), lum(s)), `${hex} on ${s}`).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
+  it('covers the default and the bundled brand surfaces', () => {
+    const read = (file: string, token: string): string[] =>
+      [...readFileSync(new URL(file, import.meta.url), 'utf8').matchAll(new RegExp(`${token}:\\s*(#[0-9a-fA-F]{6})`, 'g'))].map((m) => m[1]);
+    const lum = (hex: string): number => {
+      const c = parseLiteralColour(hex)!.rgb.map((x) => {
+        const v = x / 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    const darkHigh = Math.max(...EDGE_SURFACES.dark.map(lum));
+    const lightLow = Math.min(...EDGE_SURFACES.light.map(lum));
+    for (const file of ['../styles/theme.css', '../themes/spec-kitty/tokens.css']) {
+      for (const token of ['--dk-color-bg', '--dk-diagram-cluster-fill']) {
+        const [light, dark] = read(file, token); // light block first, dark block second
+        expect(lum(dark), `${file} dark ${token}`).toBeLessThanOrEqual(darkHigh + 1e-9);
+        expect(lum(light), `${file} light ${token}`).toBeGreaterThanOrEqual(lightLow - 1e-9);
+      }
+    }
   });
 
   /** A Mermaid <svg> with an init lineColor rule, two edges (one linkStyle) and markers. */
@@ -250,26 +306,26 @@ describe('author edge colours (#369 item 1, cycle 3)', () => {
   };
 
   it('overrides a dark init lineColor in dark mode, per edge and per arrowhead, and leaves a readable linkStyle edge alone', () => {
-    const rules = addedRules(edgeSvg('#0a0721', '#d9731a'));
+    const rules = addedRules(edgeSvg('#0a0721', '#1168bd'));
     expect(rules).toContain(":root[data-theme='dark'] #m1-L_a_b_0{stroke:var(--dk-diagram-edge)!important}");
     expect(rules).toContain(":root[data-theme='dark'] #m1_flowchart-v2-pointEnd,:root[data-theme='dark'] #m1_flowchart-v2-pointEnd *{");
-    expect(rules).not.toContain('L_b_c_0'); // #d9731a is readable on both pages
-    expect(rules).not.toContain('pointEnd__d9731a');
+    expect(rules).not.toContain('L_b_c_0'); // #1168bd clears 3:1 on every surface of both themes
+    expect(rules).not.toContain('pointEnd__1168bd');
     expect(rules).not.toContain("data-theme='light'");
   });
 
   it('overrides a pale linkStyle edge and its own arrowhead in light mode only', () => {
-    const rules = addedRules(edgeSvg('#d9731a', '#f5f5f5'));
+    const rules = addedRules(edgeSvg('#1168bd', '#f5f5f5'));
     expect(rules).toContain(":root[data-theme='light'] #m1-L_b_c_0{stroke:var(--dk-diagram-edge)!important}");
     expect(rules).toContain(
       ":root[data-theme='light'] #m1_flowchart-v2-pointEnd__f5f5f5,:root[data-theme='light'] #m1_flowchart-v2-pointEnd__f5f5f5 *{fill:var(--dk-diagram-edge)!important;stroke:var(--dk-diagram-edge)!important}",
     );
     expect(rules).not.toContain("data-theme='dark'");
-    expect(rules).not.toContain('L_a_b_0'); // the readable #d9731a class colour stays
+    expect(rules).not.toContain('L_a_b_0'); // the readable #1168bd class colour stays
   });
 
-  it('adds nothing when every edge is themed', () => {
-    const svg = edgeSvg('var(--dk-diagram-edge)', '#d9731a');
+  it('adds nothing when every edge is themed or readable everywhere', () => {
+    const svg = edgeSvg('var(--dk-diagram-edge)', '#1168bd');
     expect(addedRules(svg)).toBe('');
   });
 });

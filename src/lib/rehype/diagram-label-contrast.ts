@@ -27,9 +27,12 @@
  * an `%%{init}%%` `lineColor` (a class rule for every edge and arrowhead) or a
  * `linkStyle` (one edge, with its own colour-suffixed arrowhead). A dark colour
  * vanishes on the dark page and a pale one on the light page. Each such edge keeps
- * its colour in the theme where it is readable; in a theme where it is under 3:1
- * against the worst page (pure black for dark, pure white for light), an id-scoped
- * rule gives it the themed `--dk-diagram-edge` instead.
+ * its colour in a theme where it clears 3:1 against every surface it can sit on
+ * there; otherwise an id-scoped rule gives it the themed `--dk-diagram-edge` in
+ * that theme. Unlike a black or white label, an edge colour is mid-range, so its
+ * worst backdrop is not black or white but the surface nearest its own luminance:
+ * the check covers the whole range of each theme's surfaces (see
+ * {@link EDGE_SURFACES}).
  *
  * Two shapes reach this pass:
  *   - Mermaid: a hast `<svg>` (inline strategy). `g.node` and `g.cluster` groups.
@@ -222,16 +225,55 @@ export function cssEscapeId(id: string): string {
 /** The WCAG 1.4.11 minimum for an edge (non-text). */
 const EDGE_MIN = 3;
 
-/** The themes in which an edge colour is under {@link EDGE_MIN} against the worst
- * page: pure black stands for every dark page, pure white for every light one. */
+/**
+ * The surfaces an edge can sit on, per theme: the page and a cluster (subgraph) fill,
+ * from the toolkit defaults in `styles/theme.css` (`--dk-color-bg`,
+ * `--dk-diagram-cluster-fill`). Each theme's backdrops are taken as a luminance
+ * range: dark runs from pure black up to its lightest surface, light from its
+ * darkest surface up to pure white. A brand that keeps its surfaces inside those
+ * ranges (the bundled spec-kitty brand does; `diagram-label-contrast.test.ts` checks
+ * both) is covered too; one that lightens a dark surface past it is not.
+ */
+export const EDGE_SURFACES = {
+  dark: ['#131721', '#0e131c'],
+  light: ['#ffffff', '#eef1f6'],
+} as const;
+
+/** The luminance range [low, high] of a theme's backdrops. */
+function surfaceRange(theme: 'dark' | 'light'): [number, number] {
+  const ls = EDGE_SURFACES[theme].map((hex) => luminance(parseLiteralColour(hex)!.rgb));
+  return theme === 'dark' ? [0, Math.max(...ls)] : [Math.min(...ls), 1];
+}
+
+/** The 0–255 grey whose luminance is `l` (the inverse of the sRGB transfer). */
+const greyOf = (l: number): number => {
+  const s = l <= 0.0031308 ? l * 12.92 : 1.055 * l ** (1 / 2.4) - 0.055;
+  return Math.round(Math.min(1, Math.max(0, s)) * 255);
+};
+
+/** WCAG contrast of two luminances. */
+const contrastOf = (a: number, b: number): number => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+/** The themes in which an edge colour falls under {@link EDGE_MIN} against some
+ * backdrop in that theme's surface range. Backdrops are sampled across the range,
+ * ends included, and a translucent stroke is composited over each. Contrast
+ * depends only on luminance, so a grey of each backdrop luminance stands for it. */
 export function edgeThemesToOverride(colour: string): Array<'dark' | 'light'> {
   const c = parseLiteralColour(colour);
   if (!c || c.alpha === 0) return [];
-  // A translucent stroke shows the page through it: judge it as drawn on each page.
-  const l = (backdrop: number): number => luminance(over(c.rgb, c.alpha, backdrop));
   const out: Array<'dark' | 'light'> = [];
-  if (blackOn(l(0)) < EDGE_MIN) out.push('dark');
-  if (whiteOn(l(255)) < EDGE_MIN) out.push('light');
+  for (const theme of ['dark', 'light'] as const) {
+    const [low, high] = surfaceRange(theme);
+    const steps = 64;
+    for (let i = 0; i <= steps; i += 1) {
+      const backdrop = low + ((high - low) * i) / steps;
+      const seen = luminance(over(c.rgb, c.alpha, greyOf(backdrop)));
+      if (contrastOf(seen, backdrop) < EDGE_MIN) {
+        out.push(theme);
+        break;
+      }
+    }
+  }
   return out;
 }
 
