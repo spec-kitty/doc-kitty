@@ -84,6 +84,24 @@ flowchart LR
   linkStyle 2 stroke:#d9731a,stroke-width:2px
 ```
 
+## Author-set edge colours
+
+This diagram sets its edge colour in an init directive, as one consumer diagram
+does, and one edge sets its own colour. A dark edge colour vanishes on the dark
+page, and a pale one on the light page. Each edge keeps the author's colour
+where it is readable, and takes the theme's edge colour where it is not.
+
+```mermaid
+%%{init: {'themeVariables': {'lineColor': '#0a0721'}}}%%
+%% title: Author-set edge colours
+%% description: A producer writes to a queue that a reader drains into a store; the edges carry colours the author set.
+flowchart LR
+  producer[Producer] --> queue[Queue]
+  queue --> reader[Reader]
+  reader --> store[Store]
+  linkStyle 2 stroke:#f5f5f5,stroke-width:2px
+```
+
 ## ArchiMate view
 
 ArchiMate colours each element by its layer: business elements are pale

@@ -51,6 +51,8 @@ export interface LegibilityReport {
   figures: number;
   /** Themed edges measured, per figure (in page order). */
   themedEdgesPerFigure: number[];
+  /** Every edge measured, themed or author-coloured, per figure (in page order). */
+  edgesPerFigure: number[];
   /** Edges found but not measured, with the reason: a guard against silent loss. */
   skippedEdges: Array<{ figure: number; id: string; reason: string }>;
   /** Labels found but not measured, with the reason. */
@@ -333,6 +335,7 @@ export async function measureLegibility(page: Page): Promise<LegibilityReport> {
   return {
     figures: collected.figures,
     themedEdgesPerFigure: collected.themedEdgesPerFigure,
+    edgesPerFigure: Array.from({ length: collected.figures }, (_, fi) => edges.filter((e) => e.figure === fi).length),
     skippedEdges: collected.skippedEdges,
     skippedLabels: collected.skippedLabels,
     labels,
