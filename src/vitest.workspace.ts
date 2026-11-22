@@ -95,6 +95,17 @@ const BUILD_SUITES = [
 
 export default defineWorkspace([
   {
+    // The open-packs corpus (#330): every pack of spec-kitty-open-packs at a
+    // pinned commit, read from DK_OPEN_PACKS_DIR. Its `*.corpus.ts` files are
+    // outside the `fast` include, so `pnpm test` stays offline; CI fetches the
+    // pinned commit and runs `pnpm --filter @spec-kitty/doc-toolkit test:packs-corpus`.
+    test: {
+      name: 'packs-corpus',
+      include: ['tests/**/*.corpus.ts'],
+      environment: 'node',
+    },
+  },
+  {
     test: {
       name: 'fast',
       include: ['tests/**/*.test.ts'],
