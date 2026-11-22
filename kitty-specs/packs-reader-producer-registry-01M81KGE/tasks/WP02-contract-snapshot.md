@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: feat/330-packs-reader-producer-registry
 merge_target_branch: feat/330-packs-reader-producer-registry
 branch_strategy: Planning artifacts for this mission were generated on feat/330-packs-reader-producer-registry. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/330-packs-reader-producer-registry unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-packs-reader-producer-registry-01M81KGE
+base_commit: b344daacaf062b01e2f5d977ac0a1075b38514bf
+created_at: '2026-11-22T12:44:32.645064+00:00'
 subtasks:
 - T006
 - T007
