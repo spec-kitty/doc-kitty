@@ -575,6 +575,52 @@ function assertOkfBundle(distDir) {
   ok('okf-export: dist/okf/ is an OKF v0.2 bundle with no conformance violation');
 }
 
+/**
+ * TOM classification end to end (ADR-0080, #406): the example's organisation page and the
+ * system page that links to it reach the real content graph, the per-page agent record and
+ * the OKF bundle. Reads the built artifacts; nothing here is a synthetic fixture.
+ */
+async function assertTomClassification(distDir, index, builtRelOf) {
+  const { graph } = await loadContentGraph(distDir, index, builtRelOf);
+  const SYSTEM_PAGE = 'architecture/audit-logging';
+  const ORG_PAGE = 'context/incident-handling';
+  const nodes = new Map(graph.nodes.map((node) => [node.id, node]));
+  const edge = (source, rel, target) => graph.edges.find((e) => e.id === `${source}|${rel}|${target}`);
+
+  const logging = nodes.get('catalog:measure:events-logging');
+  if (logging?.kind !== 'catalog' || !/^https:\/\/w3id\.org\/dpv#/.test(logging.url ?? '') || logging.measure?.nature !== 'technical') {
+    fail(`tom-classification: content graph lacks a catalog:measure:events-logging node with a DPV url and nature technical (got ${JSON.stringify(logging)})`);
+  }
+  const systemEdge = edge(SYSTEM_PAGE, 'classified-as', 'catalog:measure:events-logging');
+  if (systemEdge?.scope !== 'system') {
+    fail(`tom-classification: no system-scope classified-as edge ${SYSTEM_PAGE} -> events-logging (got ${JSON.stringify(systemEdge)})`);
+  }
+  const orgEdge = edge(ORG_PAGE, 'classified-as', 'catalog:measure:accountability');
+  if (orgEdge?.scope !== 'organisation' || !orgEdge.note) {
+    fail(`tom-classification: no organisation-scope classified-as edge with a note ${ORG_PAGE} -> accountability (got ${JSON.stringify(orgEdge)})`);
+  }
+  // Linked, not copied (ADR-0080 decision 5): the system page relates to the organisation page
+  // and does not repeat its organisation measures.
+  if (!edge(SYSTEM_PAGE, 'related', ORG_PAGE)) fail(`tom-classification: ${SYSTEM_PAGE} has no related edge to ${ORG_PAGE}`);
+  if (edge(SYSTEM_PAGE, 'classified-as', 'catalog:measure:accountability')) {
+    fail(`tom-classification: ${SYSTEM_PAGE} restates the organisation measure accountability`);
+  }
+
+  const record = JSON.parse(await readFile(path.join(distDir, 'api', 'pages', `${SYSTEM_PAGE}.json`), 'utf8'));
+  const measures = record.tom_classification;
+  if (!Array.isArray(measures) || measures[0]?.measure !== 'events-logging' || measures[0]?.label !== 'Events logging') {
+    fail(`tom-classification: /api/pages/${SYSTEM_PAGE}.json does not list events-logging first (got ${JSON.stringify(measures)})`);
+  }
+  const plain = JSON.parse(await readFile(path.join(distDir, 'api', 'pages', 'architecture', 'overview.json'), 'utf8'));
+  if ('tom_classification' in plain) fail('tom-classification: an unclassified page record carries tom_classification');
+
+  const concept = await readFile(path.join(distDir, 'okf', `${SYSTEM_PAGE}.md`), 'utf8');
+  if (!concept.includes('\n## Measures\n') || !concept.includes('[Events logging](https://w3id.org/dpv#ActivityMonitoring)')) {
+    fail(`tom-classification: okf/${SYSTEM_PAGE}.md has no Measures section listing Events logging`);
+  }
+  ok('tom-classification: classified-as edges (system and organisation scope), the page record and the OKF Measures section come from the real build');
+}
+
 /** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
 async function textFilesUnder(dir) {
   const out = [];
@@ -2485,6 +2531,7 @@ async function main() {
   const builtRelOf = await assertAgentLinksResolve(distDir, index);
   await assertContentGraph(distDir, index, builtRelOf);
   assertOkfBundle(distDir);
+  await assertTomClassification(distDir, index, builtRelOf);
 
   // 4c) /api/bibliography.json — a catalog projection OUTSIDE page gating: valid
   // JSON, { version, count, records[] }, each record carrying id/title/url
