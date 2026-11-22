@@ -24,6 +24,18 @@
       "verdict": "not-applicable",
       "wp": null
     },
+    "#404": {
+      "evidence_ref": "Context only: cited in the range #401-#404 as downstream follow-ups unblocked by this Mission (spec C-003)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "EU DPA epic child: builds on #406",
+      "verdict": "not-applicable",
+      "wp": null
+    },
     "#406": {
       "evidence_ref": "This Mission implements #406 end to end (WP01-WP09); ADR-0080 accepted in WP01",
       "fr": null,
