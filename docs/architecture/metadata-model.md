@@ -232,7 +232,10 @@ build with a message that names the page and the id:
 ```
 
 Draft pages are checked too. The build-free `pnpm validate:catalog` gate runs the
-same check with the same wording, so CI catches a typo without a site build.
+same check with the same wording, so CI catches a typo without a site build. One
+difference: the gate names the page by its path from the repository root
+(`example/docs/security/tls.md`), and the build by its path from the docs root
+(`security/tls.md`).
 
 **Where it shows.** The content graph gains a `classified-as` edge from the page
 to each measure (see [Content graph](./content-graph.md)). The page's

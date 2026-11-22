@@ -19,8 +19,26 @@
  * @module measures-default
  */
 
+/**
+ * Freeze a record list and everything in it, so no caller can change a shared
+ * default record or its framework references.
+ *
+ * @template T
+ * @param {T[]} records
+ * @returns {ReadonlyArray<T>}
+ */
+function freezeRecords(records) {
+  for (const record of records) {
+    const r = /** @type {{ frameworks?: object[] }} */ (record);
+    for (const ref of r.frameworks ?? []) Object.freeze(ref);
+    if (r.frameworks) Object.freeze(r.frameworks);
+    Object.freeze(record);
+  }
+  return Object.freeze(records);
+}
+
 /** @type {ReadonlyArray<import('./measures-core.mjs').MeasureRecord>} */
-export const DEFAULT_MEASURES = Object.freeze([
+export const DEFAULT_MEASURES = freezeRecords([
   {
     id: 'pseudonymisation-encryption',
     label: 'Pseudonymisation and encryption',

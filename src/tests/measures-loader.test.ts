@@ -32,6 +32,12 @@ describe('the shipped default catalog', () => {
     const { DEFAULT_MEASURES } = await import('../lib/measures-default.mjs');
     expect(readMeasuresCatalog(fixture('no-catalog')).records).toEqual(DEFAULT_MEASURES);
     expect(Object.isFrozen(DEFAULT_MEASURES)).toBe(true);
+    // Deep: a caller cannot mutate a shared default record or its framework refs.
+    for (const record of DEFAULT_MEASURES) {
+      expect(Object.isFrozen(record)).toBe(true);
+      expect(Object.isFrozen(record.frameworks)).toBe(true);
+      for (const ref of record.frameworks) expect(Object.isFrozen(ref)).toBe(true);
+    }
   });
 });
 

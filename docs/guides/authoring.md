@@ -14,8 +14,8 @@ related:
   - adr/0051-gherkin-in-any-page
   - adr/0055-gherkin-scenario-results
   - adr/0061-gherkin-authoring-aids
-  - adr/0080-tom-classification-field-and-measures-catalog
   - adr/0062-specification-layout-and-draft-notice
+  - adr/0080-tom-classification-field-and-measures-catalog
   - architecture/gherkin-pages
 ---
 
