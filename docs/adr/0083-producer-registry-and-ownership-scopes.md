@@ -88,9 +88,10 @@ three places again.
 
 - Pack pages, the missions and Ops pages and later generators register once and
   inherit the frontmatter exemption, ownership and pruning rules.
-- The rule that a stamp alone never exempts a page now holds for every producer,
-  not only the glossary.
-- Existing sites see no change: every existing test passes unedited.
+- In the frontmatter gate, the rule that a stamp alone never exempts a page now
+  holds for every producer, not only the glossary.
+- Existing sites see no change, except that a Gherkin-stamped root page is no
+  longer exempt (below). Every existing test passes unedited.
 
 ### Negative
 
@@ -98,6 +99,20 @@ three places again.
   unless the caller passes the configured section. That is narrower than before
   only at the root: a Gherkin-stamped root page used to be exempt from the
   metadata contract and no longer is. Inside the sections it is as wide as before.
+- A `directories` scope needs its directories when the registry is built, but
+  pack directories are known only from site config. The bare-Node frontmatter
+  gate does not read site config, and no caller passes `producerScopes` yet. So
+  until #338 adds that seam, a pack producer can only be registered with a
+  section scope, and in the gate its stamp would be accepted in any one section.
+  #338 must resolve the scopes from site config before the gate runs, through the
+  site-config evaluation ADR-0079 D5 already plans for the CLIs, and pass them as
+  `producerScopes`. Until then ADR-0079 D6's "stamp and scope" holds for packs
+  only where a caller resolves the scope.
+- Three readers outside the gate still recognise a page by an ownership stamp
+  alone, with no scope: the edit link (`sourceLink` in `src/lib/page-formats.ts`),
+  the RSS hub filter (`src/lib/metadata.ts`) and the OKF export (`okfGenerated`).
+  They read `PRODUCERS`, so every registered producer joins them. Routing them
+  through `ownerOfPage` belongs with the uniform generated-section contract (#359).
 
 ### Risks
 

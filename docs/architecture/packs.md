@@ -95,7 +95,7 @@ flowchart TB
   end
   CFG["packs option<br/>(defineDocKittyIntegrations)"]
   INT["packs integration<br/>astro:config:setup"]
-  REG["producer registry<br/>(generator-stamp.mjs)"]
+  REG["producer registry<br/>(producers.mjs)"]
   GATES["gates<br/>frontmatter, links, Gherkin output scan"]
   SURF["agent surfaces<br/>sitemap, search, llms.txt, agent API, OKF export"]
   SNAP --> READ
@@ -120,7 +120,7 @@ flowchart TB
 | Packs integration | Validates the `packs` option eagerly, runs the generator at `astro:config:setup` and watches pack files in dev. Errors carry a `[dk-packs]` prefix. |
 | Pack generator | Plans the page tree, writes changed pages, prunes only its own stale pages, and backs `dockitty-generate-pack-pages --check`. |
 | Producer registry | `src/lib/producers.mjs`: one list of producers, each with a role and an ownership scope ([ADR-0083](../adr/0083-producer-registry-and-ownership-scopes.md)). `PRODUCERS` in `src/lib/generator-stamp.mjs`, `isGeneratedPage` in `src/scripts/validate-frontmatter.mjs` and the Gherkin output scan (`scanProducerOutput` in `src/lib/producer-output.mjs`) read it. |
-| Gates | The frontmatter gate and the links gate run on pack pages as on any page, through the registry. |
+| Gates | The frontmatter gate and the links gate run on pack pages as on any page, through the registry. A pack directory scope takes effect in the gate once the scopes are resolved from site config and passed as `producerScopes` (#338; see [ADR-0083](../adr/0083-producer-registry-and-ownership-scopes.md#negative)). |
 | Agent surfaces | The sitemap, search, `llms.txt`, the agent API and the OKF export list pack pages as ordinary entries. None of them gets packs-specific code. |
 
 Slice 2 also adds a `dockitty-read-pack <dir> --json` CLI that prints the model.
@@ -324,6 +324,10 @@ How the reader treats pack content, beyond ADR-0079 D3 and D4:
 - `PackModel.document` also carries the README's `frontmatter`, an addition to
   D4. The page generator does not copy it into page frontmatter.
 
+Every manifest warning except `manifest-schema-version` leaves the manifest
+unverified. The manifest is shown as fact only when its membership matches both
+ways and every hash matches.
+
 The warning codes, each with the pack-relative `file` where there is one:
 
 | Code | When |
@@ -332,11 +336,17 @@ The warning codes, each with the pack-relative `file` where there is one:
 | `symlink` | A symlink inside the pack; it is not followed |
 | `descriptor-missing`, `descriptor-unreadable`, `descriptor-missing-key`, `descriptor-unknown-key`, `descriptor-schema-version` | `pack.yaml` is absent, does not parse, lacks a required key, has a key the contract does not declare, or has another `schema_version` |
 | `readme-unreadable`, `readme-frontmatter`, `readme-ambiguous-heading` | The README cannot be read, its frontmatter does not parse, or it has a level-1 heading after its start |
-| `policy-missing`, `policy-unreadable` | `mutability_policy` names a file the pack does not hold, or one that does not parse |
+| `descriptor-invalid-value` | A `pack.yaml` value is a mapping or a list where a single value belongs; it is left out |
+| `policy-missing`, `policy-unreadable`, `policy-invalid-value` | `mutability_policy` names a file the pack does not hold, or one that does not parse; a level that is not a single value, or a prototype key, is left out |
 | `manifest-unreadable`, `manifest-missing-file`, `manifest-hash-mismatch`, `manifest-unlisted`, `manifest-unknown-kind`, `manifest-schema-version` | The manifest does not parse, lists a file the pack lacks, has a stale hash, omits a constituent, names a kind the contract does not know, or has another `schema_version` |
+| `manifest-invalid-entry`, `manifest-duplicate-entry`, `manifest-not-a-constituent`, `manifest-kind-mismatch`, `manifest-unreadable-file` | An entry has a field that is not a single value, lists a file twice, lists a file the contract does not classify as a constituent, claims another kind than the contract gives it, or names a file that cannot be read to hash |
 | `contract-unknown-key`, `contract-unknown-content-form` | The snapshot's `file-kinds.yaml` has a key or content form the reader does not know |
 | `charter-lock-mismatch`, `charter-lock-unreadable` | The consumer's pin names another commit, or has no readable `commit` |
 
 Outside doc-kitty, open-packs still runs `gen_pack_reference.py` until slice 3.
 open-packs pins charter `cb9b154`, so its packs read with a
 `charter-lock-mismatch` warning against the vendored `69ec326`, as D2 intends.
+At the pinned open-packs commit, 18 of its 19 manifests verify. `foundation`
+lists a `routing_catalog` constituent, a kind the vendored contract does not
+know, so its manifest reads as unverified and its inventory comes from the
+file walk until doc-kitty vendors a contract with that kind.
