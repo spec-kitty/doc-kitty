@@ -1,0 +1,5 @@
+schema_version: "1.0"
+id: minimal
+description: The smallest selection.
+activated_directives:
+  - id: a

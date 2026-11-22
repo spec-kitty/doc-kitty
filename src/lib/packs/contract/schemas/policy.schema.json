@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.spec-kitty.ai/charter/packs/policy.schema.json",
+  "$defs": {
+    "level": {
+      "description": "A mutability level (ADR-0012 decision 1): open (replace, extend and relate), extendable (extend and relate, never replace) or locked (no write).",
+      "enum": [
+        "open",
+        "extendable",
+        "locked"
+      ],
+      "title": "Mutability Level",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A pack's mutability policy file (policy.yaml at the pack root, ADR-0063), named by the optional mutability_policy key of pack.yaml.\n\nFields\n------\nschema_version : int\n    The shape's version, the integer 1.\nkind_defaults : mapping | absent\n    The default level of each artifact kind the pack sets one for, keyed by the\n    artifact kind token (ADR-0012 decision 4). A kind left out is open.\nartifacts : mapping | absent\n    The level of single artifacts, keyed by bare URN (<kind>:<id>, never\n    pack-qualified). An entry wins over its kind's default.\nrole_pins : mapping | absent\n    The profile each pinned role is fixed to, keyed by role token, in authored\n    order (ADR-0030, ADR-0032 decision 4).\n\nA target's level in one pack is its artifacts entry, else its kind default, else open. Along a composition closure the highest level wins, and a later pack raises a level but never lowers it (ADR-0012 decision 3, ADR-0063 decision 3).\n\nRole pins are declared in role_pins and are tighten-only: two packs of one closure that pin one role to different profiles conflict (role_pin_conflict). Role locks (ADR-0030) stay reserved: the schema is closed, so a roles key, like any key it does not declare, makes the file unreadable, and a pack whose pack.yaml names an unreadable or missing policy file is unreadable.",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "description": "The policy shape's version, the integer 1.",
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "kind_defaults": {
+      "additionalProperties": false,
+      "description": "The default level per artifact kind, keyed by the artifact kind token; a kind left out is open.",
+      "properties": {
+        "directive": {
+          "$ref": "#/$defs/level"
+        },
+        "tactic": {
+          "$ref": "#/$defs/level"
+        },
+        "styleguide": {
+          "$ref": "#/$defs/level"
+        },
+        "toolguide": {
+          "$ref": "#/$defs/level"
+        },
+        "paradigm": {
+          "$ref": "#/$defs/level"
+        },
+        "procedure": {
+          "$ref": "#/$defs/level"
+        },
+        "agent_profile": {
+          "$ref": "#/$defs/level"
+        },
+        "glossary": {
+          "$ref": "#/$defs/level"
+        },
+        "skill": {
+          "$ref": "#/$defs/level"
+        },
+        "anti_pattern": {
+          "$ref": "#/$defs/level"
+        },
+        "asset": {
+          "$ref": "#/$defs/level"
+        },
+        "template": {
+          "$ref": "#/$defs/level"
+        },
+        "mission_type": {
+          "$ref": "#/$defs/level"
+        },
+        "guard": {
+          "$ref": "#/$defs/level"
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/level"
+        },
+        "step_enhancement": {
+          "$ref": "#/$defs/level"
+        }
+      },
+      "title": "Kind Defaults",
+      "type": "object"
+    },
+    "artifacts": {
+      "additionalProperties": false,
+      "description": "The level per artifact, keyed by bare URN (<kind>:<id> of an artifact kind, no pack qualifier; a glossary context is glossary_context:<id>, ADR-0053 decision 13); an entry wins over its kind's default.",
+      "patternProperties": {
+        "^(directive|tactic|styleguide|toolguide|paradigm|procedure|agent_profile|glossary_context|skill|anti_pattern|asset|template|mission_type|guard|lifecycle|step_enhancement):[A-Za-z0-9_/.-]+$": {
+          "$ref": "#/$defs/level"
+        }
+      },
+      "title": "Artifacts",
+      "type": "object"
+    },
+    "role_pins": {
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]*$",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "description": "The profile-id each pinned role is fixed to, keyed by role token, in authored order (ADR-0030, ADR-0032 decision 4). The pinned profile is held in the pack's closure and fits the role, as its role or one of its alt-roles. Never the reserved role 'generic' (ADR-0068).",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+        "maxLength": 64,
+        "not": {
+          "const": "generic"
+        }
+      },
+      "title": "Role Pins",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version"
+  ],
+  "title": "PackMutabilityPolicy",
+  "type": "object"
+}

@@ -1,0 +1,284 @@
+/**
+ * The pack reader (#330, ADR-0079 D3, D4): fixture packs read into the
+ * documented `PackModel` with the expected warnings and `verified` flags. The
+ * reader never throws on pack content.
+ *
+ * The fixture manifests' content hashes were computed with `packContentHash`
+ * (SHA-256 after CRLF and lone CR become LF). `alpha`'s tactic has CRLF line
+ * endings on purpose (`.gitattributes` marks the fixtures `-text`), so its
+ * manifest hash proves the recipe; `delta`'s manifest carries unquoted all-digit
+ * hashes, which must read as strings, not numbers.
+ */
+import { afterEach, describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { packContentHash, readPack } from '../lib/packs/read.mjs';
+import * as packs from '../lib/packs/index.mjs';
+
+const FIXTURES = fileURLToPath(new URL('./fixtures/packs/', import.meta.url));
+const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
+const READ_WITH = '69ec326179246c9a79eca1ba1d424f059f5153e2';
+const fixture = (p: string) => path.join(FIXTURES, p);
+const codes = (m: { problems: { code: string }[] }) => m.problems.map((p) => p.code);
+
+const temps: string[] = [];
+afterEach(() => {
+  for (const d of temps.splice(0)) rmSync(d, { recursive: true, force: true });
+});
+function temp() {
+  const dir = mkdtempSync(path.join(tmpdir(), 'dk-packs-read-'));
+  temps.push(dir);
+  return dir;
+}
+
+describe('a pack with a current manifest (alpha)', () => {
+  const model = readPack(fixture('with-manifest/alpha'), { repoRoot: REPO_ROOT });
+
+  it('reads the identity in ADR-0079 D4 order, the directory being the slug', () => {
+    expect(model.dir).toBe('alpha');
+    expect(model.path).toBe('src/tests/fixtures/packs/with-manifest/alpha');
+    expect(model.identity).toEqual({
+      packId: '01JALPHA0000000000000000AA',
+      name: 'alpha-pack',
+      version: '1.2.0',
+      level: 'org',
+      parent: null,
+      dependsOn: [{ packId: '01JBETA00000000000000000BB', range: '>=1.0,<2.0' }],
+      schemaVersion: '1.0',
+    });
+    expect(Object.keys(model.identity)).toEqual(['packId', 'name', 'version', 'level', 'parent', 'dependsOn', 'schemaVersion']);
+  });
+
+  it('parses the README, keeping its frontmatter apart', () => {
+    expect(model.document?.frontmatter).toEqual({ owner: 'docs-team' });
+    expect(model.document?.title).toBe('Alpha pack');
+    expect(model.document?.preamble).toMatch(/^The alpha pack holds/);
+    expect(model.document?.sections.map((s) => s.title)).toEqual(['Purpose', 'Provenance']);
+  });
+
+  it('reads the presets and the policy named by mutability_policy', () => {
+    expect(model.presets).toEqual([{ name: 'minimal', path: 'presets/minimal.yaml' }]);
+    expect(model.policy).toEqual({ kindDefaults: { directive: 'locked' }, artifacts: { 'tactic:t': 'extendable' } });
+  });
+
+  it('verifies the manifest, the CRLF tactic included, and takes the inventory from it', () => {
+    expect(model.manifest?.verified).toBe(true);
+    expect(model.manifest?.hash).toBe('a'.repeat(64));
+    const tactic = readFileSync(fixture('with-manifest/alpha/tactics/t.tactic.yaml'));
+    expect(tactic.includes(Buffer.from('\r\n'))).toBe(true);
+    const raw = createHash('sha256').update(tactic).digest('hex');
+    const entry = model.manifest?.constituents.find((c) => c.id === 't');
+    expect(entry?.contentHash).toBe(packContentHash(tactic));
+    expect(entry?.contentHash).not.toBe(raw);
+    expect(model.inventory).toEqual({
+      source: 'manifest',
+      kinds: [
+        { kind: 'directive', ids: ['a'] },
+        { kind: 'tactic', ids: ['t'] },
+        { kind: 'template', ids: ['spec.md'] },
+      ],
+    });
+  });
+
+  it('has no problems and records the contract it was read with', () => {
+    expect(model.problems).toEqual([]);
+    expect(model.contract).toEqual({ readWith: READ_WITH });
+  });
+});
+
+describe('a pack with no manifest (beta)', () => {
+  const model = readPack(fixture('no-manifest/beta'));
+
+  it('reads with a file-kinds inventory and no manifest, with no problem', () => {
+    expect(model.manifest).toBeUndefined();
+    expect(model.policy).toBeUndefined();
+    expect(model.inventory).toEqual({ source: 'file-kinds', kinds: [{ kind: 'directive', ids: ['b'] }] });
+    expect(model.document?.title).toBeUndefined();
+    expect(model.identity.dependsOn).toEqual([]);
+    expect(model.problems).toEqual([]);
+  });
+});
+
+describe('a pack with a retired file (gamma)', () => {
+  it('warns on the retired and the unmodelled file only; ignored Markdown is silent', () => {
+    const model = readPack(fixture('retired-file/gamma'));
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([
+      ['unmodelled', 'notes.txt'],
+      ['retired', 'pack.md'],
+    ]);
+    expect(model.problems[1].message).toMatch(/\*\/pack\.md/);
+  });
+});
+
+describe('a pack with a stale manifest (delta)', () => {
+  const model = readPack(fixture('stale-manifest/delta'));
+
+  it('is unverified, falls back to the file-kinds inventory, and names each gap once', () => {
+    expect(model.manifest?.verified).toBe(false);
+    expect(model.inventory).toEqual({ source: 'file-kinds', kinds: [{ kind: 'directive', ids: ['changed', 'kept', 'unlisted'] }] });
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([
+      ['manifest-hash-mismatch', 'directives/changed.directive.yaml'],
+      ['manifest-missing-file', 'directives/gone.directive.yaml'],
+      ['manifest-unlisted', 'directives/unlisted.directive.yaml'],
+    ]);
+  });
+
+  it('reads unquoted all-digit hashes as strings', () => {
+    expect(model.manifest?.constituents.map((c) => c.contentHash)).toEqual([
+      expect.stringMatching(/^[0-9a-f]{64}$/),
+      '0'.repeat(64),
+      '1'.repeat(64),
+    ]);
+  });
+});
+
+describe('the charter lock (ADR-0079 D2)', () => {
+  it('warns on a mismatched commit and records both', () => {
+    const dir = temp();
+    writeFileSync(path.join(dir, 'charter.lock.yaml'), `commit: ${'c'.repeat(40)}\n`);
+    const model = readPack(fixture('no-manifest/beta'), { charterLock: path.join(dir, 'charter.lock.yaml') });
+    expect(model.contract).toEqual({ readWith: READ_WITH, provenAgainst: 'c'.repeat(40) });
+    expect(codes(model)).toEqual(['charter-lock-mismatch']);
+    expect(model.problems[0].message).toContain('c'.repeat(40));
+    expect(model.problems[0].message).toContain(READ_WITH);
+  });
+
+  it('is silent when the commits agree', () => {
+    const dir = temp();
+    writeFileSync(path.join(dir, 'charter.lock.yaml'), `commit: ${READ_WITH}\nrelease_tag: x\n`);
+    const model = readPack(fixture('no-manifest/beta'), { charterLock: path.join(dir, 'charter.lock.yaml') });
+    expect(model.contract.provenAgainst).toBe(READ_WITH);
+    expect(model.problems).toEqual([]);
+  });
+
+  it('warns on a missing lock file or one with no commit', () => {
+    const dir = temp();
+    expect(codes(readPack(fixture('no-manifest/beta'), { charterLock: path.join(dir, 'absent.yaml') }))).toEqual([
+      'charter-lock-unreadable',
+    ]);
+    writeFileSync(path.join(dir, 'empty.yaml'), 'release_tag: x\n');
+    const model = readPack(fixture('no-manifest/beta'), { charterLock: path.join(dir, 'empty.yaml') });
+    expect(codes(model)).toEqual(['charter-lock-unreadable']);
+    expect(model.contract.provenAgainst).toBeUndefined();
+  });
+});
+
+describe('robustness', () => {
+  it('never throws on broken pack content', () => {
+    const root = temp();
+    const dir = path.join(root, 'broken');
+    cpSync(fixture('no-manifest/beta'), dir, { recursive: true });
+    writeFileSync(path.join(dir, 'pack.yaml'), 'pack_id: [unclosed\n');
+    writeFileSync(path.join(dir, 'README.md'), '');
+    writeFileSync(path.join(dir, 'pack-manifest.yaml'), ': : :\n  - [\n');
+    writeFileSync(path.join(dir, 'blob.bin'), Buffer.from([0, 255, 1, 254]));
+    symlinkSync(path.join(dir, 'directives'), path.join(dir, 'linked'));
+    const model = readPack(dir);
+    expect(model.identity).toEqual({ packId: '', name: 'broken', version: '', dependsOn: [] });
+    // Sorted by file (blob.bin, linked, pack-manifest.yaml, pack.yaml), then code.
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([
+      ['unmodelled', 'blob.bin'],
+      ['symlink', 'linked'],
+      ['manifest-unreadable', 'pack-manifest.yaml'],
+      ['descriptor-unreadable', 'pack.yaml'],
+    ]);
+  });
+
+  it('warns on a missing descriptor, missing and unknown keys, and a named but missing policy', () => {
+    const root = temp();
+    const none = path.join(root, 'none');
+    cpSync(fixture('no-manifest/beta'), none, { recursive: true });
+    rmSync(path.join(none, 'pack.yaml'));
+    expect(codes(readPack(none))).toEqual(['descriptor-missing']);
+    const odd = path.join(root, 'odd');
+    cpSync(fixture('no-manifest/beta'), odd, { recursive: true });
+    writeFileSync(path.join(odd, 'pack.yaml'), 'name: odd\nflavour: mint\nmutability_policy: policy.yaml\nschema_version: "2.0"\n');
+    expect(codes(readPack(odd))).toEqual([
+      'descriptor-missing-key',
+      'descriptor-missing-key',
+      'descriptor-schema-version',
+      'descriptor-unknown-key',
+      'policy-missing',
+    ]);
+  });
+
+  it('refuses a manifest entry reached through a symlinked directory, and does not verify', () => {
+    const root = temp();
+    const dir = path.join(root, 'beta');
+    cpSync(fixture('no-manifest/beta'), dir, { recursive: true });
+    const outside = path.join(root, 'outside');
+    cpSync(path.join(dir, 'directives'), outside, { recursive: true });
+    rmSync(path.join(dir, 'directives'), { recursive: true });
+    symlinkSync(outside, path.join(dir, 'directives'));
+    const hash = packContentHash(readFileSync(path.join(outside, 'b.directive.yaml')));
+    writeFileSync(
+      path.join(dir, 'pack-manifest.yaml'),
+      `schema_version: "1.0"\nmanifest_hash: ${'b'.repeat(64)}\nconstituents:\n  - kind: directive\n    id: b\n    path: directives/b.directive.yaml\n    content_hash: ${hash}\n`,
+    );
+    const model = readPack(dir);
+    expect(model.manifest?.verified).toBe(false);
+    expect(model.inventory.source).toBe('file-kinds');
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([
+      ['symlink', 'directives'],
+      ['manifest-missing-file', 'directives/b.directive.yaml'],
+    ]);
+  });
+
+  it('reads no file through a symlink: pack.yaml, the README and the policy', () => {
+    const root = temp();
+    const dir = path.join(root, 'beta');
+    cpSync(fixture('no-manifest/beta'), dir, { recursive: true });
+    const outside = path.join(root, 'outside');
+    mkdirSync(outside);
+    writeFileSync(path.join(outside, 'README.md'), '# Outside\n');
+    writeFileSync(path.join(outside, 'policy.yaml'), 'schema_version: 1\nkind_defaults:\n  directive: locked\n');
+    rmSync(path.join(dir, 'README.md'));
+    symlinkSync(path.join(outside, 'README.md'), path.join(dir, 'README.md'));
+    symlinkSync(path.join(outside, 'policy.yaml'), path.join(dir, 'policy.yaml'));
+    writeFileSync(path.join(dir, 'pack.yaml'), readFileSync(path.join(dir, 'pack.yaml'), 'utf8') + 'mutability_policy: policy.yaml\n');
+    const model = readPack(dir);
+    expect(model.document).toBeUndefined();
+    expect(model.policy).toBeUndefined();
+    expect(codes(model)).toEqual(['symlink', 'policy-missing', 'symlink']);
+  });
+
+  it('never instantiates YAML tags: frontmatter, descriptor and manifest values stay plain data', () => {
+    const root = temp();
+    const dir = path.join(root, 'tagged');
+    cpSync(fixture('no-manifest/beta'), dir, { recursive: true });
+    writeFileSync(
+      path.join(dir, 'README.md'),
+      '---\nblob: !!binary aGVsbG8=\nwhen: !!timestamp 2026-01-01\nset: !!set {a: null}\nmap: !!omap [{a: 1}]\n---\n\n# Tagged\n',
+    );
+    writeFileSync(path.join(dir, 'pack.yaml'), 'pack_id: 01JTAGGED0000000000000000T\nname: tagged\npack_version: 1.10\nschema_version: 1.0\n');
+    const model = readPack(dir);
+    const fm = model.document?.frontmatter as Record<string, unknown>;
+    for (const value of Object.values(fm)) {
+      expect(Buffer.isBuffer(value) || value instanceof Date || value instanceof Set || value instanceof Map).toBe(false);
+    }
+    expect(model.identity.version).toBe('1.10');
+    expect(model.identity.schemaVersion).toBe('1.0');
+    expect(codes(model)).toEqual([]);
+  });
+
+  it('is deterministic: two reads give byte-identical JSON', () => {
+    for (const p of ['with-manifest/alpha', 'no-manifest/beta', 'retired-file/gamma', 'stale-manifest/delta']) {
+      expect(JSON.stringify(readPack(fixture(p)))).toBe(JSON.stringify(readPack(fixture(p))));
+    }
+  });
+
+  it('refuses a path that is not a directory', () => {
+    expect(() => readPack(fixture('with-manifest/alpha/pack.yaml'))).toThrow(/\[dk-packs\]/);
+  });
+});
+
+describe('the public surface', () => {
+  it('re-exports the reader, the parser, the contract loader and the classifier', () => {
+    expect(Object.keys(packs).sort()).toEqual(
+      ['classify', 'createClassifier', 'loadContract', 'packContentHash', 'parsePackDocument', 'readPack', 'verifyContractLock'].sort(),
+    );
+  });
+});
