@@ -97,7 +97,7 @@
       "wp": null
     },
     "#359": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Follow-up: #359 generalises the producer registry into the generated-section contract",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -105,7 +105,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "deferred-with-followup",
       "wp": null
     },
     "#401": {
