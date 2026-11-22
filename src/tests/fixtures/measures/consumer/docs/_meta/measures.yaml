@@ -1,0 +1,11 @@
+# A consumer catalog: it replaces the shipped default wholesale.
+- id: a-5-15-access-control
+  label: Access control
+  nature: organisational
+  frameworks:
+    - { framework: iso-27001-2022-annex-a, ref: "5.15" }
+- id: a-8-24-cryptography
+  label: Use of cryptography
+  nature: technical
+  frameworks:
+    - { framework: iso-27001-2022-annex-a, ref: "8.24" }
