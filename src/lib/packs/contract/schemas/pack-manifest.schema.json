@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.spec-kitty.ai/charter/packs/pack-manifest.schema.json",
+  "$defs": {
+    "constituent": {
+      "additionalProperties": false,
+      "description": "One constituent artifact file of the pack.",
+      "properties": {
+        "kind": {
+          "description": "The artifact kind token.",
+          "enum": [
+            "directive",
+            "tactic",
+            "styleguide",
+            "toolguide",
+            "paradigm",
+            "procedure",
+            "agent_profile",
+            "glossary",
+            "skill",
+            "anti_pattern",
+            "asset",
+            "template",
+            "mission_type",
+            "guard",
+            "lifecycle",
+            "step_enhancement"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "description": "The artifact's id.",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "description": "The file's path relative to the pack directory, /-separated.",
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "content_hash": {
+          "description": "Derived: SHA-256, lower hex, of the file's bytes after CRLF and lone CR are replaced by LF.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "path",
+        "content_hash"
+      ],
+      "title": "Constituent",
+      "type": "object"
+    },
+    "preset": {
+      "additionalProperties": false,
+      "description": "One preset file of the pack.",
+      "properties": {
+        "id": {
+          "description": "The preset's id.",
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "description": "The preset's path relative to the pack directory: presets/<id>.yaml.",
+          "pattern": "^presets/[a-z][a-z0-9]*(-[a-z0-9]+)*\\.yaml$",
+          "title": "Path",
+          "type": "string"
+        },
+        "content_hash": {
+          "description": "Derived: SHA-256, lower hex, of the file's bytes after CRLF and lone CR are replaced by LF.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "content_hash"
+      ],
+      "title": "PresetEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The generated manifest of an authored Charter Pack (pack-manifest.yaml), in the sanitized shape of ADR-0042.\n\nIt lists the pack's constituent artifact files and presets with a content hash each, and a hash over the whole. The hashes are derived fields: a whole-pack write recomputes them from the bytes it writes, the reader does not check them, and the round-trip gate verifies them. Membership is carried as written. The fetched-pack and charter-bundle variants are not this shape.",
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "description": "The manifest shape's version, the string \"1.0\".",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "manifest_hash": {
+      "description": "Derived: SHA-256, lower hex, of the UTF-8 bytes of the RFC 8785 canonical JSON of this manifest without manifest_hash.",
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Manifest Hash",
+      "type": "string"
+    },
+    "constituents": {
+      "description": "The constituent artifact files, in authored order.",
+      "items": {
+        "$ref": "#/$defs/constituent"
+      },
+      "title": "Constituents",
+      "type": "array"
+    },
+    "presets": {
+      "description": "The preset files, in authored order. Absent when the pack has none; never empty.",
+      "items": {
+        "$ref": "#/$defs/preset"
+      },
+      "minItems": 1,
+      "title": "Presets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "manifest_hash",
+    "constituents"
+  ],
+  "title": "PackManifest",
+  "type": "object"
+}

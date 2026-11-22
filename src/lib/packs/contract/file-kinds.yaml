@@ -1,0 +1,348 @@
+# Single data authority for the pack vocabulary (plan, "Vocabulary kept in sync").
+#
+# Read by the Java adapter and by the tests. The schemas in schemas/ are edited in place (R20);
+# the URN alternation, the per-kind URN prefix branches and the fragment kind enum in them
+# repeat the kind lists below, and VocabularyEqualityTest fails when they differ. A kind is
+# added here and in the schemas in the same change.
+#
+# Shape
+#   node_kinds       The service's DRG node kind tokens (NodeKind.java), in NodeKind's order: one per artifact
+#                    kind, plus action and term. A node kind's URN token may differ from its artifact kind's
+#                    token: the glossary kind's node kind is glossary_context (ADR-0053 decision 13). guard and
+#                    lifecycle are node kinds the graph documents do not admit yet, and term is an edge target
+#                    that is never declared (NodeKind.declarableInGraphs, NodeKind.edgeTarget).
+#   artifact_kinds   The artifact kind tokens (ArtifactKind.java). Each has exactly one node kind.
+#   fragment_kinds   Fragment node `kind` plural -> node kind. One name per concept (R14). Only the kinds the
+#                    graph documents may declare (NodeKind.declarableInGraphs).
+#   files            Rules that map a pack file to the schema that validates it, each with an
+#                    optional `content_form`.
+#   exclusions       Rules for files that are not pack content or have no schema, each with a
+#                    reviewable reason.
+#   payloads         Rules for files with no schema (`match`, `kind`, `content_form`, all
+#                    required), consulted only when no `files` or `exclusions` rule matches.
+#   retired          Rules for files of a retired layout (`match`, `reason`, both required;
+#                    ADR-0044 decision 6). A retired file is refused by name in the store's load and
+#                    in validate mode, YAML and Markdown alike, is never a companion, is never read
+#                    as a graph shard, is bucketed `retired:<match>` by the whole-pack gate and is
+#                    digested in the fingerprint tail. Optional; consulted after `files` and
+#                    `exclusions` and before `payloads`, but a `retired` rule beats a `files` rule
+#                    that also matches (an `exclusions` rule still beats it). No file may match a
+#                    `retired` rule and a `files` or `exclusions` rule, but for three known
+#                    overlaps, pinned by RetiredFilesTest: a README directly in the old built-in
+#                    `missions/mission-steps/` is excluded (not held, not refused), never read; a
+#                    `*.mission-type.yaml` directly under the old `mission_types/` is refused by its
+#                    family (`*/mission_types/*.yaml`), not read as a misplaced mission type; and the
+#                    graph fragment of the folded step contracts is a `**/*.graph.yaml` its retired
+#                    rule refuses.
+#   ignored          The last-resort rules (`match`, `reason`, both required; any other key fails the table;
+#                    #451). A file that no `files`, `exclusions`, `retired` or `payloads` rule takes and that no
+#                    kind claims as a companion is excluded by the first `ignored` rule that matches it, with
+#                    that rule's reason: not held, not served, not refused, not digested. The rule matches
+#                    case-insensitively (`NOTES.MD` is Markdown too). It is a fallback and not an exclusion:
+#                    an exclusion glob over `**/*.md` would come before `retired` and `payloads`, and would
+#                    take the Markdown that rules and companions model. An `ignored` rule is never among the
+#                    rules the overlap check compares, and a root file that differs only in letter case from a
+#                    `files` or `retired` rule's file is refused by name before the fallback is consulted.
+#   Any other top-level key fails when the table loads.
+#
+# Content form
+#   `content_form` says how a file is read, held, written and compared: `yaml` (the default, so
+#   the existing `files` rules do not write it), `markdown`, `text` or `bytes`. A file's
+#   extension and an asset's `mime` never choose it. `yaml`, `markdown` and `bytes` are built as
+#   rule forms. `text` exists as a companion form: a skill body is held as a `text` companion of
+#   its skill (#192, ADR-0039), read and written through the skill's binding, and no standalone
+#   `text` kind exists and no `files` rule names it. A rule naming `text` still fails when the table loads,
+#   until a mission that needs a standalone text kind builds and admits it (#432).
+#   The form decides how the store holds a file: a `bytes` file is held by its rule's kind
+#   (`asset-payload` as an asset file, `template` as a template), and a `bytes` rule of any other
+#   kind fails when the table loads. A `files` rule has a schema and is `yaml` or `markdown`; one
+#   naming `bytes` fails when the table loads. A `payloads` rule has no schema and is `bytes`, the
+#   only form the store holds a schema-less file in; one naming another form fails when the table
+#   loads.
+#   A `markdown` rule (`match`, `schema`, `content_form: markdown`) reads its files into the
+#   Markdown model: optional frontmatter, optional H1 `title`, `preamble`, and the H2 `sections`
+#   in order, each `{title, content}`. Files compare by that model and are written canonically.
+#   Its `schema` is a structure schema in schemas/ (Draft 2020-12, standard keywords only, loaded
+#   when the table loads; one that does not load fails the table). It validates the model as the
+#   JSON tree {frontmatter?, title?, preamble, sections: [{title, content}]}, with `frontmatter`
+#   and `title` left out, not null, when the document has none. The toolguide guide rule (#194),
+#   the pack document rule `*/README.md` (#260, #451) and the two mission step rules (#194, ADR-0044)
+#   declare it.
+#
+# Matching
+#   `match` is a glob over the file's path relative to the directory that holds the pack
+#   directories (`<checkout>/packs/`), written with forward slashes. `*` matches within one path
+#   segment, `**/` matches zero or more whole segments, every other character is literal. There
+#   is no trailing `**`: a rule spans nested files with `**/*`.
+#   The sections are consulted in the order `files`, `exclusions`, `retired`, `payloads`, then a
+#   root case variant, then `ignored`; within a section the first matching rule in table order
+#   decides (a payload rule overlaps the others by design, and only the first match counts). A file that no
+#   rule takes is refused as `unmodelled`. conformance/classifier-cases.yaml states the order
+#   exactly, with a case for every rule, and is what another implementation is held to.
+
+node_kinds:
+  - directive
+  - tactic
+  - styleguide
+  - toolguide
+  - paradigm
+  - procedure
+  - agent_profile
+  - glossary_context
+  - term
+  - skill
+  - anti_pattern
+  - asset
+  - template
+  - action
+  - mission_type
+  - guard
+  - lifecycle
+  - step_enhancement
+
+artifact_kinds:
+  - directive
+  - tactic
+  - styleguide
+  - toolguide
+  - paradigm
+  - procedure
+  - agent_profile
+  - glossary
+  - skill
+  - anti_pattern
+  - asset
+  - template
+  - mission_type
+  - guard
+  - lifecycle
+  - step_enhancement
+
+fragment_kinds:
+  directives: directive
+  tactics: tactic
+  styleguides: styleguide
+  toolguides: toolguide
+  paradigms: paradigm
+  procedures: procedure
+  agent_profiles: agent_profile
+  glossaries: glossary_context
+  skills: skill
+  anti_patterns: anti_pattern
+  assets: asset
+  templates: template
+  mission_types: mission_type
+  actions: action
+  step_enhancements: step_enhancement
+
+files:
+  - match: "*/pack.yaml"
+    schema: pack-descriptor
+  - match: "**/*.graph.yaml"
+    schema: graph-shard
+  - match: "*/drg/fragment.yaml"
+    schema: org-fragment
+  - match: "**/*.directive.yaml"
+    schema: directive
+  - match: "**/*.tactic.yaml"
+    schema: tactic
+  - match: "**/*.styleguide.yaml"
+    schema: styleguide
+  - match: "**/*.toolguide.yaml"
+    schema: toolguide
+  - match: "**/*.paradigm.yaml"
+    schema: paradigm
+  - match: "**/*.procedure.yaml"
+    schema: procedure
+  - match: "**/*.agent.yaml"
+    schema: agent-profile
+  - match: "**/*.asset.yaml"
+    schema: asset
+  # Glossary contexts (ADR-0049, ADR-0053 decision 11): one file per context, glossaries/<id>.glossary.yaml; a file
+  # anywhere else is refused by placement, not skipped, so the rule matches the token anywhere.
+  - match: "**/*.glossary.yaml"
+    schema: glossary
+  - match: "**/*.skill.yaml"
+    schema: skill
+  # Pack-level files (#195, ADR-0042): activation presets and the pack manifest, in their sanitized shapes.
+  - match: "*/presets/*.yaml"
+    schema: preset
+  - match: "*/pack-manifest.yaml"
+    schema: pack-manifest
+  # A pack's mutability policy (ADR-0063): policy.yaml at the pack root, the only file the descriptor's mutability_policy
+  # key may name in this version.
+  - match: "*/policy.yaml"
+    schema: policy
+  # A project file. It is not expected inside a pack; the rule exists so that a stray one is
+  # validated, not silently ignored.
+  - match: "**/charter.yaml"
+    schema: charter
+  # A toolguide's guide (#194): the Markdown companion its guide_path names, <id>.guide.md beside
+  # the toolguide. This rule is the guide companion's own (same schema, same form), so the
+  # companion ownership rule admits the toolguide's guide here and refuses any other companion.
+  - match: "**/toolguides/*.guide.md"
+    schema: toolguide-guide
+    content_form: markdown
+  # A pack's description (#260, #451, ADR-0042 decision 8 as amended 2026-11-11): README.md at the pack root, held in the
+  # Pack as its document through the markdown content form. Only the root file is the document; a README deeper in the
+  # pack keeps the exclusions and payload rules that already cover it (`*/missions/*/README.md`, `*/assets/**/README.md`).
+  - match: "*/README.md"
+    schema: pack-document
+    content_form: markdown
+  # Mission types (#194, ADR-0044): one file per type, missions/<id>/<id>.mission-type.yaml; a file anywhere else is
+  # refused by placement, not skipped, so the rule matches the token anywhere.
+  - match: "**/*.mission-type.yaml"
+    schema: mission-type
+  # A mission step's prompt and guidelines (#194, ADR-0044): Markdown companions beside their mission type, named by the
+  # step's derived prompt_path and guidelines_path. Each rule is its companion's own.
+  - match: "*/missions/*/steps/*.prompt.md"
+    schema: mission-step-prompt
+    content_form: markdown
+  - match: "*/missions/*/steps/*.guidelines.md"
+    schema: mission-step-guidelines
+    content_form: markdown
+  # Step enhancements (ADR-0053 decision 22, ADR-0066): additions held beside the mission type they augment. The
+  # target is authored only by an enhances edge in this pack's graph documents. Each prompt_fragments entry names a
+  # Markdown companion beside the enhancement (one companion per entry, any stem matching the pattern, each named by
+  # exactly one entry), with its own structure schema and no frontmatter. An id that differs from the file stem is a
+  # schema violation, as the slot pattern and prompt_fragments: [] are; a repeated slot, a missing, shared or orphan
+  # companion, the edge rules, the directory, a repeated id and an absent prompt_fragments key are
+  # prompt_fragment_invalid.
+  - match: "*/missions/*/enhancements/*.step-enhancement.yaml"
+    schema: step-enhancement
+  - match: "*/missions/*/enhancements/*.prompt-fragment.md"
+    schema: prompt-fragment
+    content_form: markdown
+  # Guards (ADR-0054): one file per guard, guards/<id>.guard.yaml; a file anywhere else is refused by placement, not
+  # skipped, so the rule matches the token anywhere.
+  - match: "**/*.guard.yaml"
+    schema: guard
+  # Lifecycles (ADR-0050 decision 17): one file per lifecycle, lifecycles/<id>.lifecycle.yaml, placed as a guard is.
+  - match: "**/*.lifecycle.yaml"
+    schema: lifecycle
+
+exclusions:
+  - match: "built-in.source.yaml"
+    reason: >-
+      The source declaration of the built-in pack. No model in core at 9554e7b2.
+  - match: "**/templates/plan-field-declaration.yaml"
+    reason: >-
+      A mission template's plan-field declaration. No model in core at 9554e7b2.
+  # Orientation notes beside a mission type and its templates (#194, ADR-0044), as for assets (R4). Named per place,
+  # never by a missions/** glob, so a README under a retired directory is refused with it, not excluded. One place
+  # still overlaps: a README directly in the old built-in missions/mission-steps/ reads as one beside a mission type
+  # named mission-steps, and is excluded, since exclusions come before retired rules; it is neither held nor refused
+  # (RetiredFilesTest pins this).
+  - match: "*/missions/README.md"
+    reason: >-
+      Orientation notes on the pack's mission types. Not pack content.
+  - match: "*/missions/*/README.md"
+    reason: >-
+      Orientation notes beside the mission type they describe. Not pack content.
+  - match: "*/missions/*/templates/**/README.md"
+    reason: >-
+      Orientation notes beside the mission templates they describe. Not pack content and not templates.
+  # Asset and template round trip (#193): the README exclusion and the payloads section below.
+  - match: "*/assets/**/README.md"
+    reason: >-
+      Orientation notes beside the assets they describe. Not pack content and not an asset
+      payload (operator ruling R4, #193).
+  # `*` matches a leading dot within one segment and `**/` zero or more whole segments, so these
+  # cover a hidden file at any depth under a pack's `assets/` or top-level `templates/`. A hidden
+  # file a `files` rule maps (a `.x.asset.yaml`) keeps that kind: `files` rules are consulted first.
+  - match: "*/assets/**/.*"
+    reason: >-
+      Hidden files under assets/ (a file manager's .DS_Store, a .gitkeep, the store's own
+      .pack-write-*.tmp temporary file) are not pack content and not asset payloads (#193).
+  - match: "*/missions/*/.*"
+    reason: >-
+      Hidden files beside a mission type (the store's own .pack-write-*.tmp temporary file, a .DS_Store) are not pack
+      content (#194).
+  - match: "*/missions/*/steps/.*"
+    reason: >-
+      Hidden files beside a mission type's step companions (the store's own .pack-write-*.tmp temporary file) are not
+      pack content (#194).
+  - match: "*/missions/*/templates/**/.*"
+    reason: >-
+      Hidden files under a mission type's templates/ are not pack content and not templates (#194).
+  - match: "*/templates/**/.*"
+    reason: >-
+      Hidden files under templates/ (a file manager's .DS_Store, a .gitkeep, the store's own
+      .pack-write-*.tmp temporary file) are not pack content and not templates (#193).
+
+# Retired families: the mission tier (#194, ADR-0044 decision 6) and, after it, the pack-level files #451 retires
+# (pack.md, PROVENANCE.md), the org charter #431 retires (org-charter.yaml), the glossary_pack shape ADR-0049 replaces and
+# the step contracts slice F folds. Files of these families are refused by
+# name, in the load and in validate mode, so a stale one cannot hide. A root file that differs only in letter case from a root-anchored `files`
+# or `retired` rule's file (Readme.md, Pack.md, PROVENANCE.MD) is refused by name under that rule as well (FR-022). Each rule
+# but the last three is anchored to a layout the pinned packs held (the mission tier at the pack root, as qa and cave-kitty
+# had it, or under missions/, as the built-in pack had it), so a payload elsewhere that merely shares a name (an asset
+# called governance-profile.yaml, a template under templates/mission-steps/) is never retired. The glossary_pack rule
+# and the two rules of the folded step contracts are not anchored: such a file or its graph fragment is refused
+# wherever it stands, an asset of that name included. Removed when the service is incorporated into core and no supported pack holds the old layout.
+retired:
+  - match: "*/mission_types/*.yaml"
+    reason: the mission-type file moved to missions/<id>/<id>.mission-type.yaml (ADR-0044)
+  - match: "*/missions/mission_types/*.yaml"
+    reason: the mission-type file moved to missions/<id>/<id>.mission-type.yaml (ADR-0044)
+  - match: "*/missions/*/mission.yaml"
+    reason: folded into the mission-type file (ADR-0044)
+  - match: "*/missions/*/mission-runtime.yaml"
+    reason: folded into the mission-type file (ADR-0044)
+  - match: "*/missions/*/governance-profile.yaml"
+    reason: folded into the mission-type file (ADR-0044)
+  - match: "*/mission_types/*/governance-profile.yaml"
+    reason: folded into the mission-type file (ADR-0044)
+  - match: "*/missions/mission_types/*/governance-profile.yaml"
+    reason: folded into the mission-type file (ADR-0044)
+  - match: "*/missions/*/expected-artifacts.yaml"
+    reason: folded into the mission-type steps (ADR-0044)
+  - match: "*/missions/*/actions/*/index.yaml"
+    reason: folded into the mission-type steps' references (ADR-0044)
+  - match: "*/mission-steps/**/*"
+    reason: folded into the mission-type steps and their companions (ADR-0044)
+  - match: "*/missions/mission-steps/**/*"
+    reason: folded into the mission-type steps and their companions (ADR-0044)
+  - match: "*/missions/*/command-templates/*"
+    reason: folded into the mission-type steps' prompts (ADR-0044)
+  # The pack document is README.md at the pack root (#451, ADR-0042 decision 8 as amended 2026-11-11). Anchored to the
+  # root: a pack.md or PROVENANCE.md deeper in the pack is not a pack-level file.
+  - match: "*/pack.md"
+    reason: the pack document is README.md at the pack root (#451, ADR-0042 as amended 2026-11-11)
+  - match: "*/PROVENANCE.md"
+    reason: folded into README.md as its provenance section (#451)
+  # The org charter (#431, operator ruling): org enforcement is a governing activation preset with must-have items
+  # plus policy.yaml levels, so the file and the descriptor's active_charter key that named it are gone. Anchored to
+  # the root like the pack-level files above; an asset called org-charter.yaml is a payload, not retired.
+  - match: "*/org-charter.yaml"
+    reason: org enforcement is an activation preset with must-have items plus policy.yaml levels (#431)
+  # The glossary_pack kind (ADR-0049): replaced outright by the glossary kind, with no reader of the old shape. The old
+  # files rule matched the token anywhere, so this rule does too: an old-shape file is refused by name wherever the
+  # old rule read it, never left unclassified and silently ignored.
+  - match: "**/*.glossary-pack.yaml"
+    reason: the glossary_pack shape is replaced by glossaries/<id>.glossary.yaml (ADR-0049)
+  # The mission step contract (slice F, #514): its substeps and delegations moved onto the mission-type steps, so a
+  # step-contract file and the graph fragment that held its nodes are refused by name wherever they stand.
+  - match: "**/*.step-contract.yaml"
+    reason: folded into the mission-type steps' substeps (slice F)
+  - match: "**/mission_step_contract.graph.yaml"
+    reason: folded into the mission-type steps' substeps (slice F)
+
+# Files with no schema (#193, ADR-0040): consulted only when no files or exclusions rule matches.
+payloads:
+  - match: "*/assets/**/*"
+    kind: asset-payload
+    content_form: bytes
+  - match: "*/templates/**/*"
+    kind: template
+    content_form: bytes
+  # A mission type's templates (#194, ADR-0044), deferred here by ADR-0040: template payloads, id <type>/<path>.
+  - match: "*/missions/*/templates/**/*"
+    kind: template
+    content_form: bytes
+
+# The fallback (#451): consulted last, after payloads, and a companion claim wins over it (a skill body, a guide).
+ignored:
+  - match: "**/*.md"
+    reason: >-
+      Author aid: Markdown that no files rule models (#451). Not pack content: not held, not served, not refused.

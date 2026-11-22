@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.spec-kitty.ai/charter/packs/pack-descriptor.schema.json",
+  "additionalProperties": false,
+  "description": "Authored descriptor for a pack's identity and lineage.\n\nFields\n------\npack_id : str\n    Stable, immutable ULID (26 chars). Sole runtime identity for the pack.\n    Minted once at creation; never changed. Mirrors the ``mission_id`` model.\npack_version : str\n    Semantic versioning string, required at every pack level, non-empty.\nparent_pack : str | None\n    ULID of the parent pack, if this pack extends another. Resolved via\n    identity→key adapter feeding ``extends.resolve_extends_order``.\n    ``None`` for root packs. An unresolvable ``parent_pack`` (pre-backfill)\n    fails closed, never silently degrades.\nname : str\n    Human-readable handle. No longer the identity key; used for display, in\n    resolved commands and as the ``<name>::`` qualifier of a cross-pack\n    reference, so it follows the identifier grammar ``^[a-z0-9][a-z0-9_-]*$``.\n    The resolver disambiguates with no silent fallback.\npack_level : PackTier | absent\n    The declared Charter Pack tier (``built-in`` / ``org`` / ``project``),\n    reusing the single :data:`kernel.pack_tiers.PackTier` authority — no new\n    enum. Required when ``depends_on`` is non-empty; otherwise optional (an\n    absent level is the ``pack_level_missing`` diagnostic, and the configured\n    level is used). An unknown value is a schema error.\nrequires_core : str | None\n    An optional PEP 440 version-specifier range (e.g. ``\">=4.0,<5.0\"``)\n    naming the Spec Kitty core versions this pack supports. Validated as a\n    :class:`packaging.specifiers.SpecifierSet`; an unparsable value is a\n    schema error naming the field. ``None`` means no constraint.\npack_drg : str | None\n    An optional pack-relative path to the DRG source. A plain string here;\n    in-pack path resolution is validated by ``charter pack validate``.\nmutability_policy : str | absent\n    An optional pack-relative path to the pack's mutability policy file, at the\n    pack root (ADR-0063). This version admits only ``policy.yaml``; the key is\n    kept so that a later version can widen it. The file is validated by the\n    ``policy`` schema; a named file that is missing or invalid makes the pack\n    unreadable. Absent, every artifact of the pack is open.\nfallback_profile : str | absent\n    The profile-id of the pack's declared fallback agent profile (ADR-0068). A\n    pack of the declaring pack's closure holds it, locked along the closure, with\n    ``role: generic`` and no alt-roles; a breach is a violation of pack.yaml (fallback_profile_unknown,\n    fallback_profile_not_locked, fallback_profile_not_role_neutral).\n\ndepends_on : list | absent\n    The packs this pack depends on, each by descriptor ``pack_id`` and a PEP 440\n    ``range`` the held ``pack_version`` must satisfy (ADR-0048 decision 1,\n    ADR-0053 decision 4). A pack that declares one must also declare\n    ``pack_level``.\noverrides : list | absent\n    The sibling conflicts this pack settles, each by the conflicting artifact\n    and the ``member`` pack meant to win (ADR-0048 decision 9, ADR-0053\n    decision 5). Until #358 any pack of the compose may declare it, not only\n    the distribution pack. Until #357 settling only clears the refusal; the\n    member's version is not yet put in force.\n\nThe schema is closed (ADR-0036 decision 3): a key it does not declare,\na retired field such as ``accompanies_doctrine_pack`` included, makes\n``pack.yaml`` unreadable.",
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "description": "The descriptor shape's version, the string \"1.0\". It declares the depends_on shape and switches on ADR-0066's empty-prompt-slot check: slots in this pack's mission step prompts must hold only whitespace or are refused as prompt_slot_not_empty. An unversioned descriptor is the legacy shape; legacy text between paired slot markers remains admitted and produces a prompt_slot_not_empty warning instead.",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "pack_id": {
+      "$ref": "#/$defs/Ulid",
+      "description": "Stable ULID identity (26 chars, Crockford base32: digits and capital letters without I, L, O and U); immutable sole runtime identity.",
+      "title": "Pack Id"
+    },
+    "pack_version": {
+      "title": "Pack Version",
+      "description": "Semantic version string; required at every pack level, non-null and non-empty.",
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_pack": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Ulid"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Parent pack ULID (26 chars); None for root packs.",
+      "title": "Parent Pack"
+    },
+    "name": {
+      "description": "Human-readable handle; not the runtime identity. It is the qualifier of a cross-pack reference (<name>::<urn>), so it follows the identifier grammar: lower-case letters, digits, '-' and '_', starting with a letter or digit.",
+      "title": "Name",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "maxLength": 64
+    },
+    "pack_level": {
+      "description": "Declared Charter Pack tier: built-in, org or project. Required when depends_on is non-empty; otherwise optional, and when present it is one of the three.",
+      "enum": [
+        "built-in",
+        "org",
+        "project"
+      ],
+      "title": "Pack Level",
+      "type": "string"
+    },
+    "depends_on": {
+      "default": [],
+      "description": "The packs this pack depends on, each by pack id and a PEP 440 version range (ADR-0048 decision 1, ADR-0053 decision 4). The item is closed. A pack that declares a dependency must also declare pack_level.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "pack_id": {
+            "$ref": "#/$defs/Ulid",
+            "description": "The depended-on pack's pack_id (ULID, 26 characters).",
+            "title": "Pack Id"
+          },
+          "range": {
+            "description": "A PEP 440 version-specifier set the held pack version must satisfy.",
+            "minLength": 1,
+            "title": "Range",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack_id",
+          "range"
+        ],
+        "title": "Pack Dependency",
+        "type": "object"
+      },
+      "title": "Depends On",
+      "type": "array",
+      "uniqueItems": true
+    },
+    "overrides": {
+      "default": [],
+      "description": "The sibling conflicts this pack settles, each by the conflicting artifact and the member pack meant to win (ADR-0048 decision 9, ADR-0053 decision 5). Until #358 any pack of the compose may declare an edge, not only the distribution pack. Until #357 settling only clears the refusal; the member's version is not yet put in force. The item is closed; an edge names exactly one winner, and a second edge on the same artifact in one descriptor is refused on read.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact": {
+            "description": "The conflicting artifact's URN, kept opaque here; it must resolve inside the compose.",
+            "minLength": 1,
+            "title": "Artifact",
+            "type": "string"
+          },
+          "member": {
+            "$ref": "#/$defs/Ulid",
+            "description": "The pack_id (ULID, 26 characters) of the member whose version wins; it must be in the compose.",
+            "title": "Member"
+          }
+        },
+        "required": [
+          "artifact",
+          "member"
+        ],
+        "title": "Pack Override",
+        "type": "object"
+      },
+      "title": "Overrides",
+      "type": "array",
+      "uniqueItems": true
+    },
+    "requires_core": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional PEP 440 version-specifier range of supported core versions.",
+      "title": "Requires Core"
+    },
+    "pack_drg": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional pack-relative path to the DRG source.",
+      "title": "Pack Drg"
+    },
+    "mutability_policy": {
+      "const": "policy.yaml",
+      "description": "Optional pack-relative path to the pack's mutability policy file (ADR-0063). Only policy.yaml, at the pack root, is admitted in this version; a named file that is missing or invalid makes the pack unreadable.",
+      "title": "Mutability Policy",
+      "type": "string"
+    },
+    "fallback_profile": {
+      "description": "The profile-id of the agent profile this pack declares as its fallback (ADR-0068): the profile selection returns, marked as a fallback, when no profile fits the role a step asks for. A pack of the pack's closure must hold the profile, locked along the closure, with `role: generic` and no alt-roles. Optional; never null.",
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "title": "Fallback Profile",
+      "type": "string"
+    }
+  },
+  "required": [
+    "pack_id",
+    "name",
+    "pack_version"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "depends_on": {
+            "minItems": 1
+          }
+        },
+        "required": [
+          "depends_on"
+        ]
+      },
+      "then": {
+        "required": [
+          "pack_level"
+        ]
+      }
+    }
+  ],
+  "title": "PackDescriptor",
+  "type": "object",
+  "$defs": {
+    "Ulid": {
+      "description": "A ULID: 26 characters of Crockford base32 (digits and capital letters without I, L, O and U).",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "title": "Ulid",
+      "type": "string"
+    }
+  }
+}
