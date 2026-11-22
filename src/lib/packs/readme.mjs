@@ -61,8 +61,17 @@ function splitFrontmatter(text) {
   return undefined;
 }
 
-/** Trim blank lines around a block, keeping its inner layout. @param {string} s */
-const trimBlock = (s) => s.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '');
+/**
+ * Trim blank lines around a block, keeping its inner layout: whole leading lines
+ * of spaces and tabs, and all trailing whitespace. No regex, so no backtracking.
+ *
+ * @param {string} s
+ */
+function trimBlock(s) {
+  let start = 0;
+  for (let nl = s.indexOf('\n'); nl !== -1 && s.slice(start, nl).trim() === ''; nl = s.indexOf('\n', start)) start = nl + 1;
+  return s.slice(start).trimEnd();
+}
 
 /**
  * @param {string} source the README's text
