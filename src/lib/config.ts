@@ -83,6 +83,7 @@ import {
 import { toPublication } from './integrations/openapi-publish.js';
 import { writePublication } from './openapi/publication.js';
 import { normaliseOpenApiOptions, type OpenApiOptions } from './openapi/options.mjs';
+import { resolvePacksOptions } from './packs/options.mjs';
 import { materialiseOpenApiSpecs, composeSitemapPredicates, unregisterSitemapPredicate } from './openapi/materialise.mjs';
 // The sitemap seams of the plan's parallel-edit registry (`sitemapPredicates`
 // and `composeSitemapPredicates`) live in materialise.mjs, dependency-light, so
@@ -183,6 +184,14 @@ function splitSidebarOption(sidebar: DocKittyOptions['sidebar']): {
       ...(titleIsIndex !== undefined ? { titleIsIndex } : {}),
     },
   };
+}
+
+/** The `packs` option (#330, ADR-0079 D2); see `DocKittyOptions.packs`. */
+export interface DocKittyPacksOption {
+  /** The consumer's charter pin file (YAML with a `commit` key), relative to the site root. */
+  charterLock?: string;
+  /** Another packs-contract snapshot directory with its own `contract.lock.json`. */
+  contract?: string;
 }
 
 export interface DocKittyOptions {
@@ -319,6 +328,23 @@ export interface DocKittyOptions {
    * malformed `.feature` fails `config:setup` with `file:line:col`.
    */
   gherkin?: DocKittyGherkinOption;
+  /**
+   * Kitty packs (#330, ADR-0079 D2). This version accepts the two
+   * contract-pinning keys only; pack pages and their keys (`sources`, `section`,
+   * `include`, `exclude`, …) arrive with #338.
+   *
+   *  - `charterLock`: the consumer's pin file, a YAML file whose `commit` key
+   *    names the charter commit its packs are proven against (open-packs'
+   *    `charter.lock.yaml`). A mismatch with the contract doc-kitty reads with is
+   *    a warning, and both commits are recorded.
+   *  - `contract`: another packs-contract snapshot directory in the vendored
+   *    layout, with its own `contract.lock.json`; its lock is checked at config
+   *    time.
+   *
+   * Relative paths resolve against the site root. Validated eagerly; an error is
+   * build-fatal with a `[dk-packs]` prefix.
+   */
+  packs?: DocKittyPacksOption;
   /**
    * The section-index basename(s) (FR-001/FR-002, D-01). Defaults to
    * `"README"` only — byte-identical to today's behaviour (NFR-003). This is
@@ -582,6 +608,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     exclude,
     gherkin,
     openapi,
+    packs,
     legacyHtmlRedirects,
     metadataBlocks,
     footer,
@@ -623,6 +650,10 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // first name decides `generatedIndexBasename`). Stale values from an earlier
   // config are already gone: see clearInternalEnv() above and ADR-0057.
   setInternalEnv(DK_INDEX_BASENAME_ENV, JSON.stringify(normalizeIndexBasenames(indexBasename)));
+  // Kitty packs (#330): validated EAGERLY, so a bad option or a contract snapshot
+  // whose lock fails throws a `[dk-packs]` Error at config time. Nothing else
+  // reads it yet: pack pages arrive with #338.
+  if (packs !== undefined) resolvePacksOptions(packs, { cwd: process.cwd() });
   // Opt-in OpenAPI reference pages: validated EAGERLY, like gherkin, so a bad option
   // or a route collision fails at config time. `undefined` when absent: every
   // openapi branch below then contributes nothing (byte-identical plugins/sidebar).
