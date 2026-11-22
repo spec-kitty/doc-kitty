@@ -99,7 +99,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Classifier: 76/76 conformance cases, full rule coverage; case floor is 70 (file holds 76, prompt guessed 80)",
-        "Cycle 2: fold B1 (folded step-1/2 run in step 4)"
+        "Cycle 2: fold B1 (folded step-1/2 run in step 4)",
+        "Cycle 2: folded step-1/2 precedence in step 4 (matches PackFileKind.ignored/classifyFolded); exact case count"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
