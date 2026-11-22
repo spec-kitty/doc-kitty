@@ -1,7 +1,7 @@
 {
-  "event_count": 54,
-  "last_event_id": "01M81V0B4DVZ4FP38XEVK0NK5B",
-  "materialized_at": "2026-11-22T14:36:47.117823+00:00",
+  "event_count": 56,
+  "last_event_id": "01M81V1PQF5FB8CGAJS5Z3TWF0",
+  "materialized_at": "2026-11-22T14:37:31.746610+00:00",
   "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
   "mission_type": "",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 1
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -278,9 +278,9 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude::node-norris",
-      "lane": "planned",
-      "last_event_id": "01M81V0B4DVZ4FP38XEVK0NK5B",
-      "last_transition_at": "2026-11-22T14:36:47.117823+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M81V1PQF5FB8CGAJS5Z3TWF0",
+      "last_transition_at": "2026-11-22T14:37:31.746610+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id."
@@ -293,7 +293,7 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
