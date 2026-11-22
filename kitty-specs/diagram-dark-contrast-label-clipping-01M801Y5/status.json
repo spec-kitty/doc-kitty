@@ -100,6 +100,9 @@
       "last_event_id": "01M80YG954E8SG2DDD6RFVYTSQ",
       "last_transition_at": "2026-11-22T06:18:40.676192+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "implementation is on the Mission branch at eeb40b3; lane-planning maps to main; never commit to main (operator ruling via dispatcher, 2026-11-22)"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 195,
