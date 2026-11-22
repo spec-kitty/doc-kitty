@@ -94,7 +94,8 @@
       "last_transition_at": "2026-11-22T13:38:58.000571+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Field shape in schema and gate, case-variant warning; full fast suite 4044 green"
+        "Field shape in schema and gate, case-variant warning; full fast suite 4044 green",
+        "Review passed (claude::reviewer-renata). Reviewed lane-b at 0a16612. The recorded range ff83357..faa0c48 leaves out the fix 0a16612, which I reviewed. tom_classification is the same zod expression in schema.ts docKittyFields and in validate-frontmatter.mjs: a union of a non-empty string or a STRICT { measure: non-empty string, scope?: system|organisation, note?: string }. TomScope and TomClassificationRef are in metadata.ts. The gate warns on a case variant ('unknown key TOM_classification: did you mean tom_classification?'), and the build drops it (tested). Parity answer: the two shapes are separate but identical expressions, kept in step only by SHAPE_PARITY fixtures that run both arms on each file (the repo's existing NFR-005 convention). Nothing compares the definitions directly. Fixtures now cover bad-scope, no-measure, not-list, unknown-key and valid. My own probe found both arms agree on a non-string note, an empty id, null, a number entry and an empty list. The cycle finding (an unknown entry key such as 'scop:' silently defaulting the scope) is fixed by .strict() on both arms, plus a parity fixture and a build-schema case. RAN on 0a16612: WP03 shape+parity files pass; pnpm test src 4290/4290, mcp 181/181; lint and typecheck clean; validate:docs and validate:example pass. Note for later WPs: the measures core (WP02) still tolerates extra entry keys, but every page passes the strict schema first, so this is not reachable through the build."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
