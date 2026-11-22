@@ -167,6 +167,23 @@ const externalReference = z.union([
   z.object({ type: z.string(), id: z.string() }),
 ]);
 
+// A `tom_classification` entry: a bare measure id or `{ measure, scope?, note? }`
+// (ADR-0080). The key is lowercase only; a case variant warns (see `validate()`).
+const tomClassificationRef = z.union([
+  z.string().min(1),
+  z.object({
+    measure: z.string().min(1),
+    scope: z.enum(['system', 'organisation']).optional(),
+    note: z.string().optional(),
+  })
+    // Strict: an unknown key such as `scop` is an error, so a typo never
+    // silently falls back to the default scope.
+    .strict(),
+]);
+
+/** The one spelling of the TOM classification key (ADR-0080 option D: no alias). */
+const TOM_KEY = 'tom_classification';
+
 // Field contract, re-derived from `docKittyFields` in src/lib/schema.ts using
 // the same zod primitives. This gate owns strict PRESENCE (schema.ts's own
 // comment delegates to it), but presence is no longer baked into the zod SHAPE:
@@ -205,6 +222,9 @@ export const frontmatterSchema = z
     authors: z.array(z.string()).optional(),
     related: z.array(relatedRef).optional(),
     external_references: z.array(externalReference).optional(),
+    // TOM classification (ADR-0080), mirrored from `docKittyFields`. Ids are
+    // resolved by validate-catalog.mjs, not here; this gate only shapes entries.
+    tom_classification: z.array(tomClassificationRef).optional(),
     audience: z
       .array(z.object({ profile: z.string(), guidance_text: z.string() }))
       .optional(),
@@ -475,6 +495,14 @@ export function validate(
       if (retired && issue.path.join('.') === 'generated.at') continue;
       const where = issue.path.length ? `\`${issue.path.join('.')}\`: ` : '';
       problems.push(`${where}${issue.message}`);
+    }
+  }
+
+  // A case variant of the TOM key (`TOM_classification`, …) is not the field: the
+  // build drops it like any undeclared key. Say so, as a warning (ADR-0080, C-001).
+  for (const key of Object.keys(data ?? {})) {
+    if (key !== TOM_KEY && key.toLowerCase() === TOM_KEY) {
+      warnings.push(`unknown key \`${key}\`: did you mean \`${TOM_KEY}\`?`);
     }
   }
 

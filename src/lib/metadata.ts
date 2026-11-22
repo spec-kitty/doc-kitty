@@ -122,6 +122,12 @@ export interface SourceRef {
  * convention's required fields (root `README.md` is exempt from `type` and
  * instead carries `okf_version`, but still carries `doc_status` and `kind`).
  */
+/** Where a classified measure applies (ADR-0080); `system` is the default. */
+export type TomScope = 'system' | 'organisation';
+
+/** One `tom_classification` entry: a bare measure id or `{ measure, scope?, note? }` (ADR-0080). */
+export type TomClassificationRef = string | { measure: string; scope?: TomScope; note?: string };
+
 export interface DocKittyFrontmatter {
   title: string;
   description?: string;
@@ -139,6 +145,8 @@ export interface DocKittyFrontmatter {
   audience?: AudienceEntry[];
   /** External references: inline or catalog citations (ADR-0009 / ADR-0018). */
   external_references?: ExternalReference[];
+  /** The measures this page provides evidence for (ADR-0080), resolved against the measures catalog. */
+  tom_classification?: TomClassificationRef[];
   /** Optional MoSCoW prioritisation note. */
   moscow?: MoscowNote;
   tags?: string[];

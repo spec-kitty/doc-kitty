@@ -236,6 +236,25 @@ export const docKittyFields = {
       ]),
     )
     .optional(),
+  // TOM classification (ADR-0080): a bare measure id or `{ measure, scope?, note? }`.
+  // Ids are resolved against the measures catalog by the content-graph and agent
+  // page routes (build-fatal on a miss); this only shapes the entries. Mirrored
+  // in validate-frontmatter.mjs (parity test).
+  tom_classification: z
+    .array(
+      z.union([
+        z.string().min(1),
+        z.object({
+          measure: z.string().min(1),
+          scope: z.enum(['system', 'organisation']).optional(),
+          note: z.string().optional(),
+        })
+          // Strict: an unknown key such as `scop` is an error, so a typo never
+          // silently falls back to the default scope.
+          .strict(),
+      ]),
+    )
+    .optional(),
   audience: z
     .array(z.object({ profile: z.string(), guidance_text: z.string() }))
     .optional(),
