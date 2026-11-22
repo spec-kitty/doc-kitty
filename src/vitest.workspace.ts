@@ -93,7 +93,20 @@ const BUILD_SUITES = [
   '../mcp/tests/perf/lane-served-site.lane.ts',
 ];
 
+// The open-packs corpus (#330): every pack of spec-kitty-open-packs at a pinned
+// commit, read from DK_OPEN_PACKS_DIR. It needs a checkout CI fetches, so it is
+// registered only when DK_PACKS_CORPUS=1, which `test:packs-corpus` sets: a plain
+// `vitest run` (and `pnpm test`) stays offline. CI runs
+// `pnpm --filter @spec-kitty/doc-toolkit test:packs-corpus` after the fetch.
+// The script sets the variable with POSIX shell syntax, as `build:a11y` does; in
+// a Windows shell, set DK_PACKS_CORPUS=1 and DK_OPEN_PACKS_DIR first, then run
+// `vitest run --project packs-corpus` from src/.
+const PACKS_CORPUS = process.env.DK_PACKS_CORPUS === '1'
+  ? [{ test: { name: 'packs-corpus', include: ['tests/**/*.corpus.ts'], environment: 'node' } }]
+  : [];
+
 export default defineWorkspace([
+  ...PACKS_CORPUS,
   {
     test: {
       name: 'fast',

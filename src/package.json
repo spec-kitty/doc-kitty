@@ -57,7 +57,8 @@
     "dockitty-export-okf": "./scripts/export-okf.mjs",
     "dockitty-assert-plantuml-no-remote-include": "./scripts/assert-plantuml-no-remote-include.mjs",
     "dockitty-plantuml-guard": "./scripts/plantuml-guard-bin.mjs",
-    "dockitty-assert-diagrams": "./scripts/assert-diagrams.mjs"
+    "dockitty-assert-diagrams": "./scripts/assert-diagrams.mjs",
+    "dockitty-read-pack": "./scripts/read-pack.mjs"
   },
   "files": [
     "index.ts",
@@ -74,6 +75,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:packs-corpus": "DK_PACKS_CORPUS=1 vitest run --project packs-corpus",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },
