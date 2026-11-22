@@ -1,8 +1,8 @@
 ---
 title: "ADR-0080: A tom_classification field and a measures catalog"
 description: "Pages classify the technical and organisational measures they evidence through an optional tom_classification field, resolved against a measures catalog."
-doc_status: draft
-updated: 2026-11-20T00:00:00Z
+doc_status: active
+updated: 2026-11-22T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -25,9 +25,13 @@ related:
 
 ## Status
 
-Proposed. It follows the research in
+**Accepted** — 2026-11-21, by operator ruling on issue #406. It follows the
+research in
 [EU DPA compatibility](../architecture/research/eu-dpa-compatibility.md). The key
 is lowercase `tom_classification`, with no uppercase alias.
+
+The **⚖ counsel** items below stay open and do not block this decision. If counsel
+objects to the default catalog, the labels change through a bug report.
 
 ## Context
 
