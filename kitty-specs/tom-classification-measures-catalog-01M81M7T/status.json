@@ -250,6 +250,9 @@
       "last_event_id": "01M81T26Z9A51720VBHF9ZVDDD",
       "last_transition_at": "2026-11-22T14:20:19.817811+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Metadata model, content graph, consumer setup (measures catalog reference), authoring guide. Default is lib/measures-default.mjs (no YAML). Documents OKF Measures ordering by measure id. validate:docs, validate:links, markdownlint-cli2 and Vale 3.18.0 clean."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 195,
