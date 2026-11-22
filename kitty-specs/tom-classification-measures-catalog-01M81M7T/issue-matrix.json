@@ -25,16 +25,16 @@
       "wp": null
     },
     "#406": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "This Mission implements #406 end to end (WP01-WP09); ADR-0080 accepted in WP01",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "title": "Accept and implement ADR-0080: tom_classification, measures catalog, classified-as edge",
+      "verdict": "in-mission",
+      "wp": "WP01"
     }
   },
   "schema_version": 1
