@@ -1,7 +1,7 @@
 {
-  "event_count": 42,
-  "last_event_id": "01M81S7BYPQZ1HYC9GTEXAPPDR",
-  "materialized_at": "2026-11-22T14:05:40.182530+00:00",
+  "event_count": 43,
+  "last_event_id": "01M81SV48A3AVE8SHREKR89ZKA",
+  "materialized_at": "2026-11-22T14:16:27.658835+00:00",
   "mission_number": "",
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
   "mission_type": "",
@@ -12,9 +12,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 2
   },
   "work_packages": {
@@ -179,22 +179,22 @@
     },
     "WP06": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
-      "lane": "for_review",
-      "last_event_id": "01M81RMZFZNJQ6G8040VEZKZ8T",
-      "last_transition_at": "2026-11-22T13:55:37.599066+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M81SV48A3AVE8SHREKR89ZKA",
+      "last_transition_at": "2026-11-22T14:16:27.658835+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "tom_classification on /api/pages records via resolvePageMeasures; key only when declared; unknown id throws naming page path and id. Carries the identical out-of-map loader fix ff3a71a (= lane-d 8a6204c): default catalog moved from measures.default.yaml (import.meta.url read breaks once Vite bundles the route) to statically imported measures-default.mjs, same 17 records. Full fast suite 4078/4078."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 290,
-      "shell_pid_created_at": "1795354757.23",
+      "role": "reviewer",
+      "shell_pid": 26010,
+      "shell_pid_created_at": "1795356983.96",
       "subtasks": {
         "T020": "done",
         "T021": "done",
