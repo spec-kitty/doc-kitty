@@ -169,6 +169,9 @@
       "last_event_id": "01M81SNHJWSGTCA8G4F3JMK6E1",
       "last_transition_at": "2026-11-22T14:13:24.700678+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "packs option, dockitty-read-pack, packs-corpus project gated by DK_PACKS_CORPUS, CI step; fast suite 4176 green"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 194,
