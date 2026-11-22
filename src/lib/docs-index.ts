@@ -20,7 +20,7 @@ import type {
   ToolRecord,
 } from './metadata.js';
 import { buildCatalog } from './catalog.js';
-import { resolveClassification, type MeasureRecord } from './measures-core.mjs';
+import { resolveClassification, type MeasureNature, type MeasureRecord } from './measures-core.mjs';
 import {
   resolveCitation,
   resolveProfile,
@@ -144,7 +144,7 @@ export interface GraphNode {
    * A measure node (`id` `catalog:measure:<id>`, ADR-0080): the measure's nature
    * and framework references. Absent on every other node.
    */
-  measure?: { nature: string; frameworks: Array<{ framework: string; ref: string }> };
+  measure?: { nature: MeasureNature; frameworks: Array<{ framework: string; ref: string }> };
   tags?: string[];
   status?: 'draft' | 'stable' | 'deprecated';
   generated?: GraphStamp;

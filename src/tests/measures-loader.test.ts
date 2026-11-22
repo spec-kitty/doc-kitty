@@ -1,4 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { mkdtempSync, mkdirSync, writeFileSync, utimesSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   DEFAULT_MEASURES_SOURCE,
@@ -69,5 +72,50 @@ describe('loadMeasuresCatalog', () => {
     expect(loadMeasuresCatalog(fixture('consumer'))).toBe(first);
     clearMeasuresCatalogCache();
     expect(loadMeasuresCatalog(fixture('consumer'))).not.toBe(first);
+  });
+});
+
+// A docs root in a temp dir with the given _meta/measures.yaml text.
+function rootWith(text: string): string {
+  const root = mkdtempSync(path.join(tmpdir(), 'dk-measures-'));
+  mkdirSync(path.join(root, '_meta'));
+  writeFileSync(path.join(root, '_meta', 'measures.yaml'), text);
+  return root;
+}
+
+const RECORD = '- id: a-b\n  label: X\n  nature: technical\n  frameworks: [{ framework: f, ref: "1" }]\n';
+
+describe('consumer catalog parsing', () => {
+  it('accepts a file that opens with the YAML document marker', () => {
+    const { records, problems } = readMeasuresCatalog(rootWith(`---\n${RECORD}`));
+    expect(problems).toEqual([]);
+    expect(records.map((r) => r.id)).toEqual(['a-b']);
+  });
+
+  it('rejects a second YAML document instead of dropping its records', () => {
+    const { problems } = readMeasuresCatalog(rootWith(`${RECORD}---\n${RECORD.replace('a-b', 'c-d')}`));
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toMatch(/cannot be parsed/);
+  });
+
+  it('reads a file with a UTF-8 byte order mark', () => {
+    const { records, problems } = readMeasuresCatalog(rootWith(`\uFEFF${RECORD}`));
+    expect(problems).toEqual([]);
+    expect(records).toHaveLength(1);
+  });
+
+  it('names an unquoted numeric ref plainly', () => {
+    const { problems } = readMeasuresCatalog(rootWith(RECORD.replace('ref: "1"', 'ref: 32')));
+    expect(problems).toEqual([expect.stringContaining('"ref" must be a string; quote numbers such as "32"')]);
+  });
+
+  it('reloads the catalog when the file changes, so a dev server sees edits', () => {
+    const root = rootWith(RECORD);
+    expect([...loadMeasuresCatalog(root).index.keys()]).toEqual(['a-b']);
+    const file = path.join(root, '_meta', 'measures.yaml');
+    writeFileSync(file, RECORD.replace('a-b', 'c-d'));
+    const later = new Date(Date.now() + 5000);
+    utimesSync(file, later, later);
+    expect([...loadMeasuresCatalog(root).index.keys()]).toEqual(['c-d']);
   });
 });
