@@ -2,7 +2,7 @@
 title: Domain
 description: Glossary and terms of art for the toolkit and convention.
 doc_status: active
-updated: 2026-08-21T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Context
 kind: Explanation
 tags: [glossary]
@@ -22,6 +22,13 @@ tags: [glossary]
 - **Toolkit** — the `@spec-kitty/doc-toolkit` library in [`../../src`](../../src).
 - **Charter / doctrine** — Spec Kitty governance artifacts this convention will
   later be recast into.
+- **Measure** — one technical, organisational, legal or physical safeguard,
+  identified by a stable id in the measures catalog: `docs/_meta/measures.yaml`,
+  or the default the toolkit ships. See
+  [ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md).
+- **TOM classification** — the optional `tom_classification` page field. It lists
+  the measures a page provides evidence for. It marks evidence; it does not make
+  a description of technical and organisational measures (TOMs) complete.
 
 ## Distinctions
 
