@@ -73,7 +73,11 @@ const SHAPE_PARITY: { file: string; relPath: string; reject: boolean }[] = [
   { file: 'err/audience-no-guidance.md', relPath: 'audience-no-guidance.md', reject: true },
   { file: 'err/hero-no-alt.md', relPath: 'hero-no-alt.md', reject: true },
   { file: 'err/related-object-no-ref.md', relPath: 'related-object-no-ref.md', reject: true },
+  { file: 'err/tom-classification-bad-scope.md', relPath: 'tom-classification-bad-scope.md', reject: true },
+  { file: 'err/tom-classification-no-measure.md', relPath: 'tom-classification-no-measure.md', reject: true },
+  { file: 'err/tom-classification-not-list.md', relPath: 'tom-classification-not-list.md', reject: true },
   { file: 'valid/valid.md', relPath: 'valid.md', reject: false },
+  { file: 'valid/tom-classification.md', relPath: 'tom-classification.md', reject: false },
   // Persona with all required attribute fields (ADR-0019): both arms accept —
   // the build schema treats role/goals/responsibilities as optional and the
   // validator's kind-aware requiredness is satisfied.
@@ -274,6 +278,7 @@ const WARNINGS = [
   { relPath: 'short-description.md', needle: 'convention suggests' },
   { relPath: 'architecture/type-mismatch.md', needle: 'path suggests' },
   { relPath: 'architecture/unknown-type.md', needle: 'type: Bogus' },
+  { relPath: 'tom-classification-case-variant.md', needle: 'did you mean `tom_classification`?' },
 ];
 
 describe('advisory warnings — pass (exit 0) on both arms but observably printed', () => {
