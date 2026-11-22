@@ -1,0 +1,19 @@
+schema_version: "1.0"
+manifest_hash: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+constituents:
+  - kind: directive
+    id: a
+    path: directives/a.directive.yaml
+    content_hash: 30c3855e740d961a28826498400c0647563ca43712a8adedebc4ed70fcd184a2
+  - kind: tactic
+    id: t
+    path: tactics/t.tactic.yaml
+    content_hash: 28beb537ffc01b4c8a295e47d103d56896b167867617f367f2c90a385de088c8
+  - kind: template
+    id: spec.md
+    path: templates/spec.md
+    content_hash: 17851e77bc868a6fedd81845f554215ecf028db678b28804deee574161456948
+presets:
+  - id: minimal
+    path: presets/minimal.yaml
+    content_hash: 336d9f61ed2a41cd064e079ec4ecebc803fb3c46205ec286c94b2740d068b053

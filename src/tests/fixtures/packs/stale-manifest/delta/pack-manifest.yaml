@@ -1,0 +1,15 @@
+schema_version: "1.0"
+manifest_hash: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+constituents:
+  - kind: directive
+    id: kept
+    path: directives/kept.directive.yaml
+    content_hash: 891ef4aa11bc7772c98b4cfcf92908d53700df7950f1af90a18974102d987a32
+  - kind: directive
+    id: changed
+    path: directives/changed.directive.yaml
+    content_hash: 0000000000000000000000000000000000000000000000000000000000000000
+  - kind: directive
+    id: gone
+    path: directives/gone.directive.yaml
+    content_hash: 1111111111111111111111111111111111111111111111111111111111111111

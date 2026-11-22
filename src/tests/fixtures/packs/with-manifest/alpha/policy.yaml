@@ -1,0 +1,5 @@
+schema_version: 1
+kind_defaults:
+  directive: locked
+artifacts:
+  tactic:t: extendable
