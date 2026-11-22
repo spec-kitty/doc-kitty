@@ -14,9 +14,8 @@
   "accepted_by": "system",
   "accepted_from_commit": "23b3bdfd2a695adc0a805a8e25ce8dc73c293be5",
   "baseline_merge_commit": "205623e637e5c1de5bc46bcbd4fd29f4678b7a39",
-  "coordination_branch": "kitty/mission-tom-classification-measures-catalog-01M81M7T",
   "created_at": "2026-11-22T12:38:33.155912+00:00",
-  "flattened": false,
+  "flattened": true,
   "friendly_name": "TOM classification and measures catalog",
   "merged_at": "2026-11-22T15:13:01.093599+00:00",
   "merged_commit": "a1c7afd20d273c984c4f2b52f767b5ad3c0a8831",
@@ -32,7 +31,6 @@
   "slug": "tom-classification-measures-catalog-01M81M7T",
   "status_phase": "1",
   "target_branch": "feat/406-tom-classification",
-  "topology": "lanes_with_coord",
   "topology_source": "explicit",
   "vcs": "git",
   "vcs_locked_at": "2026-11-22T12:53:02.316651+00:00"
