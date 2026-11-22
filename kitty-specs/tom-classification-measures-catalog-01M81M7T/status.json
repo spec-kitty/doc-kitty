@@ -30,7 +30,8 @@
       "last_transition_at": "2026-11-22T13:11:22.619698+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "ADR-0080 accepted, glossary terms, changelog fragment"
+        "ADR-0080 accepted, glossary terms, changelog fragment",
+        "Review passed (claude::reviewer-renata). Reviewed 33fbcc1 on feat/406-tom-classification directly; spec-kitty recorded no review range (not_recorded; cf. spec-kitty#7809). T001: ADR-0080 doc_status active, updated 2026-11-22; Status reads Accepted, 2026-11-21, by operator ruling on #406. Counsel items stay open and non-blocking per D1; the ⚖ markers are untouched; the Decision text is unchanged; the diff touches frontmatter and Status only. T002: the Measure and TOM classification glossary bullets match the WP wording, including the OQ-3 'marks evidence, not complete' clause, with a relative link. T003: Added fragment; its claims match the spec (17 Annex II headings, scope/note, measures.yaml replaces the default, unknown id fails the build and validate:catalog, classified-as edges, /api/pages, OKF); the root-relative link follows the unreleased README. C-004/C-006: no new ADR number, and docs/adr/README.md and CHANGELOG.md are not in the diff. RAN on 33fbcc1: validate:docs, validate:links, validate:changelog, validate:adr-ids pass; markdownlint 0 issues. validate:adr-index fails, and it already fails on main 9621b5f (main's index lacks rows 0075-0080 and has a stale 0046 date). On this branch the only extra change is ADR-0080 regenerating as Accepted. Left to the bot, as the WP prescribes. Nit: the ADR Status wording is 'Accepted — 2026-11-21, by operator ruling on issue #406' rather than the prompt's exact sentence; it is equivalent. Vale not installed here."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
