@@ -69,6 +69,9 @@ const SCOPE_TYPES = new Set(['section', 'directories']);
 export function inScope(scope, relPath, kind) {
   if (scope.kinds && !scope.kinds.includes(/** @type {string} */ (kind))) return false;
   const segments = relPath.split('/');
+  // Only a normalised POSIX path is ever in a scope: no empty, `.` or `..`
+  // segment (so no leading or doubled `/`), and no backslash.
+  if (relPath.includes('\\') || segments.some((s) => s === '' || s === '.' || s === '..')) return false;
   if (scope.type === 'section') {
     if (segments.length < 2) return false;
     return scope.section === undefined || segments[0] === scope.section;
@@ -149,8 +152,6 @@ export function createProducerRegistry(entries) {
   const all = [...byId.values()];
   const ownership = all.filter((p) => p.role === 'ownership');
 
-  /** Override maps already checked (the gate passes one map for every page). */
-  const checked = new WeakSet();
   /**
    * An override scope replaces a producer's registered scope for one call, so it
    * is held to the same rules as at registration (decisions 3 and 4 of
@@ -160,7 +161,7 @@ export function createProducerRegistry(entries) {
    * @param {Record<string, OwnershipScope | undefined>} scopes
    */
   const checkOverrides = (scopes) => {
-    if (checked.has(scopes)) return;
+    // Checked on every call, so a map changed after a first call is checked again.
     for (const [id, scope] of Object.entries(scopes)) {
       if (scope === undefined) continue;
       const producer = byId.get(id);
@@ -169,7 +170,6 @@ export function createProducerRegistry(entries) {
       }
       checkEntry({ ...producer, scope });
     }
-    checked.add(scopes);
   };
 
   return Object.freeze({
