@@ -15,5 +15,7 @@
   "slug": "tom-classification-measures-catalog-01M81M7T",
   "target_branch": "feat/406-tom-classification",
   "topology": "lanes_with_coord",
-  "topology_source": "explicit"
+  "topology_source": "explicit",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-22T12:53:02.316651+00:00"
 }

@@ -13,6 +13,9 @@ requirement_refs:
 planning_base_branch: feat/406-tom-classification
 merge_target_branch: feat/406-tom-classification
 branch_strategy: Planning artifacts for this mission were generated on feat/406-tom-classification. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/406-tom-classification unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-tom-classification-measures-catalog-01M81M7T
+base_commit: 43e4d51d63574e33cc0e375cf800ff9d72cbcbad
+created_at: '2026-11-22T12:53:03.028871+00:00'
 subtasks:
 - T004
 - T005
