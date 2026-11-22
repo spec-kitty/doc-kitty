@@ -2,7 +2,7 @@
   "mission_slug": "tom-classification-measures-catalog-01M81M7T",
   "mission_number": "",
   "mission_type": "",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -138,10 +138,10 @@
       "criterion_id": "FR-014",
       "description": "Verify FR-014 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "tom-classification-shape.test.ts case-variant warning; parity WARNINGS fixture tom-classification-case-variant.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-22T15:11:28.994734+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     }
   ],
