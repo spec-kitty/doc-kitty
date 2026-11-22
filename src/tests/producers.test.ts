@@ -48,6 +48,13 @@ describe('inScope', () => {
     expect(inScope(scope, 'behaviour')).toBe(false);
   });
 
+  it('never matches a path that is not normalised', () => {
+    const any = { type: 'section' } as const;
+    for (const p of ['/features/a.md', '../x/a.md', './glossary/a.md', 'glossary/../secret/a.md', 'glossary/', 'a//b.md', 'features\\a.md', '']) {
+      expect(inScope(any, p), p).toBe(false);
+    }
+  });
+
   it('kinds restrict a scope to those page kinds', () => {
     const scope = { type: 'section', section: 'glossary', kinds: ['Glossary', 'Hub'] } as const;
     expect(inScope(scope, 'glossary/x.md', 'Glossary')).toBe(true);
@@ -115,6 +122,11 @@ describe('ownerOfPage', () => {
     expect(() =>
       PRODUCER_REGISTRY.ownerOfPage('guides/a.md', { kind: 'Glossary' }, { scopes: { 'doc-kitty-glossary': { type: 'section' } } }),
     ).toThrow(/recognition 'scope'/);
+    // Each call checks the map as it is now: one changed after a first call is checked again.
+    const scopes: Record<string, { type: 'section'; section?: string }> = {};
+    expect(PRODUCER_REGISTRY.ownerOfPage('guides/intro.md', { kind: 'Hub' }, { scopes })).toBeUndefined();
+    scopes['doc-kitty-glossary'] = { type: 'section' };
+    expect(() => PRODUCER_REGISTRY.ownerOfPage('guides/intro.md', { kind: 'Hub' }, { scopes })).toThrow(/recognition 'scope'/);
     // An override for an unknown producer is a caller error.
     expect(() =>
       PRODUCER_REGISTRY.ownerOfPage('features/a.md', page, { scopes: { 'no-such-producer': { type: 'section' } } }),

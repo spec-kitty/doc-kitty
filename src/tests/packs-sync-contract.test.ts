@@ -106,7 +106,7 @@ describe('packs-sync-contract', () => {
   it('refuses a branch, HEAD and a short sha: only a tag or a full commit pins provenance', () => {
     const { repo, head } = fakeCharter();
     git(repo, 'branch', 'moving');
-    for (const ref of ['moving', 'HEAD', head.slice(0, 7)]) {
+    for (const ref of ['moving', 'HEAD', head.slice(0, 7), 'contract-packs-v9.9.9~1', 'contract-packs-v9.9.9^', 'contract-packs-v9.9.9^{commit}']) {
       const to = seededSnapshot();
       const before = readFileSync(path.join(to, 'contract.lock.json'), 'utf8');
       const res = run('--ref', ref, '--from', repo, '--to', to);

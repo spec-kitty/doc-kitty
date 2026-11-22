@@ -11,7 +11,7 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -318,6 +318,104 @@ describe('robustness', () => {
       ['manifest-unlisted', 'directives/a.directive.yaml'],
       ['manifest-invalid-entry', 'pack-manifest.yaml'],
     ]);
+  });
+
+  it('does not verify a manifest that lists what the pack does not hold as a constituent, twice, or under another kind', () => {
+    const root = temp();
+    const dir = path.join(root, 'alpha');
+    cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
+    const file = path.join(dir, 'pack-manifest.yaml');
+    const hashOf = (rel: string) => packContentHash(readFileSync(path.join(dir, rel)));
+    const extra = [
+      ['directive', 'ghost', 'README.md'],
+      ['directive', 'a-again', 'directives/a.directive.yaml'],
+      ['agent_profile', 'phantom', 'tactics/t.tactic.yaml'],
+    ]
+      .map(([kind, id, p]) => `  - kind: ${kind}\n    id: ${id}\n    path: ${p}\n    content_hash: ${hashOf(p)}\n`)
+      .join('');
+    writeFileSync(file, readFileSync(file, 'utf8').replace('presets:\n', `${extra}presets:\n`));
+    const model = readPack(dir);
+    expect(model.manifest?.verified).toBe(false);
+    expect(model.inventory.source).toBe('file-kinds');
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([
+      ['manifest-not-a-constituent', 'README.md'],
+      ['manifest-duplicate-entry', 'directives/a.directive.yaml'],
+      ['manifest-kind-mismatch', 'tactics/t.tactic.yaml'],
+    ]);
+  });
+
+  it('does not verify a manifest that lists a kind the contract does not know', () => {
+    const root = temp();
+    const dir = path.join(root, 'alpha');
+    cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
+    const file = path.join(dir, 'pack-manifest.yaml');
+    writeFileSync(file, readFileSync(file, 'utf8').replace('kind: tactic', 'kind: totally_bogus').replace('schema_version: "1.0"', 'schema_version: "2.0"'));
+    const model = readPack(dir);
+    expect(model.manifest?.verified).toBe(false);
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([
+      ['manifest-schema-version', 'pack-manifest.yaml'],
+      ['manifest-unknown-kind', 'tactics/t.tactic.yaml'],
+    ]);
+  });
+
+  it('keeps only single policy values, and never a prototype key', () => {
+    const root = temp();
+    const dir = path.join(root, 'alpha');
+    cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
+    writeFileSync(
+      path.join(dir, 'policy.yaml'),
+      'schema_version: 1\nkind_defaults:\n  __proto__: {polluted: yes}\n  directive: [a, b]\n  tactic: locked\nartifacts:\n  constructor: open\n  "tactic:t": extendable\n',
+    );
+    const model = readPack(dir);
+    expect(model.policy).toEqual({ kindDefaults: { tactic: 'locked' }, artifacts: { 'tactic:t': 'extendable' } });
+    expect(Object.keys(model.policy?.kindDefaults ?? {})).toEqual(['tactic']);
+    expect(model.problems.map((p) => p.code)).toEqual(['policy-invalid-value', 'policy-invalid-value', 'policy-invalid-value']);
+  });
+
+  it('warns on a policy that is not a mapping', () => {
+    const root = temp();
+    const dir = path.join(root, 'alpha');
+    cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
+    writeFileSync(path.join(dir, 'policy.yaml'), '- just\n- a list\n');
+    const model = readPack(dir);
+    expect(model.policy).toBeUndefined();
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([['policy-unreadable', 'policy.yaml']]);
+  });
+
+  it('carries the contract snapshot’s own warnings into the model', () => {
+    const snapshot = temp();
+    cpSync(fileURLToPath(new URL('../lib/packs/contract/', import.meta.url)), snapshot, { recursive: true });
+    const fk = path.join(snapshot, 'file-kinds.yaml');
+    writeFileSync(fk, readFileSync(fk, 'utf8') + '\nshiny_new_section: []\n');
+    const lockFile = path.join(snapshot, 'contract.lock.json');
+    const lock = JSON.parse(readFileSync(lockFile, 'utf8'));
+    lock.files['file-kinds.yaml'] = createHash('sha256').update(readFileSync(fk)).digest('hex');
+    writeFileSync(lockFile, JSON.stringify(lock));
+    const model = readPack(fixture('no-manifest/beta'), { contract: snapshot });
+    expect(codes(model)).toEqual(['contract-unknown-key']);
+    expect(model.problems[0].file).toBeUndefined();
+  });
+
+  it('gives the same model whatever order the directory lists its files in', () => {
+    const root = temp();
+    const copy = path.join(root, 'alpha');
+    // Recreate the pack file by file in reverse order, so its directory entries
+    // are created in another order than the fixture's.
+    const files: string[] = [];
+    const walk = (d: string, base = d): void => {
+      for (const e of readdirSync(d, { withFileTypes: true })) {
+        const abs = path.join(d, e.name);
+        if (e.isDirectory()) walk(abs, base);
+        else files.push(path.relative(base, abs));
+      }
+    };
+    walk(fixture('with-manifest/alpha'));
+    for (const rel of [...files].reverse()) {
+      mkdirSync(path.dirname(path.join(copy, rel)), { recursive: true });
+      writeFileSync(path.join(copy, rel), readFileSync(path.join(fixture('with-manifest/alpha'), rel)));
+    }
+    const strip = (m: ReturnType<typeof readPack>) => JSON.stringify({ ...m, path: '' });
+    expect(strip(readPack(copy))).toBe(strip(readPack(fixture('with-manifest/alpha'))));
   });
 
   it('is deterministic: two reads give byte-identical JSON', () => {
