@@ -157,7 +157,8 @@
       "last_transition_at": "2026-11-22T13:38:17.736523+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "OKF Measures section; 87 OKF tests green"
+        "OKF Measures section; 87 OKF tests green",
+        "Review passed (claude::reviewer-renata). Reviewed b5438b8 (range 18019cc..b5438b8). okf-export/core.mjs adds ['classified-as','Measures'] to RELATION_SECTIONS between References and Derived from, matching contracts/machine-surfaces.md. relationLine adds ' (organisation)' only for classified-as with scope organisation, then the note. A measure node with an http(s) url links to it; without an IRI it renders as plain text, never as an unlinked source (tested). Graphs without the relation take the old code paths unchanged (the existing OKF tests pass). Fixture drift check: graph.json's measure nodes (id catalog:measure:<id>, kind catalog, title, url = DPV IRI, measure {nature, frameworks}) and classified-as edges (id source|rel|target, rel, note?, scope) match the contract's content-graph examples field for field. The real graph route (WP05) does not exist yet, so the fixture can only be checked against the contract today; WP09's artifact assertions on the real build should close that loop. Nit: the contract's OKF markdown example lists Events logging before Accountability, but edges keep code-unit order, so a real bundle prints Accountability first; the example text is illustrative, so consider reordering it. RAN on b5438b8: OKF tests 81/81 (3 files); pnpm test src 4281/4281, mcp 181/181; lint and typecheck clean; no dependency changes."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
