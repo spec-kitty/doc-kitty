@@ -133,7 +133,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "readPack + PackModel; 25 tests red-first; 19/19 open-packs packs verified",
-        "Cycle 2: fold B1 (symlinked components) and B2 (YAML tags, frontmatter regex)"
+        "Cycle 2: fold B1 (symlinked components) and B2 (YAML tags, frontmatter regex)",
+        "Cycle 2: B1 heldFile (no symlinked component), B2 plain YAML data + anchored frontmatter; failsafe for descriptor and lock"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
