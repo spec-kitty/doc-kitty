@@ -48,11 +48,11 @@
       "criterion_id": "FR-005",
       "description": "Verify FR-005 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "diagram-legibility.spec.ts themed edges per figure [3,2,2,3], min 6.15:1 light / 10.63:1 dark, on both main code and the fix",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:51.257607+00:00",
+      "notes": "ratchet: #369 item 1 does not reproduce (root cause comment on #369)"
     },
     {
       "criterion_id": "FR-006",
