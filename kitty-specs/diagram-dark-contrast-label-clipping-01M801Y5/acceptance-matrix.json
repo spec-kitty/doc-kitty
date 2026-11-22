@@ -28,11 +28,11 @@
       "criterion_id": "FR-003",
       "description": "Verify FR-003 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "diagram-label-contrast.test.ts 'keeps an author label colour, wherever Mermaid put it (FR-003)'; fixture node 'Deep fill with a white label' kept #fff (6.53:1)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer",
+      "verified_at": "2026-11-22T06:24:42.223414+00:00",
+      "notes": "author label colour untouched"
     },
     {
       "criterion_id": "FR-004",
