@@ -56,7 +56,7 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::node-norris",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -66,7 +66,8 @@
       "last_transition_at": "2026-11-22T00:23:14.460122+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green"
+        "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green",
+        "Cycle 1 fixed in 9840913: translucent fills (rgba/#rrggbbaa alpha x fill-opacity x opacity) get black/white only if >=4.5 over pure black/white, else stay themed; cssEscapeId; see-through fixture node (2.7:1 light on cycle-1 code, now 6.38/6.93). Unit 4302/4302, mcp 181, typecheck, lint, e2e 446 passed (4 env-only, same on main)"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
