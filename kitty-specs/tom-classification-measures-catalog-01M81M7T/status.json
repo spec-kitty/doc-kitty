@@ -272,6 +272,9 @@
       "last_event_id": "01M81T1P2CTFK6FMRC4TECVFYT",
       "last_transition_at": "2026-11-22T14:20:02.508903+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Example org-scope + system pages (link not copy); assert-build-artifacts checks the REAL built graph, /api/pages record and OKF Measures section; pins 73->75, 78->80; negative check: typo fails build naming page and id."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 195,
