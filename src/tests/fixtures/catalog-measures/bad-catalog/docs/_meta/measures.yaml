@@ -1,0 +1,8 @@
+- id: dup
+  label: First
+  nature: technical
+  frameworks: [{ framework: x, ref: "1" }]
+- id: dup
+  label: Second
+  nature: technical
+  frameworks: [{ framework: x, ref: "2" }]
