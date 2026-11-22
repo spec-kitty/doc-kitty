@@ -27,6 +27,7 @@
   "purpose_context": "Lets a DocKitty page say which technical and organisational measure (TOM) it evidences, resolved against a replaceable measures catalog, so TOM evidence becomes queryable in the agent API, the content graph and the OKF export. Gate for the EU DPA epic #400.",
   "purpose_tldr": "Accept ADR-0080: tom_classification field, measures catalog, classified-as edge",
   "slug": "tom-classification-measures-catalog-01M81M7T",
+  "status_phase": "1",
   "target_branch": "feat/406-tom-classification",
   "topology": "lanes_with_coord",
   "topology_source": "explicit",
