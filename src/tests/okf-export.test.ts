@@ -5,7 +5,7 @@
  * core never touches the file system.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -14,19 +14,10 @@ import { okfExportIntegration } from '../lib/okf-export/integration.js';
 import { bundlePathOf, exportOkfBundle, generatedFor } from '../lib/okf-export/core.mjs';
 import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
 import { feedDateMillis } from '../lib/metadata.js';
+import { readTree } from './helpers/read-tree.js';
 
 const FIX = path.join(import.meta.dirname, 'fixtures', 'okf-export');
 const graph = JSON.parse(readFileSync(path.join(FIX, 'graph.json'), 'utf8'));
-
-function readTree(root: string, rel = ''): Map<string, string> {
-  const out = new Map<string, string>();
-  for (const e of readdirSync(path.join(root, rel), { withFileTypes: true })) {
-    const next = path.posix.join(rel, e.name);
-    if (e.isDirectory()) readTree(root, next).forEach((v, k) => out.set(k, v));
-    else out.set(next, readFileSync(path.join(root, next), 'utf8'));
-  }
-  return out;
-}
 
 const sources = readTree(path.join(FIX, 'docs'));
 const run = () => exportOkfBundle(graph, sources) as Map<string, string>;
