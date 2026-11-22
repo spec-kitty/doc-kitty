@@ -127,7 +127,42 @@ describe('createProducerRegistry', () => {
     ).toThrow(/dirs/);
   });
 
+  it('type-checks a scope: section, kinds and dirs must be strings', () => {
+    const own = (scope: unknown) => () => createProducerRegistry([{ id: 'a', role: 'ownership', scope: scope as never }]);
+    expect(own({ type: 'section', section: 3 })).toThrow(/section/);
+    expect(own({ type: 'section', section: '' })).toThrow(/section/);
+    expect(own({ type: 'section', section: 'a/b' })).toThrow(/section/);
+    expect(own({ type: 'section', section: 'x', kinds: 'Glossary' })).toThrow(/kinds/);
+    expect(own({ type: 'section', section: 'x', kinds: [1] })).toThrow(/kinds/);
+    expect(own({ type: 'directories', section: 'packs', dirs: ['qa', 7] })).toThrow(/dirs/);
+    expect(own({ type: 'directories', section: 'packs', dirs: ['a/b'] })).toThrow(/dirs/);
+  });
+
+  it('refuses a scope-recognised producer whose scope is every section', () => {
+    // It would own every non-root page in the tree, stamp or no stamp.
+    expect(() =>
+      createProducerRegistry([{ id: 'a', role: 'ownership', scope: { type: 'section' }, recognition: 'scope' }]),
+    ).toThrow(/recognition 'scope'.*section/);
+    expect(() =>
+      createProducerRegistry([{ id: 'a', role: 'ownership', scope: { type: 'section', section: 'x' }, recognition: 'scope' }]),
+    ).not.toThrow();
+    expect(() =>
+      createProducerRegistry([{ id: 'a', role: 'ownership', scope: { type: 'section' }, recognition: 'guess' as never }]),
+    ).toThrow(/recognition/);
+  });
+
   it('returns a frozen registry', () => {
     expect(Object.isFrozen(PRODUCER_REGISTRY)).toBe(true);
+  });
+});
+
+describe('isGeneratedPage (frontmatter gate)', () => {
+  it('takes the narrowed scopes as an options object', async () => {
+    const { isGeneratedPage } = await import('../scripts/validate-frontmatter.mjs');
+    const page = stamped('doc-kitty-gherkin/9.9.9');
+    expect(isGeneratedPage('behaviour/a.md', page)).toBe(true);
+    const producerScopes = { 'doc-kitty-gherkin': { type: 'section', section: 'features' } };
+    expect(isGeneratedPage('behaviour/a.md', page, { producerScopes })).toBe(false);
+    expect(isGeneratedPage('features/a.md', page, { producerScopes })).toBe(true);
   });
 });
