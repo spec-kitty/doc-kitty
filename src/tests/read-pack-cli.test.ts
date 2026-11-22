@@ -3,7 +3,7 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,13 +37,30 @@ describe('dockitty-read-pack', () => {
   });
 
   it('reports a charter lock mismatch as a warning, exit 0', () => {
-    const dir = mkdtempSync(path.join(tmpdir(), 'dk-read-pack-'));
+    // The lock lives in the repository, beside the packs, as open-packs' does.
+    const dir = mkdtempSync(path.join(path.dirname(ALPHA), '.dk-read-pack-'));
     temps.push(dir);
     writeFileSync(path.join(dir, 'charter.lock.yaml'), `commit: ${'e'.repeat(40)}\n`);
     const res = run(ALPHA, '--charter-lock', path.join(dir, 'charter.lock.yaml'));
     expect(res.status).toBe(0);
     expect(res.stdout).toContain('warning [charter-lock-mismatch]');
     expect(res.stdout).toContain(`proven against ${'e'.repeat(40)}`);
+  });
+
+  it('refuses a pack, lock or contract outside the repository root (ADR-0079 D5)', () => {
+    const outside = mkdtempSync(path.join(tmpdir(), 'dk-read-pack-outside-'));
+    temps.push(outside);
+    cpSync(ALPHA, path.join(outside, 'alpha'), { recursive: true });
+    writeFileSync(path.join(outside, 'charter.lock.yaml'), `commit: ${'e'.repeat(40)}\n`);
+    for (const args of [[path.join(outside, 'alpha')], [ALPHA, '--charter-lock', path.join(outside, 'charter.lock.yaml')], [ALPHA, '--contract', outside]]) {
+      const res = run(...args);
+      expect(res.status, args.join(' ')).toBe(2);
+      expect(res.stderr).toMatch(/outside the repository root/);
+    }
+    // --repo-root widens the root on purpose.
+    const ok = run(path.join(outside, 'alpha'), '--repo-root', outside, '--json');
+    expect(ok.status, ok.stderr).toBe(0);
+    expect(JSON.parse(ok.stdout).path).toBe('alpha');
   });
 
   it('exits 2 on a usage error, a directory that is not a pack, and a broken contract', () => {
