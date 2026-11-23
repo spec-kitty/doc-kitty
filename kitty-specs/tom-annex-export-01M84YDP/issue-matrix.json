@@ -1,7 +1,7 @@
 {
   "rows": {
     "#359": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "ADR-0087 generated-section contract; this producer's stamp is WP06 (spec FR-008, C-002)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -9,8 +9,8 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "verdict": "in-mission",
+      "wp": "WP06"
     },
     "#360": {
       "evidence_ref": "<link or commit>",
