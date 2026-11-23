@@ -123,7 +123,7 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::implementer-ivan",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -134,7 +134,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "WP04 ready: build suite 8/8, Playwright 17 passed incl. OpenAPI prev/next, measurements recorded",
-        "Changes requested: example-adopter pinned sitemap count broken by new example pages (3 build-tier failures); playwright.local.config.ts committed"
+        "Changes requested: example-adopter pinned sitemap count broken by new example pages (3 build-tier failures); playwright.local.config.ts committed",
+        "Cycle 1 folded: B1 pins 84/79, B2 overlay removed, N1-N4, WP03 NB1/NB2; full pnpm test src 4344/4344 + mcp 181/181"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
