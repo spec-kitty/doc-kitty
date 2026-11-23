@@ -443,7 +443,8 @@ export function shapeSidebar(
     // The renderer finds a group's index link by this marker, and its icon by `dkDir`.
     // The index link stays in `entries`: pagination flattens the sidebar (R7).
     const entries = ordered.map((c) =>
-      annotate && isIndex(c) && c.entry.type === 'link'
+      // The capped entry shares the index link's href but is not the group's index.
+      annotate && isIndex(c) && c.entry.type === 'link' && !isCappedEntry(c.entry)
         ? { ...c.entry, attrs: { ...c.entry.attrs, 'data-dk-group-index': '' } }
         : c.entry,
     );
@@ -549,6 +550,8 @@ export function expandCappedGroups(
       if (!isCappedEntry(entry) || hub === undefined) return [entry];
       const dir = entry.dkCappedHub;
       const slash = entry.href.endsWith('/') ? '/' : '';
+      // Only a directory-format href (`<base>/<dir>/`) can be extended to the children.
+      if (!entry.href.endsWith(`/${dir}${slash}`)) return [entry];
       const prefix = entry.href.slice(0, entry.href.length - dir.length - slash.length);
       return hub.children.map(({ slug, label }) => ({
         type: 'link',
@@ -562,18 +565,6 @@ export function expandCappedGroups(
   return expand(shaped);
 }
 
-/**
- * Re-derive prev/next after the sidebar has been reordered.
- *
- * Starlight resolves pagination from the sidebar before route middleware runs,
- * so without this the "Next" link would follow the old order while the sidebar
- * shows the new one. A side is re-derived only when it still follows the
- * sidebar: either it points at the page's neighbour in the ORIGINAL order (a
- * custom label from `prev: "…"` front matter is kept), or it is empty because
- * the page was first/last there and `followsSidebar` says the author did not
- * switch it off. A side the author pointed elsewhere (`prev: { link }`) or
- * disabled (`prev: false`, or site-wide `pagination: false`) is left alone.
- */
 /**
  * How one side of prev/next follows the sidebar: `true` takes the sidebar neighbour,
  * a string takes it under that label (Starlight's label-only override), `false`
@@ -599,6 +590,18 @@ export function paginationFollow(side: unknown, enabled: boolean): PaginationFol
   return false;
 }
 
+/**
+ * Re-derive prev/next after the sidebar has been reordered.
+ *
+ * Starlight resolves pagination from the sidebar before route middleware runs,
+ * so without this the "Next" link would follow the old order while the sidebar
+ * shows the new one. A side is re-derived only when it still follows the
+ * sidebar: either it points at the page's neighbour in the ORIGINAL order (a
+ * custom label from `prev: "…"` front matter is kept), or it is empty because
+ * the page was first/last there and `followsSidebar` says the author did not
+ * switch it off. A side the author pointed elsewhere (`prev: { link }`) or
+ * disabled (`prev: false`, or site-wide `pagination: false`) is left alone.
+ */
 export function shapePagination(
   original: readonly SidebarEntry[],
   shaped: readonly SidebarEntry[],

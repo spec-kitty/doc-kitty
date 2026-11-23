@@ -140,6 +140,23 @@ describe('a capped group (FR-003)', () => {
   });
 });
 
+describe('with the custom renderer\'s markers on (annotate)', () => {
+  it('marks only the index link as the group index, not the capped entry', () => {
+    const sidebar = shapeSidebar(tree('guides'), META, { base: BASE, hubCaps: HUB_CAPS, currentSlug: 'guides', annotate: true }).sidebar;
+    const [index, entry] = missionsGroup(sidebar).entries as Link[];
+    expect(index!.attrs).toHaveProperty('data-dk-group-index');
+    expect(entry).toMatchObject({ dkCappedHub: 'missions' });
+    expect(entry!.attrs).toEqual({});
+  });
+});
+
+describe('expanding a capped entry whose href does not end in its folder', () => {
+  it('leaves the entry as it is instead of building wrong hrefs', () => {
+    const odd = [group('Missions', [link('missions', 'Missions'), { ...(link('elsewhere', '3 pages') as Link), dkCappedHub: 'missions' } as SidebarEntry])];
+    expect(expandCappedGroups(odd, HUB_CAPS, 'missions/alpha')).toEqual(odd);
+  });
+});
+
 describe('current marking (FR-005)', () => {
   it('marks the capped entry current on a child, and only it', () => {
     const sidebar = shape(tree('missions/alpha'), 'missions/alpha');
@@ -328,6 +345,17 @@ describe('label-only prev/next overrides (FR-007; WP04 review F1, F2)', () => {
     const result = shapePagination(original, expanded, none, { prev: true, next: 'Read on' });
     expect(result.prev?.href).toBe(`${BASE}/missions/zeta/`);
     expect(result.next).toMatchObject({ href: `${BASE}/missions/charlie/`, label: 'Read on' });
+  });
+
+  it('does not fill a listed page\'s gap for a label-only override (the uncapped rule)', () => {
+    // Starlight lists the index after a page; shaping moves the index first, so the
+    // page gains a previous neighbour it did not have. Only an unset side follows into
+    // that gap, as before the cap existed: a label-only side stays empty.
+    const original = [group('Guides', [link('guides/install', 'Install', true), link('guides', 'Guides')])];
+    const shaped = shape(original, 'guides/install', new Map());
+    const none = { prev: undefined, next: undefined };
+    expect(shapePagination(original, shaped, none, { prev: 'Back', next: true }).prev).toBeUndefined();
+    expect(shapePagination(original, shaped, none, { prev: true, next: true }).prev?.href).toBe(`${BASE}/guides/`);
   });
 
   it('leaves a listed page\'s label-only override to the href rule, unchanged', () => {
