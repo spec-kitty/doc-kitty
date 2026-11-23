@@ -973,7 +973,7 @@ site, a section or one hub; see [Cap large sidebar groups](./sidebar-child-cap.m
 sidebar: { childCap: 30, cappedLabel: 'All {count} pages' },
 ```
 
-`collapsed`, `titleIsIndex` and `childCap` shape the sidebar the toolkit generates. A
+`collapsed`, `titleIsIndex`, `childCap` and `cappedLabel` shape the sidebar the toolkit generates. A
 sidebar you write yourself, through `sidebar: [...]` or `starlight.sidebar`, is
 not reshaped. With `titleIsIndex` on, its groups render with the plain
 toggle. Starlight keeps its own group behaviour there.

@@ -12,7 +12,8 @@ kind: Explanation
 The most specific setting wins:
 
 1. the hub's own `sidebar_child_cap` frontmatter, as on this example's hub;
-2. `sidebar.childCap` on the section in `docs/_meta/sections.yaml`;
+2. `sidebar.childCap` on the section in `docs/_meta/sections.yaml`, or in the
+   charter's `sections.entries`;
 3. `sidebar.childCap` in `defineDocKittyIntegrations`;
 4. the default, 50.
 
