@@ -46,12 +46,12 @@
     },
     {
       "criterion_id": "FR-005",
-      "description": "Verify FR-005 is satisfied",
+      "description": "The capped entry is the only current sidebar entry on any page below the hub; the hub page marks its index.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/sidebar-child-cap.test.ts (current marking); sidebar-child-cap-build.test.ts (every child page); tests/a11y/sidebar-child-cap.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:12.051633+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
