@@ -2,17 +2,19 @@
 /**
  * Capture the uncapped large-hub fixture's goldens (#341, WP04; NFR-002).
  *
- * Builds the fixture site with no hub over its cap using the toolkit of an
- * earlier commit (the one before the sidebar child cap existed), and writes
+ * Builds the fixture site with no hub over its cap using the toolkit of the
+ * commit this branch is based on (`git merge-base HEAD origin/main`, else
+ * `main`): the toolkit before this branch's changes. It writes
  * `golden/uncapped.json`: route → sha256 of the built page. The build suite
  * builds the same site with today's toolkit and compares. Pages are hashed after
  * `normaliseBuildPaths`, which masks the checkout path Astro hashes into scoped
  * class names; nothing else is masked.
  *
- *   node src/tests/fixtures/large-hub/capture-golden.mjs --commit <base-commit>
+ *   node src/tests/fixtures/large-hub/capture-golden.mjs
  *
- * The script checks the commit out as a temporary git worktree inside this
- * repository (`example/.dk-test-sidebar-cap-base/`, git-ignored), installs its
+ * It takes no arguments. It checks the base commit out as a temporary git
+ * worktree inside this repository (`example/.dk-test-sidebar-cap-base/`,
+ * git-ignored), installs its
  * dependencies, builds there, and removes the worktree.
  *
  * Recapture only when a change outside the cap legitimately changes the
@@ -23,32 +25,27 @@ import { spawnSync } from 'node:child_process';
 import { rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs } from 'node:util';
 import { REPO_ROOT, SITE_PREFIX, builtPages, buildSite, normaliseBuildPaths, sha256, writeSite } from './site.mjs';
 
 /** The fixture the goldens are captured from: two hubs, both under the default cap. */
 export const UNCAPPED = { guides: 10 };
 export const GOLDEN_FILE = fileURLToPath(new URL('./golden/uncapped.json', import.meta.url));
 
-const { values } = parseArgs({ options: { commit: { type: 'string' } } });
-// A commit id, nothing else: it is handed to git.
-if (!values.commit || !/^[0-9a-f]{7,40}$/.test(values.commit)) {
-  console.error('usage: capture-golden.mjs --commit <base commit id, hex>');
-  process.exit(2);
-}
-
-/** Run a command in `cwd`; exit on failure. The command and its arguments are fixed here. */
-function run(cmd, args, cwd) {
+/** Run a command in `cwd`; exit on failure (or return undefined with `soft`). */
+function run(cmd, args, cwd, { soft = false } = {}) {
   const r = spawnSync(cmd, args, { cwd, encoding: 'utf8' });
   if (r.status !== 0) {
+    if (soft) return undefined;
     console.error(`${cmd} ${args.join(' ')} failed:\n${r.stdout}\n${r.stderr}`);
     process.exit(1);
   }
   return r.stdout.trim();
 }
 
-// The full id as git reports it, so only a real commit reaches the worktree step.
-const commit = run('git', ['rev-parse', '--verify', `${values.commit}^{commit}`], REPO_ROOT);
+// The base of this branch, as git reports it.
+const commit =
+  run('git', ['merge-base', 'HEAD', 'origin/main'], REPO_ROOT, { soft: true }) ??
+  run('git', ['merge-base', 'HEAD', 'main'], REPO_ROOT);
 const base = path.join(REPO_ROOT, 'example', `${SITE_PREFIX}base`);
 rmSync(base, { recursive: true, force: true });
 run('git', ['worktree', 'prune'], REPO_ROOT);
