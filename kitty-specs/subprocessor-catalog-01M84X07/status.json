@@ -1,7 +1,7 @@
 {
-  "event_count": 5,
-  "last_event_id": "01M858NWJG2PCE5QNKBKG17TD2",
-  "materialized_at": "2026-11-23T22:33:27.888348+00:00",
+  "event_count": 6,
+  "last_event_id": "01M858NY3CKYD258F3ZJAWRWJ9",
+  "materialized_at": "2026-11-23T22:33:29.452171+00:00",
   "mission_number": "",
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_type": "software-dev",
@@ -15,7 +15,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 5
+    "planned": 6
   },
   "work_packages": {
     "WP01": {
@@ -52,6 +52,13 @@
       "lane": "planned",
       "last_event_id": "01M858NWJG2PCE5QNKBKG17TD2",
       "last_transition_at": "2026-11-23T22:33:27.888348+00:00"
+    },
+    "WP06": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M858NY3CKYD258F3ZJAWRWJ9",
+      "last_transition_at": "2026-11-23T22:33:29.452171+00:00"
     }
   }
 }
