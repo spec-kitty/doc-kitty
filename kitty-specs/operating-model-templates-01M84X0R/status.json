@@ -30,7 +30,8 @@
       "last_transition_at": "2026-11-23T23:46:38.862917+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "ADR-0085 and kind lists; docs gates green; pnpm test src 4519/4519, mcp 181/181"
+        "ADR-0085 and kind lists; docs gates green; pnpm test src 4519/4519, mcp 181/181",
+        "Cycle 2: ADR-0085 Proposed (draft), KINDS wording fixed; lint 0; pnpm test src 4519/4519 mcp 181/181"
       ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
