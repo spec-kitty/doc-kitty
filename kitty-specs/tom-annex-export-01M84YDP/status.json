@@ -20,7 +20,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
@@ -30,7 +30,8 @@
       "last_transition_at": "2026-11-23T22:33:36.514656+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Core and format 1.0: 21 unit tests red-first; full pnpm test green (src 4540/4540, mcp 181/181); CI typecheck and lint clean."
+        "Core and format 1.0: 21 unit tests red-first; full pnpm test green (src 4540/4540, mcp 181/181); CI typecheck and lint clean.",
+        "Review passed (reviewer-renata). Red-first reproduced: no core -> suite fails to load; stub -> 19/21 red, 2 invariance tests green (backed by golden bytes). Output validates against shipped schema (ajv 2020 ad hoc, not added); shipped schema == contract except generated not yet required; contract validates once a stamp is added, key order matches. 500 random permutations of nodes/edges/records byte-identical; no localeCompare/Date/Intl/node:/astro in core. absoluteUrl == withBase+absolute() on 240 base/href/site combos; missing href throws. Drafts: no filter in WP01, relies on graph (FR-006 is WP05). Lane tree == 5c266e6; dc1cf77 cleanly reverts 6c6533a's 17 stray files. Gates: pnpm test src 4540/4540, mcp 181/181; lint, typecheck clean. Non-blocking nits: N1 WP-listed 'one page, both scopes' test absent (unreachable: check() rejects it, edge id has no scope); N2 evidence merge is last-wins by url (order-dependent only on synthetic duplicate edges the graph sink cannot emit); N3 doc_status 'active' and title-from-id fallbacks unreachable; N4 shuffle test only reverses."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
