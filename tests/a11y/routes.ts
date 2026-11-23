@@ -97,6 +97,10 @@ export const ROUTES = {
   // GitHub alerts (#250, ADR-0068): the five `> [!TYPE]` alerts rendered as native
   // asides, plus the blockquotes that must stay blockquotes. Scanned in BOTH modes.
   githubAlerts: `${BASE}/guides/github-alerts/`,
+  // Sidebar child cap (#341): a five-page hub with `sidebar_child_cap: 3`. Its
+  // sidebar group is the overview link plus one "5 pages" entry, current on a child.
+  cappedHub: `${BASE}/guides/capped-hub/`,
+  cappedHubChild: `${BASE}/guides/capped-hub/where-the-cap-is-set/`,
   // Ars Rhetorica showcase — the rhetoric hub (WP02/T003), the Hub-layout landing
   // for the ported corpus. Scanned in BOTH modes as a real long-form content hub.
   rhetoricHub: `${BASE}/rhetoric/`,
@@ -435,6 +439,20 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.githubAlerts,
     shell: 'starlight',
     guardRoots: STARLIGHT_GITHUB_ALERTS_GUARD_ROOTS,
+  },
+  // #341 — the capped hub and one of its pages: the capped group (overview link and
+  // "5 pages" entry, current on the child) must clear WCAG in both colour modes.
+  {
+    name: 'Capped hub (/guides/capped-hub/)',
+    path: ROUTES.cappedHub,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
+  },
+  {
+    name: 'Capped hub child (/guides/capped-hub/where-the-cap-is-set/)',
+    path: ROUTES.cappedHubChild,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
   },
   // markua-decks (#47, WP04) — the Markua-capable OUT-OF-FRAME deck. No
   // `renderWait`: the callouts/wrapper/attribute/figure constructs are build-time
