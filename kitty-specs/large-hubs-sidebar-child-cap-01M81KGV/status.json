@@ -88,7 +88,7 @@
     },
     "WP03": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -99,7 +99,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "WP03 ready: capped group, current marking, hub-order prev/next, child-cap export; WP02 folds N1/N3/N4; fast 4084/4084",
-        "Cycle 1 folded: B1 hub-order prev/next survives the OpenAPI rebuild (hubOrderPagination via dkHubOrder), N1 dkCappedHub asserted, N2 href form documented; N3 goes to WP05 guide"
+        "Cycle 1 folded: B1 hub-order prev/next survives the OpenAPI rebuild (hubOrderPagination via dkHubOrder), N1 dkCappedHub asserted, N2 href form documented; N3 goes to WP05 guide",
+        "Cycle 2 approved. B1 fixed: example rebuilt with sidebar_child_cap:3 on guides, openapi ON: hub/children/after-group/OpenAPI pages match openapi-OFF build on every guides page (labels included); vs uncapped only the 2 draft-skipping hub children differ. Uncapped build byte-identical to f6f42a3 (617 files). Red first: 5/6 new cases fail on a9029ef (6th documents the defect). Mutation of hubOrderPagination: 6/11 killed; survivors = 2 equivalent (size guard, new-object), 3 test gaps (next:false side, at===-1 outside-hub branch, dir/ prefix in belowCappedHub) - near-equivalent in practice. dkHubOrder only set when hubCaps.size>0; read only by openapi follow-up; ordering relies on the pre-existing #112 post-order assumption. Author prev:false and object overrides respected. Fast 4090/4090, lint+typecheck clean. Non-blocking: (NB1) label-only string prev/next on a capped child with openapi on jumps past the hub (next=/rhetoric/ vs github-alerts with openapi off) - follow-up; (NB2) add next:false + outside-hub at===-1 test cases; (N3) still owed to WP05 guide."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
