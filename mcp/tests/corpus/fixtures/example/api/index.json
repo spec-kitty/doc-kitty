@@ -77,6 +77,10 @@
     },
     "scenarios": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/scenarios.json"
+    },
+    "tomAnnex": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/tom-annex.json",
+      "title": "Evidence index, not the contractual annex."
     }
   },
   "pages": [
