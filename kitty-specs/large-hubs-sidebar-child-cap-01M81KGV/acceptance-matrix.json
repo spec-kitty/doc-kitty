@@ -86,12 +86,12 @@
     },
     {
       "criterion_id": "FR-009",
-      "description": "Verify FR-009 is satisfied",
+      "description": "The cap API is exported as @spec-kitty/doc-toolkit/child-cap and re-exported from route-shaping.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/sidebar-child-cap.test.ts (package export case)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:32.075861+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
