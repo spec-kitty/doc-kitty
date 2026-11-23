@@ -4,8 +4,9 @@
 - **Origin flow:** `specify`
 - **Slot key:** `specify.contract.drift-and-snapshot`
 - **Input key:** `annex_drift_snapshot`
-- **Status:** `open`
+- **Status:** `resolved`
 - **Created:** `2026-11-23T19:34:39.088953+00:00`
+- **Resolved:** `2026-11-23T20:56:45.578830+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -22,7 +23,7 @@ api/tom-annex.json is derived at build time from committed pages, so ADR-0087's 
 
 ## Final answer
 
-_(none)_
+A: the build always emits api/tom-annex.json (stamped; source_digest over the catalog and the classified pages; at = latest input instant). A CLI writes an opt-in committed snapshot, a registered ADR-0087 producer, and --check reports drift of that snapshot against the tree. Decider: operator, relayed by the dispatcher 2026-11-23 (not independently verified).
 
 ## Rationale
 
@@ -31,3 +32,4 @@ _(none)_
 ## Change log
 
 - `2026-11-23T19:34:39.088953+00:00` - opened
+- `2026-11-23T20:56:45.578830+00:00` - resolved (final_answer="A: the build always emits api/tom-annex.json (stamped; source_digest over the catalog and the classified pages; at = latest input instant). A CLI writes an opt-in committed snapshot, a registered ADR-0087 producer, and --check reports drift of that snapshot against the tree. Decider: operator, relayed by the dispatcher 2026-11-23 (not independently verified).")

@@ -3,7 +3,7 @@
     {
       "created_at": "2026-11-23T19:34:39.088953Z",
       "decision_id": "01M84YEF7GB92FTFFX92HWNGPH",
-      "final_answer": null,
+      "final_answer": "A: the build always emits api/tom-annex.json (stamped; source_digest over the catalog and the classified pages; at = latest input instant). A CLI writes an opt-in committed snapshot, a registered ADR-0087 producer, and --check reports drift of that snapshot against the tree. Decider: operator, relayed by the dispatcher 2026-11-23 (not independently verified).",
       "input_key": "annex_drift_snapshot",
       "mission_id": "01M84YDPJCBFNXNWKGGVX39KCX",
       "mission_slug": "tom-annex-export-01M84YDP",
@@ -18,10 +18,10 @@
       "other_answer": false,
       "question": "api/tom-annex.json is derived at build time from committed pages, so ADR-0087's --check and the per-release snapshot need a committed file to compare. Which shape?",
       "rationale": null,
-      "resolved_at": null,
+      "resolved_at": "2026-11-23T20:56:45.578830Z",
       "resolved_by": null,
       "slot_key": "specify.contract.drift-and-snapshot",
-      "status": "open",
+      "status": "resolved",
       "step_id": null,
       "summary_json": null
     }
