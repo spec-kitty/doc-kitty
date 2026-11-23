@@ -76,13 +76,13 @@ Order: 1, then 2, then 3 and 4 in either order. Slice 1 can ship alone.
 
 ## Slice 1 measurements
 
-Measured on 2026-11-23 with `src/tests/fixtures/large-hub/measure.mjs`: a site
-with one hub of 1,000 generated pages plus 15 other pages (1,015 pages), built
-three times capped (the default cap, 50) and three times uncapped (the cap set
-above the page count), the runs alternating between the two, Node 22, one
-machine.
+Measured on 2026-11-23 with `src/tests/fixtures/large-hub/measure.mjs`. The site
+has one hub of 1,000 generated pages and 15 other pages, 1,015 pages in all. It
+was built three times capped, with the default cap of 50, and three times
+uncapped, with the cap set above the page count. The runs alternated between the
+two, on Node 22 and one machine.
 
-| | Uncapped | Capped |
+| Measure | Uncapped | Capped |
 | --- | --- | --- |
 | Median page HTML | 168,877 bytes | 24,013 bytes |
 | All pages | 163.7 MiB | 23.5 MiB |
