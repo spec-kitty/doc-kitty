@@ -23,7 +23,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { CONTRACT_LOCK_FILE, VENDORED_CONTRACT_DIR } from '../lib/packs/contract.mjs';
+import { CONTRACT_LOCK_FILE, VENDORED_CONTRACT_DIR, lockKeyProblem } from '../lib/packs/contract.mjs';
 
 export const CHARTER_REPOSITORY = 'https://github.com/spec-kitty/spec-kitty-charter';
 const CONTRACT_PATH = 'contracts/packs';
@@ -105,16 +105,62 @@ function resolvePinnable(checkout, ref) {
 }
 
 /**
+ * The snapshot-relative files to copy: the existing lock's keys, or the default
+ * set when there is no lock. A key that is not a safe snapshot path refuses the
+ * whole sync, naming the key (#423).
+ *
+ * @param {string} to
+ * @returns {string[]}
+ */
+function snapshotFileList(to) {
+  const lockFile = path.join(to, CONTRACT_LOCK_FILE);
+  if (!existsSync(lockFile)) return [...DEFAULT_SNAPSHOT_FILES];
+  let previous;
+  try {
+    previous = JSON.parse(readFileSync(lockFile, 'utf8'));
+  } catch (error) {
+    throw new Error(`packs-sync-contract: ${lockFile} does not parse: ${/** @type {Error} */ (error).message}; nothing was written`);
+  }
+  const files = previous?.files;
+  if (files === null || typeof files !== 'object' || Array.isArray(files)) return [...DEFAULT_SNAPSHOT_FILES];
+  const keys = Object.keys(files).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  for (const key of keys) {
+    const problem = lockKeyProblem(key);
+    if (problem) throw new Error(`packs-sync-contract: ${problem}; nothing was written`);
+    insideSnapshot(to, key);
+  }
+  return keys;
+}
+
+/**
+ * The absolute target of a snapshot-relative key, refused when it resolves
+ * outside `to` (a second check behind `lockKeyProblem`).
+ *
+ * @param {string} to
+ * @param {string} key
+ */
+function insideSnapshot(to, key) {
+  const root = path.resolve(to);
+  const target = path.resolve(root, key);
+  const rel = path.relative(root, target);
+  if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) {
+    throw new Error(`packs-sync-contract: ${CONTRACT_LOCK_FILE} key ${JSON.stringify(key)} resolves outside ${root}; nothing was written`);
+  }
+  return target;
+}
+
+/**
  * @param {{ ref: string, from?: string, to?: string, log?: (line: string) => void }} options
  * @returns {{ commit: string, tag?: string, files: Record<string, string> }}
  */
 export function syncContract({ ref, from, to = VENDORED_CONTRACT_DIR, log = (l) => process.stdout.write(`${l}\n`) }) {
+  // The file list comes from the existing lock, so every key is checked before
+  // anything is fetched, read or written (#423).
+  const list = snapshotFileList(to);
   const checkout = from ?? cloneCharter(ref);
   try {
     const { commit, tag } = resolvePinnable(checkout, ref);
     const lockFile = path.join(to, CONTRACT_LOCK_FILE);
-    const previous = existsSync(lockFile) ? JSON.parse(readFileSync(lockFile, 'utf8')) : undefined;
-    const list = previous?.files ? Object.keys(previous.files).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)) : [...DEFAULT_SNAPSHOT_FILES];
     /** @type {Map<string, Buffer>} */
     const contents = new Map();
     for (const file of list) {
@@ -128,7 +174,7 @@ export function syncContract({ ref, from, to = VENDORED_CONTRACT_DIR, log = (l) 
     const files = {};
     for (const [file, bytes] of contents) {
       const hash = createHash('sha256').update(bytes).digest('hex');
-      const target = path.join(to, file);
+      const target = insideSnapshot(to, file);
       const same = existsSync(target) && readFileSync(target).equals(bytes);
       if (!same) {
         mkdirSync(path.dirname(target), { recursive: true });
