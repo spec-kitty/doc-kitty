@@ -37,7 +37,7 @@
       "wp": null
     },
     "#401": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Mission subject (spec.md:6); WP01 core+format at lane-a dc1cf77; remaining WPs open",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -45,8 +45,8 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "verdict": "in-mission",
+      "wp": "WP01"
     },
     "#404": {
       "evidence_ref": "<link or commit>",
