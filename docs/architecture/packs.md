@@ -362,6 +362,17 @@ JSON serialization with keys sorted by UTF-16 code units, and it refuses a lone
 surrogate. `PackModel.manifest.hash` is still the value as written, so #338 can
 show it, but `verified` is false when the recomputed hash differs.
 
+Two limits follow from that recipe:
+
+- The hash is computed over the all-string view of the manifest. That is right
+  while every field the schema declares is a string. If a later schema types a
+  field as a number or a boolean, the reader must hash the typed value. Until
+  then, a typed scalar a producer writes reads as a mismatch, which fails closed.
+- `manifest_hash` has no key. It shows that a manifest has not drifted or been
+  edited since it was hashed, not who wrote it: anyone can rehash a manifest
+  that is consistent with itself. A pack page should not present it as proof
+  of authorship.
+
 The warning codes, each with the pack-relative `file` where there is one:
 
 | Code | When |
