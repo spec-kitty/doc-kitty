@@ -63,6 +63,10 @@ export interface RouteShapingOptions {
   pagination: boolean;
   /** The `sidebar.indexLabel` option (#161); absent = the locale's UI string. */
   indexLabel?: string;
+  /** The site's `sidebar.childCap` (#341); absent = the section's, else the default. */
+  childCap?: number;
+  /** The `sidebar.cappedLabel` option (#341); absent = the locale's UI string. */
+  cappedLabel?: string;
 }
 
 /**
