@@ -11,14 +11,54 @@
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 export const REPO_ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
-const EXAMPLE_DIR = path.join(REPO_ROOT, 'example');
-const ASTRO_BIN = path.join(EXAMPLE_DIR, 'node_modules', 'astro', 'bin', 'astro.mjs');
+
+/** Every fixture site is a folder with this prefix directly in an `example/` folder. */
+export const SITE_PREFIX = '.dk-test-sidebar-cap-';
+
+/** `p` after symlinks when it exists, else `p` resolved against its nearest existing ancestor. */
+function realpathOrSelf(p) {
+  let probe = p;
+  const tail = [];
+  while (true) {
+    try {
+      return path.join(realpathSync(probe), ...tail.reverse());
+    } catch {
+      const up = path.dirname(probe);
+      if (up === probe) return p;
+      tail.push(path.basename(probe));
+      probe = up;
+    }
+  }
+}
+
+/**
+ * The fixture site folder `dir`, checked: an `example/.dk-test-sidebar-cap-*`
+ * folder inside this repository (after symlinks). `writeSite` deletes it and
+ * `buildSite` runs Astro in it, so any other path is refused.
+ */
+export function siteDir(dir) {
+  const abs = path.resolve(dir);
+  const example = path.dirname(abs);
+  if (!path.basename(abs).startsWith(SITE_PREFIX) || path.basename(example) !== 'example') {
+    throw new Error(`[large-hub] not a fixture site folder (example/${SITE_PREFIX}*): ${abs}`);
+  }
+  const root = realpathSync(REPO_ROOT);
+  const inside = (p) => p === root || p.startsWith(root + path.sep);
+  // Checked before anything is created, and again after symlinks are resolved.
+  if (!inside(realpathOrSelf(example))) {
+    throw new Error(`[large-hub] fixture site folder outside the repository ${root}: ${abs}`);
+  }
+  mkdirSync(example, { recursive: true });
+  const parent = realpathSync(example);
+  if (!inside(parent)) throw new Error(`[large-hub] fixture site folder outside the repository ${root}: ${abs}`);
+  return path.join(parent, path.basename(abs));
+}
 
 /** The site's `base`. */
 export const BASE = '/site';
@@ -89,23 +129,29 @@ ${missions ? '  - id: missions\n    label: Missions\n    order: 20\n' : ''}  - i
 
 /** Write a fixture site to `dir`, replacing whatever was there. */
 export function writeSite(dir, options) {
-  rmSync(dir, { recursive: true, force: true });
+  const site = siteDir(dir);
+  rmSync(site, { recursive: true, force: true });
   for (const [rel, contents] of Object.entries(siteFiles(options))) {
-    const abs = path.join(dir, rel);
+    const abs = path.join(site, rel);
     mkdirSync(path.dirname(abs), { recursive: true });
     writeFileSync(abs, contents);
   }
 }
 
-/** Build the site in `dir` with the repository's Astro; returns status, output and seconds. */
-export function buildSite(dir, astroBin = ASTRO_BIN) {
+/**
+ * Build the site in `dir` with the Astro of the checkout it sits in (the
+ * `example/` folder's own dependencies); returns status, output and seconds.
+ */
+export function buildSite(dir) {
+  const site = siteDir(dir);
+  const astroBin = path.join(path.dirname(site), 'node_modules', 'astro', 'bin', 'astro.mjs');
   // A production build wherever it is run from. Vitest exports Vite's own variables
   // (`MODE`, `DEV`, `PROD`, `SSR`, `BASE_URL`) and `NODE_ENV=test`: inherited, they
   // give Starlight's dev-mode search markup and override the site's `base`.
   const env = { ...process.env, CI: '', NODE_ENV: 'production' };
   for (const key of ['BASE_URL', 'MODE', 'DEV', 'PROD', 'SSR']) delete env[key];
   const started = process.hrtime.bigint();
-  const r = spawnSync(process.execPath, [astroBin, 'build'], { cwd: dir, encoding: 'utf8', env, maxBuffer: 1 << 28 });
+  const r = spawnSync(process.execPath, [astroBin, 'build'], { cwd: site, encoding: 'utf8', env, maxBuffer: 1 << 28 });
   const seconds = Number(process.hrtime.bigint() - started) / 1e9;
   return { status: r.status, output: stripVTControlCharacters(`${r.stdout}\n${r.stderr}`), seconds };
 }
