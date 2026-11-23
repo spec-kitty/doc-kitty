@@ -32,11 +32,15 @@ describe('canonicalJson (RFC 8785)', () => {
   });
 
   it('serializes numbers as ECMAScript does (RFC 8785 3.2.2.3)', () => {
-    expect(canonicalJson([1e21, -0, 333333333.33333329, 1e-7, 0.000001, 100, 4.5])).toBe('[1e+21,0,333333333.3333333,1e-7,0.000001,100,4.5]');
+    expect(canonicalJson([1e21, -0, Number('333333333.33333329'), 1e-7, 0.000001, 100, 4.5])).toBe('[1e+21,0,333333333.3333333,1e-7,0.000001,100,4.5]');
   });
 
   it('escapes strings as JSON.stringify does, and keeps other characters as they are (RFC 8785 3.2.2.2)', () => {
-    expect(canonicalJson('€$\u000f\nA\'B"\\\"/')).toBe('"€$\\u000f\\nA\'B\\"\\\\\\\\\\"/"');
+    // RFC 8785's example: euro sign, $, U+000F, LF, A, ', B, ", backslash, backslash, ", / (built from code points).
+    const input = String.fromCodePoint(0x20ac, 0x24, 0x0f, 0x0a, 0x41, 0x27, 0x42, 0x22, 0x5c, 0x5c, 0x22, 0x2f);
+    const expected = String.fromCodePoint(0x22, 0x20ac, 0x24) + '\\u000f\\n' + String.fromCodePoint(0x41, 0x27, 0x42) + '\\"' + '\\\\\\\\' + '\\"/"';
+    expect(canonicalJson(input)).toBe(expected);
+    expect(expected).toHaveLength(24);
   });
 
   it('refuses what JSON cannot hold: a lone surrogate, a non-finite number, undefined', () => {
