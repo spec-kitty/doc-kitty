@@ -20,7 +20,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::scribe-sally",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -30,7 +30,8 @@
       "last_transition_at": "2026-11-23T23:48:30.918879+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "ADR-0085 and kind lists; docs gates green; pnpm test src 4519/4519, mcp 181/181"
+        "ADR-0085 and kind lists; docs gates green; pnpm test src 4519/4519, mcp 181/181",
+        "Cycle 2: ADR-0085 Proposed (draft) and KINDS wording fixed; lint 0; pnpm test src 4519/4519 mcp 181/181 at b9e1a3c"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
