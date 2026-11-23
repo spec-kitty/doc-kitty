@@ -31,7 +31,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "WP01 ready: child-cap API, settings and validation; fast suite 4051/4051, lint and typecheck clean",
-        "Cycle 1 folded: B1 options threaded into route shaping with a red-first test; N1 import order; N2 no model names in new trailers (history cleanup at consolidation)"
+        "Cycle 1 folded: B1 options threaded into route shaping with a red-first test; N1 import order; N2 no model names in new trailers (history cleanup at consolidation)",
+        "Cycle 2 approved at lane head 10ec3fe. B1 fixed: sidebar.childCap/cappedLabel are passed into routeShaping only when set (config.ts:623,800-801), and RouteShapingOptions gained both as a recorded out-of-map edit. The new test fails against the pre-fix config.ts (1 failed/18 passed) and passes after (19/19). It wraps the real routeShapingIntegration call at config.ts:976, which is the only construction and call site. N1/N2 resolved. Fast suite 4052/4052, lint and typecheck clean. Handoff to WP02: routeShapingSource does not serialise childCap/cappedLabel yet (WP02 scope)."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
