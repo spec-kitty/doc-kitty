@@ -102,7 +102,10 @@ It is built as the pack reader is (ADR-0079 D1):
   vendored one.
 - The reader is tolerant. An unknown `schema_version` major, an unknown key or an
   unknown WP state is a warning, and the mission gets a facts-only model. It
-  never fails the build. The build never fetches a contract.
+  never fails the build. The build never fetches a contract. One exception
+  fails closed: when core ships the not-for-publication declaration (D7) and the
+  reader cannot read it (an unknown major, or a missing field), the mission
+  emits nothing and gets a `[dk-missions]` warning.
 - doc-kitty renders and core judges. The reader does not validate a mission
   against core's rules (ADR-0079 D3).
 
@@ -253,6 +256,11 @@ defineDocKittyIntegrations({
 });
 ```
 
+The block above is an example, not the defaults. The defaults are
+`include: []`, `exclude: []`, `states: ['*']` and `bodies: []`, so a site that
+configures `missions` but no `publish` publishes nothing until it names
+missions.
+
 - A mission outside the allow-list emits **nothing**: no page, no hub row, no
   redirect, no agent-API entry and no Op link.
 - A mission that core declares not for publication (spec-kitty/spec-kitty#7629)
@@ -276,8 +284,9 @@ rule: an allow-list in the generator, never `doc_status`, and a leak gate.
 `dockitty-generate-mission-pages --check` fails when:
 
 - a generated page or JSON file holds content from a denied file class (D7). The
-  generator stamps each page with the file classes it drew from, and the gate
-  compares them with the allow-list;
+  generator records on each page the file classes it drew from, and the gate
+  compares them with the allow-list. That field extends the generated-page
+  stamp and is settled with #359's generated-section contract;
 - a page or record exists for a mission that the allow-list or core's private
   declaration excludes;
 - any output contains an Op's `request_text`. The gate reads the source records
