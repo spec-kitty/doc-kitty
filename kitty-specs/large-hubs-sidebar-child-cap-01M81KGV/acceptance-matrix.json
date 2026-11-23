@@ -76,12 +76,12 @@
     },
     {
       "criterion_id": "FR-008",
-      "description": "Verify FR-008 is satisfied",
+      "description": "cappedChildHidden helper; a pre-hidden build gives the same sidebar and prev/next on every page.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/child-cap.test.ts; src/tests/sidebar-child-cap-build.test.ts (sidebar.hidden producer hint)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:27.172706+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
