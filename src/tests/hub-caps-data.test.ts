@@ -95,6 +95,11 @@ describe('hub data in the route-shaping module (FR-004)', () => {
     expect(served().hubCaps[0]![1].count).toBe(7);
     expect(served({}, ['missions/foxtrot.md']).hubCaps[0]![1].count).toBe(6);
   });
+
+  it('does not treat a folder whose index is a draft as a hub', () => {
+    site({ ...MISSIONS('sidebar_child_cap: 5\n'), 'missions/README.md': page('Missions', 'sidebar_child_cap: 5\n').replace('doc_status: active', 'doc_status: draft') });
+    expect(served().hubCaps).toEqual([]);
+  });
 });
 
 describe('cap levels (FR-001)', () => {
