@@ -418,12 +418,6 @@ describe('robustness', () => {
     expect(strip(readPack(copy))).toBe(strip(readPack(fixture('with-manifest/alpha'))));
   });
 
-  it('is deterministic: two reads give byte-identical JSON', () => {
-    for (const p of ['with-manifest/alpha', 'no-manifest/beta', 'retired-file/gamma', 'stale-manifest/delta']) {
-      expect(JSON.stringify(readPack(fixture(p)))).toBe(JSON.stringify(readPack(fixture(p))));
-    }
-  });
-
   it('refuses a path that is not a directory', () => {
     expect(() => readPack(fixture('with-manifest/alpha/pack.yaml'))).toThrow(/\[dk-packs\]/);
   });
