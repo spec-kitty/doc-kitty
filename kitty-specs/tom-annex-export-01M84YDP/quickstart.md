@@ -28,10 +28,10 @@ appears.
 ```bash
 node src/scripts/tom-annex.mjs --dist example/dist \
   --snapshot example/docs/_meta/tom-annex.snapshot.json \
-  --hub example/docs/compliance/evidence-index/index.md
+  --hub example/docs/context/evidence-index/index.md
 node src/scripts/tom-annex.mjs --dist example/dist \
   --snapshot example/docs/_meta/tom-annex.snapshot.json \
-  --hub example/docs/compliance/evidence-index/index.md --check
+  --hub example/docs/context/evidence-index/index.md --check
 ```
 
 `--check` prints `doc-kitty-tom-annex <verdict> <path>` for each file that is not

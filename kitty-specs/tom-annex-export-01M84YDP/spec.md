@@ -124,8 +124,10 @@ check. It reports drift; regenerating clears it.
 
 **Acceptance Scenarios**:
 
-1. **Given** no snapshot is configured, **When** the drift check runs, **Then** it
-   passes and writes nothing.
+1. **Given** a site that has not opted in (it never passes a snapshot or hub path
+   to the evidence-index CLI, so it has no drift-check script), **When** it is
+   built and its usual checks run, **Then** no drift check runs and nothing is
+   written or failed. A bare CLI call with neither path is a usage error.
 2. **Given** a committed snapshot and an unchanged tree, **When** the check runs,
    **Then** it passes.
 3. **Given** a committed snapshot and a changed evidence page, **When** the check
@@ -137,22 +139,24 @@ check. It reports drift; regenerating clears it.
 
 ### User Story 5 - A reader browses a rendered evidence page (Priority: P3)
 
-A site that opts in gets a rendered hub page that groups measures by nature and
-scope, with the same labelling.
+A site that opts in, by running the evidence-index CLI with a hub path and
+committing the page it writes, gets a rendered hub page that groups measures by
+nature and scope, with the same labelling.
 
 **Why this priority**: The opt-in page is for humans. The JSON serves auditors'
 tools and #404.
 
-**Independent Test**: Turn the option on and build. The page exists, is grouped by
-nature and scope, and carries the label. Turn it off and the page is absent.
+**Independent Test**: Run the CLI with a hub path, commit the page and build. The
+page exists, is grouped by nature and scope, and carries the label. A site that
+never generated it has no hub page.
 
 **Acceptance Scenarios**:
 
-1. **Given** the option is off (the default), **When** the site is built, **Then**
-   no hub page exists.
-2. **Given** the option is on, **When** the site is built, **Then** the hub page
-   groups measures by nature, then scope, and states "evidence index, not the
-   contractual annex".
+1. **Given** a site that never generated the hub page (the default), **When** it
+   is built, **Then** no hub page exists.
+2. **Given** a hub page generated with the CLI and committed, **When** the site is
+   built, **Then** the hub page groups measures by nature, then scope, and states
+   "evidence index, not the contractual annex".
 
 ---
 

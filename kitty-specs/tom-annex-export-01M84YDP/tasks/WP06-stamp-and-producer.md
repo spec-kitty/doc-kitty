@@ -155,11 +155,11 @@ by the time this WP runs. Record a one-line rationale for each in the hand-off:
    - check that `by` starts with `doc-kitty-tom-annex/`;
    - check the `source_digest` and `content_hash` patterns;
    - recompute `content_hash` from the file without `generated` and compare.
-3. The schema in `src/lib/tom-annex/tom-annex.schema.json` already describes
-   `generated` as optional. Make it **required** and bump `format_version` to
-   `1.1`, since this is an additive field (NFR-003). Mirror both into
-   `kitty-specs/.../contracts/` through a planning note in the hand-off, not as an
-   edit here.
+3. The schema in `src/lib/tom-annex/tom-annex.schema.json` ships from WP01 with
+   `generated` described but not required. Make it **required** and keep
+   `format_version` at `1.0`. No format 1.0 without the stamp is ever released,
+   because the whole mission lands in one PR (analysis I4; dispatcher,
+   2026-11-23). The mission contract already requires it.
 4. Run the WP05 two-builds test: it must stay green with **no mask**.
 
 ## Definition of Done
@@ -168,7 +168,7 @@ by the time this WP runs. Record a one-line rationale for each in the hand-off:
 - [ ] The digest follows ADR-0087 D2, and its tests include positive controls.
 - [ ] The producer is registered, and the existing producer tests are updated.
 - [ ] The artifact gate verifies `content_hash`. The two-builds test is green, unmasked.
-- [ ] `format_version` is 1.1, with the schema requiring `generated`.
+- [ ] `format_version` stays 1.0, and the shipped schema requires `generated`, matching the mission contract.
 - [ ] `pnpm test` passes in full.
 
 ## Risks

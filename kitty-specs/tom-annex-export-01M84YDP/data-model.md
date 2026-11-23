@@ -11,7 +11,7 @@ in the order listed. Every list is sorted as stated.
 | `format_version` | `"1.0"` | major.minor. A rename or removal bumps the major; an addition bumps the minor (NFR-003). |
 | `label` | string | exactly `"Evidence index, not the contractual annex."` ⚖ |
 | `notice` | string | the not-legal-advice sentence ⚖ |
-| `generated` | GeneratedStamp | ADR-0087. Present once IC-03 lands. |
+| `generated` | GeneratedStamp | ADR-0087. Required in format 1.0. WP06 adds it, and no release happens before then. |
 | `catalog` | `{ source: string, default: boolean }` | from `loadMeasuresCatalog` |
 | `scopes` | `{ system: MeasureEntry[], organisation: MeasureEntry[] }` | each sorted by `id` (code-unit order). An empty scope is `[]`. |
 | `uncovered` | UncoveredMeasure[] | sorted by `id` |

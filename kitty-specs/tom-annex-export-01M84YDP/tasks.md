@@ -196,6 +196,10 @@ now.
   `ownerOfPage` (ADR-0087 D4).
 - The Gherkin migration to the four-key stamp (ADR-0087 D8), and #360–#363.
 - The shared organisation bundle (#404).
+- **An ADR-0087 D5 follow-up:** the annex uses `verified[].at` as an input
+  instant for `at`, but D5 names only `generated.at` and `updated`. Either
+  name verification instants in D5, or drop them (analysis I5; dispatcher,
+  2026-11-23).
 
 ## MVP
 

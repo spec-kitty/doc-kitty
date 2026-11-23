@@ -114,7 +114,7 @@ Requirements: FR-013, FR-004, NFR-003, C-001. Depends on: WP01 (format) and WP07
 2. Add a "Versioning" section:
    - a rename or removal is a major bump;
    - an addition is a minor bump;
-   - 1.1 added `generated` (WP06);
+   - 1.0 includes the `generated` stamp (ADR-0087);
    - consumers must ignore unknown keys within the same major version;
    - point to the shipped schema path.
 3. Add a "Stamp" section linking ADR-0087 and explaining each key, especially

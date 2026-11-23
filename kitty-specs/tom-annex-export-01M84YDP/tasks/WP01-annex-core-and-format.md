@@ -162,6 +162,7 @@ rather than emitting a broken record.
    - Keys must be emitted in **schema order**: `format`, `format_version`, `label`, `notice`, `generated` (only when present), `catalog`, `scopes`, `uncovered`, `counsel`, and the nested orders from `data-model.md`.
    - Build ordered objects explicitly. Do not rely on insertion order of objects built elsewhere.
 2. Copy `contracts/tom-annex.schema.json` to `src/lib/tom-annex/tom-annex.schema.json`. This shipped copy is what #404 reads.
+   **One deliberate difference:** leave `generated` out of the top-level `required` list. This WP does not produce the stamp; WP06 adds it and makes it required. The format stays 1.0 throughout (analysis I4).
 3. Red tests:
    - The serialised canonical fixture equals a committed golden string. Write it into the test, short, using the fixture from T001.
    - **Schema consistency**: there is no JSON-schema validator in the repo, and you must not add one. Assert instead that:
@@ -176,7 +177,7 @@ rather than emitting a broken record.
 - [ ] `buildTomAnnex`, `serializeTomAnnex` and the three constants are exported from `src/lib/tom-annex/core.mjs`, which is fs-free and Astro-free and passes `// @ts-check`.
 - [ ] Every T002–T006 test was red first, and is now green.
 - [ ] `pnpm test` passes (both tiers and mcp, NFR-005), and so do `pnpm lint` and `pnpm typecheck`, if present at the root.
-- [ ] The shipped schema equals the mission contract.
+- [ ] The shipped schema equals the mission contract, except that `generated` is not yet required (WP06 adds that).
 
 ## Risks
 
