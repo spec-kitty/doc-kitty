@@ -57,7 +57,8 @@
       "last_transition_at": "2026-11-23T22:49:59.075204+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Shared site graph: byte ratchet on content-graph.json (captured pre-extraction, non-vacuity shown), memo/dev/reset and no-mutation tests red-first; full pnpm test green (src 4526/4526, mcp 181/181); CI typecheck and lint clean."
+        "Shared site graph: byte ratchet on content-graph.json (captured pre-extraction, non-vacuity shown), memo/dev/reset and no-mutation tests red-first; full pnpm test green (src 4526/4526, mcp 181/181); CI typecheck and lint clean.",
+        "Approved. content-graph.json byte-identical on the full example build (sha256 78e0e3b4..., 88 nodes/134 edges incl. 3 OpenAPI); whole dist identical modulo worktree-path CSS scope hashes. Gates: src 4526/4526, mcp 181/181, lint 0, typecheck 0 errors. Memo key, dev rebuild, failure eviction and no-mutation verified. Non-blocking nits: (N1) unconditional memo.delete on rejection can evict a newer entry after resetSiteContentGraph() mid-flight - guard with memo.get(key)===pending; (N2) ratchet fixture does not pin the OpenAPI branch (covered by the full-site diff); (N3) bare-tsc import.meta.env error follows with-base.ts/page-formats-route.ts precedent; a vite/client triple-slash reference would clear it; the comment cites with-base.ts for the DEV spelling but that file reads BASE_URL."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
