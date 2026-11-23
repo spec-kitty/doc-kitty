@@ -20,7 +20,7 @@ import * as packs from '../lib/packs/index.mjs';
 
 const FIXTURES = fileURLToPath(new URL('./fixtures/packs/', import.meta.url));
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const READ_WITH = '69ec326179246c9a79eca1ba1d424f059f5153e2';
+const READ_WITH = '33f3ad46e9e33e895d4cd3a077d928d91b4f025f';
 const fixture = (p: string) => path.join(FIXTURES, p);
 const codes = (m: { problems: { code: string }[] }) => m.problems.map((p) => p.code);
 
@@ -342,6 +342,22 @@ describe('robustness', () => {
       ['manifest-duplicate-entry', 'directives/a.directive.yaml'],
       ['manifest-kind-mismatch', 'tactics/t.tactic.yaml'],
     ]);
+  });
+
+  it('verifies a routing catalog constituent, a kind the contract knows from rc.2 on (#418)', () => {
+    const root = temp();
+    const dir = path.join(root, 'alpha');
+    cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
+    mkdirSync(path.join(dir, 'routing_catalogs'));
+    const rel = 'routing_catalogs/default.routing-catalog.yaml';
+    writeFileSync(path.join(dir, rel), 'id: default\n');
+    const file = path.join(dir, 'pack-manifest.yaml');
+    const entry = `  - kind: routing_catalog\n    id: default\n    path: ${rel}\n    content_hash: ${packContentHash(readFileSync(path.join(dir, rel)))}\n`;
+    writeFileSync(file, readFileSync(file, 'utf8').replace('presets:\n', `${entry}presets:\n`));
+    const model = readPack(dir);
+    expect(model.problems).toEqual([]);
+    expect(model.manifest?.verified).toBe(true);
+    expect(model.inventory.kinds).toContainEqual({ kind: 'routing_catalog', ids: ['default'] });
   });
 
   it('does not verify a manifest that lists a kind the contract does not know', () => {

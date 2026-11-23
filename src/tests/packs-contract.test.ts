@@ -35,8 +35,8 @@ function copy(): string {
 
 describe('the vendored packs contract snapshot', () => {
   it('is pinned to the packs-contract release tag and its commit', () => {
-    expect(lock.tag).toBe('contract-packs-v0.1.0-rc.1');
-    expect(lock.commit).toBe('69ec326179246c9a79eca1ba1d424f059f5153e2');
+    expect(lock.tag).toBe('contract-packs-v0.1.0-rc.2');
+    expect(lock.commit).toBe('33f3ad46e9e33e895d4cd3a077d928d91b4f025f');
     expect(lock.contractPath).toBe('contracts/packs');
   });
 
