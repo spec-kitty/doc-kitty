@@ -820,6 +820,18 @@ describe('integration wiring (T022, C-004)', () => {
     });
   });
 
+  it('serves the sidebar.childCap and sidebar.cappedLabel options to the route-shaping module (#341)', () => {
+    const data = inSite(() => {
+      // Two published children (a page with no `doc_status` is a draft, which a hub never counts).
+      for (const name of ['configure', 'verify']) {
+        writeFileSync(path.join(process.cwd(), 'docs', 'guides', 'setup', `${name}.md`), `---\ntitle: ${name}\ndoc_status: active\n---\n`);
+      }
+      return servedData(defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['README', 'index'], sidebar: { childCap: 1, cappedLabel: 'All {count}' } }));
+    }) as unknown as { hubCaps: Array<[string, { cap: number; count: number }]>; cappedLabel?: string };
+    expect(data.hubCaps.map(([dir, { cap, count }]) => [dir, cap, count])).toEqual([['guides/setup', 1, 2]]);
+    expect(data.cappedLabel).toBe('All {count}');
+  });
+
   it('rejects a non-array/object sidebar, a blank or non-string sidebar.indexLabel and an unknown sidebar key (#161)', () => {
     const define = (sidebar: unknown) => () => defineDocKittyIntegrations({ title: 'Docs', sidebar: sidebar as never });
     expect(define({ indexLabel: '  ' })).toThrow('[dk-config] sidebar.indexLabel must be a non-empty string');
