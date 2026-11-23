@@ -97,6 +97,10 @@ export const ROUTES = {
   // GitHub alerts (#250, ADR-0068): the five `> [!TYPE]` alerts rendered as native
   // asides, plus the blockquotes that must stay blockquotes. Scanned in BOTH modes.
   githubAlerts: `${BASE}/guides/github-alerts/`,
+  // Sidebar child cap (#341): a five-page hub with `sidebar_child_cap: 3`. Its
+  // sidebar group is the overview link plus one "5 pages" entry, current on a child.
+  cappedHub: `${BASE}/guides/capped-hub/`,
+  cappedHubChild: `${BASE}/guides/capped-hub/where-the-cap-is-set/`,
   // Ars Rhetorica showcase — the rhetoric hub (WP02/T003), the Hub-layout landing
   // for the ported corpus. Scanned in BOTH modes as a real long-form content hub.
   rhetoricHub: `${BASE}/rhetoric/`,
@@ -430,6 +434,20 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
   },
   // #250 — the GitHub alert fixture: five native asides and three plain
   // blockquotes must clear WCAG in both colour modes.
+  // #341 — the capped hub and one of its pages: the capped group (overview link and
+  // "5 pages" entry, current on the child) must clear WCAG in both colour modes.
+  {
+    name: 'Capped hub (/guides/capped-hub/)',
+    path: ROUTES.cappedHub,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
+  },
+  {
+    name: 'Capped hub child (/guides/capped-hub/where-the-cap-is-set/)',
+    path: ROUTES.cappedHubChild,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
+  },
   {
     name: 'GitHub alerts (/guides/github-alerts/)',
     path: ROUTES.githubAlerts,
