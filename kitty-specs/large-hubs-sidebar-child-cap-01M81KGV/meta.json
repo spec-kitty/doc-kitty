@@ -29,6 +29,7 @@
   "purpose_context": "Mission, Op, pack and Gherkin sections can hold hundreds of children, and today every child lands in every page's sidebar. A configurable cap replaces an oversized group's children with one entry that links to the hub, so the sidebar stays bounded and cheap to build. Slice 1 of the large-hubs epic (#340); the paged hub listing (#342) builds on it.",
   "purpose_tldr": "Keep every page's sidebar short when a section has hundreds of child pages.",
   "slug": "large-hubs-sidebar-child-cap-01M81KGV",
+  "status_phase": "1",
   "target_branch": "feat/341-sidebar-child-cap",
   "topology": "lanes_with_coord",
   "topology_decision": {
