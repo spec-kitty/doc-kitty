@@ -66,7 +66,8 @@
       "last_transition_at": "2026-11-23T08:22:18.512006+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "WP02 ready: hubCaps and cappedLabel served; fast 4063/4063, lint/typecheck clean"
+        "WP02 ready: hubCaps and cappedLabel served; fast 4063/4063, lint/typecheck clean",
+        "Approved. Red-first verified (WP02 source reverted to 0f0d16c: 9/10 hub-caps-data + the route-shaping e2e case fail; the determinism case passes by construction). Mutations caught: at-cap boundary (<= -> <) and hub/section precedence swap. Adversarial probes green: draft and index-less sub-folders excluded, no-status page excluded, nested hub, code-unit hub order, withheld sub-folder, index basename, invalid caps fall back, child order equals selectHubChildren on tied titles. .d.ts matches runtime. Fast suite 4063/4063, lint and typecheck clean. Non-blocking nits: N1 ShapingPage orphans directoryMetaInputs JSDoc (confirmed); N2 out-of-map route-shaping.test.ts edit named in commit but not flagged as out-of-map; sectionCap inlines split('/')[0] instead of sectionOf (T009/DIRECTIVE_044); a draft hub index is still treated as a hub when not withheld (spec: published index). Forward to WP03: index-less sub-folder pages are not hub children, so a capped group drops them from the sidebar with no route back except direct links; spec line 102 covers sub-folders only."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
