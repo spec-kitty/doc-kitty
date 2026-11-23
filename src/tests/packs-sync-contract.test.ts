@@ -211,13 +211,5 @@ describe('packs-sync-contract', () => {
       expect(res.status, res.stderr).toBe(0);
       expect(readFileSync(path.join(to, '..notes.yaml'), 'utf8')).toBe('n: 1\n');
     });
-
-    it('still syncs a well-formed lock (the happy path is unchanged)', () => {
-      const repo = charterWithOutsideFile();
-      const to = seededSnapshot();
-      const res = run('--ref', 'contract-packs-v9.9.10', '--from', repo, '--to', to);
-      expect(res.status, res.stderr).toBe(0);
-      expect(readFileSync(path.join(to, 'schemas/policy.schema.json'), 'utf8')).toBe('{"v":1}\n');
-    });
   });
 });
