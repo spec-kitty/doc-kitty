@@ -188,7 +188,11 @@ function normalizeSectionEntries(
       if (sidebar === null || typeof sidebar !== 'object' || Array.isArray(sidebar)) {
         throw new Error(`${src}: section "${id}" "sidebar" must be a mapping`);
       }
-      const { childCap } = sidebar as Record<string, unknown>;
+      const { childCap, ...rest } = sidebar as Record<string, unknown>;
+      const unknown = Object.keys(rest).sort();
+      if (unknown.length > 0) {
+        throw new Error(`${src}: section "${id}" sidebar has unknown key "${unknown[0]}"; known keys: childCap`);
+      }
       if (childCap !== undefined && !isChildCap(childCap)) {
         throw new Error(`${src}: section "${id}" sidebar.childCap must be a positive whole number`);
       }

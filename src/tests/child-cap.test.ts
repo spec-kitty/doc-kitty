@@ -137,6 +137,9 @@ describe('section sidebar.childCap in sections.yaml (FR-001, FR-002)', () => {
       'sections.yaml: section "adr" sidebar.childCap must be a positive whole number',
     );
     expect(() => registry('    sidebar: 5\n')).toThrow('sections.yaml: section "adr" "sidebar" must be a mapping');
+    expect(() => registry('    sidebar:\n      child_cap: 10\n')).toThrow(
+      'sections.yaml: section "adr" sidebar has unknown key "child_cap"; known keys: childCap',
+    );
   });
 });
 
