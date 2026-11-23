@@ -20,7 +20,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::implementer-ivan",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -30,7 +30,8 @@
       "last_transition_at": "2026-11-23T07:52:03.375401+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "WP01 ready: child-cap API, settings and validation; fast suite 4051/4051, lint and typecheck clean"
+        "WP01 ready: child-cap API, settings and validation; fast suite 4051/4051, lint and typecheck clean",
+        "Cycle 1 folded: B1 options threaded into route shaping with a red-first test; N1 import order; N2 no model names in new trailers (history cleanup at consolidation)"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
