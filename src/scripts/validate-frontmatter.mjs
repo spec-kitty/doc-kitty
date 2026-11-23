@@ -259,6 +259,8 @@ export const frontmatterSchema = z
     glossary_context: z.string().optional(),
     glossary_autolink: z.boolean().optional(),
     schematic_path: z.string().optional(),
+    // The hub's sidebar child cap (#341), mirrored from `docKittyFields`.
+    sidebar_child_cap: z.number().int('must be a positive whole number').positive('must be a positive whole number').optional(),
     agent: z
       .object({
         discoverable: z.boolean().optional(),
