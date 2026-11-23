@@ -32,7 +32,7 @@ A pure renderer builds a page's frontmatter from the manifest record, including 
 |---|---|
 | Structure: a predictable, browsable shape | Pass. The templates are structure (headings, frontmatter); the preset is an opt-in `sections.yaml` snippet. |
 | Content scope: the toolkit does not author content | Pass, enforced by a test (NFR-004): template bodies hold headings and HTML-comment prompts only, with no policy or legal wording. |
-| Maintainability: single source of truth | Pass. `Role` is added only to `KINDS` in `vocabulary-core.mjs`, which the schema, the gate and the tools all import (C-003). |
+| Maintainability: single source of truth | Pass. `Role` is added only to `KINDS` in `vocabulary-core.mjs`, the one list of kinds; the gate reads it for the unknown-kind warning, and the build schema keeps `kind` an open string (C-003). |
 | Flexibility: adapt without a rewrite | Pass. The preset is opt-in; a consumer type alias applies through the existing vocabulary resolver. |
 | Architectural intent: ADRs for structural changes | Pass. ADR-0085 records the kind, following the ADR-0067 precedent for appending a kind. |
 
