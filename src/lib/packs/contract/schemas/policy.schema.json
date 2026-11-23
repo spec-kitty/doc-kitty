@@ -73,6 +73,9 @@
         },
         "step_enhancement": {
           "$ref": "#/$defs/level"
+        },
+        "routing_catalog": {
+          "$ref": "#/$defs/level"
         }
       },
       "title": "Kind Defaults",
@@ -82,7 +85,7 @@
       "additionalProperties": false,
       "description": "The level per artifact, keyed by bare URN (<kind>:<id> of an artifact kind, no pack qualifier; a glossary context is glossary_context:<id>, ADR-0053 decision 13); an entry wins over its kind's default.",
       "patternProperties": {
-        "^(directive|tactic|styleguide|toolguide|paradigm|procedure|agent_profile|glossary_context|skill|anti_pattern|asset|template|mission_type|guard|lifecycle|step_enhancement):[A-Za-z0-9_/.-]+$": {
+        "^(directive|tactic|styleguide|toolguide|paradigm|procedure|agent_profile|glossary_context|skill|anti_pattern|asset|template|mission_type|guard|lifecycle|step_enhancement|routing_catalog):[A-Za-z0-9_/.-]+$": {
           "$ref": "#/$defs/level"
         }
       },

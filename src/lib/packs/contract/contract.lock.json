@@ -1,15 +1,15 @@
 {
-  "commit": "69ec326179246c9a79eca1ba1d424f059f5153e2",
+  "commit": "33f3ad46e9e33e895d4cd3a077d928d91b4f025f",
   "contractPath": "contracts/packs",
   "files": {
-    "conformance/classifier-cases.yaml": "c8875305387d8a7e191ea3f3478d0e0366da254164a3e21fdfd427bd2ac2ffd7",
-    "file-kinds.yaml": "4c04f16718b86fa509661737488144a418b27fbc54e697d550315584350db548",
+    "conformance/classifier-cases.yaml": "a9a2404ca401622412de5f5fe971435f149acad45ee1499eb0ff5041f3f68162",
+    "file-kinds.yaml": "1fb9480f95669a21f14e42dde6d1b84b170d27a3762039c46db3b5d4567150e4",
     "schemas/pack-descriptor.schema.json": "15e5260de3ab8202631b9ddefc1266a64419130a2f849fa0f9ded32f6cfbf69f",
     "schemas/pack-document.schema.json": "41331d15e99f7b7d0e3478f730ed462dcb356391e0b0e8703c8a05955be56321",
-    "schemas/pack-manifest.schema.json": "5166887f8e9360a652195ca3d7d31d8c4f9efe3762779c9cacde476f3a70549a",
-    "schemas/policy.schema.json": "1fe07e201e249236b8a5238f8e0d5af755bdaa9828d827abd8b3eeeb54a7cceb",
-    "schemas/preset.schema.json": "1c9e5e431f26cde5eb252ab09dc7a91fbf1b4ba0c1a024c33b54a3974d73498e"
+    "schemas/pack-manifest.schema.json": "2dd287b8f59e2f50082551bc04273a50631ef95681e5df5b2d48268500645a75",
+    "schemas/policy.schema.json": "276d2f0873902202f72dbd409130df35eb6e8ded98dab4255b119ad05ab40238",
+    "schemas/preset.schema.json": "34842e591b9b9c4442e43aec3ba118ab52ec5445717f0be3eccc168768d855de"
   },
   "source": "https://github.com/spec-kitty/spec-kitty-charter",
-  "tag": "contract-packs-v0.1.0-rc.1"
+  "tag": "contract-packs-v0.1.0-rc.2"
 }
