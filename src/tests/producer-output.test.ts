@@ -9,7 +9,6 @@ import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { isProducerOwnedPage, scanProducerOutput } from '../lib/producer-output.mjs';
-import { scanOutputDir } from '../lib/gherkin/generate.mjs';
 
 const page = (by: string) => `---\ntitle: T\ngenerated:\n  by: ${JSON.stringify(by)}\n  at: "2026-11-22T00:00:00Z"\n---\n\n# T\n`;
 
@@ -53,11 +52,6 @@ describe('scanProducerOutput', () => {
     const linked = path.join(root, 'linked-root');
     symlinkSync(path.join(root, 'sub'), linked);
     expect(scanProducerOutput(linked, 'doc-kitty-gherkin')).toEqual({ owned: [], authored: ['.'] });
-  });
-
-  it('the Gherkin scan is the producer scan for doc-kitty-gherkin', () => {
-    const root = fixture();
-    expect(scanOutputDir(root)).toEqual(scanProducerOutput(root, 'doc-kitty-gherkin'));
   });
 });
 

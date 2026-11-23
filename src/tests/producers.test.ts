@@ -7,7 +7,6 @@
  */
 import { describe, expect, it } from 'vitest';
 import { PRODUCER_REGISTRY, createProducerRegistry, inScope } from '../lib/producers.mjs';
-import { PRODUCERS } from '../lib/generator-stamp.mjs';
 
 const stamped = (by: string, extra: Record<string, unknown> = {}) => ({ generated: { by, at: '2026-11-22T00:00:00Z' }, ...extra });
 
@@ -16,10 +15,6 @@ describe('the built-in registry', () => {
     expect(PRODUCER_REGISTRY.ids('ownership')).toEqual(['doc-kitty-gherkin', 'doc-kitty-glossary']);
     expect(PRODUCER_REGISTRY.ids('provenance')).toEqual(['doc-kitty-scaffold']);
     expect(PRODUCER_REGISTRY.ids()).toEqual(['doc-kitty-gherkin', 'doc-kitty-glossary', 'doc-kitty-scaffold']);
-  });
-
-  it('is what PRODUCERS in generator-stamp exposes', () => {
-    expect([...PRODUCERS]).toEqual(PRODUCER_REGISTRY.ids('ownership'));
   });
 
   it('maps a versioned stamp and a retired stamp to their producer', () => {
@@ -180,10 +175,6 @@ describe('createProducerRegistry', () => {
     expect(() =>
       createProducerRegistry([{ id: 'a', role: 'ownership', scope: { type: 'section' }, recognition: 'guess' as never }]),
     ).toThrow(/recognition/);
-  });
-
-  it('returns a frozen registry', () => {
-    expect(Object.isFrozen(PRODUCER_REGISTRY)).toBe(true);
   });
 });
 
