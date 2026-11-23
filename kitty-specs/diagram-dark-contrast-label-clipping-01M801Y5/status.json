@@ -1,7 +1,7 @@
 {
-  "event_count": 52,
-  "last_event_id": "01M853T9V33Z54V5HW7FE3M9SE",
-  "materialized_at": "2026-11-23T21:08:29.667996+00:00",
+  "event_count": 54,
+  "last_event_id": "01M853XV2QGPMGV1494ZQM1JBS",
+  "materialized_at": "2026-11-23T21:10:25.449567+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 1
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -108,9 +108,9 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 5,
       "implementer_of_record": "claude::curator-carla",
-      "lane": "planned",
-      "last_event_id": "01M853T9V33Z54V5HW7FE3M9SE",
-      "last_transition_at": "2026-11-23T21:08:29.667996+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M853XV2QGPMGV1494ZQM1JBS",
+      "last_transition_at": "2026-11-23T21:10:25.449567+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "implementation is on the Mission branch at eeb40b3; lane-planning maps to main; never commit to main (operator ruling via dispatcher, 2026-11-22)",
@@ -126,7 +126,7 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
