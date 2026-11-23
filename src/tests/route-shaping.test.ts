@@ -11,6 +11,7 @@
  *
  * Mission: sidebar-frame-header-carrier-01M4T3CB, WP04.
  */
+import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY } from '../lib/child-cap.js';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { openApiSidebarGroup } from '../lib/openapi/adapters';
@@ -810,7 +811,7 @@ describe('integration wiring (T022, C-004)', () => {
     expect(plugins.map((p) => p.name)).toEqual(['doc-kitty:i18n', 'adopter']);
     const injected: unknown[] = [];
     (plugins[0]!.hooks as Record<string, (arg: { injectTranslations: (t: unknown) => void }) => void>)['i18n:setup']!({ injectTranslations: (t: unknown) => injected.push(t) });
-    expect(injected).toEqual([{ en: { [INDEX_LABEL_KEY]: 'Overview' } }]);
+    expect(injected).toEqual([{ en: { [INDEX_LABEL_KEY]: 'Overview', [CAPPED_LABEL_KEY]: CAPPED_ENTRY_LABEL } }]);
     inSite(() => {
       expect(servedData(defineDocKittyIntegrations({ title: 'Docs' })).indexLabel).toBeUndefined();
       const labelled = defineDocKittyIntegrations({ title: 'Docs', sidebar: { indexLabel: 'Start here' } });

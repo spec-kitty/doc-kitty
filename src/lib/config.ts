@@ -83,6 +83,7 @@ import {
 import { toPublication } from './integrations/openapi-publish.js';
 import { writePublication } from './openapi/publication.js';
 import { normaliseOpenApiOptions, type OpenApiOptions } from './openapi/options.mjs';
+import { isChildCap } from './child-cap.js';
 import { materialiseOpenApiSpecs, composeSitemapPredicates, unregisterSitemapPredicate } from './openapi/materialise.mjs';
 // The sitemap seams of the plan's parallel-edit registry (`sitemapPredicates`
 // and `composeSitemapPredicates`) live in materialise.mjs, dependency-light, so
@@ -140,7 +141,19 @@ export interface DocKittySidebarOptions {
   collapsed?: boolean;
   /** Make a group's label the link to its index page. Default `false`; refused together with `indexLabel`. */
   titleIsIndex?: boolean;
+  /**
+   * The sidebar child cap (#341): a hub with more published children than this
+   * shows its index link and one entry to the hub instead. A positive whole
+   * number; default 50. A section's `sidebar.childCap` and a hub's
+   * `sidebar_child_cap` frontmatter win over it.
+   */
+  childCap?: number;
+  /** Label of the capped entry; `{count}` is replaced. Wins over the `dockitty.sidebar.cappedEntry` UI string. */
+  cappedLabel?: string;
 }
+
+/** The keys of the object form of `sidebar`, as error messages list them. */
+const SIDEBAR_KEYS = 'indexLabel, collapsed, titleIsIndex, childCap or cappedLabel';
 
 /**
  * Split the `sidebar` option into the consumer's Starlight sidebar (array) and
@@ -149,18 +162,33 @@ export interface DocKittySidebarOptions {
 function splitSidebarOption(sidebar: DocKittyOptions['sidebar']): {
   starlightSidebar: StarlightUserConfig['sidebar'];
   indexLabel: string | undefined;
+  childCap: number | undefined;
+  cappedLabel: string | undefined;
   chrome: ChromeSidebarInput;
 } {
   if (sidebar === undefined || Array.isArray(sidebar)) {
-    return { starlightSidebar: sidebar as StarlightUserConfig['sidebar'], indexLabel: undefined, chrome: {} };
+    return {
+      starlightSidebar: sidebar as StarlightUserConfig['sidebar'],
+      indexLabel: undefined,
+      childCap: undefined,
+      cappedLabel: undefined,
+      chrome: {},
+    };
   }
   if (typeof sidebar !== 'object' || sidebar === null) {
-    throw new Error('[dk-config] sidebar must be a Starlight sidebar array or an object with indexLabel, collapsed or titleIsIndex');
+    throw new Error(`[dk-config] sidebar must be a Starlight sidebar array or an object with ${SIDEBAR_KEYS}`);
   }
-  const { indexLabel, collapsed, titleIsIndex, ...unknown } = sidebar as DocKittySidebarOptions & Record<string, unknown>;
+  const { indexLabel, collapsed, titleIsIndex, childCap, cappedLabel, ...unknown } =
+    sidebar as DocKittySidebarOptions & Record<string, unknown>;
   const [extra] = Object.keys(unknown);
   if (extra !== undefined) {
-    throw new Error(`[dk-config] unknown key "${extra}" under sidebar; expected indexLabel, collapsed or titleIsIndex`);
+    throw new Error(`[dk-config] unknown key "${extra}" under sidebar; expected ${SIDEBAR_KEYS}`);
+  }
+  if (childCap !== undefined && !isChildCap(childCap)) {
+    throw new Error('[dk-config] sidebar.childCap must be a positive whole number');
+  }
+  if (cappedLabel !== undefined && (typeof cappedLabel !== 'string' || cappedLabel.trim() === '')) {
+    throw new Error('[dk-config] sidebar.cappedLabel must be a non-empty string');
   }
   if (indexLabel !== undefined && (typeof indexLabel !== 'string' || indexLabel.trim() === '')) {
     throw new Error('[dk-config] sidebar.indexLabel must be a non-empty string');
@@ -178,6 +206,8 @@ function splitSidebarOption(sidebar: DocKittyOptions['sidebar']): {
   return {
     starlightSidebar: undefined,
     indexLabel,
+    childCap,
+    cappedLabel,
     chrome: {
       ...(collapsed !== undefined ? { collapsed } : {}),
       ...(titleIsIndex !== undefined ? { titleIsIndex } : {}),
