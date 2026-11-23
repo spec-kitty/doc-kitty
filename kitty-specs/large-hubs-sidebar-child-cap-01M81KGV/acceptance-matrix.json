@@ -56,12 +56,12 @@
     },
     {
       "criterion_id": "FR-006",
-      "description": "Verify FR-006 is satisfied",
+      "description": "Label: sidebar.cappedLabel, else dockitty.sidebar.cappedEntry translation, else '{count} pages'.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/child-cap.test.ts (resolveCappedLabel, UI string); src/tests/sidebar-child-cap.test.ts (label function)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:17.114617+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
