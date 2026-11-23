@@ -66,12 +66,12 @@
     },
     {
       "criterion_id": "FR-007",
-      "description": "Verify FR-007 is satisfied",
+      "description": "prev/next follow the hub order, also after the OpenAPI renderer's rebuild and for label-only overrides.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/sidebar-child-cap.test.ts (hub order, hubOrderPagination, paginationFollow); sidebar-child-cap-build.test.ts; tests/a11y/sidebar-child-cap.spec.ts (openapi on)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:21.942011+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
