@@ -26,8 +26,8 @@ const PIN = JSON.parse(readFileSync(new URL('./fixtures/packs-corpus/open-packs.
 const HOW =
   `set DK_OPEN_PACKS_DIR to a checkout of ${PIN.repository} at ${PIN.commit}: ` +
   `git init open-packs && git -C open-packs fetch --depth 1 ${PIN.repository} ${PIN.commit} && git -C open-packs checkout FETCH_HEAD`;
-/** The only warning an open-packs pack carries at the pin (see the header). */
-const EXPECTED_WARNINGS = ['charter-lock-mismatch'];
+/** The warnings, with their counts, an open-packs pack carries at the pin (see the header). */
+const EXPECTED_WARNINGS = { 'charter-lock-mismatch': 1 };
 const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 /**
@@ -75,7 +75,7 @@ describe('every open-packs pack at the pinned commit', () => {
       // Verified includes the manifest's own hash, recomputed with RFC 8785 (#417).
       expect(model.manifest?.hash, dir).toMatch(/^[0-9a-f]{64}$/);
       expect(model.inventory.source, dir).toBe('manifest');
-      expect(Object.keys(byCode), dir).toEqual(EXPECTED_WARNINGS);
+      expect(byCode, dir).toEqual(EXPECTED_WARNINGS);
     }
     const elapsed = performance.now() - start;
     console.log(`read ${dirs.length} packs in ${Math.round(elapsed)} ms`);
