@@ -16,7 +16,8 @@ declare namespace App {
     dkHubOrder?: {
       hubCaps: import('./child-cap.js').HubCapMap;
       currentSlug: string;
-      follows: { prev: boolean; next: boolean };
+      /** `true` follows the sidebar, a string follows it under that label, `false` keeps the author's link. */
+      follows: { prev: import('./route-shaping.js').PaginationFollow; next: import('./route-shaping.js').PaginationFollow };
       /** The prev/next the route-shaping middleware computed. */
       pagination: import('./route-shaping.js').RoutePagination;
     };

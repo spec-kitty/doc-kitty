@@ -25,6 +25,7 @@ import { sidebarIcons } from 'virtual:doc-kitty/sidebar-icons';
 import {
   decorateSidebarIcons,
   expandCappedGroups,
+  paginationFollow,
   relabelledLinks,
   resolveCappedLabel,
   resolveIndexLabel,
@@ -64,9 +65,10 @@ export const onRequest = defineRouteMiddleware((context) => {
 
     // `prev`/`next` front matter left unset means "follow the sidebar".
     const { prev, next } = route.entry.data;
+    // How each side follows the sidebar: unset, or a label-only override (#341).
     const follows = {
-      prev: routeShaping.pagination && prev === undefined,
-      next: routeShaping.pagination && next === undefined,
+      prev: paginationFollow(prev, routeShaping.pagination),
+      next: paginationFollow(next, routeShaping.pagination),
     };
     // A capped hub's children are not in the shaped sidebar, so prev/next walk a copy
     // where they are, in the hub's order (the shaped tree itself when nothing is capped).
