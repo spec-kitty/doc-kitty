@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "mission_slug": "subprocessor-catalog-01M84X07",
+  "mission_id": "01M84X07GSZS94MXX0RYYNMBJK",
+  "mission_branch": "kitty/mission-subprocessor-catalog-01M84X07",
+  "target_branch": "feat/403-subprocessor-catalog",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/subprocessors-core.mjs",
+        "src/lib/subprocessors-iso3166.mjs",
+        "src/lib/subprocessors-loader.mjs",
+        "src/tests/fixtures/subprocessors/**",
+        "src/tests/subprocessors-core.test.ts",
+        "src/tests/subprocessors-loader.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/adr/0086-subprocessor-catalog.md",
+        "docs/adr/README.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/scripts/validate-catalog.mjs",
+        "src/tests/fixtures/subprocessors-gate/**",
+        "src/tests/validate-catalog-subprocessors.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/subprocessors-render.ts",
+        "src/tests/subprocessors-render.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/contract.ts",
+        "src/lib/integrations/subprocessors.ts",
+        "src/lib/routes/agent-index.ts",
+        "src/lib/routes/subprocessors-api-injected.ts",
+        "src/lib/routes/subprocessors-feed-injected.ts",
+        "src/lib/served-surfaces.ts",
+        "src/package.json",
+        "src/tests/fixtures/subprocessors-site/**",
+        "src/tests/served-surfaces-build.test.ts",
+        "src/tests/served-surfaces.test.ts",
+        "src/tests/subprocessors-build.test.ts",
+        "src/tests/subprocessors-integration.test.ts",
+        "src/tests/subprocessors-parity.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tests"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "docs/changelog/unreleased/403-subprocessor-catalog.md",
+        "docs/guides/consumer-setup.md",
+        "example/docs/_meta/subprocessors.yaml",
+        "src/scripts/assert-build-artifacts.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-planning"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "docs/changelog/unreleased/403-subprocessor-page.md",
+        "example/docs/reference/subprocessors.md",
+        "src/scripts/generate-subprocessor-page.mjs",
+        "src/tests/fixtures/subprocessor-page/**",
+        "src/tests/subprocessor-page.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-e"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-23T22:33:31.658091+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP01"
+  ],
+  "planning_commit_sha": "26170c9169c7dc1a3149ff935ff53ddac86f8817"
+}
