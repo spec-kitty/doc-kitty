@@ -1,0 +1,21 @@
+{
+  "create_return_branch": "feat/402-operating-model-templates",
+  "created_at": "2026-11-23T19:09:42.123013+00:00",
+  "flattened": false,
+  "friendly_name": "Operating-model templates and a Role kind",
+  "mid8": "01M84X0R",
+  "mission_base_sha": "26170c9169c7dc1a3149ff935ff53ddac86f8817",
+  "mission_branch": "kitty/mission-operating-model-templates-01M84X0R",
+  "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
+  "mission_number": null,
+  "mission_slug": "operating-model-templates-01M84X0R",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "About half of the EU SCC technical-and-organisational-measure headings describe an operating model (governance, accountability, incident handling, supplier management). DocKitty can stub a page today but gives no body template and has no kind for an accountable role. This mission adds an opt-in operating-model section preset, structure-and-prompt templates in the stub tools, and a Role kind, so consumers can document their operating model and classify it against the measures catalog.",
+  "purpose_tldr": "Give teams ready page templates for documenting how their organisation runs, plus a Role page kind for accountable functions.",
+  "slug": "operating-model-templates-01M84X0R",
+  "target_branch": "feat/402-operating-model-templates",
+  "topology": "single_branch",
+  "topology_settled": false,
+  "topology_source": "default"
+}
