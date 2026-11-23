@@ -113,7 +113,7 @@ const MEASURE_NODE_PREFIX = 'catalog:measure:';
  */
 function normaliseBase(raw) {
   if (!raw || raw === '/') return '';
-  return `/${raw}/`.replace(/\/{2,}/g, '/').replace(/\/$/, '');
+  return ('/' + raw + '/').replace(/\/{2,}/g, '/').replace(/\/$/, '');
 }
 
 /**
@@ -214,6 +214,20 @@ export function buildTomAnnex(graph, catalog, { site, base } = {}) {
 }
 
 /**
+ * A page node's route. The content graph always writes it (`pageNode` in
+ * `docs-index.ts`); the index never builds an address by hand.
+ *
+ * @param {Record<string, any>} node
+ * @returns {string}
+ */
+function pageHref(node) {
+  if (typeof node.href !== 'string' || node.href === '') {
+    throw new Error(`${TAG} the page node "${node.id}" has no href, so the evidence index cannot give it a URL`);
+  }
+  return node.href;
+}
+
+/**
  * @param {Record<string, any>} node a page node
  * @param {unknown} note the classification entry's note
  * @param {URL | undefined} site
@@ -224,7 +238,7 @@ function evidenceRef(node, note, site, base) {
   return {
     title: typeof node.title === 'string' ? node.title : String(node.id),
     description: stringOrNull(node.description),
-    url: absoluteUrl(site, base, typeof node.href === 'string' ? node.href : `/${node.id}/`),
+    url: absoluteUrl(site, base, pageHref(node)),
     updated: stringOrNull(node.updated),
     doc_status: typeof node.doc_status === 'string' ? node.doc_status : 'active',
     verified: verifiedPairs(node.verified),

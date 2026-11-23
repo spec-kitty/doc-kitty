@@ -124,6 +124,15 @@ describe('per-measure records grouped by scope (FR-001, FR-002)', () => {
     expect(() => build(g, catalog([record('m')]))).toThrow(/\[dk-tom-annex\].*ghost/);
   });
 
+  it('throws, naming the page, when a page node has no href (the graph always writes one)', () => {
+    const rec = record('m');
+    const noHref: Record<string, unknown> = { ...page('p') };
+    delete noHref.href;
+    expect(() => build(graph([noHref, measureNode(rec)], [classified('p', 'm')]), catalog([rec]))).toThrow(
+      /\[dk-tom-annex\].*"p".*href/,
+    );
+  });
+
   it('throws, naming the page, when an edge starts at a node the graph does not hold', () => {
     const rec = record('m');
     const g = graph([measureNode(rec)], [classified('missing-page', 'm')]);
