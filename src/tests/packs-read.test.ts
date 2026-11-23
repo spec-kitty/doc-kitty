@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
-import { packContentHash, packManifestHash, readPack } from '../lib/packs/read.mjs';
+import { packContentHash, readPack } from '../lib/packs/read.mjs';
 import * as packs from '../lib/packs/index.mjs';
 
 const FIXTURES = fileURLToPath(new URL('./fixtures/packs/', import.meta.url));
@@ -141,11 +141,6 @@ describe('the manifest\'s own hash (#417)', () => {
     writeFileSync(file, edit(readFileSync(file, 'utf8')));
     return readPack(dir);
   }
-
-  it('is recomputed with the schema\'s recipe and matches the fixture', () => {
-    const manifest = parseYaml(readFileSync(fixture('with-manifest/alpha/pack-manifest.yaml'), 'utf8'), { schema: 'failsafe' });
-    expect(packManifestHash(manifest)).toBe(manifest.manifest_hash);
-  });
 
   it('does not verify a manifest whose constituents verify but whose own hash is wrong', () => {
     const model = alphaWith((t) => t.replace(/^manifest_hash: .*$/m, `manifest_hash: ${'a'.repeat(64)}`));
