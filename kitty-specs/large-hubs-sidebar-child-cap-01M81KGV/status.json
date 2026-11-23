@@ -1,7 +1,7 @@
 {
-  "event_count": 44,
-  "last_event_id": "01M83Z2RPB9N3700BP1PZT5X2J",
-  "materialized_at": "2026-11-23T10:26:29.707256+00:00",
+  "event_count": 46,
+  "last_event_id": "01M83Z32TSTYKB2NMAHTK88HH2",
+  "materialized_at": "2026-11-23T10:26:39.908358+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
   "mission_type": "software-dev",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 1,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 1
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -124,13 +124,13 @@
     "WP04": {
       "actor": "claude",
       "agent": null,
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude::implementer-ivan",
-      "lane": "planned",
-      "last_event_id": "01M83Z2RPB9N3700BP1PZT5X2J",
-      "last_transition_at": "2026-11-23T10:26:29.707256+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M83Z32TSTYKB2NMAHTK88HH2",
+      "last_transition_at": "2026-11-23T10:26:39.908358+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "WP04 ready: build suite 8/8, Playwright 17 passed incl. OpenAPI prev/next, measurements recorded",
@@ -147,7 +147,7 @@
         "reviewer": "claude::implementer-ivan",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
