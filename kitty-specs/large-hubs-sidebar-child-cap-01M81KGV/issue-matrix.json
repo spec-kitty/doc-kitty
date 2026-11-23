@@ -25,15 +25,15 @@
       "wp": "WP01"
     },
     "#342": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Cited as the consumer of the FR-009 exports; separate slice, no work owed by this mission",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "title": "Large hubs: paged hub listing",
+      "verdict": "not-applicable",
       "wp": null
     }
   },
