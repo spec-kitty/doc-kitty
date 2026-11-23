@@ -4,8 +4,9 @@
 - **Origin flow:** `specify`
 - **Slot key:** `specify.ui.entry-label`
 - **Input key:** `entry_label`
-- **Status:** `open`
+- **Status:** `resolved`
 - **Created:** `2026-11-22T12:26:13.431612+00:00`
+- **Resolved:** `2026-11-23T07:22:39.818726+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -21,7 +22,7 @@ How is the capped entry labelled, and is it translatable?
 
 ## Final answer
 
-_(none)_
+UI string dockitty.sidebar.cappedEntry, default "{count} pages", with a site option that wins
 
 ## Rationale
 
@@ -30,3 +31,4 @@ _(none)_
 ## Change log
 
 - `2026-11-22T12:26:13.431612+00:00` - opened
+- `2026-11-23T07:22:39.818726+00:00` - resolved (final_answer="UI string dockitty.sidebar.cappedEntry, default "{count} pages", with a site option that wins")

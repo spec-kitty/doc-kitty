@@ -4,8 +4,9 @@
 - **Origin flow:** `specify`
 - **Slot key:** `specify.fixtures.child-fixture`
 - **Input key:** `child_fixture`
-- **Status:** `open`
+- **Status:** `resolved`
 - **Created:** `2026-11-22T12:26:17.225291+00:00`
+- **Resolved:** `2026-11-23T07:22:44.038639+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -21,7 +22,7 @@ How is the 200-child example hub fixture provided?
 
 ## Final answer
 
-_(none)_
+Build-test fixture site generating 200 children at test time; small capped hub in example/; 1,000-child measurement script
 
 ## Rationale
 
@@ -30,3 +31,4 @@ _(none)_
 ## Change log
 
 - `2026-11-22T12:26:17.225291+00:00` - opened
+- `2026-11-23T07:22:44.038639+00:00` - resolved (final_answer="Build-test fixture site generating 200 children at test time; small capped hub in example/; 1,000-child measurement script")
