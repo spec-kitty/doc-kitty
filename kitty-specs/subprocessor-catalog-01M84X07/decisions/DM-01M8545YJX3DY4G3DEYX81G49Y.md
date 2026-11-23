@@ -4,8 +4,9 @@
 - **Origin flow:** `plan`
 - **Slot key:** `plan.architecture.build-failure-point`
 - **Input key:** `build_failure_point`
-- **Status:** `open`
+- **Status:** `resolved`
 - **Created:** `2026-11-23T21:14:51.357253+00:00`
+- **Resolved:** `2026-11-23T22:25:56.651434+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -21,7 +22,7 @@ Where does an invalid sub-processor catalog fail the build? (A) In a new doc-kit
 
 ## Final answer
 
-_(none)_
+A: fail at astro:config:setup in a new file-gated doc-kitty:subprocessors integration; validate once with the shared bare-Node core; one aggregate error before rendering; routes injected only when the file exists. Engineering alignment confirmed as written (pure core + bare-Node loader, bibliography/measures ids passed in, embedded ISO alpha-2 list, RSS reuses rss.ts helpers, WP01-WP05 with WP05 gated on #445). Decider: operator ('as recommended', relayed verbatim by dispatcher 2026-11-23).
 
 ## Rationale
 
@@ -30,3 +31,4 @@ _(none)_
 ## Change log
 
 - `2026-11-23T21:14:51.357253+00:00` - opened
+- `2026-11-23T22:25:56.651434+00:00` - resolved (final_answer="A: fail at astro:config:setup in a new file-gated doc-kitty:subprocessors integration; validate once with the shared bare-Node core; one aggregate error before rendering; routes injected only when the file exists. Engineering alignment confirmed as written (pure core + bare-Node loader, bibliography/measures ids passed in, embedded ISO alpha-2 list, RSS reuses rss.ts helpers, WP01-WP05 with WP05 gated on #445). Decider: operator ('as recommended', relayed verbatim by dispatcher 2026-11-23).")
