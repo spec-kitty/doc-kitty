@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-22T00:00:00Z
+updated: 2026-11-23T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -2033,8 +2033,18 @@ loads: an unknown key, a value that is not a path, or a snapshot whose files do
 not match its lock fails the build with a `[dk-packs]` error. This release
 accepts only these two keys; the pack-page keys come with #338.
 
-doc-kitty ships the contract at the charter's `contract-packs-v0.1.0-rc.1`
+doc-kitty ships the contract at the charter's `contract-packs-v0.1.0-rc.2`
 release. It never fetches a contract during a build.
+
+A `contract` snapshot's lock may only name files inside the snapshot. A key with
+a `..` segment, a leading `/` or a backslash fails the build with a `[dk-packs]`
+error that names the key.
+
+A pack's manifest counts as verified only when its own `manifest_hash` matches
+the RFC 8785 recomputation, as well as its membership and every constituent's
+hash. A pack whose manifest was edited by hand after it was generated reads with
+a `manifest-own-hash-mismatch` warning, and its inventory comes from the file
+walk.
 
 ## Internal environment names
 
