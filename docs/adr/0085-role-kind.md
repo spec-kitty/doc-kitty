@@ -1,7 +1,7 @@
 ---
 title: "ADR-0085: A Role kind for accountable functions"
 description: "Role is a canonical kind for an accountable function. A Role page names its role and its responsibilities, and process pages link roles through related."
-doc_status: active
+doc_status: draft
 updated: 2026-11-23T00:00:00Z
 type: ADR
 kind: ADR
@@ -18,9 +18,13 @@ related:
 
 ## Status
 
-Accepted on 2026-11-23, by operator ruling relayed through the dispatcher for
-issue #402 (Decision Moments `01M84X1Q21P9HN21KNN9PFSNN6` and
-`01M84X1TXTTJM09B0G0YN2G9BM`).
+**Proposed**, 2026-11-23.
+
+The decision content follows the operator's rulings for issue #402, relayed
+through the dispatcher and recorded as Decision Moments
+`01M84X1Q21P9HN21KNN9PFSNN6` (Role is a new kind) and
+`01M84X1TXTTJM09B0G0YN2G9BM` (the required fields). The operator accepts the
+ADR itself.
 
 ## Context
 
@@ -40,8 +44,9 @@ audience model, and would make every role state reader goals it does not have.
 ## Decision
 
 1. `Role` is appended to the canonical kinds. The list lives in one place,
-   `src/lib/vocabulary-core.mjs`, which the build schema, the frontmatter gate
-   and the stub tools all read. This follows the precedent of `Schematic`
+   `src/lib/vocabulary-core.mjs`. The frontmatter gate reads it to warn on an
+   unknown kind; the build schema keeps `kind` an open string. This follows the
+   precedent of `Schematic`
    ([ADR-0067](0067-schematic-pages-reference-a-schema.md)).
 2. A `kind: Role` page requires two fields, checked by the frontmatter gate as it
    checks Persona pages:
@@ -61,8 +66,8 @@ audience model, and would make every role state reader goals it does not have.
 
 - An accountable function has a page of its own, separate from the audience
   model.
-- The shared vocabulary core carries the change, so the gate and the tools agree
-  without a second list.
+- The change is one entry in the shared vocabulary core, so there is no second
+  list of kinds to keep in step.
 - Operating-model templates can ship a Role page with a preset `accountability`
   classification.
 
