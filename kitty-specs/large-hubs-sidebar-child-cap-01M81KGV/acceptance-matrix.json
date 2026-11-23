@@ -36,12 +36,12 @@
     },
     {
       "criterion_id": "FR-004",
-      "description": "Verify FR-004 is satisfied",
+      "description": "The count and order come from selectHubChildren (drafts excluded, sub-folder counts once, draft index is no hub).",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/hub-caps-data.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:07.473841+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
