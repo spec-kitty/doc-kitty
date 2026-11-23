@@ -1,7 +1,8 @@
 ---
 work_package_id: WP04
 title: Proof on built output
-dependencies: [WP03]
+dependencies:
+- WP03
 requirement_refs:
 - NFR-001
 - NFR-004
@@ -12,19 +13,36 @@ requirement_refs:
 - SC-004
 planning_base_branch: feat/341-sidebar-child-cap
 merge_target_branch: feat/341-sidebar-child-cap
-branch_strategy: Planning artifacts were generated on feat/341-sidebar-child-cap. Execution worktrees are allocated per computed lane from lanes.json; completed changes merge back into feat/341-sidebar-child-cap.
-subtasks: [T016, T017, T018, T019, T020]
-agent: claude
+branch_strategy: Planning artifacts for this mission were generated on feat/341-sidebar-child-cap. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/341-sidebar-child-cap unless the human explicitly redirects the landing branch.
+subtasks:
+- T016
+- T017
+- T018
+- T019
+- T020
 history:
 - timestamp: '2026-11-23T00:00:00Z'
   agent: planner-priti
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: src/tests/sidebar-child-cap-build.test.ts
-create_intent: [src/tests/sidebar-child-cap-build.test.ts, src/tests/fixtures/large-hub/measure.mjs, src/tests/fixtures/large-hub/site.mjs, src/tests/fixtures/large-hub/golden/uncapped.json, example/docs/guides/capped-hub/README.md, tests/a11y/sidebar-child-cap.spec.ts]
+create_intent:
+- src/tests/sidebar-child-cap-build.test.ts
+- src/tests/fixtures/large-hub/measure.mjs
+- src/tests/fixtures/large-hub/site.mjs
+- src/tests/fixtures/large-hub/golden/uncapped.json
+- example/docs/guides/capped-hub/README.md
+- tests/a11y/sidebar-child-cap.spec.ts
 execution_mode: code_change
-owned_files: [src/tests/sidebar-child-cap-build.test.ts, src/tests/fixtures/large-hub/**, example/docs/guides/capped-hub/**, tests/a11y/sidebar-child-cap.spec.ts, .gitignore]
+owned_files:
+- src/tests/sidebar-child-cap-build.test.ts
+- src/tests/fixtures/large-hub/**
+- example/docs/guides/capped-hub/**
+- tests/a11y/sidebar-child-cap.spec.ts
+- .gitignore
 role: implementer
+tags: []
+tracker_refs: []
 ---
 # WP04 — Proof on built output
 

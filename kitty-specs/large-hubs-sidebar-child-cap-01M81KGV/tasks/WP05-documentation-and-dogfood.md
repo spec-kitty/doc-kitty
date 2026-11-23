@@ -1,25 +1,40 @@
 ---
 work_package_id: WP05
 title: Documentation and dogfood
-dependencies: [WP04]
+dependencies:
+- WP04
 requirement_refs:
 - FR-010
 - FR-011
 planning_base_branch: feat/341-sidebar-child-cap
 merge_target_branch: feat/341-sidebar-child-cap
-branch_strategy: Planning artifacts were generated on feat/341-sidebar-child-cap. Execution worktrees are allocated per computed lane from lanes.json; completed changes merge back into feat/341-sidebar-child-cap.
-subtasks: [T021, T022, T023, T024]
-agent: claude
+branch_strategy: Planning artifacts for this mission were generated on feat/341-sidebar-child-cap. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/341-sidebar-child-cap unless the human explicitly redirects the landing branch.
+subtasks:
+- T021
+- T022
+- T023
+- T024
 history:
 - timestamp: '2026-11-23T00:00:00Z'
   agent: planner-priti
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: curator-carla
 authoritative_surface: docs/guides/sidebar-child-cap.md
-create_intent: [docs/guides/sidebar-child-cap.md, docs/changelog/unreleased/341-sidebar-child-cap.md]
+create_intent:
+- docs/guides/sidebar-child-cap.md
+- docs/changelog/unreleased/341-sidebar-child-cap.md
 execution_mode: planning_artifact
-owned_files: [docs/guides/sidebar-child-cap.md, docs/guides/consumer-setup.md, docs/guides/authoring.md, docs/guides/README.md, docs/plans/features/large-hubs.md, docs/_meta/sections.yaml, docs/changelog/unreleased/341-sidebar-child-cap.md]
+owned_files:
+- docs/guides/sidebar-child-cap.md
+- docs/guides/consumer-setup.md
+- docs/guides/authoring.md
+- docs/guides/README.md
+- docs/plans/features/large-hubs.md
+- docs/_meta/sections.yaml
+- docs/changelog/unreleased/341-sidebar-child-cap.md
 role: implementer
+tags: []
+tracker_refs: []
 ---
 # WP05 — Documentation and dogfood
 

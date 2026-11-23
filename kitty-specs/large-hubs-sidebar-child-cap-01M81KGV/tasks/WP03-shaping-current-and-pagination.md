@@ -1,7 +1,8 @@
 ---
 work_package_id: WP03
 title: Shaping, current marking and pagination
-dependencies: [WP02]
+dependencies:
+- WP02
 requirement_refs:
 - FR-003
 - FR-005
@@ -12,19 +13,29 @@ requirement_refs:
 - NFR-002
 planning_base_branch: feat/341-sidebar-child-cap
 merge_target_branch: feat/341-sidebar-child-cap
-branch_strategy: Planning artifacts were generated on feat/341-sidebar-child-cap. Execution worktrees are allocated per computed lane from lanes.json; completed changes merge back into feat/341-sidebar-child-cap.
-subtasks: [T011, T012, T013, T014, T015]
-agent: claude
+branch_strategy: Planning artifacts for this mission were generated on feat/341-sidebar-child-cap. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/341-sidebar-child-cap unless the human explicitly redirects the landing branch.
+subtasks:
+- T011
+- T012
+- T013
+- T014
+- T015
 history:
 - timestamp: '2026-11-23T00:00:00Z'
   agent: planner-priti
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: src/lib/route-shaping.ts
-create_intent: [src/tests/sidebar-child-cap.test.ts]
+create_intent:
+- src/tests/sidebar-child-cap.test.ts
 execution_mode: code_change
-owned_files: [src/lib/route-shaping.ts, src/lib/route-middleware.ts, src/tests/sidebar-child-cap.test.ts]
+owned_files:
+- src/lib/route-shaping.ts
+- src/lib/route-middleware.ts
+- src/tests/sidebar-child-cap.test.ts
 role: implementer
+tags: []
+tracker_refs: []
 ---
 # WP03 — Shaping, current marking and pagination
 

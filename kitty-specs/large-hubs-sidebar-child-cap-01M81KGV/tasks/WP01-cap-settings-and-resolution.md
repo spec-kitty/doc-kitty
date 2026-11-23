@@ -9,19 +9,36 @@ requirement_refs:
 - C-005
 planning_base_branch: feat/341-sidebar-child-cap
 merge_target_branch: feat/341-sidebar-child-cap
-branch_strategy: Planning artifacts were generated on feat/341-sidebar-child-cap. Execution worktrees are allocated per computed lane from lanes.json; completed changes merge back into feat/341-sidebar-child-cap.
-subtasks: [T001, T002, T003, T004, T005, T006]
-agent: claude
+branch_strategy: Planning artifacts for this mission were generated on feat/341-sidebar-child-cap. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/341-sidebar-child-cap unless the human explicitly redirects the landing branch.
+subtasks:
+- T001
+- T002
+- T003
+- T004
+- T005
+- T006
 history:
 - timestamp: '2026-11-23T00:00:00Z'
   agent: planner-priti
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: src/lib/child-cap.ts
-create_intent: [src/lib/child-cap.ts, src/tests/child-cap.test.ts]
+create_intent:
+- src/lib/child-cap.ts
+- src/tests/child-cap.test.ts
 execution_mode: code_change
-owned_files: [src/lib/child-cap.ts, src/lib/config.ts, src/lib/chrome-options.ts, src/lib/sections.ts, src/lib/schema.ts, src/scripts/validate-frontmatter.mjs, src/lib/i18n-plugin.ts, src/tests/child-cap.test.ts]
+owned_files:
+- src/lib/child-cap.ts
+- src/lib/config.ts
+- src/lib/chrome-options.ts
+- src/lib/sections.ts
+- src/lib/schema.ts
+- src/scripts/validate-frontmatter.mjs
+- src/lib/i18n-plugin.ts
+- src/tests/child-cap.test.ts
 role: implementer
+tags: []
+tracker_refs: []
 ---
 # WP01 — Cap settings and resolution
 

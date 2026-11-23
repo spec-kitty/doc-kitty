@@ -1,7 +1,8 @@
 ---
 work_package_id: WP02
 title: Build-time hub data
-dependencies: [WP01]
+dependencies:
+- WP01
 requirement_refs:
 - FR-004
 - FR-009
@@ -10,19 +11,28 @@ requirement_refs:
 - NFR-003
 planning_base_branch: feat/341-sidebar-child-cap
 merge_target_branch: feat/341-sidebar-child-cap
-branch_strategy: Planning artifacts were generated on feat/341-sidebar-child-cap. Execution worktrees are allocated per computed lane from lanes.json; completed changes merge back into feat/341-sidebar-child-cap.
-subtasks: [T007, T008, T009, T010]
-agent: claude
+branch_strategy: Planning artifacts for this mission were generated on feat/341-sidebar-child-cap. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/341-sidebar-child-cap unless the human explicitly redirects the landing branch.
+subtasks:
+- T007
+- T008
+- T009
+- T010
 history:
 - timestamp: '2026-11-23T00:00:00Z'
   agent: planner-priti
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: implementer-ivan
 authoritative_surface: src/lib/integrations/route-shaping.ts
-create_intent: [src/tests/hub-caps-data.test.ts]
+create_intent:
+- src/tests/hub-caps-data.test.ts
 execution_mode: code_change
-owned_files: [src/lib/integrations/route-shaping.ts, src/lib/route-shaping-module.d.ts, src/tests/hub-caps-data.test.ts]
+owned_files:
+- src/lib/integrations/route-shaping.ts
+- src/lib/route-shaping-module.d.ts
+- src/tests/hub-caps-data.test.ts
 role: implementer
+tags: []
+tracker_refs: []
 ---
 # WP02 — Build-time hub data
 
