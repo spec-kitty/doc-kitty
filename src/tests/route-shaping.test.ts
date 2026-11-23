@@ -822,7 +822,9 @@ describe('integration wiring (T022, C-004)', () => {
 
   it('serves the sidebar.childCap and sidebar.cappedLabel options to the route-shaping module (#341)', () => {
     const data = inSite(() => {
-      // Two published children (a page with no `doc_status` is a draft, which a hub never counts).
+      // A published hub index and two published children (a page with no `doc_status`
+      // is a draft: a draft index is no hub, and a hub never counts a draft child).
+      writeFileSync(path.join(process.cwd(), 'docs', 'guides', 'setup', 'index.md'), '---\ntitle: Setting up\ndoc_status: active\n---\n');
       for (const name of ['configure', 'verify']) {
         writeFileSync(path.join(process.cwd(), 'docs', 'guides', 'setup', `${name}.md`), `---\ntitle: ${name}\ndoc_status: active\n---\n`);
       }
