@@ -31,7 +31,7 @@ describe('the shipped default catalog', () => {
     for (const r of records) expect(r.dpv).toMatch(/^https:\/\/w3id\.org\/dpv#[A-Za-z]+$/);
   });
 
-  it('is a statically imported data module, so it survives bundling into a page route', async () => {
+  it('is the shipped default when no catalog exists, and is deep-frozen', async () => {
     const { DEFAULT_MEASURES } = await import('../lib/measures-default.mjs');
     expect(readMeasuresCatalog(fixture('no-catalog')).records).toEqual(DEFAULT_MEASURES);
     expect(Object.isFrozen(DEFAULT_MEASURES)).toBe(true);
