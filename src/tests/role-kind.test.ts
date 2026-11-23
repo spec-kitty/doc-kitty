@@ -34,7 +34,7 @@ describe('Role kind (ADR-0085)', () => {
     expect(warnings.filter((w: string) => w.includes('kind: Role'))).toEqual([]);
   });
 
-  it('the build schema accepts a Role page', () => {
+  it('the build schema stays lenient for a Role page (kind is an open string there; the gate holds the rule)', () => {
     expect(buildSchema.safeParse(validRole()).success).toBe(true);
   });
 
@@ -72,14 +72,16 @@ describe('Persona rule unchanged (FR-003)', () => {
   });
 
   it('a Persona without goals still fails on goals, with the existing message', () => {
-    const { goals: _omit, ...data } = persona();
+    const data = persona();
+    delete data.goals;
     expect(validate('valid-persona.md', data).problems).toContain(
       '`goals`: persona requires a non-empty list of non-empty strings',
     );
   });
 
   it('a Persona without role still fails with the existing message', () => {
-    const { role: _omit, ...data } = persona();
+    const data = persona();
+    delete data.role;
     expect(validate('valid-persona.md', data).problems).toContain('`role`: persona requires a non-empty string');
   });
 });
