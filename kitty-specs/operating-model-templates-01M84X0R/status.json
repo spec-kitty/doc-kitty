@@ -1,7 +1,7 @@
 {
-  "event_count": 20,
-  "last_event_id": "01M85CZA26AWM0D3RBDVZD32QT",
-  "materialized_at": "2026-11-23T23:48:30.918879+00:00",
+  "event_count": 21,
+  "last_event_id": "01M85CZKHNSEA97HVHMKYFM11Y",
+  "materialized_at": "2026-11-23T23:48:40.629874+00:00",
   "mission_number": "",
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_type": "software-dev",
@@ -12,8 +12,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
-    "in_progress": 1,
+    "for_review": 2,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 3
   },
@@ -57,9 +57,9 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude::node-norris",
-      "lane": "in_progress",
-      "last_event_id": "01M85CYEYA5TD4ZXS22NWGXXD7",
-      "last_transition_at": "2026-11-23T23:48:03.038587+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M85CZKHNSEA97HVHMKYFM11Y",
+      "last_transition_at": "2026-11-23T23:48:40.629874+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181"
