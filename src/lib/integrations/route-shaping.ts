@@ -15,7 +15,7 @@ import { isChildCap, resolveChildCap, type HubCap } from '../child-cap.js';
 import { selectHubChildren } from '../hub-children.mjs';
 import { chromeOptions } from '../chrome-options.js';
 import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
-import { compareCodeUnit } from '../vocabulary-core.mjs';
+import { compareCodeUnit, isDraftStatus } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
 import { normalizeBasePrefix, siteDraftRoutes } from './shared.js';
 
@@ -71,15 +71,6 @@ export interface RouteShapingOptions {
   cappedLabel?: string;
 }
 
-/**
- * Read the slice of every docs page that sidebar shaping needs: slug, title,
- * the Starlight `sidebar` front-matter block, and whether the file is a
- * directory index. The file list is the shared walk ({@link walkMarkdownPaths}:
- * no `log.md`, dot-folders or `_meta`), read build-free for frontmatter. Slug and
- * `isIndex` come from the shared route rule (`resolveIndexEntries`, `routeOfSlug`):
- * a page is its folder's index when its route is the folder's route, so a
- * collision never reaches here (it fails the build first).
- */
 /** A docs page as the sidebar seam reads it: the directory-metadata input plus what the child cap needs. */
 interface ShapingPage extends DirectoryMetaInput {
   /** The page's `doc_status`, for the hub's draft rule. */
@@ -88,6 +79,15 @@ interface ShapingPage extends DirectoryMetaInput {
   childCap?: number;
 }
 
+/**
+ * Read the slice of every docs page that sidebar shaping needs: slug, title,
+ * the Starlight `sidebar` front-matter block, whether the file is a directory
+ * index, and, for the child cap (#341), `doc_status` and `sidebar_child_cap`. The file list is the shared walk ({@link walkMarkdownPaths}:
+ * no `log.md`, dot-folders or `_meta`), read build-free for frontmatter. Slug and
+ * `isIndex` come from the shared route rule (`resolveIndexEntries`, `routeOfSlug`):
+ * a page is its folder's index when its route is the folder's route, so a
+ * collision never reaches here (it fails the build first).
+ */
 function directoryMetaInputs(
   docsDir: string,
   indexBasename?: IndexBasenameOption,
@@ -152,9 +152,13 @@ function hubCaps(
   }));
   const order = registry ? sectionOrder(registry) : undefined;
   const sectionCap = (dir: string): number | undefined =>
-    registry?.find((section) => section.id === dir.split('/')[0])?.sidebar?.childCap;
+    registry?.find((section) => section.id === sectionOf(dir))?.sidebar?.childCap;
   const out: Array<[string, HubCap]> = [];
-  const hubs = pages.filter((page) => page.isIndex && page.slug !== '').sort((a, b) => compareCodeUnit(a.slug, b.slug));
+  // A hub is a folder with a PUBLISHED index page. A draft index built in a dev or
+  // drafts-on build is not a hub: the cap would follow a page readers never see live.
+  const hubs = pages
+    .filter((page) => page.isIndex && page.slug !== '' && !isDraftStatus(page.docStatus))
+    .sort((a, b) => compareCodeUnit(a.slug, b.slug));
   const seen = new Set<string>();
   for (const hub of hubs) {
     // First index wins on a duplicate slug, as in `buildDirectoryMeta`.
