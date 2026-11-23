@@ -37,7 +37,7 @@
       "wp": null
     },
     "#401": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "The mission's own issue (spec.md:6); WP02 approved at c06830bc, WP01/WP03-08 open",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -45,7 +45,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "in-mission",
       "wp": null
     },
     "#404": {
