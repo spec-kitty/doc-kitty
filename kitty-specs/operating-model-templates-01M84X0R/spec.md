@@ -123,7 +123,7 @@ An author reads a guide, "Documenting your operating model", which explains the 
 |----|-------|------------|----------|----------|--------|
 | C-001 | Structure, not content | Templates hold structure and prompts only, never legal or policy wording (charter scope: the toolkit does not author content). | Business | High | Open |
 | C-002 | One vocabulary change | The only addition to the canonical kinds is `Role`; `Runbook` stays a type. | Technical | High | Open |
-| C-003 | Single source of truth | `Role` is added through the existing single-source vocabulary core, so that the schema, gate and stub tools agree. | Technical | High | Open |
+| C-003 | Single source of truth | `Role` is added through the existing single-source vocabulary core, so that there is no second list of kinds. | Technical | High | Open |
 | C-004 | ADR number | The ADR is 0085, as allocated by the dispatcher. If 0085 is taken on main when the PR opens, the dispatcher is told; the runner does not renumber. | Process | High | Open |
 | C-005 | Opt-in only | The default section registry and a default scaffold run are unchanged. | Technical | High | Open |
 | C-006 | Not legal advice | User-facing docs for the feature state that the templates are not legal advice. | Regulatory | Medium | Open |

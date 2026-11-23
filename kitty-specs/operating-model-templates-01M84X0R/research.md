@@ -5,7 +5,7 @@ The operator's rulings are recorded as Decision Moments (see spec.md). The decis
 ## D1. Role is added through the single-source vocabulary
 
 - **Decision**: append `'Role'` to `KINDS` in `src/lib/vocabulary-core.mjs`, following ADR-0067 (`Schematic`) and ADR-0046 (`Specification`).
-- **Rationale**: `src/lib/schema.ts` imports `KINDS` from the core, and so does the gate. A `git grep` for `'Schematic'` finds no other list of kinds in code (the mcp package derives its list).
+- **Rationale**: the gate reads `KINDS` for its unknown-kind warning. `src/lib/schema.ts` re-exports it and derives the `Kind` type, but keeps the `kind` field an open `z.string()`. A `git grep` for `'Schematic'` finds no other list of kinds in code, and the mcp package lists none.
 - **Alternatives considered**: a separate list of compliance kinds. Rejected because it would break the single source of truth (C-003).
 
 ## D2. Template storage: a manifest module plus Markdown bodies

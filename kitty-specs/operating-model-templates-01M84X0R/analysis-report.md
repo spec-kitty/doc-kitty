@@ -4,15 +4,15 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: operating-model-templates-01M84X0R
 mission_id: 01M84X0RH8AJE7NXQK093SGRF0
-generated_at: '2026-11-23T22:34:01.034049+00:00'
+generated_at: '2026-11-23T23:29:27.796670+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
     path: .worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/spec.md
-    sha256: a630b7795b17a02290c5c2265a1da0673674c89922db46649b3c8adbcb1f3b55
+    sha256: 1c516e3274ef547a06d2c73a86ceb24c9b6deb6252475515432024a237915b71
   plan.md:
     path: .worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/plan.md
-    sha256: 9e9f07a85c68589158ee41447d8458967a22d7e596f0570f7ce8d13cb997a18e
+    sha256: 3117110c096368f3326faf6c49b9fc1d06e87637f4a5eb83c61d0c49a74edc64
   tasks.md:
     path: .worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks.md
     sha256: d3fa9b327ea1493b1ca6771a167c4112ebfb15ece55764975732ecfd8ee3f6c1
@@ -22,9 +22,9 @@ input_artifacts:
 verdict: ready
 issue_counts:
   high: 0
-  medium: 1
-  critical: 0
   low: 3
+  critical: 0
+  medium: 1
   info: 0
 findings:
 - id: I1
@@ -98,6 +98,15 @@ None.
 - Total tasks: 21.
 - Coverage: 100% of FR and NFR have at least one task.
 - Ambiguity count: 0. Duplication count: 0. Critical issues: 0.
+
+## Re-run note (after review cycle 1)
+
+Re-recorded after the cycle-1 corrections:
+
+- The WP01 prompt now asks for a Proposed ADR.
+- The spec (C-003), the plan's Charter Check and research D1 now state that the gate reads `KINDS`, while the build schema keeps `kind` an open string.
+
+These corrections change wording only. Requirements, coverage and the findings above are unchanged.
 
 ## Next actions
 
