@@ -55,7 +55,7 @@ A reader follows a link to one child of a capped hub. The sidebar has no link fo
 
 ### User Story 3 - A site owner tunes the cap per site, section or hub (Priority: P2)
 
-A site owner sets a lower cap site-wide, raises it for one section whose children are worth listing, and switches it off for one hub.
+A site owner sets a lower cap site-wide, raises it for one section whose children are worth listing, and sets a different cap on one hub.
 
 **Why this priority**: the default suits most sites. Tuning is needed for the rest, and for the dogfood ADR section.
 
