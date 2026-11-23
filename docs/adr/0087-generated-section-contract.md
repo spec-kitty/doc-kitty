@@ -1,7 +1,7 @@
 ---
 title: "ADR-0087: A generated-section contract: one stamp, one drift gate, registry ownership"
 description: "Every generated section carries the same generated stamp with a source digest, answers the same --check drift gate, and is owned through the producer registry; doc-kitty reads committed data and never runs a producing repository's code at build time."
-doc_status: draft
+doc_status: active
 updated: 2026-11-23T00:00:00Z
 type: ADR
 kind: ADR
@@ -21,7 +21,8 @@ related:
 
 ## Status
 
-**Proposed**, 2026-11-23. Issue #359, epic #353. It builds on the producer
+Accepted on 2026-11-23, by operator ruling on PR #445 (accepted together with
+ADR-0083). Proposed the same day. Issue #359, epic #353. It builds on the producer
 registry of [ADR-0083](0083-producer-registry-and-ownership-scopes.md) (issue
 #330) and does not define a second one. It extends
 [ADR-0079](0079-kitty-packs-through-a-charter-contract-reader.md) D6 and respects

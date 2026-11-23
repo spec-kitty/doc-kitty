@@ -503,9 +503,9 @@ gate. The glossary keeps its path rule (`glossary/` with `kind: Glossary` or
 `Hub`) as its scope. The scaffold is a provenance-only producer: its stamp never
 makes a page generated.
 
-#### The generated-section contract (proposed)
+#### The generated-section contract (accepted, not yet implemented)
 
-[ADR-0087](../adr/0087-generated-section-contract.md) (Proposed, #359) makes this
+[ADR-0087](../adr/0087-generated-section-contract.md) (Accepted, #359) makes this
 stamp one contract for every generated section. It is not implemented yet. Until
 it is, the rules above describe the code.
 
