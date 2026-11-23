@@ -66,6 +66,10 @@ const BUILD_SUITES = [
   // `example/.dk-test-legacy-html/`) at the domain root and under a base path,
   // and once with a refused Astro `.html` redirect key. Real Astro runs.
   'tests/legacy-html-redirects-build.test.ts',
+  // Sidebar child cap (#341): builds a fixture site with a 200-child hub (in
+  // `example/.dk-test-sidebar-cap-*`) capped, hidden-hinted, uncapped against
+  // goldens and twice for determinism. Real Astro runs, so serialized here.
+  'tests/sidebar-child-cap-build.test.ts',
   // Page chrome mission (page-chrome WP11): the suites that build the chrome fixture
   // (`tests/fixtures/chrome/`), registered together so lanes do not conflict here.
   // A listed file that does not exist yet is simply not run: these are globs.
