@@ -88,7 +88,7 @@
     },
     "WP03": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::implementer-ivan",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -98,7 +98,8 @@
       "last_transition_at": "2026-11-23T08:49:17.909894+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "WP03 ready: capped group, current marking, hub-order prev/next, child-cap export; WP02 folds N1/N3/N4; fast 4084/4084"
+        "WP03 ready: capped group, current marking, hub-order prev/next, child-cap export; WP02 folds N1/N3/N4; fast 4084/4084",
+        "Cycle 1 folded: B1 hub-order prev/next survives the OpenAPI rebuild (hubOrderPagination via dkHubOrder), N1 dkCappedHub asserted, N2 href form documented; N3 goes to WP05 guide"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
