@@ -4,8 +4,9 @@
 - **Origin flow:** `specify`
 - **Slot key:** `specify.scope.generated-page-sequencing`
 - **Input key:** `generated_page_sequencing`
-- **Status:** `open`
+- **Status:** `resolved`
 - **Created:** `2026-11-23T19:09:35.763740+00:00`
+- **Resolved:** `2026-11-23T20:56:29.362348+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -21,7 +22,7 @@ Issue #359 (generated-section contract) is still open. How should this mission h
 
 ## Final answer
 
-_(none)_
+Split into a later WP gated on #359 (recommended). Decider: operator (answered 'go', relayed by dispatcher 2026-11-23). Final WP builds on ADR-0087 (PR #445; Proposed on GitHub at time of recording) once it is accepted and merged.
 
 ## Rationale
 
@@ -30,3 +31,4 @@ _(none)_
 ## Change log
 
 - `2026-11-23T19:09:35.763740+00:00` - opened
+- `2026-11-23T20:56:29.362348+00:00` - resolved (final_answer="Split into a later WP gated on #359 (recommended). Decider: operator (answered 'go', relayed by dispatcher 2026-11-23). Final WP builds on ADR-0087 (PR #445; Proposed on GitHub at time of recording) once it is accepted and merged.")
