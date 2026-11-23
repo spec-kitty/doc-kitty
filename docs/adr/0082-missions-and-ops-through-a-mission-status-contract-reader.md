@@ -16,6 +16,7 @@ related:
   - adr/0042-native-documentation-charter
   - adr/0046-gherkin-feature-pages
   - adr/0079-kitty-packs-through-a-charter-contract-reader
+  - adr/0083-producer-registry-and-ownership-scopes
 ---
 
 # ADR-0082: Missions and Ops as generated pages, read through a mission-status contract reader
@@ -27,8 +28,8 @@ research is [Missions and Ops as generated pages](../architecture/research/missi
 and the plan is [Missions and Ops pages](../plans/features/mission-status-portal.md),
 slice 1. It follows the shape of
 [ADR-0079](0079-kitty-packs-through-a-charter-contract-reader.md) and reuses the
-producer registry that #330 builds and
-ADR-0083 records (proposed in #414). It completes
+producer registry that #330 built and
+[ADR-0083](0083-producer-registry-and-ownership-scopes.md) records. It completes
 [ADR-0006](0006-direct-render-default-projection-deferred.md) for generated
 surfaces (D7). #347, #348 and #349 implement it, in that order.
 
@@ -332,8 +333,8 @@ fallback named here.
   changes inside core's CLI cannot break a docsite.
 - Op prompts cannot leak through the model, and the leak gate checks the output
   as well.
-- The producer registry gains its third and fourth users without any change to
-  how ownership works.
+- The producer registry gains two more ownership producers without any change
+  to how ownership works.
 
 ### Negative
 
@@ -405,7 +406,7 @@ the ULID redirect giving a stable address.
 ## References
 
 - doc-kitty: epic #345; #346 (this record), #347, #348, #349; packs epic #328
-  and #330 (reader and producer registry, ADR-0083 in #414); large hubs #340, #341, #342; #359
+  and #330 (reader and producer registry, ADR-0083); large hubs #340, #341, #342; #359
   (generated-section contract)
 - spec-kitty core: ADR 2026-10-01-2 (Mission Status Read API),
   `contracts/mission-status/`, #5528, #6941, #7627, #7628, #7629
