@@ -168,6 +168,9 @@
       "last_event_id": "01M83YW6CCW71C9YYH67BFN74K",
       "last_transition_at": "2026-11-23T10:22:54.348178+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "WP05 ready: guide, cross-references, ADR section cap, measurements, changelog; docs gates clean (Vale not available locally)"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 26206,
