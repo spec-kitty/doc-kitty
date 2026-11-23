@@ -58,6 +58,7 @@ import {
 import { tocRailIntegration } from './integrations/toc-rail.js';
 import { lightboxIntegration } from './integrations/lightbox.js';
 import { contentGraphIntegration } from './integrations/content-graph.js';
+import { tomAnnexIntegration } from './integrations/tom-annex.js';
 import { pageAtomIntegration } from './integrations/page-atom.js';
 import { servedSurfacesIntegration } from './integrations/served-surfaces.js';
 import { sidebarIconsIntegration } from './integrations/sidebar-icons.js';
@@ -985,6 +986,10 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // agent index's `_links.contentGraph` never dangles. Registers no remark/rehype
     // plugin, so no plugin-order pin moves.
     contentGraphIntegration(docsDir, indexBasename),
+    // The evidence index (#401): injects `/api/tom-annex.json` only when a published
+    // page carries `tom_classification`, so a site without TOM pages gains nothing.
+    // Before served-surface detection, which reads the injected route.
+    tomAnnexIntegration(docsDir, indexBasename),
     // Per-page Atom entries (FR-020): on unless `pageFormats.atom` is false. Before
     // served-surface detection, which reads the injected route.
     ...(pageFormats?.atom === false ? [] : [pageAtomIntegration(title)]),

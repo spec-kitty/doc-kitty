@@ -9,6 +9,7 @@ import { DK_SERVED_SURFACES_ENV, clearInternalEnv } from '../lib/internal-env.mj
 import { detectServedSurfaces, servedSurfaces, type ServedSurfaces } from '../lib/served-surfaces.js';
 import { servedSurfacesIntegration } from '../lib/integrations/served-surfaces.js';
 import { restoreInternalEnv } from './helpers/restore-internal-env.js';
+import { TOM_ANNEX_LABEL } from '../lib/tom-annex/core.mjs';
 
 vi.mock('astro:content', () => ({
   getCollection: async () => [{ id: 'guides/a', data: { title: 'A', doc_status: 'active' } }],
@@ -33,6 +34,7 @@ const NONE: ServedSurfaces = {
   okf: true,
   pageAtom: false,
   openapi: false,
+  tomAnnex: false,
 };
 
 describe('detectServedSurfaces', () => {
@@ -45,6 +47,7 @@ describe('detectServedSurfaces', () => {
     ['scenarios', '/api/scenarios.json'],
     ['contentGraph', '/api/content-graph.json'],
     ['pageAtom', '/api/pages/[...slug].atom.xml'],
+    ['tomAnnex', '/api/tom-annex.json'],
   ])('%s is true only with %s', (surface, pattern) => {
     expect(detectServedSurfaces([pattern], false)).toEqual({ ...NONE, [surface]: true });
     expect(detectServedSurfaces(['/other', '/[...slug]'], false)[surface as keyof ServedSurfaces]).toBe(false);
@@ -64,6 +67,7 @@ describe('detectServedSurfaces', () => {
       okf: true,
       pageAtom: false,
       openapi: false,
+      tomAnnex: false,
     });
   });
 
@@ -201,6 +205,20 @@ describe('agentIndexRoute reads the detection result', () => {
     const undetected = (await fetchIndex(agentIndexRoute({ title: 'Docs' })))._links;
     expect(undetected).toHaveProperty('llms');
     expect(undetected).toHaveProperty('sitemap');
+  });
+
+  it('links the evidence index exactly when the site serves it (#401), with its label', async () => {
+    process.env[DK_SERVED_SURFACES_ENV] = JSON.stringify({ ...WITHOUT_ANY, tomAnnex: true });
+    const served = (await fetchIndex(agentIndexRoute({ title: 'Docs' })))._links as Record<string, { href: string; title?: string }>;
+    expect(served.tomAnnex?.href).toBe('https://docs.example/api/tom-annex.json');
+    expect(served.tomAnnex?.title).toBe(TOM_ANNEX_LABEL);
+    process.env[DK_SERVED_SURFACES_ENV] = JSON.stringify(WITHOUT_ANY);
+    expect((await fetchIndex(agentIndexRoute({ title: 'Docs' })))._links).not.toHaveProperty('tomAnnex');
+  });
+
+  it('does not link the evidence index when detection has not run (it is not built by default)', async () => {
+    delete process.env[DK_SERVED_SURFACES_ENV];
+    expect((await fetchIndex(agentIndexRoute({ title: 'Docs' })))._links).not.toHaveProperty('tomAnnex');
   });
 
   it('keeps mcp opt-in whatever is detected', async () => {
