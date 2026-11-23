@@ -132,6 +132,9 @@
       "last_event_id": "01M83TRWATSEPYYB9XXE8JS5HK",
       "last_transition_at": "2026-11-23T09:11:11.450932+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "WP04 ready: build suite 8/8, Playwright 17 passed incl. OpenAPI prev/next, measurements recorded"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 8736,
