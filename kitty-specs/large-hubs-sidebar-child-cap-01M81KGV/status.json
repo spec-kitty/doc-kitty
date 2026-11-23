@@ -1,7 +1,7 @@
 {
-  "event_count": 4,
-  "last_event_id": "01M83MVBF22FRQVPHVB3BXC90G",
-  "materialized_at": "2026-11-23T07:27:41.026451+00:00",
+  "event_count": 5,
+  "last_event_id": "01M83MVD115KN78J8H1348AGDR",
+  "materialized_at": "2026-11-23T07:27:42.625534+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
   "mission_type": "software-dev",
@@ -15,7 +15,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 4
+    "planned": 5
   },
   "work_packages": {
     "WP01": {
@@ -45,6 +45,13 @@
       "lane": "planned",
       "last_event_id": "01M83MVBF22FRQVPHVB3BXC90G",
       "last_transition_at": "2026-11-23T07:27:41.026451+00:00"
+    },
+    "WP05": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M83MVD115KN78J8H1348AGDR",
+      "last_transition_at": "2026-11-23T07:27:42.625534+00:00"
     }
   }
 }
