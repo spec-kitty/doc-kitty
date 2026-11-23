@@ -109,7 +109,13 @@ export function main(argv) {
     process.stderr.write(`${USAGE}\n`);
     return 2;
   }
-  const root = realpathSync(values['repo-root'] ? path.resolve(values['repo-root']) : findRepoRoot(process.cwd()));
+  let root;
+  try {
+    root = realpathSync(values['repo-root'] ? path.resolve(values['repo-root']) : findRepoRoot(process.cwd()));
+  } catch {
+    process.stderr.write(`[dk-packs] repository root ${values['repo-root'] ?? process.cwd()} does not exist\n${USAGE}\n`);
+    return 2;
+  }
   /** @type {Record<string, string | undefined>} */
   const paths = {};
   for (const [name, arg] of /** @type {[string, string | undefined][]} */ ([

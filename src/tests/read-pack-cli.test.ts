@@ -66,6 +66,9 @@ describe('dockitty-read-pack', () => {
   it('exits 2 on a usage error, a directory that is not a pack, and a broken contract', () => {
     expect(run().status).toBe(2);
     expect(run(ALPHA, '--frobnicate').status).toBe(2);
+    const noRoot = run(ALPHA, '--repo-root', path.join(path.dirname(ALPHA), 'does-not-exist'));
+    expect(noRoot.status).toBe(2);
+    expect(noRoot.stderr).toContain('does not exist');
     const notPack = run(path.dirname(ALPHA));
     expect(notPack.status).toBe(2);
     expect(notPack.stderr).toContain('not a pack directory');
