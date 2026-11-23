@@ -22,8 +22,8 @@ afterEach(() => {
   for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
 });
 
-const page = (title: string, extra = '') =>
-  `---\ntitle: ${JSON.stringify(title)}\ndescription: Fixture page.\ndoc_status: active\nupdated: 2026-11-23T00:00:00Z\nkind: Guide\n${extra}---\n\nBody.\n`;
+const page = (title: string, extra = '', kind = 'Guide') =>
+  `---\ntitle: ${JSON.stringify(title)}\ndescription: Fixture page.\ndoc_status: active\nupdated: 2026-11-23T00:00:00Z\nkind: ${kind}\n${extra}---\n\nBody.\n`;
 
 /** Write `docs/<rel>` files under a fresh site root and make it the cwd. */
 function site(files: Record<string, string>): void {
@@ -47,7 +47,7 @@ function served(options: Partial<RouteShapingOptions> = {}, unpublishedPaths: st
 
 /** A `missions` hub with six children: five pages (titles out of slug order) and one sub-folder. */
 const MISSIONS = (hubExtra = '') => ({
-  'missions/README.md': page('Missions', hubExtra),
+  'missions/README.md': page('Missions', hubExtra, 'Hub'),
   'missions/zeta.md': page('Alpha mission'),
   'missions/alpha.md': page('Bravo mission'),
   'missions/charlie.md': page('Charlie mission', 'sidebar:\n  label: Charlie (short)\n'),
@@ -96,8 +96,13 @@ describe('hub data in the route-shaping module (FR-004)', () => {
     expect(served({}, ['missions/foxtrot.md']).hubCaps[0]![1].count).toBe(6);
   });
 
+  it('does not cap a folder whose index page is not kind: Hub (it lists no children)', () => {
+    site({ ...MISSIONS('sidebar_child_cap: 5\n'), 'missions/README.md': page('Missions', 'sidebar_child_cap: 5\n', 'Explanation') });
+    expect(served().hubCaps).toEqual([]);
+  });
+
   it('does not treat a folder whose index is a draft as a hub', () => {
-    site({ ...MISSIONS('sidebar_child_cap: 5\n'), 'missions/README.md': page('Missions', 'sidebar_child_cap: 5\n').replace('doc_status: active', 'doc_status: draft') });
+    site({ ...MISSIONS('sidebar_child_cap: 5\n'), 'missions/README.md': page('Missions', 'sidebar_child_cap: 5\n', 'Hub').replace('doc_status: active', 'doc_status: draft') });
     expect(served().hubCaps).toEqual([]);
   });
 });
@@ -120,13 +125,44 @@ describe('cap levels (FR-001)', () => {
 
   it('applies the section cap to a nested hub of the section', () => {
     const files: Record<string, string> = {
-      'missions/README.md': page('Missions'),
-      'missions/old/README.md': page('Old missions'),
+      'missions/README.md': page('Missions', '', 'Hub'),
+      'missions/old/README.md': page('Old missions', '', 'Hub'),
       '_meta/sections.yaml': SECTIONS(2),
     };
     for (const n of ['a', 'b', 'c']) files[`missions/old/${n}.md`] = page(`Old ${n}`);
     site(files);
     expect(served().hubCaps.map(([dir, { cap, count }]) => [dir, cap, count])).toEqual([['missions/old', 2, 3]]);
+  });
+});
+
+describe('an ADR hub (FR-004: the order and count the hub page shows)', () => {
+  const adr = (title: string, status = 'Accepted') =>
+    `---\ntitle: ${JSON.stringify(title)}\ndescription: Fixture ADR.\ndoc_status: active\nupdated: 2026-11-23T00:00:00Z\nkind: ADR\n---\n\n# ${title}\n\n## Status\n\n${status}\n`;
+
+  it('lists ADRs by id, then the other pages, and does not count an ADR without an id', () => {
+    site({
+      'adr/README.md': page('Decisions', 'sidebar_child_cap: 2\n', 'Hub'),
+      'adr/0002-alpha.md': adr('ADR-0002: Alpha'),
+      'adr/0010-beta.md': adr('ADR-0010: Beta'),
+      'adr/0001-zulu.md': adr('ADR-0001: Zulu'),
+      'adr/notes.md': adr('Unnumbered note'),
+      'adr/template.md': page('A template page'),
+    });
+    expect(served().hubCaps).toEqual([
+      [
+        'adr',
+        {
+          cap: 2,
+          count: 4,
+          children: [
+            { slug: 'adr/0001-zulu', label: 'ADR-0001: Zulu' },
+            { slug: 'adr/0002-alpha', label: 'ADR-0002: Alpha' },
+            { slug: 'adr/0010-beta', label: 'ADR-0010: Beta' },
+            { slug: 'adr/template', label: 'A template page' },
+          ],
+        },
+      ],
+    ]);
   });
 });
 
