@@ -1,0 +1,21 @@
+{
+  "create_return_branch": "feat/403-subprocessor-catalog",
+  "created_at": "2026-11-23T19:09:24.644786+00:00",
+  "flattened": false,
+  "friendly_name": "Sub-processor catalog",
+  "mid8": "01M84X07",
+  "mission_base_sha": "26170c9169c7dc1a3149ff935ff53ddac86f8817",
+  "mission_branch": "kitty/mission-subprocessor-catalog-01M84X07",
+  "mission_id": "01M84X07GSZS94MXX0RYYNMBJK",
+  "mission_number": null,
+  "mission_slug": "subprocessor-catalog-01M84X07",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Data-protection terms require a current, change-notified list of sub-processors. Today that list is prose that nothing checks or publishes. This mission adds an optional catalog file with validation, a machine-readable export, a change feed, a generated list page and a link to the measures catalog. The toolkit supplies the structure; each site supplies its own facts. Tracks issue #403 in epic #400.",
+  "purpose_tldr": "Let a documentation site keep a validated list of its sub-processors and announce changes to it.",
+  "slug": "subprocessor-catalog-01M84X07",
+  "target_branch": "feat/403-subprocessor-catalog",
+  "topology": "single_branch",
+  "topology_settled": false,
+  "topology_source": "default"
+}
