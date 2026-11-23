@@ -14,6 +14,9 @@ requirement_refs:
 planning_base_branch: feat/341-sidebar-child-cap
 merge_target_branch: feat/341-sidebar-child-cap
 branch_strategy: Planning artifacts for this mission were generated on feat/341-sidebar-child-cap. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/341-sidebar-child-cap unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-large-hubs-sidebar-child-cap-01M81KGV
+base_commit: 8eefa05b5d000ef4847c8a7998bc0e7fe5ef4dcd
+created_at: '2026-11-23T09:04:14.340196+00:00'
 subtasks:
 - T016
 - T017
