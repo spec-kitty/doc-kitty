@@ -194,6 +194,22 @@ describe('packs-sync-contract', () => {
       });
     }
 
+    it('accepts a file whose name merely starts with .. (not a traversal)', () => {
+      const repo = charterWithOutsideFile();
+      writeFileSync(path.join(repo, 'contracts/packs/..notes.yaml'), 'n: 1\n');
+      git(repo, 'add', '.');
+      git(repo, 'commit', '-q', '-m', 'four');
+      git(repo, 'tag', 'contract-packs-v9.9.11');
+      const to = seededSnapshot();
+      const lockFile = path.join(to, 'contract.lock.json');
+      const lock = JSON.parse(readFileSync(lockFile, 'utf8'));
+      lock.files['..notes.yaml'] = '0'.repeat(64);
+      writeFileSync(lockFile, JSON.stringify(lock));
+      const res = run('--ref', 'contract-packs-v9.9.11', '--from', repo, '--to', to);
+      expect(res.status, res.stderr).toBe(0);
+      expect(readFileSync(path.join(to, '..notes.yaml'), 'utf8')).toBe('n: 1\n');
+    });
+
     it('still syncs a well-formed lock (the happy path is unchanged)', () => {
       const repo = charterWithOutsideFile();
       const to = seededSnapshot();
