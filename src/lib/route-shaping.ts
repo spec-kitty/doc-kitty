@@ -526,9 +526,15 @@ function flattenLinks(entries: readonly SidebarEntry[]): SidebarLink[] {
 /**
  * The tree prev/next are derived from when hubs are capped (#341): a copy of the
  * shaped tree in which each capped entry is replaced by its hub's children, in the
- * hub's listing order, with the page being rendered marked current. Hrefs follow
- * the hub index link's form (base, trailing slash). With nothing capped the shaped
- * tree itself is returned.
+ * hub's listing order, with the page being rendered marked current. With nothing
+ * capped the shaped tree itself is returned.
+ *
+ * A child's href is built from the capped entry's own href, which is the hub index
+ * link's: its prefix (the site `base`) and its trailing-slash form are kept, and the
+ * hub folder is swapped for the child's slug (`/site/missions/` → `/site/missions/m-1/`).
+ * That holds for Starlight's directory-format routes, the only form the toolkit
+ * builds (every page is served at `<slug>/`). A pre-hidden child is in no tree, so
+ * its href cannot be read from one.
  */
 export function expandCappedGroups(
   shaped: SidebarEntry[],
@@ -610,6 +616,39 @@ export function shapePagination(
     prev: side(pagination.prev, before[at - 1], after[to - 1], followsSidebar.prev),
     next: side(pagination.next, before[at + 1], after[to + 1], followsSidebar.next),
   };
+}
+
+/**
+ * prev/next in hub order after a LATER route middleware rebuilt them from the shaped
+ * sidebar (#341). The OpenAPI renderer's middleware does that on every page: it walks
+ * the capped entry as if it were a page, so every child of a capped hub would get the
+ * capped entry's neighbours. This re-derives each side that still follows the
+ * sidebar from `sidebar` (the tree that middleware left, with its own groups filled)
+ * with the capped groups expanded in hub order; a side the author set or switched off
+ * is kept. A page below a capped hub that the hub does not list (a draft in a
+ * drafts-on build) is in no expanded tree; it takes `ownPagination`, what the
+ * route-shaping middleware gave it, as it would on a site without that renderer.
+ * With no capped hub, or a page that is in neither tree, the pagination is returned
+ * unchanged (same reference).
+ */
+export function hubOrderPagination(
+  sidebar: SidebarEntry[],
+  hubCaps: HubCapMap,
+  currentSlug: string,
+  pagination: RoutePagination,
+  followsSidebar: { prev: boolean; next: boolean },
+  ownPagination?: RoutePagination,
+): RoutePagination {
+  if (hubCaps.size === 0) return pagination;
+  const links = flattenLinks(expandCappedGroups(sidebar, hubCaps, currentSlug));
+  const at = links.findIndex((link) => link.isCurrent);
+  if (at === -1) {
+    const belowCappedHub = [...hubCaps.keys()].some((dir) => currentSlug.startsWith(`${dir}/`));
+    return belowCappedHub && ownPagination ? ownPagination : pagination;
+  }
+  const prev = followsSidebar.prev ? links[at - 1] : pagination.prev;
+  const next = followsSidebar.next ? links[at + 1] : pagination.next;
+  return prev === pagination.prev && next === pagination.next ? pagination : { prev, next };
 }
 
 /** A link label that shaping changed: what the shaped sidebar shows, and the page title. */

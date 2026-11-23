@@ -10,6 +10,7 @@ import {
   buildDirectoryMeta,
   decorateSidebarIcons,
   expandCappedGroups,
+  hubOrderPagination,
   relabelledLinks,
   shapePagination,
   shapeSidebar,
@@ -141,6 +142,7 @@ describe('a capped group (FR-003)', () => {
 describe('current marking (FR-005)', () => {
   it('marks the capped entry current on a child, and only it', () => {
     const sidebar = shape(tree('missions/alpha'), 'missions/alpha');
+    expect(capped(sidebar)).toMatchObject({ dkCappedHub: 'missions' });
     expect(capped(sidebar).isCurrent).toBe(true);
     const current = JSON.stringify(sidebar).match(/"isCurrent":true/g) ?? [];
     expect(current).toHaveLength(1);
@@ -148,6 +150,7 @@ describe('current marking (FR-005)', () => {
 
   it('marks the index, not the capped entry, on the hub page', () => {
     const sidebar = shape(tree('missions'), 'missions');
+    expect(capped(sidebar)).toMatchObject({ dkCappedHub: 'missions' });
     expect((missionsGroup(sidebar).entries[0] as Link).isCurrent).toBe(true);
     expect(capped(sidebar).isCurrent).toBe(false);
   });
@@ -158,7 +161,9 @@ describe('current marking (FR-005)', () => {
   });
 
   it('does not mark it on a sibling folder that shares the prefix', () => {
-    expect(capped(shape(tree(''), 'missions-archive/x')).isCurrent).toBe(false);
+    const sidebar = shape(tree(''), 'missions-archive/x');
+    expect(capped(sidebar)).toMatchObject({ dkCappedHub: 'missions' });
+    expect(capped(sidebar).isCurrent).toBe(false);
   });
 });
 
@@ -212,6 +217,71 @@ describe('prev/next in hub order (FR-007, FR-008)', () => {
   it('returns the shaped tree itself when no hub is capped', () => {
     const shaped = shape(tree('guides'), 'guides', new Map());
     expect(expandCappedGroups(shaped, new Map(), 'guides')).toBe(shaped);
+  });
+});
+
+describe('prev/next after a later middleware rebuilt them from the shaped sidebar (FR-007)', () => {
+  // The OpenAPI renderer's middleware runs after ours and rebuilds prev/next from
+  // route.sidebar, the capped tree: it walks the capped entry as if it were a page.
+  // `hubOrderPagination` is what our follow-up middleware applies to that result.
+  const FOLLOWS = { prev: true, next: true };
+  const flat = (entries: SidebarEntry[]): Link[] =>
+    entries.flatMap((e) => (e.type === 'group' ? flat(e.entries) : [e as Link]));
+  /** What the renderer does: neighbours of the current link in the tree it is given. */
+  function rebuilt(sidebar: SidebarEntry[]) {
+    const links = flat(sidebar);
+    const at = links.findIndex((l) => l.isCurrent);
+    return at === -1 ? { prev: undefined, next: undefined } : { prev: links[at - 1], next: links[at + 1] };
+  }
+  const run = (current: string, follows = FOLLOWS) => {
+    const sidebar = shape(tree(current), current);
+    const result = hubOrderPagination(sidebar, HUB_CAPS, current, rebuilt(sidebar), follows);
+    return { prev: result.prev?.href, next: result.next?.href };
+  };
+
+  it('the renderer alone gives every child the capped entry\'s neighbours (the defect)', () => {
+    const sidebar = shape(tree('missions/alpha'), 'missions/alpha');
+    expect(rebuilt(sidebar).next?.href).toBe(`${BASE}/ops/`);
+  });
+
+  it('restores hub order on a child, the hub page and the last child', () => {
+    expect(run('missions/alpha')).toEqual({ prev: `${BASE}/missions/zeta/`, next: `${BASE}/missions/charlie/` });
+    expect(run('missions')).toEqual({ prev: `${BASE}/guides/install/`, next: `${BASE}/missions/zeta/` });
+    expect(run('missions/charlie').next).toBe(`${BASE}/ops/`);
+  });
+
+  it('restores the neighbour of the page after a capped group', () => {
+    expect(run('ops').prev).toBe(`${BASE}/missions/charlie/`);
+  });
+
+  it('keeps a side the author set or switched off', () => {
+    expect(run('missions/alpha', { prev: false, next: true }).prev).toBe(`${BASE}/missions/`);
+  });
+
+  it('gives a page below the hub that the hub does not list the pagination shaping gave it', () => {
+    // A draft child in a drafts-on build: in Starlight's tree, not in the hub's list.
+    const original = [
+      ...tree(''),
+    ].map((g) =>
+      g.type === 'group' && g.label === 'Missions'
+        ? { ...g, entries: [...g.entries, link('missions/draft', 'Draft', true)] }
+        : g,
+    );
+    const sidebar = shape(original, 'missions/draft');
+    const own = { prev: link('missions/charlie', 'Charlie') as Link, next: link('ops', 'Ops') as Link };
+    const result = hubOrderPagination(sidebar, HUB_CAPS, 'missions/draft', rebuilt(sidebar), FOLLOWS, own);
+    expect(result).toBe(own);
+    // A page outside every capped hub never takes it.
+    const guides = shape(tree('guides'), 'guides');
+    const elsewhere = hubOrderPagination(guides, HUB_CAPS, 'guides', rebuilt(guides), FOLLOWS, own);
+    expect(elsewhere).toEqual(rebuilt(guides));
+    expect(elsewhere).not.toBe(own);
+  });
+
+  it('returns the pagination itself when no hub is capped', () => {
+    const sidebar = shape(tree('guides'), 'guides', new Map());
+    const pagination = rebuilt(sidebar);
+    expect(hubOrderPagination(sidebar, new Map(), 'guides', pagination, FOLLOWS)).toBe(pagination);
   });
 });
 

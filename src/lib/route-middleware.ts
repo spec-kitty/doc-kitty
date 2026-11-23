@@ -64,15 +64,18 @@ export const onRequest = defineRouteMiddleware((context) => {
 
     // `prev`/`next` front matter left unset means "follow the sidebar".
     const { prev, next } = route.entry.data;
-    // A capped hub's children are not in the shaped sidebar, so prev/next walk a copy
-    // where they are, in the hub's order (the shaped tree itself when nothing is capped).
-    route.pagination = shapePagination(route.sidebar, expandCappedGroups(sidebar, hubCaps, currentSlug), route.pagination, {
+    const follows = {
       prev: routeShaping.pagination && prev === undefined,
       next: routeShaping.pagination && next === undefined,
-    });
+    };
+    // A capped hub's children are not in the shaped sidebar, so prev/next walk a copy
+    // where they are, in the hub's order (the shaped tree itself when nothing is capped).
+    route.pagination = shapePagination(route.sidebar, expandCappedGroups(sidebar, hubCaps, currentSlug), route.pagination, follows);
     // Handed on for a later middleware that rebuilds prev/next from the shaped sidebar
-    // (the OpenAPI renderer's, which runs after this one on every page).
+    // (the OpenAPI renderer's, which runs after this one on every page): the relabelled
+    // links, and with a capped hub what it needs to put the hub order back (#341).
     context.locals.dkRelabelled = relabelledLinks(route.sidebar, sidebar);
+    if (hubCaps.size > 0) context.locals.dkHubOrder = { hubCaps, currentSlug, follows, pagination: route.pagination };
     route.sidebar = decorateSidebarIcons(sidebar, iconMaps, routeShaping.base);
   }
 
