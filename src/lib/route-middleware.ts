@@ -75,7 +75,18 @@ export const onRequest = defineRouteMiddleware((context) => {
     // (the OpenAPI renderer's, which runs after this one on every page): the relabelled
     // links, and with a capped hub what it needs to put the hub order back (#341).
     context.locals.dkRelabelled = relabelledLinks(route.sidebar, sidebar);
-    if (hubCaps.size > 0) context.locals.dkHubOrder = { hubCaps, currentSlug, follows, pagination: route.pagination };
+    if (hubCaps.size > 0) {
+      // For the later rebuild a label-only override (`next: "Read on"`) still follows
+      // the sidebar: it is handed on as its label.
+      const followsWithLabel = (side: unknown, followsSide: boolean): boolean | string =>
+        routeShaping.pagination && typeof side === 'string' ? side : followsSide;
+      context.locals.dkHubOrder = {
+        hubCaps,
+        currentSlug,
+        follows: { prev: followsWithLabel(prev, follows.prev), next: followsWithLabel(next, follows.next) },
+        pagination: route.pagination,
+      };
+    }
     route.sidebar = decorateSidebarIcons(sidebar, iconMaps, routeShaping.base);
   }
 

@@ -624,8 +624,10 @@ export function shapePagination(
  * the capped entry as if it were a page, so every child of a capped hub would get the
  * capped entry's neighbours. This re-derives each side that still follows the
  * sidebar from `sidebar` (the tree that middleware left, with its own groups filled)
- * with the capped groups expanded in hub order; a side the author set or switched off
- * is kept. A page below a capped hub that the hub does not list (a draft in a
+ * with the capped groups expanded in hub order; a side the author pointed elsewhere
+ * or switched off (`false`) is kept. A side given as a string is Starlight's
+ * label-only override (`next: "Read on"`): it still follows the sidebar, under that
+ * label. A page below a capped hub that the hub does not list (a draft in a
  * drafts-on build) is in no expanded tree; it takes `ownPagination`, what the
  * route-shaping middleware gave it, as it would on a site without that renderer.
  * With no capped hub, or a page that is in neither tree, the pagination is returned
@@ -636,7 +638,7 @@ export function hubOrderPagination(
   hubCaps: HubCapMap,
   currentSlug: string,
   pagination: RoutePagination,
-  followsSidebar: { prev: boolean; next: boolean },
+  followsSidebar: { prev: boolean | string; next: boolean | string },
   ownPagination?: RoutePagination,
 ): RoutePagination {
   if (hubCaps.size === 0) return pagination;
@@ -646,8 +648,12 @@ export function hubOrderPagination(
     const belowCappedHub = [...hubCaps.keys()].some((dir) => currentSlug.startsWith(`${dir}/`));
     return belowCappedHub && ownPagination ? ownPagination : pagination;
   }
-  const prev = followsSidebar.prev ? links[at - 1] : pagination.prev;
-  const next = followsSidebar.next ? links[at + 1] : pagination.next;
+  const side = (follows: boolean | string, current: SidebarLink | undefined, neighbour: SidebarLink | undefined) => {
+    if (follows === false) return current;
+    return typeof follows === 'string' && neighbour ? { ...neighbour, label: follows } : neighbour;
+  };
+  const prev = side(followsSidebar.prev, pagination.prev, links[at - 1]);
+  const next = side(followsSidebar.next, pagination.next, links[at + 1]);
   return prev === pagination.prev && next === pagination.next ? pagination : { prev, next };
 }
 

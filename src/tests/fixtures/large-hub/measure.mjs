@@ -24,25 +24,29 @@ const median = (xs) => {
 };
 
 const variants = { capped: { missions: children }, uncapped: { missions: children, siteCap: children + 1 } };
-const results = {};
-for (const [name, options] of Object.entries(variants)) {
-  const dir = path.join(REPO_ROOT, 'example', `.dk-test-sidebar-cap-measure-${name}`);
-  const seconds = [];
-  let sizes = [];
-  for (let run = 0; run < runs; run += 1) {
+const seconds = { capped: [], uncapped: [] };
+const sizes = { capped: [], uncapped: [] };
+// Runs alternate between the variants, so a change in machine load over the
+// measurement falls on both alike instead of on one variant's runs.
+for (let run = 0; run < runs; run += 1) {
+  for (const [name, options] of Object.entries(variants)) {
+    const dir = path.join(REPO_ROOT, 'example', `.dk-test-sidebar-cap-measure-${name}`);
     writeSite(dir, options);
     const result = buildSite(dir);
     if (result.status !== 0) throw new Error(`${name} build failed:\n${result.output.slice(-3000)}`);
-    seconds.push(result.seconds);
-    sizes = [...builtPages(path.join(dir, 'dist')).values()].map((html) => Buffer.byteLength(html));
+    seconds[name].push(result.seconds);
+    sizes[name] = [...builtPages(path.join(dir, 'dist')).values()].map((html) => Buffer.byteLength(html));
+    rmSync(dir, { recursive: true, force: true });
   }
-  rmSync(dir, { recursive: true, force: true });
+}
+const results = {};
+for (const name of Object.keys(variants)) {
   results[name] = {
-    pages: sizes.length,
-    buildSecondsMedian: Number(median(seconds).toFixed(1)),
-    buildSeconds: seconds.map((s) => Number(s.toFixed(1))),
-    pageBytesMedian: median(sizes),
-    totalMiB: Number((sizes.reduce((a, b) => a + b, 0) / 2 ** 20).toFixed(1)),
+    pages: sizes[name].length,
+    buildSecondsMedian: Number(median(seconds[name]).toFixed(1)),
+    buildSeconds: seconds[name].map((s) => Number(s.toFixed(1))),
+    pageBytesMedian: median(sizes[name]),
+    totalMiB: Number((sizes[name].reduce((a, b) => a + b, 0) / 2 ** 20).toFixed(1)),
   };
 }
 console.log(JSON.stringify({ children, runs, node: process.version, results }, null, 2));

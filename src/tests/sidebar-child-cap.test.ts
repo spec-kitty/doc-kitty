@@ -258,6 +258,27 @@ describe('prev/next after a later middleware rebuilt them from the shaped sideba
     expect(run('missions/alpha', { prev: false, next: true }).prev).toBe(`${BASE}/missions/`);
   });
 
+  it('keeps a next the author switched off', () => {
+    expect(run('missions/alpha', { prev: true, next: false }).next).toBe(`${BASE}/ops/`);
+  });
+
+  it('follows the hub order for a label-only override, with the author\'s label', () => {
+    // `next: "Label only"` names the link but leaves its target to the sidebar.
+    const sidebar = shape(tree('missions/alpha'), 'missions/alpha');
+    const renderer = rebuilt(sidebar);
+    const labelled = { ...renderer, next: { ...renderer.next!, label: 'Label only' } };
+    const result = hubOrderPagination(sidebar, HUB_CAPS, 'missions/alpha', labelled, { prev: true, next: 'Label only' });
+    expect(result.next).toMatchObject({ href: `${BASE}/missions/charlie/`, label: 'Label only' });
+    expect(result.prev?.href).toBe(`${BASE}/missions/zeta/`);
+  });
+
+  it('leaves the pagination alone for a page in no tree and below no capped hub', () => {
+    const sidebar = shape(tree(''), 'elsewhere');
+    const pagination = rebuilt(sidebar);
+    const own = { prev: link('ops', 'Ops') as Link, next: undefined };
+    expect(hubOrderPagination(sidebar, HUB_CAPS, 'elsewhere', pagination, FOLLOWS, own)).toBe(pagination);
+  });
+
   it('gives a page below the hub that the hub does not list the pagination shaping gave it', () => {
     // A draft child in a drafts-on build: in Starlight's tree, not in the hub's list.
     const original = [

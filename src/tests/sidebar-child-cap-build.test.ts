@@ -13,7 +13,9 @@
  *     hint) builds the same sidebar and prev/next on every page;
  *  5. a site with no hub over its cap builds pages identical to the goldens
  *     captured before the cap existed (`fixtures/large-hub/golden/uncapped.json`),
- *     once the checkout path Astro hashes into class names is masked;
+ *     once the checkout path Astro hashes into class names is masked. The goldens
+ *     hash every built page's HTML (NFR-002 is about pages); the CSS bundles'
+ *     names are masked with the class names and their contents are not hashed;
  *  6. two builds of the capped site are byte-identical.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -164,9 +166,9 @@ describe('determinism and byte-identity', () => {
     'builds the capped site byte-identically twice (NFR-003)',
     () => {
       const again = build(SITES.again, { missions: CHILDREN });
-      // Same site folder name in the same checkout: the raw bytes must match.
-      const strip = (html: string) => html.replaceAll('sidebar-cap-again', 'sidebar-cap-capped');
-      for (const [route, html] of capped) expect(strip(again.get(route)!), route).toBe(html);
+      // Same checkout, same toolkit path: the raw bytes must match, page for page.
+      expect([...again.keys()].sort()).toEqual([...capped.keys()].sort());
+      for (const [route, html] of capped) expect(again.get(route), route).toBe(html);
     },
     BUILD_TIMEOUT,
   );
