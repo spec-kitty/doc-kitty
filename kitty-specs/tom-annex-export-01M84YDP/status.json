@@ -91,7 +91,8 @@
       "last_transition_at": "2026-11-23T23:39:29.185417+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Route, conditional mount and _links.tomAnnex: 18 new tests red-first; full pnpm test green (src 4563/4563, mcp 181/181); CI typecheck and lint clean; example build verified."
+        "Route, conditional mount and _links.tomAnnex: 18 new tests red-first; full pnpm test green (src 4563/4563, mcp 181/181); CI typecheck and lint clean; example build verified.",
+        "Review passed (claude::reviewer-renata). Verified at lane-c a27a1e2: red-first (new tests fail on base f23a3e8; same-tree positive controls); scan agrees with graph walk+draft rule (probed missing doc_status, mdx, _meta, dot dirs, log.md, draft section index, deprecated, draft root, excluded folders); example built 3 ways: classified -> tom-annex.json + _links.tomAnnex (4 evidence URLs under /doc-kitty/, 13 uncovered); classifications stripped -> no route, no link, api/index.json byte-identical to base built with same pages; MCP fixture _links.tomAnnex == fresh build, README provenance accurate (73 vs 75 records). Gates: pnpm test src 4563/4563 mcp 181/181, lint 0, typecheck 0. Out-of-map edits justified. Non-blocking: dev server decides mount once at config:setup (restart needed after adding/removing all classifications; removal yields the T016 throw); scan fixtures are inline tmpdirs not src/tests/fixtures/tom-annex-scan/."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
