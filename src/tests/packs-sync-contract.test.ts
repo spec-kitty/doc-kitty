@@ -166,6 +166,8 @@ describe('packs-sync-contract', () => {
       ['a ./ segment', './file-kinds.yaml'],
       ['an empty segment', 'schemas//policy.schema.json'],
       ['the lock itself', 'contract.lock.json'],
+      ['the lock in another case', 'Contract.Lock.JSON'],
+      ['a drive-relative key', 'C:outside.txt'],
     ];
 
     for (const [label, key] of badKeys) {

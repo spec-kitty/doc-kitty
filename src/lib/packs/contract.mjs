@@ -105,7 +105,7 @@ function snapshotFiles(dir) {
  *
  * A key names a file inside the snapshot directory, so it must be a relative
  * POSIX path of plain segments: no leading `/`, no backslash, no empty, `.` or
- * `..` segment, no NUL, and never the lock itself. A key that passes cannot
+ * `..` segment, no NUL, no colon, and never the lock itself in any case. A key that passes cannot
  * resolve outside the snapshot, whatever directory the snapshot sits in.
  *
  * @param {unknown} key
@@ -119,9 +119,12 @@ export function lockKeyProblem(key) {
   if (key.includes('\\')) return unsafe('it holds a backslash');
   if (key.includes('\0')) return unsafe('it holds a NUL');
   if (key.startsWith('/') || path.win32.isAbsolute(key)) return unsafe('it is absolute');
+  // A colon makes `C:x` drive-relative and `x:stream` an alternate data stream on Windows.
+  if (key.includes(':')) return unsafe('it holds a colon');
   const segments = key.split('/');
   if (segments.some((s) => s === '' || s === '.' || s === '..')) return unsafe('it has an empty, `.` or `..` segment');
-  if (key === CONTRACT_LOCK_FILE) return unsafe('it names the lock itself');
+  // Compared case-insensitively: on macOS and Windows a case variant is the lock's own file.
+  if (key.toLowerCase() === CONTRACT_LOCK_FILE) return unsafe('it names the lock itself');
   return undefined;
 }
 
