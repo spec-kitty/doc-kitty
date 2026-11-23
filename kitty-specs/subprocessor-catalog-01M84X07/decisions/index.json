@@ -73,6 +73,30 @@
       "status": "resolved",
       "step_id": null,
       "summary_json": null
+    },
+    {
+      "created_at": "2026-11-23T21:14:51.357253Z",
+      "decision_id": "01M8545YJX3DY4G3DEYX81G49Y",
+      "final_answer": null,
+      "input_key": "build_failure_point",
+      "mission_id": "01M84X07GSZS94MXX0RYYNMBJK",
+      "mission_slug": "subprocessor-catalog-01M84X07",
+      "opened_by": "cli",
+      "options": [
+        "A: fail at config setup in a file-gated integration (recommended)",
+        "B: fail when the route renders",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "Where does an invalid sub-processor catalog fail the build? (A) In a new doc-kitty:subprocessors integration at astro:config:setup. It reads the file once, validates it with the shared bare-Node core (the same core validate-catalog.mjs imports) against the bibliography and measures catalogs, and throws one aggregate error before any page renders. It injects /api/subprocessors.json and /subprocessors.xml only when the file exists (gherkin precedent), so served-surface detection drives the api/index.json links. (B) Lazily, when the routes render. Simpler, but the error comes late and a missing route cannot be told apart from a failed one.",
+      "rationale": null,
+      "resolved_at": null,
+      "resolved_by": null,
+      "slot_key": "plan.architecture.build-failure-point",
+      "status": "open",
+      "step_id": null,
+      "summary_json": null
     }
   ],
   "mission_id": "01M84X07GSZS94MXX0RYYNMBJK",
