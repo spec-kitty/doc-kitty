@@ -15,7 +15,8 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, syml
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { packContentHash, readPack } from '../lib/packs/read.mjs';
+import { parse as parseYaml } from 'yaml';
+import { packContentHash, packManifestHash, readPack } from '../lib/packs/read.mjs';
 import * as packs from '../lib/packs/index.mjs';
 
 const FIXTURES = fileURLToPath(new URL('./fixtures/packs/', import.meta.url));
@@ -23,6 +24,23 @@ const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const READ_WITH = '33f3ad46e9e33e895d4cd3a077d928d91b4f025f';
 const fixture = (p: string) => path.join(FIXTURES, p);
 const codes = (m: { problems: { code: string }[] }) => m.problems.map((p) => p.code);
+
+/** RFC 8785 for the string-only data a failsafe YAML parse yields; independent of the reader. */
+const jcs = (v: unknown): string =>
+  Array.isArray(v)
+    ? `[${v.map(jcs).join(',')}]`
+    : v !== null && typeof v === 'object'
+      ? `{${Object.keys(v)
+          .sort()
+          .map((k) => `${JSON.stringify(k)}:${jcs((v as Record<string, unknown>)[k])}`)
+          .join(',')}}`
+      : JSON.stringify(v);
+/** Rewrite a manifest's `manifest_hash` to match its content, so a test that edits it tests only its edit. */
+function rehash(file: string) {
+  const { manifest_hash: _old, ...rest } = parseYaml(readFileSync(file, 'utf8'), { schema: 'failsafe' }) as Record<string, unknown>;
+  const hash = createHash('sha256').update(jcs(rest), 'utf8').digest('hex');
+  writeFileSync(file, readFileSync(file, 'utf8').replace(/^manifest_hash: .*$/m, `manifest_hash: ${hash}`));
+}
 
 const temps: string[] = [];
 afterEach(() => {
@@ -66,7 +84,7 @@ describe('a pack with a current manifest (alpha)', () => {
 
   it('verifies the manifest, the CRLF tactic included, and takes the inventory from it', () => {
     expect(model.manifest?.verified).toBe(true);
-    expect(model.manifest?.hash).toBe('a'.repeat(64));
+    expect(model.manifest?.hash).toBe('982528f4f7cb68d454cbbe96d094ac75c881dd234f2ff79ebeb852aedd9cbc95');
     const tactic = readFileSync(fixture('with-manifest/alpha/tactics/t.tactic.yaml'));
     expect(tactic.includes(Buffer.from('\r\n'))).toBe(true);
     const raw = createHash('sha256').update(tactic).digest('hex');
@@ -110,6 +128,50 @@ describe('a pack with a retired file (gamma)', () => {
       ['retired', 'pack.md'],
     ]);
     expect(model.problems[1].message).toMatch(/\*\/pack\.md/);
+  });
+});
+
+describe('the manifest\'s own hash (#417)', () => {
+  function alphaWith(edit: (text: string) => string) {
+    const root = temp();
+    const dir = path.join(root, 'alpha');
+    cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
+    const file = path.join(dir, 'pack-manifest.yaml');
+    writeFileSync(file, edit(readFileSync(file, 'utf8')));
+    return readPack(dir);
+  }
+
+  it('is recomputed with the schema\'s recipe and matches the fixture', () => {
+    const manifest = parseYaml(readFileSync(fixture('with-manifest/alpha/pack-manifest.yaml'), 'utf8'), { schema: 'failsafe' });
+    expect(packManifestHash(manifest)).toBe(manifest.manifest_hash);
+  });
+
+  it('does not verify a manifest whose constituents verify but whose own hash is wrong', () => {
+    const model = alphaWith((t) => t.replace(/^manifest_hash: .*$/m, `manifest_hash: ${'a'.repeat(64)}`));
+    expect(model.manifest?.verified).toBe(false);
+    expect(model.manifest?.hash).toBe('a'.repeat(64));
+    expect(model.inventory.source).toBe('file-kinds');
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([['manifest-own-hash-mismatch', 'pack-manifest.yaml']]);
+    expect(model.problems[0].message).toContain('982528f4f7cb68d454cbbe96d094ac75c881dd234f2ff79ebeb852aedd9cbc95');
+  });
+
+  it('does not verify a manifest whose content changed after it was hashed', () => {
+    // A preset entry gains a field: membership and content hashes still hold.
+    const model = alphaWith((t) => t.replace('  - id: minimal\n', '  - id: minimal\n    note: added later\n'));
+    expect(model.manifest?.verified).toBe(false);
+    expect(model.problems.map((p) => [p.code, p.file])).toEqual([['manifest-own-hash-mismatch', 'pack-manifest.yaml']]);
+  });
+
+  it('does not verify a manifest with no manifest_hash, or one that is not a single value', () => {
+    for (const edit of [
+      (t: string) => t.replace(/^manifest_hash: .*\n/m, ''),
+      (t: string) => t.replace(/^manifest_hash: .*$/m, 'manifest_hash: [x]'),
+    ]) {
+      const model = alphaWith(edit);
+      expect(model.manifest?.verified).toBe(false);
+      expect(model.manifest?.hash).toBe('');
+      expect(model.problems.map((p) => [p.code, p.file])).toEqual([['manifest-own-hash-missing', 'pack-manifest.yaml']]);
+    }
   });
 });
 
@@ -218,6 +280,7 @@ describe('robustness', () => {
       path.join(dir, 'pack-manifest.yaml'),
       `schema_version: "1.0"\nmanifest_hash: ${'b'.repeat(64)}\nconstituents:\n  - kind: directive\n    id: b\n    path: directives/b.directive.yaml\n    content_hash: ${hash}\n`,
     );
+    rehash(path.join(dir, 'pack-manifest.yaml'));
     const model = readPack(dir);
     expect(model.manifest?.verified).toBe(false);
     expect(model.inventory.source).toBe('file-kinds');
@@ -310,6 +373,7 @@ describe('robustness', () => {
     cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
     const file = path.join(dir, 'pack-manifest.yaml');
     writeFileSync(file, readFileSync(file, 'utf8').replace('    path: directives/a.directive.yaml', '    path: [directives/a.directive.yaml]'));
+    rehash(file);
     const model = readPack(dir);
     expect(model.manifest?.verified).toBe(false);
     expect(model.manifest?.constituents.map((c) => c.id)).toEqual(['t', 'spec.md']);
@@ -334,6 +398,7 @@ describe('robustness', () => {
       .join('');
     // The tactic is listed under another known kind.
     writeFileSync(file, readFileSync(file, 'utf8').replace('presets:\n', `${extra}presets:\n`).replace('kind: tactic', 'kind: agent_profile'));
+    rehash(file);
     const model = readPack(dir);
     expect(model.manifest?.verified).toBe(false);
     expect(model.inventory.source).toBe('file-kinds');
@@ -354,6 +419,7 @@ describe('robustness', () => {
     const file = path.join(dir, 'pack-manifest.yaml');
     const entry = `  - kind: routing_catalog\n    id: default\n    path: ${rel}\n    content_hash: ${packContentHash(readFileSync(path.join(dir, rel)))}\n`;
     writeFileSync(file, readFileSync(file, 'utf8').replace('presets:\n', `${entry}presets:\n`));
+    rehash(file);
     const model = readPack(dir);
     expect(model.problems).toEqual([]);
     expect(model.manifest?.verified).toBe(true);
@@ -366,6 +432,7 @@ describe('robustness', () => {
     cpSync(fixture('with-manifest/alpha'), dir, { recursive: true });
     const file = path.join(dir, 'pack-manifest.yaml');
     writeFileSync(file, readFileSync(file, 'utf8').replace('kind: tactic', 'kind: totally_bogus').replace('schema_version: "1.0"', 'schema_version: "2.0"'));
+    rehash(file);
     const model = readPack(dir);
     expect(model.manifest?.verified).toBe(false);
     expect(model.problems.map((p) => [p.code, p.file])).toEqual([
@@ -442,7 +509,7 @@ describe('robustness', () => {
 describe('the public surface', () => {
   it('re-exports the reader, the parser, the contract loader and the classifier', () => {
     expect(Object.keys(packs).sort()).toEqual(
-      ['classify', 'createClassifier', 'loadContract', 'packContentHash', 'parsePackDocument', 'readPack', 'verifyContractLock'].sort(),
+      ['classify', 'createClassifier', 'loadContract', 'packContentHash', 'packManifestHash', 'parsePackDocument', 'readPack', 'verifyContractLock'].sort(),
     );
   });
 });
