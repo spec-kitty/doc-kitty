@@ -1,7 +1,7 @@
 {
-  "event_count": 17,
-  "last_event_id": "01M85CY4YGH5AT9TSP67YRSSR7",
-  "materialized_at": "2026-11-23T23:47:52.779683+00:00",
+  "event_count": 19,
+  "last_event_id": "01M85CYEYA5TD4ZXS22NWGXXD7",
+  "materialized_at": "2026-11-23T23:48:03.038587+00:00",
   "mission_number": "",
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_type": "software-dev",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 1,
+    "in_progress": 2,
     "in_review": 0,
-    "planned": 4
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -52,13 +52,13 @@
     "WP02": {
       "actor": "claude",
       "agent": null,
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
-      "lane": "planned",
-      "last_event_id": "01M85BP8QAQJR6ZQP8S3WQ7CTE",
-      "last_transition_at": "2026-11-23T23:26:06.059027+00:00",
+      "implementer_of_record": "claude::node-norris",
+      "lane": "in_progress",
+      "last_event_id": "01M85CYEYA5TD4ZXS22NWGXXD7",
+      "last_transition_at": "2026-11-23T23:48:03.038587+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181"
@@ -71,7 +71,7 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
