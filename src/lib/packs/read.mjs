@@ -18,6 +18,7 @@ import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node
 import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { loadContract } from './contract.mjs';
+import { canonicalJson } from './canonical-json.mjs';
 import { createClassifier } from './classify.mjs';
 import { parsePackDocument } from './readme.mjs';
 
@@ -62,6 +63,20 @@ export function packContentHash(bytes) {
   }
   hash.update(bytes.subarray(start));
   return hash.digest('hex');
+}
+
+/**
+ * The manifest's own-hash recipe (the charter's `pack-manifest` schema, #417):
+ * SHA-256, lower hex, of the UTF-8 bytes of the RFC 8785 canonical JSON of the
+ * manifest without `manifest_hash`. `manifest` is the manifest as the reader
+ * parses it (failsafe YAML, so every scalar is the string the schema says it
+ * is). Throws when the manifest has no canonical form (a lone surrogate).
+ *
+ * @param {Record<string, unknown>} manifest
+ */
+export function packManifestHash(manifest) {
+  const { manifest_hash: _ignored, ...rest } = manifest;
+  return createHash('sha256').update(canonicalJson(rest), 'utf8').digest('hex');
 }
 
 /** Keys never copied from pack data into an object a later slice may spread or assign from. */
@@ -467,8 +482,25 @@ export function readPack(dir, options = {}) {
         warn('manifest-unlisted', 'the pack holds this file, but pack-manifest.yaml does not list it', rel);
       }
     }
+    // The manifest's own hash (#417): recomputed, never taken as written.
+    const written = typeof m.manifest_hash === 'string' && m.manifest_hash !== '' ? m.manifest_hash : undefined;
+    if (written === undefined) {
+      verified = false;
+      warn('manifest-own-hash-missing', 'pack-manifest.yaml has no single `manifest_hash` value, so the manifest cannot be checked', 'pack-manifest.yaml');
+    } else {
+      let recomputed;
+      try {
+        recomputed = packManifestHash(m);
+      } catch (error) {
+        recomputed = `no hash (${/** @type {Error} */ (error).message})`;
+      }
+      if (recomputed !== written) {
+        verified = false;
+        warn('manifest-own-hash-mismatch', `manifest_hash ${written} in pack-manifest.yaml, ${recomputed} recomputed (RFC 8785)`, 'pack-manifest.yaml');
+      }
+    }
     manifest = {
-      hash: typeof m.manifest_hash === 'string' ? m.manifest_hash : '',
+      hash: written ?? '',
       verified,
       constituents: constituents.map((e) => ({
         kind: e.kind ?? '',

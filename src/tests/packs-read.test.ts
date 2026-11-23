@@ -37,7 +37,8 @@ const jcs = (v: unknown): string =>
       : JSON.stringify(v);
 /** Rewrite a manifest's `manifest_hash` to match its content, so a test that edits it tests only its edit. */
 function rehash(file: string) {
-  const { manifest_hash: _old, ...rest } = parseYaml(readFileSync(file, 'utf8'), { schema: 'failsafe' }) as Record<string, unknown>;
+  const rest = parseYaml(readFileSync(file, 'utf8'), { schema: 'failsafe' }) as Record<string, unknown>;
+  delete rest.manifest_hash;
   const hash = createHash('sha256').update(jcs(rest), 'utf8').digest('hex');
   writeFileSync(file, readFileSync(file, 'utf8').replace(/^manifest_hash: .*$/m, `manifest_hash: ${hash}`));
 }
