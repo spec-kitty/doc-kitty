@@ -103,7 +103,7 @@
     },
     "WP03": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::curator-carla",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
@@ -115,7 +115,8 @@
       "notes": [
         "implementation is on the Mission branch at eeb40b3; lane-planning maps to main; never commit to main (operator ruling via dispatcher, 2026-11-22)",
         "Review passed (claude::reviewer-renata). Reviewed eeb40b3 on the mission branch (the derived range f647a36..c8ca0d6 holds status commits only, because the planning lane maps to main). The forced move to for_review was under the operator ruling of 2026-11-22. Accuracy against approved WP01/WP02: font pin and its Arial-metric stack match; the reader-device fallback residual risk is stated; opaque fills get black/white, whichever contrasts more; see-through fills get black/white only if it clears 4.5:1 over any page, else themed; the rgba(230,230,230,.5) known limit is described correctly; author label colours are kept; author edge colours are the author's; the legibility check is described correctly; the halo fix (rgba sentinel rewrite) is in the changelog. The 'pending an operator decision' wording on author init fonts is accurate and not misleading. Non-blocking: the changelog fragment states 'An author font in an %%{init}%% directive no longer changes the label font' as settled; update it together with diagrams.md when the operator rules. RAN on 4eb280f: validate:docs (no warnings in diagrams.md), validate:links, validate:changelog (--check OK), markdownlint-cli2 on both files (0 issues). Vale is not installed in this reviewer container, so it was not run.",
-        "Re-review on local main per operator ruling; spec-kitty/spec-kitty#7809"
+        "Re-review on local main per operator ruling; spec-kitty/spec-kitty#7809",
+        "WP03 docs committed on local main e25328d per operator ruling (option 1; not pushed); evidence window now satisfied; spec-kitty/spec-kitty#7809. Same content mirrored on the Mission branch 3a5c48e."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
