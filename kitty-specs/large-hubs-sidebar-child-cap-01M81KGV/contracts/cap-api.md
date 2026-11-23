@@ -1,11 +1,15 @@
-# Contract: the cap API (exported from `@spec-kitty/doc-toolkit/route-shaping` sources, `src/lib/route-shaping.ts`)
+# Contract: the cap API
+
+The pure API lives in `src/lib/child-cap.ts`, is served as the package export
+`@spec-kitty/doc-toolkit/child-cap`, and is re-exported from `src/lib/route-shaping.ts`.
 
 ```ts
 export const DEFAULT_CHILD_CAP = 50;
 export const CAPPED_LABEL_KEY = 'dockitty.sidebar.cappedEntry';
 export const CAPPED_ENTRY_LABEL = '{count} pages';
 
-export interface HubCap { cap: number; count: number; children: { slug: string; label: string }[] }
+export interface HubCapChild { slug: string; label: string }
+export interface HubCap { cap: number; count: number; children: HubCapChild[] }
 export type HubCapMap = ReadonlyMap<string, HubCap>;
 
 /** Most specific first: hub frontmatter, section, site, default. */
@@ -23,7 +27,10 @@ export function resolveCappedLabel(count: number, option?: string, translate?: (
 //   currentSlug?: string;          // base-free slug of the page being rendered
 //
 // New pure helper for the middleware:
-export function expandCappedGroups(shaped: readonly SidebarEntry[], hubCaps: HubCapMap, base: string, currentSlug: string): SidebarEntry[];
+export function isChildCap(value: unknown): value is number;
+export function isCappedEntry(entry: SidebarEntry): entry is CappedEntry; // dkCappedHub marker
+export function expandCappedGroups(shaped: SidebarEntry[], hubCaps: HubCapMap, currentSlug: string): SidebarEntry[];
+// hrefs follow the capped entry's own href form (base, trailing slash), so no base argument
 ```
 
 #342 consumes `HubCap.children` (order and count) and `resolveChildCap`.
