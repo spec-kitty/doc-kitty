@@ -31,13 +31,13 @@ import { REPO_ROOT, SITE_PREFIX, builtPages, buildSite, normaliseBuildPaths, sha
 export const UNCAPPED = { guides: 10 };
 export const GOLDEN_FILE = fileURLToPath(new URL('./golden/uncapped.json', import.meta.url));
 
-/** Run a command in `cwd`; exit on failure (or return undefined with `soft`). */
+/** Run a command in `cwd`; throw on failure (or return undefined with `soft`). */
 function run(cmd, args, cwd, { soft = false } = {}) {
   const r = spawnSync(cmd, args, { cwd, encoding: 'utf8' });
   if (r.status !== 0) {
     if (soft) return undefined;
-    console.error(`${cmd} ${args.join(' ')} failed:\n${r.stdout}\n${r.stderr}`);
-    process.exit(1);
+    // Throw, not exit, so a failure inside the `try` below still removes the worktree.
+    throw new Error(`${cmd} ${args.join(' ')} failed:\n${r.stdout}\n${r.stderr}`);
   }
   return r.stdout.trim();
 }
@@ -55,10 +55,8 @@ try {
   const dir = path.join(base, 'example', `${SITE_PREFIX}uncapped`);
   writeSite(dir, UNCAPPED);
   const result = buildSite(dir);
-  if (result.status !== 0) {
-    console.error(result.output);
-    process.exit(1);
-  }
+  // Throw, not exit: `finally` must still remove the worktree.
+  if (result.status !== 0) throw new Error(`fixture build failed:\n${result.output}`);
   const pages = Object.fromEntries(
     [...builtPages(path.join(dir, 'dist'))]
       .map(([route, html]) => [route, sha256(normaliseBuildPaths(html))])

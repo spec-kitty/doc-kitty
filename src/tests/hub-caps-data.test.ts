@@ -164,6 +164,20 @@ describe('an ADR hub (FR-004: the order and count the hub page shows)', () => {
       ],
     ]);
   });
+
+  it('does not count a numbered ADR with type: Template, which the hub page does not list', () => {
+    const template =
+      '---\ntitle: "ADR-0099: Template"\ndescription: Fixture template.\ndoc_status: active\nupdated: 2026-11-23T00:00:00Z\ntype: Template\nkind: ADR\n---\n\n# ADR-0099: Template\n\n## Status\n\nProposed\n';
+    site({
+      'adr/README.md': page('Decisions', 'sidebar_child_cap: 3\n', 'Hub'),
+      'adr/0001-alpha.md': adr('ADR-0001: Alpha'),
+      'adr/0002-beta.md': adr('ADR-0002: Beta'),
+      'adr/0003-gamma.md': adr('ADR-0003: Gamma'),
+      'adr/0099-template.md': template,
+    });
+    // Three listed pages against a cap of 3: the hub is not capped.
+    expect(served().hubCaps).toEqual([]);
+  });
 });
 
 describe('module text (NFR-003, FR-006)', () => {

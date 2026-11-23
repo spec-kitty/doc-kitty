@@ -80,6 +80,8 @@ interface ShapingPage extends DirectoryMetaInput {
   childCap?: number;
   /** The page's `kind`: only a `kind: Hub` index lists its children, so only it can be capped. */
   kind?: string;
+  /** The page's `type`: the hub's ADR composition leaves out `type: Template`. */
+  type?: string;
   /** The Markdown body of an ADR-kind page, which the hub's ADR composition reads. */
   body?: string;
 }
@@ -87,7 +89,7 @@ interface ShapingPage extends DirectoryMetaInput {
 /**
  * Read the slice of every docs page that sidebar shaping needs: slug, title,
  * the Starlight `sidebar` front-matter block, whether the file is a directory
- * index, and, for the child cap (#341), `doc_status` and `sidebar_child_cap`. The file list is the shared walk ({@link walkMarkdownPaths}:
+ * index, and, for the child cap (#341), `doc_status`, `sidebar_child_cap`, `kind` and `type`. The file list is the shared walk ({@link walkMarkdownPaths}:
  * no `log.md`, dot-folders or `_meta`), read build-free for frontmatter. Slug and
  * `isIndex` come from the shared route rule (`resolveIndexEntries`, `routeOfSlug`):
  * a page is its folder's index when its route is the folder's route, so a
@@ -106,6 +108,7 @@ function directoryMetaInputs(
       doc_status?: unknown;
       sidebar_child_cap?: unknown;
       kind?: unknown;
+      type?: unknown;
       sidebar?: { label?: unknown; order?: unknown };
     } };
   });
@@ -134,6 +137,7 @@ function directoryMetaInputs(
         // An invalid value fails the schema and the frontmatter gate; here it is just not a cap.
         ...(isChildCap(data.sidebar_child_cap) ? { childCap: data.sidebar_child_cap } : {}),
         ...(typeof data.kind === 'string' ? { kind: data.kind } : {}),
+        ...(typeof data.type === 'string' ? { type: data.type } : {}),
         ...(data.kind === 'ADR' ? { body: content } : {}),
       };
     });
@@ -142,9 +146,9 @@ function directoryMetaInputs(
 
 /**
  * The hubs over their sidebar child cap (#341), sorted by folder (NFR-003). A hub
- * is a folder with an index page; its children are counted and ordered by
- * `selectHubChildren`, the selection the hub page lists (C-003), so drafts never
- * count. The cap is the hub's `sidebar_child_cap`, else its section's
+ * is a folder whose published index page has `kind: Hub`; its children are counted
+ * and ordered by `composeHubChildren`, what the hub page lists (C-003), so drafts,
+ * unnumbered ADRs and `type: Template` ADRs never count. The cap is the hub's `sidebar_child_cap`, else its section's
  * `sidebar.childCap`, else the site's, else the default. A hub at or under its
  * cap is not emitted, so a site with no large hub serves an empty list.
  */
@@ -162,6 +166,7 @@ function hubCaps(
       title: page.title,
       ...(page.docStatus === undefined ? {} : { doc_status: page.docStatus }),
       ...(page.kind === undefined ? {} : { kind: page.kind }),
+      ...(page.type === undefined ? {} : { type: page.type }),
     },
   }));
   const labelOf = new Map(entries.map((entry) => [entry.slug, entry.label]));

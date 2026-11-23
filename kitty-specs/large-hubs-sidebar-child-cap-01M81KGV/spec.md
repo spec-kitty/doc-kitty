@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: Issue #341, "Large hubs slice 1: sidebar child cap" (epic #340). Plan: `docs/plans/features/large-hubs.md`, slice 1. Design: `docs/architecture/research/missions-and-ops.md`, "The sidebar child cap".
 
-Today every page of a section lands in every page's sidebar. Mission, Op, pack and Gherkin sections can each hold hundreds of children, so each built page carries hundreds of sidebar links, and the build renders them hundreds of times. This mission adds a sidebar child cap: a hub (a directory with an index page) that has more children than its cap shows its index link and one "N pages" entry in the sidebar instead of the children. The reader still sees where they are, and the build cost stays bounded.
+Today every page of a section lands in every page's sidebar. Mission, Op, pack and Gherkin sections can each hold hundreds of children, so each built page carries hundreds of sidebar links, and the build renders them hundreds of times. This mission adds a sidebar child cap: a hub (a directory whose published index page has `kind: Hub`) that lists more children than its cap shows its index link and one "N pages" entry in the sidebar instead of the children. The reader still sees where they are, and the build cost stays bounded.
 
 **Intent summary (decisions recorded as Decision Moments, 2026-11-22):**
 
@@ -147,7 +147,7 @@ A producer that writes hundreds of pages (the future missions producer) asks the
 
 ### Key Entities
 
-- **Hub**: a directory with a published index page. Its children are the published pages and sub-folders one level down, ordered as `selectHubChildren` orders them.
+- **Hub**: a directory whose published index page has `kind: Hub`. Its children are the pages its hub page lists, in that order (`composeHubChildren`): the numbered ADRs by id (not `type: Template`), then the other published pages and sub-folders one level down in `selectHubChildren` order.
 - **Child cap**: the largest number of children a hub shows in the sidebar. Resolved per hub from frontmatter, section and site settings.
 - **Capped group**: a hub's sidebar group when its child count is above its cap: the index link and the capped entry.
 - **Capped entry**: the one sidebar link that stands for a capped hub's children. It links to the hub and carries the count.
