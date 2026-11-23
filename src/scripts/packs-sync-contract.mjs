@@ -143,7 +143,7 @@ function insideSnapshot(to, key) {
   const root = path.resolve(to);
   const target = path.resolve(root, key);
   const rel = path.relative(root, target);
-  if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) {
+  if (rel === '' || rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {
     throw new Error(`packs-sync-contract: ${CONTRACT_LOCK_FILE} key ${JSON.stringify(key)} resolves outside ${root}; nothing was written`);
   }
   return target;
