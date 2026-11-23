@@ -123,7 +123,7 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 2,
@@ -136,7 +136,8 @@
         "WP04 ready: build suite 8/8, Playwright 17 passed incl. OpenAPI prev/next, measurements recorded",
         "Changes requested: example-adopter pinned sitemap count broken by new example pages (3 build-tier failures); playwright.local.config.ts committed",
         "Cycle 1 folded: B1 pins 84/79, B2 overlay removed, N1-N4, WP03 NB1/NB2; full pnpm test src 4344/4344 + mcp 181/181",
-        "Review cycle 2 passed: B1/B2 fixed (counts derived 84/79), N1-N4 folded, NB1 red-first + on/off parity improved; full pnpm test src 4344/4344, mcp 181/181; lint/typecheck clean. Follow-ups F1/F2 (pre-existing WP03 label-only override parity) recorded."
+        "Review cycle 2 passed: B1/B2 fixed (counts derived 84/79), N1-N4 folded, NB1 red-first + on/off parity improved; full pnpm test src 4344/4344, mcp 181/181; lint/typecheck clean. Follow-ups F1/F2 (pre-existing WP03 label-only override parity) recorded.",
+        "Rework to fold review-cycle-2 follow-ups F1/F2 and nits (dispatcher: re-review on lane-d)"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -147,14 +148,14 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 25345,
-      "shell_pid_created_at": "1795429241.37",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done",
-        "T020": "done"
+        "T016": "planned",
+        "T017": "planned",
+        "T018": "planned",
+        "T019": "planned",
+        "T020": "planned"
       }
     },
     "WP05": {
