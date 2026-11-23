@@ -1,7 +1,7 @@
 {
-  "event_count": 10,
-  "last_event_id": "01M83NQ3YS69P8MGRJPRXQ2Z83",
-  "materialized_at": "2026-11-23T07:42:50.841446+00:00",
+  "event_count": 12,
+  "last_event_id": "01M83NXB18825E95P2PTM5N8A4",
+  "materialized_at": "2026-11-23T07:46:14.528808+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
   "mission_type": "software-dev",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 5
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
@@ -24,10 +24,10 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "implementer_of_record": "claude",
-      "lane": "planned",
-      "last_event_id": "01M83NQ3YS69P8MGRJPRXQ2Z83",
-      "last_transition_at": "2026-11-23T07:42:50.841446+00:00",
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "in_progress",
+      "last_event_id": "01M83NXB18825E95P2PTM5N8A4",
+      "last_transition_at": "2026-11-23T07:46:14.528808+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "WP01 ready: child-cap API, settings and validation; fast suite 4051/4051, lint and typecheck clean"
@@ -40,7 +40,7 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
