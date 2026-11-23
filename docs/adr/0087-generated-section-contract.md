@@ -23,8 +23,8 @@ related:
 
 Accepted on 2026-11-23, by operator ruling on PR #445 (accepted together with
 ADR-0083). Proposed the same day. Issue #359, epic #353. It builds on the producer
-registry of [ADR-0083](0083-producer-registry-and-ownership-scopes.md) (issue
-#330) and does not define a second one. It extends
+registry of [ADR-0083](0083-producer-registry-and-ownership-scopes.md), from
+issue #330, and does not define a second one. It extends
 [ADR-0079](0079-kitty-packs-through-a-charter-contract-reader.md) D6 and respects
 [ADR-0042](0042-native-documentation-charter.md): no runtime dependency on another
 kitty repository.
