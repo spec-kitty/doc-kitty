@@ -37,7 +37,7 @@ decided whether a page was generated, and each named the producers itself:
 
 ADR-0079 D6 asked for one producer registry with an ownership scope per producer,
 because pack pages own directories inside a section, not a whole section. More
-producers are coming: pack pages (#338), the missions and Ops pages of ADR-0082
+producers are coming: pack pages (#338), the missions and Ops pages
 (#413), and the generated-section contract (#359). Each would otherwise edit the
 three places again.
 

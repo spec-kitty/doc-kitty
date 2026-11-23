@@ -192,7 +192,7 @@ export function createProducerRegistry(entries) {
 
 /**
  * doc-kitty's own producers. A later producer (the pack pages of #338, the
- * missions and Ops pages of ADR-0082) adds an entry here with its scope.
+ * missions and Ops pages of #413) adds an entry here with its scope.
  */
 export const PRODUCER_REGISTRY = createProducerRegistry([
   {
