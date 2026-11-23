@@ -29,6 +29,7 @@ import matter from 'gray-matter';
 import { compareCodeUnit, humanizeSection, normalizeSectionPdf, type SectionPdfSetting } from './vocabulary-core.mjs';
 import { resolveGovernance } from './vocabulary-loader.mjs';
 import type { SectionSubtypeRule } from './metadata.js';
+import { isChildCap } from './child-cap.js';
 
 /** One authored section: its slug, display label, and integer sort key. */
 export interface SectionRegistryEntry {
@@ -81,6 +82,12 @@ export interface SectionRegistryEntry {
    * value is an advisory warning and leaves the site default in force.
    */
   pdf?: SectionPdfSetting;
+  /**
+   * Sidebar settings for the section. `childCap` (#341) is the sidebar child cap
+   * of every hub in the section, between the hub's own `sidebar_child_cap` and the
+   * site's `sidebar.childCap`. A positive whole number.
+   */
+  sidebar?: { childCap?: number };
 }
 
 /** The resolved registry: entries sorted by `order`, tie-broken by `id`. */
@@ -152,7 +159,7 @@ function normalizeSectionEntries(
     if (rec == null || typeof rec !== 'object') {
       throw new Error(`${src}: a section entry is not a mapping (${JSON.stringify(rec)})`);
     }
-    const { id, label, order, type, purpose, feeds, subtypes, icon, pdf } = rec as Record<string, unknown>;
+    const { id, label, order, type, purpose, feeds, subtypes, icon, pdf, sidebar } = rec as Record<string, unknown>;
 
     if (typeof id !== 'string' || id === '') {
       throw new Error(`${src}: a section entry is missing a string "id"`);
@@ -185,6 +192,20 @@ function normalizeSectionEntries(
     }
     const pdfSetting = normalizeSectionPdf(pdf, (m) => warn(`${src}: ${m}`), id);
     if (pdfSetting) entry.pdf = pdfSetting;
+    if (sidebar !== undefined) {
+      if (sidebar === null || typeof sidebar !== 'object' || Array.isArray(sidebar)) {
+        throw new Error(`${src}: section "${id}" "sidebar" must be a mapping`);
+      }
+      const { childCap, ...rest } = sidebar as Record<string, unknown>;
+      const unknown = Object.keys(rest).sort();
+      if (unknown.length > 0) {
+        throw new Error(`${src}: section "${id}" sidebar has unknown key "${unknown[0]}"; known keys: childCap`);
+      }
+      if (childCap !== undefined && !isChildCap(childCap)) {
+        throw new Error(`${src}: section "${id}" sidebar.childCap must be a positive whole number`);
+      }
+      entry.sidebar = childCap === undefined ? {} : { childCap };
+    }
     if (icon !== undefined) {
       if (typeof icon !== 'string') {
         throw new Error(`${src}: section "${id}" "icon" must be a string`);

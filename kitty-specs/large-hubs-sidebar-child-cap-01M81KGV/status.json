@@ -1,0 +1,106 @@
+{
+  "event_count": 56,
+  "last_event_id": "01M841BJBVYAK7P1P9ZTYS6XF5",
+  "materialized_at": "2026-11-23T11:06:15.291071+00:00",
+  "mission_number": "",
+  "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 5,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude::implementer-ivan",
+      "force_count": 1,
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "done",
+      "last_event_id": "01M841B9X12VAY7AFFTZ9E3AYM",
+      "last_transition_at": "2026-11-23T11:06:06.625352+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP01-cap-settings-and-resolution/review-cycle-2.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP01-cap-settings-and-resolution/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 6202,
+      "shell_pid_created_at": "1795419968.4"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude::implementer-ivan",
+      "force_count": 0,
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "done",
+      "last_event_id": "01M841BC1NPZYY1CNNBYJNFPXY",
+      "last_transition_at": "2026-11-23T11:06:08.822012+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP02-build-time-hub-data/review-cycle-1.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP02-build-time-hub-data/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 28710,
+      "shell_pid_created_at": "1795420837.32"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude::implementer-ivan",
+      "force_count": 1,
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "done",
+      "last_event_id": "01M841BE4TAV04KSW2CP63BNQQ",
+      "last_transition_at": "2026-11-23T11:06:10.970703+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP03-shaping-current-and-pagination/review-cycle-2.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP03-shaping-current-and-pagination/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 22452,
+      "shell_pid_created_at": "1795423273.01"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude::implementer-ivan",
+      "force_count": 2,
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "done",
+      "last_event_id": "01M841BG8KXBJBXB3VJ4ZZEAJG",
+      "last_transition_at": "2026-11-23T11:06:13.139533+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP04-proof-on-built-output/review-cycle-4.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP04-proof-on-built-output/review-cycle-4.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 30566,
+      "shell_pid_created_at": "1795429580.59"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude::curator-carla",
+      "force_count": 0,
+      "implementer_of_record": "claude::curator-carla",
+      "lane": "done",
+      "last_event_id": "01M841BJBVYAK7P1P9ZTYS6XF5",
+      "last_transition_at": "2026-11-23T11:06:15.291071+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP05-documentation-and-dogfood/review-cycle-1.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP05-documentation-and-dogfood/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 26206,
+      "shell_pid_created_at": "1795429305.91"
+    }
+  }
+}

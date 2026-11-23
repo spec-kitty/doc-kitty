@@ -53,7 +53,7 @@ const CASES: Array<{ key: string; accepted: Record<string, unknown>; read: Parti
     accepted: { sidebar: { collapsed: true } },
     read: {},
     rejected: { sidebar: { collapse: true } },
-    message: '[dk-config] unknown key "collapse" under sidebar; expected indexLabel, collapsed or titleIsIndex',
+    message: '[dk-config] unknown key "collapse" under sidebar; expected indexLabel, collapsed, titleIsIndex, childCap or cappedLabel',
   },
   {
     key: 'metadataBlocks.collapsed',

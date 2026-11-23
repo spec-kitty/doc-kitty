@@ -19,5 +19,7 @@ agent:
   Knowledge Format bundle and check it.
 - [Printing and PDF](./printing-and-pdf.md) — what a page looks like on paper,
   how a theme changes it, and how to publish section and whole-site PDFs.
+- [Cap large sidebar groups](./sidebar-child-cap.md) — keep the sidebar short
+  when a hub has hundreds of pages.
 - [MCP server quickstart](./mcp-server-quickstart.md) - point an MCP client at
   any DocKitty site, deployed or locally built, and let your agent read it.
