@@ -965,7 +965,15 @@ label.
 sidebar: { titleIsIndex: true },
 ```
 
-`collapsed` and `titleIsIndex` shape the sidebar the toolkit generates. A
+A hub with more pages than its sidebar child cap (default 50) shows its
+overview link and one "N pages" entry instead of its pages. Set the cap for the
+site, a section or one hub; see [Cap large sidebar groups](./sidebar-child-cap.md).
+
+```ts
+sidebar: { childCap: 30, cappedLabel: 'All {count} pages' },
+```
+
+`collapsed`, `titleIsIndex` and `childCap` shape the sidebar the toolkit generates. A
 sidebar you write yourself, through `sidebar: [...]` or `starlight.sidebar`, is
 not reshaped. With `titleIsIndex` on, its groups render with the plain
 toggle. Starlight keeps its own group behaviour there.
