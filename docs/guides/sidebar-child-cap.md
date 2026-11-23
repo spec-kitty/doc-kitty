@@ -46,7 +46,8 @@ API, and found by search, and the hub lists its pages, with the exceptions below
 A hub's pages are counted and ordered as the hub lists them: the pages and
 sub-folders one level down, without drafts. A sub-folder counts as one page, and
 its own pages leave the sidebar with it. On a hub of decision records, the ADRs
-come first, by number, and an ADR without a number is not listed.
+come first, by number. An ADR without a number, or with `type: Template`, is not
+listed.
 
 A sub-folder needs an index page to be listed. The hub does not list a sub-folder
 without one, so once the hub is capped, the pages in that sub-folder are in

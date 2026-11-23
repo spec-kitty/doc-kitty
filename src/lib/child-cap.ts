@@ -1,8 +1,8 @@
 /**
  * The sidebar child cap (#341, large hubs slice 1): the pure API.
  *
- * A hub (a folder with an index page) whose published child count is above its
- * cap is shown in the sidebar as its index link plus one entry that links to
+ * A hub (a folder whose published index page has `kind: Hub`) that lists more
+ * pages than its cap is shown in the sidebar as its index link plus one entry that links to
  * the hub ("200 pages"). This module holds the rules every surface shares: what
  * a valid cap is, which setting wins, when a generated producer should hide a
  * child, and how the entry is labelled. It is fs-free and Astro-free, so config
