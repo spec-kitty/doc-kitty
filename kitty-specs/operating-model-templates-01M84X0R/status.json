@@ -55,7 +55,8 @@
       "last_transition_at": "2026-11-23T23:46:48.887260+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181"
+        "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181",
+        "Cycle 2: lint fixed, lenient-schema test renamed; lint 0; pnpm test src 4530/4530 mcp 181/181"
       ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
