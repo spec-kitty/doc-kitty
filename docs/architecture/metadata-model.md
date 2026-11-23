@@ -503,6 +503,31 @@ gate. The glossary keeps its path rule (`glossary/` with `kind: Glossary` or
 `Hub`) as its scope. The scaffold is a provenance-only producer: its stamp never
 makes a page generated.
 
+#### The generated-section contract (proposed)
+
+[ADR-0087](../adr/0087-generated-section-contract.md) (Proposed, #359) makes this
+stamp one contract for every generated section. It is not implemented yet. Until
+it is, the rules above describe the code.
+
+- **Four keys.** The stamp gains `source_digest`: a full `sha256` over the
+  committed inputs the producer declares for the page, config included.
+  `content_hash` becomes the hash of the rendered page for every producer,
+  Gherkin included. `by` and `at` move only when `content_hash` does, so
+  `by` names the version that last changed the page.
+- **One drift gate.** Every producer that doc-kitty can run answers `--check` with
+  the same verdicts: `missing`, `orphan`, `stale-source`, `hand-edited`,
+  `stale-render`. It uses the same output line and exit codes (0, 1, 2).
+  `pnpm validate:generated` runs them all from the producer registry.
+- **Ownership** stays ADR-0083's stamp-and-scope rule. The `hand-edited` verdict
+  enforces it, and the edit link, the RSS hub filter and the OKF export route
+  through the registry too.
+- **`at` is committed data.** It never comes from the build clock. `--check` masks
+  it, and nothing else, when it compares a regenerated page. The two-builds check
+  (#300) does not mask it.
+- **Committed data only.** doc-kitty never runs a producing repository's code at
+  build time. External producers commit their output, and their freshness check
+  runs in their own CI.
+
 ### `verified`
 
 Either a list of `{ by: actor, at: instant }` entries or one bare mapping. The
