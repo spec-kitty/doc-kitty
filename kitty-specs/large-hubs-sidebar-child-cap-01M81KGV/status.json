@@ -169,7 +169,8 @@
       "last_transition_at": "2026-11-23T10:39:56.764329+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "WP05 ready: guide, cross-references, ADR section cap, measurements, changelog; docs gates clean (Vale not available locally)"
+        "WP05 ready: guide, cross-references, ADR section cap, measurements, changelog; docs gates clean (Vale not available locally)",
+        "Review passed: docs match lane-d code; ADR cap verified by build; full pnpm test green"
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
