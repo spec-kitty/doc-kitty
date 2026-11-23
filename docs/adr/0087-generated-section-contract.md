@@ -1,6 +1,6 @@
 ---
 title: "ADR-0087: A generated-section contract: one stamp, one drift gate, registry ownership"
-description: "Every generated section carries the same generated stamp with a source digest, answers the same --check drift gate, and is owned through the producer registry; doc-kitty reads committed data and never runs a producing repository's code at build time."
+description: "One generated stamp with a source digest, one --check drift gate and registry ownership for every generated section; doc-kitty reads committed data only."
 doc_status: active
 updated: 2026-11-23T00:00:00Z
 type: ADR
