@@ -2,9 +2,9 @@
   "event_count": 56,
   "last_event_id": "01M841BJBVYAK7P1P9ZTYS6XF5",
   "materialized_at": "2026-11-23T11:06:15.291071+00:00",
-  "mission_number": "21",
+  "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
-  "mission_type": "software-dev",
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -19,172 +19,88 @@
   "work_packages": {
     "WP01": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::implementer-ivan",
       "force_count": 1,
+      "implementer_of_record": "claude::implementer-ivan",
       "lane": "done",
       "last_event_id": "01M841B9X12VAY7AFFTZ9E3AYM",
       "last_transition_at": "2026-11-23T11:06:06.625352+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP01 ready: child-cap API, settings and validation; fast suite 4051/4051, lint and typecheck clean",
-        "Cycle 1 folded: B1 options threaded into route shaping with a red-first test; N1 import order; N2 no model names in new trailers (history cleanup at consolidation)",
-        "Cycle 2 approved at lane head 10ec3fe. B1 fixed: sidebar.childCap/cappedLabel are passed into routeShaping only when set (config.ts:623,800-801), and RouteShapingOptions gained both as a recorded out-of-map edit. The new test fails against the pre-fix config.ts (1 failed/18 passed) and passes after (19/19). It wraps the real routeShapingIntegration call at config.ts:976, which is the only construction and call site. N1/N2 resolved. Fast suite 4052/4052, lint and typecheck clean. Handoff to WP02: routeShapingSource does not serialise childCap/cappedLabel yet (WP02 scope)."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP01-cap-settings-and-resolution/review-cycle-2.md",
         "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP01-cap-settings-and-resolution/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 14358,
-      "shell_pid_created_at": "1795420700.76",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done",
-        "T006": "done"
-      }
+      "shell_pid": 6202,
+      "shell_pid_created_at": "1795419968.4"
     },
     "WP02": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::implementer-ivan",
       "force_count": 0,
+      "implementer_of_record": "claude::implementer-ivan",
       "lane": "done",
       "last_event_id": "01M841BC1NPZYY1CNNBYJNFPXY",
       "last_transition_at": "2026-11-23T11:06:08.822012+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP02 ready: hubCaps and cappedLabel served; fast 4063/4063, lint/typecheck clean",
-        "Approved. Red-first verified (WP02 source reverted to 0f0d16c: 9/10 hub-caps-data + the route-shaping e2e case fail; the determinism case passes by construction). Mutations caught: at-cap boundary (<= -> <) and hub/section precedence swap. Adversarial probes green: draft and index-less sub-folders excluded, no-status page excluded, nested hub, code-unit hub order, withheld sub-folder, index basename, invalid caps fall back, child order equals selectHubChildren on tied titles. .d.ts matches runtime. Fast suite 4063/4063, lint and typecheck clean. Non-blocking nits: N1 ShapingPage orphans directoryMetaInputs JSDoc (confirmed); N2 out-of-map route-shaping.test.ts edit named in commit but not flagged as out-of-map; sectionCap inlines split('/')[0] instead of sectionOf (T009/DIRECTIVE_044); a draft hub index is still treated as a hub when not withheld (spec: published index). Forward to WP03: index-less sub-folder pages are not hub children, so a capped group drops them from the sidebar with no route back except direct links; spec line 102 covers sub-folders only."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP02-build-time-hub-data/review-cycle-1.md",
         "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP02-build-time-hub-data/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 16206,
-      "shell_pid_created_at": "1795422103.21",
-      "subtasks": {
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done"
-      }
+      "shell_pid": 28710,
+      "shell_pid_created_at": "1795420837.32"
     },
     "WP03": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent": "claude::implementer-ivan",
       "force_count": 1,
+      "implementer_of_record": "claude::implementer-ivan",
       "lane": "done",
       "last_event_id": "01M841BE4TAV04KSW2CP63BNQQ",
       "last_transition_at": "2026-11-23T11:06:10.970703+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP03 ready: capped group, current marking, hub-order prev/next, child-cap export; WP02 folds N1/N3/N4; fast 4084/4084",
-        "Cycle 1 folded: B1 hub-order prev/next survives the OpenAPI rebuild (hubOrderPagination via dkHubOrder), N1 dkCappedHub asserted, N2 href form documented; N3 goes to WP05 guide",
-        "Cycle 2 approved. B1 fixed: example rebuilt with sidebar_child_cap:3 on guides, openapi ON: hub/children/after-group/OpenAPI pages match openapi-OFF build on every guides page (labels included); vs uncapped only the 2 draft-skipping hub children differ. Uncapped build byte-identical to f6f42a3 (617 files). Red first: 5/6 new cases fail on a9029ef (6th documents the defect). Mutation of hubOrderPagination: 6/11 killed; survivors = 2 equivalent (size guard, new-object), 3 test gaps (next:false side, at===-1 outside-hub branch, dir/ prefix in belowCappedHub) - near-equivalent in practice. dkHubOrder only set when hubCaps.size>0; read only by openapi follow-up; ordering relies on the pre-existing #112 post-order assumption. Author prev:false and object overrides respected. Fast 4090/4090, lint+typecheck clean. Non-blocking: (NB1) label-only string prev/next on a capped child with openapi on jumps past the hub (next=/rhetoric/ vs github-alerts with openapi off) - follow-up; (NB2) add next:false + outside-hub at===-1 test cases; (N3) still owed to WP05 guide."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP03-shaping-current-and-pagination/review-cycle-2.md",
         "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP03-shaping-current-and-pagination/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 20143,
-      "shell_pid_created_at": "1795424572.03",
-      "subtasks": {
-        "T011": "done",
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
-      }
+      "shell_pid": 22452,
+      "shell_pid_created_at": "1795423273.01"
     },
     "WP04": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::implementer-ivan",
       "force_count": 2,
+      "implementer_of_record": "claude::implementer-ivan",
       "lane": "done",
       "last_event_id": "01M841BG8KXBJBXB3VJ4ZZEAJG",
       "last_transition_at": "2026-11-23T11:06:13.139533+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP04 ready: build suite 8/8, Playwright 17 passed incl. OpenAPI prev/next, measurements recorded",
-        "Changes requested: example-adopter pinned sitemap count broken by new example pages (3 build-tier failures); playwright.local.config.ts committed",
-        "Cycle 1 folded: B1 pins 84/79, B2 overlay removed, N1-N4, WP03 NB1/NB2; full pnpm test src 4344/4344 + mcp 181/181",
-        "Review cycle 2 passed: B1/B2 fixed (counts derived 84/79), N1-N4 folded, NB1 red-first + on/off parity improved; full pnpm test src 4344/4344, mcp 181/181; lint/typecheck clean. Follow-ups F1/F2 (pre-existing WP03 label-only override parity) recorded.",
-        "Rework to fold review-cycle-2 follow-ups F1/F2 and nits (dispatcher: re-review on lane-d)",
-        "Rework: F1/F2 paginationFollow + cycle-2 nits; full pnpm test src 4347/4347, mcp 181/181",
-        "Re-review passed: F1/F2 fixed (red-first, mutants, byte-identical uncapped build, OA on/off probe); full pnpm test src 4347/4347, mcp 181/181; F3 (prev: true / next: {}) pre-existing follow-up"
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP04-proof-on-built-output/review-cycle-4.md",
         "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP04-proof-on-built-output/review-cycle-4.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 26263,
-      "shell_pid_created_at": "1795431672.63",
-      "subtasks": {
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done",
-        "T020": "done"
-      }
+      "shell_pid": 30566,
+      "shell_pid_created_at": "1795429580.59"
     },
     "WP05": {
       "actor": "merge",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent": "claude::curator-carla",
       "force_count": 0,
+      "implementer_of_record": "claude::curator-carla",
       "lane": "done",
       "last_event_id": "01M841BJBVYAK7P1P9ZTYS6XF5",
       "last_transition_at": "2026-11-23T11:06:15.291071+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "WP05 ready: guide, cross-references, ADR section cap, measurements, changelog; docs gates clean (Vale not available locally)",
-        "Review passed: docs match lane-d code; ADR cap verified by build; full pnpm test green"
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP05-documentation-and-dogfood/review-cycle-1.md",
         "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP05-documentation-and-dogfood/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 12166,
-      "shell_pid_created_at": "1795429701.24",
-      "subtasks": {
-        "T021": "done",
-        "T022": "done",
-        "T023": "done",
-        "T024": "done"
-      }
+      "shell_pid": 26206,
+      "shell_pid_created_at": "1795429305.91"
     }
   }
 }
