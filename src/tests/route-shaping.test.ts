@@ -33,6 +33,7 @@ import {
   type RouteToc,
   type SidebarEntry,
 } from '../lib/route-shaping.js';
+import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY } from '../lib/child-cap.js';
 
 vi.mock('@astrojs/starlight', () => ({
   default: (config: Record<string, unknown>) => ({
@@ -810,13 +811,27 @@ describe('integration wiring (T022, C-004)', () => {
     expect(plugins.map((p) => p.name)).toEqual(['doc-kitty:i18n', 'adopter']);
     const injected: unknown[] = [];
     (plugins[0]!.hooks as Record<string, (arg: { injectTranslations: (t: unknown) => void }) => void>)['i18n:setup']!({ injectTranslations: (t: unknown) => injected.push(t) });
-    expect(injected).toEqual([{ en: { [INDEX_LABEL_KEY]: 'Overview' } }]);
+    expect(injected).toEqual([{ en: { [INDEX_LABEL_KEY]: 'Overview', [CAPPED_LABEL_KEY]: CAPPED_ENTRY_LABEL } }]);
     inSite(() => {
       expect(servedData(defineDocKittyIntegrations({ title: 'Docs' })).indexLabel).toBeUndefined();
       const labelled = defineDocKittyIntegrations({ title: 'Docs', sidebar: { indexLabel: 'Start here' } });
       expect(servedData(labelled).indexLabel).toBe('Start here');
       expect(servedData(labelled).shapeSidebar).toBe(true);
     });
+  });
+
+  it('serves the sidebar.childCap and sidebar.cappedLabel options to the route-shaping module (#341)', () => {
+    const data = inSite(() => {
+      // A published hub index and two published children (a page with no `doc_status`
+      // is a draft: a draft index is no hub, and a hub never counts a draft child).
+      writeFileSync(path.join(process.cwd(), 'docs', 'guides', 'setup', 'index.md'), '---\ntitle: Setting up\ndoc_status: active\n---\n');
+      for (const name of ['configure', 'verify']) {
+        writeFileSync(path.join(process.cwd(), 'docs', 'guides', 'setup', `${name}.md`), `---\ntitle: ${name}\ndoc_status: active\n---\n`);
+      }
+      return servedData(defineDocKittyIntegrations({ title: 'Docs', indexBasename: ['README', 'index'], sidebar: { childCap: 1, cappedLabel: 'All {count}' } }));
+    }) as unknown as { hubCaps: Array<[string, { cap: number; count: number }]>; cappedLabel?: string };
+    expect(data.hubCaps.map(([dir, { cap, count }]) => [dir, cap, count])).toEqual([['guides/setup', 1, 2]]);
+    expect(data.cappedLabel).toBe('All {count}');
   });
 
   it('rejects a non-array/object sidebar, a blank or non-string sidebar.indexLabel and an unknown sidebar key (#161)', () => {

@@ -1,7 +1,11 @@
 import { INDEX_ENTRY_LABEL } from './route-shaping.js';
+import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY } from './child-cap.js';
 
-/** Starlight UI-string key for the index label, and its English default. */
-const SIDEBAR_UI_STRINGS = { 'dockitty.sidebar.indexLabel': INDEX_ENTRY_LABEL } as const;
+/** Starlight UI-string keys of the sidebar (index label, capped entry), and their English defaults. */
+const SIDEBAR_UI_STRINGS = {
+  'dockitty.sidebar.indexLabel': INDEX_ENTRY_LABEL,
+  [CAPPED_LABEL_KEY]: CAPPED_ENTRY_LABEL,
+} as const;
 
 /**
  * The Starlight plugin that ships the toolkit's UI strings (#161): `en` carries

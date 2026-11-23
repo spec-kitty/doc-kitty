@@ -154,7 +154,9 @@ import {
 //     index after the docs records. The generated reference PAGES themselves
 //     are not docs-collection entries and were already counted only in the
 //     sitemap pin below; the synthetic index records add +3: 70 -> 73.
-const EXPECTED_INDEX_ENTRY_COUNT = 73;
+//   - #341 (sidebar child cap) adds the capped-hub demonstrator,
+//     guides/capped-hub/ (a hub and five pages, all published, +6): 73 -> 79.
+const EXPECTED_INDEX_ENTRY_COUNT = 79;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -189,7 +191,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 73;
 // sitemap — its overview and its 3 operation pages (listParcels, createParcel,
 // getParcel) are filtered — while its pages stay built, published and served.
 // 82 -> 78.
-const EXPECTED_SITEMAP_URL_COUNT = 78;
+// #341 (sidebar child cap) adds guides/capped-hub/ (a hub and five published
+// pages, +6): 78 -> 84.
+const EXPECTED_SITEMAP_URL_COUNT = 84;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -2264,8 +2268,9 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 22 example .md files − 3 drafts, plus the 8 released generated OpenAPI reference pages; the unreleased ` +
-        `\`main\` version's 4 are filtered, FR-015. If example content changed ` +
+        `(the published set: every published example page, generated ones included, plus the released OpenAPI ` +
+        `reference pages; the unreleased \`main\` version's 4 are filtered, FR-015. The derivation is above ` +
+        `EXPECTED_SITEMAP_URL_COUNT. If example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }
