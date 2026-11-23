@@ -27,7 +27,7 @@
     {
       "created_at": "2026-11-23T19:10:14.571475Z",
       "decision_id": "01M84X1S1BM3T10WV4D4PEM8VH",
-      "final_answer": null,
+      "final_answer": "A: the Incident and breach response and Business continuity templates use kind How-To and are placed under operations/runbooks/, so type Runbook is derived. Role is the only vocabulary change. Decider: operator (verbatim \"as recommended\", dispatcher session, ledger R81, to the dispatcher prompt \"#402: Q2 and Q3. I recommend A for both\"; relayed by the dispatcher; checked against the dispatcher transcript).",
       "input_key": "runbook_template_kind",
       "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
       "mission_slug": "operating-model-templates-01M84X0R",
@@ -41,17 +41,17 @@
       "other_answer": false,
       "question": "Runbook is a type, not a kind. Which kind do the incident and continuity templates carry?",
       "rationale": null,
-      "resolved_at": null,
+      "resolved_at": "2026-11-23T22:26:09.048399Z",
       "resolved_by": null,
       "slot_key": "specify.templates.runbook-kind",
-      "status": "open",
+      "status": "resolved",
       "step_id": null,
       "summary_json": null
     },
     {
       "created_at": "2026-11-23T19:10:16.506131Z",
       "decision_id": "01M84X1TXTTJM09B0G0YN2G9BM",
-      "final_answer": null,
+      "final_answer": "A: a kind Role page requires role (a non-empty string) and responsibilities (a non-empty list of non-empty strings); goals stays optional. Decider: operator (verbatim \"as recommended\", dispatcher session, ledger R81, to the dispatcher prompt \"#402: Q2 and Q3. I recommend A for both\"; relayed by the dispatcher; checked against the dispatcher transcript).",
       "input_key": "role_required_fields",
       "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
       "mission_slug": "operating-model-templates-01M84X0R",
@@ -65,10 +65,10 @@
       "other_answer": false,
       "question": "Which fields does the validator require on a Role page?",
       "rationale": null,
-      "resolved_at": null,
+      "resolved_at": "2026-11-23T22:26:10.856100Z",
       "resolved_by": null,
       "slot_key": "specify.role.required-fields",
-      "status": "open",
+      "status": "resolved",
       "step_id": null,
       "summary_json": null
     }
