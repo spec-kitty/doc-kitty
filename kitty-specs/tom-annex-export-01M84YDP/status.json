@@ -20,7 +20,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::node-norris",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
@@ -29,6 +29,9 @@
       "last_event_id": "01M857R0Y26SFETAKBGZGZBVVA",
       "last_transition_at": "2026-11-23T22:17:09.314666+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Core and format 1.0: 21 unit tests red-first; full pnpm test green (src 4540/4540, mcp 181/181); CI typecheck and lint clean."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 15160,
