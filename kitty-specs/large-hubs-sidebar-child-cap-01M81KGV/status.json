@@ -1,7 +1,7 @@
 {
-  "event_count": 15,
-  "last_event_id": "01M83PP0CCXY3JPF3W29Q5WVCW",
-  "materialized_at": "2026-11-23T07:59:42.988103+00:00",
+  "event_count": 17,
+  "last_event_id": "01M83PQY5QRZRHRT54BKNS538G",
+  "materialized_at": "2026-11-23T08:00:46.098012+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
   "mission_type": "software-dev",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 4
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -55,11 +55,20 @@
       }
     },
     "WP02": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude::implementer-ivan",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M83MV8G16V8EQSYCM236PZMM",
-      "last_transition_at": "2026-11-23T07:27:37.985984+00:00"
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "in_progress",
+      "last_event_id": "01M83PQY5QRZRHRT54BKNS538G",
+      "last_transition_at": "2026-11-23T08:00:46.098012+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 28710,
+      "shell_pid_created_at": "1795420837.32"
     },
     "WP03": {
       "actor": "finalize-tasks",
