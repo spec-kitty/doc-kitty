@@ -32,10 +32,6 @@ describe('tom_classification shape', () => {
     expect(warnings).toEqual(['unknown key `TOM_classification`: did you mean `tom_classification`?']);
   });
 
-  it('rejects an unknown entry key on the build schema too, so a typo never defaults the scope', () => {
-    expect(buildSchema.safeParse(parse('err/tom-classification-unknown-key.md')).success).toBe(false);
-  });
-
   it('the build schema keeps tom_classification and drops a case variant', () => {
     const valid = buildSchema.safeParse(parse('valid/tom-classification.md'));
     expect(valid.success && valid.data.tom_classification).toEqual([

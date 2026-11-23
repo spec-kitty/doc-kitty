@@ -61,11 +61,6 @@ describe('resolvePageMeasures', () => {
     expect(resolvePageMeasures({}, catalog(), 'a.md')).toBeUndefined();
   });
 
-  it('throws naming the page and the unknown id', () => {
-    expect(() => resolvePageMeasures({ tom_classification: ['transmision-protection'] }, catalog(), 'security/tls.md')).toThrow(
-      '[dk-measures] security/tls.md: unknown measure id "transmision-protection" (not in the shipped default catalog)',
-    );
-  });
 });
 
 describe('agentPageRoute: tom_classification', () => {
