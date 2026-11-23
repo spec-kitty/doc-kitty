@@ -138,7 +138,8 @@
         "Cycle 1 folded: B1 pins 84/79, B2 overlay removed, N1-N4, WP03 NB1/NB2; full pnpm test src 4344/4344 + mcp 181/181",
         "Review cycle 2 passed: B1/B2 fixed (counts derived 84/79), N1-N4 folded, NB1 red-first + on/off parity improved; full pnpm test src 4344/4344, mcp 181/181; lint/typecheck clean. Follow-ups F1/F2 (pre-existing WP03 label-only override parity) recorded.",
         "Rework to fold review-cycle-2 follow-ups F1/F2 and nits (dispatcher: re-review on lane-d)",
-        "Rework: F1/F2 paginationFollow + cycle-2 nits; full pnpm test src 4347/4347, mcp 181/181"
+        "Rework: F1/F2 paginationFollow + cycle-2 nits; full pnpm test src 4347/4347, mcp 181/181",
+        "Re-review passed: F1/F2 fixed (red-first, mutants, byte-identical uncapped build, OA on/off probe); full pnpm test src 4347/4347, mcp 181/181; F3 (prev: true / next: {}) pre-existing follow-up"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
