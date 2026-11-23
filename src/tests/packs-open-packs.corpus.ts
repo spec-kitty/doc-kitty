@@ -72,6 +72,8 @@ describe('every open-packs pack at the pinned commit', () => {
       const manifest = model.manifest ? (model.manifest.verified ? 'verified' : 'unverified') : 'no manifest';
       console.log(`${dir}: ${manifest}, inventory from ${model.inventory.source}, warnings ${JSON.stringify(byCode)}`);
       expect(manifest, dir).toBe('verified');
+      // Verified includes the manifest's own hash, recomputed with RFC 8785 (#417).
+      expect(model.manifest?.hash, dir).toMatch(/^[0-9a-f]{64}$/);
       expect(model.inventory.source, dir).toBe('manifest');
       expect(Object.keys(byCode), dir).toEqual(EXPECTED_WARNINGS);
     }
