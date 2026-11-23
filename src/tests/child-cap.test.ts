@@ -4,7 +4,7 @@
  * levels set to other values, and each refused value is paired with an accepted
  * value of the same setting.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import {
   CAPPED_ENTRY_LABEL,
@@ -21,6 +21,19 @@ import { docKittyFields } from '../lib/schema.js';
 import { DOC_KITTY_I18N_PLUGIN } from '../lib/i18n-plugin.js';
 import { validate } from '../scripts/validate-frontmatter.mjs';
 import { restoreInternalEnv } from './helpers/restore-internal-env.js';
+
+/** The options each `defineDocKittyIntegrations` call hands the route-shaping integration. */
+const routeShapingCalls = vi.hoisted(() => [] as Array<Record<string, unknown>>);
+vi.mock('../lib/integrations/route-shaping.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../lib/integrations/route-shaping.js')>();
+  return {
+    ...actual,
+    routeShapingIntegration: (options: Record<string, unknown>, ...rest: unknown[]) => {
+      routeShapingCalls.push(options);
+      return (actual.routeShapingIntegration as (...args: unknown[]) => unknown)(options, ...rest);
+    },
+  };
+});
 
 restoreInternalEnv();
 
@@ -88,6 +101,16 @@ describe('site option sidebar.childCap / sidebar.cappedLabel (FR-001, FR-002, FR
   it('refuses a blank or non-string cappedLabel', () => {
     expect(define({ cappedLabel: '  ' })).toThrow('[dk-config] sidebar.cappedLabel must be a non-empty string');
     expect(define({ cappedLabel: 3 })).toThrow('[dk-config] sidebar.cappedLabel must be a non-empty string');
+  });
+
+  it('hands both options to the route-shaping integration, and nothing when unset', () => {
+    routeShapingCalls.length = 0;
+    define({ childCap: 30, cappedLabel: 'All {count}' })();
+    define({ indexLabel: 'Start' })();
+    expect(routeShapingCalls).toHaveLength(2);
+    expect(routeShapingCalls[0]).toMatchObject({ childCap: 30, cappedLabel: 'All {count}' });
+    expect(routeShapingCalls[1]).not.toHaveProperty('childCap');
+    expect(routeShapingCalls[1]).not.toHaveProperty('cappedLabel');
   });
 
   it('lists the new keys in the unknown-key message', () => {

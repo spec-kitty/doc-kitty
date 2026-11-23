@@ -619,7 +619,8 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     repository,
     starlight: overrides,
   } = options;
-  const { starlightSidebar: sidebar, indexLabel, chrome: sidebarChrome } = splitSidebarOption(sidebarOption);
+  const { starlightSidebar: sidebar, indexLabel, childCap, cappedLabel, chrome: sidebarChrome } =
+    splitSidebarOption(sidebarOption);
 
   // The page-chrome options: validated EAGERLY, so a bad value throws before any hook
   // runs, and published for the carriers and routes, which must not import this
@@ -796,6 +797,8 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     shapeSidebar: sidebarIsGenerated,
     pagination: overrides?.pagination !== false,
     ...(indexLabel ? { indexLabel } : {}),
+    ...(childCap !== undefined ? { childCap } : {}),
+    ...(cappedLabel ? { cappedLabel } : {}),
   };
 
   const starlightConfig: StarlightUserConfig = {

@@ -11,7 +11,6 @@
  *
  * Mission: sidebar-frame-header-carrier-01M4T3CB, WP04.
  */
-import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY } from '../lib/child-cap.js';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
 import { openApiSidebarGroup } from '../lib/openapi/adapters';
@@ -34,6 +33,7 @@ import {
   type RouteToc,
   type SidebarEntry,
 } from '../lib/route-shaping.js';
+import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY } from '../lib/child-cap.js';
 
 vi.mock('@astrojs/starlight', () => ({
   default: (config: Record<string, unknown>) => ({
