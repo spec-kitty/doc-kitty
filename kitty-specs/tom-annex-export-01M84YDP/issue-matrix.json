@@ -13,7 +13,7 @@
       "wp": null
     },
     "#360": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Non-goal: ADR-0087 for other producers, #360-#363 (spec.md:274)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -21,7 +21,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#400": {
