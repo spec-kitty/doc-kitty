@@ -20,7 +20,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": null,
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -33,6 +33,7 @@
         "ADR-0085 and kind lists; docs gates green; pnpm test src 4519/4519, mcp 181/181"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP01-adr-0085-role-kind/review-cycle-1.md",
         "reference": "review-cycle://operating-model-templates-01M84X0R/WP01-adr-0085-role-kind/review-cycle-1.md",
@@ -40,12 +41,12 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 23476,
-      "shell_pid_created_at": "1795476314.07",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done"
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned"
       }
     },
     "WP02": {
