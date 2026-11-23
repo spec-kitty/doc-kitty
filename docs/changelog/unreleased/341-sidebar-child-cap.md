@@ -7,7 +7,8 @@ section: Added
   with hundreds of pages put hundreds of links on each page. Now, a hub (a folder whose
   index page has `kind: Hub`) with more pages than its cap (default 50) shows its overview link and one "N pages"
   entry, marked current on every page below the hub, and prev/next follow the
-  hub's order. Set the cap with `sidebar.childCap` in the site config, on a section in
+  hub's order. The cap is on by default, so an existing hub with more than 50
+  pages is capped when you upgrade; set a higher cap to keep it expanded. Set the cap with `sidebar.childCap` in the site config, on a section in
   `sections.yaml`, or with `sidebar_child_cap` on a hub; label the entry with
   `sidebar.cappedLabel` or the `dockitty.sidebar.cappedEntry` UI string. Page
   generators can use `cappedChildHidden` from `@spec-kitty/doc-toolkit/child-cap`.
