@@ -574,11 +574,36 @@ export function expandCappedGroups(
  * switch it off. A side the author pointed elsewhere (`prev: { link }`) or
  * disabled (`prev: false`, or site-wide `pagination: false`) is left alone.
  */
+/**
+ * How one side of prev/next follows the sidebar: `true` takes the sidebar neighbour,
+ * a string takes it under that label (Starlight's label-only override), `false`
+ * keeps what the author set or switched off.
+ */
+export type PaginationFollow = boolean | string;
+
+/**
+ * Read one `prev`/`next` frontmatter value as a {@link PaginationFollow}. Unset
+ * follows the sidebar. A string, or an object with a `label` and no `link`, is a
+ * label-only override: Starlight keeps the sidebar neighbour and renames it. An
+ * object with a `link`, or `false`, is the author's. With prev/next switched off
+ * site-wide (`enabled` false) nothing follows. The one place this is decided
+ * (#341, WP04 review F1).
+ */
+export function paginationFollow(side: unknown, enabled: boolean): PaginationFollow {
+  if (!enabled) return false;
+  if (side === undefined) return true;
+  if (typeof side === 'string') return side;
+  if (side !== null && typeof side === 'object' && !('link' in side) && typeof (side as { label?: unknown }).label === 'string') {
+    return (side as { label: string }).label;
+  }
+  return false;
+}
+
 export function shapePagination(
   original: readonly SidebarEntry[],
   shaped: readonly SidebarEntry[],
   pagination: RoutePagination,
-  followsSidebar: { prev: boolean; next: boolean },
+  followsSidebar: { prev: PaginationFollow; next: PaginationFollow },
 ): RoutePagination {
   const before = flattenLinks(original);
   // Shaping may relabel a section index "Overview" (#112); prev/next name the
@@ -595,8 +620,16 @@ export function shapePagination(
     // Only the expanded tree holds the page: a capped hub's child that its producer
     // hid from Starlight's tree (#341). Each side still following the sidebar takes
     // its neighbour in the hub order; a side the author set or switched off stays.
-    const prev = followsSidebar.prev && pagination.prev === undefined ? after[to - 1] : pagination.prev;
-    const next = followsSidebar.next && pagination.next === undefined ? after[to + 1] : pagination.next;
+    // A label-only override takes the neighbour under its label: Starlight could not
+    // apply it, because the page is in none of its sidebar.
+    const take = (follows: PaginationFollow, current: SidebarLink | undefined, neighbour: SidebarLink | undefined) =>
+      follows === false || current !== undefined
+        ? current
+        : typeof follows === 'string' && neighbour
+          ? { ...neighbour, label: follows }
+          : neighbour;
+    const prev = take(followsSidebar.prev, pagination.prev, after[to - 1]);
+    const next = take(followsSidebar.next, pagination.next, after[to + 1]);
     return prev === pagination.prev && next === pagination.next ? pagination : { prev, next };
   }
 
@@ -612,9 +645,11 @@ export function shapePagination(
     return current.label === was.label ? now : { ...now, label: current.label };
   };
 
+  // A listed page's label-only override is already on Starlight's link; the href rule
+  // above carries it over, so here only an unset side (`true`) follows a gap.
   return {
-    prev: side(pagination.prev, before[at - 1], after[to - 1], followsSidebar.prev),
-    next: side(pagination.next, before[at + 1], after[to + 1], followsSidebar.next),
+    prev: side(pagination.prev, before[at - 1], after[to - 1], followsSidebar.prev === true),
+    next: side(pagination.next, before[at + 1], after[to + 1], followsSidebar.next === true),
   };
 }
 
@@ -624,8 +659,10 @@ export function shapePagination(
  * the capped entry as if it were a page, so every child of a capped hub would get the
  * capped entry's neighbours. This re-derives each side that still follows the
  * sidebar from `sidebar` (the tree that middleware left, with its own groups filled)
- * with the capped groups expanded in hub order; a side the author set or switched off
- * is kept. A page below a capped hub that the hub does not list (a draft in a
+ * with the capped groups expanded in hub order; a side the author pointed elsewhere
+ * or switched off (`false`) is kept. A side given as a string is Starlight's
+ * label-only override (`next: "Read on"`): it still follows the sidebar, under that
+ * label. A page below a capped hub that the hub does not list (a draft in a
  * drafts-on build) is in no expanded tree; it takes `ownPagination`, what the
  * route-shaping middleware gave it, as it would on a site without that renderer.
  * With no capped hub, or a page that is in neither tree, the pagination is returned
@@ -636,7 +673,7 @@ export function hubOrderPagination(
   hubCaps: HubCapMap,
   currentSlug: string,
   pagination: RoutePagination,
-  followsSidebar: { prev: boolean; next: boolean },
+  followsSidebar: { prev: PaginationFollow; next: PaginationFollow },
   ownPagination?: RoutePagination,
 ): RoutePagination {
   if (hubCaps.size === 0) return pagination;
@@ -646,8 +683,12 @@ export function hubOrderPagination(
     const belowCappedHub = [...hubCaps.keys()].some((dir) => currentSlug.startsWith(`${dir}/`));
     return belowCappedHub && ownPagination ? ownPagination : pagination;
   }
-  const prev = followsSidebar.prev ? links[at - 1] : pagination.prev;
-  const next = followsSidebar.next ? links[at + 1] : pagination.next;
+  const side = (follows: PaginationFollow, current: SidebarLink | undefined, neighbour: SidebarLink | undefined) => {
+    if (follows === false) return current;
+    return typeof follows === 'string' && neighbour ? { ...neighbour, label: follows } : neighbour;
+  };
+  const prev = side(followsSidebar.prev, pagination.prev, links[at - 1]);
+  const next = side(followsSidebar.next, pagination.next, links[at + 1]);
   return prev === pagination.prev && next === pagination.next ? pagination : { prev, next };
 }
 
