@@ -291,6 +291,11 @@ export const docKittyFields = {
   // `kind: Schematic` pages (ADR-0067): the JSON Schema file the page documents,
   // relative to the project root. Read by the remark plugin and the OKF export.
   schematic_path: z.string().optional(),
+  // The sidebar child cap of the hub this page indexes (#341): a hub with more
+  // published children than this shows its index link and one entry to the hub.
+  // Wins over the section's and the site's `sidebar.childCap`. Mirrored in the
+  // standalone gate; the build-time reader takes it from the raw frontmatter.
+  sidebar_child_cap: z.number().int().positive().optional(),
   // ADR fallbacks (#248, ADR-0069). The Hub's ADR cards read a frontmatter
   // `status` when the body has no `## Status` section, and `date` when `updated`
   // is absent. The schema drops undeclared keys, so they are declared here.
