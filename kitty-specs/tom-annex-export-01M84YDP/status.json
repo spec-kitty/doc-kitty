@@ -1,7 +1,7 @@
 {
-  "event_count": 5,
-  "last_event_id": "01M854Q1FPD18FCEG04YHM4DG9",
-  "materialized_at": "2026-11-23T21:24:11.382151+00:00",
+  "event_count": 6,
+  "last_event_id": "01M854Q32ZB7BYWGQ336AYFP5C",
+  "materialized_at": "2026-11-23T21:24:13.023764+00:00",
   "mission_number": "",
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_type": "software-dev",
@@ -15,7 +15,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 5
+    "planned": 6
   },
   "work_packages": {
     "WP01": {
@@ -52,6 +52,13 @@
       "lane": "planned",
       "last_event_id": "01M854Q1FPD18FCEG04YHM4DG9",
       "last_transition_at": "2026-11-23T21:24:11.382151+00:00"
+    },
+    "WP06": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M854Q32ZB7BYWGQ336AYFP5C",
+      "last_transition_at": "2026-11-23T21:24:13.023764+00:00"
     }
   }
 }
