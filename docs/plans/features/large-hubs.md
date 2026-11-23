@@ -2,7 +2,7 @@
 title: Large hubs
 description: "A sidebar child cap and paged, filterable hub listings, so a section with hundreds of generated children stays usable and cheap to build."
 doc_status: draft
-updated: 2026-11-13T00:00:00Z
+updated: 2026-11-23T00:00:00Z
 type: Feature
 kind: Feature
 moscow:
@@ -73,5 +73,25 @@ configuration page, and a changelog fragment. Slice 1 also records its build-tim
 and HTML-size measurements on a 1,000-child fixture.
 
 Order: 1, then 2, then 3 and 4 in either order. Slice 1 can ship alone.
+
+## Slice 1 measurements
+
+Measured on 2026-11-23 with `src/tests/fixtures/large-hub/measure.mjs`: a site
+with one hub of 1,000 generated pages plus 15 other pages (1,015 pages), built
+three times capped (the default cap, 50) and three times uncapped (the cap set
+above the page count), the runs alternating between the two, Node 22, one
+machine.
+
+| | Uncapped | Capped |
+| --- | --- | --- |
+| Median page HTML | 168,877 bytes | 24,013 bytes |
+| All pages | 163.7 MiB | 23.5 MiB |
+| Build time, three runs | 18.7 s, 20.0 s, 20.4 s | 13.9 s, 16.1 s, 15.1 s |
+| Median build time | 20.0 s | 15.1 s |
+
+The capped median page is 86% smaller, and the build takes about a quarter less
+time. The page sizes are exact: they do not change from run to run. The build
+times depend on the machine's load.
+Uncapped, a page's size grows with the hub; capped, it does not.
 
 Tracked as epic #340.
