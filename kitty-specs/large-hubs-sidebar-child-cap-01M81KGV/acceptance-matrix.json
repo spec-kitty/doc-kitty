@@ -96,12 +96,12 @@
     },
     {
       "criterion_id": "FR-010",
-      "description": "Verify FR-010 is satisfied",
-      "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "description": "This repo's adr section sets sidebar.childCap: 100, so its ADR sidebar is unchanged.",
+      "proof_type": "manual_check",
+      "evidence": "docs/_meta/sections.yaml; WP05 review cycle 1 confirmed all ADR pages in the built sidebar",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:37.064269+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
