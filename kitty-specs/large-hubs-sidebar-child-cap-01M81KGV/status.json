@@ -1,7 +1,7 @@
 {
-  "event_count": 7,
-  "last_event_id": "01M83MXB6Z5QXWCSZM7YS9XGSY",
-  "materialized_at": "2026-11-23T07:28:46.180243+00:00",
+  "event_count": 12,
+  "last_event_id": "01M83NXB18825E95P2PTM5N8A4",
+  "materialized_at": "2026-11-23T07:46:14.528808+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
   "mission_type": "software-dev",
@@ -20,19 +20,37 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 0,
-      "implementer_of_record": "claude",
+      "force_count": 1,
+      "implementer_of_record": "claude::implementer-ivan",
       "lane": "in_progress",
-      "last_event_id": "01M83MXB6Z5QXWCSZM7YS9XGSY",
-      "last_transition_at": "2026-11-23T07:28:46.180243+00:00",
+      "last_event_id": "01M83NXB18825E95P2PTM5N8A4",
+      "last_transition_at": "2026-11-23T07:46:14.528808+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "WP01 ready: child-cap API, settings and validation; fast suite 4051/4051, lint and typecheck clean"
+      ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP01-cap-settings-and-resolution/review-cycle-1.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP01-cap-settings-and-resolution/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "changes_requested"
+      },
       "role": "implementer",
-      "shell_pid": 4387,
-      "shell_pid_created_at": "1795418919.21"
+      "shell_pid": null,
+      "shell_pid_created_at": null,
+      "subtasks": {
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned",
+        "T004": "planned",
+        "T005": "planned",
+        "T006": "planned"
+      }
     },
     "WP02": {
       "actor": "finalize-tasks",
