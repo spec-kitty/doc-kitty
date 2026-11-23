@@ -17,7 +17,7 @@ declare namespace App {
       hubCaps: import('./child-cap.js').HubCapMap;
       currentSlug: string;
       /** `true` follows the sidebar, a string follows it under that label, `false` keeps the author's link. */
-      follows: { prev: boolean | string; next: boolean | string };
+      follows: { prev: import('./route-shaping.js').PaginationFollow; next: import('./route-shaping.js').PaginationFollow };
       /** The prev/next the route-shaping middleware computed. */
       pagination: import('./route-shaping.js').RoutePagination;
     };

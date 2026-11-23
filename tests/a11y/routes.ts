@@ -434,6 +434,12 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
   },
   // #250 — the GitHub alert fixture: five native asides and three plain
   // blockquotes must clear WCAG in both colour modes.
+  {
+    name: 'GitHub alerts (/guides/github-alerts/)',
+    path: ROUTES.githubAlerts,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GITHUB_ALERTS_GUARD_ROOTS,
+  },
   // #341 — the capped hub and one of its pages: the capped group (overview link and
   // "5 pages" entry, current on the child) must clear WCAG in both colour modes.
   {
@@ -447,12 +453,6 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
     path: ROUTES.cappedHubChild,
     shell: 'starlight',
     guardRoots: STARLIGHT_GUARD_ROOTS,
-  },
-  {
-    name: 'GitHub alerts (/guides/github-alerts/)',
-    path: ROUTES.githubAlerts,
-    shell: 'starlight',
-    guardRoots: STARLIGHT_GITHUB_ALERTS_GUARD_ROOTS,
   },
   // markua-decks (#47, WP04) — the Markua-capable OUT-OF-FRAME deck. No
   // `renderWait`: the callouts/wrapper/attribute/figure constructs are build-time

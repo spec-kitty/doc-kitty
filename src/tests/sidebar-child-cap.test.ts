@@ -11,6 +11,7 @@ import {
   decorateSidebarIcons,
   expandCappedGroups,
   hubOrderPagination,
+  paginationFollow,
   relabelledLinks,
   shapePagination,
   shapeSidebar,
@@ -303,6 +304,39 @@ describe('prev/next after a later middleware rebuilt them from the shaped sideba
     const sidebar = shape(tree('guides'), 'guides', new Map());
     const pagination = rebuilt(sidebar);
     expect(hubOrderPagination(sidebar, new Map(), 'guides', pagination, FOLLOWS)).toBe(pagination);
+  });
+});
+
+describe('label-only prev/next overrides (FR-007; WP04 review F1, F2)', () => {
+  it('normalises a frontmatter side into how it follows the sidebar', () => {
+    expect(paginationFollow(undefined, true)).toBe(true);
+    expect(paginationFollow('Read on', true)).toBe('Read on');
+    expect(paginationFollow({ label: 'Read on' }, true)).toBe('Read on');
+    expect(paginationFollow({ link: '/x/', label: 'Elsewhere' }, true)).toBe(false);
+    expect(paginationFollow({ link: '/x/' }, true)).toBe(false);
+    expect(paginationFollow(false, true)).toBe(false);
+    // Site-wide prev/next off: nothing follows.
+    expect(paginationFollow(undefined, false)).toBe(false);
+    expect(paginationFollow('Read on', false)).toBe(false);
+  });
+
+  it('gives a pre-hidden child with a label-only override its hub-order neighbour, under that label', () => {
+    const original = tree('', { hidden: true });
+    const shaped = shape(original, 'missions/alpha');
+    const expanded = expandCappedGroups(shaped, HUB_CAPS, 'missions/alpha');
+    const none = { prev: undefined, next: undefined };
+    const result = shapePagination(original, expanded, none, { prev: true, next: 'Read on' });
+    expect(result.prev?.href).toBe(`${BASE}/missions/zeta/`);
+    expect(result.next).toMatchObject({ href: `${BASE}/missions/charlie/`, label: 'Read on' });
+  });
+
+  it('leaves a listed page\'s label-only override to the href rule, unchanged', () => {
+    // Starlight already applied the label to the sidebar neighbour; shaping keeps it.
+    const original = tree('guides');
+    const shaped = shape(original, 'guides', new Map());
+    const starlight = { prev: undefined, next: { ...(link('guides/install', 'Read on') as Link) } };
+    const result = shapePagination(original, shaped, starlight, { prev: true, next: 'Read on' });
+    expect(result.next).toMatchObject({ href: `${BASE}/guides/install/`, label: 'Read on' });
   });
 });
 

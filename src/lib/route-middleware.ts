@@ -25,6 +25,7 @@ import { sidebarIcons } from 'virtual:doc-kitty/sidebar-icons';
 import {
   decorateSidebarIcons,
   expandCappedGroups,
+  paginationFollow,
   relabelledLinks,
   resolveCappedLabel,
   resolveIndexLabel,
@@ -64,9 +65,10 @@ export const onRequest = defineRouteMiddleware((context) => {
 
     // `prev`/`next` front matter left unset means "follow the sidebar".
     const { prev, next } = route.entry.data;
+    // How each side follows the sidebar: unset, or a label-only override (#341).
     const follows = {
-      prev: routeShaping.pagination && prev === undefined,
-      next: routeShaping.pagination && next === undefined,
+      prev: paginationFollow(prev, routeShaping.pagination),
+      next: paginationFollow(next, routeShaping.pagination),
     };
     // A capped hub's children are not in the shaped sidebar, so prev/next walk a copy
     // where they are, in the hub's order (the shaped tree itself when nothing is capped).
@@ -75,18 +77,7 @@ export const onRequest = defineRouteMiddleware((context) => {
     // (the OpenAPI renderer's, which runs after this one on every page): the relabelled
     // links, and with a capped hub what it needs to put the hub order back (#341).
     context.locals.dkRelabelled = relabelledLinks(route.sidebar, sidebar);
-    if (hubCaps.size > 0) {
-      // For the later rebuild a label-only override (`next: "Read on"`) still follows
-      // the sidebar: it is handed on as its label.
-      const followsWithLabel = (side: unknown, followsSide: boolean): boolean | string =>
-        routeShaping.pagination && typeof side === 'string' ? side : followsSide;
-      context.locals.dkHubOrder = {
-        hubCaps,
-        currentSlug,
-        follows: { prev: followsWithLabel(prev, follows.prev), next: followsWithLabel(next, follows.next) },
-        pagination: route.pagination,
-      };
-    }
+    if (hubCaps.size > 0) context.locals.dkHubOrder = { hubCaps, currentSlug, follows, pagination: route.pagination };
     route.sidebar = decorateSidebarIcons(sidebar, iconMaps, routeShaping.base);
   }
 

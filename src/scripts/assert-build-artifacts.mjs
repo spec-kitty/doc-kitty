@@ -2268,8 +2268,9 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 28 example .md files − 3 drafts, plus the 8 released generated OpenAPI reference pages; the unreleased ` +
-        `\`main\` version's 4 are filtered, FR-015. If example content changed ` +
+        `(the published set: every published example page, generated ones included, plus the released OpenAPI ` +
+        `reference pages; the unreleased \`main\` version's 4 are filtered, FR-015. The derivation is above ` +
+        `EXPECTED_SITEMAP_URL_COUNT. If example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }

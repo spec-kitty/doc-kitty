@@ -26,10 +26,12 @@ const median = (xs) => {
 const variants = { capped: { missions: children }, uncapped: { missions: children, siteCap: children + 1 } };
 const seconds = { capped: [], uncapped: [] };
 const sizes = { capped: [], uncapped: [] };
-// Runs alternate between the variants, so a change in machine load over the
-// measurement falls on both alike instead of on one variant's runs.
+// Runs alternate between the variants in ABBA order (capped first, then uncapped
+// first, and so on), so a change in machine load over the measurement falls on
+// both alike instead of on one variant's runs.
 for (let run = 0; run < runs; run += 1) {
-  for (const [name, options] of Object.entries(variants)) {
+  const order = Object.entries(variants);
+  for (const [name, options] of run % 2 === 0 ? order : order.reverse()) {
     const dir = path.join(REPO_ROOT, 'example', `.dk-test-sidebar-cap-measure-${name}`);
     writeSite(dir, options);
     const result = buildSite(dir);
