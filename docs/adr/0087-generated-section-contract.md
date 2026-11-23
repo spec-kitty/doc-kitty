@@ -189,16 +189,17 @@ Inputs:
 - `features/shipping.feature`, holding `Feature: Ship an order` and a newline;
 - `features/returns.feature`, holding `Feature: Return an order` and a newline;
 - the Gherkin configuration
-  `{"sourceUrlPrefix":"https://example.org/src/","defaultGlossaryContext":{"shipping":"shipping"}}`.
+  `{"section":"behaviour","titles":{"hr":"HR"},"sourceUrlPrefix":"https://example.org/src/","defaultGlossaryContext":{"shipping":"shipping"}}`,
+  which holds all four options D2 names for Gherkin.
 
 | Key | Value (sha256 of the input) |
 |---|---|
-| `config:doc-kitty-gherkin` | `09aad6cada61339b92c51c2bb19e9cb134c64a92087897879bbc91a939dd9bf0` (over the JCS bytes `{"defaultGlossaryContext":{"shipping":"shipping"},"sourceUrlPrefix":"https://example.org/src/"}`) |
+| `config:doc-kitty-gherkin` | `4e9ce5abbe8cb14f8719f94547084b6bd4e4d7f7a1c66e6aaa03844beaea0974` (over the JCS bytes `{"defaultGlossaryContext":{"shipping":"shipping"},"section":"behaviour","sourceUrlPrefix":"https://example.org/src/","titles":{"hr":"HR"}}`) |
 | `features/returns.feature` | `4706fe2220c95abef8076225ef261f4ccc6ff2ecd608fb062050918aaee92a4f` |
 | `features/shipping.feature` | `602cc601811283c683edd47f62a25fabd760959d848805bef9983c72fc0b93d4` |
 
 The rows are in the step-2 order. The digest is
-`sha256:d886631af7cf7ade4ba0aa2a61dca06b31e52decc594e4b67eecd900d73797c6`.
+`sha256:3f1cb1c1bfbeb5922c739057e9987407df7396829d97682420aee0ea94d823d2`.
 
 A page whose bytes are
 
@@ -234,8 +235,8 @@ hold, the first in this table wins, so a hand edit is never hidden behind a
 |---|---|---|
 | `missing` | an expected page is absent | regenerate |
 | `orphan` | a page carries the producer's stamp and is in its scope, but no input produces it | regenerate (prunes it) |
-| `stale-source` | the committed `source_digest` differs from the recomputed one | the inputs changed; regenerate |
 | `hand-edited` | the committed body's hash differs from the stamp's `content_hash` | someone edited generated output; move the edit to the source |
+| `stale-source` | the committed `source_digest` differs from the recomputed one | the inputs changed; regenerate |
 | `stale-render` | digests match, but the regenerated page differs from the committed one with `at` masked (D5) | the renderer changed; regenerate |
 | `ok` | none of the above | |
 
@@ -277,10 +278,12 @@ writes a stamp the next time it runs.
 
 **Retiring a producer.** A registry entry is never deleted while its pages
 exist. A producer is retired the way #210 retired the unversioned stamps: its
-entry stays with a retired marker (the registry's `retiredBy` mechanism). Then
-the frontmatter gate names its pages and the command that replaces or removes
-them, instead of silently treating them as authored pages that carry a foreign
-stamp.
+entry stays, with a new `retired` field naming the release that retired it and
+the command that replaces or removes its pages. The existing `retiredBy` field
+is not this: it names an older unversioned stamp of a producer that is still
+live. A retired producer owns nothing. The frontmatter gate names each page
+still carrying its stamp and that command, instead of silently treating them as
+authored pages that carry a foreign stamp.
 
 ADR-0083 noted three readers that still recognise a page by its stamp alone: the
 edit link, the RSS hub filter, and `okfGenerated`. They route through the
@@ -370,8 +373,9 @@ an external producer that adopts this contract reports the same way.
   `content_hash`, and its `by` and `at` with it, once.
 - For one minor release, a page with no `source_digest` is a pre-contract page.
   It is checked under the rule it was written with: its `content_hash` is
-  compared the old way (Gherkin: against the source bytes), not under the D2
-  rule. It passes with a warning that names the regenerate command. Without
+  compared the old way, not under the D2 rule. For Gherkin that is the source
+  `.feature` bytes for a feature page, and the sorted child-path list for a
+  hub. It passes with a warning that names the regenerate command. Without
   that, every Gherkin page would read `hand-edited` before its first
   regeneration. After that release a page with no `source_digest` is an error,
   the way #210 retired the pre-0.4.0 stamps.
@@ -446,6 +450,13 @@ Recorded from the review of PR #445; none changes a decision here.
   the evidence index (#401), not here.
 - **ADR-0080** still says the evidence index waits for the generated-section
   contract "proposed in issue #359". That changes with ADR-0080's next edit.
+- **Two possible additions to D3's verdicts, for the operator.** The first is
+  an `unowned` verdict, for an expected output path that holds a page without
+  the producer's stamp, such as a deleted or mistyped stamp. Today such a page
+  reads as authored, so the generator refuses to overwrite it: loud, but
+  unnamed. The second is producer-specific verdicts, such as ADR-0082's leak
+  check, provided they exit 1 and use the same output line. Neither is decided
+  here.
 - **Issue #359** names a three-key stamp. Its closing note should point to D1's
   last paragraph, so the criterion is not read as unmet.
 
