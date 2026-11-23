@@ -16,12 +16,12 @@
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "A cap that is not a positive whole number is refused at config time, naming the setting and where it was set.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/child-cap.test.ts (site option, sections.yaml, frontmatter schema and validate-frontmatter cases)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:02:57.426458+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
