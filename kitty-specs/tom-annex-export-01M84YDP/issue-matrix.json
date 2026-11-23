@@ -13,7 +13,7 @@
       "wp": "WP06"
     },
     "#360": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Gherkin migration #360-#363 out of scope (spec.md:274)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -21,7 +21,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#400": {
