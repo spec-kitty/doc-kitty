@@ -1919,14 +1919,17 @@ its identity, the README's title and sections, presets, policy, the inventory
 per kind and where it came from, the manifest's verified state, and warnings.
 
 ```bash
-pnpm exec dockitty-read-pack ../packs/qa
-pnpm exec dockitty-read-pack ../packs/qa --json --charter-lock ../charter.lock.yaml
+pnpm exec dockitty-read-pack packs/qa
+pnpm exec dockitty-read-pack packs/qa --json --charter-lock charter.lock.yaml
 ```
 
+Every path must sit inside the repository root: the nearest directory holding
+`.git`, or `--repo-root <dir>`, which also sets what the model's `path` is
+relative to. For a pack checked out next to your site, pass `--repo-root ..`.
 It exits 0 when it prints a model, even with warnings. It exits 2 for a usage
-error, a directory without a `pack.yaml`, or a contract snapshot whose lock fails.
-`--contract <dir>` reads with another snapshot, and `--repo-root <dir>` sets what
-the model's `path` is relative to.
+error, a path outside the repository root, a directory without a `pack.yaml`, or
+a contract snapshot whose lock fails. `--contract <dir>` reads with another
+snapshot.
 
 ### Pin the contract
 
