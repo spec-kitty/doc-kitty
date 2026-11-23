@@ -88,7 +88,7 @@
     },
     "WP03": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": null,
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -101,6 +101,7 @@
         "WP03 ready: capped group, current marking, hub-order prev/next, child-cap export; WP02 folds N1/N3/N4; fast 4084/4084"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP03-shaping-current-and-pagination/review-cycle-1.md",
         "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP03-shaping-current-and-pagination/review-cycle-1.md",
@@ -108,14 +109,14 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 15858,
-      "shell_pid_created_at": "1795423173.39",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T011": "done",
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
+        "T011": "planned",
+        "T012": "planned",
+        "T013": "planned",
+        "T014": "planned",
+        "T015": "planned"
       }
     },
     "WP04": {
