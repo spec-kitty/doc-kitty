@@ -2,7 +2,7 @@
 title: "ADR-0059: A published content graph, and alignment with OKF v0.2"
 description: Every build publishes api/content-graph.json of frontmatter relations; metadata adopts OKF UTC timestamps, actors and per-index okf_version; export converts.
 doc_status: active
-updated: 2026-10-18T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -296,3 +296,12 @@ limit") of the 2026-10-24 addendum, following #238.
    addendum is unchanged. The overview page is reached through the index entry.
 5. **A README without a body is unchanged.** It gets no overview page, and the
    sidecar `_index.meta.yaml` is unchanged.
+
+## Addendum (2026-11-22): the classified-as relation
+
+The decisions above are unchanged.
+[ADR-0080](0080-tom-classification-field-and-measures-catalog.md) decision 6 adds
+a sixth `rel`, `classified-as`, from a page to a `catalog:measure:<id>` node, and
+an optional edge field, `scope`, written only on that relation. The schema stays
+`dockitty.content-graph/1` because both are additive. A reader must tolerate a
+`rel` or a node field it does not know.

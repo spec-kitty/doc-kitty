@@ -2,7 +2,7 @@
 title: Content graph
 description: "The api/content-graph.json file every build publishes: node and edge shape, relation kinds, ids, ordering, and what it leaves out."
 doc_status: active
-updated: 2026-10-18T07:40:00Z
+updated: 2026-11-22T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -13,6 +13,7 @@ related:
   - architecture/generators
   - guides/export-okf-bundle
   - adr/0059-content-graph-and-okf-alignment
+  - adr/0080-tom-classification-field-and-measures-catalog
 ---
 
 # Content graph
@@ -56,6 +57,7 @@ uses.
 | `page` | bundle path | A published page, including section indexes |
 | `persona` | bundle path | A page under `context/audience/` |
 | `catalog` | `catalog:<type>:<id>` | A bibliography entry cited by `external_references` |
+| `catalog` | `catalog:measure:<id>` | A measure from the measures catalog that a page lists in `tom_classification` |
 | `resource` | `resource:<url-or-path>` | An external URL, or a `sources` resource that is not a page |
 | `resource` | `openapi:<label>` | One published OpenAPI version, when the `openapi` option is set (see below) |
 
@@ -77,14 +79,25 @@ string path, and is unset here. The node has no edges: the graph holds
 frontmatter relations only, and a spec version has no frontmatter. Sites
 without the option have no such nodes.
 
+A `catalog:measure:<id>` node is a record of the measures catalog
+([ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md)). Its
+`title` is the measure's label and its `url` is the measure's DPV concept IRI,
+when the record has one. That IRI names the nearest DPV concept; it is not a
+legal equivalence. It also carries a `measure` object,
+`{ nature, frameworks }`: the measure's nature (`technical`, `organisational`,
+`legal` or `physical`) and its framework references. The graph holds a measure
+node only when at least one published page lists that measure.
+
 Instants are UTC `YYYY-MM-DDTHH:MM:SSZ` and actors use the
 [actor convention](./metadata-model.md#actors). Catalog and resource nodes carry
 `title` and `url` (or `resource`).
 
 ## Edges
 
-An edge is `{ id, source, target, rel, note? }`, and its `id` is
-`source|rel|target`. `rel` is one of:
+An edge is `{ id, source, target, rel, note?, scope? }`, and its `id` is
+`source|rel|target`. The `rel` values and node fields may grow within schema
+`dockitty.content-graph/1`, so a reader must tolerate a value it does not know.
+`rel` is one of:
 
 | `rel` | From frontmatter | Target |
 |---|---|---|
@@ -93,6 +106,7 @@ An edge is `{ id, source, target, rel, note? }`, and its `id` is
 | `cites` | `external_references` | a `catalog` or `resource` node |
 | `in-section` | the page's location | the nearest published ancestor section index |
 | `derived-from` | `sources[].resource` | the page, or a `resource` node |
+| `classified-as` | `tom_classification` | a `catalog:measure:<id>` node; `note` is the entry's note |
 
 A reader that ignores `rel` still gets a plain directed edge, which is what OKF
 tools expect. The graph holds frontmatter relations only. Glossary auto-links
@@ -102,6 +116,18 @@ The edges come from the same resolvers as the Related, Audience and External
 references blocks on the rendered page, so the file and the page cannot
 disagree. A `related` entry that resolves to no page fails the build, as it does
 for the block.
+
+A `classified-as` edge always carries `scope`: `system` (the default) or
+`organisation`. No other relation has a `scope`. Its target is a catalog record,
+not a page. A measure id that is not in the measures catalog fails the build, and
+that check covers draft pages too, even though a draft contributes no edges.
+
+The OKF export renders a page's `classified-as` edges as a `## Measures` section,
+after `## References`. Each line is the measure's label linked to its DPV IRI
+(plain text when the record has no IRI), an `(organisation)` marker for
+organisation scope, then the note. The lines follow
+the graph's edge order, which is the code-unit order of the target ids, so the
+measures appear sorted by measure id rather than in authored order.
 
 ## Order and drafts
 

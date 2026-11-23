@@ -1,13 +1,14 @@
 ---
 title: Kitty packs
-description: "The target design for kitty-packs support: bounded contexts, the pack reader and its contract snapshot, generation, ownership, gates and the slices."
+description: "Kitty-packs support: bounded contexts, the pack reader and its contract snapshot as built, and the target design for generation, ownership and the slices."
 doc_status: draft
-updated: 2026-11-13T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [packs, doctrine, generated-pages, charter, open-packs]
 related:
   - adr/0079-kitty-packs-through-a-charter-contract-reader
+  - adr/0083-producer-registry-and-ownership-scopes
   - architecture/research/packs
   - plans/features/packs
   - adr/0046-gherkin-feature-pages
@@ -17,11 +18,14 @@ related:
 
 # Kitty packs
 
-> **Target design.** This page describes the envisioned shape of kitty-packs
-> support, as decided in
+> **Partly built.** This page describes kitty-packs support as decided in
 > [ADR-0079](../adr/0079-kitty-packs-through-a-charter-contract-reader.md).
-> Nothing on it is implemented yet. Where this page and the ADR differ, the ADR
-> is authoritative. The findings behind it are in the
+> Slice 2 (#330) is built: the pack reader, its contract snapshot, the
+> `packs.charterLock` and `packs.contract` options, `dockitty-read-pack` and the
+> producer registry ([ADR-0083](../adr/0083-producer-registry-and-ownership-scopes.md)).
+> Pack pages, the generator and the rest of the `packs` option are the target
+> design (#338 onward). [What is built](#what-is-built) lists the difference.
+> Where this page and the ADRs differ, the ADRs are authoritative. The findings behind it are in the
 > [research](./research/packs.md), and the delivery order is in the
 > [feature plan](../plans/features/packs.md).
 
@@ -91,7 +95,7 @@ flowchart TB
   end
   CFG["packs option<br/>(defineDocKittyIntegrations)"]
   INT["packs integration<br/>astro:config:setup"]
-  REG["producer registry<br/>(generator-stamp.mjs)"]
+  REG["producer registry<br/>(producers.mjs)"]
   GATES["gates<br/>frontmatter, links, Gherkin output scan"]
   SURF["agent surfaces<br/>sitemap, search, llms.txt, agent API, OKF export"]
   SNAP --> READ
@@ -108,15 +112,15 @@ flowchart TB
 
 | Component | Role |
 |---|---|
-| Contract snapshot | `src/lib/packs/contract/` holds `file-kinds.yaml`, the schemas the reader uses, and the charter's classifier conformance cases, transcribed from its Java tests until spec-kitty-charter#559 publishes them. `pnpm packs:sync-contract --commit <sha>` refreshes `file-kinds.yaml` and the schemas. |
-| Contract lock | `contract.lock.json` records the charter commit and each snapshot file's sha256. A unit test fails when the bytes and the lock disagree. |
+| Contract snapshot | `src/lib/packs/contract/` holds `file-kinds.yaml`, the five pack-level schemas the reader uses, and the charter's classifier conformance cases (`conformance/classifier-cases.yaml`), copied byte for byte from the release tag `contract-packs-v0.1.0-rc.1`. The charter publishes the cases as data (spec-kitty-charter#559), so none are transcribed. `pnpm packs:sync-contract --ref <tag or full commit>` refreshes every locked file. |
+| Contract lock | `contract.lock.json` records the source, the tag, the charter commit and each snapshot file's sha256. A unit test fails when the bytes and the lock disagree, or a file is added or removed. Loading a snapshot verifies its lock and refuses a symlink in it. |
 | Pack reader | `readPack(dir)` turns a pack directory into a `PackModel`. It reimplements classification only and is held to the charter's conformance cases. It parses the README into the codec's shape with doc-kitty's own Markdown pipeline. It recomputes each manifest constituent's `content_hash`. |
 | Per-kind field map | Which fields give an artefact its title and summary, such as a directive's `title` and `intent`. It lives beside the snapshot, not in page templates. |
 | `PackModel` | Identity, document, manifest, presets, policy, inventory, problems and the two contract commits. The shape is in ADR-0079 D4. |
 | Packs integration | Validates the `packs` option eagerly, runs the generator at `astro:config:setup` and watches pack files in dev. Errors carry a `[dk-packs]` prefix. |
 | Pack generator | Plans the page tree, writes changed pages, prunes only its own stale pages, and backs `dockitty-generate-pack-pages --check`. |
-| Producer registry | One list of producers, each with an ownership scope. It replaces `PRODUCERS` and `GHERKIN_PRODUCER` special cases in `src/lib/generator-stamp.mjs`, `isGeneratedPage` in `src/scripts/validate-frontmatter.mjs`, and the Gherkin output scan in `src/lib/gherkin/generate.mjs`. |
-| Gates | The frontmatter gate and the links gate run on pack pages as on any page, through the registry. |
+| Producer registry | `src/lib/producers.mjs`: one list of producers, each with a role and an ownership scope ([ADR-0083](../adr/0083-producer-registry-and-ownership-scopes.md)). `PRODUCERS` in `src/lib/generator-stamp.mjs`, `isGeneratedPage` in `src/scripts/validate-frontmatter.mjs` and the Gherkin output scan (`scanProducerOutput` in `src/lib/producer-output.mjs`) read it. |
+| Gates | The frontmatter gate and the links gate run on pack pages as on any page, through the registry. A pack directory scope takes effect in the gate once the scopes are resolved from site config and passed as `producerScopes` (#338; see [ADR-0083](../adr/0083-producer-registry-and-ownership-scopes.md#negative)). |
 | Agent surfaces | The sitemap, search, `llms.txt`, the agent API and the OKF export list pack pages as ordinary entries. None of them gets packs-specific code. |
 
 Slice 2 also adds a `dockitty-read-pack <dir> --json` CLI that prints the model.
@@ -223,7 +227,7 @@ Two commits matter, and each page shows both.
 
 ```mermaid
 flowchart LR
-  CH["charter repository<br/>at commit A"] -- "pnpm packs:sync-contract --commit A" --> SN["src/lib/packs/contract/<br/>+ contract.lock.json (A)"]
+  CH["charter repository<br/>at tag T, commit A"] -- "pnpm packs:sync-contract --ref T" --> SN["src/lib/packs/contract/<br/>+ contract.lock.json (A)"]
   SN -- "default" --> RD["pack reader<br/>readWith = A"]
   OV["packs.contract<br/>(consumer snapshot, commit C)"] -. "overrides" .-> RD
   CL["consumer charter.lock.yaml<br/>(commit B)"] -- "packs.charterLock" --> RD
@@ -242,8 +246,10 @@ flowchart LR
 - `packs.charterLock` reads the `commit` key of the consumer's pin file.
 - doc-kitty never fetches a contract at build time.
 
-A pinned charter contract release replaces the commit once the charter publishes
-releases (charter #45).
+The vendored snapshot is pinned to the packs-contract release tag
+`contract-packs-v0.1.0-rc.1`, charter commit `69ec326`. The sync script accepts a
+tag or a full commit only: a branch, `HEAD` or a short sha is refused, so the
+lock never records a moving ref as its provenance.
 
 ## Extension points
 
@@ -282,16 +288,65 @@ accepted on 2026-11-13 and is done when PR #337 merges.
 Slice 3 is the point where open-packs can switch. Slices 4 and 6 can run in
 parallel after 3. Slice 5 builds on 4, and slices 7 to 9 follow.
 
-## Not yet built
+## What is built
 
-All of it. Today doc-kitty has no `src/lib/packs/`, no `packs` option, no
-`doc-kitty-packs` producer and no producer registry. `PRODUCERS` in
-`src/lib/generator-stamp.mjs` still lists only the Gherkin and glossary
-producers. `isGeneratedPage` still recognises Gherkin by stamp and the glossary
-by path. The seams this design reuses do exist: the stamp, the
-`astro:config:setup` generation seam, hub child selection, and the open kind
-vocabulary.
+Slice 2 (#330) built the reader and the registry. Pages are not generated yet.
 
-Outside doc-kitty, open-packs still runs `gen_pack_reference.py`. Its org packs
-have no `pack-manifest.yaml`, and `built-in`'s manifest is stale. Until those are
-regenerated, their pages will show no hash or an unverified one.
+- `src/lib/packs/`: the contract snapshot and lock (`contract.mjs`), the
+  classifier (`classify.mjs`), the README parser (`readme.mjs`) and
+  `readPack(dir, { contract, charterLock, repoRoot })` (`read.mjs`), with
+  `index.mjs` as the public surface.
+- The `packs` option accepts `charterLock` and `contract` only. #338 adds
+  `sources`, `section`, `include`, `exclude`, `sourceUrlPrefix`, `extraFacts` and
+  `allowEmpty`.
+- `dockitty-read-pack <dir> [--json]` prints one model.
+- The producer registry, with the Gherkin, glossary and scaffold producers. The
+  `doc-kitty-packs` producer arrives with #338.
+- A `packs-corpus` test project reads every spec-kitty-open-packs pack at a
+  pinned commit in CI. At that commit all 19 packs read, and every manifest
+  verifies. Run it with `DK_OPEN_PACKS_DIR=<checkout> pnpm --filter
+  @spec-kitty/doc-toolkit test:packs-corpus`. The script sets `DK_PACKS_CORPUS=1`
+  with POSIX shell syntax; in a Windows shell, set both variables first and run
+  `vitest run --project packs-corpus` from `src/`.
+
+How the reader treats pack content, beyond ADR-0079 D3 and D4:
+
+- It reads every pack file as data. YAML is parsed with the failsafe schema and
+  known tags off, so `pack_version: 1.10` stays `1.10`, an unquoted all-digit
+  hash stays a string, and `!!binary` or `!!timestamp` never becomes an object.
+  README frontmatter is split off and parsed with known tags off too, but with
+  YAML's core schema, so its numbers and booleans keep their types (an unquoted
+  `1.10` there is the number `1.1`). It does not go through gray-matter, which
+  caches by input and can evaluate a `---js` block.
+- It reads no file through a symlink. A path with a symlinked component is not
+  held: a manifest entry behind one counts as missing, and the manifest does not
+  verify.
+- `PackModel.document` also carries the README's `frontmatter`, an addition to
+  D4. The page generator does not copy it into page frontmatter.
+
+Every manifest warning except `manifest-schema-version` leaves the manifest
+unverified. The manifest is shown as fact only when its membership matches both
+ways and every hash matches.
+
+The warning codes, each with the pack-relative `file` where there is one:
+
+| Code | When |
+|---|---|
+| `retired`, `unmodelled` | The contract classifies a file as retired, or no rule takes it |
+| `symlink` | A symlink inside the pack; it is not followed |
+| `descriptor-missing`, `descriptor-unreadable`, `descriptor-missing-key`, `descriptor-unknown-key`, `descriptor-schema-version` | `pack.yaml` is absent, does not parse, lacks a required key, has a key the contract does not declare, or has another `schema_version` |
+| `readme-unreadable`, `readme-frontmatter`, `readme-ambiguous-heading` | The README cannot be read, its frontmatter does not parse, or it has a level-1 heading after its start |
+| `descriptor-invalid-value` | A `pack.yaml` value is a mapping or a list where a single value belongs; it is left out |
+| `policy-missing`, `policy-unreadable`, `policy-invalid-value` | `mutability_policy` names a file the pack does not hold, or one that does not parse; a level that is not a single value, or a prototype key, is left out |
+| `manifest-unreadable`, `manifest-missing-file`, `manifest-hash-mismatch`, `manifest-unlisted`, `manifest-unknown-kind`, `manifest-schema-version` | The manifest does not parse, lists a file the pack lacks, has a stale hash, omits a constituent, names a kind the contract does not know, or has another `schema_version` |
+| `manifest-invalid-entry`, `manifest-duplicate-entry`, `manifest-not-a-constituent`, `manifest-kind-mismatch`, `manifest-unreadable-file` | An entry has a field that is not a single value, lists a file twice, lists a file the contract does not classify as a constituent, claims another kind than the contract gives it, or names a file that cannot be read to hash |
+| `contract-unknown-key`, `contract-unknown-content-form` | The snapshot's `file-kinds.yaml` has a key or content form the reader does not know |
+| `charter-lock-mismatch`, `charter-lock-unreadable` | The consumer's pin names another commit, or has no readable `commit` |
+
+Outside doc-kitty, open-packs still runs `gen_pack_reference.py` until slice 3.
+open-packs pins charter `cb9b154`, so its packs read with a
+`charter-lock-mismatch` warning against the vendored `69ec326`, as D2 intends.
+At the pinned open-packs commit, 18 of its 19 manifests verify. `foundation`
+lists a `routing_catalog` constituent, a kind the vendored contract does not
+know, so its manifest reads as unverified and its inventory comes from the
+file walk until doc-kitty vendors a contract with that kind.

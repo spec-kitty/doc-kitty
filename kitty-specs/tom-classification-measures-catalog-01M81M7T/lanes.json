@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "mission_slug": "tom-classification-measures-catalog-01M81M7T",
+  "mission_id": "01M81M7TM96RY27R7ZX40CNM7F",
+  "mission_branch": "kitty/mission-tom-classification-measures-catalog-01M81M7T",
+  "target_branch": "feat/406-tom-classification",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/measures-core.mjs",
+        "src/lib/measures-loader.mjs",
+        "src/lib/measures-default.mjs",
+        "src/tests/fixtures/measures/**",
+        "src/tests/measures-core.test.ts",
+        "src/tests/measures-loader.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/metadata.ts",
+        "src/lib/schema.ts",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/fixtures/err/tom-classification-*.md",
+        "src/tests/fixtures/valid/tom-classification.md",
+        "src/tests/fixtures/warn/tom-classification-case-variant.md",
+        "src/tests/schema-validator-parity.test.ts",
+        "src/tests/tom-classification-shape.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "src/lib/okf-export/core.mjs",
+        "src/tests/fixtures/okf-export-measures/**",
+        "src/tests/okf-export-measures.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/scripts/validate-catalog.mjs",
+        "src/tests/fixtures/catalog-measures/**",
+        "src/tests/validate-catalog-measures.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/docs-index.ts",
+        "src/lib/routes/content-graph.ts",
+        "src/tests/content-graph-measures.test.ts",
+        "src/tests/content-graph.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/lib/contract.ts",
+        "src/lib/routes/agent-page.ts",
+        "src/tests/agent-page-measures.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "example/docs/architecture/audit-logging.md",
+        "example/docs/context/incident-handling.md",
+        "src/scripts/assert-build-artifacts.mjs"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01",
+        "WP08"
+      ],
+      "write_scope": [
+        "docs/adr/0080-tom-classification-field-and-measures-catalog.md",
+        "docs/architecture/content-graph.md",
+        "docs/architecture/metadata-model.md",
+        "docs/changelog/unreleased/406-tom-classification.md",
+        "docs/context/domain.md",
+        "docs/guides/authoring.md",
+        "docs/guides/consumer-setup.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e",
+        "lane-f"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-11-22T12:50:53.391591+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP01",
+    "WP08"
+  ],
+  "planning_commit_sha": "4e18aef45a1cc89bcd369f681fefb5ba99838dc8"
+}

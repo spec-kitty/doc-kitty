@@ -1,0 +1,103 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-22T12:26:20.568791Z",
+      "decision_id": "01M81KHG0RXRSR7KKWPKX1T06Y",
+      "final_answer": "Any one section unless the caller passes the resolved section (tests unchanged)",
+      "input_key": "gherkin_scope",
+      "mission_id": "01M81KGEWFFETMERGX1TFVGKRD",
+      "mission_slug": "packs-reader-producer-registry-01M81KGE",
+      "opened_by": "cli",
+      "options": [
+        "Any one section unless the caller passes the resolved section (tests unchanged)",
+        "Read gherkin.section through site-config evaluation in the gate",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "The frontmatter gate does not know the configured gherkin.section. What ownership scope does the Gherkin producer have there?",
+      "rationale": null,
+      "resolved_at": "2026-11-22T12:26:38.612941Z",
+      "resolved_by": null,
+      "slot_key": "specify.registry.gherkin-scope",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-22T12:26:22.781535Z",
+      "decision_id": "01M81KHJ5XD0PH1DA0BTT5E4WD",
+      "final_answer": "Keep the path-and-kind rule, stamp optional (unchanged behaviour)",
+      "input_key": "glossary_recognition",
+      "mission_id": "01M81KGEWFFETMERGX1TFVGKRD",
+      "mission_slug": "packs-reader-producer-registry-01M81KGE",
+      "opened_by": "cli",
+      "options": [
+        "Keep the path-and-kind rule, stamp optional (unchanged behaviour)",
+        "Require stamp and scope",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Does the glossary producer keep recognising pages by path and kind alone, or must a glossary page also carry its stamp?",
+      "rationale": null,
+      "resolved_at": "2026-11-22T12:26:40.695104Z",
+      "resolved_by": null,
+      "slot_key": "specify.registry.glossary-recognition",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-22T12:26:24.917572Z",
+      "decision_id": "01M81KHM8NCGMNJ0MDWZP4M37A",
+      "final_answer": "A packs option accepting only charterLock and contract, validated eagerly, plus CLI flags; #338 widens it",
+      "input_key": "packs_option_surface",
+      "mission_id": "01M81KGEWFFETMERGX1TFVGKRD",
+      "mission_slug": "packs-reader-producer-registry-01M81KGE",
+      "opened_by": "cli",
+      "options": [
+        "A packs option accepting only charterLock and contract, validated eagerly, plus CLI flags; #338 widens it",
+        "CLI flags and readPack options only; config key in #338",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "packs.charterLock and packs.contract arrive before the packs option exists (#338). Where do they live in this slice?",
+      "rationale": null,
+      "resolved_at": "2026-11-22T12:26:42.815933Z",
+      "resolved_by": null,
+      "slot_key": "specify.options.packs-surface",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-22T12:29:41.140674Z",
+      "decision_id": "01M81KQKWM2X9TQ6H99VVZRJ1N",
+      "final_answer": "Separate packs-corpus vitest project fed by a CI step that fetches open-packs at a pinned commit",
+      "input_key": "open_packs_corpus",
+      "mission_id": "01M81KGEWFFETMERGX1TFVGKRD",
+      "mission_slug": "packs-reader-producer-registry-01M81KGE",
+      "opened_by": "cli",
+      "options": [
+        "Separate packs-corpus vitest project fed by a CI step that fetches open-packs at a pinned commit",
+        "Fetch inside the unit test",
+        "Vendor a reduced copy",
+        "Other"
+      ],
+      "origin_flow": "plan",
+      "other_answer": false,
+      "question": "How does CI prove every open-packs pack at a pinned commit reads with no error?",
+      "rationale": null,
+      "resolved_at": "2026-11-22T12:29:46.721098Z",
+      "resolved_by": null,
+      "slot_key": "plan.testing.open-packs-corpus",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M81KGEWFFETMERGX1TFVGKRD",
+  "version": 1
+}

@@ -22,12 +22,24 @@
  * and is asserted by src/tests/catalog.test.ts. `gray-matter` (the same YAML
  * engine the sibling validate-frontmatter.mjs gate uses) parses frontmatter and
  * the catalog files — no ad-hoc YAML re-implementation.
+ *
+ * It also resolves each page's `tom_classification` (ADR-0080) against the root's
+ * measures catalog: `<root>/_meta/measures.yaml` when present, else the shipped
+ * default. Unlike citations, this check does NOT re-implement anything: the
+ * measures core and loader are bare-Node safe, so the gate imports the very
+ * module the build routes use, and the two cannot disagree on a verdict
+ * (NFR-002, pinned by measures-parity.test.ts). The message is the same too,
+ * except that the gate names a page from the repository root
+ * (`example/docs/x.md`) and the build from the docs root (`x.md`). A malformed
+ * consumer catalog is reported even when no page uses it.
  */
 import { readdirSync, statSync, readFileSync, existsSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { walkMarkdownPaths } from '../lib/docs-walk.mjs';
 import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
+import { buildMeasuresIndex, classificationProblems } from '../lib/measures-core.mjs';
+import { readMeasuresCatalog } from '../lib/measures-loader.mjs';
 
 /** The two catalog collections and the field that keys each record. */
 const CATALOG_TYPES = ['biblio', 'tool'];
@@ -130,19 +142,30 @@ function resolveEntry(entry, catalog) {
   return `unknown catalog type "${type}" (expected ${CATALOG_TYPES.map((t) => `"${t}"`).join(' or ')}) (build-fatal, FR-008)`;
 }
 
-/** Validate every catalog citation under `root` against `root`'s catalog. */
+/**
+ * Validate every catalog citation and TOM classification under `root` against
+ * `root`'s catalogs. Returns how many references and classified pages it checked.
+ *
+ * @param {string} root
+ * @param {string[]} problems collects every problem
+ * @returns {{ citations: number, measures: number }}
+ */
 export function validateRoot(root, problems) {
   const catalog = loadCatalog(root, problems);
+  const measuresCatalog = readMeasuresCatalog(resolve(root));
+  problems.push(...measuresCatalog.problems);
+  const measures = buildMeasuresIndex(measuresCatalog.records);
 
   let files;
   try {
     files = walk(root);
   } catch (err) {
     problems.push(`cannot read docs dir "${root}": ${err.message}`);
-    return { citations: 0 };
+    return { citations: 0, measures: 0 };
   }
 
   let citations = 0;
+  let classified = 0;
   for (const file of files) {
     const rel = relative(root, file).split('\\').join('/');
     if (/(^|\/)log\.md$/i.test(rel)) continue; // reserved, frontmatter-free
@@ -154,6 +177,12 @@ export function validateRoot(root, problems) {
       problems.push(`${relative('.', file)}: unparseable frontmatter — ${err.message}`);
       continue;
     }
+    const tom = parsed.data?.tom_classification;
+    if (tom !== undefined) {
+      classified++;
+      const page = relative('.', file).split('\\').join('/');
+      problems.push(...classificationProblems(tom, measures, page, measuresCatalog.source));
+    }
     const refs = parsed.data?.external_references;
     if (!Array.isArray(refs)) continue;
     for (const entry of refs) {
@@ -164,7 +193,7 @@ export function validateRoot(root, problems) {
       if (problem) problems.push(`${relative('.', file)}: ${problem}`);
     }
   }
-  return { citations };
+  return { citations, measures: classified };
 }
 
 /** CLI entry point: validate each given root (default `docs` + `example/docs`). */
@@ -174,9 +203,11 @@ export function run(argv) {
 
   const problems = [];
   let total = 0;
+  let classifiedTotal = 0;
   for (const root of roots) {
-    const { citations } = validateRoot(root, problems);
+    const { citations, measures } = validateRoot(root, problems);
     total += citations;
+    classifiedTotal += measures;
   }
 
   if (problems.length) {
@@ -185,7 +216,7 @@ export function run(argv) {
     process.exit(1);
   }
   console.log(
-    `✓ ${total} external reference(s) resolve across ${roots.length} root(s): ${roots.join(', ')}.`,
+    `✓ ${total} external reference(s) and ${classifiedTotal} TOM classification(s) resolve across ${roots.length} root(s): ${roots.join(', ')}.`,
   );
 }
 

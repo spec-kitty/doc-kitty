@@ -1,0 +1,174 @@
+{
+  "event_count": 68,
+  "last_event_id": "01M81X2GGPGGBGWJGXZHB5YJSM",
+  "materialized_at": "2026-11-22T15:12:55.318783+00:00",
+  "mission_number": "",
+  "mission_slug": "tom-classification-measures-catalog-01M81M7T",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 9,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M81X2F4DAPE4N0CPGC5324DF",
+      "last_transition_at": "2026-11-22T15:12:53.901116+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP01-accept-adr-0080-and-vocabulary/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP01-accept-adr-0080-and-vocabulary/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 3545,
+      "shell_pid_created_at": "1795351892.76"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81X26VECSSEBRDZX0Y6GAS2",
+      "last_transition_at": "2026-11-22T15:12:45.422710+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP02-measures-core-loader-default/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP02-measures-core-loader-default/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 4644,
+      "shell_pid_created_at": "1795351978.94"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81X282CGA9BRGEY4SM0XVRB",
+      "last_transition_at": "2026-11-22T15:12:46.668107+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP03-field-shape-schema-and-gate/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP03-field-shape-schema-and-gate/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 7122,
+      "shell_pid_created_at": "1795352282.44"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81X2A2CS2KBR952GXS7DWRN",
+      "last_transition_at": "2026-11-22T15:12:48.716535+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP04-build-free-gate-parity/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP04-build-free-gate-parity/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 1185,
+      "shell_pid_created_at": "1795353300.68"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81X2BBF6RPJQC2KWH0PMKAR",
+      "last_transition_at": "2026-11-22T15:12:50.031469+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP05-content-graph-classified-as/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP05-content-graph-classified-as/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 290,
+      "shell_pid_created_at": "1795354757.23"
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81X2CNRC4GBDTZHV1TWYWV9",
+      "last_transition_at": "2026-11-22T15:12:51.384464+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP06-agent-page-classification/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP06-agent-page-classification/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 290,
+      "shell_pid_created_at": "1795354757.23"
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81X290Z900J18Q47TGZBJ3Q",
+      "last_transition_at": "2026-11-22T15:12:47.647178+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP07-okf-measures-section/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP07-okf-measures-section/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 17011,
+      "shell_pid_created_at": "1795352487.59"
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "claude::scribe-sally",
+      "force_count": 0,
+      "implementer_of_record": "claude::scribe-sally",
+      "lane": "done",
+      "last_event_id": "01M81X2GGPGGBGWJGXZHB5YJSM",
+      "last_transition_at": "2026-11-22T15:12:55.318783+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP08-docs-contract-graph-guides/review-cycle-1.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP08-docs-contract-graph-guides/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 195,
+      "shell_pid_created_at": "1795357024.06"
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 1,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M81X2DYBMJ82TFHFGT3B5XW1",
+      "last_transition_at": "2026-11-22T15:12:52.683131+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-classification-measures-catalog-01M81M7T-coord/kitty-specs/tom-classification-measures-catalog-01M81M7T/tasks/WP09-example-pages-and-artifact-assertions/review-cycle-2.md",
+        "reference": "review-cycle://tom-classification-measures-catalog-01M81M7T/WP09-example-pages-and-artifact-assertions/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 195,
+      "shell_pid_created_at": "1795358245.64"
+    }
+  }
+}

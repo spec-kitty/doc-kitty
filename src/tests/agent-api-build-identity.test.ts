@@ -33,6 +33,7 @@ import type {
   AgentIndex,
   AgentLink,
   AgentPageLinks,
+  AgentPageMeasure,
   AgentPagePayload,
   AgentRecordEntry,
   AgentRecordLinks,
@@ -104,11 +105,15 @@ const KEYS = {
   PageSourceRef: { resource: true, title: true } satisfies Record<keyof PageSourceRef, true>,
   AgentIncludeRef: { src: true, scenario: true, tags: true } satisfies Record<keyof AgentIncludeRef, true>,
   AgentPageLinks: { self: true, up: true, html: true, related: true, describedby: true } satisfies Record<keyof AgentPageLinks, true>,
+  AgentPageMeasure: { measure: true, label: true, nature: true, scope: true, note: true } satisfies Record<
+    keyof AgentPageMeasure,
+    true
+  >,
   AgentPagePayload: {
     slug: true, route: true, section: true, title: true, description: true, type: true, doc_status: true,
     kind: true, tags: true, related: true, priority: true, updated: true, source: true, audience: true,
-    url: true, authors: true, keywords: true, generated: true, verified: true, sources: true, includes: true,
-    released: true, rawDocumentUrl: true, sha256: true,
+    url: true, authors: true, keywords: true, generated: true, verified: true, sources: true,
+    tom_classification: true, includes: true, released: true, rawDocumentUrl: true, sha256: true,
     markdown: true, buildId: true, _links: true,
   } satisfies Record<keyof AgentPagePayload, true>,
   ScenarioResult: { status: true, retried: true, counts: true } satisfies Record<keyof ScenarioResult, true>,
@@ -147,7 +152,8 @@ const CHILDREN: { [R in RecordName]?: Record<string, RecordName> } = {
   AgentPageLinks: { self: 'AgentLink', up: 'AgentLink', html: 'AgentLink', related: 'AgentTitledLink', describedby: 'AgentLink' },
   AgentPagePayload: {
     related: 'ResolvedRelatedRecord', audience: 'AudienceRecord', generated: 'PageGeneratedStamp',
-    verified: 'PageVerifiedStamp', sources: 'PageSourceRef', includes: 'AgentIncludeRef', _links: 'AgentPageLinks',
+    verified: 'PageVerifiedStamp', sources: 'PageSourceRef', tom_classification: 'AgentPageMeasure',
+    includes: 'AgentIncludeRef', _links: 'AgentPageLinks',
   },
   ScenarioExamples: {},
   ScenarioRecord: { steps: 'ScenarioStep', examples: 'ScenarioExamples', result: 'ScenarioResult' },

@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-11T00:00:00Z
+updated: 2026-11-22T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -860,6 +860,71 @@ A malformed charter fails the build naming the file and offending key; an unknow
 *top-level* key only warns. If you already run a legacy `_meta/vocabulary.yaml`
 or `_meta/sections.yaml`, both keep working (you will see one deprecation notice)
 — consolidate them with [Migrating to the charter](/guides/migrating-to-charter/).
+
+## Measures catalog
+
+A page can list the technical and organisational measures it evidences in its
+`tom_classification` field
+([ADR-0080](/adr/0080-tom-classification-field-and-measures-catalog/)). The ids
+resolve against a measures catalog. You need no configuration for it.
+
+> [!CAUTION]
+> This is not legal advice. The default labels name headings from public
+> legislation. A classified page marks evidence for a measure; it does not make a
+> description of your measures specific or sufficient.
+
+**The default.** When `docs/_meta/measures.yaml` is absent, the toolkit uses its
+shipped default: the 17 example headings of Decision (EU) 2021/914, Annex II.
+Headings 1 to 4 also carry GDPR Article 32(1)(a) to (d). Each record links the
+nearest W3C DPV concept, which is a pointer for linked-data tools, not a legal
+equivalence. A tree that never uses `tom_classification` is unaffected.
+
+**Your own catalog.** Write `docs/_meta/measures.yaml` as a YAML list of records:
+
+```yaml
+# docs/_meta/measures.yaml
+- id: a-5-15-access-control
+  label: Access control
+  nature: organisational
+  frameworks:
+    - { framework: iso-27001-2022-annex-a, ref: "5.15" }
+- id: transmission-protection
+  label: Protection of data during transmission
+  nature: technical
+  frameworks:
+    - { framework: eu-scc-2021-914-annex-ii, ref: "6" }
+  dpv: https://w3id.org/dpv#EncryptionInTransfer
+```
+
+| Field | Required | Value |
+|---|---|---|
+| `id` | yes | kebab case, unique in the file |
+| `label` | yes | non-empty string |
+| `nature` | yes | `technical`, `organisational`, `legal` or `physical` |
+| `frameworks` | yes | non-empty list of `{ framework, ref }` |
+| `dpv` | no | an `http(s)` concept IRI |
+
+Your file **replaces** the default wholesale. There is no merge. To keep some
+default measures, write their records into your file in the shape above. The
+`transmission-protection` record in the example is the default one, written out.
+The defaults are listed in `lib/measures-default.mjs` of the installed
+`@spec-kitty/doc-toolkit` package, one row per heading:
+`[id, label, nature, DPV term, GDPR reference]`. Turn a row into a record like
+this:
+
+- `id`, `label` and `nature` copy across as they are.
+- `frameworks` gets `{ framework: eu-scc-2021-914-annex-ii, ref: "<n>" }`, where
+  `<n>` is the row's position, from 1 to 17. Rows 1 to 4 also get
+  `{ framework: eu-gdpr, ref: "<GDPR reference>" }`.
+- `dpv` is `https://w3id.org/dpv#` followed by the DPV term.
+
+Ids from a paywalled standard, such as ISO/IEC 27001 Annex A or BSI C5, are
+yours to add under your own licence terms.
+
+A malformed catalog fails the build and `pnpm validate:catalog`, naming the file
+and the record. This holds even when no page uses the catalog yet: a duplicate id,
+a missing field or an unknown `nature` is reported. An unknown measure id on a
+page fails both as well, naming the page and the id.
 
 ## Page chrome
 
@@ -1931,6 +1996,64 @@ gherkin: {
   that show results, in a build and in the dev server.
 - **Keep the report out of `public/`.** It holds failure messages and paths; only
   status words reach your pages.
+
+## Optional: Kitty packs
+
+doc-kitty can read Spec Kitty packs (a directory holding a `pack.yaml`) through
+one reader pinned to the charter's packs contract. Pack pages arrive with #338.
+This release ships the reader, a command that prints what it reads, and the two
+options that say which contract the packs were checked against. The design is in
+[ADR-0079](../adr/0079-kitty-packs-through-a-charter-contract-reader.md) and
+[Kitty packs](../architecture/packs.md).
+
+### Inspect a pack
+
+`dockitty-read-pack` prints the model doc-kitty reads from one pack directory:
+its identity, the README's title and sections, presets, policy, the inventory
+per kind and where it came from, the manifest's verified state, and warnings.
+
+```bash
+pnpm exec dockitty-read-pack packs/qa
+pnpm exec dockitty-read-pack packs/qa --json --charter-lock charter.lock.yaml
+```
+
+Every path must sit inside the repository root: the nearest directory holding
+`.git`, or `--repo-root <dir>`, which also sets what the model's `path` is
+relative to. For a pack checked out next to your site, pass `--repo-root ..`.
+It exits 0 when it prints a model, even with warnings. It exits 2 for a usage
+error, a path outside the repository root, a directory without a `pack.yaml`, or
+a contract snapshot whose lock fails. `--contract <dir>` reads with another
+snapshot.
+
+### Pin the contract
+
+```js
+defineDocKittyIntegrations({
+  packs: {
+    charterLock: '../charter.lock.yaml',
+    // contract: '../packs-contract', // only to read with another snapshot
+  },
+});
+```
+
+- `charterLock`: your pin file, a YAML file whose `commit` key names the charter
+  commit your packs are checked against (the shape of open-packs'
+  `charter.lock.yaml`). When it names another commit than the contract doc-kitty
+  reads with, each pack gets a `charter-lock-mismatch` warning, and the model
+  records both commits. The file need not exist when the config loads; a missing
+  one is a warning.
+- `contract`: a contract snapshot directory in doc-kitty's layout
+  (`file-kinds.yaml`, `schemas/`, `conformance/` and `contract.lock.json`), to
+  read with a newer contract than the one doc-kitty ships. Its lock is checked
+  when the config loads.
+
+Both paths resolve against the site root. The option is checked when the config
+loads: an unknown key, a value that is not a path, or a snapshot whose files do
+not match its lock fails the build with a `[dk-packs]` error. This release
+accepts only these two keys; the pack-page keys come with #338.
+
+doc-kitty ships the contract at the charter's `contract-packs-v0.1.0-rc.1`
+release. It never fetches a contract during a build.
 
 ## Internal environment names
 

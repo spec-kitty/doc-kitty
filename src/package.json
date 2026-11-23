@@ -61,7 +61,8 @@
     "dockitty-assert-diagrams": "./scripts/assert-diagrams.mjs",
     "dockitty-pdf": "./scripts/dockitty-pdf.mjs",
     "dockitty-assert-pdf": "./scripts/assert-pdf-artifacts.mjs",
-    "dockitty-assert-pdf-determinism": "./scripts/assert-pdf-determinism.mjs"
+    "dockitty-assert-pdf-determinism": "./scripts/assert-pdf-determinism.mjs",
+    "dockitty-read-pack": "./scripts/read-pack.mjs"
   },
   "files": [
     "index.ts",
@@ -78,6 +79,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:packs-corpus": "DK_PACKS_CORPUS=1 vitest run --project packs-corpus",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },

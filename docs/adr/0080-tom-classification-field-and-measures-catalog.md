@@ -1,8 +1,8 @@
 ---
 title: "ADR-0080: A tom_classification field and a measures catalog"
 description: "Pages classify the technical and organisational measures they evidence through an optional tom_classification field, resolved against a measures catalog."
-doc_status: draft
-updated: 2026-11-20T00:00:00Z
+doc_status: active
+updated: 2026-11-22T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -20,14 +20,19 @@ related:
 
 > [!CAUTION]
 > **This ADR is not legal advice.** It decides a metadata contract, not what a
-> data processing agreement must contain. Items marked **⚖ counsel** need review
-> by data-protection counsel before the default catalog ships.
+> data processing agreement must contain. Items marked **⚖ counsel** await review
+> by data-protection counsel. The operator accepted shipping the default catalog
+> before that review (issue #406).
 
 ## Status
 
-Proposed. It follows the research in
+Accepted on 2026-11-21, by operator ruling on issue #406. It follows the
+research in
 [EU DPA compatibility](../architecture/research/eu-dpa-compatibility.md). The key
 is lowercase `tom_classification`, with no uppercase alias.
+
+The **⚖ counsel** items below stay open and do not block this decision. If counsel
+objects to the default catalog, the labels change through a bug report.
 
 ## Context
 
@@ -98,8 +103,9 @@ product copies them, the copies drift apart and lose their review history.
      [ADR-0031](0031-vocabulary-override.md) and
      [ADR-0065](0065-kind-required-again.md), where an unknown value only warns.
 
-3. **DocKitty ships a default catalog.** It holds the 17 example headings of 2021/914 Annex II and the four items of GDPR
-   Article 32(1), each as a short label with its framework reference and DPV
+3. **DocKitty ships a default catalog.** It holds the 17 example headings of
+   2021/914 Annex II, where headings 1 to 4 also cite GDPR Article 32(1)(a) to
+   (d). Each is a short label with its framework references and the nearest DPV
    concept IRI.
 
    - The labels are identifiers taken from public legislation, not authored

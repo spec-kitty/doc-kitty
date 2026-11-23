@@ -1,0 +1,10 @@
+schema_version: "1.0"
+pack_id: 01JALPHA0000000000000000AA
+name: alpha-pack
+pack_version: 1.2.0
+pack_level: org
+parent_pack: null
+depends_on:
+  - pack_id: 01JBETA00000000000000000BB
+    range: ">=1.0,<2.0"
+mutability_policy: policy.yaml

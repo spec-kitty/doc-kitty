@@ -107,6 +107,15 @@ jobs:
       # The CI helpers (change classifier, ci-ok decision) carry node:test suites.
       - name: CI helper tests
         run: node --test .github/scripts/*.test.mjs
+      # The packs reader against every open-packs pack at a pinned commit (#330).
+      # The commit lives in the pin file, so a bump is one reviewed change.
+      - name: Packs corpus (open-packs at the pinned commit)
+        run: |
+          pin=$(node -p "require('./src/tests/fixtures/packs-corpus/open-packs.pin.json').commit")
+          git init -q "$RUNNER_TEMP/open-packs"
+          git -C "$RUNNER_TEMP/open-packs" fetch -q --depth 1 https://github.com/spec-kitty/spec-kitty-open-packs "$pin"
+          git -C "$RUNNER_TEMP/open-packs" checkout -q FETCH_HEAD
+          DK_OPEN_PACKS_DIR="$RUNNER_TEMP/open-packs" pnpm --filter @spec-kitty/doc-toolkit test:packs-corpus
 
   # --- Lane: doc-sanity (code || example_content || repo_docs || workflows). ---
   # BUILD-FREE: static validators only, no `astro build` (NFR-002).
