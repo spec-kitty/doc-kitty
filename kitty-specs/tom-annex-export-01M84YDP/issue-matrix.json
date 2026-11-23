@@ -1,7 +1,7 @@
 {
   "rows": {
     "#359": {
-      "evidence_ref": "Context: the ADR-0087 generated-section contract this builds on (spec.md:6)",
+      "evidence_ref": "ADR-0087 generated-section contract; this producer's stamp is WP06 (spec FR-008, C-002)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -9,11 +9,11 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "not-applicable",
-      "wp": null
+      "verdict": "in-mission",
+      "wp": "WP06"
     },
     "#360": {
-      "evidence_ref": "Non-goal: ADR-0087 for other producers, #360-#363 (spec.md:274)",
+      "evidence_ref": "Gherkin migration #360-#363 out of scope (spec.md:274)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -37,7 +37,7 @@
       "wp": null
     },
     "#401": {
-      "evidence_ref": "The mission's own issue (spec.md:6); WP02 approved at c06830bc, WP01/WP03-08 open",
+      "evidence_ref": "Mission subject (spec.md:6); WP01 core+format at lane-a dc1cf77; remaining WPs open",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -46,10 +46,10 @@
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
       "verdict": "in-mission",
-      "wp": null
+      "wp": "WP01"
     },
     "#404": {
-      "evidence_ref": "Context: the downstream consumer of the format (spec.md:18)",
+      "evidence_ref": "Consumer of the format; out of scope (spec.md:270)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -61,7 +61,7 @@
       "wp": null
     },
     "#415": {
-      "evidence_ref": "Context: the source of classification (spec.md:260)",
+      "evidence_ref": "Classification source cited as context (spec.md:260)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -73,7 +73,7 @@
       "wp": null
     },
     "#445": {
-      "evidence_ref": "Context: the gating PR for C-002 (spec.md:230); no work owed here",
+      "evidence_ref": "ADR-0087 PR; gate for WP06/WP07 only (spec C-002), not work owed here",
       "fr": null,
       "nfr": null,
       "repo": null,
