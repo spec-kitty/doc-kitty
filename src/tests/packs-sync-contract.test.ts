@@ -6,7 +6,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -145,5 +145,61 @@ describe('packs-sync-contract', () => {
     const res = run('--ref', 'no-such-tag', '--from', repo, '--to', seededSnapshot());
     expect(res.status).not.toBe(0);
     expect(res.stderr).toMatch(/no-such-tag/);
+  });
+
+  describe('refuses a lock key that could leave the snapshot (#423)', () => {
+    /** A charter whose tree holds a file outside contracts/packs, so the read itself would succeed. */
+    function charterWithOutsideFile() {
+      const { repo } = fakeCharter();
+      writeFileSync(path.join(repo, 'contracts/outside.txt'), 'escaped\n');
+      git(repo, 'add', '.');
+      git(repo, 'commit', '-q', '-m', 'three');
+      git(repo, 'tag', 'contract-packs-v9.9.10');
+      return repo;
+    }
+
+    const badKeys: [string, string][] = [
+      ['a ../ key', '../outside.txt'],
+      ['a nested ../ key', 'schemas/../../outside.txt'],
+      ['an absolute key', '/tmp/dk-escape/outside.txt'],
+      ['a backslash key', '..\\outside.txt'],
+      ['a ./ segment', './file-kinds.yaml'],
+      ['an empty segment', 'schemas//policy.schema.json'],
+      ['the lock itself', 'contract.lock.json'],
+    ];
+
+    for (const [label, key] of badKeys) {
+      it(`refuses ${label}, names it, and writes nothing`, () => {
+        const repo = charterWithOutsideFile();
+        const parent = temp('dk-parent-');
+        const to = path.join(parent, 'snapshot');
+        mkdirSync(to);
+        const lockFile = path.join(to, 'contract.lock.json');
+        writeFileSync(
+          lockFile,
+          JSON.stringify({
+            source: 'https://github.com/spec-kitty/spec-kitty-charter',
+            contractPath: 'contracts/packs',
+            commit: '0'.repeat(40),
+            files: { 'file-kinds.yaml': '0'.repeat(64), [key]: '0'.repeat(64) },
+          }),
+        );
+        const before = readFileSync(lockFile, 'utf8');
+        const res = run('--ref', 'contract-packs-v9.9.10', '--from', repo, '--to', to);
+        expect(res.status).toBe(1);
+        expect(res.stderr).toContain(JSON.stringify(key));
+        expect(readFileSync(lockFile, 'utf8')).toBe(before);
+        expect(readdirSync(to)).toEqual(['contract.lock.json']);
+        expect(readdirSync(parent)).toEqual(['snapshot']);
+      });
+    }
+
+    it('still syncs a well-formed lock (the happy path is unchanged)', () => {
+      const repo = charterWithOutsideFile();
+      const to = seededSnapshot();
+      const res = run('--ref', 'contract-packs-v9.9.10', '--from', repo, '--to', to);
+      expect(res.status, res.stderr).toBe(0);
+      expect(readFileSync(path.join(to, 'schemas/policy.schema.json'), 'utf8')).toBe('{"v":1}\n');
+    });
   });
 });

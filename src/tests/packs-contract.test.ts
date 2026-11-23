@@ -106,6 +106,18 @@ describe('the vendored packs contract snapshot', () => {
     expect(() => loadContract(dir)).toThrow(/\[dk-packs\].*file-kinds\.yaml is missing/s);
   });
 
+  it('refuses a lock key that could name a file outside the snapshot (#423)', () => {
+    for (const key of ['../outside.schema.json', 'schemas/../../outside.schema.json', '/etc/hostname', 'schemas\\policy.schema.json', './file-kinds.yaml', 'contract.lock.json']) {
+      const dir = copy();
+      const relock = JSON.parse(readFileSync(path.join(dir, 'contract.lock.json'), 'utf8'));
+      relock.files[key] = '0'.repeat(64);
+      writeFileSync(path.join(dir, 'contract.lock.json'), JSON.stringify(relock));
+      const problems = verifyContractLock(dir);
+      expect(problems, key).toEqual([expect.stringContaining(`${JSON.stringify(key)} is not a safe snapshot path`)]);
+      expect(() => loadContract(dir), key).toThrow(/\[dk-packs\].*not a safe snapshot path/s);
+    }
+  });
+
   it('fails when the lock itself is missing or unreadable', () => {
     const dir = copy();
     rmSync(path.join(dir, 'contract.lock.json'));
