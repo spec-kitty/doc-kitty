@@ -1,7 +1,7 @@
 {
-  "event_count": 39,
-  "last_event_id": "01M83YRAWWGV1TJVSF5CGASV3X",
-  "materialized_at": "2026-11-23T10:20:47.900475+00:00",
+  "event_count": 46,
+  "last_event_id": "01M83Z32TSTYKB2NMAHTK88HH2",
+  "materialized_at": "2026-11-23T10:26:39.908358+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
   "mission_type": "software-dev",
@@ -12,10 +12,10 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 0,
-    "in_review": 1,
-    "planned": 1
+    "for_review": 1,
+    "in_progress": 1,
+    "in_review": 0,
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -123,45 +123,65 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
-      "force_count": 1,
+      "agent": null,
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 2,
       "implementer_of_record": "claude::implementer-ivan",
-      "lane": "in_review",
-      "last_event_id": "01M83YRAWWGV1TJVSF5CGASV3X",
-      "last_transition_at": "2026-11-23T10:20:47.900475+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M83Z32TSTYKB2NMAHTK88HH2",
+      "last_transition_at": "2026-11-23T10:26:39.908358+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "WP04 ready: build suite 8/8, Playwright 17 passed incl. OpenAPI prev/next, measurements recorded",
         "Changes requested: example-adopter pinned sitemap count broken by new example pages (3 build-tier failures); playwright.local.config.ts committed",
-        "Cycle 1 folded: B1 pins 84/79, B2 overlay removed, N1-N4, WP03 NB1/NB2; full pnpm test src 4344/4344 + mcp 181/181"
+        "Cycle 1 folded: B1 pins 84/79, B2 overlay removed, N1-N4, WP03 NB1/NB2; full pnpm test src 4344/4344 + mcp 181/181",
+        "Review cycle 2 passed: B1/B2 fixed (counts derived 84/79), N1-N4 folded, NB1 red-first + on/off parity improved; full pnpm test src 4344/4344, mcp 181/181; lint/typecheck clean. Follow-ups F1/F2 (pre-existing WP03 label-only override parity) recorded.",
+        "Rework to fold review-cycle-2 follow-ups F1/F2 and nits (dispatcher: re-review on lane-d)"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP04-proof-on-built-output/review-cycle-1.md",
-        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP04-proof-on-built-output/review-cycle-1.md",
-        "reviewer": "claude::reviewer-renata",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP04-proof-on-built-output/review-cycle-3.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP04-proof-on-built-output/review-cycle-3.md",
+        "reviewer": "claude::implementer-ivan",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 25345,
-      "shell_pid_created_at": "1795429241.37",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T016": "done",
-        "T017": "done",
-        "T018": "done",
-        "T019": "done",
-        "T020": "done"
+        "T016": "planned",
+        "T017": "planned",
+        "T018": "planned",
+        "T019": "planned",
+        "T020": "planned"
       }
     },
     "WP05": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude::curator-carla",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M83MVD115KN78J8H1348AGDR",
-      "last_transition_at": "2026-11-23T07:27:42.625534+00:00"
+      "implementer_of_record": "claude::curator-carla",
+      "lane": "for_review",
+      "last_event_id": "01M83YW6CCW71C9YYH67BFN74K",
+      "last_transition_at": "2026-11-23T10:22:54.348178+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "WP05 ready: guide, cross-references, ADR section cap, measurements, changelog; docs gates clean (Vale not available locally)"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 26206,
+      "shell_pid_created_at": "1795429305.91",
+      "subtasks": {
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done"
+      }
     }
   }
 }
