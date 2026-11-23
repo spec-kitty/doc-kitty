@@ -116,14 +116,17 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude",
-      "agent_profile": "node-norris",
-      "agent_profile_version": "1.0",
+      "agent": "claude::node-norris",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "lane": "for_review",
       "last_event_id": "01M85DEQCK0J94740SZ282TZA8",
       "last_transition_at": "2026-11-23T23:56:56.083234+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "OKF export carries the evidence index: ratchet pinned pre-change, 8 tests red-first; full pnpm test green (src 4571/4571, mcp 181/181); CI typecheck and lint clean."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 194,
