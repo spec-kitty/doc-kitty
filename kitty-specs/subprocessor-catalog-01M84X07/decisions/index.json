@@ -52,7 +52,7 @@
     {
       "created_at": "2026-11-23T21:05:58.356510Z",
       "decision_id": "01M853NP2MPP7HNWKMX9K8Y2ST",
-      "final_answer": null,
+      "final_answer": "A: location is a non-empty list of ISO 3166-1 alpha-2 codes plus an optional free-text location_note; transfer-mechanism field out of scope (follow-up issue). (Question text lost the word 'location' to a shell-quoting slip; the question was how 'location' is typed.) Decider: operator ('1A', relayed verbatim by dispatcher 2026-11-23, mapped by dispatcher to option A of this DM).",
       "input_key": "record_field_set",
       "mission_id": "01M84X07GSZS94MXX0RYYNMBJK",
       "mission_slug": "subprocessor-catalog-01M84X07",
@@ -67,10 +67,10 @@
       "other_answer": false,
       "question": "Record field set (\u2696 counsel reviews it before it is called DPA-ready). Fields as in the issue: { id, name, address?, contact?, processing, location, responsibilities, since, until?, external_references?, tom_classification? }. external_references reuses the existing page shape (inline or {type: biblio, id}), and tom_classification reuses the page field shape from ADR-0080. Open point: how is  typed? (A) A non-empty list of ISO 3166-1 alpha-2 codes (e.g. [DE, US]) with an optional free-text location_note. Machine-checkable, useful later for transfer analysis. (B) Free text. (C) Free text now, structured later. No transfer-mechanism field in any case; that is a follow-up issue.",
       "rationale": null,
-      "resolved_at": null,
+      "resolved_at": "2026-11-23T21:10:16.591525Z",
       "resolved_by": null,
       "slot_key": "specify.entities.record-field-set",
-      "status": "open",
+      "status": "resolved",
       "step_id": null,
       "summary_json": null
     }

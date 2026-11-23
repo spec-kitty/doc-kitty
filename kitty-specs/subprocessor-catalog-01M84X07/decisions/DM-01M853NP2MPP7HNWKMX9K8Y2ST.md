@@ -4,8 +4,9 @@
 - **Origin flow:** `specify`
 - **Slot key:** `specify.entities.record-field-set`
 - **Input key:** `record_field_set`
-- **Status:** `open`
+- **Status:** `resolved`
 - **Created:** `2026-11-23T21:05:58.356510+00:00`
+- **Resolved:** `2026-11-23T21:10:16.591525+00:00`
 - **Opened by:** `cli`
 - **Other answer:** `false`
 
@@ -22,7 +23,7 @@ Record field set (⚖ counsel reviews it before it is called DPA-ready). Fields 
 
 ## Final answer
 
-_(none)_
+A: location is a non-empty list of ISO 3166-1 alpha-2 codes plus an optional free-text location_note; transfer-mechanism field out of scope (follow-up issue). (Question text lost the word 'location' to a shell-quoting slip; the question was how 'location' is typed.) Decider: operator ('1A', relayed verbatim by dispatcher 2026-11-23, mapped by dispatcher to option A of this DM).
 
 ## Rationale
 
@@ -31,3 +32,4 @@ _(none)_
 ## Change log
 
 - `2026-11-23T21:05:58.356510+00:00` - opened
+- `2026-11-23T21:10:16.591525+00:00` - resolved (final_answer="A: location is a non-empty list of ISO 3166-1 alpha-2 codes plus an optional free-text location_note; transfer-mechanism field out of scope (follow-up issue). (Question text lost the word 'location' to a shell-quoting slip; the question was how 'location' is typed.) Decider: operator ('1A', relayed verbatim by dispatcher 2026-11-23, mapped by dispatcher to option A of this DM).")
