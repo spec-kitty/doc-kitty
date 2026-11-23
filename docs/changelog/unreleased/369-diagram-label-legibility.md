@@ -11,8 +11,8 @@ section: Fixed
   themes. On a see-through fill the label keeps its theme colour unless black or
   white clears 4.5:1 over any page. A label colour the author set is kept, and
   the halo follows the theme.
-- **Build-time Mermaid edges stay visible in both themes (#369).** Before, an
-  edge colour the author set (an `%%{init}%%` `lineColor` or a `linkStyle`)
+- **Build-time Mermaid flowchart edges stay visible in both themes (#369).**
+  Before, a flowchart edge colour the author set (an `%%{init}%%` `lineColor` or a `linkStyle`)
   stayed fixed, so a dark one nearly vanished on the dark page. Now, each edge
   and its arrowhead keep the author's colour in a theme where it clears 3:1 on
   every page and subgraph surface, and take the theme's edge colour where it
@@ -20,6 +20,6 @@ section: Fixed
 - **Build-time Mermaid labels are no longer cut off (#370).** Before, a diagram
   that set its own font in an `%%{init}%%` directive was drawn in the site's
   font, which is wider than the font its label boxes were measured in, so long
-  labels were clipped. Now, every build-rendered Mermaid HTML label is measured
-  and drawn in one Arial-metric font (Arial, Helvetica, Liberation Sans or
-  Arimo).
+  labels were clipped. Now, build-rendered Mermaid HTML labels are measured and
+  drawn in one Arial-metric font (Arial, Helvetica, Liberation Sans or Arimo),
+  unless a `classDef` or `style` sets a font on that node.
