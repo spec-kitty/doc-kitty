@@ -17,5 +17,7 @@ agent:
 - [Adopting the toolkit](./adopting.md) — bring DocKitty into another repo.
 - [Exporting an OKF bundle](./export-okf-bundle.md) — write the docs as an Open
   Knowledge Format bundle and check it.
+- [Cap large sidebar groups](./sidebar-child-cap.md) — keep the sidebar short
+  when a hub has hundreds of pages.
 - [MCP server quickstart](./mcp-server-quickstart.md) - point an MCP client at
   any DocKitty site, deployed or locally built, and let your agent read it.
