@@ -1,13 +1,13 @@
 {
-  "event_count": 43,
-  "last_event_id": "01M83YW6CCW71C9YYH67BFN74K",
-  "materialized_at": "2026-11-23T10:22:54.348178+00:00",
+  "event_count": 44,
+  "last_event_id": "01M83Z2RPB9N3700BP1PZT5X2J",
+  "materialized_at": "2026-11-23T10:26:29.707256+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
   "mission_type": "software-dev",
   "schema_version": 2,
   "summary": {
-    "approved": 4,
+    "approved": 3,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
@@ -15,7 +15,7 @@
     "for_review": 1,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 0
+    "planned": 1
   },
   "work_packages": {
     "WP01": {
@@ -126,11 +126,11 @@
       "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
-      "force_count": 1,
+      "force_count": 2,
       "implementer_of_record": "claude::implementer-ivan",
-      "lane": "approved",
-      "last_event_id": "01M83YS6QT7F3WH8R40YNF085W",
-      "last_transition_at": "2026-11-23T10:21:16.410072+00:00",
+      "lane": "planned",
+      "last_event_id": "01M83Z2RPB9N3700BP1PZT5X2J",
+      "last_transition_at": "2026-11-23T10:26:29.707256+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "WP04 ready: build suite 8/8, Playwright 17 passed incl. OpenAPI prev/next, measurements recorded",
@@ -141,10 +141,10 @@
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP04-proof-on-built-output/review-cycle-2.md",
-        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP04-proof-on-built-output/review-cycle-2.md",
-        "reviewer": "claude::reviewer-renata",
-        "verdict": "approved"
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-sidebar-child-cap-01M81KGV-coord/kitty-specs/large-hubs-sidebar-child-cap-01M81KGV/tasks/WP04-proof-on-built-output/review-cycle-3.md",
+        "reference": "review-cycle://large-hubs-sidebar-child-cap-01M81KGV/WP04-proof-on-built-output/review-cycle-3.md",
+        "reviewer": "claude::implementer-ivan",
+        "verdict": "changes_requested"
       },
       "role": "reviewer",
       "shell_pid": 25345,
