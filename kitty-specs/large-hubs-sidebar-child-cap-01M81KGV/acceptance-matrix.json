@@ -26,12 +26,12 @@
     },
     {
       "criterion_id": "FR-003",
-      "description": "Verify FR-003 is satisfied",
+      "description": "A hub over its cap shows its index link and one entry to the hub.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/sidebar-child-cap.test.ts (a capped group); src/tests/sidebar-child-cap-build.test.ts (200-child build, every page: index + '200 pages')",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:02.412622+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
