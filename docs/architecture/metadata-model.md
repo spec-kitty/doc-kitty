@@ -510,20 +510,24 @@ stamp one contract for every generated section. It is not implemented yet. Until
 it is, the rules above describe the code.
 
 - **Four keys.** The stamp gains `source_digest`: a full `sha256` over the
-  committed inputs the producer declares for the page, config included.
-  `content_hash` becomes the hash of the rendered page for every producer,
-  Gherkin included. `by` and `at` move only when `content_hash` does, so
-  `by` names the version that last changed the page.
+  inputs the producer declares for the page, configuration included, by the
+  byte-exact algorithm in ADR-0087 D2. `content_hash` becomes the hash of the
+  rendered page, without its stamp, for every producer, Gherkin included.
+- **`by` means "last changed by".** `makeStamp` will carry over `by` and `at`
+  together while `content_hash` is unchanged. Today it carries over only `at`
+  and rewrites `by` on every regeneration.
 - **One drift gate.** Every producer that doc-kitty can run answers `--check` with
-  the same verdicts: `missing`, `orphan`, `stale-source`, `hand-edited`,
-  `stale-render`. It uses the same output line and exit codes (0, 1, 2).
-  `pnpm validate:generated` runs them all from the producer registry.
-- **Ownership** stays ADR-0083's stamp-and-scope rule. The `hand-edited` verdict
-  enforces it, and the edit link, the RSS hub filter and the OKF export route
-  through the registry too.
-- **`at` is committed data.** It never comes from the build clock. `--check` masks
-  it, and nothing else, when it compares a regenerated page. The two-builds check
-  (#300) does not mask it.
+  the same verdicts, in a fixed precedence: `missing`, `orphan`, `hand-edited`,
+  `stale-source`, `stale-render`. It uses the same output line and exit codes (0,
+  1, 2). `pnpm validate:generated` runs them all from the producer registry.
+- **Ownership** stays ADR-0083's stamp-and-scope rule, with the glossary still
+  recognised by scope alone. The `hand-edited` verdict enforces it, and the edit
+  link, the RSS hub filter and the OKF export route through the registry too.
+- **`at` is carried over, not rewritten.** Producers that regenerate during the
+  build write `at` only when the content changed. Byte stability rests on that
+  carry-over and on the clean-tree step (#410). `--check` masks `at`, and
+  nothing else, when it compares a regenerated page. The two-builds check (#300)
+  does not mask it.
 - **Committed data only.** doc-kitty never runs a producing repository's code at
   build time. External producers commit their output, and their freshness check
   runs in their own CI.
