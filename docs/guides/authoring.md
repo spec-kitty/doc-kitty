@@ -104,8 +104,8 @@ not maintain a navigation file.
   sub-folder above a page. If you need that reading order, make the page a
   folder with its own index, or move it into one of the folders.
 - **A hub with more pages than its cap is shown as two links.** Past the sidebar
-  child cap (default 50), a folder's group holds its index link and one "N pages"
-  entry to the hub, which lists the pages. Set `sidebar_child_cap` on the index
+  child cap (default 50), a folder whose index page has `kind: Hub` shows its
+  index link and one "N pages" entry to the hub, which lists the pages. Set `sidebar_child_cap` on the index
   page to change the cap for that hub; see
   [Cap large sidebar groups](./sidebar-child-cap.md).
 - **Top-level groups** come from the section registry
