@@ -1,18 +1,18 @@
 {
-  "event_count": 22,
-  "last_event_id": "01M85E3Q2CYRBBDFP5ES7EW2B0",
-  "materialized_at": "2026-11-24T00:08:23.884115+00:00",
+  "event_count": 27,
+  "last_event_id": "01M85E7V2P1EJ6Y6VQM1V5HP9Y",
+  "materialized_at": "2026-11-24T00:10:38.888009+00:00",
   "mission_number": "",
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_type": "software-dev",
   "schema_version": 2,
   "summary": {
-    "approved": 0,
+    "approved": 1,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 1,
     "in_review": 0,
     "planned": 3
@@ -20,30 +20,31 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude::scribe-sally",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude::scribe-sally",
-      "lane": "for_review",
-      "last_event_id": "01M85CZA26AWM0D3RBDVZD32QT",
-      "last_transition_at": "2026-11-23T23:48:30.918879+00:00",
+      "lane": "approved",
+      "last_event_id": "01M85E1H03DNP97Q08DY7HW28N",
+      "last_transition_at": "2026-11-24T00:07:12.131178+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "ADR-0085 and kind lists; docs gates green; pnpm test src 4519/4519, mcp 181/181",
-        "Cycle 2: ADR-0085 Proposed (draft) and KINDS wording fixed; lint 0; pnpm test src 4519/4519 mcp 181/181 at b9e1a3c"
+        "Cycle 2: ADR-0085 Proposed (draft) and KINDS wording fixed; lint 0; pnpm test src 4519/4519 mcp 181/181 at b9e1a3c",
+        "Approved, cycle 2 (claude::reviewer-renata). I reviewed the real target diff bb214e68..b9e1a3c5 on feat/402-operating-model-templates. The CLI range c4d781f5..1f6c7419 holds coordination bookkeeping only (#7809).\n- B1 fixed: the status is \"**Proposed**, 2026-11-23.\", with doc_status: draft as in the ADR-0083 precedent. The only \"accept\" wording left is \"The operator accepts the ADR itself\". docs/adr/README.md has no 0085 row.\n- N1 fixed: Decision 1 and Positive 2 now match the code at 4a30c365. The gate reads KINDS (validate-frontmatter.mjs:647); schema.ts re-exports it and derives Kind, with kind: z.string() at schema.ts:212.\n- The planning edits (0f2e3f9c) are consistent.\n- Gates: validate:docs passes (212 files, 4 pre-existing warnings), validate:links passes (1885 refs), validate:adr-ids passes (82 ids), markdownlint reports 0 issues on 3 files.\n- Non-blocking leftovers, planning only:\n  - The WP01 prompt still says \"Copy their frontmatter shape: ... doc_status: active\" (line 57) and \"The gate, the build schema and the stub tools pick up the kind\" (line 85).\n  - The WP02 prompt says the schema \"picks up a new member automatically\" (line 68).\n  - checklists/requirements.md:28 still has \"ADR-0085 allocated\", which is fine."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP01-adr-0085-role-kind/review-cycle-1.md",
-        "reference": "review-cycle://operating-model-templates-01M84X0R/WP01-adr-0085-role-kind/review-cycle-1.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP01-adr-0085-role-kind/review-cycle-2.md",
+        "reference": "review-cycle://operating-model-templates-01M84X0R/WP01-adr-0085-role-kind/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 24545,
+      "shell_pid_created_at": "1795478740.58",
       "subtasks": {
         "T001": "done",
         "T002": "done",
@@ -52,14 +53,14 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude::node-norris",
       "lane": "in_progress",
-      "last_event_id": "01M85E3Q2CYRBBDFP5ES7EW2B0",
-      "last_transition_at": "2026-11-24T00:08:23.884115+00:00",
+      "last_event_id": "01M85E7V2P1EJ6Y6VQM1V5HP9Y",
+      "last_transition_at": "2026-11-24T00:10:38.888009+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181",
@@ -68,8 +69,8 @@
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP02-role-kind-code/review-cycle-1.md",
-        "reference": "review-cycle://operating-model-templates-01M84X0R/WP02-role-kind-code/review-cycle-1.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP02-role-kind-code/review-cycle-2.md",
+        "reference": "review-cycle://operating-model-templates-01M84X0R/WP02-role-kind-code/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
@@ -77,10 +78,10 @@
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
-        "T004": "done",
-        "T005": "done",
-        "T006": "done",
-        "T007": "done"
+        "T004": "planned",
+        "T005": "planned",
+        "T006": "planned",
+        "T007": "planned"
       }
     },
     "WP03": {

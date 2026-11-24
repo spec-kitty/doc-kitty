@@ -65,7 +65,7 @@ Requirements: FR-001, FR-002, FR-003; NFR-001, NFR-002; C-003 (single source).
 
 ## Context
 
-- `KINDS` lives in `src/lib/vocabulary-core.mjs` (around line 471), and the list ends with `'Schematic'`. `src/lib/schema.ts` imports it, so the build zod schema picks up a new member automatically.
+- `KINDS` lives in `src/lib/vocabulary-core.mjs` (around line 471), and the list ends with `'Schematic'`. `src/lib/schema.ts` re-exports it and derives the `Kind` type, but the build schema's `kind` field is an open `z.string()`, so the build already accepts any kind. The gate's unknown-kind warning is what reads the list.
 - The Persona requiredness block is in `src/scripts/validate-frontmatter.mjs` (around lines 637–660), under `if (data.kind === 'Persona')`. Its messages read `` `role`: persona requires a non-empty string ``.
 - `src/tests/vocabulary-core.test.ts` pins the full list and `toHaveLength(15)`.
 - Fixture pattern: `src/tests/fixtures/valid/*.md` and `src/tests/fixtures/err/*.md`. Look at how the existing gate tests drive them, for example the tests that use `fixtures/valid/tom-classification.md`; grep for `fixtures/valid` in `src/tests`.
