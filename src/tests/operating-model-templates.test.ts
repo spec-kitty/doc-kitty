@@ -21,6 +21,7 @@ import { DOC_TYPES, KINDS } from '../lib/vocabulary-core.mjs';
 import { DEFAULT_MEASURES } from '../lib/measures-default.mjs';
 import { buildMeasuresIndex, classificationProblems } from '../lib/measures-core.mjs';
 import { validate } from '../scripts/validate-frontmatter.mjs';
+import { SCAFFOLD_PRODUCER } from '../lib/generator-stamp.mjs';
 import {
   OPERATING_MODEL_TEMPLATES,
   TEMPLATE_IDS,
@@ -138,7 +139,7 @@ describe('renderTemplatePage', () => {
     const data = frontmatter(renderTemplatePage(templateById('policy-index')!, { now: NOW }));
     expect(data.doc_status).toBe('draft');
     expect(data.authors).toEqual(['human:TODO-your-id']);
-    expect((data.generated as { by: string }).by).toMatch(/^dockitty-scaffold\//);
+    expect((data.generated as { by: string }).by.startsWith(`${SCAFFOLD_PRODUCER}/`)).toBe(true);
   });
 
   it('is deterministic for a fixed clock', () => {
