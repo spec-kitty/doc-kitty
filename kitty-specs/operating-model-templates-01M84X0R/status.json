@@ -1,7 +1,7 @@
 {
-  "event_count": 37,
-  "last_event_id": "01M85J0VVNFJN4BBS1HBWNGGVR",
-  "materialized_at": "2026-11-24T01:16:44.641006+00:00",
+  "event_count": 50,
+  "last_event_id": "01M85SZM8ZMFZEPYEV8A7P1F0P",
+  "materialized_at": "2026-11-24T03:35:52.863758+00:00",
   "mission_number": "",
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_type": "software-dev",
@@ -12,10 +12,10 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 1,
-    "in_review": 0,
-    "planned": 1
+    "for_review": 1,
+    "in_progress": 0,
+    "in_review": 1,
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -121,26 +121,70 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 0,
+      "force_count": 1,
       "implementer_of_record": "claude::node-norris",
-      "lane": "in_progress",
-      "last_event_id": "01M85J0VVNFJN4BBS1HBWNGGVR",
-      "last_transition_at": "2026-11-24T01:16:44.641006+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M85SZM8ZMFZEPYEV8A7P1F0P",
+      "last_transition_at": "2026-11-24T03:35:52.863758+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Stub-tool flags, red-first (5f7c6f4 red, 89166d9 green); lint 0; pnpm test src 4604/4604 mcp 181/181 (second run; first run hit a docs-loader-includes flake)",
+        "APPROVE (claude::reviewer-renata) at lane-c 89166d98. pnpm test src 4604/4604, mcp 181/181; lint 0 errors (1 new warning: unused eslint-disable new-doc.mjs:90); typecheck 0 errors. FR-014 pin reproduces on base 2ecc34a and is mutation-sensitive; 22-case base/lane diff byte-identical bar intended changes. Red commit 5f7c6f4: 21/22 red on base. Mutations: existence check, scaffold skip, newline rule go red. Non-blocking follow-ups: (1) base-arg fix and type-from-path have no test (mutants survive); (2) template defaultType fallback gives type Runbook for incident-response/business-continuity outside operations/runbooks - gate warns once a sections.yaml types operating-model; (3) control-char rule misses C1 U+0080-U+009F (harmless in practice); (4) unused eslint-disable directive. docs-loader-includes flake not reproduced (0/7).",
+        "Re-submitted unchanged for confirm-only re-review: lane-c code head 89166d98 (approval stamp ffff4d3 was never pushed by the archived reviewer)"
+      ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 393,
-      "shell_pid_created_at": "1795482995.88"
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP04-stub-tool-flags/review-cycle-1.md",
+        "reference": "review-cycle://operating-model-templates-01M84X0R/WP04-stub-tool-flags/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 22572,
+      "shell_pid_created_at": "1795491347.28",
+      "subtasks": {
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
     },
     "WP05": {
-      "actor": "finalize-tasks",
-      "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M858N2DQNVN00D9DPFWWT3VG",
-      "last_transition_at": "2026-11-23T22:33:01.111714+00:00"
+      "actor": "claude",
+      "agent": "claude::implementer-ivan",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "for_review",
+      "last_event_id": "01M85S17VZ65ARJAV5G5Z8TBFD",
+      "last_transition_at": "2026-11-24T03:19:17.119337+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Preset snippet, guide, changelog, CI glob, WP04 folds 1-4; red-first (c3c40da red; 15fd08a, 23baafe green); lint 0; combined tree (lane-d + feat/402) pnpm test src 4615/4615 mcp 181/181",
+        "Review passed: siteDocType mirrors the gate (same lenient loadSectionRegistry, same catch->frozen fallback, same expectedDocType+subtypes); FR-014 holds (plain stub/default tree untouched); red-first verified (7 red at c3c40da); guide accurate (flags, never-overwrite exit 1, opt-in snippet, Not-legal-advice C-006, RACI not available C-007); CI glob reached via src/** -> code -> doc-sanity, probe-verified. Combined tree (lane-d + feat/402 planning): src 4614/4615 (1 timing flake gherkin-generate generated.at second-boundary, 3/3 green on rerun), mcp 181/181, lint 0, typecheck 0, validate:docs/links/changelog 0 errors, markdownlint 0, vale 0. Lane-d alone: only T020 + validate:links dangling ADR-0085 link = undeclared WP05->WP01 dependency, declaration-only (ADR-0085 already on merge target feat/402). Shared-file coordination: authorised folds touch WP03 operating-model-templates.mjs and WP04 new-doc.mjs/scaffold.mjs/stub-tools-templates.test.ts plus ci.yml. Non-blocking nits in report.",
+        "Re-submitted unchanged for confirm-only re-review: lane-d code head 23baafe6 (approval stamp f96c6b7 was never pushed by the archived reviewer)"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP05-preset-guide-changelog/review-cycle-1.md",
+        "reference": "review-cycle://operating-model-templates-01M84X0R/WP05-preset-guide-changelog/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "implementer",
+      "shell_pid": 5719,
+      "shell_pid_created_at": "1795488262.64",
+      "subtasks": {
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done"
+      }
     }
   }
 }
