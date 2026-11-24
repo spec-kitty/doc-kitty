@@ -13,7 +13,7 @@
       "wp": null
     },
     "#402": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "acceptance commit 1671579c (all 14 FR criteria pass); WP01-WP05 approved; combined-tree pnpm test src 4615/4615 mcp 181/181",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -21,7 +21,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "in-mission",
+      "verdict": "fixed",
       "wp": "WP01"
     }
   },
