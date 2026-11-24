@@ -82,6 +82,12 @@ export interface SectionRegistryEntry {
    * site's `sidebar.childCap`. A positive whole number.
    */
   sidebar?: { childCap?: number };
+  /**
+   * Hub settings for the section. `pageSize` (#342) is the listing page size of
+   * every paged hub in the section, between the hub's own `hub_page_size` and the
+   * site's `hub.pageSize`. A positive whole number.
+   */
+  hub?: { pageSize?: number };
 }
 
 /** The resolved registry: entries sorted by `order`, tie-broken by `id`. */
@@ -153,7 +159,7 @@ function normalizeSectionEntries(
     if (rec == null || typeof rec !== 'object') {
       throw new Error(`${src}: a section entry is not a mapping (${JSON.stringify(rec)})`);
     }
-    const { id, label, order, type, purpose, feeds, subtypes, icon, sidebar } = rec as Record<string, unknown>;
+    const { id, label, order, type, purpose, feeds, subtypes, icon, sidebar, hub } = rec as Record<string, unknown>;
 
     if (typeof id !== 'string' || id === '') {
       throw new Error(`${src}: a section entry is missing a string "id"`);
@@ -197,6 +203,20 @@ function normalizeSectionEntries(
         throw new Error(`${src}: section "${id}" sidebar.childCap must be a positive whole number`);
       }
       entry.sidebar = childCap === undefined ? {} : { childCap };
+    }
+    if (hub !== undefined) {
+      if (hub === null || typeof hub !== 'object' || Array.isArray(hub)) {
+        throw new Error(`${src}: section "${id}" "hub" must be a mapping`);
+      }
+      const { pageSize, ...rest } = hub as Record<string, unknown>;
+      const unknown = Object.keys(rest).sort();
+      if (unknown.length > 0) {
+        throw new Error(`${src}: section "${id}" hub has unknown key "${unknown[0]}"; known keys: pageSize`);
+      }
+      if (pageSize !== undefined && !isChildCap(pageSize)) {
+        throw new Error(`${src}: section "${id}" hub.pageSize must be a positive whole number`);
+      }
+      entry.hub = pageSize === undefined ? {} : { pageSize };
     }
     if (icon !== undefined) {
       if (typeof icon !== 'string') {

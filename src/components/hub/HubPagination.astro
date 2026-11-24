@@ -1,0 +1,153 @@
+---
+/*
+ * DocKitty: the hub pagination (#342, WP03; FR-008, FR-009, NFR-004, NFR-006).
+ * Links the listing pages of a paged hub: page 1 is the hub, page N is
+ * `/<hub>/page/N/`. Renders nothing for a single page and ships no script.
+ *
+ * A real `<nav>` landmark named by the `dockitty.hub.pagination.label` string
+ * ("Pagination"): Pagefind skips `<nav>`, so the page numbers stay out of the
+ * search index while the cards above stay in it. The current page is text with
+ * `aria-current="page"` (its "Page" prefix visually hidden), never a link to
+ * itself; a Previous or Next with nowhere to go is plain muted text, no link and
+ * no ARIA (a generic element may not carry `aria-label` or `aria-disabled`).
+ * Targets are at least 24×24 px.
+ *
+ * The styles are an inline `<style>` emitted with the nav, not part of the shared
+ * stylesheet: a site without a paged hub then builds byte-identical HTML AND CSS
+ * (NFR-005), and only listing pages carry the rules. The block is static, so a
+ * strict `Content-Security-Policy` needs one constant `style-src` hash for it.
+ */
+import { HUB_PAGINATION_KEYS, pagedHubSlug, resolveHubString } from '../../lib/child-cap.js';
+import { pageLabelPrefix, paginationItems } from '../../lib/hub-pagination.js';
+
+interface Props {
+  /** The hub folder slug (`missions`). */
+  hub: string;
+  /** The page shown, 1-based. */
+  current: number;
+  /** The hub's page count. */
+  total: number;
+  hrefFor: (slug: string) => string;
+  /** Starlight's `locals.t`, for translated strings; English otherwise. */
+  translate?: (key: string) => unknown;
+}
+
+const { hub, current, total, hrefFor, translate } = Astro.props;
+const t = (key: (typeof HUB_PAGINATION_KEYS)[keyof typeof HUB_PAGINATION_KEYS], vars: Record<string, string | number> = {}) =>
+  resolveHubString(key, vars, translate);
+const href = (page: number) => hrefFor(pagedHubSlug(hub, page));
+// The visually hidden words before the current page's number (`sr-only` is
+// Starlight's global utility): "Page 3" reads as "Page " + "3".
+const pagePrefix = (page: number) => pageLabelPrefix(t(HUB_PAGINATION_KEYS.page, { page }), page);
+const items = total > 1 ? paginationItems(current, total) : [];
+---
+
+{
+  items.length > 0 && (
+    <nav class="dk-hub-pagination" aria-label={t(HUB_PAGINATION_KEYS.label)}>
+      <ul class="dk-hub-pagination__list" role="list">
+        <li>
+          {current > 1 ? (
+            <a class="dk-hub-pagination__link dk-hub-pagination__step" href={href(current - 1)} rel="prev">{t(HUB_PAGINATION_KEYS.previous)}</a>
+          ) : (
+            <span class="dk-hub-pagination__link dk-hub-pagination__step dk-hub-pagination__step--off">{t(HUB_PAGINATION_KEYS.previous)}</span>
+          )}
+        </li>
+        {items.map((item) =>
+          item.type === 'gap' ? (
+            <li><span class="dk-hub-pagination__gap" aria-hidden="true">…</span></li>
+          ) : item.current ? (
+            <li><span class="dk-hub-pagination__current" aria-current="page"><span class="sr-only">{pagePrefix(item.page)}</span>{item.page}</span></li>
+          ) : (
+            <li><a class="dk-hub-pagination__link" href={href(item.page)} aria-label={t(HUB_PAGINATION_KEYS.page, { page: item.page })}>{item.page}</a></li>
+          ),
+        )}
+        <li>
+          {current < total ? (
+            <a class="dk-hub-pagination__link dk-hub-pagination__step" href={href(current + 1)} rel="next">{t(HUB_PAGINATION_KEYS.next)}</a>
+          ) : (
+            <span class="dk-hub-pagination__link dk-hub-pagination__step dk-hub-pagination__step--off">{t(HUB_PAGINATION_KEYS.next)}</span>
+          )}
+        </li>
+      </ul>
+    </nav>
+  )
+}
+{
+  items.length > 0 && (
+    <style is:inline>
+      /*
+       * The hub pagination (#342, FR-008, NFR-004). Theme tokens only, so the theme
+       * layer stays swappable. Every link and the current page are at least 24×24 px
+       * (WCAG 2.2 §2.5.8), focus shows the shared ring (§2.4.7), and the current page is
+       * marked by weight and a border as well as colour (§1.4.1). The list wraps on a
+       * narrow screen instead of scrolling.
+       */
+      .dk-hub-pagination {
+        margin-top: var(--dk-space-xl);
+      }
+
+      .dk-hub-pagination__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--dk-space-2xs);
+      }
+
+      .dk-hub-pagination__list > li {
+        margin: 0;
+        padding: 0;
+      }
+
+      .dk-hub-pagination__link,
+      .dk-hub-pagination__current,
+      .dk-hub-pagination__gap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+        padding: var(--dk-space-3xs) var(--dk-space-xs);
+        border: 1px solid transparent;
+        border-radius: var(--dk-radius-sm);
+        line-height: 1;
+      }
+
+      a.dk-hub-pagination__link {
+        color: var(--dk-color-text-accent);
+        border-color: var(--dk-color-border);
+        background: var(--dk-color-surface-1);
+        text-decoration: none;
+      }
+
+      a.dk-hub-pagination__link:hover {
+        border-color: var(--dk-color-border-strong);
+        background: var(--dk-color-surface-2);
+      }
+
+      a.dk-hub-pagination__link:focus-visible {
+        /* Transparent, not none: forced-colours mode paints it, where the shadow is dropped. */
+        outline: 2px solid transparent;
+        box-shadow: var(--dk-shadow-focus);
+      }
+
+      .dk-hub-pagination__current {
+        color: var(--dk-color-text-strong);
+        border-color: var(--dk-color-text-accent);
+        font-weight: var(--dk-weight-semibold);
+      }
+
+      /* A Previous or Next with nowhere to go: text, muted, not interactive. */
+      .dk-hub-pagination__step--off {
+        color: var(--dk-color-text-muted);
+      }
+
+      .dk-hub-pagination__gap {
+        color: var(--dk-color-text-muted);
+      }
+    </style>
+  )
+}

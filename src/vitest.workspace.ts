@@ -70,6 +70,10 @@ const BUILD_SUITES = [
   // `example/.dk-test-sidebar-cap-*`) capped, hidden-hinted, uncapped against
   // goldens and twice for determinism. Real Astro runs, so serialized here.
   'tests/sidebar-child-cap-build.test.ts',
+  // Paged hub listing (#342): builds fixture sites with a 200-child hub (in
+  // `example/.dk-test-sidebar-cap-paged-*`) paged, with its variants and twice for
+  // determinism. Real Astro runs, so serialized here.
+  'tests/paged-hub-build.test.ts',
   // Page chrome mission (page-chrome WP11): the suites that build the chrome fixture
   // (`tests/fixtures/chrome/`), registered together so lanes do not conflict here.
   // A listed file that does not exist yet is simply not run: these are globs.

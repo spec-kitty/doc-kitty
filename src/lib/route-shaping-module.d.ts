@@ -23,7 +23,10 @@ declare module 'virtual:doc-kitty/route-shaping' {
     collapse: boolean;
     /** Emit the custom renderer's markers; true whenever a site uses the renderer. */
     annotate: boolean;
-    /** Hub folder → cap, count and children in hub order, for hubs over their child cap (#341), sorted by folder. */
+    /**
+     * Hub folder → cap, count, children in hub order, `capped` and `pageSize`, for every
+     * published `kind: Hub` hub (#341; every hub since #342/#429), sorted by folder.
+     */
     hubCaps: Array<[string, import('./child-cap.js').HubCap]>;
     /** The `sidebar.cappedLabel` option; absent = use the locale's translation (#341). */
     cappedLabel?: string;
