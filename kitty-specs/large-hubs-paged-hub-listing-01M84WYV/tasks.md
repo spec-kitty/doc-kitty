@@ -39,7 +39,7 @@ Red first in every WP: write the test, see it fail for the right reason, then im
 | T028 | Playwright: axe, keyboard and search ranking on the pagination | WP06 | |
 | T029 | Measurements on the 1,000-child fixture; large-hubs plan doc update (measurements, Q3 change) | WP06 | |
 | T030 | Configuration guide `docs/guides/paged-hub-listing.md` | WP07 | [P] |
-| T031 | ADR-0086 and cross-references from ADR-0084 and the slice-1 guide | WP07 | |
+| T031 | ADR-0089 and cross-references from ADR-0084 and the slice-1 guide | WP07 | |
 | T032 | Agent API docs for listing records | WP07 | [P] |
 | T033 | Changelog fragment and consumer-setup/authoring cross-references | WP07 | |
 
@@ -127,11 +127,11 @@ T029 Measurements on the 1,000-child fixture; large-hubs plan doc update (measur
 ### WP07 — Documentation and ADR
 
 **Prompt**: [tasks/WP07-documentation-and-adr.md](./tasks/WP07-documentation-and-adr.md)
-**Goal**: a configuration page, ADR-0086, agent-API docs and a changelog fragment. Priority P2.
+**Goal**: a configuration page, ADR-0089, agent-API docs and a changelog fragment. Priority P2.
 **Dependencies**: WP04, WP05
 
 T030 Configuration guide `docs/guides/paged-hub-listing.md` (WP07)
-T031 ADR-0086 and cross-references from ADR-0084 and the slice-1 guide (WP07)
+T031 ADR-0089 and cross-references from ADR-0084 and the slice-1 guide (WP07)
 T032 Agent API docs for listing records (WP07)
 T033 Changelog fragment and consumer-setup/authoring cross-references (WP07)
 

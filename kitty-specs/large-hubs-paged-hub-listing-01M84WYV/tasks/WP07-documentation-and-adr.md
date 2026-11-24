@@ -25,12 +25,12 @@ agent_profile: implementer-ivan
 authoritative_surface: docs/guides/paged-hub-listing.md
 create_intent:
 - docs/guides/paged-hub-listing.md
-- docs/adr/0086-paged-hub-listing.md
+- docs/adr/0089-paged-hub-listing.md
 - docs/changelog/unreleased/342-paged-hub-listing.md
 execution_mode: planning_artifact
 owned_files:
 - docs/guides/paged-hub-listing.md
-- docs/adr/0086-paged-hub-listing.md
+- docs/adr/0089-paged-hub-listing.md
 - docs/changelog/unreleased/342-paged-hub-listing.md
 - docs/guides/sidebar-child-cap.md
 - docs/guides/consumer-setup.md
@@ -92,12 +92,12 @@ Write a how-to page ("Page large hub listings"; `kind: How-To`, the type taken f
 - The `page` child collision error, with its message and how to fix it.
 - Translating the pagination strings (the five `dockitty.hub.pagination.*` keys and their English defaults).
 - Limits: locales follow #341 (a locale needs its own hub index; fallback pages are not listed). There is no "load more", sorting or filtering yet (#343), and no `llms: summary` mode yet (#344).
-- `related:` entries for the cap guide, ADR-0086 and the large-hubs plan.
+- `related:` entries for the cap guide, ADR-0089 and the large-hubs plan.
 
-### T031 — ADR-0086 and cross-references
+### T031 — ADR-0089 and cross-references
 
-1. **Check the number first.** Look at the ADRs on `main` (`git ls-tree origin/main docs/adr/`) and in the open PRs (the GitHub list), and take the next free number. 0086 was free on 2026-11-24 (research R9). If it is taken, use the next one and update every reference in this mission's docs.
-2. Write `docs/adr/0086-paged-hub-listing.md` ("Paged hub listings, included in every surface"; Proposed, 2026-11-24). Model it on ADR-0084: Status, Context, Decision, Consequences (positive and negative), Risks, Alternatives considered, References. Its decisions:
+1. **The number is 0089**, allocated by the dispatcher across the parallel missions (research R9): 0086 is #403's and 0088 the diagram mission's, both in flight. Before hand-off, run `pnpm validate:adr-ids`, and check `docs/adr/` on `main`, on `kitty/mission-subprocessor-catalog-01M84X07` and on `kitty/mission-diagram-dark-contrast-label-clipping-01M801Y5`. If 0089 is taken there, stop and ask the dispatcher rather than picking a number.
+2. Write `docs/adr/0089-paged-hub-listing.md` ("Paged hub listings, included in every surface"; Proposed, 2026-11-24). Model it on ADR-0084: Status, Context, Decision, Consequences (positive and negative), Risks, Alternatives considered, References. Its decisions:
    - Which hubs are paged, and the page-size setting at three levels.
    - The injected `StarlightPage` route `/[...hub]/page/[page]/` in the frame.
    - One hub data set for every hub (#429). The `HubCap` widening is backward compatible.
@@ -106,7 +106,7 @@ Write a how-to page ("Page large hub listings"; `kind: How-To`, the type taken f
    - The `page` collision fails the build.
    - Alternatives, from research R1, R2, R3 and R5: a query-string page, consumer page files, reusing the cap for the page size, excluding paged pages from the sitemap and search, and listing children per page in `llms.txt`.
    - Add `related:` entries for ADR-0084, ADR-0063 and the guides.
-3. In `docs/guides/sidebar-child-cap.md`, add a short paragraph and a `related:` entry pointing to the paged listing: the capped entry now leads to a paged hub. **Do not edit ADR-0084's decision text.** It is Proposed, not Accepted, but the rule is to add a new ADR rather than rewrite an old one, so put the cross-reference in ADR-0086.
+3. In `docs/guides/sidebar-child-cap.md`, add a short paragraph and a `related:` entry pointing to the paged listing: the capped entry now leads to a paged hub. **Do not edit ADR-0084's decision text.** It is Proposed, not Accepted, but the rule is to add a new ADR rather than rewrite an old one, so put the cross-reference in ADR-0089.
 
 ### T032 — Agent API docs (`docs/architecture/generators.md`)
 
@@ -124,7 +124,7 @@ Find where `generators.md` describes `/api/index.json` and the per-page JSON (co
 
 ## Definition of Done
 
-- The new guide, ADR-0086 and the fragment exist, and the cap guide, consumer setup and authoring cross-reference them.
+- The new guide, ADR-0089 and the fragment exist, and the cap guide, consumer setup and authoring cross-reference them.
 - All docs validators pass. Vale runs in CI; markdownlint passes locally.
 - The docs match the shipped behaviour (spot-check against the WP04 and WP05 tests).
 - The full `pnpm test` is green, with counts quoted.

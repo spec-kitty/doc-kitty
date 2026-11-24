@@ -101,7 +101,7 @@ src/tests/                           # unit + build-tier suites, large-hub fixtu
 example/docs/guides/paged-hub/       # NEW example hub over its cap, small page size
 tests/a11y/                          # pagination axe + keyboard + search ranking spec
 docs/guides/paged-hub-listing.md     # NEW configuration page
-docs/adr/0086-paged-hub-listing.md   # NEW ADR (0086 is free on main and in open PRs)
+docs/adr/0089-paged-hub-listing.md   # NEW ADR (0089, allocated by the dispatcher across parallel missions)
 docs/changelog/unreleased/342-paged-hub-listing.md
 docs/plans/features/large-hubs.md    # slice 2 measurements + the Q3 change
 ```
@@ -166,7 +166,7 @@ None.
 - **Affected surfaces**:
   - build fixtures: a 200-child build test reusing `src/tests/fixtures/large-hub/` and `measure.mjs`, a consumer-sidebar variant, a locale variant, a `page`-collision variant;
   - the example: `example/docs/guides/paged-hub/`, the pins in `assert-build-artifacts.mjs` (index and sitemap counts), Playwright specs and `AXE_PAGES`;
-  - docs: the configuration guide, ADR-0086, the changelog fragment, `docs/plans/features/large-hubs.md` (measurements and the Q3 change), and cross-links from `docs/guides/sidebar-child-cap.md`.
+  - docs: the configuration guide, ADR-0089, the changelog fragment, `docs/plans/features/large-hubs.md` (measurements and the Q3 change), and cross-links from `docs/guides/sidebar-child-cap.md`.
 - **Sequencing/depends-on**: IC-02, IC-03, IC-04
 - **Risks**:
   - The pinned counts move: each paged example page adds one sitemap URL and one agent-index record.

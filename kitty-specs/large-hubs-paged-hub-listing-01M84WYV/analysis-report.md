@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: large-hubs-paged-hub-listing-01M84WYV
 mission_id: 01M84WYVDYWGBH777TED2ZYGC8
-generated_at: '2026-11-24T16:01:26.758761+00:00'
+generated_at: '2026-11-24T16:06:07.270966+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -12,19 +12,19 @@ input_artifacts:
     sha256: 8d2763f607cd2eecc1e6e24b8173692c31ad03e0551d28e6b74d9ee7bb8f3691
   plan.md:
     path: .worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/plan.md
-    sha256: 60e846ba770d1f5e07d61c5b35e8d623c9e7b9cbbe7a41681e53d11f01af0d4e
+    sha256: 9ad9b74e8554feac6fefc92b9cb1d0e52e464f1d8d35d9330b22c531dad82724
   tasks.md:
     path: .worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks.md
-    sha256: 1e9c462bc6a1e434a7b58f7db340ff86e83f513a7ac318883af6de46d7daab9b
+    sha256: 1c67f088445280ec7d89c43f29fcff0767308ee57ce1a8e572481256d6c47e6e
   charter:
     path: .kittify/charter/charter.yaml
     sha256: 92e9e079284707d74cdd3581a99487c314195e1a1e4efa1a7445c75af2fcd07f
 verdict: ready
 issue_counts:
-  low: 4
-  medium: 2
-  high: 0
   critical: 0
+  low: 4
+  high: 0
+  medium: 2
   info: 0
 findings:
 - id: U1
@@ -107,6 +107,10 @@ findings:
 - Ambiguity count: 1 (I1)
 - Duplication count: 1 (D1)
 - Critical issues: 0
+
+## Note
+
+Re-recorded on 2026-11-24 after the ADR number moved from 0086 to 0089 (dispatcher allocation, research R9). The findings are unchanged.
 
 ## Next actions
 
