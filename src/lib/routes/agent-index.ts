@@ -31,6 +31,7 @@ import type { OpenApiPublication, OpenApiPublicationVersion } from '../openapi/p
 import type { Operation } from '../openapi/operations.mjs';
 import { flattenText } from '../openapi/summary.mjs';
 import { withBase } from '../with-base.js';
+import { TOM_ANNEX_LABEL } from '../tom-annex/core.mjs';
 
 export interface AgentIndexRouteOptions {
   title: string;
@@ -171,6 +172,7 @@ interface DeclaredSurfaces {
   rss: boolean;
   bibliography: boolean;
   scenarios: boolean;
+  tomAnnex: boolean;
   mcp: boolean;
 }
 
@@ -207,6 +209,11 @@ function indexLinks(site: URL | undefined, indexPath: string, declared: Declared
     ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
     ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
     ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
+    // The evidence index (#401) is linked only when the route was injected. It
+    // defaults to false: an undetected site must not advertise a file it never built.
+    ...(declared.tomAnnex
+      ? { tomAnnex: { href: absolute(site, '/api/tom-annex.json'), title: TOM_ANNEX_LABEL } }
+      : {}),
     // FR-009: the opt-in MCP wiring pointer. #307: the package is not
     // published (#408), so `href` points at the build-from-source steps
     // rather than an `npm:` name nothing can install, and `title` says so.
@@ -237,6 +244,7 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       rss: surfaces?.rss ?? true,
       bibliography: surfaces?.bibliography ?? true,
       scenarios: surfaces?.scenarios ?? true,
+      tomAnnex: surfaces?.tomAnnex ?? false,
       mcp: false,
       ...options.links,
     };
