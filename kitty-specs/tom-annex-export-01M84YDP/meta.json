@@ -29,6 +29,7 @@
   "purpose_context": "Pages already classify the measures they evidence (ADR-0080), but nothing gathers them per measure, shows which measures lack evidence, or gives an auditor a versioned entry point. This mission adds that index as a stable, documented format that a shared organisation bundle (#404) can build on, under the generated-section contract of #359. The contractual DPA annex stays the parties' own document; wording on generated surfaces awaits counsel review.",
   "purpose_tldr": "Publish a generated api/tom-annex.json that gathers, per catalogued technical and organisational measure, the documentation pages that evidence it: an evidence index, not the contractual annex.",
   "slug": "tom-annex-export-01M84YDP",
+  "status_phase": "1",
   "target_branch": "feat/401-tom-annex-export",
   "topology": "lanes_with_coord",
   "topology_decision": {
