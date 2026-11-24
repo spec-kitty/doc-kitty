@@ -51,7 +51,7 @@ function docsTree(g: ReturnType<typeof graph>, text = (id: string) => `# ${id}\n
   return root;
 }
 
-const served = async (site: ReturnType<typeof siteGraph>) =>
+const served = async () =>
   (await tomAnnexRoute({ docsDir: 'docs' })({ site: SITE } as never)).text();
 
 afterEach(() => {
@@ -85,7 +85,7 @@ describe('the served index carries the ADR-0087 stamp (WP06 T029)', () => {
     const { graph: g, catalog: c } = canonical();
     const root = docsTree(g);
     state.site = siteGraph(g, c, root);
-    const text = await served(state.site as ReturnType<typeof siteGraph>);
+    const text = await served();
     const annex = JSON.parse(text);
     const rel = (f: string) => path.relative(process.cwd(), path.join(root, f)).split(path.sep).join('/');
     const evidencePages = evidenceSourceFiles(g, (state.site as ReturnType<typeof siteGraph>).locations).map((f: string) => ({
@@ -110,7 +110,7 @@ describe('the served index carries the ADR-0087 stamp (WP06 T029)', () => {
       // One root, so the input paths stay the same and only the bytes differ.
       for (const id of ['guides/unrelated', 'guides/access']) writeFileSync(path.join(root, `${id}.md`), text(id));
       state.site = siteGraph(g, c, root);
-      return JSON.parse(await served(state.site as ReturnType<typeof siteGraph>)).generated.source_digest;
+      return JSON.parse(await served()).generated.source_digest;
     };
     const base = await digestWith((id) => `# ${id}\n`);
     expect(await digestWith((id) => (id === 'guides/unrelated' ? `# ${id}\n\n` : `# ${id}\n`))).toBe(base);
@@ -123,7 +123,7 @@ describe('the served index carries the ADR-0087 stamp (WP06 T029)', () => {
     const digestWith = async (yaml: string) => {
       writeFileSync(path.join(root, '_meta', 'measures.yaml'), yaml);
       state.site = siteGraph(g, { ...c, isDefault: false }, root);
-      return JSON.parse(await served(state.site as ReturnType<typeof siteGraph>)).generated.source_digest;
+      return JSON.parse(await served()).generated.source_digest;
     };
     expect(await digestWith('measures: []\n')).not.toBe(await digestWith('measures: []\n# edited\n'));
   });
