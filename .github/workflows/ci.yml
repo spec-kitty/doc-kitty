@@ -166,7 +166,7 @@ jobs:
       # docs/changelog/unreleased/ holds changelog fragments (ADR-0072): entries,
       # not pages, so every docs gate leaves the folder out.
       - name: Markdownlint (docs + example/docs)
-        run: pnpm exec markdownlint-cli2 "docs/**/*.md" "example/docs/**/*.md" "#docs/changelog/unreleased/**"
+        run: pnpm exec markdownlint-cli2 "docs/**/*.md" "example/docs/**/*.md" "src/lib/templates/**/*.md" "#docs/changelog/unreleased/**"
       # Vale prose stylecheck. Install the pinned binary and run it directly so the
       # gate checks ALL files at error severity (per .vale.ini) on both push and PR.
       # (The reviewdog-based vale-action uses filter_mode: added, which needs a PR
