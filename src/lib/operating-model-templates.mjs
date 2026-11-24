@@ -19,6 +19,7 @@
 import { readFileSync } from 'node:fs';
 import { stringify } from 'yaml';
 import { expectedDocType } from './vocabulary-core.mjs';
+import { loadSectionRegistry, sectionSubtypes, sectionTypes } from './vocabulary-loader.mjs';
 import { scaffoldMeta } from '../scripts/scaffold-meta.mjs';
 
 /**
@@ -168,6 +169,29 @@ export function templateById(id) {
  */
 export function templateBody(record) {
   return readFileSync(new URL(`./templates/operating-model/${record.body}`, import.meta.url), 'utf8');
+}
+
+/**
+ * The `type` a page at `relPath` is expected to carry on this site, derived the
+ * way the frontmatter gate derives it: from the site's section registry
+ * (`<docsRoot>/_meta/sections.yaml`) when there is one, else from the frozen
+ * section map. `null` when the section has no type. An unreadable registry falls
+ * back to the frozen map, as the gate does.
+ *
+ * @param {string} relPath page path under the docs root, with `/` separators
+ * @param {string} docsRoot
+ * @returns {string | null}
+ */
+export function siteDocType(relPath, docsRoot) {
+  let registry = null;
+  try {
+    registry = loadSectionRegistry(docsRoot);
+  } catch {
+    registry = null;
+  }
+  return registry
+    ? expectedDocType(relPath, sectionTypes(registry), sectionSubtypes(registry))
+    : expectedDocType(relPath);
 }
 
 /**

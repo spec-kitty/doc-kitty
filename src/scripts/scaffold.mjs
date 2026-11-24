@@ -32,7 +32,7 @@ import { dirname, join, sep } from 'node:path';
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
 import { scaffoldMeta } from './scaffold-meta.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
-import { OPERATING_MODEL_TEMPLATES, renderTemplatePage } from '../lib/operating-model-templates.mjs';
+import { OPERATING_MODEL_TEMPLATES, renderTemplatePage, siteDocType } from '../lib/operating-model-templates.mjs';
 
 const argv = process.argv.slice(2);
 // Flags that take a value: their value is not the base folder.
@@ -179,20 +179,23 @@ function write(relPath, content) {
 }
 
 if (presetFlag === 'operating-model') {
-  // The section is opt-in (its sections.yaml entry is a documented snippet), so
-  // the frozen section map derives no type for it: set Operations explicitly.
+  // The section is opt-in (its sections.yaml entry is a documented snippet).
+  // Types follow the site's registry when it has one, as the gate derives them;
+  // without an entry for the section, the index is Operations and each page
+  // keeps its template's default.
   const sectionIndex = join('operating-model', indexFilename);
+  const typeOf = (relPath, fallback) => siteDocType(relPath.split(sep).join('/'), base) ?? fallback;
   write(
     sectionIndex,
     indexFrontmatter(
       sectionIndex,
       'Operating model',
       'How the organisation runs, with its structure, roles, governance, processes and policies.',
-      'Operations',
+      typeOf(sectionIndex, 'Operations'),
     ),
   );
   for (const record of OPERATING_MODEL_TEMPLATES) {
-    write(`${record.path}.md`, renderTemplatePage(record));
+    write(`${record.path}.md`, renderTemplatePage(record, { type: typeOf(`${record.path}.md`, record.defaultType) }));
   }
 } else {
   writeDefaultTree();

@@ -43,7 +43,7 @@ import { dirname, join, sep } from 'node:path';
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
 import { scaffoldMeta } from './scaffold-meta.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
-import { TEMPLATE_IDS, renderTemplatePage, templateById } from '../lib/operating-model-templates.mjs';
+import { TEMPLATE_IDS, renderTemplatePage, siteDocType, templateById } from '../lib/operating-model-templates.mjs';
 
 function parseArgs(argv) {
   const args = { _: [], flags: {} };
@@ -86,9 +86,9 @@ function argumentError(message) {
 }
 
 // A title is one frontmatter line and the page's `# ` heading; a control
-// character (a newline, a tab) would split the heading, so refuse it.
-// eslint-disable-next-line no-control-regex
-const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
+// character (a newline, a tab, or a C1 control such as U+0085, which YAML also
+// reads as a line break) would split the heading, so refuse it.
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f-\u009f]/;
 if (typeof flags.title === 'string' && CONTROL_CHARACTERS.test(flags.title)) {
   argumentError('--title must not contain control characters (such as a newline or a tab)');
 }
@@ -99,7 +99,9 @@ else writePlainStub();
 /**
  * `--template <id>` (#402): write one operating-model template page. The slug is
  * optional (the template's path is the default). The type follows the page's
- * real path, so a slug outside the template's section still validates.
+ * real path and the site's section registry, as the gate derives it, so a slug
+ * outside the template's section, or a registry that types the section, still
+ * validates.
  */
 function writeTemplatePage() {
   if (flags.kind !== undefined) argumentError('--template fixes the kind; do not combine --template with --kind');
@@ -115,7 +117,7 @@ function writeTemplatePage() {
     console.error(`✖ refusing to overwrite existing file: ${target}`);
     process.exit(1);
   }
-  const type = flags.type ?? expectedDocType(relPath.split(sep).join('/')) ?? record.defaultType;
+  const type = flags.type ?? siteDocType(relPath.split(sep).join('/'), base) ?? record.defaultType;
   const page = renderTemplatePage(record, {
     title: typeof flags.title === 'string' ? flags.title : undefined,
     type,
