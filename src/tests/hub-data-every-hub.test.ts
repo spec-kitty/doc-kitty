@@ -11,7 +11,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { routeShapingSource, type RouteShapingOptions } from '../lib/integrations/route-shaping.js';
 import { defineDocKittyIntegrations, type DocKittyOptions } from '../lib/config.js';
-import type { HubCap } from '../lib/child-cap.js';
+import { cappedHubCaps, type HubCap } from '../lib/child-cap.js';
+import { buildDirectoryMeta, shapeSidebar, type SidebarEntry } from '../lib/route-shaping.js';
 import { restoreInternalEnv } from './helpers/restore-internal-env.js';
 
 /** The options each `defineDocKittyIntegrations` call hands the route-shaping integration. */
@@ -179,10 +180,86 @@ describe('a page child of a paged hub (T009: FR-016)', () => {
     expect(() => source()).toThrow(message);
   });
 
+  // Review cycle 1 (blocking): every routed page under the hub counts, not only the
+  // children the hub page lists, and the comparison ignores case.
+  it('fails for an index-less page/ folder whose page routes onto a listing URL', () => {
+    site(missions(4, 'sidebar_child_cap: 2\nhub_page_size: 2\n', { 'missions/page/2.md': page('Page two') }));
+    expect(() => source()).toThrow(
+      '[dk-hubs] hub "missions" is paged, but its child "missions/page/2" would collide with the paged listing URLs;',
+    );
+  });
+
+  it('fails for a routed page child the hub page does not list (a type: Template ADR)', () => {
+    const adr = (id: string, extra = '') =>
+      `---\ntitle: "ADR-${id}: Decision ${id}"\ndescription: Fixture ADR.\ndoc_status: active\nupdated: 2026-11-24T00:00:00Z\n${extra}kind: ADR\n---\n\n# ADR-${id}\n\n## Status\n\nAccepted\n`;
+    const files: Record<string, string> = { 'adr/README.md': page('Decisions', 'sidebar_child_cap: 2\nhub_page_size: 2\n', 'Hub') };
+    for (const id of ['0001', '0002', '0003', '0004']) files[`adr/${id}-d.md`] = adr(id);
+    files['adr/page.md'] = adr('0099', 'type: Template\n');
+    site(files);
+    expect(() => source()).toThrow('[dk-hubs] hub "adr" is paged, but its child "adr/page" would collide');
+    // Positive control: the same tree with the hub unpaged builds.
+    files['adr/README.md'] = page('Decisions', 'sidebar_child_cap: 10\n', 'Hub');
+    site(files);
+    expect(() => source()).not.toThrow();
+  });
+
+  it('fails for PAGE.md, whose route is lowercased', () => {
+    site(missions(4, 'sidebar_child_cap: 2\nhub_page_size: 2\n', { 'missions/PAGE.md': page('Upper page') }));
+    // The message names the page as written, so the author finds the file.
+    expect(() => source()).toThrow('[dk-hubs] hub "missions" is paged, but its child "missions/PAGE" would collide');
+  });
+
+  it('builds the index-less page/ folder and PAGE.md under an unpaged hub', () => {
+    site(missions(4, 'sidebar_child_cap: 10\n', { 'missions/page/2.md': page('Page two'), 'missions/PAGE.md': page('Upper page') }));
+    expect(() => source()).not.toThrow();
+  });
+
+  it('does not count a sibling whose slug only starts with "page"', () => {
+    site(missions(4, 'sidebar_child_cap: 2\nhub_page_size: 2\n', { 'missions/pages.md': page('Pages'), 'missions/paged/x.md': page('X') }));
+    expect(() => source()).not.toThrow();
+  });
+
   it('builds when the hub is not paged: uncapped, or capped with a page size that covers every child', () => {
     site(missions(4, 'sidebar_child_cap: 10\nhub_page_size: 2\n', pageChild));
     expect(() => source()).not.toThrow();
     site(missions(4, 'sidebar_child_cap: 2\nhub_page_size: 10\n', pageChild));
     expect(() => source()).not.toThrow();
+  });
+});
+
+describe('sidebar shaping sees capped hubs only (T010, review cycle 1 item 3)', () => {
+  const BASE = '/site';
+  const link = (slug: string, label: string): SidebarEntry => ({ type: 'link', label, href: `${BASE}/${slug}/`, isCurrent: false, badge: undefined, attrs: {} });
+  const group = (label: string, entries: SidebarEntry[]): SidebarEntry => ({ type: 'group', label, entries, collapsed: false, badge: undefined });
+  const tree = (): SidebarEntry[] => [
+    group('Guides', [link('guides', 'Guides'), link('guides/a', 'A'), link('guides/b', 'B')]),
+    group('Missions', [link('missions', 'Missions'), link('missions/x', 'X'), link('missions/y', 'Y'), link('missions/z', 'Z')]),
+  ];
+  const meta = buildDirectoryMeta([
+    { slug: 'guides', title: 'Guides', isIndex: true },
+    { slug: 'missions', title: 'Missions', isIndex: true },
+  ]);
+  const hub = (dir: string, n: number, capped: boolean): HubCap => ({
+    cap: 2,
+    count: n,
+    capped,
+    pageSize: 50,
+    children: Array.from({ length: n }, (_, i) => ({ slug: `${dir}/${i}`, label: `${i}` })),
+  });
+  const both: Array<[string, HubCap]> = [
+    ['guides', hub('guides', 2, false)],
+    ['missions', hub('missions', 3, true)],
+  ];
+  const group$ = (sidebar: SidebarEntry[], label: string) =>
+    (sidebar.find((e) => e.label === label) as Extract<SidebarEntry, { type: 'group' }>).entries;
+
+  it('caps the capped hub and leaves the uncapped hub group exactly as with no hub data', () => {
+    const plain = shapeSidebar(tree(), meta, { base: BASE }).sidebar;
+    const shaped = shapeSidebar(tree(), meta, { base: BASE, hubCaps: cappedHubCaps(both), currentSlug: 'guides' }).sidebar;
+    expect(group$(shaped, 'Guides')).toEqual(group$(plain, 'Guides'));
+    expect(group$(shaped, 'Missions')).toHaveLength(2);
+    // The unfiltered map would cap the uncapped hub too: shapeSidebar caps any hub it is given.
+    const unfiltered = shapeSidebar(tree(), meta, { base: BASE, hubCaps: new Map(both), currentSlug: 'guides' }).sidebar;
+    expect(group$(unfiltered, 'Guides')).not.toEqual(group$(plain, 'Guides'));
   });
 });
