@@ -16,12 +16,12 @@
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "A kind: Role page without a non-empty role or a non-empty responsibilities list fails the gate; goals is optional",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/role-kind.test.ts (no role, empty responsibilities, blank entry, blank role, goals not required); lane-d@23baafe6; feat/402@b9e1a3c5; combined tree pnpm test src 4615/4615 mcp 181/181; WP approvals in tasks/*/review-cycle-*.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::runner",
+      "verified_at": "2026-11-24T03:14:56.040663+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
