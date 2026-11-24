@@ -45,7 +45,7 @@ reader sees the gaps as well as the coverage.
 
 - **Drafts never count.** The index reads the built content graph, which leaves
   draft pages out. A measure that only a draft classifies is uncovered.
-- **A site with no classified pages gains nothing.** No file is built, nothing
+- **A site with no published classified pages gains nothing.** No file is built, nothing
   is linked, and no check runs.
 - **It is linked** from `api/index.json` as `_links.tomAnnex`, titled with the
   label, and the OKF export carries the same bytes as `tom-annex.json`.
@@ -154,8 +154,9 @@ the two are the same.
 
 Two limits follow from D2. `content_hash` is computed over the re-serialised
 index, so it does not see a formatting-only edit; the `--check` below compares
-bytes and does. And doc-kitty's artifact gate checks `content_hash` but cannot
-recompute `source_digest`, because it reads only the build output.
+bytes and does. And doc-kitty's artifact gate checks `content_hash` but neither
+recomputes `source_digest` nor re-derives `generated.at`, because it reads only
+the build output.
 
 ## Snapshot and hub page
 
@@ -188,7 +189,8 @@ dockitty-tom-annex --dist dist \
 ```
 
 Name at least one of `--snapshot` and `--hub`. Writing refuses a target that
-holds a file `doc-kitty-tom-annex` did not write. In this repository the same
+holds a file `doc-kitty-tom-annex` did not write: it names the file, writes
+nothing and exits `1`. In this repository the same
 commands are `pnpm generate:tom-annex` and `pnpm validate:tom-annex`, on the
 example site.
 
@@ -200,7 +202,7 @@ error. When several verdicts apply, the first in this table is reported:
 | Verdict | Meaning | Remedy |
 |---|---|---|
 | `missing` | the file, or the build's index, does not exist | build, then write it |
-| `unowned` | the path holds a file not stamped by `doc-kitty-tom-annex` | move or delete that file, then write |
+| `unowned` | the path holds a file not stamped by `doc-kitty-tom-annex` (the verdict [PR #454](https://github.com/spec-kitty/doc-kitty/pull/454) added to ADR-0087 D3) | move or delete that file, then write |
 | `hand-edited` | the file no longer matches its own `content_hash` (for the snapshot, also an `at` its evidence does not give) | move the change to the classified pages or the catalog, then write |
 | `stale-source` | its `source_digest` differs from the build's: an evidence page, the catalog or the configuration changed | write again |
 | `stale-render` | same inputs, different bytes: a toolkit change, or a formatting edit | write again |
@@ -213,12 +215,25 @@ check against a stale `dist` from before a content change passes.
 **The workflow is build, then write, then commit.** Both files are rendered
 from the previous build. After you change an evidence page or the catalog, the
 check stays red until you rebuild and write them again. That is the drift gate
-working, not a bug. A toolkit upgrade changes `by`, so it also makes the
-snapshot `stale-render` until you write it again.
+working, not a bug. A toolkit upgrade changes `by`, so it also makes both files
+`stale-render` until you write them again.
+
+**The hub page needs a date.** When no listed evidence page has an `updated`
+or `verified` date, the index's `generated.at` is `null` and the hub page has
+nothing to date itself with. The command then exits `2` and writes neither file,
+because it renders the hub before writing anything. Give at least one evidence
+page an `updated` date, rebuild, and write again.
+
+**Commit both files with LF line endings**, for example with `eol=lf` for their
+paths in `.gitattributes`. The check compares bytes, so a checkout that turns
+them into CRLF reads as `stale-render`.
 
 **How the files are written.** The command writes a hidden temporary file
 next to the target (`.<name>.<process id>.tmp`) and renames it over the target,
 so an interrupted run never leaves a half-written file. Some limits follow:
+
+- Each file is replaced on its own, not both together. If replacing the hub
+  page fails, the snapshot has already been replaced; run the command again.
 
 - A run killed between the two steps can leave that hidden `.tmp` file behind.
   Delete it; the target is unchanged.
@@ -232,7 +247,7 @@ so an interrupted run never leaves a half-written file. Some limits follow:
 - On Windows, a target that another program holds open cannot be replaced. The
   command then exits `2` and the old file stays as it was.
 
-A running `astro dev` decides at start-up whether the site has classified
+A running `astro dev` decides at start-up whether the site has published classified
 pages. After you classify the first page, restart it to see
 `/api/tom-annex.json`.
 
