@@ -17,8 +17,12 @@ import { docKittyFields } from '../lib/schema.ts';
 const fixturesUrl = new URL('./fixtures/', import.meta.url);
 const buildSchema = z.object(docKittyFields);
 
+// gray-matter caches by content and returns the same `data` object on every call,
+// so hand each caller its own copy: a test that deletes a field must not leak the
+// deletion into later parses of the same fixture.
 function parse(rel: string): Record<string, unknown> {
-  return matter(readFileSync(fileURLToPath(new URL(rel, fixturesUrl)), 'utf8')).data as Record<string, unknown>;
+  const { data } = matter(readFileSync(fileURLToPath(new URL(rel, fixturesUrl)), 'utf8'));
+  return { ...(data as Record<string, unknown>) };
 }
 
 const validRole = () => parse('valid/role.md');
@@ -82,6 +86,9 @@ describe('Persona rule unchanged (FR-003)', () => {
   it('a Persona without role still fails with the existing message', () => {
     const data = persona();
     delete data.role;
-    expect(validate('valid-persona.md', data).problems).toContain('`role`: persona requires a non-empty string');
+    const { problems } = validate('valid-persona.md', data);
+    expect(problems).toContain('`role`: persona requires a non-empty string');
+    // Isolation: only `role` was removed, so `goals` must not be reported missing.
+    expect(problems.some((p: string) => p.startsWith('`goals`'))).toBe(false);
   });
 });
