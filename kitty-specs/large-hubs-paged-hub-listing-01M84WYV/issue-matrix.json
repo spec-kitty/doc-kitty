@@ -85,7 +85,7 @@
       "wp": null
     },
     "#429": {
-      "evidence_ref": "WP02 (lane-b 4905291f): routeShapingSource emits every published kind: Hub hub with capped/pageSize in both sidebar modes (src/tests/hub-data-every-hub.test.ts, hub-caps-data.test.ts); the sidebar sees cappedHubCaps only, uncapped golden unchanged. Review cycle 1: rejected on FR-016 collision scope, #429 data itself verified.",
+      "evidence_ref": "WP02 (lane-b 28f9a771): routeShapingSource emits every published kind: Hub hub with capped/pageSize in both sidebar modes (src/tests/hub-data-every-hub.test.ts, hub-caps-data.test.ts); the sidebar sees cappedHubCaps only, uncapped golden unchanged. Review cycle 2 (claude::reviewer-renata): APPROVED; FR-016 guard now checks every published routed page under a paged hub, case-insensitively. Carry-over to WP07: document the public export cappedHubCaps (child-cap) in contracts/paging-api.md and the toolkit docs.",
       "fr": "FR-001, FR-002, FR-017",
       "nfr": "NFR-003, NFR-005",
       "repo": null,
