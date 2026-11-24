@@ -78,10 +78,10 @@
       "criterion_id": "FR-008",
       "description": "Verify FR-008 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/tom-annex-stamp.test.ts (D2 worked example, at from inputs, no clock); src/tests/tom-annex-route.test.ts (served stamp); src/tests/tom-annex-build.test.ts (built stamp); src/tests/assert-build-artifacts-tom-annex.test.ts (gate checks the stamp); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:09.429166+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
