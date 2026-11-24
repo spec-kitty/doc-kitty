@@ -1,7 +1,7 @@
 {
-  "event_count": 31,
-  "last_event_id": "01M85H7SDBE1A2CRY23VN07DAV",
-  "materialized_at": "2026-11-24T01:03:03.083546+00:00",
+  "event_count": 32,
+  "last_event_id": "01M85HB8E4PC7CPJCZQY65DEEY",
+  "materialized_at": "2026-11-24T01:04:56.772933+00:00",
   "mission_number": "",
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 3
   },
   "work_packages": {
@@ -147,21 +147,21 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M85H7SDBE1A2CRY23VN07DAV",
-      "last_transition_at": "2026-11-24T01:03:03.083546+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M85HB8E4PC7CPJCZQY65DEEY",
+      "last_transition_at": "2026-11-24T01:04:56.772933+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 195,
-      "shell_pid_created_at": "1795480015.63",
+      "role": "reviewer",
+      "shell_pid": 810,
+      "shell_pid_created_at": "1795482292.63",
       "subtasks": {
         "T021": "done",
         "T022": "done",
