@@ -160,7 +160,8 @@
         "Review cycle 1 fixes: SC-001 catalog accounting + duplicate checks red-first; NFR-002 on the example +195 ms (1.6%); full pnpm test green on 2fc2210 (src 4594/4594, mcp 181/181); code unchanged since.",
         "Review cycle 2 fixes: empty scope entries rejected, once per scope enforced, stray covered id case kills the mutation; full pnpm test green (src 4597/4597, mcp 181/181).",
         "Review cycle 3 fixes: unknown scope keys reported, the built index validated against the shipped schema, null entries reported; full pnpm test green (src 4600/4600, mcp 181/181).",
-        "Review cycle 4 fixed in 12d69b0b: Object.hasOwn for additionalProperties/required; whole-schema walk (unknown keywords anywhere, keywords beside $ref, unresolvable/cyclic $ref throw; chained $ref resolves); pattern u flag; minLength in code points; direct schemaProblems tests per keyword plus gate-level prototype-key cases. Option (a): lib/ and scripts/ ship in the package, so no Ajv. 19/19 keyword mutations killed. lint 0, typecheck 0, pnpm test src 4620/4620, mcp 181/181."
+        "Review cycle 4 fixed in 12d69b0b: Object.hasOwn for additionalProperties/required; whole-schema walk (unknown keywords anywhere, keywords beside $ref, unresolvable/cyclic $ref throw; chained $ref resolves); pattern u flag; minLength in code points; direct schemaProblems tests per keyword plus gate-level prototype-key cases. Option (a): lib/ and scripts/ ship in the package, so no Ajv. 19/19 keyword mutations killed. lint 0, typecheck 0, pnpm test src 4620/4620, mcp 181/181.",
+        "Review cycle 5 passed: both cycle-4 blockers fixed; 3 non-blocking findings (N1 test gaps, keyword-form drift, N3 for WP06)"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
