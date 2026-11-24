@@ -148,6 +148,35 @@ describe('tomAnnexProblems (WP05 T021)', () => {
     expect(problems({ annexText: dup }).join('\n')).toMatch(/listed twice/);
   });
 
+  describe('the index has the shipped format and nothing else (review cycle 3)', () => {
+    it('fails an unknown key under scopes, such as a vendor scope that double-lists a measure', () => {
+      const vendor = edited((a) => {
+        (a.scopes as Record<string, unknown>).vendor = [{ id: 'backup', label: 'x', evidence: [{ url: `${PREFIX}not/built/` }] }];
+      });
+      const found = problems({ annexText: vendor }).join('\n');
+      expect(found).toMatch(/unknown scope: vendor/);
+    });
+
+    it('the schema layer alone catches a shape no explicit check looks at', () => {
+      const wrongType = edited((a) => {
+        (a as unknown as { catalog: { default: unknown } }).catalog.default = 'yes';
+      });
+      const found = problems({ annexText: wrongType });
+      expect(found.join('\n')).toMatch(/does not match the shipped schema.*\/catalog\/default/);
+      // Positive control: the same index with the field intact has no schema problem.
+      expect(problems().join('\n')).not.toMatch(/shipped schema/);
+    });
+
+    it('reports a null scope entry or a null evidence ref instead of throwing', () => {
+      const nullEntry = edited((a) => a.scopes.system.push(null as never));
+      expect(() => problems({ annexText: nullEntry })).not.toThrow();
+      expect(problems({ annexText: nullEntry }).join('\n')).toMatch(/scope entry is not an object/);
+      const nullRef = edited((a) => a.scopes.system[0].evidence.push(null as never));
+      expect(() => problems({ annexText: nullRef })).not.toThrow();
+      expect(problems({ annexText: nullRef }).join('\n')).toMatch(/evidence entry is not an object/);
+    });
+  });
+
   describe('a site with no classified pages', () => {
     const bare = graphOf([page('p')], []);
     it('passes when neither the file nor the link exists', () => {

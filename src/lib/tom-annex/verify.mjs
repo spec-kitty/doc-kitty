@@ -16,6 +16,7 @@
  */
 
 import { TOM_ANNEX_FORMAT, TOM_ANNEX_LABEL } from './core.mjs';
+import { schemaProblems } from './schema-check.mjs';
 
 const MEASURE_PREFIX = 'catalog:measure:';
 
@@ -61,6 +62,11 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, site
     problems.push(`evidence index: format_version is ${JSON.stringify(annex?.format_version)}, expected 1.x`);
   }
   if (annex?.label !== TOM_ANNEX_LABEL) problems.push(`evidence index: label is ${JSON.stringify(annex?.label)}, expected "${TOM_ANNEX_LABEL}"`);
+  // A second layer: the shipped schema closes the class of shape holes (unknown keys, wrong types).
+  for (const p of schemaProblems(annex)) problems.push(`evidence index: does not match the shipped schema at ${p}`);
+  for (const key of Object.keys(annex?.scopes && typeof annex.scopes === 'object' ? annex.scopes : {})) {
+    if (key !== 'system' && key !== 'organisation') problems.push(`evidence index: unknown scope: ${key}`);
+  }
 
   const prefix = sitePrefix ?? prefixFromSelf(indexLinks);
   const pages = new Map(graph.nodes.map((n) => [n.id, n]));
@@ -83,6 +89,10 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, site
     /** @type {Set<string>} */
     const inScope = new Set();
     for (const entry of Array.isArray(annex?.scopes?.[scope]) ? annex.scopes[scope] : []) {
+      if (entry === null || typeof entry !== 'object') {
+        problems.push(`evidence index: a scope entry is not an object under ${scope}`);
+        continue;
+      }
       // Once per scope (FR-002): a second entry for the same id, empty or with split evidence, is an error.
       if (inScope.has(entry.id)) problems.push(`evidence index: a measure is listed twice under ${scope}: ${entry.id}`);
       inScope.add(entry.id);
@@ -91,6 +101,10 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, site
       if (evidence.length === 0) problems.push(`evidence index: a scope entry has no evidence: ${entry.id}`);
       else covered.add(entry.id);
       for (const ref of evidence) {
+        if (ref === null || typeof ref !== 'object') {
+          problems.push(`evidence index: an evidence entry is not an object under ${entry.id}`);
+          continue;
+        }
         const t = triple(entry.id, scope, ref.url);
         if (actual.has(t)) problems.push(`evidence index: an entry is listed twice (${show(t)})`);
         actual.add(t);
