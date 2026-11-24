@@ -322,23 +322,18 @@ export function routeShapingIntegration(
   return {
     name: 'doc-kitty:route-shaping',
     hooks: {
-      'astro:config:setup': ({ updateConfig, injectRoute }) => {
+      'astro:config:setup': ({ updateConfig, injectRoute, config }) => {
         shapingWarningSink().clear();
         updateConfig({ vite: { plugins: [plugin] } });
-        // The paged hub listing (#342): mount `/<hub>/page/<n>/` only when a hub is
-        // paged. The glossary pages and the withheld drafts are known by now (their
-        // integrations' setup hooks run before this one).
+        // The hub data, computed ONCE (#342): the glossary pages and the withheld
+        // drafts are known by now (their integrations' setup hooks run before this
+        // one). It mounts the paged listing route `/<hub>/page/<n>/`, only when a
+        // hub is paged, and is handed off, as a file (E2BIG), to the routes that
+        // cannot import the virtual module (the agent API, llms.txt, the build
+        // identity), so the mount and those surfaces list the same pages.
         const hubs = siteHubData(options, shapingPages(options, state, new Set(state.unpublishedDirs)));
         if (hubListingPages(hubs).length > 0) injectRoute(PAGED_HUB_ROUTE);
-      },
-      // The hub data for the routes that cannot import the virtual module (the
-      // agent API, llms.txt, the build identity: #342). Published once every
-      // setup hook has run, so the withheld drafts and the glossary pages are
-      // known, from the same inputs the module is generated from.
-      'astro:config:done': ({ config }) => {
-        const hidden = new Set(state.unpublishedDirs);
-        const cacheDir = path.join(fileURLToPath(config.cacheDir), 'doc-kitty-hubs');
-        setInternalEnv(DK_HUB_DATA_ENV, writeHubData(cacheDir, siteHubData(options, shapingPages(options, state, hidden))));
+        setInternalEnv(DK_HUB_DATA_ENV, writeHubData(path.join(fileURLToPath(config.cacheDir), 'doc-kitty-hubs'), hubs));
       },
       'astro:build:done': () => {
         const sink = shapingWarningSink();

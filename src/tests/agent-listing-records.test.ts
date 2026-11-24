@@ -166,7 +166,7 @@ describe('per-listing-page JSON (T023)', () => {
   });
 });
 
-describe('the DK_HUB_DATA handoff (route-shaping integration, astro:config:done)', () => {
+describe('the DK_HUB_DATA handoff (route-shaping integration, astro:config:setup)', () => {
   it('publishes the same hub data the virtual module serves', async () => {
     const { routeShapingIntegration, routeShapingSource } = await import('../lib/integrations/route-shaping.js');
     const root = mkdtempSync(path.join(tmpdir(), 'dk-hub-handoff-'));
@@ -182,7 +182,8 @@ describe('the DK_HUB_DATA handoff (route-shaping integration, astro:config:done)
       const state = { unpublishedDirs: [], unpublishedPaths: [] } as never;
       publish(undefined);
       const hooks = routeShapingIntegration(options, state).hooks as Record<string, (arg: unknown) => void>;
-      hooks['astro:config:done']!({ config: { cacheDir: pathToFileURL(path.join(root, '.astro') + '/') } });
+      // Since consolidation the setup hook writes the handoff (one computation).
+      hooks['astro:config:setup']!({ updateConfig: () => {}, injectRoute: () => {}, config: { cacheDir: pathToFileURL(path.join(root, '.astro') + '/') } });
       const text = routeShapingSource(options, state);
       const served = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)).hubCaps;
       // The handoff is a file path, never the data itself (review cycle 1: E2BIG).

@@ -9,9 +9,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { PAGED_HUB_ENTRYPOINT, PAGED_HUB_ROUTE } from '../lib/integrations/paged-hubs.js';
-import { routeShapingIntegration } from '../lib/integrations/route-shaping.js';
+import { routeShapingIntegration, routeShapingSource } from '../lib/integrations/route-shaping.js';
+import { readHubData } from '../lib/hub-data-handoff.js';
+import { hubListingPages } from '../lib/child-cap.js';
+import { DK_HUB_DATA_ENV } from '../lib/internal-env.mjs';
+
+const pagedHubListing = () => hubListingPages(readHubData());
 import { defineDocKittyIntegrations } from '../lib/config.js';
 import { createBuildState } from '../lib/build-state.js';
 import { restoreInternalEnv } from './helpers/restore-internal-env.js';
@@ -39,7 +44,7 @@ function injected(n: number, hubExtra: string): unknown[] {
   const setup = routeShapingIntegration({ docsDir: 'docs', base: '/', shapeSidebar: true, pagination: true }, createBuildState()).hooks[
     'astro:config:setup'
   ] as (arg: unknown) => void;
-  setup({ updateConfig: () => {}, injectRoute: (route: unknown) => routes.push(route) });
+  setup({ updateConfig: () => {}, injectRoute: (route: unknown) => routes.push(route), config: { cacheDir: pathToFileURL(path.join(root, '.astro') + '/') } });
   return routes;
 }
 
@@ -66,5 +71,59 @@ describe('the paged hub listing route (T017)', () => {
     expect(target).toBe('./lib/routes/paged-hub.astro');
     expect(existsSync(path.join(SRC, target!))).toBe(true);
     expect(PAGED_HUB_ROUTE.entrypoint).toBe(PAGED_HUB_ENTRYPOINT);
+  });
+});
+
+/*
+ * Consolidation (WP04 review item 3, WP05 review item 7): ONE hub-data computation.
+ * The setup hook computes the hub data once, mounts the route from it and writes
+ * the handoff the agent surfaces read, so the mount and the surfaces cannot
+ * disagree; the module serves the same data.
+ */
+describe('one hub-data computation (consolidation)', () => {
+  const setupWithHandoff = (n: number, hubExtra: string) => {
+    const root = mkdtempSync(path.join(tmpdir(), 'dk-paged-one-'));
+    roots.push(root);
+    mkdirSync(path.join(root, 'docs', 'missions'), { recursive: true });
+    writeFileSync(path.join(root, 'docs', 'missions', 'README.md'), page('Missions', hubExtra, 'Hub'));
+    for (let i = 1; i <= n; i += 1) writeFileSync(path.join(root, 'docs', 'missions', `m-${i}.md`), page(`Mission ${i}`));
+    vi.spyOn(process, 'cwd').mockReturnValue(root);
+    const options = { docsDir: 'docs', base: '/', shapeSidebar: true, pagination: true };
+    const state = createBuildState();
+    const integration = routeShapingIntegration(options, state);
+    const routes: unknown[] = [];
+    (integration.hooks['astro:config:setup'] as (arg: unknown) => void)({
+      updateConfig: () => {},
+      injectRoute: (route: unknown) => routes.push(route),
+      config: { cacheDir: pathToFileURL(path.join(root, '.astro') + '/') },
+    });
+    const text = routeShapingSource(options, state);
+    return { integration, routes, served: JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)).hubCaps };
+  };
+
+  it('writes the handoff in the setup hook, equal to the module\'s hub data', () => {
+    const { served } = setupWithHandoff(5, 'sidebar_child_cap: 2\nhub_page_size: 2\n');
+    expect(process.env[DK_HUB_DATA_ENV]).toMatch(/\.hubs\.json$/);
+    expect(readHubData()).toEqual(served);
+  });
+
+  it('mounts the route iff the handoff lists a listing page', () => {
+    for (const [extra, paged] of [
+      ['sidebar_child_cap: 2\nhub_page_size: 2\n', true],
+      ['sidebar_child_cap: 10\nhub_page_size: 2\n', false],
+      ['sidebar_child_cap: 2\nhub_page_size: 10\n', false],
+    ] as const) {
+      const { routes } = setupWithHandoff(5, extra);
+      expect(routes.length > 0, extra).toBe(paged);
+      expect(pagedHubListing().length > 0, extra).toBe(paged);
+    }
+  });
+
+  it('has no second computation: no config:done hook, and hubData is called from one place', () => {
+    const { integration } = setupWithHandoff(1, '');
+    expect(Object.keys(integration.hooks).sort()).toEqual(['astro:build:done', 'astro:config:setup']);
+    const source = readFileSync(path.join(SRC, 'lib', 'integrations', 'route-shaping.ts'), 'utf8');
+    expect(source.match(/\bhubData\(/g)).toHaveLength(2); // its definition and the one call in siteHubData
+    expect(source).not.toMatch(/function siteHubs\b/);
   });
 });

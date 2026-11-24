@@ -17,6 +17,7 @@ import { openApiSidebarGroup } from '../lib/openapi/adapters';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
   buildDirectoryMeta,
   humaniseDirectoryName,
@@ -740,6 +741,10 @@ describe('integration wiring (T022, C-004)', () => {
       updateConfig: (config) => {
         plugin = (config as { vite: { plugins: [typeof plugin] } }).vite.plugins[0];
       },
+      // As Astro passes them: since #342 the hook may mount the paged listing route
+      // and writes the hub-data handoff under the cache dir.
+      injectRoute: () => {},
+      config: { cacheDir: pathToFileURL(`${mkdtempSync(path.join(tmpdir(), 'dk-rs-cache-'))}/`) },
     });
     const source = plugin!.load(plugin!.resolveId(ROUTE_SHAPING_MODULE_ID)!)!;
     return JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
