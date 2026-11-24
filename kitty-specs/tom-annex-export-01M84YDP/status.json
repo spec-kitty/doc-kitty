@@ -1,7 +1,7 @@
 {
-  "event_count": 43,
-  "last_event_id": "01M864FMGSYWAHVH5JVM3WTP5K",
-  "materialized_at": "2026-11-24T06:39:23.161601+00:00",
+  "event_count": 48,
+  "last_event_id": "01M866YQMGHJCREAS7HH9NFSDE",
+  "materialized_at": "2026-11-24T07:22:35.024487+00:00",
   "mission_number": "",
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_type": "software-dev",
@@ -147,30 +147,31 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 3,
+      "agent": "claude",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 4,
       "lane": "in_review",
-      "last_event_id": "01M864FMGSYWAHVH5JVM3WTP5K",
-      "last_transition_at": "2026-11-24T06:39:23.161601+00:00",
+      "last_event_id": "01M866YQMGHJCREAS7HH9NFSDE",
+      "last_transition_at": "2026-11-24T07:22:35.024487+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean.",
         "Review cycle 1 fixes: SC-001 catalog accounting + duplicate checks red-first; NFR-002 on the example +195 ms (1.6%); full pnpm test green on 2fc2210 (src 4594/4594, mcp 181/181); code unchanged since.",
-        "Review cycle 2 fixes: empty scope entries rejected, once per scope enforced, stray covered id case kills the mutation; full pnpm test green (src 4597/4597, mcp 181/181)."
+        "Review cycle 2 fixes: empty scope entries rejected, once per scope enforced, stray covered id case kills the mutation; full pnpm test green (src 4597/4597, mcp 181/181).",
+        "Review cycle 3 fixes: unknown scope keys reported, the built index validated against the shipped schema, null entries reported; full pnpm test green (src 4600/4600, mcp 181/181)."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP05-build-gates/review-cycle-2.md",
-        "reference": "review-cycle://tom-annex-export-01M84YDP/WP05-build-gates/review-cycle-2.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP05-build-gates/review-cycle-3.md",
+        "reference": "review-cycle://tom-annex-export-01M84YDP/WP05-build-gates/review-cycle-3.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 541,
-      "shell_pid_created_at": "1795502358.14",
+      "shell_pid": 10931,
+      "shell_pid_created_at": "1795504948.78",
       "subtasks": {
         "T021": "done",
         "T022": "done",
