@@ -54,7 +54,7 @@ Requirements: FR-004. Constraints:
 
 ## Context
 
-- Precedent for appending a kind: `docs/adr/0067-schematic-pages-reference-a-schema.md` (Schematic) and ADR-0046 (Specification). Copy their frontmatter shape: `type: ADR`, `kind: ADR`, `authors: [process:doc-kitty]` and `related`, but with `doc_status: draft`, because the ADR is Proposed (precedent: ADR-0083).
+- Precedent for appending a kind: `docs/adr/0067-schematic-pages-reference-a-schema.md` (Schematic) and ADR-0046 (Specification). Copy their frontmatter shape: `type: ADR`, `kind: ADR`, `authors: [process:doc-kitty]` and `related`, with `doc_status: draft` while the ADR was Proposed (precedent: ADR-0083). The operator accepted it on 2026-11-24, and it now has `doc_status: active`.
 - Persona fields: `docs/adr/0019-persona-attribute-fields.md`.
 - Measures: `docs/adr/0080-tom-classification-field-and-measures-catalog.md`.
 - Research: `docs/architecture/research/eu-dpa-compatibility.md`, § "Operating-model templates".
@@ -71,7 +71,7 @@ Requirements: FR-004. Constraints:
 
 Write these sections:
 
-1. **Status.** "**Proposed**, 2026-11-23." with `doc_status: draft` (precedent: ADR-0083). Cite the Decision Moments `01M84X1Q21P9HN21KNN9PFSNN6` and `01M84X1TXTTJM09B0G0YN2G9BM` as the basis of the decision content. Only the operator accepts the ADR itself (review cycle 1, B1).
+1. **Status.** "**Proposed**, 2026-11-23." with `doc_status: draft` (precedent: ADR-0083). Cite the Decision Moments `01M84X1Q21P9HN21KNN9PFSNN6` and `01M84X1TXTTJM09B0G0YN2G9BM` as the basis of the decision content. Only the operator accepts the ADR itself (review cycle 1, B1); the operator accepted it on 2026-11-24 ([acceptance record](https://github.com/spec-kitty/doc-kitty/pull/446#issuecomment-7132648608)), and the Status now reads Accepted.
 2. **Context.**
    - Operating models need a page for an accountable function, such as a DPO, an incident owner or a change approver.
    - `Persona` (ADR-0019) describes a reader, so reusing it would blur the audience and the accountable function.
@@ -107,7 +107,7 @@ Do the same here. If the page has a table of kind-specific required fields, add 
 
 ## Definition of Done
 
-- ADR-0085 exists, is Proposed (the operator accepts it) and links its related ADRs.
+- ADR-0085 exists, is Accepted (operator, 2026-11-24, [acceptance record](https://github.com/spec-kitty/doc-kitty/pull/446#issuecomment-7132648608)) and links its related ADRs.
 - Both kind lists include `Role`.
 - `pnpm validate:docs`, `pnpm validate:links` and `pnpm validate:adr-ids` are green.
 - `docs/adr/README.md` is untouched.
