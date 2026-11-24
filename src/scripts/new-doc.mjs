@@ -93,6 +93,13 @@ if (typeof flags.title === 'string' && CONTROL_CHARACTERS.test(flags.title)) {
   argumentError('--title must not contain control characters (such as a newline or a tab)');
 }
 
+// Guards shared by plain and template mode: nothing is written on a bad call.
+if (positional.length > 1) argumentError(`expected one slug, got ${positional.length}: ${positional.join(' ')}`);
+if (flags.title === true) argumentError('--title needs a value');
+if (slug !== undefined && slug.split(/[\\/]/).includes('..')) {
+  argumentError(`the slug must not contain a ".." segment: ${slug}`);
+}
+
 if (flags.template !== undefined) writeTemplatePage();
 else writePlainStub();
 

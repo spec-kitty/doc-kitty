@@ -188,6 +188,8 @@ describe('conflicts and unknown ids exit 2 and write nothing (D5)', () => {
     ['--template with --kind', 'new-doc', ['--template', 'people', '--kind', 'Reference'], /--template .*--kind/],
     ['--template with --section', 'new-doc', ['operating-model', '--template', 'policy-index', '--section'], /--template .*--section/],
     ['an unknown template id', 'new-doc', ['--template', 'nope'], /unknown template "nope"/],
+    ['a second positional argument', 'new-doc', ['guides/a', 'guides/b'], /one slug/],
+    ['a slug with a .. segment', 'new-doc', ['--template', 'people', '../escape'], /\.\./],
     ['--preset with --sections', 'scaffold', ['--preset', 'operating-model', '--sections', 'guides'], /--preset .*--sections/],
     ['an unknown preset', 'scaffold', ['--preset', 'nope'], /unknown preset "nope"/],
     ['--preset=<id> (the = form)', 'scaffold', ['--preset=operating-model'], /use `--preset <id>`/],
@@ -298,7 +300,7 @@ describe('review folds (WP04 cycle 1)', () => {
 });
 
 describe('flag values are checked before writing (R24 squad)', () => {
-  for (const flag of ['--base', '--type'] as const) {
+  for (const flag of ['--base', '--type', '--title'] as const) {
     it(`new-doc --template with a bare ${flag} exits 2 with a message, not a stack trace`, () => {
       const res = spawnSync(process.execPath, [newDoc, '--template', 'people', flag], { encoding: 'utf8', cwd: root });
       expect(res.status).toBe(2);

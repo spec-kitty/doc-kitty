@@ -12,7 +12,8 @@ section: Added
   kind records an accountable function and requires `role` and
   `responsibilities`. The `operating-model` section is opt-in, through a
   documented `sections.yaml` entry. Two runs without a template also change:
-  `new-doc` refuses a `--title` with a control character (exit 2), and
+  `new-doc` refuses a `--title` with a control character, a slug with a `..`
+  segment, a bare `--title` and extra positional arguments (exit 2), and
   `scaffold` no longer takes a flag's value, such as `--index-basename index`,
   as its base folder. See
   [ADR-0085](docs/adr/0085-role-kind.md) and
