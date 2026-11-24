@@ -142,17 +142,29 @@ export function resolveHubPageSize(levels: { hub?: number; section?: number; sit
 export type PagedHubInput = Pick<HubCap, 'count' | 'capped' | 'pageSize'>;
 
 /**
+ * A hub's page size, checked: the default when unset, a `RangeError` when it is
+ * not a positive whole number. The API is exported for page producers (FR-019),
+ * so a bad value must fail rather than page forever or slice nothing.
+ */
+function checkedPageSize(pageSize: number | undefined): number {
+  if (pageSize === undefined) return DEFAULT_HUB_PAGE_SIZE;
+  if (!isChildCap(pageSize)) throw new RangeError(`[dk-hubs] page size ${pageSize} is not a positive whole number`);
+  return pageSize;
+}
+
+/**
  * Is the hub paged? Only a hub over its sidebar child cap is, and only when its
  * children outnumber its page size. Every other hub lists all its children on
  * its own page, as before #342.
  */
 export function isPagedHub(hub: PagedHubInput): boolean {
-  return hub.capped === true && hub.count > (hub.pageSize ?? DEFAULT_HUB_PAGE_SIZE);
+  const pageSize = checkedPageSize(hub.pageSize);
+  return hub.capped === true && hub.count > pageSize;
 }
 
 /** The number of listing pages: one per page size of children when paged, else one. */
 export function hubPageCount(hub: PagedHubInput): number {
-  return isPagedHub(hub) ? Math.ceil(hub.count / (hub.pageSize ?? DEFAULT_HUB_PAGE_SIZE)) : 1;
+  return isPagedHub(hub) ? Math.ceil(hub.count / checkedPageSize(hub.pageSize)) : 1;
 }
 
 /**
@@ -161,6 +173,7 @@ export function hubPageCount(hub: PagedHubInput): number {
  * one, empty, page.
  */
 export function hubPageSlice<T>(children: readonly T[], page: number, pageSize: number): T[] {
+  checkedPageSize(pageSize);
   const pages = Math.max(1, Math.ceil(children.length / pageSize));
   if (!Number.isInteger(page) || page < 1 || page > pages) {
     throw new RangeError(`[dk-hubs] page ${page} is outside 1..${pages}`);
@@ -190,15 +203,19 @@ export interface HubListingPage {
 
 /**
  * Every listing page from 2 on of every paged hub, by hub folder (code-unit order)
- * then page. Page 1 is the hub page itself, so it is not listed.
+ * then page. Page 1 is the hub page itself, so it is not listed. A hub folder
+ * that occurs twice in an iterable is listed once, from its first entry (as the
+ * build keeps the first index of a duplicate slug).
  */
 export function hubListingPages(hubs: HubCapMap | Iterable<readonly [string, HubCap]>): HubListingPage[] {
-  const entries = [...hubs].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const first = new Map<string, HubCap>();
+  for (const [hub, data] of hubs) if (!first.has(hub)) first.set(hub, data);
+  const entries = [...first].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
   const out: HubListingPage[] = [];
   for (const [hub, data] of entries) {
     if (!isPagedHub(data)) continue;
     const of = hubPageCount(data);
-    const pageSize = data.pageSize ?? DEFAULT_HUB_PAGE_SIZE;
+    const pageSize = checkedPageSize(data.pageSize);
     for (let page = 2; page <= of; page += 1) {
       out.push({ hub, page, of, slug: pagedHubSlug(hub, page), children: hubPageSlice(data.children, page, pageSize) });
     }
@@ -220,5 +237,17 @@ export function resolveHubString(
   const translated = translate?.(key);
   const template =
     typeof translated === 'string' && translated !== '' && translated !== key ? translated : HUB_PAGINATION_STRINGS[key];
-  return template.replace(/\{(\w+)\}/g, (whole, name: string) => (name in vars ? String(vars[name]) : whole));
+  return template.replace(/\{(\w+)\}/g, (whole, name: string) => (Object.hasOwn(vars, name) ? String(vars[name]) : whole));
+}
+
+/**
+ * The hubs the sidebar caps: the entries marked `capped`, and an entry without
+ * the flag (a module generated before #429 listed capped hubs only). Since #429
+ * the build data lists every hub, so sidebar shaping filters it through here and
+ * an uncapped hub keeps its group exactly as before.
+ */
+export function cappedHubCaps(hubs: Iterable<readonly [string, HubCap]>): Map<string, HubCap> {
+  const out = new Map<string, HubCap>();
+  for (const [hub, data] of hubs) if (data.capped !== false) out.set(hub, data);
+  return out;
 }

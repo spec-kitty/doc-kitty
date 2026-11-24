@@ -46,7 +46,8 @@ describe('section hub.pageSize in sections.yaml (FR-003, FR-004)', () => {
 
   it('carries a valid page size on the entry, and no key when unset', () => {
     expect(registry('    hub:\n      pageSize: 10\n')[0]!.hub).toEqual({ pageSize: 10 });
-    expect(registry('    hub: {}\n')[0]!.hub).toEqual({});
+    // toStrictEqual: an empty mapping gives `{}`, not `{ pageSize: undefined }` (WP01 review fold 3).
+    expect(registry('    hub: {}\n')[0]!.hub).toStrictEqual({});
     expect(registry('')[0]).not.toHaveProperty('hub');
   });
 

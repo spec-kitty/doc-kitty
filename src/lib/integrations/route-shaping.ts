@@ -11,7 +11,7 @@ import type { AstroIntegration } from 'astro';
 import { resolveIndexEntries, sectionOf, type IndexBasenameOption } from '../metadata.js';
 import { resolveSectionRegistry, sectionFeeds, feedsSurface, sectionOrder, type SectionRegistry } from '../sections.js';
 import { buildDirectoryMeta, pageRouteSlug, type DirectoryMetaInput } from '../route-shaping.js';
-import { isChildCap, resolveChildCap, type HubCap } from '../child-cap.js';
+import { isChildCap, isPagedHub, resolveChildCap, resolveHubPageSize, type HubCap } from '../child-cap.js';
 import { composeHubChildren, selectHubChildren } from '../hub-children.mjs';
 import { loadAdrIdRule } from '../../scripts/generate-adr-index.mjs';
 import { chromeOptions } from '../chrome-options.js';
@@ -70,6 +70,8 @@ export interface RouteShapingOptions {
   childCap?: number;
   /** The `sidebar.cappedLabel` option (#341); absent = the locale's UI string. */
   cappedLabel?: string;
+  /** The site's `hub.pageSize` (#342); absent = the section's, else the default. */
+  pageSize?: number;
 }
 
 /** A docs page as the sidebar seam reads it: the directory-metadata input plus what the child cap needs. */
@@ -78,6 +80,8 @@ interface ShapingPage extends DirectoryMetaInput {
   docStatus?: string;
   /** The page's `sidebar_child_cap`, when it is a valid cap. */
   childCap?: number;
+  /** The page's `hub_page_size` (#342), when it is a valid page size. */
+  hubPageSize?: number;
   /** The page's `kind`: only a `kind: Hub` index lists its children, so only it can be capped. */
   kind?: string;
   /** The page's `type`: the hub's ADR composition leaves out `type: Template`. */
@@ -107,6 +111,7 @@ function directoryMetaInputs(
       title?: unknown;
       doc_status?: unknown;
       sidebar_child_cap?: unknown;
+      hub_page_size?: unknown;
       kind?: unknown;
       type?: unknown;
       sidebar?: { label?: unknown; order?: unknown };
@@ -136,6 +141,7 @@ function directoryMetaInputs(
         ...(typeof data.doc_status === 'string' ? { docStatus: data.doc_status } : {}),
         // An invalid value fails the schema and the frontmatter gate; here it is just not a cap.
         ...(isChildCap(data.sidebar_child_cap) ? { childCap: data.sidebar_child_cap } : {}),
+        ...(isChildCap(data.hub_page_size) ? { hubPageSize: data.hub_page_size } : {}),
         ...(typeof data.kind === 'string' ? { kind: data.kind } : {}),
         ...(typeof data.type === 'string' ? { type: data.type } : {}),
         ...(data.kind === 'ADR' ? { body: content } : {}),
@@ -145,17 +151,24 @@ function directoryMetaInputs(
 }
 
 /**
- * The hubs over their sidebar child cap (#341), sorted by folder (NFR-003). A hub
- * is a folder whose published index page has `kind: Hub`; its children are counted
- * and ordered by `composeHubChildren`, what the hub page lists (C-003), so drafts,
- * unnumbered ADRs and `type: Template` ADRs never count. The cap is the hub's `sidebar_child_cap`, else its section's
- * `sidebar.childCap`, else the site's, else the default. A hub at or under its
- * cap is not emitted, so a site with no large hub serves an empty list.
+ * The data of every hub, sorted by folder (NFR-003): the sidebar child cap (#341)
+ * and, since #342/#429, every hub whatever its cap and the sidebar mode, with
+ * `capped` and the listing `pageSize`. A hub is a folder whose published index
+ * page has `kind: Hub`; its children are counted and ordered by
+ * `composeHubChildren`, what the hub page lists (C-003), so drafts, unnumbered
+ * ADRs and `type: Template` ADRs never count.
+ *
+ * The cap is the hub's `sidebar_child_cap`, else its section's `sidebar.childCap`,
+ * else the site's, else the default; the page size is the hub's `hub_page_size`,
+ * else its section's `hub.pageSize`, else the site's, else the default.
+ *
+ * Throws when a paged hub has a child whose slug is `<hub>/page`: its route would
+ * collide with the paged listing URLs `/<hub>/page/N/` (#342, FR-016).
  */
-function hubCaps(
+function hubData(
   pages: readonly ShapingPage[],
   registry: SectionRegistry | null,
-  siteCap: number | undefined,
+  site: { cap: number | undefined; pageSize: number | undefined },
   idRule: ReturnType<typeof loadAdrIdRule>,
 ): Array<[string, HubCap]> {
   const entries = pages.map((page) => ({
@@ -171,8 +184,7 @@ function hubCaps(
   }));
   const labelOf = new Map(entries.map((entry) => [entry.slug, entry.label]));
   const order = registry ? sectionOrder(registry) : undefined;
-  const sectionCap = (dir: string): number | undefined =>
-    registry?.find((section) => section.id === sectionOf(dir))?.sidebar?.childCap;
+  const sectionOfDir = (dir: string) => registry?.find((section) => section.id === sectionOf(dir));
   const out: Array<[string, HubCap]> = [];
   // A hub is a folder whose PUBLISHED index page is `kind: Hub`: only that page lists
   // the folder's children, so only there does the capped entry lead to them. A draft
@@ -185,12 +197,26 @@ function hubCaps(
     // First index wins on a duplicate slug, as in `buildDirectoryMeta`.
     if (seen.has(hub.slug)) continue;
     seen.add(hub.slug);
-    const cap = resolveChildCap({ hub: hub.childCap, section: sectionCap(hub.slug), site: siteCap });
+    const section = sectionOfDir(hub.slug);
+    const cap = resolveChildCap({ hub: hub.childCap, section: section?.sidebar?.childCap, site: site.cap });
+    const pageSize = resolveHubPageSize({ hub: hub.hubPageSize, section: section?.hub?.pageSize, site: site.pageSize });
     // The order and count the hub page shows (`composeHubChildren`, as Hub.astro).
     const { adrCards, others } = composeHubChildren(selectHubChildren(entries, hub.slug, order), { idRule });
     const listed = [...adrCards.map((card) => card.slug), ...others.map((entry) => entry.slug)];
-    if (listed.length <= cap) continue;
-    out.push([hub.slug, { cap, count: listed.length, children: listed.map((slug) => ({ slug, label: labelOf.get(slug) ?? '' })) }]);
+    const data: HubCap = {
+      cap,
+      count: listed.length,
+      capped: listed.length > cap,
+      pageSize,
+      children: listed.map((slug) => ({ slug, label: labelOf.get(slug) ?? '' })),
+    };
+    const collision = `${hub.slug}/page`;
+    if (isPagedHub(data) && listed.includes(collision)) {
+      throw new Error(
+        `[dk-hubs] hub "${hub.slug}" is paged, but its child "${collision}" would collide with the paged listing URLs; rename the child or raise the hub's page size or cap`,
+      );
+    }
+    out.push([hub.slug, data]);
   }
   return out;
 }
@@ -210,20 +236,19 @@ export function routeShapingSource(
 ): string {
   const unpublished = [...new Set(state.unpublishedDirs)].sort(compareCodeUnit);
   const hidden = new Set(unpublished);
-  const pages = options.shapeSidebar
-    ? directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
-        (input) => !hidden.has(input.slug),
-      )
-    : [];
+  // Read in every sidebar mode (#342/#429): the hub page, the paged listing and the
+  // agent surfaces need every hub's data even when the consumer writes the sidebar.
+  // The directory metadata stays shaping-only, so a consumer sidebar is untouched.
+  const pages = directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
+    (input) => !hidden.has(input.slug),
+  );
   const meta = options.shapeSidebar ? buildDirectoryMeta(pages) : new Map();
-  const capped = options.shapeSidebar
-    ? hubCaps(
-        pages,
-        resolveSectionRegistry(path.resolve(process.cwd(), options.docsDir)),
-        options.childCap,
-        loadAdrIdRule(path.resolve(process.cwd(), options.docsDir)),
-      )
-    : [];
+  const hubs = hubData(
+    pages,
+    resolveSectionRegistry(path.resolve(process.cwd(), options.docsDir)),
+    { cap: options.childCap, pageSize: options.pageSize },
+    loadAdrIdRule(path.resolve(process.cwd(), options.docsDir)),
+  );
   const { sidebar: chromeSidebar } = chromeOptions();
   const data = {
     base: normalizeBasePrefix(options.base),
@@ -235,7 +260,7 @@ export function routeShapingSource(
     // The renderer's markers, on whenever that renderer runs (`usesCustomSidebar` in manifest.ts).
     annotate: chromeSidebar.titleIsIndex || state.iconsAuthored,
     ...(options.indexLabel ? { indexLabel: options.indexLabel } : {}),
-    hubCaps: capped,
+    hubCaps: hubs,
     ...(options.cappedLabel ? { cappedLabel: options.cappedLabel } : {}),
   };
   return (

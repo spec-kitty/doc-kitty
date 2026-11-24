@@ -14,6 +14,7 @@ import {
   HUB_PAGINATION_KEYS,
   HUB_PAGINATION_STRINGS,
   cappedChildHidden,
+  cappedHubCaps,
   hubListingPages,
   hubPageCount,
   hubPageSlice,
@@ -301,5 +302,64 @@ describe('pagination UI strings (#342, FR-009)', () => {
     expect(resolveHubString(HUB_PAGINATION_KEYS.page, { page: 3 }, translate({}))).toBe('Page 3');
     expect(resolveHubString(HUB_PAGINATION_KEYS.page, { page: 3 }, translate({ [HUB_PAGINATION_KEYS.page]: 'Seite {page}' }))).toBe('Seite 3');
     expect(resolveHubString(HUB_PAGINATION_KEYS.next, {}, () => '')).toBe('Next');
+  });
+});
+
+/*
+ * WP01 review folds (review cycle 1, folded in WP02): the pure API refuses an
+ * invalid page size, ignores inherited names in its templates, lists a hub once,
+ * and the surviving mutants are pinned.
+ */
+describe('page-size guard (WP01 review fold 1)', () => {
+  const kids = Array.from({ length: 5 }, (_, i) => ({ slug: `h/${i}`, label: `${i}` }));
+
+  it.each([0, -2, 1.5, Number.NaN, Number.POSITIVE_INFINITY])('refuses page size %j with a RangeError', (size) => {
+    expect(() => isPagedHub({ count: 5, capped: true, pageSize: size })).toThrow(RangeError);
+    expect(() => hubPageCount({ count: 5, capped: true, pageSize: size })).toThrow(RangeError);
+    expect(() => hubPageSlice(kids, 1, size)).toThrow(RangeError);
+    expect(() => hubListingPages([['h', { cap: 1, count: 5, children: kids, capped: true, pageSize: size }]])).toThrow(RangeError);
+  });
+
+  it('still accepts a hub with no page size (the default) and a valid one', () => {
+    expect(hubPageCount({ count: 5, capped: true })).toBe(1);
+    expect(hubPageCount({ count: 5, capped: true, pageSize: 2 })).toBe(3);
+  });
+});
+
+describe('resolveHubString templates (WP01 review folds 2 and 3)', () => {
+  it('leaves an unknown or inherited {name} literal', () => {
+    expect(resolveHubString(HUB_PAGINATION_KEYS.title, { page: 2 })).toBe('{title}, page 2');
+    const custom = (template: string) => () => template;
+    expect(resolveHubString(HUB_PAGINATION_KEYS.page, { page: 1 }, custom('{constructor} {toString} {page}'))).toBe(
+      '{constructor} {toString} 1',
+    );
+  });
+
+  it('defaults Previous to "Previous"', () => {
+    expect(resolveHubString(HUB_PAGINATION_KEYS.previous, {})).toBe('Previous');
+    expect(HUB_PAGINATION_STRINGS[HUB_PAGINATION_KEYS.previous]).toBe('Previous');
+  });
+});
+
+describe('hubListingPages lists each hub once (WP01 review fold 4)', () => {
+  it('keeps the first entry of a duplicate hub key from an iterable', () => {
+    const kids = (n: number) => Array.from({ length: n }, (_, i) => ({ slug: `h/${i}`, label: `${i}` }));
+    const pages = hubListingPages([
+      ['h', { cap: 1, count: 4, children: kids(4), capped: true, pageSize: 2 }],
+      ['h', { cap: 1, count: 6, children: kids(6), capped: true, pageSize: 2 }],
+    ]);
+    expect(pages.map((p) => [p.slug, p.of])).toEqual([['h/page/2', 2]]);
+  });
+});
+
+describe('cappedHubCaps (#342 WP02: the sidebar sees capped hubs only)', () => {
+  it('keeps capped hubs, and an entry without the flag (a module from before #429)', () => {
+    const hub = (capped?: boolean): HubCap => ({ cap: 1, count: 2, children: [], ...(capped === undefined ? {} : { capped }) });
+    const map = cappedHubCaps([
+      ['a', hub(true)],
+      ['b', hub(false)],
+      ['c', hub()],
+    ]);
+    expect([...map.keys()]).toEqual(['a', 'c']);
   });
 });
