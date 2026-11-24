@@ -98,6 +98,9 @@
       "last_event_id": "01M87FC5YDK82QD1BK4BNRB1B9",
       "last_transition_at": "2026-11-24T19:08:58.701216+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Hub card list + pagination components; paged hub lists page 1; unpaged sites byte-identical incl. CSS. Full pnpm test green (src 244/4802, mcp 23/181)."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 333,
