@@ -5,7 +5,7 @@
   "description": "Evidence index, not the contractual annex. Lists, per catalog measure, the published pages that evidence it. Not legal advice.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "format_version", "label", "notice", "catalog", "scopes", "uncovered", "counsel"],
+  "required": ["format", "format_version", "label", "notice", "generated", "catalog", "scopes", "uncovered", "counsel"],
   "properties": {
     "format": { "const": "doc-kitty/tom-annex" },
     "format_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
