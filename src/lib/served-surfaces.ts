@@ -15,6 +15,8 @@ const SURFACE_ROUTES = {
   scenarios: '/api/scenarios.json',
   contentGraph: '/api/content-graph.json',
   pageAtom: '/api/pages/[...slug].atom.xml',
+  // The evidence index (#401): injected only on a site with a published classified page.
+  tomAnnex: '/api/tom-annex.json',
 } as const;
 
 export type ServedSurfaces = Record<keyof typeof SURFACE_ROUTES, boolean> & {

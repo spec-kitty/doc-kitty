@@ -31,6 +31,8 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:toc-rail',
   'doc-kitty:lightbox',
   'doc-kitty:content-graph',
+  // The evidence index (#401): registered always; it injects its route only for a classified site.
+  'doc-kitty:tom-annex',
   // Always on unless `pageFormats.atom` is false (page-chrome FR-020); before served-surfaces.
   'doc-kitty:page-atom',
   'doc-kitty:served-surfaces',
