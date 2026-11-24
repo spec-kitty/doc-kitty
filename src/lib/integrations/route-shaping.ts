@@ -18,6 +18,7 @@ import { chromeOptions } from '../chrome-options.js';
 import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
 import { compareCodeUnit, isDraftStatus } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
+import { DK_HUB_DATA_ENV, setInternalEnv } from '../internal-env.mjs';
 import { normalizeBasePrefix, siteDraftRoutes } from './shared.js';
 
 // ===========================================================================
@@ -239,6 +240,22 @@ function hubData(
  *
  * @internal An internal seam the toolkit's own tests use; not supported API.
  */
+/**
+ * The published pages the route-shaping data is built from: every docs page
+ * except the withheld drafts and the pages of a withheld draft directory.
+ */
+function shapingPages(options: RouteShapingOptions, state: BuildState, hidden: ReadonlySet<string>): ShapingPage[] {
+  return directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
+    (input) => !hidden.has(input.slug),
+  );
+}
+
+/** {@link hubData} for the site: its docs root, section registry, options and ADR id rule. */
+function siteHubData(options: RouteShapingOptions, pages: readonly ShapingPage[]): Array<[string, HubCap]> {
+  const root = path.resolve(process.cwd(), options.docsDir);
+  return hubData(pages, resolveSectionRegistry(root), { cap: options.childCap, pageSize: options.pageSize }, loadAdrIdRule(root));
+}
+
 export function routeShapingSource(
   options: RouteShapingOptions,
   state: BuildState = createBuildState(),
@@ -248,16 +265,9 @@ export function routeShapingSource(
   // Read in every sidebar mode (#342/#429): the hub page, the paged listing and the
   // agent surfaces need every hub's data even when the consumer writes the sidebar.
   // The directory metadata stays shaping-only, so a consumer sidebar is untouched.
-  const pages = directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
-    (input) => !hidden.has(input.slug),
-  );
+  const pages = shapingPages(options, state, hidden);
   const meta = options.shapeSidebar ? buildDirectoryMeta(pages) : new Map();
-  const hubs = hubData(
-    pages,
-    resolveSectionRegistry(path.resolve(process.cwd(), options.docsDir)),
-    { cap: options.childCap, pageSize: options.pageSize },
-    loadAdrIdRule(path.resolve(process.cwd(), options.docsDir)),
-  );
+  const hubs = siteHubData(options, pages);
   const { sidebar: chromeSidebar } = chromeOptions();
   const data = {
     base: normalizeBasePrefix(options.base),
@@ -312,6 +322,14 @@ export function routeShapingIntegration(
       'astro:config:setup': ({ updateConfig }) => {
         shapingWarningSink().clear();
         updateConfig({ vite: { plugins: [plugin] } });
+      },
+      // The hub data for the routes that cannot import the virtual module (the
+      // agent API, llms.txt, the build identity: #342). Published once every
+      // setup hook has run, so the withheld drafts and the glossary pages are
+      // known, from the same inputs the module is generated from.
+      'astro:config:done': () => {
+        const hidden = new Set(state.unpublishedDirs);
+        setInternalEnv(DK_HUB_DATA_ENV, JSON.stringify(siteHubData(options, shapingPages(options, state, hidden))));
       },
       'astro:build:done': () => {
         const sink = shapingWarningSink();

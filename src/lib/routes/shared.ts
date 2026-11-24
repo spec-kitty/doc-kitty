@@ -8,7 +8,8 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 import { getCollection } from 'astro:content';
-import { DK_DOCS_ROOT_ENV, DK_OPENAPI_ENV } from '../internal-env.mjs';
+import { DK_DOCS_ROOT_ENV, DK_HUB_DATA_ENV, DK_OPENAPI_ENV } from '../internal-env.mjs';
+import { hubListingPages, type HubCap, type HubListingPage } from '../child-cap.js';
 import type { DocKittyFrontmatter, IndexBasenameOption } from '../metadata.js';
 import { isPublished, readmeToIndexId, slugFromEntryId } from '../metadata.js';
 import { toolkitVersion } from '../generator-stamp.mjs';
@@ -268,6 +269,30 @@ export function stableSerialize(value: unknown): string {
 }
 
 /**
+ * The build's hub data (#342/#429), from the `DK_HUB_DATA` handoff the
+ * route-shaping integration writes at `astro:config:done`: every published
+ * `kind: Hub` hub, as `virtual:doc-kitty/route-shaping` serves it. Empty without
+ * the handoff (a route run outside a DocKitty build, as in unit tests), so every
+ * surface then emits exactly what it did before the paged listing existed.
+ */
+export function readHubData(): Array<[string, HubCap]> {
+  const raw = process.env[DK_HUB_DATA_ENV];
+  if (!raw) return [];
+  return JSON.parse(raw) as Array<[string, HubCap]>;
+}
+
+/** Every listing page from 2 on of every paged hub (`hubListingPages` over {@link readHubData}). */
+export function pagedHubListing(): HubListingPage[] {
+  return hubListingPages(readHubData());
+}
+
+/**
+ * The build-global stamp config, folded into the build identity: the OpenAPI
+ * specs' identity (below) and, since #342, the paged hub listing: each listing
+ * page's slug and children, so a page-size or order change that leaves every
+ * page's frontmatter alone still changes the stamp. Absent parts leave the stamp
+ * byte-identical to a site without them.
+ *
  * The OpenAPI specs' identity fields, folded into the build identity when the
  * `openapi` option is set (#257): each materialised version's `label`,
  * `released` flag and `sha256`, in config order. The docs corpus alone cannot
@@ -283,13 +308,21 @@ export function openApiStampConfig(
   publication?: OpenApiPublication,
 ): Record<string, unknown> | undefined {
   const resolved = publication ?? readPublication(process.env[DK_OPENAPI_ENV]);
-  if (!resolved) return undefined;
+  const listing = pagedHubListing();
+  if (!resolved && listing.length === 0) return undefined;
   return {
-    openapi: resolved.versions.map((version) => ({
-      label: version.label,
-      released: version.released,
-      sha256: version.sha256,
-    })),
+    ...(resolved
+      ? {
+          openapi: resolved.versions.map((version) => ({
+            label: version.label,
+            released: version.released,
+            sha256: version.sha256,
+          })),
+        }
+      : {}),
+    ...(listing.length > 0
+      ? { pagedHubs: listing.map((page) => ({ slug: page.slug, children: page.children.map((child) => child.slug) })) }
+      : {}),
   };
 }
 
