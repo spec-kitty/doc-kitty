@@ -220,9 +220,10 @@ working, not a bug. A toolkit upgrade changes `by`, so it also makes both files
 
 **The hub page needs a date.** When no listed evidence page has an `updated`
 or `verified` date, the index's `generated.at` is `null` and the hub page has
-nothing to date itself with. The command then exits `2` and writes neither file,
-because it renders the hub before writing anything. Give at least one evidence
-page an `updated` date, rebuild, and write again.
+nothing to date itself with. A write that names `--hub` then exits `2` and
+writes neither file, because it renders the hub before writing anything; a
+write with only `--snapshot` still succeeds. Give at least one evidence page an
+`updated` date, rebuild, and write again.
 
 **Commit both files with LF line endings**, for example with `eol=lf` for their
 paths in `.gitattributes`. The check compares bytes, so a checkout that turns
@@ -234,7 +235,6 @@ so an interrupted run never leaves a half-written file. Some limits follow:
 
 - Each file is replaced on its own, not both together. If replacing the hub
   page fails, the snapshot has already been replaced; run the command again.
-
 - A run killed between the two steps can leave that hidden `.tmp` file behind.
   Delete it; the target is unchanged.
 - The new file gets the default permissions of your umask, not the old file's

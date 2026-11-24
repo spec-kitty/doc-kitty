@@ -121,6 +121,12 @@ describe('renderHubPage (WP07 T030)', () => {
     );
     const text = renderHubPage(stamped(g, catalog([record('m')])));
     expect(text).toMatch(/\]\(https:\/\/docs\.example\.org\/docs\/a%20b%20%28c%29\/\)/);
+    // A backslash would escape the next character in a Markdown destination (R24, WP07 cycle 2 finding 3).
+    const slashed = renderHubPage({
+      ...annex,
+      scopes: { ...annex.scopes, system: [{ ...annex.scopes.system[0], evidence: [{ ...annex.scopes.system[0].evidence[0], url: 'https://x.test/a\\b/' }] }] },
+    });
+    expect(slashed).toContain('](https://x.test/a%5Cb/)');
   });
 
   it('never reads the clock, and refuses an index without an instant', () => {

@@ -220,7 +220,7 @@ export const PRODUCER_REGISTRY = createProducerRegistry([
     role: 'ownership',
     scope: { type: 'section', kinds: ['Hub'] },
     recognition: 'stamp-and-scope',
-    regenerateHint: 'run `node <toolkit>/scripts/tom-annex.mjs --dist <dist> --hub <path>` (see docs/guides/tom-annex.md)',
+    regenerateHint: 'build, then run `dockitty-tom-annex --dist <dist> [--snapshot <path>] [--hub <path>]` (see docs/guides/tom-annex.md)',
   },
   { id: 'doc-kitty-scaffold', role: 'provenance' },
 ]);

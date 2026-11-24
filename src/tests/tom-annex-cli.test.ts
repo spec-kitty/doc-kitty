@@ -26,13 +26,14 @@ function project(annex: Annex | null = base) {
   if (annex) writeFileSync(path.join(root, 'dist', 'api', 'tom-annex.json'), serializeTomAnnex(annex));
   const snapshot = path.join(root, 'docs', '_meta', 'tom-annex.snapshot.json');
   const hub = path.join(root, 'docs', 'context', 'evidence-index', 'index.md');
-  const run = (...flags: string[]) => {
-    const r = spawnSync(process.execPath, [CLI, ...flags], { cwd: root, encoding: 'utf8' });
+  const run = (...flags: string[]) => runWith([], ...flags);
+  const runWith = (nodeArgs: string[], ...flags: string[]) => {
+    const r = spawnSync(process.execPath, [...nodeArgs, CLI, ...flags], { cwd: root, encoding: 'utf8' });
     return { status: r.status, out: `${r.stdout}${r.stderr}` };
   };
   const both = ['--dist', 'dist', '--snapshot', snapshot, '--hub', hub];
   const rebuild = (a: Annex) => writeFileSync(path.join(root, 'dist', 'api', 'tom-annex.json'), serializeTomAnnex(a));
-  return { root, snapshot, hub, run, both, rebuild };
+  return { root, snapshot, hub, run, runWith, both, rebuild };
 }
 
 const variant = (edit: (a: Annex) => void): Annex => {
@@ -61,7 +62,7 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     expect(check.status).toBe(1);
     expect(check.out).toContain(`doc-kitty-tom-annex stale-source ${p.snapshot}`);
     expect(check.out).toContain(`doc-kitty-tom-annex stale-source ${p.hub}`);
-    expect(check.out).toMatch(/scripts\/tom-annex\.mjs/);
+    expect(check.out).toMatch(/dockitty-tom-annex --dist/);
   });
 
   it('reports hand-edited for an edited snapshot body', () => {
@@ -148,6 +149,26 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     // No temporary file is left behind.
     expect(readdirSync(path.dirname(p.snapshot))).toEqual(['tom-annex.snapshot.json']);
     expect(readdirSync(path.dirname(p.hub))).toEqual(['index.md']);
+  });
+
+  it('removes its temporary file when the rename fails, and keeps the old file (R24, WP07 cycle 2 finding 2)', () => {
+    const p = project();
+    p.run(...p.both);
+    const before = readFileSync(p.snapshot, 'utf8');
+    p.rebuild(variant((a) => (a.generated.source_digest = `sha256:${'d'.repeat(64)}`)));
+    const preload = fileURLToPath(new URL('./fixtures/tom-annex/fail-rename.mjs', import.meta.url));
+    const r = p.runWith(['--import', preload], '--dist', 'dist', '--snapshot', p.snapshot);
+    expect(r.status).toBe(2);
+    expect(r.out).toMatch(/simulated rename failure/);
+    expect(readFileSync(p.snapshot, 'utf8')).toBe(before);
+    expect(readdirSync(path.dirname(p.snapshot))).toEqual(['tom-annex.snapshot.json']);
+  });
+
+  it('names the dockitty-tom-annex command, with both targets, in the regenerate hint (R24, WP08 review item 10)', () => {
+    const p = project();
+    const check = p.run(...p.both, '--check');
+    expect(check.out).toMatch(/dockitty-tom-annex --dist <dist> \[--snapshot <path>\] \[--hub <path>\]/);
+    expect(check.out).not.toMatch(/node <toolkit>/);
   });
 
   it('writes nothing when the index has no date for the hub (exit 2)', () => {
