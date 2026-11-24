@@ -86,7 +86,8 @@ The rule: every URL appears once on each surface, and a child is never listed ag
 
 ## R9. ADR
 
-- **Decision**: a new ADR-0086, "Paged hub listings, included in every surface". It cross-references ADR-0084 and records the reversal of #342's sitemap criterion and the R5 rule. 0086 is free on `main` (0080, 0082–0085 and 0087 taken) and in the open PRs (#405: 0081, #453: 0085, #454: 0087); check again when the ADR is written.
+- **Decision**: a new ADR-0089, "Paged hub listings, included in every surface". It cross-references ADR-0084 and records the reversal of #342's sitemap criterion and the R5 rule.
+- **Numbering**: the dispatcher allocates ADR numbers across the parallel doc-kitty missions on 2026-11-24: 0084 #426 (merged), 0085 #402 (merged), 0086 #403 sub-processor catalog (in flight), 0087 #359 (merged), 0088 diagram mission (in flight). So #342 takes 0089. The first draft of this plan said 0086 from a check of `main` and the open PRs only, which cannot see numbers held by missions still in flight. At hand-off, re-check `validate:adr-ids` against `main`, the #403 branch and the diagram branch.
 
 ## R10. Measurements
 
