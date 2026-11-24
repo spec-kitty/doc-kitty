@@ -1,7 +1,7 @@
 {
-  "event_count": 36,
-  "last_event_id": "01M861ZG3YQVXXFJXASNQXHGQB",
-  "materialized_at": "2026-11-24T05:55:37.055367+00:00",
+  "event_count": 41,
+  "last_event_id": "01M8637KEKE4HQ9B4W0XXP0K3T",
+  "materialized_at": "2026-11-24T06:17:31.164412+00:00",
   "mission_number": "",
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_type": "software-dev",
@@ -150,19 +150,20 @@
       "agent": null,
       "agent_profile": "node-norris",
       "agent_profile_version": "1.0",
-      "force_count": 2,
+      "force_count": 3,
       "lane": "in_progress",
-      "last_event_id": "01M85J9VP72KT8XPD0AZCVMNXC",
-      "last_transition_at": "2026-11-24T01:21:39.527136+00:00",
+      "last_event_id": "01M8637KEKE4HQ9B4W0XXP0K3T",
+      "last_transition_at": "2026-11-24T06:17:31.164412+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean."
+        "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean.",
+        "Review cycle 1 fixes: SC-001 catalog accounting + duplicate checks red-first; NFR-002 on the example +195 ms (1.6%); full pnpm test green on 2fc2210 (src 4594/4594, mcp 181/181); code unchanged since."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP05-build-gates/review-cycle-1.md",
-        "reference": "review-cycle://tom-annex-export-01M84YDP/WP05-build-gates/review-cycle-1.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP05-build-gates/review-cycle-2.md",
+        "reference": "review-cycle://tom-annex-export-01M84YDP/WP05-build-gates/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
