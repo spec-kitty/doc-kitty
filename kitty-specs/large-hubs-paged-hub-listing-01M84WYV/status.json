@@ -1,7 +1,7 @@
 {
-  "event_count": 14,
-  "last_event_id": "01M87882TBX4YBJ1MYMVR1JXYW",
-  "materialized_at": "2026-11-24T17:04:24.234219+00:00",
+  "event_count": 16,
+  "last_event_id": "01M879JHK4VAH1RGM1ZE35J37P",
+  "materialized_at": "2026-11-24T17:27:35.780595+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
   "mission_type": "software-dev",
@@ -13,8 +13,8 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 1,
-    "in_review": 0,
+    "in_progress": 0,
+    "in_review": 1,
     "planned": 5
   },
   "work_packages": {
@@ -53,19 +53,30 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::implementer-ivan",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::implementer-ivan",
-      "lane": "in_progress",
-      "last_event_id": "01M87882TBX4YBJ1MYMVR1JXYW",
-      "last_transition_at": "2026-11-24T17:04:24.234219+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M879JHK4VAH1RGM1ZE35J37P",
+      "last_transition_at": "2026-11-24T17:27:35.780595+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: hub data for every hub (#429), site hub.pageSize, page collision, WP01 review folds 1-4. Full pnpm test green (src 243/4788, mcp 23/181)."
+      ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 481,
-      "shell_pid_created_at": "1795539856.33"
+      "role": "reviewer",
+      "shell_pid": 575,
+      "shell_pid_created_at": "1795541251.08",
+      "subtasks": {
+        "T005": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done",
+        "T011": "done"
+      }
     },
     "WP03": {
       "actor": "finalize-tasks",
