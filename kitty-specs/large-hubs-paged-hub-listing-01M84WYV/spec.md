@@ -1,6 +1,6 @@
 # Mission Specification: Large hubs: paged hub listing
 
-**Mission Branch**: `kitty/mission-large-hubs-paged-hub-listing-01M84WYV` (lands on `feat/342-paged-hub-listing`, stacked on PR #426 until it merges)
+**Mission Branch**: `kitty/mission-large-hubs-paged-hub-listing-01M84WYV` (lands on `feat/342-paged-hub-listing`, based on `main` after PR #426 merged)
 **Created**: 2026-11-23
 **Status**: Draft
 **Input**: Issue #342, "Large hubs slice 2: paged hub listing" (epic #340), with #429 folded in. Plan: `docs/plans/features/large-hubs.md`, slice 2. Design: `docs/architecture/research/missions-and-ops.md`, "Listing a large hub". Builds on slice 1 (#341, PR #426, ADR-0084).
@@ -171,7 +171,7 @@ A site owner who supplies their own Starlight sidebar still has large hubs. Thei
 |----|-------|------------|----------|----------|--------|
 | C-001 | One composition | Count and order come from the one composition the hub page and slice 1's cap use. No second ordering of hub children is introduced. | Technical | High | Open |
 | C-002 | No new sidebar carrier | ADR-0063's carrier set stays as is; paging lives in the hub page and in build-generated routes. | Technical | High | Open |
-| C-003 | Stacked on #426 | Until #426 merges, this work is stacked on `feat/341-sidebar-child-cap-pr` and the PR says so. | Business | High | Open |
+| C-003 | Based on main | PR #426 (slice 1) merged on 2026-11-23, so this work is based on `main`; the PR is not stacked. | Business | High | Open |
 | C-004 | Out of scope | "Load more", sorting, filters and the per-hub `index.json` (#343), and `llms: summary` mode (#344) are out of scope. | Business | High | Open |
 | C-005 | Starlight frame | Paged pages render in the Starlight frame, not as a splash or a bare page, and keep the theme layer swappable (charter: presentation axis). | Technical | High | Open |
 | C-006 | Changelog by fragment | The changelog is changed only by adding a fragment under `docs/changelog/unreleased/`; an ADR adds its file but never its index row (AGENTS.md). | Business | High | Open |
