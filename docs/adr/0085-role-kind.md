@@ -1,8 +1,8 @@
 ---
 title: "ADR-0085: A Role kind for accountable functions"
 description: "Role is a canonical kind for an accountable function. A Role page names its role and its responsibilities, and process pages link roles through related."
-doc_status: draft
-updated: 2026-11-23T00:00:00Z
+doc_status: active
+updated: 2026-11-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -18,13 +18,13 @@ related:
 
 ## Status
 
-**Proposed**, 2026-11-23.
+**Accepted**, 2026-11-24. Proposed 2026-11-23.
 
 The decision content follows the operator's rulings for issue #402, relayed
 through the dispatcher and recorded as Decision Moments
 `01M84X1Q21P9HN21KNN9PFSNN6` (Role is a new kind) and
-`01M84X1TXTTJM09B0G0YN2G9BM` (the required fields). The operator accepts the
-ADR itself.
+`01M84X1TXTTJM09B0G0YN2G9BM` (the required fields). The operator accepted the
+ADR on 2026-11-24, with a Role layout as a follow-up (#447).
 
 ## Context
 
@@ -76,8 +76,8 @@ audience model, and would make every role state reader goals it does not have.
 - The canonical kind list grows to 16 entries.
 - A Role page has no layout of its own yet. Unlike a Persona page, its `role`
   and `responsibilities` fields are not rendered on the page, so the Role
-  template repeats the duties in a body section. A Role layout is a possible
-  follow-up.
+  template repeats the duties in a body section. A Role layout is tracked as
+  a follow-up in #447.
 
 ### Risks
 
