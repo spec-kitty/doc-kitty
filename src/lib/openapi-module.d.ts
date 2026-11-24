@@ -12,5 +12,14 @@ declare namespace App {
     dkOpenApi?: import('./openapi/adapters.js').OpenApiNav;
     /** Links the route-shaping middleware relabelled, for a later middleware that rebuilds prev/next. */
     dkRelabelled?: Map<string, import('./route-shaping.js').Relabelled>;
+    /** Set only when a hub is capped (#341): what a later middleware needs to put prev/next back in hub order. */
+    dkHubOrder?: {
+      hubCaps: import('./child-cap.js').HubCapMap;
+      currentSlug: string;
+      /** `true` follows the sidebar, a string follows it under that label, `false` keeps the author's link. */
+      follows: { prev: import('./route-shaping.js').PaginationFollow; next: import('./route-shaping.js').PaginationFollow };
+      /** The prev/next the route-shaping middleware computed. */
+      pagination: import('./route-shaping.js').RoutePagination;
+    };
   }
 }

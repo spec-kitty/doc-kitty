@@ -35,8 +35,8 @@ function copy(): string {
 
 describe('the vendored packs contract snapshot', () => {
   it('is pinned to the packs-contract release tag and its commit', () => {
-    expect(lock.tag).toBe('contract-packs-v0.1.0-rc.1');
-    expect(lock.commit).toBe('69ec326179246c9a79eca1ba1d424f059f5153e2');
+    expect(lock.tag).toBe('contract-packs-v0.1.0-rc.2');
+    expect(lock.commit).toBe('33f3ad46e9e33e895d4cd3a077d928d91b4f025f');
     expect(lock.contractPath).toBe('contracts/packs');
   });
 
@@ -104,6 +104,18 @@ describe('the vendored packs contract snapshot', () => {
     delete relock.files['file-kinds.yaml'];
     writeFileSync(path.join(dir, 'contract.lock.json'), JSON.stringify(relock));
     expect(() => loadContract(dir)).toThrow(/\[dk-packs\].*file-kinds\.yaml is missing/s);
+  });
+
+  it('refuses a lock key that could name a file outside the snapshot (#423)', () => {
+    for (const key of ['../outside.schema.json', 'schemas/../../outside.schema.json', '/etc/hostname', 'schemas\\policy.schema.json', './file-kinds.yaml', 'contract.lock.json']) {
+      const dir = copy();
+      const relock = JSON.parse(readFileSync(path.join(dir, 'contract.lock.json'), 'utf8'));
+      relock.files[key] = '0'.repeat(64);
+      writeFileSync(path.join(dir, 'contract.lock.json'), JSON.stringify(relock));
+      const problems = verifyContractLock(dir);
+      expect(problems, key).toEqual([expect.stringContaining(`${JSON.stringify(key)} is not a safe snapshot path`)]);
+      expect(() => loadContract(dir), key).toThrow(/\[dk-packs\].*not a safe snapshot path/s);
+    }
   });
 
   it('fails when the lock itself is missing or unreadable', () => {

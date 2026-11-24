@@ -2,7 +2,7 @@
 title: Releasing the toolkit to GitHub Packages
 description: How a maintainer publishes @spec-kitty/doc-toolkit to the GitHub Packages npm registry by pushing a version tag, and why it needs no publish secret.
 doc_status: active
-updated: 2026-11-01T00:00:00Z
+updated: 2026-11-21T00:00:00Z
 type: Operations
 kind: How-To
 authors:
@@ -64,9 +64,10 @@ a checkout cannot go to the public npm registry by mistake.
    the minor number for breaking changes and the patch number for everything else.
    The version also appears in two places that CI checks against it. Update the
    `pnpm add @spec-kitty/doc-toolkit@<version>` lines in
-   `docs/guides/consumer-setup.md` and `example/docs/guides/install.md`. Then run
-   `pnpm generate:features`, which stamps the version into the generated
-   example feature pages.
+   `docs/guides/consumer-setup.md` and `example/docs/guides/install.md`. The
+   generated example pages (glossary, Gherkin features) need no regeneration: a
+   stamp's `by` names the version that last changed a page's content, so a
+   version bump alone does not rewrite them (#398).
 2. **Resync the consumption fixture.** A version bump changes the packed
    tarball, so regenerate the fixture lockfile:
    `DK_CONSUMPTION_BOOTSTRAP=1 node tests/consumption/scripts/run-consumption-test.mjs`.

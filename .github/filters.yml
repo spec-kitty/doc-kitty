@@ -48,11 +48,14 @@ code:
 # `code` (`src/**`), which runs doc-sanity + build-example too.
 # `example/scenarios/**` holds `.feature` files that pages include with
 # `::gherkin{src}` (ADR-0051): an edit changes the built pages, so it builds.
+# `example/.contextive/**` is the source of the committed glossary pages: an edit
+# must run the build's clean-tree check (#398).
 example_content:
   - 'example/docs/**'
   - 'example/public/**'
   - 'example/features/**'
   - 'example/scenarios/**'
+  - 'example/.contextive/**'
 
 # repo_docs — non-deployed project docs → doc-sanity only.
 repo_docs:
