@@ -62,6 +62,8 @@ const BUILD_SUITES = [
   // `example/.dk-test-exclude-folders/`) with folders left out, then runs the
   // frontmatter, link and built-link gates on it. Real Astro runs, so serialized here.
   'tests/exclude-folders-build.test.ts',
+  // The evidence index on real builds (#401, WP05): two small adopter sites under example/.
+  'tests/tom-annex-build.test.ts',
   // Legacy `.html` redirects (ADR-0071): builds a fixture site (in
   // `example/.dk-test-legacy-html/`) at the domain root and under a base path,
   // and once with a refused Astro `.html` redirect key. Real Astro runs.

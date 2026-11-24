@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://doc-kitty.spec-kitty.dev/schemas/tom-annex-1.0.json",
+  "title": "DocKitty evidence index (TOM annex), format 1.0",
+  "description": "Evidence index, not the contractual annex. Lists, per catalog measure, the published pages that evidence it. Not legal advice.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "label", "notice", "generated", "catalog", "scopes", "uncovered", "counsel"],
+  "properties": {
+    "format": { "const": "doc-kitty/tom-annex" },
+    "format_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+    "label": { "const": "Evidence index, not the contractual annex." },
+    "notice": { "type": "string", "minLength": 1 },
+    "generated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["by", "at", "source_digest", "content_hash"],
+      "properties": {
+        "by": { "type": "string", "pattern": "^doc-kitty-tom-annex/.+$" },
+        "at": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
+        "source_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "content_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{12}$" }
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "default"],
+      "properties": { "source": { "type": "string" }, "default": { "type": "boolean" } }
+    },
+    "scopes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "organisation"],
+      "properties": {
+        "system": { "type": "array", "items": { "$ref": "#/$defs/measureEntry" } },
+        "organisation": { "type": "array", "items": { "$ref": "#/$defs/measureEntry" } }
+      }
+    },
+    "uncovered": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "nature"],
+        "properties": { "id": { "type": "string" }, "label": { "type": "string" }, "nature": { "$ref": "#/$defs/nature" } }
+      }
+    },
+    "counsel": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "nature": { "enum": ["technical", "organisational", "legal", "physical"] },
+    "measureEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "nature", "frameworks", "evidence"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "label": { "type": "string" },
+        "nature": { "$ref": "#/$defs/nature" },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["framework", "ref"],
+            "properties": { "framework": { "type": "string" }, "ref": { "type": "string" } }
+          }
+        },
+        "dpv": { "type": "string" },
+        "evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/evidenceRef" } }
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "url", "updated", "doc_status", "verified", "note"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "url": { "type": "string" },
+        "updated": { "type": ["string", "null"] },
+        "doc_status": { "type": "string" },
+        "verified": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["by", "at"],
+            "properties": { "by": { "type": "string" }, "at": { "type": "string" } }
+          }
+        },
+        "note": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

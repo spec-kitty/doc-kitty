@@ -122,6 +122,9 @@ example/.dk-test-loader-includes/
 # Scenario-results fixture site (ADR-0055, transient) —
 # src/tests/gherkin-results-build.test.ts builds it, then removes it.
 example/.dk-test-gherkin-results/
+# tom-annex-build.test.ts (#401): the two evidence-index fixture sites.
+example/.dk-test-tom-annex-classified/
+example/.dk-test-tom-annex-bare/
 
 # Excluded-folders fixture site (ADR-0070, transient) —
 # src/tests/exclude-folders-build.test.ts builds it, then removes it.

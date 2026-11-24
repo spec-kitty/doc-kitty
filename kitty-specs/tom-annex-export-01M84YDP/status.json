@@ -1,5 +1,5 @@
 {
-  "event_count": 58,
+  "event_count": 59,
   "last_event_id": "01M8797YH625FFRPR0V9CE318Q",
   "materialized_at": "2026-11-24T17:21:48.582222+00:00",
   "mission_number": "",
@@ -150,7 +150,7 @@
       "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 4,
+      "force_count": 5,
       "lane": "approved",
       "last_event_id": "01M876NYH1HTHDT3JCBJHYXGMY",
       "last_transition_at": "2026-11-24T16:37:01.601877+00:00",

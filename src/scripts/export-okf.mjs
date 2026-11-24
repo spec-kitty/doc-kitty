@@ -20,7 +20,7 @@
  * Exit codes: 0 ok (advisory link warnings go to stderr), 1 conformance violation,
  * 2 usage or missing input.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { exportOkfToDisk } from '../lib/okf-export/disk.mjs';
@@ -75,11 +75,14 @@ function run(argv) {
   const flag = values['index-basename']?.split(',').filter(Boolean);
   const resolved = resolveSiteIndexBasenames(values.docs, { flag, tool: 'dockitty-export-okf' });
   announceIndexNames(resolved, { log: console.error });
+  // The evidence index (#401) sits beside the graph when the site has classified pages; its absence is normal.
+  const annexFile = path.join(path.dirname(graphFile), 'tom-annex.json');
+  const tomAnnex = existsSync(annexFile) ? readFileSync(annexFile, 'utf8') : undefined;
   const bundle = exportOkfToDisk({
     graphFile,
     docsDir: values.docs,
     outDir,
-    options: { indexBasename: resolved.names, base: values.base ?? '', siteUrl: values['site-url'] ?? '' },
+    options: { indexBasename: resolved.names, base: values.base ?? '', siteUrl: values['site-url'] ?? '', tomAnnex },
   });
   console.error(`wrote ${bundle.size} file(s) to ${values.out}`);
   return report(outDir, { baseGiven: values.base !== undefined });
