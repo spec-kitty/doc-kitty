@@ -249,16 +249,17 @@
     },
     "WP08": {
       "actor": "claude",
-      "agent": null,
-      "agent_profile": "scribe-sally",
-      "agent_profile_version": "1.0",
+      "agent": "claude::scribe-sally",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "for_review",
       "last_event_id": "01M87JZRQ0432KRC5Z0WEF43GP",
       "last_transition_at": "2026-11-24T20:12:06.240290+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Guide docs/guides/tom-annex.md, fragment docs/changelog/unreleased/401-tom-annex-export.md (section Added: the README does not allow Features), and a metadata-model cross-link paragraph after the ADR-0087 list. The label and the counsel items are verbatim from the constants; the field table matches tom-annex.schema.json key for key. Documented: project-relative keys (WP06 N4); the check trusts the build's source_digest, so CI must build first; the WP07 cycle-2 limits 1, 4 and 5 (symlinks not followed, umask mode, a stale .tmp, no fsync, a Windows locked target exits 2); the dev restart; Deferred items. WP07 findings 2 (a cleanup test) and 3 (backslash encoding) are code in WP07 files, not on this branch; they are folded at R24 on the consolidated branch. Checks: validate:docs/links/changelog 0, markdownlint 0, Vale 3.18.0 0 errors; pnpm test on feat/401 src 4745/4745 and mcp 181/181."
+        "Guide docs/guides/tom-annex.md, fragment docs/changelog/unreleased/401-tom-annex-export.md (section Added: the README does not allow Features), and a metadata-model cross-link paragraph after the ADR-0087 list. The label and the counsel items are verbatim from the constants; the field table matches tom-annex.schema.json key for key. Documented: project-relative keys (WP06 N4); the check trusts the build's source_digest, so CI must build first; the WP07 cycle-2 limits 1, 4 and 5 (symlinks not followed, umask mode, a stale .tmp, no fsync, a Windows locked target exits 2); the dev restart; Deferred items. WP07 findings 2 (a cleanup test) and 3 (backslash encoding) are code in WP07 files, not on this branch; they are folded at R24 on the consolidated branch. Checks: validate:docs/links/changelog 0, markdownlint 0, Vale 3.18.0 0 errors; pnpm test on feat/401 src 4745/4745 and mcp 181/181.",
+        "Review cycle 1 fixed in da7bc9e5: (1) a by bump makes both files stale-render; (2) the null-at limit and its remedy; (3) a refusal exits 1; (4) commit both files with LF (eol=lf); (5) the gate does not re-derive generated.at either; (6) atomic per file, not across both; (7) published classified pages; (8) unowned cites #454; (9) the issue-matrix #401 text refreshed on coordination. Item 10 (the regenerate hint) is code and is folded at R24. Vale 3.18.0 0 errors on the 3 files; validate:docs/links/changelog 0; markdownlint 0."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
