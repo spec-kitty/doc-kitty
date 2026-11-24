@@ -29,6 +29,7 @@
   "purpose_context": "About half of the EU SCC technical-and-organisational-measure headings describe an operating model (governance, accountability, incident handling, supplier management). DocKitty can stub a page today but gives no body template and has no kind for an accountable role. This mission adds an opt-in operating-model section preset, structure-and-prompt templates in the stub tools, and a Role kind, so consumers can document their operating model and classify it against the measures catalog.",
   "purpose_tldr": "Give teams ready page templates for documenting how their organisation runs, plus a Role page kind for accountable functions.",
   "slug": "operating-model-templates-01M84X0R",
+  "status_phase": "1",
   "target_branch": "feat/402-operating-model-templates",
   "topology": "lanes_with_coord",
   "topology_decision": {
