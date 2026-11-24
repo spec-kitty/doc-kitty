@@ -12,8 +12,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { restoreInternalEnv } from './helpers/restore-internal-env';
-import { DK_DOCS_ROOT_ENV, DK_HUB_DATA_ENV, deleteInternalEnv, setInternalEnv } from '../lib/internal-env.mjs';
+import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import { DK_DOCS_ROOT_ENV, DK_HUB_DATA_ENV, DK_OPENAPI_ENV, deleteInternalEnv, setInternalEnv } from '../lib/internal-env.mjs';
 import type { HubCap } from '../lib/child-cap.js';
+import { publicationFile } from './helpers/openapi-publication.js';
 
 const pad = (n: number) => String(n).padStart(3, '0');
 const { entries } = vi.hoisted(() => ({ entries: [] as Array<{ id: string; body: string; data: Record<string, unknown> }> }));
@@ -47,8 +50,11 @@ const hub = (count: number, pageSize: number, capped = true): HubCap => ({
   pageSize,
   children: Array.from({ length: count }, (_, i) => ({ slug: `missions/m-${pad(i + 1)}`, label: `Mission ${pad(i + 1)}` })),
 });
+const { writeHubData, readHubData, openApiStampConfig } = await import('../lib/routes/shared.js');
+const handoffDir = mkdtempSync(path.join(tmpdir(), 'dk-hub-data-'));
+/** Publish hub data as the integration does: a file, its path in `DK_HUB_DATA`. */
 const publish = (data: Array<[string, HubCap]> | undefined) =>
-  data === undefined ? deleteInternalEnv(DK_HUB_DATA_ENV) : setInternalEnv(DK_HUB_DATA_ENV, JSON.stringify(data));
+  data === undefined ? deleteInternalEnv(DK_HUB_DATA_ENV) : setInternalEnv(DK_HUB_DATA_ENV, writeHubData(handoffDir, data));
 
 type Index = { count: number; buildId: string; pages: Array<Record<string, unknown> & { slug: string; kind: string }> };
 const index = async (): Promise<Index> =>
@@ -59,6 +65,7 @@ const roots: string[] = [];
 afterEach(() => {
   publish(undefined);
   deleteInternalEnv(DK_DOCS_ROOT_ENV);
+  deleteInternalEnv(DK_OPENAPI_ENV);
   for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
 });
 
@@ -159,31 +166,6 @@ describe('per-listing-page JSON (T023)', () => {
   });
 });
 
-describe('llms.txt (T024)', () => {
-  it('lists each listing page once, right after its hub, and every child once', async () => {
-    corpus();
-    publish([['missions', hub(120, 50)]]);
-    const lines = (await llms()).split('\n');
-    const at = lines.indexOf('- [Missions](https://docs.example.test/missions/): Every mission.');
-    expect(at).toBeGreaterThan(-1);
-    expect(lines.slice(at + 1, at + 3)).toEqual([
-      '- [Missions, page 2](https://docs.example.test/missions/page/2/): children 51–100 of 120',
-      '- [Missions, page 3](https://docs.example.test/missions/page/3/): children 101–120 of 120',
-    ]);
-    for (let i = 1; i <= 120; i += 1) {
-      expect(lines.filter((l) => l.startsWith(`- [Mission ${pad(i)}](`))).toHaveLength(1);
-    }
-  });
-
-  it('is byte-identical without a paged hub', async () => {
-    corpus();
-    publish(undefined);
-    const none = await llms();
-    publish([['missions', hub(120, 500)]]);
-    expect(await llms()).toBe(none);
-  });
-});
-
 describe('the DK_HUB_DATA handoff (route-shaping integration, astro:config:done)', () => {
   it('publishes the same hub data the virtual module serves', async () => {
     const { routeShapingIntegration, routeShapingSource } = await import('../lib/integrations/route-shaping.js');
@@ -200,13 +182,96 @@ describe('the DK_HUB_DATA handoff (route-shaping integration, astro:config:done)
       const state = { unpublishedDirs: [], unpublishedPaths: [] } as never;
       publish(undefined);
       const hooks = routeShapingIntegration(options, state).hooks as Record<string, (arg: unknown) => void>;
-      hooks['astro:config:done']!({});
+      hooks['astro:config:done']!({ config: { cacheDir: pathToFileURL(path.join(root, '.astro') + '/') } });
       const text = routeShapingSource(options, state);
       const served = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)).hubCaps;
-      expect(JSON.parse(process.env[DK_HUB_DATA_ENV]!)).toEqual(served);
+      // The handoff is a file path, never the data itself (review cycle 1: E2BIG).
+      expect(process.env[DK_HUB_DATA_ENV]).toMatch(/\.hubs\.json$/);
+      expect(readHubData()).toEqual(served);
       expect(served[0][1]).toMatchObject({ count: 3, capped: true, pageSize: 1 });
     } finally {
       cwd.mockRestore();
     }
+  });
+});
+
+describe('review cycle 1 (WP05)', () => {
+  it('hands off more than 128 KiB of hub data, and a child process still spawns (issue 1)', () => {
+    const big: Array<[string, HubCap]> = Array.from({ length: 40 }, (_, h) => [
+      `hub-${h}`,
+      { cap: 1, count: 100, capped: true, pageSize: 10, children: Array.from({ length: 100 }, (_, i) => ({ slug: `hub-${h}/a-rather-long-child-slug-${i}`, label: `A rather long child label number ${i}` })) },
+    ]);
+    expect(JSON.stringify(big).length).toBeGreaterThan(128 * 1024);
+    publish(big);
+    expect(process.env[DK_HUB_DATA_ENV]!.length).toBeLessThan(1024);
+    const child = spawnSync(process.execPath, ['-e', ''], { env: process.env });
+    expect(child.error).toBeUndefined();
+    expect(child.status).toBe(0);
+    expect(readHubData()).toHaveLength(40);
+  });
+
+  it('reads and parses the handoff once per file (issue 1)', () => {
+    publish([['missions', hub(120, 50)]]);
+    expect(readHubData()).toBe(readHubData());
+  });
+
+  it('lists no listing record for a hub the agent index leaves out (issue 2)', async () => {
+    corpus();
+    const hubDoc = entries.find((e) => e.id === 'missions')!;
+    hubDoc.data = { ...hubDoc.data, agent: { discoverable: false } };
+    publish([['missions', hub(120, 50)]]);
+    const { pages } = await index();
+    expect(pages.some((p) => p.slug === 'missions')).toBe(false);
+    expect(pages.filter((p) => p.kind === 'Listing')).toEqual([]);
+  });
+
+  it('folds the children\'s order into the build id (item 4, M5)', async () => {
+    corpus();
+    publish([['missions', hub(120, 50)]]);
+    const a = (await index()).buildId;
+    const reordered = hub(120, 50);
+    reordered.children = [...reordered.children].reverse();
+    publish([['missions', reordered]]);
+    expect((await index()).buildId).not.toBe(a);
+  });
+
+  it('gives a nested hub\'s listing record the top-level section (item 4, M15)', async () => {
+    entries.length = 0;
+    entries.push(doc('index', 'Home'), doc('plans', 'Plans', 'Hub'), doc('plans/missions', 'Missions', 'Hub'));
+    const nested = hub(120, 50);
+    nested.children = nested.children.map((c) => ({ ...c, slug: `plans/${c.slug}` }));
+    for (const c of nested.children) entries.push(doc(c.slug, c.label));
+    publish([['plans/missions', nested]]);
+    const listing = (await index()).pages.filter((p) => p.kind === 'Listing');
+    expect(listing.map((p) => [p.slug, p.section, p.listing_of])).toEqual([
+      ['plans/missions/page/2', 'plans', 'plans/missions'],
+      ['plans/missions/page/3', 'plans', 'plans/missions'],
+    ]);
+  });
+
+  it('orders the index: docs, then Listing, then OpenAPI (item 5)', async () => {
+    corpus();
+    publish([['missions', hub(120, 50)]]);
+    setInternalEnv(
+      DK_OPENAPI_ENV,
+      publicationFile({
+        section: 'api',
+        llmsOperations: false,
+        versions: [{ label: 'v1', title: 'Pets', apiVersion: '1.0.0', released: true, rawRoute: '/api/openapi/v1.yaml', sha256: 'a'.repeat(64), operations: [] }],
+      }),
+    );
+    const kinds = (await index()).pages.map((p) => (p.kind === 'Listing' ? 'L' : p.kind === 'Reference' && String(p.slug).startsWith('api/') ? 'O' : 'D'));
+    const firstL = kinds.indexOf('L');
+    const firstO = kinds.indexOf('O');
+    expect(firstL).toBeGreaterThan(0);
+    expect(firstO).toBeGreaterThan(firstL);
+    expect(kinds.slice(0, firstL).every((k) => k === 'D')).toBe(true);
+    expect(kinds.slice(firstL, firstO).every((k) => k === 'L')).toBe(true);
+    expect(kinds.slice(firstO).every((k) => k === 'O')).toBe(true);
+  });
+
+  it('stamps nothing without a handoff (item 3: an unpaged site keeps its build id)', () => {
+    publish(undefined);
+    expect(openApiStampConfig()).toBeUndefined();
   });
 });

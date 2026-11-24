@@ -80,10 +80,12 @@ export const DK_CHROME_OPTIONS_ENV = 'DK_CHROME_OPTIONS';
 export const DK_SERVED_SURFACES_ENV = 'DK_SERVED_SURFACES';
 
 /**
- * JSON `Array<[hubFolder, HubCap]>`: every published `kind: Hub` hub's cap, page
- * size, count and children (#342/#429), the same data `virtual:doc-kitty/route-shaping`
- * serves. Read by the agent API, `llms.txt` and the build identity, which list the
- * paged hub listing's pages. Absent until `astro:config:done`.
+ * Absolute path of a JSON file holding `Array<[hubFolder, HubCap]>`: every
+ * published `kind: Hub` hub's cap, page size, count and children (#342/#429), the
+ * same data `virtual:doc-kitty/route-shaping` serves. A path, never the data (a big
+ * env string breaks every later child spawn, E2BIG; see hub-data-handoff.ts).
+ * Read by the agent API, `llms.txt` and the build identity. Absent until
+ * `astro:config:done`.
  */
 export const DK_HUB_DATA_ENV = 'DK_HUB_DATA';
 

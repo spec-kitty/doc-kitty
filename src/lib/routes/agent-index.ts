@@ -374,7 +374,9 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
     // among the docs (research R5). Gated by the hub's section `agent` feed, like
     // the hub itself. No paged hub (or no hub data) appends nothing, so the index
     // stays byte-identical; the build id above folds the listing in.
-    const hubsBySlug = new Map(all.map((entry) => [entry.slug, entry]));
+    // From the GATED set: a hub the index leaves out (feeds, or its own
+    // `agent.discoverable: false`) lists no pages either, as in llms.txt (review cycle 1).
+    const hubsBySlug = new Map(ranked.map((entry) => [entry.slug, entry]));
     const hubData = new Map(readHubData());
     for (const page of pagedHubListing()) {
       if (!feedsSurface(feeds, sectionOf(page.hub), 'agent')) continue;

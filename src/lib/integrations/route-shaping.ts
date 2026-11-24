@@ -18,7 +18,9 @@ import { chromeOptions } from '../chrome-options.js';
 import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
 import { compareCodeUnit, isDraftStatus } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
+import { fileURLToPath } from 'node:url';
 import { DK_HUB_DATA_ENV, setInternalEnv } from '../internal-env.mjs';
+import { writeHubData } from '../hub-data-handoff.js';
 import { normalizeBasePrefix, siteDraftRoutes } from './shared.js';
 
 // ===========================================================================
@@ -232,15 +234,6 @@ function hubData(
 }
 
 /**
- * Generate the source of `virtual:doc-kitty/route-shaping`. Plain JSON data, so
- * the middleware needs no filesystem access; the map is serialised as sorted
- * entries, so two builds of one tree emit the same module (NFR-006). Exported so
- * the consumer-precedence switch is testable without a build. The withheld
- * drafts come from the {@link BuildState} the draft-publication integration fills.
- *
- * @internal An internal seam the toolkit's own tests use; not supported API.
- */
-/**
  * The published pages the route-shaping data is built from: every docs page
  * except the withheld drafts and the pages of a withheld draft directory.
  */
@@ -256,6 +249,15 @@ function siteHubData(options: RouteShapingOptions, pages: readonly ShapingPage[]
   return hubData(pages, resolveSectionRegistry(root), { cap: options.childCap, pageSize: options.pageSize }, loadAdrIdRule(root));
 }
 
+/**
+ * Generate the source of `virtual:doc-kitty/route-shaping`. Plain JSON data, so
+ * the middleware needs no filesystem access; the map is serialised as sorted
+ * entries, so two builds of one tree emit the same module (NFR-006). Exported so
+ * the consumer-precedence switch is testable without a build. The withheld
+ * drafts come from the {@link BuildState} the draft-publication integration fills.
+ *
+ * @internal An internal seam the toolkit's own tests use; not supported API.
+ */
 export function routeShapingSource(
   options: RouteShapingOptions,
   state: BuildState = createBuildState(),
@@ -327,9 +329,10 @@ export function routeShapingIntegration(
       // agent API, llms.txt, the build identity: #342). Published once every
       // setup hook has run, so the withheld drafts and the glossary pages are
       // known, from the same inputs the module is generated from.
-      'astro:config:done': () => {
+      'astro:config:done': ({ config }) => {
         const hidden = new Set(state.unpublishedDirs);
-        setInternalEnv(DK_HUB_DATA_ENV, JSON.stringify(siteHubData(options, shapingPages(options, state, hidden))));
+        const cacheDir = path.join(fileURLToPath(config.cacheDir), 'doc-kitty-hubs');
+        setInternalEnv(DK_HUB_DATA_ENV, writeHubData(cacheDir, siteHubData(options, shapingPages(options, state, hidden))));
       },
       'astro:build:done': () => {
         const sink = shapingWarningSink();

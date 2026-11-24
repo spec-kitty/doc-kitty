@@ -8,8 +8,11 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 import { getCollection } from 'astro:content';
-import { DK_DOCS_ROOT_ENV, DK_HUB_DATA_ENV, DK_OPENAPI_ENV } from '../internal-env.mjs';
-import { hubListingPages, type HubCap, type HubListingPage } from '../child-cap.js';
+import { DK_DOCS_ROOT_ENV, DK_OPENAPI_ENV } from '../internal-env.mjs';
+import { hubListingPages, type HubListingPage } from '../child-cap.js';
+import { readHubData } from '../hub-data-handoff.js';
+
+export { readHubData, writeHubData } from '../hub-data-handoff.js';
 import type { DocKittyFrontmatter, IndexBasenameOption } from '../metadata.js';
 import { isPublished, readmeToIndexId, slugFromEntryId } from '../metadata.js';
 import { toolkitVersion } from '../generator-stamp.mjs';
@@ -266,19 +269,6 @@ export function stableSerialize(value: unknown): string {
     .filter((key) => record[key] !== undefined)
     .sort();
   return `{${keys.map((key) => `${JSON.stringify(key)}:${stableSerialize(record[key])}`).join(',')}}`;
-}
-
-/**
- * The build's hub data (#342/#429), from the `DK_HUB_DATA` handoff the
- * route-shaping integration writes at `astro:config:done`: every published
- * `kind: Hub` hub, as `virtual:doc-kitty/route-shaping` serves it. Empty without
- * the handoff (a route run outside a DocKitty build, as in unit tests), so every
- * surface then emits exactly what it did before the paged listing existed.
- */
-export function readHubData(): Array<[string, HubCap]> {
-  const raw = process.env[DK_HUB_DATA_ENV];
-  if (!raw) return [];
-  return JSON.parse(raw) as Array<[string, HubCap]>;
 }
 
 /** Every listing page from 2 on of every paged hub (`hubListingPages` over {@link readHubData}). */
