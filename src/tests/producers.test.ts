@@ -12,9 +12,9 @@ const stamped = (by: string, extra: Record<string, unknown> = {}) => ({ generate
 
 describe('the built-in registry', () => {
   it('lists the ownership and provenance producers in registration order', () => {
-    expect(PRODUCER_REGISTRY.ids('ownership')).toEqual(['doc-kitty-gherkin', 'doc-kitty-glossary']);
+    expect(PRODUCER_REGISTRY.ids('ownership')).toEqual(['doc-kitty-gherkin', 'doc-kitty-glossary', 'doc-kitty-tom-annex']);
     expect(PRODUCER_REGISTRY.ids('provenance')).toEqual(['doc-kitty-scaffold']);
-    expect(PRODUCER_REGISTRY.ids()).toEqual(['doc-kitty-gherkin', 'doc-kitty-glossary', 'doc-kitty-scaffold']);
+    expect(PRODUCER_REGISTRY.ids()).toEqual(['doc-kitty-gherkin', 'doc-kitty-glossary', 'doc-kitty-tom-annex', 'doc-kitty-scaffold']);
   });
 
   it('maps a versioned stamp and a retired stamp to their producer', () => {

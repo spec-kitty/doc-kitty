@@ -11,6 +11,7 @@ import {
   serializeTomAnnex,
 } from '../lib/tom-annex/core.mjs';
 import { canonical, catalog, classified, graph, measureNode, page, record } from './fixtures/tom-annex/graph.mjs';
+import { stampAnnex } from '../lib/tom-annex/stamp.mjs';
 
 const SITE = new URL('https://docs.example.org');
 const ctx = { site: SITE, base: '/' };
@@ -311,7 +312,8 @@ describe('canonical serialiser and the shipped schema (FR-013)', () => {
   it('builds objects whose keys the shipped schema declares, with every required key present', () => {
     const schema = JSON.parse(readFileSync(new URL('../lib/tom-annex/tom-annex.schema.json', import.meta.url), 'utf8'));
     const { graph: g, catalog: c } = canonical();
-    const annex = build(g, c);
+    // The shipped index always carries the ADR-0087 stamp (WP06).
+    const annex = stampAnnex(build(g, c), { inputs: [] });
     const check = (obj: Record<string, unknown>, def: { properties: Record<string, unknown>; required: string[] }) => {
       for (const key of Object.keys(obj)) expect(Object.keys(def.properties)).toContain(key);
       for (const key of def.required) expect(obj).toHaveProperty(key);
@@ -325,8 +327,8 @@ describe('canonical serialiser and the shipped schema (FR-013)', () => {
     }
     for (const u of annex.uncovered) check(u, schema.properties.uncovered.items);
     expect(annex.format_version).toMatch(new RegExp(schema.properties.format_version.pattern));
-    // WP01 ships the schema with `generated` described but not yet required (WP06 makes it required).
-    expect(schema.properties.generated).toBeDefined();
-    expect(schema.required).not.toContain('generated');
+    // WP06: no 1.0 index is released without the stamp, so the schema requires it.
+    expect(schema.required).toContain('generated');
+    check(annex.generated, schema.properties.generated);
   });
 });

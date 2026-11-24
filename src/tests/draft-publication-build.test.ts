@@ -468,6 +468,12 @@ describe('WP05 — draft publication in the built example', () => {
     expect(diffSurfaces(abs('off', ''), abs('offRepeat', ''))).toEqual([]);
   });
 
+  it('compares the evidence index too, unmasked (#401 FR-007): the example has classified pages', () => {
+    // Non-vacuity: the file exists in both builds, so 'api/**/*.json' above really compared it.
+    expect(existsSync(abs('off', 'api/tom-annex.json'))).toBe(true);
+    expect(read('offRepeat', 'api/tom-annex.json')).toBe(read('off', 'api/tom-annex.json'));
+  });
+
   it('two drafts-off builds produce byte-identical page HTML (NFR-001)', () => {
     // Non-vacuity: the comparison walks many pages (the control below shows it detects a difference).
     expect(htmlFiles('off').length).toBeGreaterThan(40);
