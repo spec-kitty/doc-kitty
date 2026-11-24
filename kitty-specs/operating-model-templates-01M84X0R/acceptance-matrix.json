@@ -86,12 +86,12 @@
     },
     {
       "criterion_id": "FR-009",
-      "description": "Verify FR-009 is satisfied",
+      "description": "Neither tool overwrites an existing file; positive controls write the missing ones",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/stub-tools-templates.test.ts (sentinel bytes unchanged, second run writes 0, partial tree); mutation check by WP04 reviewer; lane-d@23baafe6; feat/402@b9e1a3c5; combined tree pnpm test src 4615/4615 mcp 181/181; WP approvals in tasks/*/review-cycle-*.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::runner",
+      "verified_at": "2026-11-24T03:15:35.356857+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
