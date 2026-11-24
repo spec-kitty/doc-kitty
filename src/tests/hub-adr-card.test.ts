@@ -364,9 +364,13 @@ describe('single-source enforcement gate (T023, NFR-001 for #50; #57 composition
   it('Hub.astro sources its ADR-card composition from the shared importable unit (#57)', () => {
     // Hub.astro no longer calls buildAdrHubCards (or filters ADR-kind children)
     // itself — it imports the composed unit from hub-children.mjs...
+    // Since #341 it imports `composeHubChildren`, the one composition the hub page and
+    // the sidebar child cap share, which is itself built on `selectAdrHubCards`.
     expect(hubSrc).toMatch(
-      /import\s*\{[^}]*\bselectAdrHubCards\b[^}]*\}\s*from\s*['"]\.\.\/lib\/hub-children\.mjs['"]/,
+      /import\s*\{[^}]*\bcomposeHubChildren\b[^}]*\}\s*from\s*['"]\.\.\/lib\/hub-children\.mjs['"]/,
     );
+    const composeFn = hubChildrenSrc.slice(hubChildrenSrc.indexOf('export function composeHubChildren'));
+    expect(composeFn).toContain('selectAdrHubCards(');
     // ...and that unit is, in turn, defined solely in terms of the shared
     // extractor pipeline (buildAdrHubCards → extractAdrMeta), so the chain of
     // custody down to the single source (#50) is unbroken.

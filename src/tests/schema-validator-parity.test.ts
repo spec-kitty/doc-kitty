@@ -809,6 +809,42 @@ describe('generator-stamp (#177, FR-008, C-004)', () => {
       '2026-10-18T09:30:00Z',
     );
   });
+
+  // #398: a page whose content is unchanged is left as it is, so a version bump
+  // alone never rewrites a committed generated page.
+  it('makeStamp keeps the previous `by` while the content hash is unchanged, so a version bump rewrites nothing (#398)', () => {
+    const previous = { by: 'doc-kitty-gherkin/0.0.1', at: '2026-01-01T00:00:00Z', content_hash: `sha256:${'a'.repeat(12)}` };
+    expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'a'.repeat(64), previous, now: NOW })).toEqual(previous);
+    // Pre-release and build suffixes are versions too.
+    for (const by of ['doc-kitty-gherkin/0.2.0-rc.1', 'doc-kitty-gherkin/0.0.0-golden', 'doc-kitty-gherkin/1.0.0+build.5']) {
+      expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'a'.repeat(64), previous: { ...previous, by }, now: NOW }).by, by).toBe(by);
+    }
+    // Changed content: the current version and `now`.
+    expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'b'.repeat(64), previous, now: NOW }).by).toBe(
+      `doc-kitty-gherkin/${toolkitVersion()}`,
+    );
+    // An `at` the gate would reject is replaced, and so is the `by` beside it.
+    expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'a'.repeat(64), previous: { ...previous, at: 'pending' }, now: NOW }).by).toBe(
+      `doc-kitty-gherkin/${toolkitVersion()}`,
+    );
+    // Only this producer's own versioned stamp is kept: never another producer's,
+    // a retired unversioned one, or a bare producer id.
+    for (const by of [
+      'doc-kitty-glossary/0.0.1',
+      'doc-kitty/gherkin',
+      'doc-kitty-gherkin/',
+      'doc-kitty-scaffold/0.0.1',
+      'doc-kitty-gherkin/garbage with spaces',
+      'doc-kitty-gherkin/0.7',
+      42,
+    ]) {
+      expect(makeStamp({ producer: 'doc-kitty-gherkin', hash: 'a'.repeat(64), previous: { ...previous, by: by as string }, now: NOW }), String(by)).toEqual({
+        by: `doc-kitty-gherkin/${toolkitVersion()}`,
+        at: '2026-01-01T00:00:00Z',
+        content_hash: previous.content_hash,
+      });
+    }
+  });
 });
 
 // NFR-004 proof that survives the migration of our own trees: a frozen tree of

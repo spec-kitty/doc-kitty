@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
+  "mission_id": "01M81KGVX0680H6ENQ2MASQ3K2",
+  "mission_branch": "kitty/mission-large-hubs-sidebar-child-cap-01M81KGV",
+  "target_branch": "feat/341-sidebar-child-cap",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/child-cap.ts",
+        "src/lib/chrome-options.ts",
+        "src/lib/config.ts",
+        "src/lib/i18n-plugin.ts",
+        "src/lib/schema.ts",
+        "src/lib/sections.ts",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/child-cap.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/integrations/route-shaping.ts",
+        "src/lib/route-shaping-module.d.ts",
+        "src/tests/hub-caps-data.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup",
+        "tests"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/route-middleware.ts",
+        "src/lib/route-shaping.ts",
+        "src/tests/sidebar-child-cap.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        ".gitignore",
+        "example/docs/guides/capped-hub/**",
+        "src/tests/fixtures/large-hub/**",
+        "src/tests/sidebar-child-cap-build.test.ts",
+        "tests/a11y/sidebar-child-cap.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "docs/_meta/sections.yaml",
+        "docs/changelog/unreleased/341-sidebar-child-cap.md",
+        "docs/guides/README.md",
+        "docs/guides/authoring.md",
+        "docs/guides/consumer-setup.md",
+        "docs/guides/sidebar-child-cap.md",
+        "docs/plans/features/large-hubs.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-23T07:27:43.308562+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP05"
+  ],
+  "planning_commit_sha": "9621b5f855988adeb6077e7ffc04d12271fb08ce"
+}

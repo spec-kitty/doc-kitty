@@ -104,3 +104,23 @@ export function selectAdrHubCards(publishedChildren, options) {
     options,
   );
 }
+
+/**
+ * A Hub's children in the order the Hub page lists them (#341): the ADR-kind
+ * children first, as {@link selectAdrHubCards} composes them (id order; an ADR
+ * without an id or a template is not listed), then every other child in
+ * {@link selectHubChildren} order. The one composition `Hub.astro` renders and the
+ * sidebar child cap counts and pages through, so the "N pages" count and prev/next
+ * on a capped hub match the hub page.
+ *
+ * @template {{ slug: string, data: { kind?: string }, body: string }} T
+ * @param {readonly T[]} publishedChildren `selectHubChildren`'s output for one hub.
+ * @param {Parameters<typeof buildAdrHubCards>[1]} [options] The tree's ADR id rule.
+ * @returns {{ adrCards: ReturnType<typeof buildAdrHubCards>, others: T[] }}
+ */
+export function composeHubChildren(publishedChildren, options) {
+  return {
+    adrCards: selectAdrHubCards(publishedChildren, options),
+    others: publishedChildren.filter((entry) => entry.data.kind !== 'ADR'),
+  };
+}

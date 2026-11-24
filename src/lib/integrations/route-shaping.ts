@@ -9,11 +9,14 @@ import process from 'node:process';
 import matter from 'gray-matter';
 import type { AstroIntegration } from 'astro';
 import { resolveIndexEntries, sectionOf, type IndexBasenameOption } from '../metadata.js';
-import { resolveSectionRegistry, sectionFeeds, feedsSurface } from '../sections.js';
+import { resolveSectionRegistry, sectionFeeds, feedsSurface, sectionOrder, type SectionRegistry } from '../sections.js';
 import { buildDirectoryMeta, pageRouteSlug, type DirectoryMetaInput } from '../route-shaping.js';
+import { isChildCap, resolveChildCap, type HubCap } from '../child-cap.js';
+import { composeHubChildren, selectHubChildren } from '../hub-children.mjs';
+import { loadAdrIdRule } from '../../scripts/generate-adr-index.mjs';
 import { chromeOptions } from '../chrome-options.js';
 import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
-import { compareCodeUnit } from '../vocabulary-core.mjs';
+import { compareCodeUnit, isDraftStatus } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
 import { normalizeBasePrefix, siteDraftRoutes } from './shared.js';
 
@@ -63,12 +66,30 @@ export interface RouteShapingOptions {
   pagination: boolean;
   /** The `sidebar.indexLabel` option (#161); absent = the locale's UI string. */
   indexLabel?: string;
+  /** The site's `sidebar.childCap` (#341); absent = the section's, else the default. */
+  childCap?: number;
+  /** The `sidebar.cappedLabel` option (#341); absent = the locale's UI string. */
+  cappedLabel?: string;
+}
+
+/** A docs page as the sidebar seam reads it: the directory-metadata input plus what the child cap needs. */
+interface ShapingPage extends DirectoryMetaInput {
+  /** The page's `doc_status`, for the hub's draft rule. */
+  docStatus?: string;
+  /** The page's `sidebar_child_cap`, when it is a valid cap. */
+  childCap?: number;
+  /** The page's `kind`: only a `kind: Hub` index lists its children, so only it can be capped. */
+  kind?: string;
+  /** The page's `type`: the hub's ADR composition leaves out `type: Template`. */
+  type?: string;
+  /** The Markdown body of an ADR-kind page, which the hub's ADR composition reads. */
+  body?: string;
 }
 
 /**
  * Read the slice of every docs page that sidebar shaping needs: slug, title,
- * the Starlight `sidebar` front-matter block, and whether the file is a
- * directory index. The file list is the shared walk ({@link walkMarkdownPaths}:
+ * the Starlight `sidebar` front-matter block, whether the file is a directory
+ * index, and, for the child cap (#341), `doc_status`, `sidebar_child_cap`, `kind` and `type`. The file list is the shared walk ({@link walkMarkdownPaths}:
  * no `log.md`, dot-folders or `_meta`), read build-free for frontmatter. Slug and
  * `isIndex` come from the shared route rule (`resolveIndexEntries`, `routeOfSlug`):
  * a page is its folder's index when its route is the folder's route, so a
@@ -78,15 +99,19 @@ function directoryMetaInputs(
   docsDir: string,
   indexBasename?: IndexBasenameOption,
   unpublishedPaths: ReadonlySet<string> = new Set(),
-): DirectoryMetaInput[] {
+): ShapingPage[] {
   const root = path.resolve(process.cwd(), docsDir);
-  const pages = walkMarkdownPaths(root).map((rel) => ({
-    rel,
-    data: matter(readFileSync(path.join(root, rel), 'utf8')).data as {
+  const pages = walkMarkdownPaths(root).map((rel) => {
+    const parsed = matter(readFileSync(path.join(root, rel), 'utf8'));
+    return { rel, content: parsed.content, data: parsed.data as {
       title?: unknown;
+      doc_status?: unknown;
+      sidebar_child_cap?: unknown;
+      kind?: unknown;
+      type?: unknown;
       sidebar?: { label?: unknown; order?: unknown };
-    },
-  }));
+    } };
+  });
 
   const { ids } = resolveIndexEntries(
     pages.map((page) => page.rel),
@@ -94,9 +119,9 @@ function directoryMetaInputs(
   );
   // Slugs are resolved over every file, so a withheld file still takes part in
   // the index collision rule; it is only left out of the metadata afterwards.
-  const inputs: DirectoryMetaInput[] = pages
+  const inputs: ShapingPage[] = pages
     .filter(({ rel }) => !unpublishedPaths.has(rel))
-    .map(({ rel, data }) => {
+    .map(({ rel, data, content }) => {
       const { slug, isIndex } = pageRouteSlug(rel, ids.get(rel) as string);
       const label = data.sidebar?.label;
       const order = data.sidebar?.order;
@@ -108,9 +133,66 @@ function directoryMetaInputs(
           ...(typeof label === 'string' ? { label } : {}),
           ...(typeof order === 'number' ? { order } : {}),
         },
+        ...(typeof data.doc_status === 'string' ? { docStatus: data.doc_status } : {}),
+        // An invalid value fails the schema and the frontmatter gate; here it is just not a cap.
+        ...(isChildCap(data.sidebar_child_cap) ? { childCap: data.sidebar_child_cap } : {}),
+        ...(typeof data.kind === 'string' ? { kind: data.kind } : {}),
+        ...(typeof data.type === 'string' ? { type: data.type } : {}),
+        ...(data.kind === 'ADR' ? { body: content } : {}),
       };
     });
   return inputs;
+}
+
+/**
+ * The hubs over their sidebar child cap (#341), sorted by folder (NFR-003). A hub
+ * is a folder whose published index page has `kind: Hub`; its children are counted
+ * and ordered by `composeHubChildren`, what the hub page lists (C-003), so drafts,
+ * unnumbered ADRs and `type: Template` ADRs never count. The cap is the hub's `sidebar_child_cap`, else its section's
+ * `sidebar.childCap`, else the site's, else the default. A hub at or under its
+ * cap is not emitted, so a site with no large hub serves an empty list.
+ */
+function hubCaps(
+  pages: readonly ShapingPage[],
+  registry: SectionRegistry | null,
+  siteCap: number | undefined,
+  idRule: ReturnType<typeof loadAdrIdRule>,
+): Array<[string, HubCap]> {
+  const entries = pages.map((page) => ({
+    slug: page.slug,
+    label: page.sidebar?.label ?? page.title,
+    body: page.body ?? '',
+    data: {
+      title: page.title,
+      ...(page.docStatus === undefined ? {} : { doc_status: page.docStatus }),
+      ...(page.kind === undefined ? {} : { kind: page.kind }),
+      ...(page.type === undefined ? {} : { type: page.type }),
+    },
+  }));
+  const labelOf = new Map(entries.map((entry) => [entry.slug, entry.label]));
+  const order = registry ? sectionOrder(registry) : undefined;
+  const sectionCap = (dir: string): number | undefined =>
+    registry?.find((section) => section.id === sectionOf(dir))?.sidebar?.childCap;
+  const out: Array<[string, HubCap]> = [];
+  // A hub is a folder whose PUBLISHED index page is `kind: Hub`: only that page lists
+  // the folder's children, so only there does the capped entry lead to them. A draft
+  // index built in a dev or drafts-on build is not a hub either.
+  const hubs = pages
+    .filter((page) => page.isIndex && page.slug !== '' && page.kind === 'Hub' && !isDraftStatus(page.docStatus))
+    .sort((a, b) => compareCodeUnit(a.slug, b.slug));
+  const seen = new Set<string>();
+  for (const hub of hubs) {
+    // First index wins on a duplicate slug, as in `buildDirectoryMeta`.
+    if (seen.has(hub.slug)) continue;
+    seen.add(hub.slug);
+    const cap = resolveChildCap({ hub: hub.childCap, section: sectionCap(hub.slug), site: siteCap });
+    // The order and count the hub page shows (`composeHubChildren`, as Hub.astro).
+    const { adrCards, others } = composeHubChildren(selectHubChildren(entries, hub.slug, order), { idRule });
+    const listed = [...adrCards.map((card) => card.slug), ...others.map((entry) => entry.slug)];
+    if (listed.length <= cap) continue;
+    out.push([hub.slug, { cap, count: listed.length, children: listed.map((slug) => ({ slug, label: labelOf.get(slug) ?? '' })) }]);
+  }
+  return out;
 }
 
 /**
@@ -128,17 +210,20 @@ export function routeShapingSource(
 ): string {
   const unpublished = [...new Set(state.unpublishedDirs)].sort(compareCodeUnit);
   const hidden = new Set(unpublished);
-  const meta = options.shapeSidebar
-    ? buildDirectoryMeta(
-        directoryMetaInputs(
-          options.docsDir,
-          options.indexBasename,
-          new Set(state.unpublishedPaths),
-        ).filter(
-          (input) => !hidden.has(input.slug),
-        ),
+  const pages = options.shapeSidebar
+    ? directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
+        (input) => !hidden.has(input.slug),
       )
-    : new Map();
+    : [];
+  const meta = options.shapeSidebar ? buildDirectoryMeta(pages) : new Map();
+  const capped = options.shapeSidebar
+    ? hubCaps(
+        pages,
+        resolveSectionRegistry(path.resolve(process.cwd(), options.docsDir)),
+        options.childCap,
+        loadAdrIdRule(path.resolve(process.cwd(), options.docsDir)),
+      )
+    : [];
   const { sidebar: chromeSidebar } = chromeOptions();
   const data = {
     base: normalizeBasePrefix(options.base),
@@ -150,6 +235,8 @@ export function routeShapingSource(
     // The renderer's markers, on whenever that renderer runs (`usesCustomSidebar` in manifest.ts).
     annotate: chromeSidebar.titleIsIndex || state.iconsAuthored,
     ...(options.indexLabel ? { indexLabel: options.indexLabel } : {}),
+    hubCaps: capped,
+    ...(options.cappedLabel ? { cappedLabel: options.cappedLabel } : {}),
   };
   return (
     '// AUTO-GENERATED by @spec-kitty/doc-toolkit route-shaping integration. Do not edit.\n' +
