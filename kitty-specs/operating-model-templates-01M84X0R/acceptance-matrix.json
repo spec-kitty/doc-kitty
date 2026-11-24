@@ -2,7 +2,7 @@
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -136,12 +136,12 @@
     },
     {
       "criterion_id": "FR-014",
-      "description": "Verify FR-014 is satisfied",
+      "description": "Runs without --template or --preset are byte-identical to before the mission",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/stub-tools-templates.test.ts (FR-014 pin sha256 3a0816c9, 53 files, captured before the change); lane-d@23baafe6; feat/402@b9e1a3c5; combined tree pnpm test src 4615/4615 mcp 181/181; WP approvals in tasks/*/review-cycle-*.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::runner",
+      "verified_at": "2026-11-24T03:16:02.640100+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     }
   ],
