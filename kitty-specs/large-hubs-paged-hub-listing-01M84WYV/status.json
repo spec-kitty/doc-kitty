@@ -150,7 +150,7 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude:reviewer-renata",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -160,7 +160,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Listing records in agent index + per-page JSON + llms.txt, DK_HUB_DATA handoff, build-id fold; full pnpm test green (src 244/4803, mcp 23/181).",
-        "Cycle-1 fixes: file handoff (E2BIG), gated listing records, golden byte identity from pre-WP05 code; full pnpm test green (src 245/4813, mcp 23/181)."
+        "Cycle-1 fixes: file handoff (E2BIG), gated listing records, golden byte identity from pre-WP05 code; full pnpm test green (src 245/4813, mcp 23/181).",
+        "Review cycle 2 APPROVED (claude::reviewer-renata). Cycle-1 issues 1-6 fixed and verified: file handoff (E2BIG test, memo, content-addressed), hubsBySlug from ranked, golden independently reproduced on lane-b 28f9a771 (path/TZ/locale independent), M5/M6/M15 killed, ordering pinned, JSDoc fixed. Item 7 deferral acceptable (injection lives on lane-d). Full pnpm test green (src 245/4813, mcp 23/181), lint 0, typecheck 0. Handoff mutants 7/10 killed; survivors H4 (fail-silent read), H6 (cosmetic subdir), H9 (pre-existing hidden dirs). Carry-overs recorded in consolidation-notes 1b (golden folds toolkitVersion; red on any version bump) and 8."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
