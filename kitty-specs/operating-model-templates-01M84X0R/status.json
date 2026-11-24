@@ -1,0 +1,104 @@
+{
+  "event_count": 58,
+  "last_event_id": "01M85V25D4V5WTWKFM3P5JEVTP",
+  "materialized_at": "2026-11-24T03:54:44.516171+00:00",
+  "mission_number": "",
+  "mission_slug": "operating-model-templates-01M84X0R",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 5,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude::scribe-sally",
+      "force_count": 1,
+      "implementer_of_record": "claude::scribe-sally",
+      "lane": "done",
+      "last_event_id": "01M85V1Z3D5YN4JD11KQ5T934Z",
+      "last_transition_at": "2026-11-24T03:54:38.061525+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP01-adr-0085-role-kind/review-cycle-2.md",
+        "reference": "review-cycle://operating-model-templates-01M84X0R/WP01-adr-0085-role-kind/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 10724,
+      "shell_pid_created_at": "1795477666.59"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 2,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M85V1X0QWS1FWC1VAJSAKP9N",
+      "last_transition_at": "2026-11-24T03:54:35.927746+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP02-role-kind-code/review-cycle-3.md",
+        "reference": "review-cycle://operating-model-templates-01M84X0R/WP02-role-kind-code/review-cycle-3.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 8412,
+      "shell_pid_created_at": "1795479032.52"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 0,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M85V213SPYZ5X2W6PXWE365B",
+      "last_transition_at": "2026-11-24T03:54:40.121577+00:00",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/operating-model-templates-01M84X0R-coord/kitty-specs/operating-model-templates-01M84X0R/tasks/WP03-templates-and-renderer/review-cycle-1.md",
+        "reference": "review-cycle://operating-model-templates-01M84X0R/WP03-templates-and-renderer/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "shell_pid": 402,
+      "shell_pid_created_at": "1795480791.4"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude::node-norris",
+      "force_count": 1,
+      "implementer_of_record": "claude::node-norris",
+      "lane": "done",
+      "last_event_id": "01M85V236S4B9K61CM91EGASP7",
+      "last_transition_at": "2026-11-24T03:54:42.265639+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP04:20261124",
+        "reviewer": "Claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 393,
+      "shell_pid_created_at": "1795482995.88"
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude::implementer-ivan",
+      "force_count": 1,
+      "implementer_of_record": "claude::implementer-ivan",
+      "lane": "done",
+      "last_event_id": "01M85V25D4V5WTWKFM3P5JEVTP",
+      "last_transition_at": "2026-11-24T03:54:44.516171+00:00",
+      "review_result": {
+        "reference": "auto-approval:WP05:20261124",
+        "reviewer": "Claude",
+        "verdict": "approved"
+      },
+      "shell_pid": 403,
+      "shell_pid_created_at": "1795486019.67"
+    }
+  }
+}
