@@ -97,6 +97,9 @@
       "last_event_id": "01M85GWSX218QZ79GNGH8F9CRN",
       "last_transition_at": "2026-11-24T00:57:03.138068+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Templates + renderer, red-first (8ba9292 red, 5131aa7 green); lint 0; pnpm test src 4582/4582 mcp 181/181"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 402,
