@@ -1,7 +1,7 @@
 {
-  "event_count": 1,
-  "last_event_id": "01M874JQ1M8W9E84PD9V4JHD5C",
-  "materialized_at": "2026-11-24T16:00:18.484427+00:00",
+  "event_count": 2,
+  "last_event_id": "01M874JRWF1MN61KYZQAS3SNV8",
+  "materialized_at": "2026-11-24T16:00:20.367435+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
   "mission_type": "software-dev",
@@ -15,7 +15,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 1
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -24,6 +24,13 @@
       "lane": "planned",
       "last_event_id": "01M874JQ1M8W9E84PD9V4JHD5C",
       "last_transition_at": "2026-11-24T16:00:18.484427+00:00"
+    },
+    "WP02": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M874JRWF1MN61KYZQAS3SNV8",
+      "last_transition_at": "2026-11-24T16:00:20.367435+00:00"
     }
   }
 }
