@@ -1,7 +1,7 @@
 {
-  "event_count": 33,
-  "last_event_id": "01M87N8HGRGWJNCXM2C1F11NP4",
-  "materialized_at": "2026-11-24T20:51:50.936941+00:00",
+  "event_count": 34,
+  "last_event_id": "01M87NC4H09QDNV66WXHZ74B7S",
+  "materialized_at": "2026-11-24T20:53:48.704815+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 2,
+    "for_review": 1,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 2
   },
   "work_packages": {
@@ -148,22 +148,22 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude::implementer-ivan",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::implementer-ivan",
-      "lane": "for_review",
-      "last_event_id": "01M87N8HGRGWJNCXM2C1F11NP4",
-      "last_transition_at": "2026-11-24T20:51:50.936941+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M87NC4H09QDNV66WXHZ74B7S",
+      "last_transition_at": "2026-11-24T20:53:48.704815+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Listing records in agent index + per-page JSON + llms.txt, DK_HUB_DATA handoff, build-id fold; full pnpm test green (src 244/4803, mcp 23/181)."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 4875,
-      "shell_pid_created_at": "1795545350.14",
+      "role": "reviewer",
+      "shell_pid": 540,
+      "shell_pid_created_at": "1795553624.36",
       "subtasks": {
         "T022": "done",
         "T023": "done",
