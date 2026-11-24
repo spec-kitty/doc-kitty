@@ -25,13 +25,14 @@ const MEASURE_PREFIX = 'catalog:measure:';
  * @property {Record<string, { href?: string }>} indexLinks `api/index.json`'s `_links`
  * @property {string | undefined} annexText the built `api/tom-annex.json`, or undefined when absent
  * @property {(url: string) => boolean} pageBuilt whether an absolute page URL names a built page
+ * @property {string} [sitePrefix] the site's origin and base with a trailing slash, as the gate derives it; by default it is read from `_links.self`, which assumes the index sits at `api/index.json`
  */
 
 /**
  * @param {TomAnnexBuild} build
  * @returns {string[]} the problems, empty when the build is right
  */
-export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt }) {
+export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, sitePrefix }) {
   const edges = graph.edges.filter((e) => e.rel === 'classified-as');
   const linked = indexLinks?.tomAnnex !== undefined;
   if (edges.length === 0) {
@@ -60,7 +61,7 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt }) {
   }
   if (annex?.label !== TOM_ANNEX_LABEL) problems.push(`evidence index: label is ${JSON.stringify(annex?.label)}, expected "${TOM_ANNEX_LABEL}"`);
 
-  const prefix = sitePrefix(indexLinks);
+  const prefix = sitePrefix ?? prefixFromSelf(indexLinks);
   const pages = new Map(graph.nodes.map((n) => [n.id, n]));
   /** @type {Set<string>} */
   const expected = new Set();
@@ -93,7 +94,7 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt }) {
  *
  * @param {Record<string, { href?: string }>} indexLinks
  */
-function sitePrefix(indexLinks) {
+function prefixFromSelf(indexLinks) {
   const self = indexLinks?.self?.href ?? 'http://localhost:4321/api/index.json';
   return self.replace(/api\/index\.json$/, '');
 }

@@ -77,6 +77,11 @@ describe('tomAnnexProblems (WP05 T021)', () => {
     expect(problems({ annexText: moved }).length).toBeGreaterThan(0);
   });
 
+  it('uses the site prefix the gate derives, so an index mounted elsewhere still passes (#103)', () => {
+    const moved = { ...links, self: { href: `${PREFIX}v2/data/api/index.json` } };
+    expect(problems({ indexLinks: moved, sitePrefix: PREFIX })).toEqual([]);
+  });
+
   describe('a site with no classified pages', () => {
     const bare = graphOf([page('p')], []);
     it('passes when neither the file nor the link exists', () => {

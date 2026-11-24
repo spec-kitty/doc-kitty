@@ -646,7 +646,13 @@ async function assertTomAnnex(distDir, index, builtRelOf) {
     const { rel } = builtRelOf(url);
     return rel !== null && existsSync(path.join(distDir, rel));
   };
-  const problems = tomAnnexProblems({ graph, indexLinks: index?._links ?? {}, annexText, pageBuilt });
+  // The site prefix exactly as assertAgentLinksResolve derives it: the index's `self` link minus the
+  // configured index path, so an index mounted away from api/index.json (#103) still resolves pages.
+  const selfUrl = new URL(index._links.self.href);
+  const indexRel = INDEX_RELPATH.split(path.sep).join('/');
+  const basePath = selfUrl.pathname.slice(0, selfUrl.pathname.length - `/${indexRel}`.length);
+  const sitePrefix = `${selfUrl.origin}${basePath}/`;
+  const problems = tomAnnexProblems({ graph, indexLinks: index?._links ?? {}, annexText, pageBuilt, sitePrefix });
   if (problems.length > 0) fail(problems.join('; '));
   ok(
     annexText === undefined
