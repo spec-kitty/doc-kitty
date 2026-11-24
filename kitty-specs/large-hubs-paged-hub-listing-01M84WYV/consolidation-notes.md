@@ -79,9 +79,9 @@ hand-off.
 - (f) Issue-matrix rows for #359 and #402 (the ADR-number mentions at research.md:90).
 - (g) PR body: listing pages are absent from RSS and Atom by design.
 - (h) The Playwright focus-ring assertion must not pass on the UA default outline.
-- (i) Trailers in the final PR history: the dispatcher asks for no Co-Authored-By;
-  the original brief asked for the model-free Co-Authored-By trailer. Confirm with
-  the dispatcher before R24.
+- (i) Trailers in the final PR history: resolved by the dispatcher. The original
+  brief applies: keep `Co-Authored-By: Claude <noreply@anthropic.com>` and
+  `Claude-Session`; strip only trailers that name a model.
 
 ## Held for the operator
 
