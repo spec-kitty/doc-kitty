@@ -2,7 +2,7 @@
 title: "ADR-0087: A generated-section contract: one stamp, one drift gate, registry ownership"
 description: "One generated stamp with a source digest, one --check drift gate and registry ownership for every generated section; doc-kitty reads committed data only."
 doc_status: active
-updated: 2026-11-23T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -28,6 +28,10 @@ issue #330, and does not define a second one. It extends
 [ADR-0079](0079-kitty-packs-through-a-charter-contract-reader.md) D6 and respects
 [ADR-0042](0042-native-documentation-charter.md): no runtime dependency on another
 kitty repository.
+
+D3 is amended by operator approval on 2026-11-23 (ruling R81): it adds the
+`unowned` verdict and allows producer-specific verdicts. Both were recorded as
+open in the review of PR #445.
 
 ## Context
 
@@ -235,10 +239,17 @@ hold, the first in this table wins, so a hand edit is never hidden behind a
 |---|---|---|
 | `missing` | an expected page is absent | regenerate |
 | `orphan` | a page carries the producer's stamp and is in its scope, but no input produces it | regenerate (prunes it) |
+| `unowned` | an expected output path holds a page without the producer's ownership stamp, such as a deleted or mistyped stamp (a page owned by scope alone is never `unowned`) | regenerate after moving the edit to the source, or delete the page |
 | `hand-edited` | the committed body's hash differs from the stamp's `content_hash` | someone edited generated output; move the edit to the source |
 | `stale-source` | the committed `source_digest` differs from the recomputed one | the inputs changed; regenerate |
 | `stale-render` | digests match, but the regenerated page differs from the committed one with `at` masked (D5) | the renderer changed; regenerate |
 | `ok` | none of the above | |
+
+**Producer-specific verdicts.** A producer may report a verdict of its own
+beyond this table, such as ADR-0082's leak check, provided that it exits `1`,
+uses the same output line, and is documented in the producer's own ADR. Such a
+verdict ranks after `stale-render`. The table's verdicts keep their meaning for
+every producer.
 
 The output and exit codes are the same for every producer:
 
@@ -450,13 +461,6 @@ Recorded from the review of PR #445; none changes a decision here.
   the evidence index (#401), not here.
 - **ADR-0080** still says the evidence index waits for the generated-section
   contract "proposed in issue #359". That changes with ADR-0080's next edit.
-- **Two possible additions to D3's verdicts, for the operator.** The first is
-  an `unowned` verdict, for an expected output path that holds a page without
-  the producer's stamp, such as a deleted or mistyped stamp. Today such a page
-  reads as authored, so the generator refuses to overwrite it: loud, but
-  unnamed. The second is producer-specific verdicts, such as ADR-0082's leak
-  check, provided they exit 1 and use the same output line. Neither is decided
-  here.
 - **Issue #359** names a three-key stamp. Its closing note should point to D1's
   last paragraph, so the criterion is not read as unmet.
 
