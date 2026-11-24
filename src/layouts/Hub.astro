@@ -46,7 +46,7 @@ import { routeShaping } from 'virtual:doc-kitty/route-shaping';
 import HubCardList from '../components/hub/HubCardList.astro';
 import HubPagination from '../components/hub/HubPagination.astro';
 import { DEFAULT_HUB_PAGE_SIZE, hubPageCount, hubPageSlice, isPagedHub } from '../lib/child-cap.js';
-import { assertListingAgrees, listingCards, type HubCard } from '../lib/hub-pagination.js';
+import { pageCards, type HubCard } from '../lib/hub-pagination.js';
 import { composeHubCards } from '../lib/hub-cards.js';
 import '../styles/hub.css';
 
@@ -68,13 +68,14 @@ const allCards: HubCard[] = await composeHubCards(currentSlug);
 // all its children exactly as before.
 const hubEntry = routeShaping.hubCaps.find(([dir]) => dir === currentSlug)?.[1];
 const paged = hubEntry !== undefined && isPagedHub(hubEntry);
-// C-001 both ways: the listing pages slice the hub data, so it must list exactly
-// the cards this page composes, or a page would drop or lack a child.
-if (paged) assertListingAgrees(currentSlug, hubEntry, allCards);
+// C-001 both ways: `pageCards` checks the hub data lists exactly the cards this
+// page composes (else a page would drop or lack a child), then slices page 1.
 const children: HubCard[] = paged
-  ? listingCards(
+  ? pageCards(
+      currentSlug,
+      hubEntry,
+      allCards,
       hubPageSlice(hubEntry.children.map((child) => child.slug), 1, hubEntry.pageSize ?? DEFAULT_HUB_PAGE_SIZE),
-      new Map(allCards.map((card) => [card.slug, card])),
     )
   : allCards;
 const pageCount = paged ? hubPageCount(hubEntry) : 1;

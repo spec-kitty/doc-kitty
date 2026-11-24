@@ -19,7 +19,7 @@ import HubCardList from '../../components/hub/HubCardList.astro';
 import HubPagination from '../../components/hub/HubPagination.astro';
 import { HUB_PAGINATION_KEYS, hubListingPages, resolveHubString } from '../child-cap.js';
 import { composeHubCards } from '../hub-cards.js';
-import { assertListingAgrees, listingCards } from '../hub-pagination.js';
+import { pageCards } from '../hub-pagination.js';
 import { collectDocEntries } from '../docs-index.js';
 import { hrefOfSlug } from '../with-base.js';
 
@@ -42,8 +42,7 @@ const hubDoc = (await collectDocEntries()).find((entry) => entry.slug === hub);
 const data = new Map(routeShaping.hubCaps).get(hub);
 if (!hubDoc || !data) throw new Error(`[dk-hubs] listing page ${page} of hub "${hub}" has no hub page or no hub data`);
 const cards = await composeHubCards(hub);
-assertListingAgrees(hub, data, cards);
-const listed = listingCards(slugs, new Map(cards.map((card) => [card.slug, card])));
+const listed = pageCards(hub, data, cards, slugs);
 const translate = Astro.locals.t as ((key: string) => unknown) | undefined;
 const title = resolveHubString(HUB_PAGINATION_KEYS.title, { title: hubDoc.data.title, page }, translate);
 const { description, doc_status, updated } = hubDoc.data;

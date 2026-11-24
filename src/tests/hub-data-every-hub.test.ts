@@ -263,3 +263,22 @@ describe('sidebar shaping sees capped hubs only (T010, review cycle 1 item 3)', 
     expect(group$(unfiltered, 'Guides')).not.toEqual(group$(plain, 'Guides'));
   });
 });
+
+describe('the page guard, review carry-overs (M1, M14, M12)', () => {
+  it('catches a clash under an upper-case hub folder (M1)', () => {
+    const files: Record<string, string> = { 'Missions/README.md': page('Missions', 'sidebar_child_cap: 2\nhub_page_size: 2\n', 'Hub'), 'Missions/page.md': page('Page') };
+    for (let i = 1; i <= 4; i += 1) files[`Missions/m-${i}.md`] = page(`Mission ${i}`);
+    site(files);
+    expect(() => source()).toThrow(/\[dk-hubs\] hub "Missions" is paged, but its child "Missions\/page"/i);
+  });
+
+  it('catches a draft page child published in a drafts-on build (M14)', () => {
+    site(missions(4, 'sidebar_child_cap: 2\nhub_page_size: 2\n', { 'missions/page.md': page('Page', '', 'Guide', 'draft') }));
+    expect(() => source()).toThrow('[dk-hubs] hub "missions" is paged, but its child "missions/page"');
+  });
+
+  it('names the first clashing page in code-unit order, whatever the walk order (M12)', () => {
+    site(missions(4, 'sidebar_child_cap: 2\nhub_page_size: 2\n', { 'missions/page/zz.md': page('Z'), 'missions/page/aa.md': page('A') }));
+    expect(() => source()).toThrow('its child "missions/page/aa" would collide');
+  });
+});

@@ -127,3 +127,38 @@ describe('one hub-data computation (consolidation)', () => {
     expect(source).not.toMatch(/function siteHubs\b/);
   });
 });
+
+describe('withheld drafts (I3/I4, H9)', () => {
+  /** Run the setup hook over 5 children (cap 2, page size 4), withholding `withheld`. */
+  const run = (withheld: { dirs?: string[]; paths?: string[] }) => {
+    const root = mkdtempSync(path.join(tmpdir(), 'dk-paged-drafts-'));
+    roots.push(root);
+    mkdirSync(path.join(root, 'docs', 'missions'), { recursive: true });
+    writeFileSync(path.join(root, 'docs', 'missions', 'README.md'), page('Missions', 'sidebar_child_cap: 2\nhub_page_size: 4\n', 'Hub'));
+    for (let i = 1; i <= 5; i += 1) writeFileSync(path.join(root, 'docs', 'missions', `m-${i}.md`), page(`Mission ${i}`));
+    vi.spyOn(process, 'cwd').mockReturnValue(root);
+    const state = createBuildState();
+    state.unpublishedDirs = withheld.dirs ?? [];
+    state.unpublishedPaths = withheld.paths ?? [];
+    const routes: unknown[] = [];
+    (routeShapingIntegration({ docsDir: 'docs', base: '/', shapeSidebar: true, pagination: true }, state).hooks['astro:config:setup'] as (arg: unknown) => void)({
+      updateConfig: () => {},
+      injectRoute: (route: unknown) => routes.push(route),
+      config: { cacheDir: pathToFileURL(path.join(root, '.astro') + '/') },
+    });
+    return { routes, hubs: readHubData() };
+  };
+
+  it('pages 5 children by 4, but not once a withheld draft leaves 4', () => {
+    expect(run({}).routes).toHaveLength(1);
+    const { routes, hubs } = run({ paths: ['missions/m-5.md'] });
+    expect(routes).toEqual([]);
+    expect(hubs[0]![1].count).toBe(4);
+  });
+
+  it('hands off no hub for a withheld hub directory', () => {
+    const { routes, hubs } = run({ dirs: ['missions'] });
+    expect(routes).toEqual([]);
+    expect(hubs).toEqual([]);
+  });
+});

@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import matter from 'gray-matter';
-import { assertListingAgrees, listingCards, pageLabelPrefix, paginationItems, type HubCard } from '../lib/hub-pagination.js';
+import { assertListingAgrees, listingCards, pageCards, pageLabelPrefix, paginationItems, type HubCard } from '../lib/hub-pagination.js';
 import { composeHubChildren, selectHubChildren } from '../lib/hub-children.mjs';
 import { routeShapingSource } from '../lib/integrations/route-shaping.js';
 import { loadAdrIdRule } from '../scripts/generate-adr-index.mjs';
@@ -177,5 +177,18 @@ describe('paginationItems edge folds (WP03 review carry-over)', () => {
         expect(paginationItems(current, total).length).toBeLessThanOrEqual(7);
       }
     }
+  });
+});
+
+describe('pageCards: the checked slice both listing renderers use (G4)', () => {
+  const card = (slug: string): HubCard => ({ slug, title: slug });
+  const data = { count: 3, children: ['h/a', 'h/b', 'h/c'].map((slug) => ({ slug, label: slug })) };
+
+  it('checks the hub data against the cards, then returns the cards of the page', () => {
+    expect(pageCards('h', data, [card('h/c'), card('h/a'), card('h/b')], ['h/b', 'h/c']).map((c) => c.slug)).toEqual(['h/b', 'h/c']);
+  });
+
+  it('refuses to render a page when the hub data and the cards disagree', () => {
+    expect(() => pageCards('h', data, [card('h/a'), card('h/b')], ['h/a'])).toThrow('[dk-hubs] hub "h"');
   });
 });

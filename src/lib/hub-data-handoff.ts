@@ -26,7 +26,11 @@ import type { HubCap } from './child-cap.js';
 export function writeHubData(cacheDir: string, hubs: ReadonlyArray<readonly [string, HubCap]>): string {
   const bytes = Buffer.from(JSON.stringify(hubs), 'utf8');
   const digest = createHash('sha256').update(bytes).digest('hex');
-  return writeCacheAtomic(cacheDir, digest, 'hubs.json', bytes);
+  try {
+    return writeCacheAtomic(cacheDir, digest, 'hubs.json', bytes);
+  } catch (error) {
+    throw new Error(`[dk-hubs] cannot write the hub data handoff to ${cacheDir}: ${(error as Error).message}`, { cause: error });
+  }
 }
 
 /** Parsed hub data by path: a file is read and parsed once (it is content-addressed). */
@@ -42,7 +46,14 @@ export function readHubData(): Array<[string, HubCap]> {
   if (!file) return [];
   const known = memo.get(file);
   if (known) return known;
-  const value = JSON.parse(readFileSync(file, 'utf8')) as Array<[string, HubCap]>;
+  // A handoff that is set but unreadable is an error, never "no hubs": that would
+  // silently drop every listing page from the agent surfaces and llms.txt.
+  let value: Array<[string, HubCap]>;
+  try {
+    value = JSON.parse(readFileSync(file, 'utf8')) as Array<[string, HubCap]>;
+  } catch (error) {
+    throw new Error(`[dk-hubs] cannot read the hub data handoff ${file}: ${(error as Error).message}`, { cause: error });
+  }
   memo.set(file, value);
   return value;
 }

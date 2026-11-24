@@ -219,10 +219,13 @@ function hubData(
       // ADR is routed but not listed), and an index-less `page/` folder's pages
       // route onto the listing URLs themselves. Routes ignore case (`PAGE.md`).
       const prefix = `${hub.slug}/page`.toLowerCase();
-      const clash = pages.find((page) => {
-        const slug = page.slug.toLowerCase();
-        return slug === prefix || slug.startsWith(`${prefix}/`);
-      });
+      // The first clashing page in code-unit order, whatever order the walk gave.
+      const clash = pages
+        .filter((page) => {
+          const slug = page.slug.toLowerCase();
+          return slug === prefix || slug.startsWith(`${prefix}/`);
+        })
+        .sort((a, b) => compareCodeUnit(a.slug, b.slug))[0];
       if (clash) {
         throw new Error(
           `[dk-hubs] hub "${hub.slug}" is paged, but its child "${clash.slug}" would collide with the paged listing URLs; rename the child or raise the hub's page size or cap`,

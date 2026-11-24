@@ -15,6 +15,7 @@ import { collectDocEntries } from './docs-index.js';
 import { selectHubChildren, composeHubChildren } from './hub-children.mjs';
 import { loadAdrIdRule } from '../scripts/generate-adr-index.mjs';
 import { resolveSectionRegistry, sectionOrder } from './sections.js';
+import { DK_DOCS_ROOT_ENV } from './internal-env.mjs';
 import type { HubCard } from './hub-pagination.js';
 
 /** The fields of a docs entry the hub composition reads. */
@@ -28,8 +29,11 @@ interface HubEntry {
 export async function composeHubCards(hubSlug: string): Promise<HubCard[]> {
   // Section ordering follows the same registry the sidebar and discovery
   // surfaces read, so the root Hub grid never diverges from them (DIRECTIVE_044).
-  // Read from `cwd/docs`, as Hub.astro always did (#426 deferred item 7).
-  const docsRoot = path.join(process.cwd(), 'docs');
+  // The CONFIGURED docs root (`DK_DOCS_ROOT`, published by the integrations), the one
+  // the hub data reads through `options.docsDir`; `cwd/docs` without it, as Hub.astro
+  // always read. A custom `docsDir` otherwise split the hub page from the hub data
+  // (#426 deferred item 7, #342 consolidation item 3).
+  const docsRoot = process.env[DK_DOCS_ROOT_ENV] ?? path.join(process.cwd(), 'docs');
   const registry = resolveSectionRegistry(docsRoot);
   const order = registry ? sectionOrder(registry) : undefined;
   // INV-1 / US3: a hub lists only PUBLISHED children (`selectHubChildren`).

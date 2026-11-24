@@ -54,6 +54,22 @@ export function assertListingAgrees(
   }
 }
 
+/**
+ * The cards of one listing page, checked: {@link assertListingAgrees} first, then
+ * {@link listingCards} for `slugs`. The one call both listing renderers (the hub
+ * page and the paged route) make, so neither can render a slice the hub data and
+ * the hub page's own composition disagree on.
+ */
+export function pageCards(
+  hub: string,
+  data: { count: number; children: ReadonlyArray<{ slug: string }> },
+  cards: readonly HubCard[],
+  slugs: readonly string[],
+): HubCard[] {
+  assertListingAgrees(hub, data, cards);
+  return listingCards(slugs, new Map(cards.map((card) => [card.slug, card])));
+}
+
 /** One item of the pagination: a page link (or the current page), or a gap. */
 export type PaginationItem = { type: 'page'; page: number; current: boolean } | { type: 'gap' };
 

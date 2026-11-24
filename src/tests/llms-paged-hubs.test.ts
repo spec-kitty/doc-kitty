@@ -18,6 +18,12 @@ import type { HubCap } from '../lib/child-cap.js';
 const pad = (n: number) => String(n).padStart(3, '0');
 const { entries } = vi.hoisted(() => ({ entries: [] as Array<{ id: string; body: string; data: Record<string, unknown> }> }));
 vi.mock('astro:content', () => ({ getCollection: async () => entries }));
+// The golden folds the toolkit version into the build id: pin it to the version the
+// golden was produced with, so a release bump does not turn T025 red (review N1).
+vi.mock('../lib/generator-stamp.mjs', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/generator-stamp.mjs')>()),
+  toolkitVersion: () => '0.7.1',
+}));
 
 const { agentIndexRoute } = await import('../lib/routes/agent-index.js');
 const { agentPageRoute } = await import('../lib/routes/agent-page.js');
