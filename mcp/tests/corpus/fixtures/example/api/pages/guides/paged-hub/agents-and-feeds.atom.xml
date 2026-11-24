@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/agents-and-feeds/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/paged-hub/agents-and-feeds/</id>
+  <title>Agents and feeds</title>
+  <updated>2026-11-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/agents-and-feeds/"/>
+  <summary>Listing pages appear in the agent API, llms.txt and the sitemap, and every child is still listed once.</summary>
+  <content type="html">&lt;span id=&quot;agents-and-feeds&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Paging is for readers. Agents and crawlers still reach every page:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the sitemap lists every child and every listing page;&lt;/li&gt;
+&lt;li&gt;the agent API index has one &lt;code dir=&quot;auto&quot;&gt;Listing&lt;/code&gt; record per listing page, with
+&lt;code dir=&quot;auto&quot;&gt;listing_of&lt;/code&gt;, &lt;code dir=&quot;auto&quot;&gt;page&lt;/code&gt; and &lt;code dir=&quot;auto&quot;&gt;of&lt;/code&gt;, and a JSON file per listing page that lists
+its children;&lt;/li&gt;
+&lt;li&gt;llms.txt lists each listing page right after its hub.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Each child is still listed once, under its own entry.&lt;/p&gt;</content>
+</entry>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/capped-hub/generated-pages/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/capped-hub/generated-pages/</id>
+  <title>Generated pages</title>
+  <updated>2026-11-23T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/capped-hub/generated-pages/"/>
+  <summary>How a page generator can hide capped pages before the sidebar is built.</summary>
+  <content type="html">&lt;span id=&quot;generated-pages&quot;&gt;&lt;/span&gt;
+&lt;p&gt;A tool that writes hundreds of pages can mark each one with
+&lt;code dir=&quot;auto&quot;&gt;sidebar: { hidden: true }&lt;/code&gt; when its hub is over the cap, so Starlight never
+builds the entries the cap would drop. The toolkit’s &lt;code dir=&quot;auto&quot;&gt;cappedChildHidden(count, cap)&lt;/code&gt;
+says when. The sidebar, the current entry and the previous and next links are
+the same with or without the hint.&lt;/p&gt;</content>
+</entry>

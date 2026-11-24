@@ -1,0 +1,63 @@
+{
+  "slug": "architecture/audit-logging",
+  "route": "/architecture/audit-logging/",
+  "section": "architecture",
+  "title": "Audit logging",
+  "description": "How the example product records administrative actions, with the technical measures this page provides evidence for.",
+  "type": "Architecture",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "security",
+    "tom"
+  ],
+  "related": [
+    {
+      "ref": "context/incident-handling",
+      "title": "Incident handling",
+      "kind": "Explanation",
+      "doc_status": "active"
+    }
+  ],
+  "priority": 0.5,
+  "updated": "2026-11-22T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/audit-logging.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/",
+  "authors": [],
+  "keywords": [],
+  "tom_classification": [
+    {
+      "measure": "events-logging",
+      "label": "Events logging",
+      "nature": "technical",
+      "scope": "system"
+    },
+    {
+      "measure": "storage-protection",
+      "label": "Protection of data during storage",
+      "nature": "technical",
+      "scope": "system",
+      "note": "Log archives are encrypted at rest."
+    }
+  ],
+  "markdown": "# Audit logging\n\n> [!NOTE]\n> This page is an invented example of a TOM classification. It is not legal\n> advice.\n\nThe example product writes one log line for every administrative action. Each\nline names the actor, the action and the time.\n\nLog archives are encrypted at rest and kept for thirteen months.\n\n## Incidents\n\nIncident handling is an organisation-wide process. This page does not restate\nit. It links to [Incident handling](../context/incident-handling.md) through\n`related`, so the organisation measures stay written and reviewed in one place.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/audit-logging.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/"
+    },
+    "related": [
+      {
+        "href": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/",
+        "title": "Incident handling"
+      }
+    ]
+  }
+}

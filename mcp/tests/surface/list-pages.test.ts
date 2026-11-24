@@ -40,7 +40,7 @@ describe('list_pages', () => {
       expect(pages.map((p) => p.id)).toEqual(expectedPageIds(fixture('example')));
       // 70 docs pages + the 3 synthetic OpenAPI version records
       // (openapi-second-slice WP03; the fixture's index carries them last).
-      expect(pages.length).toBe(73);
+      expect(pages.length).toBe(92);
     });
 
     it('emits exactly the contract record shape, uri included, no score fields', () => {

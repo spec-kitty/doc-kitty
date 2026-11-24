@@ -1,0 +1,33 @@
+{
+  "slug": "guides/capped-hub/what-stays-reachable",
+  "route": "/guides/capped-hub/what-stays-reachable/",
+  "section": "guides",
+  "title": "What stays reachable",
+  "description": "Capped pages leave the sidebar, but every other route to them stays.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-23T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/what-stays-reachable.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/what-stays-reachable/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# What stays reachable\n\nThe cap changes the sidebar only. Each capped page is still built, listed on its\nhub, included in the sitemap and the agent API, and found by search. The previous\nand next links on each page still lead through the hub's pages in the hub's\norder.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/what-stays-reachable.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/what-stays-reachable/"
+    },
+    "related": []
+  }
+}

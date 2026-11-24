@@ -17,7 +17,7 @@
   "authors": [],
   "keywords": [],
   "markdown": "# Decision Records\n\nADRs are never edited once accepted — a new ADR supersedes an old one.\n\nThis page is a `kind: Hub` index: the ADRs below are listed automatically by the\nHub layout on build, so there is no hand-maintained table to keep in sync.\n\nTo add one, copy `template.md` from this folder to `NNNN-short-title.md`. The\ntemplate is a draft page, so it is only built when drafts are published.",
-  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/adr.json"

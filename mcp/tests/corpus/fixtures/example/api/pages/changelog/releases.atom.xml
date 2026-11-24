@@ -9,10 +9,236 @@
   <content type="html">&lt;p&gt;All notable changes to &lt;code&gt;@spec-kitty/doc-toolkit&lt;/code&gt; are recorded here. The format
 follows &lt;a href=&quot;https://keepachangelog.com/en/1.1.0/&quot;&gt;Keep a Changelog&lt;/a&gt;, and the project
 adheres to &lt;a href=&quot;https://semver.org/spec/v2.0.0.html&quot;&gt;Semantic Versioning&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&quot;unreleased&quot;&gt;&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/compare/v0.6.0...HEAD&quot;&gt;Unreleased&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id=&quot;unreleased&quot;&gt;&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/compare/v0.7.1...HEAD&quot;&gt;Unreleased&lt;/a&gt;&lt;/h2&gt;
+&lt;h3 id=&quot;added&quot;&gt;Added&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;A pack reader, pinned to the charter’s packs contract (#330).&lt;/strong&gt; Before,
+doc-kitty could not read a Spec Kitty pack. Now &lt;code&gt;readPack(dir)&lt;/code&gt; reads a pack
+directory into one model: identity, the README’s title, preamble and
+sections, presets, mutability levels, an inventory per kind, a manifest whose hashes are
+recomputed, and warnings that never fail the build. It classifies files with a
+vendored snapshot of the charter’s packs contract at
+&lt;code&gt;contract-packs-v0.1.0-rc.1&lt;/code&gt;, checked by a lock and by the charter’s own
+conformance cases. &lt;code&gt;pnpm packs:sync-contract --ref &amp;#x3C;tag&gt;&lt;/code&gt; refreshes the
+snapshot. The new &lt;code&gt;packs.charterLock&lt;/code&gt; and &lt;code&gt;packs.contract&lt;/code&gt; options pin the
+contract, and &lt;code&gt;dockitty-read-pack &amp;#x3C;dir&gt; --json&lt;/code&gt; prints the model. Pack pages
+follow in #338. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0079-kitty-packs-through-a-charter-contract-reader.md&quot;&gt;ADR-0079&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;One registry for generated pages (#330).&lt;/strong&gt; Before, the frontmatter gate,
+the stamp helpers and the Gherkin generator each named the Gherkin and
+glossary producers themselves. Now every producer is registered once, with an
+ownership scope: a whole section, or directories inside one. A stamp outside
+its producer’s scope no longer exempts a page. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0083-producer-registry-and-ownership-scopes.md&quot;&gt;ADR-0083&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;A sidebar child cap keeps large hubs out of every page’s sidebar (#341).&lt;/strong&gt;
+Before, every page of a folder was listed in every page’s sidebar, so a hub
+with hundreds of pages put hundreds of links on each page. Now, a hub (a folder whose
+index page has &lt;code&gt;kind: Hub&lt;/code&gt;) with more pages than its cap (default 50) shows its overview link and one “N pages”
+entry, marked current on every page below the hub, and prev/next follow the
+hub’s order. The cap is on by default, so an existing hub with more than 50
+pages is capped when you upgrade; set a higher cap to keep it expanded. Set the cap with &lt;code&gt;sidebar.childCap&lt;/code&gt; in the site config, on a section in
+&lt;code&gt;sections.yaml&lt;/code&gt;, or with &lt;code&gt;sidebar_child_cap&lt;/code&gt; on a hub; label the entry with
+&lt;code&gt;sidebar.cappedLabel&lt;/code&gt; or the &lt;code&gt;dockitty.sidebar.cappedEntry&lt;/code&gt; UI string. Page
+generators can use &lt;code&gt;cappedChildHidden&lt;/code&gt; from &lt;code&gt;@spec-kitty/doc-toolkit/child-cap&lt;/code&gt;.
+See &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/sidebar-child-cap.md&quot;&gt;Cap large sidebar groups&lt;/a&gt; and
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0084-sidebar-child-cap.md&quot;&gt;ADR-0084&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Operating-model templates and a Role kind (#402).&lt;/strong&gt; Before, the stub tools
+wrote pages with frontmatter and a TODO body only, and an accountable function
+had no page kind. Now &lt;code&gt;new-doc --template &amp;#x3C;id&gt;&lt;/code&gt; writes one of twelve
+operating-model templates, and &lt;code&gt;scaffold --preset operating-model&lt;/code&gt; writes the
+set with an &lt;code&gt;operating-model/&lt;/code&gt; section index. Each template holds headings and
+authoring prompts only, and presets its &lt;code&gt;tom_classification&lt;/code&gt; measures at
+organisation scope. Neither tool overwrites an existing file. A new &lt;code&gt;Role&lt;/code&gt;
+kind records an accountable function and requires &lt;code&gt;role&lt;/code&gt; and
+&lt;code&gt;responsibilities&lt;/code&gt;. The &lt;code&gt;operating-model&lt;/code&gt; section is opt-in, through a
+documented &lt;code&gt;sections.yaml&lt;/code&gt; entry. Two runs without a template also change:
+&lt;code&gt;new-doc&lt;/code&gt; refuses a &lt;code&gt;--title&lt;/code&gt; with a control character, a slug with a &lt;code&gt;..&lt;/code&gt;
+segment, a bare &lt;code&gt;--title&lt;/code&gt; and extra positional arguments (exit 2), and
+&lt;code&gt;scaffold&lt;/code&gt; no longer takes a flag’s value, such as &lt;code&gt;--index-basename index&lt;/code&gt;,
+as its base folder. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0085-role-kind.md&quot;&gt;ADR-0085&lt;/a&gt; and
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/operating-model.md&quot;&gt;Documenting your operating model&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Pages can classify the technical and organisational measures they evidence
+(#406).&lt;/strong&gt; Before, a page could not say which data-protection measure it
+documents. Now an optional &lt;code&gt;tom_classification&lt;/code&gt; field lists measure ids, each
+with an optional &lt;code&gt;scope&lt;/code&gt; (&lt;code&gt;system&lt;/code&gt; or &lt;code&gt;organisation&lt;/code&gt;) and &lt;code&gt;note&lt;/code&gt;. Ids resolve
+against &lt;code&gt;docs/_meta/measures.yaml&lt;/code&gt;, or against a shipped default of the 17
+example headings of the EU standard contractual clauses (Decision (EU)
+2021/914, Annex II), the first four also citing GDPR Art. 32(1)(a)–(d). An
+unknown id fails the build and &lt;code&gt;pnpm validate:catalog&lt;/code&gt;. The content graph gains &lt;code&gt;classified-as&lt;/code&gt;
+edges, &lt;code&gt;/api/pages&lt;/code&gt; records list the resolved measures, and the OKF export adds
+a Measures section. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0080-tom-classification-field-and-measures-catalog.md&quot;&gt;ADR-0080&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;changed&quot;&gt;Changed&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;A pack manifest’s own hash is checked (#417).&lt;/strong&gt; Before, the pack reader
+showed &lt;code&gt;manifest_hash&lt;/code&gt; as written and never recomputed it. Now it recomputes
+the hash from the manifest’s RFC 8785 canonical JSON, as the charter’s schema
+defines it. A manifest whose hash does not match reads as unverified, with a
+&lt;code&gt;manifest-own-hash-mismatch&lt;/code&gt; warning, even when every constituent matches.
+A manifest with no &lt;code&gt;manifest_hash&lt;/code&gt;, which verified before, now reads as
+unverified too, with a &lt;code&gt;manifest-own-hash-missing&lt;/code&gt; warning.
+&lt;code&gt;packManifestHash&lt;/code&gt; is exported. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/architecture/packs.md&quot;&gt;the packs architecture page&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;The vendored packs contract moves to &lt;code&gt;contract-packs-v0.1.0-rc.2&lt;/code&gt; (#418).&lt;/strong&gt;
+Before, doc-kitty read packs with the charter’s rc.1 contract, which does not
+know routing catalogs, so open-packs’ &lt;code&gt;foundation&lt;/code&gt; manifest read as
+unverified. Now the snapshot is at rc.2 (charter &lt;code&gt;33f3ad4&lt;/code&gt;), and every
+open-packs manifest verifies. rc.2 also holds graph shards only at the pack
+root and drops the &lt;code&gt;charter.yaml&lt;/code&gt; rule.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;fixed&quot;&gt;Fixed&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;links.mcp&lt;/code&gt; no longer points at an MCP package that cannot be installed (#307).&lt;/strong&gt;
+Before, a site with &lt;code&gt;links.mcp: true&lt;/code&gt; put &lt;code&gt;npm:@spec-kitty/doc-kitty-mcp&lt;/code&gt; in
+&lt;code&gt;_links.mcp.href&lt;/code&gt; on &lt;code&gt;/api/index.json&lt;/code&gt; and in its &lt;code&gt;llms.txt&lt;/code&gt; line, but that
+package is not published, so a reader who followed it got nothing. Now both
+surfaces say the server is not published yet and point at the
+build-from-source steps in
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/mcp-server-quickstart.md#build-from-source&quot;&gt;the MCP server quickstart&lt;/a&gt;.
+&lt;code&gt;_links.mcp.title&lt;/code&gt; says so too, and the &lt;code&gt;llms.txt&lt;/code&gt; line now reads
+&lt;code&gt;MCP server (not published yet, build it from source: &amp;#x3C;link&gt;): once built, doc-kitty-mcp --site &amp;#x3C;url&gt; serves …&lt;/code&gt;. The shape of &lt;code&gt;_links.mcp&lt;/code&gt; is unchanged.
+With &lt;code&gt;links.mcp&lt;/code&gt; unset or &lt;code&gt;false&lt;/code&gt;, nothing is emitted, as before. Publishing
+the package is tracked in #408.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;A clean &lt;code&gt;pnpm install&lt;/code&gt; and &lt;code&gt;pnpm build&lt;/code&gt; no longer change tracked files
+(#398).&lt;/strong&gt; Before, every build after a release restamped the committed
+glossary pages with the new toolkit version, though their content was
+unchanged, and &lt;code&gt;pnpm install&lt;/code&gt; flipped the thirteen &lt;code&gt;bin&lt;/code&gt; scripts of
+&lt;code&gt;@spec-kitty/doc-toolkit&lt;/code&gt; from mode &lt;code&gt;644&lt;/code&gt; to &lt;code&gt;755&lt;/code&gt;. Now a generated page whose
+&lt;code&gt;content_hash&lt;/code&gt; is unchanged keeps its whole &lt;code&gt;generated&lt;/code&gt; stamp, &lt;code&gt;by&lt;/code&gt; as well as
+&lt;code&gt;at&lt;/code&gt;, so &lt;code&gt;by&lt;/code&gt; names the toolkit version that last changed the content. This
+covers the glossary and the Gherkin feature pages. The &lt;code&gt;bin&lt;/code&gt; scripts are
+committed executable. CI fails the build lane when the build leaves the
+working tree dirty. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/architecture/metadata-model.md&quot;&gt;Metadata model&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;security&quot;&gt;Security&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;A contract lock cannot name a file outside its snapshot (#423).&lt;/strong&gt; Before,
+&lt;code&gt;pnpm packs:sync-contract&lt;/code&gt; wrote each key of &lt;code&gt;contract.lock.json&lt;/code&gt; without
+checking it, so a &lt;code&gt;../&lt;/code&gt; key could write outside &lt;code&gt;--to&lt;/code&gt;. Now a key with a &lt;code&gt;..&lt;/code&gt;
+segment, a leading &lt;code&gt;/&lt;/code&gt;, a backslash or an empty segment stops the sync before
+anything is fetched, read or written, and names the key. A &lt;code&gt;packs.contract&lt;/code&gt;
+snapshot with such a key fails the build with a &lt;code&gt;[dk-packs]&lt;/code&gt; error.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;documentation&quot;&gt;Documentation&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;The example site’s “Markua graceful degradation” page says it is broken on
+purpose (#195).&lt;/strong&gt; Before, its intro spoke in test terms (“exit 0”, “NFR-002”),
+so a reader could mistake the page for a rendering bug. Now an info aside and a
+short list explain that each example is deliberately malformed, what DocKitty
+does with each kind of mistake, and where the build warning appears, with a link
+to the Markua showcase.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;An ADR for missions and Ops pages (#346).&lt;/strong&gt; Before, there was only
+research and a plan for rendering a kittified repository’s missions and Ops.
+Now
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0082-missions-and-ops-through-a-mission-status-contract-reader.md&quot;&gt;ADR-0082&lt;/a&gt;
+records the decisions: a reader over core’s mission-status contract, an
+authoritative export adapter with a file fallback labelled “snapshot,
+unverified”, two producer-registry entries, publication by allow-list, and a
+leak gate.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;ADR-0087 defines one contract for generated sections (#359).&lt;/strong&gt; It is
+accepted, and the code follows in later changes. Under it, every generated page
+will carry the same &lt;code&gt;generated&lt;/code&gt; stamp: &lt;code&gt;by&lt;/code&gt;, &lt;code&gt;at&lt;/code&gt;, a new &lt;code&gt;source_digest&lt;/code&gt; over
+its declared inputs (with a byte-exact algorithm and a worked example), and
+&lt;code&gt;content_hash&lt;/code&gt; over the rendered page. Every producer will answer the same
+&lt;code&gt;--check&lt;/code&gt; drift gate, which flags stale and hand-edited pages. Ownership stays
+with the producer registry (ADR-0083, also accepted). The ADR also says that
+&lt;code&gt;by&lt;/code&gt; and &lt;code&gt;at&lt;/code&gt; change only when the page does, and that doc-kitty never runs a
+producing repository’s code at build time.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;071--2026-11-11&quot;&gt;&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/compare/v0.7.0...v0.7.1&quot;&gt;0.7.1&lt;/a&gt; — 2026-11-11&lt;/h2&gt;
+&lt;h3 id=&quot;added-1&quot;&gt;Added&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;dockitty-assert-diagrams&lt;/code&gt; proves a built site drew every diagram (#314).&lt;/strong&gt;
+Before, a site that renders diagrams at build time had to write its own check
+of the output to learn that a diagram had shipped as a code block, as a
+client-side &lt;code&gt;&amp;#x3C;pre class=&quot;mermaid&quot;&gt;&lt;/code&gt; or as a PlantUML error. Now &lt;code&gt;pnpm exec dockitty-assert-diagrams dist&lt;/code&gt; fails on any of those, on a diagram figure with
+no &lt;code&gt;&amp;#x3C;svg&gt;&lt;/code&gt;, and on a &lt;code&gt;plantuml.com&lt;/code&gt; URL. It skips redirect pages.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;dockitty-plantuml-guard&lt;/code&gt; checks a site’s PlantUML setup before the
+build (#314).&lt;/strong&gt; Before, the no-&lt;code&gt;plantuml.com&lt;/code&gt; guard was a library a site had
+to call through an inline &lt;code&gt;node -e&lt;/code&gt; script, and it read only the toolkit’s
+own files. Now &lt;code&gt;pnpm exec dockitty-plantuml-guard --astro-config astro.config.mjs&lt;/code&gt; checks the installed toolkit, the server the build will use
+(&lt;code&gt;DK_PLANTUML_SERVER_URL&lt;/code&gt; or the default) and the site’s config, and fails
+when any of them names &lt;code&gt;plantuml.com&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;changed-1&quot;&gt;Changed&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Build-mode diagrams name the Playwright version they need (#314).&lt;/strong&gt;
+Before, the consumer guide said build mode needs “Playwright” but not which
+package or version, so a site had to find out that it needs &lt;code&gt;playwright&lt;/code&gt; at
+the toolkit’s own version. Now the toolkit declares &lt;code&gt;playwright&lt;/code&gt; as an
+optional peer pinned to that version (1.62.1), and the guide shows the
+install. A site that does not render diagrams in build mode installs nothing
+new. A site that does gets a peer warning when its &lt;code&gt;playwright&lt;/code&gt; drifts from
+the toolkit’s.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;fixed-1&quot;&gt;Fixed&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;PlantUML &lt;code&gt;@startyaml&lt;/code&gt; diagrams follow the site theme (#314).&lt;/strong&gt; Before, a
+YAML diagram rendered in PlantUML’s default colours, while &lt;code&gt;@startjson&lt;/code&gt; took
+the theme’s node, border, text and arrow colours. Now &lt;code&gt;@startyaml&lt;/code&gt; gets the
+same style block, so both data trees match the rest of the page’s diagrams.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Mermaid &lt;code&gt;erDiagram&lt;/code&gt; renders in build mode (#315).&lt;/strong&gt; Before, any
+&lt;code&gt;erDiagram&lt;/code&gt; failed the whole build with “Cannot read properties of undefined
+(reading ‘0’)”: Mermaid writes &lt;code&gt;style=&quot;undefined;undefined&quot;&lt;/code&gt; on its
+relationship edges, and the SVG minifier threw on it. Now the build drops the
+unset style declarations before minifying, and the example site carries an
+&lt;code&gt;erDiagram&lt;/code&gt; so a build-mode run covers it.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;070--2026-11-08&quot;&gt;&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/compare/v0.6.0...v0.7.0&quot;&gt;0.7.0&lt;/a&gt; — 2026-11-08&lt;/h2&gt;
 &lt;h3 id=&quot;-breaking&quot;&gt;💥 Breaking&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;dockitty-assert-plantuml-no-remote-include --service-container&lt;/code&gt; now fails
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;A version label containing a dot now fails the build (#259).&lt;/strong&gt; Before, the
+&lt;code&gt;openapi&lt;/code&gt; option accepted a label such as &lt;code&gt;v1.1&lt;/code&gt;, but the renderer drops
+dots from routes, so the label advertised an address the site never served
+(&lt;code&gt;/v11/&lt;/code&gt;). Now the build refuses it — for &lt;code&gt;specs[].label&lt;/code&gt; and for labels
+derived by &lt;code&gt;archive.labelPattern&lt;/code&gt; alike — with a pointed &lt;code&gt;[dk-openapi]&lt;/code&gt;
+error. Rename it to a route-safe label such as &lt;code&gt;v1-1&lt;/code&gt;. Every &lt;code&gt;section&lt;/code&gt;
+segment follows the same rule: a mount point such as &lt;code&gt;reference/v1.1&lt;/code&gt; is
+refused too; write &lt;code&gt;reference/v1-1&lt;/code&gt;. A version labelled &lt;code&gt;index&lt;/code&gt; (any case)
+is refused as well, explicit or derived from an archive: the renderer serves
+it at &lt;code&gt;&amp;#x3C;section&gt;/index/&lt;/code&gt;, but the agent index and content graph map that
+address to the section page. Pick another label. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0078-openapi-surface-matrix.md&quot;&gt;ADR-0078&lt;/a&gt; and
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/migrations/0.6-to-0.7.md&quot;&gt;the migration note&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;dockitty-assert-plantuml-no-remote-include --service-container&lt;/code&gt; now fails
 service setups it used to pass (#268).&lt;/strong&gt; Before, the check passed any
 service that refused its test include. Now, with the opt-in unset, it fails
 when the named container has: a &lt;code&gt;PLANTUML_SECURITY_PROFILE&lt;/code&gt; that is missing
@@ -22,10 +248,57 @@ container does not publish on a matching address. An empty value for any
 flag now exits 2. To fix: set &lt;code&gt;PLANTUML_SECURITY_PROFILE=SANDBOX&lt;/code&gt; on the
 service (or declare the opt-in), move PlantUML settings into the two
 environment variables, and name the container that serves &lt;code&gt;--server&lt;/code&gt;. See the
-&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/migrations/0.6-to-0.7.md&quot;&gt;0.6 to 0.7 migration guide&lt;/a&gt;.&lt;/li&gt;
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/migrations/0.6-to-0.7.md&quot;&gt;0.6 to 0.7 migration guide&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;added&quot;&gt;Added&lt;/h3&gt;
+&lt;h3 id=&quot;added-2&quot;&gt;Added&lt;/h3&gt;
 &lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;OpenAPI versions appear in the agent API (#257).&lt;/strong&gt; Before, the generated
+reference pages were invisible to agents. Now every spec version has one
+synthetic entry in &lt;code&gt;/api/index.json&lt;/code&gt; (appended after the docs records, never
+ranked) and a page payload at &lt;code&gt;/api/pages/&amp;#x3C;section&gt;/&amp;#x3C;label&gt;.json&lt;/code&gt;, carrying
+&lt;code&gt;released&lt;/code&gt;, &lt;code&gt;rawDocumentUrl&lt;/code&gt; and the raw document’s &lt;code&gt;sha256&lt;/code&gt;. Unreleased
+versions are included and marked. The content graph and the OKF bundle carry
+the versions too. See
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0078-openapi-surface-matrix.md&quot;&gt;ADR-0078&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;openapi.llmsOperations&lt;/code&gt; lists operations in &lt;code&gt;llms.txt&lt;/code&gt; (#258).&lt;/strong&gt; Before,
+&lt;code&gt;llms.txt&lt;/code&gt; carried only one line per version. Now, when you opt in with
+&lt;code&gt;llmsOperations: true&lt;/code&gt;, each version’s raw document line is followed by one
+indented line per operation, &lt;code&gt;  - METHOD /path: summary&lt;/code&gt;. The option is off
+by default, so an opting-out site’s &lt;code&gt;llms.txt&lt;/code&gt; is unchanged. Released
+operation pages are also individual search results now, findable by summary,
+method and path. The raw documents are served in &lt;code&gt;astro dev&lt;/code&gt; too, so the
+&lt;code&gt;llms.txt&lt;/code&gt; lines and their checksums resolve while previewing, not only in a
+built site.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;A version switcher on every OpenAPI page, and an archive input (#259).&lt;/strong&gt;
+Before, the pages did not link to their siblings. Now every page carries a
+dropdown of all versions, marking the current one and unreleased ones, as
+plain links that work without scripts; from an operation page it targets the
+same operation in the other version when it exists there. A new
+&lt;code&gt;openapi.archive&lt;/code&gt; option (&lt;code&gt;glob&lt;/code&gt; + &lt;code&gt;labelPattern&lt;/code&gt;) turns matched files, such
+as tagged releases, into versions with labels derived from the file names.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;More OpenAPI input shapes, each published byte for byte (#260).&lt;/strong&gt; Before,
+only a single self-contained OpenAPI 3.x file was accepted. Now a definition
+with relative &lt;code&gt;$ref&lt;/code&gt;s across local files is bundled and published as one
+file (the published bytes are the bundle, so they match no single source
+file), Swagger 2.0 documents are accepted with their original bytes
+published, and a pinned &lt;code&gt;https&lt;/code&gt; URL works via &lt;code&gt;specs[].url&lt;/code&gt; + &lt;code&gt;sha256&lt;/code&gt;,
+fetched within bounded redirects, timeout and size, and cached under
+&lt;code&gt;node_modules/.cache/doc-kitty/openapi/&lt;/code&gt; for offline builds
+(&lt;code&gt;openapi.offline&lt;/code&gt; or &lt;code&gt;DOCKITTY_OFFLINE=1&lt;/code&gt;). Every error starts with
+&lt;code&gt;[dk-openapi]&lt;/code&gt;, names the spec version and the cause, and redacts URL query
+strings. Swagger 2.0 and remote documents must be self-contained: an
+external &lt;code&gt;$ref&lt;/code&gt; in either is refused, with the same ref-count bound as every
+other input. See &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0078-openapi-surface-matrix.md&quot;&gt;ADR-0078&lt;/a&gt; and
+&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/migrations/0.6-to-0.7.md&quot;&gt;the migration note&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Operators can let PlantUML fetch declared remote includes (#268).&lt;/strong&gt; Before,
 every URL include failed the build under the hardened &lt;code&gt;SANDBOX&lt;/code&gt; service. Now
@@ -67,8 +340,16 @@ the &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/guid
 &lt;p&gt;&lt;strong&gt;Pages and sections can show an icon in the sidebar (#293).&lt;/strong&gt; Set &lt;code&gt;sidebar.icon&lt;/code&gt; on a page, or &lt;code&gt;icon&lt;/code&gt; on a section in &lt;code&gt;sections.yaml&lt;/code&gt; or a charter’s &lt;code&gt;sections.entries&lt;/code&gt;, to &lt;code&gt;fa-&amp;#x3C;name&gt;&lt;/code&gt; for Font Awesome’s solid set or to the name of a Starlight built-in. A group takes its section’s icon, or else its index page’s. Only the icons you use reach the output, as inline SVG hidden from assistive technology, with no font file and no external request, and a page showing a Font Awesome icon carries one CC BY 4.0 licence comment. An unknown name fails the build and &lt;code&gt;validate-frontmatter&lt;/code&gt;, naming the page or section. A site with no icons is unchanged. A sidebar you write yourself takes no icons, and the build warns once if any are authored.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;changed&quot;&gt;Changed&lt;/h3&gt;
+&lt;h3 id=&quot;changed-2&quot;&gt;Changed&lt;/h3&gt;
 &lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Unreleased OpenAPI versions leave the sitemap and search (#285).&lt;/strong&gt; Before,
+the pages of every spec version were listed and indexed like any page. Now
+the pages of a version with &lt;code&gt;released: false&lt;/code&gt; are still built and served,
+carry the “unreleased” badge and their agent entries, but are held back from
+the sitemap and the search index: readers do not discover a contract that is
+not out yet, agents still resolve it. A released version is unaffected.&lt;/p&gt;
+&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Metadata blocks start collapsed (#290).&lt;/strong&gt; Before, Who is this for, Related,
 External references and Glossary links used always showed in full, and on a
@@ -82,7 +363,7 @@ open. See &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/doc
 &lt;p&gt;&lt;strong&gt;Generated sidebar groups start closed (#290).&lt;/strong&gt; Before, the groups of the generated sidebar were open on every page, apart from any a site had set to collapse, such as the generated API groups. Now each starts closed, except the groups on the path to the current page, which Starlight opens by itself. Set &lt;code&gt;sidebar: { collapsed: false }&lt;/code&gt; to keep the old sidebar exactly. A sidebar you write yourself is not changed.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;fixed&quot;&gt;Fixed&lt;/h3&gt;
+&lt;h3 id=&quot;fixed-2&quot;&gt;Fixed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The agent index no longer names a surface the site does not mount (#290).&lt;/strong&gt;
 Before, &lt;code&gt;/api/index.json&lt;/code&gt; linked &lt;code&gt;rss&lt;/code&gt;, &lt;code&gt;bibliography&lt;/code&gt;, &lt;code&gt;scenarios&lt;/code&gt;, &lt;code&gt;llms&lt;/code&gt; and
@@ -97,7 +378,7 @@ optional in the contract types. An explicit &lt;code&gt;links&lt;/code&gt; value
 another path; &lt;code&gt;llms&lt;/code&gt; and &lt;code&gt;sitemap&lt;/code&gt; have no override.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&quot;060--2026-11-02&quot;&gt;&lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/compare/v0.5.0...v0.6.0&quot;&gt;0.6.0&lt;/a&gt; — 2026-11-02&lt;/h2&gt;
-&lt;h3 id=&quot;added-1&quot;&gt;Added&lt;/h3&gt;
+&lt;h3 id=&quot;added-3&quot;&gt;Added&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;A site can publish versioned API reference pages from its OpenAPI files
@@ -203,7 +484,7 @@ roots, or the command exits with status 2. See
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0072-parallel-landing-without-shared-files.md&quot;&gt;ADR-0072&lt;/a&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;changed-1&quot;&gt;Changed&lt;/h3&gt;
+&lt;h3 id=&quot;changed-3&quot;&gt;Changed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;An Astro &lt;code&gt;redirects&lt;/code&gt; key that ends in &lt;code&gt;.html&lt;/code&gt; fails a static build
@@ -258,7 +539,7 @@ or &lt;code&gt;.github/filters.yml&lt;/code&gt; runs every lane. See
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0072-parallel-landing-without-shared-files.md&quot;&gt;ADR-0072&lt;/a&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;security&quot;&gt;Security&lt;/h3&gt;
+&lt;h3 id=&quot;security-1&quot;&gt;Security&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The PlantUML render service is pinned by digest and refuses remote
 includes (#251).&lt;/strong&gt; Before, every workflow ran the floating
@@ -276,7 +557,7 @@ requests. The consumer guide now shows the hardened service block. To adopt
 it, copy that block; a diagram that includes a URL or a local file will then
 stop the build.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;documentation&quot;&gt;Documentation&lt;/h3&gt;
+&lt;h3 id=&quot;documentation-1&quot;&gt;Documentation&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The setup guide says how to write redirect targets for a site at the domain
 root (#261).&lt;/strong&gt; Before, a config that built its Astro &lt;code&gt;redirects&lt;/code&gt; targets as
@@ -297,7 +578,7 @@ still only warns. To keep the old behaviour, list &lt;code&gt;kind&lt;/code&gt; 
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0065-kind-required-again.md&quot;&gt;ADR-0065&lt;/a&gt; and
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/migrations/0.4-to-0.5.md&quot;&gt;Upgrading from 0.4.0 to 0.5.0&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;changed-2&quot;&gt;Changed&lt;/h3&gt;
+&lt;h3 id=&quot;changed-4&quot;&gt;Changed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;On screens wider than the frame, the sidebar tint now reaches the screen edge
 (#224).&lt;/strong&gt; Before, above the 120rem default cap the sidebar panel’s tint started
@@ -307,7 +588,7 @@ edge, as the header bar does, and its links stay on the frame. Nothing changes
 at or below 1920px, or on a full-width frame. Recorded in
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0066-sidebar-tint-bleeds-past-the-frame.md&quot;&gt;ADR-0066&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;fixed-1&quot;&gt;Fixed&lt;/h3&gt;
+&lt;h3 id=&quot;fixed-3&quot;&gt;Fixed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The table of contents rail no longer jumps across the page on a slow first
 paint (#223).&lt;/strong&gt; Before, if the browser painted before the reading pane was
@@ -451,7 +732,7 @@ only the gate did before. To list every page in one pass, run
 &lt;code&gt;updated: 2024-10-01T00:00:00Z&lt;/code&gt;. See the
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0059-content-graph-and-okf-alignment.md#per-output-dates-and-the-date-shape-rule-226-227&quot;&gt;ADR-0059 note&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;added-2&quot;&gt;Added&lt;/h3&gt;
+&lt;h3 id=&quot;added-4&quot;&gt;Added&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Readers can expand diagrams and images to the full window again (#185).&lt;/strong&gt;
 Before, sites built on the toolkit drew diagrams and images at page width
@@ -588,7 +869,7 @@ Starlight’s own header. &lt;code&gt;stock-header.meta.json&lt;/code&gt; record
 Astro versions and the &lt;code&gt;compressHTML&lt;/code&gt; setting it was captured with, and a fast
 test names the field that no longer matches and the command to run.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;changed-3&quot;&gt;Changed&lt;/h3&gt;
+&lt;h3 id=&quot;changed-5&quot;&gt;Changed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The toolkit sets Starlight &lt;code&gt;markdown.processedDirs&lt;/code&gt; itself.&lt;/strong&gt; Before, only
 &lt;code&gt;src/content/docs&lt;/code&gt; got Starlight’s Markdown processing. Now the docs root is
@@ -670,7 +951,7 @@ every page was rejected. See
 is now one inline script right after the sidebar markup, and the &lt;code&gt;head&lt;/code&gt;
 entry is gone.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;fixed-2&quot;&gt;Fixed&lt;/h3&gt;
+&lt;h3 id=&quot;fixed-4&quot;&gt;Fixed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Every RSS item has a &lt;code&gt;&amp;#x3C;pubDate&gt;&lt;/code&gt; (#190).&lt;/strong&gt; Before, generated Gherkin
 feature pages and glossary pages, which carry no &lt;code&gt;updated&lt;/code&gt;, were feed items
@@ -772,7 +1053,7 @@ stamp’s &lt;code&gt;at&lt;/code&gt;. RSS still dates an item from &lt;code&gt;
 and the agent API is unchanged. See the
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0059-content-graph-and-okf-alignment.md#per-output-dates-and-the-date-shape-rule-226-227&quot;&gt;ADR-0059 note&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;documentation-1&quot;&gt;Documentation&lt;/h3&gt;
+&lt;h3 id=&quot;documentation-2&quot;&gt;Documentation&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The site’s changelog shows every release, from CHANGELOG.md (#192).&lt;/strong&gt;
 Before, the example site’s changelog was a hand-written page that stopped at
@@ -906,7 +1187,7 @@ accepted unless your index names included &lt;code&gt;index&lt;/code&gt;, and it
 collided with the folder’s landing page. Now the build stops on it whatever
 your index names are.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;changed-4&quot;&gt;Changed&lt;/h3&gt;
+&lt;h3 id=&quot;changed-6&quot;&gt;Changed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The reading column is wider, and all body content uses it (#154).&lt;/strong&gt; The
 default &lt;code&gt;--dk-width-content&lt;/code&gt; goes from &lt;code&gt;45rem&lt;/code&gt; (720px) to &lt;code&gt;60rem&lt;/code&gt; (960px), so
@@ -956,7 +1237,7 @@ definition is reported like an inline link, and an unknown option or the
 exits 2. The failure summary reads “N link problem(s) in M file(s); F file(s)
 scanned, C reference(s) checked.”&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;added-3&quot;&gt;Added&lt;/h3&gt;
+&lt;h3 id=&quot;added-5&quot;&gt;Added&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Gherkin in any page (#120).&lt;/strong&gt; Set &lt;code&gt;gherkin: true&lt;/code&gt; and a &lt;code&gt;```gherkin&lt;/code&gt;
 fence on any docs page renders as a structured scenario: the feature and
@@ -1030,7 +1311,7 @@ self-hosted server PlantUML needs. No behaviour changes. See
 &lt;li&gt;&lt;strong&gt;&lt;code&gt;--help&lt;/code&gt; on &lt;code&gt;dockitty-generate-feature-pages&lt;/code&gt;.&lt;/strong&gt; It prints the flags and
 exits with status 0.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;fixed-3&quot;&gt;Fixed&lt;/h3&gt;
+&lt;h3 id=&quot;fixed-5&quot;&gt;Fixed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;&lt;code&gt;/api/scenarios.json&lt;/code&gt; now exists whenever Gherkin pages are generated
 (#126).&lt;/strong&gt; Before, &lt;code&gt;llms.txt&lt;/code&gt; pointed agents at &lt;code&gt;/api/scenarios.json&lt;/code&gt; as soon as
@@ -1132,7 +1413,7 @@ capped frame.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;The reading column is narrower between 1152px and 1344px viewports&lt;/strong&gt;: 528px
 at 1152px (was 600px) and 656px at 1280px (was 664px).&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;changed-5&quot;&gt;Changed&lt;/h3&gt;
+&lt;h3 id=&quot;changed-7&quot;&gt;Changed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Draft pages and pages with no &lt;code&gt;doc_status&lt;/code&gt; are marked &lt;code&gt;noindex&lt;/code&gt; and left
@@ -1239,7 +1520,7 @@ the working directory) and &lt;code&gt;--mode &amp;#x3C;mode&gt;&lt;/code&gt; th
 &lt;code&gt;production&lt;/code&gt;).&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;added-4&quot;&gt;Added&lt;/h3&gt;
+&lt;h3 id=&quot;added-6&quot;&gt;Added&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;&lt;code&gt;--dk-width-frame&lt;/code&gt;&lt;/strong&gt; — a token that caps the page frame, for example
@@ -1355,7 +1636,7 @@ stamp, so its pages are still recognised by the existing &lt;code&gt;glossary/&l
 on or off.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;fixed-4&quot;&gt;Fixed&lt;/h3&gt;
+&lt;h3 id=&quot;fixed-6&quot;&gt;Fixed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Dead gutter on wide screens.&lt;/strong&gt; At 1600, 1920 and 2560px the frame shrank to
 1056px while the sidebar and header stayed at the viewport edge, leaving a gap
@@ -1446,7 +1727,7 @@ agent-API’s &lt;code&gt;generatedFrom&lt;/code&gt; field in &lt;code&gt;/api/i
 &lt;code&gt;common-docs-kitty&lt;/code&gt; to &lt;code&gt;doc-kitty&lt;/code&gt;; an agent that branched on the old value
 should update (the payload &lt;code&gt;version&lt;/code&gt; stays &lt;code&gt;2&lt;/code&gt;, as the shape is unchanged).&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;added-5&quot;&gt;Added&lt;/h3&gt;
+&lt;h3 id=&quot;added-7&quot;&gt;Added&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;GitHub Packages release workflow&lt;/strong&gt; — &lt;code&gt;.github/workflows/release.yml&lt;/code&gt;
 publishes the toolkit to the GitHub Packages npm registry
@@ -1488,7 +1769,7 @@ keeps a non-removable &lt;code&gt;title&lt;/code&gt; floor; a malformed charter 
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/0042-native-documentation-charter.md&quot;&gt;ADR-0042&lt;/a&gt; and the consumer
 charter reference + migration guide.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;changed-6&quot;&gt;Changed&lt;/h3&gt;
+&lt;h3 id=&quot;changed-8&quot;&gt;Changed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Package metadata for publishing&lt;/strong&gt; — &lt;code&gt;src/package.json&lt;/code&gt; gains &lt;code&gt;repository&lt;/code&gt;
 (with &lt;code&gt;directory: src&lt;/code&gt;, which GitHub Packages uses to link the package to this
@@ -1520,7 +1801,7 @@ names &lt;code&gt;0.1.1&lt;/code&gt;, and the install step no longer calls &lt;c
 is a regular dependency of the toolkit). The root &lt;code&gt;README&lt;/code&gt; gains a matching
 install-from-GitHub-Packages section.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;fixed-5&quot;&gt;Fixed&lt;/h3&gt;
+&lt;h3 id=&quot;fixed-7&quot;&gt;Fixed&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;The docs gates no longer exit 0 without running when started through a
 symlink&lt;/strong&gt; — the scripts ran their CLI only when &lt;code&gt;import.meta.url&lt;/code&gt; equalled
@@ -1547,7 +1828,7 @@ and get a Starlight docsite plus &lt;code&gt;sitemap.xml&lt;/code&gt;, &lt;code&
 agent-API out of the box. See &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/plans/roadmap.md&quot;&gt;&lt;code&gt;docs/plans/roadmap.md&lt;/code&gt;&lt;/a&gt; for
 the feature-by-feature status and the decision records under
 &lt;a href=&quot;https://github.com/spec-kitty/doc-kitty/blob/main/docs/adr/&quot;&gt;&lt;code&gt;docs/adr/&lt;/code&gt;&lt;/a&gt; for the reasoning.&lt;/p&gt;
-&lt;h3 id=&quot;added-6&quot;&gt;Added&lt;/h3&gt;
+&lt;h3 id=&quot;added-8&quot;&gt;Added&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Common Docs rendering&lt;/strong&gt; — the README-as-index loader renders a repo-root
 &lt;code&gt;docs/&lt;/code&gt; tree; &lt;code&gt;README.md&lt;/code&gt; (or &lt;code&gt;index.md&lt;/code&gt;) is the section index and carries

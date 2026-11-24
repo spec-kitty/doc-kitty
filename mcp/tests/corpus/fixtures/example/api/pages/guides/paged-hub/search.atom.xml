@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/</id>
+  <title>Search</title>
+  <updated>2026-11-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/"/>
+  <summary>Listing pages are in the site search, and a child&apos;s own page still ranks first for its title.</summary>
+  <content type="html">&lt;span id=&quot;search&quot;&gt;&lt;/span&gt;
+&lt;p&gt;Listing pages are indexed like any other page, so a search finds them. The
+page numbers in the pagination are not indexed.&lt;/p&gt;
+&lt;p&gt;A child’s title is the heading of its own page, so a search for that title
+leads to the child first, not to the listing page that lists it.&lt;/p&gt;</content>
+</entry>

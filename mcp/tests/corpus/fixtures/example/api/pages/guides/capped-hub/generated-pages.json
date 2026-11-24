@@ -1,0 +1,33 @@
+{
+  "slug": "guides/capped-hub/generated-pages",
+  "route": "/guides/capped-hub/generated-pages/",
+  "section": "guides",
+  "title": "Generated pages",
+  "description": "How a page generator can hide capped pages before the sidebar is built.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-23T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/generated-pages.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/generated-pages/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Generated pages\n\nA tool that writes hundreds of pages can mark each one with\n`sidebar: { hidden: true }` when its hub is over the cap, so Starlight never\nbuilds the entries the cap would drop. The toolkit's `cappedChildHidden(count, cap)`\nsays when. The sidebar, the current entry and the previous and next links are\nthe same with or without the hint.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/generated-pages.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/generated-pages/"
+    },
+    "related": []
+  }
+}

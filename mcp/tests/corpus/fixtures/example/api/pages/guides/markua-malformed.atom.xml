@@ -2,16 +2,24 @@
 <entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/">
   <id>https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/</id>
   <title>Markua graceful degradation</title>
-  <updated>2026-08-29T00:00:00.000Z</updated>
+  <updated>2026-11-18T00:00:00.000Z</updated>
   <author><name>DocKitty Example</name></author>
   <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/"/>
-  <summary>Deliberately malformed Markua that must never fail the build (NFR-002).</summary>
+  <summary>Deliberately broken Markua that shows how DocKitty degrades to readable text without failing the build.</summary>
   <content type="html">
 
+
 &lt;span id=&quot;markua-graceful-degradation&quot;&gt;&lt;/span&gt;
-&lt;p&gt;This page collects the &lt;em&gt;cannot-fail-the-build&lt;/em&gt; cases. Each construct below is
-deliberately malformed; the build must still exit 0 (NFR-002) and every case must
-degrade to &lt;strong&gt;readable text&lt;/strong&gt; — never broken markup, never a thrown error.&lt;/p&gt;
+&lt;aside aria-label=&quot;Note&quot; class=&quot;starlight-aside starlight-aside--note&quot;&gt;&lt;p class=&quot;starlight-aside__title&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; width=&quot;16&quot; height=&quot;16&quot; fill=&quot;currentColor&quot; class=&quot;starlight-aside__icon&quot;&gt;&lt;path d=&quot;M12 11a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1Zm.38-3.92a1 1 0 0 0-.76 0 1 1 0 0 0-.33.21 1.15 1.15 0 0 0-.21.33 1 1 0 0 0 .21 1.09c.097.088.209.16.33.21A1 1 0 0 0 13 8a1.05 1.05 0 0 0-.29-.71 1 1 0 0 0-.33-.21ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16.001A8 8 0 0 1 12 20Z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;Note&lt;/p&gt;&lt;div class=&quot;starlight-aside__content&quot;&gt;&lt;p&gt;This page is broken on purpose. Each example below uses Markua syntax that is wrong or unsupported, to show how DocKitty handles mistakes like these.&lt;/p&gt;&lt;/div&gt;&lt;/aside&gt;
+&lt;p&gt;A Markua mistake never fails the build. The page still builds, and each broken
+construct falls back to readable text:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;An unknown icon is dropped, and the build log prints a warning that names it.&lt;/li&gt;
+&lt;li&gt;An attribute DocKitty does not support is silently ignored.&lt;/li&gt;
+&lt;li&gt;Syntax that cannot be paired up, such as an unclosed wrapper, stays as literal
+text.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For the syntax that works, see the &lt;a href=&quot;/doc-kitty/guides/markua-showcase/&quot;&gt;Markua showcase&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&quot;an-unknown-icon-drops-gracefully&quot;&gt;An unknown icon drops gracefully&lt;/h2&gt;
 &lt;p&gt;A callout naming an icon that is not in the seed map keeps rendering, without the
 icon, and the build emits a single warning naming the unknown value:&lt;/p&gt;

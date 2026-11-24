@@ -61,6 +61,23 @@
       "updated": "2026-08-21T00:00:00Z"
     },
     {
+      "id": "architecture/audit-logging",
+      "kind": "page",
+      "type": "Architecture",
+      "title": "Audit logging",
+      "description": "How the example product records administrative actions, with the technical measures this page provides evidence for.",
+      "tags": [
+        "security",
+        "tom"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "architecture",
+      "href": "/architecture/audit-logging/",
+      "updated": "2026-11-22T00:00:00Z"
+    },
+    {
       "id": "architecture/blocks-demonstrator",
       "kind": "page",
       "type": "Architecture",
@@ -114,7 +131,7 @@
       "doc_kind": "Explanation",
       "section": "architecture",
       "href": "/architecture/overview/",
-      "updated": "2026-10-14T00:00:00Z"
+      "updated": "2026-11-10T00:00:00Z"
     },
     {
       "id": "architecture/plantuml-demonstrator",
@@ -161,7 +178,7 @@
       "description": "Behaviour specifications generated from the repository's Gherkin feature files.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.6.0",
+        "by": "doc-kitty-gherkin/0.7.1",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:16468cd02ce6"
       },
@@ -177,7 +194,7 @@
       "description": "Behaviour specifications for HR, generated from Gherkin feature files.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.6.0",
+        "by": "doc-kitty-gherkin/0.7.1",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:921b0185fc92"
       },
@@ -196,7 +213,7 @@
       ],
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.6.0",
+        "by": "doc-kitty-gherkin/0.7.1",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:2ba67bcafd1f"
       },
@@ -218,7 +235,7 @@
       "description": "Behaviour specifications for Shipping, generated from Gherkin feature files.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.6.0",
+        "by": "doc-kitty-gherkin/0.7.1",
         "at": "2026-10-18T05:55:21Z",
         "content_hash": "sha256:07bf420aeb22"
       },
@@ -237,7 +254,7 @@
       ],
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.6.0",
+        "by": "doc-kitty-gherkin/0.7.1",
         "at": "2026-10-19T08:58:27Z",
         "content_hash": "sha256:817e81f1d8da"
       },
@@ -262,7 +279,7 @@
       ],
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-gherkin/0.6.0",
+        "by": "doc-kitty-gherkin/0.7.1",
         "at": "2026-10-19T08:58:27Z",
         "content_hash": "sha256:2c4e57f9ba43"
       },
@@ -294,6 +311,70 @@
       "kind": "catalog",
       "title": "The Perseus Project",
       "url": "http://www.perseus.tufts.edu/hopper"
+    },
+    {
+      "id": "catalog:measure:accountability",
+      "kind": "catalog",
+      "title": "Accountability",
+      "url": "https://w3id.org/dpv#ComplianceMonitoring",
+      "measure": {
+        "nature": "organisational",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "16"
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog:measure:availability-restoration",
+      "kind": "catalog",
+      "title": "Restoring availability and access after an incident",
+      "url": "https://w3id.org/dpv#DataBackupProtocols",
+      "measure": {
+        "nature": "technical",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "3"
+          },
+          {
+            "framework": "eu-gdpr",
+            "ref": "Art. 32(1)(c)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog:measure:events-logging",
+      "kind": "catalog",
+      "title": "Events logging",
+      "url": "https://w3id.org/dpv#ActivityMonitoring",
+      "measure": {
+        "nature": "technical",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog:measure:storage-protection",
+      "kind": "catalog",
+      "title": "Protection of data during storage",
+      "url": "https://w3id.org/dpv#EncryptionAtRest",
+      "measure": {
+        "nature": "technical",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "7"
+          }
+        ]
+      }
     },
     {
       "id": "changelog/README",
@@ -441,6 +522,23 @@
       "updated": "2026-08-21T00:00:00Z"
     },
     {
+      "id": "context/incident-handling",
+      "kind": "page",
+      "type": "Context",
+      "title": "Incident handling",
+      "description": "How the example organisation handles an incident, written once for every product and classified as organisation-wide measures.",
+      "tags": [
+        "operations",
+        "tom"
+      ],
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "context",
+      "href": "/context/incident-handling/",
+      "updated": "2026-11-22T00:00:00Z"
+    },
+    {
       "id": "context/product",
       "kind": "page",
       "type": "Context",
@@ -519,7 +617,7 @@
       "description": "Glossary terms for the hr context.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.6.0",
+        "by": "doc-kitty-glossary/0.7.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:647872872f73"
       },
@@ -535,7 +633,7 @@
       "description": "Bounded-context vocabulary for this documentation.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.6.0",
+        "by": "doc-kitty-glossary/0.7.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:3c372a59ef6a"
       },
@@ -551,7 +649,7 @@
       "description": "Glossary terms for the rhetoric context.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.6.0",
+        "by": "doc-kitty-glossary/0.7.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:1d0bb7c2a0ee"
       },
@@ -567,7 +665,7 @@
       "description": "Glossary terms for the shipping context.",
       "status": "stable",
       "generated": {
-        "by": "doc-kitty-glossary/0.6.0",
+        "by": "doc-kitty-glossary/0.7.0",
         "at": "2026-10-18T06:09:39Z",
         "content_hash": "sha256:1fc1f255099a"
       },
@@ -588,6 +686,84 @@
       "section": "guides",
       "href": "/guides/",
       "updated": "2026-08-21T00:00:00Z"
+    },
+    {
+      "id": "guides/capped-hub/README",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Capped hub",
+      "description": "A hub with more children than its sidebar child cap, so the sidebar shows one entry for its pages.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "guides",
+      "href": "/guides/capped-hub/",
+      "updated": "2026-11-23T00:00:00Z"
+    },
+    {
+      "id": "guides/capped-hub/generated-pages",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Generated pages",
+      "description": "How a page generator can hide capped pages before the sidebar is built.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/capped-hub/generated-pages/",
+      "updated": "2026-11-23T00:00:00Z"
+    },
+    {
+      "id": "guides/capped-hub/the-capped-entry",
+      "kind": "page",
+      "type": "Guide",
+      "title": "The capped entry",
+      "description": "The one sidebar entry that stands for a capped hub's pages.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/capped-hub/the-capped-entry/",
+      "updated": "2026-11-23T00:00:00Z"
+    },
+    {
+      "id": "guides/capped-hub/what-stays-reachable",
+      "kind": "page",
+      "type": "Guide",
+      "title": "What stays reachable",
+      "description": "Capped pages leave the sidebar, but every other route to them stays.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/capped-hub/what-stays-reachable/",
+      "updated": "2026-11-23T00:00:00Z"
+    },
+    {
+      "id": "guides/capped-hub/where-the-cap-is-set",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Where the cap is set",
+      "description": "The cap is read from the hub, then its section, then the site.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/capped-hub/where-the-cap-is-set/",
+      "updated": "2026-11-23T00:00:00Z"
+    },
+    {
+      "id": "guides/capped-hub/why-a-cap",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Why a cap",
+      "description": "A section with hundreds of pages puts hundreds of links in every page's sidebar.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/capped-hub/why-a-cap/",
+      "updated": "2026-11-23T00:00:00Z"
     },
     {
       "id": "guides/getting-started",
@@ -642,7 +818,7 @@
       "doc_kind": "How-To",
       "section": "guides",
       "href": "/guides/install/",
-      "updated": "2026-10-19T00:00:00Z"
+      "updated": "2026-11-11T00:00:00Z"
     },
     {
       "id": "guides/markua-footnotes-showcase",
@@ -668,7 +844,7 @@
       "kind": "page",
       "type": "Guide",
       "title": "Markua graceful degradation",
-      "description": "Deliberately malformed Markua that must never fail the build (NFR-002).",
+      "description": "Deliberately broken Markua that shows how DocKitty degrades to readable text without failing the build.",
       "tags": [
         "markua",
         "fixture",
@@ -679,7 +855,7 @@
       "doc_kind": "Reference",
       "section": "guides",
       "href": "/guides/markua-malformed/",
-      "updated": "2026-08-29T00:00:00Z"
+      "updated": "2026-11-18T00:00:00Z"
     },
     {
       "id": "guides/markua-showcase",
@@ -701,6 +877,110 @@
       "updated": "2026-10-19T00:00:00Z"
     },
     {
+      "id": "guides/paged-hub/README",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Paged hub",
+      "description": "A hub over its sidebar child cap that lists its pages two at a time, with a pagination below the list.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Hub",
+      "section": "guides",
+      "href": "/guides/paged-hub/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
+      "id": "guides/paged-hub/accessibility",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Accessibility",
+      "description": "The pagination is a labelled navigation landmark that works with a keyboard and a screen reader.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/paged-hub/accessibility/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
+      "id": "guides/paged-hub/agents-and-feeds",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Agents and feeds",
+      "description": "Listing pages appear in the agent API, llms.txt and the sitemap, and every child is still listed once.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/paged-hub/agents-and-feeds/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
+      "id": "guides/paged-hub/listing-page-urls",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Listing page URLs",
+      "description": "Listing page N of a hub is at /<hub>/page/N/, from 2 up; page 1 is the hub itself.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Reference",
+      "section": "guides",
+      "href": "/guides/paged-hub/listing-page-urls/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
+      "id": "guides/paged-hub/page-size",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Page size",
+      "description": "The number of children each listing page shows, set per hub, per section or for the site.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/paged-hub/page-size/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
+      "id": "guides/paged-hub/search",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Search",
+      "description": "Listing pages are in the site search, and a child's own page still ranks first for its title.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/paged-hub/search/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
+      "id": "guides/paged-hub/translating-the-pagination",
+      "kind": "page",
+      "type": "Guide",
+      "title": "Translating the pagination",
+      "description": "The pagination's name and labels are UI strings that a site can translate.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "How-To",
+      "section": "guides",
+      "href": "/guides/paged-hub/translating-the-pagination/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
+      "id": "guides/paged-hub/when-a-hub-is-paged",
+      "kind": "page",
+      "type": "Guide",
+      "title": "When a hub is paged",
+      "description": "Only a hub over its sidebar child cap is paged, and only when its children outnumber its page size.",
+      "status": "stable",
+      "doc_status": "active",
+      "doc_kind": "Explanation",
+      "section": "guides",
+      "href": "/guides/paged-hub/when-a-hub-is-paged/",
+      "updated": "2026-11-24T00:00:00Z"
+    },
+    {
       "id": "guides/scenarios-in-pages",
       "kind": "page",
       "type": "Guide",
@@ -718,6 +998,39 @@
       "section": "guides",
       "href": "/guides/scenarios-in-pages/",
       "updated": "2026-10-14T00:00:00Z"
+    },
+    {
+      "id": "openapi:main",
+      "kind": "resource",
+      "title": "Shipping API",
+      "url": "https://spec-kitty.github.io/doc-kitty/reference/api/main/openapi.yaml",
+      "openapi": {
+        "sha256": "fff535ff63eb42972732b7919e7f34b5d58a053a614e1e97bb5618331deaa929",
+        "released": false,
+        "overview": "https://spec-kitty.github.io/doc-kitty/reference/api/main/"
+      }
+    },
+    {
+      "id": "openapi:v1",
+      "kind": "resource",
+      "title": "Shipping API",
+      "url": "https://spec-kitty.github.io/doc-kitty/reference/api/v1/openapi.yaml",
+      "openapi": {
+        "sha256": "29f00ddabfbf70d921560bf2fd6b657a6609101f100f294562079dd5c38ebd39",
+        "released": true,
+        "overview": "https://spec-kitty.github.io/doc-kitty/reference/api/v1/"
+      }
+    },
+    {
+      "id": "openapi:v1-1",
+      "kind": "resource",
+      "title": "Shipping API",
+      "url": "https://spec-kitty.github.io/doc-kitty/reference/api/v1-1/openapi.yaml",
+      "openapi": {
+        "sha256": "068383373bd07876d1f9c26466c900eee53ccd1bceef5cd23d26e8d0a296c8d7",
+        "released": true,
+        "overview": "https://spec-kitty.github.io/doc-kitty/reference/api/v1-1/"
+      }
     },
     {
       "id": "plans/index",
@@ -1267,6 +1580,34 @@
       "rel": "in-section"
     },
     {
+      "id": "architecture/audit-logging|classified-as|catalog:measure:events-logging",
+      "source": "architecture/audit-logging",
+      "target": "catalog:measure:events-logging",
+      "rel": "classified-as",
+      "scope": "system"
+    },
+    {
+      "id": "architecture/audit-logging|classified-as|catalog:measure:storage-protection",
+      "source": "architecture/audit-logging",
+      "target": "catalog:measure:storage-protection",
+      "rel": "classified-as",
+      "note": "Log archives are encrypted at rest.",
+      "scope": "system"
+    },
+    {
+      "id": "architecture/audit-logging|in-section|architecture/README",
+      "source": "architecture/audit-logging",
+      "target": "architecture/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "architecture/audit-logging|related|context/incident-handling",
+      "source": "architecture/audit-logging",
+      "target": "context/incident-handling",
+      "rel": "related",
+      "note": "The organisation-wide incident process this product relies on."
+    },
+    {
       "id": "architecture/blocks-demonstrator|audience|context/audience/example-persona",
       "source": "architecture/blocks-demonstrator",
       "target": "context/audience/example-persona",
@@ -1493,6 +1834,27 @@
       "rel": "in-section"
     },
     {
+      "id": "context/incident-handling|classified-as|catalog:measure:accountability",
+      "source": "context/incident-handling",
+      "target": "catalog:measure:accountability",
+      "rel": "classified-as",
+      "note": "Every incident gets a named owner and a written review.",
+      "scope": "organisation"
+    },
+    {
+      "id": "context/incident-handling|classified-as|catalog:measure:availability-restoration",
+      "source": "context/incident-handling",
+      "target": "catalog:measure:availability-restoration",
+      "rel": "classified-as",
+      "scope": "organisation"
+    },
+    {
+      "id": "context/incident-handling|in-section|context/README",
+      "source": "context/incident-handling",
+      "target": "context/README",
+      "rel": "in-section"
+    },
+    {
       "id": "context/product|in-section|context/README",
       "source": "context/product",
       "target": "context/README",
@@ -1544,6 +1906,42 @@
       "id": "guides/README|in-section|README",
       "source": "guides/README",
       "target": "README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/capped-hub/README|in-section|guides/README",
+      "source": "guides/capped-hub/README",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/capped-hub/generated-pages|in-section|guides/capped-hub/README",
+      "source": "guides/capped-hub/generated-pages",
+      "target": "guides/capped-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/capped-hub/the-capped-entry|in-section|guides/capped-hub/README",
+      "source": "guides/capped-hub/the-capped-entry",
+      "target": "guides/capped-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/capped-hub/what-stays-reachable|in-section|guides/capped-hub/README",
+      "source": "guides/capped-hub/what-stays-reachable",
+      "target": "guides/capped-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/capped-hub/where-the-cap-is-set|in-section|guides/capped-hub/README",
+      "source": "guides/capped-hub/where-the-cap-is-set",
+      "target": "guides/capped-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/capped-hub/why-a-cap|in-section|guides/capped-hub/README",
+      "source": "guides/capped-hub/why-a-cap",
+      "target": "guides/capped-hub/README",
       "rel": "in-section"
     },
     {
@@ -1610,6 +2008,54 @@
       "id": "guides/markua-showcase|in-section|guides/README",
       "source": "guides/markua-showcase",
       "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/README|in-section|guides/README",
+      "source": "guides/paged-hub/README",
+      "target": "guides/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/accessibility|in-section|guides/paged-hub/README",
+      "source": "guides/paged-hub/accessibility",
+      "target": "guides/paged-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/agents-and-feeds|in-section|guides/paged-hub/README",
+      "source": "guides/paged-hub/agents-and-feeds",
+      "target": "guides/paged-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/listing-page-urls|in-section|guides/paged-hub/README",
+      "source": "guides/paged-hub/listing-page-urls",
+      "target": "guides/paged-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/page-size|in-section|guides/paged-hub/README",
+      "source": "guides/paged-hub/page-size",
+      "target": "guides/paged-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/search|in-section|guides/paged-hub/README",
+      "source": "guides/paged-hub/search",
+      "target": "guides/paged-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/translating-the-pagination|in-section|guides/paged-hub/README",
+      "source": "guides/paged-hub/translating-the-pagination",
+      "target": "guides/paged-hub/README",
+      "rel": "in-section"
+    },
+    {
+      "id": "guides/paged-hub/when-a-hub-is-paged|in-section|guides/paged-hub/README",
+      "source": "guides/paged-hub/when-a-hub-is-paged",
+      "target": "guides/paged-hub/README",
       "rel": "in-section"
     },
     {

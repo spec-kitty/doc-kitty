@@ -1,0 +1,33 @@
+{
+  "slug": "guides/paged-hub/when-a-hub-is-paged",
+  "route": "/guides/paged-hub/when-a-hub-is-paged/",
+  "section": "guides",
+  "title": "When a hub is paged",
+  "description": "Only a hub over its sidebar child cap is paged, and only when its children outnumber its page size.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/when-a-hub-is-paged.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# When a hub is paged\n\nA hub is paged when two things are true:\n\n- it has more children than its sidebar child cap, so the sidebar shows one\n  entry for them;\n- it has more children than its page size.\n\nAny other hub lists all its children on its own page, exactly as before.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/when-a-hub-is-paged.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/"
+    },
+    "related": []
+  }
+}

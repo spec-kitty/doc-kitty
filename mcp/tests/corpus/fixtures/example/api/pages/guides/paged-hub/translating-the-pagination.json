@@ -1,0 +1,33 @@
+{
+  "slug": "guides/paged-hub/translating-the-pagination",
+  "route": "/guides/paged-hub/translating-the-pagination/",
+  "section": "guides",
+  "title": "Translating the pagination",
+  "description": "The pagination's name and labels are UI strings that a site can translate.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "How-To",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/translating-the-pagination.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Translating the pagination\n\nThe pagination uses five UI strings, with these English defaults:\n\n| Key | Default |\n| --- | --- |\n| `dockitty.hub.pagination.label` | Pagination |\n| `dockitty.hub.pagination.previous` | Previous |\n| `dockitty.hub.pagination.next` | Next |\n| `dockitty.hub.pagination.page` | Page {page} |\n| `dockitty.hub.pagination.title` | {title}, page {page} |\n\nAdd a translation for any of them in the site's `src/content/i18n/<locale>.json`.\nA string a locale does not translate falls back to English.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/translating-the-pagination.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/"
+    },
+    "related": []
+  }
+}

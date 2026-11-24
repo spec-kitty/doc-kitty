@@ -1,0 +1,33 @@
+{
+  "slug": "guides/capped-hub/the-capped-entry",
+  "route": "/guides/capped-hub/the-capped-entry/",
+  "section": "guides",
+  "title": "The capped entry",
+  "description": "The one sidebar entry that stands for a capped hub's pages.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-23T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/the-capped-entry.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/the-capped-entry/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# The capped entry\n\nThe entry reads \"5 pages\" here. Its text comes from the `sidebar.cappedLabel`\nsite option, else the `dockitty.sidebar.cappedEntry` UI string for the page's\nlanguage, else \"{count} pages\". It links to the hub, and it is marked as the\ncurrent page on every page below the hub.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/the-capped-entry.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/the-capped-entry/"
+    },
+    "related": []
+  }
+}

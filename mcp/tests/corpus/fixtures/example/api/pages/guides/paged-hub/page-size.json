@@ -1,0 +1,33 @@
+{
+  "slug": "guides/paged-hub/page-size",
+  "route": "/guides/paged-hub/page-size/",
+  "section": "guides",
+  "title": "Page size",
+  "description": "The number of children each listing page shows, set per hub, per section or for the site.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page-size.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page-size/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Page size\n\nThe page size is how many children each listing page shows. The most specific\nsetting wins:\n\n1. the hub's own `hub_page_size` frontmatter, as on this example's hub;\n2. `hub.pageSize` on the section in `docs/_meta/sections.yaml`, or in the\n   charter's `sections.entries`;\n3. `hub.pageSize` in `defineDocKittyIntegrations`;\n4. the default, 50.\n\nA page size is a positive whole number. Any other value stops the build with a\nmessage that names the setting.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page-size.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page-size/"
+    },
+    "related": []
+  }
+}
