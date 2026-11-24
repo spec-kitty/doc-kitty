@@ -130,6 +130,9 @@
       "last_event_id": "01M85KT347SN62VKE6QH4PC3CG",
       "last_transition_at": "2026-11-24T01:48:00.007531+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Stub-tool flags, red-first (5f7c6f4 red, 89166d9 green); lint 0; pnpm test src 4604/4604 mcp 181/181 (second run; first run hit a docs-loader-includes flake)"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 393,
