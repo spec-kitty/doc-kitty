@@ -159,8 +159,18 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
     // client rect → rendered. A `width > 0` test conflated the two and dropped
     // visible-but-settling diagrams (deck navigation + print) in slower renderers.
     const runNodes = scopeNodes.filter((node) => node.getClientRects().length > 0);
-    if (!runNodes.length) return;
+    if (!runNodes.length) {
+      // Nothing visible to draw: still report the theme, so the PDF printer's wait
+      // ends instead of timing out on a page whose every diagram is hidden (#381).
+      document.documentElement.setAttribute(
+        'data-dk-diagram-theme',
+        document.documentElement.getAttribute('data-theme') ?? 'light',
+      );
+      return;
+    }
     isRendering = true;
+    // The theme this run renders in; published when the run settles (below).
+    const runTheme = document.documentElement.getAttribute('data-theme') ?? 'light';
 
     mermaid.initialize({
       startOnLoad: false,
@@ -188,6 +198,11 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
           const next = pendingScope;
           pendingScope = null;
           render(Array.from(next)); // coalesced union run, after this one settled.
+        } else {
+          // Completion signal (#381, ADR-0081): the theme the diagrams now show. The
+          // PDF printer sets `data-theme="light"` and waits for this to read `light`,
+          // because an `<svg>` exists the whole time: first the stale one, then the new.
+          document.documentElement.setAttribute('data-dk-diagram-theme', runTheme);
         }
       });
   };
@@ -300,7 +315,12 @@ export async function initDiagrams(controller?: DeckController): Promise<void> {
   // that ever calls `mermaid.run` (NFR-007). Scope = the VISITED set only
   // (INV-SCOPE); on a doc page that is all nodes (they all render at load), so
   // behaviour there is unchanged.
-  new MutationObserver(() => render(Array.from(visited))).observe(
+  // Paused while the print layer prints (`data-dk-printing`, `print/print.client.ts`): a
+  // re-render resets each node to its source before redrawing, which a print would catch.
+  new MutationObserver(() => {
+    if (document.documentElement.hasAttribute('data-dk-printing')) return;
+    render(Array.from(visited));
+  }).observe(
     document.documentElement,
     { attributes: true, attributeFilter: ['data-theme'] },
   );

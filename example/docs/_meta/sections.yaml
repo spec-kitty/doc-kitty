@@ -25,10 +25,13 @@ sections:
     order: 10
     type: Context
 
+  # ADR-0081: the diagram and code fixture section the PDF determinism check needs
+  # (build-mode Mermaid, PlantUML, code blocks) gets its own PDF at /pdf/architecture.pdf.
   - id: architecture
     label: Architecture
     order: 20
     type: Architecture
+    pdf: true
 
   - id: adr
     label: Decision Records
@@ -70,6 +73,7 @@ sections:
     label: Guides
     order: 40
     type: Guide
+    pdf: true
 
   # ars-rethorica-example-01M204RR WP02 (FR-002/FR-003): custom showcase
   # section — a real Markua-authored conversion of Aristotle's Rhetoric Book I,
@@ -80,6 +84,8 @@ sections:
     label: Rhetoric
     order: 45
     type: Reference
+    # ADR-0081: in the whole-site PDF, the showcase book follows the main body.
+    pdf: { site: appendix }
 
   - id: presentations
     label: Presentations

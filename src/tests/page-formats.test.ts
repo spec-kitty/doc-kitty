@@ -20,6 +20,7 @@ const ALL: ServedSurfaces = {
   sitemap: true,
   okf: true,
   openapi: false,
+  pdf: [],
 };
 const ATOM_ON = { pageFormats: { atom: true } };
 const STAMP = 'doc-kitty-glossary/0.4.0';

@@ -54,6 +54,8 @@ import PageHero from './slots/PageHero.astro';
 import MetadataBand from './slots/MetadataBand.astro';
 import DraftNotice from './DraftNotice.astro';
 import OpenApiVersionNav from './OpenApiVersionNav.astro';
+import PrintControl from './slots/PrintControl.astro';
+import { chromeOptions } from '../lib/chrome-options.js';
 
 const route = (Astro.locals as unknown as { starlightRoute: StarlightRoute })
   .starlightRoute;
@@ -86,6 +88,9 @@ const openApiNav = Astro.locals.dkOpenApi;
 // show there: the shared predicate treats a missing `doc_status` as `draft`, and it is
 // missing only on Starlight's unparsed 404 fallback (the schema defaults every entry).
 const isDraft = data.doc_status !== undefined && isDraftEntry(entry as unknown as Parameters<typeof isDraftEntry>[0]);
+// The print control (#379): opt-in, and never on a print document itself.
+const printRoute = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/print/`;
+const showPrintControl = chromeOptions().printControl && !isPersona && !Astro.url.pathname.startsWith(printRoute);
 ---
 
 {
@@ -132,4 +137,10 @@ const isDraft = data.doc_status !== undefined && isDraftEntry(entry as unknown a
       </div>
     </>
   )
-}{isDraft && <DraftNotice />}{openApiNav && <OpenApiVersionNav nav={openApiNav} />}
+}{isDraft && <DraftNotice />}{openApiNav && <OpenApiVersionNav nav={openApiNav} />}{showPrintControl && <PrintControl entryId={entry.id} />}
+
+<script>
+  // The print layer (#378): force-light print hook, print rules and the print-token
+  // fallback. Loaded here because every in-frame page renders this carrier.
+  import '../lib/print/print.client.ts';
+</script>

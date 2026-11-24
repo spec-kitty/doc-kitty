@@ -1,0 +1,248 @@
+{
+  "event_count": 49,
+  "last_event_id": "01M7X6TMG5EJ78F1FQE4XB07J1",
+  "materialized_at": "2026-11-20T19:27:10.853806+00:00",
+  "mission_number": "21",
+  "mission_slug": "print-pdf-output-01M7X19V",
+  "mission_type": "software-dev",
+  "schema_version": 2,
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 7,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7X6TKHQ60MC98FWXRFRC5K5",
+      "last_transition_at": "2026-11-20T19:27:09.879627+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Print layer done; unit, chrome-baseline and print.spec green (mutant check on the token fallback fails as expected)",
+        "Print layer meets FR-001..009/008a; URL-suffix rule (0,1,2) via :where so theme off-switch works; fallback generated at 0,3,0; hook/observer pause race-free; callout-accent and !important notes deferred to WP07 guide."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://print-pdf-output-01M7X19V/WP01-print-layer/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 10517,
+      "shell_pid_created_at": "1795198676.0",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T007": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7X6TKPCC7GY4TJR1A1QGKB5",
+      "last_transition_at": "2026-11-20T19:27:10.028460+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "pdf key, option, resolution, ADR-0081; unit tests green",
+        "pdf key shared by both normalizers via normalizeSectionPdf (advisory, drops bad parts); resolution authored>site default>false; Presentation floor; site name reserved; DK_PDF_OPTIONS published; ADR-0081 matches D-04..D-11 and #377 rulings."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://print-pdf-output-01M7X19V/WP02-pdf-config-and-adr/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 12642,
+      "shell_pid_created_at": "1795198819.31",
+      "subtasks": {
+        "T008": "done",
+        "T009": "done",
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7X6TKV8G627T01XD93V07WF",
+      "last_transition_at": "2026-11-20T19:27:10.184632+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Print routes, manifest, gate; drafts on/off builds and gates green",
+        "Approved: order/rewrite/route/gate correct on both builds (55 tests pass, gate PASS drafts on/off; one h1, unique ids, SVG style/url(#) ids namespaced, relative+base links resolved, section index -> p0, Presentation floor + Template excluded, noindex/no pagefind/out of sitemap; gate expectations from evaluated config cross-checked with sections.yaml). Follow-ups: title sort is non-numeric (Chapter 10 before Chapter 2) and folder/page ties interleave (Book I before Introduction) vs the sidebar; flat TOC list; dir-without-index passes link gate; prefixed glossary payload id."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://print-pdf-output-01M7X19V/WP03-print-routes/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 18207,
+      "shell_pid_created_at": "1795199182.53",
+      "subtasks": {
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done",
+        "T017": "done",
+        "T018": "done",
+        "T019": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7X6TM05E8QEB4TFZMZZF1WZ",
+      "last_transition_at": "2026-11-20T19:27:10.341172+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "CLI, post-pass, gate, determinism; all green on the drafts-off example",
+        "Approved. Incremental update valid (20-byte xref entry, /Size N+1, /Prev, startxref verified on real PDFs); same-width date/struct-id patch; exit codes 0/1/2; gate PASS, determinism PASS (byte-identical), 17 unit tests pass; no new deps. Non-blocking: stale data-dk-diagram-theme=light signal race when data-theme is re-set to the same value; contract text stale (printBackground, outline depth); determinism temp dirs leak on process.exit."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://print-pdf-output-01M7X19V/WP04-pdf-cli-and-gates/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 2062,
+      "shell_pid_created_at": "1795200476.95",
+      "subtasks": {
+        "T020": "done",
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7X6TM6JVDEMKPX5EQAWAR8V",
+      "last_transition_at": "2026-11-20T19:27:10.546560+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Advisory lane, deploy step, served surfaces, link gate; workflow tests green",
+        "Approved: advisory pdf job (not in ci-ok needs/REQUIRED_LANES; ci-ok reads only threaded *_RESULT envs, unaffected), drafts-off artifact, pinned 1.62.1 image matches playwright@1.62.1 peer (autoInstallPeers -> src/node_modules/playwright), safe.directory handled; deploy prints+gates after composite Chromium install, before Pages upload; shallow checkout fine for git log -1; served-surfaces pdf config-derived and not consumed by sitemap/llms/agent/OKF; link exemption limited to manifest names. Tests 74/74 + node --test 15/15 pass."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://print-pdf-output-01M7X19V/WP05-ci-deploy-surfaces/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 4608,
+      "shell_pid_created_at": "1795200666.86",
+      "subtasks": {
+        "T026": "done",
+        "T027": "done",
+        "T028": "done",
+        "T029": "done",
+        "T030": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7X6TMBCGBBNNRQXWAW6BZ07",
+      "last_transition_at": "2026-11-20T19:27:10.700750+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Print control; unthemed fixture specs incl. axe green",
+        "Approved: printControl off by default (example dist and goldens unchanged), validated boolean; PrintControl rendered by PageTitle, skipped on Persona pages and print routes; download link from resolved pdfOptions().sections with withBase href; tokens-only styles, 24px targets, focus ring; hidden in print; axe clean in unthemed light/dark (16/16 pass), vitest 48/48. Non-blocking: ~750B of screen CSS for the control ships in print.css on every site (consider a component-scoped style); spec focuses the button rather than tabbing to it; no Persona-page assertion in the spec."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://print-pdf-output-01M7X19V/WP06-print-control/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 8161,
+      "shell_pid_created_at": "1795200826.74",
+      "subtasks": {
+        "T031": "done",
+        "T032": "done",
+        "T033": "done"
+      }
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "implementer_of_record": "claude",
+      "lane": "done",
+      "last_event_id": "01M7X6TMG5EJ78F1FQE4XB07J1",
+      "last_transition_at": "2026-11-20T19:27:10.853806+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Guide, reference, CI/CD, migration, changelog; docs gates green (Vale runs in CI)",
+        "Docs verified against code: pdf/printControl options and defaults, dockitty-pdf flags and exit codes, bins, /print/ and /pdf/ routes, exclusion floor (decks; OpenAPI and templates never docs entries), appendix/omit order, CI pdf lane advisory and deploy step, DK_PDF_OPTIONS (12 names). Consistent with ADR-0081. Changelog, frontmatter, links and markdownlint pass. Non-blocking: whole-site 'every section not excluded' sentence glosses omit; lane-matrix table has no pdf row; bare #369/#370 refs."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://print-pdf-output-01M7X19V/WP07-docs-and-changelog/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 11242,
+      "shell_pid_created_at": "1795201032.46",
+      "subtasks": {
+        "T034": "done",
+        "T035": "done",
+        "T036": "done",
+        "T037": "done"
+      }
+    }
+  }
+}

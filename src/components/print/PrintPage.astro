@@ -1,0 +1,51 @@
+---
+/**
+ * One unit of a print document (ADR-0081, #380): a page with its hero, or a body with
+ * no hero (the cover or a section divider's index page). The page's own content is
+ * passed as the default slot, rendered here to HTML and rewritten (`print/rewrite`):
+ * ids namespaced, links made in-document or absolute, headings demoted.
+ */
+import { rewritePage } from '../../lib/print/rewrite.js';
+
+interface Props {
+  /** The unit's anchor id, e.g. `p3`; also the id prefix of its content. */
+  anchor: string;
+  /** Route path → anchor id, for every unit of this document. */
+  pageAnchors: ReadonlyMap<string, string>;
+  /** The site origin for absolute links. */
+  origin: string;
+  /** Levels to demote the content's headings by. */
+  demote: number;
+  /** The lowest level a content heading may end at. */
+  floor?: number;
+  /** The hero; absent for a cover or divider body. */
+  hero?: { title: string; level: number; docStatus?: string; updated?: Date };
+  /** The wrapper class. */
+  class?: string;
+  /** The page's own route path, for its relative links. */
+  pagePath?: string;
+}
+
+const { anchor, pageAnchors, origin, demote, floor, hero, class: className = 'dk-print-page', pagePath } = Astro.props;
+const html = rewritePage(await Astro.slots.render('default'), { prefix: anchor, pageAnchors, origin, demote, floor, pagePath });
+const Heading = hero ? (`h${hero.level}` as 'h2') : 'h2';
+const updated = hero?.updated instanceof Date && !Number.isNaN(hero.updated.getTime()) ? hero.updated.toISOString().slice(0, 10) : undefined;
+---
+
+<section class={className} id={anchor}>
+  {
+    hero && (
+      <header class="dk-print-page__hero">
+        <Heading class="dk-print-page__title">{hero.title}</Heading>
+        {(hero.docStatus || updated) && (
+          <p class="dk-print-page__meta">
+            {hero.docStatus && <span class="dk-print-page__status">{hero.docStatus}</span>}
+            {hero.docStatus && updated && ' · '}
+            {updated && <time datetime={updated}>Updated {updated}</time>}
+          </p>
+        )}
+      </header>
+    )
+  }
+  <Fragment set:html={html} />
+</section>

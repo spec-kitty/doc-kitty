@@ -29,3 +29,6 @@ declare module 'virtual:doc-kitty/manifest' {
   /** The Sidebar carrier's body on a site that opted in (ADR-0075); otherwise `undefined`. */
   export const CustomSidebarBody: import('./lib/manifest.js').LayoutComponent | undefined;
 }
+
+/** The generated print-token fallback sheet (`emitPrintTokenSheet`, #386). CSS only. */
+declare module 'virtual:doc-kitty/print-tokens.css';

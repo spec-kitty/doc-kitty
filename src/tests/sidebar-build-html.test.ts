@@ -300,11 +300,14 @@ describe('WP04 — sidebar and TOC shaping in the built example', () => {
 
   it('reserves no rail for a near-empty table of contents (FR-011)', () => {
     const hub = readOut('context/audience/index.html');
-    expect(hub).not.toContain('right-sidebar');
+    // The rail as markup: the print layer's inline sheet names `.right-sidebar-container`
+    // in a selector, so a bare substring check would find the CSS, not a rail.
+    const RAIL = /class="[^"]*\bright-sidebar/;
+    expect(hub).not.toMatch(RAIL);
     expect(/<html[^>]*data-has-toc/.test(hub)).toBe(false);
     // A page with real headings keeps its rail.
     const chapter = readOut('rhetoric/book-one/chapter-02/index.html');
-    expect(chapter).toContain('right-sidebar');
+    expect(chapter).toMatch(RAIL);
     expect(/<html[^>]*data-has-toc/.test(chapter)).toBe(true);
   });
 

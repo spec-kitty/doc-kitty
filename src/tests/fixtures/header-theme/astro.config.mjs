@@ -45,6 +45,8 @@ export default defineConfig({
     diagrams: true,
     markua: true,
     indexBasename: ['README', 'index'],
+    // As in the example: the whole-site PDF route (ADR-0081), so both builds hold the same pages.
+    pdf: { site: true },
     // The example's `openapi` option (paths resolve against the example root, the build's
     // working directory): its reference pages are pages of the example (WP04).
     // Repeats the example's specs one-for-one, in its order: the themed build must

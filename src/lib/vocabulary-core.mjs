@@ -1415,3 +1415,53 @@ export function isRootIndex(relPath, indexBasename = DEFAULT_INDEX_BASENAME) {
 export function detectIndexCollisions(relPaths, indexBasename = DEFAULT_INDEX_BASENAME) {
   return groupRouteCollisions(relPaths, indexBasename);
 }
+
+/**
+ * A section's normalised `pdf` setting (ADR-0081): whether the section has its own PDF,
+ * and its placement in the whole-site PDF. Both keys are optional; an absent key means
+ * "the site default" (`section`) or `main` (`site`).
+ *
+ * @typedef {object} SectionPdfSetting
+ * @property {boolean} [section] The section's own PDF at `/pdf/<id>.pdf`.
+ * @property {'main' | 'appendix' | 'omit'} [site] Placement in the whole-site PDF.
+ */
+
+/** The whole-site placements a section may take (ADR-0081). */
+export const SECTION_PDF_PLACEMENTS = Object.freeze(['main', 'appendix', 'omit']);
+
+/**
+ * Normalise a section's authored `pdf` value (ADR-0081, #382). `true`/`false` set the
+ * section's own PDF; a mapping may set `section` (boolean) and `site` (`main`,
+ * `appendix` or `omit`). Anything else is an ADVISORY warning, never a failure, and
+ * the bad part is dropped, so the site default applies. Shared by the Astro-side
+ * registry (`sections.ts`) and the bare-Node one (`vocabulary-loader.mjs`), so the
+ * build, the gates and the PDF command read the same setting.
+ *
+ * @param {unknown} value The authored value (`undefined` when the key is absent).
+ * @param {(message: string) => void} warn Receives one message per dropped part.
+ * @param {string} sectionId For the warning text.
+ * @returns {SectionPdfSetting | undefined} `undefined` when nothing valid was authored.
+ */
+export function normalizeSectionPdf(value, warn, sectionId) {
+  if (value === undefined) return undefined;
+  if (typeof value === 'boolean') return { section: value };
+  const where = `section "${sectionId}" "pdf"`;
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    warn(`${where} must be true, false or a mapping of section/site; ignored (the site default applies)`);
+    return undefined;
+  }
+  /** @type {SectionPdfSetting} */
+  const setting = {};
+  for (const [key, raw] of Object.entries(/** @type {Record<string, unknown>} */ (value))) {
+    if (key === 'section' && typeof raw === 'boolean') setting.section = raw;
+    else if (key === 'site' && typeof raw === 'string' && SECTION_PDF_PLACEMENTS.includes(raw)) {
+      setting.site = /** @type {'main' | 'appendix' | 'omit'} */ (raw);
+    } else {
+      warn(
+        `${where}: ${JSON.stringify(key)}: ${JSON.stringify(raw)} is not valid ` +
+          `(section: true|false, site: ${SECTION_PDF_PLACEMENTS.join('|')}); ignored`,
+      );
+    }
+  }
+  return Object.keys(setting).length > 0 ? setting : undefined;
+}

@@ -107,6 +107,7 @@ flowchart TD
   BE --> OK
   DC -->|code or workflows| PA[plantuml-allowlist<br/>real service · allowlist mode]
   BE --> A11[a11y<br/>axe + diagram e2e on the built site]
+  BE -.-> PDF[pdf, advisory<br/>print · gate · determinism]
   A11 --> OK
   PA --> OK
   OK -.->|push to main, if code/content| DEP[deploy-pages]
@@ -121,6 +122,13 @@ flowchart TD
   protection — skips never block.
 - **`deploy-pages`** is a separate `on: push: branches: [main]` workflow, itself
   path-filtered to `code`/`example_content`/`workflows`.
+- **`pdf`** (advisory, [ADR-0081](../adr/0081-print-and-pdf-output-from-built-html-via-chromium.md))
+  runs whenever `build-example` runs. It prints the example's PDFs from the
+  drafts-off dist that `build-example` uploads, in the pinned Playwright
+  container, then runs the PDF gate and the determinism check. It is not in
+  `ci-ok`'s `needs` and not in `REQUIRED_LANES`, so a red run never blocks a
+  merge. It joins `ci-ok` once the maintainers agree it has been green for long
+  enough.
 
 ## Test taxonomy
 
@@ -165,6 +173,9 @@ Build-free, ordered cheap→thorough:
   `code`/`example_content`/`workflows`.
 - Build the example, publish `dist/` to GitHub Pages (the existing `deploy.yml`
   becomes path-gated and shares the build step with `build-example`).
+- Print the PDFs into `dist/pdf/` with `dockitty-pdf` and gate them, before the
+  upload (ADR-0081). A failed print fails the deploy, so no published page links
+  a missing PDF.
 - A merge that touched only `repo_docs` does not redeploy.
 - **No per-PR preview deploys** (decided) — Pages deploys on mainline only. PRs
   may upload `dist/` as a downloadable artifact if a preview is ever wanted.
