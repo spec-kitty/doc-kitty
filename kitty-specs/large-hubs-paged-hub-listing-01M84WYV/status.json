@@ -150,7 +150,7 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::implementer-ivan",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -159,7 +159,8 @@
       "last_transition_at": "2026-11-24T21:32:44.194733+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Listing records in agent index + per-page JSON + llms.txt, DK_HUB_DATA handoff, build-id fold; full pnpm test green (src 244/4803, mcp 23/181)."
+        "Listing records in agent index + per-page JSON + llms.txt, DK_HUB_DATA handoff, build-id fold; full pnpm test green (src 244/4803, mcp 23/181).",
+        "Cycle-1 fixes: file handoff (E2BIG), gated listing records, golden byte identity from pre-WP05 code; full pnpm test green (src 245/4813, mcp 23/181)."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
