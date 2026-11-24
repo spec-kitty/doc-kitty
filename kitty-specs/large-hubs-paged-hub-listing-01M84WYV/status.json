@@ -122,7 +122,7 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
@@ -132,7 +132,8 @@
       "last_transition_at": "2026-11-24T20:57:17.907239+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Paged route mounted only for paged hubs; 200-child build suite; full pnpm test green (src 246/4827, mcp 23/181)."
+        "Paged route mounted only for paged hubs; 200-child build suite; full pnpm test green (src 246/4827, mcp 23/181).",
+        "Review passed (claude::reviewer-renata): lane-d fcccc3b (code; head adds coord status merge). pnpm test src 246/4827 + mcp 23/181 green, lint+typecheck green; paged-hub-build 14 tests 42.7s serialised. Byte identity: example rebuilt from ONE path at lane-d, lane-c 92b936ac and main 5001dff: 0 of 659 files differ. Probe (200 en + 120 fr): page/2..4 and fr/page/2..3 self-canonical, each once in sitemap and Pagefind; no page/1 (spec: not built, 404), no page past last; sidebar marks hub current (en, fr); no breadcrumb component (N/A). Integration order glossary>draft-publication>route-shaping pinned by PINNED_INTEGRATION_ORDER. Mutation 15: 11 killed; survivors G5 prev/next (equivalent: Starlight finds no neighbours for the injected page), I3/I4 injection ignores withheld drafts, G4 route's assertListingAgrees call (test gaps). Anti-pattern checklist all PASS. Non-blocking carry-overs: (1) hreflang alternates and language picker on paged pages point at locale pages that are not built when locales page differently (missions/page/4 -> fr/missions/page/4 404); link gate only checks <a href>; needs operator ruling. (2) Q3 agent API, llms.txt, MCP carry no listing pages on lane-d: WP05 (lane-e 8202719) owns it; WP06 should add one cross-surface each-once test. (3) MANDATORY consolidation step: lane-d + lane-e merge with NO git conflict, so siteHubs (WP04) duplicates shapingPages+siteHubData (WP05) silently; replace siteHubs with siteHubData(options, shapingPages(options, state, new Set(state.unpublishedDirs))); WP05 also orphaned routeShapingSource's @internal JSDoc. (4) hub-cards reads cwd/docs while hub data reads options.docsDir; assertListingAgrees now fails the build loudly if a custom docsDir changes the ADR id rule. (5) route recomposes all cards and rescans the collection per listing page (O(pages x entries)); memoise if very large hubs matter. Out-of-map edits coordinated: route-shaping.ts (WP02/WP05), Hub.astro, components/hub, hub-pagination.ts (WP03), vitest.workspace.ts."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
