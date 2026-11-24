@@ -1,7 +1,7 @@
 {
-  "event_count": 38,
-  "last_event_id": "01M85KT347SN62VKE6QH4PC3CG",
-  "materialized_at": "2026-11-24T01:48:00.007531+00:00",
+  "event_count": 39,
+  "last_event_id": "01M85KXRKWDBY12BBSGSVMQNYP",
+  "materialized_at": "2026-11-24T01:50:00.317034+00:00",
   "mission_number": "",
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 1
   },
   "work_packages": {
@@ -121,22 +121,22 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "implementer_of_record": "claude::node-norris",
-      "lane": "for_review",
-      "last_event_id": "01M85KT347SN62VKE6QH4PC3CG",
-      "last_transition_at": "2026-11-24T01:48:00.007531+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M85KXRKWDBY12BBSGSVMQNYP",
+      "last_transition_at": "2026-11-24T01:50:00.317034+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Stub-tool flags, red-first (5f7c6f4 red, 89166d9 green); lint 0; pnpm test src 4604/4604 mcp 181/181 (second run; first run hit a docs-loader-includes flake)"
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 393,
-      "shell_pid_created_at": "1795482995.88",
+      "role": "reviewer",
+      "shell_pid": 805,
+      "shell_pid_created_at": "1795484996.22",
       "subtasks": {
         "T013": "done",
         "T014": "done",
