@@ -147,14 +147,17 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude",
-      "agent_profile": "node-norris",
-      "agent_profile_version": "1.0",
+      "agent": "claude::node-norris",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "lane": "for_review",
       "last_event_id": "01M85H7SDBE1A2CRY23VN07DAV",
       "last_transition_at": "2026-11-24T01:03:03.083546+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 195,
