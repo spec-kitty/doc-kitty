@@ -3,7 +3,7 @@
  * child process on a temporary `dist` holding a built, stamped index.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -120,6 +120,34 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     expect(existsSync(p.snapshot)).toBe(false);
     // The same file under --check is unowned.
     expect(p.run(...p.both, '--check').out).toContain(`doc-kitty-tom-annex unowned ${p.hub}`);
+  });
+
+  it('refuses an unstamped or foreign snapshot when only --snapshot is named (review cycle 1, R1)', () => {
+    const p = project();
+    mkdirSync(path.dirname(p.snapshot), { recursive: true });
+    for (const foreign of ['{"mine": true}\n', serializeTomAnnex(variant((a) => (a.generated.by = 'doc-kitty-gherkin/1.0.0')))]) {
+      writeFileSync(p.snapshot, foreign);
+      const r = p.run('--dist', 'dist', '--snapshot', p.snapshot);
+      expect(r.status).toBe(1);
+      expect(r.out).toContain(`refusing to overwrite ${p.snapshot}`);
+      expect(readFileSync(p.snapshot, 'utf8')).toBe(foreign);
+    }
+  });
+
+  it('replaces a file by rename, never rewriting it in place (review cycle 1, F1)', () => {
+    const p = project();
+    p.run(...p.both);
+    // A second name for the same inode sees an in-place write, but not a rename over the path.
+    const other = path.join(p.root, 'other-name.json');
+    linkSync(p.snapshot, other);
+    const before = readFileSync(other, 'utf8');
+    p.rebuild(variant((a) => (a.generated.source_digest = `sha256:${'c'.repeat(64)}`)));
+    expect(p.run(...p.both).status).toBe(0);
+    expect(readFileSync(p.snapshot, 'utf8')).not.toBe(before);
+    expect(readFileSync(other, 'utf8')).toBe(before);
+    // No temporary file is left behind.
+    expect(readdirSync(path.dirname(p.snapshot))).toEqual(['tom-annex.snapshot.json']);
+    expect(readdirSync(path.dirname(p.hub))).toEqual(['index.md']);
   });
 
   it('writes nothing when the index has no date for the hub (exit 2)', () => {

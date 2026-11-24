@@ -81,8 +81,18 @@ function inline(value) {
     .replace(/[\\`*_[\]<>|]/g, (c) => `\\${c}`);
 }
 
-/** @param {string} url @returns {string} a link destination with spaces and parentheses encoded */
-const destination = (url) => url.replace(/[ ()]/g, (c) => encodeURIComponent(c));
+/** @type {Record<string, string>} */
+const DESTINATION_ESCAPES = { ' ': '%20', '(': '%28', ')': '%29' };
+
+/**
+ * A Markdown link destination: spaces and parentheses percent-encoded, so an
+ * unbalanced parenthesis cannot end the link early. (`encodeURIComponent` leaves
+ * parentheses alone, so the map is explicit.)
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+const destination = (url) => url.replace(/[ ()]/g, (c) => DESTINATION_ESCAPES[c]);
 
 /**
  * @param {import('./core.mjs').MeasureEntry} entry

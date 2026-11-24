@@ -40,6 +40,11 @@ describe('pageContentHash follows ADR-0087 D2 for Markdown', () => {
     expect(pageContentHash(text)).toBe('sha256:3ebe501730db');
   });
 
+  it('normalises CRLF line endings before hashing (review cycle 1, R4)', () => {
+    const lf = '---\ntitle: "x"\ngenerated:\n  by: "y"\n---\n\n# X\n';
+    expect(pageContentHash(lf.replace(/\n/g, '\r\n'))).toBe(pageContentHash(lf));
+  });
+
   it('only strips the generated block in the frontmatter, not a body line that looks like one', () => {
     const body = '---\ntitle: "x"\n---\n\ngenerated:\n  by: "y"\n';
     const expected = `sha256:${createHash('sha256').update(body, 'utf8').digest('hex').slice(0, 12)}`;
@@ -107,6 +112,15 @@ describe('renderHubPage (WP07 T030)', () => {
     expect(text).toContain('**Use\\_snake & \\<tags\\>**');
     expect(text).toContain('[A \\[tricky\\] \\*title\\*]');
     expect(text).toContain(': line one line \\`two\\`');
+  });
+
+  it('encodes spaces and parentheses in link destinations (review cycle 1, R5)', () => {
+    const g = graph(
+      [page('p', { href: '/a b (c)/', updated: '2026-01-01T00:00:00Z' }), measureNode(record('m'))],
+      [classified('p', 'm')],
+    );
+    const text = renderHubPage(stamped(g, catalog([record('m')])));
+    expect(text).toMatch(/\]\(https:\/\/docs\.example\.org\/docs\/a%20b%20%28c%29\/\)/);
   });
 
   it('never reads the clock, and refuses an index without an instant', () => {

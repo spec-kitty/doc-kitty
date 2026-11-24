@@ -21,7 +21,7 @@
  *
  * Exit codes: 0 ok, 1 drift (or a refused target), 2 usage or input error.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { PRODUCER_REGISTRY } from '../lib/producers.mjs';
@@ -47,10 +47,25 @@ class UsageError extends Error {}
 /** @param {string} file @returns {string | undefined} */
 const readIfPresent = (file) => (existsSync(file) ? readFileSync(file, 'utf8') : undefined);
 
-/** @param {string} file @param {string} text */
+/**
+ * Write atomically: a temporary file in the same directory, then a rename over
+ * the target. A crash mid-write leaves the old file whole, never a truncated one
+ * that would then read as unowned.
+ *
+ * @param {string} file
+ * @param {string} text
+ */
 function write(file, text) {
-  mkdirSync(path.dirname(file), { recursive: true });
-  writeFileSync(file, text);
+  const dir = path.dirname(file);
+  mkdirSync(dir, { recursive: true });
+  const temp = path.join(dir, `.${path.basename(file)}.${process.pid}.tmp`);
+  try {
+    writeFileSync(temp, text);
+    renameSync(temp, file);
+  } catch (err) {
+    rmSync(temp, { force: true });
+    throw err;
+  }
   console.error(`wrote ${file}`);
 }
 

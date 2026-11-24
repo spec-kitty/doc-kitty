@@ -44,6 +44,10 @@ describe('checkSnapshot (WP07 T031)', () => {
     expect(check(serializeTomAnnex(variant((a) => (a.generated.by = 'doc-kitty-gherkin/1.0.0'), false)))).toBe('unowned');
   });
 
+  it('unowned when another format carries this producer stamp (review cycle 1, R3)', () => {
+    expect(check(serializeTomAnnex(variant((a) => ((a as { format: string }).format = 'other/format'), false)))).toBe('unowned');
+  });
+
   it('hand-edited when the body no longer matches its own content_hash', () => {
     const edited = serializeTomAnnex(variant((a) => a.counsel.push('Edited by hand.'), false));
     expect(check(edited)).toBe('hand-edited');
@@ -104,6 +108,11 @@ describe('checkHub (WP07 T031)', () => {
 
   it('stale-source when the build digested other inputs', () => {
     expect(check(hub, variant(otherDigest))).toBe('stale-source');
+  });
+
+  it('hand-edited wins over stale-source on the hub too (review cycle 1, R2)', () => {
+    const edited = hub.replace('## Uncovered measures', '## Uncovered measures (edited)');
+    expect(check(edited, variant(otherDigest))).toBe('hand-edited');
   });
 
   it('stale-render when the digests agree but the rendered page differs', () => {
