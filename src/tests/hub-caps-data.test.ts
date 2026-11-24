@@ -1,8 +1,12 @@
 /**
  * The sidebar child cap's build-time hub data (#341, WP02; FR-004, FR-009,
  * C-003, NFR-003). `routeShapingSource` reads the docs tree and serves, for each
- * hub over its cap, the resolved cap, the child count and the children in the
- * order the hub page lists them (`selectHubChildren`).
+ * hub, the resolved cap, the child count and the children in the order the hub
+ * page lists them (`selectHubChildren`).
+ *
+ * Since #342/#429 (paged hub listing, WP02) every published `kind: Hub` hub has an
+ * entry, capped or not and in every sidebar mode, with `capped` and `pageSize`;
+ * the expectations that said "not emitted" now say "emitted, not capped".
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -67,6 +71,8 @@ describe('hub data in the route-shaping module (FR-004)', () => {
         {
           cap: 5,
           count: 6,
+          capped: true,
+          pageSize: 50,
           children: [
             { slug: 'missions/zeta', label: 'Alpha mission' },
             { slug: 'missions/alpha', label: 'Bravo mission' },
@@ -80,14 +86,14 @@ describe('hub data in the route-shaping module (FR-004)', () => {
     ]);
   });
 
-  it('does not emit a hub at its cap', () => {
+  it('emits a hub at its cap as not capped (#429: every hub has an entry)', () => {
     site(MISSIONS('sidebar_child_cap: 6\n'));
-    expect(served().hubCaps).toEqual([]);
+    expect(served().hubCaps).toEqual([['missions', expect.objectContaining({ cap: 6, count: 6, capped: false })]]);
   });
 
-  it('emits an empty list when no hub is over the default cap', () => {
+  it('emits a hub under the default cap as not capped (#429)', () => {
     site(MISSIONS());
-    expect(served().hubCaps).toEqual([]);
+    expect(served().hubCaps).toEqual([['missions', expect.objectContaining({ cap: 50, count: 6, capped: false })]]);
   });
 
   it('does not count a withheld draft', () => {
@@ -101,7 +107,7 @@ describe('hub data in the route-shaping module (FR-004)', () => {
     expect(served().hubCaps).toEqual([]);
   });
 
-  it('does not treat a folder whose index is a draft as a hub', () => {
+  it('does not treat a folder whose index is a draft as a hub, so it is never paged (#342 edge case)', () => {
     site({ ...MISSIONS('sidebar_child_cap: 5\n'), 'missions/README.md': page('Missions', 'sidebar_child_cap: 5\n', 'Hub').replace('doc_status: active', 'doc_status: draft') });
     expect(served().hubCaps).toEqual([]);
   });
@@ -131,7 +137,11 @@ describe('cap levels (FR-001)', () => {
     };
     for (const n of ['a', 'b', 'c']) files[`missions/old/${n}.md`] = page(`Old ${n}`);
     site(files);
-    expect(served().hubCaps.map(([dir, { cap, count }]) => [dir, cap, count])).toEqual([['missions/old', 2, 3]]);
+    // #429: the outer hub (one listed child, the `old` folder) has an entry too, not capped.
+    expect(served().hubCaps.map(([dir, { cap, count, capped }]) => [dir, cap, count, capped])).toEqual([
+      ['missions', 2, 1, false],
+      ['missions/old', 2, 3, true],
+    ]);
   });
 });
 
@@ -154,6 +164,8 @@ describe('an ADR hub (FR-004: the order and count the hub page shows)', () => {
         {
           cap: 2,
           count: 4,
+          capped: true,
+          pageSize: 50,
           children: [
             { slug: 'adr/0001-zulu', label: 'ADR-0001: Zulu' },
             { slug: 'adr/0002-alpha', label: 'ADR-0002: Alpha' },
@@ -176,7 +188,7 @@ describe('an ADR hub (FR-004: the order and count the hub page shows)', () => {
       'adr/0099-template.md': template,
     });
     // Three listed pages against a cap of 3: the hub is not capped.
-    expect(served().hubCaps).toEqual([]);
+    expect(served().hubCaps).toEqual([['adr', expect.objectContaining({ cap: 3, count: 3, capped: false })]]);
   });
 });
 
@@ -187,8 +199,9 @@ describe('module text (NFR-003, FR-006)', () => {
     expect(served({ cappedLabel: 'All {count}' }).cappedLabel).toBe('All {count}');
   });
 
-  it('emits no hub data for a consumer-written sidebar', () => {
+  it('emits the same hub data for a consumer-written sidebar (#429)', () => {
     site(MISSIONS('sidebar_child_cap: 2\n'));
-    expect(served({ shapeSidebar: false }).hubCaps).toEqual([]);
+    expect(served({ shapeSidebar: false }).hubCaps).toEqual(served().hubCaps);
+    expect(served({ shapeSidebar: false }).hubCaps[0]![1].capped).toBe(true);
   });
 });

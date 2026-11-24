@@ -35,11 +35,14 @@ import {
   shapingWarningSink,
 } from './route-shaping.js';
 import { slugFromEntryId } from './metadata.js';
+import { cappedHubCaps } from './child-cap.js';
 
 const directoryMeta = new Map(routeShaping.directoryMeta);
-// The hubs over their sidebar child cap (#341). Empty on a site with no large hub,
-// and then every step below runs exactly as it did before the cap existed.
-const hubCaps = new Map(routeShaping.hubCaps);
+// The hubs over their sidebar child cap (#341). The module lists every hub since
+// #342/#429; only the capped ones reach shaping, so an uncapped hub's group and
+// prev/next are as before, and a site with no large hub runs every step below
+// exactly as it did before the cap existed.
+const hubCaps = cappedHubCaps(routeShaping.hubCaps);
 const iconMaps = { links: new Map(sidebarIcons.links), groups: new Map(sidebarIcons.groups) };
 
 export const onRequest = defineRouteMiddleware((context) => {
