@@ -1,5 +1,5 @@
 import { INDEX_ENTRY_LABEL } from './route-shaping.js';
-import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY } from './child-cap.js';
+import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY, HUB_PAGINATION_STRINGS } from './child-cap.js';
 
 /** Starlight UI-string keys of the sidebar (index label, capped entry), and their English defaults. */
 const SIDEBAR_UI_STRINGS = {
@@ -17,7 +17,7 @@ export const DOC_KITTY_I18N_PLUGIN = {
     // Starlight's plugin schema requires `config:setup` (or the legacy `setup`) to be present.
     'config:setup'() {},
     'i18n:setup'({ injectTranslations }: { injectTranslations: (t: Record<string, Record<string, string>>) => void }) {
-      injectTranslations({ en: { ...SIDEBAR_UI_STRINGS } });
+      injectTranslations({ en: { ...SIDEBAR_UI_STRINGS, ...HUB_PAGINATION_STRINGS } });
     },
   },
 };

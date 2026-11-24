@@ -4,16 +4,27 @@
  * levels set to other values, and each refused value is paired with an accepted
  * value of the same setting.
  */
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { z } from 'zod';
 import {
   CAPPED_ENTRY_LABEL,
   CAPPED_LABEL_KEY,
   DEFAULT_CHILD_CAP,
+  DEFAULT_HUB_PAGE_SIZE,
+  HUB_PAGINATION_KEYS,
+  HUB_PAGINATION_STRINGS,
   cappedChildHidden,
+  hubListingPages,
+  hubPageCount,
+  hubPageSlice,
   isChildCap,
+  isPagedHub,
+  pagedHubSlug,
   resolveCappedLabel,
   resolveChildCap,
+  resolveHubPageSize,
+  resolveHubString,
+  type HubCap,
 } from '../lib/child-cap.js';
 import { defineDocKittyIntegrations, type DocKittyOptions } from '../lib/config.js';
 import { parseSectionRegistry } from '../lib/sections.js';
@@ -172,5 +183,123 @@ describe('UI string (FR-006)', () => {
       injectTranslations: (t) => injected.push(t),
     });
     expect(injected[0]!.en![CAPPED_LABEL_KEY]).toBe(CAPPED_ENTRY_LABEL);
+  });
+});
+
+/*
+ * The paged hub listing (#342, WP01; FR-002, FR-003, FR-009, FR-019): the page
+ * size, the paging arithmetic, the listing pages and the pagination strings.
+ */
+describe('resolveHubPageSize (#342, FR-003)', () => {
+  it('takes the most specific level that is set, else 50', () => {
+    expect(resolveHubPageSize({ hub: 5, section: 40, site: 20 })).toBe(5);
+    expect(resolveHubPageSize({ section: 40, site: 20 })).toBe(40);
+    expect(resolveHubPageSize({ site: 20 })).toBe(20);
+    expect(resolveHubPageSize({})).toBe(DEFAULT_HUB_PAGE_SIZE);
+    expect(DEFAULT_HUB_PAGE_SIZE).toBe(50);
+  });
+});
+
+describe('isPagedHub and hubPageCount (#342, FR-005)', () => {
+  const hub = (count: number, capped: boolean | undefined, pageSize?: number) => ({ count, capped, pageSize });
+
+  it('pages a capped hub only when its children outnumber the page size', () => {
+    expect(isPagedHub(hub(50, true, 50))).toBe(false);
+    expect(isPagedHub(hub(51, true, 50))).toBe(true);
+    expect(isPagedHub(hub(5000, false, 50))).toBe(false);
+    expect(isPagedHub(hub(5000, undefined, 50))).toBe(false);
+    // No page size recorded: the default applies.
+    expect(isPagedHub(hub(51, true))).toBe(true);
+    expect(isPagedHub(hub(50, true))).toBe(false);
+  });
+
+  it('counts the pages, with no empty last page', () => {
+    expect(hubPageCount(hub(200, true, 50))).toBe(4);
+    expect(hubPageCount(hub(120, true, 50))).toBe(3);
+    expect(hubPageCount(hub(100, true, 50))).toBe(2);
+    expect(hubPageCount(hub(51, true, 50))).toBe(2);
+    expect(hubPageCount(hub(50, true, 50))).toBe(1);
+    expect(hubPageCount(hub(5000, false, 50))).toBe(1);
+  });
+});
+
+describe('hubPageSlice (#342, FR-007)', () => {
+  const items = Array.from({ length: 120 }, (_, i) => `c${i + 1}`);
+
+  it('splits the children into pages whose union is the input, in order, each once', () => {
+    const pages = [1, 2, 3].map((page) => hubPageSlice(items, page, 50));
+    expect(pages.map((p) => p.length)).toEqual([50, 50, 20]);
+    expect(pages[0]![0]).toBe('c1');
+    expect(pages[1]![0]).toBe('c51');
+    expect(pages[2]!.at(-1)).toBe('c120');
+    expect(pages.flat()).toEqual(items);
+  });
+
+  it('refuses a page outside 1..pages and a fractional page', () => {
+    for (const bad of [0, 4, 1.5, -1, Number.NaN]) expect(() => hubPageSlice(items, bad, 50)).toThrow(RangeError);
+    expect(hubPageSlice([], 1, 50)).toEqual([]);
+    expect(() => hubPageSlice([], 2, 50)).toThrow(RangeError);
+  });
+});
+
+describe('pagedHubSlug (#342, FR-007)', () => {
+  it('is the hub for page 1 and <hub>/page/<n> after', () => {
+    expect(pagedHubSlug('missions', 1)).toBe('missions');
+    expect(pagedHubSlug('a/b', 3)).toBe('a/b/page/3');
+    for (const bad of [0, -1, 2.5]) expect(() => pagedHubSlug('missions', bad)).toThrow(RangeError);
+  });
+});
+
+describe('hubListingPages (#342, FR-007, FR-013)', () => {
+  const children = (hub: string, n: number) =>
+    Array.from({ length: n }, (_, i) => ({ slug: `${hub}/c-${i + 1}`, label: `C ${i + 1}` }));
+
+  it('lists pages 2..n of every paged hub, by hub folder then page', () => {
+    const hubs = new Map<string, HubCap>([
+      ['zeta', { cap: 2, count: 5, children: children('zeta', 5), capped: true, pageSize: 2 }],
+      ['alpha', { cap: 50, count: 120, children: children('alpha', 120), capped: true, pageSize: 50 }],
+      ['small', { cap: 50, count: 3, children: children('small', 3), capped: false, pageSize: 1 }],
+    ]);
+    const pages = hubListingPages(hubs);
+    expect(pages.map((p) => p.slug)).toEqual(['alpha/page/2', 'alpha/page/3', 'zeta/page/2', 'zeta/page/3']);
+    expect(pages[0]).toMatchObject({ hub: 'alpha', page: 2, of: 3 });
+    expect(pages[0]!.children.map((c) => c.slug)).toEqual(children('alpha', 120).slice(50, 100).map((c) => c.slug));
+    expect(pages[3]!.children.map((c) => c.slug)).toEqual(['zeta/c-5']);
+    expect(hubListingPages([...hubs.entries()])).toEqual(pages);
+  });
+
+  it('is empty when no hub is paged', () => {
+    expect(hubListingPages(new Map())).toEqual([]);
+    expect(hubListingPages([['x', { cap: 50, count: 10, children: children('x', 10), capped: false, pageSize: 5 }]])).toEqual([]);
+  });
+});
+
+describe('HubCap widening (#342/#429, FR-002)', () => {
+  it('still accepts a slice-1 HubCap, and types the new fields as optional', () => {
+    const legacy: HubCap = { cap: 1, count: 2, children: [] };
+    expect(legacy.capped).toBeUndefined();
+    expectTypeOf<HubCap['capped']>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<HubCap['pageSize']>().toEqualTypeOf<number | undefined>();
+  });
+});
+
+describe('pagination UI strings (#342, FR-009)', () => {
+  it('ships every pagination key in English', () => {
+    const injected: Array<Record<string, Record<string, string>>> = [];
+    (DOC_KITTY_I18N_PLUGIN.hooks['i18n:setup'] as (arg: { injectTranslations: (t: Record<string, Record<string, string>>) => void }) => void)({
+      injectTranslations: (t) => injected.push(t),
+    });
+    expect(Object.values(HUB_PAGINATION_KEYS)).toHaveLength(5);
+    for (const key of Object.values(HUB_PAGINATION_KEYS)) expect(injected[0]!.en![key]).toBe(HUB_PAGINATION_STRINGS[key]);
+    expect(HUB_PAGINATION_STRINGS[HUB_PAGINATION_KEYS.label]).toBe('Pagination');
+    expect(HUB_PAGINATION_STRINGS[HUB_PAGINATION_KEYS.title]).toBe('{title}, page {page}');
+  });
+
+  it('resolves a string with its variables, a translation, and an echoed key as none', () => {
+    const translate = (strings: Record<string, string>) => (key: string) => strings[key] ?? key;
+    expect(resolveHubString(HUB_PAGINATION_KEYS.title, { title: 'Missions', page: 2 })).toBe('Missions, page 2');
+    expect(resolveHubString(HUB_PAGINATION_KEYS.page, { page: 3 }, translate({}))).toBe('Page 3');
+    expect(resolveHubString(HUB_PAGINATION_KEYS.page, { page: 3 }, translate({ [HUB_PAGINATION_KEYS.page]: 'Seite {page}' }))).toBe('Seite 3');
+    expect(resolveHubString(HUB_PAGINATION_KEYS.next, {}, () => '')).toBe('Next');
   });
 });
