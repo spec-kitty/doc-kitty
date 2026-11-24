@@ -161,7 +161,9 @@ import {
 //     (doc_status:active, +2) -> 75.
 //   - #341 (sidebar child cap) adds the capped-hub demonstrator,
 //     guides/capped-hub/ (a hub and five pages, all published, +6): 75 -> 81.
-const EXPECTED_INDEX_ENTRY_COUNT = 81;
+//   - #401 (evidence index) adds the opt-in generated hub
+//     context/evidence-index/index.md (doc_status:active, +1) -> 82.
+const EXPECTED_INDEX_ENTRY_COUNT = 82;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -200,7 +202,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 81;
 // (published, +2), 78 -> 80.
 // #341 (sidebar child cap) adds guides/capped-hub/ (a hub and five published
 // pages, +6): 80 -> 86.
-const EXPECTED_SITEMAP_URL_COUNT = 86;
+// #401 (evidence index) adds the opt-in generated hub context/evidence-index/
+// (published, +1): 86 -> 87.
+const EXPECTED_SITEMAP_URL_COUNT = 87;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
