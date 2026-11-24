@@ -31,7 +31,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "ADR-0085 and kind lists; docs gates green; pnpm test src 4519/4519, mcp 181/181",
-        "Cycle 2: ADR-0085 Proposed (draft) and KINDS wording fixed; lint 0; pnpm test src 4519/4519 mcp 181/181 at b9e1a3c"
+        "Cycle 2: ADR-0085 Proposed (draft) and KINDS wording fixed; lint 0; pnpm test src 4519/4519 mcp 181/181 at b9e1a3c",
+        "Approved, cycle 2 (claude::reviewer-renata). I reviewed the real target diff bb214e68..b9e1a3c5 on feat/402-operating-model-templates. The CLI range c4d781f5..1f6c7419 holds coordination bookkeeping only (#7809).\n- B1 fixed: the status is \"**Proposed**, 2026-11-23.\", with doc_status: draft as in the ADR-0083 precedent. The only \"accept\" wording left is \"The operator accepts the ADR itself\". docs/adr/README.md has no 0085 row.\n- N1 fixed: Decision 1 and Positive 2 now match the code at 4a30c365. The gate reads KINDS (validate-frontmatter.mjs:647); schema.ts re-exports it and derives Kind, with kind: z.string() at schema.ts:212.\n- The planning edits (0f2e3f9c) are consistent.\n- Gates: validate:docs passes (212 files, 4 pre-existing warnings), validate:links passes (1885 refs), validate:adr-ids passes (82 ids), markdownlint reports 0 issues on 3 files.\n- Non-blocking leftovers, planning only:\n  - The WP01 prompt still says \"Copy their frontmatter shape: ... doc_status: active\" (line 57) and \"The gate, the build schema and the stub tools pick up the kind\" (line 85).\n  - The WP02 prompt says the schema \"picks up a new member automatically\" (line 68).\n  - checklists/requirements.md:28 still has \"ADR-0085 allocated\", which is fine."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
