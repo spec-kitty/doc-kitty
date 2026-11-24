@@ -21,6 +21,7 @@
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
  * | DK_CHROME_OPTIONS             | define     | defineDocKittyIntegrations               | chromeOptions() (chrome-options.ts)       |
  * | DK_SERVED_SURFACES            | routes     | doc-kitty:served-surfaces routes:resolved | servedSurfaces() (served-surfaces.ts)    |
+ * | DK_HUB_DATA                   | done       | doc-kitty:route-shaping config:done      | agent API, llms.txt, build id (#342)      |
  *
  * Readers read `process.env` at call time. Vite SSR evaluates the content config
  * and routes in a separate module graph, so module state would arrive empty.
@@ -78,6 +79,16 @@ export const DK_CHROME_OPTIONS_ENV = 'DK_CHROME_OPTIONS';
  */
 export const DK_SERVED_SURFACES_ENV = 'DK_SERVED_SURFACES';
 
+/**
+ * Absolute path of a JSON file holding `Array<[hubFolder, HubCap]>`: every
+ * published `kind: Hub` hub's cap, page size, count and children (#342/#429), the
+ * same data `virtual:doc-kitty/route-shaping` serves. A path, never the data (a big
+ * env string breaks every later child spawn, E2BIG; see hub-data-handoff.ts).
+ * Read by the agent API, `llms.txt` and the build identity. Absent until
+ * `astro:config:done`.
+ */
+export const DK_HUB_DATA_ENV = 'DK_HUB_DATA';
+
 /** Every internal handoff name. */
 export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_INDEX_BASENAME_ENV,
@@ -91,6 +102,7 @@ export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV,
   DK_CHROME_OPTIONS_ENV,
   DK_SERVED_SURFACES_ENV,
+  DK_HUB_DATA_ENV,
 ]);
 
 /**
