@@ -1,0 +1,7 @@
+# Opt-in operating-model section (#402). Add this entry under `sections:` in
+# docs/_meta/sections.yaml. It is not part of the default section registry.
+- id: operating-model
+  label: Operating model
+  order: 105
+  type: Operations
+  purpose: How the organisation runs, including structure, roles, governance, processes and policies.
