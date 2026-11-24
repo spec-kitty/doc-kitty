@@ -206,6 +206,9 @@
       "last_event_id": "01M87SV68ZJNGPW8NY6SPK9F5G",
       "last_transition_at": "2026-11-24T22:11:56.319182+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181)."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 439,
