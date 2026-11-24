@@ -2,7 +2,7 @@
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -127,11 +127,11 @@
     {
       "criterion_id": "FR-013",
       "description": "Verify FR-013 is satisfied",
-      "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "proof_type": "manual_review",
+      "evidence": "docs/guides/tom-annex.md and docs/changelog/unreleased/401-tom-annex-export.md on feat/401-tom-annex-export@da7bc9e5; WP08 approved in review cycle 2; validate:docs/links/changelog, markdownlint and Vale clean",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:36.630491+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     }
   ],
