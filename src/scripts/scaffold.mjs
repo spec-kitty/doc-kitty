@@ -11,6 +11,12 @@
  *   node scripts/scaffold.mjs docs --sections context,architecture,guides
  *   node scripts/scaffold.mjs docs --index-basename index   # FR-001/FR-003
  *   node scripts/scaffold.mjs docs --astro-config site/astro.config.mjs
+ *   node scripts/scaffold.mjs docs --preset operating-model   # #402
+ *
+ * `--preset operating-model` writes only that preset: an `operating-model/`
+ * section index (a Hub, type Operations) and the 12 operating-model template
+ * pages, with preset measures and authoring prompts. It is refused with
+ * `--sections` (exit 2), as is an unknown preset. Existing files are skipped.
  *
  * The index names are read from the site's astro.config.* next to the docs folder;
  * with none, they are README and a warning says so. `--astro-config <path>` names a
@@ -26,9 +32,29 @@ import { dirname, join, sep } from 'node:path';
 import { expectedDocType } from '../lib/vocabulary-core.mjs';
 import { scaffoldMeta } from './scaffold-meta.mjs';
 import { announceIndexNames, resolveSiteIndexBasenames } from './site-index-names.mjs';
+import { OPERATING_MODEL_TEMPLATES, renderTemplatePage, siteDocType } from '../lib/operating-model-templates.mjs';
 
 const argv = process.argv.slice(2);
-const base = argv.find((a) => !a.startsWith('--')) ?? 'docs';
+// Flags that take a value: their value is not the base folder.
+const VALUE_FLAGS = new Set(['--sections', '--index-basename', '--astro-config', '--preset']);
+const base = argv.find((a, i) => !a.startsWith('--') && !VALUE_FLAGS.has(argv[i - 1])) ?? 'docs';
+
+/** An argument error: say why, write nothing, exit 2. */
+function argumentError(message) {
+  console.error(`✖ ${message}`);
+  process.exit(2);
+}
+
+// `--preset <id>` (#402). Only `operating-model` exists.
+const PRESETS = ['operating-model'];
+const presetFlag = (() => {
+  const i = argv.indexOf('--preset');
+  if (i === -1) return null;
+  const id = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : '';
+  if (argv.includes('--sections')) argumentError('--preset writes only its own pages; do not combine --preset with --sections');
+  if (!PRESETS.includes(id)) argumentError(`unknown preset "${id}". Known presets: ${PRESETS.join(', ')}`);
+  return id;
+})();
 const sectionsFlag = (() => {
   const i = argv.indexOf('--sections');
   return i !== -1 && argv[i + 1] ? argv[i + 1].split(',').map((s) => s.trim()) : null;
@@ -121,8 +147,8 @@ TODO write this page.
 `;
 }
 
-function indexFrontmatter(relPath, title, blurb) {
-  const type = expectedDocType(relPath.split(sep).join('/'));
+function indexFrontmatter(relPath, title, blurb, typeOverride) {
+  const type = typeOverride ?? expectedDocType(relPath.split(sep).join('/'));
   const typeLine = type ? `type: ${type}\n` : '';
   return `---
 title: ${title}
@@ -152,8 +178,33 @@ function write(relPath, content) {
   written.push(relPath);
 }
 
-// Bundle-root index (okf_version, exempt from `type`).
-write(indexFilename, `---
+if (presetFlag === 'operating-model') {
+  // The section is opt-in (its sections.yaml entry is a documented snippet).
+  // Types follow the site's registry when it has one, as the gate derives them;
+  // without an entry for the section, the index is Operations and each page
+  // keeps its template's default.
+  const sectionIndex = join('operating-model', indexFilename);
+  const typeOf = (relPath, fallback) => siteDocType(relPath.split(sep).join('/'), base) ?? fallback;
+  write(
+    sectionIndex,
+    indexFrontmatter(
+      sectionIndex,
+      'Operating model',
+      'How the organisation runs, with its structure, roles, governance, processes and policies.',
+      typeOf(sectionIndex, 'Operations'),
+    ),
+  );
+  for (const record of OPERATING_MODEL_TEMPLATES) {
+    write(`${record.path}.md`, renderTemplatePage(record, { type: typeOf(`${record.path}.md`, record.defaultType) }));
+  }
+} else {
+  writeDefaultTree();
+}
+
+/** The default DocKitty tree, as before #402. */
+function writeDefaultTree() {
+  // Bundle-root index (okf_version, exempt from `type`).
+  write(indexFilename, `---
 okf_version: "0.2"
 title: Documentation
 description: Master entry point for this project's documentation.
@@ -171,28 +222,29 @@ TODO one-paragraph project summary.
 TODO ordered directory listing with one-line descriptions.
 `);
 
-const chosen = sectionsFlag ?? Object.keys(SECTIONS);
-for (const section of chosen) {
-  const leaves = SECTIONS[section];
-  if (!leaves) { console.warn(`⚠ unknown section "${section}" — skipped`); continue; }
+  const chosen = sectionsFlag ?? Object.keys(SECTIONS);
+  for (const section of chosen) {
+    const leaves = SECTIONS[section];
+    if (!leaves) { console.warn(`⚠ unknown section "${section}" — skipped`); continue; }
 
-  write(join(section, indexFilename), indexFrontmatter(join(section, indexFilename), titleize(section), `The ${section} section.`));
+    write(join(section, indexFilename), indexFrontmatter(join(section, indexFilename), titleize(section), `The ${section} section.`));
 
-  for (const leaf of leaves) {
-    if (leaf.endsWith('/')) {
-      // nested directory with its own section index
-      const sub = leaf.slice(0, -1);
-      const rel = join(section, sub, indexFilename);
-      write(rel, indexFrontmatter(rel, titleize(sub), `The ${section}/${sub} section.`));
-      if (section === 'operations' && sub === 'runbooks') {
-        for (const rb of RUNBOOKS) {
-          const r = join(section, sub, rb);
-          write(r, leafFrontmatter(r, titleize(rb)));
+    for (const leaf of leaves) {
+      if (leaf.endsWith('/')) {
+        // nested directory with its own section index
+        const sub = leaf.slice(0, -1);
+        const rel = join(section, sub, indexFilename);
+        write(rel, indexFrontmatter(rel, titleize(sub), `The ${section}/${sub} section.`));
+        if (section === 'operations' && sub === 'runbooks') {
+          for (const rb of RUNBOOKS) {
+            const r = join(section, sub, rb);
+            write(r, leafFrontmatter(r, titleize(rb)));
+          }
         }
+      } else {
+        const rel = join(section, leaf);
+        write(rel, leafFrontmatter(rel, titleize(leaf)));
       }
-    } else {
-      const rel = join(section, leaf);
-      write(rel, leafFrontmatter(rel, titleize(leaf)));
     }
   }
 }
