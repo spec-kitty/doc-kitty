@@ -73,7 +73,7 @@
       "wp": null
     },
     "#429": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "spec.md: #429 folded in (FR-001/FR-002; WP01 HubCap widening, WP02 hub data)",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -81,8 +81,8 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "verdict": "in-mission",
+      "wp": "WP02"
     }
   },
   "schema_version": 1
