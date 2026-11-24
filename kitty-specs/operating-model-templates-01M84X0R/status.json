@@ -98,7 +98,8 @@
       "last_transition_at": "2026-11-24T01:15:18.242671+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Templates + renderer, red-first (8ba9292 red, 5131aa7 green); lint 0; pnpm test src 4582/4582 mcp 181/181"
+        "Templates + renderer, red-first (8ba9292 red, 5131aa7 green); lint 0; pnpm test src 4582/4582 mcp 181/181",
+        "Review passed (cycle 1): red-first verified (8ba92921 fails, module absent); 12 records match #402 + data-model (Q2=A runbooks How-To, all measures resolve vs ADR-0080 catalog, organisation scope); 12 bodies prompts-only, notice present, no policy assertions; YAML safe for 19 adversarial titles; packed tarball renders from cwd=/; markdownlint 0 on bodies + rendered pages; 5/5 mutations caught; gates src 4582/4582, mcp 181/181, lint 0, typecheck 0. Nits non-blocking: newline in title splits H1 (WP04 should reject), bodies not in CI markdownlint glob."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
