@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import process from 'node:process';
@@ -41,11 +41,14 @@ export function okfExportIntegration(
               '(check build.client and the adapter output).',
           );
         }
+        // The evidence index (#401) is built only on a site with classified pages; its absence is normal.
+        const annexFile = path.join(distDir, 'api', 'tom-annex.json');
+        const tomAnnex = existsSync(annexFile) ? readFileSync(annexFile, 'utf8') : undefined;
         const bundle = exportOkfToDisk({
           graphFile,
           docsDir,
           outDir: path.join(distDir, 'okf'),
-          options: { indexBasename, base, siteUrl, openapi: readPublication(process.env[DK_OPENAPI_ENV]) },
+          options: { indexBasename, base, siteUrl, openapi: readPublication(process.env[DK_OPENAPI_ENV]), tomAnnex },
         });
         logger.info(`wrote ${bundle.size} file(s) to okf/`);
       },

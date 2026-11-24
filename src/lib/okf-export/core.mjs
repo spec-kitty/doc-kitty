@@ -27,6 +27,7 @@ import { idIndex, rewriteBodyLinks, routeIndex } from './links.mjs';
 import { okfGenerated } from '../generator-stamp.mjs';
 import { SCHEMATIC_KIND, schematicHref } from '../schematic/core.mjs';
 import { flattenText, openApiSummaryMarkdown } from '../openapi/summary.mjs';
+import { TOM_ANNEX_FORMAT, TOM_ANNEX_LABEL } from '../tom-annex/core.mjs';
 
 /** `generated.by` of a page that has neither a stamp nor an author (FR-025). */
 export const EXPORT_PROCESS_ACTOR = 'process:dockitty-export';
@@ -55,6 +56,7 @@ const RELATION_SECTIONS = /** @type {const} */ ([
  * @property {string} [base] site base path (e.g. `/docs`) that graph `href`s and body links may carry
  * @property {string} [siteUrl] absolute site origin (e.g. `https://docs.example.org`); the `base` is added to it, and a URL that already ends in the base is accepted as is. Internal links that are not bundle pages become absolute against it
  * @property {import('../openapi/publication.js').OpenApiPublication} [openapi] published versions to export as generated summaries
+ * @property {string} [tomAnnex] the built evidence index (`api/tom-annex.json`, #401), exported byte for byte as `tom-annex.json`
  */
 
 // --- paths ------------------------------------------------------------------
@@ -531,6 +533,41 @@ function addOpenApiDocuments(out, publication, links) {
   });
 }
 
+/** The bundle path of the evidence index (#401). */
+const TOM_ANNEX_PATH = 'tom-annex.json';
+
+/**
+ * Add the built evidence index (#401) byte for byte, and return its root-index
+ * entry, labelled "Evidence index, not the contractual annex." It is the bytes
+ * the site serves at `api/tom-annex.json`, never reserialised, so a hash taken on
+ * one matches the other.
+ *
+ * @param {Map<string, string>} out
+ * @param {string | undefined} text
+ * @returns {Array<{node: Record<string, any>, path: string}>}
+ */
+function addTomAnnex(out, text) {
+  if (text === undefined) return [];
+  /** @type {unknown} */
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    throw new Error(`[dk-okf] the evidence index (tom-annex.json) is not JSON: ${err instanceof Error ? err.message : String(err)}`);
+  }
+  const format = /** @type {{ format?: unknown } | null} */ (parsed)?.format;
+  if (format !== TOM_ANNEX_FORMAT) {
+    throw new Error(`[dk-okf] the evidence index (tom-annex.json) has format ${JSON.stringify(format)}, expected "${TOM_ANNEX_FORMAT}"`);
+  }
+  out.set(TOM_ANNEX_PATH, text);
+  return [
+    {
+      node: { id: 'tom-annex', kind: 'resource', title: 'Evidence index (technical and organisational measures)', description: TOM_ANNEX_LABEL },
+      path: TOM_ANNEX_PATH,
+    },
+  ];
+}
+
 /**
  * Build the OKF v0.2 bundle.
  *
@@ -554,7 +591,7 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
   };
   /** @type {Map<string, string>} */
   const out = new Map();
-  const openApiEntries = addOpenApiDocuments(out, options.openapi, links);
+  const rootEntries = [...addOpenApiDocuments(out, options.openapi, links), ...addTomAnnex(out, options.tomAnnex)];
   for (const node of exported) {
     const source = sourceOf(sourceFiles, node.id) ?? '';
     const path = bundlePathOf(node.id, indexNames);
@@ -573,7 +610,7 @@ export function exportOkfBundle(graph, sourceFiles, options = {}) {
       children.get(node.id) ?? [],
       indexNames,
       overview,
-      path === 'index.md' ? openApiEntries : [],
+      path === 'index.md' ? rootEntries : [],
     );
     if (path === 'index.md') {
       out.set(path, `${fence(`okf_version: ${scalar(OKF_VERSION)}`)}\n${listing}`);
