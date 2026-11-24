@@ -1,7 +1,7 @@
 {
-  "event_count": 32,
-  "last_event_id": "01M85HB8E4PC7CPJCZQY65DEEY",
-  "materialized_at": "2026-11-24T01:04:56.772933+00:00",
+  "event_count": 33,
+  "last_event_id": "01M85J7Y810NCATPH1X3T98CJ1",
+  "materialized_at": "2026-11-24T01:20:36.609783+00:00",
   "mission_number": "",
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_type": "software-dev",
@@ -13,8 +13,8 @@
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
-    "planned": 3
+    "in_review": 0,
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
@@ -150,15 +150,21 @@
       "agent": "claude",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M85HB8E4PC7CPJCZQY65DEEY",
-      "last_transition_at": "2026-11-24T01:04:56.772933+00:00",
+      "force_count": 1,
+      "lane": "planned",
+      "last_event_id": "01M85J7Y810NCATPH1X3T98CJ1",
+      "last_transition_at": "2026-11-24T01:20:36.609783+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean."
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP05-build-gates/review-cycle-1.md",
+        "reference": "review-cycle://tom-annex-export-01M84YDP/WP05-build-gates/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "changes_requested"
+      },
       "role": "reviewer",
       "shell_pid": 810,
       "shell_pid_created_at": "1795482292.63",
