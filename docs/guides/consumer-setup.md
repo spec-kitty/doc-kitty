@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-23T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -973,6 +973,14 @@ site, a section or one hub; see [Cap large sidebar groups](./sidebar-child-cap.m
 
 ```ts
 sidebar: { childCap: 30, cappedLabel: 'All {count} pages' },
+```
+
+Such a hub with more pages than its page size (default 50) also splits its own
+listing across `/<hub>/page/2/` onwards. Set the page size for the site, a
+section or one hub; see [Page large hub listings](./paged-hub-listing.md).
+
+```ts
+hub: { pageSize: 25 },
 ```
 
 `collapsed`, `titleIsIndex`, `childCap` and `cappedLabel` shape the sidebar the toolkit generates. A
