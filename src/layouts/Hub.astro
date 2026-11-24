@@ -51,6 +51,11 @@ import { hrefOfSlug } from '../lib/with-base.js';
 import { selectHubChildren, composeHubChildren } from '../lib/hub-children.mjs';
 import { loadAdrIdRule } from '../scripts/generate-adr-index.mjs';
 import { resolveSectionRegistry, sectionOrder } from '../lib/sections.js';
+import { routeShaping } from 'virtual:doc-kitty/route-shaping';
+import HubCardList from '../components/hub/HubCardList.astro';
+import HubPagination from '../components/hub/HubPagination.astro';
+import { DEFAULT_HUB_PAGE_SIZE, hubPageCount, hubPageSlice, isPagedHub } from '../lib/child-cap.js';
+import { listingCards, type HubCard } from '../lib/hub-pagination.js';
 import '../styles/hub.css';
 
 const route = Astro.props as StarlightRoute;
@@ -67,19 +72,10 @@ const docsRoot = path.join(process.cwd(), 'docs');
 const registry = resolveSectionRegistry(docsRoot);
 const order = registry ? sectionOrder(registry) : undefined;
 
-// A rendered card. ADR cards additionally carry the lifecycle `status` badge and
-// `date` derived by the shared extractor; non-ADR cards leave both undefined, so
-// their markup is byte-identical to before (T020).
-interface HubCard {
-  slug: string;
-  title: string;
-  description?: string;
-  kind?: string;
-  /** ADR lifecycle status token (Proposed/Accepted/Superseded/Deprecated); '' ⇒ unbadged. */
-  status?: string;
-  /** ADR date (YYYY-MM-DD). */
-  date?: string;
-}
+// A rendered card (`HubCard`, shared with the paged listing in lib/hub-pagination.ts).
+// ADR cards additionally carry the lifecycle `status` badge and `date` derived by the
+// shared extractor; non-ADR cards leave both undefined, so their markup is
+// byte-identical to before (T020).
 
 // INV-1 / US3: a Hub lists only PUBLISHED children — a draft child (e.g.
 // adr/template) must never appear in the described-link list, mirroring the
@@ -121,7 +117,24 @@ const otherCards: HubCard[] = others
     kind: entry.data.kind,
   }));
 
-const children: HubCard[] = [...adrCards, ...otherCards];
+const allCards: HubCard[] = [...adrCards, ...otherCards];
+
+// The paged hub listing (#342): a hub over its sidebar child cap whose children
+// outnumber its page size lists its first page here and the rest on
+// `/<hub>/page/N/`. The slice comes from the build's hub data (one order and
+// count, C-001); the cards are the ones composed above. Every other hub lists
+// all its children exactly as before.
+const hubEntry = routeShaping.hubCaps.find(([dir]) => dir === currentSlug)?.[1];
+const paged = hubEntry !== undefined && isPagedHub(hubEntry);
+const children: HubCard[] = paged
+  ? listingCards(
+      hubPageSlice(hubEntry.children.map((child) => child.slug), 1, hubEntry.pageSize ?? DEFAULT_HUB_PAGE_SIZE),
+      new Map(allCards.map((card) => [card.slug, card])),
+    )
+  : allCards;
+const pageCount = paged ? hubPageCount(hubEntry) : 1;
+// The pagination sits on the list's own line below: an empty expression or a
+// comment on a line of its own would add whitespace to every unpaged hub (NFR-005).
 
 const navLabel =
   currentSlug === '' ? 'Documentation sections' : 'In this section';
@@ -129,46 +142,4 @@ const navLabel =
 
 <slot />
 
-{
-  children.length > 0 && (
-    <section class="dk-hub" role="navigation" aria-label={navLabel}>
-      <ul class="dk-hub__list" role="list">
-        {children.map((child) => (
-          <li class="dk-hub__item">
-            <a class="dk-hub__card" href={hrefFor(child.slug)}>
-              <span class="dk-hub__title">{child.title}</span>
-              {/* Explicit spaces: adjacent inline spans render glued, which
-                  would merge title/kind/status/description into one Pagefind token
-                  and hurt search recall on the title word (NFR-004). */}
-              {child.kind && (
-                <>{' '}<span class="dk-hub__kind">{child.kind}</span></>
-              )}
-              {/* ADR-only: lifecycle status badge + date. The status token comes
-                  from the shared extractor; empty/unparseable ⇒ unbadged (never
-                  breaks the hub, T019). The word itself carries the meaning —
-                  colour is only reinforcement (never colour-only), so it stays
-                  legible in both themes. */}
-              {child.status && (
-                <>{' '}<span class="dk-hub__badge" data-adr-status={child.status.toLowerCase()}>{child.status}</span></>
-              )}
-              {child.date && (
-                <>{' '}<span class="dk-hub__date">{child.date}</span></>
-              )}
-              {child.description && (
-                <>{' '}<span class="dk-hub__desc">{child.description}</span></>
-              )}
-            </a>
-            {/* A deck child also gets its `?print-pdf` export link, auto-derived
-                from the collection — a sibling of the card-wide anchor, not a
-                nested one (FR-014). Only decks (kind: Presentation) have one. */}
-            {child.kind === 'Presentation' && (
-              <a class="dk-hub__aux" href={`${hrefFor(child.slug)}?print-pdf`}>
-                Print / PDF export
-              </a>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
+<HubCardList cards={children} navLabel={navLabel} hrefFor={hrefFor} />{paged && <HubPagination hub={currentSlug} current={1} total={pageCount} hrefFor={hrefFor} translate={Astro.locals.t} />}

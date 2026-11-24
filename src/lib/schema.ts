@@ -315,6 +315,8 @@ export const docKittyFields = {
   // Wins over the section's and the site's `sidebar.childCap`. Mirrored in the
   // standalone gate; the build-time reader takes it from the raw frontmatter.
   sidebar_child_cap: z.number().int().positive().optional(),
+  // The paged hub listing (#342): this hub's listing page size; wins over the section's and the site's `hub.pageSize`.
+  hub_page_size: z.number().int().positive().optional(),
   // ADR fallbacks (#248, ADR-0069). The Hub's ADR cards read a frontmatter
   // `status` when the body has no `## Status` section, and `date` when `updated`
   // is absent. The schema drops undeclared keys, so they are declared here.
