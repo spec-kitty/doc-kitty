@@ -102,6 +102,50 @@ function check(value, schema, root, at, out) {
   }
 }
 
+const TYPES = new Set(['string', 'number', 'integer', 'boolean', 'null', 'array', 'object']);
+
+/** @param {unknown} v */
+const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+/** @param {unknown} v */
+const isPrimitive = (v) => v === null || ['string', 'number', 'boolean'].includes(typeof v);
+/** @param {unknown} v */
+const isCount = (v) => Number.isInteger(v) && /** @type {number} */ (v) >= 0;
+/** @param {string} p */
+const compilesAsUnicode = (p) => {
+  try {
+    new RegExp(p, 'u');
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * The value forms this validator implements, per keyword. A known keyword in
+ * another form (an object `const`, `items: false`, a `type` typo, ...) would be
+ * silently mis-applied, so it throws at load instead.
+ *
+ * @type {Record<string, (value: unknown) => boolean>}
+ */
+const FORMS = {
+  $ref: (v) => typeof v === 'string',
+  type: (v) => (typeof v === 'string' && TYPES.has(v)) || (Array.isArray(v) && v.length > 0 && v.every((t) => typeof t === 'string' && TYPES.has(t))),
+  const: isPrimitive,
+  enum: (v) => Array.isArray(v) && v.length > 0 && v.every(isPrimitive),
+  pattern: (v) => typeof v === 'string' && compilesAsUnicode(v),
+  minLength: isCount,
+  minItems: isCount,
+  items: isPlainObject,
+  required: (v) => Array.isArray(v) && v.every((k) => typeof k === 'string'),
+  properties: (v) => isPlainObject(v) && Object.values(/** @type {object} */ (v)).every(isPlainObject),
+  additionalProperties: (v) => v === false,
+  $defs: (v) => isPlainObject(v) && Object.values(/** @type {object} */ (v)).every(isPlainObject),
+  $schema: (v) => typeof v === 'string',
+  $id: (v) => typeof v === 'string',
+  title: (v) => typeof v === 'string',
+  description: (v) => typeof v === 'string',
+};
+
 /** Schemas already walked by `assertImplemented`. */
 const vetted = new WeakSet();
 
@@ -117,6 +161,9 @@ function assertImplemented(schema) {
   const walk = (s, at) => {
     for (const key of Object.keys(s)) {
       if (!KNOWN.has(key)) throw new Error(`[dk-tom-annex] the shipped schema uses "${key}" at ${at || '/'}, which schema-check.mjs does not implement`);
+      if (!FORMS[key](s[key])) {
+        throw new Error(`[dk-tom-annex] the shipped schema has "${key}": ${JSON.stringify(s[key])} at ${at || '/'}, a form schema-check.mjs does not implement`);
+      }
     }
     // In 2020-12 a keyword beside `$ref` also applies; `resolve()` follows the ref only, so refuse the shape.
     if (s.$ref !== undefined) {
@@ -126,7 +173,7 @@ function assertImplemented(schema) {
     }
     for (const [name, sub] of Object.entries(s.$defs ?? {})) walk(sub, `${at}/$defs/${name}`);
     for (const [name, sub] of Object.entries(s.properties ?? {})) walk(sub, `${at}/properties/${name}`);
-    if (s.items && typeof s.items === 'object') walk(s.items, `${at}/items`);
+    if (s.items !== undefined) walk(s.items, `${at}/items`);
   };
   walk(schema, '');
   vetted.add(schema);

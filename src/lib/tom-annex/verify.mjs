@@ -9,7 +9,8 @@
  *   `_links.tomAnnex`; the file must be format `doc-kitty/tom-annex` 1.x with
  *   the exact label; every evidence page must be a built page; and its
  *   (measure, scope, page) triples must equal the graph's edges, so drafts and
- *   unclassified pages cannot slip in or fall out (FR-006).
+ *   unclassified pages cannot slip in or fall out (FR-006). It carries the
+ *   ADR-0087 `generated` stamp, whose `content_hash` matches its body (WP06).
  * - A site with no such edge must build neither the file nor the link (FR-012).
  *
  * @module tom-annex/verify
@@ -17,6 +18,7 @@
 
 import { TOM_ANNEX_FORMAT, TOM_ANNEX_LABEL } from './core.mjs';
 import { schemaProblems } from './schema-check.mjs';
+import { contentHash } from './stamp.mjs';
 
 const MEASURE_PREFIX = 'catalog:measure:';
 
@@ -63,7 +65,20 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, site
   }
   if (annex?.label !== TOM_ANNEX_LABEL) problems.push(`evidence index: label is ${JSON.stringify(annex?.label)}, expected "${TOM_ANNEX_LABEL}"`);
   // A second layer: the shipped schema closes the class of shape holes (unknown keys, wrong types).
-  for (const p of schemaProblems(annex)) problems.push(`evidence index: does not match the shipped schema at ${p}`);
+  const shapeProblems = schemaProblems(annex);
+  for (const p of shapeProblems) problems.push(`evidence index: does not match the shipped schema at ${p}`);
+  // The ADR-0087 stamp (WP06): present, and its content_hash still matches the body,
+  // so a hand edit of the built file is caught (D3 `hand-edited`).
+  const generated = annex?.generated;
+  if (generated === undefined || generated === null || typeof generated !== 'object') {
+    problems.push('evidence index: api/tom-annex.json has no generated stamp (ADR-0087)');
+  } else if (shapeProblems.length === 0) {
+    // Only a schema-valid index can be re-serialised; an invalid one already fails above.
+    const actual = contentHash(annex);
+    if (generated.content_hash !== actual) {
+      problems.push(`evidence index: generated.content_hash ${JSON.stringify(generated.content_hash)} does not match the index body (${actual}): a hand edit?`);
+    }
+  }
   for (const key of Object.keys(annex?.scopes && typeof annex.scopes === 'object' ? annex.scopes : {})) {
     if (key !== 'system' && key !== 'organisation') problems.push(`evidence index: unknown scope: ${key}`);
   }

@@ -118,6 +118,40 @@ describe('the schema itself', () => {
     expect(() => schemaProblems('x', { $ref: '#/$defs/missing' })).toThrow(/unresolvable \$ref/);
   });
 
+  it('resolves a $ref only to an own $defs entry, never an inherited name (WP05 cycle 5)', () => {
+    expect(() => schemaProblems('x', { $defs: {}, $ref: '#/$defs/constructor' })).toThrow(/unresolvable \$ref/);
+  });
+
+  it('walks into items even when the instance array is empty (WP05 cycle 5)', () => {
+    expect(() => schemaProblems([], { type: 'array', items: { maxLength: 1 } })).toThrow(/maxLength/);
+  });
+
+  it('resolves every $ref at load, even one off the instance path (WP05 cycle 5)', () => {
+    expect(() => schemaProblems({}, { type: 'object', properties: { unused: { $ref: '#/$defs/missing' } } })).toThrow(/unresolvable \$ref/);
+  });
+
+  describe('throws on a known keyword in a form it does not implement (WP05 cycle 5)', () => {
+    const cases: Array<[string, Record<string, unknown>]> = [
+      ['additionalProperties as a schema', { type: 'object', additionalProperties: { type: 'string' } }],
+      ['additionalProperties: true', { type: 'object', additionalProperties: true }],
+      ['items: false', { type: 'array', items: false }],
+      ['an object const', { const: { a: 1 } }],
+      ['an array enum member', { enum: [['a']] }],
+      ['a type typo', { type: 'strnig' }],
+      ['an empty type list', { type: [] }],
+      ['minLength as a string', { type: 'string', minLength: '2' }],
+      ['a negative minItems', { type: 'array', minItems: -1 }],
+      ['required as a string', { type: 'object', required: 'a' }],
+      ['a pattern that is not a Unicode regex', { type: 'string', pattern: '(' }],
+      ['properties as an array', { type: 'object', properties: [] }],
+      ['a $ref that is not a string', { $ref: 1 }],
+      ['a title that is not a string', { title: 1 }],
+    ];
+    for (const [name, schema] of cases) {
+      it(name, () => expect(() => schemaProblems(null, schema)).toThrow(/\[dk-tom-annex\]/));
+    }
+  });
+
   it('accepts the shipped schema (every keyword in it is implemented)', () => {
     expect(() => schemaProblems({})).not.toThrow();
   });

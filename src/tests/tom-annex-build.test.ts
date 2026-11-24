@@ -132,6 +132,15 @@ describe('a classified site: drafts never count as evidence (WP05 T022, FR-006)'
     expect(gateProblems('classified')).toEqual([]);
   });
 
+  it('carries the ADR-0087 stamp, dated from the evidence and never the clock (WP06)', () => {
+    const { generated } = readJson('classified', 'api', 'tom-annex.json');
+    expect(generated.by).toMatch(/^doc-kitty-tom-annex\/\d+\.\d+\.\d+/);
+    // Every fixture page says updated 2026-11-20; the build ran today.
+    expect(generated.at).toBe('2026-11-20T00:00:00Z');
+    expect(generated.source_digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(generated.content_hash).toMatch(/^sha256:[0-9a-f]{12}$/);
+  });
+
   it('lists the published page (the positive control) and leaves the draft out', () => {
     const annex = readJson('classified', 'api', 'tom-annex.json');
     const urls = [...annex.scopes.system, ...annex.scopes.organisation].flatMap((m: { evidence: Array<{ url: string }> }) =>

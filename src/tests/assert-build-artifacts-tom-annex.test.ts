@@ -7,12 +7,18 @@
 import { describe, expect, it } from 'vitest';
 import { buildTomAnnex, serializeTomAnnex, TOM_ANNEX_LABEL } from '../lib/tom-annex/core.mjs';
 import { tomAnnexProblems } from '../lib/tom-annex/verify.mjs';
+import { contentHash, stampAnnex } from '../lib/tom-annex/stamp.mjs';
 import { canonical, graph as graphOf, page } from './fixtures/tom-annex/graph.mjs';
 
 const PREFIX = 'https://docs.example.org/docs/';
 const SITE = new URL('https://docs.example.org');
 const { graph, catalog } = canonical();
-const annexText = serializeTomAnnex(buildTomAnnex(graph as never, catalog as never, { site: SITE, base: '/docs/' }));
+// The shipped index always carries the ADR-0087 stamp (WP06, review cycle 4 N3).
+const annexText = serializeTomAnnex(
+  stampAnnex(buildTomAnnex(graph as never, catalog as never, { site: SITE, base: '/docs/' }), {
+    inputs: [{ key: 'docs/a.md', sha256: 'a'.repeat(64) }],
+  }),
+);
 const links = { self: { href: `${PREFIX}api/index.json` }, tomAnnex: { href: `${PREFIX}api/tom-annex.json`, title: TOM_ANNEX_LABEL } };
 const everyPageBuilt = () => true;
 
@@ -183,6 +189,38 @@ describe('tomAnnexProblems (WP05 T021)', () => {
       const nullRef = edited((a) => a.scopes.system[0].evidence.push(null as never));
       expect(() => problems({ annexText: nullRef })).not.toThrow();
       expect(problems({ annexText: nullRef }).join('\n')).toMatch(/evidence entry is not an object/);
+    });
+  });
+
+  describe('the ADR-0087 stamp (WP06 T029)', () => {
+    type Stamped = AnnexJson & { generated?: Record<string, unknown> };
+    const stampEdit = (edit: (annex: Stamped) => void) => edited((a) => edit(a as Stamped));
+
+    it('the good fixture is stamped and its content_hash matches (positive control)', () => {
+      const annex = JSON.parse(annexText);
+      expect(annex.generated.content_hash).toBe(contentHash(annex));
+      expect(problems().join('\n')).not.toMatch(/generated|content_hash/);
+    });
+
+    it('fails an index without the stamp', () => {
+      expect(problems({ annexText: stampEdit((a) => delete a.generated) }).join('\n')).toMatch(/no generated stamp/);
+    });
+
+    it('fails a stamp from another producer', () => {
+      const found = problems({ annexText: stampEdit((a) => (a.generated!.by = 'doc-kitty-gherkin/1.0.0')) }).join('\n');
+      expect(found).toMatch(/\/generated\/by: does not match/);
+    });
+
+    it('fails a malformed source_digest or content_hash', () => {
+      expect(problems({ annexText: stampEdit((a) => (a.generated!.source_digest = 'sha256:abc')) }).join('\n')).toMatch(/\/generated\/source_digest/);
+      expect(problems({ annexText: stampEdit((a) => (a.generated!.content_hash = 'sha256:XYZ')) }).join('\n')).toMatch(/\/generated\/content_hash/);
+    });
+
+    it('fails an index whose body no longer matches its content_hash (a hand edit)', () => {
+      const handEdited = stampEdit((a) => {
+        (a as unknown as { counsel: string[] }).counsel.push('Edited by hand.');
+      });
+      expect(problems({ annexText: handEdited }).join('\n')).toMatch(/content_hash .* does not match/);
     });
   });
 
