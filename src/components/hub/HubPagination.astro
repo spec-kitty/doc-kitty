@@ -10,7 +10,12 @@
  * `aria-current="page"` (its "Page" prefix visually hidden), never a link to
  * itself; a Previous or Next with nowhere to go is plain muted text, no link and
  * no ARIA (a generic element may not carry `aria-label` or `aria-disabled`).
- * Targets are at least 24×24 px (styles/hub.css).
+ * Targets are at least 24×24 px.
+ *
+ * The styles are an inline `<style>` emitted with the nav, not part of the shared
+ * stylesheet: a site without a paged hub then builds byte-identical HTML AND CSS
+ * (NFR-005), and only listing pages carry the rules. The block is static, so a
+ * strict `Content-Security-Policy` needs one constant `style-src` hash for it.
  */
 import { HUB_PAGINATION_KEYS, pagedHubSlug, resolveHubString } from '../../lib/child-cap.js';
 import { pageLabelPrefix, paginationItems } from '../../lib/hub-pagination.js';
@@ -66,5 +71,82 @@ const items = total > 1 ? paginationItems(current, total) : [];
         </li>
       </ul>
     </nav>
+  )
+}
+{
+  items.length > 0 && (
+    <style is:inline>
+      /*
+       * The hub pagination (#342, FR-008, NFR-004). Theme tokens only, so the theme
+       * layer stays swappable. Every link and the current page are at least 24×24 px
+       * (WCAG 2.2 §2.5.8), focus shows the shared ring (§2.4.7), and the current page is
+       * marked by weight and a border as well as colour (§1.4.1). The list wraps on a
+       * narrow screen instead of scrolling.
+       */
+      .dk-hub-pagination {
+        margin-top: var(--dk-space-xl);
+      }
+
+      .dk-hub-pagination__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--dk-space-2xs);
+      }
+
+      .dk-hub-pagination__list > li {
+        margin: 0;
+        padding: 0;
+      }
+
+      .dk-hub-pagination__link,
+      .dk-hub-pagination__current,
+      .dk-hub-pagination__gap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+        padding: var(--dk-space-3xs) var(--dk-space-xs);
+        border: 1px solid transparent;
+        border-radius: var(--dk-radius-sm);
+        line-height: 1;
+      }
+
+      a.dk-hub-pagination__link {
+        color: var(--dk-color-text-accent);
+        border-color: var(--dk-color-border);
+        background: var(--dk-color-surface-1);
+        text-decoration: none;
+      }
+
+      a.dk-hub-pagination__link:hover {
+        border-color: var(--dk-color-border-strong);
+        background: var(--dk-color-surface-2);
+      }
+
+      a.dk-hub-pagination__link:focus-visible {
+        outline: none;
+        box-shadow: var(--dk-shadow-focus);
+      }
+
+      .dk-hub-pagination__current {
+        color: var(--dk-color-text-strong);
+        border-color: var(--dk-color-text-accent);
+        font-weight: var(--dk-weight-semibold);
+      }
+
+      /* A Previous or Next with nowhere to go: text, muted, not interactive. */
+      .dk-hub-pagination__step--off {
+        color: var(--dk-color-text-muted);
+      }
+
+      .dk-hub-pagination__gap {
+        color: var(--dk-color-text-muted);
+      }
+    </style>
   )
 }
