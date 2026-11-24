@@ -80,9 +80,17 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, site
   /** @type {Set<string>} */
   const covered = new Set();
   for (const scope of ['system', 'organisation']) {
+    /** @type {Set<string>} */
+    const inScope = new Set();
     for (const entry of Array.isArray(annex?.scopes?.[scope]) ? annex.scopes[scope] : []) {
-      covered.add(entry.id);
-      for (const ref of Array.isArray(entry?.evidence) ? entry.evidence : []) {
+      // Once per scope (FR-002): a second entry for the same id, empty or with split evidence, is an error.
+      if (inScope.has(entry.id)) problems.push(`evidence index: a measure is listed twice under ${scope}: ${entry.id}`);
+      inScope.add(entry.id);
+      const evidence = Array.isArray(entry?.evidence) ? entry.evidence : [];
+      // A scope entry exists only because a page evidences it; an empty one would hide an uncovered measure.
+      if (evidence.length === 0) problems.push(`evidence index: a scope entry has no evidence: ${entry.id}`);
+      else covered.add(entry.id);
+      for (const ref of evidence) {
         const t = triple(entry.id, scope, ref.url);
         if (actual.has(t)) problems.push(`evidence index: an entry is listed twice (${show(t)})`);
         actual.add(t);

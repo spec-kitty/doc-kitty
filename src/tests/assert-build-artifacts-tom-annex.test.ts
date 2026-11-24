@@ -109,6 +109,34 @@ describe('tomAnnexProblems (WP05 T021)', () => {
       expect(problems({ annexText: twice }).join('\n')).toMatch(/listed twice.*backup/);
     });
 
+    it('fails a scope entry with no evidence, even when it hides an uncovered measure (review cycle 2)', () => {
+      const moved = edited((a) => {
+        const backup = a.uncovered.find((u) => u.id === 'backup')!;
+        a.uncovered = a.uncovered.filter((u) => u.id !== 'backup');
+        a.scopes.system.push({ id: backup.id, label: backup.label, evidence: [] } as never);
+      });
+      const found = problems({ annexText: moved }).join('\n');
+      expect(found).toMatch(/no evidence: backup/);
+      expect(found).toMatch(/not accounted for.*backup/);
+    });
+
+    it('fails the same measure twice under one scope, empty or with split evidence (review cycle 2)', () => {
+      const emptyTwin = edited((a) => a.scopes.system.push({ ...(a.scopes.system[0] as object), evidence: [] } as never));
+      expect(problems({ annexText: emptyTwin }).join('\n')).toMatch(/listed twice under system/);
+      const split = edited((a) => {
+        const [first] = a.scopes.system;
+        const half = { ...(first as object), evidence: first.evidence.slice(1) };
+        first.evidence = first.evidence.slice(0, 1);
+        a.scopes.system.push(half as never);
+      });
+      expect(problems({ annexText: split }).join('\n')).toMatch(/listed twice under system/);
+    });
+
+    it('fails a covered id that is not in the catalog (kills the narrowed-loop mutation)', () => {
+      const stray = edited((a) => a.scopes.system.push({ ...(a.scopes.system[0] as object), id: 'not-a-measure' } as never));
+      expect(problems({ annexText: stray }).join('\n')).toMatch(/not in the catalog: not-a-measure/);
+    });
+
     it('fails an id that is not in the catalog', () => {
       const stray = edited((a) => a.uncovered.push({ id: 'not-a-measure', label: 'x', nature: 'technical' }));
       expect(problems({ annexText: stray }).join('\n')).toMatch(/not in the catalog.*not-a-measure/);
