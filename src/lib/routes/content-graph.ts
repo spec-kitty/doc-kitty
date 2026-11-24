@@ -12,20 +12,16 @@
  * `_meta/measures.yaml`, else the shipped default. Because every site serves this
  * route, an unknown measure id or a malformed catalog fails every build.
  */
-import path from 'node:path';
 import process from 'node:process';
 import type { APIRoute } from 'astro';
-import { walkMarkdownPaths } from '../docs-walk.mjs';
-import { buildContentGraph, collectCitationCatalog, collectDocEntries, locatePages } from '../docs-index.js';
 import type { GraphNode } from '../docs-index.js';
-import { siteDraftRoutes } from '../integrations/shared.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
-import { loadMeasuresCatalog } from '../measures-loader.mjs';
 import type { IndexBasenameOption } from '../metadata.js';
 import { flattenText } from '../openapi/summary.mjs';
 import { readPublication } from '../openapi/publication.js';
 import { compareCodeUnit, routeOfSlug } from '../vocabulary-core.mjs';
 import { absolute } from './shared.js';
+import { siteContentGraph } from './site-graph.js';
 
 export interface ContentGraphRouteOptions {
   /** The docs directory, relative to the project root (the integration's `docsDir`). */
@@ -54,22 +50,14 @@ function openApiGraphNodes(site: URL | undefined): GraphNode[] {
 
 export function contentGraphRoute({ docsDir, indexBasename }: ContentGraphRouteOptions): APIRoute {
   return async ({ site }) => {
-    const entries = await collectDocEntries();
-    const catalog = await collectCitationCatalog();
-    const docsRoot = path.resolve(process.cwd(), docsDir);
-    const { index, source } = loadMeasuresCatalog(docsRoot);
-    // The same walk the loader and the draft rule use, so ids and routes agree with both.
-    const paths = walkMarkdownPaths(docsRoot);
-    const graph = buildContentGraph(entries, {
-      locations: locatePages(paths, indexBasename),
-      draftRoutes: siteDraftRoutes(docsDir, indexBasename),
-      catalog,
-      measures: { index, source },
-    });
+    // The shared graph (one build per site build, #401): never mutated here, so
+    // the evidence-index route reads it without the OpenAPI resource nodes.
+    const { graph: shared } = await siteContentGraph({ docsDir, indexBasename });
     const openApiNodes = openApiGraphNodes(site);
-    if (openApiNodes.length > 0) {
-      graph.nodes = [...graph.nodes, ...openApiNodes].sort((a, b) => compareCodeUnit(a.id, b.id));
-    }
+    const graph =
+      openApiNodes.length > 0
+        ? { ...shared, nodes: [...shared.nodes, ...openApiNodes].sort((a, b) => compareCodeUnit(a.id, b.id)) }
+        : shared;
     return new Response(`${JSON.stringify(graph, null, 2)}\n`, {
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
     });

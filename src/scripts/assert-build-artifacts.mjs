@@ -35,6 +35,8 @@ import { resolveSiteIndexBasenames } from './site-index-names.mjs';
 import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-eval.mjs';
 import { compareCodeUnit, parseActor } from '../lib/vocabulary-core.mjs';
 import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
+import { tomAnnexProblems } from '../lib/tom-annex/verify.mjs';
+import { loadMeasuresCatalog } from '../lib/measures-loader.mjs';
 import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -159,7 +161,9 @@ import {
 //     (doc_status:active, +2) -> 75.
 //   - #341 (sidebar child cap) adds the capped-hub demonstrator,
 //     guides/capped-hub/ (a hub and five pages, all published, +6): 75 -> 81.
-const EXPECTED_INDEX_ENTRY_COUNT = 81;
+//   - #401 (evidence index) adds the opt-in generated hub
+//     context/evidence-index/index.md (doc_status:active, +1) -> 82.
+const EXPECTED_INDEX_ENTRY_COUNT = 82;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -198,7 +202,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 81;
 // (published, +2), 78 -> 80.
 // #341 (sidebar child cap) adds guides/capped-hub/ (a hub and five published
 // pages, +6): 80 -> 86.
-const EXPECTED_SITEMAP_URL_COUNT = 86;
+// #401 (evidence index) adds the opt-in generated hub context/evidence-index/
+// (published, +1): 86 -> 87.
+const EXPECTED_SITEMAP_URL_COUNT = 87;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -634,6 +640,36 @@ async function assertTomClassification(distDir, index, builtRelOf) {
     fail(`tom-classification: okf/${SYSTEM_PAGE}.md has no Measures section listing Events logging`);
   }
   ok('tom-classification: classified-as edges (system and organisation scope), the page record and the OKF Measures section come from the real build');
+}
+
+/**
+ * The evidence index (#401): built and linked exactly when the content graph has
+ * classified-as edges, in format 1.x with its label, citing only built pages,
+ * and agreeing triple for triple with those edges (see `tom-annex/verify.mjs`).
+ */
+async function assertTomAnnex(distDir, index, builtRelOf) {
+  const { graph } = await loadContentGraph(distDir, index, builtRelOf);
+  const annexPath = path.join(distDir, 'api', 'tom-annex.json');
+  const annexText = existsSync(annexPath) ? await readFile(annexPath, 'utf8') : undefined;
+  const pageBuilt = (url) => {
+    const { rel } = builtRelOf(url);
+    return rel !== null && existsSync(path.join(distDir, rel));
+  };
+  // The site prefix exactly as assertAgentLinksResolve derives it: the index's `self` link minus the
+  // configured index path, so an index mounted away from api/index.json (#103) still resolves pages.
+  const selfUrl = new URL(index._links.self.href);
+  const indexRel = INDEX_RELPATH.split(path.sep).join('/');
+  const basePath = selfUrl.pathname.slice(0, selfUrl.pathname.length - `/${indexRel}`.length);
+  const sitePrefix = `${selfUrl.origin}${basePath}/`;
+  // SC-001: every measure of the example's effective catalog is covered or uncovered, exactly once.
+  const catalogIds = loadMeasuresCatalog(EXAMPLE_DOCS_DIR).records.map((r) => r.id);
+  const problems = tomAnnexProblems({ graph, indexLinks: index?._links ?? {}, annexText, pageBuilt, sitePrefix, catalogIds });
+  if (problems.length > 0) fail(problems.join('; '));
+  ok(
+    annexText === undefined
+      ? 'evidence index: no classified pages, so neither api/tom-annex.json nor _links.tomAnnex (FR-012)'
+      : 'evidence index: api/tom-annex.json is linked, format 1.x with its label, and agrees with every classified-as edge',
+  );
 }
 
 /** Every text file (`.html`, `.txt`, `.json`, `.xml`) under `dir`, as absolute paths. */
@@ -2548,6 +2584,7 @@ async function main() {
   await assertContentGraph(distDir, index, builtRelOf);
   assertOkfBundle(distDir);
   await assertTomClassification(distDir, index, builtRelOf);
+  await assertTomAnnex(distDir, index, builtRelOf);
 
   // 4c) /api/bibliography.json — a catalog projection OUTSIDE page gating: valid
   // JSON, { version, count, records[] }, each record carrying id/title/url

@@ -35,6 +35,7 @@
     "./routes": "./lib/routes/index.ts",
     "./routes/scenario-index-injected": "./lib/routes/scenario-index-injected.ts",
     "./routes/content-graph-injected": "./lib/routes/content-graph-injected.ts",
+    "./routes/tom-annex-injected": "./lib/routes/tom-annex-injected.ts",
     "./routes/page-atom-injected": "./lib/routes/page-atom-injected.ts",
     "./route-middleware": "./lib/route-middleware.ts",
     "./deck/*": "./lib/deck/*.ts",
@@ -59,7 +60,8 @@
     "dockitty-assert-plantuml-no-remote-include": "./scripts/assert-plantuml-no-remote-include.mjs",
     "dockitty-plantuml-guard": "./scripts/plantuml-guard-bin.mjs",
     "dockitty-assert-diagrams": "./scripts/assert-diagrams.mjs",
-    "dockitty-read-pack": "./scripts/read-pack.mjs"
+    "dockitty-read-pack": "./scripts/read-pack.mjs",
+    "dockitty-tom-annex": "./scripts/tom-annex.mjs"
   },
   "files": [
     "index.ts",
