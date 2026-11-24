@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import matter from 'gray-matter';
-import { listingCards, pageLabelPrefix, paginationItems, type HubCard } from '../lib/hub-pagination.js';
+import { assertListingAgrees, listingCards, pageLabelPrefix, paginationItems, type HubCard } from '../lib/hub-pagination.js';
 import { composeHubChildren, selectHubChildren } from '../lib/hub-children.mjs';
 import { routeShapingSource } from '../lib/integrations/route-shaping.js';
 import { loadAdrIdRule } from '../scripts/generate-adr-index.mjs';
@@ -130,5 +130,52 @@ describe('pageLabelPrefix (FR-008, FR-009)', () => {
     expect(pageLabelPrefix('Current page', 3)).toBe('Current page ');
     // The last occurrence: "Page 1 of 1" style labels keep their prefix intact.
     expect(pageLabelPrefix('Page 1, page 1', 1)).toBe('Page 1, page ');
+  });
+});
+
+describe('assertListingAgrees (#342 WP04, C-001 the other way: WP03 review carry-over)', () => {
+  const card = (slug: string): HubCard => ({ slug, title: slug });
+  const data = (slugs: string[]): Pick<HubCap, 'count' | 'children'> => ({ count: slugs.length, children: slugs.map((slug) => ({ slug, label: slug })) });
+
+  it('passes when the hub page and the hub data list the same children', () => {
+    expect(() => assertListingAgrees('h', data(['h/a', 'h/b']), [card('h/b'), card('h/a')])).not.toThrow();
+  });
+
+  it('fails when the hub page has a card the hub data lacks, naming the hub and the page', () => {
+    expect(() => assertListingAgrees('h', data(['h/a']), [card('h/a'), card('h/x')])).toThrow(
+      '[dk-hubs] hub "h": its page lists "h/x" but the build\'s hub data does not; the paged listing would drop it',
+    );
+  });
+
+  it('fails when the hub data has a child the hub page lacks', () => {
+    expect(() => assertListingAgrees('h', data(['h/a', 'h/y']), [card('h/a')])).toThrow(
+      '[dk-hubs] hub "h": the build\'s hub data lists "h/y" but its page does not',
+    );
+  });
+
+  it('fails when the counts disagree', () => {
+    expect(() => assertListingAgrees('h', { count: 3, children: data(['h/a']).children }, [card('h/a')])).toThrow(
+      '[dk-hubs] hub "h": the build\'s hub data counts 3 children but its page lists 1',
+    );
+  });
+});
+
+describe('paginationItems edge folds (WP03 review carry-over)', () => {
+  it('refuses a fractional page count', () => {
+    expect(() => paginationItems(1, 2.5)).toThrow(RangeError);
+  });
+
+  it('shows all seven pages with the current page at either end', () => {
+    const pages = (current: number) => paginationItems(current, 7).flatMap((i) => (i.type === 'page' ? [i.page] : ['…']));
+    expect(pages(1)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(pages(7)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it('never lists more than seven items', () => {
+    for (let total = 1; total <= 300; total += 1) {
+      for (const current of new Set([1, 2, Math.ceil(total / 2), total - 1, total].filter((n) => n >= 1 && n <= total))) {
+        expect(paginationItems(current, total).length).toBeLessThanOrEqual(7);
+      }
+    }
   });
 });

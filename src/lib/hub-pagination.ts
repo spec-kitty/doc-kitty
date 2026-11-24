@@ -29,6 +29,31 @@ export function listingCards(slugs: readonly string[], cardsBySlug: ReadonlyMap<
   });
 }
 
+/**
+ * Check that a paged hub's page and the build's hub data list the same children
+ * (C-001, both ways): the listing pages slice the hub data, so a card the hub page
+ * composes from the collection but the hub data lacks would be silently dropped,
+ * and a hub-data child with no card would have nothing to render. Throws, naming
+ * the hub and the first child that differs.
+ */
+export function assertListingAgrees(
+  hub: string,
+  data: { count: number; children: ReadonlyArray<{ slug: string }> },
+  cards: readonly HubCard[],
+): void {
+  const fromData = new Set(data.children.map((child) => child.slug));
+  const fromPage = new Set(cards.map((card) => card.slug));
+  const extra = cards.find((card) => !fromData.has(card.slug));
+  if (extra) {
+    throw new Error(`[dk-hubs] hub "${hub}": its page lists "${extra.slug}" but the build's hub data does not; the paged listing would drop it`);
+  }
+  const missing = data.children.find((child) => !fromPage.has(child.slug));
+  if (missing) throw new Error(`[dk-hubs] hub "${hub}": the build's hub data lists "${missing.slug}" but its page does not`);
+  if (data.count !== cards.length) {
+    throw new Error(`[dk-hubs] hub "${hub}": the build's hub data counts ${data.count} children but its page lists ${cards.length}`);
+  }
+}
+
 /** One item of the pagination: a page link (or the current page), or a gap. */
 export type PaginationItem = { type: 'page'; page: number; current: boolean } | { type: 'gap' };
 
@@ -37,7 +62,7 @@ export type PaginationItem = { type: 'page'; page: number; current: boolean } | 
  * are all shown; beyond that the first and last page and the current page with
  * one neighbour on each side, with a gap for each run of two or more pages left
  * out (a gap never stands for a single page: that page is shown instead). The
- * list never holds more than nine items.
+ * list never holds more than seven items.
  */
 export function paginationItems(current: number, total: number): PaginationItem[] {
   if (!Number.isInteger(total) || total < 1) throw new RangeError(`[dk-hubs] page count ${total} is not a whole number from 1`);

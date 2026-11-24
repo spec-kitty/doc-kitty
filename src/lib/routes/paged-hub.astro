@@ -1,0 +1,56 @@
+---
+/*
+ * DocKitty: a paged hub's listing page N, 2 and up (#342; FR-007, FR-010, FR-011).
+ * Injected at `/<hub>/page/<n>/` by the paged-hubs integration. Rendered in the
+ * Starlight frame (`StarlightPage`, C-005) with the hub's description as its
+ * lead, the hub's cards for this page, and the pagination with page N current.
+ *
+ * The pages, their order and their slices come from the build's hub data
+ * (`hubListingPages`); the cards are the hub page's own composition
+ * (`composeHubCards`), checked against the hub data both ways (C-001). Starlight
+ * gives the page its self canonical; prev/next are off, the pagination replaces
+ * them; Pagefind indexes it (the operator's ruling: paged pages appear in every
+ * surface). `StarlightPage` validates its frontmatter against the docs schema, so
+ * every required field is set.
+ */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { routeShaping } from 'virtual:doc-kitty/route-shaping';
+import HubCardList from '../../components/hub/HubCardList.astro';
+import HubPagination from '../../components/hub/HubPagination.astro';
+import { HUB_PAGINATION_KEYS, hubListingPages, resolveHubString } from '../child-cap.js';
+import { composeHubCards } from '../hub-cards.js';
+import { assertListingAgrees, listingCards } from '../hub-pagination.js';
+import { collectDocEntries } from '../docs-index.js';
+import { hrefOfSlug } from '../with-base.js';
+
+export function getStaticPaths() {
+  return hubListingPages(routeShaping.hubCaps).map((page) => ({
+    params: { hub: page.hub, page: String(page.page) },
+    props: { hub: page.hub, page: page.page, of: page.of, slugs: page.children.map((child) => child.slug) },
+  }));
+}
+
+interface Props {
+  hub: string;
+  page: number;
+  of: number;
+  slugs: string[];
+}
+
+const { hub, page, of, slugs } = Astro.props;
+const hubDoc = (await collectDocEntries()).find((entry) => entry.slug === hub);
+const data = new Map(routeShaping.hubCaps).get(hub);
+if (!hubDoc || !data) throw new Error(`[dk-hubs] listing page ${page} of hub "${hub}" has no hub page or no hub data`);
+const cards = await composeHubCards(hub);
+assertListingAgrees(hub, data, cards);
+const listed = listingCards(slugs, new Map(cards.map((card) => [card.slug, card])));
+const translate = Astro.locals.t as ((key: string) => unknown) | undefined;
+const title = resolveHubString(HUB_PAGINATION_KEYS.title, { title: hubDoc.data.title, page }, translate);
+const { description, doc_status, updated } = hubDoc.data;
+---
+
+<StarlightPage frontmatter={{ title, description, doc_status, updated, kind: 'Hub', prev: false, next: false }}>
+  {description && <p>{description}</p>}
+  <HubCardList cards={listed} navLabel="In this section" hrefFor={hrefOfSlug} />
+  <HubPagination hub={hub} current={page} total={of} hrefFor={hrefOfSlug} translate={translate} />
+</StarlightPage>

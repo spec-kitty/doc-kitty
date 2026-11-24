@@ -129,7 +129,8 @@ const items = total > 1 ? paginationItems(current, total) : [];
       }
 
       a.dk-hub-pagination__link:focus-visible {
-        outline: none;
+        /* Transparent, not none: forced-colours mode paints it, where the shadow is dropped. */
+        outline: 2px solid transparent;
         box-shadow: var(--dk-shadow-focus);
       }
 
