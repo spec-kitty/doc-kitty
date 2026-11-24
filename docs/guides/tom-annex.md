@@ -183,7 +183,8 @@ The `dockitty-tom-annex` command writes and checks them. The stamp and the
 check's output use the producer id, `doc-kitty-tom-annex`, with a hyphen; the
 command's name has none. It reads only the
 built `<dist>/api/tom-annex.json`: it runs no site config, no Astro and no other
-repository's code.
+repository's code. Run it from the project root: it refuses a `--dist`, `--snapshot` or
+`--hub` path outside the working directory (exit `2`).
 
 ```sh
 # After a build: write both files.

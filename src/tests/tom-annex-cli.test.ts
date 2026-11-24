@@ -172,6 +172,23 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     expect(check.out).not.toMatch(/node <toolkit>/);
   });
 
+  it('refuses a --dist, --snapshot or --hub path outside the working directory (exit 2; SonarCloud S8707)', () => {
+    const p = project();
+    const outside = mkdtempSync(path.join(tmpdir(), 'dk-tom-outside-'));
+    const target = path.join(outside, 'snap.json');
+    for (const args of [
+      ['--dist', 'dist', '--snapshot', target],
+      ['--dist', 'dist', '--hub', '../escape/index.md'],
+      ['--dist', outside, '--snapshot', p.snapshot, '--check'],
+    ]) {
+      const r = p.run(...args);
+      expect(r.status).toBe(2);
+      expect(r.out).toMatch(/outside the working directory/);
+    }
+    expect(existsSync(target)).toBe(false);
+    expect(existsSync(path.join(p.root, '..', 'escape'))).toBe(false);
+  });
+
   it('writes nothing when the index has no date for the hub (exit 2)', () => {
     const p = project(variant((a) => (a.generated.at = null as never)));
     const r = p.run(...p.both);

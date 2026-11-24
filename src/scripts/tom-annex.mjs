@@ -44,6 +44,25 @@ const OPTIONS = {
 
 class UsageError extends Error {}
 
+/**
+ * A path argument resolved inside the working directory (the project the site
+ * builds from). The command reads and writes only there, so a mistyped or
+ * agent-supplied path cannot reach other files on the machine.
+ *
+ * @param {string} flag
+ * @param {string} value
+ * @returns {string} the absolute path
+ */
+function insideProject(flag, value) {
+  const root = path.resolve(process.cwd());
+  const abs = path.resolve(root, value);
+  const rel = path.relative(root, abs);
+  if (rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {
+    throw new UsageError(`${flag} ${value} is outside the working directory ${root}; run the command from the project root`);
+  }
+  return abs;
+}
+
 /** @param {string} file @returns {string | undefined} */
 const readIfPresent = (file) => (existsSync(file) ? readFileSync(file, 'utf8') : undefined);
 
@@ -52,10 +71,11 @@ const readIfPresent = (file) => (existsSync(file) ? readFileSync(file, 'utf8') :
  * the target. A crash mid-write leaves the old file whole, never a truncated one
  * that would then read as unowned.
  *
- * @param {string} file
+ * @param {string} file the absolute path, inside the project
  * @param {string} text
+ * @param {string} shown the path as the user wrote it, for the message
  */
-function write(file, text) {
+function write(file, text, shown) {
   const dir = path.dirname(file);
   mkdirSync(dir, { recursive: true });
   const temp = path.join(dir, `.${path.basename(file)}.${process.pid}.tmp`);
@@ -66,7 +86,7 @@ function write(file, text) {
     rmSync(temp, { force: true });
     throw err;
   }
-  console.error(`wrote ${file}`);
+  console.error(`wrote ${shown}`);
 }
 
 /** @param {string[]} argv @returns {number} the exit code */
@@ -85,7 +105,9 @@ function run(argv) {
   if (!values.dist) throw new UsageError(`--dist is required\n${USAGE}`);
   if (!values.snapshot && !values.hub) throw new UsageError(`name at least one of --snapshot and --hub\n${USAGE}`);
 
-  const annexFile = path.join(values.dist, 'api', 'tom-annex.json');
+  const annexFile = path.join(insideProject('--dist', values.dist), 'api', 'tom-annex.json');
+  const snapshotFile = values.snapshot ? insideProject('--snapshot', values.snapshot) : undefined;
+  const hubFile = values.hub ? insideProject('--hub', values.hub) : undefined;
   const hint = PRODUCER_REGISTRY.get(TOM_ANNEX_PRODUCER)?.regenerateHint ?? '';
   const builtText = readIfPresent(annexFile);
   if (builtText === undefined) {
@@ -107,11 +129,11 @@ function run(argv) {
     /** @type {Array<[string, string]>} */
     const drift = [];
     if (values.snapshot) {
-      const verdict = checkSnapshot({ committedText: readIfPresent(values.snapshot), builtText });
+      const verdict = checkSnapshot({ committedText: readIfPresent(/** @type {string} */ (snapshotFile)), builtText });
       if (verdict !== 'ok') drift.push([verdict, values.snapshot]);
     }
     if (values.hub) {
-      const verdict = checkHub({ committedText: readIfPresent(values.hub), builtAnnex: built });
+      const verdict = checkHub({ committedText: readIfPresent(/** @type {string} */ (hubFile)), builtAnnex: built });
       if (verdict !== 'ok') drift.push([verdict, values.hub]);
     }
     for (const [verdict, file] of drift) console.log(`${TOM_ANNEX_PRODUCER} ${verdict} ${file}`);
@@ -122,11 +144,11 @@ function run(argv) {
   // Write mode: refuse a target that holds anything this producer did not write.
   const refused = [];
   if (values.snapshot) {
-    const current = readIfPresent(values.snapshot);
+    const current = readIfPresent(/** @type {string} */ (snapshotFile));
     if (current !== undefined && !isOwnedSnapshot(safeJson(current))) refused.push(values.snapshot);
   }
   if (values.hub) {
-    const current = readIfPresent(values.hub);
+    const current = readIfPresent(/** @type {string} */ (hubFile));
     if (current !== undefined && !isProducerOwnedPage(current, TOM_ANNEX_PRODUCER)) refused.push(values.hub);
   }
   if (refused.length > 0) {
@@ -135,8 +157,8 @@ function run(argv) {
   }
   // Render first, so an index the hub cannot render (no `at`) writes nothing at all.
   const hubText = values.hub ? renderHubPage(built) : undefined;
-  if (values.snapshot) write(values.snapshot, builtText);
-  if (values.hub && hubText !== undefined) write(values.hub, hubText);
+  if (snapshotFile) write(snapshotFile, builtText, values.snapshot);
+  if (hubFile && hubText !== undefined) write(hubFile, hubText, values.hub);
   return 0;
 }
 
