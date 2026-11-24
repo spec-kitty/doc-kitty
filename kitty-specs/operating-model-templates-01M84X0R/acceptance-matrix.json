@@ -66,12 +66,12 @@
     },
     {
       "criterion_id": "FR-007",
-      "description": "Verify FR-007 is satisfied",
+      "description": "new-doc --template writes the template page; unknown ids and conflicting flags exit 2 and list the ids",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/stub-tools-templates.test.ts (new-doc --template, conflicts and unknown ids); lane-d@23baafe6; feat/402@b9e1a3c5; combined tree pnpm test src 4615/4615 mcp 181/181; WP approvals in tasks/*/review-cycle-*.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::runner",
+      "verified_at": "2026-11-24T03:15:22.978804+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
