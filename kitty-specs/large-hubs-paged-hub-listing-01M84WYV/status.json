@@ -191,6 +191,9 @@
       "last_event_id": "01M87X9TEEEHK02CTC1M8GNQ10",
       "last_transition_at": "2026-11-24T23:12:21.454687+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Paged listing a11y/links/assert-build/measure + full-suite folds; full pnpm test green (src 251/4864, mcp 24/185)"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 2947,
