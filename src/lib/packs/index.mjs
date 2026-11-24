@@ -4,7 +4,7 @@
  *
  * @module packs
  */
-export { readPack, packContentHash } from './read.mjs';
+export { readPack, packContentHash, packManifestHash } from './read.mjs';
 export { parsePackDocument } from './readme.mjs';
 export { loadContract, verifyContractLock } from './contract.mjs';
 export { classify, createClassifier } from './classify.mjs';

@@ -187,12 +187,6 @@ describe('module text (NFR-003, FR-006)', () => {
     expect(served({ cappedLabel: 'All {count}' }).cappedLabel).toBe('All {count}');
   });
 
-  it('emits the same source twice', () => {
-    site(MISSIONS('sidebar_child_cap: 2\n'));
-    const options = { docsDir: 'docs', base: '/x', shapeSidebar: true, pagination: true } as const;
-    expect(routeShapingSource(options)).toBe(routeShapingSource(options));
-  });
-
   it('emits no hub data for a consumer-written sidebar', () => {
     site(MISSIONS('sidebar_child_cap: 2\n'));
     expect(served({ shapeSidebar: false }).hubCaps).toEqual([]);

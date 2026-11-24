@@ -712,7 +712,10 @@ content cache.
 
 - **The stamp ignores config-only changes.** `content_hash` covers the source
   bytes. A change to `defaultGlossaryContext` or `sourceUrlPrefix` alone rewrites
-  the frontmatter but keeps `generated.at`.
+  the frontmatter but keeps `generated.at`. The accepted generated-section
+  contract ([ADR-0087](../adr/0087-generated-section-contract.md), #359) closes
+  this limit. It hashes the rendered page into `content_hash`, and it records the
+  source bytes and the generator config in a separate `source_digest`.
 - **The authoring lint is English only.** A feature whose `# language:` is not
   `en` or `en-*` is skipped, so silence there is not a clean result.
 - **New files need a restart.** Only the `.feature` files loaded at startup are

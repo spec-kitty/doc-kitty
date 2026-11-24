@@ -80,8 +80,9 @@ describe('vocabulary sets (single-sourced enums)', () => {
       'User-Journey',
       'Specification', // appended (ADR-0046)
       'Schematic', // appended (ADR-0067)
+      'Role', // appended (ADR-0085)
     ]);
-    expect(KINDS).toHaveLength(15);
+    expect(KINDS).toHaveLength(16);
   });
 
   it('SECTION_TYPE is the frozen section→type fallback map', () => {

@@ -21,3 +21,5 @@ agent:
   when a hub has hundreds of pages.
 - [MCP server quickstart](./mcp-server-quickstart.md) - point an MCP client at
   any DocKitty site, deployed or locally built, and let your agent read it.
+- [Documenting your operating model](./operating-model.md) — start the pages
+  that describe how your organisation runs, from twelve templates.
