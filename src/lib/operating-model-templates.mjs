@@ -36,118 +36,33 @@ import { scaffoldMeta } from '../scripts/scaffold-meta.mjs';
 /** @param {OperatingModelTemplate} record */
 const freezeRecord = (record) => Object.freeze({ ...record, measures: Object.freeze([...record.measures]) });
 
+/**
+ * The starter set, one row per template:
+ * `[id, title, kind, path, defaultType, measures]`. Each body file is named
+ * after its id (`templates/operating-model/<id>.md`).
+ *
+ * @type {readonly [string, string, string, string, string, string[]][]}
+ */
+const STARTER_SET = [
+  ['organisation', 'Organisation and teams', 'Explanation', 'operating-model/organisation', 'Operations', ['it-security-governance']],
+  ['role', 'Accountable role', 'Role', 'operating-model/roles/accountable-role', 'Operations', ['accountability']],
+  ['governance-forums', 'Governance forums and decision rights', 'Reference', 'operating-model/governance-forums', 'Operations', ['it-security-governance', 'accountability']],
+  ['policy-index', 'Policy index', 'Hub', 'operating-model/policy-index', 'Operations', ['it-security-governance']],
+  ['access-management', 'Access management', 'How-To', 'operating-model/access-management', 'Operations', ['user-identification-authorisation']],
+  ['change-management', 'Change and release management', 'How-To', 'operating-model/change-management', 'Operations', ['system-configuration', 'testing-evaluation']],
+  ['incident-response', 'Incident and breach response', 'How-To', 'operations/runbooks/incident-response', 'Runbook', ['availability-restoration', 'accountability']],
+  ['business-continuity', 'Business continuity and recovery', 'How-To', 'operations/runbooks/business-continuity', 'Runbook', ['availability-restoration', 'confidentiality-integrity-availability-resilience']],
+  ['supplier-management', 'Supplier and sub-processor management', 'How-To', 'operating-model/supplier-management', 'Operations', ['certification-assurance']],
+  ['people', 'People: onboarding, training, confidentiality and offboarding', 'How-To', 'operating-model/people', 'Operations', ['it-security-governance']],
+  ['data-lifecycle', 'Data lifecycle: retention and deletion', 'How-To', 'operating-model/data-lifecycle', 'Operations', ['limited-retention', 'portability-erasure']],
+  ['assurance-audits', 'Assurance and audits', 'Reference', 'operating-model/assurance-audits', 'Operations', ['testing-evaluation', 'certification-assurance']],
+];
+
 /** @type {readonly OperatingModelTemplate[]} */
 export const OPERATING_MODEL_TEMPLATES = Object.freeze(
-  [
-    {
-      id: 'organisation',
-      title: 'Organisation and teams',
-      kind: 'Explanation',
-      path: 'operating-model/organisation',
-      defaultType: 'Operations',
-      measures: ['it-security-governance'],
-      body: 'organisation.md',
-    },
-    {
-      id: 'role',
-      title: 'Accountable role',
-      kind: 'Role',
-      path: 'operating-model/roles/accountable-role',
-      defaultType: 'Operations',
-      measures: ['accountability'],
-      body: 'role.md',
-    },
-    {
-      id: 'governance-forums',
-      title: 'Governance forums and decision rights',
-      kind: 'Reference',
-      path: 'operating-model/governance-forums',
-      defaultType: 'Operations',
-      measures: ['it-security-governance', 'accountability'],
-      body: 'governance-forums.md',
-    },
-    {
-      id: 'policy-index',
-      title: 'Policy index',
-      kind: 'Hub',
-      path: 'operating-model/policy-index',
-      defaultType: 'Operations',
-      measures: ['it-security-governance'],
-      body: 'policy-index.md',
-    },
-    {
-      id: 'access-management',
-      title: 'Access management',
-      kind: 'How-To',
-      path: 'operating-model/access-management',
-      defaultType: 'Operations',
-      measures: ['user-identification-authorisation'],
-      body: 'access-management.md',
-    },
-    {
-      id: 'change-management',
-      title: 'Change and release management',
-      kind: 'How-To',
-      path: 'operating-model/change-management',
-      defaultType: 'Operations',
-      measures: ['system-configuration', 'testing-evaluation'],
-      body: 'change-management.md',
-    },
-    {
-      id: 'incident-response',
-      title: 'Incident and breach response',
-      kind: 'How-To',
-      path: 'operations/runbooks/incident-response',
-      defaultType: 'Runbook',
-      measures: ['availability-restoration', 'accountability'],
-      body: 'incident-response.md',
-    },
-    {
-      id: 'business-continuity',
-      title: 'Business continuity and recovery',
-      kind: 'How-To',
-      path: 'operations/runbooks/business-continuity',
-      defaultType: 'Runbook',
-      measures: ['availability-restoration', 'confidentiality-integrity-availability-resilience'],
-      body: 'business-continuity.md',
-    },
-    {
-      id: 'supplier-management',
-      title: 'Supplier and sub-processor management',
-      kind: 'How-To',
-      path: 'operating-model/supplier-management',
-      defaultType: 'Operations',
-      measures: ['certification-assurance'],
-      body: 'supplier-management.md',
-    },
-    {
-      id: 'people',
-      title: 'People: onboarding, training, confidentiality and offboarding',
-      kind: 'How-To',
-      path: 'operating-model/people',
-      defaultType: 'Operations',
-      measures: ['it-security-governance'],
-      body: 'people.md',
-    },
-    {
-      id: 'data-lifecycle',
-      title: 'Data lifecycle: retention and deletion',
-      kind: 'How-To',
-      path: 'operating-model/data-lifecycle',
-      defaultType: 'Operations',
-      measures: ['limited-retention', 'portability-erasure'],
-      body: 'data-lifecycle.md',
-    },
-    {
-      id: 'assurance-audits',
-      title: 'Assurance and audits',
-      kind: 'Reference',
-      path: 'operating-model/assurance-audits',
-      defaultType: 'Operations',
-      measures: ['testing-evaluation', 'certification-assurance'],
-      body: 'assurance-audits.md',
-    },
-  ].map(freezeRecord),
+  STARTER_SET.map(([id, title, kind, path, defaultType, measures]) =>
+    freezeRecord({ id, title, kind, path, defaultType, measures, body: `${id}.md` }),
+  ),
 );
 
 /** The template ids, in manifest order. */
