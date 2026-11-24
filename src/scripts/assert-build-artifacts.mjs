@@ -159,7 +159,9 @@ import {
 //   - #406 (ADR-0080) adds the TOM classification example pair,
 //     context/incident-handling.md and architecture/audit-logging.md
 //     (doc_status:active, +2) -> 75.
-const EXPECTED_INDEX_ENTRY_COUNT = 75;
+//   - #341 (sidebar child cap) adds the capped-hub demonstrator,
+//     guides/capped-hub/ (a hub and five pages, all published, +6): 75 -> 81.
+const EXPECTED_INDEX_ENTRY_COUNT = 81;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -196,7 +198,9 @@ const EXPECTED_INDEX_ENTRY_COUNT = 75;
 // 82 -> 78.
 // #406 (ADR-0080) adds context/incident-handling.md and architecture/audit-logging.md
 // (published, +2), 78 -> 80.
-const EXPECTED_SITEMAP_URL_COUNT = 80;
+// #341 (sidebar child cap) adds guides/capped-hub/ (a hub and five published
+// pages, +6): 80 -> 86.
+const EXPECTED_SITEMAP_URL_COUNT = 86;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -2353,8 +2357,9 @@ async function main() {
   if (sitemapUrlCount !== EXPECTED_SITEMAP_URL_COUNT) {
     fail(
       `sitemap: page-URL count is ${sitemapUrlCount}, expected ${EXPECTED_SITEMAP_URL_COUNT} ` +
-        `(the published set — 24 example .md files − 3 drafts, plus the 8 released generated OpenAPI reference pages; the unreleased ` +
-        `\`main\` version's 4 are filtered, FR-015. If example content changed ` +
+        `(the published set: every published example page, generated ones included, plus the released OpenAPI ` +
+        `reference pages; the unreleased \`main\` version's 4 are filtered, FR-015. The derivation is above ` +
+        `EXPECTED_SITEMAP_URL_COUNT. If example content changed ` +
         `intentionally, update EXPECTED_SITEMAP_URL_COUNT and re-cross-check example/docs)`,
     );
   }

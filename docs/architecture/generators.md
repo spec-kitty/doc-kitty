@@ -2,7 +2,7 @@
 title: Generators
 description: The generated discovery surfaces (sitemap-index.xml, rss.xml, llms.txt, and the JSON agent-API) plus the advisory MCP wiring pointer, and their route handlers.
 doc_status: draft
-updated: 2026-11-02T00:00:00Z
+updated: 2026-11-21T00:00:00Z
 type: Architecture
 kind: Reference
 tags: [generators, sitemap, rss, llms-txt, agent-api]
@@ -58,7 +58,10 @@ short endpoint file. This page expands the surfaces the
   `links: { mcp: true }` to `agentIndexRoute` (and `llmsTxtRoute` for the
   one-line human-facing mention) advertises in `/api/index.json` (`_links.mcp`)
   and `llms.txt` how to launch the generic `@spec-kitty/doc-kitty-mcp` server
-  over the agent-API artifacts above. The server is consumer-side: it runs
+  over the agent-API artifacts above. The package is not published yet, so
+  both surfaces say so and point at the build-from-source steps in the
+  [MCP server quickstart](../guides/mcp-server-quickstart.md#build-from-source)
+  rather than at an `npm:` name. The server is consumer-side: it runs
   on the reader's machine over stdio against the already-published JSON, so a
   static host never hosts anything, and it is a strict pass-through (projection
   of published fields only; no derivation, no server-side index). Opt-in,

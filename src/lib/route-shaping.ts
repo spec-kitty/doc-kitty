@@ -34,6 +34,22 @@
  */
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
 import { compareCodeUnit, humaniseDirectoryName, routeOfSlug } from './vocabulary-core.mjs';
+import { resolveCappedLabel, type HubCapMap } from './child-cap.js';
+
+// The sidebar child cap's pure API (#341) is re-exported so the shaping seam is
+// one import path for the middleware and for the paged hub listing (#342).
+export {
+  CAPPED_ENTRY_LABEL,
+  CAPPED_LABEL_KEY,
+  DEFAULT_CHILD_CAP,
+  cappedChildHidden,
+  isChildCap,
+  resolveCappedLabel,
+  resolveChildCap,
+  type HubCap,
+  type HubCapChild,
+  type HubCapMap,
+} from './child-cap.js';
 
 /** One resolved Starlight sidebar entry (a link or a group). */
 export type SidebarEntry = StarlightRouteData['sidebar'][number];
@@ -141,6 +157,29 @@ export interface ShapeSidebarOptions {
    * Off by default, because `attrs` reach the HTML.
    */
   annotate?: boolean;
+  /**
+   * The hubs over their sidebar child cap (#341), by folder. Such a hub's group
+   * shows its index link and one capped entry instead of its children. Absent or
+   * empty: nothing is capped and the tree is shaped exactly as before.
+   */
+  hubCaps?: HubCapMap;
+  /** The capped entry's label for a child count. Default: {@link resolveCappedLabel} with no option. */
+  cappedLabel?: (count: number) => string;
+  /** Base-free slug of the page being rendered (`missions/alpha`); marks the capped entry current below its hub. */
+  currentSlug?: string;
+}
+
+/**
+ * The capped entry of a hub (#341): a plain Starlight link to the hub that stands
+ * for its children. `dkCappedHub` names the hub folder. It is not an attribute, so
+ * it never reaches the HTML; pagination, relabelling and icons skip links that
+ * carry it, because it shares its href with the hub's index link.
+ */
+export type CappedEntry = SidebarLink & { dkCappedHub: string };
+
+/** Is this entry a hub's capped entry? */
+export function isCappedEntry(entry: SidebarEntry): entry is CappedEntry {
+  return entry.type === 'link' && typeof (entry as Partial<CappedEntry>).dkCappedHub === 'string';
 }
 
 /** The result of {@link shapeSidebar}. */
@@ -252,6 +291,9 @@ export function shapeSidebar(
   const indexLabel = options.indexLabel ?? INDEX_ENTRY_LABEL;
   const collapse = options.collapse === true;
   const annotate = options.annotate === true;
+  const hubCaps: HubCapMap = options.hubCaps ?? new Map();
+  const cappedLabel = options.cappedLabel ?? ((count: number) => resolveCappedLabel(count));
+  const currentSlug = options.currentSlug;
 
   interface Shaped {
     entry: SidebarEntry;
@@ -342,7 +384,25 @@ export function shapeSidebar(
           compareCodeUnit(a.entry.label, b.entry.label) || compareCodeUnit(a.dir ?? '', b.dir ?? '')
         );
       });
-    const ordered = [...links.filter(isIndex), ...links.filter((c) => !isIndex(c)), ...groups];
+    let ordered = [...links.filter(isIndex), ...links.filter((c) => !isIndex(c)), ...groups];
+
+    // The sidebar child cap (#341): a hub over its cap keeps its index link and
+    // one entry to the hub, which is current on any page below the hub. A group
+    // whose index is not in the tree has nowhere to link and is left as it is.
+    const hubCap = hubCaps.get(dir);
+    const hubIndex = hubCap ? ordered.find(isIndex) : undefined;
+    if (hubCap && hubIndex && hubIndex.entry.type === 'link') {
+      const entry: CappedEntry = {
+        type: 'link',
+        label: cappedLabel(hubCap.count),
+        href: hubIndex.entry.href,
+        isCurrent: currentSlug !== undefined && currentSlug.startsWith(`${dir}/`),
+        badge: undefined,
+        attrs: {},
+        dkCappedHub: dir,
+      };
+      ordered = [hubIndex, { entry, dir }];
+    }
 
     let label = entry.label;
     if (depth > 0) {
@@ -383,7 +443,8 @@ export function shapeSidebar(
     // The renderer finds a group's index link by this marker, and its icon by `dkDir`.
     // The index link stays in `entries`: pagination flattens the sidebar (R7).
     const entries = ordered.map((c) =>
-      annotate && isIndex(c) && c.entry.type === 'link'
+      // The capped entry shares the index link's href but is not the group's index.
+      annotate && isIndex(c) && c.entry.type === 'link' && !isCappedEntry(c.entry)
         ? { ...c.entry, attrs: { ...c.entry.attrs, 'data-dk-group-index': '' } }
         : c.entry,
     );
@@ -435,7 +496,7 @@ export function decorateSidebarIcons(
       const { dkDir } = entry as SidebarEntry & { dkDir?: string };
       return withIcon({ ...entry, entries: entry.entries.map(decorate) }, dkDir === undefined ? undefined : groups.get(dkDir));
     }
-    if ('data-dk-group-index' in entry.attrs) return entry;
+    if ('data-dk-group-index' in entry.attrs || isCappedEntry(entry)) return entry;
     const slug = slugOfHref(entry.href, base);
     return withIcon(entry, slug === undefined ? undefined : links.get(slug));
   };
@@ -456,9 +517,77 @@ export function shapeToc(toc: RouteToc): RouteToc {
   return toc;
 }
 
-/** Every link of a sidebar tree in reading order. */
+/** Every page link of a sidebar tree in reading order; a hub's capped entry (#341) is not a page link. */
 function flattenLinks(entries: readonly SidebarEntry[]): SidebarLink[] {
-  return entries.flatMap((entry) => (entry.type === 'group' ? flattenLinks(entry.entries) : [entry]));
+  return entries.flatMap((entry) =>
+    entry.type === 'group' ? flattenLinks(entry.entries) : isCappedEntry(entry) ? [] : [entry],
+  );
+}
+
+/**
+ * The tree prev/next are derived from when hubs are capped (#341): a copy of the
+ * shaped tree in which each capped entry is replaced by its hub's children, in the
+ * hub's listing order, with the page being rendered marked current. With nothing
+ * capped the shaped tree itself is returned.
+ *
+ * A child's href is built from the capped entry's own href, which is the hub index
+ * link's: its prefix (the site `base`) and its trailing-slash form are kept, and the
+ * hub folder is swapped for the child's slug (`/site/missions/` → `/site/missions/m-1/`).
+ * That holds for Starlight's directory-format routes, the only form the toolkit
+ * builds (every page is served at `<slug>/`). A pre-hidden child is in no tree, so
+ * its href cannot be read from one.
+ */
+export function expandCappedGroups(
+  shaped: SidebarEntry[],
+  hubCaps: HubCapMap,
+  currentSlug: string,
+): SidebarEntry[] {
+  if (hubCaps.size === 0) return shaped;
+  const expand = (entries: readonly SidebarEntry[]): SidebarEntry[] =>
+    entries.flatMap((entry): SidebarEntry[] => {
+      if (entry.type === 'group') return [{ ...entry, entries: expand(entry.entries) }];
+      const hub = isCappedEntry(entry) ? hubCaps.get(entry.dkCappedHub) : undefined;
+      if (!isCappedEntry(entry) || hub === undefined) return [entry];
+      const dir = entry.dkCappedHub;
+      const slash = entry.href.endsWith('/') ? '/' : '';
+      // Only a directory-format href (`<base>/<dir>/`) can be extended to the children.
+      if (!entry.href.endsWith(`/${dir}${slash}`)) return [entry];
+      const prefix = entry.href.slice(0, entry.href.length - dir.length - slash.length);
+      return hub.children.map(({ slug, label }) => ({
+        type: 'link',
+        label,
+        href: `${prefix}${slug}${slash}`,
+        isCurrent: slug === currentSlug,
+        badge: undefined,
+        attrs: {},
+      }));
+    });
+  return expand(shaped);
+}
+
+/**
+ * How one side of prev/next follows the sidebar: `true` takes the sidebar neighbour,
+ * a string takes it under that label (Starlight's label-only override), `false`
+ * keeps what the author set or switched off.
+ */
+export type PaginationFollow = boolean | string;
+
+/**
+ * Read one `prev`/`next` frontmatter value as a {@link PaginationFollow}. Unset
+ * follows the sidebar. A string, or an object with a `label` and no `link`, is a
+ * label-only override: Starlight keeps the sidebar neighbour and renames it. An
+ * object with a `link`, or `false`, is the author's. With prev/next switched off
+ * site-wide (`enabled` false) nothing follows. The one place this is decided
+ * (#341, WP04 review F1).
+ */
+export function paginationFollow(side: unknown, enabled: boolean): PaginationFollow {
+  if (!enabled) return false;
+  if (side === undefined) return true;
+  if (typeof side === 'string') return side;
+  if (side !== null && typeof side === 'object' && !('link' in side) && typeof (side as { label?: unknown }).label === 'string') {
+    return (side as { label: string }).label;
+  }
+  return false;
 }
 
 /**
@@ -477,7 +606,7 @@ export function shapePagination(
   original: readonly SidebarEntry[],
   shaped: readonly SidebarEntry[],
   pagination: RoutePagination,
-  followsSidebar: { prev: boolean; next: boolean },
+  followsSidebar: { prev: PaginationFollow; next: PaginationFollow },
 ): RoutePagination {
   const before = flattenLinks(original);
   // Shaping may relabel a section index "Overview" (#112); prev/next name the
@@ -489,7 +618,23 @@ export function shapePagination(
   });
   const at = before.findIndex((link) => link.isCurrent);
   const to = after.findIndex((link) => link.isCurrent);
-  if (at === -1 || to === -1) return pagination;
+  if (to === -1) return pagination;
+  if (at === -1) {
+    // Only the expanded tree holds the page: a capped hub's child that its producer
+    // hid from Starlight's tree (#341). Each side still following the sidebar takes
+    // its neighbour in the hub order; a side the author set or switched off stays.
+    // A label-only override takes the neighbour under its label: Starlight could not
+    // apply it, because the page is in none of its sidebar.
+    const take = (follows: PaginationFollow, current: SidebarLink | undefined, neighbour: SidebarLink | undefined) =>
+      follows === false || current !== undefined
+        ? current
+        : typeof follows === 'string' && neighbour
+          ? { ...neighbour, label: follows }
+          : neighbour;
+    const prev = take(followsSidebar.prev, pagination.prev, after[to - 1]);
+    const next = take(followsSidebar.next, pagination.next, after[to + 1]);
+    return prev === pagination.prev && next === pagination.next ? pagination : { prev, next };
+  }
 
   const side = (
     current: SidebarLink | undefined,
@@ -503,10 +648,51 @@ export function shapePagination(
     return current.label === was.label ? now : { ...now, label: current.label };
   };
 
+  // A listed page's label-only override is already on Starlight's link; the href rule
+  // above carries it over, so here only an unset side (`true`) follows a gap.
   return {
-    prev: side(pagination.prev, before[at - 1], after[to - 1], followsSidebar.prev),
-    next: side(pagination.next, before[at + 1], after[to + 1], followsSidebar.next),
+    prev: side(pagination.prev, before[at - 1], after[to - 1], followsSidebar.prev === true),
+    next: side(pagination.next, before[at + 1], after[to + 1], followsSidebar.next === true),
   };
+}
+
+/**
+ * prev/next in hub order after a LATER route middleware rebuilt them from the shaped
+ * sidebar (#341). The OpenAPI renderer's middleware does that on every page: it walks
+ * the capped entry as if it were a page, so every child of a capped hub would get the
+ * capped entry's neighbours. This re-derives each side that still follows the
+ * sidebar from `sidebar` (the tree that middleware left, with its own groups filled)
+ * with the capped groups expanded in hub order; a side the author pointed elsewhere
+ * or switched off (`false`) is kept. A side given as a string is Starlight's
+ * label-only override (`next: "Read on"`): it still follows the sidebar, under that
+ * label. A page below a capped hub that the hub does not list (a draft in a
+ * drafts-on build) is in no expanded tree; it takes `ownPagination`, what the
+ * route-shaping middleware gave it, as it would on a site without that renderer.
+ * With no capped hub, or a page that is in neither tree, the pagination is returned
+ * unchanged (same reference).
+ */
+export function hubOrderPagination(
+  sidebar: SidebarEntry[],
+  hubCaps: HubCapMap,
+  currentSlug: string,
+  pagination: RoutePagination,
+  followsSidebar: { prev: PaginationFollow; next: PaginationFollow },
+  ownPagination?: RoutePagination,
+): RoutePagination {
+  if (hubCaps.size === 0) return pagination;
+  const links = flattenLinks(expandCappedGroups(sidebar, hubCaps, currentSlug));
+  const at = links.findIndex((link) => link.isCurrent);
+  if (at === -1) {
+    const belowCappedHub = [...hubCaps.keys()].some((dir) => currentSlug.startsWith(`${dir}/`));
+    return belowCappedHub && ownPagination ? ownPagination : pagination;
+  }
+  const side = (follows: PaginationFollow, current: SidebarLink | undefined, neighbour: SidebarLink | undefined) => {
+    if (follows === false) return current;
+    return typeof follows === 'string' && neighbour ? { ...neighbour, label: follows } : neighbour;
+  };
+  const prev = side(followsSidebar.prev, pagination.prev, links[at - 1]);
+  const next = side(followsSidebar.next, pagination.next, links[at + 1]);
+  return prev === pagination.prev && next === pagination.next ? pagination : { prev, next };
 }
 
 /** A link label that shaping changed: what the shaped sidebar shows, and the page title. */

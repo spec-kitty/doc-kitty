@@ -48,7 +48,7 @@ import {
   type DocKittyFrontmatter,
 } from '../lib/metadata.js';
 import { hrefOfSlug } from '../lib/with-base.js';
-import { selectHubChildren, selectAdrHubCards } from '../lib/hub-children.mjs';
+import { selectHubChildren, composeHubChildren } from '../lib/hub-children.mjs';
 import { loadAdrIdRule } from '../scripts/generate-adr-index.mjs';
 import { resolveSectionRegistry, sectionOrder } from '../lib/sections.js';
 import '../styles/hub.css';
@@ -94,8 +94,6 @@ const publishedChildren = selectHubChildren(
   order,
 );
 
-const isAdrKind = (data: DocKittyFrontmatter): boolean => data.kind === 'ADR';
-
 // ADR children (C-005: gated to the ADR kind only): number+status+date and the
 // number-ascending order come SOLELY from the shared pipeline — the SAME one the
 // own-tree generator uses — so the hub matches the generated table 1:1 over the
@@ -105,15 +103,17 @@ const isAdrKind = (data: DocKittyFrontmatter): boolean => data.kind === 'ADR';
 // wiring reds the test instead of a hand-kept replica. The id rule comes from
 // the SAME docs root's charter (`adr.id`, #248) the generator reads, so a
 // date-named tree gets the same ids and order on both sides.
-const adrCards: HubCard[] = selectAdrHubCards(publishedChildren, {
+// `composeHubChildren` is the one composition: the sidebar child cap (#341) counts
+// and pages through the same list, so a capped hub's "N pages" and prev/next match.
+const { adrCards: composedAdrCards, others } = composeHubChildren(publishedChildren, {
   idRule: loadAdrIdRule(docsRoot),
 });
+const adrCards: HubCard[] = composedAdrCards;
 
 // Non-ADR children keep the section-rank → title order established by
 // `selectHubChildren`. In a non-ADR hub (no ADR-kind children) this IS the whole
 // list, byte-identical to before (T020).
-const otherCards: HubCard[] = publishedChildren
-  .filter((entry) => !isAdrKind(entry.data))
+const otherCards: HubCard[] = others
   .map((entry) => ({
     slug: entry.slug,
     title: entry.data.title,
