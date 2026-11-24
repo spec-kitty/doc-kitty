@@ -53,7 +53,7 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -66,6 +66,7 @@
         "Ready for review: hub data for every hub (#429), site hub.pageSize, page collision, WP01 review folds 1-4. Full pnpm test green (src 243/4788, mcp 23/181)."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP02-hub-data-every-hub/review-cycle-1.md",
         "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP02-hub-data-every-hub/review-cycle-1.md",
@@ -73,15 +74,15 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 575,
-      "shell_pid_created_at": "1795541251.08",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T005": "done",
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done",
-        "T011": "done"
+        "T005": "planned",
+        "T007": "planned",
+        "T008": "planned",
+        "T009": "planned",
+        "T010": "planned",
+        "T011": "planned"
       }
     },
     "WP03": {
