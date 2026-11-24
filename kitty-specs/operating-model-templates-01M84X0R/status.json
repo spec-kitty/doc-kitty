@@ -1,7 +1,7 @@
 {
-  "event_count": 51,
-  "last_event_id": "01M85T0J61GKGZC8PKCRC2374T",
-  "materialized_at": "2026-11-24T03:36:23.489103+00:00",
+  "event_count": 52,
+  "last_event_id": "01M85TX9RS8V0DGQMEEMACHVZ5",
+  "materialized_at": "2026-11-24T03:52:05.145453+00:00",
   "mission_number": "",
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
@@ -154,14 +154,14 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude::implementer-ivan",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "implementer_of_record": "claude::implementer-ivan",
-      "lane": "for_review",
-      "last_event_id": "01M85S17VZ65ARJAV5G5Z8TBFD",
-      "last_transition_at": "2026-11-24T03:19:17.119337+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M85TX9RS8V0DGQMEEMACHVZ5",
+      "last_transition_at": "2026-11-24T03:52:05.145453+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Preset snippet, guide, changelog, CI glob, WP04 folds 1-4; red-first (c3c40da red; 15fd08a, 23baafe green); lint 0; combined tree (lane-d + feat/402) pnpm test src 4615/4615 mcp 181/181",
@@ -175,9 +175,9 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": 5719,
-      "shell_pid_created_at": "1795488262.64",
+      "role": "reviewer",
+      "shell_pid": 22628,
+      "shell_pid_created_at": "1795492320.05",
       "subtasks": {
         "T017": "done",
         "T018": "done",
