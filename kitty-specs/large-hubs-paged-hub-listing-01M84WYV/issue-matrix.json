@@ -60,6 +60,18 @@
       "verdict": "not-applicable",
       "wp": null
     },
+    "#403": {
+      "evidence_ref": "research.md R9: another mission, cited only for ADR numbering",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": null
+    },
     "#426": {
       "evidence_ref": "<auto-classified: no action required>",
       "fr": null,
