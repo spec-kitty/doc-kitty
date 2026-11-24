@@ -29,11 +29,12 @@ client, the two input modes, Windows notes) lives in the docs guide:
 [docs/guides/mcp-server-quickstart.md](../docs/guides/mcp-server-quickstart.md)
 - the guide is the single owner so the story cannot drift between surfaces.
 
-In short: `pnpm --filter @spec-kitty/doc-kitty-mcp build` then
-`pnpm pack --filter @spec-kitty/doc-kitty-mcp`, install the tarball, launch
-`doc-kitty-mcp --site <url>` or `--dir <path>`. The launch line is exactly the
-one the toolkit emits into `_links.mcp.usage` and `llms.txt` when a site opts
-in with `links.mcp`.
+In short: the package is not published yet (#408), so build it from source.
+`pnpm pack --filter @spec-kitty/doc-kitty-mcp` builds and packs it; install the
+tarball, then launch `doc-kitty-mcp --site <url>` or `--dir <path>`. The launch
+line is exactly the one the toolkit emits into `_links.mcp.usage` and
+`llms.txt` when a site opts in with `links.mcp`; both surfaces point at the
+guide's build-from-source section until the package ships.
 
 ## What you get
 
@@ -65,14 +66,13 @@ or as fabricated content. All seven codes:
 
 ## Publishing status
 
-Not published to any registry; the npm-scope, provenance, and registry-listing
-decision is deferred to a release-engineering ruling (mission constraint
-C-002). GitHub Packages was evaluated as a channel and found unsuitable as a
-public channel: its npm registry requires a token even to install public
-packages, so it can serve only as an internal/beta channel. Until the ruling,
-the tarball form above is the only supported installation, and the advertised
-launch line names the installed bin - never an `npx -y @spec-kitty/...`
-registry form.
+Not published to any registry yet. The operator ruled on 2026-11-21 to publish
+it to GitHub Packages with `@spec-kitty/doc-toolkit`; that work is tracked in
+[#408](https://github.com/spec-kitty/doc-kitty/issues/408). The GitHub Packages
+npm registry requires a token even to install public packages. Until #408
+ships, the tarball form above is the only supported installation, and the
+advertised launch line names the installed bin - never an
+`npx -y @spec-kitty/...` registry form.
 
 ## Development
 

@@ -2,7 +2,7 @@
 title: Kitty packs
 description: "Kitty-packs support: bounded contexts, the pack reader and its contract snapshot as built, and the target design for generation, ownership and the slices."
 doc_status: draft
-updated: 2026-11-22T00:00:00Z
+updated: 2026-11-23T00:00:00Z
 type: Architecture
 kind: Explanation
 tags: [packs, doctrine, generated-pages, charter, open-packs]
@@ -112,7 +112,7 @@ flowchart TB
 
 | Component | Role |
 |---|---|
-| Contract snapshot | `src/lib/packs/contract/` holds `file-kinds.yaml`, the five pack-level schemas the reader uses, and the charter's classifier conformance cases (`conformance/classifier-cases.yaml`), copied byte for byte from the release tag `contract-packs-v0.1.0-rc.1`. The charter publishes the cases as data (spec-kitty-charter#559), so none are transcribed. `pnpm packs:sync-contract --ref <tag or full commit>` refreshes every locked file. |
+| Contract snapshot | `src/lib/packs/contract/` holds `file-kinds.yaml`, the five pack-level schemas the reader uses, and the charter's classifier conformance cases (`conformance/classifier-cases.yaml`), copied byte for byte from the release tag `contract-packs-v0.1.0-rc.2`. The charter publishes the cases as data (spec-kitty-charter#559), so none are transcribed. `pnpm packs:sync-contract --ref <tag or full commit>` refreshes every locked file. |
 | Contract lock | `contract.lock.json` records the source, the tag, the charter commit and each snapshot file's sha256. A unit test fails when the bytes and the lock disagree, or a file is added or removed. Loading a snapshot verifies its lock and refuses a symlink in it. |
 | Pack reader | `readPack(dir)` turns a pack directory into a `PackModel`. It reimplements classification only and is held to the charter's conformance cases. It parses the README into the codec's shape with doc-kitty's own Markdown pipeline. It recomputes each manifest constituent's `content_hash`. |
 | Per-kind field map | Which fields give an artefact its title and summary, such as a directive's `title` and `intent`. It lives beside the snapshot, not in page templates. |
@@ -247,9 +247,33 @@ flowchart LR
 - doc-kitty never fetches a contract at build time.
 
 The vendored snapshot is pinned to the packs-contract release tag
-`contract-packs-v0.1.0-rc.1`, charter commit `69ec326`. The sync script accepts a
+`contract-packs-v0.1.0-rc.2`, charter commit `33f3ad4` (#418). The sync script accepts a
 tag or a full commit only: a branch, `HEAD` or a short sha is refused, so the
 lock never records a moving ref as its provenance.
+
+Every key of a `contract.lock.json` must be a relative POSIX path of plain
+segments inside the snapshot: no leading `/`, no backslash, no empty, `.` or
+`..` segment, and not the lock itself (#423). The sync script checks the keys
+before it fetches, reads or writes anything, and stops on the first bad key,
+naming it. `verifyContractLock` and `loadContract` refuse the same keys, so a
+consumer's `packs.contract` snapshot cannot name a file outside itself.
+
+rc.2 changed the contract in four ways that reach the reader. None needed a code
+change; the classifier passes the new conformance cases as it stands:
+
+- `routing_catalog` is a new artefact kind, held as
+  `**/*.routing-catalog.yaml`. A manifest can now list one and still verify, and
+  presets can activate them.
+- A graph shard is held only at the pack root (`*/*.graph.yaml`). One deeper is
+  `unmodelled`, except under `assets/` or `templates/`, where it is a payload.
+- The `**/charter.yaml` rule is gone, so a stray `charter.yaml` is `unmodelled`.
+- The contract now says an unmodelled file is warned as `file_not_held` and not
+  held, rather than refused. The reader's `unmodelled` warning already behaves
+  that way, so its code is unchanged.
+
+rc.2 carries no case for the case-folded exclusion class
+(spec-kitty-charter#645). That gap stays open until a later contract release
+adds the cases.
 
 ## Extension points
 
@@ -326,7 +350,28 @@ How the reader treats pack content, beyond ADR-0079 D3 and D4:
 
 Every manifest warning except `manifest-schema-version` leaves the manifest
 unverified. The manifest is shown as fact only when its membership matches both
-ways and every hash matches.
+ways, every constituent's `content_hash` matches, and its own `manifest_hash`
+matches.
+
+The reader recomputes `manifest_hash` with the schema's recipe (#417): SHA-256,
+lower hex, of the UTF-8 bytes of the RFC 8785 canonical JSON of the manifest
+without `manifest_hash`. The manifest is the one the reader parsed, so every
+scalar is a string, as the schema types it. `canonicalJson`
+(`src/lib/packs/canonical-json.mjs`) needs no dependency. It is ECMAScript's own
+JSON serialization with keys sorted by UTF-16 code units, and it refuses a lone
+surrogate. `PackModel.manifest.hash` is still the value as written, so #338 can
+show it, but `verified` is false when the recomputed hash differs.
+
+Two limits follow from that recipe:
+
+- The hash is computed over the all-string view of the manifest. That is right
+  while every field the schema declares is a string. If a later schema types a
+  field as a number or a boolean, the reader must hash the typed value. Until
+  then, a typed scalar a producer writes reads as a mismatch, which fails closed.
+- `manifest_hash` has no key. It shows that a manifest has not drifted or been
+  edited since it was hashed, not who wrote it: anyone can rehash a manifest
+  that is consistent with itself. A pack page should not present it as proof
+  of authorship.
 
 The warning codes, each with the pack-relative `file` where there is one:
 
@@ -338,15 +383,16 @@ The warning codes, each with the pack-relative `file` where there is one:
 | `readme-unreadable`, `readme-frontmatter`, `readme-ambiguous-heading` | The README cannot be read, its frontmatter does not parse, or it has a level-1 heading after its start |
 | `descriptor-invalid-value` | A `pack.yaml` value is a mapping or a list where a single value belongs; it is left out |
 | `policy-missing`, `policy-unreadable`, `policy-invalid-value` | `mutability_policy` names a file the pack does not hold, or one that does not parse; a level that is not a single value, or a prototype key, is left out |
-| `manifest-unreadable`, `manifest-missing-file`, `manifest-hash-mismatch`, `manifest-unlisted`, `manifest-unknown-kind`, `manifest-schema-version` | The manifest does not parse, lists a file the pack lacks, has a stale hash, omits a constituent, names a kind the contract does not know, or has another `schema_version` |
+| `manifest-unreadable`, `manifest-missing-file`, `manifest-hash-mismatch`, `manifest-unlisted`, `manifest-unknown-kind`, `manifest-schema-version` | The manifest does not parse, lists a file the pack lacks, has a stale `content_hash` for a constituent, omits a constituent, names a kind the contract does not know, or has another `schema_version` |
+| `manifest-own-hash-mismatch`, `manifest-own-hash-missing` | The manifest's own `manifest_hash` differs from the RFC 8785 recomputation, or is absent or not a single value |
 | `manifest-invalid-entry`, `manifest-duplicate-entry`, `manifest-not-a-constituent`, `manifest-kind-mismatch`, `manifest-unreadable-file` | An entry has a field that is not a single value, lists a file twice, lists a file the contract does not classify as a constituent, claims another kind than the contract gives it, or names a file that cannot be read to hash |
 | `contract-unknown-key`, `contract-unknown-content-form` | The snapshot's `file-kinds.yaml` has a key or content form the reader does not know |
 | `charter-lock-mismatch`, `charter-lock-unreadable` | The consumer's pin names another commit, or has no readable `commit` |
 
 Outside doc-kitty, open-packs still runs `gen_pack_reference.py` until slice 3.
-open-packs pins charter `cb9b154`, so its packs read with a
-`charter-lock-mismatch` warning against the vendored `69ec326`, as D2 intends.
-At the pinned open-packs commit, 18 of its 19 manifests verify. `foundation`
-lists a `routing_catalog` constituent, a kind the vendored contract does not
-know, so its manifest reads as unverified and its inventory comes from the
-file walk until doc-kitty vendors a contract with that kind.
+open-packs pins charter `cb9b154` (`service-v0.1.0-rc.3`), so its packs read
+with a `charter-lock-mismatch` warning against the vendored `33f3ad4`, as D2
+intends. At the pinned open-packs commit, all 19 manifests verify under rc.2,
+their own hashes included, and `charter-lock-mismatch` is the only warning any
+pack carries. The corpus test (`pnpm test:packs-corpus`) asserts exactly that,
+so a contract or corpus bump that changes it fails.

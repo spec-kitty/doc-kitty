@@ -29,7 +29,7 @@ import {
   feedsSurface,
 } from '../sections.js';
 import { DESCRIPTION_MAX } from '../schema.js';
-import { absolute, docsRoot, mcpLaunchUsage } from './shared.js';
+import { absolute, docsRoot, MCP_BUILD_FROM_SOURCE_URL, mcpLaunchUsage } from './shared.js';
 import { collectDocEntries } from '../docs-index.js';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
@@ -107,14 +107,14 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
     if (options.description) lines.push(`> ${options.description}`, '');
     lines.push(`Full machine index: ${absolute(site, '/api/index.json')}`, '');
     // FR-009 (WP01/T005): the opt-in MCP wiring mention — one line naming the
-    // capability and pointing at the machine index it serves. The `usage`
-    // names the installed packed-tarball bin (registry publishing is deferred
-    // per C-002, so no npmjs `npx` form is advertised yet).
+    // capability and pointing at the machine index it serves. #307: the
+    // package is not published (#408), so the line says so first and points
+    // at the build-from-source steps; no `npm:`/`npx` form until it ships.
     if (options.links?.mcp) {
       lines.push(
-        `MCP server: ${mcpLaunchUsage(site)} ` +
-          `serves the machine index (${absolute(site, '/api/index.json')}) to MCP clients ` +
-          '(npm:@spec-kitty/doc-kitty-mcp)',
+        `MCP server (not published yet, build it from source: ${MCP_BUILD_FROM_SOURCE_URL}): ` +
+          `once built, ${mcpLaunchUsage(site)} ` +
+          `serves the machine index (${absolute(site, '/api/index.json')}) to MCP clients`,
         '',
       );
     }

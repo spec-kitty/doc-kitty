@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "mission_slug": "operating-model-templates-01M84X0R",
+  "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
+  "mission_branch": "kitty/mission-operating-model-templates-01M84X0R",
+  "target_branch": "feat/402-operating-model-templates",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/vocabulary-core.mjs",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/fixtures/err/role-no-responsibilities.md",
+        "src/tests/fixtures/err/role-no-role.md",
+        "src/tests/fixtures/valid/role.md",
+        "src/tests/role-kind.test.ts",
+        "src/tests/vocabulary-core.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/adr/0085-role-kind.md",
+        "docs/architecture/metadata-model.md",
+        "docs/context/convention.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/operating-model-templates.mjs",
+        "src/lib/templates/operating-model/*.md",
+        "src/tests/operating-model-templates.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/scripts/new-doc.mjs",
+        "src/scripts/scaffold.mjs",
+        "src/tests/stub-tools-templates.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "docs/changelog/unreleased/402-operating-model-templates.md",
+        "docs/guides/README.md",
+        "docs/guides/operating-model.md",
+        "src/lib/templates/operating-model/sections.snippet.yaml",
+        "src/tests/operating-model-preset.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-11-23T22:33:01.707255+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP01"
+  ],
+  "planning_commit_sha": "26170c9169c7dc1a3149ff935ff53ddac86f8817"
+}

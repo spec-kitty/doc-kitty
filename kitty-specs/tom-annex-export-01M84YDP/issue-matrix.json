@@ -37,7 +37,7 @@
       "wp": null
     },
     "#401": {
-      "evidence_ref": "Mission subject (spec.md:6); WP01 core+format at lane-a dc1cf77; remaining WPs open",
+      "evidence_ref": "Mission subject (spec.md:6); WP01-WP07 approved (lanes a-g), WP08 docs on feat/401-tom-annex-export; delivered in the #401 PR after consolidation",
       "fr": null,
       "nfr": null,
       "repo": null,
