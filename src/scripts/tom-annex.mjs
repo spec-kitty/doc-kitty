@@ -19,6 +19,9 @@
  *
  * Evidence index, not the contractual annex. Not legal advice.
  *
+ * Every path argument must resolve inside the working directory, comparing
+ * real paths (symlinks resolved); otherwise the command exits 2.
+ *
  * Exit codes: 0 ok, 1 drift (or a refused target), 2 usage or input error.
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
@@ -30,9 +33,10 @@ import { TOM_ANNEX_FORMAT } from '../lib/tom-annex/core.mjs';
 import { checkHub, checkSnapshot, isOwnedSnapshot } from '../lib/tom-annex/check.mjs';
 import { renderHubPage } from '../lib/tom-annex/hub-page.mjs';
 import { TOM_ANNEX_PRODUCER } from '../lib/tom-annex/stamp.mjs';
+import { resolveInside } from '../lib/tom-annex/paths.mjs';
 
 const TOOL = 'dockitty-tom-annex';
-const USAGE = `usage: ${TOOL} --dist <dir> [--snapshot <path>] [--hub <path>] [--check]`;
+const USAGE = `usage: ${TOOL} --dist <dir> [--snapshot <path>] [--hub <path>] [--check]\n  Run it from the project root: every path must resolve inside the working directory (symlinks resolved), or it exits 2.`;
 
 const OPTIONS = {
   dist: { type: 'string' },
@@ -46,21 +50,20 @@ class UsageError extends Error {}
 
 /**
  * A path argument resolved inside the working directory (the project the site
- * builds from). The command reads and writes only there, so a mistyped or
- * agent-supplied path cannot reach other files on the machine.
+ * builds from), compared as real paths (`paths.mjs`). The command reads and
+ * writes only there, so a mistyped or agent-supplied path, or a directory
+ * symlink pointing out of the project, cannot reach other files.
  *
  * @param {string} flag
  * @param {string} value
- * @returns {string} the absolute path
+ * @returns {string} the real absolute path
  */
 function insideProject(flag, value) {
-  const root = path.resolve(process.cwd());
-  const abs = path.resolve(root, value);
-  const rel = path.relative(root, abs);
-  if (rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {
+  const { root, real } = resolveInside(value);
+  if (real === undefined) {
     throw new UsageError(`${flag} ${value} is outside the working directory ${root}; run the command from the project root`);
   }
-  return abs;
+  return real;
 }
 
 /** @param {string} file @returns {string | undefined} */

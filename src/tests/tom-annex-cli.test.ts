@@ -3,7 +3,7 @@
  * child process on a temporary `dist` holding a built, stamped index.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -187,6 +187,47 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     }
     expect(existsSync(target)).toBe(false);
     expect(existsSync(path.join(p.root, '..', 'escape'))).toBe(false);
+  });
+
+  it('accepts absolute paths when the project is reached through a symlink (#455 review, finding 1)', () => {
+    const p = project();
+    // A second spelling of the project root, as macOS /var -> /private/var or a symlinked workspace gives.
+    const alias = path.join(mkdtempSync(path.join(tmpdir(), 'dk-tom-alias-')), 'proj');
+    symlinkSync(p.root, alias, 'dir');
+    const viaAlias = (rel: string) => path.join(alias, rel);
+    const r = spawnSync(
+      process.execPath,
+      [CLI, '--dist', viaAlias('dist'), '--snapshot', viaAlias('docs/_meta/tom-annex.snapshot.json'), '--hub', viaAlias('docs/context/evidence-index/index.md')],
+      { cwd: alias, encoding: 'utf8' },
+    );
+    expect(`${r.stdout}${r.stderr}`).not.toMatch(/outside the working directory/);
+    expect(r.status).toBe(0);
+    expect(existsSync(p.snapshot)).toBe(true);
+  });
+
+  it('refuses a path that leaves the project through a directory symlink (#455 review, finding 2)', () => {
+    const p = project();
+    const outside = mkdtempSync(path.join(tmpdir(), 'dk-tom-elsewhere-'));
+    symlinkSync(outside, path.join(p.root, 'out'), 'dir');
+    const write = p.run('--dist', 'dist', '--snapshot', 'out/pwned.json');
+    expect(write.status).toBe(2);
+    expect(write.out).toMatch(/outside the working directory/);
+    expect(existsSync(path.join(outside, 'pwned.json'))).toBe(false);
+    // Reading through such a link is refused too: a real dist outside the project.
+    mkdirSync(path.join(outside, 'dist', 'api'), { recursive: true });
+    writeFileSync(path.join(outside, 'dist', 'api', 'tom-annex.json'), serializeTomAnnex(base));
+    symlinkSync(path.join(outside, 'dist'), path.join(p.root, 'dist-link'), 'dir');
+    expect(p.run('--dist', 'dist-link', '--snapshot', p.snapshot, '--check').status).toBe(2);
+  });
+
+  it('refuses --dist .. and accepts a file whose name merely starts with two dots (#455 review, finding 3)', () => {
+    const p = project();
+    const up = p.run('--dist', '..', '--snapshot', p.snapshot);
+    expect(up.status).toBe(2);
+    expect(up.out).toMatch(/outside the working directory/);
+    const dotted = p.run('--dist', 'dist', '--snapshot', '..snapshot.json');
+    expect(dotted.status).toBe(0);
+    expect(existsSync(path.join(p.root, '..snapshot.json'))).toBe(true);
   });
 
   it('writes nothing when the index has no date for the hub (exit 2)', () => {

@@ -184,7 +184,11 @@ check's output use the producer id, `doc-kitty-tom-annex`, with a hyphen; the
 command's name has none. It reads only the
 built `<dist>/api/tom-annex.json`: it runs no site config, no Astro and no other
 repository's code. Run it from the project root: it refuses a `--dist`, `--snapshot` or
-`--hub` path outside the working directory (exit `2`).
+`--hub` path outside the working directory (exit `2`), comparing real paths, so
+a symlinked project still works and a link that leads out of it does not. In a
+monorepo, run it in the site's package (for example with
+`pnpm --filter <site> exec`): a snapshot or hub path outside that package, such
+as a `docs/` folder at the repository root, is refused.
 
 ```sh
 # After a build: write both files.
@@ -252,9 +256,10 @@ so an interrupted run never leaves a half-written file. Some limits follow:
   mode.
 - The data is not flushed to disk (`fsync`) before the rename, so a power loss
   right after a write can still lose it.
-- Symbolic links are not followed. A target that is a link is judged through
-  the link, but the rename replaces the link itself with a regular file. Point
-  the flags at the real file.
+- Symbolic links are resolved before anything is read or written: a path, or
+  a directory on its way, that leads outside the working directory is refused
+  (exit `2`), and a target that is a link inside it is replaced at the file it
+  points to.
 - On Windows, a target that another program holds open cannot be replaced. The
   command then exits `2` and the old file stays as it was.
 
