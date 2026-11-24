@@ -484,6 +484,8 @@ export const KINDS = /** @type {const} */ ([
   'User-Journey',
   'Specification',
   'Schematic',
+  // An accountable function, kept apart from the reader-facing Persona (ADR-0085).
+  'Role',
 ]);
 
 // ---------------------------------------------------------------------------
