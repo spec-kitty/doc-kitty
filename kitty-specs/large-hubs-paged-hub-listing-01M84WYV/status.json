@@ -64,7 +64,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for review: hub data for every hub (#429), site hub.pageSize, page collision, WP01 review folds 1-4. Full pnpm test green (src 243/4788, mcp 23/181).",
-        "Cycle-1 fix: collision checks every routed page under a paged hub, case-insensitive; shapeSidebar fast-tier test; cappedHubCaps is a deliberate public addition."
+        "Cycle-1 fix: collision checks every routed page under a paged hub, case-insensitive; shapeSidebar fast-tier test; cappedHubCaps is a deliberate public addition.",
+        "Review cycle 2 passed (lane-b 28f9a771). FR-016 fixed: the page guard checks every published routed page under a paged hub (case-insensitive); probes for nested, locale, withheld/published drafts, .mdx, README/index, odd case and odd slugs all behave; no false positives found. Mutants: 11/14 guard mutants killed; survivors M1 (hub-folder case), M14 (published-draft clash) are test gaps, M12 near-equivalent. Middleware-unfiltered mutant is killed by the build tier only (the new fast test kills the cappedHubCaps mutant, not the middleware one). Tests: src 243 files/4794 passed, mcp 23/181 passed; lint and typecheck clean. Anti-pattern checklist all PASS. Accepted deferral, carry-over to WP07: document the public export cappedHubCaps in contracts/paging-api.md and the toolkit docs. Shared files: child-cap.ts (WP01-owned) touched by WP02 for cappedHubCaps, coordinated via this note."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
