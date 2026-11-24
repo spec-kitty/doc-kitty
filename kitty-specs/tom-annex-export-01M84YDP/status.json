@@ -184,7 +184,7 @@
     },
     "WP06": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
@@ -193,7 +193,8 @@
       "last_transition_at": "2026-11-24T17:21:48.582222+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Cross-lane dependency: T029's gate, two-builds and fixture part needs WP05 (lane-e). Lane-e (approved, 0d076bd5) was merged into lane-f at efa44f1f; consolidate must keep lane-f after lane-e. Divergences from the WP06 prompt, following Accepted ADR-0087 D2: (1) entries sorted by UTF-8 key bytes, not code units (D2 step 2); (2) one config:doc-kitty-tom-annex entry, RFC 8785 of {base, catalog, site}, with site and base included because they change every evidence URL and the default catalog's records sorted by id, instead of a catalog:default key (D2 step 1 Configuration; the closed key set is file, children:, config:); (3) a consumer _meta/measures.yaml is a file entry (D2 step 1 A file). Paths are project-relative (the build's cwd), POSIX. node:crypto is accepted in stamp.mjs (build time only); core.mjs stays crypto-free. at is derived from the annex's own evidence (updated and verified[].at), not from a separate evidencePages argument. Out-of-map files: routes/tom-annex.ts and tom-annex-route.test.ts (WP03); tom-annex.schema.json and tom-annex-core.test.ts (WP01); verify.mjs, schema-check.mjs, assert-build-artifacts-tom-annex.test.ts and tom-annex-build.test.ts (WP05). Reason: WP06 wires the ADR-0087 stamp, which C-002 held back from WP03 and WP05; schema-check also folds the WP05 cycle-5 non-blocking items. Gates: lint 0, typecheck 0, pnpm test src 4895/4895 and mcp 181/181."
+        "Cross-lane dependency: T029's gate, two-builds and fixture part needs WP05 (lane-e). Lane-e (approved, 0d076bd5) was merged into lane-f at efa44f1f; consolidate must keep lane-f after lane-e. Divergences from the WP06 prompt, following Accepted ADR-0087 D2: (1) entries sorted by UTF-8 key bytes, not code units (D2 step 2); (2) one config:doc-kitty-tom-annex entry, RFC 8785 of {base, catalog, site}, with site and base included because they change every evidence URL and the default catalog's records sorted by id, instead of a catalog:default key (D2 step 1 Configuration; the closed key set is file, children:, config:); (3) a consumer _meta/measures.yaml is a file entry (D2 step 1 A file). Paths are project-relative (the build's cwd), POSIX. node:crypto is accepted in stamp.mjs (build time only); core.mjs stays crypto-free. at is derived from the annex's own evidence (updated and verified[].at), not from a separate evidencePages argument. Out-of-map files: routes/tom-annex.ts and tom-annex-route.test.ts (WP03); tom-annex.schema.json and tom-annex-core.test.ts (WP01); verify.mjs, schema-check.mjs, assert-build-artifacts-tom-annex.test.ts and tom-annex-build.test.ts (WP05). Reason: WP06 wires the ADR-0087 stamp, which C-002 held back from WP03 and WP05; schema-check also folds the WP05 cycle-5 non-blocking items. Gates: lint 0, typecheck 0, pnpm test src 4895/4895 and mcp 181/181.",
+        "Review cycle 1 passed: ADR-0087 D2 digest and content_hash independently reproduced; 3 declared divergences accepted per D2; full pnpm test 4895+181 green; non-blocking N1-N8 (site-only and non-classified-edge test gaps, project-relative keys, gate does not check at/source_digest)"
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
