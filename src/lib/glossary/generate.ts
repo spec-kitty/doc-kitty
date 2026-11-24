@@ -167,15 +167,16 @@ const STAMP_BLOCK = /^generated:\n(?: {2}.*\n)+/m;
 
 /**
  * Add the `generated` stamp to a rendered page. `content_hash` covers the page
- * WITHOUT the stamp, so a rerun over unchanged input hashes identically; `at` is
- * carried over from the page already at `file` until that hash moves.
+ * WITHOUT the stamp, so a rerun over unchanged input hashes identically; `by` and
+ * `at` are carried over from the page already at `file` until that hash moves, so
+ * a version bump alone does not rewrite the page (#398).
  */
 function stampPage(text: string, file: string, now: Date | undefined): string {
   const hash = createHash('sha256').update(text).digest('hex');
   const stamp = makeStamp({
     producer: GLOSSARY_PRODUCER,
     hash,
-    previous: readFrontmatter(file)?.generated as { at?: string; content_hash?: string } | undefined,
+    previous: readFrontmatter(file)?.generated as { by?: string; at?: string; content_hash?: string } | undefined,
     now,
   });
   const block = serializeStamp(stamp).join('\n');

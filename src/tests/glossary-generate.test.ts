@@ -124,6 +124,25 @@ describe('generateGlossaryPages', () => {
     expect(readFileSync(join(out, 'glossary', 'shipping', 'index.md'), 'utf8')).toContain('at: "2026-10-18T09:30:00Z"');
   });
 
+  it('a page stamped by an older toolkit version is left byte-for-byte while its content is unchanged (#398)', () => {
+    const out = makeOutDir();
+    const written = generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out, SITE_INDEX_NAMES, undefined, new Date('2026-10-18T09:30:00Z'));
+    // As a committed page looks after a release bumped src/package.json.
+    for (const file of written) {
+      const text = readFileSync(file, 'utf8');
+      const older = text.replace(/by: "doc-kitty-glossary\/[^"]+"/, 'by: "doc-kitty-glossary/0.0.1"');
+      expect(older, 'control: the stamp was rewritten').not.toBe(text);
+      writeFileSync(file, older);
+    }
+    const committed = written.map((p) => readFileSync(p, 'utf8'));
+    generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT), out, SITE_INDEX_NAMES, undefined, new Date('2027-05-05T00:00:00Z'));
+    expect(written.map((p) => readFileSync(p, 'utf8'))).toEqual(committed);
+    // A content change still takes the current version.
+    generateGlossaryPages(indexFrom(VALID_TWO_CONTEXT.replace('A request for payment.', 'A demand.')), out, SITE_INDEX_NAMES, undefined, new Date('2027-05-05T00:00:00Z'));
+    expect(readFileSync(join(out, 'glossary', 'billing', 'index.md'), 'utf8')).not.toContain('doc-kitty-glossary/0.0.1');
+    expect(readFileSync(join(out, 'glossary', 'shipping', 'index.md'), 'utf8')).toContain('by: "doc-kitty-glossary/0.0.1"');
+  });
+
   it('presence-gates an empty index: writes nothing, returns [] (INV-G4)', () => {
     const out = makeOutDir();
     const empty = buildIndex([]); // no contexts

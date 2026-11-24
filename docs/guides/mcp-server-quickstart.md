@@ -2,7 +2,7 @@
 title: MCP server quickstart
 description: Point any MCP client at a published DocKitty site, or at a local build, with the generic doc-kitty-mcp server, so your agent can read your docs.
 doc_status: active
-updated: 2026-11-02T00:00:00Z
+updated: 2026-11-21T00:00:00Z
 type: Guide
 kind: How-To
 tags: [mcp, agents, interoperability]
@@ -22,20 +22,22 @@ directory.
 Prereqs: Node >= 22.22 and an MCP client (Claude Code/Desktop, Cursor,
 VS Code, opencode...).
 
-## Install from the tarball
+## Build from source
 
-The package is not published to any registry yet (the publishing ruling is
-deferred, see
-[ADR-0073](../adr/0073-generic-mcp-server-over-published-artifacts.md)), so
-the working form installs the packed tarball from a checkout:
+The package is not published to any registry yet, so
+`npm install @spec-kitty/doc-kitty-mcp` fails. Publishing it is tracked in
+[#408](https://github.com/spec-kitty/doc-kitty/issues/408). Until then, build
+the server from a doc-kitty checkout and install the packed tarball:
 
 ```bash
-pnpm pack --filter @spec-kitty/doc-kitty-mcp        # writes spec-kitty-doc-kitty-mcp-<version>.tgz
+git clone https://github.com/spec-kitty/doc-kitty.git && cd doc-kitty
+corepack enable && pnpm install
+pnpm pack --filter @spec-kitty/doc-kitty-mcp        # builds dist/, writes spec-kitty-doc-kitty-mcp-<version>.tgz
 npm i -g ./spec-kitty-doc-kitty-mcp-<version>.tgz   # or: npx ./spec-kitty-doc-kitty-mcp-<version>.tgz
 ```
 
-After the publishing ruling the registry form becomes
-`npx -y @spec-kitty/doc-kitty-mcp ...`.
+`npm i -g` puts the `doc-kitty-mcp` bin on your `PATH`. The `npx` form runs it
+once without installing it. Once the package is published, the registry form will be `npx -y @spec-kitty/doc-kitty-mcp ...`.
 
 ## Against a deployed site
 
@@ -62,7 +64,7 @@ Standalone smoke: launch with `--site` or `--dir` and drive it with
 ```bash
 cd my-docs-repo
 npx astro build            # or the repo's own build
-doc-kitty-mcp --dir ./dist # the bin installed from the tarball above
+doc-kitty-mcp --dir ./dist # the bin you built from source above
 ```
 
 Links embedded in answers resolve against your local build, not the
@@ -71,14 +73,24 @@ build-time baked origin (override with `--link-base <uri>`).
 ## Let your own site advertise the wiring
 
 Pass `links: { mcp: true }` to `agentIndexRoute` (and to `llmsTxtRoute` for
-the human-facing line). Your `/api/index.json` then carries a machine-readable
-`_links.mcp` pointer and your `llms.txt` a one-line mention, both naming the
-exact launch command for your site. It is opt-in and defaults to off; the
-advertised form is the tarball launch until the publishing ruling.
+the human-facing line). It is opt-in and defaults to off.
 
-The pointer's `href` (`npm:@spec-kitty/doc-kitty-mcp`) is a reserved name, not
-an installable package yet: the package is private until publishing is
-decided, so follow the `usage` string, not the `href`.
+Because the server is not published yet, neither surface claims it can be
+installed. Both send the reader to [Build from source](#build-from-source)
+first:
+
+- `/api/index.json` carries `_links.mcp` with `href` set to this page's
+  build-from-source section, a `title` that says the server is not published
+  yet, and `usage` set to the launch line for your site
+  (`doc-kitty-mcp --site <your site URL>`), which works once the server is
+  built.
+- `llms.txt` gains one line: `MCP server (not published yet, build it from
+  source: <link>): once built, doc-kitty-mcp --site <your site URL> serves the
+  machine index (...) to MCP clients`.
+
+With `mcp` unset or `false`, neither surface mentions the server. When the
+package is published ([#408](https://github.com/spec-kitty/doc-kitty/issues/408)),
+the pointer moves to the registry form.
 
 ## What you get
 

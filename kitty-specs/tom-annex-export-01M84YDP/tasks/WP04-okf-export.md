@@ -13,6 +13,9 @@ requirement_refs:
 planning_base_branch: feat/401-tom-annex-export
 merge_target_branch: feat/401-tom-annex-export
 branch_strategy: Planning artifacts for this mission were generated on feat/401-tom-annex-export. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/401-tom-annex-export unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-tom-annex-export-01M84YDP
+base_commit: b9f47620d2e5bc834f940ebf8c74103f3b4fa4a9
+created_at: '2026-11-23T23:40:29.229180+00:00'
 subtasks:
 - T017
 - T018

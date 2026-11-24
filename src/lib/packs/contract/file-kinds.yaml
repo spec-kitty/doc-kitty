@@ -32,8 +32,8 @@
 #                    `missions/mission-steps/` is excluded (not held, not refused), never read; a
 #                    `*.mission-type.yaml` directly under the old `mission_types/` is refused by its
 #                    family (`*/mission_types/*.yaml`), not read as a misplaced mission type; and the
-#                    graph fragment of the folded step contracts is a `**/*.graph.yaml` its retired
-#                    rule refuses.
+#                    graph fragment of the folded step contracts at the pack root is a `*/*.graph.yaml`
+#                    its retired rule refuses.
 #   ignored          The last-resort rules (`match`, `reason`, both required; any other key fails the table;
 #                    #451). A file that no `files`, `exclusions`, `retired` or `payloads` rule takes and that no
 #                    kind claims as a companion is excluded by the first `ignored` rule that matches it, with
@@ -77,7 +77,8 @@
 #   The sections are consulted in the order `files`, `exclusions`, `retired`, `payloads`, then a
 #   root case variant, then `ignored`; within a section the first matching rule in table order
 #   decides (a payload rule overlaps the others by design, and only the first match counts). A file that no
-#   rule takes is refused as `unmodelled`. conformance/classifier-cases.yaml states the order
+#   rule takes is `unmodelled`: it is warned as `file_not_held` and not held, as an excluded file is
+#   (#554, operator ruling Q1). conformance/classifier-cases.yaml states the order
 #   exactly, with a case for every rule, and is what another implementation is held to.
 
 node_kinds:
@@ -99,6 +100,7 @@ node_kinds:
   - guard
   - lifecycle
   - step_enhancement
+  - routing_catalog
 
 artifact_kinds:
   - directive
@@ -117,6 +119,7 @@ artifact_kinds:
   - guard
   - lifecycle
   - step_enhancement
+  - routing_catalog
 
 fragment_kinds:
   directives: directive
@@ -138,7 +141,9 @@ fragment_kinds:
 files:
   - match: "*/pack.yaml"
     schema: pack-descriptor
-  - match: "**/*.graph.yaml"
+  # The graph shards (#554, open case 6): <name>.graph.yaml at the pack root, the only shards the service reads. A
+  # *.graph.yaml below the root (drg/<kind>.graph.yaml) is not modelled, so it is warned as file_not_held and not held.
+  - match: "*/*.graph.yaml"
     schema: graph-shard
   - match: "*/drg/fragment.yaml"
     schema: org-fragment
@@ -164,6 +169,10 @@ files:
     schema: glossary
   - match: "**/*.skill.yaml"
     schema: skill
+  # Routing catalogs (ADR-0080 decision 5): one file per catalog, routing_catalogs/<id>.routing-catalog.yaml. Not a graph
+  # kind, so no fragment_kinds plural: nothing relates to a catalog.
+  - match: "**/*.routing-catalog.yaml"
+    schema: routing-catalog
   # Pack-level files (#195, ADR-0042): activation presets and the pack manifest, in their sanitized shapes.
   - match: "*/presets/*.yaml"
     schema: preset
@@ -173,10 +182,6 @@ files:
   # key may name in this version.
   - match: "*/policy.yaml"
     schema: policy
-  # A project file. It is not expected inside a pack; the rule exists so that a stray one is
-  # validated, not silently ignored.
-  - match: "**/charter.yaml"
-    schema: charter
   # A toolguide's guide (#194): the Markdown companion its guide_path names, <id>.guide.md beside
   # the toolguide. This rule is the guide companion's own (same schema, same form), so the
   # companion ownership rule admits the toolguide's guide here and refuses any other companion.
