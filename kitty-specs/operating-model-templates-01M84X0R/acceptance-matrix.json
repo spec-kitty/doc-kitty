@@ -126,12 +126,12 @@
     },
     {
       "criterion_id": "FR-013",
-      "description": "Verify FR-013 is satisfied",
-      "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "description": "The guide Documenting your operating model and the changelog fragment ship",
+      "proof_type": "docs_gate",
+      "evidence": "docs/guides/operating-model.md; docs/changelog/unreleased/402-operating-model-templates.md; validate:changelog OK; combined-tree validate:links 1892 OK, validate:docs 213 OK; WP05 approved; lane-d@23baafe6; feat/402@b9e1a3c5; combined tree pnpm test src 4615/4615 mcp 181/181; WP approvals in tasks/*/review-cycle-*.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::runner",
+      "verified_at": "2026-11-24T03:15:56.731896+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
