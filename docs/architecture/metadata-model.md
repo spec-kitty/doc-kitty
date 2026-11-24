@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-11-22T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -538,6 +538,12 @@ it is, the rules above describe the code.
 - **Committed data only.** doc-kitty never runs a producing repository's code at
   build time. External producers commit their output, and their freshness check
   runs in their own CI.
+
+The evidence index (#401) is the first producer built on the contract.
+`api/tom-annex.json` is an artifact derived at build time under D5: it carries
+the four-key stamp with an `at` taken from its inputs, never the build clock,
+and its opt-in snapshot and hub page answer `dockitty-tom-annex --check`. See
+[the evidence-index guide](../guides/tom-annex.md).
 
 ### `verified`
 
