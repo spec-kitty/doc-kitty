@@ -249,7 +249,7 @@
     },
     "WP08": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -261,6 +261,7 @@
         "Guide docs/guides/tom-annex.md, fragment docs/changelog/unreleased/401-tom-annex-export.md (section Added: the README does not allow Features), and a metadata-model cross-link paragraph after the ADR-0087 list. The label and the counsel items are verbatim from the constants; the field table matches tom-annex.schema.json key for key. Documented: project-relative keys (WP06 N4); the check trusts the build's source_digest, so CI must build first; the WP07 cycle-2 limits 1, 4 and 5 (symlinks not followed, umask mode, a stale .tmp, no fsync, a Windows locked target exits 2); the dev restart; Deferred items. WP07 findings 2 (a cleanup test) and 3 (backslash encoding) are code in WP07 files, not on this branch; they are folded at R24 on the consolidated branch. Checks: validate:docs/links/changelog 0, markdownlint 0, Vale 3.18.0 0 errors; pnpm test on feat/401 src 4745/4745 and mcp 181/181."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP08-guide-and-changelog/review-cycle-1.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP08-guide-and-changelog/review-cycle-1.md",
@@ -268,13 +269,13 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 961,
-      "shell_pid_created_at": "1795549191.29",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T035": "done",
-        "T036": "done",
-        "T037": "done",
-        "T038": "done"
+        "T035": "planned",
+        "T036": "planned",
+        "T037": "planned",
+        "T038": "planned"
       }
     }
   }
