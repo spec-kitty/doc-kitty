@@ -1,7 +1,7 @@
 {
-  "event_count": 42,
-  "last_event_id": "01M87RNHK5MVZG3ETPTYE2J7PG",
-  "materialized_at": "2026-11-24T21:51:22.725341+00:00",
+  "event_count": 44,
+  "last_event_id": "01M87RRX7G0KN1ZA77FM6WW47S",
+  "materialized_at": "2026-11-24T21:53:12.799305+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 2
+    "planned": 1
   },
   "work_packages": {
     "WP01": {
@@ -189,11 +189,19 @@
       "last_transition_at": "2026-11-24T16:00:27.790348+00:00"
     },
     "WP07": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude::implementer-ivan",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M874K1V6474QTYT734VDQH66",
-      "last_transition_at": "2026-11-24T16:00:29.542931+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M87RRX7G0KN1ZA77FM6WW47S",
+      "last_transition_at": "2026-11-24T21:53:12.799305+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 439,
+      "shell_pid_created_at": "1795557187.18"
     }
   }
 }
