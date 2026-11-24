@@ -45,15 +45,20 @@ const RESERVED = new Set(['index.md', 'log.md']);
 const ENTRY = /^[-*] \[[^\]]+\]\([^)\s]+\)(?:\s*(?:[-:]|—)\s.*)?$/;
 
 /**
+ * Every file of an on-disk bundle. Markdown files carry their text; any other
+ * file (such as `tom-annex.json`, #401) is present with empty text, so a link to
+ * it resolves exactly as it does for an in-memory bundle. The checks themselves
+ * read `.md` files only.
+ *
  * @param {string} dir
- * @returns {Map<string, string>} bundle-relative path -> text, `.md` files only
+ * @returns {Map<string, string>} bundle-relative path -> text (`''` for a non-Markdown file)
  */
 function readBundleDir(dir) {
   const out = new Map();
   for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    if (!entry.isFile()) continue;
     const full = path.join(entry.parentPath, entry.name);
-    out.set(path.relative(dir, full).split(path.sep).join('/'), readFileSync(full, 'utf8'));
+    out.set(path.relative(dir, full).split(path.sep).join('/'), entry.name.endsWith('.md') ? readFileSync(full, 'utf8') : '');
   }
   return out;
 }
