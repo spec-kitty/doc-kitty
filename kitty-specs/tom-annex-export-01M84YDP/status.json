@@ -1,20 +1,20 @@
 {
-  "event_count": 67,
-  "last_event_id": "01M87ENACYJ338BHWWH2EJQJQY",
-  "materialized_at": "2026-11-24T18:56:29.598348+00:00",
+  "event_count": 85,
+  "last_event_id": "01M87M6FZRH8RDSCZWWVP5NRJV",
+  "materialized_at": "2026-11-24T20:33:15.256076+00:00",
   "mission_number": "",
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 6,
+    "approved": 8,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
-    "planned": 1
+    "in_review": 0,
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -215,43 +215,70 @@
     },
     "WP07": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 2,
-      "lane": "in_review",
-      "last_event_id": "01M87ENACYJ338BHWWH2EJQJQY",
-      "last_transition_at": "2026-11-24T18:56:29.598348+00:00",
+      "lane": "approved",
+      "last_event_id": "01M87FRVZEV1ZTCM35PW72X3K9",
+      "last_transition_at": "2026-11-24T19:15:54.478259+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Snapshot, hub page and --check CLI (dockitty-tom-annex). Verdicts: missing > unowned (the #454 D3 amendment) > hand-edited > stale-source > stale-render. The snapshot's hand-edited also re-derives generated.at via annexInstant (WP06 review N5); source_digest is compared with the build's, since the CLI reads only dist (C-003). WP06 review N6: content_hash stays over the re-serialisation as D2 requires; --check's at-masked byte comparison catches formatting-only edits as stale-render (tested). Out-of-map files: src/package.json bin (WP03), because the bin target exists only now; src/scripts/assert-build-artifacts.mjs pinned counts, index 81->82 and sitemap 86->87, because the example gained one published Hub page; src/tests/tom-annex-stamp.test.ts gains WP06 review N1-N3. CI step proposed, not wired: after build-example, run pnpm validate:tom-annex. Gates: lint 0, typecheck 0, pnpm test src 4935/4935 and mcp 181/181.",
-        "Review cycle 1 fixed in 414c7a3b. Required: R1 (CLI refuses an unstamped or foreign snapshot with only --snapshot) and R2 (hub hand-edited beats stale-source). Recommended: R3 (format guard), R4 (CRLF), R5 (link destination; it found a real bug, since encodeURIComponent leaves parentheses alone; now an explicit map). F1: atomic writes (temp file in the same directory, then rename), tested with a hard link and no leftover temp. Each new test kills its targeted mutant, 6/6. F2, F3 and OQ1 left as directed. Gates: lint 0, typecheck 0, pnpm test src 4941/4941 and mcp 181/181."
+        "Review cycle 1 fixed in 414c7a3b. Required: R1 (CLI refuses an unstamped or foreign snapshot with only --snapshot) and R2 (hub hand-edited beats stale-source). Recommended: R3 (format guard), R4 (CRLF), R5 (link destination; it found a real bug, since encodeURIComponent leaves parentheses alone; now an explicit map). F1: atomic writes (temp file in the same directory, then rename), tested with a hard link and no leftover temp. Each new test kills its targeted mutant, 6/6. F2, F3 and OQ1 left as directed. Gates: lint 0, typecheck 0, pnpm test src 4941/4941 and mcp 181/181.",
+        "Review cycle 2 APPROVED (claude::reviewer-renata), lane-g 414c7a3b, implementer claude::node-norris. Production delta since cycle-1 verified state (f8c898c5) is destination() in hub-page.mjs and write() in tom-annex.mjs only; no golden, example or check.mjs logic moved. Cycle-1 R1-R5 and F1 closed: own mutation run 11/13 killed (R1 snapshot guard, R2 hub precedence swap, R3 format guard, R4 CRLF, R5 identity / old encodeURIComponent / ')' unmapped, F1 in-place / copy-not-rename / temp leaked, hub guard). Survivors: ' ' dropped from the destination map is equivalent (absoluteUrl's WHATWG href already encodes spaces); rmSync removed from the write error path is untested (verified by hand: a failed rename exits 2, temp removed, old file intact). R5 map is complete for the input contract (WHATWG-serialised absolute URL): <, >, newline, path backslash, non-ASCII, \" and backtick are neutralised upstream; % is untouched, so no double encoding; links resolve through the site's remark pipeline. Issue matrix confirmed: ADR-0087 Accepted 2026-11-23, #445 merged (C-002 met), #454 folded into D3 on main. Gates: pnpm test src 4941/4941 + mcp 181/181, lint 0, typecheck 0, example build 0, validate:tom-annex 0, validate:example 0 (84), validate:docs 0 (217), validate:links 0 (1943), assert:artifacts PASS, clean tree. Non-blocking for WP08/operator: N1 symlinked target is replaced by a regular file (ownership judged through the link; previous writeFileSync wrote through it) - resolve with realpathSync if a link should be honoured; N2 error-path cleanup untested; N3 destination map: space entry is dead code, and a backslash before punctuation in a query/fragment would be eaten as a CommonMark escape (unreachable: route hrefs carry no query/fragment) - adding '\\\\' -> %5C closes it; N4 pid temp name: cross-container pid collision on a shared mount is theoretical, a stale temp from a crashed run is left as a hidden file, file mode resets to umask default, no fsync (process-crash safe, not power-loss proven); N5 Windows rename-over-existing works (MoveFileExW REPLACE_EXISTING) but can EPERM/EBUSY on a locked target, which fails loud with the old file intact; Windows is not in the CI matrix. F2, F3, OQ1 remain with the operator. Status: union merge of status.events.jsonl verified exact (149 base + 4 + 4 = 157, no duplicate or invented event, timestamp order, status.json byte-identical on rematerialise, validate PASS). The 18:31 forced re-claim records from_lane for_review although the reduced state was planned after the 18:29 reject: historical, append-only, final state coherent, left as is. Repair done: the reject's rollback had reset T030-T034 to planned and nothing re-marked them, so I marked them done after verifying each is delivered."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP07-snapshot-hub-check-cli/review-cycle-1.md",
-        "reference": "review-cycle://tom-annex-export-01M84YDP/WP07-snapshot-hub-check-cli/review-cycle-1.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP07-snapshot-hub-check-cli/review-cycle-2.md",
+        "reference": "review-cycle://tom-annex-export-01M84YDP/WP07-snapshot-hub-check-cli/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
       "role": "reviewer",
       "shell_pid": 990,
       "shell_pid_created_at": "1795546583.71",
       "subtasks": {
-        "T030": "planned",
-        "T031": "planned",
-        "T032": "planned",
-        "T033": "planned",
-        "T034": "planned"
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done",
+        "T034": "done"
       }
     },
     "WP08": {
-      "actor": "finalize-tasks",
-      "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M854Q693A6RPQNX221CZS6J6",
-      "last_transition_at": "2026-11-23T21:24:16.291387+00:00"
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 2,
+      "lane": "approved",
+      "last_event_id": "01M87M6FZRH8RDSCZWWVP5NRJV",
+      "last_transition_at": "2026-11-24T20:33:15.256076+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Guide docs/guides/tom-annex.md, fragment docs/changelog/unreleased/401-tom-annex-export.md (section Added: the README does not allow Features), and a metadata-model cross-link paragraph after the ADR-0087 list. The label and the counsel items are verbatim from the constants; the field table matches tom-annex.schema.json key for key. Documented: project-relative keys (WP06 N4); the check trusts the build's source_digest, so CI must build first; the WP07 cycle-2 limits 1, 4 and 5 (symlinks not followed, umask mode, a stale .tmp, no fsync, a Windows locked target exits 2); the dev restart; Deferred items. WP07 findings 2 (a cleanup test) and 3 (backslash encoding) are code in WP07 files, not on this branch; they are folded at R24 on the consolidated branch. Checks: validate:docs/links/changelog 0, markdownlint 0, Vale 3.18.0 0 errors; pnpm test on feat/401 src 4745/4745 and mcp 181/181.",
+        "Review cycle 1 fixed in da7bc9e5: (1) a by bump makes both files stale-render; (2) the null-at limit and its remedy; (3) a refusal exits 1; (4) commit both files with LF (eol=lf); (5) the gate does not re-derive generated.at either; (6) atomic per file, not across both; (7) published classified pages; (8) unowned cites #454; (9) the issue-matrix #401 text refreshed on coordination. Item 10 (the regenerate hint) is code and is folded at R24. Vale 3.18.0 0 errors on the 3 files; validate:docs/links/changelog 0; markdownlint 0.",
+        "Review passed (cycle 2): all cycle-1 folds verified against the lane-g CLI (by bump, null at exit 2, refusal exit 1, CRLF, per-file rename); no compliance claim; gates clean; 2 non-blocking nits"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP08-guide-and-changelog/review-cycle-2.md",
+        "reference": "review-cycle://tom-annex-export-01M84YDP/WP08-guide-and-changelog/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 25774,
+      "shell_pid_created_at": "1795552346.72",
+      "subtasks": {
+        "T035": "done",
+        "T036": "done",
+        "T037": "done",
+        "T038": "done"
+      }
     }
   }
 }
