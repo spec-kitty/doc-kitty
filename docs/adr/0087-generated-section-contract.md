@@ -29,9 +29,10 @@ issue #330, and does not define a second one. It extends
 [ADR-0042](0042-native-documentation-charter.md): no runtime dependency on another
 kitty repository.
 
-D3 is amended by operator approval on 2026-11-23 (ruling R81): it adds the
-`unowned` verdict and allows producer-specific verdicts. Both were recorded as
-open in the review of PR #445.
+D3 is amended by operator approval on 2026-11-23 (ruling R81, recorded in
+[this comment](https://github.com/spec-kitty/doc-kitty/pull/454#issuecomment-7136727510)):
+it adds the `unowned` verdict and allows producer-specific verdicts. Both were
+recorded as open in the review of PR #445.
 
 ## Context
 
@@ -239,7 +240,7 @@ hold, the first in this table wins, so a hand edit is never hidden behind a
 |---|---|---|
 | `missing` | an expected page is absent | regenerate |
 | `orphan` | a page carries the producer's stamp and is in its scope, but no input produces it | regenerate (prunes it) |
-| `unowned` | an expected output path holds a page without the producer's ownership stamp, such as a deleted or mistyped stamp (a page owned by scope alone is never `unowned`) | regenerate after moving the edit to the source, or delete the page |
+| `unowned` | an expected output path holds a page without the producer's ownership stamp, such as a deleted or mistyped stamp. A page owned by scope alone is never `unowned`, and neither is a page with a stamp the producer may regenerate, such as a retired unversioned stamp (#210) | move any edit to the source, then delete the page (or restore its stamp) and regenerate; the generator refuses to write while an authored page sits in its output |
 | `hand-edited` | the committed body's hash differs from the stamp's `content_hash` | someone edited generated output; move the edit to the source |
 | `stale-source` | the committed `source_digest` differs from the recomputed one | the inputs changed; regenerate |
 | `stale-render` | digests match, but the regenerated page differs from the committed one with `at` masked (D5) | the renderer changed; regenerate |
@@ -249,7 +250,15 @@ hold, the first in this table wins, so a hand edit is never hidden behind a
 beyond this table, such as ADR-0082's leak check, provided that it exits `1`,
 uses the same output line, and is documented in the producer's own ADR. Such a
 verdict ranks after `stale-render`. The table's verdicts keep their meaning for
-every producer.
+every producer, and a producer-specific verdict never reuses a table verdict's
+name. The verdict set is therefore open: a tool that parses the output line
+must accept a verdict name it does not know.
+
+This ranking is a known trade-off. A page that is both, for example,
+`hand-edited` and a producer's policy finding (such as ADR-0082's leak check)
+reports only `hand-edited`, whose hint does not mention the finding. The check
+still exits `1`, so CI fails, and the finding is reported once the drift is
+fixed.
 
 The output and exit codes are the same for every producer:
 
