@@ -520,9 +520,10 @@ it is, the rules above describe the code.
   inputs the producer declares for the page, configuration included, by the
   byte-exact algorithm in ADR-0087 D2. `content_hash` becomes the hash of the
   rendered page, without its stamp, for every producer, Gherkin included.
-- **`by` means "last changed by".** `makeStamp` will carry over `by` and `at`
-  together while `content_hash` is unchanged. Today it carries over only `at`
-  and rewrites `by` on every regeneration.
+- **`by` means "last changed by".** `makeStamp` already carries over `by` and
+  `at` together while `content_hash` is unchanged (#398, above). What remains is
+  the rendered-page `content_hash` for Gherkin, so that a renderer-only change
+  moves `by` as well.
 - **One drift gate.** Every producer that doc-kitty can run answers `--check` with
   the same verdicts, in a fixed precedence: `missing`, `orphan`, `unowned`,
   `hand-edited`, `stale-source`, `stale-render`. A producer may add verdicts of
