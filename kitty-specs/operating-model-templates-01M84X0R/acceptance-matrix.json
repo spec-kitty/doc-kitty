@@ -76,12 +76,12 @@
     },
     {
       "criterion_id": "FR-008",
-      "description": "Verify FR-008 is satisfied",
+      "description": "scaffold --preset operating-model writes the section index and the 12 templates, and nothing else",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/stub-tools-templates.test.ts (scaffold --preset, 13 files, index Hub type Operations); lane-d@23baafe6; feat/402@b9e1a3c5; combined tree pnpm test src 4615/4615 mcp 181/181; WP approvals in tasks/*/review-cycle-*.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::runner",
+      "verified_at": "2026-11-24T03:15:28.974797+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
