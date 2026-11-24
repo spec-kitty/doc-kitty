@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: operating-model-templates-01M84X0R
 mission_id: 01M84X0RH8AJE7NXQK093SGRF0
-generated_at: '2026-11-23T23:29:27.796670+00:00'
+generated_at: '2026-11-24T00:10:47.157830+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -21,10 +21,10 @@ input_artifacts:
     sha256: 92e9e079284707d74cdd3581a99487c314195e1a1e4efa1a7445c75af2fcd07f
 verdict: ready
 issue_counts:
-  high: 0
+  medium: 1
   low: 3
   critical: 0
-  medium: 1
+  high: 0
   info: 0
 findings:
 - id: I1
@@ -106,7 +106,7 @@ Re-recorded after the cycle-1 corrections:
 - The WP01 prompt now asks for a Proposed ADR.
 - The spec (C-003), the plan's Charter Check and research D1 now state that the gate reads `KINDS`, while the build schema keeps `kind` an open string.
 
-These corrections change wording only. Requirements, coverage and the findings above are unchanged.
+After review cycle 2, three more prompt lines in WP01 and WP02 were corrected the same way (the ADR's doc_status precedent, and who reads KINDS). These corrections change wording only. Requirements, coverage and the findings above are unchanged.
 
 ## Next actions
 
