@@ -1,0 +1,70 @@
+---
+/*
+ * DocKitty: the hub pagination (#342, WP03; FR-008, FR-009, NFR-004, NFR-006).
+ * Links the listing pages of a paged hub: page 1 is the hub, page N is
+ * `/<hub>/page/N/`. Renders nothing for a single page and ships no script.
+ *
+ * A real `<nav>` landmark named by the `dockitty.hub.pagination.label` string
+ * ("Pagination"): Pagefind skips `<nav>`, so the page numbers stay out of the
+ * search index while the cards above stay in it. The current page is text with
+ * `aria-current="page"` (its "Page" prefix visually hidden), never a link to
+ * itself; a Previous or Next with nowhere to go is plain muted text, no link and
+ * no ARIA (a generic element may not carry `aria-label` or `aria-disabled`).
+ * Targets are at least 24×24 px (styles/hub.css).
+ */
+import { HUB_PAGINATION_KEYS, pagedHubSlug, resolveHubString } from '../../lib/child-cap.js';
+import { pageLabelPrefix, paginationItems } from '../../lib/hub-pagination.js';
+
+interface Props {
+  /** The hub folder slug (`missions`). */
+  hub: string;
+  /** The page shown, 1-based. */
+  current: number;
+  /** The hub's page count. */
+  total: number;
+  hrefFor: (slug: string) => string;
+  /** Starlight's `locals.t`, for translated strings; English otherwise. */
+  translate?: (key: string) => unknown;
+}
+
+const { hub, current, total, hrefFor, translate } = Astro.props;
+const t = (key: (typeof HUB_PAGINATION_KEYS)[keyof typeof HUB_PAGINATION_KEYS], vars: Record<string, string | number> = {}) =>
+  resolveHubString(key, vars, translate);
+const href = (page: number) => hrefFor(pagedHubSlug(hub, page));
+// The visually hidden words before the current page's number (`sr-only` is
+// Starlight's global utility): "Page 3" reads as "Page " + "3".
+const pagePrefix = (page: number) => pageLabelPrefix(t(HUB_PAGINATION_KEYS.page, { page }), page);
+const items = total > 1 ? paginationItems(current, total) : [];
+---
+
+{
+  items.length > 0 && (
+    <nav class="dk-hub-pagination" aria-label={t(HUB_PAGINATION_KEYS.label)}>
+      <ul class="dk-hub-pagination__list" role="list">
+        <li>
+          {current > 1 ? (
+            <a class="dk-hub-pagination__link dk-hub-pagination__step" href={href(current - 1)} rel="prev">{t(HUB_PAGINATION_KEYS.previous)}</a>
+          ) : (
+            <span class="dk-hub-pagination__link dk-hub-pagination__step dk-hub-pagination__step--off">{t(HUB_PAGINATION_KEYS.previous)}</span>
+          )}
+        </li>
+        {items.map((item) =>
+          item.type === 'gap' ? (
+            <li><span class="dk-hub-pagination__gap" aria-hidden="true">…</span></li>
+          ) : item.current ? (
+            <li><span class="dk-hub-pagination__current" aria-current="page"><span class="sr-only">{pagePrefix(item.page)}</span>{item.page}</span></li>
+          ) : (
+            <li><a class="dk-hub-pagination__link" href={href(item.page)} aria-label={t(HUB_PAGINATION_KEYS.page, { page: item.page })}>{item.page}</a></li>
+          ),
+        )}
+        <li>
+          {current < total ? (
+            <a class="dk-hub-pagination__link dk-hub-pagination__step" href={href(current + 1)} rel="next">{t(HUB_PAGINATION_KEYS.next)}</a>
+          ) : (
+            <span class="dk-hub-pagination__link dk-hub-pagination__step dk-hub-pagination__step--off">{t(HUB_PAGINATION_KEYS.next)}</span>
+          )}
+        </li>
+      </ul>
+    </nav>
+  )
+}
