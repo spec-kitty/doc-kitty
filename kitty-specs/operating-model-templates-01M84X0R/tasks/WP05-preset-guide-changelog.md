@@ -13,6 +13,9 @@ requirement_refs:
 planning_base_branch: feat/402-operating-model-templates
 merge_target_branch: feat/402-operating-model-templates
 branch_strategy: Planning artifacts for this mission were generated on feat/402-operating-model-templates. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/402-operating-model-templates unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-operating-model-templates-01M84X0R
+base_commit: 0c7f34c601e60af0c0276954d018dc9b31b4bc71
+created_at: '2026-11-24T02:07:06.281427+00:00'
 subtasks:
 - T017
 - T018
