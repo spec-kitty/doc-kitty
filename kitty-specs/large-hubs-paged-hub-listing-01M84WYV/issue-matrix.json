@@ -85,14 +85,14 @@
       "wp": null
     },
     "#429": {
-      "evidence_ref": "spec.md: #429 folded in (FR-001/FR-002; WP01 HubCap widening, WP02 hub data)",
-      "fr": null,
-      "nfr": null,
+      "evidence_ref": "WP02 (lane-b 4905291f): routeShapingSource emits every published kind: Hub hub with capped/pageSize in both sidebar modes (src/tests/hub-data-every-hub.test.ts, hub-caps-data.test.ts); the sidebar sees cappedHubCaps only, uncapped golden unchanged. Review cycle 1: rejected on FR-016 collision scope, #429 data itself verified.",
+      "fr": "FR-001, FR-002, FR-017",
+      "nfr": "NFR-003, NFR-005",
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
+      "title": "Hub data for every hub, in every sidebar mode",
       "verdict": "in-mission",
       "wp": "WP02"
     }
