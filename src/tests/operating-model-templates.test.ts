@@ -55,6 +55,14 @@ const EXPECTED = [
   ['assurance-audits', 'operating-model/assurance-audits', 'Reference', ['testing-evaluation', 'certification-assurance']],
 ] as const;
 
+/** The lines of a body that are neither headings, HTML comments nor blank (NFR-004). */
+function nonPromptLines(body: string): string[] {
+  return body
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .split('\n')
+    .filter((line) => line.trim() !== '' && !/^#{1,6} /.test(line));
+}
+
 /** Parse a rendered page; copy the data, since gray-matter caches by content. */
 function frontmatter(page: string): Record<string, unknown> {
   return { ...(matter(page).data as Record<string, unknown>) };
@@ -188,11 +196,7 @@ describe('template bodies hold structure and prompts only (NFR-004, C-001)', () 
       // Non-vacuity: a real skeleton, with real prompts.
       expect((body.match(/^#{2,6} /gm) ?? []).length, 'headings').toBeGreaterThanOrEqual(2);
       expect((body.match(/<!--/g) ?? []).length, 'prompts').toBeGreaterThanOrEqual(2);
-      const rest = body
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .split('\n')
-        .filter((line) => line.trim() !== '' && !/^#{1,6} /.test(line));
-      expect(rest).toEqual([]);
+      expect(nonPromptLines(body)).toEqual([]);
     });
 
     it(`${t.id}: opens with the structure-only, not-legal-advice notice`, () => {
@@ -204,11 +208,8 @@ describe('template bodies hold structure and prompts only (NFR-004, C-001)', () 
   }
 
   it('the NFR-004 check catches prose outside a comment (positive control)', () => {
+    // Same helper as the body tests, so the control cannot drift from them.
     const body = '## Scope\n\n<!-- Who is in scope? -->\n\nAll changes must be approved by the CAB.\n';
-    const rest = body
-      .replace(/<!--[\s\S]*?-->/g, '')
-      .split('\n')
-      .filter((line) => line.trim() !== '' && !/^#{1,6} /.test(line));
-    expect(rest).toEqual(['All changes must be approved by the CAB.']);
+    expect(nonPromptLines(body)).toEqual(['All changes must be approved by the CAB.']);
   });
 });

@@ -106,6 +106,9 @@ else writePlainStub();
 function writeTemplatePage() {
   if (flags.kind !== undefined) argumentError('--template fixes the kind; do not combine --template with --kind');
   if (flags.section !== undefined) argumentError('--template writes a page, not a section index; do not combine --template with --section');
+  for (const flag of ['base', 'type']) {
+    if (flags[flag] === true) argumentError(`--${flag} needs a value`);
+  }
   const id = typeof flags.template === 'string' ? flags.template : '';
   const record = templateById(id);
   if (!record) argumentError(`unknown template "${id}". Known templates: ${TEMPLATE_IDS.join(', ')}`);

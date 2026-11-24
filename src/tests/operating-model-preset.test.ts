@@ -11,25 +11,23 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import { parse as parseYaml } from 'yaml';
 import { SECTION_TYPE } from '../lib/vocabulary-core.mjs';
 import { loadSectionRegistry, sectionTypes } from '../lib/vocabulary-loader.mjs';
 import { validate } from '../scripts/validate-frontmatter.mjs';
-import { renderTemplatePage, templateById } from '../lib/operating-model-templates.mjs';
+import { renderTemplatePage, siteDocType, templateById } from '../lib/operating-model-templates.mjs';
 
 const snippetPath = fileURLToPath(new URL('../lib/templates/operating-model/sections.snippet.yaml', import.meta.url));
 const ownRegistry = fileURLToPath(new URL('../../docs/_meta/sections.yaml', import.meta.url));
+const exampleRegistry = fileURLToPath(new URL('../../example/docs/_meta/sections.yaml', import.meta.url));
 const NOW = new Date('2026-11-24T09:00:00Z');
 
-/** The snippet's list item, indented to sit under `sections:`. */
-function indentedSnippet(): string {
-  return readFileSync(snippetPath, 'utf8')
-    .split('\n')
-    .map((line) => (line.trim() ? `  ${line}` : line))
-    .join('\n');
+/** The snippet as shipped: already indented to sit under `sections:`. */
+function snippet(): string {
+  return readFileSync(snippetPath, 'utf8');
 }
 
 /** A docs root whose registry is the toolkit's own plus the snippet. */
@@ -37,7 +35,7 @@ function rootWithSnippet(): string {
   const root = mkdtempSync(join(tmpdir(), 'om-preset-'));
   const meta = join(root, '_meta');
   mkdirSync(meta, { recursive: true });
-  writeFileSync(join(meta, 'sections.yaml'), `${readFileSync(ownRegistry, 'utf8').trimEnd()}\n\n${indentedSnippet()}\n`, 'utf8');
+  writeFileSync(join(meta, 'sections.yaml'), `${readFileSync(ownRegistry, 'utf8').trimEnd()}\n\n${snippet()}`, 'utf8');
   return root;
 }
 
@@ -78,7 +76,15 @@ describe('operating-model section preset (FR-010)', () => {
     expect(Object.keys(SECTION_TYPE)).not.toContain('operating-model');
   });
 
-  it('with the snippet applied, a template page passes and the same page typed Guide fails', () => {
+  it('pasted verbatim at the end of a real registry, it still parses (R24 squad)', () => {
+    for (const registry of [ownRegistry, exampleRegistry]) {
+      const merged = `${readFileSync(registry, 'utf8').trimEnd()}\n${snippet()}`;
+      const parsed = parseYaml(merged) as { sections: { id: string }[] };
+      expect(parsed.sections.at(-1)?.id, registry).toBe('operating-model');
+    }
+  });
+
+  it('with the snippet applied, a template page passes and the same page typed Guide is flagged', () => {
     const root = rootWithSnippet();
     roots.push(root);
     const types = sectionTypes(loadSectionRegistry(root)!);
@@ -91,13 +97,34 @@ describe('operating-model section preset (FR-010)', () => {
     expect([...asGuide.problems, ...asGuide.warnings].some((m: string) => m.includes('Guide'))).toBe(true);
   });
 
-  it('a page written into a snippet tree lands where the registry expects it', () => {
+  it('siteDocType follows the registry: Operations with the snippet, a registry rename otherwise', () => {
     const root = rootWithSnippet();
     roots.push(root);
-    const file = join(root, 'operating-model/organisation.md');
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, renderTemplatePage(templateById('organisation')!, { now: NOW }), 'utf8');
-    const data = { ...(matter(readFileSync(file, 'utf8')).data as Record<string, unknown>) };
-    expect(data.type).toBe(sectionTypes(loadSectionRegistry(root)!)['operating-model']);
+    expect(siteDocType('operating-model/organisation.md', root)).toBe('Operations');
+    expect(siteDocType('operations/runbooks/incident-response.md', root)).toBe('Runbook');
+    // Positive control: a registry that types the section differently is followed.
+    const renamed = mkdtempSync(join(tmpdir(), 'om-preset-'));
+    roots.push(renamed);
+    mkdirSync(join(renamed, '_meta'), { recursive: true });
+    writeFileSync(
+      join(renamed, '_meta/sections.yaml'),
+      'sections:\n  - id: operating-model\n    label: Operating model\n    order: 1\n    type: Context\n',
+      'utf8',
+    );
+    expect(siteDocType('operating-model/organisation.md', renamed)).toBe('Context');
+  });
+
+  it('siteDocType falls back to the frozen map on a missing or malformed registry, as the gate does', () => {
+    const empty = mkdtempSync(join(tmpdir(), 'om-preset-'));
+    const broken = mkdtempSync(join(tmpdir(), 'om-preset-'));
+    roots.push(empty, broken);
+    mkdirSync(join(broken, '_meta'), { recursive: true });
+    writeFileSync(join(broken, '_meta/sections.yaml'), 'sections:\n  - id: [unclosed\n', 'utf8');
+    for (const root of [empty, broken]) {
+      expect(() => siteDocType('operating-model/organisation.md', root)).not.toThrow();
+      expect(siteDocType('operating-model/organisation.md', root), root).toBeNull();
+      expect(siteDocType('operations/runbooks/x.md', root), root).toBe('Runbook');
+      expect(siteDocType('guides/x.md', root), root).toBe('Guide');
+    }
   });
 });

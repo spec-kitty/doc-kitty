@@ -74,6 +74,10 @@ audience model, and would make every role state reader goals it does not have.
 ### Negative
 
 - The canonical kind list grows to 16 entries.
+- A Role page has no layout of its own yet. Unlike a Persona page, its `role`
+  and `responsibilities` fields are not rendered on the page, so the Role
+  template repeats the duties in a body section. A Role layout is a possible
+  follow-up.
 
 ### Risks
 

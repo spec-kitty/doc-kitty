@@ -198,8 +198,11 @@ export function siteDocType(relPath, docsRoot) {
  * Render a template into a page: frontmatter, a title heading, then the body.
  * Pure apart from reading the body file; deterministic for a fixed `now`.
  *
- * The `type` is the explicit one, else the one the path derives (`Runbook`
- * under `operations/runbooks/`), else the record's default. A Role page gets
+ * The `type` is the explicit one, else the one the record's path derives from
+ * the frozen section map (`Runbook` under `operations/runbooks/`), else the
+ * record's default. A caller writing into a site should pass
+ * `siteDocType(path, docsRoot) ?? record.defaultType`, so the page follows the
+ * site's section registry, as the stub tools do. A Role page gets
  * non-empty `role` and `responsibilities` placeholders, so it passes the gate
  * (ADR-0085) while it is a draft.
  *

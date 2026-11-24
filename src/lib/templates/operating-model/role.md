@@ -6,7 +6,7 @@
 
 ## Responsibilities
 
-<!-- List the duties this role is accountable for. Keep them in step with the `responsibilities` field. -->
+<!-- Describe the duties in more depth than the `responsibilities` field, which lists one duty per entry and is the field the gate checks. -->
 
 ## Decision rights
 
@@ -18,4 +18,4 @@
 
 ## Processes this role takes part in
 
-<!-- Name the process pages this role appears in, and list them in `related`. -->
+<!-- Name the processes this role takes part in. Each process page links this role in its own `related`. -->
