@@ -18,13 +18,15 @@ related:
 
 ## Status
 
-**Accepted**, 2026-11-24. Proposed 2026-11-23.
+Accepted on 2026-11-24, by operator ruling on PR #446. The
+[acceptance record](https://github.com/spec-kitty/doc-kitty/pull/446#issuecomment-7132648608) is a comment on that PR. Proposed on 2026-11-23.
+Issue #402.
 
 The decision content follows the operator's rulings for issue #402, relayed
 through the dispatcher and recorded as Decision Moments
 `01M84X1Q21P9HN21KNN9PFSNN6` (Role is a new kind) and
-`01M84X1TXTTJM09B0G0YN2G9BM` (the required fields). The operator accepted the
-ADR on 2026-11-24, with a Role layout as a follow-up (#447).
+`01M84X1TXTTJM09B0G0YN2G9BM` (the required fields). A Role layout that renders
+those fields is a follow-up (#447).
 
 ## Context
 
