@@ -196,3 +196,6 @@ kitty-specs/**/decisions/index.json.lock
 .claude/skills/spec-kitty/
 .claude/skills/spk-*/
 # <<< Spec Kitty agent files <<<
+
+# Sidebar child cap build suite and measurement (#341): fixture sites.
+example/.dk-test-sidebar-cap-*/

@@ -1,8 +1,8 @@
 ---
 title: "ADR-0083: A producer registry with an ownership scope per producer"
 description: "Every generator that stamps its pages is registered once, with a role and an ownership scope; the gates read the registry instead of naming producers."
-doc_status: draft
-updated: 2026-11-22T00:00:00Z
+doc_status: active
+updated: 2026-11-23T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -18,7 +18,9 @@ related:
 
 ## Status
 
-**Proposed**, 2026-11-22. Issue #330, epic #328. It extends
+Accepted on 2026-11-23, by operator ruling on PR #445, together with
+[ADR-0087](0087-generated-section-contract.md), which builds on it. Proposed
+on 2026-11-22. Issue #330, epic #328. It extends
 [ADR-0079](0079-kitty-packs-through-a-charter-contract-reader.md) decision 6 and
 leaves that ADR's text unchanged.
 

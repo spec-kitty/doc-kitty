@@ -1,0 +1,22 @@
+{
+  "capturedOn": "26170c9169c7dc1a3149ff935ff53ddac86f8817",
+  "fixture": {
+    "guides": 10
+  },
+  "pages": {
+    "": "7c34c98c8bc280bd6e96636bc1eb0a0962e4a46a5e7ad65422376c1dabfd6918",
+    "guides": "611d0c893c0dc338b61eb7d17ab2e2e3e675ddf67c1bdb84c3b104f27abe23f5",
+    "guides/guide-0001": "39c7a98e107f7d854647ff418065bdbcc9cb61fa7535c551345c6f398f91b2e0",
+    "guides/guide-0002": "f4407ae0c7524868773bdf691b9e013269ac272442bd6d0621cde97a4e78c63d",
+    "guides/guide-0003": "ea7d4e5a0d27efc2c63835835c8f7220571c00acab2f6252aa84d975d8a6499f",
+    "guides/guide-0004": "385faf266c304800a7aecfa735f4da0d01477cc90739ceec7fc1ca772eb19edf",
+    "guides/guide-0005": "d327d0c9205d40578e58ff4c8b0d9daf39b955f3e15aa793f5ecf0e3fd4df873",
+    "guides/guide-0006": "ef7b364c49ae908d42e1340f7e0d16116b66a154f857f3e3a70d23235e4e434b",
+    "guides/guide-0007": "e6fc640ab1fb13430dc54eb9dd088b2ebaa8b06f139e2f967183860d47ed20fc",
+    "guides/guide-0008": "42f713db4def0e6056c84bc912ddb0a359bf48d700bb2dfe0150e58238604298",
+    "guides/guide-0009": "de7ef76ecc19da707c3261a70e8076c6818e0ea1b52f7519504da900eb619c25",
+    "guides/guide-0010": "4e6ec85b2b3efe65acbbe432f2f252a5d8847ebe86d28b2238e8f1c1a5c6628a",
+    "ops": "258f89b353e8636bc2c23c59cdce54cdacfa233bcacd887036abd51866c6f9bd",
+    "ops/runbook": "7e9e2d564f567c49c3935420d82b3a9f1fd94fff864b55fc8332136e9b348919"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-23T19:10:12.545438Z",
+      "decision_id": "01M84X1Q21P9HN21KNN9PFSNN6",
+      "final_answer": "New Role kind, recorded in ADR-0085. Decider: operator (verbatim \"agreed\" at 2026-11-23T21:09:45Z in the dispatcher session, to the runner's recommendation of a new kind; relayed by the dispatcher, ledger R80; verified against the dispatcher transcript).",
+      "input_key": "role_kind",
+      "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
+      "mission_slug": "operating-model-templates-01M84X0R",
+      "opened_by": "cli",
+      "options": [
+        "New Role kind (recommended)",
+        "Persona sub-use",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Should Role be a new canonical kind, or a sub-use of Persona?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T21:10:36.999597Z",
+      "resolved_by": null,
+      "slot_key": "specify.kinds.role-kind",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-23T19:10:14.571475Z",
+      "decision_id": "01M84X1S1BM3T10WV4D4PEM8VH",
+      "final_answer": "A: the Incident and breach response and Business continuity templates use kind How-To and are placed under operations/runbooks/, so type Runbook is derived. Role is the only vocabulary change. Decider: operator (verbatim \"as recommended\", dispatcher session, ledger R81, to the dispatcher prompt \"#402: Q2 and Q3. I recommend A for both\"; relayed by the dispatcher; checked against the dispatcher transcript).",
+      "input_key": "runbook_template_kind",
+      "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
+      "mission_slug": "operating-model-templates-01M84X0R",
+      "opened_by": "cli",
+      "options": [
+        "How-To kind with type Runbook (recommended)",
+        "Add Runbook as a new kind",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Runbook is a type, not a kind. Which kind do the incident and continuity templates carry?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T22:26:09.048399Z",
+      "resolved_by": null,
+      "slot_key": "specify.templates.runbook-kind",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-23T19:10:16.506131Z",
+      "decision_id": "01M84X1TXTTJM09B0G0YN2G9BM",
+      "final_answer": "A: a kind Role page requires role (a non-empty string) and responsibilities (a non-empty list of non-empty strings); goals stays optional. Decider: operator (verbatim \"as recommended\", dispatcher session, ledger R81, to the dispatcher prompt \"#402: Q2 and Q3. I recommend A for both\"; relayed by the dispatcher; checked against the dispatcher transcript).",
+      "input_key": "role_required_fields",
+      "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
+      "mission_slug": "operating-model-templates-01M84X0R",
+      "opened_by": "cli",
+      "options": [
+        "role + responsibilities (recommended)",
+        "role + responsibilities + goals, like Persona",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Which fields does the validator require on a Role page?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T22:26:10.856100Z",
+      "resolved_by": null,
+      "slot_key": "specify.role.required-fields",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M84X0RH8AJE7NXQK093SGRF0",
+  "version": 1
+}

@@ -209,11 +209,11 @@ function sha256(text) {
 
 /**
  * The `generated` stamp already on disk at `file` (so `makeStamp` can carry its
- * `at` over while the content is unchanged); `undefined` when the file is
+ * `by` and `at` over while the content is unchanged, #398); `undefined` when the file is
  * missing or unparseable. This is why `--check` and a rerun are byte-stable.
  *
  * @param {string} file
- * @returns {{ at?: string, content_hash?: string } | undefined}
+ * @returns {{ by?: string, at?: string, content_hash?: string } | undefined}
  */
 function previousStamp(file) {
   try {

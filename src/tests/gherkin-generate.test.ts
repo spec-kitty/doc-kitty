@@ -252,6 +252,27 @@ describe('stable stamps: a rerun with unchanged input changes 0 bytes (NFR-001)'
     const page = fm(readTree(site.outDir)['shipping/book.md'] as string).generated as { at: string };
     expect(page.at).toBe('2027-03-03T00:00:00Z');
   });
+
+  it('pages stamped by an older toolkit version are not rewritten while their source is unchanged (#398)', () => {
+    const site = makeSite({ 'features/shipping/book.feature': feature('Book a slot') });
+    gen(site, { now: new Date('2026-10-18T09:30:00Z') });
+    // As committed pages look after a release bumped src/package.json.
+    const older = Object.fromEntries(
+      Object.entries(readTree(site.outDir)).map(([rel, text]) => [rel, (text as string).replace(/doc-kitty-gherkin\/[^"]+/, 'doc-kitty-gherkin/0.0.1')]),
+    );
+    expect(Object.values(older).every((text) => text.includes('by: "doc-kitty-gherkin/0.0.1"')), 'control: every page restamped').toBe(true);
+    writeTree(site.outDir, older);
+
+    const again = gen(site, { now: new Date('2027-01-01T00:00:00Z') });
+    expect(again.result.written).toEqual([]);
+    expect(readTree(site.outDir)).toEqual(older);
+    expect(diffFeaturePages(plan(site, { now: new Date('2027-02-02T00:00:00Z') }).plan, site.outDir)).toEqual({
+      added: [],
+      changed: [],
+      stale: [],
+      authored: [],
+    });
+  });
 });
 
 describe('rename / delete: owned-output pruning (02 "Owned output and pruning")', () => {

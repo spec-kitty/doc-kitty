@@ -305,3 +305,12 @@ a sixth `rel`, `classified-as`, from a page to a `catalog:measure:<id>` node, an
 an optional edge field, `scope`, written only on that relation. The schema stays
 `dockitty.content-graph/1` because both are additive. A reader must tolerate a
 `rel` or a node field it does not know.
+
+## Addendum (2026-11-22): a version bump keeps the whole stamp
+
+This addendum supersedes one clause under "Generated stamps": that a toolkit
+version bump re-stamps `generated.by` once. Following
+[#398](https://github.com/spec-kitty/doc-kitty/issues/398), `by` and `at` both
+stay while `content_hash` is unchanged, so a version bump alone rewrites no
+committed page. `by` names the toolkit version that last changed the hashed
+content. The other decisions above are unchanged.

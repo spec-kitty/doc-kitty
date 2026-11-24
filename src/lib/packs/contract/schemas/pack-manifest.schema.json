@@ -24,7 +24,8 @@
             "mission_type",
             "guard",
             "lifecycle",
-            "step_enhancement"
+            "step_enhancement",
+            "routing_catalog"
           ],
           "title": "Kind",
           "type": "string"
