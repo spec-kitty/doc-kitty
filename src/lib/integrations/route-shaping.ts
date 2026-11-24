@@ -336,7 +336,10 @@ export function routeShapingIntegration(
         // identity), so the mount and those surfaces list the same pages.
         const hubs = siteHubData(options, shapingPages(options, state, new Set(state.unpublishedDirs)));
         if (hubListingPages(hubs).length > 0) injectRoute(PAGED_HUB_ROUTE);
-        setInternalEnv(DK_HUB_DATA_ENV, writeHubData(path.join(fileURLToPath(config.cacheDir), 'doc-kitty-hubs'), hubs));
+        // Astro passes its `cacheDir`; without one (a harness that runs the hook
+        // directly), Astro's own default, `./node_modules/.astro`.
+        const cacheDir = config?.cacheDir ? fileURLToPath(config.cacheDir) : path.resolve(process.cwd(), 'node_modules', '.astro');
+        setInternalEnv(DK_HUB_DATA_ENV, writeHubData(path.join(cacheDir, 'doc-kitty-hubs'), hubs));
       },
       'astro:build:done': () => {
         const sink = shapingWarningSink();
