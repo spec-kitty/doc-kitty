@@ -22,6 +22,12 @@ hand-off.
      (WP05 review cycle 1, item 7). With WP05's file handoff (`DK_HUB_DATA` is a
      path since cycle 1), the setup hook computes the data; consider writing the
      handoff there too and dropping the separate `config:done` computation.
+1b. **Pin the toolkit version in WP05's golden (WP05 review cycle 2, N1).**
+   `src/tests/llms-paged-hubs.test.ts` pins shas that fold `toolkitVersion()`
+   (`src/package.json` version, now 0.7.1) into the build id. Any version bump
+   turns all three T025 cases red (verified: 0.7.2 gives 3 failures). Mock
+   `../lib/generator-stamp.mjs` `toolkitVersion` to `'0.7.1'` in that test so the
+   lane-b golden stays meaningful. Do not re-bake the shas from current code.
 
 ## Before or with WP06 / WP07
 
@@ -45,6 +51,18 @@ hand-off.
    focus-ring fold).
 7. PR body: a page with Starlight `draft: true` and `doc_status: active` is not
    routed in production yet trips the `page` guard (deliberate fail-loud).
+
+8. WP05 review cycle 2 test gaps (surviving mutants):
+   - H4: `readHubData` turning a missing or corrupt handoff file into `[]` survives.
+     Pin today's fail-loud throw, and wrap it in a `[dk-hubs]` message that names
+     `DK_HUB_DATA` and says to rerun the build. The raw error is ENOENT or a
+     SyntaxError.
+   - H9: the `config:done` handoff ignoring `state.unpublishedDirs` survives,
+     because the handoff test uses no withheld draft directory. This goes with
+     item 4 (I3/I4).
+   - Note only: nothing prunes `<cacheDir>/doc-kitty-hubs/*.hubs.json`, the same
+     as the `DK_OPENAPI` publication precedent. A failed cache write reports
+     with the `[dk-openapi]` prefix (`writeCacheAtomic`).
 
 ## Held for the operator
 
