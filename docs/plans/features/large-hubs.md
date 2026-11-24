@@ -2,7 +2,7 @@
 title: Large hubs
 description: "A sidebar child cap and paged, filterable hub listings, so a section with hundreds of generated children stays usable and cheap to build."
 doc_status: draft
-updated: 2026-11-23T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Feature
 kind: Feature
 moscow:
@@ -52,12 +52,17 @@ sections "The sidebar child cap" and "Listing a large hub".
    sidebar links per page in the built HTML are at most the cap plus two; a capped
    child shows the "N items" entry as current; and the output for an uncapped
    hub is byte-identical to today's.
-2. **Paged hub listing** (#342). The first page of children server-rendered on the hub,
-   then `/<hub>/page/N/` pages in the Starlight frame with a labelled pagination
-   `nav`. Paged URLs are self-canonical and out of the sitemap; every child stays
-   in it. *Done when* every fixture child is reachable from the paged listing with
-   scripts off, the pagination passes axe, and the sitemap holds every child and
-   no paged URL.
+2. **Paged hub listing** (#342). A hub over its cap whose children outnumber its
+   page size (`hub_page_size`, a section's `hub.pageSize`, the site's
+   `hub.pageSize`, default 50) lists its first page on the hub, then
+   `/<hub>/page/N/` pages in the Starlight frame with a labelled pagination `nav`.
+   Paged URLs are self-canonical and appear in every surface: the sitemap, the
+   agent API, llms.txt and search, each once, with every child still listed once.
+   The operator ruled this against the first plan, which kept paged URLs out of
+   the sitemap: "The hub and sidenav exclusions are for human navigation ease
+   purposes, not as a means to hide content." *Done when* every fixture child is
+   reachable from the paged listing with scripts off, the pagination passes axe,
+   and the sitemap holds every child and every paged URL once.
 3. **Progressive listing** (#343). A build-time `index.json` per large hub (chunked), a
    "Load more" button with an `aria-live` count, sort and filter controls, and
    query-string state. A `hub_layout: cards` presentation over the same data (core
@@ -93,5 +98,26 @@ The capped median page is 86% smaller, and the build takes about a quarter less
 time. The page sizes are exact: they do not change from run to run. The build
 times depend on the machine's load.
 Uncapped, a page's size grows with the hub; capped, it does not.
+
+## Slice 2 measurements
+
+Measured on 2026-11-24 with `src/tests/fixtures/large-hub/measure.mjs --mode paged`.
+The site has one hub of 1,000 generated pages, capped at the default cap of 50,
+and 15 other pages. It was built three times paged, with the default page size
+of 50, and three times unpaged, with `hub_page_size` above the page count. The
+runs alternated between the two, on Node 22 and one machine.
+
+| Measure | Unpaged | Paged |
+| --- | --- | --- |
+| Hub page HTML | 265,095 bytes | 39,171 bytes |
+| Pages built | 1,015 | 1,034 |
+| All pages | 23.5 MiB | 23.9 MiB |
+| Build time, three runs | 16.7 s, 17.2 s, 16.6 s | 17.3 s, 18.0 s, 17.6 s |
+| Median build time | 16.7 s | 17.6 s |
+
+The paged hub page is 15% of the unpaged one (the target was at most 25%). The
+nineteen listing pages add 0.4 MiB, and the build takes about 5% longer (the
+target was at most 10%). The page sizes are exact; the build times depend on
+the machine's load.
 
 Tracked as epic #340.

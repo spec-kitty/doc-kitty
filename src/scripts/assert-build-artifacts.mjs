@@ -20,7 +20,8 @@
  * stack-based scanner (below) — not by a filename grep, and not by adding a
  * parser dependency.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -159,7 +160,11 @@ import {
 //     (doc_status:active, +2) -> 75.
 //   - #341 (sidebar child cap) adds the capped-hub demonstrator,
 //     guides/capped-hub/ (a hub and five pages, all published, +6): 75 -> 81.
-const EXPECTED_INDEX_ENTRY_COUNT = 81;
+//   - #342 (paged hub listing) adds the paged-hub demonstrator,
+//     guides/paged-hub/ (a hub and seven pages, all published, +8), and its three
+//     listing pages (page/2..4) each append ONE synthetic `kind: "Listing"`
+//     record after the docs records (+3): 81 -> 92.
+const EXPECTED_INDEX_ENTRY_COUNT = 92;
 
 // Sitemap page-URL count == the published set (drafts excluded by the filter).
 // WP09 adds the same six glossary pages (3 demo + 3 generated), 19 → 25.
@@ -198,7 +203,10 @@ const EXPECTED_INDEX_ENTRY_COUNT = 81;
 // (published, +2), 78 -> 80.
 // #341 (sidebar child cap) adds guides/capped-hub/ (a hub and five published
 // pages, +6): 80 -> 86.
-const EXPECTED_SITEMAP_URL_COUNT = 86;
+// #342 (paged hub listing) adds guides/paged-hub/ (a hub and seven published
+// pages, +8) and its three listing pages /guides/paged-hub/page/2..4/, which the
+// sitemap lists like any page (the operator's ruling, ADR-0089) (+3): 86 -> 97.
+const EXPECTED_SITEMAP_URL_COUNT = 97;
 
 // A draft page (example/docs/adr/template.md, doc_status: draft). Its route
 // MUST NOT appear in the sitemap once the draft filter is in place.
@@ -2974,7 +2982,63 @@ async function main() {
   // links, raw documents and checksums, llms.txt, sitemap, search, no console, CSP.
   await assertOpenApiArtifacts(distDir);
 
+  // 11) The paged hub listing (#342): the demonstrator's listing pages on every surface.
+  await assertPagedHub(distDir);
+
   process.stdout.write(`assert:artifacts: PASS — all build artifacts present and valid in ${distDir}\n`);
+}
+
+/**
+ * The CSP hash of the pagination's inline `<style>` (#342): what a strict
+ * `style-src` must allow on a site with a paged hub. Pinned so a style change
+ * that moves it is a deliberate, documented change (docs/guides/paged-hub-listing.md).
+ */
+const PAGINATION_STYLE_HASH = 'sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=';
+
+/**
+ * The paged hub listing on the built example (#342, WP06): guides/paged-hub/ (seven
+ * pages, page size 2) builds listing pages 2..4 and no other; each is
+ * self-canonical with its pagination; the sitemap, the agent index and llms.txt
+ * list each once; the pagination's inline style hashes to the documented value.
+ */
+async function assertPagedHub(distDir) {
+  const hub = 'guides/paged-hub';
+  const pages = [2, 3, 4];
+  for (const n of pages) {
+    const html = await readTextOrFail(path.join(distDir, hub, 'page', String(n), 'index.html'), `${hub}/page/${n}`);
+    if (!new RegExp(`<link rel="canonical" href="[^"]*/${hub}/page/${n}/"`).test(html)) fail(`paged hub: ${hub}/page/${n} is not self-canonical`);
+    if (!html.includes('<nav class="dk-hub-pagination" aria-label="Pagination">')) fail(`paged hub: ${hub}/page/${n} has no labelled pagination`);
+    if (!html.includes(`<span class="dk-hub-pagination__current" aria-current="page"><span class="sr-only">Page </span>${n}</span>`)) {
+      fail(`paged hub: ${hub}/page/${n} does not mark page ${n} current`);
+    }
+  }
+  for (const missing of ['page/1', 'page/5']) {
+    if (existsSync(path.join(distDir, hub, missing, 'index.html'))) fail(`paged hub: ${hub}/${missing} must not be built`);
+  }
+  const sitemaps = readdirSync(distDir).filter((name) => /^sitemap-\d+\.xml$/.test(name));
+  const locs = sitemaps.flatMap((name) => [...readFileSync(path.join(distDir, name), 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
+  for (const n of pages) {
+    const count = locs.filter((loc) => loc.endsWith(`/${hub}/page/${n}/`)).length;
+    if (count !== 1) fail(`paged hub: the sitemap lists ${hub}/page/${n}/ ${count} times, not once`);
+  }
+  const index = JSON.parse(await readTextOrFail(path.join(distDir, 'api', 'index.json'), 'api/index.json'));
+  const listing = index.pages.filter((record) => record.kind === 'Listing');
+  const slugs = listing.map((record) => record.slug);
+  if (JSON.stringify(slugs) !== JSON.stringify(pages.map((n) => `${hub}/page/${n}`)) || listing.some((r) => r.listing_of !== hub)) {
+    fail(`paged hub: the agent index lists ${JSON.stringify(slugs)} as Listing records, not ${hub}/page/2..4`);
+  }
+  const llms = await readTextOrFail(path.join(distDir, 'llms.txt'), 'llms.txt');
+  for (const n of pages) {
+    const lines = llms.split('\n').filter((line) => line.includes(`/${hub}/page/${n}/)`));
+    if (lines.length !== 1) fail(`paged hub: llms.txt lists ${hub}/page/${n}/ ${lines.length} times, not once`);
+  }
+  const html = await readTextOrFail(path.join(distDir, hub, 'page', '2', 'index.html'), `${hub}/page/2`);
+  const styles = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].filter((m) => m[1].includes('.dk-hub-pagination'));
+  const hashes = styles.map((m) => `sha256-${createHash('sha256').update(m[1], 'utf8').digest('base64')}`);
+  if (hashes.length !== 1 || hashes[0] !== PAGINATION_STYLE_HASH) {
+    fail(`paged hub: the pagination's inline style hashes to ${JSON.stringify(hashes)}, not the documented ${PAGINATION_STYLE_HASH}`);
+  }
+  ok(`paged hub: ${hub} builds listing pages 2..4, each once in the sitemap, agent index and llms.txt; style ${PAGINATION_STYLE_HASH}`);
 }
 
 main().catch((err) => {

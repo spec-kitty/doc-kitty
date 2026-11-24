@@ -101,6 +101,10 @@ export const ROUTES = {
   // sidebar group is the overview link plus one "5 pages" entry, current on a child.
   cappedHub: `${BASE}/guides/capped-hub/`,
   cappedHubChild: `${BASE}/guides/capped-hub/where-the-cap-is-set/`,
+  // Paged hub listing (#342): seven pages, cap 3, page size 2, so the hub lists two
+  // and listing pages 2..4 follow, each with a "Pagination" landmark.
+  pagedHub: `${BASE}/guides/paged-hub/`,
+  pagedHubPage: `${BASE}/guides/paged-hub/page/2/`,
   // Ars Rhetorica showcase — the rhetoric hub (WP02/T003), the Hub-layout landing
   // for the ported corpus. Scanned in BOTH modes as a real long-form content hub.
   rhetoricHub: `${BASE}/rhetoric/`,
@@ -451,6 +455,20 @@ export const AXE_PAGES: ReadonlyArray<AxePage> = [
   {
     name: 'Capped hub child (/guides/capped-hub/where-the-cap-is-set/)',
     path: ROUTES.cappedHubChild,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
+  },
+  // Paged hub listing (#342): the hub's pagination and a listing page in the
+  // Starlight frame must clear WCAG in both colour modes.
+  {
+    name: 'Paged hub (/guides/paged-hub/)',
+    path: ROUTES.pagedHub,
+    shell: 'starlight',
+    guardRoots: STARLIGHT_GUARD_ROOTS,
+  },
+  {
+    name: 'Paged hub listing page (/guides/paged-hub/page/2/)',
+    path: ROUTES.pagedHubPage,
     shell: 'starlight',
     guardRoots: STARLIGHT_GUARD_ROOTS,
   },
