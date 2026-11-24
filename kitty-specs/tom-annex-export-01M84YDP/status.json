@@ -147,16 +147,17 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": null,
-      "agent_profile": "node-norris",
-      "agent_profile_version": "1.0",
+      "agent": "claude::node-norris",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "for_review",
       "last_event_id": "01M8621AKCB0ZVK6N8D1F2YHD3",
       "last_transition_at": "2026-11-24T05:56:37.100982+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean."
+        "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean.",
+        "Review cycle 1 fixes: SC-001 catalog accounting + duplicate checks red-first; NFR-002 on the example +195 ms (1.6%); full pnpm test green on 2fc2210 (src 4594/4594, mcp 181/181); code unchanged since."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
