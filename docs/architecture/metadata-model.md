@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-11-22T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -524,9 +524,10 @@ it is, the rules above describe the code.
   together while `content_hash` is unchanged. Today it carries over only `at`
   and rewrites `by` on every regeneration.
 - **One drift gate.** Every producer that doc-kitty can run answers `--check` with
-  the same verdicts, in a fixed precedence: `missing`, `orphan`, `hand-edited`,
-  `stale-source`, `stale-render`. It uses the same output line and exit codes (0,
-  1, 2). `pnpm validate:generated` runs them all from the producer registry.
+  the same verdicts, in a fixed precedence: `missing`, `orphan`, `unowned`,
+  `hand-edited`, `stale-source`, `stale-render`. A producer may add verdicts of
+  its own after those, with exit 1. It uses the same output line and exit codes
+  (0, 1, 2). `pnpm validate:generated` runs them all from the producer registry.
 - **Ownership** stays ADR-0083's stamp-and-scope rule, with the glossary still
   recognised by scope alone. The `hand-edited` verdict enforces it, and the edit
   link, the RSS hub filter and the OKF export route through the registry too.
