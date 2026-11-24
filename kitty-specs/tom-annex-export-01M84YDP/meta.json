@@ -22,7 +22,7 @@
   "mission_base_sha": "26170c9169c7dc1a3149ff935ff53ddac86f8817",
   "mission_branch": "kitty/mission-tom-annex-export-01M84YDP",
   "mission_id": "01M84YDPJCBFNXNWKGGVX39KCX",
-  "mission_number": null,
+  "mission_number": 23,
   "mission_slug": "tom-annex-export-01M84YDP",
   "mission_type": "software-dev",
   "pr_bound": true,
