@@ -116,7 +116,7 @@
     },
     "WP04": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
@@ -125,7 +125,8 @@
       "last_transition_at": "2026-11-24T00:25:47.909803+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "OKF export carries the evidence index: ratchet pinned pre-change, 8 tests red-first; full pnpm test green (src 4571/4571, mcp 181/181); CI typecheck and lint clean."
+        "OKF export carries the evidence index: ratchet pinned pre-change, 8 tests red-first; full pnpm test green (src 4571/4571, mcp 181/181); CI typecheck and lint clean.",
+        "Review passed (claude::reviewer-renata). Verified at lane-d e82f405c (sync df478491 touches status files only). Red-first: 5/8 new tests fail on base 03099fda (claimed 6; the conformance test passes vacuously at base); the conformance.mjs change is separately red (head code + base checker fails the CLI warnings test). No-annex: ratchet holds, and a real example build with tom_classification stripped gives byte-identical okf/ at base and head (106 files); CLI base vs head identical too. Verbatim: example build dist/api/tom-annex.json and dist/okf/tom-annex.json cmp-identical, sha256 5edd5c42...; bundle diff vs base is exactly index.md (+1 entry, code-unit sorted, ADR-0059 entry form) and tom-annex.json. Validation: invalid, empty, whitespace, BOM, wrong/missing/non-string format, null, array and number all throw [dk-okf]; CLI exits 2 and leaves --out untouched. Conformance: checker change alone leaves base bundle warnings unchanged (0); removes only the false /tom-annex.json warning; broken links to missing .json/.csv still warn; _index.meta.yaml sidecars now in the file map but never linked, so no effect. Gates: pnpm test src 4571/4571, mcp 181/181; lint 0; typecheck 0; example build 0. Nits (non-blocking): export-okf.mjs usage header not updated for the implicit tom-annex.json pickup (also picked up beside a --graph file); the BOM error names an invisible char rather than saying BOM; integration.ts has no unit test (covered by the real build)."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
