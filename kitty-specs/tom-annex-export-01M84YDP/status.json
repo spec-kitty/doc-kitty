@@ -147,9 +147,9 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": null,
-      "agent_profile": "node-norris",
-      "agent_profile_version": "1.0",
+      "agent": "claude::node-norris",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "for_review",
       "last_event_id": "01M872RC4GX46210ZK9NB5EPRC",
@@ -159,7 +159,8 @@
         "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean.",
         "Review cycle 1 fixes: SC-001 catalog accounting + duplicate checks red-first; NFR-002 on the example +195 ms (1.6%); full pnpm test green on 2fc2210 (src 4594/4594, mcp 181/181); code unchanged since.",
         "Review cycle 2 fixes: empty scope entries rejected, once per scope enforced, stray covered id case kills the mutation; full pnpm test green (src 4597/4597, mcp 181/181).",
-        "Review cycle 3 fixes: unknown scope keys reported, the built index validated against the shipped schema, null entries reported; full pnpm test green (src 4600/4600, mcp 181/181)."
+        "Review cycle 3 fixes: unknown scope keys reported, the built index validated against the shipped schema, null entries reported; full pnpm test green (src 4600/4600, mcp 181/181).",
+        "Review cycle 4 fixed in 12d69b0b: Object.hasOwn for additionalProperties/required; whole-schema walk (unknown keywords anywhere, keywords beside $ref, unresolvable/cyclic $ref throw; chained $ref resolves); pattern u flag; minLength in code points; direct schemaProblems tests per keyword plus gate-level prototype-key cases. Option (a): lib/ and scripts/ ship in the package, so no Ajv. 19/19 keyword mutations killed. lint 0, typecheck 0, pnpm test src 4620/4620, mcp 181/181."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
