@@ -1,7 +1,7 @@
 {
-  "event_count": 25,
-  "last_event_id": "01M85E1H03DNP97Q08DY7HW28N",
-  "materialized_at": "2026-11-24T00:07:12.131178+00:00",
+  "event_count": 27,
+  "last_event_id": "01M85E7V2P1EJ6Y6VQM1V5HP9Y",
+  "materialized_at": "2026-11-24T00:10:38.888009+00:00",
   "mission_number": "",
   "mission_slug": "operating-model-templates-01M84X0R",
   "mission_type": "software-dev",
@@ -13,9 +13,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 4
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -58,9 +58,9 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "implementer_of_record": "claude::node-norris",
-      "lane": "planned",
-      "last_event_id": "01M85E0JXVRFR2HAWPB9DKD4KW",
-      "last_transition_at": "2026-11-24T00:06:41.339722+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M85E7V2P1EJ6Y6VQM1V5HP9Y",
+      "last_transition_at": "2026-11-24T00:10:38.888009+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181",
@@ -74,7 +74,7 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
