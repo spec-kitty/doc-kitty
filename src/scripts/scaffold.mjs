@@ -45,6 +45,12 @@ function argumentError(message) {
   process.exit(2);
 }
 
+// `--preset=x` / `--sections=x` would be read as the base folder and silently
+// fall through to the default tree, so refuse the `=` form outright.
+for (const flag of ['--preset', '--sections']) {
+  if (argv.some((a) => a.startsWith(`${flag}=`))) argumentError(`${flag}=... is not supported; use \`${flag} <${flag === '--preset' ? 'id' : 'ids'}>\``);
+}
+
 // `--preset <id>` (#402). Only `operating-model` exists.
 const PRESETS = ['operating-model'];
 const presetFlag = (() => {

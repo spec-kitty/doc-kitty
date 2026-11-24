@@ -190,6 +190,8 @@ describe('conflicts and unknown ids exit 2 and write nothing (D5)', () => {
     ['an unknown template id', 'new-doc', ['--template', 'nope'], /unknown template "nope"/],
     ['--preset with --sections', 'scaffold', ['--preset', 'operating-model', '--sections', 'guides'], /--preset .*--sections/],
     ['an unknown preset', 'scaffold', ['--preset', 'nope'], /unknown preset "nope"/],
+    ['--preset=<id> (the = form)', 'scaffold', ['--preset=operating-model'], /use `--preset <id>`/],
+    ['--sections=<ids> (the = form)', 'scaffold', ['--sections=guides'], /use `--sections <ids>`/],
   ];
   for (const [name, tool, args, message] of cases) {
     it(name, () => {
