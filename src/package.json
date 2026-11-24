@@ -60,7 +60,8 @@
     "dockitty-assert-plantuml-no-remote-include": "./scripts/assert-plantuml-no-remote-include.mjs",
     "dockitty-plantuml-guard": "./scripts/plantuml-guard-bin.mjs",
     "dockitty-assert-diagrams": "./scripts/assert-diagrams.mjs",
-    "dockitty-read-pack": "./scripts/read-pack.mjs"
+    "dockitty-read-pack": "./scripts/read-pack.mjs",
+    "dockitty-tom-annex": "./scripts/tom-annex.mjs"
   },
   "files": [
     "index.ts",

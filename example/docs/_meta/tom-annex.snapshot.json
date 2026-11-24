@@ -1,0 +1,190 @@
+{
+  "format": "doc-kitty/tom-annex",
+  "format_version": "1.0",
+  "label": "Evidence index, not the contractual annex.",
+  "notice": "Not legal advice: this index lists documentation that evidences each measure; the annex of a data processing agreement remains the parties' own document.",
+  "generated": {
+    "by": "doc-kitty-tom-annex/0.7.1",
+    "at": "2026-11-22T00:00:00Z",
+    "source_digest": "sha256:b8d1860704ccd7813f9515ae3ba998fed17dc99e606a42a3b097bc75928544df",
+    "content_hash": "sha256:5edd5c42e809"
+  },
+  "catalog": {
+    "source": "the shipped default catalog",
+    "default": true
+  },
+  "scopes": {
+    "system": [
+      {
+        "id": "events-logging",
+        "label": "Events logging",
+        "nature": "technical",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "9"
+          }
+        ],
+        "dpv": "https://w3id.org/dpv#ActivityMonitoring",
+        "evidence": [
+          {
+            "title": "Audit logging",
+            "description": "How the example product records administrative actions, with the technical measures this page provides evidence for.",
+            "url": "https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/",
+            "updated": "2026-11-22T00:00:00Z",
+            "doc_status": "active",
+            "verified": [],
+            "note": null
+          }
+        ]
+      },
+      {
+        "id": "storage-protection",
+        "label": "Protection of data during storage",
+        "nature": "technical",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "7"
+          }
+        ],
+        "dpv": "https://w3id.org/dpv#EncryptionAtRest",
+        "evidence": [
+          {
+            "title": "Audit logging",
+            "description": "How the example product records administrative actions, with the technical measures this page provides evidence for.",
+            "url": "https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/",
+            "updated": "2026-11-22T00:00:00Z",
+            "doc_status": "active",
+            "verified": [],
+            "note": "Log archives are encrypted at rest."
+          }
+        ]
+      }
+    ],
+    "organisation": [
+      {
+        "id": "accountability",
+        "label": "Accountability",
+        "nature": "organisational",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "16"
+          }
+        ],
+        "dpv": "https://w3id.org/dpv#ComplianceMonitoring",
+        "evidence": [
+          {
+            "title": "Incident handling",
+            "description": "How the example organisation handles an incident, written once for every product and classified as organisation-wide measures.",
+            "url": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/",
+            "updated": "2026-11-22T00:00:00Z",
+            "doc_status": "active",
+            "verified": [],
+            "note": "Every incident gets a named owner and a written review."
+          }
+        ]
+      },
+      {
+        "id": "availability-restoration",
+        "label": "Restoring availability and access after an incident",
+        "nature": "technical",
+        "frameworks": [
+          {
+            "framework": "eu-scc-2021-914-annex-ii",
+            "ref": "3"
+          },
+          {
+            "framework": "eu-gdpr",
+            "ref": "Art. 32(1)(c)"
+          }
+        ],
+        "dpv": "https://w3id.org/dpv#DataBackupProtocols",
+        "evidence": [
+          {
+            "title": "Incident handling",
+            "description": "How the example organisation handles an incident, written once for every product and classified as organisation-wide measures.",
+            "url": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/",
+            "updated": "2026-11-22T00:00:00Z",
+            "doc_status": "active",
+            "verified": [],
+            "note": null
+          }
+        ]
+      }
+    ]
+  },
+  "uncovered": [
+    {
+      "id": "certification-assurance",
+      "label": "Certification and assurance of processes and products",
+      "nature": "organisational"
+    },
+    {
+      "id": "confidentiality-integrity-availability-resilience",
+      "label": "Confidentiality, integrity, availability and resilience of systems and services",
+      "nature": "technical"
+    },
+    {
+      "id": "data-minimisation",
+      "label": "Data minimisation",
+      "nature": "organisational"
+    },
+    {
+      "id": "data-quality",
+      "label": "Data quality",
+      "nature": "organisational"
+    },
+    {
+      "id": "it-security-governance",
+      "label": "Internal IT and IT security governance and management",
+      "nature": "organisational"
+    },
+    {
+      "id": "limited-retention",
+      "label": "Limited data retention",
+      "nature": "organisational"
+    },
+    {
+      "id": "physical-security",
+      "label": "Physical security of processing locations",
+      "nature": "physical"
+    },
+    {
+      "id": "portability-erasure",
+      "label": "Data portability and erasure",
+      "nature": "organisational"
+    },
+    {
+      "id": "pseudonymisation-encryption",
+      "label": "Pseudonymisation and encryption",
+      "nature": "technical"
+    },
+    {
+      "id": "system-configuration",
+      "label": "System configuration, including default configuration",
+      "nature": "technical"
+    },
+    {
+      "id": "testing-evaluation",
+      "label": "Regular testing, assessing and evaluating of the measures",
+      "nature": "organisational"
+    },
+    {
+      "id": "transmission-protection",
+      "label": "Protection of data during transmission",
+      "nature": "technical"
+    },
+    {
+      "id": "user-identification-authorisation",
+      "label": "User identification and authorisation",
+      "nature": "technical"
+    }
+  ],
+  "counsel": [
+    "⚖ The wording \"evidence index, not the contractual annex\" and the notice on every generated surface.",
+    "⚖ Whether a data processing agreement may reference this living index, or needs a dated snapshot.",
+    "⚖ Whether the uncovered list may be shown to third parties, since it can reveal gaps."
+  ]
+}
