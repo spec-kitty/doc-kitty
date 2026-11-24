@@ -50,7 +50,7 @@ import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
 export default defineConfig({
   site: '${SITE_URL}',
   base: '${BASE}',
-  integrations: defineDocKittyIntegrations({ title: 'Evidence fixture', base: '${BASE}' }),
+  integrations: defineDocKittyIntegrations({ title: 'Evidence fixture', base: '${BASE}', indexBasename: ['README', 'index'] }),
 });
 `,
     'src/content.config.ts': `import { defineCollection } from 'astro:content';
@@ -63,6 +63,11 @@ export const GET = agentIndexRoute({ title: 'Evidence fixture' });
     'docs/README.md': page(meta('Evidence fixture', 'Hub'), '# Evidence fixture'),
     // A classified section index page: its graph id ("security/README") is not its slug (R24 squad).
     'docs/security/README.md': page(meta('Security', 'Hub', classify([{ measure: 'it-security-governance' }])), '# Security'),
+    // An index.md section page, recognised through indexBasename [README, index] (#455 review, finding 5).
+    'docs/operations/index.md': page(
+      meta('Operations', 'Hub', classify([{ measure: 'availability-restoration' }])),
+      '# Operations',
+    ),
     'docs/security/audit.md': page(
       meta('Audit logging', 'Reference', classify([{ measure: 'events-logging', note: 'Kept for 13 months.' }])),
       '# Audit logging',
@@ -148,6 +153,9 @@ describe('a classified site: drafts never count as evidence (WP05 T022, FR-006)'
       m.evidence.map((e) => e.url),
     );
     expect(urls).toContain(`${SITE_URL}${BASE}/security/audit/`);
+    // Section index pages count as evidence, under either index name (#455 review).
+    expect(urls).toContain(`${SITE_URL}${BASE}/security/`);
+    expect(urls).toContain(`${SITE_URL}${BASE}/operations/`);
     expect(urls.some((u: string) => u.includes('draft-access'))).toBe(false);
     // The measure only the draft lists is uncovered.
     expect(annex.uncovered.map((u: { id: string }) => u.id)).toContain('user-identification-authorisation');

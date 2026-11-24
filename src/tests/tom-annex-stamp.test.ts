@@ -172,6 +172,12 @@ describe('evidenceSourceFiles: only pages with a classified-as edge are inputs (
     expect(evidenceSourceFiles({ edges }, real)).toEqual(['README.md', 'security/README.md', 'security/audit.md']);
   });
 
+  it('finds index.md and README.md section pages under indexBasename [README, index] (#455 review, finding 5)', () => {
+    const real = locatePages(['index.md', 'security/index.md', 'ops/README.md', 'ops/runbook.md'], ['README', 'index']);
+    const edges = ['index', 'security/index', 'ops/README', 'ops/runbook'].map((source) => ({ rel: 'classified-as', source, target: 'catalog:measure:a' }));
+    expect(evidenceSourceFiles({ edges }, real)).toEqual(['index.md', 'ops/README.md', 'ops/runbook.md', 'security/index.md']);
+  });
+
   it('throws when an evidence page has no source file', () => {
     const { 'guides/access': _dropped, ...partial } = locations;
     void _dropped;
