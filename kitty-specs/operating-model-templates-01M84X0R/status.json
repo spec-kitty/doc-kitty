@@ -53,7 +53,7 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::node-norris",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
@@ -64,7 +64,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181",
-        "Cycle 2: lint fixed and lenient-schema test renamed; lint 0; pnpm test src 4530/4530 mcp 181/181 at 4a30c36"
+        "Cycle 2: lint fixed and lenient-schema test renamed; lint 0; pnpm test src 4530/4530 mcp 181/181 at 4a30c36",
+        "Cycle 3: parse() returns a copy (gray-matter cache), isolation assertion added; lint 0; shuffled seeds 1-10 11/11; pnpm test src 4530/4530 mcp 181/181 at 43ed537"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
