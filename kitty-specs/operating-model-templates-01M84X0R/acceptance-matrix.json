@@ -6,12 +6,12 @@
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "Verify FR-001 is satisfied",
+      "description": "Role is a canonical kind: KINDS contains Role and a valid Role page draws no unknown-kind warning",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/role-kind.test.ts (is a canonical kind; passes with no kind warning); src/tests/vocabulary-core.test.ts (16 kinds); lane-d@23baafe6; feat/402@b9e1a3c5; combined tree pnpm test src 4615/4615 mcp 181/181; WP approvals in tasks/*/review-cycle-*.md",
+      "pass_fail": "pass",
+      "verified_by": "claude::runner",
+      "verified_at": "2026-11-24T03:14:50.363073+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
