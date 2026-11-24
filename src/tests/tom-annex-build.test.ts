@@ -61,7 +61,8 @@ export const collections = { docs: defineCollection({ loader: docKittyDocsLoader
 export const GET = agentIndexRoute({ title: 'Evidence fixture' });
 `,
     'docs/README.md': page(meta('Evidence fixture', 'Hub'), '# Evidence fixture'),
-    'docs/security/README.md': page(meta('Security', 'Hub'), '# Security'),
+    // A classified section index page: its graph id ("security/README") is not its slug (R24 squad).
+    'docs/security/README.md': page(meta('Security', 'Hub', classify([{ measure: 'it-security-governance' }])), '# Security'),
     'docs/security/audit.md': page(
       meta('Audit logging', 'Reference', classify([{ measure: 'events-logging', note: 'Kept for 13 months.' }])),
       '# Audit logging',

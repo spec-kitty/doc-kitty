@@ -59,7 +59,7 @@ describe('renderHubPage (WP07 T030)', () => {
   });
 
   it('writes frontmatter that meets the metadata contract, dated from the index', () => {
-    expect(data.title).toBe('Evidence index (TOM)');
+    expect(data.title).toBe('Evidence index (technical and organisational measures)');
     expect(data.description).toContain(TOM_ANNEX_LABEL);
     expect(data.doc_status).toBe('active');
     expect(data.type).toBe('Reference');

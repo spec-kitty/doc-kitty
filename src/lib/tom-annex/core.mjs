@@ -111,7 +111,7 @@ const MEASURE_NODE_PREFIX = 'catalog:measure:';
  *
  * @param {string | undefined} raw
  */
-function normaliseBase(raw) {
+export function normaliseBase(raw) {
   if (!raw || raw === '/') return '';
   return ('/' + raw + '/').replace(/\/{2,}/g, '/').replace(/\/$/, '');
 }

@@ -89,11 +89,8 @@ function run(argv) {
   const hint = PRODUCER_REGISTRY.get(TOM_ANNEX_PRODUCER)?.regenerateHint ?? '';
   const builtText = readIfPresent(annexFile);
   if (builtText === undefined) {
-    const why = `the build produced no evidence index at ${annexFile} (no published classified pages?)`;
-    if (!values.check) throw new UsageError(why);
-    console.log(`${TOM_ANNEX_PRODUCER} missing ${annexFile}`);
-    console.log(`  ${why}`);
-    return 1;
+    // An input error in both modes (exit 2): `missing` is a D3 verdict for a committed file, not for the build.
+    throw new UsageError(`the build produced no evidence index at ${annexFile} (no published classified pages?); build the site first`);
   }
   /** @type {any} */
   let built;

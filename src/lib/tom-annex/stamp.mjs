@@ -11,9 +11,10 @@
  *   (each evidence page's source file, a consumer catalog file, and one
  *   `config:doc-kitty-tom-annex` entry), sorted by the UTF-8 bytes of the key,
  *   written `key NUL value`, joined with `\n`, hashed with sha256.
- * - The configuration entry is the RFC 8785 form of `{base, catalog, site}`:
- *   the site and base change every evidence URL, and the shipped default
- *   catalog (sorted by id) is configuration rather than a file. A consumer
+ * - The configuration entry is the RFC 8785 form of `{base, catalog,
+ *   indexBasename, site}`: the site and base change every evidence URL, the
+ *   index names change section-index URLs, and the shipped default catalog
+ *   (sorted by id) is configuration rather than a file. A consumer
  *   catalog is a file entry instead, and `catalog` is then `null`.
  * - `content_hash` is the first 12 hex of the sha256 of the index as
  *   `serializeTomAnnex` writes it without `generated` (D2, "a producer that
@@ -31,8 +32,8 @@
 import { createHash } from 'node:crypto';
 import { canonicalJson } from '../packs/canonical-json.mjs';
 import { toolkitVersion } from '../generator-stamp.mjs';
-import { compareCodeUnit, formatInstant, normaliseInstant } from '../vocabulary-core.mjs';
-import { serializeTomAnnex } from './core.mjs';
+import { compareCodeUnit, formatInstant, normaliseInstant, normalizeIndexBasenames } from '../vocabulary-core.mjs';
+import { normaliseBase, serializeTomAnnex } from './core.mjs';
 
 /** The producer id (ADR-0083), the `by` prefix and the configuration key's suffix. */
 export const TOM_ANNEX_PRODUCER = 'doc-kitty-tom-annex';
@@ -65,22 +66,27 @@ export function sourceDigest(entries) {
 
 /**
  * @typedef {object} AnnexConfig
- * @property {string} base
+ * @property {string} base the normalised base: '' or '/segment[/segment]'
  * @property {Array<Record<string, unknown>> | null} catalog the default catalog's records sorted by id, or null for a consumer catalog
- * @property {string} site
+ * @property {string[]} indexBasename the section-index names, in priority order
+ * @property {string} site the site URL as a parsed href, or ''
  */
 
 /**
- * The options that change the rendered index (D2, configuration entry).
+ * The options that change the rendered index (D2, configuration entry): the
+ * site and base (every evidence URL), the index names (section-index URLs) and
+ * the shipped default catalog. Equivalent spellings (`/docs` and `/docs/`,
+ * `https://x` and `https://x/`) normalise to one value, so they give one digest.
  *
- * @param {{ site: URL | string | undefined, base: string, catalog: { records: ReadonlyArray<Record<string, any>>, isDefault: boolean } }} args
+ * @param {{ site: URL | string | undefined, base: string | undefined, catalog: { records: ReadonlyArray<Record<string, any>>, isDefault: boolean }, indexBasename?: string | string[] }} args
  * @returns {AnnexConfig}
  */
-export function annexConfig({ site, base, catalog }) {
+export function annexConfig({ site, base, catalog, indexBasename }) {
   return {
-    base,
+    base: normaliseBase(base),
     catalog: catalog.isDefault ? [...catalog.records].sort((a, b) => compareCodeUnit(a.id, b.id)) : null,
-    site: site === undefined ? '' : String(site),
+    indexBasename: normalizeIndexBasenames(indexBasename),
+    site: site === undefined || String(site) === '' ? '' : new URL(String(site)).href,
   };
 }
 
@@ -112,14 +118,19 @@ export function annexInputs({ evidencePages, catalogFile, config }) {
  * edge starts from: the index's evidence pages, each once, sorted.
  *
  * @param {{ edges: ReadonlyArray<{ rel: string, source: string }> }} graph
- * @param {Readonly<Record<string, { file?: string }>>} locations by graph node id
+ * @param {Readonly<Record<string, { id?: string, file?: string }>>} locations as `locatePages` returns them (keyed by slug, each with its node `id`)
  * @returns {string[]}
  */
 export function evidenceSourceFiles(graph, locations) {
+  // `locatePages` keys by route slug, but an edge names the page by its node id,
+  // the bundle path: a section index is slug "security", id "security/README".
+  /** @type {Map<string, string | undefined>} */
+  const fileById = new Map();
+  for (const [key, loc] of Object.entries(locations)) fileById.set(/** @type {any} */ (loc).id ?? key, loc.file);
   const files = new Set();
   for (const edge of graph.edges) {
     if (edge.rel !== 'classified-as') continue;
-    const file = locations[edge.source]?.file;
+    const file = fileById.get(edge.source);
     if (typeof file !== 'string') throw new Error(`[dk-tom-annex] source digest: the evidence page ${edge.source} has no source file`);
     files.add(posix(file));
   }

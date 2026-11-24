@@ -1,5 +1,5 @@
 ---
-title: The evidence index (TOM annex export)
+title: The evidence index (technical and organisational measures)
 description: What api/tom-annex.json lists and what it is not, its format 1.x for tools, and how to commit an opt-in snapshot and hub page and check them.
 doc_status: active
 updated: 2026-11-24T00:00:00Z
@@ -17,7 +17,7 @@ related:
   - guides/draft-publication
 ---
 
-# The evidence index (TOM annex export)
+# The evidence index (technical and organisational measures)
 
 > [!CAUTION]
 > **Evidence index, not the contractual annex.** Not legal advice: this index
@@ -45,8 +45,9 @@ reader sees the gaps as well as the coverage.
 
 - **Drafts never count.** The index reads the built content graph, which leaves
   draft pages out. A measure that only a draft classifies is uncovered.
-- **A site with no published classified pages gains nothing.** No file is built, nothing
-  is linked, and no check runs.
+- **A site with no published classified pages gains nothing.** No file is built
+  and nothing is linked; doc-kitty's artifact gate only checks that nothing was
+  built.
 - **It is linked** from `api/index.json` as `_links.tomAnnex`, titled with the
   label, and the OKF export carries the same bytes as `tom-annex.json`.
 - **Evidence URLs are absolute**: the site's `site` URL, its `base` and the
@@ -75,14 +76,17 @@ These are open, and every generated surface lists them:
 ## Format 1.x
 
 The index is one JSON object. The shipped schema,
-`lib/tom-annex/tom-annex.schema.json` in the toolkit package, is the
-normative shape. The tables below follow it key for key.
+`lib/tom-annex/tom-annex.schema.json` in the toolkit package, describes the
+version it ships with exactly, and the tables below follow it key for key. It
+rejects keys it does not know, so do not use it to reject a file of a later
+`1.x`: see [Versioning](#versioning).
 
 **Serialisation.** Two-space indented JSON with a final newline. Keys are
 written in the order of the tables, whatever order a producer built them in, so
-the same content always gives the same bytes. `null` means "known to be empty"
-(a page without a description); an absent key means the value does not exist
-(a measure without a `dpv` term). Only `dpv` is ever absent.
+the same content always gives the same bytes. A key whose value the page does
+not have is written as `null` (a page without a description, a classification
+without a note). Only `dpv` is ever left out, when the catalog has no term for
+the measure.
 
 ### The file
 
@@ -131,7 +135,8 @@ when pages classify it under both.
 - Renaming or removing a key, or changing its meaning, is a **major** version
   (`2.0`).
 - Adding a key is a **minor** version (`1.1`).
-- A consumer must accept any `1.x` and ignore keys it does not know.
+- A consumer must accept any `1.x` and ignore keys it does not know. Validate a
+  file against the schema of its own minor version, or none.
 - Format 1.0 includes the `generated` stamp. No 1.0 index was ever released
   without it.
 
@@ -144,7 +149,7 @@ when pages classify it under both.
 |---|---|
 | `by` | `doc-kitty-tom-annex/<toolkit version>`: the producer that wrote it |
 | `at` | the latest `updated` or `verified` instant among the listed evidence, or `null` when none has one. **Never the build clock**, so two builds of the same tree write the same bytes. |
-| `source_digest` | `sha256:` and 64 hex digits over the declared inputs (ADR-0087 D2): each evidence page's source file, a consumer catalog file, and the site, the base and the shipped default catalog as configuration. A change to a page that is not evidence does not change it. |
+| `source_digest` | `sha256:` and 64 hex digits over the declared inputs (ADR-0087 D2): each evidence page's source file, a consumer catalog file, and, as configuration, the site, the base, the section-index names and the shipped default catalog. Equivalent spellings of the site or base (`/docs` and `/docs/`) give the same digest. A change to a page that is not evidence does not change it. |
 | `content_hash` | `sha256:` and the first 12 hex digits of the index serialised without `generated`: it detects a hand edit |
 
 The keys of `source_digest`'s input entries are paths relative to the project
@@ -169,10 +174,14 @@ counsel; these make either possible.
 - **The hub page** is a Markdown Hub rendered from the built index: measures by
   nature, then scope, with links to the evidence pages, and the uncovered
   measures. It opens with the label, the notice and the ⚖ items, and carries a
-  four-key `generated` stamp. Put it in an existing section; the example uses
-  `context/evidence-index/index.md`. Do not classify the hub page itself.
+  four-key `generated` stamp. Put it inside an existing section, not at the
+  root of the docs: only a Hub inside a section counts as a generated page for
+  the frontmatter gate. The example uses `context/evidence-index/index.md`. Do
+  not classify the hub page itself.
 
-The `dockitty-tom-annex` command writes and checks them. It reads only the
+The `dockitty-tom-annex` command writes and checks them. The stamp and the
+check's output use the producer id, `doc-kitty-tom-annex`, with a hyphen; the
+command's name has none. It reads only the
 built `<dist>/api/tom-annex.json`: it runs no site config, no Astro and no other
 repository's code.
 
@@ -197,15 +206,16 @@ example site.
 `--check` prints one line per file that is not up to date,
 `doc-kitty-tom-annex <verdict> <path>`, then the command to regenerate. It
 exits `0` when both are up to date, `1` on drift, and `2` on a usage or input
-error. When several verdicts apply, the first in this table is reported:
+error. A build with no `api/tom-annex.json` is an input error: build the site
+first. When several verdicts apply, the first in this table is reported:
 
 | Verdict | Meaning | Remedy |
 |---|---|---|
-| `missing` | the file, or the build's index, does not exist | build, then write it |
+| `missing` | the file does not exist | write it |
 | `unowned` | the path holds a file not stamped by `doc-kitty-tom-annex` (the verdict [PR #454](https://github.com/spec-kitty/doc-kitty/pull/454) added to ADR-0087 D3) | move or delete that file, then write |
 | `hand-edited` | the file no longer matches its own `content_hash` (for the snapshot, also an `at` its evidence does not give) | move the change to the classified pages or the catalog, then write |
 | `stale-source` | its `source_digest` differs from the build's: an evidence page, the catalog or the configuration changed | write again |
-| `stale-render` | same inputs, different bytes: a toolkit change, or a formatting edit | write again |
+| `stale-render` | same inputs, different bytes: a toolkit change, or a formatting edit to the snapshot (on the hub page, any edit reads as `hand-edited`) | write again |
 
 **The check trusts the build.** It compares the committed files with the
 `source_digest` of the `dist` you point it at; it does not recompute the
@@ -257,6 +267,10 @@ pages. After you classify the first page, restart it to see
   owned through the registry instead of by its command-line path. It would amend
   ADR-0083 D3; for now the snapshot is recognised by its path.
 - The shared organisation bundle (#404), which builds on this format.
+- The ADR-0087 stamp helpers (the four-key Markdown stamp, `source_digest` and
+  the Markdown `content_hash`) live with this producer for now. They move to the
+  shared stamp module when the Gherkin and glossary producers adopt the
+  four-key stamp (ADR-0087 D8).
 - ADR-0087 D5 names `generated.at` and `updated` as the instants `at` may come
   from; the index also uses `verified[].at`. A follow-up either names
   verification instants in D5 or drops them.

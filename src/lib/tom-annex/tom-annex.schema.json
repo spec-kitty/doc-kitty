@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://doc-kitty.spec-kitty.dev/schemas/tom-annex-1.0.json",
-  "title": "DocKitty evidence index (TOM annex), format 1.0",
+  "title": "DocKitty evidence index (technical and organisational measures), format 1.0",
   "description": "Evidence index, not the contractual annex. Lists, per catalog measure, the published pages that evidence it. Not legal advice.",
   "type": "object",
   "additionalProperties": false,

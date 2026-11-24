@@ -18,8 +18,8 @@ import { createHash } from 'node:crypto';
 import { MEASURE_NATURES } from '../measures-core.mjs';
 import { TOM_ANNEX_COUNSEL, TOM_ANNEX_LABEL, TOM_ANNEX_NOTICE } from './core.mjs';
 
-const TITLE = 'Evidence index (TOM)';
-const DESCRIPTION = `${TOM_ANNEX_LABEL} The published pages that evidence each technical and organisational measure.`;
+const TITLE = 'Evidence index (technical and organisational measures)';
+const DESCRIPTION = `${TOM_ANNEX_LABEL} The published pages classified under each technical and organisational measure.`;
 
 /** @type {Record<string, string>} */
 const NATURE_HEADING = {
@@ -147,9 +147,9 @@ export function renderHubPage(annex) {
   }
   body.push('', '## Uncovered measures', '');
   if (annex.uncovered.length === 0) {
-    body.push('Every measure of the catalog has at least one evidence page.');
+    body.push('Every measure of the catalog has at least one classified page.');
   } else {
-    body.push('No published page evidences these measures yet.', '');
+    body.push('No published page is classified under these measures yet.', '');
     for (const u of annex.uncovered) body.push(`- **${inline(u.label)}** (\`${u.id}\`), ${u.nature}`);
   }
 

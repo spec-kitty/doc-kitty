@@ -39,7 +39,7 @@ export function tomAnnexRoute({ docsDir, indexBasename }: TomAnnexRouteOptions):
     // rather than publish an empty index.
     if (!graph.edges.some((edge) => edge.rel === 'classified-as')) {
       throw new Error(
-        `[dk-tom-annex] the route is mounted but the content graph has no classified-as edge: the config-time scan and the graph disagree (${docsRoot})`,
+        `[dk-tom-annex] the route is mounted but the content graph has no classified-as edge: the config-time scan and the graph disagree (${docsRoot}); under \`astro dev\`, restart the dev server after adding or removing the last classification`,
       );
     }
     const base = import.meta.env.BASE_URL;
@@ -51,7 +51,7 @@ export function tomAnnexRoute({ docsDir, indexBasename }: TomAnnexRouteOptions):
     const inputs = annexInputs({
       evidencePages: evidenceSourceFiles(graph, locations).map(source),
       catalogFile: measures.isDefault ? undefined : source(MEASURES_REGISTRY_RELPATH),
-      config: annexConfig({ site, base, catalog: measures }),
+      config: annexConfig({ site, base, catalog: measures, indexBasename }),
     });
     return new Response(serializeTomAnnex(stampAnnex(annex, { inputs })), {
       headers: { 'Content-Type': 'application/json; charset=utf-8' },

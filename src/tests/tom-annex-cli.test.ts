@@ -92,11 +92,12 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     expect(check.out).toContain(`doc-kitty-tom-annex missing ${p.hub}`);
   });
 
-  it('reports a missing build index under --check (exit 1), and refuses to write without one (exit 2)', () => {
+  it('treats a missing build index as an input error, not a D3 verdict, in both modes (exit 2; R24 squad)', () => {
     const p = project(null);
     const check = p.run(...p.both, '--check');
-    expect(check.status).toBe(1);
-    expect(check.out).toMatch(/missing .*tom-annex\.json[\s\S]*no published classified pages\?/);
+    expect(check.status).toBe(2);
+    expect(check.out).toMatch(/no evidence index at .*tom-annex\.json[\s\S]*no published classified pages\?/);
+    expect(check.out).not.toMatch(/^doc-kitty-tom-annex missing/m);
     const write = p.run(...p.both);
     expect(write.status).toBe(2);
     expect(existsSync(p.snapshot)).toBe(false);

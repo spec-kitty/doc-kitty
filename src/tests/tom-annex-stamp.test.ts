@@ -6,6 +6,8 @@
  */
 import { createHash } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('astro:content', () => ({ getCollection: async () => [] }));
 import { buildTomAnnex, serializeTomAnnex } from '../lib/tom-annex/core.mjs';
 import {
   TOM_ANNEX_PRODUCER,
@@ -18,6 +20,7 @@ import {
   stampAnnex,
 } from '../lib/tom-annex/stamp.mjs';
 import { PRODUCER_REGISTRY } from '../lib/producers.mjs';
+import { locatePages } from '../lib/docs-index.js';
 import { isGeneratedStamp } from '../lib/generator-stamp.mjs';
 import { canonical, catalog as catalogOf, classified, graph as graphOf, page, record } from './fixtures/tom-annex/graph.mjs';
 
@@ -95,6 +98,22 @@ describe('the declared inputs (T026)', () => {
     expect(digestOf(pages, { config: other })).not.toBe(digestOf(pages));
   });
 
+  it('includes the index names, which change section-index URLs (R24 squad)', () => {
+    const records = [record('a'), record('b')];
+    const withNames = (indexBasename?: string | string[]) =>
+      annexConfig({ site: SITE, base: BASE, catalog: { records, isDefault: true }, indexBasename });
+    expect(withNames().indexBasename).toEqual(['README']);
+    expect(withNames('README').indexBasename).toEqual(['README']);
+    expect(digestOf(pages, { config: withNames(['index', 'README']) })).not.toBe(digestOf(pages, { config: withNames() }));
+  });
+
+  it('normalises equivalent base and site spellings to one digest (R24 squad)', () => {
+    const records = [record('a'), record('b')];
+    const at = (site: string, base: string) => annexConfig({ site, base, catalog: { records, isDefault: true } });
+    expect(digestOf(pages, { config: at('https://docs.example.org', '/docs') })).toBe(digestOf(pages, { config: at('https://docs.example.org/', '/docs/') }));
+    expect(digestOf(pages, { config: at('https://docs.example.org', 'docs/') })).toBe(digestOf(pages, { config: at('https://docs.example.org/', '/docs/') }));
+  });
+
   it('the default catalog is configuration, sorted by id, so record order does not matter', () => {
     const sorted = annexConfig({ site: SITE, base: BASE, catalog: { records: [record('a'), record('b')], isDefault: true } });
     expect(digestOf(pages, { config: sorted })).toBe(digestOf(pages));
@@ -139,6 +158,18 @@ describe('evidenceSourceFiles: only pages with a classified-as edge are inputs (
       ],
     };
     expect(evidenceSourceFiles(mixed, locations)).toEqual(evidenceSourceFiles(graph, locations));
+  });
+
+  it('finds a classified section index page through the real locatePages shape (R24 squad, MAJOR)', () => {
+    // locatePages keys by route slug ("security"), while a node's id is its bundle path ("security/README").
+    const real = locatePages(['README.md', 'security/README.md', 'security/audit.md'], ['README']);
+    expect(real.security?.id).toBe('security/README');
+    const edges = [
+      { rel: 'classified-as', source: 'security/README', target: 'catalog:measure:a' },
+      { rel: 'classified-as', source: 'README', target: 'catalog:measure:a' },
+      { rel: 'classified-as', source: 'security/audit', target: 'catalog:measure:a' },
+    ];
+    expect(evidenceSourceFiles({ edges }, real)).toEqual(['README.md', 'security/README.md', 'security/audit.md']);
   });
 
   it('throws when an evidence page has no source file', () => {
