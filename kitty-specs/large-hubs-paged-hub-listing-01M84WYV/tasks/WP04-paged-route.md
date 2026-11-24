@@ -18,6 +18,9 @@ requirement_refs:
 planning_base_branch: feat/342-paged-hub-listing
 merge_target_branch: feat/342-paged-hub-listing
 branch_strategy: Planning artifacts for this mission were generated on feat/342-paged-hub-listing. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/342-paged-hub-listing unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-large-hubs-paged-hub-listing-01M84WYV
+base_commit: 0aa0210f67381ed7958102f5eec48c0f200ef0b5
+created_at: '2026-11-24T19:48:30.330272+00:00'
 subtasks:
 - T017
 - T018
