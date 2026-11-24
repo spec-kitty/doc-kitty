@@ -53,7 +53,7 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 2,
@@ -65,7 +65,8 @@
       "notes": [
         "Role kind + gate rule, red-first (9a55716 red, e0c53a6 green); pnpm test src 4530/4530, mcp 181/181",
         "Cycle 2: lint fixed and lenient-schema test renamed; lint 0; pnpm test src 4530/4530 mcp 181/181 at 4a30c36",
-        "Cycle 3: parse() returns a copy (gray-matter cache), isolation assertion added; lint 0; shuffled seeds 1-10 11/11; pnpm test src 4530/4530 mcp 181/181 at 43ed537"
+        "Cycle 3: parse() returns a copy (gray-matter cache), isolation assertion added; lint 0; shuffled seeds 1-10 11/11; pnpm test src 4530/4530 mcp 181/181 at 43ed537",
+        "Review passed (cycle 3): parse() copy fixes the shared-fixture leak (14 shuffled seeds green, mutation check red without copy); gates green src 4530/4530, mcp 181/181, lint/typecheck 0, status validate PASS"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
