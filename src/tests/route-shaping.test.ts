@@ -33,7 +33,7 @@ import {
   type RouteToc,
   type SidebarEntry,
 } from '../lib/route-shaping.js';
-import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY } from '../lib/child-cap.js';
+import { CAPPED_ENTRY_LABEL, CAPPED_LABEL_KEY, HUB_PAGINATION_STRINGS } from '../lib/child-cap.js';
 
 vi.mock('@astrojs/starlight', () => ({
   default: (config: Record<string, unknown>) => ({
@@ -811,7 +811,8 @@ describe('integration wiring (T022, C-004)', () => {
     expect(plugins.map((p) => p.name)).toEqual(['doc-kitty:i18n', 'adopter']);
     const injected: unknown[] = [];
     (plugins[0]!.hooks as Record<string, (arg: { injectTranslations: (t: unknown) => void }) => void>)['i18n:setup']!({ injectTranslations: (t: unknown) => injected.push(t) });
-    expect(injected).toEqual([{ en: { [INDEX_LABEL_KEY]: 'Overview', [CAPPED_LABEL_KEY]: CAPPED_ENTRY_LABEL } }]);
+    // The hub pagination strings (#342) ship in the same plugin.
+    expect(injected).toEqual([{ en: { [INDEX_LABEL_KEY]: 'Overview', [CAPPED_LABEL_KEY]: CAPPED_ENTRY_LABEL, ...HUB_PAGINATION_STRINGS } }]);
     inSite(() => {
       expect(servedData(defineDocKittyIntegrations({ title: 'Docs' })).indexLabel).toBeUndefined();
       const labelled = defineDocKittyIntegrations({ title: 'Docs', sidebar: { indexLabel: 'Start here' } });
