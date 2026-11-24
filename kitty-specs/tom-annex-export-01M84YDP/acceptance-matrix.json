@@ -38,10 +38,10 @@
       "criterion_id": "FR-004",
       "description": "Verify FR-004 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/tom-annex-core.test.ts (label, notice, counsel); src/tests/tom-annex-hub-page.test.ts (caution block, every counsel item); src/tests/okf-export-tom-annex.test.ts (OKF entry label); src/tests/tom-annex-build.test.ts (_links title = label); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:47.290707+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
