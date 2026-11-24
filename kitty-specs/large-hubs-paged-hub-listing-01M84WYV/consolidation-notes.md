@@ -64,6 +64,25 @@ hand-off.
      as the `DK_OPENAPI` publication precedent. A failed cache write reports
      with the `[dk-openapi]` prefix (`writeCacheAtomic`).
 
+## WP06 review carry-overs (approved at lane-f 28ff2c81; fold at R24)
+
+- (a) The hub data handoff read error names `DK_HUB_DATA` and says to rerun the build.
+- (b) The setup hook comment says the hub data is computed once; the virtual
+  module still calls `siteHubData` again. Fix the comment, or serve the
+  module's `hubCaps` from the handoff.
+- (c) A test that the listing route calls `pageCards` (G4 at the route level).
+- (d) PR body: quote the NFR-002 build-time spread (recorded +5%, reviewer rerun
+  +9.6%, budget 10%).
+- (e) WP07: the guide carries the pinned pagination CSP hash and documents the
+  listing contract fields (`listing_of`, `page`, `of`, `children`,
+  `ListingChild`). Checked: the guide at bda45d6e has neither.
+- (f) Issue-matrix rows for #359 and #402 (the ADR-number mentions at research.md:90).
+- (g) PR body: listing pages are absent from RSS and Atom by design.
+- (h) The Playwright focus-ring assertion must not pass on the UA default outline.
+- (i) Trailers in the final PR history: the dispatcher asks for no Co-Authored-By;
+  the original brief asked for the model-free Co-Authored-By trailer. Confirm with
+  the dispatcher before R24.
+
 ## Held for the operator
 
 - Locales with different page counts: a listing page's hreflang alternates and
