@@ -1,0 +1,139 @@
+{
+  "mission_slug": "tom-annex-export-01M84YDP",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-core.test.ts (per-measure records, evidence-ref fields, schema keys); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:31.400417+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-core.test.ts (grouping by scope, once per scope); src/tests/tom-annex-build.test.ts (organisation page filed once); src/tests/assert-build-artifacts-tom-annex.test.ts (listed twice under a scope fails); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:36.857673+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-core.test.ts (uncovered); src/tests/assert-build-artifacts-tom-annex.test.ts (SC-001 accounting); src/tests/tom-annex-build.test.ts (draft-only measure is uncovered); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:42.049964+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-core.test.ts (label, notice, counsel); src/tests/tom-annex-hub-page.test.ts (caution block, every counsel item); src/tests/okf-export-tom-annex.test.ts (OKF entry label); src/tests/tom-annex-build.test.ts (_links title = label); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:47.290707+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-build.test.ts (_links.tomAnnex with label); src/tests/assert-build-artifacts-tom-annex.test.ts (gate requires the link); src/tests/agent-api-build-identity.test.ts; lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:52.760695+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-build.test.ts (classified draft left out, its measure uncovered); src/tests/assert-build-artifacts-tom-annex.test.ts (triples equal the graph); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:58.358160+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/draft-publication-build.test.ts (two builds, index compared unmasked); src/tests/tom-annex-core.test.ts (schema-order serialisation); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:03.800296+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-stamp.test.ts (D2 worked example, at from inputs, no clock); src/tests/tom-annex-route.test.ts (served stamp); src/tests/tom-annex-build.test.ts (built stamp); src/tests/assert-build-artifacts-tom-annex.test.ts (gate checks the stamp); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:09.429166+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Verify FR-009 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-check.test.ts (D3 verdicts and precedence); src/tests/tom-annex-cli.test.ts (write, check, refuse, exit codes); lane-g@6134ce5c (contains lanes a-f); pnpm validate:tom-annex clean on the example",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:14.792302+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Verify FR-010 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-hub-page.test.ts (golden page, natures and scopes); src/tests/tom-annex-cli.test.ts (opt-in --hub); example/docs/context/evidence-index/index.md; lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:20.275696+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Verify FR-011 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/okf-export-tom-annex.test.ts; src/tests/tom-annex-build.test.ts (OKF bundle carries the same bytes); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:25.850694+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Verify FR-012 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/tom-annex-build.test.ts (bare site: no file, no link, no OKF copy, gate passes); src/tests/tom-annex-scan.test.ts; src/tests/assert-build-artifacts-tom-annex.test.ts (no classified pages); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:31.046368+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Verify FR-013 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "docs/guides/tom-annex.md and docs/changelog/unreleased/401-tom-annex-export.md on feat/401-tom-annex-export@da7bc9e5; WP08 approved in review cycle 2; validate:docs/links/changelog, markdownlint and Vale clean",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:36.630491+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}
