@@ -9,18 +9,23 @@
  * implements exactly the keywords the shipped schema uses: `$ref` (into
  * `#/$defs`), `type` (one or a list), `const`, `enum`, `pattern`, `minLength`,
  * `minItems`, `items`, `required`, `properties` and `additionalProperties: false`.
- * A schema that starts using another keyword fails loudly here, so the two cannot
- * drift apart silently.
+ * `pattern` is a Unicode regex and `minLength` counts code points, as in
+ * JSON Schema 2020-12. The whole schema is walked once before use: another
+ * keyword anywhere (even off the instance's path), a keyword beside `$ref`, or
+ * an unresolvable or cyclic `$ref` throws, so the two cannot drift apart silently.
  *
  * @module tom-annex/schema-check
  */
 
 import shippedSchema from './tom-annex.schema.json' with { type: 'json' };
 
-/** The keywords this validator implements, plus annotations it ignores. */
+/** Annotations: accepted anywhere and ignored. */
+const ANNOTATIONS = new Set(['$schema', '$id', 'title', 'description']);
+
+/** The keywords this validator implements, plus the annotations it ignores. */
 const KNOWN = new Set([
   '$ref', 'type', 'const', 'enum', 'pattern', 'minLength', 'minItems', 'items', 'required', 'properties',
-  'additionalProperties', '$schema', '$id', '$defs', 'title', 'description',
+  'additionalProperties', '$defs', ...ANNOTATIONS,
 ]);
 
 /**
@@ -39,11 +44,20 @@ function typeOf(value) {
  * @param {Record<string, any>} root
  */
 function resolve(schema, root) {
-  if (typeof schema.$ref !== 'string') return schema;
-  const name = /^#\/\$defs\/(.+)$/.exec(schema.$ref)?.[1];
-  const target = name === undefined ? undefined : root.$defs?.[name];
-  if (!target) throw new Error(`[dk-tom-annex] the shipped schema has an unresolvable $ref ${schema.$ref}`);
-  return target;
+  let current = schema;
+  /** @type {Set<string>} */
+  const seen = new Set();
+  // Follow a chain of `$ref`s (a → b → …) to the schema at its end.
+  while (typeof current.$ref === 'string') {
+    const ref = current.$ref;
+    if (seen.has(ref)) throw new Error(`[dk-tom-annex] the shipped schema has a $ref cycle through ${ref}`);
+    seen.add(ref);
+    const name = /^#\/\$defs\/(.+)$/.exec(ref)?.[1];
+    const target = name === undefined || !Object.hasOwn(root.$defs ?? {}, name) ? undefined : root.$defs[name];
+    if (!target) throw new Error(`[dk-tom-annex] the shipped schema has an unresolvable $ref ${ref}`);
+    current = target;
+  }
+  return current;
 }
 
 /**
@@ -55,9 +69,6 @@ function resolve(schema, root) {
  */
 function check(value, schema, root, at, out) {
   const s = resolve(schema, root);
-  for (const key of Object.keys(s)) {
-    if (!KNOWN.has(key)) throw new Error(`[dk-tom-annex] the shipped schema uses "${key}", which schema-check.mjs does not implement`);
-  }
   const where = at === '' ? '/' : at;
   if (s.type !== undefined) {
     const allowed = Array.isArray(s.type) ? s.type : [s.type];
@@ -71,8 +82,9 @@ function check(value, schema, root, at, out) {
   if ('const' in s && value !== s.const) out.push(`${where}: expected ${JSON.stringify(s.const)}`);
   if (Array.isArray(s.enum) && !s.enum.includes(value)) out.push(`${where}: expected one of ${s.enum.map((v) => JSON.stringify(v)).join(', ')}`);
   if (typeof value === 'string') {
-    if (typeof s.pattern === 'string' && !new RegExp(s.pattern).test(value)) out.push(`${where}: does not match ${s.pattern}`);
-    if (typeof s.minLength === 'number' && value.length < s.minLength) out.push(`${where}: shorter than ${s.minLength}`);
+    // JSON Schema patterns are Unicode regexes, and lengths count code points.
+    if (typeof s.pattern === 'string' && !new RegExp(s.pattern, 'u').test(value)) out.push(`${where}: does not match ${s.pattern}`);
+    if (typeof s.minLength === 'number' && [...value].length < s.minLength) out.push(`${where}: shorter than ${s.minLength}`);
   }
   if (Array.isArray(value)) {
     if (typeof s.minItems === 'number' && value.length < s.minItems) out.push(`${where}: fewer than ${s.minItems} item(s)`);
@@ -80,13 +92,44 @@ function check(value, schema, root, at, out) {
   }
   if (typeOf(value) === 'object') {
     const obj = /** @type {Record<string, unknown>} */ (value);
-    for (const key of s.required ?? []) if (!(key in obj)) out.push(`${where}: missing required "${key}"`);
+    // Own properties only: `in` would let prototype keys such as "constructor" through.
+    for (const key of s.required ?? []) if (!Object.hasOwn(obj, key)) out.push(`${where}: missing required "${key}"`);
     const properties = s.properties ?? {};
     for (const [key, child] of Object.entries(obj)) {
-      if (key in properties) check(child, properties[key], root, `${at}/${key}`, out);
+      if (Object.hasOwn(properties, key)) check(child, properties[key], root, `${at}/${key}`, out);
       else if (s.additionalProperties === false) out.push(`${where}: unknown key "${key}"`);
     }
   }
+}
+
+/** Schemas already walked by `assertImplemented`. */
+const vetted = new WeakSet();
+
+/**
+ * Throw if any subschema, reachable or not from a given instance, uses a keyword
+ * this validator does not implement. Walks `$defs`, `properties` and `items`.
+ *
+ * @param {Record<string, any>} schema
+ */
+function assertImplemented(schema) {
+  if (vetted.has(schema)) return;
+  /** @param {Record<string, any>} s @param {string} at */
+  const walk = (s, at) => {
+    for (const key of Object.keys(s)) {
+      if (!KNOWN.has(key)) throw new Error(`[dk-tom-annex] the shipped schema uses "${key}" at ${at || '/'}, which schema-check.mjs does not implement`);
+    }
+    // In 2020-12 a keyword beside `$ref` also applies; `resolve()` follows the ref only, so refuse the shape.
+    if (s.$ref !== undefined) {
+      const beside = Object.keys(s).filter((k) => !ANNOTATIONS.has(k) && k !== '$ref' && k !== '$defs');
+      if (beside.length > 0) throw new Error(`[dk-tom-annex] the shipped schema has ${beside.join(', ')} beside $ref at ${at || '/'}, which schema-check.mjs does not apply`);
+      resolve(s, schema);
+    }
+    for (const [name, sub] of Object.entries(s.$defs ?? {})) walk(sub, `${at}/$defs/${name}`);
+    for (const [name, sub] of Object.entries(s.properties ?? {})) walk(sub, `${at}/properties/${name}`);
+    if (s.items && typeof s.items === 'object') walk(s.items, `${at}/items`);
+  };
+  walk(schema, '');
+  vetted.add(schema);
 }
 
 /**
@@ -97,6 +140,7 @@ function check(value, schema, root, at, out) {
  * @returns {string[]}
  */
 export function schemaProblems(annex, schema = shippedSchema) {
+  assertImplemented(schema);
   /** @type {string[]} */
   const out = [];
   check(annex, schema, schema, '', out);

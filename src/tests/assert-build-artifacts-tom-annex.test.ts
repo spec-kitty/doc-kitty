@@ -167,6 +167,15 @@ describe('tomAnnexProblems (WP05 T021)', () => {
       expect(problems().join('\n')).not.toMatch(/shipped schema/);
     });
 
+    it('fails a key named like an Object.prototype member, at the top level and inside an evidence ref (review cycle 4)', () => {
+      for (const key of ['constructor', '__proto__']) {
+        const top = annexText.replace(/^\{/, `{"${key}": {"a": 1},`);
+        expect(problems({ annexText: top }).join('\n')).toMatch(new RegExp(`shipped schema at /: unknown key "${key}"`));
+        const inRef = annexText.replace('"title":', `"${key}": 1, "title":`);
+        expect(problems({ annexText: inRef }).join('\n')).toMatch(new RegExp(`shipped schema at /scopes/system/0/evidence/0: unknown key "${key}"`));
+      }
+    });
+
     it('reports a null scope entry or a null evidence ref instead of throwing', () => {
       const nullEntry = edited((a) => a.scopes.system.push(null as never));
       expect(() => problems({ annexText: nullEntry })).not.toThrow();
