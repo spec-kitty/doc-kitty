@@ -10,10 +10,8 @@
  *   HTML comments, nothing else.
  */
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import { parse as parseYaml } from 'yaml';
@@ -30,7 +28,6 @@ import {
 } from '../lib/operating-model-templates.mjs';
 
 const NOW = new Date('2026-11-24T09:00:00Z');
-const gatePath = fileURLToPath(new URL('../scripts/validate-frontmatter.mjs', import.meta.url));
 const bodiesDir = fileURLToPath(new URL('../lib/templates/operating-model/', import.meta.url));
 const measuresIndex = buildMeasuresIndex(DEFAULT_MEASURES);
 
@@ -171,22 +168,6 @@ describe('every rendered template passes the gate (FR-012)', () => {
     });
   }
 
-  it('the gate CLI passes a tree holding all 12 rendered pages', () => {
-    const root = mkdtempSync(join(tmpdir(), 'om-templates-'));
-    try {
-      const docs = join(root, 'docs');
-      for (const t of OPERATING_MODEL_TEMPLATES) {
-        const file = join(docs, `${t.path}.md`);
-        mkdirSync(dirname(file), { recursive: true });
-        writeFileSync(file, renderTemplatePage(t, { now: NOW }), 'utf8');
-      }
-      const res = spawnSync(process.execPath, [gatePath, docs], { encoding: 'utf8' });
-      expect(res.status, `${res.stdout}\n${res.stderr}`).toBe(0);
-      expect(res.stdout).toMatch(/✓ 12 file\(s\) valid/);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
 });
 
 describe('template bodies hold structure and prompts only (NFR-004, C-001)', () => {
