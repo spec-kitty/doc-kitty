@@ -191,18 +191,24 @@ if (presetFlag === 'operating-model') {
   // keeps its template's default.
   const sectionIndex = join('operating-model', indexFilename);
   const typeOf = (relPath, fallback) => siteDocType(relPath.split(sep).join('/'), base) ?? fallback;
-  write(
-    sectionIndex,
-    indexFrontmatter(
+  // Render every page before writing any, so a failed template read leaves
+  // nothing half-written.
+  const pages = [
+    [
       sectionIndex,
-      'Operating model',
-      'How the organisation runs, with its structure, roles, governance, processes and policies.',
-      typeOf(sectionIndex, 'Operations'),
-    ),
-  );
-  for (const record of OPERATING_MODEL_TEMPLATES) {
-    write(`${record.path}.md`, renderTemplatePage(record, { type: typeOf(`${record.path}.md`, record.defaultType) }));
-  }
+      indexFrontmatter(
+        sectionIndex,
+        'Operating model',
+        'How the organisation runs, with its structure, roles, governance, processes and policies.',
+        typeOf(sectionIndex, 'Operations'),
+      ),
+    ],
+    ...OPERATING_MODEL_TEMPLATES.map((record) => [
+      `${record.path}.md`,
+      renderTemplatePage(record, { type: typeOf(`${record.path}.md`, record.defaultType) }),
+    ]),
+  ];
+  for (const [relPath, content] of pages) write(relPath, content);
 } else {
   writeDefaultTree();
 }
