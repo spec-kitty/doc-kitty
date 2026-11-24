@@ -11,6 +11,9 @@ section: Added
   organisation scope. Neither tool overwrites an existing file. A new `Role`
   kind records an accountable function and requires `role` and
   `responsibilities`. The `operating-model` section is opt-in, through a
-  documented `sections.yaml` entry. See
+  documented `sections.yaml` entry. Two runs without a template also change:
+  `new-doc` refuses a `--title` with a control character (exit 2), and
+  `scaffold` no longer takes a flag's value, such as `--index-basename index`,
+  as its base folder. See
   [ADR-0085](docs/adr/0085-role-kind.md) and
   [Documenting your operating model](docs/guides/operating-model.md).

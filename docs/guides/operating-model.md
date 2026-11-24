@@ -19,7 +19,8 @@ related:
 
 **Audience.** A team that documents how its organisation runs: its structure,
 roles, governance, processes and policies. Many teams do this to support the
-organisational measures in a data processing agreement.
+organisational measures in a data processing agreement (see the
+[EU DPA compatibility research](../architecture/research/eu-dpa-compatibility.md)).
 
 **What the toolkit gives you.** It gives you structure, not content: twelve page
 templates, an opt-in `operating-model` section, and a `Role` kind for
@@ -86,7 +87,7 @@ is `Runbook`. The other pages go to `operating-model/`.
 
 Keep the preset measures that your page evidences, and remove the rest. If you
 replace the measures catalog with your own `docs/_meta/measures.yaml`, a preset
-id that your catalog drops fails `pnpm validate:catalog` and the build. Remove
+id that your catalog drops fails `pnpm exec dockitty-validate-catalog docs` and the build. Remove
 it from the page, or keep the record in your catalog.
 
 ## Opt into the section
@@ -106,10 +107,12 @@ sections:
 ```
 
 The same entry ships in the toolkit as
-`lib/templates/operating-model/sections.snippet.yaml`.
+`lib/templates/operating-model/sections.snippet.yaml`, already indented to paste
+at the end of a two-space `sections:` list.
 
-Without the entry, the pages still validate. With it, the gate also checks that
-their `type` is `Operations`, or the type you set through the vocabulary.
+Without the entry, the pages still validate. With it, the gate also warns when
+an operating-model page's `type` is not `Operations`, or the type you set
+through the vocabulary.
 
 Both tools take a page's `type` from your section registry, the way the gate
 does. Without an entry for the section, the index and the `operating-model/`

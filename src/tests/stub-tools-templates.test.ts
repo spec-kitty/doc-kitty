@@ -53,7 +53,8 @@ afterEach(() => rmSync(root, { recursive: true, force: true }));
 describe('runs without --template or --preset are unchanged (FR-014)', () => {
   // Digest of the default scaffold tree and `new-doc guides/x`, captured before
   // this mission's changes: paths sorted, each file masked for its clock lines
-  // and the toolkit version.
+  // and the toolkit version. When the default scaffold output changes on
+  // purpose, regenerate this digest in the same change and say why.
   const PINNED = { files: 53, sha256: '3a0816c98bf398688cc7ba84687e2ccd419c160b947a5b5d52a3c0cad9338686' };
   const mask = (s: string) =>
     s
@@ -238,15 +239,13 @@ describe('--title rejects control characters (review nit, WP03 cycle 1)', () => 
 /** Write the toolkit's own registry plus the operating-model snippet into `<docs>/_meta`. */
 function applySnippet(docsRoot: string): void {
   const own = readFileSync(fileURLToPath(new URL('../../docs/_meta/sections.yaml', import.meta.url)), 'utf8');
+  // The snippet ships indented for a `sections:` list, so it is appended verbatim.
   const snippet = readFileSync(
     fileURLToPath(new URL('../lib/templates/operating-model/sections.snippet.yaml', import.meta.url)),
     'utf8',
-  )
-    .split('\n')
-    .map((line) => (line.trim() ? `  ${line}` : line))
-    .join('\n');
+  );
   mkdirSync(join(docsRoot, '_meta'), { recursive: true });
-  writeFileSync(join(docsRoot, '_meta/sections.yaml'), `${own.trimEnd()}\n\n${snippet}\n`, 'utf8');
+  writeFileSync(join(docsRoot, '_meta/sections.yaml'), `${own.trimEnd()}\n\n${snippet}`, 'utf8');
 }
 
 describe('review folds (WP04 cycle 1)', () => {
@@ -294,4 +293,16 @@ describe('review folds (WP04 cycle 1)', () => {
     expect(res.stderr).toMatch(/--title must not contain control characters/);
     expect(files(docs).filter((f) => !f.startsWith('_meta'))).toEqual([]);
   });
+});
+
+describe('flag values are checked before writing (R24 squad)', () => {
+  for (const flag of ['--base', '--type'] as const) {
+    it(`new-doc --template with a bare ${flag} exits 2 with a message, not a stack trace`, () => {
+      const res = spawnSync(process.execPath, [newDoc, '--template', 'people', flag], { encoding: 'utf8', cwd: root });
+      expect(res.status).toBe(2);
+      expect(res.stderr).toMatch(new RegExp(`✖ ${flag} needs a value`));
+      expect(res.stderr).not.toMatch(/TypeError|at /);
+      expect(files(root)).toEqual([]);
+    });
+  }
 });
