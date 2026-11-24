@@ -86,6 +86,7 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
+      "implementer_of_record": "claude",
       "lane": "approved",
       "last_event_id": "01M85CES11AGVECYMVYBFYWYGS",
       "last_transition_at": "2026-11-23T23:39:29.185417+00:00",
