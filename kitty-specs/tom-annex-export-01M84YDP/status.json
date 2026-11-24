@@ -2,9 +2,9 @@
   "event_count": 93,
   "last_event_id": "01M87MTS7JZXT06R4TBWPQSZ8W",
   "materialized_at": "2026-11-24T20:44:20.082720+00:00",
-  "mission_number": "",
+  "mission_number": "23",
   "mission_slug": "tom-annex-export-01M84YDP",
-  "mission_type": "",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -19,139 +19,266 @@
   "work_packages": {
     "WP01": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MT84TQK3Y4S2ZYK8S039K",
       "last_transition_at": "2026-11-24T20:44:02.586896+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Core and format 1.0: 21 unit tests red-first; full pnpm test green (src 4540/4540, mcp 181/181); CI typecheck and lint clean.",
+        "Review passed (reviewer-renata). Red-first reproduced: no core -> suite fails to load; stub -> 19/21 red, 2 invariance tests green (backed by golden bytes). Output validates against shipped schema (ajv 2020 ad hoc, not added); shipped schema == contract except generated not yet required; contract validates once a stamp is added, key order matches. 500 random permutations of nodes/edges/records byte-identical; no localeCompare/Date/Intl/node:/astro in core. absoluteUrl == withBase+absolute() on 240 base/href/site combos; missing href throws. Drafts: no filter in WP01, relies on graph (FR-006 is WP05). Lane tree == 5c266e6; dc1cf77 cleanly reverts 6c6533a's 17 stray files. Gates: pnpm test src 4540/4540, mcp 181/181; lint, typecheck clean. Non-blocking nits: N1 WP-listed 'one page, both scopes' test absent (unreachable: check() rejects it, edge id has no scope); N2 evidence merge is last-wins by url (order-dependent only on synthetic duplicate edges the graph sink cannot emit); N3 doc_status 'active' and title-from-id fallbacks unreachable; N4 shuffle test only reverses."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP01-annex-core-and-format/review-cycle-1.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP01-annex-core-and-format/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 15160,
-      "shell_pid_created_at": "1795470229.82"
+      "role": "reviewer",
+      "shell_pid": 23142,
+      "shell_pid_created_at": "1795473133.36",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done"
+      }
     },
     "WP02": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MTAFVDF836WD4F1D7BTMJ",
       "last_transition_at": "2026-11-24T20:44:04.987948+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Shared site graph: byte ratchet on content-graph.json (captured pre-extraction, non-vacuity shown), memo/dev/reset and no-mutation tests red-first; full pnpm test green (src 4526/4526, mcp 181/181); CI typecheck and lint clean.",
+        "Approved. content-graph.json byte-identical on the full example build (sha256 78e0e3b4..., 88 nodes/134 edges incl. 3 OpenAPI); whole dist identical modulo worktree-path CSS scope hashes. Gates: src 4526/4526, mcp 181/181, lint 0, typecheck 0 errors. Memo key, dev rebuild, failure eviction and no-mutation verified. Non-blocking nits: (N1) unconditional memo.delete on rejection can evict a newer entry after resetSiteContentGraph() mid-flight - guard with memo.get(key)===pending; (N2) ratchet fixture does not pin the OpenAPI branch (covered by the full-site diff); (N3) bare-tsc import.meta.env error follows with-base.ts/page-formats-route.ts precedent; a vite/client triple-slash reference would clear it; the comment cites with-base.ts for the DEV spelling but that file reads BASE_URL."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP02-shared-site-graph/review-cycle-1.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP02-shared-site-graph/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 21544,
-      "shell_pid_created_at": "1795470504.25"
+      "role": "reviewer",
+      "shell_pid": 21681,
+      "shell_pid_created_at": "1795473923.51",
+      "subtasks": {
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
     },
     "WP03": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MTCXPTPCNCYX7H7FG9QF6",
       "last_transition_at": "2026-11-24T20:44:07.478992+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Route, conditional mount and _links.tomAnnex: 18 new tests red-first; full pnpm test green (src 4563/4563, mcp 181/181); CI typecheck and lint clean; example build verified.",
+        "Review passed (claude::reviewer-renata). Verified at lane-c a27a1e2: red-first (new tests fail on base f23a3e8; same-tree positive controls); scan agrees with graph walk+draft rule (probed missing doc_status, mdx, _meta, dot dirs, log.md, draft section index, deprecated, draft root, excluded folders); example built 3 ways: classified -> tom-annex.json + _links.tomAnnex (4 evidence URLs under /doc-kitty/, 13 uncovered); classifications stripped -> no route, no link, api/index.json byte-identical to base built with same pages; MCP fixture _links.tomAnnex == fresh build, README provenance accurate (73 vs 75 records). Gates: pnpm test src 4563/4563 mcp 181/181, lint 0, typecheck 0. Out-of-map edits justified. Non-blocking: dev server decides mount once at config:setup (restart needed after adding/removing all classifications; removal yields the T016 throw); scan fixtures are inline tmpdirs not src/tests/fixtures/tom-annex-scan/."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP03-route-mount-and-link/review-cycle-1.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP03-route-mount-and-link/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 309,
-      "shell_pid_created_at": "1795474320.06"
+      "role": "reviewer",
+      "shell_pid": 24122,
+      "shell_pid_created_at": "1795477131.8",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
     },
     "WP04": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MTFES8PFF32S51Z1GRXB4",
       "last_transition_at": "2026-11-24T20:44:10.073929+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "OKF export carries the evidence index: ratchet pinned pre-change, 8 tests red-first; full pnpm test green (src 4571/4571, mcp 181/181); CI typecheck and lint clean.",
+        "Review passed (claude::reviewer-renata). Verified at lane-d e82f405c (sync df478491 touches status files only). Red-first: 5/8 new tests fail on base 03099fda (claimed 6; the conformance test passes vacuously at base); the conformance.mjs change is separately red (head code + base checker fails the CLI warnings test). No-annex: ratchet holds, and a real example build with tom_classification stripped gives byte-identical okf/ at base and head (106 files); CLI base vs head identical too. Verbatim: example build dist/api/tom-annex.json and dist/okf/tom-annex.json cmp-identical, sha256 5edd5c42...; bundle diff vs base is exactly index.md (+1 entry, code-unit sorted, ADR-0059 entry form) and tom-annex.json. Validation: invalid, empty, whitespace, BOM, wrong/missing/non-string format, null, array and number all throw [dk-okf]; CLI exits 2 and leaves --out untouched. Conformance: checker change alone leaves base bundle warnings unchanged (0); removes only the false /tom-annex.json warning; broken links to missing .json/.csv still warn; _index.meta.yaml sidecars now in the file map but never linked, so no effect. Gates: pnpm test src 4571/4571, mcp 181/181; lint 0; typecheck 0; example build 0. Nits (non-blocking): export-okf.mjs usage header not updated for the implicit tom-annex.json pickup (also picked up beside a --graph file); the BOM error names an invisible char rather than saying BOM; integration.ts has no unit test (covered by the real build)."
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP04-okf-export/review-cycle-1.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP04-okf-export/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 194,
-      "shell_pid_created_at": "1795477218.58"
+      "role": "reviewer",
+      "shell_pid": 10508,
+      "shell_pid_created_at": "1795479867.26",
+      "subtasks": {
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done"
+      }
     },
     "WP05": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 5,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MTM7DS2EZJD4MBJZWPHB2",
       "last_transition_at": "2026-11-24T20:44:14.957451+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean.",
+        "Review cycle 1 fixes: SC-001 catalog accounting + duplicate checks red-first; NFR-002 on the example +195 ms (1.6%); full pnpm test green on 2fc2210 (src 4594/4594, mcp 181/181); code unchanged since.",
+        "Review cycle 2 fixes: empty scope entries rejected, once per scope enforced, stray covered id case kills the mutation; full pnpm test green (src 4597/4597, mcp 181/181).",
+        "Review cycle 3 fixes: unknown scope keys reported, the built index validated against the shipped schema, null entries reported; full pnpm test green (src 4600/4600, mcp 181/181).",
+        "Review cycle 4 fixed in 12d69b0b: Object.hasOwn for additionalProperties/required; whole-schema walk (unknown keywords anywhere, keywords beside $ref, unresolvable/cyclic $ref throw; chained $ref resolves); pattern u flag; minLength in code points; direct schemaProblems tests per keyword plus gate-level prototype-key cases. Option (a): lib/ and scripts/ ship in the package, so no Ajv. 19/19 keyword mutations killed. lint 0, typecheck 0, pnpm test src 4620/4620, mcp 181/181.",
+        "Review cycle 5 passed: both cycle-4 blockers fixed; 3 non-blocking findings (N1 test gaps, keyword-form drift, N3 for WP06)"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP05-build-gates/review-cycle-5.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP05-build-gates/review-cycle-5.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 1023,
-      "shell_pid_created_at": "1795506075.24"
+      "role": "reviewer",
+      "shell_pid": 731,
+      "shell_pid_created_at": "1795534278.33",
+      "subtasks": {
+        "T021": "done",
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
     },
     "WP06": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MTHT2GWTG80FDAQ4BM27A",
       "last_transition_at": "2026-11-24T20:44:12.482911+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Cross-lane dependency: T029's gate, two-builds and fixture part needs WP05 (lane-e). Lane-e (approved, 0d076bd5) was merged into lane-f at efa44f1f; consolidate must keep lane-f after lane-e. Divergences from the WP06 prompt, following Accepted ADR-0087 D2: (1) entries sorted by UTF-8 key bytes, not code units (D2 step 2); (2) one config:doc-kitty-tom-annex entry, RFC 8785 of {base, catalog, site}, with site and base included because they change every evidence URL and the default catalog's records sorted by id, instead of a catalog:default key (D2 step 1 Configuration; the closed key set is file, children:, config:); (3) a consumer _meta/measures.yaml is a file entry (D2 step 1 A file). Paths are project-relative (the build's cwd), POSIX. node:crypto is accepted in stamp.mjs (build time only); core.mjs stays crypto-free. at is derived from the annex's own evidence (updated and verified[].at), not from a separate evidencePages argument. Out-of-map files: routes/tom-annex.ts and tom-annex-route.test.ts (WP03); tom-annex.schema.json and tom-annex-core.test.ts (WP01); verify.mjs, schema-check.mjs, assert-build-artifacts-tom-annex.test.ts and tom-annex-build.test.ts (WP05). Reason: WP06 wires the ADR-0087 stamp, which C-002 held back from WP03 and WP05; schema-check also folds the WP05 cycle-5 non-blocking items. Gates: lint 0, typecheck 0, pnpm test src 4895/4895 and mcp 181/181.",
+        "Review cycle 1 passed: ADR-0087 D2 digest and content_hash independently reproduced; 3 declared divergences accepted per D2; full pnpm test 4895+181 green; non-blocking N1-N8 (site-only and non-classified-edge test gaps, project-relative keys, gate does not check at/source_digest)"
+      ],
+      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP06-stamp-and-producer/review-cycle-1.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP06-stamp-and-producer/review-cycle-1.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 5180,
-      "shell_pid_created_at": "1795534322.34"
+      "role": "reviewer",
+      "shell_pid": 21291,
+      "shell_pid_created_at": "1795540088.52",
+      "subtasks": {
+        "T026": "done",
+        "T027": "done",
+        "T028": "done",
+        "T029": "done"
+      }
     },
     "WP07": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 2,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MTPVJP465BEJZ7CF9BBQ0",
       "last_transition_at": "2026-11-24T20:44:17.650292+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Snapshot, hub page and --check CLI (dockitty-tom-annex). Verdicts: missing > unowned (the #454 D3 amendment) > hand-edited > stale-source > stale-render. The snapshot's hand-edited also re-derives generated.at via annexInstant (WP06 review N5); source_digest is compared with the build's, since the CLI reads only dist (C-003). WP06 review N6: content_hash stays over the re-serialisation as D2 requires; --check's at-masked byte comparison catches formatting-only edits as stale-render (tested). Out-of-map files: src/package.json bin (WP03), because the bin target exists only now; src/scripts/assert-build-artifacts.mjs pinned counts, index 81->82 and sitemap 86->87, because the example gained one published Hub page; src/tests/tom-annex-stamp.test.ts gains WP06 review N1-N3. CI step proposed, not wired: after build-example, run pnpm validate:tom-annex. Gates: lint 0, typecheck 0, pnpm test src 4935/4935 and mcp 181/181.",
+        "Review cycle 1 fixed in 414c7a3b. Required: R1 (CLI refuses an unstamped or foreign snapshot with only --snapshot) and R2 (hub hand-edited beats stale-source). Recommended: R3 (format guard), R4 (CRLF), R5 (link destination; it found a real bug, since encodeURIComponent leaves parentheses alone; now an explicit map). F1: atomic writes (temp file in the same directory, then rename), tested with a hard link and no leftover temp. Each new test kills its targeted mutant, 6/6. F2, F3 and OQ1 left as directed. Gates: lint 0, typecheck 0, pnpm test src 4941/4941 and mcp 181/181.",
+        "Review cycle 2 APPROVED (claude::reviewer-renata), lane-g 414c7a3b, implementer claude::node-norris. Production delta since cycle-1 verified state (f8c898c5) is destination() in hub-page.mjs and write() in tom-annex.mjs only; no golden, example or check.mjs logic moved. Cycle-1 R1-R5 and F1 closed: own mutation run 11/13 killed (R1 snapshot guard, R2 hub precedence swap, R3 format guard, R4 CRLF, R5 identity / old encodeURIComponent / ')' unmapped, F1 in-place / copy-not-rename / temp leaked, hub guard). Survivors: ' ' dropped from the destination map is equivalent (absoluteUrl's WHATWG href already encodes spaces); rmSync removed from the write error path is untested (verified by hand: a failed rename exits 2, temp removed, old file intact). R5 map is complete for the input contract (WHATWG-serialised absolute URL): <, >, newline, path backslash, non-ASCII, \" and backtick are neutralised upstream; % is untouched, so no double encoding; links resolve through the site's remark pipeline. Issue matrix confirmed: ADR-0087 Accepted 2026-11-23, #445 merged (C-002 met), #454 folded into D3 on main. Gates: pnpm test src 4941/4941 + mcp 181/181, lint 0, typecheck 0, example build 0, validate:tom-annex 0, validate:example 0 (84), validate:docs 0 (217), validate:links 0 (1943), assert:artifacts PASS, clean tree. Non-blocking for WP08/operator: N1 symlinked target is replaced by a regular file (ownership judged through the link; previous writeFileSync wrote through it) - resolve with realpathSync if a link should be honoured; N2 error-path cleanup untested; N3 destination map: space entry is dead code, and a backslash before punctuation in a query/fragment would be eaten as a CommonMark escape (unreachable: route hrefs carry no query/fragment) - adding '\\\\' -> %5C closes it; N4 pid temp name: cross-container pid collision on a shared mount is theoretical, a stale temp from a crashed run is left as a hidden file, file mode resets to umask default, no fsync (process-crash safe, not power-loss proven); N5 Windows rename-over-existing works (MoveFileExW REPLACE_EXISTING) but can EPERM/EBUSY on a locked target, which fails loud with the old file intact; Windows is not in the CI matrix. F2, F3, OQ1 remain with the operator. Status: union merge of status.events.jsonl verified exact (149 base + 4 + 4 = 157, no duplicate or invented event, timestamp order, status.json byte-identical on rematerialise, validate PASS). The 18:31 forced re-claim records from_lane for_review although the reduced state was planned after the 18:29 reject: historical, append-only, final state coherent, left as is. Repair done: the reject's rollback had reset T030-T034 to planned and nothing re-marked them, so I marked them done after verifying each is delivered."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP07-snapshot-hub-check-cli/review-cycle-2.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP07-snapshot-hub-check-cli/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 225,
-      "shell_pid_created_at": "1795540989.72"
+      "role": "reviewer",
+      "shell_pid": 990,
+      "shell_pid_created_at": "1795546583.71",
+      "subtasks": {
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done",
+        "T034": "done"
+      }
     },
     "WP08": {
       "actor": "merge",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
-      "implementer_of_record": "claude",
       "lane": "done",
       "last_event_id": "01M87MTS7JZXT06R4TBWPQSZ8W",
       "last_transition_at": "2026-11-24T20:44:20.082720+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Guide docs/guides/tom-annex.md, fragment docs/changelog/unreleased/401-tom-annex-export.md (section Added: the README does not allow Features), and a metadata-model cross-link paragraph after the ADR-0087 list. The label and the counsel items are verbatim from the constants; the field table matches tom-annex.schema.json key for key. Documented: project-relative keys (WP06 N4); the check trusts the build's source_digest, so CI must build first; the WP07 cycle-2 limits 1, 4 and 5 (symlinks not followed, umask mode, a stale .tmp, no fsync, a Windows locked target exits 2); the dev restart; Deferred items. WP07 findings 2 (a cleanup test) and 3 (backslash encoding) are code in WP07 files, not on this branch; they are folded at R24 on the consolidated branch. Checks: validate:docs/links/changelog 0, markdownlint 0, Vale 3.18.0 0 errors; pnpm test on feat/401 src 4745/4745 and mcp 181/181.",
+        "Review cycle 1 fixed in da7bc9e5: (1) a by bump makes both files stale-render; (2) the null-at limit and its remedy; (3) a refusal exits 1; (4) commit both files with LF (eol=lf); (5) the gate does not re-derive generated.at either; (6) atomic per file, not across both; (7) published classified pages; (8) unowned cites #454; (9) the issue-matrix #401 text refreshed on coordination. Item 10 (the regenerate hint) is code and is folded at R24. Vale 3.18.0 0 errors on the 3 files; validate:docs/links/changelog 0; markdownlint 0.",
+        "Review passed (cycle 2): all cycle-1 folds verified against the lane-g CLI (by bump, null at exit 2, refusal exit 1, CRLF, per-file rename); no compliance claim; gates clean; 2 non-blocking nits"
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP08-guide-and-changelog/review-cycle-2.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP08-guide-and-changelog/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "shell_pid": 326,
-      "shell_pid_created_at": "1795547837.32"
+      "role": "reviewer",
+      "shell_pid": 25774,
+      "shell_pid_created_at": "1795552346.72",
+      "subtasks": {
+        "T035": "done",
+        "T036": "done",
+        "T037": "done",
+        "T038": "done"
+      }
     }
   }
 }
