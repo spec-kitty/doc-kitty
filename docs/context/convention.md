@@ -224,8 +224,11 @@ warns on an unknown value rather than failing.
   `Explanation`.
 - **Structural kinds**: `Hub` (a section index or link list), `ADR`,
   `Changelog`, `Glossary`, `Presentation`, `Persona`, the planning kinds
-  `Planning`, `Feature`, `User-Journey`, and `Specification` (a page generated
-  from a Gherkin `.feature` file, [ADR-0046](../adr/0046-gherkin-feature-pages.md)).
+  `Planning`, `Feature`, `User-Journey`, `Specification` (a page generated
+  from a Gherkin `.feature` file, [ADR-0046](../adr/0046-gherkin-feature-pages.md)),
+  `Schematic` (a page that documents a schema file,
+  [ADR-0067](../adr/0067-schematic-pages-reference-a-schema.md)), and `Role` (an
+  accountable function, [ADR-0085](../adr/0085-role-kind.md)).
 
 A section `README.md` is a `Hub`; an ADR page is `kind: ADR`; a getting-started
 guide is a `Tutorial`; most prose pages are `Reference` or `Explanation`. `type`

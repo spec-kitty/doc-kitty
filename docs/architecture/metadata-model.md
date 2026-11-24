@@ -90,9 +90,11 @@ declares its kind rather than being exempt:
   description), the planning kinds `Planning`, `Feature`, and `User-Journey`
   (see [ADR-0010](../adr/0010-planning-kinds-and-moscow.md)), and `Specification`
   (a page generated from a Gherkin `.feature` file, see
-  [ADR-0046](../adr/0046-gherkin-feature-pages.md)), and `Schematic` (a page
+  [ADR-0046](../adr/0046-gherkin-feature-pages.md)), `Schematic` (a page
   that documents a JSON or YAML schema named by `schematic_path`, see
-  [ADR-0067](../adr/0067-schematic-pages-reference-a-schema.md)).
+  [ADR-0067](../adr/0067-schematic-pages-reference-a-schema.md)), and `Role` (an
+  accountable function such as a data protection officer, see
+  [ADR-0085](../adr/0085-role-kind.md)).
 
 The vocabulary is open, like `type`: the validator checks the canonical set above
 and warns on an unknown value rather than failing.
@@ -306,6 +308,11 @@ and an `audience` profile slug resolves against it directly. Persona attribute
 fields (`role`, `goals`, `responsibilities`) are defined in
 [ADR-0019](../adr/0019-persona-attribute-fields.md); the passport layout renders
 them.
+
+A `Role` page describes an accountable function, not a reader
+([ADR-0085](../adr/0085-role-kind.md)). It reuses the `role` and
+`responsibilities` fields, and the gate requires both. `goals` is optional on a
+Role page. A process page names the roles it involves through `related`.
 
 Profile resolution is a **soft miss** (FR-002): a `profile` with no persona page
 does not fail the build — the block renders the humanized slug and warns on the
