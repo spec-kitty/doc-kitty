@@ -28,10 +28,10 @@
       "criterion_id": "FR-003",
       "description": "Verify FR-003 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/tom-annex-core.test.ts (uncovered); src/tests/assert-build-artifacts-tom-annex.test.ts (SC-001 accounting); src/tests/tom-annex-build.test.ts (draft-only measure is uncovered); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:37:42.049964+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
