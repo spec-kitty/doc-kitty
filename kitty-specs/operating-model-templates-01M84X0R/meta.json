@@ -1,5 +1,4 @@
 {
-  "accept_commit": "d45c60c29b6445d72ebf16188189262d65d5e899",
   "acceptance_history": [
     {
       "accept_commit": "d45c60c29b6445d72ebf16188189262d65d5e899",
@@ -7,12 +6,18 @@
       "accepted_at": "2026-11-24T03:16:09.951591+00:00",
       "accepted_by": "system",
       "accepted_from_commit": "864602756d09cf054c6a542bc9d56c63f5da5cb4"
+    },
+    {
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-11-24T03:16:26.757014+00:00",
+      "accepted_by": "system",
+      "accepted_from_commit": "e58e1a2534d5194d9727f66bb3285a97d61ac6fb"
     }
   ],
   "acceptance_mode": "pr",
-  "accepted_at": "2026-11-24T03:16:09.951591+00:00",
+  "accepted_at": "2026-11-24T03:16:26.757014+00:00",
   "accepted_by": "system",
-  "accepted_from_commit": "864602756d09cf054c6a542bc9d56c63f5da5cb4",
+  "accepted_from_commit": "e58e1a2534d5194d9727f66bb3285a97d61ac6fb",
   "coordination_branch": "kitty/mission-operating-model-templates-01M84X0R",
   "create_return_branch": "feat/402-operating-model-templates",
   "created_at": "2026-11-23T19:09:42.123013+00:00",
