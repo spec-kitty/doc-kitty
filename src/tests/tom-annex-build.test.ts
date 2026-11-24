@@ -18,6 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TOM_ANNEX_LABEL } from '../lib/tom-annex/core.mjs';
 import { tomAnnexProblems } from '../lib/tom-annex/verify.mjs';
+import { loadMeasuresCatalog } from '../lib/measures-loader.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'bin', 'astro.mjs');
@@ -107,6 +108,7 @@ function gateProblems(variant: Variant): string[] {
     annexText: existsSync(annexPath) ? readFileSync(annexPath, 'utf8') : undefined,
     pageBuilt: (url: string) =>
       url.startsWith(prefix) && existsSync(dist(variant, url.slice(prefix.length), 'index.html')),
+    catalogIds: loadMeasuresCatalog(path.join(siteDir(variant), 'docs')).records.map((r: { id: string }) => r.id),
   });
 }
 

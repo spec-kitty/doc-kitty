@@ -16,11 +16,18 @@ const annexText = serializeTomAnnex(buildTomAnnex(graph as never, catalog as nev
 const links = { self: { href: `${PREFIX}api/index.json` }, tomAnnex: { href: `${PREFIX}api/tom-annex.json`, title: TOM_ANNEX_LABEL } };
 const everyPageBuilt = () => true;
 
+const catalogIds = catalog.records.map((r) => r.id);
 const problems = (over: Record<string, unknown> = {}) =>
-  tomAnnexProblems({ graph, indexLinks: links, annexText, pageBuilt: everyPageBuilt, ...over } as never);
+  tomAnnexProblems({ graph, indexLinks: links, annexText, pageBuilt: everyPageBuilt, catalogIds, ...over } as never);
 
 /** A loose view of the parsed index, for editing test variants. */
-type AnnexJson = { format: string; format_version: string; label: string; scopes: Record<'system' | 'organisation', Array<{ evidence: Array<{ url: string }> }>> };
+type AnnexJson = {
+  format: string;
+  format_version: string;
+  label: string;
+  scopes: Record<'system' | 'organisation', Array<{ evidence: Array<{ url: string }> }>>;
+  uncovered: Array<{ id: string; label: string; nature: string }>;
+};
 
 const edited = (edit: (annex: AnnexJson) => void) => {
   const annex = JSON.parse(annexText);
@@ -80,6 +87,37 @@ describe('tomAnnexProblems (WP05 T021)', () => {
   it('uses the site prefix the gate derives, so an index mounted elsewhere still passes (#103)', () => {
     const moved = { ...links, self: { href: `${PREFIX}v2/data/api/index.json` } };
     expect(problems({ indexLinks: moved, sitePrefix: PREFIX })).toEqual([]);
+  });
+
+  it('without the gate prefix, the same moved index fails (negative control for #103)', () => {
+    const moved = { ...links, self: { href: `${PREFIX}v2/data/api/index.json` } };
+    expect(problems({ indexLinks: moved }).length).toBeGreaterThan(0);
+  });
+
+  describe('every catalog measure is accounted for exactly once (SC-001)', () => {
+    it('fails an empty uncovered list when a catalog measure has no evidence', () => {
+      expect(problems({ annexText: edited((a) => (a.uncovered = [])) }).join('\n')).toMatch(/not accounted for.*backup/);
+    });
+
+    it('fails a covered measure that is also listed as uncovered', () => {
+      const both = edited((a) => a.uncovered.push({ id: 'events-logging', label: 'x', nature: 'technical' }));
+      expect(problems({ annexText: both }).join('\n')).toMatch(/both covered and uncovered.*events-logging/);
+    });
+
+    it('fails a measure listed twice as uncovered', () => {
+      const twice = edited((a) => a.uncovered.push({ ...a.uncovered[0] }));
+      expect(problems({ annexText: twice }).join('\n')).toMatch(/listed twice.*backup/);
+    });
+
+    it('fails an id that is not in the catalog', () => {
+      const stray = edited((a) => a.uncovered.push({ id: 'not-a-measure', label: 'x', nature: 'technical' }));
+      expect(problems({ annexText: stray }).join('\n')).toMatch(/not in the catalog.*not-a-measure/);
+    });
+  });
+
+  it('fails a duplicated evidence entry under one measure', () => {
+    const dup = edited((a) => a.scopes.system[0].evidence.push({ ...a.scopes.system[0].evidence[0] }));
+    expect(problems({ annexText: dup }).join('\n')).toMatch(/listed twice/);
   });
 
   describe('a site with no classified pages', () => {

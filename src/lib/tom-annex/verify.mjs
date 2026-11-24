@@ -25,6 +25,7 @@ const MEASURE_PREFIX = 'catalog:measure:';
  * @property {Record<string, { href?: string }>} indexLinks `api/index.json`'s `_links`
  * @property {string | undefined} annexText the built `api/tom-annex.json`, or undefined when absent
  * @property {(url: string) => boolean} pageBuilt whether an absolute page URL names a built page
+ * @property {string[]} [catalogIds] the effective catalog's measure ids; when given, every one must be covered or uncovered, exactly once (SC-001)
  * @property {string} [sitePrefix] the site's origin and base with a trailing slash, as the gate derives it; by default it is read from `_links.self`, which assumes the index sits at `api/index.json`
  */
 
@@ -32,7 +33,7 @@ const MEASURE_PREFIX = 'catalog:measure:';
  * @param {TomAnnexBuild} build
  * @returns {string[]} the problems, empty when the build is right
  */
-export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, sitePrefix }) {
+export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, sitePrefix, catalogIds }) {
   const edges = graph.edges.filter((e) => e.rel === 'classified-as');
   const linked = indexLinks?.tomAnnex !== undefined;
   if (edges.length === 0) {
@@ -76,16 +77,52 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, site
 
   /** @type {Set<string>} */
   const actual = new Set();
+  /** @type {Set<string>} */
+  const covered = new Set();
   for (const scope of ['system', 'organisation']) {
     for (const entry of Array.isArray(annex?.scopes?.[scope]) ? annex.scopes[scope] : []) {
+      covered.add(entry.id);
       for (const ref of Array.isArray(entry?.evidence) ? entry.evidence : []) {
-        actual.add(triple(entry.id, scope, ref.url));
+        const t = triple(entry.id, scope, ref.url);
+        if (actual.has(t)) problems.push(`evidence index: an entry is listed twice (${show(t)})`);
+        actual.add(t);
         if (!pageBuilt(ref.url)) problems.push(`evidence index: ${entry.id} cites ${ref.url}, which is not a built page`);
       }
     }
   }
+  problems.push(...accountingProblems(covered, Array.isArray(annex?.uncovered) ? annex.uncovered : [], catalogIds));
   for (const t of actual) if (!expected.has(t)) problems.push(`evidence index: an entry is not in the content graph (${show(t)})`);
   for (const t of expected) if (!actual.has(t)) problems.push(`evidence index: a classified-as edge is missing from the evidence index (${show(t)})`);
+  return problems;
+}
+
+/**
+ * SC-001: every catalog measure appears exactly once, either covered (under a
+ * scope) or in `uncovered`, and nothing else does.
+ *
+ * @param {Set<string>} covered ids under `scopes.*`
+ * @param {Array<{ id?: unknown }>} uncovered
+ * @param {string[] | undefined} catalogIds
+ * @returns {string[]}
+ */
+function accountingProblems(covered, uncovered, catalogIds) {
+  const problems = [];
+  /** @type {Set<string>} */
+  const listed = new Set();
+  for (const item of uncovered) {
+    const id = String(item?.id);
+    if (listed.has(id)) problems.push(`evidence index: an uncovered measure is listed twice: ${id}`);
+    if (covered.has(id)) problems.push(`evidence index: a measure is both covered and uncovered: ${id}`);
+    listed.add(id);
+  }
+  if (catalogIds === undefined) return problems;
+  const catalog = new Set(catalogIds);
+  for (const id of [...covered, ...listed]) {
+    if (!catalog.has(id)) problems.push(`evidence index: a measure is not in the catalog: ${id}`);
+  }
+  for (const id of catalog) {
+    if (!covered.has(id) && !listed.has(id)) problems.push(`evidence index: a catalog measure is not accounted for (neither covered nor uncovered): ${id}`);
+  }
   return problems;
 }
 

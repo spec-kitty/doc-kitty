@@ -36,6 +36,7 @@ import { ConfigEvalError, evalRefusal, evaluateGateConfig } from './site-config-
 import { compareCodeUnit, parseActor } from '../lib/vocabulary-core.mjs';
 import { checkOkfBundle } from '../lib/okf-export/conformance.mjs';
 import { tomAnnexProblems } from '../lib/tom-annex/verify.mjs';
+import { loadMeasuresCatalog } from '../lib/measures-loader.mjs';
 import { checkPlantumlSources, PLANTUML_COM_URL_RE } from './plantuml-guard.mjs';
 import {
   DK_PUBLISH_DRAFTS_ENV,
@@ -652,7 +653,9 @@ async function assertTomAnnex(distDir, index, builtRelOf) {
   const indexRel = INDEX_RELPATH.split(path.sep).join('/');
   const basePath = selfUrl.pathname.slice(0, selfUrl.pathname.length - `/${indexRel}`.length);
   const sitePrefix = `${selfUrl.origin}${basePath}/`;
-  const problems = tomAnnexProblems({ graph, indexLinks: index?._links ?? {}, annexText, pageBuilt, sitePrefix });
+  // SC-001: every measure of the example's effective catalog is covered or uncovered, exactly once.
+  const catalogIds = loadMeasuresCatalog(EXAMPLE_DOCS_DIR).records.map((r) => r.id);
+  const problems = tomAnnexProblems({ graph, indexLinks: index?._links ?? {}, annexText, pageBuilt, sitePrefix, catalogIds });
   if (problems.length > 0) fail(problems.join('; '));
   ok(
     annexText === undefined
