@@ -10,7 +10,6 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import { z } from 'zod';
-import { KINDS } from '../lib/vocabulary-core.mjs';
 import { validate } from '../scripts/validate-frontmatter.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
@@ -28,10 +27,6 @@ function parse(rel: string): Record<string, unknown> {
 const validRole = () => parse('valid/role.md');
 
 describe('Role kind (ADR-0085)', () => {
-  it('is a canonical kind', () => {
-    expect(KINDS).toContain('Role');
-  });
-
   it('a Role page with role and responsibilities, and no goals, passes the gate with no kind warning', () => {
     const { problems, warnings } = validate('role.md', validRole());
     expect(problems).toEqual([]);
@@ -60,11 +55,6 @@ describe('Role kind (ADR-0085)', () => {
   it('rejects a blank `role` string', () => {
     const data = { ...validRole(), role: '   ' };
     expect(validate('role.md', data).problems.some((p: string) => p.startsWith('`role`'))).toBe(true);
-  });
-
-  it('does not require `goals` on a Role page', () => {
-    const { problems } = validate('role.md', validRole());
-    expect(problems.some((p: string) => p.startsWith('`goals`'))).toBe(false);
   });
 });
 

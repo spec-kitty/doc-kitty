@@ -169,17 +169,14 @@ describe('scaffold --preset operating-model (FR-008)', () => {
     expect(existsSync(join(docs, 'operating-model/README.md'))).toBe(false);
   });
 
-  it('writes only the preset, not the default tree', () => {
-    expect(run(scaffold, [docs, '--preset', 'operating-model']).status).toBe(0);
-    expect(existsSync(join(docs, 'README.md'))).toBe(false);
-    expect(existsSync(join(docs, 'guides'))).toBe(false);
-  });
-
   it('writes a tree the frontmatter gate passes', () => {
     expect(run(scaffold, [docs, '--preset', 'operating-model']).status).toBe(0);
     const res = run(gate, [docs]);
     expect(res.status, `${res.stdout}\n${res.stderr}`).toBe(0);
     expect(res.stdout).toMatch(/✓ 13 file\(s\) valid/);
+    // The preset writes only its own pages, not the default tree.
+    expect(existsSync(join(docs, 'README.md'))).toBe(false);
+    expect(existsSync(join(docs, 'guides'))).toBe(false);
   });
 });
 
