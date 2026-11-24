@@ -54,7 +54,7 @@ Requirements: FR-004. Constraints:
 
 ## Context
 
-- Precedent for appending a kind: `docs/adr/0067-schematic-pages-reference-a-schema.md` (Schematic) and ADR-0046 (Specification). Copy their frontmatter shape: `type: ADR`, `kind: ADR`, `doc_status: active`, `authors: [process:doc-kitty]` and `related`.
+- Precedent for appending a kind: `docs/adr/0067-schematic-pages-reference-a-schema.md` (Schematic) and ADR-0046 (Specification). Copy their frontmatter shape: `type: ADR`, `kind: ADR`, `authors: [process:doc-kitty]` and `related`, but with `doc_status: draft`, because the ADR is Proposed (precedent: ADR-0083).
 - Persona fields: `docs/adr/0019-persona-attribute-fields.md`.
 - Measures: `docs/adr/0080-tom-classification-field-and-measures-catalog.md`.
 - Research: `docs/architecture/research/eu-dpa-compatibility.md`, § "Operating-model templates".
@@ -82,7 +82,7 @@ Write these sections:
    - Process pages name the roles they involve through `related`.
    - `Runbook` stays a `type` derived from `operations/runbooks/`; it is not a kind.
 4. **Consequences.**
-   - The gate, the build schema and the stub tools pick up the kind through the shared core.
+   - The kind is one entry in the shared vocabulary core. The gate reads it for the unknown-kind warning; the build schema keeps `kind` an open string.
    - An operating-model template for a role ships in the same mission.
    - A generated responsibility (RACI) matrix is a possible later step, out of scope here.
 5. **Alternatives considered.**
