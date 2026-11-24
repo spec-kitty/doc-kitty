@@ -147,7 +147,7 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -159,6 +159,7 @@
         "Gate rules (verify.mjs) red-first, build suite on two adopter sites, two-builds non-vacuity; full pnpm test green (src 4588/4588, mcp 181/181); lint and typecheck clean."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/tom-annex-export-01M84YDP-coord/kitty-specs/tom-annex-export-01M84YDP/tasks/WP05-build-gates/review-cycle-1.md",
         "reference": "review-cycle://tom-annex-export-01M84YDP/WP05-build-gates/review-cycle-1.md",
@@ -166,14 +167,14 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 810,
-      "shell_pid_created_at": "1795482292.63",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T021": "done",
-        "T022": "done",
-        "T023": "done",
-        "T024": "done",
-        "T025": "done"
+        "T021": "planned",
+        "T022": "planned",
+        "T023": "planned",
+        "T024": "planned",
+        "T025": "planned"
       }
     },
     "WP06": {
