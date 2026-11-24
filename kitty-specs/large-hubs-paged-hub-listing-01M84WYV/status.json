@@ -20,7 +20,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::implementer-ivan",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
@@ -29,6 +29,9 @@
       "last_event_id": "01M876KH7C9RD85A531JKV39N4",
       "last_transition_at": "2026-11-24T16:35:42.444296+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: paging API, hub/section page size, pagination strings. Full pnpm test green (src 242/4761, mcp 23/181); lint+typecheck clean."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 4298,
