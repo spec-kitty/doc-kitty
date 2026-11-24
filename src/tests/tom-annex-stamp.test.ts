@@ -84,6 +84,12 @@ describe('the declared inputs (T026)', () => {
     expect(digestOf([...pages, pages[0]])).toBe(digestOf(pages));
   });
 
+  it('changes when only the site changes (WP06 review N1)', () => {
+    const records = [record('a'), record('b')];
+    const at = (site: URL) => annexConfig({ site, base: BASE, catalog: { records, isDefault: true } });
+    expect(digestOf(pages, { config: at(new URL('https://other.example.org')) })).not.toBe(digestOf(pages, { config: at(SITE) }));
+  });
+
   it('changes with the site or the base, which change every evidence URL', () => {
     const other = annexConfig({ site: SITE, base: '/v2/', catalog: { records: [record('a'), record('b')], isDefault: true } });
     expect(digestOf(pages, { config: other })).not.toBe(digestOf(pages));
@@ -121,6 +127,18 @@ describe('evidenceSourceFiles: only pages with a classified-as edge are inputs (
     // Control: the unclassified page exists in the graph and the locations, and is still not an input.
     expect(locations['guides/unrelated']).toBeDefined();
     expect(files).not.toContain('guides/unrelated.md');
+  });
+
+  it('takes only classified-as edges, ignoring other relations from pages with no source (WP06 review N2)', () => {
+    const mixed = {
+      ...graph,
+      edges: [
+        ...graph.edges,
+        { id: 'x|links-to|y', source: 'nowhere/linked', target: 'guides/access', rel: 'links-to' },
+        { id: 'x|cites|y', source: 'nowhere/citing', target: 'ref:1', rel: 'cites' },
+      ],
+    };
+    expect(evidenceSourceFiles(mixed, locations)).toEqual(evidenceSourceFiles(graph, locations));
   });
 
   it('throws when an evidence page has no source file', () => {
@@ -167,6 +185,15 @@ describe('content_hash and at (T027)', () => {
   it('at is the latest updated or verified instant of the listed evidence', () => {
     // The fixture's audit page: updated 2026-11-20, verified 2026-11-21.
     expect(annexInstant(annex)).toBe('2026-11-21T00:00:00Z');
+  });
+
+  it('at is the evidence updated when nothing is verified (WP06 review N3)', () => {
+    const only = buildTomAnnex(
+      graphOf([page('p', { updated: '2026-03-04T05:06:07Z' }), { id: 'catalog:measure:a', kind: 'measure' }], [classified('p', 'a')]) as never,
+      catalogOf([record('a')]) as never,
+      { site: SITE, base: BASE },
+    );
+    expect(annexInstant(only)).toBe('2026-03-04T05:06:07Z');
   });
 
   it('at is null when no evidence carries an instant', () => {
