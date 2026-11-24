@@ -58,7 +58,6 @@ import {
 import { tocRailIntegration } from './integrations/toc-rail.js';
 import { lightboxIntegration } from './integrations/lightbox.js';
 import { contentGraphIntegration } from './integrations/content-graph.js';
-import { pagedHubsIntegration } from './integrations/paged-hubs.js';
 import { pageAtomIntegration } from './integrations/page-atom.js';
 import { servedSurfacesIntegration } from './integrations/served-surfaces.js';
 import { sidebarIconsIntegration } from './integrations/sidebar-icons.js';
@@ -1044,8 +1043,6 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // agent index's `_links.contentGraph` never dangles. Registers no remark/rehype
     // plugin, so no plugin-order pin moves.
     contentGraphIntegration(docsDir, indexBasename),
-    // The paged hub listing (#342): `/<hub>/page/<n>/`, no paths without a paged hub.
-    pagedHubsIntegration(),
     // Per-page Atom entries (FR-020): on unless `pageFormats.atom` is false. Before
     // served-surface detection, which reads the injected route.
     ...(pageFormats?.atom === false ? [] : [pageAtomIntegration(title)]),

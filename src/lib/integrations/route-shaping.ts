@@ -11,7 +11,8 @@ import type { AstroIntegration } from 'astro';
 import { resolveIndexEntries, sectionOf, type IndexBasenameOption } from '../metadata.js';
 import { resolveSectionRegistry, sectionFeeds, feedsSurface, sectionOrder, type SectionRegistry } from '../sections.js';
 import { buildDirectoryMeta, pageRouteSlug, type DirectoryMetaInput } from '../route-shaping.js';
-import { isChildCap, isPagedHub, resolveChildCap, resolveHubPageSize, type HubCap } from '../child-cap.js';
+import { hubListingPages, isChildCap, isPagedHub, resolveChildCap, resolveHubPageSize, type HubCap } from '../child-cap.js';
+import { PAGED_HUB_ROUTE } from './paged-hubs.js';
 import { composeHubChildren, selectHubChildren } from '../hub-children.mjs';
 import { loadAdrIdRule } from '../../scripts/generate-adr-index.mjs';
 import { chromeOptions } from '../chrome-options.js';
@@ -231,6 +232,19 @@ function hubData(
 }
 
 /**
+ * Every hub's data for the site, as the module serves it (`hubCaps`): its published
+ * pages (the withheld drafts left out), section registry, options and ADR id rule.
+ */
+function siteHubs(options: RouteShapingOptions, state: BuildState): Array<[string, HubCap]> {
+  const hidden = new Set(state.unpublishedDirs);
+  const root = path.resolve(process.cwd(), options.docsDir);
+  const pages = directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
+    (input) => !hidden.has(input.slug),
+  );
+  return hubData(pages, resolveSectionRegistry(root), { cap: options.childCap, pageSize: options.pageSize }, loadAdrIdRule(root));
+}
+
+/**
  * Generate the source of `virtual:doc-kitty/route-shaping`. Plain JSON data, so
  * the middleware needs no filesystem access; the map is serialised as sorted
  * entries, so two builds of one tree emit the same module (NFR-006). Exported so
@@ -309,9 +323,13 @@ export function routeShapingIntegration(
   return {
     name: 'doc-kitty:route-shaping',
     hooks: {
-      'astro:config:setup': ({ updateConfig }) => {
+      'astro:config:setup': ({ updateConfig, injectRoute }) => {
         shapingWarningSink().clear();
         updateConfig({ vite: { plugins: [plugin] } });
+        // The paged hub listing (#342): mount `/<hub>/page/<n>/` only when a hub is
+        // paged. The glossary pages and the withheld drafts are known by now (their
+        // integrations' setup hooks run before this one).
+        if (hubListingPages(siteHubs(options, state)).length > 0) injectRoute(PAGED_HUB_ROUTE);
       },
       'astro:build:done': () => {
         const sink = shapingWarningSink();

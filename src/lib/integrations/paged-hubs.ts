@@ -1,5 +1,9 @@
-/** The paged hub listing route integration (#342). Imports nothing from `config.ts`. */
-import type { AstroIntegration } from 'astro';
+/**
+ * The paged hub listing route (#342): where it is mounted and from which file.
+ * Injected by the route-shaping integration, and only when the site has a paged
+ * hub: the route's module graph would otherwise change how Vite splits every
+ * site's CSS, and a site without a paged hub must build exactly as before.
+ */
 
 /** The injected route's entrypoint, a package export so a consuming site resolves it. */
 export const PAGED_HUB_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/paged-hub';
@@ -7,19 +11,5 @@ export const PAGED_HUB_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/paged-hub';
 /** The injected route pattern: listing page N (2 and up) of the hub at `hub`. */
 export const PAGED_HUB_PATTERN = '/[...hub]/page/[page]';
 
-/**
- * Inject `/<hub>/page/<n>/` on every site, so a paged hub's listing pages need no
- * page file. Appended unconditionally by `defineDocKittyIntegrations`: a site
- * without a paged hub gets no paths from the route, and builds what it did
- * before. `prerender` keeps the route static when a site sets `output: 'server'`.
- */
-export function pagedHubsIntegration(): AstroIntegration {
-  return {
-    name: 'doc-kitty:paged-hubs',
-    hooks: {
-      'astro:config:setup': ({ injectRoute }) => {
-        injectRoute({ pattern: PAGED_HUB_PATTERN, entrypoint: PAGED_HUB_ENTRYPOINT, prerender: true });
-      },
-    },
-  };
-}
+/** The route as `injectRoute` takes it. `prerender` keeps it static under `output: 'server'`. */
+export const PAGED_HUB_ROUTE = { pattern: PAGED_HUB_PATTERN, entrypoint: PAGED_HUB_ENTRYPOINT, prerender: true } as const;
