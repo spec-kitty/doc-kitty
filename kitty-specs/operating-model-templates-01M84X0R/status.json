@@ -162,6 +162,9 @@
       "last_event_id": "01M85PVNMZGP7404XQV6E4C051",
       "last_transition_at": "2026-11-24T02:41:17.471434+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Preset snippet, guide, changelog, CI glob, WP04 folds 1-4; red-first (c3c40da red; 15fd08a, 23baafe green); lint 0; combined tree (lane-d + feat/402) pnpm test src 4615/4615 mcp 181/181"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 403,
