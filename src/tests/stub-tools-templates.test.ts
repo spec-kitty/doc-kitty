@@ -229,3 +229,69 @@ describe('--title rejects control characters (review nit, WP03 cycle 1)', () => 
     expect(fm(join(docs, 'operating-model/people.md')).title).toBe('People: joiners and leavers');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Folded from the WP04 review (cycle 1) into WP05, before the guide documents
+// the flags. Each of these failed or was unguarded at 89166d98.
+// ---------------------------------------------------------------------------
+
+/** Write the toolkit's own registry plus the operating-model snippet into `<docs>/_meta`. */
+function applySnippet(docsRoot: string): void {
+  const own = readFileSync(fileURLToPath(new URL('../../docs/_meta/sections.yaml', import.meta.url)), 'utf8');
+  const snippet = readFileSync(
+    fileURLToPath(new URL('../lib/templates/operating-model/sections.snippet.yaml', import.meta.url)),
+    'utf8',
+  )
+    .split('\n')
+    .map((line) => (line.trim() ? `  ${line}` : line))
+    .join('\n');
+  mkdirSync(join(docsRoot, '_meta'), { recursive: true });
+  writeFileSync(join(docsRoot, '_meta/sections.yaml'), `${own.trimEnd()}\n\n${snippet}\n`, 'utf8');
+}
+
+describe('review folds (WP04 cycle 1)', () => {
+  it('scaffold: a value flag before the base argument is not taken as the base', () => {
+    const res = run(scaffold, ['--index-basename', 'index', docs, '--preset', 'operating-model']);
+    expect(res.status, res.stderr).toBe(0);
+    expect(existsSync(join(docs, 'operating-model/index.md'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'index'))).toBe(false);
+  });
+
+  it('new-doc --template: a slug outside the template section takes that section type', () => {
+    expect(run(newDoc, ['--template', 'role', 'guides/dpo', '--base', docs]).status).toBe(0);
+    const data = fm(join(docs, 'guides/dpo.md'));
+    expect(data.type).toBe('Guide');
+    expect(data.kind).toBe('Role');
+  });
+
+  it('new-doc --template: the type follows the site registry when the snippet is applied', () => {
+    applySnippet(docs);
+    expect(run(newDoc, ['--template', 'incident-response', 'operating-model/ir', '--base', docs]).status).toBe(0);
+    expect(fm(join(docs, 'operating-model/ir.md')).type).toBe('Operations');
+    const res = run(gate, [docs]);
+    expect(res.status, `${res.stdout}\n${res.stderr}`).toBe(0);
+    expect(`${res.stdout}\n${res.stderr}`).not.toMatch(/operating-model\/ir\.md.*type/);
+  });
+
+  it('new-doc --template: without a registry entry the template default type stays (positive control)', () => {
+    expect(run(newDoc, ['--template', 'incident-response', 'operating-model/ir', '--base', docs]).status).toBe(0);
+    expect(fm(join(docs, 'operating-model/ir.md')).type).toBe('Runbook');
+  });
+
+  it('scaffold --preset: a snippet tree validates with no type warnings', () => {
+    applySnippet(docs);
+    expect(run(scaffold, [docs, '--preset', 'operating-model']).status).toBe(0);
+    expect(fm(join(docs, 'operating-model/README.md')).type).toBe('Operations');
+    expect(fm(join(docs, 'operations/runbooks/incident-response.md')).type).toBe('Runbook');
+    const res = run(gate, [docs]);
+    expect(res.status, `${res.stdout}\n${res.stderr}`).toBe(0);
+    expect(`${res.stdout}\n${res.stderr}`).not.toMatch(/operating-model\/.*`type/);
+  });
+
+  it('new-doc: a C1 control character (U+0085) in --title exits 2 and writes nothing', () => {
+    const res = run(newDoc, ['--template', 'people', '--title', 'Line\u0085two', '--base', docs]);
+    expect(res.status).toBe(2);
+    expect(res.stderr).toMatch(/--title must not contain control characters/);
+    expect(files(docs).filter((f) => !f.startsWith('_meta'))).toEqual([]);
+  });
+});
