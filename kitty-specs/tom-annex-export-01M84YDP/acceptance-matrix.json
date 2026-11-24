@@ -68,10 +68,10 @@
       "criterion_id": "FR-007",
       "description": "Verify FR-007 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/draft-publication-build.test.ts (two builds, index compared unmasked); src/tests/tom-annex-core.test.ts (schema-order serialisation); lane-g@6134ce5c (contains lanes a-f)",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-24T20:38:03.800296+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
