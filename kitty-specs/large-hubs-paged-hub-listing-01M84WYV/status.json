@@ -148,7 +148,7 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -161,6 +161,7 @@
         "Listing records in agent index + per-page JSON + llms.txt, DK_HUB_DATA handoff, build-id fold; full pnpm test green (src 244/4803, mcp 23/181)."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP05-agent-surfaces/review-cycle-1.md",
         "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP05-agent-surfaces/review-cycle-1.md",
@@ -168,13 +169,13 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 540,
-      "shell_pid_created_at": "1795553624.36",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T022": "done",
-        "T023": "done",
-        "T024": "done",
-        "T025": "done"
+        "T022": "planned",
+        "T023": "planned",
+        "T024": "planned",
+        "T025": "planned"
       }
     },
     "WP06": {
