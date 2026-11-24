@@ -55,6 +55,11 @@ audience model, and would make every role state reader goals it does not have.
 
    `goals` is optional on a Role page. The build schema stays lenient, as it is
    for Persona.
+
+   Role reuses Persona's `role` and `responsibilities` field names rather than
+   defining its own: they mean the same thing, one gate helper
+   (`requireAttributeFields`) checks both, and the two kinds stay separate by
+   `kind`, not by field names.
 3. A process page names the roles it involves through `related`. The Role page
    does not list its processes in a separate field.
 4. `Runbook` stays a `type`, derived from `operations/runbooks/`. It is not a
