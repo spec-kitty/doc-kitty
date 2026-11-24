@@ -262,7 +262,8 @@
       "shell_pid": 326,
       "shell_pid_created_at": "1795547837.32",
       "subtasks": {
-        "T035": "done"
+        "T035": "done",
+        "T036": "done"
       }
     }
   }
