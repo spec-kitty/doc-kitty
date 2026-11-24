@@ -17,9 +17,16 @@ hand-off.
    - move WP05's helpers out from between `routeShapingSource`'s `@internal`
      JSDoc and the function, so that comment is not orphaned;
    - add a test that fails if two hub-data computations exist.
+   - add a test that the route is injected iff `pagedHubListing()` (the
+     handoff's listing) is non-empty, so the mount and the agent surfaces agree
+     (WP05 review cycle 1, item 7). With WP05's file handoff (`DK_HUB_DATA` is a
+     path since cycle 1), the setup hook computes the data; consider writing the
+     handoff there too and dropping the separate `config:done` computation.
 
 ## Before or with WP06 / WP07
 
+2a. An MCP-side build-fixture test (WP06) that loads a paged corpus, modelled on
+    `mcp/tests/corpus/openapi-entries.test.ts` (WP05 review cycle 1).
 2. A cross-surface test (WP06): every listing URL appears exactly once in the
    sitemap, Pagefind, `/api/index.json`, `/api/pages`, `llms.txt` and the MCP
    listing; children are never duplicated.
