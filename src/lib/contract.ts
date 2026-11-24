@@ -146,6 +146,11 @@ export interface IndexLinks {
   rss?: AgentLink;
   bibliography?: AgentLink;
   scenarios?: AgentLink;
+  /**
+   * Present only when a published page is classified (ADR-0080, #401): the
+   * evidence index. Its title is "Evidence index, not the contractual annex."
+   */
+  tomAnnex?: AgentTitledLink;
   /** Present only when the site opts in with `links.mcp` (FR-009). */
   mcp?: McpWiringPointer;
 }
