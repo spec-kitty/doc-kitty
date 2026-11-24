@@ -1,0 +1,119 @@
+{
+  "mission_slug": "large-hubs-sidebar-child-cap-01M81KGV",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "The cap resolves hub frontmatter, then section, then site, then 50.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/child-cap.test.ts (resolveChildCap); src/tests/hub-caps-data.test.ts (cap levels); full pnpm test 4347/4347 at lane-d 98b26ff",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:02:52.657517+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "A cap that is not a positive whole number is refused at config time, naming the setting and where it was set.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/child-cap.test.ts (site option, sections.yaml, frontmatter schema and validate-frontmatter cases)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:02:57.426458+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "A hub over its cap shows its index link and one entry to the hub.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-child-cap.test.ts (a capped group); src/tests/sidebar-child-cap-build.test.ts (200-child build, every page: index + '200 pages')",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:02.412622+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "The count and order come from selectHubChildren (drafts excluded, sub-folder counts once, draft index is no hub).",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/hub-caps-data.test.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:07.473841+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "The capped entry is the only current sidebar entry on any page below the hub; the hub page marks its index.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-child-cap.test.ts (current marking); sidebar-child-cap-build.test.ts (every child page); tests/a11y/sidebar-child-cap.spec.ts",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:12.051633+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Label: sidebar.cappedLabel, else dockitty.sidebar.cappedEntry translation, else '{count} pages'.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/child-cap.test.ts (resolveCappedLabel, UI string); src/tests/sidebar-child-cap.test.ts (label function)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:17.114617+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "prev/next follow the hub order, also after the OpenAPI renderer's rebuild and for label-only overrides.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-child-cap.test.ts (hub order, hubOrderPagination, paginationFollow); sidebar-child-cap-build.test.ts; tests/a11y/sidebar-child-cap.spec.ts (openapi on)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:21.942011+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "cappedChildHidden helper; a pre-hidden build gives the same sidebar and prev/next on every page.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/child-cap.test.ts; src/tests/sidebar-child-cap-build.test.ts (sidebar.hidden producer hint)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:27.172706+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "The cap API is exported as @spec-kitty/doc-toolkit/child-cap and re-exported from route-shaping.",
+      "proof_type": "automated_test",
+      "evidence": "src/tests/sidebar-child-cap.test.ts (package export case)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:32.075861+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "This repo's adr section sets sidebar.childCap: 100, so its ADR sidebar is unchanged.",
+      "proof_type": "manual_check",
+      "evidence": "docs/_meta/sections.yaml; WP05 review cycle 1 confirmed all ADR pages in the built sidebar",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:37.064269+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Configuration guide, cross-references and a changelog fragment ship with the change.",
+      "proof_type": "manual_check",
+      "evidence": "docs/guides/sidebar-child-cap.md; docs/changelog/unreleased/341-sidebar-child-cap.md; validate:docs, validate:links, validate:changelog clean",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-23T11:03:42.132812+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

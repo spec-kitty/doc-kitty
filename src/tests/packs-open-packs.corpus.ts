@@ -6,8 +6,12 @@
  * (`.github/workflows/ci.yml`, code-quality). It FAILS without the checkout,
  * never skips: the proof must not pass by not running.
  *
- * Warnings are expected and not asserted (they track open-packs and the contract
- * it pins); a summary per pack goes to the log.
+ * Under the vendored contract (contract-packs-v0.1.0-rc.2, #418) every manifest
+ * verifies, and the one warning a pack may carry is `charter-lock-mismatch`:
+ * open-packs is proven against a charter service release, not the packs-contract
+ * tag doc-kitty vendors, which ADR-0079 D2 reports rather than hides. Any other
+ * warning fails, so a contract or corpus bump that changes this is seen. A
+ * summary per pack goes to the log.
  */
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -22,6 +26,8 @@ const PIN = JSON.parse(readFileSync(new URL('./fixtures/packs-corpus/open-packs.
 const HOW =
   `set DK_OPEN_PACKS_DIR to a checkout of ${PIN.repository} at ${PIN.commit}: ` +
   `git init open-packs && git -C open-packs fetch --depth 1 ${PIN.repository} ${PIN.commit} && git -C open-packs checkout FETCH_HEAD`;
+/** The warnings, with their counts, an open-packs pack carries at the pin (see the header). */
+const EXPECTED_WARNINGS = { 'charter-lock-mismatch': 1 };
 const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 /**
@@ -65,6 +71,11 @@ describe('every open-packs pack at the pinned commit', () => {
       for (const p of model.problems) byCode[p.code] = (byCode[p.code] ?? 0) + 1;
       const manifest = model.manifest ? (model.manifest.verified ? 'verified' : 'unverified') : 'no manifest';
       console.log(`${dir}: ${manifest}, inventory from ${model.inventory.source}, warnings ${JSON.stringify(byCode)}`);
+      expect(manifest, dir).toBe('verified');
+      // Verified includes the manifest's own hash, recomputed with RFC 8785 (#417).
+      expect(model.manifest?.hash, dir).toMatch(/^[0-9a-f]{64}$/);
+      expect(model.inventory.source, dir).toBe('manifest');
+      expect(byCode, dir).toEqual(EXPECTED_WARNINGS);
     }
     const elapsed = performance.now() - start;
     console.log(`read ${dirs.length} packs in ${Math.round(elapsed)} ms`);

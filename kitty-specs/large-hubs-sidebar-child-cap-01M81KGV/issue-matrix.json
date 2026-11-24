@@ -1,0 +1,53 @@
+{
+  "rows": {
+    "#161": {
+      "evidence_ref": "Cited in code comments for the existing indexLabel option; context only",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "Sidebar index label (prior feature)",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#340": {
+      "evidence_ref": "<auto-classified: no action required>",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<auto-classified: context_only>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#341": {
+      "evidence_ref": "Implemented by this mission; WP01 lane-a 10ec3fe (cap settings and API), WP02-WP05 to follow",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Large hubs slice 1: sidebar child cap",
+      "verdict": "in-mission",
+      "wp": "WP01"
+    },
+    "#342": {
+      "evidence_ref": "Cited as the consumer of the FR-009 exports; separate slice, no work owed by this mission",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Large hubs: paged hub listing",
+      "verdict": "not-applicable",
+      "wp": null
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,15 @@
+schema_version: '1.0'
+manifest_hash: 25db458924a165fb9f68b7bc58d7e4883494dd7912214b958cd89a12dd9f74fc
+constituents:
+- kind: directive
+  id: CAVE_001
+  path: directives/cave-001-terse-output.directive.yaml
+  content_hash: b38f47540e900474f673fd6bf0cd6e574d7eee12163ff19a28f6ef3060fa5954
+- kind: mission_type
+  id: cave-dev
+  path: missions/cave-dev/cave-dev.mission-type.yaml
+  content_hash: 72f3c7cc50e684a938d5175a16abeaf3cce3a6c0273deb1f0cc03479828dd03b
+- kind: styleguide
+  id: cave-sty-001-communication
+  path: styleguides/cave-sty-001-communication.styleguide.yaml
+  content_hash: 27a57521ee2a3360defa64a26fde8bb8c7923eeb22d754cfaf6181b0bba61a76

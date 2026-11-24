@@ -21,6 +21,8 @@ sections:
     order: 30
     type: ADR
     purpose: The immutable log of architectural decisions.
+    sidebar:
+      childCap: 100   # more than 50 ADRs; keep them all in the sidebar (#341)
 
   - id: plans
     label: Plans

@@ -2,7 +2,7 @@
 title: "ADR-0073: One generic MCP server over published artifacts"
 description: One runtime-configured MCP server consumes any DocKitty site's published artifacts over stdio; per-consumer codegen is rejected with a recorded re-trigger.
 doc_status: active
-updated: 2026-11-02T00:00:00Z
+updated: 2026-11-21T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -19,6 +19,13 @@ related:
 ## Status
 
 Accepted
+
+Decision 9's pointer `href` is amended by the
+[#307](https://github.com/spec-kitty/doc-kitty/issues/307) ruling of
+2026-11-21: until the package is published
+([#408](https://github.com/spec-kitty/doc-kitty/issues/408)), `href` points at
+the [build-from-source steps](../guides/mcp-server-quickstart.md#build-from-source)
+and is the link a reader follows; the `npm:` identifier is no longer emitted.
 
 ## Context
 

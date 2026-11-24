@@ -156,6 +156,15 @@
       "minItems": 1,
       "title": "Activated Step Enhancements",
       "type": "array"
+    },
+    "activated_routing_catalogs": {
+      "description": "The routing catalogs this preset activates, in authored order: a plain member list, applied as selected.routing_catalog (ADR-0080). Absent when the preset selects none; never empty.",
+      "items": {
+        "$ref": "#/$defs/item"
+      },
+      "minItems": 1,
+      "title": "Activated Routing Catalogs",
+      "type": "array"
     }
   },
   "required": [

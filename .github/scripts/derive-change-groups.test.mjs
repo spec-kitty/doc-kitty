@@ -35,6 +35,8 @@ const CLASSIFY_CASES = [
   ['example/features/shipping/book-consignment.feature', 'example_content'],
   // `.feature` files the example's pages include with `::gherkin{src}` (ADR-0051).
   ['example/scenarios/init/init.feature', 'example_content'],
+  // the glossary source the build generates committed pages from (#398).
+  ['example/.contextive/definitions.yaml', 'example_content'],
   // non-deployed repo docs (root markdown + docs/agents trees).
   ['docs/architecture/ci-cd-pipeline.md', 'repo_docs'],
   ['README.md', 'repo_docs'],

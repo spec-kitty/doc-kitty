@@ -101,6 +101,34 @@ function snapshotFiles(dir) {
 }
 
 /**
+ * Why a lock key is not a safe snapshot path, or `undefined` when it is (#423).
+ *
+ * A key names a file inside the snapshot directory, so it must be a relative
+ * POSIX path of plain segments: no leading `/`, no backslash, no empty, `.` or
+ * `..` segment, no NUL, no colon, and never the lock itself in any case. A key that passes cannot
+ * resolve outside the snapshot, whatever directory the snapshot sits in.
+ *
+ * @param {unknown} key
+ * @returns {string | undefined}
+ */
+export function lockKeyProblem(key) {
+  const shown = JSON.stringify(key);
+  /** @param {string} why */
+  const unsafe = (why) => `${CONTRACT_LOCK_FILE} key ${shown} is not a safe snapshot path (${why})`;
+  if (typeof key !== 'string' || key === '') return unsafe('it is empty');
+  if (key.includes('\\')) return unsafe('it holds a backslash');
+  if (key.includes('\0')) return unsafe('it holds a NUL');
+  if (key.startsWith('/') || path.win32.isAbsolute(key)) return unsafe('it is absolute');
+  // A colon makes `C:x` drive-relative and `x:stream` an alternate data stream on Windows.
+  if (key.includes(':')) return unsafe('it holds a colon');
+  const segments = key.split('/');
+  if (segments.some((s) => s === '' || s === '.' || s === '..')) return unsafe('it has an empty, `.` or `..` segment');
+  // Compared case-insensitively: on macOS and Windows a case variant is the lock's own file.
+  if (key.toLowerCase() === CONTRACT_LOCK_FILE) return unsafe('it names the lock itself');
+  return undefined;
+}
+
+/**
  * Read and shape-check a snapshot's lock.
  *
  * @param {string} dir
@@ -120,6 +148,10 @@ function readLock(dir) {
   }
   if (lock.files === null || typeof lock.files !== 'object' || Array.isArray(lock.files)) {
     return { problem: `${CONTRACT_LOCK_FILE} has no \`files\` map` };
+  }
+  for (const key of Object.keys(lock.files).sort(byCodeUnit)) {
+    const unsafe = lockKeyProblem(key);
+    if (unsafe) return { problem: unsafe };
   }
   return { lock };
 }
