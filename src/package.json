@@ -29,6 +29,7 @@
   "exports": {
     ".": "./index.ts",
     "./contract": "./lib/contract.ts",
+    "./child-cap": "./lib/child-cap.ts",
     "./config": "./lib/config.ts",
     "./schema": "./lib/schema.ts",
     "./routes": "./lib/routes/index.ts",

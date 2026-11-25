@@ -259,6 +259,8 @@ export const frontmatterSchema = z
     glossary_context: z.string().optional(),
     glossary_autolink: z.boolean().optional(),
     schematic_path: z.string().optional(),
+    // The hub's sidebar child cap (#341), mirrored from `docKittyFields`.
+    sidebar_child_cap: z.number().int('must be a positive whole number').positive('must be a positive whole number').optional(),
     agent: z
       .object({
         discoverable: z.boolean().optional(),
@@ -405,6 +407,32 @@ function restoreDateOnlyScalars(data, frontmatterText) {
     if (!(data[field] instanceof Date)) continue;
     const m = new RegExp(`^${field}:[ \\t]*(\\d{4}-\\d{2}-\\d{2})[ \\t]*(?:#.*)?$`, 'm').exec(frontmatterText);
     if (m) data[field] = m[1];
+  }
+}
+
+/**
+ * The shared attribute-field requiredness of the Persona (ADR-0019) and Role
+ * (ADR-0085) kinds: `role` is a non-empty string, and each named list field is a
+ * non-empty list of non-empty strings. `label` names the kind in the message.
+ *
+ * @param {Record<string, unknown>} data
+ * @param {string} label
+ * @param {string[]} listFields
+ * @param {string[]} problems collects the messages
+ */
+function requireAttributeFields(data, label, listFields, problems) {
+  if (typeof data.role !== 'string' || data.role.trim().length === 0) {
+    problems.push(`\`role\`: ${label} requires a non-empty string`);
+  }
+  for (const field of listFields) {
+    const value = data[field];
+    if (
+      !Array.isArray(value) ||
+      value.length === 0 ||
+      !value.every((item) => typeof item === 'string' && item.trim().length > 0)
+    ) {
+      problems.push(`\`${field}\`: ${label} requires a non-empty list of non-empty strings`);
+    }
   }
 }
 
@@ -642,19 +670,14 @@ export function validate(
   // string arrays. Enforced regardless of `doc_status`, so a draft persona is held
   // to the same identity contract as a published one.
   if (data.kind === 'Persona') {
-    if (typeof data.role !== 'string' || data.role.trim().length === 0) {
-      problems.push('`role`: persona requires a non-empty string');
-    }
-    for (const field of ['goals', 'responsibilities']) {
-      const value = data[field];
-      if (
-        !Array.isArray(value) ||
-        value.length === 0 ||
-        !value.every((item) => typeof item === 'string' && item.trim().length > 0)
-      ) {
-        problems.push(`\`${field}\`: persona requires a non-empty list of non-empty strings`);
-      }
-    }
+    requireAttributeFields(data, 'persona', ['goals', 'responsibilities'], problems);
+  }
+
+  // Kind-aware requiredness for `kind: Role` (ADR-0085): an accountable function
+  // names its role and its duties. `goals` is a reader's attribute and stays
+  // optional here. Same gate-only strict layer as Persona; the build stays lenient.
+  if (data.kind === 'Role') {
+    requireAttributeFields(data, 'role', ['responsibilities'], problems);
   }
 
   // FR-027: an unknown sidebar icon fails, as it fails the build, through the same resolver.

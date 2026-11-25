@@ -31,7 +31,7 @@ import { normalizeBasePrefix } from './shared.js';
  *   (a) parses the definitions ONCE (`loadGlossary`, the single parse site INV-G1)
  *       and codegens the hub + per-context pages into `<docsDir>/glossary/**`
  *       (`generateGlossaryPages`). The generator is deterministic + idempotent
- *       (no timestamp/`generated:` field), so a dev-watcher re-run rewrites
+ *       (the stamp is kept while the content is unchanged), so a dev-watcher re-run rewrites
  *       byte-identical files and never loops.
  *   (b) registers the remark plugins in the PINNED order (`updateConfig` APPENDS
  *       after Astro's built-in remark-gfm): `glossary-term → glossary-autolink`,

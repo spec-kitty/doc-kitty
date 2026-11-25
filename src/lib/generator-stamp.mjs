@@ -162,25 +162,39 @@ function contentHashOf(hash) {
   return `sha256:${hash.replace(/^sha256:/, '').slice(0, 12)}`;
 }
 
+/** The `<version>` part of a stamp `makeStamp` may carry over: `x.y.z` with an optional pre-release or build suffix. */
+const STAMP_VERSION = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/;
+
 /**
- * Build a stamp. `at` is stable: it is carried over from `previous` while
- * `previous.content_hash` equals the new hash (even across a version bump) and
- * is `now` (whole-second UTC) once the content changes.
+ * Build a stamp. While `previous.content_hash` equals the new hash, the hashed
+ * content is unchanged and so is the stamp: `previous` comes back as it is, `by` included,
+ * so a version bump alone never rewrites a committed generated page (#398). Once
+ * the content changes, `by` names the current toolkit version and `at` is `now`
+ * (whole-second UTC). So `by` records the version that last changed the hashed content
+ * (for a Gherkin page that is the `.feature` source, not the rendered body).
+ *
+ * `previous.at` is kept only while it still reads as a date, and `previous.by`
+ * only while it is this producer's own stamp with a version-shaped suffix;
+ * otherwise that field is written fresh.
  *
  * @param {object} args
  * @param {string} args.producer one of {@link PRODUCERS}
  * @param {string} args.hash hex digest of the generated content
- * @param {{at?: string, content_hash?: string}} [args.previous] the page's existing stamp
+ * @param {{by?: string, at?: string, content_hash?: string}} [args.previous] the page's existing stamp
  * @param {Date} [args.now] injectable clock
  * @returns {{by: string, at: string, content_hash: string}}
  */
 export function makeStamp({ producer, hash, previous, now = new Date() }) {
   const content_hash = contentHashOf(hash);
+  const unchanged = previous?.content_hash === content_hash;
   // A kept `at` must still read as a date: the gate rejects one that does not (#227).
-  const keep = previous?.content_hash === content_hash && typeof previous.at === 'string' && normaliseInstant(previous.at) !== null;
+  const keepAt = unchanged && typeof previous.at === 'string' && normaliseInstant(previous.at) !== null;
+  // A kept `by` must be this producer's own stamp with a version-shaped suffix,
+  // and moves with `at`; a hand-edited `by` is replaced, as before.
+  const keepBy = keepAt && typeof previous.by === 'string' && STAMP_VERSION.test(previous.by.slice(producer.length + 1)) && isGeneratedStamp(previous.by, producer);
   return {
-    by: `${producer}/${toolkitVersion()}`,
-    at: keep ? /** @type {string} */ (previous.at) : formatInstant(now),
+    by: keepBy ? /** @type {string} */ (previous.by) : `${producer}/${toolkitVersion()}`,
+    at: keepAt ? /** @type {string} */ (previous.at) : formatInstant(now),
     content_hash,
   };
 }

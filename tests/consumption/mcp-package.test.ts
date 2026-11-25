@@ -427,21 +427,24 @@ describe('mcp package clean-room consumption (WP06, NFR-003/C-002/US-3)', () => 
     expect(report.exitCode).toBe(0);
   });
 
-  it('T026: the links.mcp build advertises the packed-tarball command form (never an npx registry form)', () => {
+  it('T026: the links.mcp build points at build-from-source, never an npm name or npx form (#307)', () => {
     // Assert the raw BUILT index (pre-rewrite), so the advertised URL is the
     // site's real baked base URL - exactly what a visiting agent would read.
+    const buildFromSource =
+      'https://github.com/spec-kitty/doc-kitty/blob/main/docs/guides/mcp-server-quickstart.md#build-from-source';
     expect(builtIndex._links.mcp).toEqual({
-      href: 'npm:@spec-kitty/doc-kitty-mcp',
-      title: 'Doc-Kitty MCP server',
+      href: buildFromSource,
+      title: 'Doc-Kitty MCP server (not published yet: build it from source, see href)',
       usage: `doc-kitty-mcp --site ${EXAMPLE_BAKED_ORIGIN}`,
     });
-    expect(builtIndex._links.mcp?.usage).not.toContain('npx'); // C-002: no registry form is advertised yet
 
     const llmsTxt = readFileSync(path.join(EXAMPLE_DIST, 'llms.txt'), 'utf8');
-    const mcpLines = llmsTxt.split('\n').filter((line) => line.startsWith('MCP server:'));
+    expect(llmsTxt).not.toContain('npm:@spec-kitty/doc-kitty-mcp');
+    const mcpLines = llmsTxt.split('\n').filter((line) => line.startsWith('MCP server'));
     expect(mcpLines).toEqual([
-      `MCP server: doc-kitty-mcp --site ${EXAMPLE_BAKED_ORIGIN} serves the machine index ` +
-        `(${EXAMPLE_BAKED_ORIGIN}/api/index.json) to MCP clients (npm:@spec-kitty/doc-kitty-mcp)`,
+      `MCP server (not published yet, build it from source: ${buildFromSource}): ` +
+        `once built, doc-kitty-mcp --site ${EXAMPLE_BAKED_ORIGIN} serves the machine index ` +
+        `(${EXAMPLE_BAKED_ORIGIN}/api/index.json) to MCP clients`,
     ]);
   });
 

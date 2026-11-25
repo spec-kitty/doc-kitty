@@ -2,7 +2,7 @@
 title: Metadata model
 description: "The frontmatter contract every page carries, and how the toolkit reads it."
 doc_status: draft
-updated: 2026-11-22T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Architecture
 kind: Reference
 authors:
@@ -90,9 +90,11 @@ declares its kind rather than being exempt:
   description), the planning kinds `Planning`, `Feature`, and `User-Journey`
   (see [ADR-0010](../adr/0010-planning-kinds-and-moscow.md)), and `Specification`
   (a page generated from a Gherkin `.feature` file, see
-  [ADR-0046](../adr/0046-gherkin-feature-pages.md)), and `Schematic` (a page
+  [ADR-0046](../adr/0046-gherkin-feature-pages.md)), `Schematic` (a page
   that documents a JSON or YAML schema named by `schematic_path`, see
-  [ADR-0067](../adr/0067-schematic-pages-reference-a-schema.md)).
+  [ADR-0067](../adr/0067-schematic-pages-reference-a-schema.md)), and `Role` (an
+  accountable function such as a data protection officer, see
+  [ADR-0085](../adr/0085-role-kind.md)).
 
 The vocabulary is open, like `type`: the validator checks the canonical set above
 and warns on an unknown value rather than failing.
@@ -307,6 +309,11 @@ fields (`role`, `goals`, `responsibilities`) are defined in
 [ADR-0019](../adr/0019-persona-attribute-fields.md); the passport layout renders
 them.
 
+A `Role` page describes an accountable function, not a reader
+([ADR-0085](../adr/0085-role-kind.md)). It reuses the `role` and
+`responsibilities` fields, and the gate requires both. `goals` is optional on a
+Role page. A process page names the roles it involves through `related`.
+
 Profile resolution is a **soft miss** (FR-002): a `profile` with no persona page
 does not fail the build — the block renders the humanized slug and warns on the
 build log. This is deliberately asymmetric with the build-fatal `related` miss
@@ -330,8 +337,10 @@ Three fields in `/api/*.json` come from the build, not from page frontmatter:
   (`_meta/sections.yaml`) in registry order, as `{ id, label, order, purpose? }`;
   a site without a registry emits `[]`.
 - `_links.mcp` on the index is opt-in (`links: { mcp: true }`) and points agents at
-  the generic MCP server. Its `href` is a reserved name, not an installable
-  package yet.
+  the generic MCP server. The package is not published yet, so its `href` is
+  the build-from-source section of the
+  [MCP server quickstart](../guides/mcp-server-quickstart.md#build-from-source)
+  and its `title` says the server must be built from source.
 
 The shapes are published as types in `@spec-kitty/doc-toolkit/contract`; see
 [ADR-0073](../adr/0073-generic-mcp-server-over-published-artifacts.md).
@@ -477,8 +486,12 @@ generated:
 ```
 
 `by` is `<producer>/<toolkit version>`. `content_hash` is the DocKitty extension
-to OKF's `generated`: a hash of the page content without the stamp. `at` only
-moves when the hash does, so regeneration over unchanged input is byte-stable.
+to OKF's `generated`: a hash of the page content without the stamp. `by` and `at`
+only move when the hash does, so regeneration over unchanged input is byte-stable,
+also across a toolkit release (#398). `by` therefore names the toolkit version
+that last changed the hashed content, not the version that last ran. A Gherkin
+feature page hashes its `.feature` source, so a renderer-only change keeps `by`. A build
+never rewrites a committed generated page because of a version bump alone.
 
 Two outputs read a stamp differently (#226). RSS dates an item from `updated`,
 else the stamp's `at`, whatever the stamp's `by`. The OKF export takes `by`, `at`
@@ -496,6 +509,37 @@ producer's scope, so a stamp alone never exempts a page from the frontmatter
 gate. The glossary keeps its path rule (`glossary/` with `kind: Glossary` or
 `Hub`) as its scope. The scaffold is a provenance-only producer: its stamp never
 makes a page generated.
+
+#### The generated-section contract (accepted, not yet implemented)
+
+[ADR-0087](../adr/0087-generated-section-contract.md) (Accepted, #359) makes this
+stamp one contract for every generated section. It is not implemented yet. Until
+it is, the rules above describe the code.
+
+- **Four keys.** The stamp gains `source_digest`: a full `sha256` over the
+  inputs the producer declares for the page, configuration included, by the
+  byte-exact algorithm in ADR-0087 D2. `content_hash` becomes the hash of the
+  rendered page, without its stamp, for every producer, Gherkin included.
+- **`by` means "last changed by".** `makeStamp` already carries over `by` and
+  `at` together while `content_hash` is unchanged (#398, above). What remains is
+  the rendered-page `content_hash` for Gherkin, so that a renderer-only change
+  moves `by` as well.
+- **One drift gate.** Every producer that doc-kitty can run answers `--check` with
+  the same verdicts, in a fixed precedence: `missing`, `orphan`, `unowned`,
+  `hand-edited`, `stale-source`, `stale-render`. A producer may add verdicts of
+  its own after those, with exit 1. It uses the same output line and exit codes
+  (0, 1, 2). `pnpm validate:generated` runs them all from the producer registry.
+- **Ownership** stays ADR-0083's stamp-and-scope rule, with the glossary still
+  recognised by scope alone. The `hand-edited` verdict enforces it, and the edit
+  link, the RSS hub filter and the OKF export route through the registry too.
+- **`at` is carried over, not rewritten.** Producers that regenerate during the
+  build write `at` only when the content changed. Byte stability rests on that
+  carry-over and on the clean-tree step (#410). `--check` masks `at`, and
+  nothing else, when it compares a regenerated page. The two-builds check (#300)
+  does not mask it.
+- **Committed data only.** doc-kitty never runs a producing repository's code at
+  build time. External producers commit their output, and their freshness check
+  runs in their own CI.
 
 ### `verified`
 

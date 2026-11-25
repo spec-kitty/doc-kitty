@@ -15,7 +15,14 @@ import type { AudienceEntry, ResolvedRelated } from '../metadata.js';
 import { DEFAULT_AGENT_PRIORITY, rankForAgents, resolveRelated, sectionOf, toAgentRecord } from '../metadata.js';
 import { resolveSectionRegistry, sectionOrder, sectionFeeds, feedsSurface } from '../sections.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { absolute, buildIdForBuild, docsRoot, mcpLaunchUsage, openApiStampConfig } from './shared.js';
+import {
+  absolute,
+  buildIdForBuild,
+  docsRoot,
+  MCP_BUILD_FROM_SOURCE_URL,
+  mcpLaunchUsage,
+  openApiStampConfig,
+} from './shared.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { servedSurfaces } from '../served-surfaces.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
@@ -57,13 +64,14 @@ export interface AgentIndexLinks {
   scenarios?: boolean;
   /**
    * The MCP wiring pointer (FR-009). Unlike the siblings here this defaults to
-   * OFF: it advertises `@spec-kitty/doc-kitty-mcp`, so it is opt-in until a
+   * OFF: it advertises the Doc-Kitty MCP server, so it is opt-in until a
    * site deliberately wires the server into its agent story. When true, the
-   * index carries `_links.mcp` — `{ href: 'npm:@spec-kitty/doc-kitty-mcp',
-   * title, usage }`, where `usage` is the packed-tarball launch command with
-   * this site's base URL substituted (registry publishing is deferred per
-   * C-002) — and `llms.txt` shows the matching one-liner when the site also
-   * passes `links: { mcp: true }` to `llmsTxtRoute`.
+   * index carries `_links.mcp` — `{ href, title, usage }`, where `href`
+   * points at the build-from-source instructions while the package is
+   * unpublished (#307; publishing is #408), `title` says so, and `usage` is
+   * the launch command with this site's base URL substituted — and
+   * `llms.txt` shows the matching one-liner when the site also passes
+   * `links: { mcp: true }` to `llmsTxtRoute`.
    */
   mcp?: boolean;
 }
@@ -199,17 +207,16 @@ function indexLinks(site: URL | undefined, indexPath: string, declared: Declared
     ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
     ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
     ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
-    // FR-009: the opt-in MCP wiring pointer. `usage` names the installed
-    // tarball bin (the C-002 ruling on registry publishing is pending, so
-    // no `npx -y @spec-kitty/…` form is advertised yet). `href` is a
-    // RESERVED NAME, not an installable package: `@spec-kitty/doc-kitty-mcp`
-    // is `private: true` until publishing is decided, so `npm install` of it
-    // fails today. Consumers must follow `usage`, not `href`.
+    // FR-009: the opt-in MCP wiring pointer. #307: the package is not
+    // published (#408), so `href` points at the build-from-source steps
+    // rather than an `npm:` name nothing can install, and `title` says so.
+    // `usage` is the launch line once built; no `npx`/registry form until
+    // the package ships.
     ...(declared.mcp
       ? {
           mcp: {
-            href: 'npm:@spec-kitty/doc-kitty-mcp',
-            title: 'Doc-Kitty MCP server',
+            href: MCP_BUILD_FROM_SOURCE_URL,
+            title: 'Doc-Kitty MCP server (not published yet: build it from source, see href)',
             usage: mcpLaunchUsage(site),
           },
         }

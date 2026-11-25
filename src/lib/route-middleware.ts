@@ -22,21 +22,41 @@
 import { defineRouteMiddleware } from '@astrojs/starlight/route-data';
 import { routeShaping } from 'virtual:doc-kitty/route-shaping';
 import { sidebarIcons } from 'virtual:doc-kitty/sidebar-icons';
-import { decorateSidebarIcons, relabelledLinks, resolveIndexLabel, shapePagination, shapeSidebar, shapeToc, shapingWarningSink } from './route-shaping.js';
+import {
+  decorateSidebarIcons,
+  expandCappedGroups,
+  paginationFollow,
+  relabelledLinks,
+  resolveCappedLabel,
+  resolveIndexLabel,
+  shapePagination,
+  shapeSidebar,
+  shapeToc,
+  shapingWarningSink,
+} from './route-shaping.js';
+import { slugFromEntryId } from './metadata.js';
 
 const directoryMeta = new Map(routeShaping.directoryMeta);
+// The hubs over their sidebar child cap (#341). Empty on a site with no large hub,
+// and then every step below runs exactly as it did before the cap existed.
+const hubCaps = new Map(routeShaping.hubCaps);
 const iconMaps = { links: new Map(sidebarIcons.links), groups: new Map(sidebarIcons.groups) };
 
 export const onRequest = defineRouteMiddleware((context) => {
   const route = context.locals.starlightRoute;
 
   if (routeShaping.shapeSidebar) {
+    const currentSlug = slugFromEntryId(route.id);
+    const translate = context.locals.t as (key: string) => unknown;
     const { sidebar, warnings } = shapeSidebar(route.sidebar, directoryMeta, {
       base: routeShaping.base,
       unpublishedDirs: routeShaping.unpublishedDirs,
       collapse: routeShaping.collapse,
       annotate: routeShaping.annotate,
-      indexLabel: resolveIndexLabel(routeShaping.indexLabel, context.locals.t as (key: string) => unknown),
+      indexLabel: resolveIndexLabel(routeShaping.indexLabel, translate),
+      ...(hubCaps.size > 0
+        ? { hubCaps, currentSlug, cappedLabel: (count: number) => resolveCappedLabel(count, routeShaping.cappedLabel, translate) }
+        : {}),
     });
     // Collected, not printed: every page shapes the same tree, and the
     // integration reports the set once when the build finishes.
@@ -45,13 +65,19 @@ export const onRequest = defineRouteMiddleware((context) => {
 
     // `prev`/`next` front matter left unset means "follow the sidebar".
     const { prev, next } = route.entry.data;
-    route.pagination = shapePagination(route.sidebar, sidebar, route.pagination, {
-      prev: routeShaping.pagination && prev === undefined,
-      next: routeShaping.pagination && next === undefined,
-    });
+    // How each side follows the sidebar: unset, or a label-only override (#341).
+    const follows = {
+      prev: paginationFollow(prev, routeShaping.pagination),
+      next: paginationFollow(next, routeShaping.pagination),
+    };
+    // A capped hub's children are not in the shaped sidebar, so prev/next walk a copy
+    // where they are, in the hub's order (the shaped tree itself when nothing is capped).
+    route.pagination = shapePagination(route.sidebar, expandCappedGroups(sidebar, hubCaps, currentSlug), route.pagination, follows);
     // Handed on for a later middleware that rebuilds prev/next from the shaped sidebar
-    // (the OpenAPI renderer's, which runs after this one on every page).
+    // (the OpenAPI renderer's, which runs after this one on every page): the relabelled
+    // links, and with a capped hub what it needs to put the hub order back (#341).
     context.locals.dkRelabelled = relabelledLinks(route.sidebar, sidebar);
+    if (hubCaps.size > 0) context.locals.dkHubOrder = { hubCaps, currentSlug, follows, pagination: route.pagination };
     route.sidebar = decorateSidebarIcons(sidebar, iconMaps, routeShaping.base);
   }
 
