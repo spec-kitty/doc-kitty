@@ -1,19 +1,19 @@
 {
-  "event_count": 55,
-  "last_event_id": "01M89BB9TEJKTS8H88EJH9D955",
-  "materialized_at": "2026-11-25T12:37:04.462310+00:00",
+  "event_count": 56,
+  "last_event_id": "01M89BGYHFCCYYPDM7FEP4YAW6",
+  "materialized_at": "2026-11-25T12:40:09.519681+00:00",
   "mission_number": "",
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 5,
+    "approved": 6,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 1
   },
   "work_packages": {
@@ -187,9 +187,9 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "in_review",
-      "last_event_id": "01M89BB9TEJKTS8H88EJH9D955",
-      "last_transition_at": "2026-11-25T12:37:04.462310+00:00",
+      "lane": "approved",
+      "last_event_id": "01M89BGYHFCCYYPDM7FEP4YAW6",
+      "last_transition_at": "2026-11-25T12:40:09.519681+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Example catalog, artifact assertions, guide, changelog, MCP fixture carry-over; full pnpm test green",
@@ -198,10 +198,10 @@
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/subprocessor-catalog-01M84X07-coord/kitty-specs/subprocessor-catalog-01M84X07/tasks/WP06-example-guide-and-changelog/review-cycle-1.md",
-        "reference": "review-cycle://subprocessor-catalog-01M84X07/WP06-example-guide-and-changelog/review-cycle-1.md",
-        "reviewer": "claude:reviewer-renata",
-        "verdict": "changes_requested"
+        "feedback_path": "/home/user/doc-kitty/.worktrees/subprocessor-catalog-01M84X07-coord/kitty-specs/subprocessor-catalog-01M84X07/tasks/WP06-example-guide-and-changelog/review-cycle-2.md",
+        "reference": "review-cycle://subprocessor-catalog-01M84X07/WP06-example-guide-and-changelog/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
       },
       "role": "reviewer",
       "shell_pid": 518,
