@@ -29,7 +29,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "ADR-0086 (Proposed) + regenerated ADR index; validators and full pnpm test green",
-        "Review cycle 1 folded: README reverted to main (ADR-0072 D2); decisions 5/6 scoped and ADR-0087 conformance recorded; context and tie-break folded"
+        "Review cycle 1 folded: README reverted to main (ADR-0072 D2); decisions 5/6 scoped and ADR-0087 conformance recorded; context and tie-break folded",
+        "Review cycle 2 passed: all cycle-1 folds verified; 5 non-blocking findings incl. FR-006 known divergence"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
