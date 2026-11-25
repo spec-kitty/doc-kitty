@@ -148,7 +148,7 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -160,6 +160,7 @@
         "Integration, routes, index links; parity over 12 catalogs; fixture build proves additive-only output; full pnpm test green"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/subprocessor-catalog-01M84X07-coord/kitty-specs/subprocessor-catalog-01M84X07/tasks/WP05-integration-routes-and-discovery/review-cycle-1.md",
         "reference": "review-cycle://subprocessor-catalog-01M84X07/WP05-integration-routes-and-discovery/review-cycle-1.md",
@@ -167,15 +168,15 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 668,
-      "shell_pid_created_at": "1795602373.72",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T018": "done",
-        "T019": "done",
-        "T020": "done",
-        "T021": "done",
-        "T022": "done",
-        "T023": "done"
+        "T018": "planned",
+        "T019": "planned",
+        "T020": "planned",
+        "T021": "planned",
+        "T022": "planned",
+        "T023": "planned"
       }
     },
     "WP06": {
