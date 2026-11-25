@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-25T07:43:22.150224+00:00",
+      "accepted_by": "claude::implementer-ivan",
+      "accepted_from_commit": "0899947013b446b6589d03f82f5238460766d1ee"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-25T07:43:22.150224+00:00",
+  "accepted_by": "claude::implementer-ivan",
+  "accepted_from_commit": "0899947013b446b6589d03f82f5238460766d1ee",
   "coordination_branch": "kitty/mission-large-hubs-paged-hub-listing-01M84WYV",
   "create_return_branch": "feat/342-paged-hub-listing",
   "created_at": "2026-11-23T19:08:39.486855+00:00",
