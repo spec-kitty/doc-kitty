@@ -23,7 +23,7 @@
  * `by` carries over (operator ruling on #455, the rule `makeStamp` applies
  * since #454, through the shared `keepsBy`): while a file's `content_hash` is
  * unchanged, it keeps the `by` of the stamp already committed, so a toolkit
- * upgrade alone changes nothing. A `by` that is not version-shaped, such as a
+ * upgrade alone changes nothing. A `by` whose version is not SemVer 2.0.0, such as a
  * hand edit, is not kept, so it reads as `stale-render`.
  * {@link snapshotToWrite} and {@link hubToWrite} apply the rule for writing,
  * and the checks compare against the same result.
@@ -60,7 +60,7 @@ export function isOwnedSnapshot(annex) {
 
 /**
  * The committed `by` when the committed file has the same `content_hash` and
- * its `by` is one {@link keepsBy} keeps (this producer's, version-shaped), else
+ * its `by` is one {@link keepsBy} keeps (this producer's, a SemVer version), else
  * the built one. A hand-edited `by` is therefore not carried over.
  *
  * @param {any} committedStamp

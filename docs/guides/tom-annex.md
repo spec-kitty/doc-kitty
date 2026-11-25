@@ -235,7 +235,7 @@ first. When several verdicts apply, the first in this table is reported:
 | `unowned` | the path holds a file not stamped by `doc-kitty-tom-annex` (the verdict [PR #454](https://github.com/spec-kitty/doc-kitty/pull/454) added to ADR-0087 D3) | move or delete that file, then write |
 | `hand-edited` | the file no longer matches its own `content_hash` (for the snapshot, also an `at` its evidence does not give) | move the change to the classified pages or the catalog, then write |
 | `stale-source` | its `source_digest` differs from the build's: an evidence page, the catalog or the configuration changed | write again |
-| `stale-render` | same inputs, different bytes: a toolkit release that renders differently, a formatting edit to the snapshot, or a stamp `by` that is not this producer's version-shaped `by`, such as a hand edit (an edit to another valid version reads as `ok`, because `by` carries over; any other edit to the hub page reads as `hand-edited`) | write again |
+| `stale-render` | same inputs, different bytes: a toolkit release that renders differently, a formatting edit to the snapshot, or a stamp `by` whose version is not a [SemVer 2.0.0](https://semver.org/spec/v2.0.0.html) version, such as `doc-kitty-tom-annex/01.00.00` (a `by` that names another producer is reported as `unowned` instead, as that verdict comes first; an edit to another valid version reads as `ok`, because `by` carries over; any other edit to the hub page reads as `hand-edited`) | write again |
 
 **The check trusts the build.** It compares the committed files with the
 `source_digest` of the `dist` you point it at; it does not recompute the

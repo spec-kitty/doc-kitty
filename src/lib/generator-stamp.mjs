@@ -162,8 +162,38 @@ function contentHashOf(hash) {
   return `sha256:${hash.replace(/^sha256:/, '').slice(0, 12)}`;
 }
 
-/** The `<version>` part of a stamp `makeStamp` may carry over: `x.y.z` with an optional pre-release or build suffix. */
-const STAMP_VERSION = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/;
+/** A SemVer 2.0.0 numeric identifier, and an alphanumeric one (pre-release only). */
+const NUM_ID = '0|[1-9]\\d*';
+const PRE_ID = `(?:${NUM_ID}|\\d*[A-Za-z-][0-9A-Za-z-]*)`;
+const BUILD_ID = '[0-9A-Za-z-]+';
+
+/**
+ * The SemVer 2.0.0 grammar (semver.org, section 2, 9 and 10): no leading
+ * zeros, no empty identifier, a pre-release after `-` and build metadata after
+ * `+`, in that order.
+ */
+const STAMP_VERSION = new RegExp(
+  `^(${NUM_ID})\\.(${NUM_ID})\\.(${NUM_ID})(?:-${PRE_ID}(?:\\.${PRE_ID})*)?(?:\\+${BUILD_ID}(?:\\.${BUILD_ID})*)?$`,
+);
+
+/** npm semver's bounds: at most 256 characters, and each number a safe integer. */
+const STAMP_VERSION_MAX_LENGTH = 256;
+
+/**
+ * Is `version` one a stamp may carry over? A SemVer 2.0.0 version within npm
+ * semver's bounds (#455 operator ruling, 2026-11-25). So `01.00.00`,
+ * `1.0.0+.` and `9007199254740992.0.0` are refused, while
+ * `99999999999999.0.0` and `1.0.0--` (`-` is a valid pre-release identifier)
+ * are versions.
+ *
+ * @param {string} version
+ * @returns {boolean}
+ */
+function isStampVersion(version) {
+  if (version.length > STAMP_VERSION_MAX_LENGTH) return false;
+  const core = STAMP_VERSION.exec(version);
+  return core !== null && core.slice(1, 4).every((n) => Number.isSafeInteger(Number(n)));
+}
 
 /**
  * Build a stamp. While `previous.content_hash` equals the new hash, the hashed
@@ -174,7 +204,7 @@ const STAMP_VERSION = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/;
  * (for a Gherkin page that is the `.feature` source, not the rendered body).
  *
  * `previous.at` is kept only while it still reads as a date, and `previous.by`
- * only while it is this producer's own stamp with a version-shaped suffix;
+ * only while it is this producer's own stamp with a SemVer version ({@link keepsBy});
  * otherwise that field is written fresh.
  *
  * @param {object} args
@@ -189,7 +219,7 @@ export function makeStamp({ producer, hash, previous, now = new Date() }) {
   const unchanged = previous?.content_hash === content_hash;
   // A kept `at` must still read as a date: the gate rejects one that does not (#227).
   const keepAt = unchanged && typeof previous.at === 'string' && normaliseInstant(previous.at) !== null;
-  // A kept `by` must be this producer's own stamp with a version-shaped suffix,
+  // A kept `by` must be this producer's own stamp with a SemVer version,
   // and moves with `at`; a hand-edited `by` is replaced, as before.
   const keepBy = keepAt && keepsBy(previous.by, producer);
   return {
@@ -201,8 +231,8 @@ export function makeStamp({ producer, hash, previous, now = new Date() }) {
 
 /**
  * May a previous stamp's `by` be carried over? Only this producer's own stamp
- * with a version-shaped suffix (`x.y.z`, optionally with a pre-release or build
- * part); anything else, such as a hand-edited `by`, is written fresh. The one
+ * whose suffix is a SemVer 2.0.0 version ({@link isStampVersion}); anything
+ * else, such as a hand-edited `by`, is written fresh. The one
  * rule shared by {@link makeStamp} and the evidence index's carry-over (#455).
  *
  * @param {unknown} by
@@ -210,7 +240,7 @@ export function makeStamp({ producer, hash, previous, now = new Date() }) {
  * @returns {boolean}
  */
 export function keepsBy(by, producer) {
-  return typeof by === 'string' && isGeneratedStamp(by, producer) && STAMP_VERSION.test(by.slice(producer.length + 1));
+  return typeof by === 'string' && isGeneratedStamp(by, producer) && isStampVersion(by.slice(producer.length + 1));
 }
 
 /**

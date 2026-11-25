@@ -83,7 +83,7 @@ describe('checkSnapshot (WP07 T031)', () => {
 
   // #455 confirm review F1: the carry-over keeps only a version-shaped `by`,
   // as makeStamp does; a hand-edited one is stale-render and is rewritten.
-  it.each(['doc-kitty-tom-annex/garbage', 'doc-kitty-tom-annex/ '])('a hand-edited `by` (%j) with unchanged content is stale-render (#455 F1)', (by) => {
+  it.each(['doc-kitty-tom-annex/garbage', 'doc-kitty-tom-annex/ ', 'doc-kitty-tom-annex/01.00.00', 'doc-kitty-tom-annex/1.0.0+.'])('a hand-edited `by` (%j) with unchanged content is stale-render (#455 F1, NIT 3)', (by) => {
     const committed = serializeTomAnnex(variant((a) => (a.generated.by = by), false));
     expect(check(committed)).toBe('stale-render');
     expect(snapshotToWrite(builtText, committed)).toBe(builtText);
@@ -137,7 +137,7 @@ describe('checkHub (WP07 T031)', () => {
     expect(check(hub.replace(/by: "doc-kitty-tom-annex\/[^"]+"/, 'by: "doc-kitty-tom-annex/0.0.1"'))).toBe('ok');
   });
 
-  it.each(['doc-kitty-tom-annex/garbage', 'doc-kitty-tom-annex/ '])('a hand-edited `by` (%j) with unchanged content is stale-render (#455 F1)', (by) => {
+  it.each(['doc-kitty-tom-annex/garbage', 'doc-kitty-tom-annex/ ', 'doc-kitty-tom-annex/01.00.00', 'doc-kitty-tom-annex/1.0.0+.'])('a hand-edited `by` (%j) with unchanged content is stale-render (#455 F1, NIT 3)', (by) => {
     const committed = hub.replace(/by: "doc-kitty-tom-annex\/[^"]+"/, `by: "${by}"`);
     expect(committed).not.toBe(hub);
     expect(check(committed)).toBe('stale-render');

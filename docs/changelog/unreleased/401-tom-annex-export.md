@@ -14,4 +14,4 @@ section: Added
   site that leaves the option off, or has no published classified page, builds
   nothing new. The new `dockitty-tom-annex`
   command writes an opt-in committed snapshot and hub page and checks them for
-  drift, including a stamp `by` that is not this producer's version-shaped `by`. See [the guide](docs/guides/tom-annex.md).
+  drift, including a stamp `by` whose version is not a SemVer 2.0.0 version. See [the guide](docs/guides/tom-annex.md).
