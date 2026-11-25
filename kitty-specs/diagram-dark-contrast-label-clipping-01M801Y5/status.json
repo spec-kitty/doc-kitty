@@ -125,7 +125,8 @@
         "Cycle 5: local main 08b038c (signed, unpushed per consolidation ruling), mission-branch mirror 8587911. N3: Font/Author font text, #369 fragment's #370 bullet and #370 fragment now say an %%{init}%% / front-matter fontFamily (incl. themeVariables.fontFamily) is neither shown nor used for measurement; init-font exception removed; other directive values kept; sequence font keys -> #458. N1: themeCSS fonts documented as author CSS beside classDef/style (kept, can overflow ~9 px), tracked in #412 (comment 7156698452). Checks: markdownlint 0 issues, validate:changelog OK, validate:docs OK.",
         "Cycle 6 rework (review-cycle-5 findings 1, 2; N6).",
         "Cycle 6: local main 60bd182 (signed, unpushed), mirror 93cacc2. F1: themeCSS clip described in proportion (grows with the label to about a tenth of its width until Mermaid wraps); '9 px' removed. F2: sequence font keys are overwritten by Mermaid 11.17.1 setConf with the secure top-level fontFamily, so sequence labels use the toolkit stack; #458 described as hardening; 370 fragment drops 'not dropped yet'; 369 fragment drops the #458 non-sentence; #458 premise corrected (comment 7156878618). N6: 370 fragment added to WP03 owned_files and create_intent. Checks: markdownlint 0 issues, validate:changelog OK.",
-        "Cycle 7 rework (review-cycle-6 finding 1)."
+        "Cycle 7 rework (review-cycle-6 finding 1).",
+        "Cycle 7: local main be1bf7e (signed, unpushed), mirror 62c3786. F1: 'same stack' limited to sequence labels; C4 labels use Mermaid's C4 font (\"Open Sans\", sans-serif, not set by the toolkit); author c4 font keys still apply; #458 covers both sets. Confirmed in 11.17.1 source (renderer setConf(getConfig().c4)). My #458 C4 claim corrected (comment 7157013559, proposes widening #458). Fragments unchanged. markdownlint 0 issues."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
