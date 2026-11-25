@@ -24,15 +24,15 @@
   date.
 - **No file, no output.** A site without the catalog gets no new outputs and no
   errors.
-- **Sequencing.** The generated human-readable list page is the last work package.
-  It follows ADR-0087 (generated-section contract, accepted 2026-11-23 on PR #445)
-  and waits for that PR to merge.
+- **Sequencing.** The generated human-readable list page (FR-017) is deferred to
+  follow-up #461 (operator ruling, option B, 2026-11-25). It follows ADR-0087,
+  whose `source_digest` and D3 machinery arrives with #455, and reuses it.
 
 Decisions recorded in this mission:
 
 | Decision | Outcome | Decider |
 |----------|---------|---------|
-| DM `01M84X0K4K462YEMYV9RHB5T96`: generated-page sequencing | Final WP, gated on #359 / ADR-0087 (PR #445) merging | Operator |
+| DM `01M84X0K4K462YEMYV9RHB5T96`: generated-page sequencing | Final WP, gated on #359 / ADR-0087 (PR #445) merging. Later split out: deferred to follow-up #461, gated on #455 (operator ruling, option B, 2026-11-25) | Operator |
 | DM `01M8535645HETHAQ432516SAAY`: change-feed shape | Dedicated RSS feed + JSON `changes`, derived from `since`/`until` only | Operator |
 | DM `01M853NP2MPP7HNWKMX9K8Y2ST`: `location` typing | Non-empty list of ISO 3166-1 alpha-2 codes + optional `location_note` | Operator |
 
@@ -137,14 +137,16 @@ file added. All three appear (positive control).
 
 ---
 
-### User Story 5 - A generated list page (Priority: P3, gated)
+### User Story 5 - A generated list page (Priority: P3, deferred to #461)
 
 A reader opens a sub-processor page that lists current sub-processors and,
 separately, past ones. The page is generated from the catalog and stamped, and a
 drift check catches a stale or hand-edited copy.
 
-**Why this priority**: It needs the generated-section contract (ADR-0087, PR #445),
-which has not merged yet. All other stories ship without it.
+**Why this priority**: It needs the generated-section contract (ADR-0087). The
+ADR merged with PR #445, but its `source_digest` and D3 machinery arrives with
+#455, so the story is deferred to follow-up #461 (operator ruling, option B). All
+other stories ship without it.
 
 **Independent Test**: Generate the page from the example catalog. It carries the
 ADR-0087 stamp, lists current and past records separately, and the drift check
@@ -186,7 +188,7 @@ fails after the catalog changes until the page is regenerated.
 | FR-003 | Unique ids | As a site maintainer, I want a duplicate record id to fail validation, naming the id, so that each sub-processor is addressable. | High | Open | [build] | no — paired with the valid two-record fixture |
 | FR-004 | Date rules | As a site maintainer, I want `since` and `until` to be calendar dates and `until` never before `since`, so that the change history is coherent. | High | Open | [build] | no |
 | FR-005 | Typed location | As a site maintainer, I want `location` to be a non-empty list of upper-case ISO 3166-1 alpha-2 codes, with an optional free-text `location_note`, so that locations are machine-checkable. | High | Open | [build] | no |
-| FR-006 | References resolve | As a site maintainer, I want each `external_references` entry, in the existing page shape (inline, or `{type: biblio, id}`), to resolve against the bibliography catalog, so that citations do not dangle. | High | Open | [build] | no |
+| FR-006 | References resolve | As a site maintainer, I want each `external_references` entry, in the existing page shape (inline, or `{type: biblio | tool, id}`), to resolve against the bibliography or tools catalog, so that citations do not dangle. | High | Open | [build] | no |
 | FR-007 | Measures link | As a compliance author, I want a record's `tom_classification`, in the ADR-0080 page-field shape, to resolve against the effective measures catalog, so that a TOM annex export can reference a provider's physical-security and assurance evidence. | High | Open | [build] | no |
 | FR-008 | One validation, two gates | As a maintainer, I want the build-free gate (`validate-catalog.mjs`) and the build to apply the same checks with the same messages, so that a passing gate predicts a passing build. | High | Open | [build] | no — parity asserted on shared invalid fixtures |
 | FR-009 | Agent export | As an agent, I want `api/subprocessors.json` to hold every record and a `changes` list (one `added` entry per `since`, one `removed` entry per `until`), so that I can read the list and its history without scraping prose. | High | Open | [build] | no |
@@ -197,7 +199,7 @@ fails after the catalog changes until the page is regenerated.
 | FR-014 | Architecture decision | As a maintainer, I want an ADR (ADR-0086) that records the catalog, its field set, the feed and the sequencing, so that the design is reviewable and the ⚖ items are tracked. | Medium | Open | [build] | no |
 | FR-015 | Example content | As a toolkit user, I want the example site to carry clearly fictional records covering a current, a past and a future-dated sub-processor, so that the outputs can be seen and tested. | Medium | Open | [build] | no |
 | FR-016 | Guide and changelog | As a toolkit user, I want a guide section that explains the catalog, the outputs and the ⚖ limits, plus a changelog fragment, so that I can adopt the feature correctly. | Medium | Open | [build] | no |
-| FR-017 | Generated list page | As a reader, I want a generated page that lists current and past sub-processors separately, stamped and drift-checked per ADR-0087, so that the human-readable list cannot fall out of date. Gated on PR #445 merging. | Low | Open | [build] | no |
+| FR-017 | Generated list page | As a reader, I want a generated page that lists current and past sub-processors separately, stamped and drift-checked per ADR-0087, so that the human-readable list cannot fall out of date. Deferred to follow-up #461, gated on #455. | Low | Deferred (#461) | [build] | no |
 
 ### Non-Functional Requirements
 
@@ -216,8 +218,8 @@ fails after the catalog changes until the page is regenerated.
 | C-001 | Structure only | The toolkit ships no default sub-processor records. Only the example site carries records, and they are clearly fictional. | Regulatory | High | Open |
 | C-002 | Counsel review ⚖ | The field set and the "feed as notice" use are marked ⚖ in the ADR and the guide, and are not described as DPA-ready. | Regulatory | High | Open |
 | C-003 | Reuse existing shapes | `external_references` and `tom_classification` use the existing page shapes and resolvers. No new reference shape is introduced. | Technical | High | Open |
-| C-004 | Page gated | FR-017 starts only after PR #445 (ADR-0087) has merged to `main`. No other requirement depends on it. | Technical | High | Open |
-| C-005 | No build clock | No output may depend on the build date. "Current" vs "upcoming" is left to the reader of the dates, except on the gated page (FR-017), which follows ADR-0087's masking rules. | Technical | High | Open |
+| C-004 | Page gated | FR-017 is deferred to follow-up #461, which starts only after #455 (the ADR-0087 `source_digest` and D3 machinery) has merged to `main`. No other requirement depends on it. | Technical | High | Deferred (#461) |
+| C-005 | No build clock | No output may depend on the build date. "Current" vs "upcoming" is left to the reader of the dates, except on the deferred page (FR-017, #461), which follows ADR-0087's masking rules. | Technical | High | Open |
 | C-006 | Out of scope | No transfer-mechanism field, no derivation from changelog fragments, and no merging with an organisation-wide catalog. Each becomes a follow-up issue. | Business | Medium | Open |
 | C-007 | Committed data only | The build reads committed data files only, consistent with ADR-0087 D6. | Technical | Medium | Open |
 
@@ -268,4 +270,4 @@ fails after the catalog changes until the page is regenerated.
 - ADR-0080 (Accepted 2026-11-21): the `tom_classification` shape and the measures
   catalog.
 - ADR-0018: the catalog pattern and the bibliography catalog.
-- ADR-0087 (Accepted 2026-11-23, PR #445, not yet merged): FR-017 only.
+- ADR-0087 (Accepted 2026-11-23, PR #445, merged to `main` 2026-11-24): FR-017 only.
