@@ -37,15 +37,15 @@
       "wp": null
     },
     "#403": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Implemented by this mission (WP01-WP07); the mission PR will carry 'Closes #403'",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "title": "Sub-processor catalog: optional _meta/subprocessors.yaml, generated list page and change feed",
+      "verdict": "in-mission",
       "wp": null
     },
     "#445": {
