@@ -12,6 +12,8 @@
  *   unclassified pages cannot slip in or fall out (FR-006). It carries the
  *   ADR-0087 `generated` stamp, whose `content_hash` matches its body (WP06).
  * - A site with no such edge must build neither the file nor the link (FR-012).
+ * - The index is opt-in (`tomAnnex: true`), so a classified site may build
+ *   neither; building only one of the two is an error.
  *
  * @module tom-annex/verify
  */
@@ -46,6 +48,9 @@ export function tomAnnexProblems({ graph, indexLinks, annexText, pageBuilt, site
     return problems;
   }
 
+  // The index is opt-in (`tomAnnex: true`): a classified site that did not opt in
+  // builds neither the file nor the link. One without the other is always wrong.
+  if (annexText === undefined && !linked) return [];
   const problems = [];
   if (!linked) problems.push('evidence index: the content graph has classified-as edges, but api/index.json has no _links.tomAnnex');
   if (annexText === undefined) {

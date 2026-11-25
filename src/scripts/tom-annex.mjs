@@ -30,8 +30,7 @@ import { parseArgs } from 'node:util';
 import { PRODUCER_REGISTRY } from '../lib/producers.mjs';
 import { isProducerOwnedPage } from '../lib/producer-output.mjs';
 import { TOM_ANNEX_FORMAT } from '../lib/tom-annex/core.mjs';
-import { checkHub, checkSnapshot, isOwnedSnapshot } from '../lib/tom-annex/check.mjs';
-import { renderHubPage } from '../lib/tom-annex/hub-page.mjs';
+import { checkHub, checkSnapshot, hubToWrite, isOwnedSnapshot, snapshotToWrite } from '../lib/tom-annex/check.mjs';
 import { TOM_ANNEX_PRODUCER } from '../lib/tom-annex/stamp.mjs';
 import { resolveInside } from '../lib/tom-annex/paths.mjs';
 
@@ -116,7 +115,7 @@ function run(argv) {
   const builtText = readIfPresent(annexFile);
   if (builtText === undefined) {
     // An input error in both modes (exit 2): `missing` is a D3 verdict for a committed file, not for the build.
-    throw new UsageError(`the build produced no evidence index at ${annexFile} (no published classified pages?); build the site first`);
+    throw new UsageError(`the build produced no evidence index at ${annexFile} (is \`tomAnnex: true\` set in the site config, and does the site have a published classified page?); the snapshot and the hub page are written from the built index, so build the site first`);
   }
   /** @type {any} */
   let built;
@@ -160,8 +159,8 @@ function run(argv) {
     return 1;
   }
   // Render first, so an index the hub cannot render (no `at`) writes nothing at all.
-  const hubText = values.hub ? renderHubPage(built) : undefined;
-  if (snapshotFile) write(snapshotFile, builtText, values.snapshot);
+  const hubText = hubFile ? hubToWrite(built, readIfPresent(hubFile)) : undefined;
+  if (snapshotFile) write(snapshotFile, snapshotToWrite(builtText, readIfPresent(snapshotFile)), values.snapshot);
   if (hubFile && hubText !== undefined) write(hubFile, hubText, values.hub);
   return 0;
 }

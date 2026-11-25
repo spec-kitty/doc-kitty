@@ -65,6 +65,24 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     expect(check.out).toMatch(/dockitty-tom-annex --dist/);
   });
 
+  it('keeps the committed `by` when the content is unchanged, and writes the current one when it changes (operator ruling Q7)', () => {
+    const p = project();
+    p.run(...p.both);
+    const old = (text: string) => text.replace(/"doc-kitty-tom-annex\/[^"]+"/, '"doc-kitty-tom-annex/0.0.1"');
+    // As if both files were written by an older toolkit release.
+    writeFileSync(p.snapshot, old(readFileSync(p.snapshot, 'utf8')));
+    writeFileSync(p.hub, old(readFileSync(p.hub, 'utf8')));
+    expect(p.run(...p.both, '--check').status).toBe(0);
+    expect(p.run(...p.both).status).toBe(0);
+    expect(readFileSync(p.snapshot, 'utf8')).toContain('"doc-kitty-tom-annex/0.0.1"');
+    expect(readFileSync(p.hub, 'utf8')).toContain('"doc-kitty-tom-annex/0.0.1"');
+    // A content change is a new version: the current `by` is written.
+    p.rebuild(variant((a) => (a.scopes.system[0].label = `${a.scopes.system[0].label} (renamed)`)));
+    expect(p.run(...p.both).status).toBe(0);
+    expect(readFileSync(p.snapshot, 'utf8')).not.toContain('0.0.1');
+    expect(readFileSync(p.hub, 'utf8')).not.toContain('0.0.1');
+  });
+
   it('reports hand-edited for an edited snapshot body', () => {
     const p = project();
     p.run(...p.both);
@@ -96,7 +114,7 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     const p = project(null);
     const check = p.run(...p.both, '--check');
     expect(check.status).toBe(2);
-    expect(check.out).toMatch(/no evidence index at .*tom-annex\.json[\s\S]*no published classified pages\?/);
+    expect(check.out).toMatch(/no evidence index at .*tom-annex\.json[\s\S]*`tomAnnex: true`[\s\S]*published classified page/);
     expect(check.out).not.toMatch(/^doc-kitty-tom-annex missing/m);
     const write = p.run(...p.both);
     expect(write.status).toBe(2);

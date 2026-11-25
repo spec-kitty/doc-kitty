@@ -76,6 +76,11 @@ describe('checkSnapshot (WP07 T031)', () => {
     expect(check(reformatted)).toBe('stale-render');
   });
 
+  it('a toolkit upgrade with unchanged content is ok: `by` carries over (operator ruling Q7)', () => {
+    const committed = serializeTomAnnex(variant((a) => (a.generated.by = 'doc-kitty-tom-annex/0.0.1'), false));
+    expect(check(committed)).toBe('ok');
+  });
+
   it('masks only generated.at: a different at alone is ok', () => {
     const builtLater = variant((a) => (a.generated.at = '2030-01-01T00:00:00Z'));
     // The committed at must still be the one its own evidence gives, so mask from the built side.
@@ -118,6 +123,10 @@ describe('checkHub (WP07 T031)', () => {
   it('stale-render when the digests agree but the rendered page differs', () => {
     const older = restamped(hub.replace('Do not edit it by hand', 'Please do not edit it by hand'));
     expect(check(older)).toBe('stale-render');
+  });
+
+  it('a toolkit upgrade with unchanged content is ok: `by` carries over (operator ruling Q7)', () => {
+    expect(check(hub.replace(/by: "doc-kitty-tom-annex\/[^"]+"/, 'by: "doc-kitty-tom-annex/0.0.1"'))).toBe('ok');
   });
 
   it('masks only generated.at (and the updated it drives)', () => {

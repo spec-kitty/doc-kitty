@@ -24,7 +24,7 @@ const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const ASTRO_BIN = path.join(REPO_ROOT, 'example', 'node_modules', 'astro', 'bin', 'astro.mjs');
 const SITE_URL = 'https://example.test';
 const BASE = '/site';
-const VARIANTS = ['classified', 'bare'] as const;
+const VARIANTS = ['classified', 'bare', 'optout'] as const;
 type Variant = (typeof VARIANTS)[number];
 const siteDir = (v: Variant) => path.join(REPO_ROOT, 'example', `.dk-test-tom-annex-${v}`);
 const dist = (v: Variant, ...rel: string[]) => path.join(siteDir(v), 'dist', ...rel);
@@ -43,14 +43,16 @@ const meta = (title: string, kind: string, extra: Record<string, unknown> = {}) 
 });
 
 function files(variant: Variant): Record<string, string> {
-  const classify = (entries: unknown[]) => (variant === 'classified' ? { tom_classification: entries } : {});
+  // "optout" classifies like "classified" but leaves `tomAnnex` off, the default (operator ruling Q11).
+  const classify = (entries: unknown[]) => (variant === 'bare' ? {} : { tom_classification: entries });
+  const optIn = variant === 'optout' ? '' : ', tomAnnex: true';
   return {
     'astro.config.mjs': `import { defineConfig } from 'astro/config';
 import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
 export default defineConfig({
   site: '${SITE_URL}',
   base: '${BASE}',
-  integrations: defineDocKittyIntegrations({ title: 'Evidence fixture', base: '${BASE}', indexBasename: ['README', 'index'] }),
+  integrations: defineDocKittyIntegrations({ title: 'Evidence fixture', base: '${BASE}', indexBasename: ['README', 'index']${optIn} }),
 });
 `,
     'src/content.config.ts': `import { defineCollection } from 'astro:content';
@@ -181,5 +183,16 @@ describe('a site with no classified pages gains nothing (WP05 T024, FR-012)', ()
     expect(readJson('bare', 'api', 'index.json')._links).not.toHaveProperty('tomAnnex');
     expect(existsSync(dist('bare', 'okf', 'tom-annex.json'))).toBe(false);
     expect(gateProblems('bare')).toEqual([]);
+  });
+});
+
+describe('a classified site that leaves tomAnnex off publishes nothing new (operator ruling Q11)', () => {
+  it('builds no index, no link and no OKF copy, and passes the gate', () => {
+    expect(existsSync(dist('optout', 'api', 'tom-annex.json'))).toBe(false);
+    expect(readJson('optout', 'api', 'index.json')._links).not.toHaveProperty('tomAnnex');
+    expect(existsSync(dist('optout', 'okf', 'tom-annex.json'))).toBe(false);
+    // Positive control: the same pages are classified, so the graph has classified-as edges.
+    expect(readJson('optout', 'api', 'content-graph.json').edges.some((e: { rel: string }) => e.rel === 'classified-as')).toBe(true);
+    expect(gateProblems('optout')).toEqual([]);
   });
 });

@@ -50,6 +50,12 @@ describe('tomAnnexProblems (WP05 T021)', () => {
     expect(problems({ annexText: undefined }).join('\n')).toMatch(/api\/tom-annex\.json.*not built/);
   });
 
+  it('passes a classified site that did not opt in: neither the file nor the link (operator ruling Q11)', () => {
+    const { tomAnnex, ...withoutLink } = links;
+    void tomAnnex;
+    expect(problems({ annexText: undefined, indexLinks: withoutLink })).toEqual([]);
+  });
+
   it('requires the _links.tomAnnex entry', () => {
     const { tomAnnex, ...withoutLink } = links;
     void tomAnnex;

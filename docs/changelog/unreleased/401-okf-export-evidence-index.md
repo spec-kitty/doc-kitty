@@ -9,6 +9,6 @@ section: Changed
   in the bundle read as a broken link. Now the export copies `tom-annex.json`
   into the bundle with a root-index entry, and stops with an error if that file
   is not a `doc-kitty/tom-annex` index. The check registers every file in the
-  bundle, so a link to a file that is there resolves. A site with classified
-  pages also gains `tomAnnex` in its `api/index.json` links, which changes a
-  pinned link set.
+  bundle, so a link to a file that is there resolves. A site that opts in with
+  `tomAnnex: true` also gains `tomAnnex` in its `api/index.json` links, which
+  changes a pinned link set.

@@ -32,10 +32,10 @@ organisation bundle of #404) who builds on its format.
 
 A site whose pages classify the technical and organisational measures they
 evidence, with the `tom_classification` field of
-[ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md), gets
-one more build output: `api/tom-annex.json`. For every measure of the site's
-measures catalog it lists the published pages that evidence it, grouped by
-scope:
+[ADR-0080](../adr/0080-tom-classification-field-and-measures-catalog.md), can
+opt in to one more build output: `api/tom-annex.json`. For every measure of the
+site's measures catalog it lists the published pages that evidence it, grouped
+by scope:
 
 - **`system`**: the measure as the documented system implements it;
 - **`organisation`**: the measure as the organisation around it applies it.
@@ -43,11 +43,24 @@ scope:
 Measures that no published page evidences are listed under `uncovered`, so a
 reader sees the gaps as well as the coverage.
 
+**It is off by default.** Turn it on in the site config:
+
+```js
+integrations: defineDocKittyIntegrations({
+  title: 'My docs',
+  tomAnnex: true,
+}),
+```
+
+⚖ Publishing the index also publishes its `uncovered` list, and whether that may
+be shown to third parties is one of the questions for counsel below. A site that
+classifies pages therefore publishes nothing new until it opts in.
+
 - **Drafts never count.** The index reads the built content graph, which leaves
   draft pages out. A measure that only a draft classifies is uncovered.
-- **A site with no published classified pages gains nothing.** No file is built
-  and nothing is linked; doc-kitty's artifact gate only checks that nothing was
-  built.
+- **Without the option, or with no published classified page, the site gains
+  nothing.** No file is built and nothing is linked; doc-kitty's artifact gate
+  only checks that the file and the link are both there or both absent.
 - **It is linked** from `api/index.json` as `_links.tomAnnex`, titled with the
   label, and the OKF export carries the same bytes as `tom-annex.json`.
 - **Evidence URLs are absolute**: the site's `site` URL, its `base` and the
@@ -147,7 +160,7 @@ when pages classify it under both.
 
 | Key | Meaning |
 |---|---|
-| `by` | `doc-kitty-tom-annex/<toolkit version>`: the producer that wrote it |
+| `by` | `doc-kitty-tom-annex/<toolkit version>`: the producer and version that wrote it. In the committed snapshot and hub page it carries over while their `content_hash` is unchanged, so it names the release that last changed the content |
 | `at` | the latest `updated` or `verified` instant among the listed evidence, or `null` when none has one. **Never the build clock**, so two builds of the same tree write the same bytes. |
 | `source_digest` | `sha256:` and 64 hex digits over the declared inputs (ADR-0087 D2): each evidence page's source file, a consumer catalog file, and, as configuration, the site, the base, the section-index names and the shipped default catalog. Equivalent spellings of the site or base (`/docs` and `/docs/`) give the same digest. A change to a page that is not evidence does not change it. |
 | `content_hash` | `sha256:` and the first 12 hex digits of the index serialised without `generated`: it detects a hand edit |
@@ -167,7 +180,9 @@ the build output.
 
 Both are opt-in, and both are files you commit. ⚖ Whether a data processing
 agreement should cite the living index or a dated snapshot is a question for
-counsel; these make either possible.
+counsel; these make either possible. Both are written from the built
+`api/tom-annex.json`, so they need `tomAnnex: true`: without it the build has
+no index, and the command stops with exit `2` and says so.
 
 - **The snapshot** is the built `api/tom-annex.json`, byte for byte, at a path
   you choose. Its history in version control dates each state of the index.
@@ -220,7 +235,7 @@ first. When several verdicts apply, the first in this table is reported:
 | `unowned` | the path holds a file not stamped by `doc-kitty-tom-annex` (the verdict [PR #454](https://github.com/spec-kitty/doc-kitty/pull/454) added to ADR-0087 D3) | move or delete that file, then write |
 | `hand-edited` | the file no longer matches its own `content_hash` (for the snapshot, also an `at` its evidence does not give) | move the change to the classified pages or the catalog, then write |
 | `stale-source` | its `source_digest` differs from the build's: an evidence page, the catalog or the configuration changed | write again |
-| `stale-render` | same inputs, different bytes: a toolkit change, or a formatting edit to the snapshot (on the hub page, any edit reads as `hand-edited`) | write again |
+| `stale-render` | same inputs, different bytes: a toolkit release that renders differently, or a formatting edit to the snapshot (on the hub page, any edit reads as `hand-edited`) | write again |
 
 **The check trusts the build.** It compares the committed files with the
 `source_digest` of the `dist` you point it at; it does not recompute the
@@ -230,8 +245,9 @@ check against a stale `dist` from before a content change passes.
 **The workflow is build, then write, then commit.** Both files are rendered
 from the previous build. After you change an evidence page or the catalog, the
 check stays red until you rebuild and write them again. That is the drift gate
-working, not a bug. A toolkit upgrade changes `by`, so it also makes both files
-`stale-render` until you write them again.
+working, not a bug. A toolkit upgrade alone does not turn it red: while a
+file's content is unchanged, its committed `by` stands, as ADR-0087 D1 sets for
+every generated page, and writing it again keeps that `by`.
 
 **The hub page needs a date.** When no listed evidence page has an `updated`
 or `verified` date, the index's `generated.at` is `null` and the hub page has
