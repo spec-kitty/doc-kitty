@@ -59,6 +59,18 @@
       "title": "<auto-classified: pr_or_commit_ref>",
       "verdict": "not-applicable",
       "wp": null
+    },
+    "#461": {
+      "evidence_ref": "Follow-up for the deferred FR-017 (operator ruling option B, #403 comment 7162823706); no work owed in this mission",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "Sub-processor catalog: a generated list page (current and past), on the ADR-0087 contract",
+      "verdict": "not-applicable",
+      "wp": null
     }
   },
   "schema_version": 1
