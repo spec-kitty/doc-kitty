@@ -32,7 +32,14 @@ describe('the pdf lane', () => {
     expect(pdf.container?.image).toBe(ci.jobs.a11y.container?.image);
     const download = pdf.steps.find((s) => s.uses?.startsWith('actions/download-artifact'));
     expect(download?.with).toMatchObject({ name: 'example-dist-nodrafts', path: 'example/dist-nodrafts' });
+    // The only build in the lane is the small chrome fixture of the client-mode check.
     expect(pdf.steps.some((s) => /pnpm build|astro build/.test(s.run ?? ''))).toBe(false);
+  });
+
+  it('also checks that two client-mode prints are byte-identical (#394)', () => {
+    const runs = pdf.steps.map((s) => s.run ?? '');
+    const client = runs.findIndex((r) => r.includes('pdf-client-determinism.mjs'));
+    expect(client, 'a client-mode determinism step').toBeGreaterThan(runs.findIndex((r) => r.includes('assert-pdf-determinism.mjs')));
   });
 
   it('prints, gates, then checks determinism, in that order', () => {
