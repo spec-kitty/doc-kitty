@@ -122,7 +122,8 @@
         "Cycle 4: B1/N2 resolved; new B2 — %%{init}%% font still sets the measurement, serif clips 9 px; docs overclaim",
         "Cycle 4 B2 fixed (docs): %%{init}%% font still sets Mermaid's measurement while labels are shown in the Arial stack, so a narrower (serif) one can clip; points to #412. N3 (toolkit surfaces) and N4 (line wrap) folded.",
         "Cycle 5 rework: resync docs to WP02 cycle-5 fix (N3) and document themeCSS fonts as author CSS (N1).",
-        "Cycle 5: local main 08b038c (signed, unpushed per consolidation ruling), mission-branch mirror 8587911. N3: Font/Author font text, #369 fragment's #370 bullet and #370 fragment now say an %%{init}%% / front-matter fontFamily (incl. themeVariables.fontFamily) is neither shown nor used for measurement; init-font exception removed; other directive values kept; sequence font keys -> #458. N1: themeCSS fonts documented as author CSS beside classDef/style (kept, can overflow ~9 px), tracked in #412 (comment 7156698452). Checks: markdownlint 0 issues, validate:changelog OK, validate:docs OK."
+        "Cycle 5: local main 08b038c (signed, unpushed per consolidation ruling), mission-branch mirror 8587911. N3: Font/Author font text, #369 fragment's #370 bullet and #370 fragment now say an %%{init}%% / front-matter fontFamily (incl. themeVariables.fontFamily) is neither shown nor used for measurement; init-font exception removed; other directive values kept; sequence font keys -> #458. N1: themeCSS fonts documented as author CSS beside classDef/style (kept, can overflow ~9 px), tracked in #412 (comment 7156698452). Checks: markdownlint 0 issues, validate:changelog OK, validate:docs OK.",
+        "Cycle 6 rework (review-cycle-5 findings 1, 2; N6)."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
