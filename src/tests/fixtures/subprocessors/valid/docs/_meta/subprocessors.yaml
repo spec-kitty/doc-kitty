@@ -1,0 +1,29 @@
+# Fictional fixture for the sub-processor loader tests (ADR-0086).
+- id: acme-hosting
+  name: Acme Hosting B.V.
+  address: 1 Example Street, Amsterdam
+  contact: privacy@acme-hosting.example
+  processing: Hosting of the production database and backups.
+  location: [NL, DE]
+  location_note: Backups replicate to Frankfurt.
+  responsibilities: Acme operates the infrastructure; we configure access and retention.
+  since: 2025-01-15
+  external_references:
+    - { type: biblio, id: acme-dpa }
+  tom_classification:
+    - physical-security
+    - measure: certification-assurance
+      note: Yearly ISO/IEC 27001 audit.
+- id: beta-mail
+  name: Beta Mail Ltd
+  processing: Transactional email.
+  location: [IE]
+  responsibilities: Beta delivers mail; we choose what is sent.
+  since: 2027-03-01
+- id: gamma-analytics
+  name: Gamma Analytics Inc.
+  processing: Product usage analytics.
+  location: [US]
+  responsibilities: Gamma stores events; we decide which events are sent.
+  since: 2023-01-10
+  until: 2025-09-30
