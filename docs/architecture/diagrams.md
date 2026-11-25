@@ -156,15 +156,17 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
     `Arial, Helvetica, "Liberation Sans", Arimo`, all with Arial's widths. So a
     site font cannot widen a label past its box, unless the reader's device has
     none of these fonts and falls back to a wider sans font. Labels drawn as SVG
-    text, such as sequence diagram labels, keep Mermaid's own sizing; Mermaid
-    draws them in the same stack.
+    text keep Mermaid's own sizing. Sequence diagram labels are drawn in the
+    same stack. C4 diagram labels use Mermaid's C4 font, `"Open Sans",
+    sans-serif`, which the toolkit does not set.
   - *Author font.* The site's font does not reach the labels. A `fontFamily` set
     in an `%%{init}%%` directive or front-matter `config`, including
     `themeVariables.fontFamily`, is neither shown nor used for measurement: the
     build drops it, and keeps every other directive value. The sequence diagram
     font keys (`actorFontFamily`, `noteFontFamily`, `messageFontFamily`) have no
     effect either: Mermaid 11.17.1 replaces them with the top-level `fontFamily`.
-    Dropping them too, in case a later Mermaid honours them, is
+    The C4 font keys in an author `c4` block (`personFontFamily`,
+    `systemFontFamily` and the others) do still apply. Dropping both sets is
     [#458](https://github.com/spec-kitty/doc-kitty/issues/458).
     Fonts set in author CSS are kept: on one node with `classDef` or `style`, or
     in an `%%{init}%%` `themeCSS` rule. Such a label can be measured in one font
