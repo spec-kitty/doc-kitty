@@ -19,7 +19,7 @@
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::architect-alphonso",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -28,7 +28,8 @@
       "last_transition_at": "2026-11-25T07:54:26.826203+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "ADR-0086 (Proposed) + regenerated ADR index; validators and full pnpm test green"
+        "ADR-0086 (Proposed) + regenerated ADR index; validators and full pnpm test green",
+        "Review cycle 1 folded: README reverted to main (ADR-0072 D2); decisions 5/6 scoped and ADR-0087 conformance recorded; context and tie-break folded"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
