@@ -1,7 +1,7 @@
 {
-  "event_count": 53,
-  "last_event_id": "01M88QZRX4792WQA6ZDTJ3TY0V",
-  "materialized_at": "2026-11-25T06:58:43.749021+00:00",
+  "event_count": 54,
+  "last_event_id": "01M88QZVN78VHV46AXJV6YNKET",
+  "materialized_at": "2026-11-25T06:58:46.567433+00:00",
   "mission_number": "",
   "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
   "mission_type": "software-dev",
@@ -9,10 +9,10 @@
     "approved": 6,
     "blocked": 0,
     "canceled": 0,
-    "claimed": 1,
+    "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
     "planned": 0
   },
@@ -218,9 +218,9 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "claimed",
-      "last_event_id": "01M88QZRX4792WQA6ZDTJ3TY0V",
-      "last_transition_at": "2026-11-25T06:58:43.749021+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M88QZVN78VHV46AXJV6YNKET",
+      "last_transition_at": "2026-11-25T06:58:46.567433+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181)."
