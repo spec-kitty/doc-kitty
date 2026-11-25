@@ -1,47 +1,48 @@
 {
-  "event_count": 27,
+  "event_count": 30,
   "last_event_id": "01M88XVDG80B2HERD9R2EBXT16",
   "materialized_at": "2026-11-25T08:41:12.456353+00:00",
   "mission_number": "",
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 2,
+    "approved": 3,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 1,
-    "in_progress": 1,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 3
   },
   "work_packages": {
     "WP01": {
       "actor": "claude",
-      "agent": "claude::architect-alphonso",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "for_review",
-      "last_event_id": "01M88V5SMAKBPM6WE83WNGJ6CP",
-      "last_transition_at": "2026-11-25T07:54:26.826203+00:00",
+      "lane": "approved",
+      "last_event_id": "01M88WWC2QBNB1DD4B26803K4C",
+      "last_transition_at": "2026-11-25T08:24:15.191338+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "ADR-0086 (Proposed) + regenerated ADR index; validators and full pnpm test green",
-        "Review cycle 1 folded: README reverted to main (ADR-0072 D2); decisions 5/6 scoped and ADR-0087 conformance recorded; context and tie-break folded"
+        "Review cycle 1 folded: README reverted to main (ADR-0072 D2); decisions 5/6 scoped and ADR-0087 conformance recorded; context and tie-break folded",
+        "Review cycle 2 passed: all cycle-1 folds verified; 5 non-blocking findings incl. FR-006 known divergence"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/subprocessor-catalog-01M84X07-coord/kitty-specs/subprocessor-catalog-01M84X07/tasks/WP01-adr-0086-subprocessor-catalog/review-cycle-1.md",
-        "reference": "review-cycle://subprocessor-catalog-01M84X07/WP01-adr-0086-subprocessor-catalog/review-cycle-1.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/subprocessor-catalog-01M84X07-coord/kitty-specs/subprocessor-catalog-01M84X07/tasks/WP01-adr-0086-subprocessor-catalog/review-cycle-2.md",
+        "reference": "review-cycle://subprocessor-catalog-01M84X07/WP01-adr-0086-subprocessor-catalog/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 774,
+      "shell_pid_created_at": "1795594240.01",
       "subtasks": {
         "T001": "done",
         "T002": "done",
@@ -118,10 +119,13 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M88V7D33JC4M7QGNM39B8EWK",
-      "last_transition_at": "2026-11-25T07:55:19.325034+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M88X42KNXKGB6XCTS3MXE437",
+      "last_transition_at": "2026-11-25T08:28:27.637475+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Pure API/feed renderers; 15 tests incl. byte stability; full pnpm test green"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 24848,
