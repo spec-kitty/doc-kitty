@@ -10,6 +10,7 @@ authors:
 related:
   - adr/0018-citation-catalog-collections
   - adr/0080-tom-classification-field-and-measures-catalog
+  - adr/0083-producer-registry-and-ownership-scopes
   - adr/0087-generated-section-contract
   - architecture/research/eu-dpa-compatibility
 ---
@@ -35,15 +36,18 @@ These **⚖ counsel** items stay open and do not block the decision:
 
 ## Context
 
-Several sources require a processor to keep a current list of its sub-processors:
+Several sources concern a processor's sub-processors and the list that names them:
 
-- GDPR Article 28(2) and 28(4): authorisation, notice of intended changes, and the
-  same obligations flowed down to each sub-processor.
-- Decision (EU) 2021/915, Annex IV, and Clause 7.7: the name, address and contact
-  of each sub-processor, a description of the processing, and the division of
+- GDPR Article 28(2) and 28(4) govern engaging a sub-processor: prior
+  authorisation, notice of intended changes under a general authorisation, and
+  the same obligations flowed down to each sub-processor.
+- The list itself comes from the standard contractual clauses. Decision (EU)
+  2021/915, Annex IV, names what each entry holds: the name, address and contact
+  of the sub-processor, a description of the processing, and the division of
   responsibilities. Under a general written authorisation (Clause 7.7, Option 2)
-  the processor informs the controller of changes in advance.
-- Decision (EU) 2021/914, Annex III: the list of sub-processors.
+  the processor informs the controller of changes to the list in advance.
+- Decision (EU) 2021/914, Annex III, carries the same list for the international
+  transfer clauses.
 
 A DocKitty site that documents such a service keeps this list as prose, usually
 on an integrations page. Nothing validates it, nothing exports it for agents, and
@@ -106,19 +110,35 @@ named a sub-processor catalog as a follow-up.
 5. **The build publishes two outputs when the file exists.**
    - `api/subprocessors.json` holds every record and a `changes` list: one
      `added` entry per `since`, one `removed` entry per `until`, newest first.
+     Entries on the same date sort by id, ascending, then `added` before
+     `removed`, so the order never depends on the order of the file.
    - `subprocessors.xml` is an RSS feed with one item per change.
    - Served-surface detection finds both routes, and `api/index.json` links them.
      Without the file neither route exists, so neither link appears.
-   - **No output reads the build clock.** The documents carry dates, never a
-     "current" or "upcoming" status, so the same catalog builds the same bytes
-     on any day. A site gives advance notice by writing a future `since` or
-     `until`. **⚖ counsel**: whether that feed meets a given contract's notice
-     terms is a legal question, not a format one.
+   - **Neither the API document nor the feed reads the build clock.** Both carry
+     dates, never a "current" or "upcoming" status, so the same catalog builds
+     the same bytes on any day. A site gives advance notice by writing a future
+     `since` or `until`. **⚖ counsel**: whether that feed meets a given
+     contract's notice terms is a legal question, not a format one.
 
 6. **A generated list page follows [ADR-0087](0087-generated-section-contract.md).**
-   A page that lists current and past sub-processors separately carries ADR-0087's
-   `generated` stamp and its drift gate. It ships as a separate step, after the
-   outputs above.
+   A page lists current and past sub-processors in separate sections. It ships
+   as a separate step, after the outputs above.
+   - **The one date-relative output.** Splitting current from past needs a
+     reference date, so the page is the single exception to decision 5's rule.
+     Its reference date, and what a byte-stability check masks, follow ADR-0087
+     D5. The concrete rule is decided where the page is built, not here.
+   - **It is a registered producer.** The page carries ADR-0087's `generated`
+     stamp (D1) and belongs to a producer registered with an ownership scope
+     ([ADR-0083](0083-producer-registry-and-ownership-scopes.md) D7, ADR-0087
+     D4), so a hand edit is flagged rather than silently kept.
+   - **Its source digest covers the committed catalog** (ADR-0087 D2): the
+     `_meta/subprocessors.yaml` file and the generator configuration that
+     changes the output.
+   - **It joins the `--check` drift gate** (ADR-0087 D3) with the full verdict
+     set, including `unowned`.
+   - **It reads committed data only** (ADR-0087 D6, spec C-007), and runs no
+     other repository's code.
 
 ### Out of this decision (follow-ups)
 
