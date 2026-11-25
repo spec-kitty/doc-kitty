@@ -859,11 +859,15 @@ describe('generator-stamp (#177, FR-008, C-004)', () => {
       'doc-kitty-gherkin/garbage',
       'doc-kitty-gherkin/0.7',
       'doc-kitty-gherkinx/0.0.1',
+      // Same length as the producer, so only the ownership half rejects it.
+      'doc-kitty-gherkiN/0.0.1',
       undefined,
       42,
     ]) {
       expect(keepsBy(by, 'doc-kitty-gherkin'), String(by)).toBe(false);
     }
+    // Two producer ids of the same length: the version half alone would accept it.
+    expect(keepsBy('doc-kitty-scaffold/0.0.1', 'doc-kitty-glossary')).toBe(false);
   });
 });
 
