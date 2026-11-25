@@ -42,6 +42,14 @@ export function hubPageSlice<T>(children: readonly T[], page: number, pageSize: 
 
 /** Base-free slug of listing page N: the hub itself for 1, `<hub>/page/<N>` otherwise. */
 export function pagedHubSlug(hub: string, page: number): string;
+
+/**
+ * #429: the hubs the sidebar caps, from data that lists every hub. Keeps the entries
+ * whose `capped` is not `false` (an entry without the flag, from data generated
+ * before #429, counts as capped). Sidebar shaping filters the build data through it,
+ * so an uncapped hub keeps its sidebar group exactly as before.
+ */
+export function cappedHubCaps(hubs: Iterable<readonly [string, HubCap]>): Map<string, HubCap>;
 ```
 
 The build reports a `page` collision (R8) as an error thrown from the route-shaping data generation, not through this pure API.
