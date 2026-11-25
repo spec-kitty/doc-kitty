@@ -47,8 +47,8 @@ Rules:
 - **No clock.** There is no timestamp and no per-record status: a document built
   on any day is the same.
 - **Base-aware URLs.** URLs are absolute and base-aware, like the other agent surfaces.
-- **Serialisation.** JSON is serialised with two-space indentation and a trailing
-  newline, matching the other `api/*.json` routes.
+- **Serialisation.** JSON is serialised with two-space indentation and no trailing
+  newline, matching the other `api/*.json` routes (`JSON.stringify(body, null, 2)`).
 
 ## Agent index (`api/index.json`) additions
 
