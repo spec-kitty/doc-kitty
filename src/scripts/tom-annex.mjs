@@ -108,7 +108,8 @@ function run(argv) {
   if (!values.dist) throw new UsageError(`--dist is required\n${USAGE}`);
   if (!values.snapshot && !values.hub) throw new UsageError(`name at least one of --snapshot and --hub\n${USAGE}`);
 
-  const annexFile = path.join(insideProject('--dist', values.dist), 'api', 'tom-annex.json');
+  // Guard the file itself too: a `dist/api` symlink must not lead the read out of the project.
+  const annexFile = insideProject('--dist', path.join(insideProject('--dist', values.dist), 'api', 'tom-annex.json'));
   const snapshotFile = values.snapshot ? insideProject('--snapshot', values.snapshot) : undefined;
   const hubFile = values.hub ? insideProject('--hub', values.hub) : undefined;
   const hint = PRODUCER_REGISTRY.get(TOM_ANNEX_PRODUCER)?.regenerateHint ?? '';

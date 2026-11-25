@@ -3,7 +3,7 @@
  * child process on a temporary `dist` holding a built, stamped index.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -218,6 +218,17 @@ describe('dockitty-tom-annex (WP07 T034)', () => {
     writeFileSync(path.join(outside, 'dist', 'api', 'tom-annex.json'), serializeTomAnnex(base));
     symlinkSync(path.join(outside, 'dist'), path.join(p.root, 'dist-link'), 'dir');
     expect(p.run('--dist', 'dist-link', '--snapshot', p.snapshot, '--check').status).toBe(2);
+  });
+
+  it('refuses an index read through a dist/api symlink that leads out of the project (#455 confirm, LOW 1)', () => {
+    const p = project(null);
+    const outside = mkdtempSync(path.join(tmpdir(), 'dk-tom-api-'));
+    writeFileSync(path.join(outside, 'tom-annex.json'), serializeTomAnnex(base));
+    rmSync(path.join(p.root, 'dist', 'api'), { recursive: true, force: true });
+    symlinkSync(outside, path.join(p.root, 'dist', 'api'), 'dir');
+    const check = p.run('--dist', 'dist', '--snapshot', p.snapshot, '--check');
+    expect(check.status).toBe(2);
+    expect(check.out).toMatch(/outside the working directory/);
   });
 
   it('refuses --dist .. and accepts a file whose name merely starts with two dots (#455 review, finding 3)', () => {

@@ -259,7 +259,8 @@ so an interrupted run never leaves a half-written file. Some limits follow:
 - Symbolic links are resolved before anything is read or written: a path, or
   a directory on its way, that leads outside the working directory is refused
   (exit `2`), and a target that is a link inside it is replaced at the file it
-  points to.
+  points to. A link that points at nothing is replaced by a regular file at the
+  link's own path.
 - On Windows, a target that another program holds open cannot be replaced. The
   command then exits `2` and the old file stays as it was.
 
