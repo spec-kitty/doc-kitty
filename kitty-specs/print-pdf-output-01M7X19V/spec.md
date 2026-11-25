@@ -22,7 +22,7 @@ Today a reader in dark mode who prints a doc-kitty page gets a near-black PDF, a
 
 | Term | Meaning | Avoid |
 |------|---------|-------|
-| Print layer | The print stylesheet plus the force-light print hook, on for every site | "print theme" |
+| Print layer | The print stylesheet plus the force-light print hook; opt-in (`print`), on with the print control or any PDF, and on in the starter config for new sites | "print theme" |
 | Print document | One HTML document that holds a whole section, or the whole site, in reading order behind a cover page | "book", "manuscript" |
 | Section PDF | The PDF of one section's print document, published at `/pdf/<section>.pdf` | "export" |
 | Whole-site PDF | The PDF of the whole-site print document, opt-in at site level | "book", "site export" |
@@ -162,7 +162,7 @@ A maintainer opens a PR touching code, example content or workflows. A path-scop
 | ID | Title | Constraint | Category | Priority | Status |
 |----|-------|------------|----------|----------|--------|
 | C-001 | PDF location | PDFs live in `dist/pdf/` and deploy with the site on main only; `/pdf/<section>.pdf` and `/pdf/site.pdf` are public URL contracts. | Business | High | Open |
-| C-002 | Opt-in | Section PDFs are opt-in per section; the whole-site PDF is opt-in at site level; the print layer is on for every site. | Business | High | Open |
+| C-002 | Opt-in | Section PDFs are opt-in per section; the whole-site PDF is opt-in at site level; the print layer is opt-in (`print`, also on with `printControl` or any PDF), and new sites start with `print: true` in the starter config. A site that opts into none of them builds byte for byte what it built before (SC-004). Amended by the operator rulings of 2026-11-25 on #377. | Business | High | Open |
 | C-003 | Not a manuscript type | The whole-site PDF adds no book or manuscript content type; that plan stays *Won't*. | Business | High | Open |
 | C-004 | Lane advisory | The PDF lane is not added to `ci-ok`; joining it is an operator decision. | Technical | High | Open |
 | C-005 | Built output only | The PDF lane reads built output only and never runs a generated-section producer (#359). | Technical | High | Open |

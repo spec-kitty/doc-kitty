@@ -1,9 +1,11 @@
 /*
  * DocKitty print layer (#378, ADR-0081): what a page looks like on paper.
  *
- * `print.client.ts` imports this sheet, and `PageTitle.astro` loads that script, so it
- * reaches every in-frame page (the print routes included) and never the out-of-frame
- * deck route, whose print rules live in `dk-reveal-theme.css`. The sheet follows the
+ * `print.client.ts` imports this sheet, and `PrintLayer.astro` loads that script. The
+ * layer is opt-in (`print`, also on with `printControl` or any PDF): with it on, the
+ * sheet reaches every in-frame page (the print routes included); with it off, no page.
+ * It never reaches the out-of-frame deck route, whose print rules live in
+ * `dk-reveal-theme.css`. The sheet follows the
  * module graph like `disclosure.css`, so no `.css` file joins the global list.
  *
  * Starlight already prints its own variables light; doc-kitty's `--dk-* → --sl-*`

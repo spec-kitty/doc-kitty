@@ -2,7 +2,7 @@
 title: Printing and PDF
 description: What a doc-kitty page looks like on paper, how a theme changes it, and how a site publishes section and whole-site PDFs built in CI.
 doc_status: active
-updated: 2026-11-20T00:00:00Z
+updated: 2026-11-25T00:00:00Z
 type: Guide
 kind: How-To
 authors:
@@ -23,8 +23,22 @@ prints, and a site owner who publishes PDFs. The decision behind all of this is
 
 ## Print any page
 
-Every doc-kitty site has a print layer. It needs no configuration. Use the
+A site turns the print layer on with one option. Readers then use the
 browser's **Print** or **Save as PDF**.
+
+```js
+defineDocKittyIntegrations({
+  print: true,
+});
+```
+
+New sites start with it: the starter configuration in
+[Consumer setup](./consumer-setup.md#3-astroconfigmjs--wire-the-integrations)
+sets `print: true`. The print control and any PDF turn the layer on as well,
+because both need it, so a site with either can leave `print` out. Setting
+`print: false` next to them is a config error. A site that sets none of these
+builds exactly what it built before the print layer existed, and prints as it
+did before.
 
 On paper a page keeps its title, its status and date, its metadata band and its
 content. It leaves out the header bar, the sidebar, the table-of-contents rail,
@@ -45,9 +59,9 @@ The layout changes for paper too:
 
 ### Dark mode prints light
 
-A reader in dark mode still gets a light printout. When the browser starts a
-print, the page switches to light mode, then switches back afterwards. The
-reader's choice is never stored.
+With the print layer on, a reader in dark mode still gets a light printout.
+When the browser starts a print, the page switches to light mode, then switches
+back afterwards. The reader's choice is never stored.
 
 Some browsers print without telling the page. For them, a print-only fallback
 sheet sets the light colour values. The site's theme generates that sheet, so
@@ -58,9 +72,11 @@ There are two limits to know about:
 - A brand that ships its per-mode colours in a CSS file, not in its `tokens`
   object, gets the default light palette on this fallback path. The page is
   still light, but the colours are not the brand's.
-- In a site that draws its diagrams in the browser (client mode), a diagram
-  keeps the colours it had when the print started. It is not redrawn halfway
-  through the print. Build-mode diagrams follow the light colours every time.
+- A page with diagrams drawn in the browser (client mode) does not switch
+  modes: a switch would redraw its diagrams, and a print could catch one
+  halfway. The fallback sheet prints the page light, and those diagrams keep
+  the colours they had when the print started. Build-mode diagrams follow the
+  light colours every time.
   A client-mode diagram inside a closed disclosure or a hidden tab is drawn only
   once it is shown, so a browser print of it shows its source. The PDFs open
   everything first and draw every diagram.
@@ -217,7 +233,7 @@ defineDocKittyIntegrations({
 ```
 
 When the page's section has its own PDF, a **Download section PDF** link follows
-the button. The control is hidden on paper. A theme restyles it, or hides it,
+the button. The control turns the print layer on, and is hidden on paper. A theme restyles it, or hides it,
 through `.dk-print-control`.
 
 The link points at `/pdf/<section>.pdf`, which only exists once the PDFs are

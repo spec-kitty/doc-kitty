@@ -1,8 +1,8 @@
 ---
 title: "ADR-0081: Print and PDF output from built HTML via Chromium"
-description: "Every page prints light through a print layer; sections and the whole site can opt into PDFs that CI prints from the built site with Chromium."
+description: "An opt-in print layer prints every page light; sections and the whole site can opt into PDFs that CI prints from the built site with Chromium."
 doc_status: draft
-updated: 2026-11-20T00:00:00Z
+updated: 2026-11-25T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -25,7 +25,9 @@ related:
 ## Status
 
 Proposed. It records the operator's rulings on epic #377 of 2026-11-20 and
-settles the epic's open choices.
+settles the epic's open choices. Amended before acceptance by the rulings of
+2026-11-25 on #377: the consumption test's byte-for-byte check stays, so the
+print layer is opt-in, and new sites start with it on.
 
 ## Context
 
@@ -43,7 +45,18 @@ as code and printed Markua asides as literal text.
 
 ## Decision
 
-### 1. A print layer on every site
+### 1. An opt-in print layer
+
+The print layer is opt-in (operator ruling of 2026-11-25 on #377, amending the
+2026-11-20 default below). The `print` option of `defineDocKittyIntegrations`
+turns it on; `printControl: true` and any PDF turn it on too, because both need
+it, and `print: false` next to either is a config error. New sites start with
+`print: true`: the starter configuration in the consumer setup guide sets it. A
+site that sets none of these builds exactly what it built before the layer
+existed, which the consumption test's byte-for-byte check (SC-004) holds every
+change to. Off, the layer is in no module graph: the manifest exports its
+component only when it is on, as it does for the custom sidebar body
+(ADR-0075).
 
 - `print.css` hides the screen chrome, keeps the page title, status, date and
   metadata band, gives the page a white background and the content the full
@@ -54,18 +67,22 @@ as code and printed Markua asides as literal text.
   widen the content use `!important` to beat Starlight's layout, so their
   overrides need it too.
 - A `beforeprint` hook sets `data-theme="light"` and restores the reader's
-  value on `afterprint`. It never writes to storage. Client-mode diagrams pause
-  their re-render while a print is in progress, so a print never catches a
-  diagram reset to its source.
+  value on `afterprint`. It never writes to storage. It leaves a page with
+  client-mode diagrams alone: the diagram renderer redraws on a theme change,
+  resetting each diagram to its source first, and a print could catch that.
+  Such a page prints light through the fallback below, and its client-mode
+  diagrams keep the reader's theme. The renderer, which every site ships,
+  carries no print code.
 - A print-token fallback covers browsers that print without the event. It is
   generated from the resolved theme by the token emitter: each mode-varying
   token takes its light value under `@media print` at
   `:root:root[data-theme='dark']`, which beats every dark block in any order.
   A brand that ships per-mode colour as a CSS file is invisible to the emitter,
   so on that path the print is light but uses the merged catalog's colours.
-- The layer rides the module graph of a script every in-frame page loads, like
-  the disclosure control (ADR-0077). It adds no global component sheet, so the
-  out-of-frame deck route keeps its own print rules.
+- The layer rides the module graph of a script that every in-frame page of a
+  site with the layer loads, like the disclosure control (ADR-0077). It adds no
+  global component sheet, so the out-of-frame deck route keeps its own print
+  rules.
 
 ### 2. A `pdf` setting in two places
 
@@ -123,8 +140,10 @@ defineDocKittyIntegrations({
 
 - `dockitty-pdf` serves a built `dist` and opens each print route in Chromium,
   the one Playwright already installs for build-mode diagrams (ADR-0040). It
-  forces the light theme and waits until client-mode diagrams report a light
-  render. It then prints with `page.pdf({ tagged: true, outline: true,
+  loads each page in the light theme, so client-mode diagrams draw light the
+  first time, refuses a page that did not load light, and waits until every
+  client-mode diagram that is laid out holds its drawing (the renderer's own
+  `data-processed` marker and its `<svg>`). It then prints with `page.pdf({ tagged: true, outline: true,
   preferCSSPageSize: true })`. It adds no dependency: `playwright` is an
   existing optional peer of the toolkit.
 - A post-pass pins `CreationDate` and `ModDate` to `SOURCE_DATE_EPOCH`, falling
@@ -162,7 +181,7 @@ The epic left these choices open. The operator settled them on 2026-11-20:
 
 | Choice | Ruling |
 |---|---|
-| Defaults | The print layer is on for every site. Section PDFs are opt-in per section, and the whole-site PDF is opt-in at site level. |
+| Defaults | Section PDFs are opt-in per section, and the whole-site PDF is opt-in at site level. The print layer was on for every site; the operator amended that on 2026-11-25 (section 1): it is opt-in, and on in the starter configuration for new sites. |
 | Where PDFs live | `dist/pdf/`, deployed on `main` only, not a release asset. |
 | Paper size | A4, overridable through `@page`. There is no config key. |
 | Ordering against #369 and #370 | These diagram fixes do not block. Diagram-heavy sections should wait for them before their PDFs are promoted. |
@@ -180,16 +199,14 @@ red lane fixes it before merging, or the next deploy stops.
 
 This decision adds these contracts, which later changes must keep or migrate:
 
-- The `pdf` key in `sections.yaml`, and the `pdf` and `printControl` options of
-  `defineDocKittyIntegrations`.
+- The `pdf` key in `sections.yaml`, and the `print`, `pdf` and `printControl`
+  options of `defineDocKittyIntegrations`.
 - The URLs `/print/`, `/print/<section>/` and `/pdf/<name>.pdf`, with `site` as
   a reserved PDF name, and the build file `dist/print/manifest.json`.
 - The commands `dockitty-pdf`, `dockitty-assert-pdf` and
   `dockitty-assert-pdf-determinism`, and the package export
   `@spec-kitty/doc-toolkit/routes/print-injected`.
-- The class `.dk-print-control`, and the attributes `data-dk-print` and
-  `html[data-dk-diagram-theme]`, the signal that client diagrams finished a
-  render in the current colour mode.
+- The class `.dk-print-control` and the attribute `data-dk-print`.
 - The `pdf` list in the served-surfaces record (#397), from the resolved
   settings. Nothing reads it yet; it lets a later surface, such as the agent
   index, link the PDFs without a second source of truth.
@@ -201,7 +218,10 @@ chrome. Translating them waits for the toolkit's own label work.
 
 ### Positive
 
-- Every site prints clean and light in either colour mode, with no configuration.
+- A site with the print layer prints clean and light in either colour mode, and
+  new sites start with it on.
+- A site without it builds exactly what it built before, so the layer reaches
+  existing sites only when they ask for it.
 - PDFs keep everything the render pipeline adds, because they come from the
   built site.
 - The PDFs are reproducible, tagged, and carry a bookmark outline.
@@ -209,7 +229,12 @@ chrome. Translating them waits for the toolkit's own label work.
 ### Negative
 
 - The print layer adds one stylesheet and one small script to every in-frame
-  page.
+  page of a site that turns it on.
+- An existing site that does not turn the layer on keeps printing as before: a
+  reader in the dark theme prints a dark page there.
+- On a page with client-mode diagrams, a browser print keeps those diagrams in
+  the reader's theme (#369 is where client diagrams become theme-agnostic).
+  PDFs are not affected.
 - Paged-media features that Chromium lacks are out of reach, such as
   `target-counter()` page numbers in a table of contents (#383).
 
@@ -258,4 +283,5 @@ check.
   [ADR-0057](0057-internal-env-handoff-seam.md),
   [ADR-0070](0070-excluded-folders.md),
   [ADR-0072](0072-parallel-landing-without-shared-files.md),
+  [ADR-0075](0075-sidebar-carrier-renders-own-sublist-on-opt-in.md),
   [ADR-0077](0077-shared-disclosure-control.md).

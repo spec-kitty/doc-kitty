@@ -2,7 +2,7 @@
 title: Consumer setup — build a docsite from the published toolkit
 description: The install → configure → theme → build path for a net-new adopter, using only the published @spec-kitty/doc-toolkit surface.
 doc_status: active
-updated: 2026-11-23T00:00:00Z
+updated: 2026-11-25T00:00:00Z
 type: Guide
 kind: How-To
 tags: [adoption, setup, consumer, theming, release]
@@ -176,6 +176,9 @@ export default defineConfig({
     theme: myTheme,
     markua: true,
     indexBasename: ['README', 'index'],
+    // Pages print clean and light (ADR-0081). New sites start with it on; leave it
+    // out to keep a site printing as it did before.
+    print: true,
   }),
 });
 ```
@@ -1132,9 +1135,11 @@ edits. The edit link for generated pages is tracked in
 
 ### Print control
 
-Every page already prints cleanly, with no option. `printControl: true` adds a
-**Print / Save as PDF** button to each page. When the page's section has its own
-PDF, a **Download section PDF** link follows the button. It is off by default.
+`print: true` (in the starter configuration above) makes every page print
+cleanly, and light from the dark theme. `printControl: true` adds a
+**Print / Save as PDF** button to each page, and turns the print layer on with
+it. When the page's section has its own PDF, a **Download section PDF** link
+follows the button. Both are off by default.
 
 ```ts
 printControl: true,
@@ -1145,6 +1150,7 @@ printControl: true,
 Sections can opt into PDFs, and the whole site can too. The PDFs are printed
 from the built site by `dockitty-pdf`. A section opts in with `pdf: true` in
 `sections.yaml`, and the site sets defaults here. All of it is off by default.
+Any PDF turns the print layer on.
 
 ```ts
 pdf: {

@@ -1,8 +1,8 @@
 ---
 title: Print and PDF output
-description: What the print layer changes in every built site, the routes and URLs the PDF feature reserves, and how to turn the PDFs on.
+description: How to turn the opt-in print layer on, the routes and URLs the PDF feature reserves, and how to turn the PDFs on.
 doc_status: active
-updated: 2026-11-20T00:00:00Z
+updated: 2026-11-25T00:00:00Z
 type: Migration
 kind: How-To
 authors:
@@ -15,18 +15,21 @@ related:
 
 # Print and PDF output
 
-No setting is needed to upgrade, and nothing breaks. This page lists what
-changes in a built site with no config change, and what the PDF feature
-reserves. The decision is in
+No setting is needed to upgrade, and nothing breaks: a site that changes no
+setting builds exactly what it built before. This page lists what the print
+layer changes once you turn it on, and what the PDF feature reserves. The
+decision is in
 [ADR-0081](../adr/0081-print-and-pdf-output-from-built-html-via-chromium.md).
 
-## What changes with no config change
+## Turn the print layer on
 
-- **Every page prints differently.** The print layer is on for every site. A
-  printed page leaves out the site chrome, prints light from the dark theme, and
-  shows the address of each external link. A theme that had its own print rules
-  should check them: the print layer's rules for the hidden chrome and the white
-  page use `!important`. See
+Add `print: true` to `defineDocKittyIntegrations`. New sites start with it, and
+`printControl: true` or any PDF turns it on as well. Once it is on:
+
+- **Every page prints differently.** A printed page leaves out the site chrome,
+  prints light from the dark theme, and shows the address of each external
+  link. A theme that had its own print rules should check them: the print
+  layer's rules for the hidden chrome and the white page use `!important`. See
   [Change how a page prints](../guides/printing-and-pdf.md#change-how-a-page-prints).
 - **Every in-frame page loads one more small script and its print rules.** The
   out-of-frame deck route does not.
